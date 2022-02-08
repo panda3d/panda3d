@@ -1,9 +1,11 @@
-from direct.showbase.DirectObject import *
 from panda3d.core import *
+from direct.showbase.DirectObject import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
+
 
 class TimeManager(DistributedObject.DistributedObject):
     """
@@ -127,7 +129,7 @@ class TimeManager(DistributedObject.DistributedObject):
         The return value is true if the attempt is made, or false if
         it is too soon since the last attempt.
         """
-        now = globalClock.getRealTime()
+        now = ClockObject.getGlobalClock().getRealTime()
 
         if now - self.lastAttempt < self.minWait:
             self.notify.debug("Not resyncing (too soon): %s" % (description))
@@ -144,7 +146,6 @@ class TimeManager(DistributedObject.DistributedObject):
 
         return 1
 
-
     def serverTime(self, context, timestamp):
         """serverTime(self, int8 context, int32 timestamp)
 
@@ -157,7 +158,8 @@ class TimeManager(DistributedObject.DistributedObject):
         determine the clock delta between the AI and the client
         machines.
         """
-        end = globalClock.getRealTime()
+        clock = ClockObject.getGlobalClock()
+        end = clock.getRealTime()
 
         if context != self.thisContext:
             self.notify.info("Ignoring TimeManager response for old context %d" % (context))
@@ -177,11 +179,10 @@ class TimeManager(DistributedObject.DistributedObject):
         if globalClockDelta.getUncertainty() > self.maxUncertainty:
             if self.attemptCount < self.maxAttempts:
                 self.notify.info("Uncertainty is too high, trying again.")
-                self.start = globalClock.getRealTime()
+                self.start = clock.getRealTime()
                 self.sendUpdate("requestServerTime", [self.thisContext])
                 return
             self.notify.info("Giving up on uncertainty requirement.")
 
         messenger.send("gotTimeSync", taskChain = 'default')
         messenger.send(self.cr.uniqueName("gotTimeSync"), taskChain = 'default')
-

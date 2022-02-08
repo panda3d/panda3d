@@ -602,7 +602,7 @@ make_transform(const EggTransform *egg_transform) {
 void EggLoader::
 show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
   PT(GeomPrimitive) primitive = new GeomLines(Geom::UH_static);
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3c();
   PT(GeomVertexData) vertex_data =
     new GeomVertexData(vertex_pool->get_name(), format, Geom::UH_static);
 
@@ -900,6 +900,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgb8:
   case EggTexture::F_rgb5:
   case EggTexture::F_rgb332:
+  case EggTexture::F_srgb:
     wanted_channels = 3;
     wanted_alpha = false;
     break;
@@ -910,6 +911,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgba8:
   case EggTexture::F_rgba4:
   case EggTexture::F_rgba5:
+  case EggTexture::F_srgb_alpha:
     wanted_channels = 4;
     wanted_alpha = true;
     break;
@@ -1186,6 +1188,30 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
   tex->set_default_sampler(sampler);
 
+  bool force_srgb = false;
+  if (egg_force_srgb_textures) {
+    switch (egg_tex->get_env_type()) {
+    case EggTexture::ET_unspecified:
+    case EggTexture::ET_modulate:
+    case EggTexture::ET_decal:
+    case EggTexture::ET_blend:
+    case EggTexture::ET_replace:
+    case EggTexture::ET_add:
+    case EggTexture::ET_blend_color_scale:
+    case EggTexture::ET_modulate_glow:
+    case EggTexture::ET_modulate_gloss:
+      force_srgb = true;
+      if (egg2pg_cat.is_debug()) {
+        egg2pg_cat.debug()
+          << "Enabling sRGB format on texture " << egg_tex->get_name() << "\n";
+      }
+      break;
+
+    default:
+      break;
+    }
+  }
+
   if (tex->get_num_components() == 1) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_red:
@@ -1201,44 +1227,52 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_format(Texture::F_alpha);
       break;
     case EggTexture::F_luminance:
-      tex->set_format(Texture::F_luminance);
-      break;
-
-    case EggTexture::F_unspecified:
+      tex->set_format(force_srgb ? Texture::F_sluminance : Texture::F_luminance);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 1-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_sluminance);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 2) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_luminance_alpha:
-      tex->set_format(Texture::F_luminance_alpha);
+      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alpha);
       break;
 
     case EggTexture::F_luminance_alphamask:
-      tex->set_format(Texture::F_luminance_alphamask);
-      break;
-
-    case EggTexture::F_unspecified:
+      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alphamask);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 2-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_sluminance_alpha);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 3) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgb:
-      tex->set_format(Texture::F_rgb);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb);
       break;
     case EggTexture::F_rgb12:
-      if (tex->get_component_width() >= 2) {
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb);
+      } else if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
         tex->set_format(Texture::F_rgb12);
       } else {
@@ -1251,36 +1285,45 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     case EggTexture::F_rgba8:
       // We'll quietly accept RGBA8 for a 3-component texture, since flt2egg
       // generates these for 3-component as well as for 4-component textures.
-      tex->set_format(Texture::F_rgb8);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb8);
       break;
     case EggTexture::F_rgb5:
-      tex->set_format(Texture::F_rgb5);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb5);
       break;
     case EggTexture::F_rgb332:
-      tex->set_format(Texture::F_rgb332);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb332);
       break;
-
-    case EggTexture::F_unspecified:
+    case EggTexture::F_srgb:
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 3-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 4) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
-      tex->set_format(Texture::F_rgba);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba);
       break;
     case EggTexture::F_rgbm:
-      tex->set_format(Texture::F_rgbm);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgbm);
       break;
     case EggTexture::F_rgba12:
-      if (tex->get_component_width() >= 2) {
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb_alpha);
+      } else if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
-        tex->set_format(Texture::F_rgba12);
+        tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba12);
       } else {
         egg2pg_cat.warning()
           << "Ignoring inappropriate format " << egg_tex->get_format()
@@ -1288,23 +1331,36 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       }
       break;
     case EggTexture::F_rgba8:
-      tex->set_format(Texture::F_rgba8);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba8);
       break;
     case EggTexture::F_rgba4:
-      tex->set_format(Texture::F_rgba4);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba4);
       break;
     case EggTexture::F_rgba5:
-      tex->set_format(Texture::F_rgba5);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba5);
       break;
-
-    case EggTexture::F_unspecified:
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb_alpha);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 4-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb_alpha);
+      }
+      break;
     }
+  }
+
+  if (force_srgb && tex->get_format() != Texture::F_alpha &&
+      !Texture::is_srgb(tex->get_format())) {
+    egg2pg_cat.warning()
+      << "Unable to enable sRGB format on texture " << egg_tex->get_name()
+      << " with specified format " << egg_tex->get_format() << "\n";
   }
 
   switch (egg_tex->get_quality_level()) {
@@ -1482,6 +1538,10 @@ make_texture_stage(const EggTexture *egg_tex) {
 
   case EggTexture::ET_normal_gloss:
     stage->set_mode(TextureStage::M_normal_gloss);
+    break;
+
+  case EggTexture::ET_emission:
+    stage->set_mode(TextureStage::M_emission);
     break;
 
   case EggTexture::ET_unspecified:
@@ -2183,13 +2243,14 @@ make_vertex_data(const EggRenderState *render_state,
   if (!ignore_color) {
     // Let's not use Direct3D-style colors on platforms where we only have
     // OpenGL anyway.
-#ifdef _WIN32
-    array_format->add_column(InternalName::get_color(), 1,
-                             Geom::NT_packed_dabc, Geom::C_color);
-#else
-    array_format->add_column(InternalName::get_color(), 4,
-                             Geom::NT_uint8, Geom::C_color);
-#endif
+    if (vertex_colors_prefer_packed) {
+      array_format->add_column(InternalName::get_color(), 1,
+                               Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      array_format->add_column(InternalName::get_color(), 4,
+                               Geom::NT_uint8, Geom::C_color);
+    }
   }
 
   vector_string uv_names, uvw_names, tbn_names;

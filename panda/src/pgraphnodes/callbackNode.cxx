@@ -30,6 +30,7 @@ CallbackNode(const std::string &name) :
   PandaNode(name)
 {
   PandaNode::set_cull_callback();
+  PandaNode::set_renderable();
 
   // Set up a default, infinite bounding volume, unless the user tells us
   // otherwise.  Not sure if this is a great idea, because it means a naive
@@ -99,17 +100,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   // Recurse onto the node's children.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool CallbackNode::
-is_renderable() const {
   return true;
 }
 

@@ -23,10 +23,9 @@ bool TypeRegistryNode::_paranoid_inheritance = false;
  */
 TypeRegistryNode::
 TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref) :
-  _handle(handle), _name(name), _ref(ref)
+  _handle(handle), _name(name), _ref(ref), _memory_usage{}
 {
   clear_subtree();
-  memset(_memory_usage, 0, sizeof(_memory_usage));
 }
 
 /**

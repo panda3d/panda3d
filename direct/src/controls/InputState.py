@@ -1,6 +1,8 @@
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.showbase.PythonUtil import SerialNumGen
+from direct.showbase.MessengerGlobal import messenger
+
 
 # internal class, don't create these on your own
 class InputStateToken:

@@ -33,6 +33,7 @@
 #include "cullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
@@ -42,6 +43,8 @@
 #include "geomDrawCallbackData.h"
 #include "geomNode.h"
 #include "geomTransformer.h"
+#include "instanceList.h"
+#include "instancedNode.h"
 #include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
@@ -373,6 +376,13 @@ ConfigVariableBool allow_live_flatten
           "only has an effect when Panda is not compiled for a release "
           "build."));
 
+ConfigVariableBool filled_wireframe_apply_shader
+("filled-wireframe-apply-shader", false,
+ PRC_DESC("Set this true to apply any shader configured on nodes onto the "
+          "filled wireframe overlay.  The wireframe color is multiplied with "
+          "the result of the fragment shader.  This is helpful when the shader "
+          "alters the position of the vertices and makes the overlay wrong."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
@@ -407,6 +417,7 @@ init_libpgraph() {
   CullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();
+  DepthBiasAttrib::init_type();
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
@@ -416,6 +427,8 @@ init_libpgraph() {
   GeomDrawCallbackData::init_type();
   GeomNode::init_type();
   GeomTransformer::init_type();
+  InstanceList::init_type();
+  InstancedNode::init_type();
   LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();
@@ -478,12 +491,15 @@ init_libpgraph() {
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
   DecalEffect::register_with_read_factory();
+  DepthBiasAttrib::register_with_read_factory();
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();
+  InstanceList::register_with_read_factory();
+  InstancedNode::register_with_read_factory();
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LightRampAttrib::register_with_read_factory();

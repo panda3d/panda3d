@@ -1,14 +1,12 @@
 """ Class used to create and control radamec device """
-from math import *
 from direct.showbase.DirectObject import DirectObject
+from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from .DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
 
-"""
-TODO:
-Handle interaction between widget, followSelectedTask and updateTask
-"""
+#TODO: Handle interaction between widget, followSelectedTask and updateTask
 
 # ANALOGS
 NULL_AXIS = -1
@@ -65,4 +63,3 @@ class DirectFastrak(DirectObject):
                                3.280839895013123 * pos[1],
                                3.280839895013123 * pos[0])
         self.notify.debug("Tracker(%d) Pos = %s" % (self.deviceNo, repr(self.trackerPos)))
-

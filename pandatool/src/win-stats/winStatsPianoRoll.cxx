@@ -15,7 +15,7 @@
 #include "winStatsMonitor.h"
 #include "numeric_types.h"
 
-static const int default_piano_roll_width = 400;
+static const int default_piano_roll_width = 600;
 static const int default_piano_roll_height = 200;
 
 bool WinStatsPianoRoll::_window_class_registered = false;
@@ -27,14 +27,14 @@ const char * const WinStatsPianoRoll::_window_class_name = "piano";
 WinStatsPianoRoll::
 WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index) :
   PStatPianoRoll(monitor, thread_index,
-                 default_piano_roll_width,
-                 default_piano_roll_height),
+                 monitor->get_pixel_scale() * default_piano_roll_width / 4,
+                 monitor->get_pixel_scale() * default_piano_roll_height / 4),
   WinStatsGraph(monitor)
 {
-  _left_margin = 128;
-  _right_margin = 8;
-  _top_margin = 16;
-  _bottom_margin = 8;
+  _left_margin = _pixel_scale * 32;
+  _right_margin = _pixel_scale * 2;
+  _top_margin = _pixel_scale * 5;
+  _bottom_margin = _pixel_scale * 2;
 
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
@@ -103,7 +103,7 @@ set_time_units(int unit_mask) {
  * Called when the user single-clicks on a label.
  */
 void WinStatsPianoRoll::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
   if (collector_index >= 0) {
     WinStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
   }
@@ -121,6 +121,15 @@ set_horizontal_scale(double time_width) {
   GetClientRect(_window, &rect);
   rect.bottom = _top_margin;
   InvalidateRect(_window, &rect, TRUE);
+}
+
+/**
+ * Calls update_guide_bars with parameters suitable to this kind of graph.
+ */
+void WinStatsPianoRoll::
+normal_guide_bars() {
+  // We want vaguely 100 pixels between guide bars.
+  update_guide_bars(get_xsize() / (_pixel_scale * 25), get_horizontal_scale());
 }
 
 /**
@@ -144,6 +153,21 @@ begin_draw() {
   for (int i = 0; i < num_guide_bars; i++) {
     draw_guide_bar(_bitmap_dc, get_guide_bar(i));
   }
+
+  SelectObject(_bitmap_dc, GetStockObject(NULL_PEN));
+}
+
+/**
+ * Should be overridden by the user class.  This hook will be called before
+ * drawing any one row of bars.  These bars correspond to the collector whose
+ * index is get_row_collector(row), and in the color get_row_color(row).
+ */
+void WinStatsPianoRoll::
+begin_row(int row) {
+  int collector_index = get_label_collector(row);
+  HBRUSH brush = get_collector_brush(collector_index, _highlighted_index == collector_index);
+  SelectObject(_bitmap_dc, brush);
+  SelectObject(_bitmap_dc, GetStockObject(NULL_PEN));
 }
 
 /**
@@ -155,13 +179,7 @@ draw_bar(int row, int from_x, int to_x) {
     int y = _label_stack.get_label_y(row) - _graph_top;
     int height = _label_stack.get_label_height(row);
 
-    RECT rect = {
-      from_x, y - height + 2,
-      to_x, y - 2,
-    };
-    int collector_index = get_label_collector(row);
-    HBRUSH brush = get_collector_brush(collector_index);
-    FillRect(_bitmap_dc, &rect, brush);
+    RoundRect(_bitmap_dc, from_x, y - height + 2, to_x, y - 2, _pixel_scale, _pixel_scale);
   }
 }
 
@@ -233,7 +251,10 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // When the mouse is over a color bar, highlight it.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      _label_stack.highlight_label(get_collector_under_pixel(x, y));
+
+      int collector_index = get_collector_under_pixel(x, y);
+      _label_stack.highlight_label(collector_index);
+      on_enter_label(collector_index);
 
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
       // window.
@@ -244,10 +265,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         0
       };
       TrackMouseEvent(&tme);
-
-    } else {
+    }
+    else {
       // If the mouse is in some drag mode, stop highlighting.
       _label_stack.highlight_label(-1);
+      on_leave_label(_highlighted_index);
     }
 
     if (_drag_mode == DM_scale) {
@@ -278,6 +300,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_MOUSELEAVE:
     // When the mouse leaves the graph, stop highlighting.
     _label_stack.highlight_label(-1);
+    on_leave_label(_highlighted_index);
     break;
 
   case WM_LBUTTONUP:
@@ -305,7 +328,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // clicking on the corresponding label.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      clicked_label(get_collector_under_pixel(x, y));
+      on_click_label(get_collector_under_pixel(x, y));
       return 0;
     }
     break;
@@ -325,12 +348,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 void WinStatsPianoRoll::
 additional_window_paint(HDC hdc) {
   // Draw in the labels for the guide bars.
-  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
-  SelectObject(hdc, hfnt);
+  SelectObject(hdc, WinStatsGraph::_monitor->get_font());
   SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
   SetBkMode(hdc, TRANSPARENT);
 
-  int y = _top_margin;
+  int y = _top_margin - 2;
 
   int i;
   int num_guide_bars = get_num_guide_bars();
@@ -411,13 +433,8 @@ get_collector_under_pixel(int xpoint, int ypoint) {
  */
 void WinStatsPianoRoll::
 update_labels() {
-  _label_stack.clear_labels();
-  for (int i = 0; i < get_num_labels(); i++) {
-    int label_index =
-      _label_stack.add_label(WinStatsGraph::_monitor, this,
-                             _thread_index,
-                             get_label_collector(i), true);
-  }
+  _label_stack.replace_labels(WinStatsGraph::_monitor, this,
+                              _thread_index, _labels, true);
   _labels_changed = false;
 }
 
@@ -551,7 +568,7 @@ register_window_class(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+  wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 

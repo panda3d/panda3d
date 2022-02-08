@@ -13,7 +13,7 @@
 
 #include "eglGraphicsPixmap.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
@@ -245,4 +245,4 @@ open_buffer() {
   return true;
 }
 
-#endif  // HAVE_X11
+#endif  // USE_X11

@@ -2,6 +2,7 @@
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
+from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import PythonUtil
 from panda3d.core import *
 from panda3d.direct import *
@@ -13,9 +14,7 @@ class DistributedObjectAI(DistributedObjectBase):
     QuietZone = 1
 
     def __init__(self, air):
-        try:
-            self.DistributedObjectAI_initialized
-        except:
+        if not hasattr(self, 'DistributedObjectAI_initialized'):
             self.DistributedObjectAI_initialized = 1
             DistributedObjectBase.__init__(self, air)
 
@@ -66,11 +65,11 @@ class DistributedObjectAI(DistributedObjectBase):
                 flags = []
                 if self.__generated:
                     flags.append("generated")
-                if self.air == None:
+                if self.air is None:
                     flags.append("deleted")
 
                 flagStr = ""
-                if len(flags):
+                if len(flags) > 0:
                     flagStr = " (%s)" % (" ".join(flags))
 
                 print("%sfrom DistributedObject doId:%s, parent:%s, zone:%s%s" % (
@@ -119,24 +118,23 @@ class DistributedObjectAI(DistributedObjectBase):
                 # self.doId may not exist.  The __dict__ syntax works around that.
                 assert self.notify.debug('delete(): %s' % (self.__dict__.get("doId")))
 
-                if not self._DOAI_requestedDelete:
-                    # this logs every delete that was not requested by us.
-                    # TODO: this currently prints warnings for deletes of objects
-                    # that we did not create. We need to add a 'locally created'
-                    # flag to every object to filter these out.
-                    """
-                    DistributedObjectAI.notify.warning(
-                        'delete() called but requestDelete never called for %s: %s'
-                        % (self.__dict__.get('doId'), self.__class__.__name__))
-                        """
-                    """
-                    # print a stack trace so we can detect whether this is the
-                    # result of a network msg.
-                    # this is slow.
-                    from direct.showbase.PythonUtil import StackTrace
-                    DistributedObjectAI.notify.warning(
-                        'stack trace: %s' % StackTrace())
-                        """
+                #if not self._DOAI_requestedDelete:
+                #    # this logs every delete that was not requested by us.
+                #    # TODO: this currently prints warnings for deletes of objects
+                #    # that we did not create. We need to add a 'locally created'
+                #    # flag to every object to filter these out.
+                #
+                #    DistributedObjectAI.notify.warning(
+                #        'delete() called but requestDelete never called for %s: %s'
+                #        % (self.__dict__.get('doId'), self.__class__.__name__))
+                #
+                #    # print a stack trace so we can detect whether this is the
+                #    # result of a network msg.
+                #    # this is slow.
+                #    from direct.showbase.PythonUtil import StackTrace
+                #    DistributedObjectAI.notify.warning(
+                #        'stack trace: %s' % StackTrace())
+
                 self._DOAI_requestedDelete = False
 
                 self.releaseZoneData()
@@ -167,7 +165,7 @@ class DistributedObjectAI(DistributedObjectBase):
         Returns true if the object has been deleted,
         or if it is brand new and hasnt yet been generated.
         """
-        return self.air == None
+        return self.air is None
 
     def isGenerated(self):
         """
@@ -195,7 +193,6 @@ class DistributedObjectAI(DistributedObjectBase):
         Called after the object has been generated and all
         of its required fields filled in. Overwrite when needed.
         """
-        pass
 
     def b_setLocation(self, parentId, zoneId):
         self.d_setLocation(parentId, zoneId)
@@ -206,14 +203,13 @@ class DistributedObjectAI(DistributedObjectBase):
 
     def setLocation(self, parentId, zoneId):
         # Prevent Duplicate SetLocations for being Called
-        if (self.parentId == parentId) and (self.zoneId == zoneId):
+        if self.parentId == parentId and self.zoneId == zoneId:
             return
 
         oldParentId = self.parentId
         oldZoneId = self.zoneId
         self.air.storeObjectLocation(self, parentId, zoneId)
-        if ((oldParentId != parentId) or
-            (oldZoneId != zoneId)):
+        if oldParentId != parentId or oldZoneId != zoneId:
             self.releaseZoneData()
             messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
             # if we are not going into the quiet zone, send a 'logical' zone
@@ -476,10 +472,10 @@ class DistributedObjectAI(DistributedObjectBase):
         self._DOAI_requestedDelete = True
 
     def taskName(self, taskString):
-        return ("%s-%s" % (taskString, self.doId))
+        return "%s-%s" % (taskString, self.doId)
 
     def uniqueName(self, idString):
-        return ("%s-%s" % (idString, self.doId))
+        return "%s-%s" % (idString, self.doId)
 
     def validate(self, avId, bool, msg):
         if not bool:
@@ -542,7 +538,7 @@ class DistributedObjectAI(DistributedObjectBase):
         avId = self.air.getAvatarIdFromSender()
         assert self.notify.debug('setBarrierReady(%s, %s)' % (context, avId))
         barrier = self.__barriers.get(context)
-        if barrier == None:
+        if barrier is None:
             # This may be None if a client was slow and missed an
             # earlier timeout.  Too bad.
             return
@@ -569,7 +565,6 @@ class DistributedObjectAI(DistributedObjectBase):
 
     def _retrieveCachedData(self):
         """ This is a no-op on the AI. """
-        pass
 
     def setAI(self, aiChannel):
         self.air.setAI(self.doId, aiChannel)

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![Build Status](https://github.com/panda3d/panda3d/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/panda3d/panda3d/actions?query=branch%3Amaster+workflow%3A%22Continuous+Integration%22)
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-6/).
+[this page](https://www.panda3d.org/download/sdk-1-10-11/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -52,9 +52,9 @@ Building Panda3D
 Windows
 -------
 
-You can build Panda3D with the Microsoft Visual C++ 2015, 2017 or 2019 compiler,
-which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
-You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
+You can build Panda3D with the Microsoft Visual C++ 2015, 2017, 2019 or 2022
+compiler, which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
+You will also need to install the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk),
 and if you intend to target Windows Vista, you will also need the
 [Windows 8.1 SDK](https://go.microsoft.com/fwlink/p/?LinkId=323507).
 
@@ -64,17 +64,17 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
-on your version of Visual C++; 2019 is 14.2, 2017 is 14.1, and 2015 is 14.
-Remove the `--windows-sdk=10` option if you need to support Windows Vista,
-which requires the Windows 8.1 SDK.
+on your version of Visual C++; 2022 is 14.3, 2019 is 14.2, 2017 is 14.1, and
+2015 is 14.  Remove the `--windows-sdk=10` option if you need to support
+Windows Vista, which requires the Windows 8.1 SDK.
 
 ```bash
-makepanda\makepanda.bat --everything --installer --msvc-version=14.2 --windows-sdk=10 --no-eigen --threads=2
+makepanda\makepanda.bat --everything --installer --msvc-version=14.3 --windows-sdk=10 --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -249,10 +249,3 @@ to everyone who has donated!
 <a href="https://opencollective.com/panda3d" target="_blank">
   <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />
 </a>
-
-### Gold Sponsors
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/0/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/0/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/1/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/1/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/2/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/2/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/3/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/3/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/4/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/4/website)

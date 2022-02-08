@@ -15,7 +15,6 @@
 #define RAMFILE_H
 
 #include "pandabase.h"
-#include "typedef.h"
 #include "referenceCount.h"
 #include "extension.h"
 
@@ -35,6 +34,9 @@ PUBLISHED:
   EXTENSION(PyObject *get_data() const);
   INLINE size_t get_data_size() const;
   INLINE void clear();
+
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
 
 public:
   std::string read(size_t length);

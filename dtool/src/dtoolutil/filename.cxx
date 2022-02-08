@@ -1876,13 +1876,13 @@ open_read(std::ifstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
   stream.open(os_specific.c_str(), open_mode);
-#endif  // _WIN32
+#endif  // _MSC_VER
 
   return (!stream.fail());
 }
@@ -1926,11 +1926,11 @@ open_write(std::ofstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -1958,11 +1958,11 @@ open_append(std::ofstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2000,11 +2000,11 @@ open_read_write(std::fstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2032,11 +2032,11 @@ open_read_append(std::fstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());

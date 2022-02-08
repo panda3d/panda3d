@@ -29,9 +29,9 @@ GeomVertexReader(Thread *current_thread) :
  * object.
  */
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data,
+GeomVertexReader(CPT(GeomVertexData) vertex_data,
                  Thread *current_thread) :
-  _vertex_data(vertex_data),
+  _vertex_data(std::move(vertex_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -43,10 +43,10 @@ GeomVertexReader(const GeomVertexData *vertex_data,
  * data type.
  */
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexData *vertex_data,
+GeomVertexReader(CPT(GeomVertexData) vertex_data,
                  CPT_InternalName name,
                  Thread *current_thread) :
-  _vertex_data(vertex_data),
+  _vertex_data(std::move(vertex_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -58,9 +58,9 @@ GeomVertexReader(const GeomVertexData *vertex_data,
  * only.
  */
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexArrayData *array_data,
+GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                  Thread *current_thread) :
-  _array_data(array_data),
+  _array_data(std::move(array_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -71,9 +71,9 @@ GeomVertexReader(const GeomVertexArrayData *array_data,
  * only.
  */
 INLINE GeomVertexReader::
-GeomVertexReader(const GeomVertexArrayData *array_data, int column,
+GeomVertexReader(CPT(GeomVertexArrayData) array_data, int column,
                  Thread *current_thread) :
-  _array_data(array_data),
+  _array_data(std::move(array_data)),
   _current_thread(current_thread)
 {
   initialize();

@@ -51,12 +51,13 @@ reset(double now) {
 void CacheStats::
 write(std::ostream &out, const char *name) const {
 #ifndef NDEBUG
+  int num_states = _num_states.load(std::memory_order_relaxed);
   out << name << " cache: " << _cache_hits << " hits, "
       << _cache_misses << " misses\n"
       << _cache_adds + _cache_new_adds << "(" << _cache_new_adds << ") adds(new), "
       << _cache_dels << " dels, "
-      << _total_cache_size << " / " << _num_states << " = "
-      << (double)_total_cache_size / (double)_num_states
+      << _total_cache_size << " / " << num_states << " = "
+      << (double)_total_cache_size / (double)num_states
       << " average cache size\n";
 #endif  // NDEBUG
 }

@@ -108,7 +108,7 @@ PUBLISHED:
   virtual void set_3d_max_distance(PN_stdfloat dist);
   virtual PN_stdfloat get_3d_max_distance() const;
 
-  // *_speaker_mix is for use with FMOD.
+  // speaker_mix is for use with FMOD.
   virtual PN_stdfloat get_speaker_mix(int speaker);
   virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
 
@@ -122,6 +122,14 @@ PUBLISHED:
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(time, get_time, set_time);
+  MAKE_PROPERTY(volume, get_volume, set_volume);
+  MAKE_PROPERTY(balance, get_balance, set_balance);
+  MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(name, get_name);
 
 protected:
   AudioSound();

@@ -157,8 +157,10 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
+  bool is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const;
+
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomVertexData *vertex_data,
+            const GeomVertexData *vertex_data, size_t num_instances,
             bool force, Thread *current_thread) const;
 
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
@@ -433,7 +435,7 @@ public:
 
   bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
-            bool force) const;
+            size_t num_instances, bool force) const;
 
 private:
   const Geom *_object;

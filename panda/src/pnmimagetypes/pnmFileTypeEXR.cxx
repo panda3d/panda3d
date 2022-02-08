@@ -25,6 +25,10 @@
 #include <ImfChannelList.h>
 #include <ImfVersion.h>
 #include <ImfIO.h>
+#include <ImfFrameBuffer.h>
+#include <ImfHeader.h>
+
+#include <ImathBox.h>
 
 #ifndef IMATH_NAMESPACE
 #define IMATH_NAMESPACE Imath
@@ -50,6 +54,15 @@ public:
     _strm.write(c, n);
   }
 
+#if OPENEXR_VERSION_MAJOR >= 3
+  virtual uint64_t tellp() {
+    return _strm.tellp();
+  }
+
+  virtual void seekp(uint64_t pos) {
+    _strm.seekp(pos);
+  }
+#else
   virtual IMF::Int64 tellp() {
     return _strm.tellp();
   }
@@ -57,6 +70,7 @@ public:
   virtual void seekp(IMF::Int64 pos) {
     _strm.seekp(pos);
   }
+#endif
 
 private:
   std::ostream &_strm;
@@ -88,6 +102,15 @@ public:
     return not_eof;
   }
 
+#if OPENEXR_VERSION_MAJOR >= 3
+  virtual uint64_t tellg() {
+    return _strm.tellg();
+  }
+
+  virtual void seekg(uint64_t pos) {
+    _strm.seekg(pos);
+  }
+#else
   virtual IMF::Int64 tellg() {
     return _strm.tellg();
   }
@@ -95,6 +118,7 @@ public:
   virtual void seekg(IMF::Int64 pos) {
     _strm.seekg(pos);
   }
+#endif
 
   virtual void clear() {
     _strm.clear();
@@ -180,7 +204,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeEXR::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -191,7 +214,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeEXR::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 

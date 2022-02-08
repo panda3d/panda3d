@@ -1,3 +1,4 @@
+from panda3d.core import ConfigVariableString
 from panda3d.physics import SpriteParticleRenderer
 
 
@@ -17,9 +18,9 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     sourceNodeName = None
 
     def getSourceTextureName(self):
-        if self.sourceTextureName == None:
-            SpriteParticleRendererExt.sourceTextureName = base.config.GetString(
-                'particle-sprite-texture', 'maps/lightbulb.rgb')
+        if self.sourceTextureName is None:
+            SpriteParticleRendererExt.sourceTextureName = ConfigVariableString(
+                'particle-sprite-texture', 'maps/lightbulb.rgb').value
         # Return instance copy of class variable
         return self.sourceTextureName
 
@@ -28,11 +29,11 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceTextureName = name
 
     def setTextureFromFile(self, fileName = None):
-        if fileName == None:
+        if fileName is None:
             fileName = self.getSourceTextureName()
 
-        t = loader.loadTexture(fileName)
-        if (t != None):
+        t = base.loader.loadTexture(fileName)
+        if t is not None:
             self.setTexture(t, t.getYSize())
             self.setSourceTextureName(fileName)
             return True
@@ -41,14 +42,14 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             return False
 
     def addTextureFromFile(self, fileName = None):
-        if(self.getNumAnims() == 0):
+        if self.getNumAnims() == 0:
             return self.setTextureFromFile(fileName)
 
-        if fileName == None:
+        if fileName is None:
             fileName = self.getSourceTextureName()
 
-        t = loader.loadTexture(fileName)
-        if (t != None):
+        t = base.loader.loadTexture(fileName)
+        if t is not None:
             self.addTexture(t, t.getYSize())
             return True
         else:
@@ -56,9 +57,9 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
             return False
 
     def getSourceFileName(self):
-        if self.sourceFileName == None:
-            SpriteParticleRendererExt.sourceFileName = base.config.GetString(
-                'particle-sprite-model', 'models/misc/smiley')
+        if self.sourceFileName is None:
+            SpriteParticleRendererExt.sourceFileName = ConfigVariableString(
+                'particle-sprite-model', 'models/misc/smiley').value
         # Return instance copy of class variable
         return self.sourceFileName
 
@@ -67,9 +68,9 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceFileName = name
 
     def getSourceNodeName(self):
-        if self.sourceNodeName == None:
-            SpriteParticleRendererExt.sourceNodeName = base.config.GetString(
-                'particle-sprite-node', '**/*')
+        if self.sourceNodeName is None:
+            SpriteParticleRendererExt.sourceNodeName = ConfigVariableString(
+                'particle-sprite-node', '**/*').value
         # Return instance copy of class variable
         return self.sourceNodeName
 
@@ -78,14 +79,14 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         self.sourceNodeName = name
 
     def setTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
-        if modelName == None:
+        if modelName is None:
             modelName = self.getSourceFileName()
-            if nodeName == None:
+            if nodeName is None:
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
-        m = loader.loadModel(modelName)
-        if (m == None):
+        m = base.loader.loadModel(modelName)
+        if m is None:
             print("SpriteParticleRendererExt: Couldn't find model: %s!" % modelName)
             return False
 
@@ -102,17 +103,17 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
         return True
 
     def addTextureFromNode(self, modelName = None, nodeName = None, sizeFromTexels = False):
-        if(self.getNumAnims() == 0):
+        if self.getNumAnims() == 0:
             return self.setTextureFromNode(modelName, nodeName, sizeFromTexels)
 
-        if modelName == None:
+        if modelName is None:
             modelName = self.getSourceFileName()
-            if nodeName == None:
+            if nodeName is None:
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
-        m = loader.loadModel(modelName)
-        if (m == None):
+        m = base.loader.loadModel(modelName)
+        if m is None:
             print("SpriteParticleRendererExt: Couldn't find model: %s!" % modelName)
             return False
 

@@ -38,11 +38,11 @@ PythonThread(PyObject *function, PyObject *args,
 
   set_args(args);
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD) && PY_VERSION_HEX < 0x03090000
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
+  // WITH_THREAD symbol defined within Python.h
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
 #endif
 }
 
@@ -245,20 +245,28 @@ call_python_func(PyObject *function, PyObject *args) {
       PyObject *exc, *val, *tb;
       PyErr_Fetch(&exc, &val, &tb);
 
-      thread_cat.error()
-        << "Exception occurred within " << *current_thread << "\n";
-
       // Temporarily restore the exception state so we can print a callback
-      // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
+      // on-the-spot, except if it's a SystemExit, which would cause PyErr_Print
+      // to exit the process immediately.
+      if (exc != PyExc_SystemExit) {
+        thread_cat.error()
+          << "Exception occurred within " << *current_thread << "\n";
+
+        Py_XINCREF(exc);
+        Py_XINCREF(val);
+        Py_XINCREF(tb);
+        PyErr_Restore(exc, val, tb);
+        PyErr_Print();
+      } else {
+        thread_cat.info()
+          << "SystemExit occurred within " << *current_thread << "\n";
+      }
 
       PyGILState_Release(gstate);
 
-      PyErr_Restore(exc, val, tb);
+      if (PyGILState_Check()) {
+        PyErr_Restore(exc, val, tb);
+      }
     } else {
       // No exception.  Restore the thread state normally.
       PyGILState_Release(gstate);

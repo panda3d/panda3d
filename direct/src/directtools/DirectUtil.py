@@ -2,6 +2,7 @@
 from .DirectGlobals import *
 from panda3d.core import VBase4
 from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 # Routines to adjust values
 def ROUND_TO(value, divisor):
@@ -19,7 +20,7 @@ def getTkColorString(color):
     Print out a Tk compatible version of a color string
     """
     def toHex(intVal):
-        val = int(round(intVal))
+        val = int(intVal)
         if val < 16:
             return "0" + hex(val)[2:]
         else:
@@ -35,7 +36,7 @@ def lerpBackgroundColor(r, g, b, duration):
     Function to lerp background color to a new value
     """
     def lerpColor(state):
-        dt = globalClock.getDt()
+        dt = base.clock.getDt()
         state.time += dt
         sf = state.time / state.duration
         if sf >= 1.0:
@@ -84,4 +85,3 @@ def getFileData(filename, separator = ','):
             data = [s.strip() for s in l.split(separator)]
             fileData.append(data)
     return fileData
-

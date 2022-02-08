@@ -284,11 +284,10 @@ remanage() {
 }
 
 /**
- * Called when the user changes the frame size.
+ * Called when the user changes the frame size.  Assumes the lock is held.
  */
 void PGScrollFrame::
 frame_changed() {
-  LightReMutexHolder holder(_lock);
   PGVirtualFrame::frame_changed();
   _needs_remanage = true;
   _needs_recompute_clip = true;

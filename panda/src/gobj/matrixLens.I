@@ -54,7 +54,7 @@ operator = (const MatrixLens &copy) {
  * Explicitly specifies the projection matrix.  This matrix should convert X
  * and Y to the range [-film_size/2, film_size/2], where (-fs/2,-fs/2) is the
  * lower left corner of the screen and (fs/2, fs/2) is the upper right.  Z
- * should go to the range [-1, 1], where -1 is the far plane and 1 is the near
+ * should go to the range [-1, 1], where -1 is the near plane and 1 is the far
  * plane.  Note that this is a left-handed Y-up coordinate system.
  *
  * The default film_size for a MatrixLens is 2, so the default range is [-1,

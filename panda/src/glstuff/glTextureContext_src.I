@@ -29,6 +29,7 @@ CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
   _handle_resident = false;
 #endif
   _has_storage = false;
+  _simple_loaded = false;
   _immutable = false;
   _uses_mipmaps = false;
   _generate_mipmaps = false;

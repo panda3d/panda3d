@@ -51,18 +51,17 @@ CacheStats TransformState::_cache_stats;
 TypeHandle TransformState::_type_handle;
 
 /**
- * Actually, this could be a private constructor, since no one inherits from
- * TransformState, but gcc gives us a spurious warning if all constructors are
- * private.
+ *
  */
 TransformState::
-TransformState() : _lock("TransformState") {
+TransformState() :
+  _flags(F_is_identity | F_singular_known | F_is_2d),
+  _lock("TransformState") {
+
   if (_states_lock == nullptr) {
     init_states();
   }
-  _saved_entry = -1;
-  _flags = F_is_identity | F_singular_known | F_is_2d;
-  _inv_mat = nullptr;
+
   _cache_stats.add_num_states(1);
 
 #ifdef DO_MEMORY_USAGE
@@ -233,42 +232,12 @@ operator == (const TransformState &other) const {
 }
 
 /**
- * Constructs an identity transform.
- */
-CPT(TransformState) TransformState::
-make_identity() {
-  // The identity state is asked for so often, we make it a special case and
-  // store a pointer forever once we find it the first time.
-  if (_identity_state == nullptr) {
-    TransformState *state = new TransformState;
-    _identity_state = return_unique(state);
-  }
-
-  return _identity_state;
-}
-
-/**
- * Constructs an invalid transform; for instance, the result of inverting a
- * singular matrix.
- */
-CPT(TransformState) TransformState::
-make_invalid() {
-  if (_invalid_state == nullptr) {
-    TransformState *state = new TransformState;
-    state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
-    _invalid_state = return_unique(state);
-  }
-
-  return _invalid_state;
-}
-
-/**
  * Makes a new TransformState with the specified components.
  */
 CPT(TransformState) TransformState::
 make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
                          const LVecBase3 &scale, const LVecBase3 &shear) {
-  nassertr(!(pos.is_nan() || hpr.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
+  nassertr(!(pos.is_nan() || hpr.is_nan() || scale.is_nan() || shear.is_nan()), make_invalid());
   // Make a special-case check for the identity transform.
   if (pos == LVecBase3(0.0f, 0.0f, 0.0f) &&
       hpr == LVecBase3(0.0f, 0.0f, 0.0f) &&
@@ -293,7 +262,7 @@ make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
 CPT(TransformState) TransformState::
 make_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
                           const LVecBase3 &scale, const LVecBase3 &shear) {
-  nassertr(!(pos.is_nan() || quat.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
+  nassertr(!(pos.is_nan() || quat.is_nan() || scale.is_nan() || shear.is_nan()), make_invalid());
   // Make a special-case check for the identity transform.
   if (pos == LVecBase3(0.0f, 0.0f, 0.0f) &&
       quat == LQuaternion::ident_quat() &&
@@ -336,7 +305,7 @@ CPT(TransformState) TransformState::
 make_pos_rotate_scale_shear2d(const LVecBase2 &pos, PN_stdfloat rotate,
                               const LVecBase2 &scale,
                               PN_stdfloat shear) {
-  nassertr(!(pos.is_nan() || cnan(rotate) || scale.is_nan() || cnan(shear)) , make_invalid());
+  nassertr(!(pos.is_nan() || cnan(rotate) || scale.is_nan() || cnan(shear)), make_invalid());
   // Make a special-case check for the identity transform.
   if (pos == LVecBase2(0.0f, 0.0f) &&
       rotate == 0.0f &&
@@ -700,7 +669,7 @@ invert_compose(const TransformState *other) const {
 
   if (other == this) {
     // a->invert_compose(a) always produces identity.
-    return make_identity();
+    return _identity_state;
   }
 
   if (!transform_cache) {
@@ -1016,6 +985,14 @@ get_num_unused_states() {
   size_t size = _states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
     const TransformState *state = _states.get_key(si);
+
+    std::pair<StateCount::iterator, bool> ir =
+      state_count.insert(StateCount::value_type(state, 1));
+    if (!ir.second) {
+      // If the above insert operation fails, then it's already in the
+      // cache; increment its value.
+      (*(ir.first)).second++;
+    }
 
     size_t i;
     size_t cache_size = state->_composition_cache.get_num_entries();
@@ -1413,6 +1390,40 @@ init_states() {
   _states_lock = new LightReMutex("TransformState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
+
+  // The identity and invalid states are asked for so often, we make them a
+  // special case and store a pointer forever.
+  {
+    TransformState *state = new TransformState;
+    state->_pos.set(0.0f, 0.0f, 0.0f);
+    state->_scale.set(1.0f, 1.0f, 1.0f);
+    state->_shear.set(0.0f, 0.0f, 0.0f);
+    state->_hpr.set(0.0f, 0.0f, 0.0f);
+    state->_quat.set(1.0f, 0.0f, 0.0f, 0.0f);
+    state->_norm_quat.set(1.0f, 0.0f, 0.0f, 0.0f);
+    state->_mat.set(1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, 1.0f);
+    state->_inv_mat = new LMatrix4(state->_mat);
+    state->_hash = H_identity;
+    state->_flags = F_is_identity | F_singular_known | F_components_known
+                  | F_has_components | F_mat_known | F_quat_known | F_hpr_known
+                  | F_uniform_scale | F_identity_scale | F_is_2d
+                  | F_norm_quat_known;
+    state->cache_ref();
+    state->_saved_entry = _states.store(state, nullptr);
+    _identity_state = state;
+  }
+  {
+    TransformState *state = new TransformState;
+    state->_hash = H_invalid;
+    state->_flags = F_is_singular | F_singular_known | F_components_known
+                  | F_mat_known | F_is_invalid;
+    state->cache_ref();
+    state->_saved_entry = _states.store(state, nullptr);
+    _invalid_state = state;
+  }
 }
 
 /**
@@ -1596,7 +1607,7 @@ do_invert_compose(const TransformState *other) const {
       // First, invert our own transform.
       if (scale == 0.0f) {
         ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
-        return make_invalid();
+        return _invalid_state;
       }
       scale = 1.0f / scale;
       quat.invert_in_place();
@@ -1625,7 +1636,7 @@ do_invert_compose(const TransformState *other) const {
       // First, invert our own transform.
       if (scale == 0.0f) {
         ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
-        return make_invalid();
+        return _invalid_state;
       }
       scale = 1.0f / scale;
       quat.invert_in_place();
@@ -1649,7 +1660,7 @@ do_invert_compose(const TransformState *other) const {
         pgraph_cat.warning()
           << "Unexpected singular matrix found for " << *this << "\n";
       } else {
-        nassertr(_inv_mat != nullptr, make_invalid());
+        nassertr(_inv_mat != nullptr, _invalid_state);
         LMatrix4 new_mat;
         new_mat.multiply(other->get_mat(), *_inv_mat);
         if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
@@ -1668,12 +1679,12 @@ do_invert_compose(const TransformState *other) const {
   }
 
   if (is_singular()) {
-    return make_invalid();
+    return _invalid_state;
   }
 
   // Now that is_singular() has returned false, we can assume that _inv_mat
   // has been allocated and filled in.
-  nassertr(_inv_mat != nullptr, make_invalid());
+  nassertr(_inv_mat != nullptr, _invalid_state);
 
   if (is_2d() && other->is_2d()) {
     const LMatrix4 &i = *_inv_mat;
@@ -1991,54 +2002,61 @@ remove_cache_pointers() {
  * Computes a suitable hash value for phash_map.
  */
 void TransformState::
-do_calc_hash() {
+calc_hash() const {
+  // It's OK not to grab the lock here, because (1) this does not depend on
+  // cached values (only given components are considered), and (2) the hash
+  // itself is set atomically.
   PStatTimer timer(_transform_hash_pcollector);
-  _hash = 0;
+  AtomicAdjust::Integer hash = 0;
 
   static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
-  _hash = int_hash::add_hash(_hash, flags);
+  hash = int_hash::add_hash(hash, flags);
 
-  if ((_flags & (F_is_invalid | F_is_identity)) == 0) {
-    // Only bother to put the rest of the stuff in the hash if the transform
-    // is not invalid or empty.
+  nassertv((flags & (F_is_invalid | F_is_identity)) == 0);
 
-    if ((_flags & F_components_given) != 0) {
-      // If the transform was specified componentwise, hash it componentwise.
-      _hash = _pos.add_hash(_hash);
-      if ((_flags & F_hpr_given) != 0) {
-        _hash = _hpr.add_hash(_hash);
+  // Only bother to put the rest of the stuff in the hash if the transform
+  // is not invalid or empty.
 
-      } else if ((_flags & F_quat_given) != 0) {
-        _hash = _quat.add_hash(_hash);
-      }
+  if ((_flags & F_components_given) != 0) {
+    // If the transform was specified componentwise, hash it componentwise.
+    hash = _pos.add_hash(hash);
+    if ((_flags & F_hpr_given) != 0) {
+      hash = _hpr.add_hash(hash);
+    }
+    else if ((_flags & F_quat_given) != 0) {
+      hash = _quat.add_hash(hash);
+    }
 
-      _hash = _scale.add_hash(_hash);
-      _hash = _shear.add_hash(_hash);
+    hash = _scale.add_hash(hash);
+    hash = _shear.add_hash(hash);
+  }
+  else {
+    // Otherwise, hash the matrix . . .
+    if (_uniquify_matrix) {
+      // . . . but only if the user thinks that's worthwhile.
+      check_mat();
+      hash = _mat.add_hash(hash);
+    }
+    else {
+      // Otherwise, hash the pointer only--any two different matrix-based
+      // TransformStates are considered to be different, even if their
+      // matrices have the same values.
 
-    } else {
-      // Otherwise, hash the matrix . . .
-      if (_uniquify_matrix) {
-        // . . . but only if the user thinks that's worthwhile.
-        if ((_flags & F_mat_known) == 0) {
-          // Calculate the matrix without doubly-locking.
-          do_calc_mat();
-        }
-        _hash = _mat.add_hash(_hash);
-
-      } else {
-        // Otherwise, hash the pointer only--any two different matrix-based
-        // TransformStates are considered to be different, even if their
-        // matrices have the same values.
-
-        _hash = pointer_hash::add_hash(_hash, this);
-      }
+      hash = pointer_hash::add_hash(hash, this);
     }
   }
 
-  _flags |= F_hash_known;
+  if (hash == H_unknown || hash == H_identity || hash == H_invalid) {
+    // Arbitrarily offset the hash not to conflict with these special values.
+    hash += 0x10000;
+  }
+
+  // We don't care if some other thread set this in the meantime, since every
+  // thread should have computed the same hash.
+  AtomicAdjust::set(_hash, hash);
 }
 
 /**
@@ -2055,7 +2073,7 @@ calc_singular() {
 
   PStatTimer timer(_transform_calc_pcollector);
 
-  nassertv((_flags & F_is_invalid) == 0);
+  nassertv((_flags & (F_is_invalid | F_is_identity)) == 0);
 
   // We determine if a matrix is singular by attempting to invert it (and we
   // save the result of this invert operation for a subsequent
@@ -2092,39 +2110,30 @@ do_calc_components() {
 
   PStatTimer timer(_transform_calc_pcollector);
 
-  nassertv((_flags & F_is_invalid) == 0);
-  if ((_flags & F_is_identity) != 0) {
-    _scale.set(1.0f, 1.0f, 1.0f);
-    _shear.set(0.0f, 0.0f, 0.0f);
-    _hpr.set(0.0f, 0.0f, 0.0f);
-    _quat = LQuaternion::ident_quat();
-    _pos.set(0.0f, 0.0f, 0.0f);
-    _flags |= F_has_components | F_components_known | F_hpr_known | F_quat_known | F_uniform_scale | F_identity_scale;
+  nassertv((_flags & (F_is_invalid | F_is_identity)) == 0);
+
+  // If we don't have components and we're not identity, the only other
+  // explanation is that we were constructed via a matrix.
+  nassertv((_flags & F_mat_known) != 0);
+
+  if ((_flags & F_mat_known) == 0) {
+    do_calc_mat();
+  }
+  bool possible = decompose_matrix(_mat, _scale, _shear, _hpr, _pos);
+  if (!possible) {
+    // Some matrices can't be decomposed into scale, hpr, pos.  In this
+    // case, we now know that we cannot compute the components; but the
+    // closest approximations are stored, at least.
+    _flags |= F_components_known | F_hpr_known;
 
   } else {
-    // If we don't have components and we're not identity, the only other
-    // explanation is that we were constructed via a matrix.
-    nassertv((_flags & F_mat_known) != 0);
-
-    if ((_flags & F_mat_known) == 0) {
-      do_calc_mat();
-    }
-    bool possible = decompose_matrix(_mat, _scale, _shear, _hpr, _pos);
-    if (!possible) {
-      // Some matrices can't be decomposed into scale, hpr, pos.  In this
-      // case, we now know that we cannot compute the components; but the
-      // closest approximations are stored, at least.
-      _flags |= F_components_known | F_hpr_known;
-
-    } else {
-      // Otherwise, we do have the components, or at least the hpr.
-      _flags |= F_has_components | F_components_known | F_hpr_known;
-      check_uniform_scale();
-    }
-
-    // However, we can always get at least the pos.
-    _mat.get_row3(_pos, 3);
+    // Otherwise, we do have the components, or at least the hpr.
+    _flags |= F_has_components | F_components_known | F_hpr_known;
+    check_uniform_scale();
   }
+
+  // However, we can always get at least the pos.
+  _mat.get_row3(_pos, 3);
 }
 
 /**
@@ -2140,7 +2149,7 @@ do_calc_hpr() {
 
   PStatTimer timer(_transform_calc_pcollector);
 
-  nassertv((_flags & F_is_invalid) == 0);
+  nassertv((_flags & (F_is_invalid | F_is_identity)) == 0);
   if ((_flags & F_components_known) == 0) {
     do_calc_components();
   }
@@ -2166,7 +2175,7 @@ calc_quat() {
 
   PStatTimer timer(_transform_calc_pcollector);
 
-  nassertv((_flags & F_is_invalid) == 0);
+  nassertv((_flags & (F_is_invalid | F_is_identity)) == 0);
   if ((_flags & F_components_known) == 0) {
     do_calc_components();
   }
@@ -2206,20 +2215,16 @@ do_calc_mat() {
 
   PStatTimer timer(_transform_calc_pcollector);
 
-  nassertv((_flags & F_is_invalid) == 0);
-  if ((_flags & F_is_identity) != 0) {
-    _mat = LMatrix4::ident_mat();
+  nassertv((_flags & (F_is_invalid | F_is_identity)) == 0);
 
-  } else {
-    // If we don't have a matrix and we're not identity, the only other
-    // explanation is that we were constructed via components.
-    nassertv((_flags & F_components_known) != 0);
-    if ((_flags & F_hpr_known) == 0) {
-      do_calc_hpr();
-    }
-
-    compose_matrix(_mat, _scale, _shear, get_hpr(), _pos);
+  // If we don't have a matrix and we're not identity, the only other
+  // explanation is that we were constructed via components.
+  nassertv((_flags & F_components_known) != 0);
+  if ((_flags & F_hpr_known) == 0) {
+    do_calc_hpr();
   }
+
+  compose_matrix(_mat, _scale, _shear, get_hpr(), _pos);
   _flags |= F_mat_known;
 }
 
@@ -2333,7 +2338,18 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   state->fillin(scan, manager);
-  manager->register_change_this(change_this, state);
+
+  if (state->_flags & F_is_identity) {
+    delete state;
+    return (TypedWritable *)_identity_state.p();
+  }
+  else if (state->_flags & F_is_invalid) {
+    delete state;
+    return (TypedWritable *)_invalid_state.p();
+  }
+  else {
+    manager->register_change_this(change_this, state);
+  }
 
   return state;
 }

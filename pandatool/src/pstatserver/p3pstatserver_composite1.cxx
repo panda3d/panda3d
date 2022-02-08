@@ -1,4 +1,5 @@
 #include "pStatClientData.cxx"
+#include "pStatFlameGraph.cxx"
 #include "pStatGraph.cxx"
 #include "pStatListener.cxx"
 #include "pStatMonitor.cxx"

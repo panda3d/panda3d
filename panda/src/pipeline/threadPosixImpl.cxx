@@ -28,8 +28,8 @@
 static JavaVM *java_vm = nullptr;
 #endif
 
-pthread_key_t ThreadPosixImpl::_pt_ptr_index = 0;
-bool ThreadPosixImpl::_got_pt_ptr_index = false;
+__thread Thread *ThreadPosixImpl::_current_thread = nullptr;
+static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
 
 /**
  *
@@ -79,10 +79,6 @@ start(ThreadPriority priority, bool joinable) {
   _joinable = joinable;
   _status = S_start_called;
   _detached = false;
-
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
 
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -186,6 +182,21 @@ get_unique_id() const {
   return strm.str();
 }
 
+/**
+ * Associates the indicated Thread object with the currently-executing thread.
+ * You should not call this directly; use Thread::bind_thread() instead.
+ */
+void ThreadPosixImpl::
+bind_thread(Thread *thread) {
+  if (_current_thread == nullptr && thread == Thread::get_main_thread()) {
+    _main_thread_known.test_and_set(std::memory_order_relaxed);
+  }
+  _current_thread = thread;
+#ifdef ANDROID
+  bind_java_thread();
+#endif
+}
+
 #ifdef ANDROID
 /**
  * Attaches the thread to the Java virtual machine.  If this returns true, a
@@ -193,6 +204,8 @@ get_unique_id() const {
  */
 bool ThreadPosixImpl::
 attach_java_vm() {
+  assert(java_vm != nullptr);
+
   JNIEnv *env;
   std::string thread_name = _parent_obj->get_name();
   JavaVMAttachArgs args;
@@ -219,6 +232,8 @@ bind_java_thread() {
   Thread *thread = Thread::get_current_thread();
   nassertv(thread != nullptr);
 
+  assert(java_vm != nullptr);
+
   // Get the JNIEnv for this Java thread, and store it on the corresponding
   // Panda thread object.
   JNIEnv *env;
@@ -243,8 +258,7 @@ root_func(void *data) {
     // TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
 
     ThreadPosixImpl *self = (ThreadPosixImpl *)data;
-    int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
-    nassertr(result == 0, nullptr);
+    _current_thread = self->_parent_obj;
 
     {
       self->_mutex.lock();
@@ -298,27 +312,18 @@ root_func(void *data) {
 }
 
 /**
- * Allocate a new index to store the Thread parent pointer as a piece of per-
- * thread private data.
+ * Called by get_current_thread() if the current therad pointer is null; checks
+ * whether it might be the main thread.
  */
-void ThreadPosixImpl::
-init_pt_ptr_index() {
-  nassertv(!_got_pt_ptr_index);
-
-  int result = pthread_key_create(&_pt_ptr_index, nullptr);
-  if (result != 0) {
-    thread_cat->error()
-      << "Unable to associate Thread pointers with threads.\n";
-    return;
+Thread *ThreadPosixImpl::
+init_current_thread() {
+  Thread *thread = _current_thread;
+  if (!_main_thread_known.test_and_set(std::memory_order_relaxed)) {
+    thread = Thread::get_main_thread();
+    _current_thread = thread;
   }
-
-  _got_pt_ptr_index = true;
-
-  // Assume that we must be in the main thread, since this method must be
-  // called before the first thread is spawned.
-  Thread *main_thread_obj = Thread::get_main_thread();
-  result = pthread_setspecific(_pt_ptr_index, main_thread_obj);
-  nassertv(result == 0);
+  nassertr(thread != nullptr, nullptr);
+  return thread;
 }
 
 #ifdef ANDROID

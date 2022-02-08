@@ -18,7 +18,6 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "typedef.h"
 #include "pnotify.h"
 #include "filename.h"
 #include "plist.h"

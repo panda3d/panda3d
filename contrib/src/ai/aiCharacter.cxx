@@ -117,6 +117,10 @@ NodePath AICharacter::get_char_render() {
   return _window_render;
 }
 
+std::string AICharacter::get_name() {
+  return _name;
+}
+
 void AICharacter::set_pf_guide(bool pf_guide) {
   _pf_guide = pf_guide;
 }

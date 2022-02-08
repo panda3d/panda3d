@@ -49,18 +49,9 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   nassertv(s->get_language() == Shader::SL_Cg);
 
   // Get a Cg context for this GSG.
-  CGcontext context = glgsg->_cg_context;
-  if (context == 0) {
-    // The GSG doesn't have a Cg context yet.  Create one.
-    glgsg->_cg_context = context = cgCreateContext();
-
-#if CG_VERSION_NUM >= 3100
-    // This just sounds like a good thing to do.
-    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
-    if (glgsg->_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
-      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
-    }
-#endif
+  CGcontext context = glgsg->get_cg_context();
+  if (context == nullptr) {
+    return;
   }
 
   // Ask the shader to compile itself for us and to give us the resulting Cg
@@ -166,7 +157,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
             if (cgGetParameterSemantic(p)) {
               GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
             }
-            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+            GLCAT.error(false) << " should be declared as float3, not float4!\n";
           }
           break;
         case 3:  // gl_Color

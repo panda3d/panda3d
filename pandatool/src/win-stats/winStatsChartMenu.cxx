@@ -125,19 +125,32 @@ do_update() {
     }
   }
 
-  // Also a menu item for a piano roll (following a separator).
+  // Also menu items for flame graph and piano roll (following a separator).
   mii.fMask = MIIM_FTYPE;
   mii.fType = MFT_SEPARATOR;
   InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
-  WinStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
-  int menu_id = _monitor->get_menu_id(menu_def);
+  {
+    WinStatsMonitor::MenuDef menu_def(_thread_index, -2, false);
+    int menu_id = _monitor->get_menu_id(menu_def);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-  mii.fType = MFT_STRING;
-  mii.wID = menu_id;
-  mii.dwTypeData = "Piano Roll";
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = menu_id;
+    mii.dwTypeData = "Flame Graph";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  }
+
+  {
+    WinStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
+    int menu_id = _monitor->get_menu_id(menu_def);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = menu_id;
+    mii.dwTypeData = "Piano Roll";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  }
 }
 
 /**

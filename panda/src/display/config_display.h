@@ -84,6 +84,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableString window_title;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt parent_window_handle;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_unexposed_draw;
 extern EXPCL_PANDA_DISPLAY ConfigVariableFilename subprocess_window;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool ime_aware;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableString framebuffer_mode;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_hardware;
@@ -109,6 +110,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableColor background_color;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
+extern EXPCL_PANDA_DISPLAY ConfigVariableDouble display_zoom;
 
 extern EXPCL_PANDA_DISPLAY void init_libdisplay();
 

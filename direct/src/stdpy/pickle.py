@@ -21,8 +21,12 @@ shared context between all objects written by that Pickler.
 Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
+__all__ = ["PickleError", "PicklingError", "UnpicklingError", "Pickler",
+           "Unpickler", "dump", "dumps", "load", "loads",
+           "HIGHEST_PROTOCOL", "DEFAULT_PROTOCOL"]
+
 import sys
-from panda3d.core import BamWriter, BamReader
+from panda3d.core import BamWriter, BamReader, TypedObject
 from copyreg import dispatch_table
 
 
@@ -30,21 +34,56 @@ from copyreg import dispatch_table
 # with the local pickle.py.
 pickle = __import__('pickle')
 
-class Pickler(pickle.Pickler):
+HIGHEST_PROTOCOL = pickle.HIGHEST_PROTOCOL
+DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
+
+PickleError = pickle.PickleError
+PicklingError = pickle.PicklingError
+UnpicklingError = pickle.UnpicklingError
+
+BasePickler = pickle._Pickler
+BaseUnpickler = pickle._Unpickler
+
+
+class Pickler(BasePickler):
 
     def __init__(self, *args, **kw):
         self.bamWriter = BamWriter()
-        pickle.Pickler.__init__(self, *args, **kw)
+        self._canonical = {}
+        BasePickler.__init__(self, *args, **kw)
+
+    def clear_memo(self):
+        BasePickler.clear_memo(self)
+        self._canonical.clear()
+        self.bamWriter = BamWriter()
 
     # We have to duplicate most of the save() method, so we can add
     # support for __reduce_persist__().
 
-    def save(self, obj):
+    def save(self, obj, save_persistent_id=True):
+        if self.proto >= 4:
+            self.framer.commit_frame()
+
         # Check for persistent id (defined by a subclass)
         pid = self.persistent_id(obj)
-        if pid:
+        if pid is not None and save_persistent_id:
             self.save_pers(pid)
             return
+
+        # Check if this is a Panda type that we've already saved; if so, store
+        # a mapping to the canonical copy, so that Python's memoization system
+        # works properly.  This is needed because Python uses id(obj) for
+        # memoization, but there may be multiple Python wrappers for the same
+        # C++ pointer, and we don't want that to result in duplication.
+        t = type(obj)
+        if issubclass(t, TypedObject.__base__):
+            canonical = self._canonical.get(obj.this)
+            if canonical is not None:
+                obj = canonical
+            else:
+                # First time we're seeing this C++ pointer; save it as the
+                # "canonical" version.
+                self._canonical[obj.this] = obj
 
         # Check the memo
         x = self.memo.get(id(obj))
@@ -53,7 +92,6 @@ class Pickler(pickle.Pickler):
             return
 
         # Check the type dispatch table
-        t = type(obj)
         f = self.dispatch.get(t)
         if f:
             f(self, obj) # Call unbound method with explicit self
@@ -109,11 +147,12 @@ class Pickler(pickle.Pickler):
         # Save the reduce() output and finally memoize the object
         self.save_reduce(obj=obj, *rv)
 
-class Unpickler(pickle.Unpickler):
+
+class Unpickler(BaseUnpickler):
 
     def __init__(self, *args, **kw):
         self.bamReader = BamReader()
-        pickle.Unpickler.__init__(self, *args, **kw)
+        BaseUnpickler.__init__(self, *args, **kw)
 
     # Duplicate the load_reduce() function, to provide a special case
     # for the reduction function.
@@ -123,9 +162,10 @@ class Unpickler(pickle.Unpickler):
         args = stack.pop()
         func = stack[-1]
 
-        # If the function name ends with "Persist", then assume the
+        # If the function name ends with "_persist", then assume the
         # function wants the Unpickler as the first parameter.
-        if func.__name__.endswith('Persist'):
+        func_name = func.__name__
+        if func_name.endswith('_persist') or func_name.endswith('Persist'):
             value = func(self, *args)
         else:
             # Otherwise, use the existing pickle convention.
@@ -133,9 +173,7 @@ class Unpickler(pickle.Unpickler):
 
         stack[-1] = value
 
-    #FIXME: how to replace in Python 3?
-    if sys.version_info < (3, 0):
-        pickle.Unpickler.dispatch[pickle.REDUCE] = load_reduce
+    BaseUnpickler.dispatch[pickle.REDUCE[0]] = load_reduce
 
 
 # Shorthands

@@ -472,14 +472,14 @@ end_frame(Thread *current_thread) {
 bool TinyGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
 #ifndef NDEBUG
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -2387,10 +2387,7 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
       // meantime load a temporary simple image in its place.
       async_reload_texture(gtc);
       if (!tex->has_ram_image()) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -2558,7 +2555,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
   ZTextureLevel *dest = &gltex->levels[0];
   memcpy(dest->pixmap, image_ptr, image_size);
 
-  gtc->mark_simple_loaded();
+  gtc->mark_loaded();
 
   return true;
 }

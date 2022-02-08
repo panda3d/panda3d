@@ -30,6 +30,9 @@ template<>
 class Extension<WindowProperties> : public ExtensionBase<WindowProperties> {
 public:
   void __init__(PyObject *self, PyObject *args, PyObject *kwds);
+
+  PyObject *__getstate__(PyObject *self) const;
+  void __setstate__(PyObject *self, PyObject *state);
 };
 
 #endif  // HAVE_PYTHON

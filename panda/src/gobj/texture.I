@@ -28,7 +28,6 @@ make_copy() const {
   CDWriter cdata_tex(tex->_cycler, true);
   cdata_tex->inc_properties_modified();
   cdata_tex->inc_image_modified();
-  cdata_tex->inc_simple_image_modified();
   return tex;
 }
 
@@ -232,7 +231,6 @@ clear_image() {
   do_clear_ram_image(cdata);
   do_clear_simple_ram_image(cdata);
   cdata->inc_image_modified();
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -357,8 +355,6 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   if (do_load_one(cdata, pnmimage, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -374,7 +370,7 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   if (do_load_one(cdata, pnmimage, get_name(), z, n, options)) {
     return true;
   }
@@ -388,8 +384,6 @@ INLINE bool Texture::
 load(const PfmFile &pfm, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   if (do_load_one(cdata, pfm, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -405,7 +399,7 @@ INLINE bool Texture::
 load(const PfmFile &pfm, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   if (do_load_one(cdata, pfm, get_name(), z, n, options)) {
     return true;
   }
@@ -1770,6 +1764,12 @@ INLINE void Texture::
 set_simple_ram_image(CPTA_uchar image, int x_size, int y_size) {
   CDWriter cdata(_cycler, true);
   do_set_simple_ram_image(cdata, image, x_size, y_size);
+
+  // If we don't have a RAM image currently, we need to update this, to let the
+  // GSG know that it needs to update the simple image it is currently using.
+  if (!do_has_ram_image(cdata)) {
+    cdata->inc_image_modified();
+  }
 }
 
 /**
@@ -1799,16 +1799,6 @@ INLINE UpdateSeq Texture::
 get_image_modified() const {
   CDReader cdata(_cycler);
   return cdata->_image_modified;
-}
-
-/**
- * Returns a sequence number which is guaranteed to change at least every time
- * the texture's "simple" image data is modified.
- */
-INLINE UpdateSeq Texture::
-get_simple_image_modified() const {
-  CDReader cdata(_cycler);
-  return cdata->_simple_image_modified;
 }
 
 /**
@@ -2261,7 +2251,7 @@ do_get_auto_texture_scale(const CData *cdata) const {
  */
 INLINE void Texture::
 store_unscaled_byte(unsigned char *&p, int value) {
-  (*p++) = (uchar)value;
+  (*p++) = (unsigned char)value;
 }
 
 /**
@@ -2272,10 +2262,10 @@ store_unscaled_byte(unsigned char *&p, int value) {
 INLINE void Texture::
 store_unscaled_short(unsigned char *&p, int value) {
   union {
-    ushort us;
-    uchar uc[2];
+    unsigned short us;
+    unsigned char uc[2];
   } v;
-  v.us = (ushort)value;
+  v.us = (unsigned short)value;
   (*p++) = v.uc[0];
   (*p++) = v.uc[1];
 }
@@ -2320,8 +2310,8 @@ get_unsigned_byte(const unsigned char *&p) {
 INLINE double Texture::
 get_unsigned_short(const unsigned char *&p) {
   union {
-    ushort us;
-    uchar uc[2];
+    unsigned short us;
+    unsigned char uc[2];
   } v;
   v.uc[0] = (*p++);
   v.uc[1] = (*p++);
@@ -2337,7 +2327,7 @@ INLINE double Texture::
 get_unsigned_int(const unsigned char *&p) {
   union {
     unsigned int ui;
-    uchar uc[4];
+    unsigned char uc[4];
   } v;
   v.uc[0] = (*p++);
   v.uc[1] = (*p++);
@@ -2460,19 +2450,14 @@ inc_properties_modified() {
 }
 
 /**
- *
+ * Marks the whole image as modified.
  */
 INLINE void Texture::CData::
 inc_image_modified() {
   ++_image_modified;
-}
-
-/**
- *
- */
-INLINE void Texture::CData::
-inc_simple_image_modified() {
-  ++_simple_image_modified;
+  _modified_pages.resize(1);
+  _modified_pages[0]._z_end = (size_t)-1;
+  _modified_pages[0]._modified = _image_modified;
 }
 
 /**

@@ -46,6 +46,8 @@ class EXPCL_PANDAAI AICharacter : public ReferenceCount {
   void set_char_render(NodePath render);
   NodePath get_char_render();
 
+  std::string get_name();
+
 PUBLISHED:
     double get_mass();
     void set_mass(double m);
@@ -65,6 +67,8 @@ PUBLISHED:
 
     explicit AICharacter(std::string model_name, NodePath model_np, double mass, double movt_force, double max_force);
     ~AICharacter();
+
+  MAKE_PROPERTY(name, get_name);
 };
 
 #endif

@@ -64,6 +64,7 @@ public:
   // or glTexStorage2D() call.  If none of these have changed, we can reload
   // the texture image with a glTexSubImage2D().
   bool _has_storage;
+  bool _simple_loaded;
   bool _immutable;
   bool _uses_mipmaps;
   bool _generate_mipmaps;

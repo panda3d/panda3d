@@ -13,7 +13,7 @@
 
 #include "pta_ushort.h"
 
-template class PointerToBase<ReferenceCountedVector<ushort> >;
-template class PointerToArrayBase<ushort>;
+template class PointerToBase<ReferenceCountedVector<unsigned short> >;
+template class PointerToArrayBase<unsigned short>;
 template class PointerToArray<unsigned short>;
 template class ConstPointerToArray<unsigned short>;

@@ -33,6 +33,10 @@
 #define WM_TOUCH 0x0240
 #endif
 
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
+
 #if WINVER < 0x0601
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
@@ -283,6 +287,17 @@ process_events() {
  */
 void WinGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
+  if (properties.has_fullscreen() && !properties.get_fullscreen() &&
+      is_fullscreen()) {
+    if (do_windowed_switch()) {
+      _properties.set_fullscreen(false);
+      properties.clear_fullscreen();
+    } else {
+      windisplay_cat.warning()
+        << "Switching to windowed mode failed!\n";
+    }
+  }
+
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
@@ -302,32 +317,34 @@ set_properties_now(WindowProperties &properties) {
     // When switching undecorated mode, Windows will keep the window at the
     // current outer size, whereas we want to keep it with the configured
     // inner size.  Store the current size and origin.
-    LPoint2i top_left = _properties.get_origin();
-    LPoint2i bottom_right = top_left + _properties.get_size();
+    if (_parent_window_handle == nullptr) {
+      LPoint2i top_left = _properties.get_origin();
+      LPoint2i bottom_right = top_left + _properties.get_size();
 
-    DWORD window_style = make_style(_properties);
-    DWORD current_style = GetWindowLong(_hWnd, GWL_STYLE);
-    SetWindowLong(_hWnd, GWL_STYLE, window_style);
+      DWORD window_style = make_style(_properties);
+      DWORD current_style = GetWindowLong(_hWnd, GWL_STYLE);
+      SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
-    // If we switched to/from undecorated, calculate the new size.
-    if (((window_style ^ current_style) & WS_CAPTION) != 0) {
-      RECT view_rect;
-      SetRect(&view_rect, top_left[0], top_left[1],
-              bottom_right[0], bottom_right[1]);
-      WINDOWINFO wi;
-      GetWindowInfo(_hWnd, &wi);
-      AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+      // If we switched to/from undecorated, calculate the new size.
+      if (((window_style ^ current_style) & WS_CAPTION) != 0) {
+        RECT view_rect;
+        SetRect(&view_rect, top_left[0], top_left[1],
+                bottom_right[0], bottom_right[1]);
+        WINDOWINFO wi;
+        GetWindowInfo(_hWnd, &wi);
+        AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-      SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
-                   view_rect.right - view_rect.left,
-                   view_rect.bottom - view_rect.top,
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
-                   SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
-    } else {
-      // We need to call this to ensure that the style change takes effect.
-      SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE |
-                   SWP_FRAMECHANGED | SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+        SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
+                     view_rect.right - view_rect.left,
+                     view_rect.bottom - view_rect.top,
+                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                     SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+      } else {
+        // We need to call this to ensure that the style change takes effect.
+        SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE |
+                     SWP_FRAMECHANGED | SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+      }
     }
   }
 
@@ -435,14 +452,6 @@ set_properties_now(WindowProperties &properties) {
         windisplay_cat.warning()
           << "Switching to fullscreen mode failed!\n";
       }
-    } else if (!properties.get_fullscreen() && is_fullscreen()){
-      if (do_windowed_switch()){
-        _properties.set_fullscreen(false);
-        properties.clear_fullscreen();
-      } else {
-        windisplay_cat.warning()
-          << "Switching to windowed mode failed!\n";
-      }
     }
   }
 
@@ -464,7 +473,9 @@ set_properties_now(WindowProperties &properties) {
         // Fall through
 
       case WindowProperties::M_confined:
-        if (confine_cursor()) {
+        // If we are not the foreground window, we defer confining the cursor
+        // until we are.
+        if (GetForegroundWindow() != _hWnd || confine_cursor()) {
           _properties.set_mouse_mode(properties.get_mouse_mode());
         }
         break;
@@ -504,6 +515,11 @@ void WinGraphicsWindow::
 close_window() {
   set_cursor_out_of_window();
   DestroyWindow(_hWnd);
+
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() != WindowProperties::M_absolute) {
+    ClipCursor(nullptr);
+  }
 
   if (is_fullscreen()) {
     // revert to default display mode.
@@ -797,7 +813,7 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
     GetWindowInfo(_hWnd, &wi);
     AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING;
+    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING | SWP_NOACTIVATE;
 
     if (has_origin) {
       x_origin = view_rect.left;
@@ -812,12 +828,6 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
                  view_rect.right - view_rect.left,
                  view_rect.bottom - view_rect.top,
                  flags);
-
-    // If we are in confined mode, we must update the clip region.
-    if (_properties.has_mouse_mode() &&
-        _properties.get_mouse_mode() == WindowProperties::M_confined) {
-      confine_cursor();
-    }
 
     handle_reshape();
     return true;
@@ -866,6 +876,28 @@ handle_reshape() {
         << "ClientToScreen() failed in handle_reshape.  Ignoring.\n";
     }
     return;
+  }
+
+  // If we are in confined mode, we must update the clip region.  However,
+  // we ony do that if the cursor in currently inside the window, to properly
+  // handle the case where someone is resizing the window straight after
+  // switching to it (you can do this if you press the start menu key to
+  // deactive the window, and then trying to resize it)
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() != WindowProperties::M_absolute &&
+      _hWnd == GetForegroundWindow()) {
+
+    POINT cpos;
+    if (GetCursorPos(&cpos) && PtInRect(&view_rect, cpos)) {
+      windisplay_cat.info()
+        << "ClipCursor() to " << view_rect.left << "," << view_rect.top
+        << " to " << view_rect.right << "," << view_rect.bottom << endl;
+
+      if (!ClipCursor(&view_rect)) {
+        windisplay_cat.warning()
+          << "Failed to re-confine cursor to window.\n";
+      }
+    }
   }
 
   WindowProperties properties;
@@ -1008,7 +1040,7 @@ do_windowed_switch() {
 
   // If we had a confined cursor, we must reconfine it now.
   if (_properties.has_mouse_mode() &&
-      _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      _properties.get_mouse_mode() != WindowProperties::M_absolute) {
     confine_cursor();
   }
 
@@ -1045,17 +1077,25 @@ make_style(const WindowProperties &properties) {
   // Additionally, the window class attribute should not include the
   // CS_PARENTDC style.
 
-  DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  DWORD window_style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
   if (properties.get_fullscreen()) {
-    window_style |= WS_SYSMENU;
-  } else if (!properties.get_undecorated()) {
-    window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+    window_style |= WS_POPUP | WS_SYSMENU;
+  }
+  else if (_parent_window_handle) {
+    window_style |= WS_CHILD;
+  }
+  else {
+    window_style |= WS_POPUP;
 
-    if (!properties.get_fixed_size()) {
-      window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
-    } else {
-      window_style |= WS_BORDER;
+    if (!properties.get_undecorated()) {
+      window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+
+      if (!properties.get_fixed_size()) {
+        window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
+      } else {
+        window_style |= WS_BORDER;
+      }
     }
   }
   return window_style;
@@ -1577,7 +1617,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         // If we had a confined cursor, we must reconfine it upon activation.
         if (_properties.has_mouse_mode() &&
-            _properties.get_mouse_mode() == WindowProperties::M_confined) {
+            _properties.get_mouse_mode() != WindowProperties::M_absolute) {
           if (!confine_cursor()) {
             properties.set_mouse_mode(WindowProperties::M_absolute);
           }
@@ -1623,7 +1663,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     // If we had a confined cursor, we must reconfine it upon a resize.
     if (_properties.has_mouse_mode() &&
-        _properties.get_mouse_mode() == WindowProperties::M_confined) {
+        _properties.get_mouse_mode() != WindowProperties::M_absolute) {
       confine_cursor();
     }
     break;
@@ -1775,6 +1815,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_MOUSEHWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      double time = get_message_time();
+
+      if (delta >= 0) {
+        while (delta > 0) {
+          handle_keypress(MouseButton::wheel_right(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_right(), time);
+          delta -= WHEEL_DELTA;
+        }
+      } else {
+        while (delta < 0) {
+          handle_keypress(MouseButton::wheel_left(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_left(), time);
+          delta += WHEEL_DELTA;
+        }
+      }
+      return 0;
+    }
+    break;
 
   case WM_IME_SETCONTEXT:
     if (!ime_hide)
@@ -2076,7 +2141,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if (lptstr != nullptr)  {
               char *pChar;
               for (pChar = lptstr; *pChar; pChar++) {
-                _input->keystroke((uchar)*pChar);
+                _input->keystroke((unsigned char)*pChar);
               }
               GlobalUnlock(hglb);
             }
@@ -2618,6 +2683,10 @@ lookup_key(WPARAM wparam) const {
   case VK_LMENU: return KeyboardButton::lalt();
   case VK_RMENU: return KeyboardButton::ralt();
 
+  case VK_LWIN: return KeyboardButton::lmeta();
+  case VK_RWIN: return KeyboardButton::rmeta();
+  case VK_APPS: return KeyboardButton::menu();
+
   default:
     int key = MapVirtualKey(wparam, 2);
     if (isascii(key) && key != 0) {
@@ -2763,6 +2832,7 @@ lookup_raw_key(LPARAM lparam) const {
 
   // A few additional keys don't fit well in the above table.
   switch (vsc) {
+  case 86: return KeyboardButton::ascii_key('<'); // Between lshift and z
   case 87: return KeyboardButton::f11();
   case 88: return KeyboardButton::f12();
   default: return ButtonHandle::none();
@@ -2782,10 +2852,10 @@ get_keyboard_map() const {
 
   wchar_t text[256];
   UINT vsc = 0;
-  unsigned short ex_vsc[] = {0x57, 0x58,
+  unsigned short ex_vsc[] = {0x56, 0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
 
-  for (int k = 1; k < 84 + 17; ++k) {
+  for (int k = 1; k < 84 + sizeof(ex_vsc) / sizeof(short); ++k) {
     if (k >= 84) {
       vsc = ex_vsc[k - 84];
     } else {

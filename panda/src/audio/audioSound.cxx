@@ -71,8 +71,8 @@ get_3d_max_distance() const {
  */
 PN_stdfloat AudioSound::
 get_speaker_mix(int speaker) {
-    // intentionally blank
-    return 0.0;
+  // intentionally blank
+  return 0.0;
 }
 
 /**
@@ -80,7 +80,7 @@ get_speaker_mix(int speaker) {
  */
 void AudioSound::
 set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
-    // intentionally blank
+  // intentionally blank
 }
 
 /**

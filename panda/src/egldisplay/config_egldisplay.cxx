@@ -12,7 +12,9 @@
  */
 
 #include "config_egldisplay.h"
+#include "eglGraphicsBuffer.h"
 #include "eglGraphicsPipe.h"
+#include "eglGraphicsPixmap.h"
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
@@ -44,8 +46,10 @@ init_libegldisplay() {
   }
   initialized = true;
 
+  eglGraphicsBuffer::init_type();
   eglGraphicsPipe::init_type();
-#ifdef HAVE_X11
+#ifdef USE_X11
+  eglGraphicsPixmap::init_type();
   eglGraphicsWindow::init_type();
 #endif
   eglGraphicsStateGuardian::init_type();

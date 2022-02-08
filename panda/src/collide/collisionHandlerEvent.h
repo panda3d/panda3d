@@ -22,6 +22,7 @@
 
 #include "vector_string.h"
 #include "pointerTo.h"
+#include "extension.h"
 
 /**
  * A specialized kind of CollisionHandler that throws an event for each
@@ -61,11 +62,18 @@ PUBLISHED:
   MAKE_SEQ(get_out_patterns, get_num_out_patterns, get_out_pattern);
 
   MAKE_SEQ_PROPERTY(in_patterns, get_num_in_patterns, get_in_pattern);
-  MAKE_SEQ_PROPERTY(again_patterns, get_num_again_patterns, get_out_pattern);
+  MAKE_SEQ_PROPERTY(again_patterns, get_num_again_patterns, get_again_pattern);
   MAKE_SEQ_PROPERTY(out_patterns, get_num_out_patterns, get_out_pattern);
 
   void clear();
   void flush();
+
+  // These help implement Python pickle support.
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, vector_uchar data));
+
+  virtual void write_datagram(Datagram &destination) const;
+  virtual void read_datagram(DatagramIterator &source);
 
 protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);

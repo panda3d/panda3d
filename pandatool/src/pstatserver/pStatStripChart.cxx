@@ -284,12 +284,71 @@ get_title_text() {
 }
 
 /**
- * Returns true if get_title_text() has never yet returned an answer, false if
- * it has.
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
  */
-bool PStatStripChart::
-is_title_unknown() const {
-  return _title_unknown;
+std::string PStatStripChart::
+get_label_tooltip(int collector_index) const {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(collector_index)) {
+    return std::string();
+  }
+
+  std::ostringstream text;
+  text << client_data->get_collector_fullname(collector_index);
+
+  double value;
+  if (collector_index == _collector_index) {
+    value = get_average_net_value();
+  }
+  else {
+    const PStatThreadData *thread_data = _view.get_thread_data();
+    int now_i, then_i;
+    if (!thread_data->get_elapsed_frames(then_i, now_i)) {
+      return text.str();
+    }
+    double now = _time_width + _start_time;
+    double then = now - pstats_average_time;
+
+    double net_value = 0.0f;
+    double net_time = 0.0f;
+
+    // We start with just the portion of frame then_i that actually does fall
+    // within our "then to now" window (usually some portion of it will).
+    const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    if (frame_data.get_end() > then) {
+      double this_time = (frame_data.get_end() - then);
+      _view.set_to_frame(frame_data);
+
+      const PStatViewLevel *level = _view.get_level(collector_index);
+      if (level != nullptr) {
+        net_value += level->get_net_value() * this_time;
+        net_time += this_time;
+      }
+    }
+    // Then we get all of each of the remaining frames.
+    for (int frame_number = then_i + 1;
+         frame_number <= now_i;
+         frame_number++) {
+      const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
+      double this_time = frame_data.get_net_time();
+      _view.set_to_frame(frame_data);
+
+      const PStatViewLevel *level = _view.get_level(collector_index);
+      if (level != nullptr) {
+        net_value += level->get_net_value() * this_time;
+        net_time += this_time;
+      }
+    }
+
+    if (net_time == 0) {
+      return text.str();
+    }
+    value = net_value / net_time;
+  }
+
+  text << " (" << format_number(value, get_guide_bar_units(), get_guide_bar_unit_name()) << ")";
+  return text.str();
 }
 
 /**

@@ -14,21 +14,16 @@
 #include "gtkStatsGraph.h"
 #include "gtkStatsMonitor.h"
 #include "gtkStatsLabelStack.h"
+#include "convert_srgb.h"
 
-const GdkColor GtkStatsGraph::rgb_white = {
-  0, 0xffff, 0xffff, 0xffff
+const double GtkStatsGraph::rgb_light_gray[3] = {
+  0x9a / (double)0xff, 0x9a / (double)0xff, 0x9a / (double)0xff,
 };
-const GdkColor GtkStatsGraph::rgb_light_gray = {
-  0, 0x9a9a, 0x9a9a, 0x9a9a,
+const double GtkStatsGraph::rgb_dark_gray[3] = {
+  0x33 / (double)0xff, 0x33 / (double)0xff, 0x33 / (double)0xff,
 };
-const GdkColor GtkStatsGraph::rgb_dark_gray = {
-  0, 0x3333, 0x3333, 0x3333,
-};
-const GdkColor GtkStatsGraph::rgb_black = {
-  0, 0x0000, 0x0000, 0x0000
-};
-const GdkColor GtkStatsGraph::rgb_user_guide_bar = {
-  0, 0x8282, 0x9696, 0xffff
+const double GtkStatsGraph::rgb_user_guide_bar[3] = {
+  0x82 / (double)0xff, 0x96 / (double)0xff, 0xff / (double)0xff,
 };
 
 /**
@@ -45,14 +40,14 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   GtkWidget *parent_window = monitor->get_window();
 
-  GdkDisplay *display = gdk_drawable_get_display(parent_window->window);
+  GdkDisplay *display = gdk_window_get_display(gtk_widget_get_window(parent_window));
   _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
 
-  _pixmap = nullptr;
-  _pixmap_gc = nullptr;
+  _cr_surface = nullptr;
+  _cr = nullptr;
 
-  _pixmap_xsize = 0;
-  _pixmap_ysize = 0;
+  _surface_xsize = 0;
+  _surface_ysize = 0;
 
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
@@ -79,8 +74,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
   gtk_widget_add_events(_graph_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
       GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(_graph_window), "expose_event",
-       G_CALLBACK(graph_expose_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "draw",
+       G_CALLBACK(graph_draw_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "configure_event",
        G_CALLBACK(configure_graph_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "button_press_event",
@@ -90,29 +85,35 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
   g_signal_connect(G_OBJECT(_graph_window), "motion_notify_event",
        G_CALLBACK(motion_notify_event_callback), this);
 
+  // An overlay inside the frame, for charts that want to display widgets on
+  // top of the graph.
+  _graph_overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(_graph_overlay), _graph_window);
+
   // A Frame to hold the graph.
-  GtkWidget *graph_frame = gtk_frame_new(nullptr);
-  gtk_frame_set_shadow_type(GTK_FRAME(graph_frame), GTK_SHADOW_IN);
-  gtk_container_add(GTK_CONTAINER(graph_frame), _graph_window);
+  _graph_frame = gtk_frame_new(nullptr);
+  gtk_frame_set_shadow_type(GTK_FRAME(_graph_frame), GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(_graph_frame), _graph_overlay);
 
   // A VBox to hold the graph's frame, and any numbers (scale legend?  total?)
   // above it.
-  _graph_vbox = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(_graph_vbox), graph_frame,
+  _graph_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_end(GTK_BOX(_graph_vbox), _graph_frame,
        TRUE, TRUE, 0);
 
   // An HBox to hold the graph's frame, and the scale legend to the right of
   // it.
-  _graph_hbox = gtk_hbox_new(FALSE, 0);
+  _graph_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(_graph_hbox), _graph_vbox,
          TRUE, TRUE, 0);
 
   // An HPaned to hold the label stack and the graph hbox.
-  _hpaned = gtk_hpaned_new();
+  _hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_paned_set_wide_handle(GTK_PANED(_hpaned), TRUE);
   gtk_container_add(GTK_CONTAINER(_window), _hpaned);
   gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
 
-  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), TRUE, TRUE);
+  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), FALSE, FALSE);
   gtk_paned_pack2(GTK_PANED(_hpaned), _graph_hbox, TRUE, TRUE);
 
   _drag_mode = DM_none;
@@ -128,13 +129,13 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 GtkStatsGraph::
 ~GtkStatsGraph() {
   _monitor = nullptr;
-  release_pixmap();
+  release_surface();
 
-  Brushes::iterator bi;
-  for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
-    GdkGC *gc = (*bi).second;
-    g_object_unref(gc);
+  for (auto &item : _brushes) {
+    cairo_pattern_destroy(item.second.first);
+    cairo_pattern_destroy(item.second.second);
   }
+  _brushes.clear();
 
   _label_stack.clear_labels();
 
@@ -157,13 +158,6 @@ new_collector(int new_collector) {
  */
 void GtkStatsGraph::
 new_data(int thread_index, int frame_number) {
-}
-
-/**
- * Called when it is necessary to redraw the entire graph.
- */
-void GtkStatsGraph::
-force_redraw() {
 }
 
 /**
@@ -214,7 +208,38 @@ user_guide_bars_changed() {
  * Called when the user single-clicks on a label.
  */
 void GtkStatsGraph::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
+}
+
+/**
+ * Called when the user hovers the mouse over a label.
+ */
+void GtkStatsGraph::
+on_enter_label(int collector_index) {
+  if (collector_index != _highlighted_index) {
+    _highlighted_index = collector_index;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the user's mouse cursor leaves a label.
+ */
+void GtkStatsGraph::
+on_leave_label(int collector_index) {
+  if (collector_index == _highlighted_index && collector_index != -1) {
+    _highlighted_index = -1;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsGraph::
+get_label_tooltip(int collector_index) const {
+  return std::string();
 }
 
 /**
@@ -236,37 +261,37 @@ close() {
 }
 
 /**
- * Returns a GC suitable for drawing in the indicated collector's color.
+ * Returns a pattern suitable for drawing in the indicated collector's color.
  */
-GdkGC *GtkStatsGraph::
-get_collector_gc(int collector_index) {
+cairo_pattern_t *GtkStatsGraph::
+get_collector_pattern(int collector_index, bool highlight) {
   Brushes::iterator bi;
   bi = _brushes.find(collector_index);
   if (bi != _brushes.end()) {
-    return (*bi).second;
+    return highlight ? (*bi).second.second : (*bi).second.first;
   }
 
   // Ask the monitor what color this guy should be.
   LRGBColor rgb = _monitor->get_collector_color(collector_index);
+  cairo_pattern_t *pattern = cairo_pattern_create_rgb(
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
+  cairo_pattern_t *hpattern = cairo_pattern_create_rgb(
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
 
-  GdkColor c;
-  c.red = (int)(rgb[0] * 65535.0f);
-  c.green = (int)(rgb[1] * 65535.0f);
-  c.blue = (int)(rgb[2] * 65535.0f);
-  GdkGC *gc = gdk_gc_new(_pixmap);
-  // g_object_ref(gc);   Should this be ref_sink?
-  gdk_gc_set_rgb_fg_color(gc, &c);
-
-  _brushes[collector_index] = gc;
-  return gc;
+  _brushes[collector_index] = std::make_pair(pattern, hpattern);
+  return highlight ? hpattern : pattern;
 }
 
 /**
- * This is called during the servicing of expose_event; it gives a derived
+ * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsGraph::
-additional_graph_window_paint() {
+additional_graph_window_paint(cairo_t *cr) {
 }
 
 /**
@@ -323,12 +348,14 @@ gboolean GtkStatsGraph::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   _potential_drag_mode = consider_drag_start(graph_x, graph_y);
 
+  GdkWindow *window = gtk_widget_get_window(_window);
+
   if (_potential_drag_mode == DM_guide_bar ||
       _drag_mode == DM_guide_bar) {
-    gdk_window_set_cursor(_window->window, _hand_cursor);
+    gdk_window_set_cursor(window, _hand_cursor);
 
   } else {
-    gdk_window_set_cursor(_window->window, nullptr);
+    gdk_window_set_cursor(window, nullptr);
   }
 
   return TRUE;
@@ -338,30 +365,27 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
  * Sets up a backing-store bitmap of the indicated size.
  */
 void GtkStatsGraph::
-setup_pixmap(int xsize, int ysize) {
-  release_pixmap();
+setup_surface(int xsize, int ysize) {
+  release_surface();
 
-  _pixmap_xsize = std::max(xsize, 0);
-  _pixmap_ysize = std::max(ysize, 0);
+  _surface_xsize = std::max(xsize, 0);
+  _surface_ysize = std::max(ysize, 0);
 
-  _pixmap = gdk_pixmap_new(_graph_window->window, _pixmap_xsize, _pixmap_ysize, -1);
-  // g_object_ref(_pixmap);   Should this be ref_sink?
-  _pixmap_gc = gdk_gc_new(_pixmap);
-  // g_object_ref(_pixmap_gc);    Should this be ref_sink?
+  _cr_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, _surface_xsize, _surface_ysize);
+  _cr = cairo_create(_cr_surface);
 
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0,
-         _pixmap_xsize, _pixmap_ysize);
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_paint(_cr);
 }
 
 /**
- * Frees the backing-store bitmap created by setup_pixmap().
+ * Frees the backing-store bitmap created by setup_surface().
  */
 void GtkStatsGraph::
-release_pixmap() {
-  if (_pixmap != nullptr) {
-    g_object_unref(_pixmap);
-    g_object_unref(_pixmap_gc);
+release_surface() {
+  if (_cr_surface != nullptr) {
+    cairo_surface_destroy(_cr_surface);
+    cairo_destroy(_cr);
   }
 }
 
@@ -388,17 +412,15 @@ window_destroy(GtkWidget *widget, gpointer data) {
  * Fills in the graph window.
  */
 gboolean GtkStatsGraph::
-graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+graph_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
-  if (self->_pixmap != nullptr) {
-    gdk_draw_drawable(self->_graph_window->window,
-          self->_graph_window->style->fg_gc[0],
-          self->_pixmap, 0, 0, 0, 0,
-          self->_pixmap_xsize, self->_pixmap_ysize);
+  if (self->_cr_surface != nullptr) {
+    cairo_set_source_surface(cr, self->_cr_surface, 0, 0);
+    cairo_paint(cr);
   }
 
-  self->additional_graph_window_paint();
+  self->additional_graph_window_paint(cr);
 
   return TRUE;
 }
@@ -412,7 +434,7 @@ configure_graph_callback(GtkWidget *widget, GdkEventConfigure *event,
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
   self->changed_graph_size(event->width, event->height);
-  self->setup_pixmap(event->width, event->height);
+  self->setup_surface(event->width, event->height);
   self->force_redraw();
 
   return TRUE;

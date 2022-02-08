@@ -22,6 +22,11 @@
 #include "virtualFileMountHTTP.h"
 #include "ramfile.h"
 #include "globPattern.h"
+#include "string_utils.h"
+
+#ifdef HAVE_ZLIB
+#include "zStream.h"
+#endif
 
 #include <stdio.h>
 
@@ -111,12 +116,14 @@ HTTPChannel(HTTPClient *client) :
   _done_state = S_new;
   _started_download = false;
   _sent_so_far = 0;
+  _body_socket_stream = nullptr;
   _body_stream = nullptr;
   _owns_body_stream = false;
   _sbio = nullptr;
   _cipher_list = _client->get_cipher_list();
   _last_status_code = 0;
   _last_run_time = 0.0f;
+  _download_dest = DD_none;
   _download_to_ramfile = nullptr;
   _download_to_stream = nullptr;
 }
@@ -550,7 +557,7 @@ run() {
  * The user is responsible for passing the returned istream to
  * close_read_body() later.
  */
-ISocketStream *HTTPChannel::
+std::istream *HTTPChannel::
 open_read_body() {
   reset_body_stream();
 
@@ -560,14 +567,14 @@ open_read_body() {
 
   string transfer_coding = downcase(get_header_value("Transfer-Encoding"));
 
-  ISocketStream *result;
+  std::istream *result;
   if (transfer_coding == "chunked") {
     // "chunked" transfer encoding.  This means we will have to decode the
     // length of the file as we read it in chunks.  The IChunkedStream does
     // this.
     _state = S_reading_body;
     _read_index++;
-    result = new IChunkedStream(_source, this);
+    _body_socket_stream = new IChunkedStream(_source, this);
 
   } else {
     // If the transfer encoding is anything else, assume "identity". This is
@@ -576,11 +583,39 @@ open_read_body() {
     // file otherwise.
     _state = S_reading_body;
     _read_index++;
-    result = new IIdentityStream(_source, this, _got_file_size, _file_size);
+    _body_socket_stream = new IIdentityStream(_source, this, _got_file_size, _file_size);
+  }
+  result = _body_socket_stream;
+
+  string content_encoding = trim(get_header_value("Content-Encoding"));
+  if (!content_encoding.empty()) {
+    vector_string content_encodings;
+    tokenize(downcase(content_encoding), content_encodings, ",");
+    for (const string &encoding : content_encodings) {
+      string trimmed = trim(encoding);
+      if (trimmed == "identity") {
+        continue;
+      }
+#ifdef HAVE_ZLIB
+      else if (trimmed == "gzip" || trimmed == "deflate" || trimmed == "x-gzip") {
+        // "deflate" actually includes zlib header, which is accepted as well
+        result = new IDecompressStream(result, true, -1, true);
+      }
+#endif
+      else {
+        downloader_cat.error()
+          << "Content-Encoding not supported: " << trimmed << "\n";
+        delete result;
+        _body_socket_stream = nullptr;
+        _body_stream = nullptr;
+        _owns_body_stream = false;
+        return nullptr;
+      }
+    }
   }
 
-  result->_channel = this;
   _body_stream = result;
+  _body_socket_stream->_channel = this;
   _owns_body_stream = false;
 
   return result;
@@ -786,27 +821,13 @@ get_connection() {
 }
 
 /**
- * Returns the input string with all uppercase letters converted to lowercase.
- */
-string HTTPChannel::
-downcase(const string &s) {
-  string result;
-  result.reserve(s.size());
-  string::const_iterator p;
-  for (p = s.begin(); p != s.end(); ++p) {
-    result += tolower(*p);
-  }
-  return result;
-}
-
-/**
  * Called by ISocketStream destructor when _body_stream is destructing.
  */
 void HTTPChannel::
 body_stream_destructs(ISocketStream *stream) {
-  if (stream == _body_stream) {
+  if (stream == _body_socket_stream) {
     if (_state == S_reading_body) {
-      switch (_body_stream->get_read_state()) {
+      switch (_body_socket_stream->get_read_state()) {
       case ISocketStream::RS_complete:
         finished_body(false);
         break;
@@ -820,6 +841,8 @@ body_stream_destructs(ISocketStream *stream) {
         break;
       }
     }
+
+    _body_socket_stream = nullptr;
     _body_stream = nullptr;
     _owns_body_stream = false;
   }
@@ -2160,7 +2183,7 @@ run_reading_body() {
     std::getline(*_body_stream, line);
   }
 
-  if (!_body_stream->is_closed()) {
+  if (!_body_socket_stream->is_closed()) {
     // There's more to come later.
     return true;
   }
@@ -2281,7 +2304,7 @@ run_download_to_file() {
 
   _download_to_stream->flush();
 
-  if (_body_stream->is_closed()) {
+  if (_body_socket_stream->is_closed()) {
     // Done.
     reset_body_stream();
     close_download_stream();
@@ -2331,7 +2354,7 @@ run_download_to_ram() {
     count = _body_stream->gcount();
   }
 
-  if (_body_stream->is_closed()) {
+  if (_body_socket_stream->is_closed()) {
     // Done.
     reset_body_stream();
     close_download_stream();
@@ -2392,7 +2415,7 @@ run_download_to_stream() {
 
   _download_to_stream->flush();
 
-  if (_body_stream->is_closed()) {
+  if (_body_socket_stream->is_closed()) {
     // Done.
     reset_body_stream();
     close_download_stream();
@@ -3635,6 +3658,14 @@ make_header() {
       << "Content-Length: " << _body.length() << "\r\n";
   }
 
+#ifdef HAVE_ZLIB
+  stream
+    << "Accept-Encoding: gzip, deflate, identity\r\n";
+#else
+  stream
+    << "Accept-Encoding: identity\r\n";
+#endif
+
   _header = stream.str();
 }
 
@@ -3810,6 +3841,7 @@ reset_body_stream() {
       nassertv(_body_stream == nullptr && !_owns_body_stream);
     }
   } else {
+    _body_socket_stream = nullptr;
     _body_stream = nullptr;
   }
 }

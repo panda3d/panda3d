@@ -183,6 +183,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LMatrix3) __rmul__(FLOATTYPE scalar) const);
+
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix3) &other);
 
   INLINE_LINMATH FLOATTYPE determinant() const;

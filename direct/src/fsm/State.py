@@ -21,27 +21,25 @@ class State(DirectObject):
         States = weakref.WeakKeyDictionary()
 
         @classmethod
-        def replaceMethod(self, oldFunction, newFunction):
+        def replaceMethod(cls, oldFunction, newFunction):
             import types
             count = 0
-            for state in self.States:
+            for state in cls.States:
                 # Note: you can only replace methods currently
                 enterFunc = state.getEnterFunc()
                 exitFunc = state.getExitFunc()
                 # print 'testing: ', state, enterFunc, exitFunc, oldFunction
-                if type(enterFunc) == types.MethodType:
+                if isinstance(enterFunc, types.MethodType):
                     if enterFunc.__func__ == oldFunction:
                         # print 'found: ', enterFunc, oldFunction
                         state.setEnterFunc(types.MethodType(newFunction,
-                                                            enterFunc.__self__,
-                                                            enterFunc.__self__.__class__))
+                                                            enterFunc.__self__))
                         count += 1
-                if type(exitFunc) == types.MethodType:
+                if isinstance(exitFunc, types.MethodType):
                     if exitFunc.__func__ == oldFunction:
                         # print 'found: ', exitFunc, oldFunction
                         state.setExitFunc(types.MethodType(newFunction,
-                                                           exitFunc.__self__,
-                                                           exitFunc.__self__.__class__))
+                                                           exitFunc.__self__))
                         count += 1
             return count
 
@@ -64,19 +62,19 @@ class State(DirectObject):
     # setters and getters
 
     def getName(self):
-        return(self.__name)
+        return self.__name
 
     def setName(self, stateName):
         self.__name = stateName
 
     def getEnterFunc(self):
-        return(self.__enterFunc)
+        return self.__enterFunc
 
     def setEnterFunc(self, stateEnterFunc):
         self.__enterFunc = stateEnterFunc
 
     def getExitFunc(self):
-        return(self.__exitFunc)
+        return self.__exitFunc
 
     def setExitFunc(self, stateExitFunc):
         self.__exitFunc = stateExitFunc
@@ -101,9 +99,9 @@ class State(DirectObject):
             return 1
 
         # if we're given a state object, get its name instead
-        if type(otherState) != type(''):
+        if not isinstance(otherState, str):
             otherState = otherState.getName()
-        return (otherState in self.__transitions)
+        return otherState in self.__transitions
 
     def setTransitions(self, stateTransitions):
         """setTransitions(self, string[])"""
@@ -121,7 +119,7 @@ class State(DirectObject):
     if __debug__:
         def getInspectorPos(self):
             """getInspectorPos(self)"""
-            return(self.__inspectorPos)
+            return self.__inspectorPos
 
         def setInspectorPos(self, inspectorPos):
             """setInspectorPos(self, [x, y])"""
@@ -133,7 +131,7 @@ class State(DirectObject):
         """
         Return the list of child FSMs
         """
-        return(self.__FSMList)
+        return self.__FSMList
 
     def setChildren(self, FSMList):
         """setChildren(self, ClassicFSM[])
@@ -198,7 +196,7 @@ class State(DirectObject):
         # state that is safe to enter
         self.__enterChildren(argList)
 
-        if (self.__enterFunc != None):
+        if self.__enterFunc is not None:
             self.__enterFunc(*argList)
 
     def exit(self, argList=[]):
@@ -209,24 +207,9 @@ class State(DirectObject):
         self.__exitChildren(argList)
 
         # call exit function if it exists
-        if (self.__exitFunc != None):
+        if self.__exitFunc is not None:
             self.__exitFunc(*argList)
 
     def __str__(self):
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\
                (self.__name, self.__enterFunc, self.__exitFunc, self.__transitions, self.__FSMList)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

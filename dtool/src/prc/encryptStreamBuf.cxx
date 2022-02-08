@@ -95,6 +95,10 @@ EncryptStreamBuf::
 ~EncryptStreamBuf() {
   close_read();
   close_write();
+
+#ifdef PHAVE_IOSTREAM
+  delete[] eback();
+#endif
 }
 
 /**

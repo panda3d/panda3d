@@ -811,6 +811,11 @@ PUBLISHED:
   bool has_depth_offset() const;
   int get_depth_offset() const;
 
+  void set_depth_bias(PN_stdfloat slope_factor, PN_stdfloat constant_factor,
+                      PN_stdfloat clamp = 0.0, int priority = 0);
+  void clear_depth_bias();
+  bool has_depth_bias() const;
+
   void do_billboard_axis(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
@@ -952,6 +957,10 @@ PUBLISHED:
   static NodePath decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 private:
+  bool replace_copied_nodes(const NodePath &source, const NodePath &dest,
+                            const PandaNode::InstanceMap &inst_map,
+                            Thread *current_thread);
+
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
                        int &a_count, int &b_count,

@@ -147,7 +147,7 @@ draw_lines() {
     _created_data = nullptr;
 
     PT(GeomVertexData) vdata = new GeomVertexData
-      ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
+      ("portal", GeomVertexFormat::get_v3c(), Geom::UH_static);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     GeomVertexWriter color(vdata, InternalName::get_color());
 

@@ -48,8 +48,9 @@ class OnscreenImage(DirectObject, NodePath):
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
 
-        if parent == None:
-            parent = aspect2d
+        if parent is None:
+            from direct.showbase import ShowBaseGlobal
+            parent = ShowBaseGlobal.aspect2d
         self.setImage(image, parent = parent, sort = sort)
 
         # Adjust pose
@@ -88,7 +89,7 @@ class OnscreenImage(DirectObject, NodePath):
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            if transform == None:
+            if transform is None:
                 # If we're replacing a previous image, we throw away
                 # the new image's transform in favor of the original
                 # image's transform.
@@ -106,14 +107,16 @@ class OnscreenImage(DirectObject, NodePath):
                 tex = image
             else:
                 # It's a Texture file name
-                tex = loader.loadTexture(image)
+                tex = TexturePool.loadTexture(image)
+                if not tex:
+                    raise IOError('Could not load texture: %s' % (image))
             cm = CardMaker('OnscreenImage')
             cm.setFrame(-1, 1, -1, 1)
             self.assign(parent.attachNewNode(cm.generate(), sort))
             self.setTexture(tex)
-        elif type(image) == type(()):
+        elif isinstance(image, tuple):
             # Assume its a file+node name, extract texture from node
-            model = loader.loadModel(image[0])
+            model = base.loader.loadModel(image[0])
             if model:
                 node = model.find(image[1])
                 if node:
@@ -134,11 +137,10 @@ class OnscreenImage(DirectObject, NodePath):
             # Use option string to access setter function
             try:
                 setter = getattr(self, 'set' + option[0].upper() + option[1:])
-                if (((setter == self.setPos) or
-                     (setter == self.setHpr) or
-                     (setter == self.setScale)) and
-                    (isinstance(value, tuple) or
-                     isinstance(value, list))):
+                if (setter == self.setPos or
+                    setter == self.setHpr or
+                    setter == self.setScale) and \
+                   isinstance(value, (tuple, list)):
                     setter(*value)
                 else:
                     setter(value)

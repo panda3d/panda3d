@@ -2,15 +2,17 @@
 
 __all__ = ['Interval']
 
-from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.DirectObject import DirectObject
-from direct.task.Task import Task, TaskManager
-from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import *
 from panda3d.direct import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.Task import Task, TaskManager
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.extensions_native import CInterval_extensions
 from direct.extensions_native import NodePath_extensions
 import math
+
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -71,8 +73,8 @@ class Interval(DirectObject):
         # Returns true if the interval has not been started, has already
         # played to its completion, or has been explicitly stopped via
         # finish().
-        return (self.getState() == CInterval.SInitial or \
-                self.getState() == CInterval.SFinal)
+        return self.getState() == CInterval.SInitial or \
+               self.getState() == CInterval.SFinal
 
     def setT(self, t):
         # There doesn't seem to be any reason to clamp this, and it
@@ -132,7 +134,7 @@ class Interval(DirectObject):
         return self.getT()
 
     def resume(self, startT = None):
-        if startT != None:
+        if startT is not None:
             self.setT(startT)
         self.setupResume()
         if not self.isPlaying():
@@ -398,7 +400,7 @@ class Interval(DirectObject):
         space = ''
         for l in range(indent):
             space = space + ' '
-        return (space + self.name + ' dur: %.2f' % self.duration)
+        return space + self.name + ' dur: %.2f' % self.duration
 
     open_ended = property(getOpenEnded)
     stopped = property(isStopped)
@@ -458,7 +460,7 @@ class Interval(DirectObject):
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
         tkinter = importlib.import_module('tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = tkinter.Frame(tl)

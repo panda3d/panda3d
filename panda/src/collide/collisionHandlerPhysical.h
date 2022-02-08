@@ -54,6 +54,9 @@ PUBLISHED:
 PUBLISHED:
   MAKE_PROPERTY2(center, has_center, get_center, set_center, clear_center);
 
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, vector_uchar data, PyObject *nodepaths));
+
 protected:
   bool _has_contact; // Are we in contact with anything?
 
@@ -82,6 +85,8 @@ protected:
   Colliders _colliders;
 
   NodePath _center;
+
+  friend class Extension<CollisionHandlerPhysical>;
 
 public:
   static TypeHandle get_class_type() {

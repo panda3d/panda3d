@@ -6,6 +6,10 @@ import types
 import os
 import sys
 
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+
+
 def findClass(className):
     """
     Look in sys.modules dictionary for a module that defines a class
@@ -21,18 +25,17 @@ def findClass(className):
             # is the same as the module we are looking in, then we found
             # the matching class and a good module namespace to redefine
             # our class in.
-            if (classObj and
-                ((type(classObj) == types.ClassType) or
-                 (type(classObj) == types.TypeType)) and
-                (classObj.__module__ == moduleName)):
+            if classObj and isinstance(classObj, type) and \
+               classObj.__module__ == moduleName:
                 return [classObj, module.__dict__]
     return None
+
 
 def rebindClass(filename):
     file = open(filename, 'r')
     lines = file.readlines()
     for line in lines:
-        if (line[0:6] == 'class '):
+        if line[0:6] == 'class ':
             # Chop off the "class " syntax and strip extra whitespace
             classHeader = line[6:].strip()
             # Look for a open paren if it does inherit
@@ -94,35 +97,32 @@ def copyFuncs(fromClass, toClass):
     # Copy the functions from fromClass into toClass dictionary
     for funcName, newFunc in fromClass.__dict__.items():
         # Filter out for functions
-        if (type(newFunc) == types.FunctionType):
+        if isinstance(newFunc, types.FunctionType):
             # See if we already have a function with this name
             oldFunc = toClass.__dict__.get(funcName)
             if oldFunc:
-
-                """
                 # This code is nifty, but with nested functions, give an error:
                 #   SystemError: cellobject.c:22: bad argument to internal function
                 # Give the new function code the same filename as the old function
                 # Perhaps there is a cleaner way to do this? This was my best idea.
-                newCode = types.CodeType(newFunc.func_code.co_argcount,
-                                         newFunc.func_code.co_nlocals,
-                                         newFunc.func_code.co_stacksize,
-                                         newFunc.func_code.co_flags,
-                                         newFunc.func_code.co_code,
-                                         newFunc.func_code.co_consts,
-                                         newFunc.func_code.co_names,
-                                         newFunc.func_code.co_varnames,
-                                         # Use the oldFunc's filename here. Tricky!
-                                         oldFunc.func_code.co_filename,
-                                         newFunc.func_code.co_name,
-                                         newFunc.func_code.co_firstlineno,
-                                         newFunc.func_code.co_lnotab)
-                newFunc = types.FunctionType(newCode,
-                                             newFunc.func_globals,
-                                             newFunc.func_name,
-                                             newFunc.func_defaults,
-                                             newFunc.func_closure)
-                """
+                #newCode = types.CodeType(newFunc.func_code.co_argcount,
+                #                         newFunc.func_code.co_nlocals,
+                #                         newFunc.func_code.co_stacksize,
+                #                         newFunc.func_code.co_flags,
+                #                         newFunc.func_code.co_code,
+                #                         newFunc.func_code.co_consts,
+                #                         newFunc.func_code.co_names,
+                #                         newFunc.func_code.co_varnames,
+                #                         # Use the oldFunc's filename here. Tricky!
+                #                         oldFunc.func_code.co_filename,
+                #                         newFunc.func_code.co_name,
+                #                         newFunc.func_code.co_firstlineno,
+                #                         newFunc.func_code.co_lnotab)
+                #newFunc = types.FunctionType(newCode,
+                #                             newFunc.func_globals,
+                #                             newFunc.func_name,
+                #                             newFunc.func_defaults,
+                #                             newFunc.func_closure)
                 replaceFuncList.append((oldFunc, funcName, newFunc))
             else:
                 # TODO: give these new functions a proper code filename

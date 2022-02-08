@@ -1111,6 +1111,7 @@ is_integer(CPPType *type) {
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_wchar_t ||
+           simple_type->_type == CPPSimpleType::T_char8_t ||
            simple_type->_type == CPPSimpleType::T_char16_t ||
            simple_type->_type == CPPSimpleType::T_char32_t ||
            simple_type->_type == CPPSimpleType::T_int);
@@ -1148,7 +1149,8 @@ is_unsigned_integer(CPPType *type) {
             simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
            (simple_type->_flags & CPPSimpleType::F_unsigned) != 0) ||
-           (simple_type->_type == CPPSimpleType::T_char16_t ||
+           (simple_type->_type == CPPSimpleType::T_char8_t ||
+            simple_type->_type == CPPSimpleType::T_char16_t ||
             simple_type->_type == CPPSimpleType::T_char32_t);
       }
     }

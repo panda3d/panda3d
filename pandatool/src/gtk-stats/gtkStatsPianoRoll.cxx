@@ -16,7 +16,7 @@
 #include "numeric_types.h"
 #include "gtkStatsLabelStack.h"
 
-static const int default_piano_roll_width = 400;
+static const int default_piano_roll_width = 600;
 static const int default_piano_roll_height = 200;
 
 /**
@@ -35,12 +35,19 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   // Add a DrawingArea widget on top of the graph, to display all of the scale
   // units.
   _scale_area = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(_scale_area), "expose_event",
-       G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_scale_area), "draw",
+       G_CALLBACK(draw_callback), this);
   gtk_box_pack_start(GTK_BOX(_graph_vbox), _scale_area,
          FALSE, FALSE, 0);
-  gtk_widget_set_size_request(_scale_area, 0, 20);
 
+  // It should be large enough to display the labels.
+  {
+    PangoLayout *layout = gtk_widget_create_pango_layout(_window, "0123456789 ms");
+    int width, height;
+    pango_layout_get_pixel_size(layout, &width, &height);
+    gtk_widget_set_size_request(_scale_area, 0, height + 1);
+    g_object_unref(layout);
+  }
 
   gtk_widget_set_size_request(_graph_window, default_piano_roll_width,
             default_piano_roll_height);
@@ -119,7 +126,7 @@ set_time_units(int unit_mask) {
  * Called when the user single-clicks on a label.
  */
 void GtkStatsPianoRoll::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
   if (collector_index >= 0) {
     GtkStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
   }
@@ -142,9 +149,8 @@ set_horizontal_scale(double time_width) {
  */
 void GtkStatsPianoRoll::
 clear_region() {
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0,
-         get_xsize(), get_ysize());
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_paint(_cr);
 }
 
 /**
@@ -157,8 +163,20 @@ begin_draw() {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    draw_guide_bar(_pixmap, get_guide_bar(i));
+    draw_guide_bar(_cr, get_guide_bar(i));
   }
+}
+
+/**
+ * Should be overridden by the user class.  This hook will be called before
+ * drawing any one row of bars.  These bars correspond to the collector whose
+ * index is get_row_collector(row), and in the color get_row_color(row).
+ */
+void GtkStatsPianoRoll::
+begin_row(int row) {
+  int collector_index = get_label_collector(row);
+  cairo_set_source(_cr, get_collector_pattern(collector_index,
+    _highlighted_index == collector_index));
 }
 
 /**
@@ -170,12 +188,8 @@ draw_bar(int row, int from_x, int to_x) {
     int y = _label_stack.get_label_y(row, _graph_window);
     int height = _label_stack.get_label_height(row);
 
-    int collector_index = get_label_collector(row);
-    GdkGC *gc = get_collector_gc(collector_index);
-
-    gdk_draw_rectangle(_pixmap, gc, TRUE,
-           from_x, y - height + 2,
-           to_x - from_x, height - 4);
+    cairo_rectangle(_cr, from_x, y - height + 2, to_x - from_x, height - 4);
+    cairo_fill(_cr);
   }
 }
 
@@ -199,14 +213,14 @@ idle() {
 }
 
 /**
- * This is called during the servicing of expose_event; it gives a derived
+ * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsPianoRoll::
-additional_graph_window_paint() {
+additional_graph_window_paint(cairo_t *cr) {
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_bar(_graph_window->window, get_user_guide_bar(i));
+    draw_guide_bar(cr, get_user_guide_bar(i));
   }
 }
 
@@ -247,7 +261,7 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
   if (double_click) {
     // Double-clicking on a color bar in the graph is the same as double-
     // clicking on the corresponding label.
-    clicked_label(get_collector_under_pixel(graph_x, graph_y));
+    on_click_label(get_collector_under_pixel(graph_x, graph_y));
     return TRUE;
   }
 
@@ -299,7 +313,9 @@ gboolean GtkStatsPianoRoll::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
     // When the mouse is over a color bar, highlight it.
-    _label_stack.highlight_label(get_collector_under_pixel(graph_x, graph_y));
+    int collector_index = get_collector_under_pixel(graph_x, graph_y);
+    _label_stack.highlight_label(collector_index);
+    on_enter_label(collector_index);
 
     /*
     // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
@@ -316,6 +332,7 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   } else {
     // If the mouse is in some drag mode, stop highlighting.
     _label_stack.highlight_label(-1);
+    on_leave_label(_highlighted_index);
   }
 
   if (_drag_mode == DM_scale) {
@@ -380,42 +397,44 @@ update_labels() {
  * Draws the line for the indicated guide bar on the graph.
  */
 void GtkStatsPianoRoll::
-draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar) {
+draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   int x = height_to_pixel(bar._height);
 
   if (x > 0 && x < get_xsize() - 1) {
     // Only draw it if it's not too close to the top.
     switch (bar._style) {
     case GBS_target:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_light_gray);
+      cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
       break;
 
     case GBS_user:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_user_guide_bar);
+      cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
       break;
 
     case GBS_normal:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
+      cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
       break;
     }
-    gdk_draw_line(surface, _pixmap_gc, x, 0, x, get_ysize());
+    cairo_move_to(cr, x, 0);
+    cairo_line_to(cr, x, get_ysize());
+    cairo_stroke(cr);
   }
 }
 
 /**
- * This is called during the servicing of expose_event.
+ * This is called during the servicing of the draw event.
  */
 void GtkStatsPianoRoll::
-draw_guide_labels() {
+draw_guide_labels(cairo_t *cr) {
   int i;
   int num_guide_bars = get_num_guide_bars();
   for (i = 0; i < num_guide_bars; i++) {
-    draw_guide_label(get_guide_bar(i));
+    draw_guide_label(cr, get_guide_bar(i));
   }
 
   int num_user_guide_bars = get_num_user_guide_bars();
   for (i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_label(get_user_guide_bar(i));
+    draw_guide_label(cr, get_user_guide_bar(i));
   }
 }
 
@@ -423,20 +442,18 @@ draw_guide_labels() {
  * Draws the text for the indicated guide bar label at the top of the graph.
  */
 void GtkStatsPianoRoll::
-draw_guide_label(const PStatGraph::GuideBar &bar) {
-  GdkGC *gc = gdk_gc_new(_scale_area->window);
-
+draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   switch (bar._style) {
   case GBS_target:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_light_gray);
+    cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
     break;
 
   case GBS_user:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_user_guide_bar);
+    cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
     break;
 
   case GBS_normal:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_dark_gray);
+    cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
     break;
   }
 
@@ -453,7 +470,6 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);
-      g_object_unref(gc);
       return;
     }
   }
@@ -467,22 +483,24 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
              x, 0,
              &x, &junk_y);
 
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(_scale_area, &allocation);
+
     int this_x = x - width / 2;
-    gdk_draw_layout(_scale_area->window, gc, this_x,
-        _scale_area->allocation.height - height, layout);
+    cairo_move_to(cr, this_x, allocation.height - height);
+    pango_cairo_show_layout(cr, layout);
   }
 
   g_object_unref(layout);
-  g_object_unref(gc);
 }
 
 /**
  * Draws in the scale labels.
  */
 gboolean GtkStatsPianoRoll::
-expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsPianoRoll *self = (GtkStatsPianoRoll *)data;
-  self->draw_guide_labels();
+  self->draw_guide_labels(cr);
 
   return TRUE;
 }

@@ -34,6 +34,7 @@ __all__ = [
     'Semaphore', 'BoundedSemaphore',
     'Event',
     'Timer',
+    'ThreadError',
     'local',
     'current_thread',
     'main_thread',
@@ -46,6 +47,7 @@ TIMEOUT_MAX = _thread.TIMEOUT_MAX
 
 local = _thread._local
 _newname = _thread._newname
+ThreadError = _thread.error
 
 class ThreadBase:
     """ A base class for both Thread and ExternalThread in this

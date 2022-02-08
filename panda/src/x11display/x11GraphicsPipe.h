@@ -147,8 +147,8 @@ public:
   INLINE bool supports_relative_mouse() const;
   INLINE bool enable_dga_mouse();
   INLINE void disable_dga_mouse();
-  INLINE bool enable_raw_mouse();
-  INLINE void disable_raw_mouse();
+  bool enable_raw_mouse();
+  void disable_raw_mouse();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();

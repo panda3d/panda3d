@@ -24,8 +24,12 @@
 #include "pandaNode.h"
 #include "luse.h"
 #include "geom.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "cycleData.h"
+#include "cycleDataLockedReader.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
 
 /**
  * The primary interface to this module.  This class does basic text assembly;
@@ -99,7 +103,7 @@ PUBLISHED:
   INLINE bool has_frame() const;
   INLINE bool is_frame_as_margin() const;
   INLINE LVecBase4 get_frame_as_set() const;
-  INLINE LVecBase4 get_frame_actual() const;
+  LVecBase4 get_frame_actual() const;
 
   INLINE void set_frame_line_width(PN_stdfloat line_width);
   INLINE PN_stdfloat get_frame_line_width() const;
@@ -116,7 +120,7 @@ PUBLISHED:
   INLINE bool get_card_decal() const;
   INLINE bool is_card_as_margin() const;
   INLINE LVecBase4 get_card_as_set() const;
-  INLINE LVecBase4 get_card_actual() const;
+  LVecBase4 get_card_actual() const;
   INLINE LVecBase4 get_card_transformed() const;
 
   INLINE void set_transform(const LMatrix4 &transform);
@@ -282,7 +286,6 @@ public:
                       Thread *current_thread) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,
@@ -295,29 +298,24 @@ public:
                                Thread *current_thread);
 
 private:
-  INLINE void invalidate_no_measure();
-  INLINE void invalidate_with_measure();
-  INLINE void check_rebuild() const;
-  INLINE void check_measure() const;
+  class CData;
 
-  void do_rebuild();
-  void do_measure();
+  INLINE void invalidate_no_measure(CData *cdata);
+  INLINE void invalidate_with_measure(CData *cdata);
+  INLINE bool do_needs_rebuild(const CData *cdata) const;
+  INLINE bool do_needs_measure(const CData *cdata) const;
 
-  PT(PandaNode) do_generate();
+  void do_rebuild(CData *cdata);
+  void do_measure(CData *cdata);
+
+  PT(PandaNode) do_generate(CData *cdata);
   PT(PandaNode) do_get_internal_geom() const;
 
-  PT(PandaNode) make_frame();
-  PT(PandaNode) make_card();
-  PT(PandaNode) make_card_with_border();
+  PT(PandaNode) do_make_frame(const CData *cdata);
+  PT(PandaNode) do_make_card(const CData *cdata);
+  PT(PandaNode) do_make_card_with_border(const CData *cdata);
 
   static int count_geoms(PandaNode *node);
-
-  Mutex _lock;
-  PT(PandaNode) _internal_geom;
-
-  PT(Texture) _card_texture;
-  LColor _frame_color;
-  LColor _card_color;
 
   enum Flags {
     F_has_frame        =  0x0001,
@@ -334,26 +332,54 @@ private:
     F_card_decal       =  0x0800,
   };
 
-  int _flags;
-  int _max_rows;
-  GeomEnums::UsageHint _usage_hint;
-  int _flatten_flags;
-  PN_stdfloat _frame_width;
-  PN_stdfloat _card_border_size;
-  PN_stdfloat _card_border_uv_portion;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA_TEXT CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return TextNode::get_class_type();
+    }
 
-  LVector2 _frame_ul, _frame_lr;
-  LVector2 _card_ul, _card_lr;
+    // We copy these here because they aren't pipeline-cycled on TextEncoder.
+    std::string _text;
+    std::wstring _wtext;
 
-  LMatrix4 _transform;
-  CoordinateSystem _coordinate_system;
+    PT(PandaNode) _internal_geom;
 
-  LPoint3 _ul3d, _lr3d;
+    PT(Texture) _card_texture;
+    LColor _frame_color;
+    LColor _card_color;
 
-  // Returned from TextAssembler:
-  LVector2 _text_ul, _text_lr;
-  int _num_rows;
-  std::wstring _wordwrapped_wtext;
+    int _flags;
+    int _max_rows;
+    GeomEnums::UsageHint _usage_hint;
+    int _flatten_flags;
+    PN_stdfloat _frame_width;
+    PN_stdfloat _card_border_size;
+    PN_stdfloat _card_border_uv_portion;
+
+    LVector2 _frame_ul, _frame_lr;
+    LVector2 _card_ul, _card_lr;
+
+    LMatrix4 _transform;
+    CoordinateSystem _coordinate_system;
+
+    LPoint3 _ul3d, _lr3d;
+
+    // Returned from TextAssembler:
+    LVector2 _text_ul, _text_lr;
+    int _num_rows;
+    std::wstring _wordwrapped_wtext;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
   static PStatCollector _text_generate_pcollector;
 

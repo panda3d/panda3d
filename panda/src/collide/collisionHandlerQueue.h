@@ -18,6 +18,7 @@
 
 #include "collisionHandler.h"
 #include "collisionEntry.h"
+#include "extension.h"
 
 /**
  * A special kind of CollisionHandler that does nothing except remember the
@@ -44,6 +45,8 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
+
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 private:
   typedef pvector< PT(CollisionEntry) > Entries;

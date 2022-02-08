@@ -12,11 +12,6 @@ from .DirectFrame import *
 from .DirectButton import *
 from math import isnan
 
-"""
-import DirectSlider
-d = DirectSlider(borderWidth=(0, 0))
-
-"""
 
 class DirectSlider(DirectFrame):
     """
@@ -63,8 +58,7 @@ class DirectSlider(DirectFrame):
         self.thumb = self.createcomponent("thumb", (), None,
                                           DirectButton, (self,),
                                           borderWidth = self['borderWidth'])
-        if self.thumb['frameSize'] == None and \
-           self.thumb.bounds == [0.0, 0.0, 0.0, 0.0]:
+        if self.thumb['frameSize'] is None:
             # Compute a default frameSize for the thumb.
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:
@@ -148,7 +142,7 @@ class DirectSlider(DirectFrame):
         self._lastOrientation = self['orientation']
 
     def destroy(self):
-        if (hasattr(self, 'thumb')):
+        if hasattr(self, 'thumb'):
             self.thumb.destroy() # ow!
             del self.thumb
         DirectFrame.destroy(self)

@@ -146,14 +146,6 @@ def test_weighted_choice():
     # Assert that we got 'item1'.
     assert item == items[0]
 
-    # Test PythonUtil.weightedChoice() with an invalid sum.
-    # This time, we're using 2000 so that regardless of the random
-    # number, we will still reach the very last item.
-    item = PythonUtil.weightedChoice(choicelist, sum=100000)
-
-    # Assert that we got 'item8', since we would get the last item.
-    assert item == items[-1]
-
     # Create a bogus random function.
     rnd = lambda: 0.5
 
@@ -165,3 +157,25 @@ def test_weighted_choice():
     # When subtracting that number by each weight, it will reach 0
     # by the time it hits 'item6' in the iteration.
     assert item == items[5]
+
+
+def test_serial():
+    gen = PythonUtil.SerialNumGen()
+    assert gen.next() == 0
+    assert next(gen) == 1
+    assert next(gen) == 2
+    assert gen.next() == 3
+
+
+def test_alphabet_counter():
+    counter = PythonUtil.AlphabetCounter()
+    assert next(counter) == 'A'
+    assert counter.next() == 'B'
+    assert counter.next() == 'C'
+    assert next(counter) == 'D'
+
+    for i in range(26 - 4):
+        next(counter)
+
+    assert next(counter) == 'AA'
+    assert next(counter) == 'AB'

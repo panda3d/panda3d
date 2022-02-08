@@ -61,6 +61,7 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
+  std::string __repr__() const;
 };
 
 INLINE_MATHUTIL std::ostream &

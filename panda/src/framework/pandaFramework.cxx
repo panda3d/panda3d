@@ -311,6 +311,39 @@ define_key(const string &event_name, const string &description,
 }
 
 /**
+ * Sets up a handler for the indicated key.  When the key is pressed in a
+ * window, the given callback will be called.  The description is a one-line
+ * description of the function of the key, for display to the user.
+ */
+void PandaFramework::
+define_key(const string &event_name, const string &description,
+           EventHandler::EventLambda function) {
+  if (_event_handler.has_hook(event_name)) {
+    // If there is already a hook for the indicated keyname, we're most likely
+    // replacing a previous definition of a key.  Search for the old
+    // definition and remove it.
+    KeyDefinitions::iterator di;
+    di = _key_definitions.begin();
+    while (di != _key_definitions.end() && (*di)._event_name != event_name) {
+      ++di;
+    }
+    if (di != _key_definitions.end()) {
+      _key_definitions.erase(di);
+    }
+  }
+
+  // Now add a new hook for the keyname, and also add the new description.
+  _event_handler.add_hook(event_name, function);
+
+  if (!description.empty()) {
+    KeyDefinition keydef;
+    keydef._event_name = event_name;
+    keydef._description = description;
+    _key_definitions.push_back(keydef);
+  }
+}
+
+/**
  * Fills in the indicated window properties structure according to the normal
  * window properties for this application.
  */

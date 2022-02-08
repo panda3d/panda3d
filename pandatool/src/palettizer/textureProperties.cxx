@@ -244,6 +244,7 @@ fully_define() {
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:
     case EggTexture::F_rgba5:
+    case EggTexture::F_srgb_alpha:
       _num_channels = 4;
       break;
 
@@ -253,6 +254,7 @@ fully_define() {
     case EggTexture::F_rgb8:
     case EggTexture::F_rgb5:
     case EggTexture::F_rgb332:
+    case EggTexture::F_srgb:
       _num_channels = 3;
       break;
 

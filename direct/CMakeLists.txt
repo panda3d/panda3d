@@ -53,7 +53,8 @@ if(HAVE_PYTHON)
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py"
     "\"This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead.\"
 
-print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
+if __debug__:
+    print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
 
   foreach(module ${ALL_INTERROGATE_MODULES})
     string(REGEX REPLACE "^.*\\." "" module_name "${module}")
@@ -65,6 +66,19 @@ except ImportError as err:
         raise
 ")
   endforeach()
+
+  file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py"
+    "from direct.showbase import DConfig
+
+def get_config_showbase():
+    return DConfig
+
+def get_config_express():
+    return DConfig
+
+getConfigShowbase = get_config_showbase
+getConfigExpress = get_config_express
+")
 
   # Now install ourselves:
   install_python_package(pandac SOURCE "${CMAKE_CURRENT_BINARY_DIR}/pandac" LIB COMPONENT Direct)

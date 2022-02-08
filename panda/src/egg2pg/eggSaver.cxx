@@ -800,6 +800,9 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check for a texture.
   const TextureAttrib *ta;
   if (net_state->get_attrib(ta)) {
+    const TexMatrixAttrib *tma = nullptr;
+    net_state->get_attrib(tma);
+
     for (size_t i = 0; i < ta->get_num_on_stages(); ++i) {
       TextureStage *tex_stage = ta->get_on_stage(i);
 
@@ -855,6 +858,9 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_normal_gloss:
           egg_tex->set_env_type(EggTexture::ET_normal_gloss);
           break;
+        case TextureStage::M_emission:
+          egg_tex->set_env_type(EggTexture::ET_emission);
+          break;
         default:
           break;
         }
@@ -862,6 +868,45 @@ convert_primitive(const GeomVertexData *vertex_data,
         const InternalName *name = tex_stage->get_texcoord_name();
         if (name != nullptr && name != InternalName::get_texcoord()) {
           egg_tex->set_uv_name(name->get_basename());
+        }
+
+        if (tma != nullptr && tma->has_stage(tex_stage)) {
+          CPT(TransformState) transform = tma->get_transform(tex_stage);
+          if (!transform->is_identity()) {
+            if (transform->has_components()) {
+              // If the transform can be represented componentwise, we prefer storing
+              // it that way in the egg file.
+              const LVecBase3 &scale = transform->get_scale();
+              const LQuaternion &quat = transform->get_quat();
+              const LVecBase3 &pos = transform->get_pos();
+              if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
+                if (transform->is_2d()) {
+                  egg_tex->add_scale2d(LVecBase2d(scale[0], scale[1]));
+                } else {
+                  egg_tex->add_scale3d(LCAST(double, scale));
+                }
+              }
+              if (!quat.is_identity()) {
+                if (transform->is_2d()) {
+                  egg_tex->add_rotate2d(transform->get_rotate2d());
+                } else {
+                  egg_tex->add_rotate3d(LCAST(double, quat));
+                }
+              }
+              if (!pos.almost_equal(LVecBase3::zero())) {
+                if (transform->is_2d()) {
+                  egg_tex->add_translate2d(LVector2d(pos[0], pos[1]));
+                } else {
+                  egg_tex->add_translate3d(LCAST(double, pos));
+                }
+              }
+            }
+            else if (transform->has_mat()) {
+              // Otherwise, we store the raw matrix.
+              const LMatrix4 &mat = transform->get_mat();
+              egg_tex->set_transform3d(LCAST(double, mat));
+            }
+          }
         }
 
         egg_prim->add_texture(egg_tex);
@@ -1410,6 +1455,12 @@ get_egg_texture(Texture *tex) {
         break;
       case Texture::F_luminance_alphamask:
         temp.set_format(EggTexture::F_luminance_alphamask);
+        break;
+      case Texture::F_srgb:
+        temp.set_format(EggTexture::F_srgb);
+        break;
+      case Texture::F_srgb_alpha:
+        temp.set_format(EggTexture::F_srgb_alpha);
         break;
       default:
         break;

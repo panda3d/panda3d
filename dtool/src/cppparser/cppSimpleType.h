@@ -28,6 +28,7 @@ public:
     T_bool,
     T_char,
     T_wchar_t,
+    T_char8_t,
     T_char16_t,
     T_char32_t,
     T_int,

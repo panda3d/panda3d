@@ -3,14 +3,16 @@
 __all__ = ['Diff', 'ObjectPool']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
+from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr, itype
 from direct.showbase.PythonUtil import getNumberedTypedString, getNumberedTypedSortedString
 import gc
 
+
 class Diff:
     def __init__(self, lost, gained):
-        self.lost=lost
-        self.gained=gained
+        self.lost = lost
+        self.gained = gained
+
     def printOut(self, full=False):
         print('lost %s objects, gained %s objects' % (len(self.lost), len(self.gained)))
         print('\n\nself.lost\n')
@@ -21,6 +23,7 @@ class Diff:
             self.gained.printObjsByType()
             print('\n\nGAINED-OBJECT REFERRERS\n')
             self.gained.printReferrers(1)
+
 
 class ObjectPool:
     """manipulate a pool of Python objects"""
@@ -124,7 +127,7 @@ class ObjectPool:
                     print('\nOBJ: %s\n' % safeRepr(obj))
                     referrers = gc.get_referrers(obj)
                     print('%s REFERRERS:\n' % len(referrers))
-                    if len(referrers):
+                    if len(referrers) > 0:
                         print(getNumberedTypedString(referrers, maxLen=80,
                                                     numPrefix='REF'))
                     else:

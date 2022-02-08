@@ -44,6 +44,8 @@ PUBLISHED:
 
   INLINE size_t get_num_words() const;
 
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
 protected:
   INLINE const ConfigDeclaration *get_default_value() const;
 

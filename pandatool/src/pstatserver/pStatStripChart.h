@@ -68,8 +68,9 @@ public:
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
 
-  std::string get_title_text();
   bool is_title_unknown() const;
+  std::string get_title_text();
+  std::string get_label_tooltip(int collector_index) const;
 
 protected:
   class ColorData {
@@ -89,6 +90,7 @@ protected:
   void compute_average_pixel_data(PStatStripChart::FrameData &result,
                                   int &then_i, int &now_i, double now);
   double get_net_value(int frame_number) const;
+  double get_net_value(int frame_number, int collector_index) const;
   double get_average_net_value() const;
 
   void changed_size(int xsize, int ysize);

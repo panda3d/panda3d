@@ -656,6 +656,27 @@ compare_to(const GeomVertexArrayFormat &other) const {
 }
 
 /**
+ * Returns a suitable format for sending an array of instances to the graphics
+ * backend.
+ *
+ * This may only be called after the format has been registered.  The return
+ * value will have been already registered.
+ */
+const GeomVertexArrayFormat *GeomVertexArrayFormat::
+get_instance_array_format() {
+  static CPT(GeomVertexArrayFormat) inst_array_format;
+
+  if (inst_array_format == nullptr) {
+    GeomVertexArrayFormat *new_array_format = new GeomVertexArrayFormat("instance_matrix", 4, NT_stdfloat, C_matrix);
+    new_array_format->set_divisor(1);
+    inst_array_format = GeomVertexArrayFormat::register_format(new_array_format);
+  }
+
+  nassertr(inst_array_format != nullptr, nullptr);
+  return inst_array_format.p();
+}
+
+/**
  * Resorts the _columns vector so that the columns are listed in the same
  * order they appear in the record.
  */

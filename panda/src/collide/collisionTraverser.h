@@ -24,6 +24,7 @@
 
 #include "pset.h"
 #include "register_type.h"
+#include "extension.h"
 
 class CollisionNode;
 class CollisionRecorder;
@@ -62,7 +63,7 @@ PUBLISHED:
   void clear_colliders();
   MAKE_SEQ_PROPERTY(colliders, get_num_colliders, get_collider);
 
-  void traverse(const NodePath &root);
+  BLOCKING void traverse(const NodePath &root);
 
 #if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
   void set_recorder(CollisionRecorder *recorder);
@@ -78,6 +79,9 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level) const;
+
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
 
 private:
   typedef pvector<CollisionLevelStateSingle> LevelStatesSingle;

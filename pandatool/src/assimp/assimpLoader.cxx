@@ -619,7 +619,7 @@ load_mesh(size_t index) {
   PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
   aformat->add_column(InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point);
   if (mesh.HasNormals()) {
-    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector);
+    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_normal);
   }
   if (mesh.HasVertexColors(0)) {
     aformat->add_column(InternalName::get_color(), 4, Geom::NT_stdfloat, Geom::C_color);
@@ -1035,7 +1035,7 @@ load_light(const aiLight &light) {
     LPoint3 pos (light.mPosition.x, light.mPosition.y, light.mPosition.z);
     LQuaternion quat;
     ::look_at(quat, LPoint3(vec.x, vec.y, vec.z), LVector3::up());
-    plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
+    plight->set_transform(TransformState::make_pos_quat(pos, quat));
     break; }
 
   // This is a somewhat recent addition to Assimp, so let's be kind to those

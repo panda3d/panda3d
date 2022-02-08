@@ -7,6 +7,7 @@ __all__ = ['WxSlider']
 
 import wx
 
+
 class WxSlider(wx.Slider):
     def __init__(self, parent, id, value, minValue, maxValue,\
                  pos=wx.DefaultPosition, size=wx.DefaultSize,\
@@ -90,4 +91,3 @@ class WxSlider(wx.Slider):
         if not self.textValue is None:
             self.textValue.Enable()
             self.textValue.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
-

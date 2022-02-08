@@ -1,8 +1,15 @@
 """Inspectors allow you to visually browse through the members of
-various python objects.  To open an inspector, import this module, and
-execute inspector.inspect(anObject) I start IDLE with this command
-line: idle.py -c "from inspector import inspect"
-so that I can just type: inspect(anObject) any time."""
+various Python objects.  To open an inspector, import this module, and
+execute ``inspector.inspect(anObject)``.
+
+I start IDLE with this command line::
+
+   idle.py -c "from inspector import inspect"
+
+so that I can just type: ``inspect(anObject)`` any time.
+
+See :ref:`inspection-utilities` for more information.
+"""
 
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
@@ -13,6 +20,9 @@ import Pmw
 ### public API
 
 def inspect(anObject):
+    """Opens up a window for visually inspecting the details of a given Python
+    object.  See :ref:`inspection-utilities`.
+    """
     inspector = inspectorFor(anObject)
     inspectorWindow = InspectorWindow(inspector)
     inspectorWindow.open()
@@ -114,7 +124,7 @@ class Inspector:
             except:
                 pass
         if doc:
-            return (str(object) + '\n' + str(doc))
+            return str(object) + '\n' + str(doc)
         else:
             return str(object)
 
@@ -309,7 +319,7 @@ class InspectorWindow:
     # Event Handling
     def listSelectionChanged(self, event):
         partNumber = self.selectedIndex()
-        if partNumber == None:
+        if partNumber is None:
             partNumber = 0
         string = self.topInspector().stringForPartNumber(partNumber)
         self.textWidget.component('text').configure(state = 'normal')
@@ -345,7 +355,7 @@ class InspectorWindow:
     # Menu Events
     def inspect(self):
         inspector = self.inspectorForSelectedPart()
-        if inspector == None:
+        if inspector is None:
             return
         InspectorWindow(inspector).open()
 
@@ -356,7 +366,7 @@ class InspectorWindow:
 
     def dive(self):
         inspector = self.inspectorForSelectedPart()
-        if inspector == None:
+        if inspector is None:
             return
         self.inspectors.append(inspector)
         self.update()
@@ -378,7 +388,7 @@ class InspectorWindow:
         self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
-        help = Toplevel(tkroot)
+        help = Toplevel(base.tkRoot)
         help.title("Inspector Help")
         frame = Frame(help)
         frame.pack()
@@ -398,7 +408,7 @@ class InspectorWindow:
 
     def inspectorForSelectedPart(self):
         partNumber = self.selectedIndex()
-        if partNumber == None:
+        if partNumber is None:
             return None
         part = self.topInspector().partNumber(partNumber)
         return self.topInspector().inspectorFor(part)
@@ -407,7 +417,7 @@ class InspectorWindow:
         print(event)
         partNumber = self.selectedIndex()
         print(partNumber)
-        if partNumber == None:
+        if partNumber is None:
             return
         part = self.topInspector().partNumber(partNumber)
         print(part)
@@ -437,7 +447,3 @@ class InspectorWindow:
                 label = item,
                 command = lambda p = part, f = func: f(p))
         return popupMenu
-
-
-
-

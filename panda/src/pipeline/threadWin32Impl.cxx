@@ -20,8 +20,28 @@
 #include "pointerTo.h"
 #include "config_pipeline.h"
 
-DWORD ThreadWin32Impl::_pt_ptr_index = 0;
-bool ThreadWin32Impl::_got_pt_ptr_index = false;
+static thread_local Thread *_current_thread = nullptr;
+static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
+
+/**
+ * Called by get_current_thread() if the current thread pointer is null; checks
+ * whether it might be the main thread.
+ * Note that adding noinline speeds up this call *significantly*, don't remove!
+ */
+static __declspec(noinline) Thread *
+init_current_thread() {
+  Thread *thread = _current_thread;
+  if (!_main_thread_known.test_and_set(std::memory_order_relaxed)) {
+    // Assume that we must be in the main thread, since this method must be
+    // called before the first thread is spawned.
+    thread = Thread::get_main_thread();
+    _current_thread = thread;
+  }
+  // If this assertion triggers, you are making Panda calls from a thread
+  // that has not first been registered using Thread::bind_thread().
+  nassertr(thread != nullptr, nullptr);
+  return thread;
+}
 
 /**
  *
@@ -61,10 +81,6 @@ start(ThreadPriority priority, bool joinable) {
 
   _joinable = joinable;
   _status = S_start_called;
-
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
 
   // Increment the parent object's reference count first.  The thread will
   // eventually decrement it when it terminates.
@@ -134,6 +150,27 @@ get_unique_id() const {
 }
 
 /**
+ *
+ */
+Thread *ThreadWin32Impl::
+get_current_thread() {
+  Thread *thread = _current_thread;
+  return (thread != nullptr) ? thread : init_current_thread();
+}
+
+/**
+ * Associates the indicated Thread object with the currently-executing thread.
+ * You should not call this directly; use Thread::bind_thread() instead.
+ */
+void ThreadWin32Impl::
+bind_thread(Thread *thread) {
+  if (_current_thread == nullptr && thread == Thread::get_main_thread()) {
+    _main_thread_known.test_and_set(std::memory_order_relaxed);
+  }
+  _current_thread = thread;
+}
+
+/**
  * The entry point of each thread.
  */
 DWORD ThreadWin32Impl::
@@ -143,8 +180,7 @@ root_func(LPVOID data) {
     // TAU_PROFILE("void ThreadWin32Impl::root_func()", " ", TAU_USER);
 
     ThreadWin32Impl *self = (ThreadWin32Impl *)data;
-    BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);
-    nassertr(result, 1);
+    _current_thread = self->_parent_obj;
 
     {
       self->_mutex.lock();
@@ -183,30 +219,6 @@ root_func(LPVOID data) {
   }
 
   return 0;
-}
-
-/**
- * Allocate a new index to store the Thread parent pointer as a piece of per-
- * thread private data.
- */
-void ThreadWin32Impl::
-init_pt_ptr_index() {
-  nassertv(!_got_pt_ptr_index);
-
-  _pt_ptr_index = TlsAlloc();
-  if (_pt_ptr_index == TLS_OUT_OF_INDEXES) {
-    thread_cat->error()
-      << "Unable to associate Thread pointers with threads.\n";
-    return;
-  }
-
-  _got_pt_ptr_index = true;
-
-  // Assume that we must be in the main thread, since this method must be
-  // called before the first thread is spawned.
-  Thread *main_thread_obj = Thread::get_main_thread();
-  BOOL result = TlsSetValue(_pt_ptr_index, main_thread_obj);
-  nassertv(result);
 }
 
 #endif  // THREAD_WIN32_IMPL

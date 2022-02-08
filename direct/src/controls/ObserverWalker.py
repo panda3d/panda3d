@@ -31,9 +31,6 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         """
         Set up the avatar for collisions
         """
-        """
-        Set up the avatar for collisions
-        """
         assert not avatarNodePath.isEmpty()
 
         self.cTrav = collisionTraverser
@@ -102,11 +99,9 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         Activate the arrow keys, etc.
         """
         assert self.debugPrint("enableAvatarControls")
-        pass
 
     def disableAvatarControls(self):
         """
         Ignore the arrow keys, etc.
         """
         assert self.debugPrint("disableAvatarControls")
-        pass

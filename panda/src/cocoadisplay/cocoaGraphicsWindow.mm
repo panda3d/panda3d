@@ -628,18 +628,32 @@ open_window() {
 
   if (_properties.get_fullscreen()) {
     // Change the display mode.
-    CGDisplayModeRef mode;
-    mode = find_display_mode(_properties.get_x_size(),
-                             _properties.get_y_size());
+    CFMutableArrayRef modes;
 
-    if (mode == NULL) {
+    modes = find_display_modes(_properties.get_x_size(),
+                               _properties.get_y_size());
+
+    if (CFArrayGetCount(modes) > 0) {
+      bool switched = false;
+      for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+        CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+        if (do_switch_fullscreen(mode)) {
+          switched = true;
+          break;
+        }
+      }
+      CFRelease(modes);
+
+      if (!switched) {
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
+        return false;
+      }
+
+    } else {
       cocoadisplay_cat.error()
         << "Could not find a suitable display mode!\n";
-      return false;
-
-    } else if (!do_switch_fullscreen(mode)) {
-      cocoadisplay_cat.error()
-        << "Failed to change display mode.\n";
+      CFRelease(modes);
       return false;
     }
   }
@@ -679,7 +693,7 @@ open_window() {
   // Enable relative mouse mode, if this was requested.
   if (_properties.has_mouse_mode() &&
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
-    mouse_mode_relative();
+    CGAssociateMouseAndMouseCursorPosition(NO);
   }
 
   _vsync_enabled = sync_video && cocoagsg->setup_vsync();
@@ -734,22 +748,6 @@ close_window() {
 }
 
 /**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_absolute() {
-  CGAssociateMouseAndMouseCursorPosition(YES);
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_relative() {
-  CGAssociateMouseAndMouseCursorPosition(NO);
-}
-
-/**
  * Applies the requested set of properties to the window, if possible, for
  * instance to request a change in size or minimization status.
  *
@@ -787,38 +785,48 @@ set_properties_now(WindowProperties &properties) {
           height = _properties.get_y_size();
         }
 
-        CGDisplayModeRef mode;
-        mode = find_display_mode(width, height);
+        CFMutableArrayRef modes = find_display_modes(width, height);
 
-        if (mode == NULL) {
+        if (CFArrayGetCount(modes) > 0) {
+          bool switched = false;
+          for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+            CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+            if (do_switch_fullscreen(mode)) {
+              switched = true;
+              break;
+            }
+          }
+
+          if (switched) {
+            if (_window != nil) {
+              // For some reason, setting the style mask makes it give up its
+              // first-responder status.
+              if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+                [_window setStyleMask:NSBorderlessWindowMask];
+              }
+              [_window makeFirstResponder:_view];
+              [_window setLevel:NSMainMenuWindowLevel+1];
+              [_window makeKeyAndOrderFront:nil];
+            }
+
+            // We've already set the size property this way; clear it.
+            properties.clear_size();
+            _properties.set_size(width, height);
+            properties.clear_origin();
+            _properties.set_origin(0, 0);
+            properties.clear_fullscreen();
+            _properties.set_fullscreen(true);
+
+          } else {
+            cocoadisplay_cat.error()
+              << "Failed to change display mode.\n";
+          }
+        } else {
           cocoadisplay_cat.error()
             << "Could not find a suitable display mode with size " << width
             << "x" << height << "!\n";
-
-        } else if (do_switch_fullscreen(mode)) {
-          if (_window != nil) {
-            // For some reason, setting the style mask makes it give up its
-            // first-responder status.
-            if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-              [_window setStyleMask:NSBorderlessWindowMask];
-            }
-            [_window makeFirstResponder:_view];
-            [_window setLevel:NSMainMenuWindowLevel+1];
-            [_window makeKeyAndOrderFront:nil];
-          }
-
-          // We've already set the size property this way; clear it.
-          properties.clear_size();
-          _properties.set_size(width, height);
-          properties.clear_origin();
-          _properties.set_origin(0, 0);
-          properties.clear_fullscreen();
-          _properties.set_fullscreen(true);
-
-        } else {
-          cocoadisplay_cat.error()
-            << "Failed to change display mode.\n";
         }
+        CFRelease(modes);
 
       } else {
         do_switch_fullscreen(NULL);
@@ -864,22 +872,33 @@ set_properties_now(WindowProperties &properties) {
       properties.clear_size();
 
     } else {
-      CGDisplayModeRef mode = find_display_mode(width, height);
+      CFMutableArrayRef modes = find_display_modes(width, height);
 
-      if (mode == NULL) {
-        cocoadisplay_cat.error()
-          << "Could not find a suitable display mode with size " << width
-          << "x" << height << "!\n";
+      if (CFArrayGetCount(modes) > 0) {
+        bool switched = false;
+        for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+          CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+          if (do_switch_fullscreen(mode)) {
+            switched = true;
+            break;
+          }
+        }
 
-      } else if (do_switch_fullscreen(mode)) {
-        // Yay!  Our resolution has changed.
-        _properties.set_size(width, height);
-        properties.clear_size();
+        if (switched) {
+          // Yay!  Our resolution has changed.
+          _properties.set_size(width, height);
+          properties.clear_size();
+        } else {
+          cocoadisplay_cat.error()
+            << "Failed to change display mode.\n";
+        }
 
       } else {
         cocoadisplay_cat.error()
-          << "Failed to change display mode.\n";
+          << "Could not find a suitable display mode with size " << width
+          << "x" << height << "!\n";
       }
+      CFRelease(modes);
     }
   }
 
@@ -1101,8 +1120,8 @@ set_properties_now(WindowProperties &properties) {
  * Returns an appropriate CGDisplayModeRef for the given width and height, or
  * NULL if none was found.
  */
-CGDisplayModeRef CocoaGraphicsWindow::
-find_display_mode(int width, int height) {
+CFMutableArrayRef CocoaGraphicsWindow::
+find_display_modes(int width, int height) {
   CFDictionaryRef options = NULL;
   // On macOS 10.15+ (Catalina), we want to select the display mode with the
   // samescaling factor as the current view to avoid cropping or scaling issues.
@@ -1122,6 +1141,9 @@ find_display_mode(int width, int height) {
                                  &kCFTypeDictionaryValueCallBacks);
   }
 #endif
+  CFMutableArrayRef valid_modes;
+  valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
   if (options != NULL) {
     CFRelease(options);
@@ -1132,7 +1154,7 @@ find_display_mode(int width, int height) {
 
   // Get the current refresh rate and pixel encoding.
   CFStringRef current_pixel_encoding;
-  int refresh_rate;
+  double refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
   // First check if the current mode is adequate.
@@ -1141,7 +1163,9 @@ find_display_mode(int width, int height) {
   if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
       CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
-    return mode;
+    CFArrayAppendValue(valid_modes, mode);
+    CGDisplayModeRelease(mode);
+    return valid_modes;
   }
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
@@ -1164,7 +1188,7 @@ find_display_mode(int width, int height) {
     // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
-        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
         (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
@@ -1172,17 +1196,19 @@ find_display_mode(int width, int height) {
 #endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
-      CFRetain(mode);
-      CFRelease(pixel_encoding);
-      CFRelease(current_pixel_encoding);
-      CFRelease(modes);
-      return mode;
+      if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
+        // Exact match for refresh rate, prioritize this.
+        CFArrayInsertValueAtIndex(valid_modes, 0, mode);
+      } else {
+        CFArrayAppendValue(valid_modes, mode);
+      }
     }
+    CFRelease(pixel_encoding);
   }
 
   CFRelease(current_pixel_encoding);
   CFRelease(modes);
-  return NULL;
+  return valid_modes;
 }
 
 /**
@@ -1732,6 +1758,19 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
+  // If UCKeyTranslate could not map the key into a valid unicode character or
+  // reserved symbol (See NSEvent.h), it returns 0x10 as translated character.
+  // This happens e.g.e with the combination Fn+F1.. keys.
+  // In that case, as fallback, we use charactersIgnoringModifiers to retrieve
+  // the character without modifiers.
+  if (c == 0x10) {
+    NSString *str = [event charactersIgnoringModifiers];
+    if (str == nil || [str length] != 1) {
+      return;
+    }
+    c = [str characterAtIndex: 0];
+  }
+
   ButtonHandle button = map_key(c);
 
   if (button == ButtonHandle::none()) {
@@ -1890,11 +1929,14 @@ handle_wheel_event(double x, double y) {
     _input->button_up(MouseButton::wheel_down());
   }
 
-  // TODO: check if this is correct, I don't own a MacBook
-  if (x > 0.0) {
+  if (x != 0 && cocoa_invert_wheel_x) {
+    x = -x;
+  }
+
+  if (x < 0.0) {
     _input->button_down(MouseButton::wheel_right());
     _input->button_up(MouseButton::wheel_right());
-  } else if (x < 0.0) {
+  } else if (x > 0.0) {
     _input->button_down(MouseButton::wheel_left());
     _input->button_up(MouseButton::wheel_left());
   }
@@ -2119,6 +2161,7 @@ map_raw_key(unsigned short keycode) const {
   case 0x07: return KeyboardButton::ascii_key('x');
   case 0x08: return KeyboardButton::ascii_key('c');
   case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0A: return KeyboardButton::ascii_key('<');
   case 0x0B: return KeyboardButton::ascii_key('b');
   case 0x0C: return KeyboardButton::ascii_key('q');
   case 0x0D: return KeyboardButton::ascii_key('w');

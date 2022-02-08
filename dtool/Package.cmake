@@ -556,16 +556,17 @@ package_option(HarfBuzz
 
 package_status(HarfBuzz "HarfBuzz")
 
-# GTK2
+# GTK3
 
-set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-find_package(GTK2 QUIET COMPONENTS gtk)
+if(NOT WIN32)
+  find_package(GTK3 QUIET)
+endif()
 
-package_option(GTK2)
+package_option(GTK3
+  "This is necessary to build the PStats performance analysis tool on platforms
+  other than Windows.")
 
-package_status(GTK2 "gtk+-2")
-
+package_status(GTK3 "gtk+-3")
 
 #
 # ------------ Physics engines ------------

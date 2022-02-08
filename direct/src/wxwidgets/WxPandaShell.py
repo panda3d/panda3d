@@ -104,7 +104,8 @@ class WxPandaShell(WxAppShell):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.mainFrame, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.SetSizer(sizer)
+        self.Layout()
 
     def initialize(self):
         """Initializes the viewports and editor."""
@@ -113,9 +114,9 @@ class WxPandaShell(WxAppShell):
         self.wxStep()
         ViewportManager.initializeAll()
         # Position the camera
-        if base.trackball != None:
-          base.trackball.node().setPos(0, 30, 0)
-          base.trackball.node().setHpr(0, 15, 0)
+        if base.trackball is not None:
+            base.trackball.node().setPos(0, 30, 0)
+            base.trackball.node().setHpr(0, 15, 0)
 
         # to make persp view as default
         self.perspViewMenuItem.Toggle()
@@ -202,9 +203,10 @@ class WxPandaShell(WxAppShell):
     def wxStep(self, task = None):
         """A step in the WX event loop. You can either call this yourself or use as task."""
         while self.evtLoop.Pending():
-          self.evtLoop.Dispatch()
+            self.evtLoop.Dispatch()
         self.evtLoop.ProcessIdle()
-        if task != None: return task.cont
+        if task is not None:
+            return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""

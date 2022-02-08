@@ -383,6 +383,11 @@ ConfigVariableFilename subprocess_window
           "and is not used or needed in other environments.  See "
           "WindowProperties::set_subprocess_window()."));
 
+ConfigVariableBool ime_aware
+("ime-aware", false,
+ PRC_DESC("Set this true to show candidate strings in Panda3D rather than via "
+          "an OS-provided external popup window."));
+
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
  PRC_DESC("No longer has any effect.  Do not use."));
@@ -484,6 +489,14 @@ ConfigVariableBool sync_video
           "but it may be useful to set it false during development for a "
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
+
+ConfigVariableDouble display_zoom
+("display-zoom", 0.0,
+ PRC_DESC("If this is set to a value other than 0.0, it overrides the detected "
+          "system DPI scaling.  GraphicsPipe::get_display_zoom() will instead "
+          "return whatever was passed in here.  You should generally only "
+          "change this based on a user preference change or to test how the UI "
+          "will look on monitors with different pixel densities."));
 
 /**
  * Initializes the library.  This must be called at least once before any of

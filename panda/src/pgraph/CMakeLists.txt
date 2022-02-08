@@ -29,6 +29,7 @@ set(P3PGRAPH_HEADERS
   cullTraverserData.I cullTraverserData.h
   cullableObject.I cullableObject.h
   decalEffect.I decalEffect.h
+  depthBiasAttrib.I depthBiasAttrib.h
   depthOffsetAttrib.I depthOffsetAttrib.h
   depthTestAttrib.I depthTestAttrib.h
   depthWriteAttrib.I depthWriteAttrib.h
@@ -39,6 +40,8 @@ set(P3PGRAPH_HEADERS
   geomDrawCallbackData.I geomDrawCallbackData.h
   geomNode.I geomNode.h
   geomTransformer.I geomTransformer.h
+  instanceList.I instanceList.h
+  instancedNode.I instancedNode.h
   internalNameCollection.I internalNameCollection.h
   lensNode.I lensNode.h
   light.I light.h
@@ -129,6 +132,7 @@ set(P3PGRAPH_SOURCES
   cullTraverserData.cxx
   cullableObject.cxx
   decalEffect.cxx
+  depthBiasAttrib.cxx
   depthOffsetAttrib.cxx
   depthTestAttrib.cxx
   depthWriteAttrib.cxx
@@ -139,6 +143,8 @@ set(P3PGRAPH_SOURCES
   geomDrawCallbackData.cxx
   geomNode.cxx
   geomTransformer.cxx
+  instanceList.cxx
+  instancedNode.cxx
   internalNameCollection.cxx
   lensNode.cxx
   light.cxx

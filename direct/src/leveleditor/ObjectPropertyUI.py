@@ -115,13 +115,9 @@ class ObjectPropUI(wx.Panel):
                     exist = True
                     break
 
-            if exist == False:
+            if not exist:
                 self.parent.editor.animMgr.keyFrames.append(frame)
-                self.parent.editor.ui.animUI.OnPropKey()
-
-            else:
-                self.parent.editor.ui.animUI.OnPropKey()
-
+            self.parent.editor.ui.animUI.OnPropKey()
         else:
             evt.Skip()
 
@@ -320,7 +316,8 @@ class ObjectPropertyUI(ScrolledPanel):
 
         parentSizer = wx.BoxSizer(wx.VERTICAL)
         parentSizer.Add(self, 1, wx.EXPAND, 0)
-        parent.SetSizer(parentSizer); parent.Layout()
+        parent.SetSizer(parentSizer)
+        parent.Layout()
 
         self.SetDropTarget(AnimFileDrop(self.editor))
 
@@ -639,7 +636,7 @@ class ObjectPropertyUI(ScrolledPanel):
                             lambda p0=None, p1=obj, p2=key: self.editor.objectMgr.updateObjectProperty(p0, p1, p2))
 
 
-        self.propsPane.SetSizer(sizer);
+        self.propsPane.SetSizer(sizer)
         self.Layout()
         self.SetupScrolling(self, scroll_y = True, rate_y = 20)
         if self.lastPropTab == 'Transform':
@@ -648,4 +645,3 @@ class ObjectPropertyUI(ScrolledPanel):
             self.nb.SetSelection(1)
         elif self.lastPropTab == 'Properties':
             self.nb.SetSelection(2)
-
