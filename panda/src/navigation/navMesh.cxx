@@ -17,9 +17,15 @@
 #include "geomTrifans.h"
 #include "config_navigation.h"
 #include "lvecBase3.h"
+#include "geomVertexWriter.h"
 #include <iostream>
 
 TypeHandle NavMesh::_type_handle;
+
+LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
+LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
+LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
+LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
 
 /**
  * NavMesh constructor to initialize member variables.
