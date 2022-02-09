@@ -18,9 +18,11 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "typedWritableReferenceCount.h"
-#include "pandaFramework.h"
 #include "pandaSystem.h"
 #include "lmatrix.h"
+#include "eventParameter.h"
+#include "pandabase.h"
+#include "geomNode.h"
 
 /**
  * NavMeshParams class stores all the parameters of a navigation mesh.
@@ -75,10 +77,6 @@ PUBLISHED:
 private:
   dtNavMesh *_nav_mesh;
   dtNavMeshCreateParams _params;
-  LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
-  LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
-  LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
-  LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
   int border_index;
   
 public:

@@ -20,7 +20,6 @@
 #include "geom.h"
 #include "geomNode.h"
 #include "nodePath.h"
-#include "pandaFramework.h"
 #include "pandaSystem.h"
 #include "navMesh.h"
 #include "lpoint3.h"

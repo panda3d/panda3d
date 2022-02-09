@@ -18,7 +18,6 @@
 #include "DetourNavMeshQuery.h"
 #include "navMesh.h"
 #include "pta_LVecBase3.h"
-#include "pandaFramework.h"
 #include "pandaSystem.h"
 #include "nodePath.h"
 

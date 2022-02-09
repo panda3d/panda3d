@@ -14,6 +14,8 @@
 
 #include "navMeshNode.h"
 #include "omniBoundingVolume.h"
+#include "cullTraverserData.h"
+#include "cullTraverser.h"
 #include <iostream>
 
 TypeHandle NavMeshNode::_type_handle;
@@ -28,6 +30,7 @@ NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
   set_cull_callback();
   // CollisionNodes are hidden by default.
   set_overall_hidden(true);
+  set_renderable();
 }
 
 NavMeshNode::NavMeshNode(const std::string &name):
@@ -60,9 +63,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PT(PandaNode) node = _nav_mesh->draw_nav_mesh_geom();
   
   if(node != nullptr) {
-  	CullTraverserData next_data(data, node);
-  	next_data._state = RenderState::make_empty();
-  	trav->traverse(next_data);
+    trav->traverse_down(data, node, data._net_transform, RenderState::make_empty());
   }
 
   // Now carry on to render our child nodes.
@@ -81,17 +82,6 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         Thread *current_thread) const {
   internal_bounds = new OmniBoundingVolume;
   internal_vertices = 0;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool NavMeshNode::
-is_renderable() const {
-  return true;
 }
 
 
