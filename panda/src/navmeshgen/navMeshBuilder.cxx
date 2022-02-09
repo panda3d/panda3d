@@ -27,6 +27,7 @@
 #include "geom.h"
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
+#include "geomVertexReader.h"
 #include "geomTrifans.h"
 
 #include "string_utils.h"

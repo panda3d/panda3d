@@ -16,10 +16,10 @@
 
 #include <string>
 #include "geom.h"
-#include "pandaFramework.h"
 #include "pandaSystem.h"
 #include "navMesh.h"
 #include <string>
+#include <pandaNode.h>
 
 /**
  * NavMeshNode class is a child class of PandaNode which stores the NavMesh object.
@@ -51,7 +51,6 @@ public:
   }
   virtual TypeHandle force_init_type() { init_type(); return get_class_type(); }
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
 private:
   static TypeHandle _type_handle;
