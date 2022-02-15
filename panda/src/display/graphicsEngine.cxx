@@ -925,10 +925,14 @@ render_frame() {
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
       if (thread->_thread_state == TS_wait) {
+        // Release before notifying, otherwise the other thread will wake up
+        // and get blocked on the mutex straight away.
         thread->_thread_state = TS_do_frame;
+        thread->_cv_mutex.release();
         thread->_cv_start.notify();
+      } else {
+        thread->_cv_mutex.release();
       }
-      thread->_cv_mutex.release();
     }
 
     // Some threads may still be drawing, so indicate that we have to wait for
@@ -1036,8 +1040,8 @@ open_windows() {
       }
 
       thread->_thread_state = TS_do_windows;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -1154,11 +1158,11 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     thread->_gsg = gsg;
     thread->_texture = tex;
     thread->_thread_state = TS_do_extract;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the extraction.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1222,11 +1226,11 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
     thread->_state = state.p();
     thread->_work_groups = work_groups;
     thread->_thread_state = TS_do_compute;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the compute task.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1292,11 +1296,11 @@ do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg) {
   // Now that the draw thread is idle, signal it to do the extraction task.
   thread->_region = region;
   thread->_thread_state = TS_do_screenshot;
-  thread->_cv_start.notify();
   thread->_cv_mutex.release();
+  thread->_cv_start.notify();
   thread->_cv_mutex.acquire();
 
-  //XXX is this necessary, or is acquiring the mutex enough?
+  // Wait for it to finish the extraction.
   while (thread->_thread_state != TS_wait) {
     thread->_cv_done.wait();
   }
@@ -1937,8 +1941,8 @@ do_flip_frame(Thread *current_thread) {
       RenderThread *thread = (*ti).second;
       nassertv(thread->_thread_state == TS_wait);
       thread->_thread_state = TS_do_flip;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -2365,8 +2369,8 @@ terminate_threads(Thread *current_thread) {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_thread_state = TS_terminate;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
   }
 
   // Finally, wait for them all to finish cleaning up.
