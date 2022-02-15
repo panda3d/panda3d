@@ -69,7 +69,7 @@ PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
+//PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
 PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
@@ -86,7 +86,7 @@ PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformSta
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
-PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
+PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
 PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 
@@ -182,9 +182,9 @@ GraphicsEngine(Pipeline *pipeline) :
 GraphicsEngine::
 ~GraphicsEngine() {
 #ifdef DO_PSTATS
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   remove_all_windows();
@@ -714,9 +714,9 @@ render_frame() {
   // to be App.
 #ifdef DO_PSTATS
   _render_frame_pcollector.start();
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   // Make sure our buffers and windows are fully realized before we render a
@@ -799,7 +799,10 @@ render_frame() {
 
     // Now it's time to do any drawing from the main frame--after all of the
     // App code has executed, but before we begin the next frame.
-    _app.do_frame(this, current_thread);
+    {
+      PStatTimer timer(_do_frame_pcollector, current_thread);
+      _app.do_frame(this, current_thread);
+    }
 
     // Grab each thread's mutex again after all windows have flipped, and wait
     // for the thread to finish.
@@ -854,6 +857,7 @@ render_frame() {
     // Reset our pcollectors that track data across the frame.
     CullTraverser::_nodes_pcollector.clear_level();
     CullTraverser::_geom_nodes_pcollector.clear_level();
+    CullTraverser::_pgui_nodes_pcollector.clear_level();
     CullTraverser::_geoms_pcollector.clear_level();
     GeomCacheManager::_geom_cache_active_pcollector.clear_level();
     GeomCacheManager::_geom_cache_record_pcollector.clear_level();
@@ -954,7 +958,7 @@ render_frame() {
 
   // Anything that happens outside of GraphicsEngine::render_frame() is deemed
   // to be App.
-  _app_pcollector.start();
+  //_app_pcollector.start();
   _render_frame_pcollector.stop();
 }
 
@@ -2573,7 +2577,6 @@ resort_windows() {
  */
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
-  PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   LightReMutexHolder holder(_wl_lock);
 
   engine->cull_to_bins(_cull, current_thread);
@@ -2745,8 +2748,11 @@ thread_main() {
       break;
 
     case TS_do_frame:
-      do_pending(_engine, current_thread);
-      do_frame(_engine, current_thread);
+      {
+        PStatTimer timer(_engine->_do_frame_pcollector, current_thread);
+        do_pending(_engine, current_thread);
+        do_frame(_engine, current_thread);
+      }
       break;
 
     case TS_do_flip:

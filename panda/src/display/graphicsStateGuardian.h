@@ -664,9 +664,9 @@ protected:
 
 public:
   // Statistics
-  static PStatCollector _vertex_buffer_switch_pcollector;
-  static PStatCollector _index_buffer_switch_pcollector;
-  static PStatCollector _shader_buffer_switch_pcollector;
+  //static PStatCollector _vertex_buffer_switch_pcollector;
+  //static PStatCollector _index_buffer_switch_pcollector;
+  //static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
   static PStatCollector _load_shader_buffer_pcollector;

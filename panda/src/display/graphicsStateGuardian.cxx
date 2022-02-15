@@ -63,9 +63,9 @@
 
 using std::string;
 
-PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
-PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
-PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");
+//PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
+//PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
+//PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
 PStatCollector GraphicsStateGuardian::_load_index_buffer_pcollector("Draw:Transfer data:Index buffer");
 PStatCollector GraphicsStateGuardian::_load_shader_buffer_pcollector("Draw:Transfer data:Shader buffer");
@@ -2376,18 +2376,20 @@ begin_frame(Thread *current_thread) {
   int frame = ClockObject::get_global_clock()->get_frame_count();
   if (_last_query_frame < frame) {
     _last_query_frame = frame;
-    _timer_queries_pcollector.clear_level();
+    if (pstats_gpu_timing && _supports_timer_query) {
+      _timer_queries_pcollector.clear_level();
 
-    // Now is a good time to flush previous frame's queries.  We may not
-    // actually have all of the previous frame's results in yet, but that's
-    // okay; the GPU data is allowed to lag a few frames behind.
-    flush_timer_queries();
+      // Now is a good time to flush previous frame's queries.  We may not
+      // actually have all of the previous frame's results in yet, but that's
+      // okay; the GPU data is allowed to lag a few frames behind.
+      flush_timer_queries();
 
-    if (_timer_queries_active) {
-      // Issue a stop and start event for collector 0, marking the beginning
-      // of the new frame.
-      issue_timer_query(0x8000);
-      issue_timer_query(0x0000);
+      if (_timer_queries_active) {
+        // Issue a stop and start event for collector 0, marking the beginning
+        // of the new frame.
+        issue_timer_query(0x8000);
+        issue_timer_query(0x0000);
+      }
     }
   }
 #endif
@@ -3223,8 +3225,9 @@ void GraphicsStateGuardian::
 init_frame_pstats() {
   if (PStatClient::is_connected()) {
     _data_transferred_pcollector.clear_level();
-    _vertex_buffer_switch_pcollector.clear_level();
-    _index_buffer_switch_pcollector.clear_level();
+    //_vertex_buffer_switch_pcollector.clear_level();
+    //_index_buffer_switch_pcollector.clear_level();
+    //_shader_buffer_switch_pcollector.clear_level();
 
     _primitive_batches_pcollector.clear_level();
     _primitive_batches_tristrip_pcollector.clear_level();

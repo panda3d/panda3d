@@ -195,6 +195,8 @@ draw_mask_changed() {
  */
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  CullTraverser::_pgui_nodes_pcollector.add_level(1);
+
   // We try not to hold the lock for longer than necessary.
   PT(PandaNode) state_def_root;
   bool has_frame;
