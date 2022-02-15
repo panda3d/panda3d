@@ -18,8 +18,8 @@
 
 #include <commctrl.h>
 
-static const int default_flame_graph_width = 800;
-static const int default_flame_graph_height = 150;
+static const int default_flame_graph_width = 1085;
+static const int default_flame_graph_height = 210;
 
 bool WinStatsFlameGraph::_window_class_registered = false;
 const char * const WinStatsFlameGraph::_window_class_name = "flame";
@@ -30,7 +30,7 @@ const char * const WinStatsFlameGraph::_window_class_name = "flame";
 WinStatsFlameGraph::
 WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
                    int collector_index) :
-  PStatFlameGraph(monitor, monitor->get_view(thread_index),
+  PStatFlameGraph(monitor,
                   thread_index, collector_index,
                   monitor->get_pixel_scale() * default_flame_graph_width / 4,
                   monitor->get_pixel_scale() * default_flame_graph_height / 4),
@@ -127,34 +127,7 @@ set_time_units(int unit_mask) {
  */
 void WinStatsFlameGraph::
 on_click_label(int collector_index) {
-  int prev_collector_index = get_collector_index();
-  if (collector_index == prev_collector_index && collector_index != 0) {
-    // Clicking on the top label means to go up to the parent level.
-    const PStatClientData *client_data =
-      WinStatsGraph::_monitor->get_client_data();
-    if (client_data->has_collector(collector_index)) {
-      const PStatCollectorDef &def =
-        client_data->get_collector_def(collector_index);
-      collector_index = def._parent_index;
-      set_collector_index(collector_index);
-    }
-  }
-  else {
-    // Clicking on any other label means to focus on that.
-    set_collector_index(collector_index);
-  }
-
-  // Change the root collector to show the full name.
-  if (prev_collector_index != collector_index) {
-    auto it = _labels.find(prev_collector_index);
-    if (it != _labels.end()) {
-      it->second->update_text(false);
-    }
-    it = _labels.find(collector_index);
-    if (it != _labels.end()) {
-      it->second->update_text(true);
-    }
-  }
+  set_collector_index(collector_index);
 }
 
 /**
@@ -164,6 +137,11 @@ void WinStatsFlameGraph::
 on_enter_label(int collector_index) {
   if (collector_index != _highlighted_index) {
     _highlighted_index = collector_index;
+    clear_graph_tooltip();
+
+    if (!get_average_mode()) {
+      PStatFlameGraph::force_redraw();
+    }
   }
 }
 
@@ -174,53 +152,11 @@ void WinStatsFlameGraph::
 on_leave_label(int collector_index) {
   if (collector_index == _highlighted_index && collector_index != -1) {
     _highlighted_index = -1;
-  }
-}
 
-/**
- * Called when the mouse hovers over a label, and should return the text that
- * should appear on the tooltip.
- */
-std::string WinStatsFlameGraph::
-get_label_tooltip(int collector_index) const {
-  return PStatFlameGraph::get_label_tooltip(collector_index);
-}
-
-/**
- * Repositions the labels.
- */
-void WinStatsFlameGraph::
-update_labels() {
-  if (_graph_window) {
-    PStatFlameGraph::update_labels();
-  }
-}
-
-/**
- * Repositions a label.  If width is 0, the label should be deleted.
- */
-void WinStatsFlameGraph::
-update_label(int collector_index, int row, int x, int width) {
-  WinStatsLabel *label;
-
-  auto it = _labels.find(collector_index);
-  if (it != _labels.end()) {
-    if (width == 0) {
-      delete it->second;
-      _labels.erase(it);
-      return;
+    if (!get_average_mode()) {
+      PStatFlameGraph::force_redraw();
     }
-    label = it->second;
-  } else {
-    if (width == 0) {
-      return;
-    }
-    label = new WinStatsLabel(WinStatsGraph::_monitor, this, _thread_index, collector_index, false, false);
-    _labels[collector_index] = label;
-    label->setup(_graph_window);
   }
-
-  label->set_pos(x, _ysize - 2 - row * label->get_height(), std::min(width, _xsize - 2));
 }
 
 /**
@@ -263,6 +199,56 @@ begin_draw() {
   for (int i = 0; i < num_guide_bars; i++) {
     draw_guide_bar(_bitmap_dc, get_guide_bar(i));
   }
+
+  SelectObject(_bitmap_dc, WinStatsGraph::_monitor->get_font());
+  SelectObject(_bitmap_dc, GetStockObject(NULL_PEN));
+  SetBkMode(_bitmap_dc, TRANSPARENT);
+  SetTextAlign(_bitmap_dc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+}
+
+/**
+ * Should be overridden by the user class.  Should draw a single bar at the
+ * indicated location.
+ */
+void WinStatsFlameGraph::
+draw_bar(int depth, int from_x, int to_x, int collector_index) {
+  int bottom = get_ysize() - 1 - depth * _pixel_scale * 5;
+  int top = bottom - _pixel_scale * 5;
+
+  bool is_highlighted = collector_index == _highlighted_index;
+  HBRUSH brush = get_collector_brush(collector_index, is_highlighted);
+
+  if (to_x < from_x + 2) {
+    // It's just a tiny sliver.  This is a more reliable way to draw it.
+    RECT rect = {from_x, top + 1, from_x + 1, bottom - 1};
+    FillRect(_bitmap_dc, &rect, brush);
+  }
+  else {
+    SelectObject(_bitmap_dc, brush);
+    RoundRect(_bitmap_dc,
+              std::max(from_x, -_pixel_scale - 1),
+              top,
+              std::min(std::max(to_x, from_x + 1), get_xsize() + _pixel_scale),
+              bottom,
+              _pixel_scale,
+              _pixel_scale);
+
+    int left = std::max(from_x, 0) + _pixel_scale / 2;
+    int right = std::min(to_x, get_xsize()) - _pixel_scale / 2;
+
+    if ((to_x - from_x) >= _pixel_scale * 4) {
+      // Only bother drawing the text if we've got some space to draw on.
+      // Choose a suitable foreground color.
+      SetTextColor(_bitmap_dc, get_collector_text_color(collector_index, is_highlighted));
+
+      const PStatClientData *client_data = WinStatsGraph::_monitor->get_client_data();
+      const std::string &name = client_data->get_collector_name(collector_index);
+
+      RECT rect = {left, top, right, bottom};
+      DrawText(_bitmap_dc, name.data(), name.size(),
+               &rect, DT_LEFT | DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER);
+    }
+  }
 }
 
 /**
@@ -279,6 +265,15 @@ end_draw() {
  */
 void WinStatsFlameGraph::
 idle() {
+}
+
+/**
+ * Overridden by a derived class to implement an animation.  If it returns
+ * false, the animation timer is stopped.
+ */
+bool WinStatsFlameGraph::
+animate(double time, double dt) {
+  return PStatFlameGraph::animate(time, dt);
 }
 
 /**
@@ -300,10 +295,27 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case BN_CLICKED:
       if ((HWND)lparam == _average_check_box) {
         int result = SendMessage(_average_check_box, BM_GETCHECK, 0, 0);
-        set_average_mode(result == BST_CHECKED);
+        if (result == BST_CHECKED) {
+          set_average_mode(true);
+          start_animation();
+        } else {
+          set_average_mode(false);
+        }
         return 0;
       }
       break;
+
+    case 101:
+      set_collector_index(_popup_index);
+      return 0;
+
+    case 102:
+      WinStatsGraph::_monitor->open_strip_chart(get_thread_index(), _popup_index, false);
+      return 0;
+
+    case 103:
+      WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
+      return 0;
     }
     break;
 
@@ -331,7 +343,25 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_MOUSEMOVE:
-    if (_drag_mode == DM_new_guide_bar) {
+    if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+      // When the mouse is over a color bar, highlight it.
+      int x = LOWORD(lparam);
+      int y = HIWORD(lparam);
+
+      int collector_index = get_bar_collector(pixel_to_depth(y), x);
+      on_enter_label(collector_index);
+
+      // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
+      // window.
+      TRACKMOUSEEVENT tme = {
+        sizeof(TRACKMOUSEEVENT),
+        TME_LEAVE,
+        _graph_window,
+        0
+      };
+      TrackMouseEvent(&tme);
+    }
+    else if (_drag_mode == DM_new_guide_bar) {
       // We haven't created the new guide bar yet; we won't until the mouse
       // comes within the graph's region.
       int16_t x = LOWORD(lparam);
@@ -345,6 +375,13 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       int16_t x = LOWORD(lparam);
       move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
       return 0;
+    }
+    break;
+
+  case WM_MOUSELEAVE:
+    // When the mouse leaves the graph, stop highlighting.
+    if (_highlighted_index != -1) {
+      on_leave_label(_highlighted_index);
     }
     break;
 
@@ -364,8 +401,42 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_LBUTTONDBLCLK:
     {
-      // Clicking on whitespace in the graph goes to the parent.
-      on_click_label(get_collector_index());
+      // Double-clicking on a color bar in the graph will zoom the graph into
+      // that collector.
+      int16_t x = LOWORD(lparam);
+      int16_t y = HIWORD(lparam);
+      set_collector_index(get_bar_collector(pixel_to_depth(y), x));
+      return 0;
+    }
+    break;
+
+  case WM_CONTEXTMENU:
+    {
+      POINT point;
+      if (GetCursorPos(&point)) {
+        POINT graph_point =  point;
+        if (ScreenToClient(_graph_window, &graph_point)) {
+          int depth = pixel_to_depth(graph_point.y);
+          int collector_index = get_bar_collector(depth, graph_point.x);
+          if (collector_index >= 0) {
+            _popup_index = collector_index;
+            HMENU popup = CreatePopupMenu();
+
+            std::string label = get_bar_tooltip(depth, graph_point.x);
+            if (!label.empty()) {
+              AppendMenu(popup, MF_STRING | MF_DISABLED, 0, label.c_str());
+            }
+            if (collector_index == get_collector_index()) {
+              AppendMenu(popup, MF_STRING | MF_DISABLED, 101, "Set as Focus");
+            } else {
+              AppendMenu(popup, MF_STRING, 101, "Set as Focus");
+            }
+            AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
+            AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+            TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
+          }
+        }
+      }
       return 0;
     }
     break;
@@ -426,6 +497,15 @@ additional_graph_window_paint(HDC hdc) {
 }
 
 /**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsFlameGraph::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  return get_bar_tooltip(pixel_to_depth(mouse_y), mouse_x);
+}
+
+/**
  * Based on the mouse position within the window's client area, look for
  * draggable things the mouse might be hovering over and return the
  * apprioprate DragMode enum or DM_none if nothing is indicated.
@@ -472,6 +552,14 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
                  SWP_NOZORDER | SWP_SHOWWINDOW);
     InvalidateRect(_average_check_box, nullptr, TRUE);
   }
+}
+
+/**
+ * Converts a pixel to a depth index.
+ */
+int WinStatsFlameGraph::
+pixel_to_depth(int y) const {
+  return (get_ysize() - 1 - y) / (_pixel_scale * 5);
 }
 
 /**
@@ -554,6 +642,7 @@ create_window() {
   register_window_class(application);
 
   std::string window_title = get_title_text();
+  POINT window_pos = WinStatsGraph::_monitor->get_new_window_pos();
 
   RECT win_rect = {
     0, 0,
@@ -565,11 +654,13 @@ create_window() {
   AdjustWindowRect(&win_rect, graph_window_style, FALSE);
 
   _window =
-    CreateWindow(_window_class_name, window_title.c_str(), graph_window_style,
-                 CW_USEDEFAULT, CW_USEDEFAULT,
-                 win_rect.right - win_rect.left,
-                 win_rect.bottom - win_rect.top,
-                 WinStatsGraph::_monitor->get_window(), nullptr, application, 0);
+    CreateWindowEx(WS_EX_DLGMODALFRAME, _window_class_name,
+                   window_title.c_str(), graph_window_style,
+                   window_pos.x, window_pos.y,
+                   win_rect.right - win_rect.left,
+                   win_rect.bottom - win_rect.top,
+                   WinStatsGraph::_monitor->get_window(),
+                   nullptr, application, 0);
   if (!_window) {
     nout << "Could not create FlameGraph window!\n";
     exit(1);
@@ -586,6 +677,7 @@ create_window() {
 
   if (get_average_mode()) {
     SendMessage(_average_check_box, BM_SETCHECK, BST_CHECKED, 0);
+    start_animation();
   }
 
   // Ensure that the window is on top of the stack.

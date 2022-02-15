@@ -6,5 +6,6 @@
 #include "winStatsLabelStack.cxx"
 #include "winStatsMonitor.cxx"
 #include "winStatsPianoRoll.cxx"
+#include "winStatsTimeline.cxx"
 #include "winStatsServer.cxx"
 #include "winStatsStripChart.cxx"

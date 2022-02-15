@@ -520,15 +520,16 @@ reset_level(PStatViewLevel *level) {
 
     if (level->_parent == nullptr) {
       // This level didn't know its parent before, but now it does.
-      PStatViewLevel *parent_level = get_level(parent_index);
-      nassertr(parent_level != level, true);
-
-      level->_parent = parent_level;
-      parent_level->_children.push_back(level);
-      parent_level->sort_children(_client_data);
-      any_changed = true;
-
-    } else if (level->_parent->_collector != parent_index) {
+      if (level->_collector != 0 || parent_index != 0) {
+        PStatViewLevel *parent_level = get_level(parent_index);
+        nassertr(parent_level != level, true);
+        level->_parent = parent_level;
+        parent_level->_children.push_back(level);
+        parent_level->sort_children(_client_data);
+        any_changed = true;
+      }
+    }
+    else if (level->_parent->_collector != parent_index) {
       // This level knew about its parent, but now it's something different.
       PStatViewLevel *old_parent_level = level->_parent;
       nassertr(old_parent_level != level, true);

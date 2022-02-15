@@ -15,8 +15,8 @@
 #include "winStatsMonitor.h"
 #include "numeric_types.h"
 
-static const int default_piano_roll_width = 600;
-static const int default_piano_roll_height = 200;
+static const int default_piano_roll_width = 800;
+static const int default_piano_roll_height = 400;
 
 bool WinStatsPianoRoll::_window_class_registered = false;
 const char * const WinStatsPianoRoll::_window_class_name = "piano";
@@ -51,7 +51,7 @@ WinStatsPianoRoll::
 }
 
 /**
- * Called as each frame's data is made available.  There is no gurantee the
+ * Called as each frame's data is made available.  There is no guarantee the
  * frames will arrive in order, or that all of them will arrive at all.  The
  * monitor should be prepared to accept frames received out-of-order or
  * missing.
@@ -107,6 +107,36 @@ on_click_label(int collector_index) {
   if (collector_index >= 0) {
     WinStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
   }
+}
+
+/**
+ * Called when the user right-clicks on a label.
+ */
+void WinStatsPianoRoll::
+on_popup_label(int collector_index) {
+  POINT point;
+  if (collector_index >= 0 && GetCursorPos(&point)) {
+    _popup_index = collector_index;
+
+    HMENU popup = CreatePopupMenu();
+
+    std::string label = get_label_tooltip(collector_index);
+    if (!label.empty()) {
+      AppendMenu(popup, MF_STRING | MF_DISABLED, 0, label.c_str());
+    }
+    AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
+    AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+    TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
+  }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsPianoRoll::
+get_label_tooltip(int collector_index) const {
+  return PStatPianoRoll::get_label_tooltip(collector_index);
 }
 
 /**
@@ -212,6 +242,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_potential_drag_mode == DM_new_guide_bar) {
       set_drag_mode(DM_new_guide_bar);
       SetCapture(_graph_window);
+      return 0;
+    }
+    break;
+
+  case WM_COMMAND:
+    switch (LOWORD(wparam)) {
+    case 102:
+      WinStatsGraph::_monitor->open_strip_chart(get_thread_index(), _popup_index, false);
+      return 0;
+
+    case 103:
+      WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
       return 0;
     }
     break;
@@ -333,6 +375,19 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_CONTEXTMENU:
+    {
+      POINT point;
+      if (GetCursorPos(&point) && ScreenToClient(_graph_window, &point)) {
+        int collector_index = get_collector_under_pixel(point.x, point.y);
+        if (collector_index >= 0) {
+          on_popup_label(collector_index);
+        }
+      }
+      return 0;
+    }
+    break;
+
   default:
     break;
   }
@@ -380,6 +435,19 @@ additional_graph_window_paint(HDC hdc) {
 }
 
 /**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsPianoRoll::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  int collector_index = get_collector_under_pixel(mouse_x, mouse_y);
+  if (collector_index >= 0) {
+    return get_label_tooltip(collector_index);
+  }
+  return std::string();
+}
+
+/**
  * Based on the mouse position within the window's client area, look for
  * draggable things the mouse might be hovering over and return the
  * apprioprate DragMode enum or DM_none if nothing is indicated.
@@ -413,7 +481,7 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
  * -1.
  */
 int WinStatsPianoRoll::
-get_collector_under_pixel(int xpoint, int ypoint) {
+get_collector_under_pixel(int xpoint, int ypoint) const {
   if (_label_stack.get_num_labels() == 0) {
     return -1;
   }
@@ -521,7 +589,7 @@ create_window() {
     WinStatsGraph::_monitor->get_client_data();
   std::string thread_name = client_data->get_thread_name(_thread_index);
   std::string window_title = thread_name + " thread piano roll";
-
+  POINT window_pos = WinStatsGraph::_monitor->get_new_window_pos();
 
   RECT win_rect = {
     0, 0,
@@ -533,11 +601,13 @@ create_window() {
   AdjustWindowRect(&win_rect, graph_window_style, FALSE);
 
   _window =
-    CreateWindow(_window_class_name, window_title.c_str(), graph_window_style,
-                 CW_USEDEFAULT, CW_USEDEFAULT,
-                 win_rect.right - win_rect.left,
-                 win_rect.bottom - win_rect.top,
-                 WinStatsGraph::_monitor->get_window(), nullptr, application, 0);
+    CreateWindowEx(WS_EX_DLGMODALFRAME, _window_class_name,
+                   window_title.c_str(), graph_window_style,
+                   window_pos.x, window_pos.y,
+                   win_rect.right - win_rect.left,
+                   win_rect.bottom - win_rect.top,
+                   WinStatsGraph::_monitor->get_window(),
+                   nullptr, application, 0);
   if (!_window) {
     nout << "Could not create PianoRoll window!\n";
     exit(1);

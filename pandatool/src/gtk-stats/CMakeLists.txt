@@ -26,6 +26,7 @@ set(GTKSTATS_SOURCES
   gtkStatsPianoRoll.cxx
   gtkStatsServer.cxx
   gtkStatsStripChart.cxx
+  gtkStatsTimeline.cxx
 )
 
 composite_sources(gtk-stats GTKSTATS_SOURCES)

@@ -39,6 +39,8 @@ public:
 
   virtual void set_time_units(int unit_mask);
   virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
   void set_horizontal_scale(double time_width);
 
 protected:
@@ -50,15 +52,17 @@ protected:
   virtual void idle();
 
   virtual void additional_graph_window_paint(cairo_t *cr);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
-  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-               bool double_click);
-  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
-  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_press(int graph_x, int graph_y,
+                                       bool double_click, int button);
+  virtual gboolean handle_button_release(int graph_x, int graph_y);
+  virtual gboolean handle_motion(int graph_x, int graph_y);
+  virtual gboolean handle_leave();
 
 private:
-  int get_collector_under_pixel(int xpoint, int ypoint);
+  int get_collector_under_pixel(int xpoint, int ypoint) const;
   void update_labels();
   void draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar);
   void draw_guide_labels(cairo_t *cr);

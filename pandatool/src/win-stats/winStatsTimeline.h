@@ -6,19 +6,18 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file winStatsPianoRoll.h
- * @author drose
- * @date 2004-01-12
+ * @file winStatsTimeline.h
+ * @author rdb
+ * @date 2022-02-11
  */
 
-#ifndef WINSTATSPIANOROLL_H
-#define WINSTATSPIANOROLL_H
+#ifndef WINSTATSTIMELINE_H
+#define WINSTATSTIMELINE_H
 
 #include "pandatoolbase.h"
 
 #include "winStatsGraph.h"
-#include "pStatPianoRoll.h"
-#include "pointerTo.h"
+#include "pStatTimeline.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -28,32 +27,30 @@
 class WinStatsMonitor;
 
 /**
- * A window that draws a piano-roll style chart, which shows the collectors
- * explicitly stopping and starting, one frame at a time.
+ * A window that draws all of the start/stop event pairs on each thread on a
+ * horizontal scrolling timeline, with concurrent start/stop pairs stacked
+ * underneath each other.
  */
-class WinStatsPianoRoll : public PStatPianoRoll, public WinStatsGraph {
+class WinStatsTimeline : public PStatTimeline, public WinStatsGraph {
 public:
-  WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index);
-  virtual ~WinStatsPianoRoll();
+  WinStatsTimeline(WinStatsMonitor *monitor);
+  virtual ~WinStatsTimeline();
 
   virtual void new_data(int thread_index, int frame_number);
   virtual void force_redraw();
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
-  virtual void set_time_units(int unit_mask);
-  virtual void on_click_label(int collector_index);
-  virtual void on_popup_label(int collector_index);
-  virtual std::string get_label_tooltip(int collector_index) const;
-  void set_horizontal_scale(double time_width);
-
 protected:
-  virtual void normal_guide_bars();
-  void clear_region();
+  virtual void clear_region();
   virtual void begin_draw();
-  virtual void begin_row(int row);
-  virtual void draw_bar(int row, int from_x, int to_x);
+  virtual void draw_separator(int row);
+  virtual void draw_guide_bar(int x, GuideBarStyle style);
+  virtual void draw_bar(int row, int from_x, int to_x, int collector_index,
+                        const std::string &collector_name);
   virtual void end_draw();
   virtual void idle();
+
+  virtual bool animate(double time, double dt);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -64,20 +61,29 @@ protected:
                                        int width, int height);
 
 private:
-  int get_collector_under_pixel(int xpoint, int ypoint) const;
-  void update_labels();
-  void draw_guide_bar(HDC hdc, const GuideBar &bar);
-  void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);
+  void draw_guide_label(HDC hdc, int y, const GuideBar &bar);
+  void draw_thread_label(HDC hdc, const ThreadRow &thread_row);
 
   void create_window();
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-  int _popup_index = -1;
+  int row_to_pixel(int y) const {
+    return y * _pixel_scale * 5 + _pixel_scale;
+  }
+  int pixel_to_row(int y) const {
+    return (y - _pixel_scale) / (_pixel_scale * 5);
+  }
 
   static bool _window_class_registered;
   static const char * const _window_class_name;
+
+  HBRUSH _grid_brush;
+
+  int _highlighted_row = -1;
+  int _highlighted_x = 0;
+  ColorBar _popup_bar;
 };
 
 #endif

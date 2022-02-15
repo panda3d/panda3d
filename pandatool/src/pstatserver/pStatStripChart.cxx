@@ -56,7 +56,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
     _unit_name = def._level_units;
   }
 
-  set_default_vertical_scale();
+  set_auto_vertical_scale();
 }
 
 /**
@@ -139,6 +139,7 @@ set_collector_index(int collector_index) {
     _title_unknown = true;
     _data.clear();
     clear_label_usage();
+    set_auto_vertical_scale();
     force_redraw();
     update_labels();
   }
@@ -170,26 +171,44 @@ void PStatStripChart::
 set_auto_vertical_scale() {
   const PStatThreadData *thread_data = _view.get_thread_data();
 
-  double max_value = 0.0;
+  // Calculate the median value.
+  std::vector<double> values;
 
-  int frame_number = -1;
-  for (int x = 0; x <= _xsize; x++) {
-    double time = pixel_to_timestamp(x);
-    frame_number =
-      thread_data->get_frame_number_at_time(time, frame_number);
+  if (thread_data != nullptr && !thread_data->is_empty()) {
+    // Find the oldest visible frame.
+    double start_time = pixel_to_timestamp(0);
+    int oldest_frame = std::max(
+      thread_data->get_frame_number_at_time(start_time),
+      thread_data->get_oldest_frame_number());
+    int latest_frame = thread_data->get_latest_frame_number();
 
-    if (thread_data->has_frame(frame_number)) {
-      double net_value = get_net_value(frame_number);
-      max_value = max(max_value, net_value);
+    for (int frame_number = oldest_frame; frame_number <= latest_frame; ++frame_number) {
+      if (thread_data->has_frame(frame_number)) {
+        values.push_back(get_net_value(frame_number));
+      }
     }
   }
 
-  // Ok, now we know what the max value visible in the chart is.  Choose a
-  // scale that will show all of this sensibly.
-  if (max_value == 0.0) {
-    set_vertical_scale(1.0);
+  if (values.empty()) {
+    set_default_vertical_scale();
+    return;
+  }
+
+  double median;
+  size_t half = values.size() / 2;
+  if (values.size() % 2 == 0) {
+    std::sort(values.begin(), values.end());
+    median = (values[half] + values[half + 1]) / 2.0;
   } else {
-    set_vertical_scale(max_value * 1.1);
+    std::nth_element(values.begin(), values.begin() + half, values.end());
+    median = values[half];
+  }
+
+  if (median > 0.0) {
+    // Take 1.5 times the median value as the vertical scale.
+    set_vertical_scale(median * 1.5);
+  } else {
+    set_default_vertical_scale();
   }
 }
 

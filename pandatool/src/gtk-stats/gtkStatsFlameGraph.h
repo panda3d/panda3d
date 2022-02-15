@@ -28,7 +28,7 @@ class GtkStatsLabel;
 class GtkStatsFlameGraph : public PStatFlameGraph, public GtkStatsGraph {
 public:
   GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
-                     int collector_index=0);
+                     int collector_index=-1);
   virtual ~GtkStatsFlameGraph();
 
   virtual void new_collector(int collector_index);
@@ -40,27 +40,30 @@ public:
   virtual void on_click_label(int collector_index);
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
-  virtual std::string get_label_tooltip(int collector_index) const;
 
 protected:
-  virtual void update_labels();
-  virtual void update_label(int collector_index, int row, int x, int width);
   virtual void normal_guide_bars();
 
   void clear_region();
   virtual void begin_draw();
+  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
   virtual void end_draw();
   virtual void idle();
 
+  virtual bool animate(double time, double dt);
+
   virtual void additional_graph_window_paint(cairo_t *cr);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
-  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-               bool double_click);
-  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
-  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_press(int graph_x, int graph_y,
+                                       bool double_click, int button);
+  virtual gboolean handle_button_release(int graph_x, int graph_y);
+  virtual gboolean handle_motion(int graph_x, int graph_y);
+  virtual gboolean handle_leave();
 
 private:
+  int pixel_to_depth(int y) const;
   void draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar);
   void draw_guide_labels(cairo_t *cr);
   void draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar);
@@ -70,12 +73,12 @@ private:
 
 private:
   std::string _net_value_text;
-  pmap<int, GtkStatsLabel *> _labels;
 
   GtkWidget *_top_hbox;
   GtkWidget *_average_check_box;
   GtkWidget *_total_label;
-  GtkWidget *_fixed;
+
+  int _popup_index = -1;
 };
 
 #endif

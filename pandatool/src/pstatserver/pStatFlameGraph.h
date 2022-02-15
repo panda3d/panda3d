@@ -35,14 +35,14 @@ class PStatFrameData;
  */
 class PStatFlameGraph : public PStatGraph {
 public:
-  PStatFlameGraph(PStatMonitor *monitor, PStatView &view,
+  PStatFlameGraph(PStatMonitor *monitor,
                   int thread_index, int collector_index,
                   int xsize, int ysize);
   virtual ~PStatFlameGraph();
 
   void update();
 
-  INLINE PStatView &get_view() const;
+  INLINE int get_thread_index() const;
   INLINE int get_collector_index() const;
   void set_collector_index(int collector_index);
 
@@ -56,46 +56,70 @@ public:
 
   INLINE bool is_title_unknown() const;
   std::string get_title_text();
-  std::string get_label_tooltip(int collector_index) const;
+
+  std::string get_bar_tooltip(int depth, int x) const;
+  int get_bar_collector(int depth, int x) const;
 
 protected:
-  static const size_t _num_average_frames = 200;
-
-  struct CollectorData {
-    double _offset;
-    double _net_value;
-    int _depth;
-    // This is updated like a ring buffer, initialized with all the same value
-    // at first, then always at _average_cursor.
-    double _values[_num_average_frames];
-  };
-  typedef pmap<int, CollectorData> Data;
-
   void update_data();
-  void update_data(const PStatViewLevel *level, int depth, double &offset);
   void changed_size(int xsize, int ysize);
   void force_redraw();
-  virtual void update_labels();
-  virtual void update_label(int collector_index, int row, int x, int width)=0;
   virtual void normal_guide_bars();
 
   virtual void begin_draw();
+  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
   virtual void end_draw();
   virtual void idle();
 
-private:
-  void compute_page(const PStatFrameData &frame_data);
+  bool animate(double time, double dt);
 
-protected:
+private:
+  static const size_t _num_average_frames = 150;
+
+  class StackLevel {
+  public:
+    void reset();
+
+    StackLevel *start(int collector_index, double time);
+    StackLevel *stop(int collector_index, double time);
+    StackLevel *stop_all(double time);
+
+    INLINE double get_net_value(bool average) const;
+    void reset_averages();
+    bool update_averages(size_t cursor);
+
+    const StackLevel *locate(int depth, double time, bool average) const;
+
+    void clear();
+
+  private:
+    StackLevel *r_stop(int collector_index, double time);
+
+    double _net_value = 0.0;
+    double _avg_net_value = 0.0;
+
+    // This is updated like a ring buffer, initialized with all the same value
+    // at first, then always at _average_cursor.
+    double _values[_num_average_frames] = {0.0};
+
+    double _start_time = 0.0;
+    bool _started = false;
+
+    int _collector_index = -1;
+    StackLevel *_parent = nullptr;
+    pmap<int, StackLevel> _children;
+
+    friend class PStatFlameGraph;
+  };
+
+  void r_draw_level(const StackLevel &level, int depth = 0, double offset = 0.0);
+
+  StackLevel _stack;
   int _thread_index;
-
-private:
-  PStatView &_view;
   int _collector_index;
+  int _orig_collector_index;
   bool _average_mode;
   size_t _average_cursor;
-
-  Data _data;
 
   double _time_width;
   int _current_frame;
