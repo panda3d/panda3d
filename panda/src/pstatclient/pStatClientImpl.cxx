@@ -124,6 +124,11 @@ client_connect(std::string hostname, int port) {
   MutexDebug::increment_pstats();
 #endif // DEBUG_THREADS
 
+  // Wait for the server hello.
+  while (!_got_udp_port) {
+    transmit_control_data();
+  }
+
   return _is_connected;
 }
 
