@@ -374,6 +374,14 @@ main_tick() {
 }
 
 /**
+ * A convenience function to call new_frame() for the current thread.
+ */
+void PStatClient::
+thread_tick() {
+  get_global_pstats()->client_thread_tick();
+}
+
+/**
  * A convenience function to call new_frame() on any threads with the
  * indicated sync_name
  */
@@ -407,6 +415,19 @@ client_main_tick() {
         _impl->new_frame(*vi);
       }
     }
+  }
+}
+
+/**
+ * A convenience function to call new_frame() on the current thread.
+ */
+void PStatClient::
+client_thread_tick() {
+  ReMutexHolder holder(_lock);
+
+  if (has_impl()) {
+    PStatThread thread = do_get_current_thread();
+    _impl->new_frame(thread.get_index());
   }
 }
 
@@ -1286,11 +1307,19 @@ main_tick() {
 }
 
 void PStatClient::
+thread_tick() {
+}
+
+void PStatClient::
 thread_tick(const std::string &) {
 }
 
 void PStatClient::
 client_main_tick() {
+}
+
+void PStatClient::
+client_thread_tick() {
 }
 
 void PStatClient::
