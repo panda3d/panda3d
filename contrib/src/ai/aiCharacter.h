@@ -41,7 +41,7 @@ class EXPCL_PANDAAI AICharacter : public ReferenceCount {
   NodePath _ai_char_np;
   bool _pf_guide;
 
-  void update();
+  void update(PN_stdfloat dt = 1.0);
   void set_velocity(LVecBase3 vel);
   void set_char_render(NodePath render);
   NodePath get_char_render();
