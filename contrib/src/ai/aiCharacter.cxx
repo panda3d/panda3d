@@ -44,22 +44,21 @@ AICharacter::~AICharacter() {
 void AICharacter::
 update() {
   if (!_steering->is_off(_steering->_none)) {
-    const LRotation ai_flip = LRotation(180, 0, 0);
-    const LMatrix4 ai_flip_matrix = LMatrix4::rotate_mat(ai_flip.get_angle(), ai_flip.get_axis_normalized());
+    static const LRotation ai_flip = LRotation(180, 0, 0);
+    static const LMatrix4 ai_flip_matrix = LMatrix4::rotate_mat(ai_flip.get_angle(), ai_flip.get_axis_normalized());
     LVecBase3 old_pos = _ai_char_np.get_pos();
     LVecBase3 steering_force = _steering->calculate_prioritized();
     LVecBase3 acceleration = steering_force / _mass;
 
     _velocity = acceleration;
 
-
-    LVecBase3 direction = _steering->_steering_force;
-    direction.normalize();
-    ai_flip_matrix.xform_vec_in_place(direction);
-
     _ai_char_np.set_pos(old_pos + _velocity) ;
 
     if (steering_force.length() > 0) {
+      LVecBase3 direction = _steering->_steering_force;
+      direction.normalize();
+      ai_flip_matrix.xform_vec_in_place(direction);
+
       _ai_char_np.look_at(_ai_char_np.get_pos() + direction);
     }
   } else {
