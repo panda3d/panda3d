@@ -2579,10 +2579,18 @@ void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
 
-  engine->cull_to_bins(_cull, current_thread);
-  engine->cull_and_draw_together(_cdraw, current_thread);
-  engine->draw_bins(_draw, current_thread);
-  engine->process_events(_window, current_thread);
+  if (!_cull.empty()) {
+    engine->cull_to_bins(_cull, current_thread);
+  }
+  if (!_cdraw.empty()) {
+    engine->cull_and_draw_together(_cdraw, current_thread);
+  }
+  if (!_draw.empty()) {
+    engine->draw_bins(_draw, current_thread);
+  }
+  if (!_window.empty()) {
+    engine->process_events(_window, current_thread);
+  }
 
   // If any GSG's on the list have no more outstanding pointers, clean them
   // up.  (We are in the draw thread for all of these GSG's.)
