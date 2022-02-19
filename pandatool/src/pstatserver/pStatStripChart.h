@@ -46,6 +46,7 @@ public:
   bool first_data() const;
 
   INLINE PStatView &get_view() const;
+  INLINE int get_thread_index() const;
   INLINE int get_collector_index() const;
   void set_collector_index(int collector_index);
 

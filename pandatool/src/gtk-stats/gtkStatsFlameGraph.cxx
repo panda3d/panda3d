@@ -25,11 +25,8 @@ static const int default_flame_graph_height = 150;
 GtkStatsFlameGraph::
 GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
                    int collector_index) :
-  PStatFlameGraph(monitor, monitor->get_view(thread_index),
-                  thread_index, collector_index,
-                  default_flame_graph_width,
-                  default_flame_graph_height),
-  GtkStatsGraph(monitor)
+  PStatFlameGraph(monitor, thread_index, collector_index, 0, 0),
+  GtkStatsGraph(monitor, false)
 {
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
@@ -54,13 +51,9 @@ GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
   gtk_box_pack_start(GTK_BOX(_top_hbox), _scale_area, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(_top_hbox), _total_label, FALSE, FALSE, 0);
 
-  gtk_widget_set_size_request(_graph_window, default_flame_graph_width,
-                              default_flame_graph_height);
-
-  // Add a fixed container to the overlay to allow arbitrary positioning
-  // of labels therein.
-  _fixed = gtk_fixed_new();
-  gtk_overlay_add_overlay(GTK_OVERLAY(_graph_overlay), _fixed);
+  gtk_widget_set_size_request(_graph_window,
+    default_flame_graph_width * monitor->get_resolution() / 96,
+    default_flame_graph_height * monitor->get_resolution() / 96);
 
   gtk_widget_show_all(_window);
   gtk_widget_show(_window);
@@ -71,6 +64,10 @@ GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
   gtk_widget_set_size_request(_window, 0, 0);
 
   clear_region();
+
+  if (get_average_mode()) {
+    start_animation();
+  }
 }
 
 /**
@@ -119,7 +116,9 @@ new_data(int thread_index, int frame_number) {
  */
 void GtkStatsFlameGraph::
 force_redraw() {
-  PStatFlameGraph::force_redraw();
+  if (_cr) {
+    PStatFlameGraph::force_redraw();
+  }
 }
 
 /**
@@ -152,34 +151,7 @@ set_time_units(int unit_mask) {
  */
 void GtkStatsFlameGraph::
 on_click_label(int collector_index) {
-  int prev_collector_index = get_collector_index();
-  if (collector_index == prev_collector_index && collector_index != 0) {
-    // Clicking on the top label means to go up to the parent level.
-    const PStatClientData *client_data =
-      GtkStatsGraph::_monitor->get_client_data();
-    if (client_data->has_collector(collector_index)) {
-      const PStatCollectorDef &def =
-        client_data->get_collector_def(collector_index);
-      collector_index = def._parent_index;
-      set_collector_index(collector_index);
-    }
-  }
-  else {
-    // Clicking on any other label means to focus on that.
-    set_collector_index(collector_index);
-  }
-
-  // Change the root collector to show the full name.
-  if (prev_collector_index != collector_index) {
-    auto it = _labels.find(prev_collector_index);
-    if (it != _labels.end()) {
-      it->second->update_text(false);
-    }
-    it = _labels.find(collector_index);
-    if (it != _labels.end()) {
-      it->second->update_text(true);
-    }
-  }
+  set_collector_index(collector_index);
 }
 
 /**
@@ -189,6 +161,10 @@ void GtkStatsFlameGraph::
 on_enter_label(int collector_index) {
   if (collector_index != _highlighted_index) {
     _highlighted_index = collector_index;
+
+    if (!get_average_mode()) {
+      PStatFlameGraph::force_redraw();
+    }
   }
 }
 
@@ -199,54 +175,11 @@ void GtkStatsFlameGraph::
 on_leave_label(int collector_index) {
   if (collector_index == _highlighted_index && collector_index != -1) {
     _highlighted_index = -1;
-  }
-}
 
-/**
- * Called when the mouse hovers over a label, and should return the text that
- * should appear on the tooltip.
- */
-std::string GtkStatsFlameGraph::
-get_label_tooltip(int collector_index) const {
-  return PStatFlameGraph::get_label_tooltip(collector_index);
-}
-
-/**
- * Repositions the labels.
- */
-void GtkStatsFlameGraph::
-update_labels() {
-  PStatFlameGraph::update_labels();
-}
-
-/**
- * Repositions a label.  If width is 0, the label should be deleted.
- */
-void GtkStatsFlameGraph::
-update_label(int collector_index, int row, int x, int width) {
-  GtkStatsLabel *label;
-
-  auto it = _labels.find(collector_index);
-  if (it != _labels.end()) {
-    label = it->second;
-    if (width == 0) {
-      gtk_container_remove(GTK_CONTAINER(_fixed), label->get_widget());
-      delete label;
-      _labels.erase(it);
-      return;
+    if (!get_average_mode()) {
+      PStatFlameGraph::force_redraw();
     }
-    gtk_fixed_move(GTK_FIXED(_fixed), label->get_widget(), x, _ysize - (row + 1) * label->get_height());
   }
-  else {
-    if (width == 0) {
-      return;
-    }
-    label = new GtkStatsLabel(GtkStatsGraph::_monitor, this, _thread_index, collector_index, false, false);
-    _labels[collector_index] = label;
-    gtk_fixed_put(GTK_FIXED(_fixed), label->get_widget(), x, _ysize - (row + 1) * label->get_height());
-  }
-
-  gtk_widget_set_size_request(label->get_widget(), std::min(width, _xsize), label->get_height());
 }
 
 /**
@@ -255,8 +188,7 @@ update_label(int collector_index, int row, int x, int width) {
 void GtkStatsFlameGraph::
 normal_guide_bars() {
   // We want vaguely 100 pixels between guide bars.
-  double res = gdk_screen_get_resolution(gdk_screen_get_default());
-  int num_bars = (int)(get_xsize() / (100.0 * (res > 0 ? res / 96.0 : 1.0)));
+  int num_bars = get_xsize() / (_pixel_scale * 25);
 
   _guide_bars.clear();
 
@@ -293,6 +225,63 @@ begin_draw() {
 }
 
 /**
+ * Should be overridden by the user class.  Should draw a single bar at the
+ * indicated location.
+ */
+void GtkStatsFlameGraph::
+draw_bar(int depth, int from_x, int to_x, int collector_index) {
+  double bottom = get_ysize() - depth * _pixel_scale * 5;
+  double top = bottom - _pixel_scale * 5;
+
+  bool is_highlighted = collector_index == _highlighted_index;
+  cairo_set_source(_cr, get_collector_pattern(collector_index, is_highlighted));
+
+  if (to_x < from_x + 3) {
+    // It's just a tiny sliver.  This is a more reliable way to draw it.
+    cairo_rectangle(_cr, from_x, top, to_x - from_x, bottom - top);
+    cairo_fill(_cr);
+  }
+  else {
+    double radius = std::min((double)_pixel_scale, (to_x - from_x) / 2.0);
+    cairo_new_sub_path(_cr);
+    cairo_arc(_cr, to_x - radius, top + radius, radius, -0.5 * M_PI, 0.0);
+    cairo_arc(_cr, to_x - radius, bottom - radius, radius, 0.0, 0.5 * M_PI);
+    cairo_arc(_cr, from_x + radius, bottom - radius, radius, 0.5 * M_PI, M_PI);
+    cairo_arc(_cr, from_x + radius, top + radius, radius, M_PI, 1.5 * M_PI);
+    cairo_close_path(_cr);
+    cairo_fill(_cr);
+
+    if ((to_x - from_x) >= _pixel_scale * 4) {
+      // Only bother drawing the text if we've got some space to draw on.
+      int left = std::max(from_x, 0) + _pixel_scale / 2;
+      int right = std::min(to_x, get_xsize()) - _pixel_scale / 2;
+
+      const PStatClientData *client_data = GtkStatsGraph::_monitor->get_client_data();
+      const std::string &name = client_data->get_collector_name(collector_index);
+
+      // Choose a suitable foreground color.
+      LRGBColor fg = get_collector_text_color(collector_index, is_highlighted);
+      cairo_set_source_rgb(_cr, fg[0], fg[1], fg[2]);
+
+      PangoLayout *layout = gtk_widget_create_pango_layout(_graph_window, name.c_str());
+      pango_layout_set_attributes(layout, _pango_attrs);
+      pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+      pango_layout_set_width(layout, (right - left) * PANGO_SCALE);
+      pango_layout_set_height(layout, -1);
+
+      int width, height;
+      pango_layout_get_pixel_size(layout, &width, &height);
+
+      // Center the text vertically in the bar.
+      cairo_move_to(_cr, left, top + (bottom - top - height) / 2);
+      pango_cairo_show_layout(_cr, layout);
+
+      g_object_unref(layout);
+    }
+  }
+}
+
+/**
  * Called after all the bars have been drawn, this triggers a refresh event to
  * draw it to the window.
  */
@@ -309,6 +298,15 @@ idle() {
 }
 
 /**
+ * Overridden by a derived class to implement an animation.  If it returns
+ * false, the animation timer is stopped.
+ */
+bool GtkStatsFlameGraph::
+animate(double time, double dt) {
+  return PStatFlameGraph::animate(time, dt);
+}
+
+/**
  * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
@@ -318,6 +316,15 @@ additional_graph_window_paint(cairo_t *cr) {
   for (int i = 0; i < num_user_guide_bars; i++) {
     draw_guide_bar(cr, get_user_guide_bar(i));
   }
+}
+
+/**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsFlameGraph::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  return get_bar_tooltip(pixel_to_depth(mouse_y), mouse_x);
 }
 
 /**
@@ -352,12 +359,74 @@ consider_drag_start(int graph_x, int graph_y) {
  * Called when the mouse button is depressed within the graph window.
  */
 gboolean GtkStatsFlameGraph::
-handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-        bool double_click) {
+handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
   if (graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
-    if (double_click) {
-      // Clicking on whitespace in the graph goes to the parent.
-      on_click_label(get_collector_index());
+    int depth = pixel_to_depth(graph_y);
+    int collector_index = get_bar_collector(depth, graph_x);
+    if (button == 3) {
+      if (collector_index >= 0) {
+        GtkWidget *menu = gtk_menu_new();
+        _popup_index = collector_index;
+
+        std::string label = get_bar_tooltip(depth, graph_x);
+        if (!label.empty()) {
+          GtkWidget *menu_item = gtk_menu_item_new_with_label(label.c_str());
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          gtk_widget_set_sensitive(menu_item, FALSE);
+        }
+
+        {
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Set as Focus");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+          if (collector_index == 0 && get_collector_index() == 0) {
+            gtk_widget_set_sensitive(menu_item, FALSE);
+          } else {
+            g_signal_connect(G_OBJECT(menu_item), "activate",
+              G_CALLBACK(+[] (GtkWidget *widget, gpointer data) {
+                GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
+                self->set_collector_index(self->_popup_index);
+              }),
+              this);
+          }
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            get_thread_index(), collector_index,
+            GtkStatsMonitor::CT_strip_chart, false,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Strip Chart");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            get_thread_index(), collector_index,
+            GtkStatsMonitor::CT_flame_graph,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        gtk_widget_show_all(menu);
+        gtk_menu_popup_at_pointer(GTK_MENU(menu), nullptr);
+        return TRUE;
+      }
+      return FALSE;
+    }
+    else if (double_click && button == 1) {
+      // Double-clicking on a color bar in the graph will zoom the graph into
+      // that collector.
+      set_collector_index(collector_index);
       return TRUE;
     }
   }
@@ -375,21 +444,21 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
     return TRUE;
   }
 
-  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y,
-              double_click);
+  return GtkStatsGraph::handle_button_press(graph_x, graph_y,
+                                            double_click, button);
 }
 
 /**
  * Called when the mouse button is released within the graph window.
  */
 gboolean GtkStatsFlameGraph::
-handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
+handle_button_release(int graph_x, int graph_y) {
   if (_drag_mode == DM_scale) {
     set_drag_mode(DM_none);
     // ReleaseCapture();
-    return handle_motion(widget, graph_x, graph_y);
-
-  } else if (_drag_mode == DM_guide_bar) {
+    return handle_motion(graph_x, graph_y);
+  }
+  else if (_drag_mode == DM_guide_bar) {
     if (graph_x < 0 || graph_x >= get_xsize()) {
       remove_user_guide_bar(_drag_guide_bar);
     } else {
@@ -397,17 +466,30 @@ handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
     }
     set_drag_mode(DM_none);
     // ReleaseCapture();
-    return handle_motion(widget, graph_x, graph_y);
+    return handle_motion(graph_x, graph_y);
   }
 
-  return GtkStatsGraph::handle_button_release(widget, graph_x, graph_y);
+  return GtkStatsGraph::handle_button_release(graph_x, graph_y);
 }
 
 /**
  * Called when the mouse is moved within the graph window.
  */
 gboolean GtkStatsFlameGraph::
-handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
+handle_motion(int graph_x, int graph_y) {
+  if (_drag_mode == DM_none && _potential_drag_mode == DM_none &&
+      graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
+    // When the mouse is over a color bar, highlight it.
+    int depth = pixel_to_depth(graph_y);
+    int collector_index = get_bar_collector(depth, graph_x);
+    on_enter_label(collector_index);
+  }
+  else {
+    // If the mouse is in some drag mode, stop highlighting.
+    _label_stack.highlight_label(-1);
+    on_leave_label(_highlighted_index);
+  }
+
   if (_drag_mode == DM_new_guide_bar) {
     // We haven't created the new guide bar yet; we won't until the mouse
     // comes within the graph's region.
@@ -422,7 +504,25 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
     return TRUE;
   }
 
-  return GtkStatsGraph::handle_motion(widget, graph_x, graph_y);
+  return GtkStatsGraph::handle_motion(graph_x, graph_y);
+}
+
+/**
+ * Called when the mouse has left the graph window.
+ */
+gboolean GtkStatsFlameGraph::
+handle_leave() {
+  _label_stack.highlight_label(-1);
+  on_leave_label(_highlighted_index);
+  return TRUE;
+}
+
+/**
+ * Converts a pixel to a depth index.
+ */
+int GtkStatsFlameGraph::
+pixel_to_depth(int y) const {
+  return (get_ysize() - 1 - y) / (_pixel_scale * 5);
 }
 
 /**
@@ -443,7 +543,7 @@ draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar) {
       cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
       break;
 
-    case GBS_normal:
+    default:
       cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
       break;
     }
@@ -484,7 +584,7 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
     cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
     break;
 
-  case GBS_normal:
+  default:
     cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
     break;
   }
@@ -492,13 +592,13 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   int x = height_to_pixel(bar._height);
   const std::string &label = bar._label;
 
-  PangoLayout *layout = gtk_widget_create_pango_layout(_window, label.c_str());
+  PangoLayout *layout = gtk_widget_create_pango_layout(_scale_area, label.c_str());
   int width, height;
   pango_layout_get_pixel_size(layout, &width, &height);
 
   if (bar._style != GBS_user) {
-    double from_height = pixel_to_height(x - width);
-    double to_height = pixel_to_height(x + width);
+    double from_height = pixel_to_height(x - width * _cr_scale);
+    double to_height = pixel_to_height(x + width * _cr_scale);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);
@@ -509,6 +609,8 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   if (x >= 0 && x < get_xsize()) {
     // Now convert our x to a coordinate within our drawing area.
     int junk_y;
+
+    x /= _cr_scale;
 
     // The x coordinate comes from the graph_window.
     gtk_widget_translate_coordinates(_graph_window, _scale_area,
@@ -537,6 +639,9 @@ toggled_callback(GtkToggleButton *button, gpointer data) {
 
   bool active = gtk_toggle_button_get_active(button);
   self->set_average_mode(active);
+  if (active) {
+    self->start_animation();
+  }
 }
 
 /**

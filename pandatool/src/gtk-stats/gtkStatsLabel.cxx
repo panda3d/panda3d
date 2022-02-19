@@ -50,7 +50,6 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
        G_CALLBACK(query_tooltip_callback), this);
 
   gtk_widget_set_has_tooltip(_widget, TRUE);
-  gtk_widget_show(_widget);
 
   // Set the fg and bg colors on the label.
   LRGBColor rgb = _monitor->get_collector_color(_collector_index);
@@ -71,7 +70,7 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   } else {
     _fg_color = LRGBColor(1);
   }
-  if (bright >= 0.5 * 0.75) {
+  if (bright * 0.75 >= 0.5) {
     _highlight_fg_color = LRGBColor(0);
   } else {
     _highlight_fg_color = LRGBColor(1);
@@ -81,6 +80,7 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _mouse_within = false;
 
   update_text(use_fullname);
+  gtk_widget_show_all(_widget);
 }
 
 /**
@@ -237,7 +237,7 @@ enter_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
  */
 gboolean GtkStatsLabel::
 leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
-          gpointer data) {
+                            gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
   self->set_mouse_within(false);
   return TRUE;
@@ -248,11 +248,13 @@ leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
  */
 gboolean GtkStatsLabel::
 button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
-          gpointer data) {
+                            gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
-  bool double_click = (event->type == GDK_2BUTTON_PRESS);
-  if (double_click) {
+  if (event->type == GDK_2BUTTON_PRESS && event->button == 1) {
     self->_graph->on_click_label(self->_collector_index);
+  }
+  else if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
+    self->_graph->on_popup_label(self->_collector_index);
   }
   return TRUE;
 }
@@ -262,8 +264,8 @@ button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
  */
 gboolean GtkStatsLabel::
 query_tooltip_callback(GtkWidget *widget, gint x, gint y,
-                gboolean keyboard_tip, GtkTooltip *tooltip,
-                gpointer data) {
+                       gboolean keyboard_tip, GtkTooltip *tooltip,
+                       gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
 
   std::string text = self->_graph->get_label_tooltip(self->_collector_index);

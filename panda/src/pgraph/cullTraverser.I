@@ -198,6 +198,7 @@ INLINE void CullTraverser::
 flush_level() {
   _nodes_pcollector.flush_level();
   _geom_nodes_pcollector.flush_level();
+  _pgui_nodes_pcollector.flush_level();
   _geoms_pcollector.flush_level();
   _geoms_occluded_pcollector.flush_level();
 }

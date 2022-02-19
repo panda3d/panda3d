@@ -43,6 +43,8 @@ public:
 
   void update();
 
+  INLINE int get_thread_index() const;
+
   INLINE void set_horizontal_scale(double time_width);
   INLINE double get_horizontal_scale() const;
 
@@ -50,6 +52,8 @@ public:
   INLINE double pixel_to_timestamp(int x) const;
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
+
+  std::string get_label_tooltip(int collector_index) const;
 
 protected:
   void changed_size(int xsize, int ysize);

@@ -95,9 +95,11 @@ PUBLISHED:
   INLINE static void resume_after_pause();
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &sync_name);
 
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
   bool client_connect(std::string hostname, int port);
   void client_disconnect();
@@ -291,10 +293,12 @@ PUBLISHED:
   INLINE static void resume_after_pause() { }
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &);
 
 public:
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
   bool client_connect(std::string hostname, int port);
   void client_disconnect();

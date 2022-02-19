@@ -69,7 +69,7 @@ PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
+//PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
 PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
@@ -86,7 +86,7 @@ PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformSta
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
-PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
+PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
 PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 
@@ -182,9 +182,9 @@ GraphicsEngine(Pipeline *pipeline) :
 GraphicsEngine::
 ~GraphicsEngine() {
 #ifdef DO_PSTATS
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   remove_all_windows();
@@ -714,9 +714,9 @@ render_frame() {
   // to be App.
 #ifdef DO_PSTATS
   _render_frame_pcollector.start();
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   // Make sure our buffers and windows are fully realized before we render a
@@ -799,7 +799,10 @@ render_frame() {
 
     // Now it's time to do any drawing from the main frame--after all of the
     // App code has executed, but before we begin the next frame.
-    _app.do_frame(this, current_thread);
+    {
+      PStatTimer timer(_do_frame_pcollector, current_thread);
+      _app.do_frame(this, current_thread);
+    }
 
     // Grab each thread's mutex again after all windows have flipped, and wait
     // for the thread to finish.
@@ -854,6 +857,7 @@ render_frame() {
     // Reset our pcollectors that track data across the frame.
     CullTraverser::_nodes_pcollector.clear_level();
     CullTraverser::_geom_nodes_pcollector.clear_level();
+    CullTraverser::_pgui_nodes_pcollector.clear_level();
     CullTraverser::_geoms_pcollector.clear_level();
     GeomCacheManager::_geom_cache_active_pcollector.clear_level();
     GeomCacheManager::_geom_cache_record_pcollector.clear_level();
@@ -925,10 +929,14 @@ render_frame() {
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
       if (thread->_thread_state == TS_wait) {
+        // Release before notifying, otherwise the other thread will wake up
+        // and get blocked on the mutex straight away.
         thread->_thread_state = TS_do_frame;
+        thread->_cv_mutex.release();
         thread->_cv_start.notify();
+      } else {
+        thread->_cv_mutex.release();
       }
-      thread->_cv_mutex.release();
     }
 
     // Some threads may still be drawing, so indicate that we have to wait for
@@ -950,7 +958,7 @@ render_frame() {
 
   // Anything that happens outside of GraphicsEngine::render_frame() is deemed
   // to be App.
-  _app_pcollector.start();
+  //_app_pcollector.start();
   _render_frame_pcollector.stop();
 }
 
@@ -1036,8 +1044,8 @@ open_windows() {
       }
 
       thread->_thread_state = TS_do_windows;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -1154,11 +1162,11 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     thread->_gsg = gsg;
     thread->_texture = tex;
     thread->_thread_state = TS_do_extract;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the extraction.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1222,11 +1230,11 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
     thread->_state = state.p();
     thread->_work_groups = work_groups;
     thread->_thread_state = TS_do_compute;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the compute task.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1292,11 +1300,11 @@ do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg) {
   // Now that the draw thread is idle, signal it to do the extraction task.
   thread->_region = region;
   thread->_thread_state = TS_do_screenshot;
-  thread->_cv_start.notify();
   thread->_cv_mutex.release();
+  thread->_cv_start.notify();
   thread->_cv_mutex.acquire();
 
-  //XXX is this necessary, or is acquiring the mutex enough?
+  // Wait for it to finish the extraction.
   while (thread->_thread_state != TS_wait) {
     thread->_cv_done.wait();
   }
@@ -1937,8 +1945,8 @@ do_flip_frame(Thread *current_thread) {
       RenderThread *thread = (*ti).second;
       nassertv(thread->_thread_state == TS_wait);
       thread->_thread_state = TS_do_flip;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -2365,8 +2373,8 @@ terminate_threads(Thread *current_thread) {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_thread_state = TS_terminate;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
   }
 
   // Finally, wait for them all to finish cleaning up.
@@ -2569,13 +2577,20 @@ resort_windows() {
  */
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
-  PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   LightReMutexHolder holder(_wl_lock);
 
-  engine->cull_to_bins(_cull, current_thread);
-  engine->cull_and_draw_together(_cdraw, current_thread);
-  engine->draw_bins(_draw, current_thread);
-  engine->process_events(_window, current_thread);
+  if (!_cull.empty()) {
+    engine->cull_to_bins(_cull, current_thread);
+  }
+  if (!_cdraw.empty()) {
+    engine->cull_and_draw_together(_cdraw, current_thread);
+  }
+  if (!_draw.empty()) {
+    engine->draw_bins(_draw, current_thread);
+  }
+  if (!_window.empty()) {
+    engine->process_events(_window, current_thread);
+  }
 
   // If any GSG's on the list have no more outstanding pointers, clean them
   // up.  (We are in the draw thread for all of these GSG's.)
@@ -2741,8 +2756,11 @@ thread_main() {
       break;
 
     case TS_do_frame:
-      do_pending(_engine, current_thread);
-      do_frame(_engine, current_thread);
+      {
+        PStatTimer timer(_engine->_do_frame_pcollector, current_thread);
+        do_pending(_engine, current_thread);
+        do_frame(_engine, current_thread);
+      }
       break;
 
     case TS_do_flip:

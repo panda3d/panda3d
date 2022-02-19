@@ -288,6 +288,14 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
   }
 
   int index = frame_number - _first_frame_number;
+
+  // It's possible to receive frames out of order.
+  while (index < 0) {
+    _frames.push_front(nullptr);
+    ++index;
+    --_first_frame_number;
+  }
+
   nassertv(index >= 0 && index < (int)_frames.size());
 
   if (_frames[index] != nullptr) {
