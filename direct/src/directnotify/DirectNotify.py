@@ -105,14 +105,14 @@ class DirectNotify:
         for categoryName in self.getCategories():
             self.setDconfigLevel(categoryName)
 
-    def setVerbose(self, info=1, warning=1, debug=1):
+    def setVerbose(self, warning=1, info=1, debug=1):
         """
         Change the severity output of all of the registered categories en masse.
         """
         for categoryName in self.getCategories():
             category = self.getCategory(categoryName)
-            category.setWarning(info)
-            category.setInfo(warning)
+            category.setWarning(warning)
+            category.setInfo(info)
             category.setDebug(debug)
 
     def popupControls(self, tl = None):
