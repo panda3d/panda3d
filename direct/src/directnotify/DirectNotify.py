@@ -105,12 +105,15 @@ class DirectNotify:
         for categoryName in self.getCategories():
             self.setDconfigLevel(categoryName)
 
-    def setVerbose(self):
+    def setVerbose(self, info=1, warning=1, debug=1):
+        """
+        Change the severity output of all of the registered categories en masse.
+        """
         for categoryName in self.getCategories():
             category = self.getCategory(categoryName)
-            category.setWarning(1)
-            category.setInfo(1)
-            category.setDebug(1)
+            category.setWarning(info)
+            category.setInfo(warning)
+            category.setDebug(debug)
 
     def popupControls(self, tl = None):
         # Don't use a regular import, to prevent ModuleFinder from picking
