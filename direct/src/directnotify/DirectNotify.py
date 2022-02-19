@@ -8,12 +8,12 @@ from . import Logger
 class DirectNotify:
     """
     DirectNotify class: this class contains methods for creating
-    mulitple notify categories via a dictionary of Notifiers.
+    multiple notify categories via a dictionary of Notifiers.
     """
 
     def __init__(self):
         """
-        DirectNotify class keeps a dictionary of Notfiers
+        DirectNotify class keeps a dictionary of Notifiers
         """
         self.__categories = { }
         # create a default log file
@@ -30,7 +30,7 @@ class DirectNotify:
         """
         return "DirectNotify categories: %s" % (self.__categories)
 
-    #getters and setters
+    # getters and setters
     def getCategories(self):
         """
         Return list of category dictionary keys
