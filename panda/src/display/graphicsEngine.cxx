@@ -1719,13 +1719,6 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         win->end_frame(GraphicsOutput::FM_render, current_thread);
 
         if (_auto_flip) {
-#ifdef DO_PSTATS
-          // This is a good time to perform a latency query.
-          if (gsg->get_timer_queries_active()) {
-            gsg->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
-          }
-#endif
-
           if (win->flip_ready()) {
             PStatGPUTimer timer(gsg, _flip_pcollector, current_thread);
             win->begin_flip();

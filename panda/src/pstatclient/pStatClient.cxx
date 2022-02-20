@@ -403,6 +403,8 @@ client_main_tick() {
       return;
     }
 
+    ClockObject *clock = ClockObject::get_global_clock();
+
     _impl->client_main_tick();
 
     MultiThingsByName::const_iterator ni =
@@ -412,7 +414,8 @@ client_main_tick() {
       for (vector_int::const_iterator vi = indices.begin();
            vi != indices.end();
            ++vi) {
-        _impl->new_frame(*vi);
+        int frame_number = clock->get_frame_count(get_thread_object(*vi));
+        _impl->new_frame(*vi, frame_number);
       }
     }
   }

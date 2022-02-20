@@ -77,8 +77,6 @@ public:
 
   virtual void close_ime();
 
-  virtual void begin_flip();
-
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
   void receive_windows_message(unsigned int msg, int wparam, int lparam);

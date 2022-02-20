@@ -61,7 +61,6 @@ set(P3GOBJ_HEADERS
   textureReloadRequest.I textureReloadRequest.h
   textureStage.I textureStage.h
   textureStagePool.I textureStagePool.h
-  timerQueryContext.I timerQueryContext.h
   transformBlend.I transformBlend.h
   transformBlendTable.I transformBlendTable.h
   transformTable.I transformTable.h
@@ -141,7 +140,6 @@ set(P3GOBJ_SOURCES
   textureReloadRequest.cxx
   textureStage.cxx
   textureStagePool.cxx
-  timerQueryContext.cxx
   transformBlend.cxx
   transformBlendTable.cxx
   transformTable.cxx

@@ -162,7 +162,7 @@ client_disconnect() {
  * data for the previous frame.
  */
 void PStatClientImpl::
-new_frame(int thread_index) {
+new_frame(int thread_index, int frame_number) {
   double frame_start = get_real_time();
 
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
@@ -185,7 +185,6 @@ new_frame(int thread_index) {
     return;
   }
 
-  int frame_number = -1;
   PStatFrameData frame_data;
 
   if (!pthread->_frame_data.is_empty()) {
@@ -205,11 +204,13 @@ new_frame(int thread_index) {
       }
     }
     pthread->_frame_data.swap(frame_data);
-    frame_number = pthread->_frame_number;
+    if (frame_number == -1) {
+      frame_number = pthread->_frame_number;
+    }
   }
 
   pthread->_frame_data.clear();
-  pthread->_frame_number++;
+  pthread->_frame_number = frame_number + 1;
   _client->start(0, thread_index, frame_start);
 
   // Also record the time for the PStats operation itself.
@@ -217,7 +218,7 @@ new_frame(int thread_index) {
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
   _client->start(pstats_index, current_thread_index, frame_start);
 
-  if (frame_number != -1) {
+  if (!frame_data.is_empty()) {
     transmit_frame_data(thread_index, frame_number, frame_data);
   }
   _client->stop(pstats_index, current_thread_index, get_real_time());
@@ -228,7 +229,7 @@ new_frame(int thread_index) {
  * data.
  */
 void PStatClientImpl::
-add_frame(int thread_index, const PStatFrameData &frame_data) {
+add_frame(int thread_index, int frame_number, const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
@@ -249,16 +250,12 @@ add_frame(int thread_index, const PStatFrameData &frame_data) {
     return;
   }
 
-  int frame_number = pthread->_frame_number++;
-
   // Also record the time for the PStats operation itself.
   int current_thread_index = Thread::get_current_thread()->get_pstats_index();
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
   _client->start(pstats_index, current_thread_index);
 
-  if (frame_number != -1) {
-    transmit_frame_data(thread_index, frame_number, frame_data);
-  }
+  transmit_frame_data(thread_index, frame_number, frame_data);
   _client->stop(pstats_index, current_thread_index);
 }
 
