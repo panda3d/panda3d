@@ -71,7 +71,6 @@ PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
 //PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
-PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_cull_setup_pcollector("Cull:Setup");
@@ -79,15 +78,12 @@ PStatCollector GraphicsEngine::_cull_sort_pcollector("Cull:Sort");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
 PStatCollector GraphicsEngine::_flip_pcollector("Wait:Flip");
-PStatCollector GraphicsEngine::_flip_begin_pcollector("Wait:Flip:Begin");
-PStatCollector GraphicsEngine::_flip_end_pcollector("Wait:Flip:End");
 PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
 PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
-PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 
 PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
@@ -799,10 +795,7 @@ render_frame() {
 
     // Now it's time to do any drawing from the main frame--after all of the
     // App code has executed, but before we begin the next frame.
-    {
-      PStatTimer timer(_do_frame_pcollector, current_thread);
-      _app.do_frame(this, current_thread);
-    }
+    _app.do_frame(this, current_thread);
 
     // Grab each thread's mutex again after all windows have flipped, and wait
     // for the thread to finish.
@@ -1416,14 +1409,9 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
     GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
-        {
-          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-          win->begin_flip();
-        }
-        {
-          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-          win->end_flip();
-        }
+        PStatTimer timer(_flip_pcollector, current_thread);
+        win->begin_flip();
+        win->end_flip();
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
@@ -1446,14 +1434,9 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
 
         if (_auto_flip) {
           if (win->flip_ready()) {
-            {
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-              win->begin_flip();
-            }
-            {
-              PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-              win->end_flip();
-            }
+            PStatTimer timer(_flip_pcollector, current_thread);
+            win->begin_flip();
+            win->end_flip();
           }
         }
       }
@@ -1691,6 +1674,8 @@ cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
  */
 void GraphicsEngine::
 draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+  PStatTimer timer(_draw_pcollector, current_thread);
+
   nassertv(wlist.verify_list());
 
   size_t wlist_size = wlist.size();
@@ -1702,16 +1687,9 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
       GraphicsOutput *host = win->get_host();
       if (host->flip_ready()) {
-        {
-          // We can't use a PStatGPUTimer before begin_frame, so when using
-          // GPU timing, it is advisable to set auto-flip to #t.
-          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-          host->begin_flip();
-        }
-        {
-          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-          host->end_flip();
-        }
+        PStatTimer timer(_flip_pcollector, current_thread);
+        host->begin_flip();
+        host->end_flip();
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
@@ -1749,16 +1727,9 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 #endif
 
           if (win->flip_ready()) {
-            {
-              // begin_flip doesn't do anything interesting, let's not waste
-              // two timer queries on that.
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-              win->begin_flip();
-            }
-            {
-              PStatGPUTimer timer(gsg, GraphicsEngine::_flip_end_pcollector, current_thread);
-              win->end_flip();
-            }
+            PStatGPUTimer timer(gsg, _flip_pcollector, current_thread);
+            win->begin_flip();
+            win->end_flip();
           }
         }
 
@@ -1820,6 +1791,8 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   size_t warray_count = 0;
   GraphicsOutput **warray = (GraphicsOutput **)alloca(warray_size);
 
+  PStatTimer timer(_flip_pcollector, current_thread);
+
   size_t i;
   for (i = 0; i < num_windows; ++i) {
     GraphicsOutput *win = wlist[i];
@@ -1828,14 +1801,12 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       warray[warray_count] = win;
       ++warray_count;
 
-      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
       win->begin_flip();
     }
   }
 
   for (i = 0; i < warray_count; ++i) {
     GraphicsOutput *win = warray[i];
-    PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
     win->end_flip();
   }
 }
@@ -1851,7 +1822,7 @@ ready_flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread)
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
-      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
+      PStatTimer timer(_flip_pcollector, current_thread);
       win->ready_flip();
     }
   }
@@ -2756,11 +2727,8 @@ thread_main() {
       break;
 
     case TS_do_frame:
-      {
-        PStatTimer timer(_engine->_do_frame_pcollector, current_thread);
-        do_pending(_engine, current_thread);
-        do_frame(_engine, current_thread);
-      }
+      do_pending(_engine, current_thread);
+      do_frame(_engine, current_thread);
       break;
 
     case TS_do_flip:
