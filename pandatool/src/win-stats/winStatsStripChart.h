@@ -46,6 +46,8 @@ public:
   virtual void on_click_label(int collector_index);
   virtual void on_popup_label(int collector_index);
   virtual std::string get_label_tooltip(int collector_index) const;
+
+  void set_collector_index(int collector_index);
   void set_vertical_scale(double value_height);
 
 protected:
