@@ -104,6 +104,7 @@ protected:
 
   long _event_mask;
   bool _awaiting_configure;
+  bool _first_configure_done;
   bool _dga_mouse_enabled;
   bool _raw_mouse_enabled;
   Bool _override_redirect;

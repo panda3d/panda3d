@@ -116,6 +116,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 
   _awaiting_configure = false;
+  _first_configure_done = false;
   _dga_mouse_enabled = false;
   _raw_mouse_enabled = false;
   _override_redirect = False;
@@ -1049,7 +1050,11 @@ set_properties_now(WindowProperties &properties) {
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
-    _awaiting_configure = true;
+    if (_first_configure_done) {
+        _awaiting_configure = true;
+    } else {
+        _first_configure_done = true;
+    }
   }
 }
 
