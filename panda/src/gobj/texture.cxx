@@ -1065,7 +1065,7 @@ async_ensure_ram_image(bool allow_compression, int priority) {
   double delay = async_load_delay;
 
   // This texture has not yet been queued to be reloaded.  Queue it up now.
-  task = new FunctionAsyncTask(task_name, [=](AsyncTask *task) {
+  task = task_mgr->add(task_name, [=](AsyncTask *task) {
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
@@ -1076,9 +1076,8 @@ async_ensure_ram_image(bool allow_compression, int priority) {
     }
     return AsyncTask::DS_done;
   });
-  task->set_task_chain("texture_reload");
   task->set_priority(priority);
-  task_mgr->add(task);
+  task->set_task_chain("texture_reload");
   cdataw->_reload_task = task;
   return (AsyncFuture *)task;
 }

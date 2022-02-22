@@ -30,7 +30,6 @@
 #include "clockObject.h"
 #include "ordered_vector.h"
 #include "indirectCompareNames.h"
-#include "functionAsyncTask.h"
 
 /**
  * A class to manage a loose queue of isolated tasks, which can be performed
