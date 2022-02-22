@@ -60,24 +60,27 @@ PUBLISHED:
  * can be obtained using NavMeshBuilder class or can be generated 
  * using the NavMeshParams class by the user. 
  */
-class EXPCL_NAVIGATION NavMesh: public TypedWritableReferenceCount
+class EXPCL_NAVIGATION NavMesh : public TypedWritableReferenceCount
 {
-PUBLISHED:
+public:
+  explicit NavMesh(dtNavMesh *nav_mesh);
 
-  NavMesh(dtNavMesh *nav_mesh);
-  NavMesh(NavMeshParams mesh_params);
-  void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
+PUBLISHED:
+  explicit NavMesh(NavMeshParams mesh_params);
   NavMesh();
   PT(GeomNode) draw_nav_mesh_geom();
-  int get_vert_count() { return _params.vertCount; }
-  int get_poly_count() { return _params.polyCount; }
-  int get_detail_vert_count() { return _params.detailVertsCount; }
-  int get_detail_tri_count() { return _params.detailTriCount; }
+  INLINE int get_vert_count() const;
+  INLINE int get_poly_count() const;
+  INLINE int get_detail_vert_count() const;
+  INLINE int get_detail_tri_count() const;
 
 private:
   dtNavMesh *_nav_mesh;
-  dtNavMeshCreateParams _params;
-  int border_index;
+  dtNavMeshCreateParams _params {};
+  int border_index = 0;
+
+  LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
+  LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
   
 public:
   bool init_nav_mesh();
@@ -111,6 +114,6 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 };
 
-
+#include "navMesh.I"
 
 #endif // NAVMESH_H

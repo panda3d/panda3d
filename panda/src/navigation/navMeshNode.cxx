@@ -23,20 +23,19 @@ TypeHandle NavMeshNode::_type_handle;
 /**
  * NavMeshNode contructor which stores the NavMesh object as _nav_mesh
  */
-NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
-  PandaNode(name)
+NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh) :
+    NavMeshNode(name)
 {
   _nav_mesh = nav_mesh;
+}
+
+NavMeshNode::NavMeshNode(const std::string &name) :
+ PandaNode(name) {
   set_cull_callback();
   // CollisionNodes are hidden by default.
   set_overall_hidden(true);
   set_renderable();
 }
-
-NavMeshNode::NavMeshNode(const std::string &name):
- PandaNode(name) {}
-
-NavMeshNode::~NavMeshNode() {}
 
 /**
  * This function will be called during the cull traversal to perform any

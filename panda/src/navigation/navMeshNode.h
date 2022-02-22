@@ -28,14 +28,16 @@ class EXPCL_NAVIGATION NavMeshNode: public PandaNode
 {
 PUBLISHED:
   NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh);
-  PT(NavMesh) get_nav_mesh() { return _nav_mesh; }
-  PT(GeomNode) draw_nav_mesh_geom() { return _nav_mesh->draw_nav_mesh_geom(); }
+  INLINE PT(GeomNode) draw_nav_mesh_geom();
+  INLINE PT(NavMesh) get_nav_mesh();
+
+  MAKE_PROPERTY(nav_mesh, get_nav_mesh);
 private:
   PT(NavMesh) _nav_mesh;
 
 public:
-  NavMeshNode(const std::string &name);
-  ~NavMeshNode();
+  explicit NavMeshNode(const std::string &name);
+  ~NavMeshNode() = default;
 
 public:
   static TypeHandle get_class_type() {
@@ -70,5 +72,7 @@ protected:
                                        Thread *current_thread) const;
 
 };
+
+#include "navMeshNode.I"
 
 #endif // NAVMESHNODE_H
