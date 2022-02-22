@@ -267,7 +267,7 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
   double oldest_allowable_time = time - _history;
   while (!_frames.empty() &&
          (_frames.front() == nullptr ||
-          _frames.front()->is_empty() ||
+          _frames.front()->is_time_empty() ||
           _frames.front()->get_start() < oldest_allowable_time)) {
     delete _frames.front();
     _frames.pop_front();
