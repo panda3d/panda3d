@@ -4420,6 +4420,7 @@ begin_frame_timing(int frame_number) {
   }
 
   PStatClient *client = PStatClient::get_global_pstats();
+  PStatTimer timer(_wait_timer_pcollector);
 
   _timer_queries_pcollector.clear_level();
 
@@ -4435,12 +4436,14 @@ begin_frame_timing(int frame_number) {
   _deleted_queries.pop_back();
   _glQueryCounter(frame_query, GL_TIMESTAMP);
 
-  // Synchronize the GL time with the PStats clock.
+  // Synchronize the GL time with the PStats clock.  Note that the driver may
+  // arbitrarily decide to wait a long time on this call if the queue is
+  // saturated with work.  Experimentally, it seems that it queries the time
+  // *after* the wait, so we take the CPU time after it returns.  If we find
+  // that some drivers do it differently, we may have to do multiple calls.
   GLint64 gl_time;
-  double cpu_time1 = client->get_real_time();
   _glGetInteger64v(GL_TIMESTAMP, &gl_time);
-  double cpu_time2 = client->get_real_time();
-  double cpu_time = (cpu_time1 + cpu_time2) / 2.0;
+  double cpu_time = client->get_real_time();
 
   // Check if the results from the previous frame are available.  We just need
   // to check whether the last query for each frame is available.
@@ -4486,8 +4489,6 @@ end_frame_timing(const FrameTiming &frame) {
     return;
   }
 
-  PStatTimer timer(_wait_timer_pcollector);
-
   // We represent each GSG as one thread.  In the future we may change this to
   // representing each graphics device as one thread, but OpenGL doesn't really
   // expose this information to us.
@@ -4516,6 +4517,7 @@ end_frame_timing(const FrameTiming &frame) {
         frame_data.add_start(query.second & 0x7fff, time);
       }
     }
+    _deleted_queries.push_back(query.first);
   }
 
   // The end time of the last collector is implicitly the frame's end time.

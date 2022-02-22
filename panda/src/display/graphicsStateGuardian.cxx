@@ -2363,7 +2363,10 @@ calc_projection_mat(const Lens *lens) {
  */
 bool GraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
-  _prepared_objects->begin_frame(this, current_thread);
+  {
+    PStatTimer timer(_prepare_pcollector);
+    _prepared_objects->begin_frame(this, current_thread);
+  }
 
   // We should reset the state to the default at the beginning of every frame.
   // Although this will incur additional overhead, particularly in a simple
