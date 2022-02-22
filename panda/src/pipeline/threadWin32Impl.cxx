@@ -20,8 +20,33 @@
 #include "pointerTo.h"
 #include "config_pipeline.h"
 
+#include <windows.h>
+
 static thread_local Thread *_current_thread = nullptr;
 static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
+
+#if _WIN32_WINNT < 0x0601
+// Requires Windows 7.
+static DWORD (*EnableThreadProfiling)(HANDLE, DWORD, DWORD64, HANDLE *) = nullptr;
+static DWORD (*DisableThreadProfiling)(HANDLE) = nullptr;
+static DWORD (*ReadThreadProfilingData)(HANDLE, DWORD, PPERFORMANCE_DATA data) = nullptr;
+
+static bool init_thread_profiling() {
+  static bool inited = false;
+  if (!inited) {
+    HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+    EnableThreadProfiling = (decltype(EnableThreadProfiling))GetProcAddress(kernel32, "EnableThreadProfiling");
+    DisableThreadProfiling = (decltype(DisableThreadProfiling))GetProcAddress(kernel32, "DisableThreadProfiling");
+    ReadThreadProfilingData = (decltype(ReadThreadProfilingData))GetProcAddress(kernel32, "ReadThreadProfilingData");
+    inited = true;
+  }
+  return (EnableThreadProfiling && DisableThreadProfiling && ReadThreadProfilingData);
+}
+#else
+static bool init_thread_profiling() {
+  return true;
+}
+#endif
 
 /**
  * Called by get_current_thread() if the current thread pointer is null; checks
@@ -171,6 +196,35 @@ bind_thread(Thread *thread) {
 }
 
 /**
+ * Returns the number of context switches that occurred on the current thread.
+ * The first number is the total number of context switches reported by the OS,
+ * and the second number is the number of involuntary context switches (ie. the
+ * thread was scheduled out by the OS), if known, otherwise zero.
+ * Returns true if context switch information was available, false otherwise.
+ */
+bool ThreadWin32Impl::
+get_context_switches(size_t &total, size_t &involuntary) {
+  Thread *thread = get_current_thread();
+  ThreadWin32Impl *self = &thread->_impl;
+
+  if (!self->_profiling && init_thread_profiling()) {
+    DWORD result = EnableThreadProfiling(GetCurrentThread(), THREAD_PROFILING_FLAG_DISPATCH, 0, &self->_profiling);
+    if (result != ERROR_SUCCESS) {
+      self->_profiling = 0;
+      return false;
+    }
+  }
+
+  PERFORMANCE_DATA data = {sizeof(PERFORMANCE_DATA), PERFORMANCE_DATA_VERSION};
+  if (ReadThreadProfilingData(self->_profiling, READ_THREAD_PROFILING_FLAG_DISPATCHING, &data) == ERROR_SUCCESS) {
+    total = data.ContextSwitchCount;
+    involuntary = 0;
+    return true;
+  }
+  return false;
+}
+
+/**
  * The entry point of each thread.
  */
 DWORD ThreadWin32Impl::
@@ -210,6 +264,11 @@ root_func(LPVOID data) {
       self->_status = S_finished;
       self->_cv.notify();
       self->_mutex.unlock();
+    }
+
+    if (self->_profiling != 0) {
+      DisableThreadProfiling(self->_profiling);
+      self->_profiling = 0;
     }
 
     // Now drop the parent object reference that we grabbed in start(). This

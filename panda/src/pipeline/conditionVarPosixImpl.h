@@ -43,6 +43,11 @@ public:
 private:
   MutexPosixImpl &_mutex;
   pthread_cond_t _cvar;
+
+  static int (*_wait_func)(pthread_cond_t *, pthread_mutex_t *);
+  static int (*_timedwait_func)(pthread_cond_t *, pthread_mutex_t *,
+                                const struct timespec *);
+  friend class PStatClientImpl;
 };
 
 #include "conditionVarPosixImpl.I"

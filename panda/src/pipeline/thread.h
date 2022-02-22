@@ -81,6 +81,8 @@ PUBLISHED:
   BLOCKING INLINE static void force_yield();
   BLOCKING INLINE static void consider_yield();
 
+  INLINE static bool get_context_switches(size_t &total, size_t &involuntary);
+
   virtual void output(std::ostream &out) const;
   void output_blocker(std::ostream &out) const;
   static void write_status(std::ostream &out);
@@ -161,6 +163,10 @@ private:
 private:
   static Thread *_main_thread;
   static Thread *_external_thread;
+
+  static void (*_sleep_func)(double);
+  static void (*_yield_func)();
+  friend class PStatClientImpl;
 
 public:
   static TypeHandle get_class_type() {

@@ -52,6 +52,8 @@ public:
   INLINE static void yield();
   INLINE static void consider_yield();
 
+  static bool get_context_switches(size_t &total, size_t &involuntary);
+
 private:
   static DWORD WINAPI root_func(LPVOID data);
 
@@ -69,6 +71,7 @@ private:
   DWORD _thread_id;
   bool _joinable;
   Status _status;
+  HANDLE _profiling;
 };
 
 #include "threadWin32Impl.I"

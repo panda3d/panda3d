@@ -111,6 +111,8 @@ private:
   double _udp_count_factor;
   unsigned int _tcp_count;
   unsigned int _udp_count;
+
+  bool _thread_profiling = false;
 };
 
 #include "pStatClientImpl.I"

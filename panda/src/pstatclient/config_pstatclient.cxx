@@ -82,6 +82,11 @@ ConfigVariableBool pstats_gpu_timing
           "is not usually an accurate reflectino of how long the actual "
           "operation takes on the video card."));
 
+ConfigVariableBool pstats_thread_profiling
+("pstats-thread-profiling", false,
+ PRC_DESC("Set this true to query the system for thread statistics, such as "
+          "the number of context switches and time spent waiting."));
+
 // The rest are different in that they directly control the server, not the
 // client.
 ConfigVariableBool pstats_scroll_mode

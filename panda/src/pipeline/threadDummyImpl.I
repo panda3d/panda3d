@@ -124,3 +124,11 @@ yield() {
 INLINE void ThreadDummyImpl::
 consider_yield() {
 }
+
+/**
+ *
+ */
+INLINE bool ThreadDummyImpl::
+get_context_switches(size_t &, size_t &) {
+  return false;
+}
