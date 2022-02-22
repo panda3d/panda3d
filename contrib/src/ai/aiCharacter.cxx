@@ -54,7 +54,7 @@ update(PN_stdfloat dt) {
 
     _ai_char_np.set_pos(old_pos + _velocity * dt);
 
-    if (steering_force.length() > 0) {
+    if (steering_force.length_squared() > 0) {
       LVecBase3 direction = _steering->_steering_force;
       direction.normalize();
       ai_flip_matrix.xform_vec_in_place(direction);
