@@ -215,4 +215,12 @@ INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LVecBase3) 
   return out;
 };
 
+namespace std {
+  template<>
+  struct hash<FLOATNAME(LVecBase3)> {
+    size_t
+    operator()(const FLOATNAME(LVecBase3) &_vec) const noexcept { return _vec.get_hash(); }
+  };
+}
+
 #include "lvecBase3_src.I"

@@ -22,20 +22,16 @@
 
 TypeHandle NavMesh::_type_handle;
 
-LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
-LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
-LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
-LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
 
 /**
  * NavMesh constructor to initialize member variables.
  */
 NavMesh::NavMesh():
-  _nav_mesh(0) {}
+  _nav_mesh(nullptr) {}
 
 NavMesh::~NavMesh() {
   dtFreeNavMesh(_nav_mesh);
-  _nav_mesh = 0;
+  _nav_mesh = nullptr;
 }
 
 /**
@@ -49,7 +45,7 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh) {
  * NavMesh constructor to store NavMesh Parameters.
  */
 NavMesh::NavMesh(NavMeshParams mesh_params):
-  _nav_mesh(0) {
+  _nav_mesh(nullptr) {
   //memset(&(_params), 0, sizeof(_params));
   _params = {};
 
@@ -91,11 +87,11 @@ NavMesh::NavMesh(NavMeshParams mesh_params):
  * Function to build navigation mesh from the parameters.
  */
 bool NavMesh::init_nav_mesh() {
-  unsigned char *nav_data = 0;
+  unsigned char *nav_data = nullptr;
   int nav_data_size = 0;
 
   if (!dtCreateNavMeshData(&_params, &nav_data, &nav_data_size)) {
-    navigation_cat.error() << "\nCould not build Detour navmesh.\n";
+    navigation_cat.error() << "Could not build Detour navmesh." << std::endl;
     return false;
   }
 
@@ -103,7 +99,7 @@ bool NavMesh::init_nav_mesh() {
 
   if (!_nav_mesh) {
     dtFree(nav_data);
-    navigation_cat.error() << "\nCould not create Detour navmesh\n";
+    navigation_cat.error() << "Could not create Detour navmesh" << std::endl;
     return false;
   }
 
@@ -112,13 +108,13 @@ bool NavMesh::init_nav_mesh() {
   status = _nav_mesh->init(nav_data, nav_data_size, DT_TILE_FREE_DATA);
   if (dtStatusFailed(status)) {
     dtFree(nav_data);
-    navigation_cat.error() << "\nCould not init Detour navmesh\n";
+    navigation_cat.error() << "Could not init Detour navmesh" << std::endl;
     return false;
   }
 }
 
 /**
- * Function to return geomnode for the navigation mesh.
+ * This function generates a GeomNode that visually represents the NavMesh.
  */
 PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 
@@ -145,9 +141,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 
     LVecBase3 vec = mat_from_y.xform_point({x, y, z});
     vertex.add_data3(vec);
-
-    //vertex.add_data3(x, -z, y); //if origingally model is z-up
-    //vertex.add_data3(x, y, z); //if originally model is y-up
     
     colour.add_data4(0, 0, 1, 1);
   }
@@ -163,26 +156,16 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
     const unsigned short* p = &_params.polys[i*nvp * 2];
 
     // Iterate the vertices.
-    //unsigned short vi[3];  // The vertex indices.
     for (int j = 0; j < nvp; ++j) {
       if (p[j] == border_index) {
         break;// End of vertices.
       }
-      if (p[j + nvp] == border_index) {
-        prim->add_vertex(p[j]);
-        // The edge beginning with this vertex is a solid border.
-      }
-      else {
-        prim->add_vertex(p[j]);
-        // The edge beginning with this vertex connects to 
-        // polygon p[j + nvp].
-      }
+      prim->add_vertex(p[j]);// The edge beginning with this vertex is a solid border.
     }
     prim->close_primitive();
 
   }
-  PT(Geom) polymeshgeom;
-  polymeshgeom = new Geom(vdata);
+  PT(Geom) polymeshgeom = new Geom(vdata);
   polymeshgeom->add_primitive(prim);
 
   node->add_geom(polymeshgeom);
@@ -219,49 +202,49 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_bool(_params.buildBvTree);
 
   //the bmin and bmax values
-  for(int i=0;i<3;i++) {
-    dg.add_float32(_params.bmin[i]);
+  for (float f : _params.bmin) {
+    dg.add_float32(f);
   }
-  for(int i=0;i<3;i++) {
-    dg.add_float32(_params.bmax[i]);
+  for (float f : _params.bmax) {
+    dg.add_float32(f);
   }
   
   //POLYGON MESH ATTRIBUTES
 
   //the vertices
-  for(int i=0 ; i < (_params.vertCount) * 3 ; i++) {
+  for (int i=0 ; i < (_params.vertCount) * 3 ; i++) {
     dg.add_uint16(_params.verts[i]);
   }
 
   //the polygon data
-  for(int i=0 ; i < (_params.polyCount) * 2 * (_params.nvp) ;i++) {
+  for (int i=0 ; i < (_params.polyCount) * 2 * (_params.nvp) ;i++) {
     dg.add_uint16(_params.polys[i]);
   }
 
   //the polygon flags
-  for(int i=0 ; i < _params.polyCount ;i++) {
+  for (int i=0 ; i < _params.polyCount ;i++) {
     dg.add_uint16(_params.polyFlags[i]);
   }
 
   //the polygon area IDs
-  for(int i=0 ; i < _params.polyCount ;i++) {
+  for (int i=0 ; i < _params.polyCount ;i++) {
     dg.add_uint8(_params.polyAreas[i]);           
   }
   
   //POLYGON MESH DETAIL ATTRIBUTES
 
   //height detail sub-mesh data
-  for(int i=0 ; i < (_params.polyCount) * 4 ;i++) {
+  for (int i=0 ; i < (_params.polyCount) * 4 ;i++) {
     dg.add_uint32(_params.detailMeshes[i]);
   }
 
   //detail mesh vertices
-  for(int i=0 ; i < (_params.detailVertsCount) * 3 ;i++) {
+  for (int i=0 ; i < (_params.detailVertsCount) * 3 ;i++) {
     dg.add_float32(_params.detailVerts[i]);
   }
 
   //detail mesh vertices
-  for(int i=0 ; i < (_params.detailTriCount) * 4 ;i++) {
+  for (int i=0 ; i < (_params.detailTriCount) * 4 ;i++) {
     dg.add_uint8(_params.detailTris[i]);
   }
 
@@ -307,50 +290,50 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   bool build_bv_tree = scan.get_bool();
 
   float b_min[3];
-  for(int i=0;i<3;i++) {
-    b_min[i] = scan.get_float32();
+  for (float &f : b_min) {
+    f = scan.get_float32();
   }
   float b_max[3];
-  for(int i=0;i<3;i++) {
-    b_max[i] = scan.get_float32();
+  for (float &f : b_max) {
+    f = scan.get_float32();
   }
 
   //POLYGON MESH ATTRIBUTES
 
   unsigned short *verts = new unsigned short[3 * vert_count];
-  for(int i=0 ; i < 3 * vert_count ; i++) {
+  for (int i=0 ; i < 3 * vert_count ; i++) {
     verts[i] = scan.get_uint16();
   }
 
   unsigned short *polys = new unsigned short[poly_count * 2 * nvp];
-  for(int i=0 ; i < poly_count * 2 * nvp ; i++) {
+  for (int i=0 ; i < poly_count * 2 * nvp ; i++) {
     polys[i] = scan.get_uint16();
   }
 
   unsigned short *poly_flags = new unsigned short[poly_count];
-  for(int i=0 ; i < poly_count; i++) {
+  for (int i=0 ; i < poly_count; i++) {
     poly_flags[i] = scan.get_uint16();
   }
 
   unsigned char *poly_areas = new unsigned char[poly_count];
-  for(int i=0 ; i < poly_count; i++) {
+  for (int i=0 ; i < poly_count; i++) {
     poly_areas[i] = scan.get_uint8();
   }
 
   //POLYGON MESH DETAIL ATTRIBUTES
 
   unsigned int *detail_meshes = new unsigned int[poly_count * 4];
-  for(int i=0 ; i < poly_count * 4 ;i++) {
+  for (int i=0 ; i < poly_count * 4 ;i++) {
     detail_meshes[i] = scan.get_uint32();
   }
 
   float *detail_verts = new float[detail_vert_count * 3];
-  for(int i=0 ; i < detail_vert_count * 3 ;i++) {
+  for (int i=0 ; i < detail_vert_count * 3 ;i++) {
     detail_verts[i] = scan.get_float32();
   }
 
   unsigned char *detail_tris = new unsigned char[detail_tri_count * 4];
-  for(int i=0 ; i < detail_tri_count * 4 ;i++) {
+  for (int i=0 ; i < detail_tri_count * 4 ;i++) {
     detail_tris[i] = scan.get_uint8();
   }
 
