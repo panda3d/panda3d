@@ -17,6 +17,7 @@
 
 #include "DetourNavMeshQuery.h"
 #include "navMesh.h"
+#include "navMeshPath.h"
 #include "pta_LVecBase3.h"
 #include "pandaSystem.h"
 #include "nodePath.h"
@@ -26,29 +27,27 @@
  * in a NavMesh object. The queries include functions to find the paths from one 
  * point to another over the mesh.
  */
-class EXPCL_NAVIGATION NavMeshQuery
-{
-
+class EXPCL_NAVIGATION NavMeshQuery {
 PUBLISHED:
-  
-  NavMeshQuery();
-  NavMeshQuery(PT(NavMesh) nav_mesh);
-  bool set_nav_query(PT(NavMesh) nav_mesh);
-  NavMeshQuery(NodePath nav_mesh_node_path);
-  bool set_nav_query(NodePath nav_mesh_node_path);
+  explicit NavMeshQuery(PT(NavMesh) nav_mesh, int max_nodes = 2048);
+  explicit NavMeshQuery(NodePath nav_mesh_node_path, int max_nodes = 2048);
   bool nearest_point(LPoint3 &p);
-  PTA_LVecBase3 find_path(LPoint3 &start, LPoint3 &end);
-  PTA_LVecBase3 find_straight_path(LPoint3 &start, LPoint3 &end, int opt=0);
+  NavMeshPath find_path(LPoint3 &start, LPoint3 &end);
+  NavMeshPath find_straight_path(LPoint3 &start, LPoint3 &end, int opt = 0);
 
 private:
-  
   class dtNavMeshQuery *_nav_query;
   static const int MAX_POLYS = 256;
+
+  LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
+  LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
 
 public:
   
   ~NavMeshQuery();
   
 };
+
+#include "navMeshQuery.I"
 
 #endif // NAVMESHQUERY_H

@@ -20,15 +20,13 @@
 #include "config_navmeshgen.h"
 
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <stdio.h>
 #include <string>
-#include <iostream>
 #include "geom.h"
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 #include "geomTrifans.h"
+#include "collisionNode.h"
 
 #include "string_utils.h"
 
@@ -36,81 +34,38 @@
 /**
  * NavMeshBuilder contructor which initiates the member variables
  */
-NavMeshBuilder::NavMeshBuilder() :
+NavMeshBuilder::NavMeshBuilder(NodePath parent) :
+  _parent(parent),
   _filter_low_hanging_obstacles(true),
   _filter_ledge_spans(true),
   _filter_walkable_low_height_spans(true),
-  _ctx(0),
-  _triareas(0),
-  _solid(0),
-  _chf(0),
-  _cset(0),
-  _pmesh(0),
-  _dmesh(0),
-  _scale(1.0f),
-  _verts(0),
-  _tris(0),
-  _normals(0),
-  _vert_count(0),
-  _tri_count(0) {
+  _scale(1.0f) {
   index_temp = 0;
-  _vertex_map.clear();
-  _vertex_vector.clear();
-  _face_vector.clear();
   _ctx = new rcContext;
   reset_common_settings();
 }
 
 NavMeshBuilder::~NavMeshBuilder() {
-  delete[] _verts;
-  delete[] _normals;
-  delete[] _tris;
-
   cleanup();
-
 }
 
 
 /**
  * Function to add vertex to the vertex array.
  */
-void NavMeshBuilder::add_vertex(float x, float y, float z, int &cap) {
-  if (_vert_count + 1 > cap) {
-    cap = !cap ? 8 : cap * 2;
-    float *nv = new float[cap * 3];
-    if (_vert_count) {
-      memcpy(nv, _verts, _vert_count * 3 * sizeof(float));
-    }
-    delete[] _verts;
-    _verts = nv;
-  }
-  float *dst = &_verts[_vert_count * 3];
-  *dst++ = x * _scale;
-  *dst++ = y * _scale;
-  *dst++ = z * _scale;
-  _vert_count++;
-  _vert_capacity = cap;
+void NavMeshBuilder::add_vertex(float x, float y, float z) {
+  _verts.emplace_back(x);
+  _verts.emplace_back(y);
+  _verts.emplace_back(z);
 }
 
 /**
  * Function to add triangles to the triangles array.
  */
-void NavMeshBuilder::add_triangle(int a, int b, int c, int &cap) {
-  if (_tri_count + 1 > cap) {
-    cap = !cap ? 8 : cap * 2;
-    int *nv = new int[cap * 3];
-    if (_tri_count) {
-      memcpy(nv, _tris, _tri_count * 3 * sizeof(int));
-    }
-    delete[] _tris;
-    _tris = nv;
-  }
-  int *dst = &_tris[_tri_count * 3];
-  *dst++ = a;
-  *dst++ = b;
-  *dst++ = c;
-  _tri_count++;
-  _tri_capacity = cap;
+void NavMeshBuilder::add_triangle(int a, int b, int c) {
+  _tris.emplace_back(a);
+  _tris.emplace_back(b);
+  _tris.emplace_back(c);
 }
 
 /**
@@ -124,7 +79,7 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
   if (_vertex_map.find(v) == _vertex_map.end()) {
 
     LVecBase3 vec = mat_to_y.xform_point(v);
-    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+    add_vertex(vec[0], vec[1], vec[2]);
   
     //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
@@ -137,7 +92,7 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
   v = {b[0], b[1], b[2]};
   if (_vertex_map.find(v) == _vertex_map.end()) {
     LVecBase3 vec = mat_to_y.xform_point(v);
-    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+    add_vertex(vec[0], vec[1], vec[2]);
 
     //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
@@ -150,7 +105,7 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
   v = {c[0], c[1], c[2]};
   if (_vertex_map.find(v) == _vertex_map.end()) {
     LVecBase3 vec = mat_to_y.xform_point(v);
-    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+    add_vertex(vec[0], vec[1], vec[2]);
 
     //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
@@ -160,16 +115,14 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
 
   v3 = _vertex_map[v];
 
-  LVector3 xvx = { float(v1 + 1), float(v2 + 1), float(v3 + 1) };
-  _face_vector.push_back(xvx);
-  add_triangle(v1, v2, v3, _tri_capacity);
+  add_triangle(v1, v2, v3);
 
 }
 
 /**
  * This function adds a custom polygon with equal to or more than three vertices to the input geometry.
  */
-void NavMeshBuilder::add_polygon(PTA_LVecBase3f vec) {
+void NavMeshBuilder::add_polygon(PTA_LVecBase3f &vec) {
   for (int i = 2; i < vec.size(); ++i) {
     add_polygon(LPoint3(vec[i-2]), LPoint3(vec[i-1]), LPoint3(vec[i]));
   }
@@ -179,36 +132,40 @@ void NavMeshBuilder::add_polygon(PTA_LVecBase3f vec) {
  * Function to build vertex array and triangles array from a geom.
  */
 bool NavMeshBuilder::from_geom(PT(Geom) geom) {
-  int vcap = 0;
-  int tcap = 0;
-  
-  process_geom(geom, vcap, tcap);
+  CPT(Geom) const_geom = geom;
+  process_geom(const_geom, TransformState::make_identity());
   _loaded = true;
   return true;
 }
 
 /**
- * Function to build vertex array and triangles array from a node path.
+ * Adds all visible geometry under the given node to the NavMesh.
  */
 bool NavMeshBuilder::from_node_path(NodePath node) {
-  NodePathCollection geom_node_collection = node.find_all_matches("**/+GeomNode");
+  CPT(TransformState) transform = node.get_transform(_parent);
 
-  int vcap = 0;
-  int tcap = 0;
+  process_node_path(node, transform);
 
-  if (node.node()->is_of_type(GeomNode::get_class_type())) {
-    PT(GeomNode) g = DCAST(GeomNode, node.node());
-    process_geom_node(g, vcap, tcap);
-    _loaded = true;
-    return true;
+  for (auto &tri_verts : _tri_verticies) {
+    add_triangle(_vertex_map[tri_verts.a], _vertex_map[tri_verts.b], _vertex_map[tri_verts.c]);
   }
 
-  for (size_t i = 0; i < geom_node_collection.get_num_paths(); ++i) {
+  _loaded = true;
+  return true;
+}
 
-    PT(GeomNode) g = DCAST(GeomNode, geom_node_collection.get_path(i).node());
-    process_geom_node(g, vcap, tcap);
+/**
+ * Adds all collision geometry under the given node to the NavMesh.
+ */
+bool NavMeshBuilder::from_coll_node_path(NodePath node) {
+  CPT(TransformState) transform = node.get_transform(_parent);
 
+  process_coll_node_path(node, transform);
+
+  for (auto &tri_verts : _tri_verticies) {
+    add_triangle(_vertex_map[tri_verts.a], _vertex_map[tri_verts.b], _vertex_map[tri_verts.c]);
   }
+
   _loaded = true;
   return true;
 }
@@ -216,62 +173,53 @@ bool NavMeshBuilder::from_node_path(NodePath node) {
 /**
  * Function to find vertices and faces in a geom primitive.
  */
-void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, int &tcap) {
+void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, CPT(TransformState) &transform) {
 
   GeomVertexReader vertex(vdata, "vertex");
 
   CPT(GeomPrimitive) prim = orig_prim->decompose();
 
-  for (size_t k = 0; k < prim->get_num_primitives(); ++k) {
+  for (int k = 0; k < prim->get_num_primitives(); ++k) {
 
     int s = prim->get_primitive_start(k);
     int e = prim->get_primitive_end(k);
 
-    LVector3 v;
+    LVector3 v1, v2, v3;
     if (e - s == 3) {
       int a = prim->get_vertex(s);
       vertex.set_row(a);
-      v = vertex.get_data3();
-      a = _vertex_map[v];
+      v1 = vertex.get_data3();
+      transform->get_mat().xform_point_general_in_place(v1);
 
       int b = prim->get_vertex(s + 1);
       vertex.set_row(b);
-      v = vertex.get_data3();
-      b = _vertex_map[v];
+      v2 = vertex.get_data3();
+      transform->get_mat().xform_point_general_in_place(v2);
 
       int c = prim->get_vertex(s + 2);
       vertex.set_row(c);
-      v = vertex.get_data3();
-      c = _vertex_map[v];
+      v3 = vertex.get_data3();
+      transform->get_mat().xform_point_general_in_place(v3);
 
-
-      LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
-      _face_vector.push_back(xvx);
-      add_triangle(a, b, c, tcap);
-
-    }
-    else if (e - s > 3) {
-
+      _tri_verticies.emplace_back((TriVertGroup){v1, v2, v3});
+    } else if (e - s > 3) {
       for (int i = s + 2; i < e; ++i) {
         int a = prim->get_vertex(s);
         vertex.set_row(a);
-        v = vertex.get_data3();
-        a = _vertex_map[v];
+        v1 = vertex.get_data3();
+        transform->get_mat().xform_point_general_in_place(v1);
 
         int b = prim->get_vertex(i - 1);
         vertex.set_row(b);
-        v = vertex.get_data3();
-        b = _vertex_map[v];
+        v2 = vertex.get_data3();
+        transform->get_mat().xform_point_general_in_place(v2);
 
         int c = prim->get_vertex(i);
         vertex.set_row(c);
-        v = vertex.get_data3();
-        c = _vertex_map[v];
+        v3 = vertex.get_data3();
+        transform->get_mat().xform_point_general_in_place(v3);
 
-        LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
-        _face_vector.push_back(xvx);
-        add_triangle(a, b, c, tcap);
-
+        _tri_verticies.emplace_back((TriVertGroup){v1, v2, v3});
       }
     }
     else continue;
@@ -283,60 +231,79 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
 /**
  * Function to find vertices from GeomVertexData.
  */
-void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap) {
+void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, CPT(TransformState) &transform) {
   GeomVertexReader vertex(vdata, "vertex");
-  float x, y, z;
 
   while (!vertex.is_at_end()) {
 
     LVector3 v = vertex.get_data3();
-    x = v[0];
-    y = v[1];
-    z = v[2];
+    transform->get_mat().xform_point_general_in_place(v);
     if (_vertex_map.find(v) == _vertex_map.end()) {
       LVecBase3 vec = mat_to_y.xform_point(v);
-      add_vertex(vec[0], vec[1], vec[2], vcap);
-      
-      LVector3 xvx = { v[0],v[2],-v[1] };
+      add_vertex(vec[0], vec[1], vec[2]);
+
       _vertex_map[v] = index_temp++;
       _vertex_vector.push_back(v);
     }
-
   }
-  return;
 }
 
 /**
  * Function to process geom to find primitives.
  */
-void NavMeshBuilder::process_geom(CPT(Geom) geom, int& vcap, int& tcap) {
+void NavMeshBuilder::process_geom(CPT(Geom) &geom, CPT(TransformState) transform) {
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
-  process_vertex_data(vdata, vcap);
+  process_vertex_data(vdata, transform);
 
   for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
-    process_primitive(prim, vdata, tcap);
+    process_primitive(prim, vdata, transform);
   }
-  return;
 }
 
 /**
  * Function to process geom node to find geoms.
  */
-void NavMeshBuilder::process_geom_node(GeomNode *geomnode, int &vcap, int &tcap) {
-
-
-  if (geomnode->get_num_geoms() > 1) {
-    std::cout << "Cannot proceed: Make sure number of geoms = 1\n";
-    return;
-  }
-  for (size_t j = 0; j < geomnode->get_num_geoms(); ++j) {
+void NavMeshBuilder::process_geom_node(PT(GeomNode) &geomnode, CPT(TransformState) &transform) {
+  for (int j = 0; j < geomnode->get_num_geoms(); ++j) {
     CPT(Geom) geom = geomnode->get_geom(j);
-    process_geom(geom, vcap, tcap);
+    process_geom(geom, transform);
   }
-  return;
+}
+
+void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &transform) {
+  if (node.node()->is_of_type(GeomNode::get_class_type())) {
+    PT(GeomNode) g = DCAST(GeomNode, node.node());
+    process_geom_node(g, transform);
+  }
+
+  NodePathCollection children = node.get_children();
+  for (int i=0; i<children.get_num_paths(); i++) {
+    NodePath cnp = children.get_path(i);
+    CPT(TransformState) child_transform = cnp.get_transform();
+    CPT(TransformState) net_transform = transform->compose(child_transform);
+    process_node_path(cnp, net_transform);
+  }
+}
+
+void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform) {
+  if (node.node()->is_of_type(CollisionNode::get_class_type())) {
+    PT(CollisionNode) g = DCAST(CollisionNode, node.node());
+    for (int i = 0; i < g->get_num_solids(); i++) {
+      PT(GeomNode) gn = g->get_solid(i)->get_viz();
+      process_geom_node(gn, transform);
+    }
+  }
+
+  NodePathCollection children = node.get_children();
+  for (int i=0; i<children.get_num_paths(); i++) {
+    NodePath cnp = children.get_path(i);
+    CPT(TransformState) child_transform = cnp.get_transform();
+    CPT(TransformState) net_transform = transform->compose(child_transform);
+    process_coll_node_path(cnp, net_transform);
+  }
 }
 
 /**
@@ -384,23 +351,21 @@ PT(NavMesh) NavMeshBuilder::build() {
   if (!loaded_geom()) {
 
     _ctx->log(RC_LOG_ERROR, "build(): Input mesh is not specified.");
-    navmeshgen_cat.error() << "\nbuild(): Input mesh is not specified.\n";
+    navmeshgen_cat.error() << "build(): Input mesh is not specified." << std::endl;
 
     return _nav_mesh_obj;
   }
 
   cleanup();
 
-  rcCalcBounds(get_verts(), get_vert_count(), _mesh_bMin, _mesh_bMax);
+  rcCalcBounds(_verts.data(), get_vert_count(), _mesh_bMin, _mesh_bMax);
 
   const float *bmin = _mesh_bMin;
   const float *bmax = _mesh_bMax;
-  const float *verts = get_verts();
-  const int nverts = get_vert_count();
-  const int *tris = get_tris();
-  const int ntris = get_tri_count();
   navmeshgen_cat.info() << "BMIN: " << bmin[0] << " " << bmin[1] << std::endl;
   navmeshgen_cat.info() << "BMAX: " << bmax[0] << " " << bmax[1] << std::endl;
+  navmeshgen_cat.info() << "vert count: " << get_vert_count() << std::endl;
+
   //
   // Step 1. Initialize build config.
   //
@@ -434,11 +399,11 @@ PT(NavMesh) NavMeshBuilder::build() {
   _ctx->startTimer(RC_TIMER_TOTAL);
 
   _ctx->log(RC_LOG_PROGRESS, "Building navigation mesh:");
-  navmeshgen_cat.info() << "\nBuilding navigation mesh:\n";
+  navmeshgen_cat.info() << "Building navigation mesh:" << std::endl;
   _ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", _cfg.width, _cfg.height);
-  navmeshgen_cat.info() << "\n - " << _cfg.width << " x " << _cfg.height << " cells\n";
-  _ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts / 1000.0f, ntris / 1000.0f);
-  navmeshgen_cat.info() << "\n - " << nverts / 1000.0f << "K vetrs, " << ntris / 1000.0f << "K tris\n";
+  navmeshgen_cat.info() << " - " << _cfg.width << " x " << _cfg.height << " cells" << std::endl;
+  _ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", get_vert_count() / 1000.0, get_tri_count() / 1000.0);
+  navmeshgen_cat.info() << " - " << get_vert_count() / 1000.0 << "K vetrs, " << get_tri_count() / 1000.0 << "K tris" << std::endl;
 
   //
   // Step 2. Rasterize input polygon soup.
@@ -448,35 +413,35 @@ PT(NavMesh) NavMeshBuilder::build() {
   _solid = rcAllocHeightfield();
   if (!_solid) {
     _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'solid'.");
-    navmeshgen_cat.error() << "\nbuild(): Out of memory 'solid'.\n";
+    navmeshgen_cat.error() << "build(): Out of memory 'solid'." << std::endl;
     return _nav_mesh_obj;
   }
   if (!rcCreateHeightfield(_ctx, *_solid, _cfg.width, _cfg.height, _cfg.bmin, _cfg.bmax, _cfg.cs, _cfg.ch)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not create solid heightfield.");
-    navmeshgen_cat.error() << "\nbuild(): Could not create solid heightfield.\n";
+    navmeshgen_cat.error() << "build(): Could not create solid heightfield." << std::endl;
     return _nav_mesh_obj;
   }
 
   // Allocate array that can hold triangle area types.
   // If you have multiple meshes you need to process, allocate
-  // and array which can hold the max number of triangles you need to process.
-  _triareas = new unsigned char[ntris];
+  // an array which can hold the max number of triangles you need to process.
+  _triareas = new unsigned char[get_tri_count()];
   if (!_triareas) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory '_triareas' (%d).", ntris);
-    navmeshgen_cat.error() << "\nbuild(): Out of memory '_triareas' (" << ntris << ").\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory '_triareas' (%d).", get_tri_count());
+    navmeshgen_cat.error() << "build(): Out of memory '_triareas' (" << get_tri_count() << ")." << std::endl;
     return _nav_mesh_obj;
   }
 
   // Find triangles which are walkable based on their slope and rasterize them.
   // If your input data is multiple meshes, you can transform them here, calculate
   // the are type for each of the meshes and rasterize them.
-  memset(_triareas, 0, ntris * sizeof(unsigned char));
+  memset(_triareas, 0, get_tri_count() * sizeof(unsigned char));
   
-  rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, verts, nverts, tris, ntris, _triareas);
+  rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, _verts.data(), get_vert_count(), _tris.data(), get_tri_count(), _triareas);
 
-  if (!rcRasterizeTriangles(_ctx, verts, nverts, tris, _triareas, ntris, *_solid, _cfg.walkableClimb)) {
+  if (!rcRasterizeTriangles(_ctx, _verts.data(), get_vert_count(), _tris.data(), _triareas, get_tri_count(), *_solid, _cfg.walkableClimb)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not rasterize triangles.");
-    navmeshgen_cat.error() << "\nbuild(): Could not rasterize triangles.\n";
+    navmeshgen_cat.error() << "build(): Could not rasterize triangles." << std::endl;
     return _nav_mesh_obj;
   }
 
@@ -506,12 +471,12 @@ PT(NavMesh) NavMeshBuilder::build() {
   _chf = rcAllocCompactHeightfield();
   if (!_chf) {
     _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'chf'.");
-    navmeshgen_cat.error() << "\nbuild(): Out of memory 'chf'.\n";
+    navmeshgen_cat.error() << "build(): Out of memory 'chf'." << std::endl;
     return _nav_mesh_obj;
   }
   if (!rcBuildCompactHeightfield(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid, *_chf)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not build compact data.");
-    navmeshgen_cat.error() << "\nbuild(): Could not build compact data.\n";
+    navmeshgen_cat.error() << "build(): Could not build compact data." << std::endl;
     return _nav_mesh_obj;
   }
 
@@ -519,7 +484,7 @@ PT(NavMesh) NavMeshBuilder::build() {
   // Erode the walkable area by agent radius.
   if (!rcErodeWalkableArea(_ctx, _cfg.walkableRadius, *_chf)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not erode.");
-    navmeshgen_cat.error() << "\nbuild(): Could not erode.\n";
+    navmeshgen_cat.error() << "build(): Could not erode." << std::endl;
     return _nav_mesh_obj;
   }
 
@@ -550,37 +515,39 @@ PT(NavMesh) NavMeshBuilder::build() {
   //     if you have large open areas with small obstacles (not a problem if you use tiles)
   //   * good choice to use for tiled navmesh with medium and small sized tiles
 
-  if (_partition_type == SAMPLE_PARTITION_WATERSHED) {
-    // Prepare for region partitioning, by calculating distance field along the walkable surface.
-    if (!rcBuildDistanceField(_ctx, *_chf)) {
-      _ctx->log(RC_LOG_ERROR, "build(): Could not build distance field.");
-      navmeshgen_cat.error() << "\nbuild(): Could not build distance field.\n";
-      return _nav_mesh_obj;
-    }
+  switch (_partition_type) {
+    case SAMPLE_PARTITION_WATERSHED:
+      // Prepare for region partitioning, by calculating distance field along the walkable surface.
+      if (!rcBuildDistanceField(_ctx, *_chf)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build distance field.");
+        navmeshgen_cat.error() << "build(): Could not build distance field." << std::endl;
+        return _nav_mesh_obj;
+      }
 
-    // Partition the walkable surface into simple regions without holes.
-    if (!rcBuildRegions(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "build(): Could not build watershed regions.");
-      navmeshgen_cat.error() << "\nbuild(): Could not build watershed regions.\n";
-      return _nav_mesh_obj;
-    }
-  }
-  else if (_partition_type == SAMPLE_PARTITION_MONOTONE) {
-    // Partition the walkable surface into simple regions without holes.
-    // Monotone partitioning does not need distancefield.
-    if (!rcBuildRegionsMonotone(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "build(): Could not build monotone regions.");
-      navmeshgen_cat.error() << "\nbuild(): Could not build monotone regions.\n";
-      return _nav_mesh_obj;
-    }
-  }
-  else { // SAMPLE_PARTITION_LAYERS
-    // Partition the walkable surface into simple regions without holes.
-    if (!rcBuildLayerRegions(_ctx, *_chf, 0, _cfg.minRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "build(): Could not build layer regions.");
-      navmeshgen_cat.error() << "\nbuild(): Could not build layer regions.\n";
-      return _nav_mesh_obj;
-    }
+      // Partition the walkable surface into simple regions without holes.
+      if (!rcBuildRegions(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build watershed regions.");
+        navmeshgen_cat.error() << "build(): Could not build watershed regions." << std::endl;
+        return _nav_mesh_obj;
+      }
+      break;
+    case SAMPLE_PARTITION_MONOTONE:
+      // Partition the walkable surface into simple regions without holes.
+      // Monotone partitioning does not need distancefield.
+      if (!rcBuildRegionsMonotone(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build monotone regions.");
+        navmeshgen_cat.error() << "build(): Could not build monotone regions." << std::endl;
+        return _nav_mesh_obj;
+      }
+      break;
+    case SAMPLE_PARTITION_LAYERS:
+      // Partition the walkable surface into simple regions without holes.
+      if (!rcBuildLayerRegions(_ctx, *_chf, 0, _cfg.minRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build layer regions.");
+        navmeshgen_cat.error() << "build(): Could not build layer regions." << std::endl;
+        return _nav_mesh_obj;
+      }
+      break;
   }
 
   //
@@ -591,12 +558,12 @@ PT(NavMesh) NavMeshBuilder::build() {
   _cset = rcAllocContourSet();
   if (!_cset) {
     _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'cset'.");
-    navmeshgen_cat.error() << "\nbuild(): Out of memory 'cset'.\n";
+    navmeshgen_cat.error() << "build(): Out of memory 'cset'." << std::endl;
     return _nav_mesh_obj;
   }
   if (!rcBuildContours(_ctx, *_chf, _cfg.maxSimplificationError, _cfg.maxEdgeLen, *_cset)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not create contours.");
-    navmeshgen_cat.error() << "\nbuild(): Could not create contours.\n";
+    navmeshgen_cat.error() << "build(): Could not create contours." << std::endl;
     return _nav_mesh_obj;
   }
 
@@ -608,12 +575,12 @@ PT(NavMesh) NavMeshBuilder::build() {
   _pmesh = rcAllocPolyMesh();
   if (!_pmesh) {
     _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmesh'.");
-    navmeshgen_cat.error() << "\nbuild(): Out of memory 'pmesh'.\n";
+    navmeshgen_cat.error() << "build(): Out of memory 'pmesh'." << std::endl;
     return _nav_mesh_obj;
   }
   if (!rcBuildPolyMesh(_ctx, *_cset, _cfg.maxVertsPerPoly, *_pmesh)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not triangulate contours.");
-    navmeshgen_cat.error() << "\nbuild(): Could not triangulate contours.\n";
+    navmeshgen_cat.error() << "build(): Could not triangulate contours." << std::endl;
     return _nav_mesh_obj;
   }
 
@@ -624,13 +591,13 @@ PT(NavMesh) NavMeshBuilder::build() {
   _dmesh = rcAllocPolyMeshDetail();
   if (!_dmesh) {
     _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmdtl'.");
-    navmeshgen_cat.error() << "\nbuild(): Out of memory 'pmdt1'.\n";
+    navmeshgen_cat.error() << "build(): Out of memory 'pmdt1'." << std::endl;
     return _nav_mesh_obj;
   }
 
   if (!rcBuildPolyMeshDetail(_ctx, *_pmesh, *_chf, _cfg.detailSampleDist, _cfg.detailSampleMaxError, *_dmesh)) {
     _ctx->log(RC_LOG_ERROR, "build(): Could not build detail mesh.");
-    navmeshgen_cat.error() << "\nbuild(): Could not build detail mesh.\n";
+    navmeshgen_cat.error() << "build(): Could not build detail mesh." << std::endl;
     return _nav_mesh_obj;
   }
   navmeshgen_cat.info() << "Number of vertices: " << _pmesh->nverts << std::endl;
@@ -755,17 +722,7 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
       if (p[j] == RC_MESH_NULL_IDX) {
         break;// End of vertices.
       }
-      if (p[j + nvp] == RC_MESH_NULL_IDX) {
-        prim->add_vertex(p[j]);
-        // The edge beginning with this vertex is a solid border.
-      }
-      else {
-        prim->add_vertex(p[j]);
-        // The edge beginning with this vertex connects to 
-        // polygon p[j + nvp].
-      }
-      //std::cout << "p[j]: " << p[j] << std::endl;
-
+      prim->add_vertex(p[j]);// The edge beginning with this vertex is a solid border.
     }
     prim->close_primitive();
 
