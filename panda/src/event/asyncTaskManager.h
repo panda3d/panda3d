@@ -66,7 +66,8 @@ PUBLISHED:
 
   void add(AsyncTask *task);
 #ifndef CPPPARSER
-  INLINE AsyncTask *add(const std::string &name, FunctionAsyncTask::TaskFunction function);
+  template<class Callable>
+  INLINE AsyncTask *add(const std::string &name, Callable callable);
 #endif
   bool has_task(AsyncTask *task) const;
 
