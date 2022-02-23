@@ -222,6 +222,20 @@ consider_yield() {
   ThreadImpl::consider_yield();
 }
 
+/**
+ * Equivalent to the pause instruction on x86 or the yield instruction on ARM,
+ * to be called in spin loops.
+ */
+INLINE void Thread::
+relax() {
+#ifdef _MSC_VER
+  YieldProcessor();
+#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64))
+  __asm__ __volatile__("pause");
+#elif defined(__arm__) || defined(__aarch64__)
+  __asm__ __volatile__ ("yield" ::: "memory");
+#endif
+}
 
 /**
  * Returns thread statistics.  The first number is the total number of context

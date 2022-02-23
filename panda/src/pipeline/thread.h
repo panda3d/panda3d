@@ -80,6 +80,7 @@ PUBLISHED:
 
   BLOCKING INLINE static void force_yield();
   BLOCKING INLINE static void consider_yield();
+  BLOCKING INLINE static void relax();
 
   INLINE static bool get_context_switches(size_t &total, size_t &involuntary);
 
