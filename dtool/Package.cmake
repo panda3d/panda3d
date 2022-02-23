@@ -47,6 +47,27 @@ if(THIRDPARTY_DIRECTORY)
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
 
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-arm64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-x64)
+    else()
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-a)
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-arm64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-x64)
+    else()
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-a)
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
+
   else()
     message(FATAL_ERROR
       "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
