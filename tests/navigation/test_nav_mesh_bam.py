@@ -26,7 +26,7 @@ def test_nav_mesh_bam():
     vertex.add_data3((100, 0, 3))
     vertex.add_data3((100, 200, 1))
     vertex.add_data3((50, 50, 4))
-    
+
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
     prim.close_primitive()
@@ -41,13 +41,13 @@ def test_nav_mesh_bam():
     node.add_geom(geom)
 
     scene = core.NodePath(node)
-    
+
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
     builder.from_node_path(scene)
-    
+
     navmesh = builder.build()
 
     vertCount = navmesh.get_vert_count()
@@ -71,7 +71,7 @@ def test_nav_mesh_node_bam():
     vertex.add_data3((100, 0, 3))
     vertex.add_data3((100, 200, 1))
     vertex.add_data3((50, 50, 4))
-    
+
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
     prim.close_primitive()
@@ -86,13 +86,13 @@ def test_nav_mesh_node_bam():
     node.add_geom(geom)
 
     scene = core.NodePath(node)
-    
+
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
     builder.from_node_path(scene)
-    
+
     navmesh = builder.build()
 
     navmeshnode = navigation.NavMeshNode("navmeshnode",navmesh)
@@ -117,7 +117,7 @@ def test_nav_query_bam():
     vertex.add_data3((100, 0, 3))
     vertex.add_data3((100, 200, 1))
     vertex.add_data3((50, 50, 4))
-    
+
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
     prim.close_primitive()
@@ -132,25 +132,25 @@ def test_nav_query_bam():
     node.add_geom(geom)
 
     scene = core.NodePath(node)
-    
+
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
     builder.from_node_path(scene)
-    
+
     navmesh = builder.build()
 
     query = navigation.NavMeshQuery(navmesh)
-    pos = core.LPoint3(50,55,3);
+    pos = core.LPoint3(50, 55, 3)
     query.nearest_point(pos)
-    path = query.find_path(pos, core.LPoint3(100,0,3))
+    path = query.find_path(pos, core.LPoint3(100, 0, 3))
 
     navmeshBam = reconstruct(navmesh)
     queryBam = navigation.NavMeshQuery(navmeshBam)
-    posBam = core.LPoint3(50,55,3);
+    posBam = core.LPoint3(50, 55, 3)
     queryBam.nearest_point(posBam)
-    pathBam = query.find_path(posBam, core.LPoint3(100,0,3))
+    pathBam = query.find_path(posBam, core.LPoint3(100, 0, 3))
 
     assert pos == posBam
-    assert len(path) == len(pathBam)
+    assert path == pathBam
