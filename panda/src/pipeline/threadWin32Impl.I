@@ -76,7 +76,7 @@ sleep(double seconds) {
  */
 INLINE void ThreadWin32Impl::
 yield() {
-  Sleep(1);
+  Sleep(0);
 }
 
 /**
