@@ -46,6 +46,7 @@ set(P3DTOOLBASE_HEADERS
   typeRegistryNode.I typeRegistryNode.h
   typedObject.I typedObject.h
   pallocator.T pallocator.h
+  patomic.h patomic.I
   pdeque.h plist.h pmap.h pset.h
   pvector.h epvector.h
   lookup3.h
@@ -70,6 +71,7 @@ set(P3DTOOLBASE_SOURCES
   mutexWin32Impl.cxx
   mutexSpinlockImpl.cxx
   neverFreeMemory.cxx
+  patomic.cxx
   pdtoa.cxx
   pstrtod.cxx
   register_type.cxx

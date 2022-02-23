@@ -19,6 +19,19 @@
 
 #include <atomic>
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#endif
+
+#ifdef __linux__
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
+
 #if defined(THREAD_DUMMY_IMPL) || defined(THREAD_SIMPLE_IMPL)
 
 /**
@@ -73,25 +86,7 @@ private:
   T _value;
 };
 
-/**
- * Dummy implementation of std::atomic_flag that does not do any atomic
- * operations.
- */
-struct EXPCL_DTOOL_DTOOLBASE patomic_flag {
-  constexpr patomic_flag() noexcept = default;
-
-  patomic_flag(const patomic_flag &) = delete;
-  patomic_flag &operator=(const patomic_flag &) = delete;
-
-  ALWAYS_INLINE bool test_and_set(std::memory_order order = std::memory_order_seq_cst) noexcept;
-  ALWAYS_INLINE void clear(std::memory_order order = std::memory_order_seq_cst) noexcept;
-
-  bool __internal_flag = false;
-};
-
 #define patomic_thread_fence(order) (std::atomic_signal_fence((order)))
-
-#include "patomic.I"
 
 #else
 
@@ -99,10 +94,78 @@ struct EXPCL_DTOOL_DTOOLBASE patomic_flag {
 template<class T>
 using patomic = std::atomic<T>;
 
-typedef std::atomic_flag patomic_flag;
-
 #define patomic_thread_fence(order) (std::atomic_thread_fence((order)))
 
 #endif
+
+/**
+ * Implementation of atomic_unsigned_lock_free with C++20 semantics.
+ */
+class EXPCL_DTOOL_DTOOLBASE patomic_unsigned_lock_free : public patomic<uint32_t> {
+public:
+  constexpr patomic_unsigned_lock_free() noexcept;
+  constexpr patomic_unsigned_lock_free(uint32_t desired) noexcept;
+
+  INLINE void wait(uint32_t old, std::memory_order order = std::memory_order_seq_cst) const noexcept;
+  ALWAYS_INLINE void notify_one() noexcept;
+  ALWAYS_INLINE void notify_all() noexcept;
+};
+
+/**
+ * Implementation of atomic_signed_lock_free with C++20 semantics.
+ */
+class EXPCL_DTOOL_DTOOLBASE patomic_signed_lock_free : public patomic<int32_t> {
+public:
+  constexpr patomic_signed_lock_free() noexcept;
+  constexpr patomic_signed_lock_free(int32_t desired) noexcept;
+
+  INLINE void wait(int32_t old, std::memory_order order = std::memory_order_seq_cst) const noexcept;
+  ALWAYS_INLINE void notify_one() noexcept;
+  ALWAYS_INLINE void notify_all() noexcept;
+};
+
+/**
+ * Implementation of atomic_flag with C++20 semantics.
+ */
+class EXPCL_DTOOL_DTOOLBASE patomic_flag {
+public:
+  constexpr patomic_flag() noexcept = default;
+  constexpr patomic_flag(bool desired) noexcept;
+
+  patomic_flag(const patomic_flag &) = delete;
+  patomic_flag &operator=(const patomic_flag &) = delete;
+
+  ALWAYS_INLINE void clear(std::memory_order order = std::memory_order_seq_cst) noexcept;
+  ALWAYS_INLINE bool test_and_set(std::memory_order order = std::memory_order_seq_cst) noexcept;
+  ALWAYS_INLINE bool test(std::memory_order order = std::memory_order_seq_cst) const noexcept;
+
+  ALWAYS_INLINE void wait(bool old, std::memory_order order = std::memory_order_seq_cst) const noexcept;
+  ALWAYS_INLINE void notify_one() noexcept;
+  ALWAYS_INLINE void notify_all() noexcept;
+
+private:
+  patomic_unsigned_lock_free _value { 0u };
+};
+
+#ifndef CPPPARSER
+ALWAYS_INLINE void patomic_wait(const volatile int32_t *value, int32_t old);
+ALWAYS_INLINE void patomic_notify_one(volatile int32_t *value);
+ALWAYS_INLINE void patomic_notify_all(volatile int32_t *value);
+
+ALWAYS_INLINE void patomic_wait(const volatile uint32_t *value, uint32_t old);
+ALWAYS_INLINE void patomic_notify_one(volatile uint32_t *value);
+ALWAYS_INLINE void patomic_notify_all(volatile uint32_t *value);
+
+#ifdef _WIN32
+EXPCL_DTOOL_DTOOLBASE extern BOOL (*_patomic_wait_func)(volatile VOID *, PVOID, SIZE_T, DWORD);
+EXPCL_DTOOL_DTOOLBASE extern void (*_patomic_wake_one_func)(PVOID);
+EXPCL_DTOOL_DTOOLBASE extern void (*_patomic_wake_all_func)(PVOID);
+#elif !defined(__linux__) && defined(HAVE_POSIX_THREADS)
+EXPCL_DTOOL_DTOOLBASE void _patomic_wait(const volatile uint32_t *value, uint32_t old);
+EXPCL_DTOOL_DTOOLBASE void _patomic_notify_all(volatile uint32_t *value);
+#endif
+
+#include "patomic.I"
+#endif  // CPPPARSER
 
 #endif
