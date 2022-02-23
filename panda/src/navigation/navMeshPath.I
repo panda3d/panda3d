@@ -35,3 +35,13 @@ INLINE LPoint3 NavMeshPath::
 get_point(int index) const {
   return _points[index];
 }
+
+INLINE bool NavMeshPath::
+operator == (const NavMeshPath &other) const {
+  return _points == other.get_points();
+}
+
+INLINE bool NavMeshPath::
+operator != (const NavMeshPath &other) const {
+  return _points != other.get_points();
+}

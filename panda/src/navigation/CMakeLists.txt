@@ -1,9 +1,13 @@
 set(P3NAVIGATION_HEADERS
         config_navigation.h
         navMesh.h
+        navMesh.I
         navMeshNode.h
+        navMeshNode.I
         navMeshQuery.h
+        navMeshQuery.I
         navMeshPath.h
+        navMeshPath.I
         )
 
 set(P3NAVIGATION_SOURCES

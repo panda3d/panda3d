@@ -37,6 +37,9 @@ PUBLISHED:
   PN_stdfloat get_length();
   MAKE_PROPERTY(length, get_length);
 
+  INLINE bool operator == (const NavMeshPath &other) const;
+  INLINE bool operator != (const NavMeshPath &other) const;
+
 private:
   pvector<LPoint3> _points;
 

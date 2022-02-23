@@ -74,7 +74,7 @@ def test_poly_mesh():
     
     nverts = builder.get_pmesh_vert_count()
     npolys = builder.get_pmesh_poly_count()
-    maxpolys = builder.get_pmesh_max_poly_count()
     assert nverts == 230
     assert npolys == 112
-    assert maxpolys == 226
+    assert builder.vert_count == 6
+    assert builder.tri_count == 4
