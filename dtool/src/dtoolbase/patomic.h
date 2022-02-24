@@ -103,6 +103,8 @@ using patomic = std::atomic<T>;
  */
 class EXPCL_DTOOL_DTOOLBASE patomic_unsigned_lock_free : public patomic<uint32_t> {
 public:
+  typedef uint32_t value_type;
+
   constexpr patomic_unsigned_lock_free() noexcept;
   constexpr patomic_unsigned_lock_free(uint32_t desired) noexcept;
 
@@ -116,6 +118,8 @@ public:
  */
 class EXPCL_DTOOL_DTOOLBASE patomic_signed_lock_free : public patomic<int32_t> {
 public:
+  typedef int32_t value_type;
+
   constexpr patomic_signed_lock_free() noexcept;
   constexpr patomic_signed_lock_free(int32_t desired) noexcept;
 
