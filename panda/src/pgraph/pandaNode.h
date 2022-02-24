@@ -39,7 +39,6 @@
 #include "pnotify.h"
 #include "updateSeq.h"
 #include "deletedChain.h"
-#include "pandaNodeChain.h"
 #include "pStatCollector.h"
 #include "copyOnWriteObject.h"
 #include "copyOnWritePointer.h"
