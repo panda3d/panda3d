@@ -1,7 +1,7 @@
-from panda3d import navmeshgen
 from panda3d import core
 
-def test_input_geom():
+
+def test_input_geom(navmeshgen):
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -38,7 +38,7 @@ def test_input_geom():
     assert vcount == 6
     assert tcount == 4
 
-def test_poly_mesh():
+def test_poly_mesh(navmeshgen):
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))

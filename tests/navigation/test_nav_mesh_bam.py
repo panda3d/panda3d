@@ -1,6 +1,5 @@
-from panda3d import navigation
-from panda3d import navmeshgen
 from panda3d import core
+
 
 def reconstruct(object):
     # Create a temporary buffer, which we first write the object into, and
@@ -19,7 +18,7 @@ def reconstruct(object):
     return object
 
 
-def test_nav_mesh_bam():
+def test_nav_mesh_bam(navmeshgen, navigation):
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -64,7 +63,7 @@ def test_nav_mesh_bam():
     assert detailTriCount == navmeshBam.get_detail_tri_count()
 
 
-def test_nav_mesh_node_bam():
+def test_nav_mesh_node_bam(navmeshgen, navigation):
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -110,7 +109,7 @@ def test_nav_mesh_node_bam():
     assert detailTriCount == navmeshNodeBam.get_nav_mesh().get_detail_tri_count()
 
 
-def test_nav_query_bam():
+def test_nav_query_bam(navmeshgen, navigation):
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
