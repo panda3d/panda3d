@@ -15,8 +15,8 @@
 #ifndef NAVMESH_H
 #define NAVMESH_H
 
-#include "DetourNavMesh.h"
-#include "DetourNavMeshBuilder.h"
+#include "recastnavigation/DetourNavMesh.h"
+#include "recastnavigation/DetourNavMeshBuilder.h"
 #include "typedWritableReferenceCount.h"
 #include "pandaSystem.h"
 #include "lmatrix.h"

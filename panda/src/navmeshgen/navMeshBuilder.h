@@ -15,7 +15,7 @@
 #ifndef NAVMESHBUILDER_H
 #define NAVMESHBUILDER_H
 
-#include "Recast.h"
+#include "recastnavigation/Recast.h"
 #include <string>
 #include <unordered_map>
 #include <tuple>
