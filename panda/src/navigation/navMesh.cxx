@@ -111,6 +111,8 @@ bool NavMesh::init_nav_mesh() {
     navigation_cat.error() << "Could not init Detour navmesh" << std::endl;
     return false;
   }
+
+  return true;
 }
 
 /**
