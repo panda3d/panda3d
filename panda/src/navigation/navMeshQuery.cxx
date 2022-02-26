@@ -13,7 +13,7 @@
 
 #include "navMeshQuery.h"
 #include "navMeshNode.h"
-#include "DetourNavMeshQuery.h"
+#include "recastnavigation/DetourNavMeshQuery.h"
 #include "lvecBase3.h"
 #include "config_navigation.h"
 #include <iostream>

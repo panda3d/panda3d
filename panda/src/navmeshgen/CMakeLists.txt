@@ -1,6 +1,11 @@
+if(NOT HAVE_RECAST OR NOT HAVE_DETOUR)
+    return()
+endif()
+
 set(P3NAVMESHGEN_HEADERS
         config_navmeshgen.h
         navMeshBuilder.h
+        navMeshBuilder.I
         )
 
 set(P3NAVMESHGEN_SOURCES
@@ -8,13 +13,13 @@ set(P3NAVMESHGEN_SOURCES
         navMeshBuilder.cxx
         )
 
-file(GLOB P3NAVMESHGEN_HEADERS *.h *.I)
-file(GLOB P3NAVMESHGEN_SOURCES *.cpp ${P3NAVMESHGEN_SOURCES})
-
 composite_sources(p3navmeshgen P3NAVMESHGEN_SOURCES)
 add_library(p3navmeshgen ${P3NAVMESHGEN_HEADERS} ${P3NAVMESHGEN_SOURCES})
 set_target_properties(p3navmeshgen PROPERTIES DEFINE_SYMBOL BUILDING_NAVMESHGEN)
-target_link_libraries(p3navmeshgen panda p3navigation)
+target_link_libraries(p3navmeshgen panda
+  p3navigation
+  PKG::RECAST
+  PKG::DETOUR)
 set_target_properties(p3navmeshgen PROPERTIES CXX_EXCEPTIONS ON)
 target_interrogate(p3navmeshgen ALL)
 

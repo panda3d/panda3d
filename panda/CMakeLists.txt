@@ -215,13 +215,15 @@ build_apps = direct.dist.commands:finalize_distribution_options
     export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
   endif()
 
-  add_python_module(panda3d.navigation p3navigation IMPORT panda3d.core COMPONENT NavigationPython)
+  if(HAVE_RECAST AND HAVE_DETOUR)
+    add_python_module(panda3d.navigation p3navigation IMPORT panda3d.core COMPONENT NavigationPython)
 
-  export_targets(NavigationPython NAMESPACE "Panda3D::Python::" COMPONENT NavigationDevel)
+    export_targets(NavigationPython NAMESPACE "Panda3D::Python::" COMPONENT NavigationDevel)
 
-  add_python_module(panda3d.navmeshgen p3navmeshgen IMPORT panda3d.core COMPONENT NavMeshGenPython)
+    add_python_module(panda3d.navmeshgen p3navmeshgen IMPORT panda3d.core COMPONENT NavMeshGenPython)
 
-  export_targets(NavMeshGenPython NAMESPACE "Panda3D::Python::" COMPONENT NavMeshGenDevel)
+    export_targets(NavMeshGenPython NAMESPACE "Panda3D::Python::" COMPONENT NavMeshGenDevel)
+  endif()
 
   export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)
 endif()

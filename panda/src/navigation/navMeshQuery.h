@@ -15,7 +15,7 @@
 #ifndef NAVMESHQUERY_H
 #define NAVMESHQUERY_H
 
-#include "DetourNavMeshQuery.h"
+#include "recastnavigation/DetourNavMeshQuery.h"
 #include "navMesh.h"
 #include "navMeshPath.h"
 #include "pta_LVecBase3.h"
