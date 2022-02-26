@@ -12,9 +12,9 @@
  */
 
 #include "navMeshBuilder.h"
-#include "Recast.h"
-#include "DetourNavMesh.h"
-#include "DetourNavMeshBuilder.h"
+#include "recastnavigation/Recast.h"
+#include "recastnavigation/DetourNavMesh.h"
+#include "recastnavigation/DetourNavMeshBuilder.h"
 #include "pta_LVecBase3.h"
 #include "lvecBase3.h"
 #include "config_navmeshgen.h"
