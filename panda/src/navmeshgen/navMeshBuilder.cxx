@@ -157,10 +157,10 @@ bool NavMeshBuilder::from_node_path(NodePath node) {
 /**
  * Adds all collision geometry under the given node to the NavMesh.
  */
-bool NavMeshBuilder::from_coll_node_path(NodePath node) {
+bool NavMeshBuilder::from_coll_node_path(NodePath node, BitMask32 mask) {
   CPT(TransformState) transform = node.get_transform(_parent);
 
-  process_coll_node_path(node, transform);
+  process_coll_node_path(node, transform, mask);
 
   for (auto &tri_verts : _tri_verticies) {
     add_triangle(_vertex_map[tri_verts.a], _vertex_map[tri_verts.b], _vertex_map[tri_verts.c]);
@@ -288,12 +288,14 @@ void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &tran
   }
 }
 
-void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform) {
+void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform, BitMask32 mask) {
   if (node.node()->is_of_type(CollisionNode::get_class_type())) {
     PT(CollisionNode) g = DCAST(CollisionNode, node.node());
-    for (int i = 0; i < g->get_num_solids(); i++) {
-      PT(GeomNode) gn = g->get_solid(i)->get_viz();
-      process_geom_node(gn, transform);
+    if ((g->get_into_collide_mask() & mask) != 0) {
+      for (int i = 0; i < g->get_num_solids(); i++) {
+        PT(GeomNode) gn = g->get_solid(i)->get_viz();
+        process_geom_node(gn, transform);
+      }
     }
   }
 
@@ -302,7 +304,7 @@ void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) 
     NodePath cnp = children.get_path(i);
     CPT(TransformState) child_transform = cnp.get_transform();
     CPT(TransformState) net_transform = transform->compose(child_transform);
-    process_coll_node_path(cnp, net_transform);
+    process_coll_node_path(cnp, net_transform, mask);
   }
 }
 
