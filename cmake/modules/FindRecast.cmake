@@ -1,13 +1,13 @@
-# Filename: FindOgg.cmake
-# Authors: CFSworks (13 Jan, 2019)
+# Filename: FindRecast.cmake
+# Authors: Maxwell175 (27 Feb 2022)
 #
 # Usage:
-#   find_package(Ogg [REQUIRED] [QUIET])
+#   find_package(Recast [REQUIRED] [QUIET])
 #
 # Once done this will define:
-#   OGG_FOUND       - system has Ogg
-#   OGG_INCLUDE_DIR - the include directory containing ogg/
-#   OGG_LIBRARY     - the path to the ogg library
+#   RECAST_FOUND       - system has Recast
+#   RECAST_INCLUDE_DIR - the include directory containing recastnavigation/
+#   RECAST_LIBRARY     - the path to the recast library
 #
 
 find_path(RECAST_INCLUDE_DIR NAMES "recastnavigation/Recast.h")
