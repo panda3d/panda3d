@@ -1,13 +1,13 @@
-# Filename: FindOgg.cmake
-# Authors: CFSworks (13 Jan, 2019)
+# Filename: FindDetour.cmake
+# Authors: Maxwell175 (27 Feb 2022)
 #
 # Usage:
-#   find_package(Ogg [REQUIRED] [QUIET])
+#   find_package(Detour [REQUIRED] [QUIET])
 #
 # Once done this will define:
-#   OGG_FOUND       - system has Ogg
-#   OGG_INCLUDE_DIR - the include directory containing ogg/
-#   OGG_LIBRARY     - the path to the ogg library
+#   DETOUR_FOUND       - system has Detour
+#   DETOUR_INCLUDE_DIR - the include directory containing recastnavigation/
+#   DETOUR_LIBRARY     - the path to the detour library
 #
 
 find_path(DETOUR_INCLUDE_DIR NAMES "recastnavigation/DetourCommon.h")
