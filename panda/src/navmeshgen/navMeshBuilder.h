@@ -104,7 +104,7 @@ PUBLISHED:
 
   void reset_common_settings();
   bool from_node_path(NodePath node);
-  bool from_coll_node_path(NodePath node);
+  bool from_coll_node_path(NodePath node, BitMask32 mask = BitMask32::all_on());
   bool from_geom(PT(Geom) geom);
   PT(GeomNode) draw_poly_mesh_geom();
 
@@ -139,7 +139,7 @@ private:
   void add_vertex(float x, float y, float z);
   void add_triangle(int a, int b, int c);
 
-  void process_coll_node_path(NodePath &node, CPT(TransformState) &transform);
+  void process_coll_node_path(NodePath &node, CPT(TransformState) &transform, BitMask32 mask);
   void process_node_path(NodePath &node, CPT(TransformState) &transform);
   void process_geom_node(PT(GeomNode) &geomnode, CPT(TransformState) &transform);
   void process_geom(CPT(Geom) &geom, CPT(TransformState) transform);
