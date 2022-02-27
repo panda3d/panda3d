@@ -1,3 +1,4 @@
+import pytest
 from panda3d import core
 
 
@@ -18,7 +19,9 @@ def reconstruct(object):
     return object
 
 
-def test_nav_mesh_bam(navmeshgen, navigation):
+def test_nav_mesh_bam():
+    navigation = pytest.importorskip("panda3d.navigation")
+    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -63,7 +66,9 @@ def test_nav_mesh_bam(navmeshgen, navigation):
     assert detailTriCount == navmeshBam.get_detail_tri_count()
 
 
-def test_nav_mesh_node_bam(navmeshgen, navigation):
+def test_nav_mesh_node_bam():
+    navigation = pytest.importorskip("panda3d.navigation")
+    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -109,7 +114,9 @@ def test_nav_mesh_node_bam(navmeshgen, navigation):
     assert detailTriCount == navmeshNodeBam.get_nav_mesh().get_detail_tri_count()
 
 
-def test_nav_query_bam(navmeshgen, navigation):
+def test_nav_query_bam():
+    navigation = pytest.importorskip("panda3d.navigation")
+    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
