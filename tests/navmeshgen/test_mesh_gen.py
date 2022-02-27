@@ -1,7 +1,10 @@
+import pytest
 from panda3d import core
 
 
-def test_input_geom(navmeshgen):
+def test_input_geom():
+    navigation = pytest.importorskip("panda3d.navigation")
+    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -38,7 +41,10 @@ def test_input_geom(navmeshgen):
     assert vcount == 6
     assert tcount == 4
 
-def test_poly_mesh(navmeshgen):
+
+def test_poly_mesh():
+    navigation = pytest.importorskip("panda3d.navigation")
+    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
