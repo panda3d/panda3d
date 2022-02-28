@@ -403,6 +403,8 @@ client_main_tick() {
       return;
     }
 
+    ClockObject *clock = ClockObject::get_global_clock();
+
     _impl->client_main_tick();
 
     MultiThingsByName::const_iterator ni =
@@ -412,7 +414,8 @@ client_main_tick() {
       for (vector_int::const_iterator vi = indices.begin();
            vi != indices.end();
            ++vi) {
-        _impl->new_frame(*vi);
+        int frame_number = clock->get_frame_count(get_thread_object(*vi));
+        _impl->new_frame(*vi, frame_number);
       }
     }
   }
@@ -898,6 +901,38 @@ stop(int collector_index, int thread_index, double as_of) {
       // This collector has now been completely stopped; record a new data
       // point.
       thread->_frame_data.add_stop(collector_index, as_of);
+    }
+  }
+}
+
+/**
+ * Adds a pair of start/stop times in the given collector.  Used in low-level
+ * code that knows there will not be any other collectors started and stopped
+ * in the meantime, and can be more efficient than a pair of start/stop times.
+ */
+void PStatClient::
+start_stop(int collector_index, int thread_index, double start, double stop) {
+  if (!client_is_connected()) {
+    return;
+  }
+
+#ifdef _DEBUG
+  nassertv(collector_index >= 0 && collector_index < get_num_collectors());
+  nassertv(thread_index >= 0 && thread_index < get_num_threads());
+#endif
+
+  Collector *collector = get_collector_ptr(collector_index);
+  InternalThread *thread = get_thread_ptr(thread_index);
+
+  if (collector->is_active() && thread->_is_active) {
+    LightMutexHolder holder(thread->_thread_lock);
+    if (collector->_per_thread[thread_index]._nested_count == 0) {
+      // This collector wasn't already started in this thread; record a new
+      // data point.
+      if (thread->_thread_active) {
+        thread->_frame_data.add_start(collector_index, start);
+        thread->_frame_data.add_stop(collector_index, stop);
+      }
     }
   }
 }

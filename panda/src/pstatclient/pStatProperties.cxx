@@ -220,7 +220,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "PipelineCyclers:Dirty",            { 0.2, 0.2, 0.2 },  "", 5000 },
   { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
   { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
-  { 1, "Command latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
+  { 1, "window1 latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
   { 0, nullptr }
 };
 

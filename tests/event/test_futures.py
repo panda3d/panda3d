@@ -90,6 +90,30 @@ def test_future_wait():
 
 @pytest.mark.skipif(not core.Thread.is_threading_supported(),
                     reason="Threading support disabled")
+def test_future_wait_timeout():
+    threading = pytest.importorskip("direct.stdpy.threading")
+
+    fut = core.AsyncFuture()
+
+    # Launch a thread to set the result value.
+    def thread_main():
+        time.sleep(0.001)
+        fut.set_result(None)
+
+    thread = threading.Thread(target=thread_main)
+
+    assert not fut.done()
+    thread.start()
+
+    assert fut.result(1.0) is None
+
+    assert fut.done()
+    assert not fut.cancelled()
+    assert fut.result() is None
+
+
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
 def test_future_wait_cancel():
     threading = pytest.importorskip("direct.stdpy.threading")
 

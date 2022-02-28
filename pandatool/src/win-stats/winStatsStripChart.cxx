@@ -231,6 +231,23 @@ get_label_tooltip(int collector_index) const {
 }
 
 /**
+ * Changes the collector represented by this strip chart.  This may force a
+ * redraw.
+ */
+void WinStatsStripChart::
+set_collector_index(int collector_index) {
+  if (get_collector_index() != collector_index) {
+    PStatStripChart::set_collector_index(collector_index);
+
+    // Redraw the scale labels.
+    RECT rect;
+    GetClientRect(_window, &rect);
+    rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+  }
+}
+
+/**
  * Changes the value the height of the vertical axis represents.  This may
  * force a redraw.
  */

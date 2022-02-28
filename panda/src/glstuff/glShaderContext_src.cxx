@@ -2105,7 +2105,7 @@ set_state_and_transform(const RenderState *target_rs,
  */
 void CLP(ShaderContext)::
 issue_parameters(int altered) {
-  PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
+  PStatTimer timer(_glgsg->_draw_set_state_shader_parameters_pcollector);
 
   if (GLCAT.is_spam()) {
     GLCAT.spam()

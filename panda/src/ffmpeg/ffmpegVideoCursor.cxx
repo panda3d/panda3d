@@ -698,7 +698,7 @@ thread_main() {
     while (do_poll()) {
       // Keep doing stuff as long as there's something to do.
       _lock.release();
-      PStatClient::thread_tick(_sync_name);
+      PStatClient::thread_tick();
       Thread::consider_yield();
       _lock.acquire();
     }

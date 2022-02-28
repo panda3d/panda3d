@@ -637,6 +637,7 @@ update_status_bar() {
   if (thread_data == nullptr || thread_data->is_empty()) {
     return;
   }
+  int frame_number = thread_data->get_latest_frame_number();
   const PStatFrameData &frame_data = thread_data->get_latest_frame();
 
   pvector<int> collectors;
@@ -664,6 +665,13 @@ update_status_bar() {
         if (std::find(_status_bar_collectors.begin(), _status_bar_collectors.end(), collector) == _status_bar_collectors.end()) {
           continue;
         }
+      }
+
+      // Add the value for other threads that have this collector.
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = get_level_view(collector, thread_index);
+        view.set_to_frame(frame_number);
+        value += view.get_net_value();
       }
 
       const PStatCollectorDef &def = client_data->get_collector_def(collector);
@@ -720,6 +728,17 @@ status_bar_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 
   if (event->type == GDK_2BUTTON_PRESS && event->button == 1) {
     monitor->open_strip_chart(0, collector, collector != 0);
+
+    // Also open a strip chart for other threads with data for this
+    // collector.
+    if (collector != 0) {
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = monitor->get_level_view(collector, thread_index);
+        if (view.get_net_value() > 0.0) {
+          monitor->open_strip_chart(thread_index, collector, true);
+        }
+      }
+    }
     return TRUE;
   }
   else if (event->type == GDK_BUTTON_PRESS && event->button == 3 && index > 0) {

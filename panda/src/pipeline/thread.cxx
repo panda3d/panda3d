@@ -22,6 +22,9 @@ Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;
 
+void (*Thread::_sleep_func)(double) = &ThreadImpl::sleep;
+void (*Thread::_yield_func)() = &ThreadImpl::yield;
+
 /**
  * Creates a new Thread object, but does not immediately start executing it.
  * This gives the caller a chance to store it in a PT(Thread) object, if

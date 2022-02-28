@@ -219,21 +219,6 @@ close_ime() {
 }
 
 /**
- * This function will be called within the draw thread after end_frame() has
- * been called on all windows, to initiate the exchange of the front and back
- * buffers.
- *
- * This should instruct the window to prepare for the flip at the next video
- * sync, but it should not wait.
- *
- * We have the two separate functions, begin_flip() and end_flip(), to make it
- * easier to flip all of the windows at the same time.
- */
-void WinGraphicsWindow::
-begin_flip() {
-}
-
-/**
  * Do whatever processing is necessary to ensure that the window responds to
  * user events.  Also, honor any requests recently made via
  * request_properties()

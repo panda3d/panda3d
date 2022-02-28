@@ -572,6 +572,26 @@ def GetFlexVersion():
         Warn("Unable to detect flex version")
         return (0, 0, 0)
 
+SEVENZIP = None
+def GetSevenZip():
+    global SEVENZIP
+    if SEVENZIP is not None:
+        return SEVENZIP
+
+    win_util = os.path.join(GetThirdpartyBase(), 'win-util')
+    if GetHost() == 'windows' and os.path.isdir(win_util):
+        SEVENZIP = GetThirdpartyBase() + "/win-util/7za.exe"
+    elif LocateBinary('7z'):
+        SEVENZIP = '7z'
+    else:
+        # We don't strictly need it, so don't give an error
+        return None
+
+    return SEVENZIP
+
+def HasSevenZip():
+    return GetSevenZip() is not None
+
 ########################################################################
 ##
 ## LocateBinary

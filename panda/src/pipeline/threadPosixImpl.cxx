@@ -21,6 +21,11 @@
 #include "config_pipeline.h"
 #include <sched.h>
 
+// Used for getrusage().
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #ifdef ANDROID
 #include "config_express.h"
 #include <jni.h>
@@ -247,6 +252,26 @@ bind_java_thread() {
   }
 }
 #endif  // ANDROID
+
+/**
+ * Returns the number of context switches that occurred on the current thread.
+ * The first number is the total number of context switches reported by the OS,
+ * and the second number is the number of involuntary context switches (ie. the
+ * thread was scheduled out by the OS), if known, otherwise zero.
+ * Returns true if context switch information was available, false otherwise.
+ */
+bool ThreadPosixImpl::
+get_context_switches(size_t &total, size_t &involuntary) {
+#ifdef RUSAGE_THREAD
+  struct rusage usage;
+  if (getrusage(RUSAGE_THREAD, &usage) == 0) {
+    total = (size_t)usage.ru_nvcsw;
+    involuntary = (size_t)usage.ru_nivcsw;
+    return true;
+  }
+#endif
+  return false;
+}
 
 /**
  * The entry point of each thread.

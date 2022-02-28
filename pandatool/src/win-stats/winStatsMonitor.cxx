@@ -712,6 +712,7 @@ update_status_bar() {
   if (thread_data == nullptr || thread_data->is_empty()) {
     return;
   }
+  int frame_number = thread_data->get_latest_frame_number();
   const PStatFrameData &frame_data = thread_data->get_latest_frame();
 
   // Gather the top-level collector list.
@@ -732,6 +733,13 @@ update_status_bar() {
         if (std::find(_status_bar_collectors.begin(), _status_bar_collectors.end(), collector) == _status_bar_collectors.end()) {
           continue;
         }
+      }
+
+      // Add the value for other threads that have this collector.
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = get_level_view(collector, thread_index);
+        view.set_to_frame(frame_number);
+        value += view.get_net_value();
       }
 
       const PStatCollectorDef &def = client_data->get_collector_def(collector);
@@ -944,6 +952,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       else if (mouse.dwItemSpec >= 1 && mouse.dwItemSpec <= _status_bar_collectors.size()) {
         int collector = _status_bar_collectors[mouse.dwItemSpec - 1];
         open_strip_chart(0, collector, true);
+
+        // Also open a strip chart for other threads with data for this
+        // collector.
+        const PStatClientData *client_data = get_client_data();
+        for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+          PStatView &view = get_level_view(collector, thread_index);
+          if (view.get_net_value() > 0.0) {
+            open_strip_chart(thread_index, collector, true);
+          }
+        }
       }
       return TRUE;
     }
