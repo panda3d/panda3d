@@ -1211,7 +1211,7 @@ def CompileCxx(obj,src,opts):
             cmd = "cl "
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
-            cmd += "/wd4996 /wd4275 /wd4273 "
+            cmd += "/wd4996 "
 
             # Set the minimum version to Windows Vista.
             cmd += "/DWINVER=0x600 "
@@ -1261,7 +1261,7 @@ def CompileCxx(obj,src,opts):
             cmd = "icl "
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
-            cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+            cmd += "/wd4996 /wd4267 /wd4101 "
             cmd += "/DWINVER=0x600 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
@@ -1458,10 +1458,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
 
         # Enable more warnings.
-        cmd += " -Wall -Wno-unused-function"
-
-        if not src.endswith(".c"):
-            cmd += " -Wno-reorder"
+        cmd += " -Wall -Wno-unused-function -Werror=return-type"
 
         # Ignore unused variables in NDEBUG builds, often used in asserts.
         if optlevel == 4:
