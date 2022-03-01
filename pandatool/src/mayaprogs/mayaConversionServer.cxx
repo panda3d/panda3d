@@ -26,8 +26,8 @@
  * Initializes the Maya conversion server.
  */
 MayaConversionServer::
-MayaConversionServer() : _qListener(&_qManager, 0), _qReader(&_qManager, 0),
-  _cWriter(&_qManager, 0) {
+MayaConversionServer() : _listener(&_manager, 0), _reader(&_manager, 0),
+  _writer(&_manager, 0) {
 }
 
 /**
@@ -37,39 +37,39 @@ MayaConversionServer() : _qListener(&_qManager, 0), _qReader(&_qManager, 0),
 void MayaConversionServer::
 poll() {
   // Listen for new connections
-  _qListener.poll();
+  _listener.poll();
 
   // If we have a new connection from a client create a new connection pointer
   // and add it to the reader list
-  if (_qListener.new_connection_available()) {
+  if (_listener.new_connection_available()) {
     PT(Connection) rendezvous;
     PT(Connection) connection;
     NetAddress address;
 
-    if (_qListener.get_new_connection(rendezvous, address, connection)) {
-      _qReader.add_connection(connection);
+    if (_listener.get_new_connection(rendezvous, address, connection)) {
+      _reader.add_connection(connection);
       _clients.insert(connection);
     }
   }
 
   // Check for reset clients
-  if (_qManager.reset_connection_available()) {
+  if (_manager.reset_connection_available()) {
     PT(Connection) connection;
 
-    if (_qManager.get_reset_connection(connection)) {
+    if (_manager.get_reset_connection(connection)) {
       _clients.erase(connection);
-      _qManager.close_connection(connection);
+      _manager.close_connection(connection);
     }
   }
 
   // Poll the readers (created above) and if they have data process it
-  _qReader.poll();
+  _reader.poll();
 
-  if (_qReader.data_available()) {
+  if (_reader.data_available()) {
     // Grab the incoming data and unpack it
     NetDatagram datagram;
 
-    if (_qReader.get_data(datagram)) {
+    if (_reader.get_data(datagram)) {
       DatagramIterator data(datagram);
 
       // First data should be the "argc" (argument count) from the client
@@ -168,7 +168,7 @@ poll() {
       response.add_bool(converted);
 
       // Send the response
-      if (!_cWriter.send(response, datagram.get_connection())) {
+      if (!_writer.send(response, datagram.get_connection())) {
         // Looks like we couldn't send the response
         nout << "Could not send response to the client.\n";
       }
@@ -189,7 +189,7 @@ poll() {
 
     Clients::iterator ci;
     for (ci = _clients.begin(); ci != _clients.end(); ++ci) {
-      _qManager.close_connection(*ci);
+      _manager.close_connection(*ci);
     }
   } // qReader.data_available
 } // poll
@@ -200,7 +200,7 @@ poll() {
 void MayaConversionServer::
 listen() {
   // Open a rendezvous port for receiving new connections from the client
-  PT(Connection) rend = _qManager.open_TCP_server_rendezvous(4242, 100);
+  PT(Connection) rend = _manager.open_TCP_server_rendezvous(4242, 100);
 
   if (rend.is_null()) {
     nout << "Port opening failed!\n";
@@ -210,7 +210,7 @@ listen() {
   nout << "Server opened on port 4242, waiting for requests...\n";
 
   // Add this connection to the listeners list
-  _qListener.add_connection(rend);
+  _listener.add_connection(rend);
 
   // Main loop.  Keep polling for connections, but don't eat up all the CPU.
   while (true) {

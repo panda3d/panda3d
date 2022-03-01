@@ -48,10 +48,10 @@ protected:
   typedef pset< PT(Connection) > Clients;
   Clients _clients;
 
-  QueuedConnectionManager _qManager;
-  QueuedConnectionListener _qListener;
-  QueuedConnectionReader _qReader;
-  ConnectionWriter _cWriter;
+  QueuedConnectionManager _manager;
+  QueuedConnectionListener _listener;
+  QueuedConnectionReader _reader;
+  ConnectionWriter _writer;
 };
 
 #endif
