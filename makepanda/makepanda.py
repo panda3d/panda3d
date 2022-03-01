@@ -867,7 +867,6 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
-    SmartPkgEnable("OPENEXR",   "OpenEXR",   ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), ("OpenEXR", "Imath", "OpenEXR/ImfOutputFile.h"))
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
     SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
@@ -892,6 +891,23 @@ if (COMPILER=="GCC"):
             # Don't export ffmpeg symbols from libp3ffmpeg when linking statically.
             for ffmpeg_lib in ffmpeg_libs:
                 LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
+
+    if not PkgSkip("OPENEXR"):
+        # OpenEXR libraries have different names depending on the version.
+        openexr_libdir = os.path.join(GetThirdpartyDir(), "openexr", "lib")
+        openexr_incs = ("OpenEXR", "Imath", "OpenEXR/ImfOutputFile.h")
+        if os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR-3_1.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR-3_1", "IlmThread-3_1", "Imath-3_1", "Iex-3_1"), openexr_incs)
+        if os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR-3_0.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR-3_0", "IlmThread-3_0", "Imath-3_0", "Iex-3_0"), openexr_incs)
+        elif os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR", "IlmThread", "Imath", "Iex"), openexr_incs)
+        elif os.path.isfile(os.path.join(openexr_libdir, "libIlmImf.a")):
+            SmartPkgEnable("OPENEXR", "", ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), openexr_incs)
+        else:
+            # Find it in the system, preferably using pkg-config, otherwise
+            # using the OpenEXR 3 naming scheme.
+            SmartPkgEnable("OPENEXR", "OpenEXR", ("OpenEXR", "IlmThread", "Imath", "Iex"), openexr_incs)
 
     if GetTarget() != "darwin":
         for fcollada_lib in fcollada_libs:
@@ -924,6 +940,9 @@ if (COMPILER=="GCC"):
             LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImfUtil.a")
             LibName("OPENEXR", "-Wl,--exclude-libs,libIlmThread.a")
             LibName("OPENEXR", "-Wl,--exclude-libs,libImath.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXR.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXRCore.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXRUtil.a")
 
         if not PkgSkip("VORBIS"):
             LibName("VORBIS", "-Wl,--exclude-libs,libogg.a")
