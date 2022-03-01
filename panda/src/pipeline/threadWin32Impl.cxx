@@ -27,9 +27,9 @@ static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
 
 #if _WIN32_WINNT < 0x0601
 // Requires Windows 7.
-static DWORD (*EnableThreadProfiling)(HANDLE, DWORD, DWORD64, HANDLE *) = nullptr;
-static DWORD (*DisableThreadProfiling)(HANDLE) = nullptr;
-static DWORD (*ReadThreadProfilingData)(HANDLE, DWORD, PPERFORMANCE_DATA data) = nullptr;
+static DWORD (__stdcall *EnableThreadProfiling)(HANDLE, DWORD, DWORD64, HANDLE *) = nullptr;
+static DWORD (__stdcall *DisableThreadProfiling)(HANDLE) = nullptr;
+static DWORD (__stdcall *ReadThreadProfilingData)(HANDLE, DWORD, PPERFORMANCE_DATA data) = nullptr;
 
 static bool init_thread_profiling() {
   static bool inited = false;
