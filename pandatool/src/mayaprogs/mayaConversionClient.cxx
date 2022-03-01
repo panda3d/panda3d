@@ -19,11 +19,8 @@
  * Initializes the Maya conversion client.
  */
 MayaConversionClient::
-MayaConversionClient()
+MayaConversionClient() : _qReader(&_qManager, 0), _cWriter(&_qManager, 0)
 {
-  _qManager = new QueuedConnectionManager();
-  _qReader = new QueuedConnectionReader(_qManager, 0);
-  _cWriter = new ConnectionWriter(_qManager, 0);
 }
 
 /**
@@ -44,12 +41,12 @@ bool MayaConversionClient::
 connect(NetAddress server) {
   if (_conn) {
     // Remove this connection from the readers list
-    _qReader->remove_connection(_conn);
+    _qReader.remove_connection(_conn);
     _conn = nullptr;
   }
 
   // Attempt to open a connection
-  _conn = _qManager->open_TCP_client_connection(server, 0);
+  _conn = _qManager.open_TCP_client_connection(server, 0);
 
   if (!_conn ||  _conn.is_null()) {
     // This connection could not be opened
@@ -57,7 +54,7 @@ connect(NetAddress server) {
   }
 
   // Add this connection to the readers list
-  _qReader->add_connection(_conn);
+  _qReader.add_connection(_conn);
   return true;
 }
 
@@ -94,17 +91,17 @@ queue(Filename working_directory, int argc, char *argv[], MayaConversionServer::
   datagram.add_uint8(conversion_type);
 
   // Send the conversion request
-  if (!_cWriter->send(datagram, _conn) || !_conn->flush()) {
+  if (!_cWriter.send(datagram, _conn) || !_conn->flush()) {
     nout << "Failed to send workload to server process.\n";
     return false;
   }
 
   // Wait for a response
-  while (_conn->get_socket()->Active() && !_qReader->data_available()) {
-    _qReader->poll();
+  while (_conn->get_socket()->Active() && !_qReader.data_available()) {
+    _qReader.poll();
   }
 
-  if (!_qReader->data_available()) {
+  if (!_qReader.data_available()) {
     // No response has been given by the server.
     nout << "No response has been given by the conversion server.\n";
     return false;
@@ -113,7 +110,7 @@ queue(Filename working_directory, int argc, char *argv[], MayaConversionServer::
   NetDatagram response;
 
   // Let's read the response now!
-  if (!_qReader->get_data(response)) {
+  if (!_qReader.get_data(response)) {
     nout << "The conversion response could not be read.\n";
     return false;
   }
@@ -147,13 +144,13 @@ close() {
   }
 
   while (true) {
-    _qReader->data_available();
+    _qReader.data_available();
 
-    if (_qManager->reset_connection_available()) {
+    if (_qManager.reset_connection_available()) {
       PT(Connection) connection;
 
-      if (_qManager->get_reset_connection(connection)) {
-        _qManager->close_connection(_conn);
+      if (_qManager.get_reset_connection(connection)) {
+        _qManager.close_connection(_conn);
         _conn = nullptr;
         return;
       }

@@ -44,9 +44,9 @@ public:
   int main(int argc, char *argv[], MayaConversionServer::ConversionType conversion_type);
 
 private:
-  QueuedConnectionManager *_qManager;
-  QueuedConnectionReader *_qReader;
-  ConnectionWriter *_cWriter;
+  QueuedConnectionManager _qManager;
+  QueuedConnectionReader _qReader;
+  ConnectionWriter _cWriter;
   PT(Connection) _conn;
 };
 
