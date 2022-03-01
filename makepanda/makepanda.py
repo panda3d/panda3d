@@ -6045,17 +6045,21 @@ for VER in MAYAVERSIONS:
     TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
 if MAYA_BUILT:
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', 'NOARCH:ARM64']
+
     TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
 
     TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
     TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
     TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
     TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg_client.exe', opts=['NOARCH:ARM64'])
 
     TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
     TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
     TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
     TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya_client.exe', opts=['NOARCH:ARM64'])
 
 #
 # DIRECTORY: contrib/src/ai/
