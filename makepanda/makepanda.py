@@ -1069,8 +1069,6 @@ if (COMPILER=="GCC"):
             LibName("FFMPEG", "-undefined dynamic_lookup")
         if not PkgSkip("ASSIMP"):
             LibName("ASSIMP", "-undefined dynamic_lookup")
-        if not PkgSkip("OPENEXR"):
-            LibName("OPENEXR", "-undefined dynamic_lookup")
         if not PkgSkip("VRPN"):
             LibName("VRPN", "-undefined dynamic_lookup")
 
