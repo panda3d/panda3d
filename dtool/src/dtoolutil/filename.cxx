@@ -152,10 +152,22 @@ get_panda_root() {
 
   if (panda_root == nullptr) {
     panda_root = new string;
+
+#ifdef _MSC_VER
+    char *envvar = nullptr;
+    size_t size = 0;
+    while (getenv_s(&size, envvar, size, "PANDA_ROOT") == ERANGE) {
+      envvar = (char *)alloca(size);
+    }
+    if (size != 0) {
+      (*panda_root) = front_to_back_slash(envvar);
+    }
+#else
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
+#endif
 
     // Ensure the string ends in a backslash.  If PANDA_ROOT is empty or
     // undefined, this function must return a single backslash--not an empty

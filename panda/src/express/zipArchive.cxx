@@ -2018,7 +2018,13 @@ write_index(std::ostream &write, streampos &fpos) {
 
   if (_timestamp > dos_epoch) {
     // Convert from UNIX timestamp to DOS/FAT timestamp.
+#ifdef _MSC_VER
+    struct tm time_data;
+    struct tm *time = &time_data;
+    localtime_s(time, &_timestamp);
+#else
     struct tm *time = localtime(&_timestamp);
+#endif
     writer.add_uint16((time->tm_sec >> 1)
                     | (time->tm_min << 5)
                     | (time->tm_hour << 11));
@@ -2120,7 +2126,13 @@ write_header(std::ostream &write, std::streampos &fpos) {
 
   if (_timestamp > 315532800) {
     // Convert from UNIX timestamp to DOS/FAT timestamp.
+#ifdef _MSC_VER
+    struct tm time_data;
+    struct tm *time = &time_data;
+    localtime_s(time, &_timestamp);
+#else
     struct tm *time = localtime(&_timestamp);
+#endif
     writer.add_uint16((time->tm_sec >> 1)
                     | (time->tm_min << 5)
                     | (time->tm_hour << 11));
