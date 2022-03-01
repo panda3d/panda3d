@@ -356,7 +356,7 @@ clear(std::memory_order order) noexcept {
  */
 ALWAYS_INLINE bool patomic_flag::
 test_and_set(std::memory_order order) noexcept {
-  return (bool)_value.exchange(1u, order);
+  return _value.exchange(1u, order) != 0u;
 }
 
 /**
@@ -364,7 +364,7 @@ test_and_set(std::memory_order order) noexcept {
  */
 ALWAYS_INLINE bool patomic_flag::
 test(std::memory_order order) const noexcept {
-  return (bool)_value.load(order);
+  return _value.load(order) != 0u;
 }
 
 /**

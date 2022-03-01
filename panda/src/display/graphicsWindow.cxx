@@ -39,8 +39,8 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                GraphicsOutput *host) :
   GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host, true),
   _input_lock("GraphicsWindow::_input_lock"),
-  _properties_lock("GraphicsWindow::_properties_lock"),
-  _latency_pcollector(name + " latency")
+  _latency_pcollector(name + " latency"),
+  _properties_lock("GraphicsWindow::_properties_lock")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

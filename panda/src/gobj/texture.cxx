@@ -1116,7 +1116,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
   if (cdata->_component_width == 1) {
     if (format == "RGBA" && cdata->_num_components == 4) {
       imgsize *= 4;
-      for (int p = 0; p < imgsize; p += 4) {
+      for (size_t p = 0; p < imgsize; p += 4) {
         newdata[p + 2] = image[p    ];
         newdata[p + 1] = image[p + 1];
         newdata[p    ] = image[p + 2];
@@ -1127,7 +1127,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     }
     if (format == "RGB" && cdata->_num_components == 3) {
       imgsize *= 3;
-      for (int p = 0; p < imgsize; p += 3) {
+      for (size_t p = 0; p < imgsize; p += 3) {
         newdata[p + 2] = image[p    ];
         newdata[p + 1] = image[p + 1];
         newdata[p    ] = image[p + 2];
@@ -1138,13 +1138,13 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     if (format == "A" && cdata->_num_components != 3) {
       // We can generally rely on alpha to be the last component.
       int component = cdata->_num_components - 1;
-      for (int p = 0; p < imgsize; ++p) {
+      for (size_t p = 0; p < imgsize; ++p) {
         newdata[component] = image[p];
       }
       do_set_ram_image(cdata, newdata);
       return;
     }
-    for (int p = 0; p < imgsize; ++p) {
+    for (size_t p = 0; p < imgsize; ++p) {
       for (unsigned char s = 0; s < format.size(); ++s) {
         signed char component = -1;
         if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
@@ -1176,7 +1176,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     do_set_ram_image(cdata, newdata);
     return;
   }
-  for (int p = 0; p < imgsize; ++p) {
+  for (size_t p = 0; p < imgsize; ++p) {
     for (unsigned char s = 0; s < format.size(); ++s) {
       signed char component = -1;
       if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {

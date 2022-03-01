@@ -12,7 +12,7 @@
  */
 
 #include "config_pstatclient.h"
-
+#include "pStatTimer.h"
 #include "dconfig.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PSTATCLIENT)

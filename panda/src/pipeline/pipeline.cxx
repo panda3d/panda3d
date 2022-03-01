@@ -26,9 +26,9 @@ Pipeline(const std::string &name, int num_stages) :
   Namable(name),
 #ifdef THREADED_PIPELINE
   _num_stages(num_stages),
+  _next_cycle_seq(1),
   _cycle_lock("Pipeline cycle"),
-  _lock("Pipeline"),
-  _next_cycle_seq(1)
+  _lock("Pipeline")
 #else
   _num_stages(1)
 #endif

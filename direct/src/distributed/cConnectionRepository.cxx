@@ -58,19 +58,18 @@ CConnectionRepository(bool has_owner_view, bool threaded_net) :
   _bdc(4096000,4096000,1400),
   _native(false),
 #endif
+  _has_owner_view(has_owner_view),
+  _handle_c_updates(true),
   _client_datagram(true),
   _handle_datagrams_internally(handle_datagrams_internally),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
+  _in_quiet_zone(0),
   _time_warning(0.0),
-// _msg_channels(),
   _msg_sender(0),
   _msg_type(0),
-  _has_owner_view(has_owner_view),
-  _handle_c_updates(true),
   _want_message_bundling(true),
-  _bundling_msgs(0),
-  _in_quiet_zone(0)
+  _bundling_msgs(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {

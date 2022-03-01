@@ -50,10 +50,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _packet_data(nullptr),
   _format_ctx(nullptr),
   _audio_ctx(nullptr),
-  _resample_ctx(nullptr),
+  _frame(nullptr),
   _buffer(nullptr),
   _buffer_alloc(nullptr),
-  _frame(nullptr)
+  _resample_ctx(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
