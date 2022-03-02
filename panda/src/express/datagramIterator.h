@@ -23,6 +23,9 @@
  * A class to retrieve the individual data elements previously stored in a
  * Datagram.  Elements may be retrieved one at a time; it is up to the caller
  * to know the correct type and order of each element.
+ *
+ * Note that it is the responsibility of the caller to ensure that the datagram
+ * object is not destructed while this DatagramIterator is in use.
  */
 class EXPCL_PANDA_EXPRESS DatagramIterator {
 public:
