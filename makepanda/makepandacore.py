@@ -3489,11 +3489,17 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if sys.version_info >= (3, 0):
+    target = GetTarget()
+
+    if sys.version_info >= (3, 5) and target == 'windows':
+        if GetTargetArch() == 'x64':
+            return '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        else:
+            return '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+    elif sys.version_info >= (3, 0):
         import _imp
         return _imp.extension_suffixes()[0]
 
-    target = GetTarget()
     if target == 'windows':
         return '.pyd'
     else:
