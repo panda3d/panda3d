@@ -26,12 +26,12 @@ static_assert(sizeof(uint32_t) == sizeof(int32_t),
 
 // On Windows 7, we try to load the Windows 8 functions dynamically, and
 // fall back to a condition variable table if they aren't available.
-static BOOL initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout);
-static void dummy_wake(PVOID addr) {}
+static BOOL __stdcall initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout);
+static void __stdcall dummy_wake(PVOID addr) {}
 
-BOOL (*_patomic_wait_func)(volatile VOID *, PVOID, SIZE_T, DWORD) = &initialize_wait;
-void (*_patomic_wake_one_func)(PVOID) = &dummy_wake;
-void (*_patomic_wake_all_func)(PVOID) = &dummy_wake;
+BOOL (__stdcall *_patomic_wait_func)(volatile VOID *, PVOID, SIZE_T, DWORD) = &initialize_wait;
+void (__stdcall *_patomic_wake_one_func)(PVOID) = &dummy_wake;
+void (__stdcall *_patomic_wake_all_func)(PVOID) = &dummy_wake;
 
 // Randomly pick an entry into the wait table based on the hash of the address.
 // It's possible to get hash collision, but that's not so bad, it just means
@@ -47,7 +47,7 @@ static const size_t _wait_hash_mask = 63;
 /**
  * Emulates WakeByAddressSingle for Windows Vista and 7.
  */
-static void
+static void __stdcall
 emulated_wake(PVOID addr) {
   size_t i = std::hash<volatile void *>{}(addr) & (sizeof(_wait_table) / sizeof(WaitTableEntry) - 1);
   WaitTableEntry &entry = _wait_table[i];
@@ -65,7 +65,7 @@ emulated_wake(PVOID addr) {
  * Emulates WaitOnAddress for Windows Vista and 7.  Only supports aligned
  * 32-bit values.
  */
-static BOOL
+static BOOL __stdcall
 emulated_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   assert(size == sizeof(LONG));
 
@@ -95,7 +95,7 @@ emulated_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
  * Initially assigned to the wait function slot to initialize the function
  * pointers.
  */
-static BOOL
+static BOOL __stdcall
 initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   // There's a chance of a race here, with two threads trying to initialize the
   // functions at the same time.  That's OK, because they should all produce

@@ -18,6 +18,6 @@
 #include "conditionVarWin32Impl.h"
 
 // This function gets replaced by PStats to measure the time spent waiting.
-BOOL (*ConditionVarWin32Impl::_wait_func)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG) = &SleepConditionVariableSRW;
+BOOL (__stdcall *ConditionVarWin32Impl::_wait_func)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG) = &SleepConditionVariableSRW;
 
 #endif  // _WIN32
