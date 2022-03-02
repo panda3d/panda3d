@@ -3366,7 +3366,12 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if CrossCompiling():
+    if GetTarget() == 'windows':
+        if GetTargetArch() == 'x64':
+            return '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        else:
+            return '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+    elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
         import _imp
