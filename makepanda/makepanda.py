@@ -1241,7 +1241,7 @@ def CompileCxx(obj,src,opts):
             if (building):
                 cmd += " /DBUILDING_" + building
 
-            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
+            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64' or not PkgSkip("EIGEN"):
                 cmd += " /bigobj"
 
             cmd += " /Zm300"
