@@ -21,11 +21,12 @@
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
 #include "luse.h"
+#include "memoryBase.h"
 #include "nurbsCurveEvaluator.h"
 #include "plist.h"
 #include "epvector.h"
 
-class CMotionTrailVertex {
+class CMotionTrailVertex : public MemoryBase {
 public:
   LPoint4 _vertex;
   LVecBase4 _start_color;
