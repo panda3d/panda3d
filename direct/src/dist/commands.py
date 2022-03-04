@@ -465,6 +465,12 @@ class build_apps(setuptools.Command):
         elif not self.android_abis:
             self.android_abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86']
 
+        supported_abis = 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86-64', 'mips', 'mips64'
+        unsupported_abis = set(self.android_abis) - set(supported_abis)
+        if unsupported_abis:
+            raise ValueError(f'Unrecognized value(s) for android_abis: {", ".join(unsupported_abis)}\n'
+                             f'Valid ABIs are: {", ".join(supported_abis)}')
+
         self.icon_objects = {}
         for app, iconpaths in self.icons.items():
             if not isinstance(iconpaths, list) and not isinstance(iconpaths, tuple):
