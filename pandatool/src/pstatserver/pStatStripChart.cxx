@@ -56,7 +56,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
     _unit_name = def._level_units;
   }
 
-  set_default_vertical_scale();
+  set_auto_vertical_scale();
 }
 
 /**
@@ -139,6 +139,7 @@ set_collector_index(int collector_index) {
     _title_unknown = true;
     _data.clear();
     clear_label_usage();
+    set_auto_vertical_scale();
     force_redraw();
     update_labels();
   }
@@ -170,26 +171,44 @@ void PStatStripChart::
 set_auto_vertical_scale() {
   const PStatThreadData *thread_data = _view.get_thread_data();
 
-  double max_value = 0.0;
+  // Calculate the median value.
+  std::vector<double> values;
 
-  int frame_number = -1;
-  for (int x = 0; x <= _xsize; x++) {
-    double time = pixel_to_timestamp(x);
-    frame_number =
-      thread_data->get_frame_number_at_time(time, frame_number);
+  if (thread_data != nullptr && !thread_data->is_empty()) {
+    // Find the oldest visible frame.
+    double start_time = pixel_to_timestamp(0);
+    int oldest_frame = std::max(
+      thread_data->get_frame_number_at_time(start_time),
+      thread_data->get_oldest_frame_number());
+    int latest_frame = thread_data->get_latest_frame_number();
 
-    if (thread_data->has_frame(frame_number)) {
-      double net_value = get_net_value(frame_number);
-      max_value = max(max_value, net_value);
+    for (int frame_number = oldest_frame; frame_number <= latest_frame; ++frame_number) {
+      if (thread_data->has_frame(frame_number)) {
+        values.push_back(get_net_value(frame_number));
+      }
     }
   }
 
-  // Ok, now we know what the max value visible in the chart is.  Choose a
-  // scale that will show all of this sensibly.
-  if (max_value == 0.0) {
-    set_vertical_scale(1.0);
+  if (values.empty()) {
+    set_default_vertical_scale();
+    return;
+  }
+
+  double median;
+  size_t half = values.size() / 2;
+  if (values.size() % 2 == 0) {
+    std::sort(values.begin(), values.end());
+    median = (values[half] + values[half + 1]) / 2.0;
   } else {
-    set_vertical_scale(max_value * 1.1);
+    std::nth_element(values.begin(), values.begin() + half, values.end());
+    median = values[half];
+  }
+
+  if (median > 0.0) {
+    // Take 1.5 times the median value as the vertical scale.
+    set_vertical_scale(median * 1.5);
+  } else {
+    set_default_vertical_scale();
   }
 }
 
@@ -284,12 +303,71 @@ get_title_text() {
 }
 
 /**
- * Returns true if get_title_text() has never yet returned an answer, false if
- * it has.
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
  */
-bool PStatStripChart::
-is_title_unknown() const {
-  return _title_unknown;
+std::string PStatStripChart::
+get_label_tooltip(int collector_index) const {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(collector_index)) {
+    return std::string();
+  }
+
+  std::ostringstream text;
+  text << client_data->get_collector_fullname(collector_index);
+
+  double value;
+  if (collector_index == _collector_index) {
+    value = get_average_net_value();
+  }
+  else {
+    const PStatThreadData *thread_data = _view.get_thread_data();
+    int now_i, then_i;
+    if (!thread_data->get_elapsed_frames(then_i, now_i)) {
+      return text.str();
+    }
+    double now = _time_width + _start_time;
+    double then = now - pstats_average_time;
+
+    double net_value = 0.0f;
+    double net_time = 0.0f;
+
+    // We start with just the portion of frame then_i that actually does fall
+    // within our "then to now" window (usually some portion of it will).
+    const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    if (frame_data.get_end() > then) {
+      double this_time = (frame_data.get_end() - then);
+      _view.set_to_frame(frame_data);
+
+      const PStatViewLevel *level = _view.get_level(collector_index);
+      if (level != nullptr) {
+        net_value += level->get_net_value() * this_time;
+        net_time += this_time;
+      }
+    }
+    // Then we get all of each of the remaining frames.
+    for (int frame_number = then_i + 1;
+         frame_number <= now_i;
+         frame_number++) {
+      const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
+      double this_time = frame_data.get_net_time();
+      _view.set_to_frame(frame_data);
+
+      const PStatViewLevel *level = _view.get_level(collector_index);
+      if (level != nullptr) {
+        net_value += level->get_net_value() * this_time;
+        net_time += this_time;
+      }
+    }
+
+    if (net_time == 0) {
+      return text.str();
+    }
+    value = net_value / net_time;
+  }
+
+  text << " (" << format_number(value, get_guide_bar_units(), get_guide_bar_unit_name()) << ")";
+  return text.str();
 }
 
 /**

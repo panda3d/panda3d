@@ -792,8 +792,15 @@ main(int argc, char **argv) {
     }
   }
 
+#ifdef _MSC_VER
+  char source_date_epoch_str[64];
+  size_t source_date_epoch_size = 0;
+  if (getenv_s(&source_date_epoch_size, source_date_epoch_str,
+               sizeof(source_date_epoch_str), "SOURCE_DATE_EPOCH"), source_date_epoch_size > 1) {
+#else
   const char *source_date_epoch_str = getenv("SOURCE_DATE_EPOCH");
   if (source_date_epoch_str != nullptr && source_date_epoch_str[0] != 0) {
+#endif
     source_date_epoch = (time_t)strtoll(source_date_epoch_str, nullptr, 10);
   }
 

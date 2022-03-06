@@ -4162,12 +4162,21 @@ begin_frame(Thread *current_thread) {
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  int frame_number = ClockObject::get_global_clock()->get_frame_count(current_thread);
+  if (_current_frame_timing == nullptr ||
+      frame_number != _current_frame_timing->_frame_number) {
+
+    _current_frame_timing = begin_frame_timing(frame_number);
+  }
+#endif
+
 #ifndef NDEBUG
   _show_texture_usage = false;
   if (gl_show_texture_usage) {
     // When this is true, then every other second, we show the usage textures
     // instead of the real textures.
-    double now = ClockObject::get_global_clock()->get_frame_time();
+    double now = ClockObject::get_global_clock()->get_frame_time(current_thread);
     int this_second = (int)floor(now);
     if (this_second & 1) {
       _show_texture_usage = true;
@@ -4189,16 +4198,6 @@ begin_frame(Thread *current_thread) {
     }
   }
 #endif  // NDEBUG
-
-#ifdef DO_PSTATS
-  /*if (_supports_timer_query) {
-    // Measure the difference between the OpenGL clock and the PStats clock.
-    GLint64 time_ns;
-    _glGetInteger64v(GL_TIMESTAMP, &time_ns);
-    _timer_delta = time_ns * -0.000000001;
-    _timer_delta += PStatClient::get_global_pstats()->get_real_time();
-  }*/
-#endif
 
 #ifndef OPENGLES
   if (_current_properties->get_srgb_color()) {
@@ -4404,6 +4403,129 @@ end_frame(Thread *current_thread) {
   if (GLCAT.is_spam()) {
     GLCAT.spam(false) << endl;
   }
+}
+
+/**
+ *
+ */
+CLP(GraphicsStateGuardian)::FrameTiming *CLP(GraphicsStateGuardian)::
+begin_frame_timing(int frame_number) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  if (!_timer_queries_active) {
+    if (pstats_gpu_timing && _supports_timer_query && PStatClient::is_connected()) {
+      _timer_queries_active = true;
+    } else {
+      return nullptr;
+    }
+  }
+
+  PStatClient *client = PStatClient::get_global_pstats();
+  PStatTimer timer(_wait_timer_pcollector);
+
+  _timer_queries_pcollector.clear_level();
+
+  if (_deleted_queries.size() < 128) {
+    // We'll need a lot of timer queries, so allocate a whole bunch up front.
+    size_t alloc_count = 128 - _deleted_queries.size();
+    _deleted_queries.resize(_deleted_queries.size() + alloc_count);
+    _glGenQueries(alloc_count, _deleted_queries.data() + _deleted_queries.size() - alloc_count);
+  }
+
+  // Issue a start query for collector 0, marking the start of this frame.
+  GLuint frame_query = _deleted_queries.back();
+  _deleted_queries.pop_back();
+  _glQueryCounter(frame_query, GL_TIMESTAMP);
+
+  // Synchronize the GL time with the PStats clock.  Note that the driver may
+  // arbitrarily decide to wait a long time on this call if the queue is
+  // saturated with work.  Experimentally, it seems that it queries the time
+  // *after* the wait, so we take the CPU time after it returns.  If we find
+  // that some drivers do it differently, we may have to do multiple calls.
+  GLint64 gl_time;
+  _glGetInteger64v(GL_TIMESTAMP, &gl_time);
+  double cpu_time = client->get_real_time();
+
+  // Check if the results from the previous frame are available.  We just need
+  // to check whether the last query for each frame is available.
+  while (!_frame_timings.empty()) {
+    const FrameTiming &frame = _frame_timings.front();
+    GLuint last_query = frame._queries.back().first;
+    GLuint result;
+    _glGetQueryObjectuiv(last_query, GL_QUERY_RESULT_AVAILABLE, &result);
+    if (result == 0) {
+      // Not ready, so subsequent frames won't be, either.
+      break;
+    }
+    // We've got a frame whose timer queries are ready.
+    end_frame_timing(frame);
+    _frame_timings.pop_front();
+  }
+
+  FrameTiming frame;
+  frame._frame_number = frame_number;
+  frame._gpu_sync_time = gl_time;
+  frame._cpu_sync_time = cpu_time;
+  frame._queries.push_back(std::make_pair(frame_query, 0));
+  _frame_timings.push_back(std::move(frame));
+
+  return &_frame_timings.back();
+#else
+  return nullptr;
+#endif
+}
+
+/**
+ * Gets the timer query results for the given frame and sends them to the
+ * PStats server.
+ */
+void CLP(GraphicsStateGuardian)::
+end_frame_timing(const FrameTiming &frame) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  // This uses the lower-level PStats interfaces for now because of all the
+  // unnecessary overhead that would otherwise be incurred when adding such a
+  // large amount of data at once.
+  if (!PStatClient::is_connected()) {
+    _timer_queries_active = false;
+    return;
+  }
+
+  // We represent each GSG as one thread.  In the future we may change this to
+  // representing each graphics device as one thread, but OpenGL doesn't really
+  // expose this information to us.
+  PStatThread gpu_thread = get_pstats_thread();
+
+  PStatFrameData frame_data;
+  size_t latency_ref_i = 0;
+
+  for (auto &query : frame._queries) {
+    GLuint64 time_ns;
+    _glGetQueryObjectui64v(query.first, GL_QUERY_RESULT, &time_ns);
+
+    if (query.second & 0x10000) {
+      // Latency query.
+      GLint64 ref = frame._latency_refs[latency_ref_i++];
+      double time = ((GLint64)time_ns - ref) * 0.000001;
+      frame_data.add_level(query.second & 0x7fff, time);
+    }
+    else {
+      // Convert GL time to Panda time.
+      double time = ((GLint64)time_ns - frame._gpu_sync_time) * 0.000000001 + frame._cpu_sync_time;
+      if (query.second & 0x8000) {
+        frame_data.add_stop(query.second & 0x7fff, time);
+      }
+      else {
+        frame_data.add_start(query.second & 0x7fff, time);
+      }
+    }
+    _deleted_queries.push_back(query.first);
+  }
+
+  // The end time of the last collector is implicitly the frame's end time.
+  frame_data.add_stop(0, frame_data.get_end());
+  gpu_thread.add_frame(frame._frame_number, frame_data);
+
+  _timer_queries_pcollector.add_level_now(frame._queries.size());
+#endif
 }
 
 /**
@@ -7149,48 +7271,57 @@ end_occlusion_query() {
  * Adds a timer query to the command stream, associated with the given PStats
  * collector index.
  */
-PT(TimerQueryContext) CLP(GraphicsStateGuardian)::
+void CLP(GraphicsStateGuardian)::
 issue_timer_query(int pstats_index) {
 #if defined(DO_PSTATS) && !defined(OPENGLES)
-  nassertr(_supports_timer_query, nullptr);
-
-  PT(CLP(TimerQueryContext)) query;
-
-  // Hack
-  if (pstats_index == _command_latency_pcollector.get_index()) {
-    query = new CLP(LatencyQueryContext)(this, pstats_index);
-  } else {
-    query = new CLP(TimerQueryContext)(this, pstats_index);
+  FrameTiming *frame = _current_frame_timing;
+  if (frame == nullptr) {
+    return;
   }
 
-  if (_deleted_queries.size() >= 1) {
-    query->_index = _deleted_queries.back();
-    _deleted_queries.pop_back();
-  } else {
-    _glGenQueries(1, &query->_index);
+  nassertv(_supports_timer_query);
 
-    if (GLCAT.is_spam()) {
-      GLCAT.spam() << "Generating query for " << pstats_index
-                   << ": " << query->_index << "\n";
-    }
+  if (_deleted_queries.empty()) {
+    // Allocate some number at a time, since we'll need a lot of these.
+    _deleted_queries.resize(_deleted_queries.size() + 16);
+    _glGenQueries(16, _deleted_queries.data() + _deleted_queries.size() - 16);
   }
+
+  GLuint index = _deleted_queries.back();
+  _deleted_queries.pop_back();
 
   // Issue the timestamp query.
-  _glQueryCounter(query->_index, GL_TIMESTAMP);
+  _glQueryCounter(index, GL_TIMESTAMP);
 
-  if (_use_object_labels) {
-    // Assign a label to it based on the PStatCollector name.
-    const PStatClient *client = PStatClient::get_global_pstats();
-    string name = client->get_collector_fullname(pstats_index & 0x7fff);
-    _glObjectLabel(GL_QUERY, query->_index, name.size(), name.data());
+  //if (_use_object_labels) {
+  //  // Assign a label to it based on the PStatCollector name.
+  //  const PStatClient *client = PStatClient::get_global_pstats();
+  //  string name = client->get_collector_fullname(pstats_index & 0x7fff);
+  //  _glObjectLabel(GL_QUERY, index, name.size(), name.data());
+  //}
+
+  frame->_queries.push_back(std::make_pair(index, pstats_index));
+#endif
+}
+
+/**
+ * A latency query is a special type of timer query that measures the
+ * difference between CPU time and GPU time, ie. how far the GPU is behind in
+ * processing the commands being generated by the CPU right now.
+ */
+void CLP(GraphicsStateGuardian)::
+issue_latency_query(int pstats_index) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  FrameTiming *frame = _current_frame_timing;
+  if (frame == nullptr) {
+    return;
   }
 
-  _pending_timer_queries.push_back((TimerQueryContext *)query);
+  GLint64 time;
+  _glGetInteger64v(GL_TIMESTAMP, &time);
+  issue_timer_query(pstats_index | 0x10000);
 
-  return (TimerQueryContext *)query;
-
-#else
-  return nullptr;
+  frame->_latency_refs.push_back(time);
 #endif
 }
 
@@ -11743,7 +11874,7 @@ set_state_and_transform(const RenderState *target,
 #endif
 
   _state_pcollector.add_level(1);
-  PStatGPUTimer timer1(this, _draw_set_state_pcollector);
+  PStatTimer timer1(_draw_set_state_pcollector);
 
   bool transform_changed = transform != _internal_transform;
   if (transform_changed) {
@@ -11934,7 +12065,7 @@ set_state_and_transform(const RenderState *target,
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
-    PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+    //PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
     do_issue_texture();
 

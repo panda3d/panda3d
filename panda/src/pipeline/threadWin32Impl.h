@@ -43,8 +43,8 @@ public:
 
   INLINE static void prepare_for_exit();
 
-  INLINE static Thread *get_current_thread();
-  INLINE static void bind_thread(Thread *thread);
+  static Thread *get_current_thread();
+  static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
   INLINE static bool is_simple_threads();
@@ -52,9 +52,10 @@ public:
   INLINE static void yield();
   INLINE static void consider_yield();
 
+  static bool get_context_switches(size_t &total, size_t &involuntary);
+
 private:
   static DWORD WINAPI root_func(LPVOID data);
-  static void init_pt_ptr_index();
 
   enum Status {
     S_new,
@@ -70,9 +71,7 @@ private:
   DWORD _thread_id;
   bool _joinable;
   Status _status;
-
-  static DWORD _pt_ptr_index;
-  static bool _got_pt_ptr_index;
+  HANDLE _profiling;
 };
 
 #include "threadWin32Impl.I"

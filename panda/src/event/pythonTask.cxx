@@ -40,13 +40,13 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
   _args(nullptr),
   _upon_death(nullptr),
   _owner(nullptr),
-  _registered_to_owner(false),
   _exception(nullptr),
   _exc_value(nullptr),
   _exc_traceback(nullptr),
   _generator(nullptr),
   _fut_waiter(nullptr),
   _ignore_return(false),
+  _registered_to_owner(false),
   _retrieved_exception(false) {
 
   nassertv(func_or_coro != nullptr);

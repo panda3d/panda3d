@@ -129,6 +129,20 @@ update() {
 }
 
 /**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string PStatPianoRoll::
+get_label_tooltip(int collector_index) const {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(collector_index)) {
+    return std::string();
+  }
+
+  return client_data->get_collector_fullname(collector_index);
+}
+
+/**
  * To be called by the user class when the widget size has changed.  This
  * updates the chart's internal data and causes it to issue redraw commands to
  * reflect the new size.

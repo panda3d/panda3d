@@ -333,7 +333,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2016, macOS-11]
+        os: [ubuntu-18.04, windows-2019, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
@@ -365,7 +365,7 @@ jobs:
     - name: Build Python 3.9
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -378,7 +378,7 @@ jobs:
     - name: Build Python 3.8
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -391,7 +391,7 @@ jobs:
     - name: Build Python 3.7
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.7
       shell: bash
       run: |

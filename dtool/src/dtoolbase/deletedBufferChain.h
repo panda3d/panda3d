@@ -20,6 +20,7 @@
 #include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "typeHandle.h"
+#include "patomic.h"
 #include <assert.h>
 
 // Though it's tempting, it doesn't seem to be possible to implement
@@ -37,7 +38,7 @@
 #endif // NDEBUG
 
 #ifdef USE_DELETEDCHAINFLAG
-enum DeletedChainFlag {
+enum DeletedChainFlag : unsigned int {
   DCF_deleted = 0xfeedba0f,
   DCF_alive = 0x12487654,
 };
@@ -73,7 +74,7 @@ private:
     // In development mode, we piggyback this extra data.  This is maintained
     // out-of-band from the actual pointer returned, so we can safely use this
     // flag to indicate the difference between allocated and freed pointers.
-    TVOLATILE AtomicAdjust::Integer _flag;
+    patomic<DeletedChainFlag> _flag;
 #endif
 
     // This pointer sits within the buffer, in the same space referenced by

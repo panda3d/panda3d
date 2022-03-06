@@ -29,22 +29,6 @@ INLINE ConditionVarDummyImpl::
  *
  */
 INLINE void ConditionVarDummyImpl::
-wait() {
-  Thread::force_yield();
-}
-
-/**
- *
- */
-INLINE void ConditionVarDummyImpl::
-wait(double) {
-  Thread::force_yield();
-}
-
-/**
- *
- */
-INLINE void ConditionVarDummyImpl::
 notify() {
 }
 

@@ -17,6 +17,7 @@
 #include "config_event.h"
 #include "pStatTimer.h"
 #include "throw_event.h"
+#include "trueClock.h"
 
 TypeHandle AsyncFuture::_type_handle;
 TypeHandle AsyncGatheringFuture::_type_handle;
@@ -39,6 +40,7 @@ AsyncFuture::
   if (result_ref != nullptr) {
     _result_ref.cheat() = nullptr;
     if (!result_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete _result;
     }
     _result = nullptr;
@@ -49,6 +51,11 @@ AsyncFuture::
  * Cancels the future.  Returns true if it was cancelled, or false if the
  * future was already done.  Either way, done() will return true after this
  * call returns.
+ *
+ * Please note that calling this is not a guarantee that the operation
+ * corresponding this future does not run.  It could already be in the process
+ * of running, or perhaps not respond to a cancel signal.  All this guarantees
+ * is that the future is marked as done when this call returns.
  *
  * In the case of a task, this is equivalent to remove().
  */
@@ -70,8 +77,7 @@ cancel() {
 void AsyncFuture::
 output(std::ostream &out) const {
   out << get_type();
-  FutureState state = (FutureState)AtomicAdjust::get(_future_state);
-  switch (state) {
+  switch (get_future_state()) {
   case FS_pending:
   case FS_locked_pending:
     out << " (pending)";
@@ -93,47 +99,66 @@ output(std::ostream &out) const {
  */
 void AsyncFuture::
 wait() {
-  if (done()) {
-    return;
+  if (!done()) {
+    PStatTimer timer(AsyncTaskChain::_wait_pcollector);
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Waiting for future " << *this << "\n";
+    }
+
+    FutureState state = get_future_state();
+    while (state < FS_finished) {
+      if (state == FS_locked_pending) {
+        // If it's locked, someone is probably about to finish it, so don't
+        // go to sleep.
+        do {
+          Thread::relax();
+          state = get_future_state();
+        }
+        while (state == FS_locked_pending);
+
+        if (state >= FS_finished) {
+          return;
+        }
+      }
+
+      // Go to sleep.
+      _future_state.wait(state, std::memory_order_relaxed);
+      state = get_future_state();
+    }
   }
 
-  PStatTimer timer(AsyncTaskChain::_wait_pcollector);
-  if (task_cat.is_debug()) {
-    task_cat.debug()
-      << "Waiting for future " << *this << "\n";
-  }
-
-  // Continue to yield while the future isn't done.  It may be more efficient
-  // to use a condition variable, but let's not add the extra complexity
-  // unless we're sure that we need it.
-  do {
-    Thread::force_yield();
-  } while (!done());
+  // Let's make wait() an acquire op, so that people can use a future for
+  // synchronization.
+  patomic_thread_fence(std::memory_order_acquire);
 }
 
 /**
- * Waits until the future is done, or until the timeout is reached.
+ * Waits until the future is done, or until the timeout is reached.  Note that
+ * this can be considerably less efficient than wait() without a timeout, so
+ * it's generally not a good idea to use this unless you really need to.
  */
 void AsyncFuture::
 wait(double timeout) {
-  if (done()) {
-    return;
-  }
+  if (!done()) {
+    PStatTimer timer(AsyncTaskChain::_wait_pcollector);
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Waiting up to " << timeout << " seconds for future " << *this << "\n";
+    }
 
-  PStatTimer timer(AsyncTaskChain::_wait_pcollector);
-  if (task_cat.is_debug()) {
-    task_cat.debug()
-      << "Waiting up to " << timeout << " seconds for future " << *this << "\n";
-  }
+    // Continue to yield while the future isn't done.  It may be more efficient
+    // to use a condition variable, but let's not add the extra complexity
+    // unless we're sure that we need it.
+    TrueClock *clock = TrueClock::get_global_ptr();
+    double end = clock->get_short_time() + timeout;
+    do {
+      Thread::relax();
+    }
+    while (!done() && clock->get_short_time() < end);
 
-  // Continue to yield while the future isn't done.  It may be more efficient
-  // to use a condition variable, but let's not add the extra complexity
-  // unless we're sure that we need it.
-  ClockObject *clock = ClockObject::get_global_clock();
-  double end = clock->get_real_time() + timeout;
-  do {
-    Thread::force_yield();
-  } while (!done() && clock->get_real_time() < end);
+    patomic_thread_fence(std::memory_order_acquire);
+  }
 }
 
 /**
@@ -143,7 +168,11 @@ wait(double timeout) {
  */
 void AsyncFuture::
 notify_done(bool clean_exit) {
+  patomic_thread_fence(std::memory_order_acquire);
   nassertv(done());
+
+  // Let any calls to wait() know that we're done.
+  _future_state.notify_all();
 
   // This will only be called by the thread that managed to set the
   // _future_state away from the "pending" state, so this is thread safe.
@@ -158,7 +187,7 @@ notify_done(bool clean_exit) {
       // It's a gathering future.  Decrease the pending count on it, and if
       // we're the last one, call notify_done() on it.
       AsyncGatheringFuture *gather = (AsyncGatheringFuture *)fut;
-      if (!AtomicAdjust::dec(gather->_num_pending)) {
+      if (gather->_num_pending.fetch_sub(1, std::memory_order_relaxed) == 1) {
         if (gather->set_future_state(FS_finished)) {
           gather->notify_done(true);
         }
@@ -222,22 +251,22 @@ void AsyncFuture::
 set_result(TypedObject *ptr, ReferenceCount *ref_ptr) {
   // We don't strictly need to lock the future since only one thread is
   // allowed to call set_result(), but we might as well.
-  FutureState orig_state = (FutureState)AtomicAdjust::
-    compare_and_exchange(_future_state, (AtomicAdjust::Integer)FS_pending,
-                                        (AtomicAdjust::Integer)FS_locked_pending);
-
+  patomic_unsigned_lock_free::value_type orig_state = FS_pending;
+  if (!_future_state.compare_exchange_strong(orig_state, FS_locked_pending,
+                                             std::memory_order_relaxed)) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-  while (orig_state == FS_locked_pending) {
-    Thread::force_yield();
-    orig_state = (FutureState)AtomicAdjust::
-      compare_and_exchange(_future_state, (AtomicAdjust::Integer)FS_pending,
-                                          (AtomicAdjust::Integer)FS_locked_pending);
-  }
+    while (orig_state == FS_locked_pending) {
+      Thread::relax();
+      orig_state = FS_pending;
+      _future_state.compare_exchange_weak(orig_state, FS_locked_pending,
+                                          std::memory_order_relaxed);
+    }
 #else
-  // We can't lose control between now and calling unlock() if we're using a
-  // cooperative threading model.
-  nassertv(orig_state != FS_locked_pending);
+    // We can't lose control between now and calling unlock() if we're using a
+    // cooperative threading model.
+    nassertv(false);
 #endif
+  }
 
   if (orig_state == FS_pending) {
     _result = ptr;
@@ -246,15 +275,15 @@ set_result(TypedObject *ptr, ReferenceCount *ref_ptr) {
 
     // OK, now our thread owns the _waiting vector et al.
     notify_done(true);
-
-  } else if (orig_state == FS_cancelled) {
+  }
+  else if (orig_state == FS_cancelled) {
     // This was originally illegal, but there is a chance that the future was
     // cancelled while another thread was setting the result.  So, we drop
     // this, but we can issue a warning.
     task_cat.warning()
       << "Ignoring set_result() called on cancelled " << *this << "\n";
-
-  } else {
+  }
+  else {
     task_cat.error()
       << "set_result() was called on finished " << *this << "\n";
   }
@@ -370,9 +399,7 @@ AsyncGatheringFuture(AsyncFuture::Futures futures) :
 
   bool any_pending = false;
 
-  AsyncFuture::Futures::const_iterator it;
-  for (it = _futures.begin(); it != _futures.end(); ++it) {
-    AsyncFuture *fut = *it;
+  for (AsyncFuture *fut : _futures) {
     // If this returns true, the future is not yet done and we need to
     // register ourselves with it.  This creates a circular reference, but it
     // is resolved when the future is completed or cancelled.
@@ -381,7 +408,7 @@ AsyncGatheringFuture(AsyncFuture::Futures futures) :
         _manager = fut->_manager;
       }
       fut->_waiting.push_back((AsyncFuture *)this);
-      AtomicAdjust::inc(_num_pending);
+      _num_pending.fetch_add(1, std::memory_order_relaxed);
       fut->unlock();
       any_pending = true;
     }
@@ -390,7 +417,7 @@ AsyncGatheringFuture(AsyncFuture::Futures futures) :
     // Start in the done state if all the futures we were passed are done.
     // Note that it is only safe to set this member in this manner if indeed
     // no other future holds a reference to us.
-    _future_state = (AtomicAdjust::Integer)FS_finished;
+    _future_state.store(FS_finished, std::memory_order_relaxed);
   }
 }
 
@@ -410,7 +437,7 @@ cancel() {
 
     // Temporarily increase the pending count so that the notify_done()
     // callbacks won't end up causing it to be set to "finished".
-    AtomicAdjust::inc(_num_pending);
+    _num_pending.fetch_add(1, std::memory_order_relaxed);
 
     bool any_cancelled = false;
     for (AsyncFuture *fut : _futures) {
@@ -421,7 +448,7 @@ cancel() {
 
     // If all the futures were cancelled, change state of this future to
     // "cancelled" and call the notify_done() callbacks.
-    if (!AtomicAdjust::dec(_num_pending)) {
+    if (_num_pending.fetch_sub(1, std::memory_order_relaxed) == 1) {
       if (set_future_state(FS_cancelled)) {
         notify_done(false);
       }

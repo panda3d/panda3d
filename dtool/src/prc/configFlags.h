@@ -17,6 +17,7 @@
 #include "dtoolbase.h"
 #include "numeric_types.h"
 #include "atomicAdjust.h"
+#include "memoryBase.h"
 
 /**
  * This class is the base class of both ConfigVariable and ConfigVariableCore.

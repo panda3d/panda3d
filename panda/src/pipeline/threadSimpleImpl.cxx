@@ -55,6 +55,9 @@ ThreadSimpleImpl(Thread *parent_obj) :
 #ifdef WIN32
   _win32_system_thread_id = 0;
 #endif
+
+  _context_switches = 0;
+  _involuntary_context_switches = 0;
 }
 
 /**
@@ -229,6 +232,32 @@ yield_this(bool volunteer) {
   }
   _manager->enqueue_ready(this, true);
   _manager->next_context();
+  if (!volunteer) {
+    // Technically all context switches are voluntary here, but to make this
+    // distinction meaningful, we count it as involuntary on consider_yield().
+    ++_involuntary_context_switches;
+  }
+}
+
+/**
+ * Returns the number of context switches that occurred on the current thread.
+ * The first number is the total number of context switches reported by the OS,
+ * and the second number is the number of involuntary context switches (ie. the
+ * thread was scheduled out by the OS), if known, otherwise zero.
+ * Returns true if context switch information was available, false otherwise.
+ */
+bool ThreadSimpleImpl::
+get_context_switches(size_t &total, size_t &involuntary) {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  if (manager->is_same_system_thread()) {
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    if (thread != nullptr) {
+      total = thread->_context_switches;
+      involuntary = thread->_involuntary_context_switches;
+      return true;
+    }
+  }
+  return false;
 }
 
 /**

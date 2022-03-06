@@ -506,7 +506,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   LParabola local_p(parabola->get_parabola());
   local_p.xform(wrt_mat);
 
-  PN_stdfloat t = INT_MAX;
+  PN_stdfloat t = FLT_MAX;
   PN_stdfloat t1, t2;
   int intersecting_face = -1;
   for (int i = 0; i < get_num_planes(); i++) {

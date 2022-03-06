@@ -66,11 +66,11 @@ GeomVertexData(const std::string &name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
   _name(name),
+  _cycler(GeomVertexData::CData(format, usage_hint)),
   _char_pcollector(PStatCollector(_animation_pcollector, name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
   _morphs_pcollector(_char_pcollector, "Morphs"),
-  _blends_pcollector(_char_pcollector, "Calc blends"),
-  _cycler(GeomVertexData::CData(format, usage_hint))
+  _blends_pcollector(_char_pcollector, "Calc blends")
 {
   nassertv(format->is_registered());
 }

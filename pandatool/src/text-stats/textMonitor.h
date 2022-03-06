@@ -29,7 +29,7 @@ class TextStats;
  */
 class TextMonitor : public PStatMonitor {
 public:
-  TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data);
+  TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data, bool json = false);
   TextStats *get_server();
 
   virtual std::string get_monitor_name();
@@ -37,6 +37,7 @@ public:
   virtual void got_hello();
   virtual void got_bad_version(int client_major, int client_minor,
                                int server_major, int server_minor);
+  virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);
   virtual void lost_connection();
   virtual bool is_thread_safe();
@@ -47,6 +48,8 @@ public:
 private:
   std::ostream *_outStream; //[PECI]
   bool _show_raw_data;
+  bool _json;
+  int _dummy_pid = 0;
 };
 
 #include "textMonitor.I"

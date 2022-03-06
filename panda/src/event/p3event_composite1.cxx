@@ -7,7 +7,6 @@
 #include "asyncTaskSequence.cxx"
 #include "buttonEvent.cxx"
 #include "buttonEventList.cxx"
-#include "functionAsyncTask.cxx"
 #include "genericAsyncTask.cxx"
 #include "pointerEvent.cxx"
 #include "pointerEventList.cxx"

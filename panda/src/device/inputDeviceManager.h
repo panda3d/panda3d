@@ -30,7 +30,7 @@ class WinRawInputDevice;
  *
  * @since 1.10.0
  */
-class EXPCL_PANDA_DEVICE InputDeviceManager {
+class EXPCL_PANDA_DEVICE InputDeviceManager : public MemoryBase {
 protected:
   InputDeviceManager();
   ~InputDeviceManager() = default;
