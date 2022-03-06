@@ -58,8 +58,8 @@ CPPStructType(const CPPStructType &copy) :
   CPPExtensionType(copy),
   _scope(copy._scope),
   _incomplete(copy._incomplete),
-  _derivation(copy._derivation),
-  _final(copy._final)
+  _final(copy._final),
+  _derivation(copy._derivation)
 {
   _subst_decl_recursive_protect = false;
 }

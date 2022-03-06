@@ -15,7 +15,7 @@ base.camera.setPosHpr(0, -10.0, 0, 0, 0, 0)
 base.camLens.setFov(52.0)
 base.camLens.setNearFar(1.0, 10000.0)
 
-globalClock.setMaxDt(0.2)
+base.clock.setMaxDt(0.2)
 base.enableParticles()
 base.addAngularIntegrator()
 

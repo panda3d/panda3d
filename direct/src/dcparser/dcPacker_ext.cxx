@@ -226,6 +226,10 @@ unpack_object() {
       std::string str;
       _this->unpack_string(str);
       object = PyUnicode_FromStringAndSize(str.data(), str.size());
+      if (object == nullptr) {
+        nassert_raise("Unable to decode UTF-8 string; use blob type for binary data");
+        return nullptr;
+      }
     }
     break;
 

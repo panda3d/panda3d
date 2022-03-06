@@ -216,8 +216,8 @@ class RLock(core.ReMutex):
         core.ReMutex.__init__(self, name)
 
 
-class Condition(core.ConditionVarFull):
-    """ This class provides a wrapper around Panda's ConditionVarFull
+class Condition(core.ConditionVar):
+    """ This class provides a wrapper around Panda's ConditionVar
     object.  The wrapper is designed to emulate Python's own
     threading.Condition object. """
 
@@ -230,7 +230,7 @@ class Condition(core.ConditionVarFull):
         assert isinstance(lock, Lock)
 
         self.__lock = lock
-        core.ConditionVarFull.__init__(self, self.__lock)
+        core.ConditionVar.__init__(self, self.__lock)
 
     def acquire(self, *args, **kw):
         return self.__lock.acquire(*args, **kw)
@@ -240,12 +240,12 @@ class Condition(core.ConditionVarFull):
 
     def wait(self, timeout = None):
         if timeout is None:
-            core.ConditionVarFull.wait(self)
+            core.ConditionVar.wait(self)
         else:
-            core.ConditionVarFull.wait(self, timeout)
+            core.ConditionVar.wait(self, timeout)
 
     def notifyAll(self):
-        core.ConditionVarFull.notifyAll(self)
+        core.ConditionVar.notifyAll(self)
 
     notify_all = notifyAll
 
@@ -295,7 +295,7 @@ class Event:
 
     def __init__(self):
         self.__lock = core.Mutex("Python Event")
-        self.__cvar = core.ConditionVarFull(self.__lock)
+        self.__cvar = core.ConditionVar(self.__lock)
         self.__flag = False
 
     def is_set(self):

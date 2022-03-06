@@ -36,7 +36,7 @@ def lerpBackgroundColor(r, g, b, duration):
     Function to lerp background color to a new value
     """
     def lerpColor(state):
-        dt = globalClock.getDt()
+        dt = base.clock.getDt()
         state.time += dt
         sf = state.time / state.duration
         if sf >= 1.0:

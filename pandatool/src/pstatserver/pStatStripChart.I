@@ -20,6 +20,14 @@ get_view() const {
 }
 
 /**
+ * Returns the particular thread whose data this strip chart reflects.
+ */
+INLINE int PStatStripChart::
+get_thread_index() const {
+  return _thread_index;
+}
+
+/**
  * Returns the particular collector whose data this strip chart reflects.
  */
 INLINE int PStatStripChart::
@@ -154,6 +162,15 @@ height_to_pixel(double value) const {
 INLINE double PStatStripChart::
 pixel_to_height(int x) const {
   return _value_height * (double)(get_ysize() - x) / (double)get_ysize();
+}
+
+/**
+ * Returns true if get_title_text() has never yet returned an answer, false if
+ * it has.
+ */
+INLINE bool PStatStripChart::
+is_title_unknown() const {
+  return _title_unknown;
 }
 
 /**

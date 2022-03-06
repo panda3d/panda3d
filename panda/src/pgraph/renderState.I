@@ -389,22 +389,6 @@ consider_update_pstats(int old_referenced_bits) const {
 /**
  *
  */
-INLINE RenderState::Composition::
-Composition() {
-}
-
-/**
- *
- */
-INLINE RenderState::Composition::
-Composition(const RenderState::Composition &copy) :
-  _result(copy._result)
-{
-}
-
-/**
- *
- */
 INLINE RenderState::Attribute::
 Attribute(const RenderAttrib *attrib, int override) :
   _attrib(attrib),

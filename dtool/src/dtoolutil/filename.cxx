@@ -152,10 +152,22 @@ get_panda_root() {
 
   if (panda_root == nullptr) {
     panda_root = new string;
+
+#ifdef _MSC_VER
+    char *envvar = nullptr;
+    size_t size = 0;
+    while (getenv_s(&size, envvar, size, "PANDA_ROOT") == ERANGE) {
+      envvar = (char *)alloca(size);
+    }
+    if (size != 0) {
+      (*panda_root) = front_to_back_slash(envvar);
+    }
+#else
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
+#endif
 
     // Ensure the string ends in a backslash.  If PANDA_ROOT is empty or
     // undefined, this function must return a single backslash--not an empty
@@ -477,7 +489,8 @@ get_home_directory() {
   if (AtomicAdjust::get_ptr(_home_directory) == nullptr) {
     Filename home_directory;
 
-    // In all environments, check $HOME first.
+    // In all environments except Windows, check $HOME first.
+#ifndef _WIN32
     char *home = getenv("HOME");
     if (home != nullptr) {
       Filename dirname = from_os_specific(home);
@@ -487,6 +500,7 @@ get_home_directory() {
         }
       }
     }
+#endif
 
     if (home_directory.empty()) {
 #ifdef _WIN32
@@ -1876,13 +1890,13 @@ open_read(std::ifstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
   stream.open(os_specific.c_str(), open_mode);
-#endif  // _WIN32
+#endif  // _MSC_VER
 
   return (!stream.fail());
 }
@@ -1926,11 +1940,11 @@ open_write(std::ofstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -1958,11 +1972,11 @@ open_append(std::ofstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2000,11 +2014,11 @@ open_read_write(std::fstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2032,11 +2046,11 @@ open_read_append(std::fstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());

@@ -372,12 +372,14 @@ public:
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   int get_num_primitives() const;
+  int get_num_faces() const;
   void get_referenced_vertices(BitArray &bits) const;
   INLINE int get_min_vertex() const;
   INLINE int get_max_vertex() const;
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
+  INLINE const GeomVertexArrayData *get_vertices() const;
   INLINE int get_index_stride() const;
   INLINE const unsigned char *get_read_pointer(bool force) const;
   INLINE int get_strip_cut_index() const;

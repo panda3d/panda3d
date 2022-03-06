@@ -31,6 +31,11 @@ ConfigureFn(config_cocoadisplay) {
   init_libcocoadisplay();
 }
 
+ConfigVariableBool cocoa_invert_wheel_x
+("cocoa-invert-wheel-x", false,
+ PRC_DESC("Set this to true to swap the wheel_left and wheel_right mouse "
+          "button events, to restore to the pre-1.10.12 behavior."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

@@ -34,7 +34,6 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
-  virtual void begin_flip();
   virtual void ready_flip();
   virtual void end_flip();
 

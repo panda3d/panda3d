@@ -30,11 +30,17 @@ protected:
   INLINE bool attachStream(Assimp::LogStream*, unsigned int) {
     return false;
   };
+  INLINE bool detachStream(Assimp::LogStream*, unsigned int) {
+    return false;
+  };
+
+  // Kept for compatibility with Assimp 4.x
   INLINE bool detatchStream(Assimp::LogStream*, unsigned int) {
     return false;
   };
 
   void OnDebug(const char *message);
+  void OnVerboseDebug(const char *message);
   void OnError(const char *message);
   void OnInfo(const char *message);
   void OnWarn(const char *message);

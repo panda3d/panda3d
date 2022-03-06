@@ -75,10 +75,10 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                GraphicsOutput *host,
                bool default_stereo_flags) :
   _lock("GraphicsOutput"),
+  _size(0, 0),
   _cull_window_pcollector(_cull_pcollector, name),
   _draw_window_pcollector(_draw_pcollector, name),
-  _clear_window_pcollector(_draw_window_pcollector, "Clear"),
-  _size(0, 0)
+  _clear_window_pcollector(_draw_window_pcollector, "Clear")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -833,6 +833,9 @@ get_active_display_region(int n) const {
  * Creates and returns an offscreen buffer for rendering into, the result of
  * which will be a texture suitable for applying to geometry within the scene
  * rendered into this window.
+ *
+ * If you pass zero as the buffer size, the buffer will have the same size as
+ * the host window, and will automatically be resized when the host window is.
  *
  * If tex is not NULL, it is the texture that will be set up for rendering
  * into; otherwise, a new Texture object will be created.  In either case, the

@@ -18,6 +18,7 @@
 
 #include "config_text.h"
 #include "luse.h"
+#include "memoryBase.h"
 #include "textFont.h"
 #include "pointerTo.h"
 #include "renderState.h"
@@ -38,7 +39,7 @@
  * the string; each nested TextProperties structure modifies the appearance of
  * subsequent text within the block.
  */
-class EXPCL_PANDA_TEXT TextProperties {
+class EXPCL_PANDA_TEXT TextProperties : public MemoryBase {
 PUBLISHED:
   enum Alignment {
     A_left,

@@ -137,6 +137,9 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
+  EXTENSION(PyObject *__reduce__() const);
+  EXTENSION(void __setstate__(PyObject *));
+
 public:
 #ifdef HAVE_PYTHON
   PyObject *get_python_type() const;

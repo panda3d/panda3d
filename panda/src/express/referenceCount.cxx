@@ -23,17 +23,19 @@ TypeHandle ReferenceCount::_type_handle;
  */
 bool ReferenceCount::
 do_test_ref_count_integrity() const {
+  int ref_count = _ref_count.load(std::memory_order_relaxed);
+
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.
   // Maybe you tried to create an automatic (local variable) instance of a
   // class that derives from ReferenceCount.  Or maybe your headers are out of
   // sync, and you need to make clean in direct or some higher tree.
-  nassertr(_ref_count != deleted_ref_count, false);
+  nassertr(ref_count != deleted_ref_count, false);
 
   // If this assertion fails, the reference counts are all screwed up
   // altogether.  Maybe some errant code stomped all over memory somewhere.
-  nassertr(_ref_count >= 0, false);
+  nassertr(ref_count >= 0, false);
 
   return true;
 }
@@ -44,7 +46,7 @@ do_test_ref_count_integrity() const {
 bool ReferenceCount::
 do_test_ref_count_nonzero() const {
   nassertr(do_test_ref_count_integrity(), false);
-  nassertr(_ref_count > 0, false);
+  nassertr(_ref_count.load(std::memory_order_relaxed) > 0, false);
 
   return true;
 }
@@ -54,11 +56,12 @@ do_test_ref_count_nonzero() const {
  */
 void ReferenceCount::
 create_weak_list() {
-  WeakReferenceList *weak_list = new WeakReferenceList;
-  void *orig =
-    AtomicAdjust::compare_and_exchange_ptr(_weak_list, nullptr, weak_list);
-  if (orig != nullptr) {
+  WeakReferenceList *new_list = new WeakReferenceList;
+  WeakReferenceList *old_list = nullptr;
+  if (!_weak_list.compare_exchange_strong(old_list, new_list,
+                                          std::memory_order_release,
+                                          std::memory_order_relaxed)) {
     // Someone else created it first.
-    delete weak_list;
+    delete new_list;
   }
 }

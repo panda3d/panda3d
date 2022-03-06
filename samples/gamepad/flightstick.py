@@ -120,7 +120,7 @@ class App(ShowBase):
         self.lblAction.hide()
 
     def moveTask(self, task):
-        dt = globalClock.getDt()
+        dt = base.clock.dt
 
         if not self.flightStick:
             return task.cont

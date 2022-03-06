@@ -39,6 +39,7 @@ encode(Datagram &datagram) const {
     datagram.add_string(_client_progname);
     datagram.add_uint16(_major_version);
     datagram.add_uint16(_minor_version);
+    datagram.add_uint32(_client_pid);
     break;
 
   case T_define_collectors:
@@ -85,6 +86,11 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
     } else {
       _major_version = source.get_uint16();
       _minor_version = source.get_uint16();
+    }
+    if (source.get_remaining_size() >= 4) {
+      _client_pid = source.get_uint32();
+    } else {
+      _client_pid = -1;
     }
     break;
 

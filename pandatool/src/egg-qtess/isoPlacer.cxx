@@ -106,14 +106,14 @@ get_scores(int subdiv, int across, double ratio,
  */
 void IsoPlacer::
 place(int count, pvector<double> &iso_points) {
-  int i;
-
   // Count up the average curvature.
+  /*
   double avg_curve = 0.0;
   for (i = 0; i < _maxi; i++) {
     avg_curve += _cscore[i];
   }
   avg_curve /= (double)_maxi;
+  */
 
   // Find all the local maxima in the curvature table.  These are bend points.
   typedef pvector<int> BendPoints;

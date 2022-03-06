@@ -50,7 +50,6 @@ public:
   // from parent class PandaNode.
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
   virtual void output(std::ostream &out) const;
 
   // from parent class CollisionRecorder.

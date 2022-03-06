@@ -64,6 +64,10 @@ PUBLISHED:
   BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
+#ifndef CPPPARSER
+  template<class Callable>
+  INLINE AsyncTask *add(const std::string &name, Callable callable);
+#endif
   bool has_task(AsyncTask *task) const;
 
   AsyncTask *find_task(const std::string &name) const;

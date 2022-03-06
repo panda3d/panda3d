@@ -20,6 +20,11 @@
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
+#include <commctrl.h>
+#include <shellscalingapi.h>
+
+// Enable common controls version 6, necessary for modern visual styles
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 static const char *toplevel_class_name = "pstats";
 static WinStatsServer *server = nullptr;
@@ -82,6 +87,15 @@ create_toplevel_window(HINSTANCE application) {
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+  // Initialize commctl32.dll.
+  INITCOMMONCONTROLSEX icc;
+  icc.dwICC = ICC_WIN95_CLASSES | ICC_STANDARD_CLASSES;
+  icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
+  InitCommonControlsEx(&icc);
+
+  // Signal DPI awareness.
+  SetProcessDPIAware();
+
   HINSTANCE application = GetModuleHandle(nullptr);
   HWND toplevel_window = create_toplevel_window(application);
 

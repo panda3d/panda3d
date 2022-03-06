@@ -21,7 +21,6 @@
  */
 PyObject *Extension<CollisionHandlerPhysical>::
 __reduce__(PyObject *self) const {
-  extern struct Dtool_PyTypedObject Dtool_Datagram;
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   // Create a tuple with all the NodePath pointers.

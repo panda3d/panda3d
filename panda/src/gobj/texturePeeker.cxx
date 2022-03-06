@@ -361,7 +361,7 @@ lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
 }
 
 /**
- * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * Works like TexturePeeker::lookup(), but instead of uv-coordinates, integer
  * coordinates are used.
  */
 void TexturePeeker::
@@ -372,7 +372,7 @@ fetch_pixel(LColor &color, int x, int y) const {
 }
 
 /**
- * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * Works like TexturePeeker::lookup(), but instead of uv-coordinates, integer
  * coordinates are used.
  */
 void TexturePeeker::
@@ -436,7 +436,7 @@ lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
  * rectangle defined by the specified coordinate range.
  *
  * The texel color is linearly filtered over the entire region.  u, v, and w
- * will wrap around regardless of the texture's wrap mode.
+ * must be in the range [0, 1].
  */
 void TexturePeeker::
 filter_rect(LColor &color,
@@ -464,7 +464,7 @@ filter_rect(LColor &color,
  * rectangle defined by the specified coordinate range.
  *
  * The texel color is linearly filtered over the entire region.  u, v, and w
- * will wrap around regardless of the texture's wrap mode.
+ * must be in the range [0, 1].
  */
 void TexturePeeker::
 filter_rect(LColor &color,

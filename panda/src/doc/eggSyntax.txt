@@ -3,7 +3,7 @@ THE PHILOSOPHY OF EGG FILES (vs. bam files)
 Egg files are used by Panda3D to describe many properties of a scene:
 simple geometry, including special effects and collision surfaces,
 characters including skeletons, morphs, and multiple-joint
-assignments, and character animation tables.  
+assignments, and character animation tables.
 
 Egg files are designed to be the lingua franca of model manipulation
 for Panda tools.  A number of utilities are provided that read and
@@ -168,8 +168,9 @@ appear before they are referenced.
     The remaining formats are generic and specify only the semantic
     meaning of the channels.  The size of the texels is determined by
     the width of the components in the image file.  RGBA is the most
-    general; RGB is the same, but without any alpha channel.  RGBM is
-    like RGBA, except that it requests only one bit of alpha, if the
+    general; RGB is the same, but without any alpha channel.
+
+    RGBM is like RGBA, except that it requests only one bit of alpha, if the
     graphics card can provide that, to leave more room for the RGB
     components, which is especially important for older 16-bit
     graphics cards (the "M" stands for "mask", as in a cutout).
@@ -211,7 +212,7 @@ appear before they are referenced.
     Although less often used, for 3-d textures wrapw may also be
     specified, and it behaves similarly to wrapu and wrapv.
 
-    There are other legal values in addtional to REPEAT and CLAMP.
+    There are other legal values in additional to REPEAT and CLAMP.
     The full list is:
 
       CLAMP
@@ -278,7 +279,7 @@ appear before they are referenced.
     / (number of views).
 
   <Scalar> read-mipmaps { flag }
- 
+
    If this flag is nonzero, then pre-generated mipmap levels will be
     loaded along with the texture.  In this case, the filename should
     contain a sequence of one or more hash mark ("#") characters,
@@ -413,7 +414,7 @@ appear before they are referenced.
       <Scalar> combine-alpha-operand2 { src-alpha }
 
   <Scalar> saved-result { flag }
- 
+
     If flag is nonzero, then it indicates that this particular texture
     stage will be supplied as the "last_saved_result" source for any
     future texture stages.
@@ -704,7 +705,7 @@ appear before they are referenced.
     <UV> [name] { u v [w] [tangent] [binormal] [morph-list] }
 
     This gives the texture coordinates of the vertex.  This must be
-    specified if a texture is to be mapped onto this geometry.  
+    specified if a texture is to be mapped onto this geometry.
 
     The texture coordinates are usually two-dimensional, with two
     component values (u v), but they may also be three-dimensional,
@@ -739,7 +740,7 @@ appear before they are referenced.
     meaning to custom code or a custom shader.  Like named UV's, there
     may be multiple Aux entries for a given vertex, each with a
     different name.
-    
+
 
 
 <DynamicVertexPool> name { vertices }
@@ -758,18 +759,18 @@ appear before they are referenced.
 
   At the present time, the DynamicVertexPool is not implemented in
   Panda3D.
-  
+
 
 
 
 GEOMETRY ENTRIES
 
-<Polygon> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
-    } 
+<Polygon> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
+    }
 }
 
   A polygon consists of a sequence of vertices from a single vertex
@@ -822,7 +823,7 @@ GEOMETRY ENTRIES
     used unless all vertices also have a normal.  If no normal is
     defined, none will be supplied.  The polygon normal, like the
     vertex normal, may be morphed by specifying a series of <DNormal>
-    entries.  
+    entries.
 
     The polygon normal is used only for lighting and environment
     mapping calculations, and is not related to the implicit normal
@@ -844,7 +845,7 @@ GEOMETRY ENTRIES
     disabled, and polygons are one-sided; specifying a nonzero value
     disables backface culling for this particular polygon and allows
     it to be viewed from either side.
-    
+
 
   <Scalar> bin { bin-name }
 
@@ -916,12 +917,12 @@ GEOMETRY ENTRIES
     or even within a texture.
 
 
-<Patch> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
-    } 
+<Patch> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
+    }
 }
 
   A patch is similar to a polygon, but it is a special primitive that
@@ -936,12 +937,12 @@ GEOMETRY ENTRIES
   specified for Patch.
 
 
-<PointLight> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
-    } 
+<PointLight> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
+    }
 }
 
   A PointLight is a set of single points.  One point is drawn for each
@@ -964,12 +965,12 @@ GEOMETRY ENTRIES
     viewer normally.
 
 
-<Line> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
-    } 
+<Line> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
+    }
     [component attributes]
 }
 
@@ -985,11 +986,11 @@ GEOMETRY ENTRIES
   line segment, as in TriangleStrip, below.
 
 
-<TriangleStrip> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
+<TriangleStrip> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
     }
     [component attributes]
 }
@@ -1013,7 +1014,7 @@ GEOMETRY ENTRIES
   It is possible for the individual triangles of a triangle strip to
   have a separate normal and/or color.  If so, a <Component> entry
   should be given for each so-modified triangle:
-  
+
   <Component> index {
     <RGBA> { r g b a [morph-list] }
     <Normal> { x y z [morph-list] }
@@ -1024,11 +1025,11 @@ GEOMETRY ENTRIES
   must always follow the vertex list.
 
 
-<TriangleFan> name { 
-    [attributes] 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
+<TriangleFan> name {
+    [attributes]
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
     }
     [component attributes]
 }
@@ -1057,7 +1058,7 @@ itself doesn't support them and will always create static curves and
 surfaces.  External tools like egg-qtess, however, may respect them.
 
 <NURBSCurve> {
-    [attributes] 
+    [attributes]
 
     <Order> { order }
     <Knots> { knot-list }
@@ -1083,7 +1084,7 @@ surfaces.  External tools like egg-qtess, however, may respect them.
 
   <Scalar> type { curve-type }
 
-    This defines the semanting meaning of this curve, either XYZ, HPR,
+    This defines the semantic meaning of this curve, either XYZ, HPR,
     or T.  If the type is XYZ, the curve will automatically be
     transformed between Y-up and Z-up if necessary; otherwise, it will
     be left alone.
@@ -1107,16 +1108,16 @@ surfaces.  External tools like egg-qtess, however, may respect them.
 
 
 <NURBSSurface> name {
-    [attributes] 
+    [attributes]
 
     <Order> { u-order v-order }
     <U-knots> { u-knot-list }
     <V-knots> { v-knot-list }
 
-    <VertexRef> { 
-        indices 
-        <Ref> { pool-name } 
-    } 
+    <VertexRef> {
+        indices
+        <Ref> { pool-name }
+    }
 }
 
   A NURBS surface is an extension of a NURBS curve into two parametric
@@ -1137,7 +1138,7 @@ surfaces.  External tools like egg-qtess, however, may respect them.
     These define the number of subdivisions to make in the U and V
     directions to represent the surface.  A uniform subdivision is
     always made, and trim curves are not respected (though they will
-    be drawn in if the trim curves themselves also have a subiv
+    be drawn in if the trim curves themselves also have a subdiv
     parameter).  This is only intended as a cheesy visualization.
 
 
@@ -1194,7 +1195,7 @@ surfaces.  External tools like egg-qtess, however, may respect them.
 
   Although the egg syntax supports trim curves, there are at present
   no egg processing tools that respect them.  For instance, egg-qtess
-  ignores trim curves and always tesselates the entire NURBS surface.
+  ignores trim curves and always tessellates the entire NURBS surface.
 
 
 MORPH DESCRIPTION ENTRIES
@@ -1267,7 +1268,7 @@ GROUPING ENTRIES
   attributes of the group:
 
   GROUP BINARY ATTRIBUTES
-  
+
   These attributes may be either on or off; they are off by default.
   They are turned on by specifying a non-zero "boolean-value".
 
@@ -1309,6 +1310,15 @@ GROUPING ENTRIES
     top of any hierarchy of <Joint>'s and/or geometry with morphed
     vertices; joints and morphs appearing outside of a hierarchy
     identified with a <Dart> flag are undefined.
+
+  <Dart> { structured }
+
+    This is an optional alternative for the <Dart> flag.
+    By default, Panda will collapse all of the geometry in a group (with the <Dart> { 1 } flag)
+    a single node. While this is optimal for conditions such as characters moving around
+    a scene, it may be suboptimal for larger or more complex characters.
+    This entry is typically generated by the egg-optchar program with the "-dart structured" flag.
+    <Dart> { structured } implies <Dart> { 1 }.
 
   <Switch> { boolean-value }
 
@@ -1446,7 +1456,7 @@ GROUPING ENTRIES
     of the billboard, not at the origin of the scene.
 
   <SwitchCondition> {
-     <Distance> { 
+     <Distance> {
         in out [fade] <Vertex> { x y z }
      }
   }
@@ -1483,7 +1493,7 @@ GROUPING ENTRIES
     Valid types so far are:
 
     Plane
-    
+
       The geometry represents an infinite plane.  The first polygon
       found in the group will define the plane.
 
@@ -1550,7 +1560,7 @@ GROUPING ENTRIES
       most compatibility.
 
     keep
- 
+
       Don't discard the visible geometry after using it to define a
       collision surface; create both an invisible collision surface
       and the visible geometry.
@@ -1619,7 +1629,8 @@ GROUPING ENTRIES
 
     There may also be additional predefined egg object types not
     listed here; see the *.pp files that are installed into the etc
-    directory for a complete list.
+    directory for a complete list. Additionally, you can reference
+    the file located in $PANDA/src/doc/howto.MultiGenModelFlags
 
   <Transform> { transform-definition }
 
@@ -1683,9 +1694,9 @@ GROUPING ENTRIES
     current group, regardless of the group in which the geometry is
     actually defined.  See the <Joint> description, below.
 
-  <AnimPreload> { 
+  <AnimPreload> {
     <Scalar> fps { float-value }
-    <Scalar> num-frames { integer-value } 
+    <Scalar> num-frames { integer-value }
   }
 
     One or more AnimPreload entries may appear within the <Group> that
@@ -1720,7 +1731,7 @@ GROUPING ENTRIES
   geometry in the scene graph.  The syntax is:
 
 <Instance> name {
-  <Ref> { group-name } 
+  <Ref> { group-name }
   [ <Ref> { group-name } ... ]
 }
 
@@ -1746,8 +1757,8 @@ GROUPING ENTRIES
   and it may contain other joints.
 
   A tree of <Joint> nodes only makes sense within a character
-  definition, which is created by applying the <DART> flag to a group.
-  See <DART>, above.
+  definition, which is created by applying the <Dart> flag to a group.
+  See <Dart>, above.
 
   The vertex assignment is crucial.  This is how the geometry of a
   character is made to move with the joints.  The character's geometry
@@ -1790,7 +1801,7 @@ GROUPING ENTRIES
   bundles, or any one of the following (<Scalar> entries are optional,
   and default as shown):
 
-  <S$Anim> name { 
+  <S$Anim> name {
       <Scalar> fps { 24 }
       <V> { values }
   }
@@ -1844,7 +1855,7 @@ GROUPING ENTRIES
     an animation sequence.
 
 
-  <VertexAnim> name { 
+  <VertexAnim> name {
       <Scalar> width { table-width }
       <Scalar> fps { 24 }
       <V> { values }
@@ -1912,6 +1923,10 @@ ANIMATION STRUCTURE
   The <Dart> flag is necessary to indicate that this group begins an
   animated model description.  Without the <Dart> flag, joints will be
   treated as ordinary groups, and morphs will be ignored.
+
+  It is important to note that utilizing <Dart> { 1 } will collapse all of the
+  model's geometry into a single node. To omit this, use <Dart> { structured } instead.
+  (See <Dart> above.)
 
   In the above, UPPERCASE NAMES represent an arbitrary name that you
   may choose.  The name of the enclosing group, CHARACTER_NAME, is

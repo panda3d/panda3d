@@ -42,11 +42,19 @@ class EXPCL_PANDA_PGRAPH CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,
                            const TransformState *net_transform,
-                           const RenderState *state,
+                           CPT(RenderState) state,
                            GeometricBoundingVolume *view_frustum,
                            Thread *current_thread);
   INLINE CullTraverserData(const CullTraverserData &parent,
-                           PandaNode *child);
+                           PandaNode *child,
+                           const TransformState *net_transform,
+                           CPT(RenderState) state,
+                           GeometricBoundingVolume *view_frustum);
+  INLINE CullTraverserData(const CullTraverserData &parent,
+                           PandaNodePipelineReader &&node_reader,
+                           const TransformState *net_transform,
+                           CPT(RenderState) state,
+                           GeometricBoundingVolume *view_frustum);
 
 PUBLISHED:
   INLINE PandaNode *node() const;
@@ -62,13 +70,20 @@ PUBLISHED:
   INLINE CPT(TransformState) get_internal_transform(const CullTraverser *trav) const;
   INLINE const TransformState *get_net_transform(const CullTraverser *trav) const;
 
-  INLINE bool is_in_view(const DrawMask &camera_mask);
+  INLINE int is_in_view(const DrawMask &camera_mask) const;
   INLINE bool is_this_node_hidden(const DrawMask &camera_mask) const;
+
+  bool apply_cull_planes(const CullPlanes *planes, const GeometricBoundingVolume *node_gbv);
 
   void apply_transform_and_state(CullTraverser *trav);
   void apply_transform(const TransformState *node_transform);
 
   MAKE_PROPERTY(node_path, get_node_path);
+
+public:
+  bool is_instance_in_view(const TransformState *instance_transform, const DrawMask &camera_mask) const;
+  INLINE int is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &camera_mask) const;
+  INLINE int is_child_in_view(const PandaNode::DownConnection &child, const DrawMask &camera_mask) const;
 
 private:
   // We store a chain leading all the way to the root, so that we can compose
@@ -88,9 +103,6 @@ public:
 
 private:
   PT(NodePathComponent) r_get_node_path() const;
-
-  bool is_in_view_impl();
-  static const RenderState *get_fake_view_frustum_cull_state();
 };
 
 /* okcircular */

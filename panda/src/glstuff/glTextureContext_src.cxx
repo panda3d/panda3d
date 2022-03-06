@@ -82,6 +82,7 @@ reset_data() {
   _handle_resident = false;
 #endif
   _has_storage = false;
+  _simple_loaded = false;
   _immutable = false;
 
 #ifndef OPENGLES_1

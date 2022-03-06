@@ -186,7 +186,7 @@ class ClientRepositoryBase(ConnectionRepository):
                 self.doGenerate(*args)
 
                 if deferrable:
-                    self.lastGenerate = globalClock.getFrameTime()
+                    self.lastGenerate = ClockObject.getGlobalClock().getFrameTime()
 
                 for dg, di in updates:
                     # non-DC updates that need to be played back in-order are
@@ -207,7 +207,7 @@ class ClientRepositoryBase(ConnectionRepository):
         """ This is the task that generates an object on the deferred
         queue. """
 
-        now = globalClock.getFrameTime()
+        now = ClockObject.getGlobalClock().getFrameTime()
         while self.deferredGenerates:
             if now - self.lastGenerate < self.deferInterval:
                 # Come back later.
@@ -539,7 +539,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self.notify.debug("Heartbeats not started; not sending.")
             return
 
-        elapsed = globalClock.getRealTime() - self.lastHeartbeat
+        elapsed = ClockObject.getGlobalClock().getRealTime() - self.lastHeartbeat
         if elapsed < 0 or elapsed > self.heartbeatInterval:
             # It's time to send the heartbeat again (or maybe someone
             # reset the clock back).

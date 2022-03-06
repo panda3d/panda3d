@@ -5,6 +5,8 @@ from direct.directtools.DirectUtil import *
 from direct.gui import OnscreenText
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
+from panda3d.core import ClockObject
+
 import math
 
 #TODO: Handle interaction between widget, followSelectedTask and updateTask
@@ -58,7 +60,7 @@ class DirectJoybox(DirectObject):
                         R_TWIST, L_TWIST, NULL_AXIS]
         self.modifier = [1, 1, 1, -1, -1, 0]
         # Initialize time
-        self.lastTime = globalClock.getFrameTime()
+        self.lastTime = ClockObject.getGlobalClock().getFrameTime()
         # Record node path
         self.nodePath = nodePath
         self.headingNP = headingNP
@@ -148,7 +150,7 @@ class DirectJoybox(DirectObject):
 
     def updateVals(self):
         # Update delta time
-        cTime = globalClock.getFrameTime()
+        cTime = ClockObject.getGlobalClock().getFrameTime()
         self.deltaTime = cTime - self.lastTime
         self.lastTime = cTime
         # Update analogs
@@ -164,7 +166,7 @@ class DirectJoybox(DirectObject):
 
     def updateValsUnrolled(self):
         # Update delta time
-        cTime = globalClock.getFrameTime()
+        cTime = ClockObject.getGlobalClock().getFrameTime()
         self.deltaTime = cTime - self.lastTime
         self.lastTime = cTime
         # Update analogs

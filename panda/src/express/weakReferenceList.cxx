@@ -27,7 +27,7 @@ WeakReferenceList() : _count(_alive_offset) {
  */
 WeakReferenceList::
 ~WeakReferenceList() {
-  nassertv(_count == 0);
+  nassertv(_count.load(std::memory_order_relaxed) == 0);
 }
 
 /**
@@ -91,7 +91,7 @@ mark_deleted() {
 
   // Decrement the special offset added to the weak pointer count to indicate
   // that it can be deleted when all the weak references have gone.
-  AtomicAdjust::Integer result = AtomicAdjust::add(_count, -_alive_offset);
+  int result = _count.fetch_sub(_alive_offset, std::memory_order_relaxed) - _alive_offset;
   _lock.unlock();
   if (result == 0) {
     // There are no weak references remaining either, so delete this.

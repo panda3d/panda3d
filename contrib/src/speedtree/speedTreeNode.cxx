@@ -1003,17 +1003,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool SpeedTreeNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  * Adds the node's contents to the CullResult we are building up during the
  * cull traversal, so that it will be drawn at render time.  For most nodes
  * other than GeomNodes, this is a do-nothing operation.
@@ -1162,6 +1151,7 @@ set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const {
 void SpeedTreeNode::
 init_node() {
   PandaNode::set_cull_callback();
+  PandaNode::set_renderable();
 
   _is_valid = false;
   _needs_repopulate = false;

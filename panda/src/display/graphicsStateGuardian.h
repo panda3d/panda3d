@@ -44,7 +44,6 @@
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
-#include "timerQueryContext.h"
 #include "loader.h"
 #include "shaderAttrib.h"
 #include "texGenAttrib.h"
@@ -320,7 +319,8 @@ public:
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  virtual PT(TimerQueryContext) issue_timer_query(int pstats_index);
+  virtual void issue_timer_query(int pstats_index);
+  virtual void issue_latency_query(int pstats_index);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
@@ -362,8 +362,6 @@ PUBLISHED:
   virtual void end_scene();
 public:
   virtual void end_frame(Thread *current_thread);
-
-  void flush_timer_queries();
 
   void set_current_properties(const FrameBufferProperties *properties);
 
@@ -445,6 +443,7 @@ public:
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
+  PStatThread get_pstats_thread();
 #endif
 
 protected:
@@ -602,13 +601,6 @@ protected:
 #ifdef DO_PSTATS
   int _pstats_gpu_thread;
   bool _timer_queries_active;
-  PStatFrameData _pstats_gpu_data;
-
-  int _last_query_frame;
-  int _last_num_queried;
-  // double _timer_delta;
-  typedef pdeque<PT(TimerQueryContext)> TimerQueryQueue;
-  TimerQueryQueue _pending_timer_queries;
 #endif
 
   bool _copy_texture_inverted;
@@ -664,9 +656,9 @@ protected:
 
 public:
   // Statistics
-  static PStatCollector _vertex_buffer_switch_pcollector;
-  static PStatCollector _index_buffer_switch_pcollector;
-  static PStatCollector _shader_buffer_switch_pcollector;
+  //static PStatCollector _vertex_buffer_switch_pcollector;
+  //static PStatCollector _index_buffer_switch_pcollector;
+  //static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
   static PStatCollector _load_shader_buffer_pcollector;
@@ -699,7 +691,6 @@ public:
   static PStatCollector _wait_occlusion_pcollector;
   static PStatCollector _wait_timer_pcollector;
   static PStatCollector _timer_queries_pcollector;
-  static PStatCollector _command_latency_pcollector;
 
   static PStatCollector _prepare_pcollector;
   static PStatCollector _prepare_texture_pcollector;

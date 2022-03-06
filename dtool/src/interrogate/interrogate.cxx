@@ -547,8 +547,15 @@ main(int argc, char **argv) {
   // We allow overriding this value by setting SOURCE_DATE_EPOCH to support
   // reproducible builds.
   int file_identifier;
+#ifdef _MSC_VER
+  char source_date_epoch[64];
+  size_t source_date_epoch_size = 0;
+  if (getenv_s(&source_date_epoch_size, source_date_epoch,
+               sizeof(source_date_epoch), "SOURCE_DATE_EPOCH"), source_date_epoch_size > 1) {
+#else
   const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
   if (source_date_epoch != nullptr && source_date_epoch[0] != 0) {
+#endif
     file_identifier = atoi(source_date_epoch);
   } else {
     file_identifier = time(nullptr);

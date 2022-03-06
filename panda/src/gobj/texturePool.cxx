@@ -274,6 +274,62 @@ ns_has_texture(const Filename &orig_filename) {
 }
 
 /**
+ * The nonstatic implementation of get_texture().
+ */
+Texture *TexturePool::
+ns_get_texture(const Filename &orig_filename, int primary_file_num_channels,
+               bool read_mipmaps) {
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  {
+    MutexHolder holder(_lock);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, LoaderOptions());
+
+    Textures::const_iterator ti;
+    ti = _textures.find(key);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
+ * The nonstatic implementation of get_texture().
+ */
+Texture *TexturePool::
+ns_get_texture(const Filename &orig_filename,
+               const Filename &orig_alpha_filename,
+               int primary_file_num_channels,
+               int alpha_file_channel,
+               bool read_mipmaps) {
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  key._alpha_file_channel = alpha_file_channel;
+  {
+    MutexHolder holder(_lock);
+    LoaderOptions options;
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
+    resolve_filename(key._alpha_fullpath, orig_alpha_filename, read_mipmaps, options);
+
+    Textures::const_iterator ti;
+    ti = _textures.find(key);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
  * The nonstatic implementation of load_texture().
  */
 Texture *TexturePool::

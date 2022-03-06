@@ -2230,6 +2230,8 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::wheel_left();
   } else if (index == x_wheel_right_button) {
     return MouseButton::wheel_right();
+  } else if (index >= 8) {
+    return MouseButton::button(index - 5);
   } else {
     return MouseButton::button(index - 1);
   }

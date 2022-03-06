@@ -85,7 +85,6 @@ PUBLISHED:
 public:
 
   // Methods derived from PandaNode
-  virtual bool is_renderable() const;
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_combine() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
@@ -103,7 +102,7 @@ private:
                                        Thread *current_thread) const;
 
   // Chunk data
-  struct Chunk {
+  struct Chunk : public MemoryBase {
     // Depth, starting at 0
     size_t depth;
 
@@ -116,11 +115,11 @@ private:
     // Children, in the order (0, 0) (1, 0) (0, 1) (1, 1)
     Chunk* children[4];
 
-    // Chunk heights, used for culling
-    PN_stdfloat avg_height, min_height, max_height;
-
     // Edge heights, used for lod computation, in the same order as the children
     LVector4 edges;
+
+    // Chunk heights, used for culling
+    PN_stdfloat avg_height, min_height, max_height;
 
     // Last CLOD factor, stored while computing LOD, used for seamless transitions between lods
     PN_stdfloat last_clod;

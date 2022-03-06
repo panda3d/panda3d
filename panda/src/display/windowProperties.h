@@ -205,6 +205,9 @@ PUBLISHED:
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
 
+  EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
+
   void add_properties(const WindowProperties &other);
 
   void output(std::ostream &out) const;
@@ -232,7 +235,7 @@ private:
     S_maximized            = 0x10000,
   };
 
-  // This bitmask represents the truefalse settings for various boolean flags
+  // This bitmask represents the true/false settings for various boolean flags
   // (assuming the corresponding S_* bit has been set, above).
   enum Flags {
     F_undecorated    = S_undecorated,

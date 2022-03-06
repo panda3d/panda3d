@@ -57,6 +57,8 @@ public:
   INLINE static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();
+
+  INLINE static bool get_context_switches(size_t &, size_t &);
 };
 
 #include "threadDummyImpl.I"

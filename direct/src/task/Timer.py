@@ -2,6 +2,8 @@
 
 __all__ = ['Timer']
 
+from panda3d.core import ClockObject
+
 from . import Task
 from .TaskManagerGlobal import taskMgr
 
@@ -25,7 +27,7 @@ class Timer:
         self.callback = None
         self.finalT = t
         self.name = name
-        self.startT = globalClock.getFrameTime()
+        self.startT = ClockObject.getGlobalClock().getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
@@ -35,7 +37,7 @@ class Timer:
             self.stop()
         self.callback = callback
         self.finalT = t
-        self.startT = globalClock.getFrameTime()
+        self.startT = ClockObject.getGlobalClock().getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
@@ -71,7 +73,7 @@ class Timer:
         return self.finalT - self.currT
 
     def __timerTask(self, task):
-        t = globalClock.getFrameTime()
+        t = ClockObject.getGlobalClock().getFrameTime()
         te = t - self.startT
         self.currT = te
         if te >= self.finalT:

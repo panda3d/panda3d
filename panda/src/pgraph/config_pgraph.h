@@ -30,7 +30,7 @@ NotifyCategoryDecl(pgraph, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDecl(loader, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDecl(portal, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 
-extern ConfigVariableBool fake_view_frustum_cull;
+extern EXPCL_PANDA_PGRAPH ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool clip_plane_cull;
 extern ConfigVariableBool allow_portal_cull;
 extern ConfigVariableBool debug_portal_cull;

@@ -89,7 +89,6 @@ private:
   int _y_size;
   int _z_size;
   int _is_cube;
-  int _unused1;
   int _pixel_width;
   Texture::Format _format;
   Texture::ComponentType _component_type;
