@@ -983,7 +983,7 @@ class MopathRecorder(AppShell, DirectObject):
                 # Start new task
                 t = taskMgr.add(
                     self.recordTask, self.name + '-recordTask')
-                t.startTime = globalClock.getFrameTime()
+                t.startTime = ClockObject.getGlobalClock().getFrameTime()
         else:
             if self.samplingMode == 'Continuous':
                 # Kill old task
@@ -1016,7 +1016,7 @@ class MopathRecorder(AppShell, DirectObject):
     def recordTask(self, state):
         # Record raw data point
         time = self.recordStart + (
-            globalClock.getFrameTime() - state.startTime)
+            ClockObject.getGlobalClock().getFrameTime() - state.startTime)
         self.recordPoint(time)
         return Task.cont
 
@@ -1281,7 +1281,7 @@ class MopathRecorder(AppShell, DirectObject):
         t = taskMgr.add(
             self.playbackTask, self.name + '-playbackTask')
         t.currentTime = self.playbackTime
-        t.lastTime = globalClock.getFrameTime()
+        t.lastTime = ClockObject.getGlobalClock().getFrameTime()
 
     def setSpeedScale(self, value):
         self.speedScale.set(math.log10(value))
@@ -1291,7 +1291,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.speedVar.set('%0.2f' % self.playbackSF)
 
     def playbackTask(self, state):
-        time = globalClock.getFrameTime()
+        time = ClockObject.getGlobalClock().getFrameTime()
         dTime = self.playbackSF * (time - state.lastTime)
         state.lastTime = time
         if self.loopPlayback:

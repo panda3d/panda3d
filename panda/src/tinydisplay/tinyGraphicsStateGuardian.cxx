@@ -2387,10 +2387,7 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
       // meantime load a temporary simple image in its place.
       async_reload_texture(gtc);
       if (!tex->has_ram_image()) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -2558,7 +2555,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
   ZTextureLevel *dest = &gltex->levels[0];
   memcpy(dest->pixmap, image_ptr, image_size);
 
-  gtc->mark_simple_loaded();
+  gtc->mark_loaded();
 
   return true;
 }
@@ -3042,6 +3039,15 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
 
   case ColorBlendAttrib::O_incoming_color_saturate:
     return 1;
+
+  case ColorBlendAttrib::O_incoming1_color:
+    return 1;
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+    return 0;
+  case ColorBlendAttrib::O_incoming1_alpha:
+    return 1;
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    return 0;
 
   case ColorBlendAttrib::O_color_scale:
     return 10;

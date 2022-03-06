@@ -50,8 +50,8 @@ allocate(size_t size, TypeHandle type_handle) {
     _lock.unlock();
 
 #ifdef USE_DELETEDCHAINFLAG
-    assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
-    obj->_flag = DCF_alive;
+    DeletedChainFlag orig_flag = obj->_flag.exchange(DCF_alive, std::memory_order_relaxed);
+    assert(orig_flag == DCF_deleted);
 #endif  // USE_DELETEDCHAINFLAG
 
     void *ptr = node_to_buffer(obj);
@@ -75,7 +75,7 @@ allocate(size_t size, TypeHandle type_handle) {
   obj = (ObjectNode *)(aligned - flag_reserved_bytes);
 
 #ifdef USE_DELETEDCHAINFLAG
-  obj->_flag = DCF_alive;
+  obj->_flag.store(DCF_alive, std::memory_order_relaxed);
 #endif  // USE_DELETEDCHAINFLAG
 
   void *ptr = node_to_buffer(obj);
@@ -116,14 +116,16 @@ deallocate(void *ptr, TypeHandle type_handle) {
   ObjectNode *obj = buffer_to_node(ptr);
 
 #ifdef USE_DELETEDCHAINFLAG
-  AtomicAdjust::Integer orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
+  DeletedChainFlag orig_flag = DCF_alive;
+  if (UNLIKELY(!obj->_flag.compare_exchange_strong(orig_flag, DCF_deleted,
+                                                   std::memory_order_relaxed))) {
+    // If this assertion is triggered, you double-deleted an object.
+    assert(orig_flag != DCF_deleted);
 
-  // If this assertion is triggered, you double-deleted an object.
-  assert(orig_flag != (AtomicAdjust::Integer)DCF_deleted);
-
-  // If this assertion is triggered, you tried to delete an object that was
-  // never allocated, or you have heap corruption.
-  assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
+    // If this assertion is triggered, you tried to delete an object that was
+    // never allocated, or you have heap corruption.
+    assert(orig_flag == DCF_alive);
+  }
 #endif  // USE_DELETEDCHAINFLAG
 
   _lock.lock();

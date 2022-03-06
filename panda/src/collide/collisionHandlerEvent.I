@@ -26,15 +26,6 @@ operator () (const PT(CollisionEntry) &a,
 }
 
 /**
- * The assignment operator does absolutely nothing, since this is just a
- * function object class that stores no data.  We define it just to quiet up
- * g++ in -Wall mode.
- */
-INLINE void CollisionHandlerEvent::SortEntries::
-operator = (const CollisionHandlerEvent::SortEntries &) {
-}
-
-/**
  * Removes all of the previously-added in patterns.  See add_in_pattern.
  */
 INLINE void CollisionHandlerEvent::

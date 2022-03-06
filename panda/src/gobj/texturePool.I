@@ -34,6 +34,29 @@ verify_texture(const Filename &filename) {
 }
 
 /**
+ * Returns the texture that has already been previously loaded, or NULL
+ * otherwise.
+ */
+INLINE Texture *TexturePool::
+get_texture(const Filename &filename, int primary_file_num_channels,
+            bool read_mipmaps) {
+  return get_global_ptr()->ns_get_texture(filename, primary_file_num_channels,
+                                          read_mipmaps);
+}
+
+/**
+ * Returns the texture that has already been previously loaded, or NULL
+ * otherwise.
+ */
+INLINE Texture *TexturePool::
+get_texture(const Filename &filename, const Filename &alpha_filename,
+            int primary_file_num_channels, int alpha_file_channel,
+            bool read_mipmaps) {
+  return get_global_ptr()->ns_get_texture(filename, primary_file_num_channels,
+                                          read_mipmaps);
+}
+
+/**
  * Loads the given filename up into a texture, if it has not already been
  * loaded, and returns the new texture.  If a texture with the same filename
  * was previously loaded, returns that one instead.  If the texture file

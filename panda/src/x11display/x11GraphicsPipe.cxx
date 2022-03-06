@@ -35,8 +35,8 @@ LightReMutex x11GraphicsPipe::_x_mutex;
  */
 x11GraphicsPipe::
 x11GraphicsPipe(const std::string &display) :
-  _have_xrandr(false),
   _xcursor_size(-1),
+  _have_xrandr(false),
   _XF86DGADirectVideo(nullptr) {
 
   std::string display_spec = display;
@@ -425,7 +425,7 @@ enable_raw_mouse() {
     XISetMask(mask, XI_RawMotion);
 
     if (_XISelectEvents(_display, _root, &event_mask, 1) == Success) {
-      if (x11display_cat.info()) {
+      if (x11display_cat.is_info()) {
         x11display_cat.info()
           << "Enabled raw mouse events using XInput2 extension\n";
       }

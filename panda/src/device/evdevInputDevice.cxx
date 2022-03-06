@@ -113,6 +113,8 @@ static const struct DeviceMapping {
   {0x046d, 0xc629, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Mouse Pro
   {0x046d, 0xc62b, InputDevice::DeviceClass::spatial_mouse, 0},
+  // FrSky Simulator
+  {0x0483, 0x5720, InputDevice::DeviceClass::flight_stick, 0},
   {0},
 };
 
@@ -124,8 +126,9 @@ TypeHandle EvdevInputDevice::_type_handle;
 EvdevInputDevice::
 EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _manager(manager),
-  _index(index),
   _fd(-1),
+  _quirks(0),
+  _index(index),
   _can_write(false),
   _ff_id(-1),
   _ff_playing(false),
@@ -136,9 +139,8 @@ EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _dpad_left_button(-1),
   _dpad_up_button(-1),
   _ltrigger_code(-1),
-  _rtrigger_code(-1),
-  _quirks(0) {
-
+  _rtrigger_code(-1)
+{
   char path[64];
   sprintf(path, "/dev/input/event%zd", index);
 
@@ -960,7 +962,7 @@ map_button(int code, DeviceClass device_class, int quirks) {
       KeyboardButton::ascii_key('.'),
       ButtonHandle::none(),
       ButtonHandle::none(),
-      ButtonHandle::none(),
+      KeyboardButton::ascii_key('<'),
       KeyboardButton::f11(),
       KeyboardButton::f12(),
       ButtonHandle::none(),

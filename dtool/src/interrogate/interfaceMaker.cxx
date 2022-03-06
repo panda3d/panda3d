@@ -77,8 +77,8 @@ InterfaceMaker::Function::
  */
 InterfaceMaker::MakeSeq::
 MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
-  _name(name),
   _imake_seq(imake_seq),
+  _name(name),
   _length_getter(nullptr),
   _element_getter(nullptr)
 {

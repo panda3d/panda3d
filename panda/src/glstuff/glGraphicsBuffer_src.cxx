@@ -30,12 +30,12 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
   GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
-  _bind_texture_pcollector(_draw_window_pcollector, "Bind textures"),
-  _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
-  _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples"),
   _requested_multisamples(0),
   _requested_coverage_samples(0),
-  _rb_context(nullptr)
+  _rb_context(nullptr),
+  _bind_texture_pcollector(_draw_window_pcollector, "Bind textures"),
+  _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
+  _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples")
 {
   // A FBO doesn't have a back buffer.
   _draw_buffer_type       = RenderBuffer::T_front;
@@ -1693,6 +1693,11 @@ close_buffer() {
   if (!_fbo.empty()) {
     glgsg->_glDeleteFramebuffers(_fbo.size(), _fbo.data());
     _fbo.clear();
+  }
+
+  if (_fbo_multisample != 0) {
+    glgsg->_glDeleteFramebuffers(1, &_fbo_multisample);
+    _fbo_multisample = 0;
   }
 
   report_my_gl_errors();

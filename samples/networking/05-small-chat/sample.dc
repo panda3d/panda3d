@@ -1,0 +1,5 @@
+from message import Message
+
+dclass Message: DistributedObject {
+  sendText(string messageText) broadcast;
+}

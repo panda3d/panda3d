@@ -195,11 +195,13 @@ handle_client_control_message(const PStatClientControlMessage &message) {
           (message._major_version == server_major_version &&
            message._minor_version > server_minor_version)) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
+                              message._client_pid,
                               message._major_version, message._minor_version,
                               server_major_version, server_minor_version);
         _monitor->close();
       } else {
-        _monitor->hello_from(message._client_hostname, message._client_progname);
+        _monitor->hello_from(message._client_hostname, message._client_progname,
+                             message._client_pid);
       }
     }
     break;

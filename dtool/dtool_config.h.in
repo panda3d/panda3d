@@ -130,8 +130,12 @@
 /* Define if we want to support fixed-function OpenGL rendering. */
 #cmakedefine SUPPORT_FIXED_FUNCTION
 
-/* Define for either of the alternative malloc schemes. */
+/* Define if we have mimalloc available. */
+#cmakedefine HAVE_MIMALLOC
+
+/* Define for one of the alternative malloc schemes. */
 #cmakedefine USE_MEMORY_DLMALLOC
+#cmakedefine USE_MEMORY_MIMALLOC
 #cmakedefine USE_MEMORY_PTMALLOC2
 
 /* Define if we want to compile in support for pipelining.  */

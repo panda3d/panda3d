@@ -5,7 +5,7 @@ __all__ = ['AnimPanel', 'ActorControl']
 ### SEE END OF FILE FOR EXAMPLE USEAGE ###
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from panda3d.core import Filename, getModelPath
+from panda3d.core import Filename, getModelPath, ClockObject
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from direct.task import Task
@@ -294,7 +294,7 @@ class AnimPanel(AppShell):
 
     def playActorControls(self):
         self.stopActorControls()
-        self.lastT = globalClock.getFrameTime()
+        self.lastT = ClockObject.getGlobalClock().getFrameTime()
         self.playList = self.actorControlList[:]
         taskMgr.add(self.play, self.id + '_UpdateTask')
 
@@ -302,7 +302,7 @@ class AnimPanel(AppShell):
         if not self.playList:
             return Task.done
         fLoop = self.loopVar.get()
-        currT = globalClock.getFrameTime()
+        currT = ClockObject.getGlobalClock().getFrameTime()
         deltaT = currT - self.lastT
         self.lastT = currT
         for actorControl in self.playList:

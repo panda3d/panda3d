@@ -16,8 +16,7 @@
  */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const std::string &name) :
-  PandaNode(name),
-  _selected_child(0)
+  PandaNode(name)
 {
 }
 
@@ -26,17 +25,6 @@ SelectiveChildNode(const std::string &name) :
  */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const SelectiveChildNode &copy) :
-  PandaNode(copy),
-  _selected_child(copy._selected_child)
+  PandaNode(copy)
 {
-}
-
-/**
- * Selects the indicated child for rendering.  This is normally called during
- * the cull_callback() method, but it may be called at any time.
- */
-INLINE void SelectiveChildNode::
-select_child(int n) {
-  nassertv(n >= 0);
-  _selected_child = n;
 }

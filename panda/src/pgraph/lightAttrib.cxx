@@ -469,6 +469,7 @@ replace_on_light(const NodePath &source, const NodePath &dest) const {
     slobj->attrib_unref();
 
     *it = dest;
+    attrib->_on_lights.sort();
   }
   return return_new(attrib);
 }
@@ -531,6 +532,7 @@ replace_off_light(const NodePath &source, const NodePath &dest) const {
     slobj->attrib_unref();
 
     *it = dest;
+    attrib->_off_lights.sort();
   }
   return return_new(attrib);
 }

@@ -64,10 +64,14 @@ csincos(float v, float *sin_result, float *cos_result) {
       fstp DWORD ptr [edx]
       fstp DWORD ptr [eax]
       }
-#else //!_X86_
+#elif defined(__APPLE__)
+  __sincosf(v, sin_result, cos_result);
+#elif defined(_GNU_SOURCE)
+  sincosf(v, sin_result, cos_result);
+#else
   *sin_result = sinf(v);
   *cos_result = cosf(v);
-#endif //!_X86_
+#endif
 }
 
 /**
@@ -231,6 +235,10 @@ csincos(double v, double *sin_result, double *cos_result) {
       fstp QWORD ptr [edx]
       fstp QWORD ptr [eax]
       }
+#elif defined(__APPLE__)
+  __sincos(v, sin_result, cos_result);
+#elif defined(_GNU_SOURCE)
+  sincos(v, sin_result, cos_result);
 #else //!_X86_
   *sin_result = sin(v);
   *cos_result = cos(v);

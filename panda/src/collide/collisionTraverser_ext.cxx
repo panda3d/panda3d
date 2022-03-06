@@ -21,7 +21,6 @@
 PyObject *Extension<CollisionTraverser>::
 __getstate__() const {
   extern struct Dtool_PyTypedObject Dtool_CollisionHandler;
-  extern struct Dtool_PyTypedObject Dtool_CollisionTraverser;
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   const std::string &name = _this->get_name();
@@ -60,7 +59,7 @@ __setstate__(PyObject *state) {
   _this->set_name(std::string(data, len));
 
   _this->set_respect_prev_transform(PyTuple_GET_ITEM(state, 1) != Py_False);
-  size_t num_colliders = (ssize_t)PyLong_AsLong(PyTuple_GET_ITEM(state, 2));
+  size_t num_colliders = (size_t)PyLong_AsLong(PyTuple_GET_ITEM(state, 2));
 
   for (size_t i = 0; i < num_colliders; ++i) {
     NodePath *collider = (NodePath *)DtoolInstance_VOID_PTR(PyTuple_GET_ITEM(state, i * 2 + 3));

@@ -1,3 +1,96 @@
+-----------------------  RELEASE 1.10.11  -----------------------
+
+Maintenance release containing assorted bug fixes and minor improvements.
+
+Rendering
+* Fix erratic shadow bug with multiple lights from gltf/blend2bam (#1153)
+* Fix erratic behavior of HW skinning shaders on non-animated models (#1207)
+* Fix errors with compressed luminance textures in DirectX 9 (#1198)
+* Implement screenshotting multisample backbuffer in DirectX 9 (#1225)
+
+Texture Loading
+* Don't load texture from disk when loading .bam if preloading is off (#1208)
+* Fix TextureReloadRequest not working properly when mipmapping is disabled
+* Add TexturePool.get_texture() method for querying textures in pool
+* Fix crash when opening a .txo, .dds or .ktx file fails
+* Improve error message when calling tex.write() with unknown extension
+
+Input
+* Generate horizontal scroll wheel events on Windows
+* Generate events for mouse buttons 4 and 5 on X11
+* Generate events for lmeta, rmeta and menu keys on Windows
+* Add raw event (raw-<) for key between shift and Z on ISO keyboards
+* Gracefully handle invalid raw input device data on Windows
+* Correctly handle negative axis input from Windows raw input devices (#1218)
+* FrSky RC controller is now registered as flight stick (#1218)
+
+Deployment
+* Support building with tkinter on all supported platforms (#780)
+* Fix issue with zipimport module not being packaged
+* Fix grayscale icons becoming blue when scaled automatically
+* Automatically include cacert.pem when depending on certifi
+* Suppress assorted spurious missing module warnings
+* Targeting linux_x86_64 / linux_i686 also allows use of manylinux wheels
+
+Build
+* Add support for Maya 2022 (#1213)
+* Support building with Visual Studio 2022
+* Support building with macOS 11.3 SDK (and work around clang crash)
+* Support building with Windows 11 SDK
+* Build Ubuntu .deb files with bindings for multiple Python 3 versions
+* Support compilation with Assimp 5.x (#1212)
+* Support building on manylinux_2_24
+
+Miscellaneous
+* Fix nodes with same tag key but different value getting flattened together
+* taskMgr.step() now restores previous SIGINT handler afterwards (#1180)
+* Add base.clock as alias for globalClock
+* FilterManager mul parameter now accepts floating-point values (#1231)
+* Assorted minor API documentation improvements
+* Fix memory leak getting Bullet persistent manifolds from Python (#1193)
+* Fix assertion in PythonLoaderFileType with debug Python build
+* Add missing property interface to PlaneNode
+* Fix prepare_scene() not properly invoking the Shader Generator
+* Add name property to AICharacter class (#1205)
+* Add bullet-split-impulse configuration variable (#1201)
+* Fix slider thumb entering dragging state on keyboard button press (#1188)
+* Allow OnscreenImage to be created before ShowBase is created (#1209)
+* Fix manager, t, play_rate, duration properties of Sequence/Parallel (#1202)
+* Expose ButtonEvent API to Python (UNSTABLE API, will be changed soon)
+
+-----------------------  RELEASE 1.10.10  -----------------------
+
+This release fixes assorted, mostly very minor bugs.
+
+* Round refresh rates when choosing display mode on macOS (#1144)
+* Vectors now support floor division
+* It is now possible to use round(), ceil() and floor() with vector types
+* Add RenderState::get_unused_states()
+* Fix assertion error in RenderState::get_num_unused_states()
+* Fix Assimp loader not importing normal vectors correctly (#1163)
+* Fix error when trying to render DirectGUI in offscreen mode (#1174)
+* Fix crash when resizing window in multi-window DirectX 9 application (#1167)
+* Fixes to enable compilation with recent OpenEXR and FFMpeg versions
+* Fix draw callback being called twice if cull callback calls upcall()
+* Improve error message when display module fails to load
+* Fix writing/reading BitArray to/from bam files on 64-bit systems (#1181)
+* evdev input devices (such as gamepads) are now supported in FreeBSD as well
+* Panda no longer tries to compress buffer textures when compression is enabled
+* Fix Geom::make_lines_in_place() (& points, patches) leaving invalid state
+* Fix memory leak when cleaning up FilterManager (#1166)
+* Fix memory leak deleting multisample OpenGL FBOs (#1166)
+* Fix auto-binding of SSBOs sometimes causing overlapping bindings (#1176)
+* PSSMCameraRig::update() now accepts a camera node directly
+* Support copying depth buffer for 32-bit depth with 8-bit stencil (#1142)
+* Prevent trying to copy depth from non-depth buffer in OpenGL renderer (#1142)
+* Fixes to format selection for OpenGL renderbuffers (#1137, #1141)
+* gl-depth-zero-to-one is now supported in OpenGL ES 2+ (if driver supports)
+* Maya models can contain more than three eggObjectTypes (#1134)
+* Fix black screen on Linux when switching fullscreen without a WM active
+* Fix Linux crash when trying to load a directory instead of a file (#1140)
+* Fix crash when loading an invalid font
+* Fix a very obscure unintended DirectGUI behavior change in 1.10.9
+
 ------------------------  RELEASE 1.10.9  -----------------------
 
 This is a bugfix release which addresses some severe issues on macOS, as well as

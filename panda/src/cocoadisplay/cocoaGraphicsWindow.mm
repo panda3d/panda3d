@@ -1929,11 +1929,14 @@ handle_wheel_event(double x, double y) {
     _input->button_up(MouseButton::wheel_down());
   }
 
-  // TODO: check if this is correct, I don't own a MacBook
-  if (x > 0.0) {
+  if (x != 0 && cocoa_invert_wheel_x) {
+    x = -x;
+  }
+
+  if (x < 0.0) {
     _input->button_down(MouseButton::wheel_right());
     _input->button_up(MouseButton::wheel_right());
-  } else if (x < 0.0) {
+  } else if (x > 0.0) {
     _input->button_down(MouseButton::wheel_left());
     _input->button_up(MouseButton::wheel_left());
   }
@@ -2158,6 +2161,7 @@ map_raw_key(unsigned short keycode) const {
   case 0x07: return KeyboardButton::ascii_key('x');
   case 0x08: return KeyboardButton::ascii_key('c');
   case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0A: return KeyboardButton::ascii_key('<');
   case 0x0B: return KeyboardButton::ascii_key('b');
   case 0x0C: return KeyboardButton::ascii_key('q');
   case 0x0D: return KeyboardButton::ascii_key('w');

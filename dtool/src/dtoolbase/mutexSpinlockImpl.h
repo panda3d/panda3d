@@ -19,9 +19,7 @@
 
 #ifdef MUTEX_SPINLOCK
 
-#ifdef PHAVE_ATOMIC
 #include <atomic>
-#endif
 
 /**
  * Uses a simple user-space spinlock to implement a mutex.  It is usually not

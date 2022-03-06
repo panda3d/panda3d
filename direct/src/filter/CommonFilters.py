@@ -1,20 +1,20 @@
 """
-
 Class CommonFilters implements certain common image
 postprocessing filters.  See the :ref:`common-image-filters` page for
 more information about how to use these filters.
 
-It is not ideal that these filters are all included in a single
-monolithic module.  Unfortunately, when you want to apply two filters
-at the same time, you have to compose them into a single shader, and
-the composition process isn't simply a question of concatenating them:
-you have to somehow make them work together.  I suspect that there
-exists some fairly simple framework that would make this automatable.
-However, until I write some more filters myself, I won't know what
-that framework is.  Until then, I'll settle for this
-clunky approach.  - Josh
-
+These filters are written in the Cg shading language.
 """
+
+# It is not ideal that these filters are all included in a single
+# monolithic module.  Unfortunately, when you want to apply two filters
+# at the same time, you have to compose them into a single shader, and
+# the composition process isn't simply a question of concatenating them:
+# you have to somehow make them work together.  I suspect that there
+# exists some fairly simple framework that would make this automatable.
+# However, until I write some more filters myself, I won't know what
+# that framework is.  Until then, I'll settle for this
+# clunky approach.  - Josh
 
 from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import AuxBitplaneAttrib
@@ -459,6 +459,11 @@ class CommonFilters:
         return True
 
     def setBloom(self, blend=(0.3,0.4,0.3,0.0), mintrigger=0.6, maxtrigger=1.0, desat=0.6, intensity=1.0, size="medium"):
+        """
+        Applies the Bloom filter to the output.
+        size can either be "off", "small", "medium", or "large".
+        Setting size to "off" will remove the Bloom filter.
+        """
         if size == 0 or size == "off":
             self.delBloom()
             return
@@ -548,7 +553,7 @@ class CommonFilters:
         return True
 
     def setBlurSharpen(self, amount=0.0):
-        """Enables the blur/sharpen filter. If the 'amount' parameter is 1.0, it will not have effect.
+        """Enables the blur/sharpen filter. If the 'amount' parameter is 1.0, it will not have any effect.
         A value of 0.0 means fully blurred, and a value higher than 1.0 sharpens the image."""
         fullrebuild = ("BlurSharpen" not in self.configuration)
         self.configuration["BlurSharpen"] = amount

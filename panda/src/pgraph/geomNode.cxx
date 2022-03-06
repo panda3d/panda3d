@@ -59,6 +59,8 @@ GeomNode(const std::string &name) :
 
   // GeomNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
+
+  set_renderable();
 }
 
 /**
@@ -392,9 +394,24 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
+    // As well as the shaders.
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
+      }
+      else if (sa->auto_shader()) {
+        gsg->ensure_generated_shader(geom_state);
+      }
+      else if (munger->is_of_type(StateMunger::get_class_type())) {
+        // Premunge the state for the fixed-function pipeline.
+        StateMunger *state_munger = (StateMunger *)munger.p();
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
+      }
+      // TODO: prepare the shader inputs.
     }
 
     // And now prepare each of the textures.
@@ -408,16 +425,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           prepared_objects->enqueue_texture(texture);
         }
       }
-    }
-
-    // As well as the shaders.
-    const ShaderAttrib *sa;
-    if (geom_state->get_attrib(sa)) {
-      Shader *shader = (Shader *)sa->get_shader();
-      if (shader != nullptr) {
-        prepared_objects->enqueue_shader(shader);
-      }
-      // TODO: prepare the shader inputs.
     }
   }
 
@@ -480,17 +487,6 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   }
 
   return next_transform;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool GeomNode::
-is_renderable() const {
-  return true;
 }
 
 /**
@@ -561,7 +557,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
         // Cull this Geom.
         continue;
       }
-      if (!data._cull_planes->is_empty()) {
+      if (data._cull_planes != nullptr) {
         // Also cull the Geom against the cull planes.
         CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =

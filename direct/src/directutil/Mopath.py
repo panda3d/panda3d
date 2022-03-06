@@ -2,7 +2,8 @@ from direct.showbase.DirectObject import DirectObject
 from direct.showbase.MessengerGlobal import messenger
 from direct.directtools.DirectGeometry import *
 
-from panda3d.core import NodePath, LineSegs
+from panda3d.core import NodePath, LineSegs, ClockObject
+
 
 class Mopath(DirectObject):
 
@@ -152,13 +153,13 @@ class Mopath(DirectObject):
         self.stop()
         t = taskMgr.add(self.__playTask, self.name + '-play')
         t.currentTime = time
-        t.lastTime = globalClock.getFrameTime()
+        t.lastTime = ClockObject.getGlobalClock().getFrameTime()
 
     def stop(self):
         taskMgr.remove(self.name + '-play')
 
     def __playTask(self, task):
-        time = globalClock.getFrameTime()
+        time = ClockObject.getGlobalClock().getFrameTime()
         dTime = time - task.lastTime
         task.lastTime = time
         if self.loop:

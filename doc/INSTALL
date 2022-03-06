@@ -186,7 +186,7 @@ it will show you the available command-line options:
   --use-opencv      --no-opencv    (enable/disable use of OPENCV)
   --use-directcam   --no-directcam (enable/disable use of DIRECTCAM)
   --use-vision      --no-vision    (enable/disable use of VISION)
-  --use-gtk2        --no-gtk2      (enable/disable use of GTK2)
+  --use-gtk3        --no-gtk3      (enable/disable use of GTK3)
   --use-npapi       --no-npapi     (enable/disable use of NPAPI)
   --use-mfc         --no-mfc       (enable/disable use of MFC)
   --use-wx          --no-wx        (enable/disable use of WX)

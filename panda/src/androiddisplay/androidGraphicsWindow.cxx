@@ -45,6 +45,7 @@ AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       GraphicsStateGuardian *gsg,
                       GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  _primary_pointer_down(false),
   _mouse_button_state(0)
 {
   AndroidGraphicsPipe *android_pipe;
@@ -516,12 +517,9 @@ handle_key_event(const AInputEvent *event) {
   // Is it an up or down event?
   int32_t action = AKeyEvent_getAction(event);
   if (action == AKEY_EVENT_ACTION_DOWN) {
-    if (AKeyEvent_getRepeatCount(event) > 0) {
-      _input->button_resume_down(button);
-    } else {
-      _input->button_down(button);
-    }
-  } else if (action == AKEY_EVENT_ACTION_UP) {
+    _input->button_down(button);
+  }
+  else if (action == AKEY_EVENT_ACTION_UP) {
     _input->button_up(button);
   }
   // TODO AKEY_EVENT_ACTION_MULTIPLE
@@ -535,33 +533,101 @@ handle_key_event(const AInputEvent *event) {
 int32_t AndroidGraphicsWindow::
 handle_motion_event(const AInputEvent *event) {
   int32_t action = AMotionEvent_getAction(event);
+  int32_t pointer_index = (action >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
   action &= AMOTION_EVENT_ACTION_MASK;
 
-  if (action == AMOTION_EVENT_ACTION_DOWN ||
-      action == AMOTION_EVENT_ACTION_UP) {
-    // The up event doesn't let us know which button is up, so we need to
-    // keep track of the button state ourselves.
-    int32_t button_state = AMotionEvent_getButtonState(event);
-    if (button_state == 0 && action == AMOTION_EVENT_ACTION_DOWN) {
-      button_state = AMOTION_EVENT_BUTTON_PRIMARY;
+  if (action == AMOTION_EVENT_ACTION_DOWN) {
+    _primary_pointer_down = true;
+  }
+  else if (action == AMOTION_EVENT_ACTION_UP
+        || action == AMOTION_EVENT_ACTION_CANCEL) {
+    _primary_pointer_down = false;
+  }
+
+  int32_t button_state = AMotionEvent_getButtonState(event);
+
+  // Emulate mouse click; as long as the primary pointer is held down,
+  // and no other mouse button is causing it, the primary mouse button
+  // is considered depressed.
+  if (button_state == 0 && _primary_pointer_down &&
+      action != AMOTION_EVENT_ACTION_BUTTON_RELEASE) {
+    button_state |= AMOTION_EVENT_BUTTON_PRIMARY;
+  }
+
+  int32_t changed = _mouse_button_state ^ button_state;
+  if (changed != 0) {
+    if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
+      if (button_state & AMOTION_EVENT_BUTTON_PRIMARY) {
+        _input->button_down(MouseButton::one());
+      } else {
+        _input->button_up(MouseButton::one());
+      }
     }
-    int32_t changed = _mouse_button_state ^ button_state;
-    if (changed != 0) {
-      if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
-        if (button_state & AMOTION_EVENT_BUTTON_PRIMARY) {
-          _input->button_down(MouseButton::one());
-        } else {
-          _input->button_up(MouseButton::one());
-        }
+    if (changed & AMOTION_EVENT_BUTTON_SECONDARY) {
+      if (button_state & AMOTION_EVENT_BUTTON_SECONDARY) {
+        _input->button_down(MouseButton::three());
+      } else {
+        _input->button_up(MouseButton::three());
       }
-      if (changed & AMOTION_EVENT_BUTTON_SECONDARY) {
-        if (button_state & AMOTION_EVENT_BUTTON_SECONDARY) {
-          _input->button_down(MouseButton::three());
-        } else {
-          _input->button_up(MouseButton::three());
-        }
+    }
+    if (changed & AMOTION_EVENT_BUTTON_TERTIARY) {
+      if (button_state & AMOTION_EVENT_BUTTON_TERTIARY) {
+        _input->button_down(MouseButton::two());
+      } else {
+        _input->button_up(MouseButton::two());
       }
-      _mouse_button_state = button_state;
+    }
+    if (changed & AMOTION_EVENT_BUTTON_BACK) {
+      if (button_state & AMOTION_EVENT_BUTTON_BACK) {
+        _input->button_down(MouseButton::four());
+      } else {
+        _input->button_up(MouseButton::four());
+      }
+    }
+    if (changed & AMOTION_EVENT_BUTTON_FORWARD) {
+      if (button_state & AMOTION_EVENT_BUTTON_FORWARD) {
+        _input->button_down(MouseButton::five());
+      } else {
+        _input->button_up(MouseButton::five());
+      }
+    }
+    _mouse_button_state = button_state;
+  }
+
+  if (action == AMOTION_EVENT_ACTION_SCROLL) {
+    float v = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_VSCROLL, pointer_index);
+    float h = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HSCROLL, pointer_index);
+
+    if (v > 0.5) {
+      while (v > 0) {
+        _input->button_down(MouseButton::wheel_up());
+        _input->button_up(MouseButton::wheel_up());
+        v -= 1;
+      }
+    }
+    else if (v < 0.5) {
+      while (v < 0) {
+        _input->button_down(MouseButton::wheel_down());
+        _input->button_up(MouseButton::wheel_down());
+        v += 1;
+      }
+    }
+
+    // In my tests the scroll direction is opposite of what the docs indicate,
+    // ie. a positive value is left, not right.
+    if (h > 0.5) {
+      while (h > 0) {
+        _input->button_down(MouseButton::wheel_left());
+        _input->button_up(MouseButton::wheel_left());
+        h -= 1;
+      }
+    }
+    else if (h < 0.5) {
+      while (h < 0) {
+        _input->button_down(MouseButton::wheel_right());
+        _input->button_up(MouseButton::wheel_right());
+        h += 1;
+      }
     }
   }
 
@@ -816,6 +882,42 @@ map_button(int32_t keycode) {
       return KeyboardButton::f12();
     case AKEYCODE_NUM_LOCK:
       return KeyboardButton::num_lock();
+    case AKEYCODE_NUMPAD_0:
+      return KeyboardButton::ascii_key('0');
+    case AKEYCODE_NUMPAD_1:
+      return KeyboardButton::ascii_key('1');
+    case AKEYCODE_NUMPAD_2:
+      return KeyboardButton::ascii_key('2');
+    case AKEYCODE_NUMPAD_3:
+      return KeyboardButton::ascii_key('3');
+    case AKEYCODE_NUMPAD_4:
+      return KeyboardButton::ascii_key('4');
+    case AKEYCODE_NUMPAD_5:
+      return KeyboardButton::ascii_key('5');
+    case AKEYCODE_NUMPAD_6:
+      return KeyboardButton::ascii_key('6');
+    case AKEYCODE_NUMPAD_7:
+      return KeyboardButton::ascii_key('7');
+    case AKEYCODE_NUMPAD_8:
+      return KeyboardButton::ascii_key('8');
+    case AKEYCODE_NUMPAD_9:
+      return KeyboardButton::ascii_key('9');
+    case AKEYCODE_NUMPAD_DIVIDE:
+      return KeyboardButton::ascii_key('/');
+    case AKEYCODE_NUMPAD_MULTIPLY:
+      return KeyboardButton::ascii_key('*');
+    case AKEYCODE_NUMPAD_SUBTRACT:
+      return KeyboardButton::ascii_key('-');
+    case AKEYCODE_NUMPAD_ADD:
+      return KeyboardButton::ascii_key('+');
+    case AKEYCODE_NUMPAD_DOT:
+      return KeyboardButton::ascii_key('.');
+    case AKEYCODE_NUMPAD_COMMA:
+      return KeyboardButton::ascii_key(',');
+    case AKEYCODE_NUMPAD_ENTER:
+      return KeyboardButton::enter();
+    case AKEYCODE_NUMPAD_EQUALS:
+      return KeyboardButton::ascii_key('=');
     default:
       break;
   }

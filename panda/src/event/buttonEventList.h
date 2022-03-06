@@ -47,6 +47,8 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
+  MAKE_SEQ_PROPERTY(events, get_num_events, get_event);
+
 private:
   typedef pvector<ButtonEvent> Events;
   Events _events;

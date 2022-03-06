@@ -18,7 +18,7 @@
  */
 INLINE void WeakReferenceList::
 ref() const {
-  AtomicAdjust::inc(_count);
+  _count.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -30,7 +30,7 @@ ref() const {
  */
 INLINE bool WeakReferenceList::
 unref() const {
-  return AtomicAdjust::dec(_count);
+  return _count.fetch_sub(1, std::memory_order_release) != 1;
 }
 
 /**
@@ -41,5 +41,5 @@ unref() const {
  */
 INLINE bool WeakReferenceList::
 was_deleted() const {
-  return AtomicAdjust::get(_count) < _alive_offset;
+  return _count.load(std::memory_order_relaxed) < _alive_offset;
 }

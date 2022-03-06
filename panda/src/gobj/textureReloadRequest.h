@@ -27,6 +27,8 @@
  * force the texture's image to be re-read from disk.  It is used by
  * GraphicsStateGuardian::async_reload_texture(), when get_incomplete_render()
  * is true.
+ *
+ * @deprecated Use Texture::async_ensure_ram_image() instead.
  */
 class EXPCL_PANDA_GOBJ TextureReloadRequest : public AsyncTask {
 public:

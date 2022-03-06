@@ -90,7 +90,6 @@ protected:
     INLINE bool
     operator () (const PT(CollisionEntry) &a,
                  const PT(CollisionEntry) &b) const;
-    INLINE void operator = (const SortEntries &other);
   };
 
   typedef pset<PT(CollisionEntry), SortEntries> Colliding;

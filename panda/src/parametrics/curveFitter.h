@@ -20,7 +20,6 @@
 
 #include "parametricCurveCollection.h"
 
-#include "typedef.h"
 #include "pvector.h"
 
 class HermiteCurve;

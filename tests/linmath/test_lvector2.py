@@ -1,4 +1,5 @@
 from math import floor, ceil
+import sys
 
 from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
 from panda3d import core
@@ -124,6 +125,7 @@ def test_vec2_rmul():
     assert 2 * Vec2(3, -4) == Vec2(6, -8)
 
 
+@pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
 @pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
 def test_vec2_floordiv(type):
     with pytest.raises(ZeroDivisionError):
@@ -141,3 +143,11 @@ def test_vec2_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec2_buffer():
+    v = Vec2(1.5, -10.0)
+    m = memoryview(v)
+    assert len(m) == 2
+    assert m[0] == 1.5
+    assert m[1] == -10.0

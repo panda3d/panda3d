@@ -56,6 +56,9 @@ public:
                   const std::string &description,
                   EventHandler::EventCallbackFunction *function,
                   void *data);
+  void define_key(const std::string &event_name,
+                  const std::string &description,
+                  EventHandler::EventLambda function);
 
   INLINE void set_window_title(const std::string &title);
   virtual void get_default_window_props(WindowProperties &props);

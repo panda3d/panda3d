@@ -49,8 +49,6 @@
 // interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED __published
 
-#define PHAVE_ATOMIC 1
-
 typedef int ios_openmode;
 typedef int ios_fmtflags;
 typedef int ios_iostate;
@@ -111,9 +109,6 @@ typedef std::ios::seekdir ios_seekdir;
 #else
 #define INLINE inline
 #endif
-
-// Expect that we have access to the <atomic> header.
-#define PHAVE_ATOMIC 1
 
 // Determine the availability of C++11 features.
 #if defined(_MSC_VER) && _MSC_VER < 1900 // Visual Studio 2015

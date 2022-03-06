@@ -51,6 +51,18 @@ static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
 
 #if defined(CPPPARSER)
 
+#elif defined(USE_MEMORY_MIMALLOC)
+
+// mimalloc is a modern memory manager by Microsoft that is very fast as well
+// as thread-safe.
+
+#include "mimalloc.h"
+
+#define call_malloc mi_malloc
+#define call_realloc mi_realloc
+#define call_free mi_free
+#undef MEMORY_HOOK_MALLOC_LOCK
+
 #elif defined(USE_MEMORY_DLMALLOC)
 
 // Memory manager: DLMALLOC This is Doug Lea's memory manager.  It is very

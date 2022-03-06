@@ -138,7 +138,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(global_flags
-    "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing")
+    "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing -Werror=return-type")
   set(release_flags "-Wno-unused-variable")
 
   if(NOT MSVC)
@@ -154,7 +154,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   endif()
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${global_flags}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags} -Wno-reorder")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags}")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${release_flags}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${release_flags}")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${release_flags}")

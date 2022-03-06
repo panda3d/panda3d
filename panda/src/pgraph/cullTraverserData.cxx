@@ -15,9 +15,6 @@
 #include "cullTraverser.h"
 #include "config_pgraph.h"
 #include "pandaNode.h"
-#include "colorAttrib.h"
-#include "textureAttrib.h"
-#include "renderModeAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "boundingPlane.h"
 #include "billboardEffect.h"
@@ -64,10 +61,28 @@ apply_transform_and_state(CullTraverser *trav) {
   }
 
   if (clip_plane_cull) {
-    _cull_planes = _cull_planes->apply_state(trav, this,
-      (const ClipPlaneAttrib *)node_state->get_attrib(ClipPlaneAttrib::get_class_slot()),
-      (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes(),
-      (const OccluderEffect *)node_effects->get_effect(OccluderEffect::get_class_type()));
+    const ClipPlaneAttrib *cpa = (const ClipPlaneAttrib *)
+      node_state->get_attrib(ClipPlaneAttrib::get_class_slot());
+    const OccluderEffect *occluders = (const OccluderEffect *)
+      node_effects->get_effect(OccluderEffect::get_class_type());
+
+    if (cpa != nullptr || occluders != nullptr) {
+      CullPlanes::apply_state(_cull_planes, trav, this, cpa,
+        (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes(),
+        occluders);
+    }
+  }
+
+  const FogAttrib *fog_attr;
+  if (node_state->get_attrib(fog_attr)) {
+    Fog *fog = fog_attr->get_fog();
+    if (fog != nullptr) {
+      // If we just introduced a FogAttrib here, call adjust_to_camera()
+      // now.  This maybe isn't the perfect time to call it, but it's good
+      // enough; and at this time we have all the information we need for
+      // it.
+      fog->adjust_to_camera(trav->get_camera_transform());
+    }
   }
 }
 
@@ -88,33 +103,88 @@ apply_transform(const TransformState *node_transform) {
 
     _net_transform = _net_transform->compose(node_transform);
 
-    if ((_view_frustum != nullptr) ||
-        (!_cull_planes->is_empty())) {
+    if (_view_frustum != nullptr || _cull_planes != nullptr) {
       // We need to move the viewing frustums into the node's coordinate space
       // by applying the node's inverse transform.
-      if (node_transform->is_singular()) {
-        // But we can't invert a singular transform!  Instead of trying, we'll
-        // just give up on frustum culling from this point down.
-        _view_frustum = nullptr;
-        _cull_planes = CullPlanes::make_empty();
-
-      } else {
-        CPT(TransformState) inv_transform =
-          node_transform->invert_compose(TransformState::make_identity());
-
+      const LMatrix4 *inverse_mat = node_transform->get_inverse_mat();
+      if (inverse_mat != nullptr) {
         // Copy the bounding volumes for the frustums so we can transform
         // them.
         if (_view_frustum != nullptr) {
           _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
           nassertv(_view_frustum != nullptr);
 
-          _view_frustum->xform(inv_transform->get_mat());
+          _view_frustum->xform(*inverse_mat);
         }
 
-        _cull_planes = _cull_planes->xform(inv_transform->get_mat());
+        if (_cull_planes != nullptr) {
+          _cull_planes = _cull_planes->xform(*inverse_mat);
+        }
+      }
+      else {
+        // But we can't invert a singular transform!  Instead of trying, we'll
+        // just give up on frustum culling from this point down.
+        pgraph_cat.warning()
+          << "Singular transformation detected on node: " << get_node_path() << "\n";
+        _view_frustum = nullptr;
+        _cull_planes = nullptr;
       }
     }
   }
+}
+
+/**
+ * Returns intersection flags if any of the children under the current node are
+ * in view if first transformed by the given transform, false otherwise.
+ */
+bool CullTraverserData::
+is_instance_in_view(const TransformState *instance_transform, const DrawMask &camera_mask) const {
+  PT(GeometricBoundingVolume) view_frustum_p;
+  const GeometricBoundingVolume *view_frustum = nullptr;
+
+  if (_view_frustum != nullptr) {
+    if (!instance_transform->is_identity()) {
+      // We need to move the viewing frustums into the node's coordinate space
+      // by applying the node's inverse transform.
+      const LMatrix4 *inverse_mat = instance_transform->get_inverse_mat();
+      if (inverse_mat != nullptr) {
+        // Copy the bounding volumes for the frustums so we can transform them.
+        view_frustum_p = _view_frustum->make_copy()->as_geometric_bounding_volume();
+        nassertr(view_frustum_p != nullptr, false);
+
+        view_frustum_p->xform(*inverse_mat);
+        view_frustum = view_frustum_p;
+      } else {
+        // Don't render instances with a singular transformation.
+        return false;
+      }
+    } else {
+      view_frustum = _view_frustum;
+    }
+  }
+
+  PandaNode::Children children = _node_reader.get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    const PandaNode::DownConnection &child = children.get_child_connection(i);
+
+    if (!child.compare_draw_mask(_draw_mask, camera_mask)) {
+      // If there are no draw bits in common with the camera, the node is out.
+      continue;
+    }
+
+    if (view_frustum == nullptr) {
+      return true;
+    }
+
+    const GeometricBoundingVolume *node_gbv = child.get_bounds();
+    nassertd(node_gbv != nullptr) continue;
+
+    if (view_frustum->contains(node_gbv)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -152,127 +222,37 @@ r_get_node_path() const {
 }
 
 /**
- * The private implementation of is_in_view().
+ * Applies the cull planes.  Returns true if the node should still be rendered,
+ * false if it should be culled.
  */
 bool CullTraverserData::
-is_in_view_impl() {
-  const GeometricBoundingVolume *node_gbv = nullptr;
-
-  if (_view_frustum != nullptr) {
-    node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
-    nassertr(node_gbv != nullptr, false);
-
-    int result = _view_frustum->contains(node_gbv);
-
-    if (pgraph_cat.is_spam()) {
-      pgraph_cat.spam()
-        << get_node_path() << " cull result = " << std::hex << result << std::dec << "\n";
-    }
-
-    if (result == BoundingVolume::IF_no_intersection) {
-      // No intersection at all.  Cull.
-#ifdef NDEBUG
-      return false;
-#else
-      if (!fake_view_frustum_cull) {
-        return false;
-      }
-
-      // If we have fake view-frustum culling enabled, instead of actually
-      // culling an object we simply force it to be drawn in red wireframe.
-      _view_frustum = nullptr;
-      _state = _state->compose(get_fake_view_frustum_cull_state());
-#endif
-
-    } else if ((result & BoundingVolume::IF_all) != 0) {
-      // The node and its descendents are completely enclosed within the
-      // frustum.  No need to cull further.
-      _view_frustum = nullptr;
-
-    } else {
-      // The node is partially, but not completely, within the viewing
-      // frustum.
-      if (_node_reader.is_final()) {
-        // Normally we'd keep testing child bounding volumes as we continue
-        // down.  But this node has the "final" flag, so the user is claiming
-        // that there is some important reason we should consider everything
-        // visible at this point.  So be it.
-        _view_frustum = nullptr;
-      }
-    }
-  }
-
-  if (!_cull_planes->is_empty()) {
-    if (node_gbv == nullptr) {
-      node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
-      nassertr(node_gbv != nullptr, false);
-    }
-
+apply_cull_planes(const CullPlanes *planes, const GeometricBoundingVolume *node_gbv) {
+  if (!planes->is_empty()) {
     // Also cull against the current clip planes.
     int result;
-    _cull_planes = _cull_planes->do_cull(result, _state, node_gbv);
+    CPT(CullPlanes) new_planes = planes->do_cull(result, _state, node_gbv);
 
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << get_node_path() << " cull planes cull result = " << std::hex
         << result << std::dec << "\n";
-      _cull_planes->write(pgraph_cat.spam(false));
-    }
-
-    if (_node_reader.is_final()) {
-      // Even though the node may be partially within the clip planes, do no
-      // more culling against them below this node.
-      _cull_planes = CullPlanes::make_empty();
-
-      if (pgraph_cat.is_spam()) {
-        pgraph_cat.spam()
-          << get_node_path() << " is_final, cull planes disabled, state:\n";
-        _state->write(pgraph_cat.spam(false), 2);
-      }
+      new_planes->write(pgraph_cat.spam(false));
     }
 
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
-#ifdef NDEBUG
       return false;
-#else
-      if (!fake_view_frustum_cull) {
-        return false;
-      }
-      _cull_planes = CullPlanes::make_empty();
-      _state = _state->compose(get_fake_view_frustum_cull_state());
-#endif
-
-    } else if ((result & BoundingVolume::IF_all) != 0) {
-      // The node and its descendents are completely in front of all of the
+    }
+    else if ((result & BoundingVolume::IF_all) != 0) {
+      // The node and its descendants are completely in front of all of the
       // clip planes and occluders.  The do_cull() call should therefore have
       // removed all of the clip planes and occluders.
-      nassertr(_cull_planes->is_empty(), true);
+      nassertr(new_planes->is_empty(), true);
+    }
+    else if (!_node_reader.is_final() && !new_planes->is_empty()) {
+      _cull_planes = std::move(new_planes);
     }
   }
 
   return true;
-}
-
-/**
- * Returns a RenderState for rendering stuff in red wireframe, strictly for
- * the fake_view_frustum_cull effect.
- */
-const RenderState *CullTraverserData::
-get_fake_view_frustum_cull_state() {
-#ifdef NDEBUG
-  return nullptr;
-#else
-  // Once someone asks for this pointer, we hold its reference count and never
-  // free it.
-  static CPT(RenderState) state;
-  if (state == nullptr) {
-    state = RenderState::make
-      (ColorAttrib::make_flat(LColor(1.0f, 0.0f, 0.0f, 1.0f)),
-       TextureAttrib::make_all_off(),
-       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
-       RenderState::get_max_priority());
-  }
-  return state;
-#endif
 }
