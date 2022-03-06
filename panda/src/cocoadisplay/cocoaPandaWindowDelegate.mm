@@ -30,6 +30,7 @@
 - (void) windowDidResize:(NSNotification *)notification {
   // Forcing a move event is unfortunately necessary because Cocoa does not
   // call windowDidMove in case of window zooms.
+  _graphicsWindow->handle_move_event();
   _graphicsWindow->handle_resize_event();
 }
 
