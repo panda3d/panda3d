@@ -48,21 +48,9 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
 
 endif()
 
-# Panda3D is now a C++11 project. Newer versions of CMake support this out of
-# the box; for older versions we take a shot in the dark:
-if(CMAKE_VERSION VERSION_LESS "3.1")
-  check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
-  if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-  endif()
-
-else()
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-endif()
+# Panda3D is now a C++11 project.
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set certain CMake flags we expect
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
@@ -108,21 +96,6 @@ endif()
 # (used for display and audio plugins) to use a .dylib extension.
 if(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
-endif()
-
-# We want the output structured like build/CONFIG/bin, not build/bin/CONFIG per
-# the default for multi-configuration generators. In CMake 3.4+, it switches
-# automatically if the *_OUTPUT_DIRECTORY property contains a generator
-# expresssion, but as of this writing we support as early as CMake 3.0.2.
-#
-# So, let's just do this:
-if(CMAKE_VERSION VERSION_LESS "3.4")
-  foreach(_type RUNTIME ARCHIVE LIBRARY)
-    foreach(_config ${CMAKE_CONFIGURATION_TYPES})
-      string(TOUPPER "${_config}" _config)
-      set(CMAKE_${_type}_OUTPUT_DIRECTORY_${_config} "${CMAKE_${_type}_OUTPUT_DIRECTORY}")
-    endforeach(_config)
-  endforeach(_type)
 endif()
 
 # Set warning levels
