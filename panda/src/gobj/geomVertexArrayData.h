@@ -66,9 +66,10 @@ PUBLISHED:
   explicit GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                                UsageHint usage_hint);
   GeomVertexArrayData(const GeomVertexArrayData &copy);
-  void operator = (const GeomVertexArrayData &copy);
   virtual ~GeomVertexArrayData();
   ALLOC_DELETED_CHAIN(GeomVertexArrayData);
+
+  void operator = (const GeomVertexArrayData &copy) = delete;
 
   int compare_to(const GeomVertexArrayData &other) const;
 

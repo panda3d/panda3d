@@ -137,33 +137,6 @@ GeomVertexData(const GeomVertexData &copy,
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a GeomVertexData
- * that is actively being used for rendering.
- */
-void GeomVertexData::
-operator = (const GeomVertexData &copy) {
-  CopyOnWriteObject::operator = (copy);
-
-  clear_cache();
-
-  _name = copy._name;
-  _cycler = copy._cycler;
-  _char_pcollector = copy._char_pcollector;
-  _skinning_pcollector = copy._skinning_pcollector;
-  _morphs_pcollector = copy._morphs_pcollector;
-  _blends_pcollector = copy._blends_pcollector;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_modified = Geom::get_next_modified();
-    cdata->_animated_vertices = nullptr;
-    cdata->_animated_vertices_modified = UpdateSeq();
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-/**
  *
  */
 GeomVertexData::
