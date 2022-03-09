@@ -33,9 +33,7 @@ WeakPointerToBase(To *ptr) {
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(const PointerToBase<T> &copy) {
-  // This double-casting is a bit of a cheat to get around the inheritance
-  // issue--it's difficult to declare a template class to be a friend.
-  To *ptr = (To *)((const WeakPointerToBase<To> *)&copy)->_void_ptr;
+  To *ptr = (To *)copy._void_ptr;
   _void_ptr = ptr;
   if (ptr != nullptr) {
     _weak_ref = ptr->weak_ref();
