@@ -397,7 +397,7 @@ package_option(OpenEXR "Enable support for loading .exr images.")
 package_status(OpenEXR "OpenEXR")
 
 # libsquish
-find_package(LibSquish QUIET)
+find_package(LibSquish QUIET MODULE)
 
 package_option(SQUISH
   "Enables support for automatic compression of DXT textures."
