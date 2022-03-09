@@ -43,6 +43,12 @@ if(HAVE_FFMPEG)
   target_compile_definitions(p3vision PRIVATE HAVE_FFMPEG)
 endif()
 
+if(HAVE_ARTOOLKIT AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  target_link_options(p3vision PRIVATE "LINKER:--exclude-libs,libAR.a")
+  target_link_options(p3vision PRIVATE "LINKER:--exclude-libs,libARMulti.a")
+endif()
+
 install(TARGETS p3vision
   EXPORT Vision COMPONENT Vision
   DESTINATION ${CMAKE_INSTALL_LIBDIR}

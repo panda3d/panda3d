@@ -180,6 +180,11 @@ target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 if(HAVE_SQUISH)
   target_compile_definitions(p3gobj PRIVATE HAVE_SQUISH)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # Keep symbols from libsquish internal.
+    target_link_options(p3gobj PRIVATE "LINKER:--exclude-libs,libsquish.a")
+  endif()
 endif()
 
 if(PHAVE_LOCKF)
