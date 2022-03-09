@@ -228,6 +228,7 @@ function(add_metalib target_name)
   set(interface_defines)
   set(includes)
   set(libs)
+  set(link_options)
   set(component_init_funcs "")
   foreach(component ${components})
     if(NOT TARGET "${component}")
@@ -315,6 +316,16 @@ function(add_metalib target_name)
         endif()
       endforeach(component_library)
 
+      # All the linker options applied to an individual component get applied
+      # when building the metalib (for things like --exclude-libs).
+      get_target_property(component_link_options "${component}" LINK_OPTIONS)
+      foreach(component_link_option ${component_link_options})
+        if(component_link_option)
+          list(APPEND link_options "${component_link_option}")
+
+        endif()
+      endforeach(component_link_option)
+
       # Consume this component's objects
       list(APPEND sources "$<TARGET_OBJECTS:${component}>")
 
@@ -342,6 +353,7 @@ function(add_metalib target_name)
     PRIVATE ${private_defines}
     INTERFACE ${interface_defines})
   target_link_libraries("${target_name}" ${libs})
+  target_link_options("${target_name}" PRIVATE ${link_options})
   target_include_directories("${target_name}"
     PUBLIC ${includes}
     INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/panda3d>")
