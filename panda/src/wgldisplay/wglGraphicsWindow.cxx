@@ -200,7 +200,7 @@ open_window() {
   // GSG creationinitialization.
 
   wglGraphicsStateGuardian *wglgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, false);

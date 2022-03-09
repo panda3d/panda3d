@@ -360,7 +360,7 @@ check_fbo() {
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
   check_host_valid();
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     return;
   }
 
@@ -1661,7 +1661,7 @@ close_buffer() {
 
   check_host_valid();
 
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     return;
   }
 
@@ -1824,7 +1824,7 @@ unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
  */
 void CLP(GraphicsBuffer)::
 report_my_errors(int line, const char *file) {
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       GLCAT.error() << file << ", line " << line << ": GL error " << (int)error_code << "\n";
