@@ -1370,6 +1370,10 @@ def CompileCxx(obj,src,opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
+        elif 'clang' not in GetCXX().split('/')[-1]:
+            # Enable interprocedural optimizations in GCC.
+            cmd += " -fno-semantic-interposition"
+
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
                 cmd += ' --sysroot=%s' % (SDK["SYSROOT"])
