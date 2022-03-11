@@ -3,4 +3,5 @@
 #include "navMeshQuery.cxx"
 #include "navMeshNode.cxx"
 #include "navMeshPath.cxx"
-
+#include "navMeshPoly.cxx"
+#include "navMeshQueryFilter.cxx"

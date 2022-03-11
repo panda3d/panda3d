@@ -25,4 +25,3 @@ NotifyCategoryDecl(navigation, EXPCL_NAVIGATION, EXPTP_NAVIGATION);
 extern EXPCL_NAVIGATION void init_libnavigation();
 
 #endif
-
