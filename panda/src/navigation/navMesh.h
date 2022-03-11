@@ -23,6 +23,7 @@
 #include "eventParameter.h"
 #include "pandabase.h"
 #include "geomNode.h"
+#include "navMeshPoly.h"
 
 /**
  * NavMeshParams class stores all the parameters of a navigation mesh.
@@ -54,6 +55,8 @@ PUBLISHED:
 
 };
 
+typedef pvector<NavMeshPoly> NavMeshPolys;
+
 
 /**
  * NavMesh class stores the navigation mesh. The navigation mesh 
@@ -73,6 +76,10 @@ PUBLISHED:
   INLINE int get_poly_count() const;
   INLINE int get_detail_vert_count() const;
   INLINE int get_detail_tri_count() const;
+
+  NavMeshPoly get_poly_at(LPoint3 point);
+
+  NavMeshPolys get_polys_around(LPoint3 point, LVector3 extents = LVector3( 3 , 3 , 3 ));
 
 private:
   dtNavMesh *_nav_mesh;

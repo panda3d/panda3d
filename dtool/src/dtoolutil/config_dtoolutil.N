@@ -8,3 +8,7 @@ forcetype std::ios
 forcetype std::istream
 forcetype std::ostream
 forcetype std::iostream
+
+forcetype pvector<std::string>
+forcetype pvector<unsigned char>
+forcetype std::vector<unsigned char>

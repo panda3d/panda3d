@@ -333,7 +333,7 @@ protected:
   typedef pvector<PointerData> Pointers;
   Pointers _pointers;
 
-PUBLISHED:
+public:
   typedef pvector<ButtonState> Buttons;
   typedef pvector<AxisState> Axes;
   Buttons _buttons;
