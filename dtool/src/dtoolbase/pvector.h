@@ -31,8 +31,7 @@
 template<class Type>
 class pvector : public std::vector<Type> {
 PUBLISHED:
-  const Type &operator[](size_t index) const;
-  Type &operator[](size_t index);
+  Type operator[](size_t index);
   size_t size() const;
 };
 
