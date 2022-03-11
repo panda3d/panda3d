@@ -176,6 +176,72 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 }
 
 /**
+ * Finds the NavMeshPoly that is closest to the given point.
+ */
+NavMeshPoly NavMesh::
+get_poly_at(LPoint3 point) {
+  dtNavMeshQuery query;
+
+  query.init(_nav_mesh, 8);
+
+  LPoint3 center_pt = mat_to_y.xform_point(point);
+  const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
+  float nearest_p[3] = { 0, 0, 0 };
+  const float extents[3] = { 10 , 10 , 10 };
+
+  dtQueryFilter filter;
+
+  dtPolyRef nearest_poly_ref_id = 0;
+
+  dtStatus status = query.findNearestPoly(center, extents, &filter, &nearest_poly_ref_id, nearest_p);
+
+  if (dtStatusFailed(status)) {
+    navigation_cat.error() << "Cannot find nearest point on polymesh." << std::endl;
+    return {this, 0};
+  }
+
+  return {this, nearest_poly_ref_id};
+}
+
+/**
+ * Gets a list of NavMeshPolys that are within the box formed by the passed in half-extents.
+ */
+NavMeshPolys NavMesh::
+get_polys_around(LPoint3 point, LVector3 extents) {
+  NavMeshPolys results;
+
+  dtNavMeshQuery query;
+
+  query.init(_nav_mesh, 8);
+
+  LPoint3 center_pt = mat_to_y.xform_point(point);
+  const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
+
+  LVector3 transformed_extents = mat_to_y.xform_point(extents);
+  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+
+  dtQueryFilter filter;
+
+  static const int MAX_POLYS = 64;
+
+  dtPolyRef polys[MAX_POLYS] = {};
+  int poly_count = 0;
+
+  dtStatus status = query.queryPolygons(center, extent_array, &filter, polys, &poly_count, MAX_POLYS);
+
+  if (dtStatusFailed(status)) {
+    navigation_cat.error() << "Cannot find nearest point on polymesh." << std::endl;
+    return results;
+  }
+
+  for (int i = 0; i < poly_count; i++) {
+    results.emplace_back(NavMeshPoly(this, polys[i]));
+  }
+
+  return results;
+}
+
+/**
  * Tells the BamReader how to create objects of type NavMesh.
  */
 void NavMesh::

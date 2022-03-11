@@ -10,8 +10,12 @@ set(P3NAVIGATION_HEADERS
         navMeshNode.I
         navMeshPath.h
         navMeshPath.I
+        navMeshPoly.h
+        navMeshPoly.I
         navMeshQuery.h
         navMeshQuery.I
+        navMeshQueryFilter.h
+        navMeshQueryFilter.I
         )
 
 set(P3NAVIGATION_SOURCES
@@ -19,7 +23,9 @@ set(P3NAVIGATION_SOURCES
         navMesh.cxx
         navMeshNode.cxx
         navMeshPath.cxx
+        navMeshPoly.cxx
         navMeshQuery.cxx
+        navMeshQueryFilter.cxx
         )
 
 composite_sources(p3navigation P3NAVIGATION_SOURCES)

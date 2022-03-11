@@ -616,22 +616,9 @@ PT(NavMesh) NavMeshBuilder::build() {
   // The GUI may allow more max points per polygon than Detour can handle.
   // Only build the detour navmesh if we do not exceed the limit.
   if (_cfg.maxVertsPerPoly <= DT_VERTS_PER_POLYGON) {
-    
-
-    // Update poly flags from areas.
     for (int i = 0; i < _pmesh->npolys; ++i) {
-      if (_pmesh->areas[i] == RC_WALKABLE_AREA)
-        _pmesh->areas[i] = SAMPLE_POLYAREA_GROUND;
-
-      if (_pmesh->areas[i] == SAMPLE_POLYAREA_GROUND || _pmesh->areas[i] == SAMPLE_POLYAREA_GRASS || _pmesh->areas[i] == SAMPLE_POLYAREA_ROAD) {
-        _pmesh->flags[i] = SAMPLE_POLYFLAGS_WALK;
-      }
-      else if (_pmesh->areas[i] == SAMPLE_POLYAREA_WATER) {
-        _pmesh->flags[i] = SAMPLE_POLYFLAGS_SWIM;
-      }
-      else if (_pmesh->areas[i] == SAMPLE_POLYAREA_DOOR) {
-        _pmesh->flags[i] = SAMPLE_POLYFLAGS_WALK | SAMPLE_POLYFLAGS_DOOR;
-      }
+      // Initialize all polygons to 1, so they are enabled by default.
+      _pmesh->flags[i] = 1;
     }
     
     NavMeshParams mesh_params;

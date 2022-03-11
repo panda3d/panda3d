@@ -10,3 +10,20 @@
  * @author Maxwell175
  * @date 2022-02-21
  */
+
+
+/**
+ * Returns the exclusion mask that will filter the walkable polygons.
+ */
+INLINE NavMeshQueryFilter NavMeshQuery::
+get_filter() const {
+  return _filter;
+}
+
+/**
+ * Sets the exclusion mask that will filter the walkable polygons.
+ */
+INLINE void NavMeshQuery::
+set_filter(NavMeshQueryFilter &filter) {
+  _filter = filter;
+}

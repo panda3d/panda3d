@@ -12,3 +12,8 @@
  */
 
 class dtNavMesh;
+
+typedef unsigned int dtPolyRef;
+
+class dtQueryFilter;
+class dtNavMeshQuery;

@@ -30,6 +30,10 @@
 // Simplified definition to speed up Interrogate parsing.
 template<class Type>
 class pvector : public std::vector<Type> {
+PUBLISHED:
+  const Type &operator[](size_t index) const;
+  Type &operator[](size_t index);
+  size_t size() const;
 };
 
 #else
@@ -62,6 +66,18 @@ public:
   pvector<Type> &operator =(pvector<Type> &&from) noexcept {
     base_class::operator =(std::move(from));
     return *this;
+  }
+
+PUBLISHED:
+  const Type &operator[](size_t index) const {
+    return base_class::at(index);
+  };
+  Type &operator[](size_t index) {
+    return base_class::at(index);
+  };
+
+  size_t size() const {
+    return base_class::size();
   }
 };
 
