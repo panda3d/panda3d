@@ -877,8 +877,11 @@ def JavaGetImports(path):
     imports = []
     try:
         for match in JavaImportRegex.finditer(source, 0):
-            impname = match.group(1)
-            imports.append(impname.strip())
+            impname = match.group(1).strip()
+            if not impname.startswith('java.') and \
+               not impname.startswith('dalvik.') and \
+               not impname.startswith('android.'):
+                imports.append(impname.strip())
     except:
         print("Failed to determine dependencies of \"" + path  +"\".")
         raise
