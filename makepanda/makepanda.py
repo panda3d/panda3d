@@ -6264,6 +6264,8 @@ def ParallelMake(tasklist):
             tasklist = extras
         sys.stdout.flush()
         if tasksqueued == 0:
+            if len(tasklist) > 0:
+                continue
             break
         donetask = donequeue.get()
         if donetask == 0:
