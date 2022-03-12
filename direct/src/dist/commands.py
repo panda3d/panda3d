@@ -155,7 +155,6 @@ from android_log import write as android_log_write
 
 
 sys.frozen = True
-sys.platform = "android"
 
 # Temporary hack for plyer to detect Android, see kivy/plyer#670
 os.environ['ANDROID_ARGUMENT'] = ''
