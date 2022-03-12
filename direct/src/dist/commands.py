@@ -157,6 +157,9 @@ from android_log import write as android_log_write
 sys.frozen = True
 sys.platform = "android"
 
+# Temporary hack for plyer to detect Android, see kivy/plyer#670
+os.environ['ANDROID_ARGUMENT'] = ''
+
 
 # Replace stdout/stderr with something that writes to the Android log.
 class AndroidLogStream:
@@ -735,7 +738,7 @@ class build_apps(setuptools.Command):
 
         for appname in self.gui_apps:
             activity = ET.SubElement(application, 'activity')
-            activity.set('android:name', 'org.panda3d.android.PandaActivity')
+            activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
             activity.set('android:theme', '@android:style/Theme.NoTitleBar')
             activity.set('android:configChanges', 'orientation|keyboardHidden')
