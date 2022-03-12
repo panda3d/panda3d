@@ -1023,7 +1023,7 @@ class build_apps(setuptools.Command):
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
-            for suffix in freezer.moduleSuffixes:
+            for suffix in freezer.mf.suffixes:
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
 
