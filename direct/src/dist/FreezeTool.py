@@ -80,6 +80,7 @@ defaultHiddenImports = {
     ],
     'pandas.compat': ['lzma', 'cmath'],
     'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
+    'plyer': ['plyer.platforms'],
 }
 
 
@@ -852,6 +853,20 @@ class Freezer:
         self.hiddenImports = defaultHiddenImports.copy()
         if hiddenImports is not None:
             self.hiddenImports.update(hiddenImports)
+
+        # Special hack for plyer, which has platform-specific hidden imports
+        plyer_platform = None
+        if self.platform.startswith('android'):
+            plyer_platform = 'android'
+        elif self.platform.startswith('linux'):
+            plyer_platform = 'linux'
+        elif self.platform.startswith('mac'):
+            plyer_platform = 'macosx'
+        elif self.platform.startswith('win'):
+            plyer_platform = 'win'
+
+        if plyer_platform:
+            self.hiddenImports['plyer'].append(f'plyer.platforms.{plyer_platform}.*')
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
