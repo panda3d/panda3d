@@ -337,7 +337,7 @@ root_func(void *data) {
 }
 
 /**
- * Called by get_current_thread() if the current therad pointer is null; checks
+ * Called by get_current_thread() if the current thread pointer is null; checks
  * whether it might be the main thread.
  */
 Thread *ThreadPosixImpl::
@@ -347,7 +347,6 @@ init_current_thread() {
     thread = Thread::get_main_thread();
     _current_thread = thread;
   }
-  nassertr(thread != nullptr, nullptr);
   return thread;
 }
 
