@@ -20,6 +20,8 @@
 
 class NavMesh;
 
+typedef pvector<LPoint3> PointList;
+
 /**
  * The NavMeshPath class describes a path that was found by NavMeshQuery.
  */
@@ -33,12 +35,18 @@ public:
 PUBLISHED:
   INLINE PT(NavMesh) get_nav_mesh() const;
 
-  LPoint3 get_center();
+  LPoint3 get_center() const;
   MAKE_PROPERTY(center, get_center);
 
+  BitMask16 get_flags() const;
   void set_flags(BitMask16 mask);
-  BitMask16 get_flags();
   MAKE_PROPERTY(flags, get_flags, set_flags);
+
+  LColor get_debug_color() const;
+  void set_debug_color(LColor color);
+  MAKE_PROPERTY(debug_color, get_debug_color, set_debug_color);
+
+  PointList get_verts() const;
 
   INLINE bool operator == (const NavMeshPoly &other) const;
   INLINE bool operator != (const NavMeshPoly &other) const;
