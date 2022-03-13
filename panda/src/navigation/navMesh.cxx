@@ -19,6 +19,7 @@
 #include "lvecBase3.h"
 #include "geomVertexWriter.h"
 #include <iostream>
+#include "lineSegs.h"
 
 TypeHandle NavMesh::_type_handle;
 
@@ -119,60 +120,100 @@ bool NavMesh::init_nav_mesh() {
  * This function generates a GeomNode that visually represents the NavMesh.
  */
 PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
+  bool have_poly_outline_cache = _cache_poly_outlines != nullptr;
 
   PT(GeomVertexData) vdata;
   vdata = new GeomVertexData("vertexInfo", GeomVertexFormat::get_v3c4(), Geom::UH_static);
-  vdata->set_num_rows(_params.vertCount);
+
+  pvector<std::tuple<LPoint3, LColor>> vector_data;
+  pvector<pvector<int>> prims;
+
+  PT(GeomNode) node;
+  if (have_poly_outline_cache) {
+    node = DCAST(GeomNode, _cache_poly_outlines->make_copy());
+  } else {
+    node = new GeomNode("navmesh_gnode");
+  }
+
+  if (_cache_poly_verts.empty()) {
+    for (const NavMeshPoly &poly : get_polys()) {
+      _cache_poly_verts[poly.get_poly_ref()] = poly.get_verts();
+    }
+  }
+
+  // Loop through every vertex in every poly, collecting the vertices,
+  // which are intentionally duplicated for adjacent polys in order to allow
+  // individual polys to have different colors.
+  for (const auto &poly : _cache_poly_verts) {
+    pvector<int> primitive;
+
+    LineSegs poly_segs;
+    poly_segs.set_color(0, 0, 0);
+    poly_segs.set_thickness(3);
+
+    for (const LPoint3 &point : poly.second) {
+      vector_data.emplace_back(std::make_tuple(point, get_poly_debug_color(poly.first)));
+      primitive.emplace_back(vector_data.size() - 1);  // Save off the vertex index for the primitive.
+      if (!have_poly_outline_cache) {
+        poly_segs.draw_to(point);
+      }
+    }
+
+    if (!have_poly_outline_cache) {
+      poly_segs.create(node);
+    }
+    prims.emplace_back(primitive);
+  }
+
+  if (!have_poly_outline_cache) {
+    _cache_poly_outlines = DCAST(GeomNode, node->make_copy());
+  }
+
+  vdata->set_num_rows(vector_data.size());
 
   GeomVertexWriter vertex(vdata, "vertex");
   GeomVertexWriter colour(vdata, "color");
 
-  const int nvp = _params.nvp;
-  const float cs = _params.cs;
-  const float ch = _params.ch;
-  const float* orig = _params.bmin;
-  
-  for (int i = 0;i < _params.vertCount * 3;i += 3) {
-    const unsigned short* v = &_params.verts[i];
-
-    //convert to world space
-    const float x = orig[0] + v[0] * cs;
-    const float y = orig[1] + v[1] * ch;
-    const float z = orig[2] + v[2] * cs;
-    
-
-    LVecBase3 vec = mat_from_y.xform_point({x, y, z});
-    vertex.add_data3(vec);
-    
-    colour.add_data4(0, 0, 1, 1);
+  for (auto &vert_pair : vector_data) {
+    vertex.add_data3(std::get<0>(vert_pair));
+    colour.add_data4(std::get<1>(vert_pair));
   }
-
-  PT(GeomNode) node;
-  node = new GeomNode("gnode");
 
   PT(GeomTrifans) prim;
   prim = new GeomTrifans(Geom::UH_static);
 
-  for (int i = 0; i < _params.polyCount; ++i) {
-
-    const unsigned short* p = &_params.polys[i*nvp * 2];
-
-    // Iterate the vertices.
-    for (int j = 0; j < nvp; ++j) {
-      if (p[j] == border_index) {
-        break;// End of vertices.
-      }
-      prim->add_vertex(p[j]);// The edge beginning with this vertex is a solid border.
+  for (const auto &primitive : prims) {
+    for (int vert_idx : primitive) {
+      prim->add_vertex(vert_idx);
     }
     prim->close_primitive();
-
   }
+
   PT(Geom) polymeshgeom = new Geom(vdata);
   polymeshgeom->add_primitive(prim);
 
   node->add_geom(polymeshgeom);
 
   return node;
+}
+
+NavMeshPolys NavMesh::
+get_polys() {
+  NavMeshPolys results;
+
+  const dtNavMesh *navMesh = _nav_mesh;
+
+  for (int i = 0; i < _nav_mesh->getMaxTiles(); i++) {
+    const dtMeshTile* tile = navMesh->getTile(i);
+    for (int j = 0; j < _nav_mesh->getParams()->maxPolys; j++) {
+      dtPolyRef ref = _nav_mesh->encodePolyId(tile->salt, i, j);
+      if (_nav_mesh->isValidPolyRef(ref)) {
+        results.emplace_back(NavMeshPoly(this, ref));
+      }
+    }
+  }
+
+  return results;
 }
 
 /**

@@ -1,1 +1,3 @@
 forcetype pvector<NavMeshPoly>
+forcetype pvector<LPoint3>
+forcetype std::vector<LPoint3>

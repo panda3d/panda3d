@@ -24,6 +24,7 @@
 #include "pandabase.h"
 #include "geomNode.h"
 #include "navMeshPoly.h"
+#include <unordered_map>
 
 /**
  * NavMeshParams class stores all the parameters of a navigation mesh.
@@ -77,14 +78,23 @@ PUBLISHED:
   INLINE int get_detail_vert_count() const;
   INLINE int get_detail_tri_count() const;
 
+  NavMeshPolys get_polys();
+
   NavMeshPoly get_poly_at(LPoint3 point);
 
   NavMeshPolys get_polys_around(LPoint3 point, LVector3 extents = LVector3( 3 , 3 , 3 ));
+
+  INLINE void reset_debug_colors();
 
 private:
   dtNavMesh *_nav_mesh;
   dtNavMeshCreateParams _params {};
   int border_index = 0;
+
+  std::unordered_map<dtPolyRef, LColor> _debug_colors;
+
+  PT(GeomNode) _cache_poly_outlines = nullptr;
+  std::unordered_map<dtPolyRef, PointList> _cache_poly_verts;
 
   LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
@@ -93,7 +103,9 @@ public:
   bool init_nav_mesh();
   dtNavMesh *get_nav_mesh() { return _nav_mesh; }
   ~NavMesh();
-  
+
+  INLINE LColor get_poly_debug_color(dtPolyRef poly) const;
+  INLINE void set_poly_debug_color(dtPolyRef poly, LColor color);
 
 public:
   static TypeHandle get_class_type() {
