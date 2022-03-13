@@ -69,10 +69,10 @@ public:
 
 PUBLISHED:
   const Type &operator[](size_t index) const {
-    return base_class::at(index);
+    return base_class::operator[](index);
   };
   Type &operator[](size_t index) {
-    return base_class::at(index);
+    return base_class::operator[](index);
   };
 
   size_t size() const {
