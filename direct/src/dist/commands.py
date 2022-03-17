@@ -459,15 +459,15 @@ class build_apps(setuptools.Command):
 
             if self.android_abis:
                 for abi in self.android_abis:
-                    assert abi not in ('mips64', 'x86-64', 'arm64-v8a'), \
+                    assert abi not in ('mips64', 'x86_64', 'arm64-v8a'), \
                         f'{abi} was not a valid Android ABI before Android 21!'
             else:
                 self.android_abis = ['armeabi-v7a', 'x86']
 
         elif not self.android_abis:
-            self.android_abis = ['arm64-v8a', 'armeabi-v7a', 'x86-64', 'x86']
+            self.android_abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86']
 
-        supported_abis = 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86-64', 'mips', 'mips64'
+        supported_abis = 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64'
         unsupported_abis = set(self.android_abis) - set(supported_abis)
         if unsupported_abis:
             raise ValueError(f'Unrecognized value(s) for android_abis: {", ".join(unsupported_abis)}\n'
