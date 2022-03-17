@@ -57,6 +57,8 @@ public:
 
   const std::string& get_name() const;
 
+  const bool get_positional() const;
+
   PN_stdfloat length() const;
 
   void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);

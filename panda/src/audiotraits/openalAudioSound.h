@@ -77,6 +77,8 @@ public:
 
   const std::string &get_name() const;
 
+  const bool& get_positional() const;
+
   // return: playing time in seconds.
   PN_stdfloat length() const;
 

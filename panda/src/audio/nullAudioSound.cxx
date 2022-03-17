@@ -110,6 +110,10 @@ const string& NullAudioSound::get_name() const {
   return blank;
 }
 
+const bool NullAudioSound::get_positional() const {
+  return false;
+}
+
 PN_stdfloat NullAudioSound::length() const {
   return 0;
 }

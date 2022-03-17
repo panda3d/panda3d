@@ -81,6 +81,8 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _file_name = file->get_original_filename();
   _file_name.set_binary();
 
+  _positional = positional;
+
   // Get the Speaker Mode [Important for later on.]
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
@@ -536,6 +538,11 @@ set_play_rate_on_channel() {
 const string& FmodAudioSound::
 get_name() const {
   return _file_name;
+}
+
+const bool& FmodAudioSound::
+get_positional() const {
+  return _positional;
 }
 
 /**
