@@ -274,6 +274,11 @@ void NavMeshBuilder::process_geom_node(PT(GeomNode) &geomnode, CPT(TransformStat
 }
 
 void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &transform) {
+  // Do not process stashed nodes.
+  if (node.is_stashed()) {
+    return;
+  }
+
   if (node.node()->is_of_type(GeomNode::get_class_type())) {
     PT(GeomNode) g = DCAST(GeomNode, node.node());
     process_geom_node(g, transform);
@@ -289,6 +294,11 @@ void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &tran
 }
 
 void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform, BitMask32 mask) {
+  // Do not process stashed nodes.
+  if (node.is_stashed()) {
+    return;
+  }
+
   if (node.node()->is_of_type(CollisionNode::get_class_type())) {
     PT(CollisionNode) g = DCAST(CollisionNode, node.node());
     if ((g->get_into_collide_mask() & mask) != 0) {
