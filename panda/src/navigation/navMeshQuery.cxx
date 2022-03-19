@@ -47,7 +47,7 @@ NavMeshQuery::~NavMeshQuery() {
  * Given an input point, this function finds the nearest point
  * to it lying over the navigation mesh surface.
  */
-bool NavMeshQuery::nearest_point(LPoint3 &p) {
+bool NavMeshQuery::nearest_point(LPoint3 &p, LVector3 extents) {
   if (!_nav_query) {
     navigation_cat.error() << "NavMeshQuery not created!" << std::endl;
     return false;
@@ -56,13 +56,14 @@ bool NavMeshQuery::nearest_point(LPoint3 &p) {
   LPoint3 center_pt = mat_to_y.xform_point(p);
   const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
   float nearest_p[3] = { 0, 0, 0 };
-  const float extents[3] = { 10 , 10 , 10 };
+  LVector3 transformed_extents = mat_to_y.xform_point(extents);
+  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
 
   dtQueryFilter filter;
 
   dtPolyRef nearest_poly_ref_id = 0;
 
-  dtStatus status = _nav_query->findNearestPoly(center, extents, &filter, &nearest_poly_ref_id, nearest_p);
+  dtStatus status = _nav_query->findNearestPoly(center, extent_array, &filter, &nearest_poly_ref_id, nearest_p);
 
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh." << std::endl;
@@ -78,7 +79,7 @@ bool NavMeshQuery::nearest_point(LPoint3 &p) {
  * path from the start to end point using the NavMesh.
  * It returns a NavMeshPath object that represents the path that was found.
  */
-NavMeshPath NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end) {
+NavMeshPath NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end, LVector3 extents) {
   pvector<LPoint3> path_array;
 
   dtPolyRef start_ref = 0;
@@ -92,15 +93,16 @@ NavMeshPath NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end) {
   dtQueryFilter *filter = _filter.get_filter();
   dtPolyRef path[MAX_POLYS];
   int path_count;
-  const float extents[3] = { 10, 10, 10 };
+  LVector3 transformed_extents = mat_to_y.xform_point(extents);
+  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
 
-  dtStatus status = _nav_query->findNearestPoly(start_pos, extents, filter, &start_ref, nearest_start);
+  dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, filter, &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for start point." << std::endl;
     return {};
   }
 
-  status = _nav_query->findNearestPoly(end_pos, extents, filter, &end_ref, nearest_end);
+  status = _nav_query->findNearestPoly(end_pos, extent_array, filter, &end_ref, nearest_end);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for end point." << std::endl;
     return {};
@@ -143,7 +145,7 @@ NavMeshPath NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end) {
  * often called 'string pulling', which might not properly account for terrain height.
  * It returns a NavMeshPath object that represents the path that was found.
  */
-NavMeshPath NavMeshQuery::find_straight_path(LPoint3 &start, LPoint3 &end, int opt) {
+NavMeshPath NavMeshQuery::find_straight_path(LPoint3 &start, LPoint3 &end, LVector3 extents, int opt) {
   pvector<LPoint3> straight_path_array;
 
   dtPolyRef start_ref = 0;
@@ -157,15 +159,16 @@ NavMeshPath NavMeshQuery::find_straight_path(LPoint3 &start, LPoint3 &end, int o
   dtQueryFilter *filter = _filter.get_filter();
   dtPolyRef path[MAX_POLYS];
   int path_count;
-  const float extents[3] = { 10, 10, 10 };
+  LVector3 transformed_extents = mat_to_y.xform_point(extents);
+  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
 
-  dtStatus status = _nav_query->findNearestPoly(start_pos, extents, filter, &start_ref, nearest_start);
+  dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, filter, &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for start point." << std::endl;
     return {};
   }
 
-  status = _nav_query->findNearestPoly(end_pos, extents, _filter.get_filter(), &end_ref, nearest_end);
+  status = _nav_query->findNearestPoly(end_pos, extent_array, _filter.get_filter(), &end_ref, nearest_end);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for end point." << std::endl;
     return {};
@@ -360,7 +363,7 @@ static int fixupShortcuts(dtPolyRef* path, int npath, dtNavMeshQuery* navQuery)
   return npath;
 }
 
-NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end) {
+NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector3 extents) {
   pvector<LPoint3> path_array;
 
   dtPolyRef start_ref = 0;
@@ -373,15 +376,16 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end) {
   float nearest_end[3] = { 0, 0, 0 };
   dtPolyRef path[MAX_POLYS];
   int path_count;
-  const float extents[3] = { 10, 10, 10 };
+  LVector3 transformed_extents = mat_to_y.xform_point(extents);
+  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
 
-  dtStatus status = _nav_query->findNearestPoly(start_pos, extents, _filter.get_filter(), &start_ref, nearest_start);
+  dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, _filter.get_filter(), &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for start point." << std::endl;
     return {};
   }
 
-  status = _nav_query->findNearestPoly(end_pos, extents, _filter.get_filter(), &end_ref, nearest_end);
+  status = _nav_query->findNearestPoly(end_pos, extent_array, _filter.get_filter(), &end_ref, nearest_end);
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh for end point." << std::endl;
     return {};
