@@ -57,7 +57,7 @@ bool NavMeshQuery::nearest_point(LPoint3 &p, LVector3 extents) {
   const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
   float nearest_p[3] = { 0, 0, 0 };
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
 
   dtQueryFilter filter;
 
@@ -94,7 +94,7 @@ NavMeshPath NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end, LVector3 exten
   dtPolyRef path[MAX_POLYS];
   int path_count;
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
 
   dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, filter, &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
@@ -160,7 +160,7 @@ NavMeshPath NavMeshQuery::find_straight_path(LPoint3 &start, LPoint3 &end, LVect
   dtPolyRef path[MAX_POLYS];
   int path_count;
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
 
   dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, filter, &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
@@ -377,7 +377,7 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
   dtPolyRef path[MAX_POLYS];
   int path_count;
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
 
   dtStatus status = _nav_query->findNearestPoly(start_pos, extent_array, _filter.get_filter(), &start_ref, nearest_start);
   if (dtStatusFailed(status)) {
