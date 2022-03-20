@@ -259,7 +259,7 @@ get_polys_around(LPoint3 point, LVector3 extents) {
   const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
 
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { transformed_extents[0], transformed_extents[1], transformed_extents[2] };
+  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
 
   dtQueryFilter filter;
 
