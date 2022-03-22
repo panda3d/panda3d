@@ -540,7 +540,7 @@ get_name() const {
   return _file_name;
 }
 
-const bool& FmodAudioSound::
+bool FmodAudioSound::
 get_positional() const {
   return _positional;
 }

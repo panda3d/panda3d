@@ -85,7 +85,7 @@ PUBLISHED:
   virtual const std::string& get_name() const = 0;
 
 
-  virtual const bool get_positional() const = 0;
+  virtual bool get_positional() const = 0;
 
   // return: playing time in seconds.
   virtual PN_stdfloat length() const = 0;

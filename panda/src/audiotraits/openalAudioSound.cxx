@@ -875,9 +875,9 @@ get_name() const {
   return _basename;
 }
 
-/*
-  Get positional flag
-*/
+/**
+ * Get positional flag
+ */
 const bool& OpenALAudioSound::
 get_positional() const {
   return _positional;
