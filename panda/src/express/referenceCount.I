@@ -28,8 +28,8 @@ TypeHandle RefCountObj<Base>::_type_handle;
  */
 INLINE ReferenceCount::
 ReferenceCount() :
-  _weak_list(nullptr),
-  _ref_count(0) {
+  _ref_count(0),
+  _weak_list(nullptr) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
 #endif
@@ -45,8 +45,8 @@ ReferenceCount() :
  */
 INLINE ReferenceCount::
 ReferenceCount(const ReferenceCount &) :
-  _weak_list(nullptr),
-  _ref_count(0) {
+  _ref_count(0),
+  _weak_list(nullptr) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
 #endif

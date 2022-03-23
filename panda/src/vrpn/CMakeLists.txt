@@ -37,6 +37,12 @@ target_interrogate(p3vrpn ALL)
 
 set_target_properties(p3vrpn PROPERTIES CXX_EXCEPTIONS ON)
 
+if(HAVE_VRPN AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  target_link_options(p3vrpn PRIVATE "LINKER:--exclude-libs,libvrpn.a")
+  target_link_options(p3vrpn PRIVATE "LINKER:--exclude-libs,libquat.a")
+endif()
+
 install(TARGETS p3vrpn
   EXPORT VRPN COMPONENT VRPN
   DESTINATION ${CMAKE_INSTALL_LIBDIR}

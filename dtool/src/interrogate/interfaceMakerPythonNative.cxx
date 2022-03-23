@@ -2510,11 +2510,11 @@ write_module_class(ostream &out, Object *obj) {
           out << "  if (arg2 != nullptr && arg2 != Py_None) {\n";
           out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
           write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
-                                true, true, AT_varargs, RF_pyobject | RF_err_null | RF_decref_args, true);
+                                true, true, AT_varargs, return_flags | RF_decref_args, true);
           out << "    Py_DECREF(args);\n";
           out << "  } else {\n";
           write_function_forset(out, one_param_remaps, 1, 1, expected_params, 4,
-                                true, true, AT_single_arg, RF_pyobject | RF_err_null, true);
+                                true, true, AT_single_arg, return_flags, true);
           out << "  }\n\n";
 
           out << "  if (!_PyErr_OCCURRED()) {\n";

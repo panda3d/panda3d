@@ -176,18 +176,6 @@ function(package_option name)
   # Create the INTERFACE library used to depend on this package.
   add_library(PKG::${name} INTERFACE IMPORTED GLOBAL)
 
-  # Explicitly record the package's include directories as system include
-  # directories.  CMake does do this automatically for INTERFACE libraries, but
-  # it does it by discovering all transitive links first, then reading
-  # INTERFACE_INCLUDE_DIRECTORIES for those which are INTERFACE libraries.  So,
-  # this would be broken for the metalib system (pre CMake 3.12) which doesn't
-  # "link" the object libraries.
-  if(CMAKE_VERSION VERSION_LESS "3.12")
-    set_target_properties(PKG::${name} PROPERTIES
-      INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-      "$<TARGET_PROPERTY:PKG::${name},INTERFACE_INCLUDE_DIRECTORIES>")
-  endif()
-
   # If the option actually is enabled, populate the INTERFACE library created above
   if(HAVE_${name})
     set(use_variables ON)
@@ -412,9 +400,8 @@ function(export_packages filename)
             endforeach(config)
           endif()
 
-        elseif(CMAKE_VERSION VERSION_GREATER "3.8")
-          # This is an INTERFACE_LIBRARY, and CMake is new enough to support
-          # IMPORTED_IMPLIB
+        else()
+          # This is an INTERFACE_LIBRARY.
           get_target_property(imported_libname "${head}" IMPORTED_LIBNAME)
           if(imported_libname)
             list(APPEND libraries ${imported_libname})

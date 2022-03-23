@@ -97,6 +97,11 @@ target_include_directories(p3dtoolbase PUBLIC
 target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS PKG::MIMALLOC)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
+if(HAVE_MIMALLOC AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  target_link_options(p3dtoolbase PRIVATE "LINKER:--exclude-libs,libmimalloc.a")
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3dtoolbase
     EXPORT Core COMPONENT Core

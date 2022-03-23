@@ -99,13 +99,13 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _size(0),
   _chunk_size(32),
   _generate_patches(false),
-  _data_texture(nullptr),
+  _heightfield_tex(nullptr),
   _chunk_geom(nullptr),
+  _data_texture(nullptr),
   _current_view_index(0),
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
-  _update_enabled(true),
-  _heightfield_tex(nullptr)
+  _update_enabled(true)
 {
   set_renderable();
 }

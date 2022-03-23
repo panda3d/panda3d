@@ -22,9 +22,9 @@
 CPPNamespace::
 CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
   CPPDeclaration(file),
+  _is_inline(false),
   _ident(ident),
-  _scope(scope),
-  _is_inline(false)
+  _scope(scope)
 {
 }
 

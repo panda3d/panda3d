@@ -731,6 +731,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
  */
 DisplayRegion::CData::
 CData() :
+  _depth_range(0, 1),
   _lens_index(0),
   _camera_node(nullptr),
   _active(true),
@@ -738,8 +739,7 @@ CData() :
   _stereo_channel(Lens::SC_mono),
   _tex_view_offset(0),
   _target_tex_page(-1),
-  _scissor_enabled(true),
-  _depth_range(0, 1)
+  _scissor_enabled(true)
 {
   _regions.push_back(Region());
 }
@@ -750,6 +750,7 @@ CData() :
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
   _regions(copy._regions),
+  _depth_range(copy._depth_range),
   _lens_index(copy._lens_index),
   _camera(copy._camera),
   _camera_node(copy._camera_node),
@@ -758,8 +759,7 @@ CData(const DisplayRegion::CData &copy) :
   _stereo_channel(copy._stereo_channel),
   _tex_view_offset(copy._tex_view_offset),
   _target_tex_page(copy._target_tex_page),
-  _scissor_enabled(copy._scissor_enabled),
-  _depth_range(copy._depth_range)
+  _scissor_enabled(copy._scissor_enabled)
 {
 }
 

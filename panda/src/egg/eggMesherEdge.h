@@ -29,7 +29,6 @@ class EggMesherStrip;
 class EXPCL_PANDA_EGG EggMesherEdge {
 public:
   INLINE EggMesherEdge(int vi_a, int vi_b);
-  INLINE EggMesherEdge(const EggMesherEdge &copy);
 
   void remove(EggMesherStrip *strip);
   void change_strip(EggMesherStrip *from, EggMesherStrip *to);

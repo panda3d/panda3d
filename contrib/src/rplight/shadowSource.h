@@ -30,6 +30,7 @@
 
 #include "pandabase.h"
 #include "luse.h"
+#include "memoryBase.h"
 #include "transformState.h"
 #include "look_at.h"
 #include "compose_matrix.h"
@@ -48,7 +49,7 @@
  *   and a view-projection matrix. The shadow manager regenerates the shadow maps
  *   using the data from the shadow sources.
  */
-class ShadowSource {
+class ShadowSource : public MemoryBase {
 public:
   ShadowSource();
 
@@ -78,14 +79,13 @@ public:
   inline const BoundingSphere& get_bounds() const;
 
 private:
-  int _slot;
-  bool _needs_update;
-  size_t _resolution;
   LMatrix4 _mvp;
   LVecBase4i _region;
   LVecBase4 _region_uv;
-
   BoundingSphere _bounds;
+  int _slot;
+  bool _needs_update;
+  size_t _resolution;
 };
 
 #include "shadowSource.I"

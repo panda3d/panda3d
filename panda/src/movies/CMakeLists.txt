@@ -51,6 +51,24 @@ target_link_libraries(p3movies p3pstatclient p3gobj p3pandabase pandaexpress
   PKG::VORBIS PKG::OPUS)
 target_interrogate(p3movies ALL)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  if(HAVE_OPUS OR HAVE_VORBIS)
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libogg.a")
+  endif()
+
+  if(HAVE_VORBIS)
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libvorbis.a")
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libvorbisenc.a")
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libvorbisfile.a")
+  endif()
+
+  if(HAVE_OPUS)
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libopus.a")
+    target_link_options(p3movies PRIVATE "LINKER:--exclude-libs,libopusfile.a")
+  endif()
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3movies
     EXPORT Core COMPONENT Core

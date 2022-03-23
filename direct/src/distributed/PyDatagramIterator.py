@@ -30,6 +30,21 @@ class PyDatagramIterator(DatagramIterator):
 
     getChannel = DatagramIterator.getUint64
 
+    def __init__(self, datagram=None, offset=0):
+        if datagram is not None:
+            super().__init__(datagram, offset)
+
+            # Retain a reference to it so that it doesn't get deleted.
+            self.__datagram = datagram
+        else:
+            super().__init__()
+
+    def getDatagram(self):
+        return self.__datagram
+
+    def get_datagram(self):
+        return self.__datagram
+
     def getArg(self, subatomicType, divisor=1):
         # Import the type numbers
         if divisor == 1:

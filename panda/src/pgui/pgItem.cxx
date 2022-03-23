@@ -62,9 +62,9 @@ PGItem(const string &name) :
   _notify(nullptr),
   _has_frame(false),
   _frame(0, 0, 0, 0),
-  _region(new PGMouseWatcherRegion(this)),
   _state(0),
-  _flags(0)
+  _flags(0),
+  _region(new PGMouseWatcherRegion(this))
 {
   set_cull_callback();
   set_renderable();

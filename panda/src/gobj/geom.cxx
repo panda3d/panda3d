@@ -63,26 +63,6 @@ Geom(const Geom &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a Geom that is
- * actively being used for rendering.
- */
-void Geom::
-operator = (const Geom &copy) {
-  CopyOnWriteObject::operator = (copy);
-
-  clear_cache();
-
-  _cycler = copy._cycler;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    mark_internal_bounds_stale(cdata);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-/**
  *
  */
 Geom::

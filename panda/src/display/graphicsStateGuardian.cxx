@@ -2035,7 +2035,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2058,7 +2058,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2087,7 +2087,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2117,7 +2117,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2140,7 +2140,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2170,7 +2170,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
@@ -2191,7 +2191,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
-        size_t si = 0;
+        int si = 0;
         for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();

@@ -62,9 +62,10 @@ protected:
   Geom(const Geom &copy);
 
 PUBLISHED:
-  void operator = (const Geom &copy);
   virtual ~Geom();
   ALLOC_DELETED_CHAIN(Geom);
+
+  void operator = (const Geom &copy) = delete;
 
   virtual Geom *make_copy() const;
 

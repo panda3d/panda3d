@@ -1097,7 +1097,7 @@ stop_clock_wait() {
 void PStatClient::
 add_collector(PStatClient::Collector *collector) {
   int num_collectors = get_num_collectors();
-  if (num_collectors >= _collectors_size) {
+  if (num_collectors >= (int)_collectors_size) {
     // We need to grow the array.  We have to be careful here, because there
     // might be clients accessing the array right now who are not protected by
     // the lock.
@@ -1136,7 +1136,7 @@ add_thread(PStatClient::InternalThread *thread) {
   _threads_by_name[thread->_name].push_back(num_threads);
   _threads_by_sync_name[thread->_sync_name].push_back(num_threads);
 
-  if (num_threads >= _threads_size) {
+  if (num_threads >= (int)_threads_size) {
     // We need to grow the array.  We have to be careful here, because there
     // might be clients accessing the array right now who are not protected by
     // the lock.
