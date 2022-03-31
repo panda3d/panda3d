@@ -117,6 +117,7 @@ PUBLISHED:
   INLINE int get_subrange_begin(size_t n) const;
   INLINE int get_subrange_end(size_t n) const;
 
+  EXTENSION(bool __bool__() const);
   EXTENSION(PyObject *__getstate__() const);
   EXTENSION(void __setstate__(PyObject *state));
 

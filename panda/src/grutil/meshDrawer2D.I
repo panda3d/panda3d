@@ -37,9 +37,9 @@ MeshDrawer2D() {
 INLINE MeshDrawer2D::
 ~MeshDrawer2D() {
   _root.remove_node();
-  if (_vertex != nullptr) delete _vertex;
-  if (_uv != nullptr)     delete _uv;
-  if (_color != nullptr)  delete _color;
+  delete _vertex;
+  delete _uv;
+  delete _color;
 }
 
 /**

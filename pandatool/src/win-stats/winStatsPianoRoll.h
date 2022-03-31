@@ -41,12 +41,16 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
   void set_horizontal_scale(double time_width);
 
 protected:
+  virtual void normal_guide_bars();
   void clear_region();
   virtual void begin_draw();
+  virtual void begin_row(int row);
   virtual void draw_bar(int row, int from_x, int to_x);
   virtual void end_draw();
   virtual void idle();
@@ -55,11 +59,12 @@ protected:
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
 
 private:
-  int get_collector_under_pixel(int xpoint, int ypoint);
+  int get_collector_under_pixel(int xpoint, int ypoint) const;
   void update_labels();
   void draw_guide_bar(HDC hdc, const GuideBar &bar);
   void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);
@@ -68,6 +73,8 @@ private:
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+  int _popup_index = -1;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

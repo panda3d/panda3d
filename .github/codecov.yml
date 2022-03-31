@@ -1,0 +1,16 @@
+coverage:
+  status:
+    project:
+      default:
+        threshold: 0.1
+    patch:
+      default:
+        target: 0%
+codecov:
+  require_ci_to_pass: true
+  notify:
+    after_n_builds: 2
+    wait_for_ci: true
+comment:
+  require_changes: true
+  after_n_builds: 2

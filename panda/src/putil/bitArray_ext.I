@@ -10,3 +10,11 @@
  * @author rdb
  * @date 2020-03-21
  */
+
+/**
+ * Returns true if the value is not zero.
+ */
+INLINE bool Extension<BitArray>::
+__bool__() const {
+  return !_this->is_zero();
+}

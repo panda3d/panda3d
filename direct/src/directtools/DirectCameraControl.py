@@ -6,6 +6,7 @@ from .DirectSelection import SelectionRay
 from direct.interval.IntervalGlobal import Sequence, Func
 from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
@@ -22,7 +23,7 @@ class DirectCameraControl(DirectObject):
         self.orthoViewRoll = 0.0
         self.lastView = 0
         self.coa = Point3(0, 100, 0)
-        self.coaMarker = loader.loadModel('models/misc/sphere')
+        self.coaMarker = base.loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
         self.coaMarker.setTransparency(1)
         self.coaMarker.setColor(1, 0, 0, 0)
@@ -128,8 +129,8 @@ class DirectCameraControl(DirectObject):
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
-            self.startT= globalClock.getFrameTime()
-            self.startF = globalClock.getFrameCount()
+            self.startT = base.clock.getFrameTime()
+            self.startF = base.clock.getFrameCount()
             # If the cam is orthogonal, spawn differentTask
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
                base.direct.camera.getName() != 'persp':
@@ -150,7 +151,7 @@ class DirectCameraControl(DirectObject):
     def __startManipulateCamera(self, func = None, task = None, ival = None):
         self.__stopManipulateCamera()
         if func:
-            assert(task is None)
+            assert task is None
             task = Task.Task(func)
         if task:
             self.manipulateCameraTask = taskMgr.add(task, 'manipulateCamera')
@@ -168,8 +169,8 @@ class DirectCameraControl(DirectObject):
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
-            self.startT= globalClock.getFrameTime()
-            self.startF = globalClock.getFrameCount()
+            self.startT = base.clock.getFrameTime()
+            self.startF = base.clock.getFrameCount()
             # Start manipulation
             # If the cam is orthogonal, spawn differentTask
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
@@ -185,8 +186,8 @@ class DirectCameraControl(DirectObject):
                 # Hide the marker for this kind of motion
                 self.coaMarker.hide()
                 # Record time of start of mouse interaction
-                self.startT= globalClock.getFrameTime()
-                self.startF = globalClock.getFrameCount()
+                self.startT = base.clock.getFrameTime()
+                self.startF = base.clock.getFrameCount()
                 # Start manipulation
                 self.spawnXZTranslateOrHPanYZoom()
                 # END MOUSE IN CENTRAL REGION
@@ -203,9 +204,9 @@ class DirectCameraControl(DirectObject):
 
     def mouseFlyStop(self):
         self.__stopManipulateCamera()
-        stopT = globalClock.getFrameTime()
+        stopT = base.clock.getFrameTime()
         deltaT = stopT - self.startT
-        stopF = globalClock.getFrameCount()
+        stopF = base.clock.getFrameCount()
         deltaF = stopF - self.startF
         ## No reason this shouldn't work with Maya cam on
         # if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):
@@ -366,7 +367,7 @@ class DirectCameraControl(DirectObject):
                                 moveDir[2],
                                 hVal,
                                 0.0, 0.0)
-        if (self.lockRoll == True):
+        if self.lockRoll:
             # flatten roll
             base.direct.camera.setR(0)
 
@@ -449,7 +450,7 @@ class DirectCameraControl(DirectObject):
                                  (deltaX * base.direct.dr.fovH),
                                  (-deltaY * base.direct.dr.fovV),
                                  0.0)
-            if (self.lockRoll == True):
+            if self.lockRoll:
                 # flatten roll
                 base.direct.camera.setR(0)
             self.camManipRef.setPos(self.coaMarkerPos)
@@ -466,7 +467,7 @@ class DirectCameraControl(DirectObject):
                                     (deltaY * 180.0),
                                     0.0)
 
-            if (self.lockRoll == True):
+            if self.lockRoll:
                 # flatten roll
                 self.camManipRef.setR(0)
             base.direct.camera.setTransform(self.camManipRef, wrt)
@@ -491,7 +492,7 @@ class DirectCameraControl(DirectObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
-        if (self.lockRoll == True):
+        if self.lockRoll:
             # flatten roll
             self.camManipRef.setR(0)
         base.direct.camera.setTransform(self.camManipRef, wrt)
@@ -576,7 +577,7 @@ class DirectCameraControl(DirectObject):
         if not coaDist:
             coaDist = Vec3(self.coa - ZERO_POINT).length()
         # Place the marker in render space
-        if ref == None:
+        if ref is None:
             # KEH: use the current display region
             # ref = base.cam
             ref = base.direct.drList.getCurrentDr().cam
@@ -892,4 +893,3 @@ class DirectCameraControl(DirectObject):
 
     def removeManipulateCameraTask(self):
         self.__stopManipulateCamera()
-

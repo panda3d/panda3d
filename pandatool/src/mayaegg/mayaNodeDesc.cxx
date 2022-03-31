@@ -72,9 +72,7 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
  */
 MayaNodeDesc::
 ~MayaNodeDesc() {
-  if (_dag_path != nullptr) {
-    delete _dag_path;
-  }
+  delete _dag_path;
 }
 
 /**

@@ -2,6 +2,10 @@ from panda3d import core
 import pickle
 
 
+def test_sparse_array_type():
+    assert core.SparseArray.get_class_type().name == "SparseArray"
+
+
 def test_sparse_array_set_bit_to():
     """Tests SparseArray behavior for set_bit_to()."""
 
@@ -233,6 +237,18 @@ def test_sparse_array_augm_assignment():
     u = core.SparseArray()
     t ^= u
     assert s is t
+
+
+def test_sparse_array_nonzero():
+    sa = core.SparseArray()
+    assert not sa
+    sa.set_bit(0)
+    assert sa
+
+    sa = core.SparseArray.all_on()
+    assert sa
+    sa.clear_range(0, 100)
+    assert sa
 
 
 def test_sparse_array_getstate():

@@ -69,6 +69,7 @@ get_config_properties() {
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
   props.set_fixed_size(win_fixed_size);
+  props.set_maximized(maximized);
   props.set_cursor_hidden(cursor_hidden);
   if (!icon_filename.empty()) {
     props.set_icon_filename(icon_filename);
@@ -240,6 +241,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_minimized()) {
     set_minimized(other.get_minimized());
   }
+  if (other.has_maximized()) {
+    set_maximized(other.get_maximized());
+  }
   if (other.has_raw_mice()) {
     set_raw_mice(other.get_raw_mice());
   }
@@ -295,6 +299,9 @@ output(ostream &out) const {
   }
   if (has_minimized()) {
     out << (get_minimized() ? "minimized " : "!minimized ");
+  }
+  if (has_maximized()) {
+    out << (get_maximized() ? "maximized " : "!maximized ");
   }
   if (has_raw_mice()) {
     out << (get_raw_mice() ? "raw_mice " : "!raw_mice ");

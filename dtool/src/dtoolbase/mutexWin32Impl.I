@@ -14,17 +14,9 @@
 /**
  *
  */
-INLINE MutexWin32Impl::
-~MutexWin32Impl() {
-  DeleteCriticalSection(&_lock);
-}
-
-/**
- *
- */
 INLINE void MutexWin32Impl::
 lock() {
-  EnterCriticalSection(&_lock);
+  AcquireSRWLockExclusive(&_lock);
 }
 
 /**
@@ -32,13 +24,45 @@ lock() {
  */
 INLINE bool MutexWin32Impl::
 try_lock() {
-  return (TryEnterCriticalSection(&_lock) != 0);
+  return (TryAcquireSRWLockExclusive(&_lock) != 0);
 }
 
 /**
  *
  */
 INLINE void MutexWin32Impl::
+unlock() {
+  ReleaseSRWLockExclusive(&_lock);
+}
+
+/**
+ *
+ */
+INLINE ReMutexWin32Impl::
+~ReMutexWin32Impl() {
+  DeleteCriticalSection(&_lock);
+}
+
+/**
+ *
+ */
+INLINE void ReMutexWin32Impl::
+lock() {
+  EnterCriticalSection(&_lock);
+}
+
+/**
+ *
+ */
+INLINE bool ReMutexWin32Impl::
+try_lock() {
+  return (TryEnterCriticalSection(&_lock) != 0);
+}
+
+/**
+ *
+ */
+INLINE void ReMutexWin32Impl::
 unlock() {
   LeaveCriticalSection(&_lock);
 }

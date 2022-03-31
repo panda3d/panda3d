@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/panda3d/panda3d.svg?branch=release/1.10.x)](https://travis-ci.org/panda3d/panda3d)
+[![Build Status](https://github.com/panda3d/panda3d/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/panda3d/panda3d/actions?query=branch%3Amaster+workflow%3A%22Continuous+Integration%22)
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
@@ -55,8 +55,8 @@ Windows
 You can build Panda3D with the Microsoft Visual C++ 2015, 2017, 2019 or 2022
 compiler, which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
 You will also need to install the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk),
-and if you intend to target Windows XP, you will also need the Windows 7.1A
-SDK (which can be installed from the Visual Studio Installer).
+and if you intend to target Windows Vista, you will also need the
+[Windows 8.1 SDK](https://go.microsoft.com/fwlink/p/?LinkId=323507).
 
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
@@ -71,7 +71,7 @@ After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
 on your version of Visual C++; 2022 is 14.3, 2019 is 14.2, 2017 is 14.1, and
 2015 is 14.  Remove the `--windows-sdk=10` option if you need to support
-Windows XP, which requires the Windows 7.1A SDK.
+Windows Vista, which requires the Windows 8.1 SDK.
 
 ```bash
 makepanda\makepanda.bat --everything --installer --msvc-version=14.3 --windows-sdk=10 --no-eigen --threads=2
@@ -100,7 +100,7 @@ for you to install, depending on your distribution).
 The following command illustrates how to build Panda3D with some common
 options:
 ```bash
-python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
+python3 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
 ```
 
 You will probably see some warnings saying that it's unable to find several
@@ -113,7 +113,7 @@ If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
+sudo apt-get install build-essential pkg-config fakeroot python3-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -145,9 +145,8 @@ you may build Panda3D using a command like the following:
 python makepanda/makepanda.py --everything --installer
 ```
 
-In order to make a universal build, pass the --universal flag.  You may also
-target a specific minimum macOS version using the --osxtarget flag followed
-by the release number, eg. 10.6 or 10.7.
+You may target a specific minimum macOS version using the --osxtarget flag
+followed by the release number, eg. 10.9 or 10.14.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
@@ -165,11 +164,11 @@ pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish op
 ```
 
 You will also need to choose which version of Python you want to use.
-Install the appropriate package for it (such as `python2` or `python36`) and
+Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source
@@ -178,35 +177,32 @@ directory which you can install using `pkg install`.
 Android
 -------
 
-Note: building on Android is very experimental and not guaranteed to work.
+Although it's possible to build Panda3D on an Android device itself using the
+[termux](https://termux.com/) shell, the recommended route is to cross-compile
+.whl files using the SDK and NDK, which can then be used by the `build_apps`
+command to build a Python application into an .apk or .aab bundle.  You will
+need to get the latest thirdparty packages, which can be obtained from the
+artifacts page of the last successful run here:
 
-You can experimentally build the Android Python runner via the [termux](https://termux.com/)
-shell.  You will need to install [Termux](https://play.google.com/store/apps/details?id=com.termux)
-and [Termux API](https://play.google.com/store/apps/details?id=com.termux.api)
-from the Play Store.  Many of the dependencies can be installed by running the
-following command in the Termux shell:
+https://github.com/rdb/panda3d-thirdparty/actions?query=branch%3Amain+is%3Asuccess+event%3Apush
+
+This does not include Python at the moment, which can be extracted from
+[this archive](https://rdb.name/thirdparty-android.tar.gz) instead.
+
+These commands show how to compile wheels for the supported Android ABIs:
 
 ```bash
-pkg install python ndk-sysroot clang bison freetype harfbuzz libpng eigen openal-soft opusfile libvorbis assimp libopus ecj dx patchelf aapt apksigner libcrypt openssl pkg-config
+export ANDROID_SDK_ROOT=/home/rdb/local/android
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
 ```
 
-Then, you can build the .apk using this command:
+It is now possible to use the generated wheels with `build_apps`, as explained
+on this page:
 
-```bash
-python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
-```
-
-You can install the generated panda3d.apk by browsing to the panda3d folder
-using a file manager.  You may need to copy it to `/sdcard` to be able to
-access it from other apps.
-
-To launch a Python program from Termux, you can use the `run_python.sh` script
-inside the `panda/src/android` directory.  It will launch Python in a separate
-activity, load it with the Python script you passed as argument, and use a
-socket for returning the command-line output to the Termux shell.  Do note
-that this requires the Python application to reside on the SD card and that
-Termux needs to be set up with access to the SD card (using the
-`termux-setup-storage` command).
+https://discourse.panda3d.org/t/deployment-for-android/28226
 
 Running Tests
 =============

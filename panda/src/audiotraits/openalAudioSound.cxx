@@ -375,7 +375,6 @@ read_stream_data(int bytelen, unsigned char *buffer) {
   nassertr(has_sound_data(), 0);
 
   MovieAudioCursor *cursor = _sd->_stream;
-  double length = cursor->length();
   int channels = cursor->audio_channels();
   int rate = cursor->audio_rate();
   int space = bytelen / (channels * 2);
@@ -383,7 +382,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 
   while (space && (_loops_completed < _playing_loops)) {
     double t = cursor->tell();
-    double remain = length - t;
+    double remain = cursor->length() - t;
     if (remain > 60.0) {
       remain = 60.0;
     }
@@ -405,9 +404,20 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     if (samples > _sd->_stream->ready()) {
       samples = _sd->_stream->ready();
     }
-    cursor->read_samples(samples, (int16_t *)buffer);
-    size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
-    audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
+    samples = cursor->read_samples(samples, (int16_t *)buffer);
+    if (audio_cat.is_debug()) {
+      size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
+      audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
+    }
+    if (samples == 0) {
+      _loops_completed += 1;
+      cursor->seek(0.0);
+      if (_playing_loops >= 1000000000) {
+        // Prevent infinite loop if endlessly looping empty sound
+        return fill;
+      }
+      continue;
+    }
     fill += samples;
     space -= samples;
     buffer += (samples * channels * 2);
@@ -556,13 +566,18 @@ push_fresh_buffers() {
 }
 
 /**
- * The next time you call play, the sound will start from the specified
- * offset.
+ * Sets the offset within the sound.  If the sound is currently playing, its
+ * position is updated immediately.
  */
 void OpenALAudioSound::
 set_time(PN_stdfloat time) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _start_time = time;
+
+  if (is_playing()) {
+    // Ensure that the position is updated immediately.
+    play();
+  }
 }
 
 /**
@@ -815,10 +830,12 @@ set_active(bool active) {
     } else {
       // ...deactivate the sound.
       if (status()==PLAYING) {
+        // Store off the current time so we can resume from where we paused.
+        _start_time = get_time();
         stop();
-        if (_loop_count==0) {
+        if (_loop_count == 0) {
           // ...we're pausing a looping sound.
-          _paused=true;
+          _paused = true;
         }
       }
     }

@@ -12,7 +12,6 @@ from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .OnscreenText import OnscreenText
-import sys
 # import this to make sure it gets pulled into the publish
 import encodings.utf_8
 from direct.showbase.DirectObject import DirectObject
@@ -90,7 +89,7 @@ class DirectEntry(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
-        if self['entryFont'] == None:
+        if self['entryFont'] is None:
             font = DGG.getDefaultFont()
         else:
             font = self['entryFont']
@@ -242,13 +241,13 @@ class DirectEntry(DirectFrame):
                 if wasNonWordChar:
                     # first letter of a word, capitalize it unconditionally;
                     capitalize = True
-                elif (character == character.upper() and
-                      len(self.autoCapitalizeAllowPrefixes) and
-                      wordSoFar in self.autoCapitalizeAllowPrefixes):
+                elif character == character.upper() and \
+                     len(self.autoCapitalizeAllowPrefixes) > 0 and \
+                     wordSoFar in self.autoCapitalizeAllowPrefixes:
                     # first letter after one of the prefixes, allow it to be capitalized
                     capitalize = True
-                elif (len(self.autoCapitalizeForcePrefixes) and
-                      wordSoFar in self.autoCapitalizeForcePrefixes):
+                elif len(self.autoCapitalizeForcePrefixes) > 0 and \
+                     wordSoFar in self.autoCapitalizeForcePrefixes:
                     # first letter after one of the force prefixes, force it to be capitalized
                     capitalize = True
                 if capitalize:
@@ -274,16 +273,9 @@ class DirectEntry(DirectFrame):
         does not change the current cursor position.  Also see
         enterText(). """
 
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-            self.guiItem.setWtext(text)
-        else:
-            self.unicodeText = isinstance(text, unicode)
-            if self.unicodeText:
-                self.guiItem.setWtext(text)
-            else:
-                self.guiItem.setText(text)
+        assert not isinstance(text, bytes)
+        self.unicodeText = True
+        self.guiItem.setWtext(text)
 
     def get(self, plain = False):
         """ Returns the text currently showing in the typable region.
@@ -312,7 +304,7 @@ class DirectEntry(DirectFrame):
         return self.guiItem.getCursorPosition()
 
     def setCursorPosition(self, pos):
-        if (pos < 0):
+        if pos < 0:
             self.guiItem.setCursorPosition(self.guiItem.getNumCharacters() + pos)
         else:
             self.guiItem.setCursorPosition(pos)

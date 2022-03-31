@@ -30,9 +30,6 @@ protected:
 
 PUBLISHED:
   static std::string get_version_string();
-  static std::string get_package_version_string();
-  static std::string get_package_host_url();
-  static std::string get_p3d_coreapi_version_string();
 
   static int get_major_version();
   static int get_minor_version();
@@ -85,9 +82,6 @@ PUBLISHED:
 private:
   void reset_system_names();
 
-  void set_package_version_string(const std::string &package_version_string);
-  void set_package_host_url(const std::string &package_host_url);
-
   typedef pmap<std::string, std::string> SystemTags;
   typedef pmap<std::string, SystemTags> Systems;
   typedef pvector<std::string> SystemNames;
@@ -95,9 +89,6 @@ private:
   Systems _systems;
   SystemNames _system_names;
   bool _system_names_dirty;
-
-  std::string _package_version_string;
-  std::string _package_host_url;
 
   static PandaSystem *_global_ptr;
 

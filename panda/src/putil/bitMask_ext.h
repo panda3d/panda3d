@@ -29,6 +29,7 @@
 template<class WType, int nbits>
 class Extension<BitMask<WType, nbits> > : public ExtensionBase<BitMask<WType, nbits> > {
 public:
+  INLINE bool __bool__() const;
   INLINE PyObject *__int__() const;
   INLINE PyObject *__reduce__(PyObject *self) const;
 };

@@ -39,6 +39,7 @@
 #include "boundingSphere.h"
 #include "config_mathutil.h"
 #include "preparedGraphicsObjects.h"
+#include "instanceList.h"
 
 
 bool allow_flatten_color = ConfigVariableBool
@@ -58,6 +59,8 @@ GeomNode(const std::string &name) :
 
   // GeomNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
+
+  set_renderable();
 }
 
 /**
@@ -391,11 +394,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
-    }
-
     // As well as the shaders.
     const ShaderAttrib *sa;
     if (geom_state->get_attrib(sa)) {
@@ -409,7 +407,9 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       else if (munger->is_of_type(StateMunger::get_class_type())) {
         // Premunge the state for the fixed-function pipeline.
         StateMunger *state_munger = (StateMunger *)munger.p();
-        geom_state = state_munger->munge_state(geom_state);
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
       }
       // TODO: prepare the shader inputs.
     }
@@ -490,17 +490,6 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool GeomNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  * Adds the node's contents to the CullResult we are building up during the
  * cull traversal, so that it will be drawn at render time.  For most nodes
  * other than GeomNodes, this is a do-nothing operation.
@@ -523,36 +512,52 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   trav->_geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
-  for (int i = 0; i < num_geoms; i++) {
-    CPT(Geom) geom = geoms.get_geom(i);
-    if (geom->is_empty()) {
-      continue;
-    }
-
-    CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-    if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
-      // Cull.
-      continue;
-    }
-
-    // Cull the Geom bounding volume against the view frustum andor the cull
-    // planes.  Don't bother unless we've got more than one Geom, since
-    // otherwise the bounding volume of the GeomNode is (probably) the same as
-    // that of the one Geom, and we've already culled against that.
-    if (num_geoms > 1) {
-      if (data._view_frustum != nullptr) {
-        // Cull the individual Geom against the view frustum.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
-        const GeometricBoundingVolume *geom_gbv =
-          geom_volume->as_geometric_bounding_volume();
-
-        int result = data._view_frustum->contains(geom_gbv);
-        if (result == BoundingVolume::IF_no_intersection) {
-          // Cull this Geom.
-          continue;
-        }
+  if (num_geoms == 1) {
+    // If there's only one Geom, we don't need to bother culling each individual
+    // Geom bounding volume against the view frustum, since we've already
+    // checked the one on the GeomNode itself.
+    CPT(Geom) geom = geoms.get_geom(0);
+    if (!geom->is_empty()) {
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(0));
+      if (!state->has_cull_callback() || state->cull_callback(trav, data)) {
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), std::move(internal_transform));
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
       }
-      if (!data._cull_planes->is_empty()) {
+    }
+  }
+  else {
+    // More than one Geom.
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(Geom) geom = geoms.get_geom(i);
+      if (geom->is_empty()) {
+        continue;
+      }
+
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+      if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
+        // Cull.
+        continue;
+      }
+
+      if (data._instances != nullptr) {
+        // Draw each individual instance.  We don't bother culling each
+        // individual Geom for each instance; that is probably way too slow.
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), internal_transform);
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
+        continue;
+      }
+
+      // Cull the individual Geom against the view frustum.
+      if (data._view_frustum != nullptr &&
+          !geom->is_in_view(data._view_frustum, current_thread)) {
+        // Cull this Geom.
+        continue;
+      }
+      if (data._cull_planes != nullptr) {
         // Also cull the Geom against the cull planes.
         CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
@@ -564,11 +569,11 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
           continue;
         }
       }
-    }
 
-    CullableObject *object =
-      new CullableObject(std::move(geom), std::move(state), internal_transform);
-    trav->get_cull_handler()->record_object(object, trav);
+      CullableObject *object =
+        new CullableObject(std::move(geom), std::move(state), internal_transform);
+      trav->get_cull_handler()->record_object(object, trav);
+    }
   }
 }
 

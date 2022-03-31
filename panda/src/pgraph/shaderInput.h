@@ -37,7 +37,7 @@
  * This is a small container class that can hold any one of the value types
  * that can be passed as input to a shader.
  */
-class EXPCL_PANDA_PGRAPH ShaderInput {
+class EXPCL_PANDA_PGRAPH ShaderInput : public MemoryBase {
 PUBLISHED:
   // Used when binding texture images.
   enum AccessFlags {
@@ -119,7 +119,7 @@ PUBLISHED:
   INLINE const LVecBase4 &get_vector() const;
   INLINE const Shader::ShaderPtrData &get_ptr() const;
 
-  const NodePath &get_nodepath() const;
+  NodePath get_nodepath() const;
   Texture *get_texture() const;
   const SamplerState &get_sampler() const;
 

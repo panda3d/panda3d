@@ -20,7 +20,6 @@
 #include "vertexSlider.h"
 #include "character.h"
 #include "vector_PartGroupStar.h"
-#include "typedef.h"
 #include "pmap.h"
 
 

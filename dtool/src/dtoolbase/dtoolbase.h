@@ -21,19 +21,7 @@
 
 #include "dtool_config.h"
 
-/* Make sure WIN32 and WIN32_VC are defined when using MSVC */
-#if defined(_WIN32) || defined(_WIN64)
-#ifndef WIN32
-#define WIN32
-#endif
 #ifdef _MSC_VER
-#ifndef WIN32_VC
-#define WIN32_VC
-#endif
-#endif
-#endif
-
-#ifdef WIN32_VC
 /* These warning pragmas must appear before anything else for VC++ to
    respect them.  Sheesh. */
 
@@ -58,11 +46,11 @@
 #pragma warning (disable : 4267)
 /* C4577: 'noexcept' used with no exception handling mode specified */
 #pragma warning (disable : 4577)
-#endif  /* WIN32_VC */
+#endif  /* _MSC_VER */
 
 /* Windows likes to define min() and max() macros, which will conflict with
    std::min() and std::max() respectively, unless we do this: */
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -118,7 +106,7 @@
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
-#define _WIN32_WINNT 0x0502
+#define _WIN32_WINNT 0x0600
 
 #ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
@@ -387,6 +375,10 @@ typedef struct _object PyObject;
 // This specialized malloc implementation can perform the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
+#elif defined(USE_MEMORY_MIMALLOC)
+// This one does, too.
+#undef MEMORY_HOOK_DO_ALIGN
+
 #elif defined(USE_MEMORY_PTMALLOC2)
 // But not this one.  For some reason it crashes when we try to build it with
 // alignment 16.  So if we're using ptmalloc2, we need to enforce alignment
@@ -396,6 +388,12 @@ typedef struct _object PyObject;
 #elif (defined(IS_OSX) || defined(_WIN64)) && !defined(__AVX__)
 // The OS-provided malloc implementation will do the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
+
+#elif defined(HAVE_MIMALLOC) && defined(_WIN32)
+// Prefer mimalloc on Windows, if we have it.  It is significantly faster than
+// standard malloc, supports multi-threading well and does the alignment too.
+#undef MEMORY_HOOK_DO_ALIGN
+#define USE_MEMORY_MIMALLOC 1
 
 #elif defined(MEMORY_HOOK_DO_ALIGN)
 // We need memory alignment, and we're willing to provide it ourselves.
@@ -438,7 +436,7 @@ typedef struct _object PyObject;
 #endif
 
 /* Determine our memory-allocation requirements. */
-#if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
+#if defined(USE_MEMORY_MIMALLOC) || defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
 #else
 /* Otherwise, if we have no custom memory management needs at all, we
@@ -485,7 +483,7 @@ typedef struct _object PyObject;
 #endif
 
 /* These symbols are used in dtoolsymbols.h and pandasymbols.h. */
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if defined(_WIN32) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __declspec(dllexport)
 #define IMPORT_CLASS __declspec(dllimport)
 #elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)

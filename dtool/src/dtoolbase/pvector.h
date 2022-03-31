@@ -15,6 +15,7 @@
 #define PVECTOR_H
 
 #include <vector>
+#include <initializer_list>
 
 #include "dtoolbase.h"
 #include "pallocator.h"
@@ -51,6 +52,7 @@ public:
   explicit pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   explicit pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
   pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator(type_handle)) { }
+  pvector(std::initializer_list<Type> init, TypeHandle type_handle = pvector_type_handle) : base_class(std::move(init), allocator(type_handle)) { }
 
   pvector<Type> &operator =(const pvector<Type> &copy) {
     base_class::operator =(copy);

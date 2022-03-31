@@ -53,11 +53,12 @@ public:
 
   static CPT(CullPlanes) make_empty();
   CPT(CullPlanes) xform(const LMatrix4 &mat) const;
-  CPT(CullPlanes) apply_state(const CullTraverser *trav,
-                              const CullTraverserData *data,
-                              const ClipPlaneAttrib *net_attrib,
-                              const ClipPlaneAttrib *off_attrib,
-                              const OccluderEffect *node_effect) const;
+  static void apply_state(CPT(CullPlanes) &planes,
+                          const CullTraverser *trav,
+                          const CullTraverserData *data,
+                          const ClipPlaneAttrib *net_attrib,
+                          const ClipPlaneAttrib *off_attrib,
+                          const OccluderEffect *node_effect);
   CPT(CullPlanes) do_cull(int &result, CPT(RenderState) &state,
                           const GeometricBoundingVolume *node_gbv) const;
 

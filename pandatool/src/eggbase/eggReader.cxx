@@ -55,6 +55,7 @@ EggReader() {
 
   _got_tex_dirname = false;
   _got_tex_extension = false;
+  _exit_on_failure = true;
 }
 
 /**
@@ -125,6 +126,16 @@ add_delod_options(double default_delod) {
 }
 
 /**
+ * Sets whether the reader will quit the program upon encountering a fatal error.
+ *
+ * If true, the entire program will quit as soon as an egg loading error occurs.
+ */
+void EggReader::
+set_exit_on_failure(bool exit_on_failure) {
+  _exit_on_failure = exit_on_failure;
+}
+
+/**
  * Returns this object as an EggReader pointer, if it is in fact an EggReader,
  * or NULL if it is not.
  *
@@ -175,18 +186,27 @@ handle_args(ProgramBase::Args &args) {
         // Rather than returning false, we simply exit here, so the ProgramBase
         // won't try to tell the user how to run the program just because we got
         // a bad egg file.
-        exit(1);
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     } else {
       if (!file_data.read(std::cin)) {
-        exit(1);
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     }
 
     if (_noabs && file_data.original_had_absolute_pathnames()) {
       nout << filename.get_basename()
            << " includes absolute pathnames!\n";
-      exit(1);
+      if (_exit_on_failure) {
+        exit(1);
+      }
+      return false;
     }
 
     DSearchPath file_path;
@@ -194,7 +214,10 @@ handle_args(ProgramBase::Args &args) {
 
     if (_force_complete) {
       if (!file_data.load_externals(file_path)) {
-        exit(1);
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     }
 

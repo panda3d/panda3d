@@ -21,7 +21,6 @@
  */
 PyObject *Extension<CollisionHandlerPhysical>::
 __reduce__(PyObject *self) const {
-  extern struct Dtool_PyTypedObject Dtool_Datagram;
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   // Create a tuple with all the NodePath pointers.
@@ -47,32 +46,12 @@ __reduce__(PyObject *self) const {
       DTool_CreatePyInstance((void *)target, Dtool_NodePath, false, true));
   }
 
-  // Call the write_datagram method via Python, since it's not a virtual method
-  // on the C++ end.
-#if PY_MAJOR_VERSION >= 3
-  PyObject *method_name = PyUnicode_FromString("write_datagram");
-#else
-  PyObject *method_name = PyString_FromString("write_datagram");
-#endif
-
   Datagram dg;
-  PyObject *destination = DTool_CreatePyInstance(&dg, Dtool_Datagram, false, false);
-
-  PyObject *retval = PyObject_CallMethodOneArg(self, method_name, destination);
-  Py_DECREF(method_name);
-  Py_DECREF(destination);
-  if (retval == nullptr) {
-    return nullptr;
-  }
-  Py_DECREF(retval);
+  _this->write_datagram(dg);
 
   const char *data = (const char *)dg.get_data();
   Py_ssize_t size = dg.get_length();
-#if PY_MAJOR_VERSION >= 3
   return Py_BuildValue("O()(y#N)", Py_TYPE(self), data, size, nodepaths);
-#else
-  return Py_BuildValue("O()(s#N)", Py_TYPE(self), data, size, nodepaths);
-#endif
 }
 
 /**
@@ -81,25 +60,10 @@ __reduce__(PyObject *self) const {
  */
 void Extension<CollisionHandlerPhysical>::
 __setstate__(PyObject *self, vector_uchar data, PyObject *nodepaths) {
-  extern struct Dtool_PyTypedObject Dtool_DatagramIterator;
-
-  // Call the read_datagram method via Python, since it's not a virtual method
-  // on the C++ end.
-#if PY_MAJOR_VERSION >= 3
-  PyObject *method_name = PyUnicode_FromString("read_datagram");
-#else
-  PyObject *method_name = PyString_FromString("read_datagram");
-#endif
-
   {
     Datagram dg(std::move(data));
     DatagramIterator scan(dg);
-    PyObject *source = DTool_CreatePyInstance(&scan, Dtool_DatagramIterator, false, false);
-
-    PyObject *retval = PyObject_CallMethodOneArg(self, method_name, source);
-    Py_DECREF(method_name);
-    Py_DECREF(source);
-    Py_XDECREF(retval);
+    _this->read_datagram(scan);
   }
 
   PyObject *center = PyTuple_GET_ITEM(nodepaths, 0);

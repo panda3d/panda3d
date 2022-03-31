@@ -13,7 +13,6 @@
 
 #include "asyncFuture_ext.h"
 #include "asyncTaskSequence.h"
-#include "eventParameter.h"
 #include "paramValue.h"
 #include "paramPyObject.h"
 #include "pythonTask.h"
@@ -24,7 +23,6 @@
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_AsyncFuture;
-extern struct Dtool_PyTypedObject Dtool_EventParameter;
 extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
@@ -113,7 +111,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
           if (value != nullptr) {
             return value;
           }
-          PyErr_Restore(nullptr, nullptr, nullptr);
+          PyErr_Clear();
         }
       }
 
@@ -127,26 +125,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
     }
   } else {
     // If the future was cancelled, we should raise an exception.
-    static PyObject *exc_type = nullptr;
-    if (exc_type == nullptr) {
-      // Get the CancelledError that asyncio uses, too.
-      PyObject *module = PyImport_ImportModule("concurrent.futures._base");
-      if (module != nullptr) {
-        exc_type = PyObject_GetAttrString(module, "CancelledError");
-        Py_DECREF(module);
-      }
-      else {
-        PyErr_Clear();
-      }
-      // If we can't get that, we should pretend and make our own.
-      if (exc_type == nullptr) {
-        exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.CancelledError",
-                                             (char*)"The Future was cancelled.",
-                                             nullptr, nullptr);
-      }
-    }
-    Py_INCREF(exc_type);
-    PyErr_Restore(exc_type, nullptr, nullptr);
+    PyErr_SetNone(Extension<AsyncFuture>::get_cancelled_error_type());
     return nullptr;
   }
 }
@@ -167,8 +146,7 @@ static PyObject *gen_next(PyObject *self) {
   } else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
-      Py_INCREF(PyExc_StopIteration);
-      PyErr_Restore(PyExc_StopIteration, result, nullptr);
+      PyErr_SetObject(PyExc_StopIteration, result);
     }
     return nullptr;
   }
@@ -194,49 +172,31 @@ set_result(PyObject *result) {
     return;
   }
   else if (DtoolInstance_Check(result)) {
-    void *ptr;
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_EventParameter))) {
-      _this->set_result(*(const EventParameter *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
-      _this->set_result((TypedWritableReferenceCount *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
-      _this->set_result((TypedReferenceCount *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
-      _this->set_result((TypedObject *)ptr);
-      return;
+    // If this is a Python subclass of a C++ type, fall through to below, since
+    // we don't want to lose that extra information.
+    if (Py_TYPE(result) == (PyTypeObject *)DtoolInstance_TYPE(result)) {
+      void *ptr;
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
+        _this->set_result((TypedWritableReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
+        _this->set_result((TypedReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
+        _this->set_result((TypedObject *)ptr);
+        return;
+      }
     }
   }
   else if (PyUnicode_Check(result)) {
-#if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t result_len;
     wchar_t *result_str = PyUnicode_AsWideCharString(result, &result_len);
-#else
-    Py_ssize_t result_len = PyUnicode_GET_SIZE(result);
-    wchar_t *result_str = (wchar_t *)alloca(sizeof(wchar_t) * (result_len + 1));
-    PyUnicode_AsWideChar((PyUnicodeObject *)result, result_str, result_len);
-#endif
     _this->set_result(new EventStoreWstring(std::wstring(result_str, result_len)));
-#if PY_VERSION_HEX >= 0x03030000
     PyMem_Free(result_str);
-#endif
     return;
   }
-#if PY_MAJOR_VERSION < 3
-  else if (PyString_Check(result)) {
-    const char *result_str;
-    Py_ssize_t result_len;
-    if (PyString_AsStringAndSize(result, (char **)&result_str, &result_len) != -1) {
-      _this->set_result(new EventStoreString(std::string(result_str, result_len)));
-    }
-    return;
-  }
-#endif
   else if (PyLongOrInt_Check(result)) {
     long result_val = PyLongOrInt_AS_LONG(result);
     if (result_val >= INT_MIN && result_val <= INT_MAX) {
@@ -262,14 +222,33 @@ set_result(PyObject *result) {
  * raises TimeoutError.
  */
 PyObject *Extension<AsyncFuture>::
-result(PyObject *timeout) const {
+result(PyObject *self, PyObject *timeout) const {
+  double timeout_val;
+  if (timeout != Py_None) {
+    timeout_val = PyFloat_AsDouble(timeout);
+    if (timeout_val == -1.0 && _PyErr_OCCURRED()) {
+      return nullptr;
+    }
+  }
+
   if (!_this->done()) {
     // Not yet done?  Wait until it is done, or until a timeout occurs.  But
     // first check to make sure we're not trying to deadlock the thread.
     Thread *current_thread = Thread::get_current_thread();
-    if (_this == (const AsyncFuture *)current_thread->get_current_task()) {
+    AsyncTask *current_task = (AsyncTask *)current_thread->get_current_task();
+    if (_this == current_task) {
       PyErr_SetString(PyExc_RuntimeError, "cannot call task.result() from within the task");
       return nullptr;
+    }
+
+    PythonTask *python_task = nullptr;
+    if (current_task != nullptr &&
+        current_task->is_of_type(PythonTask::get_class_type())) {
+      // If we are calling result() inside a coroutine, mark it as awaiting this
+      // future.  That makes it possible to cancel() us from another thread.
+      python_task = (PythonTask *)current_task;
+      nassertr(python_task->_fut_waiter == nullptr, nullptr);
+      python_task->_fut_waiter = self;
     }
 
     // Release the GIL for the duration.
@@ -279,24 +258,28 @@ result(PyObject *timeout) const {
 #endif
     if (timeout == Py_None) {
       _this->wait();
-    } else {
-      PyObject *num = PyNumber_Float(timeout);
-      if (num != nullptr) {
-        _this->wait(PyFloat_AS_DOUBLE(num));
-      } else {
-        return Dtool_Raise_ArgTypeError(timeout, 0, "result", "float");
-      }
+    }
+    else {
+      _this->wait(timeout_val);
     }
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     Py_BLOCK_THREADS
 #endif
+
+    if (python_task != nullptr) {
+      python_task->_fut_waiter = nullptr;
+    }
 
     if (!_this->done()) {
       // It timed out.  Raise an exception.
       static PyObject *exc_type = nullptr;
       if (exc_type == nullptr) {
         // Get the TimeoutError that asyncio uses, too.
+#if PY_VERSION_HEX >= 0x03080000
+        PyObject *module = PyImport_ImportModule("asyncio.exceptions");
+#else
         PyObject *module = PyImport_ImportModule("concurrent.futures._base");
+#endif
         if (module != nullptr) {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
@@ -306,13 +289,18 @@ result(PyObject *timeout) const {
         }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
+#if PY_VERSION_HEX >= 0x03080000
+          exc_type = PyErr_NewExceptionWithDoc((char*)"asyncio.exceptions.TimeoutError",
+                                               (char*)"The operation exceeded the given deadline.",
+                                               nullptr, nullptr);
+#else
           exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.TimeoutError",
                                                (char*)"The operation exceeded the given deadline.",
                                                nullptr, nullptr);
+#endif
         }
       }
-      Py_INCREF(exc_type);
-      PyErr_Restore(exc_type, nullptr, nullptr);
+      PyErr_SetNone(exc_type);
       return nullptr;
     }
   }
@@ -374,7 +362,6 @@ gather(PyObject *args) {
         futures.push_back(fut);
         continue;
       }
-#if PY_VERSION_HEX >= 0x03050000
     } else if (PyCoro_CheckExact(item)) {
       // We allow passing in a coroutine instead of a future.  This causes it
       // to be scheduled as a task on the current task manager.
@@ -391,7 +378,6 @@ gather(PyObject *args) {
       }
       futures.push_back(task);
       continue;
-#endif
     }
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
   }
@@ -403,6 +389,46 @@ gather(PyObject *args) {
   } else {
     return PyErr_NoMemory();
   }
+}
+
+/**
+ * Returns a borrowed reference to the CancelledError exception type.
+ */
+PyObject *Extension<AsyncFuture>::
+get_cancelled_error_type() {
+  static PyObject *exc_type = nullptr;
+  if (exc_type == nullptr) {
+    // This method should not affect the current exception, so stash it.
+    PyObject *curexc_type, *curexc_value, *curexc_traceback;
+    PyErr_Fetch(&curexc_type, &curexc_value, &curexc_traceback);
+
+    // Get the CancelledError that asyncio uses, too.
+#if PY_VERSION_HEX >= 0x03080000
+    PyObject *module = PyImport_ImportModule("asyncio.exceptions");
+#else
+    PyObject *module = PyImport_ImportModule("concurrent.futures._base");
+#endif
+    if (module != nullptr) {
+      exc_type = PyObject_GetAttrString(module, "CancelledError");
+      Py_DECREF(module);
+    }
+
+    // If we can't get that, we should pretend and make our own.
+    if (exc_type == nullptr) {
+#if PY_VERSION_HEX >= 0x03080000
+      exc_type = PyErr_NewExceptionWithDoc((char *)"asyncio.exceptions.CancelledError",
+                                            (char *)"The Future or Task was cancelled.",
+                                            PyExc_BaseException, nullptr);
+#else
+      exc_type = PyErr_NewExceptionWithDoc((char *)"concurrent.futures._base.CancelledError",
+                                            (char *)"The Future was cancelled.",
+                                            nullptr, nullptr);
+#endif
+    }
+
+    PyErr_Restore(curexc_type, curexc_value, curexc_traceback);
+  }
+  return exc_type;
 }
 
 #endif

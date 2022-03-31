@@ -109,6 +109,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
   { 1, "App:Show code",                    { 0.8, 0.2, 1.0 } },
+  //{ 0, "App:Show code:General",            { 0.4, 0.3, 0.9 } },
   { 0, "App:Show code:Nametags",           { 0.8, 0.8, 1.0 } },
   { 0, "App:Show code:Nametags:2d",        { 0.0, 0.0, 0.5 } },
   { 0, "App:Show code:Nametags:2d:Contents", { 0.0, 0.5, 0.0 } },
@@ -216,10 +217,10 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "RenderStates:Cached",              { 1.0, 0.0, 0.2 } },
   { 1, "RenderStates:Unused",              { 0.2, 0.2, 0.2 } },
   { 1, "PipelineCyclers",                  { 0.5, 0.5, 1.0 },  "", 50000 },
-  { 1, "Dirty PipelineCyclers",            { 0.2, 0.2, 0.2 },  "", 5000 },
+  { 1, "PipelineCyclers:Dirty",            { 0.2, 0.2, 0.2 },  "", 5000 },
   { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
   { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
-  { 1, "Command latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
+  { 1, "window1 latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
   { 0, nullptr }
 };
 

@@ -1,4 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.PythonUtil import ScratchPad, SerialNumGen
 
 if __debug__:
     from panda3d.core import PStatCollector
@@ -107,7 +108,6 @@ class Job(DirectObject):
             self._generator = None
 
 if __debug__: # __dev__ not yet available at this point
-    from direct.showbase.Job import Job
     class TestJob(Job):
         def __init__(self):
             Job.__init__(self, 'TestJob')
@@ -134,4 +134,5 @@ if __debug__: # __dev__ not yet available at this point
                     yield None
 
     def addTestJob():
+        from direct.showbase.JobManagerGlobal import jobMgr
         jobMgr.add(TestJob())

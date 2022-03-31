@@ -2,7 +2,9 @@
 
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
 from . import LargeBlobSenderConsts
+
 
 class DistributedLargeBlobSender(DistributedObject.DistributedObject):
     """DistributedLargeBlobSender: for sending large chunks of data through

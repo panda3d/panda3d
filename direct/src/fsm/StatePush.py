@@ -408,6 +408,7 @@ class AttrSetter(StateChangeNode):
         StateChangeNode._handleStateChange(self)
 
 if __debug__:
+    from direct.showbase.PythonUtil import ScratchPad
     o = ScratchPad()
     svar = StateVar(0)
     aset = AttrSetter(svar, o, 'testAttr')

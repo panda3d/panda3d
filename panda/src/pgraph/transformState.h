@@ -52,7 +52,7 @@ class FactoryParams;
  * And instead of modifying a TransformState object, create a new one.
  */
 class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
-protected:
+private:
   TransformState();
 
 public:
@@ -69,13 +69,15 @@ PUBLISHED:
   bool operator == (const TransformState &other) const;
   INLINE size_t get_hash() const;
 
-  static CPT(TransformState) make_identity();
-  static CPT(TransformState) make_invalid();
+  INLINE static CPT(TransformState) make_identity();
+  INLINE static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3 &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3 &hpr);
   INLINE static CPT(TransformState) make_quat(const LQuaternion &quat);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3 &pos,
                                                  const LVecBase3 &hpr);
+  INLINE static CPT(TransformState) make_pos_quat(const LVecBase3 &pos,
+                                                  const LQuaternion &quat);
   INLINE static CPT(TransformState) make_scale(PN_stdfloat scale);
   INLINE static CPT(TransformState) make_scale(const LVecBase3 &scale);
   INLINE static CPT(TransformState) make_shear(const LVecBase3 &shear);
@@ -140,6 +142,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_uniform_scale() const;
   INLINE const LVecBase3 &get_shear() const;
   INLINE const LMatrix4 &get_mat() const;
+  INLINE const LMatrix4 *get_inverse_mat() const;
 
   INLINE LVecBase2 get_pos2d() const;
   INLINE PN_stdfloat get_rotate2d() const;
@@ -258,14 +261,14 @@ private:
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
   typedef SimpleHashMap<const TransformState *, std::nullptr_t, indirect_equals_hash<const TransformState *> > States;
-  static States *_states;
+  static States _states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
 
   // This iterator records the entry corresponding to this TransformState
   // object in the above global set.  We keep the index around so we can
   // remove it when the TransformState destructs.
-  int _saved_entry;
+  int _saved_entry = -1;
 
   // This data structure manages the job of caching the composition of two
   // TransformStates.  It's complicated because we have to be sure to remove
@@ -279,9 +282,6 @@ private:
   // object destructs.
   class Composition {
   public:
-    INLINE Composition();
-    INLINE Composition(const Composition &copy);
-
     // _result is reference counted if and only if it is not the same pointer
     // as this.
     const TransformState *_result;
@@ -323,8 +323,7 @@ private:
   INLINE void check_quat() const;
   INLINE void check_norm_quat() const;
   INLINE void check_mat() const;
-  INLINE void calc_hash();
-  void do_calc_hash();
+  void calc_hash() const;
   void calc_singular();
   INLINE void calc_components();
   void do_calc_components();
@@ -362,15 +361,20 @@ private:
     F_has_nonzero_shear  = 0x00004000,
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
-    F_hash_known         = 0x00020000,
     F_norm_quat_known    = 0x00040000,
   };
   LPoint3 _pos;
   LVecBase3 _hpr, _scale, _shear;
   LQuaternion _quat, _norm_quat;
   LMatrix4 _mat;
-  LMatrix4 *_inv_mat;
-  size_t _hash;
+  LMatrix4 *_inv_mat = nullptr;
+
+  enum HashValue : AtomicAdjust::Integer {
+    H_unknown = 0,
+    H_identity = 1,
+    H_invalid = 2,
+  };
+  mutable AtomicAdjust::Integer _hash = H_unknown;
 
   unsigned int _flags;
 

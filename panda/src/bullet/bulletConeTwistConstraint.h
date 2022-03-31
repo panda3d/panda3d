@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_CONE_TWIST_CONSTRAINT_H__
-#define __BULLET_CONE_TWIST_CONSTRAINT_H__
+#ifndef BULLETCONETWISTCONSTRAINT_H
+#define BULLETCONETWISTCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -89,4 +89,4 @@ private:
 
 #include "bulletConeTwistConstraint.I"
 
-#endif // __BULLET_CONE_TWIST_CONSTRAINT_H__
+#endif // BULLETCONETWISTCONSTRAINT_H

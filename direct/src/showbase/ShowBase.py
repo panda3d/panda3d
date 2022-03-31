@@ -19,7 +19,9 @@ Built-in global variables
 Some key variables used in all Panda3D scripts are actually attributes of the
 ShowBase instance.  When creating an instance of this class, it will write many
 of these variables to the built-in scope of the Python interpreter, so that
-they are accessible to any Python module, without the need fors extra imports.
+they are accessible to any Python module, without the need for extra imports.
+For example, the ShowBase instance itself is accessible anywhere through the
+:data:`~builtins.base` variable.
 
 While these are handy for prototyping, we do not recommend using them in bigger
 projects, as it can make the code confusing to read to other Python developers,
@@ -43,14 +45,11 @@ from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilitySho
 from . import DConfig
 
 # Register the extension methods for NodePath.
-from direct.extensions_native import NodePath_extensions
+from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 
 # This needs to be available early for DirectGUI imports
 import sys
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 builtins.config = DConfig
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
@@ -59,6 +58,7 @@ from .BulletinBoardGlobal import bulletinBoard
 from direct.task.TaskManagerGlobal import taskMgr
 from .JobManagerGlobal import jobMgr
 from .EventManagerGlobal import eventMgr
+from .PythonUtil import Stack
 #from PythonUtil import *
 from direct.interval import IntervalManager
 from direct.showbase.BufferViewer import BufferViewer
@@ -74,7 +74,7 @@ if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
     from . import OnScreenDebug
-from . import AppRunnerGlobal
+    import warnings
 
 @atexit.register
 def exitfunc():
@@ -103,37 +103,41 @@ class ShowBase(DirectObject.DirectObject):
         including this instance itself (under the name ``base``).
         """
 
+        from . import ShowBaseGlobal
+
         #: Set if the want-dev Config.prc variable is enabled.  By default, it
         #: is set to True except when using Python with the -O flag.
-        self.__dev__ = self.config.GetBool('want-dev', __debug__)
+        self.__dev__ = ShowBaseGlobal.__dev__
         builtins.__dev__ = self.__dev__
 
-        logStackDump = (self.config.GetBool('log-stack-dump', False) or
-                        self.config.GetBool('client-log-stack-dump', False))
-        uploadStackDump = self.config.GetBool('upload-stack-dump', False)
+        logStackDump = (ConfigVariableBool('log-stack-dump', False).value or
+                        ConfigVariableBool('client-log-stack-dump', False).value)
+        uploadStackDump = ConfigVariableBool('upload-stack-dump', False).value
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
         if __debug__:
-            self.__autoGarbageLogging = self.__dev__ and self.config.GetBool('auto-garbage-logging', False)
+            self.__autoGarbageLogging = self.__dev__ and ConfigVariableBool('auto-garbage-logging', False)
 
         #: The directory containing the main Python file of this application.
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
         self.main_dir = self.mainDir
 
-        #: This contains the global appRunner instance, as imported from
-        #: `.AppRunnerGlobal`.  This will be None if we are not running in the
-        #: runtime environment (ie. from a .p3d file).  Deprecated.
-        self.appRunner = AppRunnerGlobal.appRunner
+        # This contains the global appRunner instance, as imported from
+        # `.AppRunnerGlobal`.  This is deprecated and always None nowadays.
+        self.appRunner = None
         self.app_runner = self.appRunner
 
         #debug running multiplier
         self.debugRunningMultiplier = 4
 
         # [gjeon] to disable sticky keys
-        if self.config.GetBool('disable-sticky-keys', 0):
+        if ConfigVariableBool('disable-sticky-keys', False):
             storeAccessibilityShortcutKeys()
             allowAccessibilityShortcutKeys(False)
+            self.__disabledStickyKeys = True
+        else:
+            self.__disabledStickyKeys = False
 
         self.printEnvDebugInfo()
         vfs = VirtualFileSystem.getGlobalPtr()
@@ -143,18 +147,18 @@ class ShowBase(DirectObject.DirectObject):
         self.__deadInputs = 0
 
         # Store dconfig variables
-        self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
-        self.musicActive = self.config.GetBool('audio-music-active', 1)
-        self.wantFog = self.config.GetBool('want-fog', 1)
-        self.wantRender2dp = self.config.GetBool('want-render2dp', 1)
+        self.sfxActive = ConfigVariableBool('audio-sfx-active', True).value
+        self.musicActive = ConfigVariableBool('audio-music-active', True).value
+        self.wantFog = ConfigVariableBool('want-fog', True).value
+        self.wantRender2dp = ConfigVariableBool('want-render2dp', True).value
 
-        self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
+        self.screenshotExtension = ConfigVariableString('screenshot-extension', 'jpg').value
         self.musicManager = None
         self.musicManagerIsValid = None
         self.sfxManagerList = []
         self.sfxManagerIsValidList = []
 
-        self.wantStats = self.config.GetBool('want-pstats', 0)
+        self.wantStats = ConfigVariableBool('want-pstats', False).value
         self.wantTk = False
         self.wantWx = False
         self.wantDirect = False
@@ -181,7 +185,7 @@ class ShowBase(DirectObject.DirectObject):
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
         # If you need to know the actual aspect ratio call base.getAspectRatio()
-        self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).getValue()
+        self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).value
         # This variable is used to see if the aspect ratio has changed when
         # we get a window-event.
         self.__oldAspectRatio = None
@@ -191,8 +195,8 @@ class ShowBase(DirectObject.DirectObject):
         #: be 'onscreen' (the default), 'offscreen' or 'none'.
         self.windowType = windowType
         if self.windowType is None:
-            self.windowType = self.config.GetString('window-type', 'onscreen')
-        self.requireWindow = self.config.GetBool('require-window', 1)
+            self.windowType = ConfigVariableString('window-type', 'onscreen').value
+        self.requireWindow = ConfigVariableBool('require-window', True).value
 
         #: This is the main, or only window; see `winList` for a list of *all* windows.
         self.win = None
@@ -265,11 +269,10 @@ class ShowBase(DirectObject.DirectObject):
             self.clusterSyncFlag = clusterSyncFlag
         except NameError:
             # Has the clusterSyncFlag been set via a config variable
-            self.clusterSyncFlag = self.config.GetBool('cluster-sync', 0)
+            self.clusterSyncFlag = ConfigVariableBool('cluster-sync', False)
 
         # We've already created aspect2d in ShowBaseGlobal, for the
         # benefit of creating DirectGui elements before ShowBase.
-        from . import ShowBaseGlobal
         self.hidden = ShowBaseGlobal.hidden
 
         #: The global :class:`~panda3d.core.GraphicsEngine`, as returned by
@@ -301,14 +304,14 @@ class ShowBase(DirectObject.DirectObject):
         # Maybe create a RecorderController to record and/or play back
         # the user session.
         self.recorder = None
-        playbackSession = self.config.GetString('playback-session', '')
-        recordSession = self.config.GetString('record-session', '')
-        if playbackSession:
+        playbackSession = ConfigVariableFilename('playback-session', '')
+        recordSession = ConfigVariableFilename('record-session', '')
+        if not playbackSession.empty():
             self.recorder = RecorderController()
-            self.recorder.beginPlayback(Filename.fromOsSpecific(playbackSession))
-        elif recordSession:
+            self.recorder.beginPlayback(playbackSession.value)
+        elif not recordSession.empty():
             self.recorder = RecorderController()
-            self.recorder.beginRecord(Filename.fromOsSpecific(recordSession))
+            self.recorder.beginRecord(recordSession.value)
 
         if self.recorder:
             # If we're either playing back or recording, pass the
@@ -322,19 +325,19 @@ class ShowBase(DirectObject.DirectObject):
 
         # For some reason, wx needs to be initialized before the graphics window
         if sys.platform == "darwin":
-            if self.config.GetBool("want-wx", 0):
+            if ConfigVariableBool("want-wx", False):
                 wx = importlib.import_module('wx')
                 self.wxApp = wx.App()
 
             # Same goes for Tk, which uses a conflicting NSApplication
-            if self.config.GetBool("want-tk", 0):
+            if ConfigVariableBool("want-tk", False):
                 Pmw = importlib.import_module('Pmw')
                 self.tkRoot = Pmw.initialise()
 
         # Open the default rendering window.
         if self.windowType != 'none':
             props = WindowProperties.getDefault()
-            if (self.config.GetBool('read-raw-mice', 0)):
+            if ConfigVariableBool('read-raw-mice', False):
                 props.setRawMice(1)
             self.openDefaultWindow(startDirect = False, props=props)
 
@@ -404,18 +407,18 @@ class ShowBase(DirectObject.DirectObject):
         # - pcalt-# (# is CPU number, 0-based)
         # - client-cpu-affinity config
         # - auto-single-cpu-affinity config
-        affinityMask = self.config.GetInt('client-cpu-affinity-mask', -1)
+        affinityMask = ConfigVariableInt('client-cpu-affinity-mask', -1).value
         if affinityMask != -1:
             TrueClock.getGlobalPtr().setCpuAffinity(affinityMask)
         else:
             # this is useful on machines that perform better with each process
             # assigned to a single CPU
-            autoAffinity = self.config.GetBool('auto-single-cpu-affinity', 0)
+            autoAffinity = ConfigVariableBool('auto-single-cpu-affinity', False).value
             affinity = None
             if autoAffinity and hasattr(builtins, 'clientIndex'):
                 affinity = abs(int(builtins.clientIndex))
             else:
-                affinity = self.config.GetInt('client-cpu-affinity', -1)
+                affinity = ConfigVariableInt('client-cpu-affinity', -1).value
             if (affinity in (None, -1)) and autoAffinity:
                 affinity = 0
             if affinity not in (None, -1):
@@ -451,7 +454,6 @@ class ShowBase(DirectObject.DirectObject):
         builtins.cpMgr = ConfigPageManager.getGlobalPtr()
         builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
         builtins.pandaSystem = PandaSystem.getGlobalPtr()
-        builtins.wantUberdog = self.config.GetBool('want-uberdog', 1)
         if __debug__:
             builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
             self.onScreenDebug = OnScreenDebug.OnScreenDebug()
@@ -463,7 +465,6 @@ class ShowBase(DirectObject.DirectObject):
             builtins.pixel2dp = self.pixel2dp
 
         # Now add this instance to the ShowBaseGlobal module scope.
-        from . import ShowBaseGlobal
         builtins.run = ShowBaseGlobal.run
         ShowBaseGlobal.base = self
         ShowBaseGlobal.__dev__ = self.__dev__
@@ -475,13 +476,13 @@ class ShowBase(DirectObject.DirectObject):
 
         self.createBaseAudioManagers()
 
-        if self.__dev__ and self.config.GetBool('track-gui-items', False):
+        if self.__dev__ and ConfigVariableBool('track-gui-items', False):
             # dict of guiId to gui item, for tracking down leaks
             if not hasattr(ShowBase, 'guiItems'):
                 ShowBase.guiItems = {}
 
         # optionally restore the default gui sounds from 1.7.2 and earlier
-        if ConfigVariableBool('orig-gui-sounds', False).getValue():
+        if ConfigVariableBool('orig-gui-sounds', False).value:
             from direct.gui import DirectGuiGlobals as DGG
             DGG.setDefaultClickSound(self.loader.loadSfx("audio/sfx/GUI_click.wav"))
             DGG.setDefaultRolloverSound(self.loader.loadSfx("audio/sfx/GUI_rollover.wav"))
@@ -503,18 +504,15 @@ class ShowBase(DirectObject.DirectObject):
             self.setupWindowControls()
 
         # Client sleep
-        sleepTime = self.config.GetFloat('client-sleep', 0.0)
+        sleepTime = ConfigVariableDouble('client-sleep', 0.0)
         self.clientSleep = 0.0
-        self.setSleep(sleepTime)
+        self.setSleep(sleepTime.value)
 
         # Extra sleep for running 4+ clients on a single machine
         # adds a sleep right after the main render in igloop
         # tends to even out the frame rate and keeps it from going
         # to zero in the out of focus windows
-        if self.config.GetBool('multi-sleep', 0):
-            self.multiClientSleep = 1
-        else:
-            self.multiClientSleep = 0
+        self.multiClientSleep = ConfigVariableBool('multi-sleep', False)
 
         #: Utility for viewing offscreen buffers, see :mod:`.BufferViewer`.
         self.bufferViewer = BufferViewer(self.win, self.render2dp if self.wantRender2dp else self.render2d)
@@ -523,7 +521,7 @@ class ShowBase(DirectObject.DirectObject):
             if fStartDirect: # [gjeon] if this is False let them start direct manually
                 self.__doStartDirect()
 
-            if self.config.GetBool('show-tex-mem', False):
+            if ConfigVariableBool('show-tex-mem', False):
                 if not self.texmem or self.texmem.cleanedUp:
                     self.toggleTexMem()
 
@@ -551,10 +549,10 @@ class ShowBase(DirectObject.DirectObject):
         except ImportError:
             return
 
-        profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
+        profile.Profile.bias = ConfigVariableDouble("profile-bias", 0.0).value
 
         def f8(x):
-            return ("%" + "8.%df" % self.config.GetInt("profile-decimals", 3)) % x
+            return ("%" + "8.%df" % ConfigVariableInt("profile-decimals", 3)) % x
         pstats.f8 = f8
 
     # temp; see ToonBase.py
@@ -566,13 +564,13 @@ class ShowBase(DirectObject.DirectObject):
         in.  Stuff like the model paths and other paths.  Feel free to
         add stuff to this.
         """
-        if self.config.GetBool('want-env-debug-info', 0):
-           print("\n\nEnvironment Debug Info {")
-           print("* model path:")
-           print(getModelPath())
-           #print "* dna path:"
-           #print getDnaPath()
-           print("}")
+        if ConfigVariableBool('want-env-debug-info', False):
+            print("\n\nEnvironment Debug Info {")
+            print("* model path:")
+            print(getModelPath())
+            #print "* dna path:"
+            #print getDnaPath()
+            print("}")
 
     def destroy(self):
         """ Call this function to destroy the ShowBase and stop all
@@ -601,8 +599,9 @@ class ShowBase(DirectObject.DirectObject):
         self.aspect2d.reparent_to(self.render2d)
 
         # [gjeon] restore sticky key settings
-        if self.config.GetBool('disable-sticky-keys', 0):
+        if self.__disabledStickyKeys:
             allowAccessibilityShortcutKeys(True)
+            self.__disabledStickyKeys = False
 
         self.ignoreAll()
         self.shutdown()
@@ -1084,16 +1083,10 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearStencilActive(oldClearStencilActive)
                 self.win.setClearStencil(oldClearStencil)
 
-            flag = self.config.GetBool('show-frame-rate-meter', False)
-            if self.appRunner is not None and self.appRunner.allowPythonDev:
-                # In an allow_python_dev p3d application, we always
-                # start up with the frame rate meter enabled, to
-                # provide a visual reminder that this flag has been
-                # set.
-                flag = True
-            self.setFrameRateMeter(flag)
-            flag = self.config.GetBool('show-scene-graph-analyzer-meter', False)
-            self.setSceneGraphAnalyzerMeter(flag)
+            flag = ConfigVariableBool('show-frame-rate-meter', False)
+            self.setFrameRateMeter(flag.value)
+            flag = ConfigVariableBool('show-scene-graph-analyzer-meter', False)
+            self.setSceneGraphAnalyzerMeter(flag.value)
         return success
 
     def setSleep(self, amount):
@@ -1101,10 +1094,10 @@ class ShowBase(DirectObject.DirectObject):
         Sets up a task that calls python 'sleep' every frame.  This is a simple
         way to reduce the CPU usage (and frame rate) of a panda program.
         """
-        if (self.clientSleep == amount):
+        if self.clientSleep == amount:
             return
         self.clientSleep = amount
-        if (amount == 0.0):
+        if amount == 0.0:
             self.taskMgr.remove('clientSleep')
         else:
             # Spawn it after igloop (at the end of each frame)
@@ -1436,7 +1429,7 @@ class ShowBase(DirectObject.DirectObject):
             # Use the existing camera node.
             cam = useCamera
             camNode = useCamera.node()
-            assert(isinstance(camNode, Camera))
+            assert isinstance(camNode, Camera)
             lens = camNode.getLens()
             cam.reparentTo(self.camera)
 
@@ -1459,7 +1452,7 @@ class ShowBase(DirectObject.DirectObject):
             camNode.setScene(scene)
 
         if mask is not None:
-            if (isinstance(mask, int)):
+            if isinstance(mask, int):
                 mask = BitMask32(mask)
             camNode.setCameraMask(mask)
 
@@ -1517,7 +1510,7 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        if (cameraName):
+        if cameraName:
             cam2dNode = Camera('cam2d_' + cameraName)
         else:
             cam2dNode = Camera('cam2d')
@@ -1563,7 +1556,7 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        if (cameraName):
+        if cameraName:
             cam2dNode = Camera('cam2dp_' + cameraName)
         else:
             cam2dNode = Camera('cam2dp')
@@ -1715,7 +1708,7 @@ class ShowBase(DirectObject.DirectObject):
             mb.addButton(KeyboardButton.meta())
             mw.node().setModifierButtons(mb)
             bt = mw.attachNewNode(ButtonThrower("buttons%s" % (i)))
-            if (i != 0):
+            if i != 0:
                 bt.node().setPrefix('mousedev%s-' % (i))
             mods = ModifierButtons()
             mods.addButton(KeyboardButton.shift())
@@ -1724,7 +1717,7 @@ class ShowBase(DirectObject.DirectObject):
             mods.addButton(KeyboardButton.meta())
             bt.node().setModifierButtons(mods)
             buttonThrowers.append(bt)
-            if (win.hasPointer(i)):
+            if win.hasPointer(i):
                 pointerWatcherNodes.append(mw.node())
 
         return buttonThrowers, pointerWatcherNodes
@@ -1735,8 +1728,8 @@ class ShowBase(DirectObject.DirectObject):
         the currently-known mouse position.  Useful if the mouse
         pointer is invisible for some reason.
         """
-        mouseViz = render2d.attachNewNode('mouseViz')
-        lilsmiley = loader.loadModel('lilsmiley')
+        mouseViz = self.render2d.attachNewNode('mouseViz')
+        lilsmiley = self.loader.loadModel('lilsmiley')
         lilsmiley.reparentTo(mouseViz)
 
         aspectRatio = self.getAspectRatio()
@@ -1911,10 +1904,10 @@ class ShowBase(DirectObject.DirectObject):
         return self.physicsMgrEnabled
 
     def updateManagers(self, state):
-        dt = globalClock.getDt()
-        if (self.particleMgrEnabled == 1):
+        dt = self.clock.dt
+        if self.particleMgrEnabled:
             self.particleMgr.doParticles(dt)
-        if (self.physicsMgrEnabled == 1):
+        if self.physicsMgrEnabled:
             self.physicsMgr.doPhysics(dt)
         return Task.cont
 
@@ -1937,7 +1930,11 @@ class ShowBase(DirectObject.DirectObject):
         if port is None:
             port = -1
         PStatClient.connect(hostname, port)
-        return PStatClient.isConnected()
+        if PStatClient.isConnected():
+            PStatClient.mainTick()
+            return True
+        else:
+            return False
 
     def addSfxManager(self, extraSfxManager):
         """
@@ -1947,7 +1944,7 @@ class ShowBase(DirectObject.DirectObject):
         # keep a list of sfx manager objects to apply settings to,
         # since there may be others in addition to the one we create here
         self.sfxManagerList.append(extraSfxManager)
-        newSfxManagerIsValid = (extraSfxManager!=None) and extraSfxManager.isValid()
+        newSfxManagerIsValid = extraSfxManager is not None and extraSfxManager.isValid()
         self.sfxManagerIsValidList.append(newSfxManagerIsValid)
         if newSfxManagerIsValid:
             extraSfxManager.setActive(self.sfxActive)
@@ -1991,7 +1988,7 @@ class ShowBase(DirectObject.DirectObject):
     def SetAllSfxEnables(self, bEnabled):
         """Calls ``setActive(bEnabled)`` on all valid SFX managers."""
         for i in range(len(self.sfxManagerList)):
-            if (self.sfxManagerIsValidList[i]):
+            if self.sfxManagerIsValidList[i]:
                 self.sfxManagerList[i].setActive(bEnabled)
 
     def enableSoundEffects(self, bEnableSoundEffects):
@@ -1999,9 +1996,9 @@ class ShowBase(DirectObject.DirectObject):
         Enables or disables SFX managers.
         """
         # don't setActive(1) if no audiofocus
-        if self.AppHasAudioFocus or (bEnableSoundEffects==0):
+        if self.AppHasAudioFocus or not bEnableSoundEffects:
             self.SetAllSfxEnables(bEnableSoundEffects)
-        self.sfxActive=bEnableSoundEffects
+        self.sfxActive = bEnableSoundEffects
         if bEnableSoundEffects:
             self.notify.debug("Enabling sound effects")
         else:
@@ -2043,7 +2040,8 @@ class ShowBase(DirectObject.DirectObject):
         """
         :deprecated: Use `.Loader.Loader.loadSfx()` instead.
         """
-        assert self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
+        if __debug__:
+            warnings.warn("base.loadSfx is deprecated, use base.loader.loadSfx instead.", DeprecationWarning, stacklevel=2)
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
@@ -2053,7 +2051,8 @@ class ShowBase(DirectObject.DirectObject):
         """
         :deprecated: Use `.Loader.Loader.loadMusic()` instead.
         """
-        assert self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
+        if __debug__:
+            warnings.warn("base.loadMusic is deprecated, use base.loader.loadMusic instead.", DeprecationWarning, stacklevel=2)
         return self.loader.loadMusic(name)
 
     def playSfx(
@@ -2110,7 +2109,7 @@ class ShowBase(DirectObject.DirectObject):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.shadowTrav:
-           self.shadowTrav.traverse(self.render)
+            self.shadowTrav.traverse(self.render)
         return Task.cont
 
     def __collisionLoop(self, state):
@@ -2121,7 +2120,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.appTrav:
             self.appTrav.traverse(self.render)
         if self.shadowTrav:
-           self.shadowTrav.traverse(self.render)
+            self.shadowTrav.traverse(self.render)
         messenger.send("collisionLoopFinished")
         return Task.cont
 
@@ -2246,7 +2245,7 @@ class ShowBase(DirectObject.DirectObject):
         # between collisionLoop and igLoop
         self.taskMgr.add(self.__collisionLoop, 'collisionLoop', sort = 30)
 
-        if ConfigVariableBool('garbage-collect-states').getValue():
+        if ConfigVariableBool('garbage-collect-states').value:
             self.taskMgr.add(self.__garbageCollectStates, 'garbageCollectStates', sort = 46)
         # give the igLoop task a reasonably "late" sort,
         # so that it will get run after most tasks
@@ -2514,7 +2513,7 @@ class ShowBase(DirectObject.DirectObject):
         # Make the spots round, so there's less static in the display.
         # This forces software point generation on many drivers, so
         # it's not on by default.
-        if self.config.GetBool('round-show-vertices', False):
+        if ConfigVariableBool('round-show-vertices', False):
             spot = PNMImage(256, 256, 1)
             spot.renderSpot((1, 1, 1, 1), (0, 0, 0, 0), 0.8, 1)
             tex = Texture('spot')
@@ -2569,11 +2568,11 @@ class ShowBase(DirectObject.DirectObject):
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
-            self.oobeVis = loader.loadModel('models/misc/camera', okMissing = True)
+            self.oobeVis = base.loader.loadModel('models/misc/camera', okMissing = True)
             if not self.oobeVis:
                 # Sometimes we have default-model-extension set to
                 # egg, but the file might be a bam file.
-                self.oobeVis = loader.loadModel('models/misc/camera.bam', okMissing = True)
+                self.oobeVis = base.loader.loadModel('models/misc/camera.bam', okMissing = True)
             if not self.oobeVis:
                 self.oobeVis = NodePath('oobeVis')
             self.oobeVis.node().setFinal(1)
@@ -2609,9 +2608,9 @@ class ShowBase(DirectObject.DirectObject):
             #    self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0
-            bboard.post('oobeEnabled', False)
+            self.bboard.post('oobeEnabled', False)
         else:
-            bboard.post('oobeEnabled', True)
+            self.bboard.post('oobeEnabled', True)
             try:
                 cameraParent = localAvatar
             except:
@@ -2937,14 +2936,15 @@ class ShowBase(DirectObject.DirectObject):
         Returns:
             A `~direct.task.Task` that can be awaited.
         """
-        globalClock.setMode(ClockObject.MNonRealTime)
-        globalClock.setDt(1.0/float(fps))
+        clock = self.clock
+        clock.mode = ClockObject.MNonRealTime
+        clock.dt = 1.0 / fps
         t = self.taskMgr.add(self._movieTask, namePrefix + '_task')
         t.frameIndex = 0  # Frame 0 is not captured.
         t.numFrames = int(duration * fps)
         t.source = source
         t.outputString = namePrefix + '_%0' + repr(sd) + 'd.' + format
-        t.setUponDeath(lambda state: globalClock.setMode(ClockObject.MNormal))
+        t.setUponDeath(lambda state: clock.setMode(ClockObject.MNormal))
         return t
 
     def _movieTask(self, state):
@@ -3130,7 +3130,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if not self.wxApp:
             # Create a new base.wxApp.
-            self.wxApp = wx.PySimpleApp(redirect = False)
+            self.wxApp = wx.App(redirect = False)
 
         if ConfigVariableBool('wx-main-loop', True):
             # Put wxPython in charge of the main loop.  It really
@@ -3140,7 +3140,7 @@ class ShowBase(DirectObject.DirectObject):
             # Set a timer to run the Panda frame 60 times per second.
             wxFrameRate = ConfigVariableDouble('wx-frame-rate', 60.0)
             self.wxTimer = wx.Timer(self.wxApp)
-            self.wxTimer.Start(1000.0 / wxFrameRate.getValue())
+            self.wxTimer.Start(1000.0 / wxFrameRate.value)
             self.wxApp.Bind(wx.EVT_TIMER, self.__wxTimerCallback)
 
             # wx is now the main loop, not us any more.
@@ -3227,7 +3227,7 @@ class ShowBase(DirectObject.DirectObject):
 
             # Set a timer to run the Panda frame 60 times per second.
             tkFrameRate = ConfigVariableDouble('tk-frame-rate', 60.0)
-            self.tkDelay = int(1000.0 / tkFrameRate.getValue())
+            self.tkDelay = int(1000.0 / tkFrameRate.value)
             self.tkRoot.after(self.tkDelay, self.__tkTimerCallback)
 
             # wx is now the main loop, not us any more.
@@ -3299,7 +3299,7 @@ class ShowBase(DirectObject.DirectObject):
 
         :rtype: panda3d.core.NodePath
         """
-        return loader.loadModel("models/misc/xyzAxis.bam")
+        return self.loader.loadModel("models/misc/xyzAxis.bam")
 
     def __doStartDirect(self):
         if self.__directStarted:
@@ -3307,15 +3307,15 @@ class ShowBase(DirectObject.DirectObject):
         self.__directStarted = False
 
         # Start Tk, Wx and DIRECT if specified by Config.prc
-        fTk = self.config.GetBool('want-tk', 0)
-        fWx = self.config.GetBool('want-wx', 0)
+        fTk = ConfigVariableBool('want-tk', False).value
+        fWx = ConfigVariableBool('want-wx', False).value
         # Start DIRECT if specified in Config.prc or in cluster mode
-        fDirect = (self.config.GetBool('want-directtools', 0) or
-                   (self.config.GetString("cluster-mode", '') != ''))
+        fDirect = (ConfigVariableBool('want-directtools', 0).value or
+                   (not ConfigVariableString("cluster-mode", '').empty()))
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
-    def run(self):
+    def run(self): # pylint: disable=method-hidden
         """This method runs the :class:`~direct.task.Task.TaskManager`
         when ``self.appRunner is None``, which is to say, when we are
         not running from within a p3d file.  When we *are* within a p3d

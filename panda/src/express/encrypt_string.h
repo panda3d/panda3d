@@ -19,15 +19,16 @@
 #ifdef HAVE_OPENSSL
 
 #include "filename.h"
+#include "vector_uchar.h"
 
 BEGIN_PUBLISH
 
-EXPCL_PANDA_EXPRESS std::string
+EXPCL_PANDA_EXPRESS vector_uchar
 encrypt_string(const std::string &source, const std::string &password,
                const std::string &algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
 EXPCL_PANDA_EXPRESS std::string
-decrypt_string(const std::string &source, const std::string &password);
+decrypt_string(const vector_uchar &source, const std::string &password);
 
 EXPCL_PANDA_EXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const std::string &password,

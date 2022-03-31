@@ -1,0 +1,13 @@
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "CoreDevel")
+add_metalib(p3dtool INIT init_libdtool dtool.h COMPONENTS p3dtoolutil p3dtoolbase)
+unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
+
+install(TARGETS p3dtool
+  EXPORT Core COMPONENT Core
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT CoreDevel)
+
+# Also handle thirdparty DLLs
+thirdparty_copy_alongside(p3dtool)

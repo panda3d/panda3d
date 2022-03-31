@@ -2,15 +2,10 @@
 # TK and PMW INTERFACE MODULES#
 ###############################
 from direct.showbase.TkGlobal import*
-import Pmw, sys
+import Pmw
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import askopenfilename
-else:
-    from tkFileDialog import askopenfilename
-
+from tkinter.filedialog import askopenfilename
 
 #############################
 # Scene Editor Python Files #

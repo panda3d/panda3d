@@ -107,20 +107,8 @@ get_num_manifold_points() const {
 /**
  *
  */
-BulletManifoldPoint *BulletPersistentManifold::
-get_manifold_point(int idx) const {
-  LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  nassertr(idx < _manifold->getNumContacts(), nullptr)
-
-  return new BulletManifoldPoint(_manifold->getContactPoint(idx));
-}
-
-/**
- *
- */
 BulletManifoldPoint BulletPersistentManifold::
-__get_manifold_point(int idx) const {
+get_manifold_point(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
   return BulletManifoldPoint(_manifold->getContactPoint(idx));
 }

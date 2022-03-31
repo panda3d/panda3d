@@ -18,7 +18,7 @@
 
 #include "netDatagram.h"
 #include "pmutex.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pdeque.h"
 
 /**
@@ -41,7 +41,7 @@ public:
 
 private:
   Mutex _cvlock;
-  ConditionVarFull _cv;  // signaled when queue contents change.
+  ConditionVar _cv;  // signaled when queue contents change.
 
   typedef pdeque<NetDatagram> QueueType;
   QueueType _queue;

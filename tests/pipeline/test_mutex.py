@@ -1,4 +1,8 @@
 from panda3d.core import Mutex, ReMutex
+from panda3d import core
+from random import random
+import pytest
+import sys
 
 
 def test_mutex_acquire_release():
@@ -31,6 +35,82 @@ def test_mutex_try_acquire():
     m.release()
 
 
+def test_mutex_with():
+    m = Mutex()
+
+    rc = sys.getrefcount(m)
+    with m:
+        assert m.debug_is_locked()
+
+    with m:
+        assert m.debug_is_locked()
+
+    assert rc == sys.getrefcount(m)
+
+
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
+def test_mutex_contention():
+    # As a smoke test for mutexes, we just spawn a bunch of threads that do a
+    # lot of mutexing and hope that we can catch any obvious issues with the
+    # mutex implementation, especially when compiling with DEBUG_THREADS.
+    m1 = Mutex()
+    m2 = Mutex()
+    m3 = Mutex()
+    m4 = Mutex()
+
+    def thread_acq_rel(m):
+        for i in range(5000):
+            m.acquire()
+            m.release()
+
+    def thread_nested():
+        for i in range(5000):
+            m1.acquire()
+            m4.acquire()
+            m4.release()
+            m1.release()
+
+    def thread_hand_over_hand():
+        m1.acquire()
+        for i in range(5000):
+            m2.acquire()
+            m1.release()
+            m3.acquire()
+            m2.release()
+            m1.acquire()
+            m3.release()
+
+        m1.release()
+
+    def thread_sleep(m):
+        for i in range(250):
+            m.acquire()
+            core.Thread.sleep(random() * 0.003)
+            m.release()
+
+    threads = [
+        core.PythonThread(thread_acq_rel, (m1,), "", ""),
+        core.PythonThread(thread_acq_rel, (m2,), "", ""),
+        core.PythonThread(thread_acq_rel, (m3,), "", ""),
+        core.PythonThread(thread_acq_rel, (m4,), "", ""),
+        core.PythonThread(thread_nested, (), "", ""),
+        core.PythonThread(thread_nested, (), "", ""),
+        core.PythonThread(thread_nested, (), "", ""),
+        core.PythonThread(thread_hand_over_hand, (), "", ""),
+        core.PythonThread(thread_hand_over_hand, (), "", ""),
+        core.PythonThread(thread_sleep, (m1,), "", ""),
+        core.PythonThread(thread_sleep, (m2,), "", ""),
+        core.PythonThread(thread_sleep, (m3,), "", ""),
+        core.PythonThread(thread_sleep, (m4,), "", ""),
+    ]
+    for thread in threads:
+        thread.start(core.TP_normal, True)
+
+    for thread in threads:
+        thread.join()
+
+
 def test_remutex_acquire_release():
     m = ReMutex()
     m.acquire()
@@ -58,3 +138,15 @@ def test_remutex_try_acquire():
     m.release()
     m.release()
 
+
+def test_remutex_with():
+    m = ReMutex()
+
+    rc = sys.getrefcount(m)
+    with m:
+        assert m.debug_is_locked()
+        with m:
+            assert m.debug_is_locked()
+        assert m.debug_is_locked()
+
+    assert rc == sys.getrefcount(m)

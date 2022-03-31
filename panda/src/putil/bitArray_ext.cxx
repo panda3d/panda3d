@@ -20,18 +20,6 @@
  */
 void Extension<BitArray>::
 __init__(PyObject *init_value) {
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(init_value)) {
-    long value = PyInt_AS_LONG(init_value);
-    if (value >= 0) {
-      _this->set_word(0, value);
-    } else {
-      PyErr_SetString(PyExc_ValueError, "BitArray constructor requires a positive integer");
-    }
-    return;
-  }
-#endif
-
   if (!PyLong_Check(init_value) || Py_SIZE(init_value) < 0) {
     PyErr_SetString(PyExc_ValueError, "BitArray constructor requires a positive integer");
     return;

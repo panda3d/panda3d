@@ -122,7 +122,6 @@ PUBLISHED:
   INLINE Filename operator + (const std::string &other) const;
 
   INLINE Filename operator / (const Filename &other) const;
-  EXTENSION(Filename __truediv__(const Filename &other) const);
 
   // Or, you can use any of these.
   INLINE std::string get_fullpath() const;
@@ -233,7 +232,7 @@ PUBLISHED:
   INLINE bool operator != (const std::string &other) const;
   INLINE bool operator < (const std::string &other) const;
   INLINE int compare_to(const Filename &other) const;
-  INLINE bool __nonzero__() const;
+  INLINE bool __bool__() const;
   int get_hash() const;
 
   INLINE void output(std::ostream &out) const;

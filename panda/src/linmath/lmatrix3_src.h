@@ -55,10 +55,10 @@ PUBLISHED:
     friend class FLOATNAME(LMatrix3);
   };
 
-  INLINE_LINMATH FLOATNAME(LMatrix3)();
-  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3)() = default;
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
-      const FLOATNAME(LMatrix3) &other);
+      const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE, FLOATTYPE, FLOATTYPE,
                                      FLOATTYPE, FLOATTYPE, FLOATTYPE,
@@ -182,6 +182,8 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
+
+  EXTENSION(INLINE_LINMATH FLOATNAME(LMatrix3) __rmul__(FLOATTYPE scalar) const);
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix3) &other);
 

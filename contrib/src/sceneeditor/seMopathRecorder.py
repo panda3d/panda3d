@@ -25,17 +25,12 @@ from direct.tkwidgets.Slider import Slider
 from direct.tkwidgets.EntryScale import EntryScale
 from direct.tkwidgets.VectorWidgets import Vector2Entry, Vector3Entry
 from direct.tkwidgets.VectorWidgets import ColorEntry
-import os, sys, Pmw
+import os, Pmw
 import math
 
-if sys.version_info >= (3, 0):
-    from tkinter import Button, Frame, Radiobutton, Checkbutton, Label
-    from tkinter import StringVar, BooleanVar, Entry, Scale
-    import tkinter
-else:
-    from Tkinter import Button, Frame, Radiobutton, Checkbutton, Label
-    from Tkinter import StringVar, BooleanVar, Entry, Scale
-    import Tkinter as tkinter
+from tkinter import Button, Frame, Radiobutton, Checkbutton, Label
+from tkinter import StringVar, BooleanVar, Entry, Scale
+import tkinter
 
 
 PRF_UTILITIES = [

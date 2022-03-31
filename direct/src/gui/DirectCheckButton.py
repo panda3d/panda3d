@@ -61,12 +61,12 @@ class DirectCheckButton(DirectButton):
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)
         # After initialization with X giving it the correct size, put back space
-        if self['boxImage'] ==  None:
+        if self['boxImage'] is None:
             self.indicator['text'] = (' ', '*')
             self.indicator['text_pos'] = (0, -.2)
         else:
             self.indicator['text'] = (' ', ' ')
-        if self['boxImageColor'] != None and self['boxImage'] !=  None:
+        if self['boxImageColor'] is not None and self['boxImage'] is not None:
             self.colors = [VBase4(0, 0, 0, 0), self['boxImageColor']]
             self.component('indicator')['image_color'] = VBase4(0, 0, 0, 0)
 
@@ -84,7 +84,7 @@ class DirectCheckButton(DirectButton):
         else:
             # Use ready state to compute bounds
             frameType = self.frameStyle[0].getType()
-            if fClearFrame and (frameType != PGFrameStyle.TNone):
+            if fClearFrame and frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
                 # To force an update of the button
@@ -92,7 +92,7 @@ class DirectCheckButton(DirectButton):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
@@ -170,7 +170,7 @@ class DirectCheckButton(DirectButton):
 
     def commandFunc(self, event):
         self['indicatorValue'] = 1 - self['indicatorValue']
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
 
         if self['command']:
@@ -179,12 +179,5 @@ class DirectCheckButton(DirectButton):
 
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
-
-
-
-
-
-
-

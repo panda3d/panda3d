@@ -117,7 +117,7 @@ public:
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 
 protected:
-  void set_detected_display_zoom(PN_stdfloat zoom);
+  INLINE void set_detected_display_zoom(PN_stdfloat zoom);
 
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
@@ -137,6 +137,7 @@ protected:
   int _supported_types;
   int _display_width;
   int _display_height;
+  PN_stdfloat _detected_display_zoom;
   PT(GraphicsDevice) _device;
 
   DisplayInformation *_display_information;

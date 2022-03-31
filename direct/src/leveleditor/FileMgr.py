@@ -11,7 +11,7 @@ class FileMgr:
     def saveToFile(self, fileName):
         try:
             f = open(fileName, 'w')
-            f.write("from pandac.PandaModules import *\n")
+            f.write("from panda3d.core import *\n")
             f.write("\nif hasattr(base, 'le'):\n")
             f.write("    objectMgr = base.le.objectMgr\n")
             f.write("    animMgr = base.le.animMgr\n")

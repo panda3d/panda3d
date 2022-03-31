@@ -28,6 +28,8 @@ class EggGroupNode;
 class EggRenderMode;
 class EggTextureCollection;
 
+struct EggLexerState;
+
 /**
  * A base class for things that may be directly added into the egg hierarchy.
  * This includes groups, joints, polygons, vertex pools, etc., but does not
@@ -100,7 +102,7 @@ protected:
     UF_local_coord     = 0x004,
   };
 
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
 
   virtual void update_under(int depth_offset);
   virtual void adjust_under();

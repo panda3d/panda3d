@@ -13,13 +13,10 @@
 
 #include "physicalNode.h"
 #include "physicsManager.h"
-
-#ifdef PHAVE_ATOMIC
-#include <atomic>
-#endif
+#include "patomic.h"
 
 // static stuff.
-static std::atomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;
+static patomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;
 
 TypeHandle PhysicalNode::_type_handle;
 
@@ -60,6 +57,7 @@ PhysicalNode::
  */
 PandaNode *PhysicalNode::
 make_copy() const {
+  LightMutexHolder holder(_lock);
   if (!_physicals.empty() && !warned_copy_physical_node.test_and_set()) {
     // This is a problem, because a Physical can only be on one PhysicalNode.
     //FIXME: Figure out a solution.
@@ -74,6 +72,7 @@ make_copy() const {
  */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
+  LightMutexHolder holder(_lock);
   size_t num_physicals = _physicals.size();
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
@@ -88,6 +87,7 @@ add_physicals_from(const PhysicalNode &other) {
  */
 void PhysicalNode::
 set_physical(size_t index, Physical *physical) {
+  LightMutexHolder holder(_lock);
   nassertv(index < _physicals.size());
 
   _physicals[index]->_physical_node = nullptr;
@@ -100,6 +100,7 @@ set_physical(size_t index, Physical *physical) {
  */
 void PhysicalNode::
 insert_physical(size_t index, Physical *physical) {
+  LightMutexHolder holder(_lock);
   if (index > _physicals.size()) {
     index = _physicals.size();
   }
@@ -113,6 +114,7 @@ insert_physical(size_t index, Physical *physical) {
  */
 void PhysicalNode::
 remove_physical(Physical *physical) {
+  LightMutexHolder holder(_lock);
   pvector< PT(Physical) >::iterator found;
   PT(Physical) ptp = physical;
   found = find(_physicals.begin(), _physicals.end(), ptp);
@@ -130,6 +132,7 @@ remove_physical(Physical *physical) {
  */
 void PhysicalNode::
 remove_physical(size_t index) {
+  LightMutexHolder holder(_lock);
   nassertv(index <= _physicals.size());
 
   pvector< PT(Physical) >::iterator remove;

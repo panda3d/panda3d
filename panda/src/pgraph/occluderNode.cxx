@@ -55,6 +55,7 @@ OccluderNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
+  set_renderable();
   // OccluderNodes are hidden by default.
   set_overall_hidden(true);
   set_double_sided(false);
@@ -155,18 +156,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Now carry on to render our child nodes.
   return true;
 }
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool OccluderNode::
-is_renderable() const {
-  return true;
-}
-
 
 /**
  * Writes a brief description of the node to the indicated output stream.

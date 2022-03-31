@@ -140,7 +140,7 @@ handle_entries() {
 
               ShoveData sd;
               sd._vector = normal;
-              sd._length = (surface_point - interior_point).length();
+              sd._length = (surface_point - interior_point).dot(normal);
               sd._valid = true;
               sd._entry = entry;
 

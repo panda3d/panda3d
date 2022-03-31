@@ -101,14 +101,14 @@ is_simple_threads() {
  */
 INLINE void ThreadDummyImpl::
 sleep(double seconds) {
-#ifdef WIN32
+#ifdef _WIN32
   Sleep((int)(seconds * 1000));
 #else
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
   nanosleep(&rqtp, nullptr);
-#endif  // WIN32
+#endif  // _WIN32
 }
 
 /**
@@ -123,4 +123,12 @@ yield() {
  */
 INLINE void ThreadDummyImpl::
 consider_yield() {
+}
+
+/**
+ *
+ */
+INLINE bool ThreadDummyImpl::
+get_context_switches(size_t &, size_t &) {
+  return false;
 }

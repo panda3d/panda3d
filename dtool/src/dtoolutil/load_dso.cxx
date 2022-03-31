@@ -32,7 +32,7 @@ static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
   }
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 /* begin Win32-specific code */
 
 #define WINDOWS_LEAN_AND_MEAN
@@ -50,19 +50,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
     return nullptr;
   }
   std::wstring os_specific_w = abspath.to_os_specific_w();
-
-  // Try using LoadLibraryEx, if possible.
-  typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCWSTR, HANDLE, DWORD);
-  tLoadLibraryEx pLoadLibraryEx;
-  HINSTANCE hLib = LoadLibrary("kernel32.dll");
-  if (hLib) {
-    pLoadLibraryEx = (tLoadLibraryEx)GetProcAddress(hLib, "LoadLibraryExW");
-    if (pLoadLibraryEx) {
-      return pLoadLibraryEx(os_specific_w.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
-    }
-  }
-
-  return LoadLibraryW(os_specific_w.c_str());
+  return LoadLibraryExW(os_specific_w.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
 bool

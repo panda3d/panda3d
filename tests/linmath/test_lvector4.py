@@ -92,7 +92,6 @@ def test_vec4_compare():
     assert Vec4(0, 0, 0, 1).compare_to(Vec4(0, 0, 0, 1)) == 0
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec4_round():
     original_vector = Vec4(2.3, -2.6, 3.5, 1)
 
@@ -103,7 +102,6 @@ def test_vec4_round():
     assert rounded_vector.w == 1
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec4_floor():
     original_vector = Vec4(2.3, -2.6, 3.5, 1)
 
@@ -114,7 +112,6 @@ def test_vec4_floor():
     assert rounded_vector.w == 1
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec4_ceil():
     original_vector = Vec4(2.3, -2.6, 3.5, 1)
 
@@ -123,6 +120,10 @@ def test_vec4_ceil():
     assert rounded_vector.y == -2
     assert rounded_vector.z == 4
     assert rounded_vector.w == 1
+
+
+def test_vec4_rmul():
+    assert 2 * Vec4(0, 3, -4, 0.5) == Vec4(0, 6, -8, 1)
 
 
 @pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
@@ -143,3 +144,13 @@ def test_vec4_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec4_buffer():
+    v = Vec4(0, 0.5, 2.0, -4.0)
+    m = memoryview(v)
+    assert len(m) == 4
+    assert m[0] == 0
+    assert m[1] == 0.5
+    assert m[2] == 2.0
+    assert m[3] == -4.0

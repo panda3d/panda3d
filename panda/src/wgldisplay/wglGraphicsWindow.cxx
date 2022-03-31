@@ -127,21 +127,6 @@ end_frame(FrameMode mode, Thread *current_thread) {
  * been called on all windows, to initiate the exchange of the front and back
  * buffers.
  *
- * This should instruct the window to prepare for the flip at the next video
- * sync, but it should not wait.
- *
- * We have the two separate functions, begin_flip() and end_flip(), to make it
- * easier to flip all of the windows at the same time.
- */
-void wglGraphicsWindow::
-begin_flip() {
-}
-
-/**
- * This function will be called within the draw thread after end_frame() has
- * been called on all windows, to initiate the exchange of the front and back
- * buffers.
- *
  * This should instruct the window to prepare for the flip when command, but
  * will not actually flip
  *
@@ -215,7 +200,7 @@ open_window() {
   // GSG creationinitialization.
 
   wglGraphicsStateGuardian *wglgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, false);

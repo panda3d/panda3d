@@ -97,7 +97,6 @@ def test_vec2_nan():
     assert not Vec2D(-inf, 0).is_nan()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec2_round():
     original_vector = Vec2(2.3, -2.6)
 
@@ -106,7 +105,6 @@ def test_vec2_round():
     assert rounded_vector.y == -3
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec2_floor():
     original_vector = Vec2(2.3, -2.6)
 
@@ -115,13 +113,16 @@ def test_vec2_floor():
     assert rounded_vector.y == -3
 
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
 def test_vec2_ceil():
     original_vector = Vec2(2.3, -2.6)
 
     rounded_vector = ceil(original_vector)
     assert rounded_vector.x == 3
     assert rounded_vector.y == -2
+
+
+def test_vec2_rmul():
+    assert 2 * Vec2(3, -4) == Vec2(6, -8)
 
 
 @pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
@@ -142,3 +143,11 @@ def test_vec2_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec2_buffer():
+    v = Vec2(1.5, -10.0)
+    m = memoryview(v)
+    assert len(m) == 2
+    assert m[0] == 1.5
+    assert m[1] == -10.0

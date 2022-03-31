@@ -9,24 +9,15 @@ __all__ = ['AppShell']
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-import Pmw, sys
 from . import Dial
 from . import Floater
 from . import Slider
 from . import EntryScale
 from . import VectorWidgets
 from . import ProgressBar
+from tkinter.filedialog import *
+import Pmw
 
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-else:
-    from tkFileDialog import *
-
-
-"""
-TO FIX:
-Radiobutton ordering change
-"""
 
 # Create toplevel widget dictionary
 try:
@@ -76,7 +67,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
             )
         self.defineoptions(kw, optiondefs)
         # If no toplevel passed in, create one
-        if parent == None:
+        if parent is None:
             self.parent = Toplevel()
         else:
             self.parent = parent
@@ -289,7 +280,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         newBtn = self.__buttonBox.add(buttonName)
         newBtn.configure(kw)
         if helpMessage:
-             self.bind(newBtn, helpMessage, statusMessage)
+            self.bind(newBtn, helpMessage, statusMessage)
         return newBtn
 
     def alignbuttons(self):
@@ -561,4 +552,3 @@ class TestAppShell(AppShell):
 
 if __name__ == '__main__':
     test = TestAppShell(balloon_state='none')
-

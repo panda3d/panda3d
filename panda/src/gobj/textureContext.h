@@ -43,16 +43,16 @@ PUBLISHED:
   INLINE bool was_modified() const;
   INLINE bool was_properties_modified() const;
   INLINE bool was_image_modified() const;
-  INLINE bool was_simple_image_modified() const;
+  INLINE bool was_image_page_modified(int z, int n) const;
 
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
-  INLINE UpdateSeq get_simple_image_modified() const;
+
+  INLINE SparseArray get_image_modified_pages(int n = 0) const;
 
 public:
   INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   INLINE void mark_loaded();
-  INLINE void mark_simple_loaded();
   INLINE void mark_unloaded();
   INLINE void mark_needs_reload();
 
@@ -63,7 +63,6 @@ private:
   int _view;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
-  UpdateSeq _simple_image_modified;
 
 public:
   static TypeHandle get_class_type() {

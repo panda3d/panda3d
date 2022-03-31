@@ -245,7 +245,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  unsigned int aniso_degree = sampler.get_effective_anisotropic_degree();
   SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
@@ -357,10 +357,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       async_reload_texture(dtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (dtc->was_simple_image_modified()) {
-          return dtc->create_simple_texture(*_screen);
-        }
-        return true;
+        return dtc->create_simple_texture(*_screen);
       }
     }
   }
@@ -1001,8 +998,10 @@ begin_frame(Thread *current_thread) {
   GraphicsStateGuardian::begin_frame(current_thread);
 
   if (_d3d_device == nullptr) {
-    dxgsg9_cat.debug()
-      << this << "::begin_frame(): no device.\n";
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << this << "::begin_frame(): no device.\n";
+    }
     return false;
   }
 
@@ -1178,8 +1177,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+                      size_t num_instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1955,9 +1954,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                 tex_level_0, &src_rect,
                                 filter);
   if (FAILED(hr)) {
-    dxgsg9_cat.debug()
-      << "StretchRect failed in framebuffer_copy_to_texture"
-      << D3DERRORSTRING(hr);
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << "StretchRect failed in framebuffer_copy_to_texture"
+        << D3DERRORSTRING(hr);
+    }
     okflag = false;
   }
 
@@ -2428,7 +2429,7 @@ reset() {
   hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, nullptr);
   _supports_occlusion_query = !FAILED(hr);
 
-  if (dxgsg9_cat.is_error()) {
+  if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
       << "\nMaxTextureWidth = " << d3d_caps.MaxTextureWidth
@@ -3248,11 +3249,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
+  int shader_slot = ShaderAttrib::get_class_slot();
+  if (_target_shader != _state_shader ||
+      !_state_mask.get_bit(shader_slot)) {
     // PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(shader_slot);
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
@@ -4657,8 +4661,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // release the old swapchain and create a new one
   if (_screen && _screen->_swap_chain) {
     _screen->_swap_chain->Release();
-    wdxdisplay9_cat.debug()
-      << "swap chain " << _screen->_swap_chain << " is released\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "swap chain " << _screen->_swap_chain << " is released\n";
+    }
     _screen->_swap_chain = nullptr;
     hr = _d3d_device->CreateAdditionalSwapChain(presentation_params, &_screen->_swap_chain);
   }
@@ -4778,7 +4784,10 @@ create_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
   hr = new_context->_d3d_device->CreateAdditionalSwapChain(&new_context->_presentation_params, &new_context->_swap_chain);
   if (FAILED(hr)) {
-    wdxdisplay9_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "Swapchain creation failed :" << D3DERRORSTRING(hr) << "\n";
+    }
     return false;
   }
   return true;
@@ -4793,7 +4802,10 @@ release_swap_chain(DXScreenData *new_context) {
   if (new_context->_swap_chain) {
     hr = new_context->_swap_chain->Release();
     if (FAILED(hr)) {
-      wdxdisplay9_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug()
+          << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      }
       return false;
     }
     if (new_context->_swap_chain == _swap_chain) {

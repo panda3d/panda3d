@@ -28,3 +28,8 @@ INLINE std::string DatagramUDPHeader::
 get_header() const {
   return _header.get_message();
 }
+
+INLINE CPTA_uchar DatagramUDPHeader::
+get_array() const {
+  return _header.get_array();
+}

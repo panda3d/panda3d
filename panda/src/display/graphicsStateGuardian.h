@@ -44,7 +44,6 @@
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
-#include "timerQueryContext.h"
 #include "loader.h"
 #include "shaderAttrib.h"
 #include "texGenAttrib.h"
@@ -293,6 +292,7 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
+  virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
@@ -306,17 +306,21 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts);
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *ibc);
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  virtual PT(TimerQueryContext) issue_timer_query(int pstats_index);
+  virtual void issue_timer_query(int pstats_index);
+  virtual void issue_latency_query(int pstats_index);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
@@ -332,13 +336,16 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
-                                       LMatrix4 &t, int index);
-  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LMatrix4 *cache, int altered);
+  void fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                            LMatrix4 *into, int count = 1);
+  void fetch_specified_member(const NodePath &np, CPT_InternalName member,
+                              LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
+  bool fetch_ptr_parameter(const Shader::ShaderPtrSpec &spec, Shader::ShaderPtrData &data);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
@@ -356,8 +363,6 @@ PUBLISHED:
 public:
   virtual void end_frame(Thread *current_thread);
 
-  void flush_timer_queries();
-
   void set_current_properties(const FrameBufferProperties *properties);
 
   virtual bool depth_offset_decals();
@@ -368,7 +373,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
@@ -438,6 +443,7 @@ public:
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
+  PStatThread get_pstats_thread();
 #endif
 
 protected:
@@ -595,13 +601,6 @@ protected:
 #ifdef DO_PSTATS
   int _pstats_gpu_thread;
   bool _timer_queries_active;
-  PStatFrameData _pstats_gpu_data;
-
-  int _last_query_frame;
-  int _last_num_queried;
-  // double _timer_delta;
-  typedef pdeque<PT(TimerQueryContext)> TimerQueryQueue;
-  TimerQueryQueue _pending_timer_queries;
 #endif
 
   bool _copy_texture_inverted;
@@ -657,9 +656,9 @@ protected:
 
 public:
   // Statistics
-  static PStatCollector _vertex_buffer_switch_pcollector;
-  static PStatCollector _index_buffer_switch_pcollector;
-  static PStatCollector _shader_buffer_switch_pcollector;
+  //static PStatCollector _vertex_buffer_switch_pcollector;
+  //static PStatCollector _index_buffer_switch_pcollector;
+  //static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
   static PStatCollector _load_shader_buffer_pcollector;
@@ -692,7 +691,6 @@ public:
   static PStatCollector _wait_occlusion_pcollector;
   static PStatCollector _wait_timer_pcollector;
   static PStatCollector _timer_queries_pcollector;
-  static PStatCollector _command_latency_pcollector;
 
   static PStatCollector _prepare_pcollector;
   static PStatCollector _prepare_texture_pcollector;

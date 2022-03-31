@@ -50,8 +50,6 @@ PUBLISHED:
 
   INLINE void set_respect_prev_transform(bool flag);
   INLINE bool get_respect_prev_transform() const;
-  MAKE_PROPERTY(respect_preV_transform, get_respect_prev_transform,
-                                        set_respect_prev_transform);
   MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform,
                                         set_respect_prev_transform);
 
@@ -75,7 +73,7 @@ PUBLISHED:
   MAKE_PROPERTY2(recorder, has_recorder, get_recorder,
                            set_recorder, clear_recorder);
 
-  CollisionVisualizer *show_collisions(const NodePath &root);
+  PandaNode *show_collisions(const NodePath &root);
   void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 

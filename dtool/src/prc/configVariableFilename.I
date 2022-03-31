@@ -219,6 +219,14 @@ set_word(size_t n, const Filename &value) {
 }
 
 /**
+ * Returns true if the variable is not empty.
+ */
+INLINE bool ConfigVariableFilename::
+__bool__() const {
+  return !get_value().empty();
+}
+
+/**
  * Returns the variable's value, as a reference into the config variable
  * itself.  This is the internal method that implements get_value(), which
  * returns a concrete.

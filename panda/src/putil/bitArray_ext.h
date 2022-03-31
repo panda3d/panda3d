@@ -31,6 +31,8 @@ class Extension<BitArray> : public ExtensionBase<BitArray> {
 public:
   void __init__(PyObject *init_value);
 
+  INLINE bool __bool__() const;
+
   PyObject *__getstate__() const;
   void __setstate__(PyObject *state);
 };

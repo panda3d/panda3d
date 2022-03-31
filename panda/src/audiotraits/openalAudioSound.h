@@ -10,8 +10,8 @@
  * @author Ben Buchwald <bb2@alumni.cmu.edu>
  */
 
-#ifndef __OPENAL_AUDIO_SOUND_H__
-#define __OPENAL_AUDIO_SOUND_H__
+#ifndef OPENALAUDIOSOUND_H
+#define OPENALAUDIOSOUND_H
 
 #include "pandabase.h"
 
@@ -209,4 +209,4 @@ private:
 
 #include "openalAudioSound.I"
 
-#endif /* __OPENAL_AUDIO_SOUND_H__ */
+#endif /* __OPENALAUDIOSOUND_H__ */

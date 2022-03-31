@@ -12,13 +12,8 @@
  */
 
 #ifdef FLOATTYPE_IS_INT
-#if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
 #define PY_AS_FLOATTYPE PyLong_AS_LONG
-#else
-#define PYNUMBER_FLOATTYPE PyNumber_Int
-#define PY_AS_FLOATTYPE PyInt_AS_LONG
-#endif
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
 #define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
@@ -198,6 +193,27 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
   return 0;
 }
 
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase3)>::
+__rmul__(PyObject *self, FLOATTYPE scalar) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
+#endif
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase3) *vec = (FLOATNAME(LVecBase3) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase3));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = _this->_v(0) * scalar;
+    vec->_v(1) = _this->_v(1) * scalar;
+    vec->_v(2) = _this->_v(2) * scalar;
+  }
+  return py_vec;
+}
+
 /**
  *
  */
@@ -352,6 +368,46 @@ __ceil__(PyObject *self) const {
     vec->_v(2) = std::ceil(_this->_v(2));
   }
   return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH int Extension<FLOATNAME(LVecBase3)>::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+
+  static const char format[2] = {FLOATTOKEN, 0};
+  static const Py_ssize_t shape = FLOATNAME(LVecBase3)::num_components;
+
+  Py_INCREF(self);
+
+  view->buf = (void *)_this->get_data();
+  view->obj = self;
+  view->len = 3 * sizeof(FLOATTYPE);
+  view->readonly = 1;
+  view->itemsize = sizeof(FLOATTYPE);
+  view->format = nullptr;
+  if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
+    view->format = (char *)format;
+  }
+  view->ndim = 1;
+  view->shape = nullptr;
+  if ((flags & PyBUF_ND) == PyBUF_ND) {
+    view->shape = (Py_ssize_t *)&shape;
+  }
+  view->strides = nullptr;
+  if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
+    view->strides = &view->itemsize;
+  }
+  view->suboffsets = nullptr;
+  view->internal = nullptr;
+
+  return 0;
 }
 
 #undef PYNUMBER_FLOATTYPE

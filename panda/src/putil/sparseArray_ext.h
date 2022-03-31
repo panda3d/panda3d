@@ -29,6 +29,8 @@
 template<>
 class Extension<SparseArray> : public ExtensionBase<SparseArray> {
 public:
+  INLINE bool __bool__() const;
+
   PyObject *__getstate__() const;
   void __setstate__(PyObject *state);
 };

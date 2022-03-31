@@ -22,17 +22,17 @@ IDecompressStream() : std::istream(&_buf) {
  *
  */
 INLINE IDecompressStream::
-IDecompressStream(std::istream *source, bool owns_source) : std::istream(&_buf) {
-  open(source, owns_source);
+IDecompressStream(std::istream *source, bool owns_source, std::streamsize source_length, bool header) : std::istream(&_buf) {
+  open(source, owns_source, source_length, header);
 }
 
 /**
  *
  */
 INLINE IDecompressStream &IDecompressStream::
-open(std::istream *source, bool owns_source) {
+open(std::istream *source, bool owns_source, std::streamsize source_length, bool header) {
   clear((ios_iostate)0);
-  _buf.open_read(source, owns_source);
+  _buf.open_read(source, owns_source, source_length, header);
   return *this;
 }
 
@@ -58,19 +58,19 @@ OCompressStream() : std::ostream(&_buf) {
  *
  */
 INLINE OCompressStream::
-OCompressStream(std::ostream *dest, bool owns_dest, int compression_level) :
+OCompressStream(std::ostream *dest, bool owns_dest, int compression_level, bool header) :
   std::ostream(&_buf)
 {
-  open(dest, owns_dest, compression_level);
+  open(dest, owns_dest, compression_level, header);
 }
 
 /**
  *
  */
 INLINE OCompressStream &OCompressStream::
-open(std::ostream *dest, bool owns_dest, int compression_level) {
+open(std::ostream *dest, bool owns_dest, int compression_level, bool header) {
   clear((ios_iostate)0);
-  _buf.open_write(dest, owns_dest, compression_level);
+  _buf.open_write(dest, owns_dest, compression_level, header);
   return *this;
 }
 

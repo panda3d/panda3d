@@ -21,18 +21,13 @@
 PyObject *Extension<CollisionTraverser>::
 __getstate__() const {
   extern struct Dtool_PyTypedObject Dtool_CollisionHandler;
-  extern struct Dtool_PyTypedObject Dtool_CollisionTraverser;
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   const std::string &name = _this->get_name();
   size_t num_colliders = _this->get_num_colliders();
 
   PyObject *state = PyTuple_New(num_colliders * 2 + 3);
-#if PY_MAJOR_VERSION >= 3
   PyTuple_SET_ITEM(state, 0, PyUnicode_FromStringAndSize(name.data(), name.size()));
-#else
-  PyTuple_SET_ITEM(state, 0, PyString_FromStringAndSize(name.data(), name.size()));
-#endif
   PyTuple_SET_ITEM(state, 1, PyBool_FromLong(_this->get_respect_prev_transform()));
   PyTuple_SET_ITEM(state, 2, PyLong_FromLong((long)num_colliders));
 
@@ -60,12 +55,7 @@ __setstate__(PyObject *state) {
   _this->clear_colliders();
 
   Py_ssize_t len = 0;
-#if PY_MAJOR_VERSION >= 3
   const char *data = PyUnicode_AsUTF8AndSize(PyTuple_GET_ITEM(state, 0), &len);
-#else
-  char *data;
-  PyString_AsStringAndSize(PyTuple_GET_ITEM(state, 0), &data, &len);
-#endif
   _this->set_name(std::string(data, len));
 
   _this->set_respect_prev_transform(PyTuple_GET_ITEM(state, 1) != Py_False);

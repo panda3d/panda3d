@@ -21,7 +21,7 @@ TypeHandle GraphicsWindowProcCallbackData::_type_handle;
  */
 void GraphicsWindowProcCallbackData::
 output(std::ostream &out) const {
-#ifdef WIN32
+#ifdef _WIN32
   out << get_type() << "(" << (void*)_graphicsWindow << ", " << _hwnd << ", "
       << _msg << ", " << _wparam << ", " << _lparam << ")";
 #else

@@ -24,7 +24,7 @@
 
 class Thread;
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -57,6 +57,8 @@ public:
   INLINE static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();
+
+  INLINE static bool get_context_switches(size_t &, size_t &);
 };
 
 #include "threadDummyImpl.I"

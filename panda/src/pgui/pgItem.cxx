@@ -62,11 +62,12 @@ PGItem(const string &name) :
   _notify(nullptr),
   _has_frame(false),
   _frame(0, 0, 0, 0),
-  _region(new PGMouseWatcherRegion(this)),
   _state(0),
-  _flags(0)
+  _flags(0),
+  _region(new PGMouseWatcherRegion(this))
 {
   set_cull_callback();
+  set_renderable();
 }
 
 /**
@@ -194,6 +195,8 @@ draw_mask_changed() {
  */
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  CullTraverser::_pgui_nodes_pcollector.add_level(1);
+
   // We try not to hold the lock for longer than necessary.
   PT(PandaNode) state_def_root;
   bool has_frame;
@@ -278,22 +281,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (state_def_root != nullptr) {
     // This item has a current state definition that we should use to render
     // the item.
-    CullTraverserData next_data(data, state_def_root);
-    trav->traverse(next_data);
+    trav->traverse_down(data, state_def_root);
   }
 
   // Now continue to render everything else below this node.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool PGItem::
-is_renderable() const {
   return true;
 }
 
@@ -1006,21 +997,19 @@ get_frame_style(int state) {
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
-  // Get the state def node, mainly to ensure that this state is slotted and
-  // listed as having been defined.
-  NodePath &root = do_get_state_def(state);
-  nassertv(!root.is_empty());
+
+  slot_state_def(state);
+
+  if (_state_defs[state]._root.is_empty()) {
+    // Create a new node.
+    _state_defs[state]._root = NodePath("state_" + format_string(state));
+  }
 
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
-
-#ifdef THREADED_PIPELINE
-  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
-    update_frame(state);
-  }
-#endif
+  update_frame(state);
 }
 
 #ifdef HAVE_AUDIO

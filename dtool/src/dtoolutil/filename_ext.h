@@ -34,9 +34,6 @@ public:
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__repr__() const;
   PyObject *__fspath__() const;
-
-  Filename __truediv__(const Filename &other) const;
-
   PyObject *scan_directory() const;
 };
 

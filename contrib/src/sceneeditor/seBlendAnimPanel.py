@@ -5,13 +5,8 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-import sys
 from direct.task import Task
-
-if sys.version_info >= (3, 0):
-    from tkinter.simpledialog import askfloat
-else:
-    from tkSimpleDialog import askfloat
+from tkinter.simpledialog import askfloat
 
 FRAMES = 0
 SECONDS = 1

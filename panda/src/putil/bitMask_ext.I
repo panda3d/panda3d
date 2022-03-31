@@ -11,6 +11,14 @@
  * @date 2020-03-22
  */
 
+/**
+ * Returns true if the value is not zero.
+ */
+template<class WType, int nbits>
+INLINE bool Extension<BitMask<WType, nbits> >::
+__bool__() const {
+  return this->_this->get_word() != 0;
+}
 
 /**
  * Returns the value as an integer.

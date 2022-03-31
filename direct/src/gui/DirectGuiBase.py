@@ -90,6 +90,7 @@ __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 from panda3d.core import *
 from direct.showbase import ShowBaseGlobal
 from direct.showbase.ShowBase import ShowBase
+from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
 from .OnscreenText import *
 from .OnscreenGeom import *
@@ -97,14 +98,9 @@ from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
-import sys
+from direct.task.TaskManagerGlobal import taskMgr
 
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
-
-guiObjectCollector = PStatCollector("Client::GuiObjects")
+_track_gui_items = ConfigVariableBool('track-gui-items', False)
 
 
 class DirectGuiBase(DirectObject.DirectObject):
@@ -439,7 +435,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             info = optionInfo[option]
             func = info[DGG._OPT_FUNCTION]
             if func is not None:
-              func()
+                func()
 
     # Allow index style references
     def __setitem__(self, key, value):
@@ -563,7 +559,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         if widgetClass is None:
             return None
         # Get arguments for widget constructor
-        if len(widgetArgs) == 1 and type(widgetArgs[0]) == tuple:
+        if len(widgetArgs) == 1 and isinstance(widgetArgs[0], tuple):
             # Arguments to the constructor can be specified as either
             # multiple trailing arguments to createcomponent() or as a
             # single tuple argument.
@@ -642,7 +638,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if ShowBaseGlobal.config.GetBool('debug-directgui-msgs', False):
+        if ConfigVariableBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -671,7 +667,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = ShowBaseGlobal.config.GetBool('direct-gui-edit', False)
+    guiEdit = ConfigVariableBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -734,10 +730,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.guiId = self.guiItem.getId()
 
         if ShowBaseGlobal.__dev__:
-            guiObjectCollector.addLevel(1)
-            guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if ShowBaseGlobal.config.GetBool('track-gui-items', False):
+            if _track_gui_items:
                 if not hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems = {}
                 if self.guiId in ShowBase.guiItems:
@@ -824,7 +818,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def editStart(self, event):
         taskMgr.remove('guiEditTask')
-        vWidget2render2d = self.getPos(render2d)
+        vWidget2render2d = self.getPos(ShowBaseGlobal.render2d)
         vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
         editVec = Vec3(vWidget2render2d - vMouse2render2d)
         if base.mouseWatcherNode.getModifierButtons().isDown(
@@ -850,7 +844,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if mwn.hasMouse():
             vMouse2render2d = Point3(mwn.getMouse()[0], 0, mwn.getMouse()[1])
             newPos = vMouse2render2d + state.editVec
-            self.setPos(render2d, newPos)
+            self.setPos(ShowBaseGlobal.render2d, newPos)
             if DirectGuiWidget.snapToGrid:
                 newPos = self.getPos()
                 newPos.set(
@@ -864,9 +858,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         taskMgr.remove('guiEditTask')
 
     def setState(self):
-        if type(self['state']) == type(0):
+        if isinstance(self['state'], int):
             self.guiItem.setActive(self['state'])
-        elif (self['state'] == DGG.NORMAL) or (self['state'] == 'normal'):
+        elif self['state'] == DGG.NORMAL or self['state'] == 'normal':
             self.guiItem.setActive(1)
         else:
             self.guiItem.setActive(0)
@@ -885,7 +879,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             bw = (0, 0)
 
         else:
-            if fClearFrame and (frameType != PGFrameStyle.TNone):
+            if fClearFrame and frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
                 # To force an update of the button
@@ -893,12 +887,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
-            if ((frameType != PGFrameStyle.TNone) and
-                (frameType != PGFrameStyle.TFlat)):
+            if frameType != PGFrameStyle.TNone and \
+               frameType != PGFrameStyle.TFlat:
                 bw = self['borderWidth']
             else:
                 bw = (0, 0)
@@ -958,9 +952,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setRelief(self, fSetStyle = 1):
         relief = self['relief']
         # Convert None, and string arguments
-        if relief == None:
+        if relief is None:
             relief = PGFrameStyle.TNone
-        elif isinstance(relief, stringType):
+        elif isinstance(relief, str):
             # Convert string to frame style int
             relief = DGG.FrameStyleDict[relief]
         # Set style
@@ -985,8 +979,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameColor(self):
         # this might be a single color or a list of colors
         colors = self['frameColor']
-        if type(colors[0]) == int or \
-           type(colors[0]) == float:
+        if isinstance(colors[0], (int, float)):
             colors = (colors,)
         for i in range(self['numStates']):
             if i >= len(colors):
@@ -999,17 +992,16 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameTexture(self):
         # this might be a single texture or a list of textures
         textures = self['frameTexture']
-        if textures == None or \
-           isinstance(textures, Texture) or \
-           isinstance(textures, stringType):
+        if textures is None or \
+           isinstance(textures, (Texture, str)):
             textures = (textures,) * self['numStates']
         for i in range(self['numStates']):
             if i >= len(textures):
                 texture = textures[-1]
             else:
                 texture = textures[i]
-            if isinstance(texture, stringType):
-                texture = loader.loadTexture(texture)
+            if isinstance(texture, str):
+                texture = base.loader.loadTexture(texture)
             if texture:
                 self.frameStyle[i].setTexture(texture)
             else:
@@ -1037,8 +1029,6 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def destroy(self):
         if hasattr(self, "frameStyle"):
             if ShowBaseGlobal.__dev__:
-                guiObjectCollector.subLevel(1)
-                guiObjectCollector.flushLevel()
                 if hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems.pop(self.guiId, None)
 
@@ -1083,10 +1073,10 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self[key] = value[1]
 
     def taskName(self, idString):
-        return (idString + "-" + str(self.guiId))
+        return idString + "-" + str(self.guiId)
 
     def uniqueName(self, idString):
-        return (idString + "-" + str(self.guiId))
+        return idString + "-" + str(self.guiId)
 
     def setProp(self, propString, value):
         """

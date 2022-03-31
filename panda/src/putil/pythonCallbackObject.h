@@ -34,6 +34,8 @@ PUBLISHED:
   void set_function(PyObject *function);
   PyObject *get_function();
 
+  PyObject *__reduce__() const;
+
   MAKE_PROPERTY(function, get_function, set_function);
 
 public:

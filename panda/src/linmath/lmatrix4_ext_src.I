@@ -38,6 +38,14 @@ __reduce__(PyObject *self) const {
 /**
  *
  */
+INLINE_LINMATH FLOATNAME(LMatrix4) Extension<FLOATNAME(LMatrix4)>::
+__rmul__(FLOATTYPE scalar) const {
+  return *_this * scalar;
+}
+
+/**
+ *
+ */
 INLINE_LINMATH std::string Extension<FLOATNAME(LMatrix4)>::
 __repr__() const {
   std::ostringstream out;

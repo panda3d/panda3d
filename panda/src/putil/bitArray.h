@@ -42,12 +42,14 @@ public:
   typedef BitMaskNative MaskType;
   typedef MaskType::WordType WordType;
 
+  INLINE BitArray(WordType init_value);
+
 PUBLISHED:
   enum { num_bits_per_word = MaskType::num_bits };
 
   INLINE BitArray();
-  INLINE BitArray(WordType init_value);
   BitArray(const SparseArray &from);
+  EXTENSION(BitArray(PyObject *init_value));
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();
@@ -126,6 +128,7 @@ PUBLISHED:
   void operator <<= (int shift);
   void operator >>= (int shift);
 
+  EXTENSION(bool __bool__() const);
   EXTENSION(PyObject *__getstate__() const);
   EXTENSION(void __setstate__(PyObject *state));
 

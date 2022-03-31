@@ -1,15 +1,13 @@
 """ Class used to create and control radamec device """
 from math import *
 from direct.showbase.DirectObject import DirectObject
+from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from .DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
 
-
-"""
-TODO:
-Handle interaction between widget, followSelectedTask and updateTask
-"""
+#TODO: Handle interaction between widget, followSelectedTask and updateTask
 
 # ANALOGS
 RAD_PAN = 0
@@ -23,7 +21,7 @@ class DirectRadamec(DirectObject):
 
     def __init__(self, device = 'Analog0', nodePath = None):
         # See if device manager has been initialized
-        if base.direct.deviceManager == None:
+        if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
         self.name = 'Radamec-' + repr(DirectRadamec.radamecCount)
@@ -73,11 +71,12 @@ class DirectRadamec(DirectObject):
     # Normalize to the range [-minVal, maxVal] based on some hard-coded
     # max/min numbers of the Radamec device
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
-        try:
-            maxRange = self.maxRange[chan]
-            minRange = self.minRange[chan]
-        except IndexError:
+        if chan < 0 or chan >= min(len(self.maxRange), len(self.minRange)):
             raise RuntimeError("can't normalize this channel (channel %d)" % chan)
-        range = maxRange - minRange
-        clampedVal = CLAMP(self.aList[chan], minRange, maxRange)
-        return ((maxVal - minVal) * (clampedVal - minRange) / range) + minVal
+
+        maxRange = self.maxRange[chan]
+        minRange = self.minRange[chan]
+
+        diff = maxRange - minRange
+        clampedVal = max(min(self.aList[chan], maxRange), maxRange)
+        return ((maxVal - minVal) * (clampedVal - minRange) / diff) + minVal

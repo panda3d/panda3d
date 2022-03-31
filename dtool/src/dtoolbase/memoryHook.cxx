@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include "typeRegistry.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 // Windows case.
 #ifndef WIN32_LEAN_AND_MEAN
@@ -50,6 +50,18 @@ static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
               "MEMORY_HOOK_ALIGNMENT should be a power of two");
 
 #if defined(CPPPARSER)
+
+#elif defined(USE_MEMORY_MIMALLOC)
+
+// mimalloc is a modern memory manager by Microsoft that is very fast as well
+// as thread-safe.
+
+#include "mimalloc.h"
+
+#define call_malloc mi_malloc
+#define call_realloc mi_realloc
+#define call_free mi_free
+#undef MEMORY_HOOK_MALLOC_LOCK
 
 #elif defined(USE_MEMORY_DLMALLOC)
 
@@ -191,7 +203,7 @@ ptr_to_alloc(void *ptr, size_t &size) {
  */
 MemoryHook::
 MemoryHook() {
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
   SYSTEM_INFO sysinfo;
@@ -487,7 +499,7 @@ heap_trim(size_t pad) {
   _lock.unlock();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   // Also, on Windows we have _heapmin().
   if (_heapmin() == 0) {
     trimmed = true;
@@ -516,7 +528,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   _total_mmap_size += size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
   void *ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE,
@@ -571,7 +583,7 @@ mmap_free(void *ptr, size_t size) {
   _total_mmap_size -= size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   VirtualFree(ptr, 0, MEM_RELEASE);
 #else
   munmap(ptr, size);

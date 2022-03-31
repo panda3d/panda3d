@@ -18,6 +18,7 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
+#include "virtualFileMountZip.h"
 #include "streamWrapper.h"
 #include "dSearchPath.h"
 #include "dcast.h"
@@ -94,6 +95,16 @@ mount(Multifile *multifile, const Filename &mount_point, int flags) {
 }
 
 /**
+ * Mounts the indicated ZipArchive at the given mount point.
+ */
+bool VirtualFileSystem::
+mount(ZipArchive *archive, const Filename &mount_point, int flags) {
+  PT(VirtualFileMountZip) new_mount =
+    new VirtualFileMountZip(archive);
+  return mount(new_mount, mount_point, flags);
+}
+
+/**
  * Mounts the indicated system file or directory at the given mount point.  If
  * the named file is a directory, mounts the directory.  If the named file is
  * a Multifile, mounts it as a Multifile.  Returns true on success, false on
@@ -126,20 +137,70 @@ mount(const Filename &physical_filename, const Filename &mount_point,
     PT(VirtualFileMountSystem) new_mount =
       new VirtualFileMountSystem(physical_filename);
     return mount(new_mount, mount_point, flags);
-  } else {
-    // It's not a directory; it must be a Multifile.
-    PT(Multifile) multifile = new Multifile;
-    multifile->set_encryption_password(password);
+  }
 
-    // For now these are always opened read only.  Maybe later we'll support
-    // read-write on Multifiles.
-    flags |= MF_read_only;
-    if (!multifile->open_read(physical_filename)) {
-      return false;
+  // It's not a directory; it must be a multifile or .zip file.
+  Filename fname = physical_filename;
+  fname.set_binary();
+
+  PT(VirtualFile) vfile = get_file(fname);
+  if (vfile == nullptr) {
+    return false;
+  }
+  istream *stream = vfile->open_read_file(false);
+  if (stream == nullptr) {
+    return false;
+  }
+
+  // For now these are always opened read only.  Maybe later we'll support
+  // read-write on multifiles and .zip files.
+  flags |= MF_read_only;
+
+  int ch = stream->get();
+  if (ch == '#' || ch == 'p') {
+    // It *might* be a multifile.
+    while (ch == '#') {
+      // Skip to the end of the line.
+      while (ch != EOF && ch != '\n') {
+        ch = stream->get();
+      }
+      // Skip to the first non-whitespace character of the line.
+      while (ch != EOF && (isspace(ch) || ch == '\r')) {
+        ch = stream->get();
+      }
     }
 
-    return mount(multifile, mount_point, flags);
+    // Now read the actual Multifile header.
+    char this_header[6];
+    this_header[0] = ch;
+    stream->read(this_header + 1, 6 - 1);
+    if (!stream->fail() && stream->gcount() == 6 - 1 &&
+        memcmp(this_header, "pmf\0\n\r", 6) == 0) {
+      // Looks like a multifile all right.  Reopen it.
+      close_read_file(stream);
+
+      PT(Multifile) multifile = new Multifile;
+      multifile->set_encryption_password(password);
+
+      if (!multifile->open_read(physical_filename)) {
+        return false;
+      }
+
+      return mount(multifile, mount_point, flags);
+    }
   }
+
+  // It must be a ZIP file.  Note that ZipArchive does not require rewinding
+  // the stream back to 0.
+  IStreamWrapper *read = new IStreamWrapper(stream, true);
+
+  PT(ZipArchive) archive = new ZipArchive;
+  if (!archive->open_read(read, true)) {
+    return false;
+  }
+
+  archive->set_filename(physical_filename);
+  return mount(archive, mount_point, flags);
 }
 
 /**
@@ -220,6 +281,48 @@ unmount(Multifile *multifile) {
       VirtualFileMountMultifile *mmount =
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile() == multifile) {
+        // Remove this one.  Don't increment wi.
+        if (express_cat->is_debug()) {
+          express_cat->debug()
+            << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
+        }
+        mount->_file_system = nullptr;
+
+      } else {
+        // Don't remove this one.
+        ++wi;
+      }
+    } else {
+      // Don't remove this one.
+      ++wi;
+    }
+    ++ri;
+  }
+
+  int num_removed = _mounts.end() - wi;
+  _mounts.erase(wi, _mounts.end());
+  ++_mount_seq;
+  _lock.unlock();
+  return num_removed;
+}
+
+/**
+ * Unmounts all appearances of the indicated ZipArchive from the file system.
+ * Returns the number of appearances unmounted.
+ */
+int VirtualFileSystem::
+unmount(ZipArchive *archive) {
+  _lock.lock();
+  Mounts::iterator ri, wi;
+  wi = ri = _mounts.begin();
+  while (ri != _mounts.end()) {
+    VirtualFileMount *mount = (*ri);
+    (*wi) = mount;
+
+    if (mount->is_exact_type(VirtualFileMountZip::get_class_type())) {
+      VirtualFileMountZip *zip_mount =
+        DCAST(VirtualFileMountZip, mount);
+      if (zip_mount->get_archive() == archive) {
         // Remove this one.  Don't increment wi.
         if (express_cat->is_debug()) {
           express_cat->debug()
@@ -546,6 +649,10 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
     return get_file(filename, status_only);
   }
 
+  if (filename.empty()) {
+    return nullptr;
+  }
+
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; ++i) {
     Filename match(searchpath.get_directory(i), filename);
@@ -869,7 +976,7 @@ close_read_file(istream *stream) {
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else
@@ -928,7 +1035,7 @@ open_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_write_file(ostream *stream) {
   if (stream != nullptr) {
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
     (*global_operator_delete)(stream);
 #else
@@ -984,7 +1091,7 @@ open_read_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_read_write_file(iostream *stream) {
   if (stream != nullptr) {
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~iostream();
     (*global_operator_delete)(stream);
 #else

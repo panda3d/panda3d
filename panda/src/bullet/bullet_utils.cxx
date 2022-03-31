@@ -118,10 +118,9 @@ btTransform LMatrix4_to_btTrans(const LMatrix4 &m) {
  */
 LMatrix4 btTrans_to_LMatrix4(const btTransform &trans) {
 
-  return TransformState::make_pos_quat_scale(
+  return TransformState::make_pos_quat(
     btVector3_to_LVector3(trans.getOrigin()),
-    btQuat_to_LQuaternion(trans.getRotation()),
-    LVector3(1.0f, 1.0f, 1.0f))->get_mat();
+    btQuat_to_LQuaternion(trans.getRotation()))->get_mat();
 }
 
 /**

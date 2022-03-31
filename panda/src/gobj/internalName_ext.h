@@ -30,6 +30,8 @@ template<>
 class Extension<InternalName> : public ExtensionBase<InternalName> {
 public:
   static PT(InternalName) make(PyObject *str);
+
+  PyObject *__reduce__() const;
 };
 
 #endif  // HAVE_PYTHON

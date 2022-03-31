@@ -23,6 +23,8 @@ public:
   INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign);
   INLINE_LINMATH std::string __repr__() const;
 
+  INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const;
+
   INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const;
   INLINE_LINMATH PyObject *__ifloordiv__(PyObject *self, FLOATTYPE scalar);
 
@@ -32,6 +34,8 @@ public:
   INLINE_LINMATH PyObject *__round__(PyObject *self) const;
   INLINE_LINMATH PyObject *__floor__(PyObject *self) const;
   INLINE_LINMATH PyObject *__ceil__(PyObject *self) const;
+
+  INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 };
 
 #include "lvecBase3_ext_src.I"

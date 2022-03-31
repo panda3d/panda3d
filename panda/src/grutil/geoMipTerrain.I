@@ -237,10 +237,14 @@ is_dirty() {
  * the terrain will be, but more expensive to render.  A value of 0 makes the
  * terrain the lowest quality possible, depending on blocksize.  The default
  * value is 100.
+ *
+ * @deprecated use set_near/set_far instead
  */
 INLINE void GeoMipTerrain::
 set_factor(PN_stdfloat factor) {
-  grutil_cat.debug() << "Using deprecated method set_factor, use set_near and set_far instead!\n";
+  if (grutil_cat.is_debug()) {
+    grutil_cat.debug() << "Using deprecated method set_factor, use set_near and set_far instead!\n";
+  }
   _use_near_far = false;
   _factor = factor;
 }

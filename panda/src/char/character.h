@@ -59,7 +59,6 @@ PUBLISHED:
   virtual PandaNode *combine_with(PandaNode *other);
 
   INLINE CharacterJointBundle *get_bundle(int i) const;
-  void merge_bundles(PartBundle *old_bundle, PartBundle *other_bundle);
   void merge_bundles(PartBundleHandle *old_bundle_handle,
                      PartBundleHandle *other_bundle_handle);
 

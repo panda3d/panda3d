@@ -159,8 +159,7 @@ PyObject *Dtool_Raise_AssertionError() {
 #else
   PyObject *message = PyString_FromString(notify->get_assert_error_message().c_str());
 #endif
-  Py_INCREF(PyExc_AssertionError);
-  PyErr_Restore(PyExc_AssertionError, message, nullptr);
+  PyErr_SetObject(PyExc_AssertionError, message);
   notify->clear_assert_failed();
   return nullptr;
 }
@@ -169,14 +168,7 @@ PyObject *Dtool_Raise_AssertionError() {
  * Raises a TypeError with the given message, and returns NULL.
  */
 PyObject *Dtool_Raise_TypeError(const char *message) {
-  // PyErr_Restore is what PyErr_SetString would have ended up calling
-  // eventually anyway, so we might as well just get to the point.
-  Py_INCREF(PyExc_TypeError);
-#if PY_MAJOR_VERSION >= 3
-  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), nullptr);
-#else
-  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), nullptr);
-#endif
+  PyErr_SetString(PyExc_TypeError, message);
   return nullptr;
 }
 
@@ -197,8 +189,7 @@ PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *functio
     function_name, param, type_name,
     Py_TYPE(obj)->tp_name);
 
-  Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  PyErr_SetObject(PyExc_TypeError, message);
   return nullptr;
 }
 
@@ -217,8 +208,7 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     "'%.100s' object has no attribute '%.200s'",
     Py_TYPE(obj)->tp_name, attribute);
 
-  Py_INCREF(PyExc_AttributeError);
-  PyErr_Restore(PyExc_AttributeError, message, nullptr);
+  PyErr_SetObject(PyExc_AttributeError, message);
   return nullptr;
 }
 
@@ -754,7 +744,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }
@@ -765,7 +755,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *callable = (PyObject *)Py_TYPE(self);
-  return _PyObject_FastCall(callable, &self, 1);
+  return PyObject_CallOneArg(callable, self);
 }
 
 /**
@@ -778,7 +768,7 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }
@@ -795,7 +785,11 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return false;
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
@@ -841,7 +835,11 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0);
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;

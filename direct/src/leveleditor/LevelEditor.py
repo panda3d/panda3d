@@ -31,7 +31,7 @@ class LevelEditor(LevelEditorBase):
 
         # Populating uderlined data-structures
         self.ui = LevelEditorUI(self)
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         self.objectPalette.populate()
         self.protoPalette.populate()
 
@@ -42,4 +42,4 @@ class LevelEditor(LevelEditorBase):
         # When you define your own LevelEditor class inheriting LevelEditorBase
         # you should call self.initialize() at the end of __init__() function
         self.initialize()
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_ARROW))

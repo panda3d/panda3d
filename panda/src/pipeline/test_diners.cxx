@@ -26,7 +26,7 @@
 
 using std::cerr;
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 // Under Windows, the rand() function seems to return a sequence per-thread,
 // so we use this trick to set each thread to a different seed.
 static int last_rand = 0;
@@ -38,7 +38,7 @@ static double random_f(double max)
 {
   MutexHolder l(rand_mutex);
   int i = rand();
-#ifdef WIN32_VC
+#ifdef _WIN32
   last_rand = i;
 #endif /* __WIN32__ */
   return max * (double)i / (double)RAND_MAX;
@@ -76,7 +76,7 @@ class philosopher : public Thread {
 private:
   int _id;
   void thread_main() {
-#ifdef WIN32_VC
+#ifdef _WIN32
     rand_mutex.acquire();
     srand(last_rand);
     rand_mutex.release();

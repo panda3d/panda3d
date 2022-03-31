@@ -39,7 +39,11 @@ INLINE ConditionVarPosixImpl::
 INLINE void ConditionVarPosixImpl::
 wait() {
   TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
+#ifdef DO_PSTATS
+  int result = _wait_func(&_cvar, &_mutex._lock);
+#else
   int result = pthread_cond_wait(&_cvar, &_mutex._lock);
+#endif
 #ifndef NDEBUG
   if (result != 0) {
     pipeline_cat.error()

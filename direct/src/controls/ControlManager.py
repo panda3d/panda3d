@@ -1,5 +1,6 @@
 
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 #from DirectGui import *
 #from PythonUtil import *
 #from IntervalGlobal import *
@@ -292,18 +293,18 @@ class ControlManager:
         self.forceAvJumpToken.release()
         self.forceAvJumpToken = None
 
-    def monitor(self, foo):
+    def monitor(self, _):
         #assert self.debugPrint("monitor()")
         #if 1:
         #    airborneHeight=self.avatar.getAirborneHeight()
         #    onScreenDebug.add("airborneHeight", "% 10.4f"%(airborneHeight,))
-        if 0:
-            onScreenDebug.add("InputState forward", "%d"%(inputState.isSet("forward")))
-            onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
-            onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
-            onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
-            onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
-            onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
+        #if 0:
+        #    onScreenDebug.add("InputState forward", "%d"%(inputState.isSet("forward")))
+        #    onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
+        #    onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
+        #    onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
+        #    onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
+        #    onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
 
     def setWASDTurn(self, turn):
@@ -343,4 +344,3 @@ class ControlManager:
 
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
-

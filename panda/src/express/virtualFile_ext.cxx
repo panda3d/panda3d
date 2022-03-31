@@ -44,19 +44,11 @@ read_file(bool auto_unwrap) const {
     return PyErr_Format(PyExc_IOError, "Failed to read file: '%s'", fn.c_str());
   }
 
-#if PY_MAJOR_VERSION >= 3
   if (pv.empty()) {
     return PyBytes_FromStringAndSize("", 0);
   } else {
     return PyBytes_FromStringAndSize((const char *)&pv[0], pv.size());
   }
-#else
-  if (pv.empty()) {
-    return PyString_FromStringAndSize("", 0);
-  } else {
-    return PyString_FromStringAndSize((const char *)&pv[0], pv.size());
-  }
-#endif
 }
 
 /**
@@ -72,15 +64,9 @@ write_file(PyObject *data, bool auto_wrap) {
   char *buffer;
   Py_ssize_t length;
 
-#if PY_MAJOR_VERSION >= 3
   if (PyBytes_AsStringAndSize(data, &buffer, &length) == -1) {
     return nullptr;
   }
-#else
-  if (PyString_AsStringAndSize(data, &buffer, &length) == -1) {
-    return nullptr;
-  }
-#endif
 
   // Release the GIL while we do this potentially slow operation.
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)

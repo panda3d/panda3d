@@ -547,8 +547,15 @@ main(int argc, char **argv) {
   // We allow overriding this value by setting SOURCE_DATE_EPOCH to support
   // reproducible builds.
   int file_identifier;
+#ifdef _MSC_VER
+  char source_date_epoch[64];
+  size_t source_date_epoch_size = 0;
+  if (getenv_s(&source_date_epoch_size, source_date_epoch,
+               sizeof(source_date_epoch), "SOURCE_DATE_EPOCH"), source_date_epoch_size > 1) {
+#else
   const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
   if (source_date_epoch != nullptr && source_date_epoch[0] != 0) {
+#endif
     file_identifier = atoi(source_date_epoch);
   } else {
     file_identifier = time(nullptr);
@@ -582,6 +589,8 @@ main(int argc, char **argv) {
     the_output_include = &output_include;
   }
 
+  int status = 0;
+
   // Now output all of the wrapper functions.
   if (!output_code_filename.empty())
   {
@@ -603,6 +612,7 @@ main(int argc, char **argv) {
 
     if (output_code.fail()) {
       nout << "Unable to write to " << output_code_filename << "\n";
+      status = -1;
     } else {
       builder.write_code(output_code,the_output_include, def);
     }
@@ -617,13 +627,13 @@ main(int argc, char **argv) {
     pofstream output_data;
     output_data_filename.open_write(output_data);
 
-    if (output_data.fail())
-    {
+    if (output_data.fail()) {
       nout << "Unable to write to " << output_data_filename << "\n";
+      status = -1;
     } else {
       InterrogateDatabase::get_ptr()->write(output_data, def);
     }
   }
 
-  return (0);
+  return status;
 }

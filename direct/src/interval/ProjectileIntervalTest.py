@@ -6,8 +6,9 @@ from panda3d.core import *
 from panda3d.direct import *
 from .IntervalGlobal import *
 
+
 def doTest():
-    smiley = loader.loadModel('models/misc/smiley')
+    smiley = base.loader.loadModel('models/misc/smiley')
     smiley.reparentTo(render)
 
     pi = ProjectileInterval(smiley, startPos=Point3(0, 0, 0),
@@ -15,4 +16,3 @@ def doTest():
                             timeToWayPoint=3)
     pi.loop()
     return pi
-

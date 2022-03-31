@@ -18,12 +18,7 @@ INLINE PyObject *Extension<Datagram>::
 get_message() const {
   const char *data = (const char *)_this->get_data();
   size_t size = _this->get_length();
-
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)data, size);
-#else
-  return PyString_FromStringAndSize((char *)data, size);
-#endif
 }
 
 /**

@@ -15,11 +15,17 @@
 #include "winStatsServer.h"
 #include "winStatsStripChart.h"
 #include "winStatsPianoRoll.h"
+#include "winStatsFlameGraph.h"
+#include "winStatsTimeline.h"
 #include "winStatsChartMenu.h"
 #include "winStatsMenuId.h"
+#include "pStatFrameData.h"
 #include "pStatGraph.h"
 #include "pStatCollectorDef.h"
-#include "indent.h"
+
+#include <algorithm>
+
+#include <commctrl.h>
 
 bool WinStatsMonitor::_window_class_registered = false;
 const char * const WinStatsMonitor::_window_class_name = "monitor";
@@ -37,6 +43,25 @@ WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _time_units = 0;
   _scroll_speed = 0.0;
   _pause = false;
+
+  // Create the fonts used for rendering the UI.
+  NONCLIENTMETRICS metrics = {0};
+  metrics.cbSize = sizeof(NONCLIENTMETRICS);
+  if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &metrics, 0)) {
+    _font = CreateFontIndirect(&metrics.lfMenuFont);
+  } else {
+    _font = (HFONT)GetStockObject(ANSI_VAR_FONT);
+  }
+
+  HDC dc = GetDC(nullptr);
+  _pixel_scale = 0;
+  if (dc) {
+    _pixel_scale = GetDeviceCaps(dc, LOGPIXELSX) / (96 / 4);
+  }
+  if (_pixel_scale <= 0) {
+    _pixel_scale = 4;
+  }
+  ReleaseDC(nullptr, dc);
 }
 
 /**
@@ -171,13 +196,14 @@ new_thread(int thread_index) {
  */
 void WinStatsMonitor::
 new_data(int thread_index, int frame_number) {
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    WinStatsGraph *graph = (*gi);
+  for (WinStatsGraph *graph : _graphs) {
     graph->new_data(thread_index, frame_number);
   }
-}
 
+  if (thread_index == 0) {
+    update_status_bar();
+  }
+}
 
 /**
  * Called whenever the connection to the client has been lost.  This is a
@@ -210,16 +236,21 @@ idle() {
   const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
   double frame_rate = thread_data->get_frame_rate();
   if (frame_rate != 0.0f) {
+    // The leading tab centers the text in the status bar.
     char buffer[128];
-    sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
+    sprintf(buffer, "\t%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
 
     MENUITEMINFO mii;
     memset(&mii, 0, sizeof(mii));
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_STRING;
-    mii.dwTypeData = buffer;
+    mii.dwTypeData = buffer + 1; // chop off leading tab
     SetMenuItemInfo(_menu_bar, MI_frame_rate_label, FALSE, &mii);
     DrawMenuBar(_window);
+
+    if (_status_bar) {
+      SendMessage(_status_bar, WM_SETTEXT, 0, (LPARAM)buffer);
+    }
   }
 }
 
@@ -253,6 +284,34 @@ get_window() const {
 }
 
 /**
+ * Returns the font that should be used for rendering text.
+ */
+HFONT WinStatsMonitor::
+get_font() const {
+  return _font;
+}
+
+/**
+ * Returns the system DPI scaling as a fraction where 4 = no scaling.
+ */
+int WinStatsMonitor::
+get_pixel_scale() const {
+  return _pixel_scale;
+}
+
+/**
+ * Returns an amount by which to offset the next window position.
+ */
+POINT WinStatsMonitor::
+get_new_window_pos() {
+  int offset = _graphs.size() * 10 * _pixel_scale;
+  POINT pt;
+  pt.x = offset + _client_origin.x;
+  pt.y = offset + _client_origin.y;
+  return pt;
+}
+
+/**
  * Opens a new strip chart showing the indicated data.
  */
 void WinStatsMonitor::
@@ -280,12 +339,38 @@ open_piano_roll(int thread_index) {
 }
 
 /**
+ * Opens a new flame graph showing the indicated data.
+ */
+void WinStatsMonitor::
+open_flame_graph(int thread_index, int collector_index) {
+  WinStatsFlameGraph *graph = new WinStatsFlameGraph(this, thread_index, collector_index);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+}
+
+/**
+ * Opens a new timeline.
+ */
+void WinStatsMonitor::
+open_timeline() {
+  WinStatsTimeline *graph = new WinStatsTimeline(this);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+}
+
+/**
  * Returns the MenuDef properties associated with the indicated menu ID.  This
  * specifies what we expect to do when the given menu has been selected.
  */
 const WinStatsMonitor::MenuDef &WinStatsMonitor::
 lookup_menu(int menu_id) const {
-  static MenuDef invalid(0, 0, false);
+  static MenuDef invalid(0, 0, CT_strip_chart, false);
   int menu_index = menu_id - MI_new_chart;
   nassertr(menu_index >= 0 && menu_index < (int)_menu_by_id.size(), invalid);
   return _menu_by_id[menu_index];
@@ -467,10 +552,16 @@ create_window() {
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
 
+  create_status_bar(application);
+
   // For some reason, SW_SHOWNORMAL doesn't always work, but SW_RESTORE seems
   // to.
   ShowWindow(_window, SW_RESTORE);
   SetForegroundWindow(_window);
+
+  _client_origin.x = 0;
+  _client_origin.y = 0;
+  ClientToScreen(_window, &_client_origin);
 }
 
 /**
@@ -588,6 +679,173 @@ setup_frame_rate_label() {
 }
 
 /**
+ * Sets up a status bar at the bottom of the screen showing assorted level
+ * values.
+ */
+void WinStatsMonitor::
+create_status_bar(HINSTANCE application) {
+  _status_bar = CreateWindow(STATUSCLASSNAME, nullptr,
+                             SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE,
+                             0, 0, 0, 0,
+                             _window, (HMENU)0, application, nullptr);
+
+  update_status_bar();
+
+
+  ShowWindow(_status_bar, SW_SHOW);
+  UpdateWindow(_status_bar);
+
+  InvalidateRect(_status_bar, NULL, TRUE);
+}
+
+/**
+ * Updates the status bar.
+ */
+void WinStatsMonitor::
+update_status_bar() {
+  const PStatClientData *client_data = get_client_data();
+  if (client_data == nullptr) {
+    return;
+  }
+
+  const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return;
+  }
+  int frame_number = thread_data->get_latest_frame_number();
+  const PStatFrameData &frame_data = thread_data->get_latest_frame();
+
+  // Gather the top-level collector list.
+  pvector<std::string> parts;
+  pvector<int> collectors;
+  size_t total_chars = 0;
+
+  int num_toplevel_collectors = client_data->get_num_toplevel_collectors();
+  for (int tc = 0; tc < num_toplevel_collectors; tc++) {
+    int collector = client_data->get_toplevel_collector(tc);
+    if (client_data->has_collector(collector) &&
+        client_data->get_collector_has_level(collector, 0)) {
+      PStatView &view = get_level_view(collector, 0);
+      view.set_to_frame(frame_data);
+      double value = view.get_net_value();
+      if (value == 0.0) {
+        // Don't include it unless we've included it before.
+        if (std::find(_status_bar_collectors.begin(), _status_bar_collectors.end(), collector) == _status_bar_collectors.end()) {
+          continue;
+        }
+      }
+
+      // Add the value for other threads that have this collector.
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = get_level_view(collector, thread_index);
+        view.set_to_frame(frame_number);
+        value += view.get_net_value();
+      }
+
+      const PStatCollectorDef &def = client_data->get_collector_def(collector);
+      std::string text = "\t" + def._name;
+      text += ": " + PStatGraph::format_number(value, PStatGraph::GBU_named | PStatGraph::GBU_show_units, def._level_units);
+      total_chars += text.size();
+      parts.push_back(text);
+      collectors.push_back(collector);
+    }
+  }
+
+  size_t cur_size = _status_bar_collectors.size();
+  _status_bar_collectors = std::move(collectors);
+
+  // Allocate an array for holding the right edge coordinates.
+  HLOCAL hloc = LocalAlloc(LHND, sizeof(int) * (parts.size() + 1));
+  PINT sizes = (PINT)LocalLock(hloc);
+
+  // Allocate the left-most slot for the framerate indicator.
+  double offset = 28.0 * _pixel_scale;
+  sizes[0] = (int)(offset + 0.5);
+
+  if (!parts.empty()) {
+    // Distribute the sizes roughly based on the number of characters.  It's not
+    // as good as measuring the text, but it's good enough.
+    RECT rect;
+    double width_per_char = 0;
+    GetClientRect(_status_bar, &rect);
+    // Leave room for the grip.
+    rect.right -= _pixel_scale * 4;
+    width_per_char = (rect.right - rect.left - offset) / (double)total_chars;
+
+    // If we get below a minimum width, start chopping parts off.
+    while (!parts.empty() && width_per_char < _pixel_scale * 1.5) {
+      total_chars -= parts.back().size();
+      parts.pop_back();
+      width_per_char = (rect.right - rect.left - offset) / (double)total_chars;
+    }
+
+    if (!parts.empty()) {
+      for (size_t i = 0; i < parts.size(); ++i) {
+        offset += (parts[i].size()) * width_per_char;
+        sizes[i + 1] = (int)(offset + 0.5);
+      }
+    } else {
+      // No room for any collectors; the framerate can take up the whole width.
+      sizes[0] = rect.right - rect.left;
+    }
+  }
+
+  SendMessage(_status_bar, SB_SETPARTS, (WPARAM)(parts.size() + 1), (LPARAM)sizes);
+
+  LocalUnlock(hloc);
+  LocalFree(hloc);
+
+  for (size_t i = 0; i < parts.size(); ++i) {
+    SendMessage(_status_bar, SB_SETTEXT, i + 1, (LPARAM)parts[i].c_str());
+  }
+}
+
+/**
+ * Called when someone right-clicks on a part of the status bar.
+ */
+void WinStatsMonitor::
+show_popup_menu(int collector) {
+  POINT point;
+  if (!GetCursorPos(&point)) {
+    return;
+  }
+
+  const PStatClientData *client_data = get_client_data();
+  if (client_data == nullptr) {
+    return;
+  }
+
+  PStatView &level_view = get_level_view(collector, 0);
+  const PStatViewLevel *view_level = level_view.get_top_level();
+  int num_children = view_level->get_num_children();
+  if (num_children == 0) {
+    return;
+  }
+
+  HMENU popup = CreatePopupMenu();
+
+  // Reverse the order since the menus are listed from the top down; we want
+  // to be visually consistent with the graphs, which list these labels from
+  // the bottom up.
+  for (int c = num_children - 1; c >= 0; c--) {
+    const PStatViewLevel *child_level = view_level->get_child(c);
+
+    int child_collector = child_level->get_collector();
+    MenuDef menu_def(0, child_collector, CT_strip_chart, true);
+    int menu_id = get_menu_id(menu_def);
+
+    double value = child_level->get_net_value();
+
+    const PStatCollectorDef &def = client_data->get_collector_def(child_collector);
+    std::string text = def._name;
+    text += ": " + PStatGraph::format_number(value, PStatGraph::GBU_named | PStatGraph::GBU_show_units, def._level_units);
+    AppendMenu(popup, MF_STRING, menu_id, text.c_str());
+  }
+
+  TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
+}
+
+/**
  * Registers the window class for the monitor window, if it has not already
  * been registered.
  */
@@ -604,7 +862,7 @@ register_window_class(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+  wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
@@ -640,6 +898,81 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_DESTROY:
     close();
+    break;
+
+  case WM_WINDOWPOSCHANGED:
+    if (!_graphs.empty()) {
+      RECT status_bar_rect;
+      GetWindowRect(_status_bar, &status_bar_rect);
+
+      RECT client_rect;
+      GetClientRect(_window, &client_rect);
+      MapWindowPoints(_window, nullptr, (POINT *)&client_rect, 2);
+
+      int delta_x = client_rect.left - _client_origin.x;
+      int delta_y = client_rect.top - _client_origin.y;
+      _client_origin.x = client_rect.left;
+      _client_origin.y = client_rect.top;
+
+      int iconic_offset = 0;
+
+      for (WinStatsGraph *graph : _graphs) {
+        RECT child_rect;
+        HWND window = graph->get_window();
+        if (GetWindowRect(window, &child_rect)) {
+          if (IsIconic(window)) {
+            // Keep it glued to the bottom-left corner of the parent window.
+            child_rect.left = client_rect.left + iconic_offset;
+            child_rect.top = client_rect.bottom - (child_rect.bottom - child_rect.top) - (status_bar_rect.bottom - status_bar_rect.top);
+            iconic_offset += (child_rect.right - child_rect.left);
+          } else {
+            child_rect.left += delta_x;
+            child_rect.top += delta_y;
+          }
+          SetWindowPos(window, 0, child_rect.left, child_rect.top, 0, 0,
+                       SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE);
+        }
+      }
+    }
+    break;
+
+  case WM_SIZE:
+    if (_status_bar) {
+      SendMessage(_status_bar, WM_SIZE, 0, 0);
+      update_status_bar();
+    }
+    break;
+
+  case WM_NOTIFY:
+    if (((LPNMHDR)lparam)->code == NM_DBLCLK) {
+      NMMOUSE &mouse = *(NMMOUSE *)lparam;
+      if (mouse.dwItemSpec == 0) {
+        open_strip_chart(0, 0, false);
+      }
+      else if (mouse.dwItemSpec >= 1 && mouse.dwItemSpec <= _status_bar_collectors.size()) {
+        int collector = _status_bar_collectors[mouse.dwItemSpec - 1];
+        open_strip_chart(0, collector, true);
+
+        // Also open a strip chart for other threads with data for this
+        // collector.
+        const PStatClientData *client_data = get_client_data();
+        for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+          PStatView &view = get_level_view(collector, thread_index);
+          if (view.get_net_value() > 0.0) {
+            open_strip_chart(thread_index, collector, true);
+          }
+        }
+      }
+      return TRUE;
+    }
+    else if (((LPNMHDR)lparam)->code == NM_RCLICK) {
+      NMMOUSE &mouse = *(NMMOUSE *)lparam;
+      if (mouse.dwItemSpec >= 1 &&
+          mouse.dwItemSpec <= _status_bar_collectors.size()) {
+        int collector = _status_bar_collectors[mouse.dwItemSpec - 1];
+        show_popup_menu(collector);
+      }
+    }
     break;
 
   case WM_COMMAND:
@@ -701,11 +1034,23 @@ handle_menu_command(int menu_id) {
   default:
     if (menu_id >= MI_new_chart) {
       const MenuDef &menu_def = lookup_menu(menu_id);
-      if (menu_def._collector_index < 0) {
-        open_piano_roll(menu_def._thread_index);
-      } else {
+      switch (menu_def._chart_type) {
+      case CT_timeline:
+        open_timeline();
+        break;
+
+      case CT_strip_chart:
         open_strip_chart(menu_def._thread_index, menu_def._collector_index,
                          menu_def._show_level);
+        break;
+
+      case CT_flame_graph:
+        open_flame_graph(menu_def._thread_index, menu_def._collector_index);
+        break;
+
+      case CT_piano_roll:
+        open_piano_roll(menu_def._thread_index);
+        break;
       }
     }
   }

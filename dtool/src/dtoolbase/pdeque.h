@@ -18,7 +18,7 @@
 #include "pallocator.h"
 #include "register_type.h"
 #include <deque>
-
+#include <initializer_list>
 
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
@@ -40,6 +40,7 @@ public:
   pdeque(TypeHandle type_handle = pdeque_type_handle) : std::deque<Type, pallocator_array<Type> >(allocator(type_handle)) { }
   pdeque(size_type n, TypeHandle type_handle = pdeque_type_handle) : std::deque<Type, pallocator_array<Type> >(n, Type(), allocator(type_handle)) { }
   pdeque(size_type n, const Type &value, TypeHandle type_handle = pdeque_type_handle) : std::deque<Type, pallocator_array<Type> >(n, value, allocator(type_handle)) { }
+  pdeque(std::initializer_list<Type> init, TypeHandle type_handle = pdeque_type_handle) : std::deque<Type, pallocator_array<Type> >(std::move(init), allocator(type_handle)) { }
 };
 
 #endif  // USE_STL_ALLOCATOR

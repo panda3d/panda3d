@@ -89,16 +89,16 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
       out << "  { \"" << remap->_reported_name << "\", &"
-          << remap->_wrapper_name << ", METH_VARARGS },\n";
+          << remap->_wrapper_name << ", METH_VARARGS, nullptr },\n";
     }
   }
-  out << "  { nullptr, nullptr }\n"
+  out << "  { nullptr, nullptr, 0, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_simple_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
-      << "  \"" << def->library_name << "\",\n"
+      << "  \"" << def->module_name << "\",\n"
       << "  nullptr,\n"
       << "  -1,\n"
       << "  python_simple_funcs,\n"

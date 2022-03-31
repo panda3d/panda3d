@@ -31,7 +31,9 @@ public:
 PUBLISHED:
   INLINE explicit StreamReader(std::istream *in, bool owns_stream);
   INLINE StreamReader(const StreamReader &copy);
+  INLINE StreamReader(StreamReader &&from) noexcept;
   INLINE void operator = (const StreamReader &copy);
+  INLINE void operator = (StreamReader &&from) noexcept;
   INLINE ~StreamReader();
 
   INLINE std::istream *get_istream() const;

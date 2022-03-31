@@ -9,9 +9,9 @@ from __future__ import print_function
 
 __all__ = []
 
-import os, sys
-from distutils import sysconfig
-import panda3d, pandac
+import os
+import panda3d
+import pandac
 from panda3d.interrogatedb import *
 
 
@@ -273,6 +273,7 @@ def processModule(handle, package):
             if "panda3d." + package == module_name:
                 processType(handle, type)
         else:
+            typename = interrogate_type_name(type)
             print("Type %s has no module name" % typename)
 
     for i_func in range(interrogate_number_of_global_functions()):
@@ -283,7 +284,8 @@ def processModule(handle, package):
             if "panda3d." + package == module_name:
                 processFunction(handle, func)
         else:
-            print("Type %s has no module name" % typename)
+            funcname = interrogate_function_name(func)
+            print("Function %s has no module name" % funcname)
 
     print("}", file=handle)
 
@@ -307,13 +309,8 @@ if __name__ == "__main__":
     processModule(handle, "core")
 
     # Determine the suffix for the extension modules.
-    if sys.version_info >= (3, 0):
-        import _imp
-        ext_suffix = _imp.extension_suffixes()[0]
-    elif sys.platform == "win32":
-        ext_suffix = ".pyd"
-    else:
-        ext_suffix = ".so"
+    import _imp
+    ext_suffix = _imp.extension_suffixes()[0]
 
     for lib in os.listdir(os.path.dirname(panda3d.__file__)):
         if lib.endswith(ext_suffix) and not lib.startswith('core.'):

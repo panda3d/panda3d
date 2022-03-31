@@ -112,6 +112,8 @@ PUBLISHED:
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
+  EXTENSION(bool __bool__() const);
+  EXTENSION(PyObject *__int__() const);
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 public:

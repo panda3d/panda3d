@@ -50,10 +50,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _packet_data(nullptr),
   _format_ctx(nullptr),
   _audio_ctx(nullptr),
-  _resample_ctx(nullptr),
+  _frame(nullptr),
   _buffer(nullptr),
   _buffer_alloc(nullptr),
-  _frame(nullptr)
+  _resample_ctx(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -464,7 +464,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FfmpegAudioCursor::
+int FfmpegAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
@@ -488,4 +488,5 @@ read_samples(int n, int16_t *data) {
 
   }
   _samples_read += n;
+  return n;
 }

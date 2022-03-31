@@ -16,9 +16,6 @@
  */
 INLINE StreamWriter::
 StreamWriter(std::ostream &out) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(&out),
   _owns_stream(false)
 {
@@ -29,9 +26,6 @@ StreamWriter(std::ostream &out) :
  */
 INLINE StreamWriter::
 StreamWriter(std::ostream *out, bool owns_stream) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(out),
   _owns_stream(owns_stream)
 {
@@ -42,16 +36,24 @@ StreamWriter(std::ostream *out, bool owns_stream) :
  */
 INLINE StreamWriter::
 StreamWriter(const StreamWriter &copy) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(copy._out),
   _owns_stream(false)
 {
 }
 
 /**
- * The copy constructor does not copy ownership of the stream.
+ * The move constructor steals ownership of the stream.
+ */
+INLINE StreamWriter::
+StreamWriter(StreamWriter &&from) noexcept :
+  _out(from._out),
+  _owns_stream(from._owns_stream)
+{
+  from._owns_stream = false;
+}
+
+/**
+ * The copy assignment operator does not copy ownership of the stream.
  */
 INLINE void StreamWriter::
 operator = (const StreamWriter &copy) {
@@ -60,6 +62,19 @@ operator = (const StreamWriter &copy) {
   }
   _out = copy._out;
   _owns_stream = false;
+}
+
+/**
+ * The move assignment operator steals ownership of the stream.
+ */
+INLINE void StreamWriter::
+operator = (StreamWriter &&from) noexcept {
+  if (_owns_stream) {
+    delete _out;
+  }
+  _out = from._out;
+  _owns_stream = from._owns_stream;
+  from._owns_stream = false;
 }
 
 /**

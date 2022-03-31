@@ -89,7 +89,6 @@ protected:
 
   // RenderState analysis information.  Created by analyze_renderstate:
 
-  CPT(RenderState) _state;
   struct ShaderKey {
     ShaderKey();
     bool operator < (const ShaderKey &other) const;

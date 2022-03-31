@@ -65,6 +65,7 @@ PlaneNode(const std::string &name, const LPlane &plane) :
   _clip_effect(~0)
 {
   set_cull_callback();
+  set_renderable();
 
   // PlaneNodes are hidden by default.
   set_overall_hidden(true);
@@ -149,17 +150,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool PlaneNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  * Returns a newly-allocated BoundingVolume that represents the internal
  * contents of the node.  Should be overridden by PandaNode classes that
  * contain something internally.
@@ -199,7 +189,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   const LPlane &plane = cdataw->_plane;
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    (get_name(), GeomVertexFormat::get_v3cp(), Geom::UH_static);
+    (get_name(), GeomVertexFormat::get_v3c(), Geom::UH_static);
 
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);

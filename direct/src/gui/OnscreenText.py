@@ -8,7 +8,7 @@ __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm'
 
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
-import sys
+import warnings
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -123,7 +123,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -131,7 +131,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -139,7 +139,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -147,7 +147,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -155,7 +155,7 @@ class OnscreenText(NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         else:
             raise ValueError
@@ -174,7 +174,7 @@ class OnscreenText(NodePath):
         if decal:
             textNode.setCardDecal(1)
 
-        if font == None:
+        if font is None:
             font = DGG.getDefaultFont()
 
         textNode.setFont(font)
@@ -218,7 +218,7 @@ class OnscreenText(NodePath):
         # graph.
         self.updateTransformMat()
 
-        if drawOrder != None:
+        if drawOrder is not None:
             textNode.setBin('fixed')
             textNode.setDrawOrder(drawOrder)
 
@@ -282,34 +282,15 @@ class OnscreenText(NodePath):
         self.textNode.clearText()
 
     def setText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.setWtext(text)
-        else:
-            self.textNode.setText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.setWtext(text)
 
     def appendText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.appendWtext(text)
-        else:
-            self.textNode.appendText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.appendWtext(text)
 
     def getText(self):
-        if self.unicodeText:
-            return self.textNode.getWtext()
-        else:
-            return self.textNode.getText()
+        return self.textNode.getWtext()
 
     text = property(getText, setText)
 
@@ -324,6 +305,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextX()` method instead.
         """
+        if __debug__:
+            warnings.warn("Use `.setTextX()` method instead.", DeprecationWarning, stacklevel=2)
         self.setTextPos(x, self.__pos[1])
 
     def setTextY(self, y):
@@ -337,6 +320,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextY()` method instead.
         """
+        if __debug__:
+            warnings.warn("Use `.setTextY()` method instead.", DeprecationWarning, stacklevel=2)
         self.setTextPos(self.__pos[0], y)
 
     def setTextPos(self, x, y=None):
@@ -366,6 +351,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextPos()` method or `.text_pos` property instead.
         """
+        if __debug__:
+            warnings.warn("Use `.setTextPos()` method or `.text_pos` property instead.", DeprecationWarning, stacklevel=2)
         self.__pos = (x, y)
         self.updateTransformMat()
 
@@ -374,6 +361,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.getTextPos()` method or `.text_pos` property instead.
         """
+        if __debug__:
+            warnings.warn("Use `.getTextPos()` method or `.text_pos` property instead.", DeprecationWarning, stacklevel=2)
         return self.__pos
 
     pos = property(getPos)
@@ -399,6 +388,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use ``setTextR(-roll)`` instead (note the negated sign).
         """
+        if __debug__:
+            warnings.warn("Use ``setTextR(-roll)`` instead (note the negated sign).", DeprecationWarning, stacklevel=2)
         self.__roll = roll
         self.updateTransformMat()
 
@@ -407,6 +398,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use ``-getTextR()`` instead (note the negated sign).
         """
+        if __debug__:
+            warnings.warn("Use ``-getTextR()`` instead (note the negated sign).", DeprecationWarning, stacklevel=2)
         return self.__roll
 
     roll = property(getRoll, setRoll)
@@ -444,7 +437,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextScale()` method or `.text_scale` property instead.
         """
-
+        if __debug__:
+            warnings.warn("Use `.setTextScale()` method or `.text_scale` property instead.", DeprecationWarning, stacklevel=2)
         if sy is None:
             if isinstance(sx, tuple):
                 self.__scale = sx
@@ -459,12 +453,14 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.getTextScale()` method or `.text_scale` property instead.
         """
+        if __debug__:
+            warnings.warn("Use `.getTextScale()` method or `.text_scale` property instead.", DeprecationWarning, stacklevel=2)
         return self.__scale
 
     scale = property(getScale, setScale)
 
     def updateTransformMat(self):
-        assert(isinstance(self.textNode, TextNode))
+        assert isinstance(self.textNode, TextNode)
         mat = (
             Mat4.scaleMat(Vec3.rfu(self.__scale[0], 1, self.__scale[1])) *
             Mat4.rotateMat(self.__roll, Vec3.back()) *
@@ -546,10 +542,18 @@ class OnscreenText(NodePath):
         for option, value in kw.items():
             # Use option string to access setter function
             try:
-                setter = getattr(self, 'set' + option[0].upper() + option[1:])
-                if setter == self.setPos:
-                    setter(value[0], value[1])
+                if option == 'pos':
+                    self.setTextPos(value[0], value[1])
+                elif option == 'roll':
+                    self.setTextR(-value)
+                elif option == 'scale':
+                    self.setTextScale(value)
+                elif option == 'x':
+                    self.setTextX(value)
+                elif option == 'y':
+                    self.setTextY(value)
                 else:
+                    setter = getattr(self, 'set' + option[0].upper() + option[1:])
                     setter(value)
             except AttributeError:
                 print('OnscreenText.configure: invalid option: %s' % option)
@@ -561,6 +565,17 @@ class OnscreenText(NodePath):
     def cget(self, option):
         # Get current configuration setting.
         # This is for compatibility with DirectGui functions
+        if option == 'pos':
+            return self.__pos
+        elif option == 'roll':
+            return self.__roll
+        elif option == 'scale':
+            return self.__scale
+        elif option == 'x':
+            return self.__pos[0]
+        elif option == 'y':
+            return self.__pos[1]
+
         getter = getattr(self, 'get' + option[0].upper() + option[1:])
         return getter()
 
@@ -574,4 +589,3 @@ class OnscreenText(NodePath):
 
     # Allow index style refererences
     __getitem__ = cget
-

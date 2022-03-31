@@ -52,6 +52,7 @@ public:
     GBS_normal,
     GBS_target,
     GBS_user,
+    GBS_frame,
   };
 
   class GuideBar {

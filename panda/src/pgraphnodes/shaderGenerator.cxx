@@ -585,9 +585,9 @@ rehash_generated_shaders() {
 
   // With uniquify-states turned on, we can actually go through all the states
   // and check whether their generated shader is still OK.
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
 
     if (state->_generated_shader != nullptr) {
       ShaderKey key;
@@ -626,9 +626,9 @@ void ShaderGenerator::
 clear_generated_shaders() {
   LightReMutexHolder holder(*RenderState::_states_lock);
 
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->_generated_shader.clear();
   }
 
@@ -1716,11 +1716,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   nassertr(shader != nullptr, nullptr);
 
   CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
+  int flags = 0;
   if (key._alpha_test_mode != RenderAttrib::M_none) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+    flags |= ShaderAttrib::F_subsume_alpha_test;
   }
   if (key._disable_alpha_write) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+    flags |= ShaderAttrib::F_disable_alpha_write;
+  }
+  if (flags != 0) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }
 
   reset_register_allocator();

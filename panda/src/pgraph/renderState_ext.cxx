@@ -118,18 +118,15 @@ get_invert_composition_cache() const {
 PyObject *Extension<RenderState>::
 get_states() {
   extern struct Dtool_PyTypedObject Dtool_RenderState;
-  if (RenderState::_states == nullptr) {
-    return PyList_New(0);
-  }
   LightReMutexHolder holder(*RenderState::_states_lock);
 
-  size_t num_states = RenderState::_states->get_num_entries();
+  size_t num_states = RenderState::_states.get_num_entries();
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->ref();
     PyObject *a =
       DTool_CreatePyInstanceTyped((void *)state, Dtool_RenderState,
@@ -149,15 +146,12 @@ get_states() {
 PyObject *Extension<RenderState>::
 get_unused_states() {
   extern struct Dtool_PyTypedObject Dtool_RenderState;
-  if (RenderState::_states == nullptr) {
-    return PyList_New(0);
-  }
   LightReMutexHolder holder(*RenderState::_states_lock);
 
   PyObject *list = PyList_New(0);
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     if (state->get_cache_ref_count() == state->get_ref_count()) {
       state->ref();
       PyObject *a =

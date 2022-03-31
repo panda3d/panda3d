@@ -26,6 +26,7 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "dcClass_ext.h"
 #endif
 
 using std::endl;
@@ -57,19 +58,18 @@ CConnectionRepository(bool has_owner_view, bool threaded_net) :
   _bdc(4096000,4096000,1400),
   _native(false),
 #endif
+  _has_owner_view(has_owner_view),
+  _handle_c_updates(true),
   _client_datagram(true),
   _handle_datagrams_internally(handle_datagrams_internally),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
+  _in_quiet_zone(0),
   _time_warning(0.0),
-// _msg_channels(),
   _msg_sender(0),
   _msg_type(0),
-  _has_owner_view(has_owner_view),
-  _handle_c_updates(true),
   _want_message_bundling(true),
-  _bundling_msgs(0),
-  _in_quiet_zone(0)
+  _bundling_msgs(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -410,19 +410,12 @@ send_datagram(const Datagram &dg) {
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
       std::ostringstream s;
-
-#if PY_VERSION_HEX >= 0x03030000
-      PyObject *exc_type = PyExc_ConnectionError;
-#else
-      PyObject *exc_type = PyExc_OSError;
-#endif
-
       s << endl << "Error sending message: " << endl;
       dg.dump_hex(s);
       s << "Message data: " << dg.get_data() << endl;
 
       string message = s.str();
-      PyErr_SetString(exc_type, message.c_str());
+      PyErr_SetString(PyExc_ConnectionError, message.c_str());
 #endif
     }
     return result;
@@ -736,7 +729,7 @@ handle_update_field() {
       // get into trouble if it tried to delete the object from the doId2do
       // map.
       Py_INCREF(distobj);
-      dclass->receive_update(distobj, _di);
+      invoke_extension(dclass).receive_update(distobj, _di);
       Py_DECREF(distobj);
 
       if (PyErr_Occurred()) {
@@ -820,7 +813,7 @@ handle_update_field_owner() {
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        dclass->receive_update(distobjOV, _odi);
+        invoke_extension(dclass).receive_update(distobjOV, _odi);
         Py_DECREF(distobjOV);
 
         if (PyErr_Occurred()) {
@@ -861,7 +854,7 @@ handle_update_field_owner() {
         // get into trouble if it tried to delete the object from the doId2do
         // map.
         Py_INCREF(distobj);
-        dclass->receive_update(distobj, _di);
+        invoke_extension(dclass).receive_update(distobj, _di);
         Py_DECREF(distobj);
 
         if (PyErr_Occurred()) {
@@ -921,22 +914,14 @@ describe_message(std::ostream &out, const string &prefix,
     if (_python_repository != nullptr) {
       PyObject *msgId = PyLong_FromLong(msg_type);
       nassertv(msgId != nullptr);
-#if PY_MAJOR_VERSION >= 3
       PyObject *methodName = PyUnicode_FromString("_getMsgName");
-#else
-      PyObject *methodName = PyString_FromString("_getMsgName");
-#endif
       nassertv(methodName != nullptr);
 
-      PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
-                                                    msgId, nullptr);
+      PyObject *result =
+        PyObject_CallMethodOneArg(_python_repository, methodName, msgId);
       nassertv(result != nullptr);
 
-#if PY_MAJOR_VERSION >= 3
       msgName += string(PyUnicode_AsUTF8(result));
-#else
-      msgName += string(PyString_AsString(result));
-#endif
 
       Py_DECREF(methodName);
       Py_DECREF(msgId);

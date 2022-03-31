@@ -371,7 +371,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
 
       pvector<string> tag_attribute_names;
       get_tag_attribute_names(dag_object, tag_attribute_names);
-      for (uint ti=0; ti < tag_attribute_names.size(); ti++) {
+      for (unsigned int ti=0; ti < tag_attribute_names.size(); ti++) {
         if (get_enum_attribute(dag_object, tag_attribute_names[ti], object_type)) {
           egg_group->set_tag(tag_attribute_names[ti].substr(3), object_type);
         }

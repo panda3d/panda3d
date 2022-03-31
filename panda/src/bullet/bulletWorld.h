@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_WORLD_H__
-#define __BULLET_WORLD_H__
+#ifndef BULLETWORLD_H
+#define BULLETWORLD_H
 
 #include "pandabase.h"
 
@@ -58,7 +58,7 @@ PUBLISHED:
   void set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz);
   const LVector3 get_gravity() const;
 
-  int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
+  BLOCKING int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
 
   BulletSoftBodyWorldInfo get_world_info();
 
@@ -127,9 +127,8 @@ PUBLISHED:
 
   // Manifolds
   int get_num_manifolds() const;
-  BulletPersistentManifold *get_manifold(int idx) const;
-  BulletPersistentManifold __get_manifold(int idx) const;
-  MAKE_SEQ(get_manifolds, get_num_manifolds, __get_manifold);
+  BulletPersistentManifold get_manifold(int idx) const;
+  MAKE_SEQ(get_manifolds, get_num_manifolds, get_manifold);
 
   // Collision filtering
   void set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable);
@@ -169,7 +168,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(characters, get_num_characters, get_character);
   MAKE_SEQ_PROPERTY(vehicles, get_num_vehicles, get_vehicle);
   MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
-  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, __get_manifold);
+  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
   MAKE_PROPERTY(force_update_all_aabbs, get_force_update_all_aabbs,
                                         set_force_update_all_aabbs);
 
@@ -273,6 +272,7 @@ private:
   btOverlapFilterCallback *_filter_cb;
 
   PT(CallbackObject) _tick_callback_obj;
+  PT(CallbackObject) _contact_added_callback_obj;
 
   PT(BulletDebugNode) _debug;
 
@@ -318,4 +318,4 @@ operator >> (std::istream &in, BulletWorld::FilterAlgorithm &algorithm);
 
 #include "bulletWorld.I"
 
-#endif // __BULLET_WORLD_H__
+#endif // BULLETWORLD_H

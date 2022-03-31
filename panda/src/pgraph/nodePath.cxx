@@ -34,9 +34,10 @@
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
 #include "alphaTestAttrib.h"
+#include "depthBiasAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
-#include "depthOffsetAttrib.h"
 #include "shaderAttrib.h"
 #include "billboardEffect.h"
 #include "compassEffect.h"
@@ -4688,6 +4689,8 @@ get_depth_write() const {
  * bias is always an integer number, and each integer increment represents the
  * smallest possible increment in Z that is sufficient to completely resolve
  * two coplanar polygons.  Positive numbers are closer towards the camera.
+ *
+ * @deprecated See set_depth_bias() instead, which provides more controls.
  */
 void NodePath::
 set_depth_offset(int bias, int priority) {
@@ -4732,6 +4735,40 @@ get_depth_offset() const {
   }
 
   return 0;
+}
+
+/**
+ * This instructs the graphics driver to apply an offset or bias to the
+ * generated depth values for rendered polygons, before they are written to
+ * the depth buffer.  This can be used to shift polygons forward slightly, to
+ * resolve depth conflicts, or self-shadowing artifacts on thin objects.
+ * Positive numbers are further away from the camera.
+ */
+void NodePath::
+set_depth_bias(PN_stdfloat slope_factor, PN_stdfloat constant_factor, PN_stdfloat clamp, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(DepthBiasAttrib::make(slope_factor, constant_factor, clamp), priority);
+}
+
+/**
+ * Completely removes any depth-bias adjustment that may have been set on
+ * this node via set_depth_bias().
+ */
+void NodePath::
+clear_depth_bias() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(DepthBiasAttrib::get_class_slot());
+}
+
+/**
+ * Returns true if a depth-bias adjustment has been explicitly set on this
+ * particular node via set_depth_bias().  If this returns true, then
+ * get_depth_bias() may be called to determine which has been set.
+ */
+bool NodePath::
+has_depth_bias() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(DepthBiasAttrib::get_class_slot());
 }
 
 /**

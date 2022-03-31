@@ -212,4 +212,3 @@ class FourState:
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
                     id(self), self.stateIndex==4, message))
-

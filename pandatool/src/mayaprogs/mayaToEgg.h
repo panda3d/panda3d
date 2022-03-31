@@ -17,6 +17,9 @@
 #include "pandatoolbase.h"
 #include "somethingToEgg.h"
 #include "mayaToEggConverter.h"
+#include "mayaApi.h"
+
+#include "programBase.h"
 
 /**
  *
@@ -24,11 +27,15 @@
 class MayaToEgg : public SomethingToEgg {
 public:
   MayaToEgg();
+  ~MayaToEgg();
 
-  void run();
+  bool run();
 
 protected:
   static bool dispatch_transform_type(const std::string &opt, const std::string &arg, void *var);
+  virtual bool handle_args(ProgramBase::Args &args);
+
+  PT(MayaApi) open_api();
 
   int _verbose;
   bool _polygon_output;
@@ -49,6 +56,9 @@ protected:
   vector_string _excludes;
   vector_string _ignore_sliders;
   vector_string _force_joints;
+
+public:
+  bool _run_server;
 };
 
 #endif

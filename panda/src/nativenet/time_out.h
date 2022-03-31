@@ -1,5 +1,5 @@
-#ifndef __TIME_OUT_H__
-#define __TIME_OUT_H__
+#ifndef TIME_OUT_H
+#define TIME_OUT_H
 
 // think of this class as a time based alarm.. would be nice to have a
 // template implementation of this class .. could avoud some storage and some
@@ -125,4 +125,4 @@ inline Time_Span Time_Out::Remaining() const
     return Remaining(Time_Clock::GetCurrentTime());
 }
 
-#endif //__TIME_OUT_H__
+#endif //TIME_OUT_H

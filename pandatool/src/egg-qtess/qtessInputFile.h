@@ -18,6 +18,7 @@
 #include "qtessInputEntry.h"
 #include "filename.h"
 #include "pvector.h"
+#include "vector_double.h"
 
 class QtessSurface;
 

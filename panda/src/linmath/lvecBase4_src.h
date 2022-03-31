@@ -20,7 +20,7 @@ class FLOATNAME(UnalignedLVecBase4);
 /**
  * This is the base class for all three-component vectors and points.
  */
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) : public MemoryBase {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
@@ -160,6 +160,8 @@ PUBLISHED:
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LVecBase4) &other);
 
+  EXTENSION(INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const);
+
   EXTENSION(INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const);
   EXTENSION(INLINE_LINMATH PyObject *__ifloordiv__(PyObject *self, FLOATTYPE scalar));
 
@@ -184,6 +186,8 @@ PUBLISHED:
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
   INLINE_LINMATH void write_datagram(Datagram &destination) const;
   INLINE_LINMATH void read_datagram(DatagramIterator &source);
+
+  EXTENSION(INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
 
 public:
   // The underlying implementation is via the Eigen library, if available.

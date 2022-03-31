@@ -255,6 +255,8 @@ PUBLISHED:
   virtual bool flip_ready() const;
   virtual GraphicsOutput *get_host();
 
+  MAKE_PROPERTY(host, get_host);
+
 public:
   INLINE bool operator < (const GraphicsOutput &other) const;
 

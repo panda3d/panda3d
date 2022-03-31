@@ -33,6 +33,7 @@ class Extension<DoubleBitMask<BMType> > : public ExtensionBase<DoubleBitMask<BMT
 public:
   INLINE void __init__(PyObject *init_value);
 
+  INLINE bool __bool__() const;
   INLINE PyObject *__int__() const;
   INLINE PyObject *__reduce__(PyObject *self) const;
 };

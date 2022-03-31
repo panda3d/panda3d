@@ -47,7 +47,7 @@
 #undef TVOLATILE
 #define TVOLATILE
 
-#elif defined(WIN32_VC)
+#elif defined(_WIN32)
 
 // In Windows, use the native threading library.
 #define THREAD_WIN32_IMPL 1

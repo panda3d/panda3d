@@ -731,6 +731,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
  */
 DisplayRegion::CData::
 CData() :
+  _depth_range(0, 1),
   _lens_index(0),
   _camera_node(nullptr),
   _active(true),
@@ -749,6 +750,7 @@ CData() :
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
   _regions(copy._regions),
+  _depth_range(copy._depth_range),
   _lens_index(copy._lens_index),
   _camera(copy._camera),
   _camera_node(copy._camera_node),

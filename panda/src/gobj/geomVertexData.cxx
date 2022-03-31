@@ -66,11 +66,11 @@ GeomVertexData(const std::string &name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
   _name(name),
+  _cycler(GeomVertexData::CData(format, usage_hint)),
   _char_pcollector(PStatCollector(_animation_pcollector, name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
   _morphs_pcollector(_char_pcollector, "Morphs"),
-  _blends_pcollector(_char_pcollector, "Calc blends"),
-  _cycler(GeomVertexData::CData(format, usage_hint))
+  _blends_pcollector(_char_pcollector, "Calc blends")
 {
   nassertv(format->is_registered());
 }
@@ -130,33 +130,6 @@ GeomVertexData(const GeomVertexData &copy,
     }
 
     // It's important that we *not* copy the animated_vertices pointer.
-    cdata->_animated_vertices = nullptr;
-    cdata->_animated_vertices_modified = UpdateSeq();
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-/**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a GeomVertexData
- * that is actively being used for rendering.
- */
-void GeomVertexData::
-operator = (const GeomVertexData &copy) {
-  CopyOnWriteObject::operator = (copy);
-
-  clear_cache();
-
-  _name = copy._name;
-  _cycler = copy._cycler;
-  _char_pcollector = copy._char_pcollector;
-  _skinning_pcollector = copy._skinning_pcollector;
-  _morphs_pcollector = copy._morphs_pcollector;
-  _blends_pcollector = copy._blends_pcollector;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_modified = Geom::get_next_modified();
     cdata->_animated_vertices = nullptr;
     cdata->_animated_vertices_modified = UpdateSeq();
   }
@@ -2588,6 +2561,52 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     _array_writers[i] = new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+remove_array(size_t i) {
+  nassertv(i < _cdata->_arrays.size());
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->remove_array(i);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.erase(_cdata->_arrays.begin() + i);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.erase(_array_writers.begin() + i);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+insert_array(size_t i, const GeomVertexArrayData *array) {
+  const GeomVertexArrayFormat *array_format = array->get_array_format();
+
+  if (i > _cdata->_arrays.size()) {
+    i = _cdata->_arrays.size();
+  }
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->insert_array(i, array_format);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.insert(_cdata->_arrays.begin() + i, (GeomVertexArrayData *)array);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.insert(_array_writers.begin() + i, new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread));
   }
 }
 

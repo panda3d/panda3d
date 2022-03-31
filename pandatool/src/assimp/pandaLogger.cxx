@@ -35,7 +35,9 @@ set_default() {
  *
  */
 void PandaLogger::OnDebug(const char *message) {
-  assimp_cat.debug() << message << "\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug() << message << "\n";
+  }
 }
 
 /**

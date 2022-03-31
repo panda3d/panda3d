@@ -11,6 +11,9 @@
  * @date 2007-07-19
  */
 
+template<class Key, class Value, class Compare>
+TypeHandle SimpleHashMap<Key, Value, Compare>::_type_handle;
+
 /**
  *
  */
@@ -42,8 +45,9 @@ SimpleHashMap(const SimpleHashMap &copy) :
   if (_table_size > 0) {
     size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
+    init_type();
     _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
 
     for (size_t i = 0; i < _num_entries; ++i) {
       new(&_table[i]) TableEntry(copy._table[i]);
@@ -101,8 +105,9 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
       // _table_size * 4 more ints at the end (for the index array).
       size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
+      init_type();
       _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-      _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+      _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
       for (size_t i = 0; i < _num_entries; ++i) {
         new(&_table[i]) TableEntry(copy._table[i]);
       }
@@ -119,7 +124,7 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
         old_table[i].~TableEntry();
       }
 
-      old_deleted_chain->deallocate(old_table, TypeHandle::none());
+      old_deleted_chain->deallocate(old_table, _type_handle);
     }
   }
   return *this;
@@ -355,7 +360,7 @@ clear() {
       _table[i].~TableEntry();
     }
 
-    _deleted_chain->deallocate(_table, TypeHandle::none());
+    _deleted_chain->deallocate(_table, _type_handle);
     _table = nullptr;
     _deleted_chain = nullptr;
     _table_size = 0;
@@ -685,8 +690,9 @@ new_table() {
   // _table_size * 4 more ints at the end (for the index array).
   size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
+  init_type();
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
   memset(get_index_array(), -1, _table_size * sizeof(int) * sparsity);
 }
 
@@ -744,7 +750,7 @@ resize_table(size_t new_size) {
   // _table_size * sparsity more ints at the end (for the sparse index array).
   size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size * sparsity * sizeof(int);
   _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
   int *index_array = get_index_array();
   memset(index_array, -1, _table_size * sizeof(int) * sparsity);
 
@@ -757,7 +763,7 @@ resize_table(size_t new_size) {
   }
 
   // We don't need this old thing anymore.
-  old_chain->deallocate(old_table, TypeHandle::none());
+  old_chain->deallocate(old_table, _type_handle);
 
   // Reindex the table.
   for (size_t i = 0; i < _num_entries; ++i) {
@@ -771,4 +777,23 @@ resize_table(size_t new_size) {
   }
 
   nassertv(validate());
+}
+
+/**
+ *
+ */
+template<class Key, class Value, class Compare>
+void SimpleHashMap<Key, Value, Compare>::
+init_type() {
+#if defined(HAVE_RTTI) && !defined(__EDG__)
+  // If we have RTTI, we can determine the name of the base type.
+  std::string key_name = typeid(Key).name();
+  std::string value_name = typeid(Value).name();
+
+  _type_handle =
+    register_dynamic_type("SimpleHashMap<" + key_name + ", " + value_name + ">");
+#else
+  _type_handle =
+    register_dynamic_type("SimpleHashMap<unknown, unknown>");
+#endif
 }

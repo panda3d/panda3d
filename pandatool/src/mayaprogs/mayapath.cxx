@@ -358,7 +358,7 @@ main(int argc, char *argv[]) {
     putenv(putenv_cstr);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   string sep = ";";
 #else
   string sep = ":";
@@ -461,11 +461,6 @@ main(int argc, char *argv[]) {
   }
 
 #endif // IS_OSX
-
-  // When this is set, Panda3D will try not to use any functions from the
-  // CPython API.  This is necessary because Maya links with its own copy of
-  // Python, which may be incompatible with ours.
-  putenv((char *)"PANDA_INCOMPATIBLE_PYTHON=1");
 
   // Now that we have set up the environment variables properly, chain to the
   // actual maya2egg_bin (or whichever) executable.

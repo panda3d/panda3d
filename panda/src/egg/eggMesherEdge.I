@@ -21,18 +21,6 @@ EggMesherEdge(int vi_a, int vi_b) : _vi_a(vi_a), _vi_b(vi_b) {
 }
 
 /**
- *
- */
-INLINE EggMesherEdge::
-EggMesherEdge(const EggMesherEdge &copy) :
-  _vi_a(copy._vi_a),
-  _vi_b(copy._vi_b),
-  _strips(copy._strips),
-  _opposite(copy._opposite)
-{
-}
-
-/**
  * Returns true if the edge contains the indicated vertex index, false
  * otherwise.
  */

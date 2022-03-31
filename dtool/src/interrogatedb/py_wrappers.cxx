@@ -30,7 +30,7 @@ static void _register_collection(PyTypeObject *type, const char *abc) {
 #endif
         PyObject *sequence = PyDict_GetItemString(dict, abc);
         if (sequence != nullptr) {
-          if (PyObject_CallMethodObjArgs(sequence, register_str, (PyObject *)type, nullptr) == nullptr) {
+          if (PyObject_CallMethodOneArg(sequence, register_str, (PyObject *)type) == nullptr) {
             PyErr_Print();
           }
         }
@@ -75,7 +75,7 @@ static PyObject *Dtool_SequenceWrapper_repr(PyObject *self) {
   }
 
   if (len < 0) {
-    PyErr_Restore(nullptr, nullptr, nullptr);
+    PyErr_Clear();
     return Dtool_WrapperBase_repr(self);
   }
 
@@ -422,7 +422,7 @@ static int Dtool_MappingWrapper_contains(PyObject *self, PyObject *key) {
     return 1;
   } else if (_PyErr_OCCURRED() == PyExc_KeyError ||
              _PyErr_OCCURRED() == PyExc_TypeError) {
-    PyErr_Restore(nullptr, nullptr, nullptr);
+    PyErr_Clear();
     return 0;
   } else {
     return -1;
@@ -480,7 +480,7 @@ static PyObject *Dtool_MappingWrapper_get(PyObject *self, PyObject *args) {
   if (value != nullptr) {
     return value;
   } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
-    PyErr_Restore(nullptr, nullptr, nullptr);
+    PyErr_Clear();
     Py_INCREF(defvalue);
     return defvalue;
   } else {
@@ -944,7 +944,7 @@ static PyObject *Dtool_MutableMappingWrapper_pop(PyObject *self, PyObject *args)
       return nullptr;
     }
   } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
-    PyErr_Restore(nullptr, nullptr, nullptr);
+    PyErr_Clear();
     Py_INCREF(defvalue);
     return defvalue;
   } else {
@@ -1044,7 +1044,7 @@ static PyObject *Dtool_MutableMappingWrapper_setdefault(PyObject *self, PyObject
   if (value != nullptr) {
     return value;
   } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
-    PyErr_Restore(nullptr, nullptr, nullptr);
+    PyErr_Clear();
     if (wrap->_setitem_func(wrap->_base._self, key, defvalue) == 0) {
       Py_INCREF(defvalue);
       return defvalue;

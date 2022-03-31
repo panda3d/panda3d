@@ -11,8 +11,8 @@
  * @date 2010-12-27
  */
 
-#ifndef __BULLET_SOFT_BODY_NODE_H__
-#define __BULLET_SOFT_BODY_NODE_H__
+#ifndef BULLETSOFTBODYNODE_H
+#define BULLETSOFTBODYNODE_H
 
 #include "pandabase.h"
 
@@ -267,4 +267,4 @@ private:
 
 #include "bulletSoftBodyNode.I"
 
-#endif // __BULLET_SOFT_BODY_NODE_H__
+#endif // BULLETSOFTBODYNODE_H

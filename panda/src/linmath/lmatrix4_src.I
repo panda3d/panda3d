@@ -115,32 +115,8 @@ zeros_mat() {
  *
  */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) {
   operator = (copy);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
-operator = (const FLOATNAME(LMatrix4) &copy) {
-  TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
-  return *this;
 }
 
 /**
@@ -1627,14 +1603,6 @@ invert(const FLOATNAME(LMatrix4) &a) {
   return result;
 }
 
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)() {
-}
-
 /**
  *
  */
@@ -1646,26 +1614,9 @@ FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy) {
 /**
  *
  */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
-  return *this;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
-operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
-  TAU_PROFILE("void UnalignedLMatrix4::operator =(UnalignedLMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
   return *this;
 }
 

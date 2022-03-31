@@ -24,6 +24,8 @@
 #include <hash_set>
 #endif
 
+#include <initializer_list>
+
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
@@ -52,6 +54,7 @@ public:
   typedef std::set<Key, Compare, allocator> base_class;
   pset(TypeHandle type_handle = pset_type_handle) : base_class(Compare(), allocator(type_handle)) { }
   pset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : base_class(comp, type_handle) { }
+  pset(std::initializer_list<Key> init, TypeHandle type_handle = pset_type_handle) : base_class(std::move(init), allocator(type_handle)) { }
 
 #ifdef USE_TAU
   std::pair<typename base_class::iterator, bool>
@@ -110,6 +113,7 @@ public:
   typedef pallocator_single<Key> allocator;
   pmultiset(TypeHandle type_handle = pset_type_handle) : std::multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
   pmultiset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : std::multiset<Key, Compare, allocator>(comp, type_handle) { }
+  pmultiset(std::initializer_list<Key> init, TypeHandle type_handle = pset_type_handle) : std::multiset<Key, Compare, allocator>(std::move(init), allocator(type_handle)) { }
 };
 
 #ifdef HAVE_STL_HASH

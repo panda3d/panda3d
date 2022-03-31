@@ -31,7 +31,6 @@ class Mutex;
 class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
-class ConditionVarFullDebug;
 class AsyncTask;
 
 /**
@@ -43,7 +42,8 @@ class AsyncTask;
  * object will automatically be destructed if no other pointers are
  * referencing it.
  */
-class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
+// Due to a GCC bug, we can't use alignas() together with an attribute.
+class ALIGN_64BYTE EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const std::string &name, const std::string &sync_name);
   Thread(const Thread &copy) = delete;
@@ -80,6 +80,9 @@ PUBLISHED:
 
   BLOCKING INLINE static void force_yield();
   BLOCKING INLINE static void consider_yield();
+  BLOCKING INLINE static void relax();
+
+  INLINE static bool get_context_switches(size_t &total, size_t &involuntary);
 
   virtual void output(std::ostream &out) const;
   void output_blocker(std::ostream &out) const;
@@ -156,12 +159,15 @@ private:
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
   ConditionVarDebug *_waiting_on_cvar;
-  ConditionVarFullDebug *_waiting_on_cvar_full;
 #endif  // DEBUG_THREADS
 
 private:
   static Thread *_main_thread;
   static Thread *_external_thread;
+
+  static void (*_sleep_func)(double);
+  static void (*_yield_func)();
+  friend class PStatClientImpl;
 
 public:
   static TypeHandle get_class_type() {
@@ -184,7 +190,6 @@ private:
 
   friend class MutexDebug;
   friend class ConditionVarDebug;
-  friend class ConditionVarFullDebug;
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;

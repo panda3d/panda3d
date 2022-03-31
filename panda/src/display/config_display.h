@@ -73,6 +73,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool old_alpha_blend;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_origin;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool fullscreen;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool maximized;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool undecorated;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_fixed_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool cursor_hidden;
@@ -83,6 +84,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableString window_title;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt parent_window_handle;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_unexposed_draw;
 extern EXPCL_PANDA_DISPLAY ConfigVariableFilename subprocess_window;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool ime_aware;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableString framebuffer_mode;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_hardware;

@@ -83,11 +83,7 @@ readline() {
   Py_BLOCK_THREADS
 #endif  // HAVE_THREADS && !SIMPLE_THREADS
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-  return PyString_FromStringAndSize(line.data(), line.size());
-#endif
 }
 
 /**
@@ -134,11 +130,7 @@ readlines() {
 
   Py_ssize_t i = 0;
   for (const std::string &line : lines) {
-#if PY_MAJOR_VERSION >= 3
     PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-    PyObject *py_line = PyString_FromStringAndSize(line.data(), line.size());
-#endif
     PyList_SET_ITEM(lst, i++, py_line);
   }
 

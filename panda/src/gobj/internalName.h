@@ -92,11 +92,14 @@ PUBLISHED:
   INLINE static PT(InternalName) get_camera();
   INLINE static PT(InternalName) get_model();
   INLINE static PT(InternalName) get_view();
+  INLINE static PT(InternalName) get_instance_matrix();
 
 #ifdef HAVE_PYTHON
   // These versions are exposed to Python, which have additional logic to map
   // from Python interned strings.
   EXTENSION(static PT(InternalName) make(PyObject *str));
+
+  EXTENSION(PyObject *__reduce__() const);
 #endif
 
 public:
@@ -139,6 +142,7 @@ private:
   static PT(InternalName) _camera;
   static PT(InternalName) _model;
   static PT(InternalName) _view;
+  static PT(InternalName) _instance_matrix;
 
 public:
   // Datagram stuff

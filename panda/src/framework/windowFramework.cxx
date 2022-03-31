@@ -340,6 +340,13 @@ get_pixel_2d() {
     _pixel_2d = get_render_2d().attach_new_node(top);
     _pixel_2d.set_pos(-1, 0, 1);
 
+    // Tell the PGTop about our MouseWatcher object, so the PGui system can
+    // operate.
+    PandaNode *mouse_node = get_mouse().node();
+    if (mouse_node->is_of_type(MouseWatcher::get_class_type())) {
+      top->set_mouse_watcher(DCAST(MouseWatcher, mouse_node));
+    }
+
     if (_window->has_size()) {
       int x_size = _window->get_sbs_left_x_size();
       int y_size = _window->get_sbs_left_y_size();
@@ -675,7 +682,7 @@ load_default_model(const NodePath &parent) {
   GeomNode *geomnode = new GeomNode("tri");
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("tri", GeomVertexFormat::get_v3n3cpt2(),
+    ("tri", GeomVertexFormat::get_v3n3t2(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
@@ -1429,8 +1436,11 @@ create_anim_controls() {
   setup_shuttle_button("4", 2, st_play_button);
   setup_shuttle_button(":", 3, st_forward_button);
 
-  _update_anim_controls_task = new GenericAsyncTask("controls", st_update_anim_controls, (void *)this);
-  _panda_framework->get_task_mgr().add(_update_anim_controls_task);
+  AsyncTaskManager &task_mgr = _panda_framework->get_task_mgr();
+  _update_anim_controls_task = task_mgr.add("controls", [this](AsyncTask *task) {
+    update_anim_controls();
+    return AsyncTask::DS_cont;
+  });
 }
 
 /**
@@ -1443,7 +1453,7 @@ destroy_anim_controls() {
 
     _panda_framework->get_event_handler().remove_hooks_with((void *)this);
     if (_update_anim_controls_task != nullptr) {
-      _panda_framework->get_task_mgr().remove(_update_anim_controls_task);
+      _update_anim_controls_task->remove();
       _update_anim_controls_task.clear();
     }
   }
@@ -1558,18 +1568,6 @@ forward_button() {
   nassertv(control != nullptr);
   control->pose(control->get_frame() + 1);
 }
-
-
-/**
- * The static task function.
- */
-AsyncTask::DoneStatus WindowFramework::
-st_update_anim_controls(GenericAsyncTask *, void *data) {
-  WindowFramework *self = (WindowFramework *)data;
-  self->update_anim_controls();
-  return AsyncTask::DS_cont;
-}
-
 
 /**
  * The static event handler function.

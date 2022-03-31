@@ -30,11 +30,13 @@ public:
   static PyObject *__iter__(PyObject *self) { return __await__(self); }
 
   void set_result(PyObject *result);
-  PyObject *result(PyObject *timeout = Py_None) const;
+  PyObject *result(PyObject *self, PyObject *timeout = Py_None) const;
 
   PyObject *add_done_callback(PyObject *self, PyObject *fn);
 
   static PyObject *gather(PyObject *args);
+
+  static PyObject *get_cancelled_error_type();
 };
 
 #endif  // HAVE_PYTHON

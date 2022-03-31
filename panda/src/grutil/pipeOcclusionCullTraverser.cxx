@@ -290,7 +290,7 @@ bool PipeOcclusionCullTraverser::
 is_in_view(CullTraverserData &data) {
   _next_query = nullptr;
 
-  if (!CullTraverser::is_in_view(data)) {
+  if (!data.is_in_view(get_camera_mask())) {
     return false;
   }
   if (!_live) {

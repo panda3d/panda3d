@@ -19,6 +19,9 @@ template<>
 class Extension<FLOATNAME(LMatrix4)> : public ExtensionBase<FLOATNAME(LMatrix4)> {
 public:
   INLINE_LINMATH PyObject *__reduce__(PyObject *self) const;
+
+  INLINE_LINMATH FLOATNAME(LMatrix4) __rmul__(FLOATTYPE scalar) const;
+
   INLINE_LINMATH std::string __repr__() const;
 };
 

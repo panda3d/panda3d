@@ -11,8 +11,8 @@
  * @date 2010-02-16
  */
 
-#ifndef __BULLET_VEHICLE_H__
-#define __BULLET_VEHICLE_H__
+#ifndef BULLETVEHICLE_H
+#define BULLETVEHICLE_H
 
 #include "pandabase.h"
 
@@ -85,7 +85,7 @@ PUBLISHED:
   void apply_engine_force(PN_stdfloat force, int idx);
 
   // Wheels
-  BulletWheel create_wheel();
+  BulletWheel create_wheel(PN_stdfloat suspension_rest_length=0.4);
 
   int get_num_wheels() const;
   BulletWheel get_wheel(int idx) const;
@@ -137,4 +137,4 @@ private:
 
 #include "bulletVehicle.I"
 
-#endif // __BULLET_VEHICLE_H__
+#endif // BULLETVEHICLE_H

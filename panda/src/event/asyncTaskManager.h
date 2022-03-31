@@ -23,7 +23,7 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
@@ -64,6 +64,10 @@ PUBLISHED:
   BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
+#ifndef CPPPARSER
+  template<class Callable>
+  INLINE AsyncTask *add(const std::string &name, Callable callable);
+#endif
   bool has_task(AsyncTask *task) const;
 
   AsyncTask *find_task(const std::string &name) const;
@@ -130,7 +134,7 @@ protected:
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
 
-  ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
+  ConditionVar _frame_cvar;  // Signalled when the clock ticks.
 
   static AsyncTaskManager* _global_ptr;
 

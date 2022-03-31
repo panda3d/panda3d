@@ -16,6 +16,7 @@
 #include "notifyCategoryProxy.h"
 
 #include "uniqueIdAllocator.h"
+#include "lightMutexHolder.h"
 
 using std::endl;
 
@@ -84,6 +85,8 @@ UniqueIdAllocator::
  */
 uint32_t UniqueIdAllocator::
 allocate() {
+  LightMutexHolder holder(_lock);
+
   if (_next_free == IndexEnd) {
     // ...all ids allocated.
     uniqueIdAllocator_warning("allocate Error: no more free ids.");
@@ -115,6 +118,8 @@ allocate() {
  */
 void UniqueIdAllocator::
 initial_reserve_id(uint32_t id) {
+  LightMutexHolder holder(_lock);
+
   nassertv(id >= _min && id <= _max); // Attempt to reserve out-of-range id.
   uint32_t index = id - _min; // Convert to _table index.
 
@@ -169,22 +174,54 @@ initial_reserve_id(uint32_t id) {
   --_free;
 }
 
+/**
+ * Checks the allocated state of an index. Returns true for
+ * indices that are currently allocated and in use.
+ */
+bool UniqueIdAllocator::
+is_allocated(uint32_t id) {
+  LightMutexHolder holder(_lock);
+
+  if (id < _min || id > _max) {
+    // This id is out of range, not allocated.
+    return false;
+  }
+
+  uint32_t index = id - _min; // Convert to _table index.
+  return _table[index] == IndexAllocated;
+}
 
 /**
  * Free an allocated index (index must be between _min and _max that were
  * passed to the constructor).
+ *
+ * Since 1.11.0, returns true if the index has been freed successfully
+ * or false if the index has not been allocated yet, instead of
+ * triggering an assertion.
  */
-void UniqueIdAllocator::
+bool UniqueIdAllocator::
 free(uint32_t id) {
+  LightMutexHolder holder(_lock);
+
   uniqueIdAllocator_debug("free("<<id<<")");
 
-  nassertv(id >= _min && id <= _max); // Attempt to free out-of-range id.
+  if (id < _min || id > _max) {
+    // Attempt to free out-of-range id.
+    return false;
+  }
+
   uint32_t index = id - _min; // Convert to _table index.
-  nassertv(_table[index] == IndexAllocated); // Attempt to free non-allocated id.
+
+  if (_table[index] != IndexAllocated) {
+    // Attempt to free non-allocated id.
+    return false;
+  }
+
   if (_next_free != IndexEnd) {
-    nassertv(_table[_last_free] == IndexEnd);
+    nassertr(_table[_last_free] == IndexEnd, false);
     _table[_last_free] = index;
   }
+
   _table[index] = IndexEnd; // Mark this element as the end of the list.
   _last_free = index;
 
@@ -194,6 +231,7 @@ free(uint32_t id) {
   }
 
   ++_free;
+  return true;
 }
 
 
@@ -220,6 +258,8 @@ output(std::ostream &out) const {
  */
 void UniqueIdAllocator::
 write(std::ostream &out) const {
+  LightMutexHolder holder(_lock);
+
   out << "_min: " << _min << "; _max: " << _max
       << ";\n_next_free: " << int32_t(_next_free)
       << "; _last_free: " << int32_t(_last_free)

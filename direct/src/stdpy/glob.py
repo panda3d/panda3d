@@ -2,7 +2,6 @@
 vfs constructs.  This enables Python to interface more easily with Panda's
 virtual file system. """
 
-import sys
 import os
 import fnmatch
 
@@ -52,9 +51,6 @@ def iglob(pathname):
 def glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
-    if sys.version_info < (3, 0) and isinstance(pattern, unicode) and not isinstance(dirname, unicode):
-        dirname = unicode(dirname, sys.getfilesystemencoding() or
-                                   sys.getdefaultencoding())
     try:
         names = os.listdir(dirname)
     except os.error:
@@ -81,9 +77,10 @@ def has_magic(s):
     else:
         return '*' in s or '?' in s or '[' in s
 
+
 def escape(pathname):
     drive, pathname = os.path.splitdrive(pathname)
-    if sys.version_info >= (3, 0) and isinstance(pathname, bytes):
+    if isinstance(pathname, bytes):
         newpath = bytearray(drive)
         for c in pathname:
             if c == 42 or c == 63 or c == 91:

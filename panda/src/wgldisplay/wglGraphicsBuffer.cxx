@@ -157,7 +157,7 @@ bind_texture_to_pbuffer() {
   if (tex_index >= 0) {
     const RenderTexture &rt = cdata->_textures[tex_index];
     Texture *tex = rt._texture;
-    if ((_pbuffer_bound != 0)&&(_pbuffer_bound != tex)) {
+    if (_pbuffer_bound != nullptr && _pbuffer_bound != tex) {
       _pbuffer_bound->release(wglgsg->get_prepared_objects());
       _pbuffer_bound = 0;
     }
@@ -188,7 +188,7 @@ bind_texture_to_pbuffer() {
     }
     _pbuffer_bound = tex;
   } else {
-    if (_pbuffer_bound != 0) {
+    if (_pbuffer_bound != nullptr) {
       _pbuffer_bound->release(wglgsg->get_prepared_objects());
       _pbuffer_bound = 0;
     }
@@ -292,7 +292,7 @@ open_buffer() {
   // GSG creationinitialization.
 
   wglGraphicsStateGuardian *wglgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, true);
@@ -355,16 +355,16 @@ open_buffer() {
  */
 void wglGraphicsBuffer::
 release_pbuffer() {
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     return;
   }
 
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
-  if (_pbuffer_bound != 0) {
+  if (_pbuffer_bound != nullptr) {
     _pbuffer_bound->release(wglgsg->get_prepared_objects());
-    _pbuffer_bound = 0;
+    _pbuffer_bound.clear();
   }
   wglGraphicsPipe::wgl_make_current(0, 0, nullptr);
   if (_pbuffer_dc) {
@@ -420,7 +420,7 @@ rebuild_bitplanes() {
   // Determine what pbuffer attributes are needed for currently-applicable
   // textures.
 
-  if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
+  if (_host != nullptr && (_creation_flags & GraphicsPipe::BF_size_track_host) != 0) {
     if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());

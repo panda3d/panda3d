@@ -72,8 +72,8 @@ PUBLISHED:
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
   EXTENSION(void __setstate__(PyObject *self, vector_uchar data));
 
-  void write_datagram(Datagram &destination) const;
-  void read_datagram(DatagramIterator &source);
+  virtual void write_datagram(Datagram &destination) const;
+  virtual void read_datagram(DatagramIterator &source);
 
 protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);
@@ -90,7 +90,6 @@ protected:
     INLINE bool
     operator () (const PT(CollisionEntry) &a,
                  const PT(CollisionEntry) &b) const;
-    INLINE void operator = (const SortEntries &other);
   };
 
   typedef pset<PT(CollisionEntry), SortEntries> Colliding;

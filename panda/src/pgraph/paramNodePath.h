@@ -26,11 +26,11 @@ protected:
   INLINE ParamNodePath() {};
 
 PUBLISHED:
-  INLINE ParamNodePath(const NodePath &node_path);
-  INLINE ParamNodePath(NodePath &&node_path) noexcept;
+  ParamNodePath(NodePath node_path);
+  virtual ~ParamNodePath();
 
   INLINE virtual TypeHandle get_value_type() const;
-  INLINE const NodePath &get_value() const;
+  INLINE NodePath get_value() const;
 
   virtual void output(std::ostream &out) const;
 

@@ -96,14 +96,15 @@ PUBLISHED:
   INLINE void induce_labor();
   INLINE void clear_to_initial();
   INLINE void soft_stop(PN_stdfloat br = 0.0);
-  INLINE void soft_start(PN_stdfloat br = 0.0);
-  INLINE void soft_start(PN_stdfloat br, PN_stdfloat first_birth_delay);
+  INLINE void soft_start(PN_stdfloat br = 0.0, PN_stdfloat first_birth_delay = 0.0);
   void update(PN_stdfloat dt);
 
   virtual void output(std::ostream &out) const;
   virtual void write_free_particle_fifo(std::ostream &out, int indent=0) const;
   virtual void write_spawn_templates(std::ostream &out, int indent=0) const;
   virtual void write(std::ostream &out, int indent=0) const;
+
+  void birth_litter();
 
 private:
   #ifdef PSSANITYCHECK
@@ -112,7 +113,6 @@ private:
 
   bool birth_particle();
   void kill_particle(int pool_index);
-  void birth_litter();
   void resize_pool(int size);
 
   pdeque< int > _free_particle_fifo;

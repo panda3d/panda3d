@@ -144,6 +144,13 @@ PUBLISHED:
   MAKE_PROPERTY2(minimized, has_minimized, get_minimized,
                             set_minimized, clear_minimized);
 
+  INLINE void set_maximized(bool maximized);
+  INLINE bool get_maximized() const;
+  INLINE bool has_maximized() const;
+  INLINE void clear_maximized();
+  MAKE_PROPERTY2(maximized, has_maximized, get_maximized,
+                            set_maximized, clear_maximized);
+
   INLINE void set_raw_mice(bool raw_mice);
   INLINE bool get_raw_mice() const;
   INLINE bool has_raw_mice() const;
@@ -198,6 +205,9 @@ PUBLISHED:
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
 
+  EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
+
   void add_properties(const WindowProperties &other);
 
   void output(std::ostream &out) const;
@@ -222,6 +232,7 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
+    S_maximized            = 0x10000,
   };
 
   // This bitmask represents the true/false settings for various boolean flags
@@ -231,6 +242,7 @@ private:
     F_fullscreen     = S_fullscreen,
     F_foreground     = S_foreground,
     F_minimized      = S_minimized,
+    F_maximized      = S_maximized,
     F_open           = S_open,
     F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
