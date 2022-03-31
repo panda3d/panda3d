@@ -30,6 +30,15 @@
 
 #include "pset.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_DIRECTD)
+  #error Buildsystem error: BUILDING_DIRECT_DIRECTD not defined
+#endif
+
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::string;
+
 namespace {
   // ...This section is part of the old stuff from the original
   // implementation.  The new stuff that uses job objects doesn't need this
@@ -79,7 +88,7 @@ namespace {
     // If we can't open the process with PROCESS_TERMINATE rights, then we
     // give up immediately.
     hProc = OpenProcess(SYNCHRONIZE|PROCESS_TERMINATE, FALSE, dwPID);
-    if(hProc == NULL) {
+    if(hProc == nullptr) {
        return TA_FAILED;
     }
 
@@ -111,7 +120,7 @@ namespace {
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(),
+    if (CreateProcess(nullptr, (char*)cmd.c_str(),
         0, 0, 1, NORMAL_PRIORITY_CLASS,
         0, 0, &si, &pi)) {
       pid=pi.dwProcessId;
@@ -144,7 +153,7 @@ DirectD::~DirectD() {
 int
 DirectD::client_ready(const string& server_host, int port,
     const string& cmd) {
-  stringstream ss;
+  std::stringstream ss;
   ss<<"!"<<cmd;
   send_one_message(server_host, port, ss.str());
   return 0;
@@ -224,7 +233,7 @@ DirectD::start_app(const string& cmd) {
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(),
+    if (CreateProcess(nullptr, (char*)cmd.c_str(),
         0, 0, 1, NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED,
         0, 0, &si, &pi)) {
       // The process must be created with CREATE_SUSPENDED to give us a chance

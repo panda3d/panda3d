@@ -147,14 +147,14 @@ is_constructible(const CPPType *given_type) const {
 
   // Can initialize void pointer with any pointer.
   const CPPSimpleType *simple_type = a->as_simple_type();
-  if (simple_type != NULL) {
+  if (simple_type != nullptr) {
     return simple_type->_type == CPPSimpleType::T_void;
   }
 
   // Can initialize from derived class pointer.
   const CPPStructType *a_struct = a->as_struct_type();
   const CPPStructType *b_struct = b->as_struct_type();
-  if (a_struct != NULL && b_struct != NULL) {
+  if (a_struct != nullptr && b_struct != nullptr) {
     return a_struct->is_base_of(b_struct);
   }
 
@@ -194,7 +194,7 @@ is_copy_assignable() const {
 bool CPPPointerType::
 is_equivalent(const CPPType &other) const {
   const CPPPointerType *ot = ((CPPType *)&other)->as_pointer_type();
-  if (ot == (CPPPointerType *)NULL) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -205,7 +205,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPPointerType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   /*
   CPPFunctionType *ftype = _pointing_at->as_function_type();
   if (ftype != (CPPFunctionType *)NULL) {
@@ -235,13 +235,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPPointerType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
-  string star = "*";
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
+  std::string star = "*";
 
   CPPFunctionType *ftype = _pointing_at->as_function_type();
-  if (ftype != NULL &&
+  if (ftype != nullptr &&
       ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0)) {
     // We have to output pointers-to-method with a scoping before the '*'.
     star = ftype->_class_owner->get_fully_scoped_name() + "::*";
@@ -275,7 +275,7 @@ as_pointer_type() {
 bool CPPPointerType::
 is_equal(const CPPDeclaration *other) const {
   const CPPPointerType *ot = ((CPPDeclaration *)other)->as_pointer_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return _pointing_at == ot->_pointing_at;
 }
@@ -288,7 +288,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPPointerType::
 is_less(const CPPDeclaration *other) const {
   const CPPPointerType *ot = ((CPPDeclaration *)other)->as_pointer_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return _pointing_at < ot->_pointing_at;
 }

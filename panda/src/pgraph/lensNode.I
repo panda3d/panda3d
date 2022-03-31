@@ -45,12 +45,12 @@ set_lens(Lens *lens) {
  */
 INLINE Lens *LensNode::
 get_lens(int index) const {
-  nassertr(index >= 0 && index < max_lenses, NULL); // Sanity check
+  nassertr(index >= 0 && index < max_lenses, nullptr); // Sanity check
 
   if (index < (int)_lenses.size()) {
     return _lenses[index]._lens;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**

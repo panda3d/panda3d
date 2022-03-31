@@ -16,7 +16,7 @@
 #include "configVariableManager.h"
 #include "virtualFileSystem.h"
 #include "config_express.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "hashVal.h"
 
 /**
@@ -43,11 +43,11 @@ load_prc_file(const Filename &filename) {
   vfs->resolve_filename(path, cp_mgr->get_search_path()) ||
     vfs->resolve_filename(path, get_model_path());
 
-  istream *file = vfs->open_read_file(path, true);
-  if (file == (istream *)NULL) {
+  std::istream *file = vfs->open_read_file(path, true);
+  if (file == nullptr) {
     util_cat.error()
       << "Unable to open " << path << "\n";
-    return NULL;
+    return nullptr;
   }
 
   util_cat.info()
@@ -64,7 +64,7 @@ load_prc_file(const Filename &filename) {
     util_cat.info()
       << "Unable to read " << path << "\n";
     cp_mgr->delete_explicit_page(page);
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -78,8 +78,8 @@ load_prc_file(const Filename &filename) {
  * loaded prc files is listed.
  */
 EXPCL_PANDA_PUTIL ConfigPage *
-load_prc_file_data(const string &name, const string &data) {
-  istringstream strm(data);
+load_prc_file_data(const std::string &name, const std::string &data) {
+  std::istringstream strm(data);
 
   ConfigPageManager *cp_mgr = ConfigPageManager::get_global_ptr();
 
@@ -94,7 +94,7 @@ load_prc_file_data(const string &name, const string &data) {
     util_cat.info()
       << "Unable to read explicit prc data " << name << "\n";
     cp_mgr->delete_explicit_page(page);
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -121,7 +121,7 @@ unload_prc_file(ConfigPage *page) {
  */
 void
 hash_prc_variables(HashVal &hash) {
-  ostringstream strm;
+  std::ostringstream strm;
   ConfigVariableManager *cv_mgr = ConfigVariableManager::get_global_ptr();
   cv_mgr->write_prc_variables(strm);
   hash.hash_string(strm.str());

@@ -38,7 +38,7 @@ get_from() const {
  */
 INLINE bool CollisionEntry::
 has_into() const {
-  return (_into != (CollisionSolid *)NULL);
+  return (_into != nullptr);
 }
 
 /**
@@ -338,7 +338,7 @@ test_intersection(CollisionHandler *record,
   PT(CollisionEntry) result = get_from()->test_intersection(*this);
 #ifdef DO_COLLISION_RECORDING
   if (trav->has_recorder()) {
-    if (result != (CollisionEntry *)NULL) {
+    if (result != nullptr) {
       trav->get_recorder()->collision_tested(*result, true);
     } else {
       trav->get_recorder()->collision_tested(*this, false);
@@ -351,17 +351,17 @@ test_intersection(CollisionHandler *record,
   // if there was no collision detected but the handler wants to know about
   // all potential collisions, create a "didn't collide" collision entry for
   // it
-  if (record->wants_all_potential_collidees() && result == (CollisionEntry *)NULL) {
+  if (record->wants_all_potential_collidees() && result == nullptr) {
     result = new CollisionEntry(*this);
     result->reset_collided();
   }
-  if (result != (CollisionEntry *)NULL) {
+  if (result != nullptr) {
     record->add_entry(result);
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const CollisionEntry &entry) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CollisionEntry &entry) {
   entry.output(out);
   return out;
 }

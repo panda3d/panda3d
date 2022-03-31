@@ -28,24 +28,31 @@
  * Wrapper class around the Android Bitmap mechanism to allow loading images
  * on Android without needing libpng or libjpeg.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAndroid : public PNMFileType {
+class PNMFileTypeAndroid : public PNMFileType {
 public:
-  PNMFileTypeAndroid();
+  enum CompressFormat : jint {
+    CF_jpeg = 0,
+    CF_png = 1,
+    CF_webp = 2,
+  };
 
-  virtual string get_name() const;
+  PNMFileTypeAndroid(CompressFormat format);
+
+  virtual std::string get_name() const;
 
   virtual int get_num_extensions() const;
-  virtual string get_extension(int n) const;
+  virtual std::string get_extension(int n) const;
 
   virtual bool has_magic_number() const;
 
-  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
-                                 const string &magic_number = string());
+  virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
+                                 const std::string &magic_number = std::string());
+  virtual PNMWriter *make_writer(std::ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
   public:
-    Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
+    Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string magic_number);
     virtual ~Reader();
 
     virtual void prepare_read();
@@ -60,29 +67,20 @@ public:
     int32_t _format;
   };
 
-  // The TypedWritable interface follows.
-public:
-  static void register_with_read_factory();
+  class Writer : public PNMWriter {
+  public:
+    Writer(PNMFileType *type, std::ostream *file, bool owns_file,
+           CompressFormat format);
 
-protected:
-  static TypedWritable *make_PNMFileTypeAndroid(const FactoryParams &params);
+    virtual int write_data(xel *array, xelval *alpha);
+    virtual bool supports_grayscale() const;
 
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    PNMFileType::init_type();
-    register_type(_type_handle, "PNMFileTypeAndroid",
-                  PNMFileType::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  private:
+    CompressFormat _format;
+  };
 
 private:
-  static TypeHandle _type_handle;
+  CompressFormat _format;
 };
 
 #endif  // ANDROID

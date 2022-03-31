@@ -26,7 +26,7 @@ class DCSwitchParameter;
  * requested from a particular field; its ownership is retained by the field
  * so it must not be deleted.
  */
-class DCPackerCatalog {
+class EXPCL_DIRECT_DCPARSER DCPackerCatalog {
 private:
   DCPackerCatalog(const DCPackerInterface *root);
   DCPackerCatalog(const DCPackerCatalog &copy);
@@ -37,7 +37,7 @@ public:
   // and its relationship to its parent.
   class Entry {
   public:
-    string _name;
+    std::string _name;
     const DCPackerInterface *_field;
     const DCPackerInterface *_parent;
     int _field_index;
@@ -58,7 +58,7 @@ public:
 
     INLINE int get_num_entries() const;
     INLINE const Entry &get_entry(int n) const;
-    INLINE int find_entry_by_name(const string &name) const;
+    INLINE int find_entry_by_name(const std::string &name) const;
     INLINE int find_entry_by_field(const DCPackerInterface *field) const;
 
   private:
@@ -71,17 +71,17 @@ public:
 
   INLINE int get_num_entries() const;
   INLINE const Entry &get_entry(int n) const;
-  int find_entry_by_name(const string &name) const;
+  int find_entry_by_name(const std::string &name) const;
   int find_entry_by_field(const DCPackerInterface *field) const;
 
   const LiveCatalog *get_live_catalog(const char *data, size_t length) const;
   void release_live_catalog(const LiveCatalog *live_catalog) const;
 
 private:
-  void add_entry(const string &name, const DCPackerInterface *field,
+  void add_entry(const std::string &name, const DCPackerInterface *field,
                  const DCPackerInterface *parent, int field_index);
 
-  void r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
+  void r_fill_catalog(const std::string &name_prefix, const DCPackerInterface *field,
                       const DCPackerInterface *parent, int field_index);
   void r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
                            const DCSwitchParameter *&last_switch) const;
@@ -96,7 +96,7 @@ private:
   typedef pvector<Entry> Entries;
   Entries _entries;
 
-  typedef pmap<string, int> EntriesByName;
+  typedef pmap<std::string, int> EntriesByName;
   EntriesByName _entries_by_name;
 
   typedef pmap<const DCPackerInterface *, int> EntriesByField;
@@ -105,7 +105,7 @@ private:
   typedef pmap<const DCPackerInterface *, DCPackerCatalog *> SwitchCatalogs;
   SwitchCatalogs _switch_catalogs;
 
-  typedef pmap<const DCSwitchParameter *, string> SwitchPrefixes;
+  typedef pmap<const DCSwitchParameter *, std::string> SwitchPrefixes;
   SwitchPrefixes _switch_prefixes;
 
   friend class DCPackerInterface;

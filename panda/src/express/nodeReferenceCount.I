@@ -52,8 +52,6 @@ NodeReferenceCount(const NodeReferenceCount &copy) : ReferenceCount(copy) {
  */
 INLINE void NodeReferenceCount::
 operator = (const NodeReferenceCount &copy) {
-  nassertv(this != NULL);
-
   // If this assertion fails, our own pointer was recently deleted.  Possibly
   // you used a real pointer instead of a PointerTo at some point, and the
   // object was deleted when the PointerTo went out of scope.  Maybe you tried
@@ -74,8 +72,6 @@ operator = (const NodeReferenceCount &copy) {
  */
 INLINE NodeReferenceCount::
 ~NodeReferenceCount() {
-  nassertv(this != NULL);
-
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.
@@ -219,9 +215,9 @@ void NodeRefCountObj<Base>::
 init_type() {
 #if defined(HAVE_RTTI) && !defined(__EDG__)
   // If we have RTTI, we can determine the name of the base type.
-  string base_name = typeid(Base).name();
+  std::string base_name = typeid(Base).name();
 #else
-  string base_name = "unknown";
+  std::string base_name = "unknown";
 #endif
 
   TypeHandle base_type = register_dynamic_type(base_name);

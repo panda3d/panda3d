@@ -75,7 +75,7 @@ get_collision_origin() const {
  *
  */
 void CollisionSegment::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "segment, a (" << _a << "), b (" << _b << ")";
 }
 
@@ -131,7 +131,7 @@ compute_internal_bounds() const {
                            LPoint3(0.01, -0.01, 0.01), LPoint3(-0.01, -0.01, 0.01));
 
   volume->xform(from_segment);
-  return volume.p();
+  return volume;
 }
 
 /**
@@ -146,7 +146,7 @@ fill_viz_geom() {
   }
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("collision", GeomVertexFormat::get_v3cp(),
+    ("collision", GeomVertexFormat::get_v3c(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 

@@ -32,12 +32,12 @@ PUBLISHED:
 
   bool open(const FileReference *file);
   INLINE bool open(const Filename &filename);
-  bool open(istream &in, const Filename &filename = Filename());
-  INLINE istream &get_stream();
+  bool open(std::istream &in, const Filename &filename = Filename());
+  INLINE std::istream &get_stream();
 
   void close();
 
-  bool read_header(string &header, size_t num_bytes);
+  bool read_header(std::string &header, size_t num_bytes);
   virtual bool get_datagram(Datagram &data);
   virtual bool save_datagram(SubfileInfo &info);
   virtual bool is_eof();
@@ -47,14 +47,14 @@ PUBLISHED:
   virtual time_t get_timestamp() const;
   virtual const FileReference *get_file();
   virtual VirtualFile *get_vfile();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
 
 private:
   bool _read_first_datagram;
   bool _error;
   CPT(FileReference) _file;
   PT(VirtualFile) _vfile;
-  istream *_in;
+  std::istream *_in;
   bool _owns_in;
   Filename _filename;
   time_t _timestamp;

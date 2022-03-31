@@ -20,11 +20,11 @@
  */
 DeletedBufferChain::
 DeletedBufferChain(size_t buffer_size) {
-  _deleted_chain = NULL;
+  _deleted_chain = nullptr;
   _buffer_size = buffer_size;
 
   // We must allocate at least this much space for bookkeeping reasons.
-  _buffer_size = max(_buffer_size, sizeof(ObjectNode));
+  _buffer_size = std::max(_buffer_size, sizeof(ObjectNode));
 }
 
 /**
@@ -43,15 +43,15 @@ allocate(size_t size, TypeHandle type_handle) {
 
   ObjectNode *obj;
 
-  _lock.acquire();
-  if (_deleted_chain != (ObjectNode *)NULL) {
+  _lock.lock();
+  if (_deleted_chain != nullptr) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
-    _lock.release();
+    _lock.unlock();
 
 #ifdef USE_DELETEDCHAINFLAG
-    assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
-    obj->_flag = DCF_alive;
+    DeletedChainFlag orig_flag = obj->_flag.exchange(DCF_alive, std::memory_order_relaxed);
+    assert(orig_flag == DCF_deleted);
 #endif  // USE_DELETEDCHAINFLAG
 
     void *ptr = node_to_buffer(obj);
@@ -64,7 +64,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
     return ptr;
   }
-  _lock.release();
+  _lock.unlock();
 
   // If we get here, the deleted_chain is empty; we have to allocate a new
   // object from the system pool.
@@ -75,7 +75,7 @@ allocate(size_t size, TypeHandle type_handle) {
   obj = (ObjectNode *)(aligned - flag_reserved_bytes);
 
 #ifdef USE_DELETEDCHAINFLAG
-  obj->_flag = DCF_alive;
+  obj->_flag.store(DCF_alive, std::memory_order_relaxed);
 #endif  // USE_DELETEDCHAINFLAG
 
   void *ptr = node_to_buffer(obj);
@@ -103,7 +103,7 @@ deallocate(void *ptr, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", "
   // ", TAU_USER);
-  assert(ptr != (void *)NULL);
+  assert(ptr != nullptr);
 
 #ifdef DO_MEMORY_USAGE
   const size_t alloc_size = _buffer_size + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1;
@@ -116,22 +116,24 @@ deallocate(void *ptr, TypeHandle type_handle) {
   ObjectNode *obj = buffer_to_node(ptr);
 
 #ifdef USE_DELETEDCHAINFLAG
-  AtomicAdjust::Integer orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
+  DeletedChainFlag orig_flag = DCF_alive;
+  if (UNLIKELY(!obj->_flag.compare_exchange_strong(orig_flag, DCF_deleted,
+                                                   std::memory_order_relaxed))) {
+    // If this assertion is triggered, you double-deleted an object.
+    assert(orig_flag != DCF_deleted);
 
-  // If this assertion is triggered, you double-deleted an object.
-  assert(orig_flag != (AtomicAdjust::Integer)DCF_deleted);
-
-  // If this assertion is triggered, you tried to delete an object that was
-  // never allocated, or you have heap corruption.
-  assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
+    // If this assertion is triggered, you tried to delete an object that was
+    // never allocated, or you have heap corruption.
+    assert(orig_flag == DCF_alive);
+  }
 #endif  // USE_DELETEDCHAINFLAG
 
-  _lock.acquire();
+  _lock.lock();
 
   obj->_next = _deleted_chain;
   _deleted_chain = obj;
 
-  _lock.release();
+  _lock.unlock();
 
 #else  // USE_DELETED_CHAIN
   PANDA_FREE_SINGLE(ptr);

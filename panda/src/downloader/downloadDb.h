@@ -59,7 +59,7 @@ MultifileRecord is a Vector<FileRecord>
  * the files on the client system, and another copy for the server,
  * representing the files the server has available.
  */
-class EXPCL_PANDAEXPRESS DownloadDb {
+class EXPCL_PANDA_DOWNLOADER DownloadDb {
 PUBLISHED:
   // Status of a multifile is stored in this enum Note these values are in
   // increasing order of "doneness" So if you are decompressed, you are
@@ -76,9 +76,9 @@ PUBLISHED:
   explicit DownloadDb(Filename &server_file, Filename &client_file);
   ~DownloadDb();
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
-  void write_version_map(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
+  void write_version_map(std::ostream &out) const;
 
   // Write a database file
   bool write_client_db(Filename &file);
@@ -87,71 +87,71 @@ PUBLISHED:
   INLINE int get_client_num_multifiles() const;
   INLINE int get_server_num_multifiles() const;
 
-  INLINE string get_client_multifile_name(int index) const;
-  INLINE string get_server_multifile_name(int index) const;
+  INLINE std::string get_client_multifile_name(int index) const;
+  INLINE std::string get_server_multifile_name(int index) const;
 
-  INLINE int get_client_multifile_size(string mfname) const;
-  INLINE void set_client_multifile_size(string mfname, int size);
-  INLINE int set_client_multifile_delta_size(string mfname, int size);
-  INLINE int get_server_multifile_size(string mfname) const;
-  INLINE void set_server_multifile_size(string mfname, int size);
+  INLINE int get_client_multifile_size(std::string mfname) const;
+  INLINE void set_client_multifile_size(std::string mfname, int size);
+  INLINE int set_client_multifile_delta_size(std::string mfname, int size);
+  INLINE int get_server_multifile_size(std::string mfname) const;
+  INLINE void set_server_multifile_size(std::string mfname, int size);
 
-  INLINE Phase get_client_multifile_phase(string mfname) const;
-  INLINE Phase get_server_multifile_phase(string mfname) const;
+  INLINE Phase get_client_multifile_phase(std::string mfname) const;
+  INLINE Phase get_server_multifile_phase(std::string mfname) const;
 
-  INLINE void set_client_multifile_incomplete(string mfname);
-  INLINE void set_client_multifile_complete(string mfname);
-  INLINE void set_client_multifile_decompressed(string mfname);
-  INLINE void set_client_multifile_extracted(string mfname);
+  INLINE void set_client_multifile_incomplete(std::string mfname);
+  INLINE void set_client_multifile_complete(std::string mfname);
+  INLINE void set_client_multifile_decompressed(std::string mfname);
+  INLINE void set_client_multifile_extracted(std::string mfname);
 
-  INLINE int get_server_num_files(string mfname) const;
-  INLINE string get_server_file_name(string mfname, int index) const;
+  INLINE int get_server_num_files(std::string mfname) const;
+  INLINE std::string get_server_file_name(std::string mfname, int index) const;
 
   // Queries from the Launcher
-  bool client_multifile_exists(string mfname) const;
-  bool client_multifile_complete(string mfname) const;
-  bool client_multifile_decompressed(string mfname) const;
-  bool client_multifile_extracted(string mfname) const;
+  bool client_multifile_exists(std::string mfname) const;
+  bool client_multifile_complete(std::string mfname) const;
+  bool client_multifile_decompressed(std::string mfname) const;
+  bool client_multifile_extracted(std::string mfname) const;
 
   // Ask what version (told with the hash) this multifile is
-  HashVal get_client_multifile_hash(string mfname) const;
-  void set_client_multifile_hash(string mfname, HashVal val);
-  HashVal get_server_multifile_hash(string mfname) const;
-  void set_server_multifile_hash(string mfname, HashVal val);
+  HashVal get_client_multifile_hash(std::string mfname) const;
+  void set_client_multifile_hash(std::string mfname, HashVal val);
+  HashVal get_server_multifile_hash(std::string mfname) const;
+  void set_server_multifile_hash(std::string mfname, HashVal val);
 
   // Operations on multifiles
-  void delete_client_multifile(string mfname);
-  void add_client_multifile(string server_mfname);
-  void expand_client_multifile(string mfname);
+  void delete_client_multifile(std::string mfname);
+  void add_client_multifile(std::string server_mfname);
+  void expand_client_multifile(std::string mfname);
 
   // Server side operations to create multifile records
   void create_new_server_db();
-  void server_add_multifile(string mfname, Phase phase, int size, int status);
-  void server_add_file(string mfname, string fname);
+  void server_add_multifile(std::string mfname, Phase phase, int size, int status);
+  void server_add_file(std::string mfname, std::string fname);
 
 public:
 
-  class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
+  class EXPCL_PANDA_DOWNLOADER FileRecord : public ReferenceCount {
   public:
     FileRecord();
-    FileRecord(string name);
-    void write(ostream &out) const;
-    string _name;
+    FileRecord(std::string name);
+    void write(std::ostream &out) const;
+    std::string _name;
   };
 
   typedef pvector< PT(FileRecord) > FileRecords;
 
-  class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
+  class EXPCL_PANDA_DOWNLOADER MultifileRecord : public ReferenceCount {
   public:
     MultifileRecord();
-    MultifileRecord(string name, Phase phase, int size, int status);
-    void write(ostream &out) const;
+    MultifileRecord(std::string name, Phase phase, int size, int status);
+    void write(std::ostream &out) const;
     int get_num_files() const;
-    string get_file_name(int index) const;
-    bool file_exists(string fname) const;
-    PT(FileRecord) get_file_record_named(string fname) const;
+    std::string get_file_name(int index) const;
+    bool file_exists(std::string fname) const;
+    PT(FileRecord) get_file_record_named(std::string fname) const;
     void add_file_record(PT(FileRecord) fr);
-    string _name;
+    std::string _name;
     Phase _phase;
     int _size;
     int _status;
@@ -162,24 +162,24 @@ public:
 
   typedef pvector< PT(MultifileRecord) > MultifileRecords;
 
-  class EXPCL_PANDAEXPRESS Db {
+  class EXPCL_PANDA_DOWNLOADER Db {
   public:
     Db();
-    void write(ostream &out) const;
+    void write(std::ostream &out) const;
     int get_num_multifiles() const;
-    string get_multifile_name(int index) const;
-    bool multifile_exists(string mfname) const;
-    PT(MultifileRecord) get_multifile_record_named(string mfname) const;
+    std::string get_multifile_name(int index) const;
+    bool multifile_exists(std::string mfname) const;
+    PT(MultifileRecord) get_multifile_record_named(std::string mfname) const;
     void add_multifile_record(PT(MultifileRecord) mfr);
-    int parse_header(const string &data);
-    int parse_record_header(const string &data);
-    PT(MultifileRecord) parse_mfr(const string &data);
-    PT(FileRecord) parse_fr(const string &data);
+    int parse_header(Datagram dg);
+    int parse_record_header(Datagram dg);
+    PT(MultifileRecord) parse_mfr(Datagram dg);
+    PT(FileRecord) parse_fr(Datagram dg);
     bool read(StreamReader &sr, bool want_server_info);
     bool write(StreamWriter &sw, bool want_server_info);
     Filename _filename;
     MultifileRecords _mfile_records;
-    bool write_header(ostream &write_stream);
+    bool write_header(std::ostream &write_stream);
     bool write_bogus_header(StreamWriter &sw);
   private:
     int32_t _header_length;
@@ -218,7 +218,7 @@ protected:
   VersionMap _versions;
 };
 
-INLINE ostream &operator << (ostream &out, const DownloadDb &dldb) {
+INLINE std::ostream &operator << (std::ostream &out, const DownloadDb &dldb) {
   dldb.output(out);
   return out;
 }

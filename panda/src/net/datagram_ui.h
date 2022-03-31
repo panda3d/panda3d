@@ -26,7 +26,7 @@
 
 #include "netDatagram.h"
 
-istream &operator >> (istream &in, NetDatagram &datagram);
-ostream &operator << (ostream &out, const NetDatagram &datagram);
+std::istream &operator >> (std::istream &in, NetDatagram &datagram);
+std::ostream &operator << (std::ostream &out, const NetDatagram &datagram);
 
 #endif

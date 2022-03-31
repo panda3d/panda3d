@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 
+using std::string;
+
 
 /**
  * Creates a new NameUniquifier.

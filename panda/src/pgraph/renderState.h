@@ -50,11 +50,12 @@ protected:
 
 private:
   RenderState(const RenderState &copy);
-  void operator = (const RenderState &copy);
 
 public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
+
+  RenderState &operator = (const RenderState &copy) = delete;
 
   typedef RenderAttribRegistry::SlotMask SlotMask;
 
@@ -130,8 +131,8 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   static int get_max_priority();
 
@@ -140,10 +141,11 @@ PUBLISHED:
   static int clear_cache();
   static void clear_munger_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
+  EXTENSION(static PyObject *get_unused_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
@@ -161,8 +163,17 @@ public:
   template<class AttribType>
   INLINE bool get_attrib(const AttribType *&attrib) const;
   template<class AttribType>
+  INLINE bool get_attrib(CPT(AttribType) &attrib) const;
+  template<class AttribType>
   INLINE void get_attrib_def(const AttribType *&attrib) const;
+  template<class AttribType>
+  INLINE void get_attrib_def(CPT(AttribType) &attrib) const;
 #endif  // CPPPARSER
+
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
 
 private:
   INLINE void check_hash() const;
@@ -226,8 +237,8 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const RenderState *, nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
-  static States *_states;
+  typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
+  static States _states;
   static const RenderState *_empty_state;
 
   // This iterator records the entry corresponding to this RenderState object
@@ -242,9 +253,6 @@ private:
   // two involved RenderState objects.
   class Composition {
   public:
-    INLINE Composition();
-    INLINE Composition(const Composition &copy);
-
     // _result is reference counted if and only if it is not the same pointer
     // as this.
     const RenderState *_result;
@@ -372,7 +380,7 @@ private:
 template<>
 INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const RenderState &state) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderState &state) {
   state.output(out);
   return out;
 }

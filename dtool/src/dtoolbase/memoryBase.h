@@ -23,8 +23,6 @@
 // MemoryBase; this macro is provided to resolve problems with multiple
 // inheritance or some such.
 
-#ifndef USE_MEMORY_NOWRAPPERS
-
 #define ALLOC_MEMORY_BASE                                    \
   inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return PANDA_MALLOC_SINGLE(size);                        \
@@ -34,7 +32,9 @@
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    PANDA_FREE_SINGLE(ptr);                                  \
+    if (ptr != nullptr) {                                    \
+      PANDA_FREE_SINGLE(ptr);                                \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -46,16 +46,12 @@
     return ptr;                                              \
   }                                                          \
   inline void operator delete[](void *ptr) {                 \
-    PANDA_FREE_ARRAY(ptr);                                   \
+    if (ptr != nullptr) {                                    \
+      PANDA_FREE_ARRAY(ptr);                                 \
+    }                                                        \
   }                                                          \
   inline void operator delete[](void *, void *) {            \
   }
-
-#else   // USE_MEMORY_NOWRAPPERS
-
-#define ALLOC_MEMORY_BASE
-
-#endif  // USE_MEMORY_NOWRAPPERS
 
 /**
  * This class is intended to be the base class of all objects in Panda that
@@ -66,7 +62,7 @@
  * that seems to cause problems when including header files for C++-based
  * system libraries (such as are found on OSX).
  */
-class EXPCL_DTOOL MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE MemoryBase {
 public:
   ALLOC_MEMORY_BASE;
 };

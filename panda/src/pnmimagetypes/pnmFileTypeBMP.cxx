@@ -20,6 +20,8 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::string;
+
 static const char * const extensions_bmp[] = {
   "bmp"
 };
@@ -96,8 +98,7 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeBMP::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
+make_reader(std::istream *file, bool owns_file, const string &magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -107,8 +108,7 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  * NULL.
  */
 PNMWriter *PNMFileTypeBMP::
-make_writer(ostream *file, bool owns_file) {
-  init_pnm();
+make_writer(std::ostream *file, bool owns_file) {
   return new Writer(this, file, owns_file);
 }
 

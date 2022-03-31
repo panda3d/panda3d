@@ -22,27 +22,6 @@ class AICharacter;
 class Flock;
 
 /**
- * This class implements a linked list of AI Characters allowing the user to
- * add and delete characters from the linked list.  This will be used in the
- * AIWorld class.
- */
-class EXPCL_PANDAAI AICharPool {
-    public:
-    struct node {
-      AICharacter * _ai_char;
-      node * _next;
-    } ;
-
-    node* _head;
-    AICharPool();
-    ~AICharPool();
-    void append(AICharacter *ai_ch);
-    void del(string name);
-        void print_list();
-};
-
-
-/**
  * A class that implements the virtual AI world which keeps track of the AI
  * characters active at any given time.  It contains a linked list of AI
  * characters, obstactle data and unique name for each character.  It also
@@ -51,20 +30,21 @@ class EXPCL_PANDAAI AICharPool {
  */
 class EXPCL_PANDAAI AIWorld {
   private:
-    AICharPool * _ai_char_pool;
+    typedef std::vector<PT(AICharacter)> AICharPool;
+    AICharPool _ai_char_pool;
     NodePath _render;
   public:
-    vector<NodePath> _obstacles;
+    std::vector<NodePath> _obstacles;
     typedef std::vector<Flock*> FlockPool;
     FlockPool _flock_pool;
-    void remove_ai_char_from_flock(string name);
+    void remove_ai_char_from_flock(std::string name);
 
 PUBLISHED:
     AIWorld(NodePath render);
     ~AIWorld();
 
     void add_ai_char(AICharacter *ai_ch);
-    void remove_ai_char(string name);
+    void remove_ai_char(std::string name);
 
     void add_flock(Flock *flock);
     void flock_off(unsigned int flock_id);

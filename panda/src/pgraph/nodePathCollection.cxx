@@ -19,6 +19,9 @@
 #include "colorAttrib.h"
 #include "indent.h"
 
+using std::max;
+using std::min;
+
 /**
  * Adds a new NodePath to the collection.
  */
@@ -188,8 +191,8 @@ get_path(int index) const {
  * get_path(), but it may be a more convenient way to access it.
  */
 NodePath NodePathCollection::
-operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
+operator [] (size_t index) const {
+  nassertr(index < _node_paths.size(), NodePath());
 
   return _node_paths[index];
 }
@@ -198,7 +201,7 @@ operator [] (int index) const {
  * Returns the number of paths in the collection.  This is the same thing as
  * get_num_paths().
  */
-int NodePathCollection::
+size_t NodePathCollection::
 size() const {
   return _node_paths.size();
 }
@@ -208,7 +211,7 @@ size() const {
  * hierarchically.
  */
 void NodePathCollection::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {
     NodePath path = get_path(i);
     indent(out, indent_level) << path << "\n";
@@ -223,13 +226,13 @@ ls(ostream &out, int indent_level) const {
  * listed first.
  */
 NodePathCollection NodePathCollection::
-find_all_matches(const string &path) const {
+find_all_matches(const std::string &path) const {
   NodePathCollection result;
 
   FindApproxPath approx_path;
   if (approx_path.add_string(path)) {
     if (!is_empty()) {
-      FindApproxLevelEntry *level = NULL;
+      FindApproxLevelEntry *level = nullptr;
       for (int i = 0; i < get_num_paths(); i++) {
         FindApproxLevelEntry *start =
           new FindApproxLevelEntry(get_path(i), approx_path);
@@ -557,7 +560,7 @@ set_attrib(const RenderAttrib *attrib, int priority) {
  * indicated output stream.
  */
 void NodePathCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_paths() == 1) {
     out << "1 NodePath";
   } else {
@@ -570,7 +573,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void NodePathCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {
     indent(out, indent_level) << get_path(i) << "\n";
   }

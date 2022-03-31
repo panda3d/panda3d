@@ -49,7 +49,7 @@ get_variable() const {
  * text defined for the variable in the .prc file (or passed to
  * ConfigPage::make_declaration()).
  */
-INLINE const string &ConfigDeclaration::
+INLINE const std::string &ConfigDeclaration::
 get_string_value() const {
   return _string_value;
 }
@@ -58,7 +58,7 @@ get_string_value() const {
  * Changes the value assigned to this variable.
  */
 INLINE void ConfigDeclaration::
-set_string_value(const string &string_value) {
+set_string_value(const std::string &string_value) {
   _string_value = string_value;
   _got_words = false;
   invalidate_cache();
@@ -145,12 +145,12 @@ has_double_word(size_t n) const {
  * Returns the string value of the nth word of the declaration's value, or
  * empty string if there is no nth value.  See also has_string_word().
  */
-INLINE string ConfigDeclaration::
+INLINE std::string ConfigDeclaration::
 get_string_word(size_t n) const {
   if (has_string_word(n)) {
     return _words[n]._str;
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -225,8 +225,8 @@ get_decl_seq() const {
   return _decl_seq;
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigDeclaration &decl) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigDeclaration &decl) {
   decl.output(out);
   return out;
 }

@@ -17,6 +17,9 @@
 
 #include <algorithm>
 
+using std::istream;
+using std::ostream;
+
 /**
  *
  */

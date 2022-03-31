@@ -23,7 +23,7 @@ TypeHandle AmbientLight::_type_handle;
  *
  */
 AmbientLight::
-AmbientLight(const string &name) :
+AmbientLight(const std::string &name) :
   LightNode(name)
 {
 }
@@ -63,7 +63,7 @@ make_copy() const {
  *
  */
 void AmbientLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";
@@ -85,7 +85,7 @@ void AmbientLight::
 bind(GraphicsStateGuardianBase *, const NodePath &, int) {
   // AmbientLights aren't bound to light id's; this function should never be
   // called.
-  nassertv(false);
+  nassert_raise("cannot bind AmbientLight");
 }
 
 /**

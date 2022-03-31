@@ -56,6 +56,10 @@ extern ContactDestroyedCallback gContactDestroyedCallback;
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDABULLET)
+  #error Buildsystem error: BUILDING_PANDABULLET not defined
+#endif
+
 Configure(config_bullet);
 NotifyCategoryDef(bullet, "");
 
@@ -95,6 +99,11 @@ PRC_DESC("Specifies if events should be send when new contacts are "
          "created or existing contacts get remove. Warning: enabling "
          "contact events might create more load on the event queue "
          "then you might want! Default value is FALSE."));
+
+ConfigVariableBool bullet_split_impulse
+("bullet-split-impulse", false,
+PRC_DESC("Penetrating recovery won't add momentum. "
+         "btContactSolverInfo::m_splitImpulse. Default value is false."));
 
 ConfigVariableInt bullet_solver_iterations
 ("bullet-solver-iterations", 10,
@@ -185,6 +194,7 @@ init_libbullet() {
   BulletDebugNode::register_with_read_factory();
   BulletPlaneShape::register_with_read_factory();
   BulletRigidBodyNode::register_with_read_factory();
+  BulletGhostNode::register_with_read_factory();
   BulletSphereShape::register_with_read_factory();
   BulletTriangleMesh::register_with_read_factory();
   BulletTriangleMeshShape::register_with_read_factory();
@@ -203,7 +213,9 @@ init_libbullet() {
 
   // Initialize notification category
   bullet_cat.init();
-  bullet_cat.debug() << "initialize module" << endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "initialize module" << std::endl;
+  }
 
   // Register the Bullet system
   PandaSystem *ps = PandaSystem::get_global_ptr();

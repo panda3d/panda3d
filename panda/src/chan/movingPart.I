@@ -43,7 +43,7 @@ MovingPart(const MovingPart<SwitchType> &copy) :
  */
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
-MovingPart(PartGroup *parent, const string &name,
+MovingPart(PartGroup *parent, const std::string &name,
            const ValueType &default_value) :
   MovingPartBase(parent, name),
   _value(default_value),
@@ -87,7 +87,7 @@ make_default_channel() const {
  */
 template<class SwitchType>
 void MovingPart<SwitchType>::
-output_value(ostream &out) const {
+output_value(std::ostream &out) const {
   SwitchType::output_value(out, _value);
 }
 

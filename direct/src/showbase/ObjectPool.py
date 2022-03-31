@@ -3,14 +3,16 @@
 __all__ = ['Diff', 'ObjectPool']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
+from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr, itype
 from direct.showbase.PythonUtil import getNumberedTypedString, getNumberedTypedSortedString
 import gc
 
+
 class Diff:
     def __init__(self, lost, gained):
-        self.lost=lost
-        self.gained=gained
+        self.lost = lost
+        self.gained = gained
+
     def printOut(self, full=False):
         print('lost %s objects, gained %s objects' % (len(self.lost), len(self.gained)))
         print('\n\nself.lost\n')
@@ -21,6 +23,7 @@ class Diff:
             self.gained.printObjsByType()
             print('\n\nGAINED-OBJECT REFERRERS\n')
             self.gained.printReferrers(1)
+
 
 class ObjectPool:
     """manipulate a pool of Python objects"""
@@ -110,15 +113,6 @@ class ObjectPool:
                 print('TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ])))
                 print(getNumberedTypedSortedString(self._type2objs[typ]))
 
-    def containerLenStr(self):
-        s  =   'Object Pool: Container Lengths'
-        s += '\n=============================='
-        lengths = list(self._len2obj.keys())
-        lengths.sort()
-        lengths.reverse()
-        for count in counts:
-            pass
-
     def printReferrers(self, numEach=3):
         """referrers of the first few of each type of object"""
         counts = list(set(self._count2types.keys()))
@@ -133,7 +127,7 @@ class ObjectPool:
                     print('\nOBJ: %s\n' % safeRepr(obj))
                     referrers = gc.get_referrers(obj)
                     print('%s REFERRERS:\n' % len(referrers))
-                    if len(referrers):
+                    if len(referrers) > 0:
                         print(getNumberedTypedString(referrers, maxLen=80,
                                                     numPrefix='REF'))
                     else:

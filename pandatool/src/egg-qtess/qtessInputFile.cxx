@@ -15,6 +15,8 @@
 #include "config_egg_qtess.h"
 #include "string_utils.h"
 
+using std::string;
+
 /**
  *
  */
@@ -30,7 +32,7 @@ read(const Filename &filename) {
   _filename = Filename::text_filename(filename);
   _entries.clear();
 
-  ifstream input;
+  std::ifstream input;
   if (!_filename.open_read(input)) {
     qtess_cat.error()
       << "Unable to open input file " << _filename << "\n";
@@ -41,7 +43,7 @@ read(const Filename &filename) {
 
   int line_number = 0;
   string line;
-  while (getline(input, line)) {
+  while (std::getline(input, line)) {
     line_number++;
 
     // Eliminate comments.  We have to scan the line repeatedly until we find
@@ -306,7 +308,7 @@ count_tris() {
  *
  */
 void QtessInputFile::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     (*ei).write(out, indent_level);

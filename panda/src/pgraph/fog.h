@@ -40,7 +40,7 @@ class TransformState;
  */
 class EXPCL_PANDA_PGRAPH Fog : public PandaNode {
 PUBLISHED:
-  explicit Fog(const string &name);
+  explicit Fog(const std::string &name);
 
 protected:
   Fog(const Fog &copy);
@@ -85,7 +85,7 @@ PUBLISHED:
   INLINE void set_exp_density(PN_stdfloat exp_density);
   MAKE_PROPERTY(exp_density, get_exp_density, set_exp_density);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   void adjust_to_camera(const TransformState *camera_transform);
@@ -132,9 +132,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, Fog::Mode mode);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, Fog::Mode mode);
 
-INLINE ostream &operator << (ostream &out, const Fog &fog) {
+INLINE std::ostream &operator << (std::ostream &out, const Fog &fog) {
   fog.output(out);
   return out;
 }

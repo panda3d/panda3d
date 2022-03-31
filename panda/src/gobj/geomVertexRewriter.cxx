@@ -17,9 +17,9 @@
  *
  */
 void GeomVertexRewriter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   const GeomVertexColumn *column = get_column();
-  if (column == (GeomVertexColumn *)NULL) {
+  if (column == nullptr) {
     out << "GeomVertexRewriter()";
 
   } else {

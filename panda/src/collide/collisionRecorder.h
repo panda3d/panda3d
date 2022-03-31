@@ -35,7 +35,7 @@ public:
   virtual ~CollisionRecorder();
 
 PUBLISHED:
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   virtual void begin_traversal();

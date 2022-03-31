@@ -25,6 +25,10 @@
 // than this, it must be bogus.
 #define INSANE_SIZE 20000
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const char * const extensions_img[] = {
   "img"
 };
@@ -82,7 +86,6 @@ get_suggested_extension() const {
  */
 PNMReader *PNMFileTypeIMG::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -93,7 +96,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeIMG::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 

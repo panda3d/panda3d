@@ -48,7 +48,7 @@ PUBLISHED:
   CPT(RenderEffect) remove_on_occluder(const NodePath &occluder) const;
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;

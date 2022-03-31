@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
-  INLINE explicit SequenceNode(const string &name);
+  INLINE explicit SequenceNode(const std::string &name);
 
 protected:
   SequenceNode(const SequenceNode &copy);
@@ -35,17 +35,18 @@ PUBLISHED:
   virtual int get_num_frames() const;
   INLINE void set_frame_rate(double frame_rate);
 
+  MAKE_PROPERTY(frame_rate, get_frame_rate, set_frame_rate);
+
 public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
   virtual bool safe_to_combine_children() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual int get_first_visible_child() const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   static void register_with_read_factory();

@@ -13,6 +13,21 @@
 
 #include "aiBehaviors.h"
 
+#include "arrival.h"
+#include "evade.h"
+#include "flee.h"
+#include "flock.h"
+#include "obstacleAvoidance.h"
+#include "pathFind.h"
+#include "pathFollow.h"
+#include "pursue.h"
+#include "seek.h"
+#include "wander.h"
+
+using std::cout;
+using std::endl;
+using std::string;
+
 static const float _PI = 3.14;
 
 AIBehaviors::AIBehaviors() {
@@ -21,16 +36,16 @@ AIBehaviors::AIBehaviors() {
   _previous_conflict = false;
   _conflict = false;
 
-  _seek_obj = NULL;
-  _flee_obj = NULL;
-  _pursue_obj = NULL;
-  _evade_obj = NULL;
-  _arrival_obj = NULL;
-  _wander_obj = NULL;
-  _flock_group = NULL;
-  _path_follow_obj = NULL;
-  _path_find_obj = NULL;
-  _obstacle_avoidance_obj = NULL;
+  _seek_obj = nullptr;
+  _flee_obj = nullptr;
+  _pursue_obj = nullptr;
+  _evade_obj = nullptr;
+  _arrival_obj = nullptr;
+  _wander_obj = nullptr;
+  _flock_group = nullptr;
+  _path_follow_obj = nullptr;
+  _path_find_obj = nullptr;
+  _obstacle_avoidance_obj = nullptr;
 
   turn_off("seek");
   turn_off("flee");
@@ -267,7 +282,7 @@ LVecBase3 AIBehaviors::calculate_prioritized() {
     accumulate_force("obstacle_avoidance", force);
   }
 
-  if(_path_follow_obj!=NULL) {
+  if(_path_follow_obj!=nullptr) {
     if(_path_follow_obj->_start) {
       _path_follow_obj->do_follow();
     }
@@ -286,13 +301,13 @@ LVecBase3 AIBehaviors::calculate_prioritized() {
   }
 
   if(is_on(_arrival)) {
-    if(_seek_obj != NULL) {
+    if(_seek_obj != nullptr) {
       LVecBase3 dirn = _steering_force;
       dirn.normalize();
       _steering_force = ((_steering_force.length() - _arrival_force.length()) * dirn);
     }
 
-    if(_pursue_obj != NULL) {
+    if(_pursue_obj != nullptr) {
       LVecBase3 dirn = _steering_force;
       dirn.normalize();
       _steering_force = ((_steering_force.length() - _arrival_force.length()) * _arrival_obj->_arrival_direction);
@@ -320,10 +335,10 @@ void AIBehaviors::remove_ai(string ai_type) {
             }
 
     case 1:  {
-              if(_seek_obj != NULL) {
+              if(_seek_obj != nullptr) {
                 turn_off("seek");
                 delete _seek_obj;
-                _seek_obj = NULL;
+                _seek_obj = nullptr;
               }
               break;
             }
@@ -338,10 +353,10 @@ void AIBehaviors::remove_ai(string ai_type) {
             }
 
     case 3: {
-              if(_pursue_obj != NULL) {
+              if(_pursue_obj != nullptr) {
                 turn_off("pursue");
                 delete _pursue_obj;
-                _pursue_obj = NULL;
+                _pursue_obj = nullptr;
               }
               break;
             }
@@ -356,59 +371,59 @@ void AIBehaviors::remove_ai(string ai_type) {
             }
 
     case 5: {
-              if(_arrival_obj != NULL) {
+              if(_arrival_obj != nullptr) {
                 turn_off("arrival");
                 turn_off("arrival_activate");
                 delete _arrival_obj;
-                _arrival_obj = NULL;
+                _arrival_obj = nullptr;
               }
               break;
             }
 
     case 6: {
-              if(_flock_group != NULL) {
+              if(_flock_group != nullptr) {
                 turn_off("flock");
                 turn_off("flock_activate");
-                _flock_group = NULL;
+                _flock_group = nullptr;
               }
               break;
             }
 
     case 7: {
-              if(_wander_obj != NULL) {
+              if(_wander_obj != nullptr) {
                 turn_off("wander");
                 delete _wander_obj;
-                _wander_obj = NULL;
+                _wander_obj = nullptr;
               }
               break;
             }
 
     case 8: {
-              if(_obstacle_avoidance_obj !=NULL) {
+              if(_obstacle_avoidance_obj !=nullptr) {
                 turn_off("obstacle_avoidance");
                 delete _obstacle_avoidance_obj;
-                _obstacle_avoidance_obj = NULL;
+                _obstacle_avoidance_obj = nullptr;
               }
               break;
             }
 
     case 9: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_off("pursue");
                 delete _pursue_obj;
-                _pursue_obj = NULL;
+                _pursue_obj = nullptr;
                 delete _path_follow_obj;
-                _path_follow_obj = NULL;
+                _path_follow_obj = nullptr;
               }
               break;
             }
     case 16: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_off("pursue");
                 delete _pursue_obj;
-                _pursue_obj = NULL;
+                _pursue_obj = nullptr;
                 delete _path_follow_obj;
-                _path_follow_obj = NULL;
+                _path_follow_obj = nullptr;
               }
               break;
             }
@@ -436,7 +451,7 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 1:  {
-              if(_seek_obj != NULL) {
+              if(_seek_obj != nullptr) {
                 turn_off("seek");
               }
               break;
@@ -451,7 +466,7 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 3: {
-              if(_pursue_obj != NULL) {
+              if(_pursue_obj != nullptr) {
                 turn_off("pursue");
               }
               break;
@@ -466,7 +481,7 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 5: {
-              if(_arrival_obj != NULL) {
+              if(_arrival_obj != nullptr) {
                 turn_off("arrival");
                 turn_off("arrival_activate");
               }
@@ -474,7 +489,7 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 6: {
-              if(_flock_group != NULL) {
+              if(_flock_group != nullptr) {
                 turn_off("flock");
                 turn_off("flock_activate");
               }
@@ -482,14 +497,14 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 7: {
-              if(_wander_obj != NULL) {
+              if(_wander_obj != nullptr) {
                 turn_off("wander");
               }
               break;
             }
 
     case 8: {
-              if(_obstacle_avoidance_obj != NULL) {
+              if(_obstacle_avoidance_obj != nullptr) {
                 turn_off("obstacle_avoidance");
                 turn_off("obstacle_avoidance_activate");
               }
@@ -497,14 +512,14 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 9: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_off("pursue");
                 _path_follow_obj->_start = false;
               }
               break;
             }
     case 16: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_off("pursue");
                 _path_follow_obj->_start = false;
               }
@@ -534,7 +549,7 @@ void AIBehaviors::resume_ai(string ai_type) {
             }
 
     case 1:  {
-              if(_seek_obj != NULL) {
+              if(_seek_obj != nullptr) {
                 turn_on("seek");
               }
               break;
@@ -548,7 +563,7 @@ void AIBehaviors::resume_ai(string ai_type) {
             }
 
     case 3: {
-              if(_pursue_obj != NULL) {
+              if(_pursue_obj != nullptr) {
                 turn_on("pursue");
               }
               break;
@@ -562,42 +577,42 @@ void AIBehaviors::resume_ai(string ai_type) {
             }
 
     case 5: {
-              if(_arrival_obj != NULL) {
+              if(_arrival_obj != nullptr) {
                 turn_on("arrival");
               }
               break;
             }
 
     case 6: {
-              if(_flock_group != NULL) {
+              if(_flock_group != nullptr) {
                 turn_on("flock");
               }
               break;
             }
 
     case 7: {
-              if(_wander_obj != NULL) {
+              if(_wander_obj != nullptr) {
                 turn_on("wander");
               }
               break;
             }
 
     case 8: {
-              if(_obstacle_avoidance_obj != NULL) {
+              if(_obstacle_avoidance_obj != nullptr) {
                 turn_on("obstacle_avoidance");
               }
               break;
             }
 
     case 9: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_on("pursue");
                 _path_follow_obj->_start = true;
               }
               break;
             }
     case 16: {
-              if(_pursue_obj != NULL && _path_follow_obj != NULL) {
+              if(_pursue_obj != nullptr && _path_follow_obj != nullptr) {
                 turn_off("pursue");
                 _path_follow_obj->_start = false;
               }

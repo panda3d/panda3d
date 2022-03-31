@@ -38,18 +38,21 @@ class Filename;
  */
 class XFileNode : public TypedObject, public Namable,
                   virtual public ReferenceCount {
+protected:
+  INLINE XFileNode(XFile *x_file);
+
 public:
-  XFileNode(XFile *x_file, const string &name);
+  XFileNode(XFile *x_file, const std::string &name);
   virtual ~XFileNode();
 
   INLINE XFile *get_x_file() const;
 
   INLINE int get_num_children() const;
   INLINE XFileNode *get_child(int n) const;
-  XFileNode *find_child(const string &name) const;
-  int find_child_index(const string &name) const;
+  XFileNode *find_child(const std::string &name) const;
+  int find_child_index(const std::string &name) const;
   int find_child_index(const XFileNode *child) const;
-  XFileNode *find_descendent(const string &name) const;
+  XFileNode *find_descendent(const std::string &name) const;
 
   INLINE int get_num_objects() const;
   INLINE XFileDataNode *get_object(int n) const;
@@ -60,12 +63,12 @@ public:
   virtual bool is_template_def() const;
   virtual bool is_reference() const;
   virtual bool is_object() const;
-  virtual bool is_standard_object(const string &template_name) const;
+  virtual bool is_standard_object(const std::string &template_name) const;
 
   void add_child(XFileNode *node);
   virtual void clear();
 
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_text(std::ostream &out, int indent_level) const;
 
   typedef pmap<const XFileDataDef *, XFileDataObject *> PrevData;
 
@@ -81,21 +84,21 @@ public:
   // The following methods can be used to create instances of the standard
   // template objects.  These definitions match those defined in
   // standardTemplates.x in this directory (and compiled into the executable).
-  XFileDataNode *add_Mesh(const string &name);
-  XFileDataNode *add_MeshNormals(const string &name);
-  XFileDataNode *add_MeshVertexColors(const string &name);
-  XFileDataNode *add_MeshTextureCoords(const string &name);
-  XFileDataNode *add_MeshMaterialList(const string &name);
-  XFileDataNode *add_Material(const string &name, const LColor &face_color,
+  XFileDataNode *add_Mesh(const std::string &name);
+  XFileDataNode *add_MeshNormals(const std::string &name);
+  XFileDataNode *add_MeshVertexColors(const std::string &name);
+  XFileDataNode *add_MeshTextureCoords(const std::string &name);
+  XFileDataNode *add_MeshMaterialList(const std::string &name);
+  XFileDataNode *add_Material(const std::string &name, const LColor &face_color,
                               double power, const LRGBColor &specular_color,
                               const LRGBColor &emissive_color);
-  XFileDataNode *add_TextureFilename(const string &name,
+  XFileDataNode *add_TextureFilename(const std::string &name,
                                      const Filename &filename);
-  XFileDataNode *add_Frame(const string &name);
+  XFileDataNode *add_Frame(const std::string &name);
   XFileDataNode *add_FrameTransformMatrix(const LMatrix4d &mat);
 
 public:
-  static string make_nice_name(const string &str);
+  static std::string make_nice_name(const std::string &str);
 
 protected:
   XFile *_x_file;
@@ -106,7 +109,7 @@ protected:
   typedef pvector<XFileDataNode *> Objects;
   Objects _objects;
 
-  typedef pmap<string, int> ChildrenByName;
+  typedef pmap<std::string, int> ChildrenByName;
   ChildrenByName _children_by_name;
 
 public:

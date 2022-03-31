@@ -26,7 +26,7 @@ class XFileDataDef;
  */
 class XFileTemplate : public XFileNode {
 public:
-  XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid);
+  XFileTemplate(XFile *x_file, const std::string &name, const WindowsGuid &guid);
   virtual ~XFileTemplate();
 
   virtual bool has_guid() const;
@@ -35,7 +35,7 @@ public:
   virtual bool is_template_def() const;
 
   virtual void clear();
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_text(std::ostream &out, int indent_level) const;
 
   INLINE bool is_standard() const;
 

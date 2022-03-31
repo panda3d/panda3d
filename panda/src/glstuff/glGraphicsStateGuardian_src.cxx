@@ -14,7 +14,7 @@
  *   get_supports_cg_profile)
  */
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"
@@ -52,6 +52,7 @@
 #include "alphaTestAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthWriteAttrib.h"
 #include "fogAttrib.h"
@@ -68,10 +69,17 @@
 #include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
-#include "Cg/cgGL.h"
+#include <Cg/cgGL.h>
 #endif
 
 #include <algorithm>
+
+using std::dec;
+using std::endl;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
 
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
@@ -84,9 +92,11 @@ PStatCollector CLP(GraphicsStateGuardian)::_vertex_array_update_pcollector("Draw
 PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Update texture");
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
+PStatCollector CLP(GraphicsStateGuardian)::_check_residency_pcollector("*:PStats:Check residency");
 
-#ifndef OPENGLES_1
-PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
+#if defined(HAVE_CG) && !defined(OPENGLES)
+AtomicAdjust::Integer CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts = 0;
+pvector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
 #endif
 
 // The following noop functions are assigned to the corresponding glext
@@ -148,6 +158,13 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 #endif
 
 #ifndef OPENGLES_1
+static void APIENTRY
+null_glPolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp) {
+  glPolygonOffset(factor, units);
+}
+#endif
+
+#ifndef OPENGLES_1
 // We have a default shader that will be applied when there isn't any shader
 // applied (e.g.  if it failed to compile).  We need this because OpenGL ES
 // 2.x and OpenGL 3.2+ core don't have a fixed-function pipeline.  This
@@ -166,6 +183,7 @@ static const string default_vshader =
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "attribute vec4 p3d_Vertex;\n"
   "attribute vec4 p3d_Color;\n"
@@ -174,12 +192,57 @@ static const string default_vshader =
   "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
+
+#ifndef OPENGLES
+// This version of the shader is used if vertices-float64 is enabled.
+static const string default_vshader_fp64 =
+#ifdef __APPLE__
+  "#version 150\n"
+#else
+  "#version 130\n"
+#endif
+  "#extension GL_ARB_vertex_attrib_64bit : require\n"
+  "#extension GL_ARB_gpu_shader_fp64 : require\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+
+// Same as above, but for OpenGL 4.1.
+static const string default_vshader_fp64_gl41 =
+  "#version 410\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+#endif
 
 static const string default_fshader =
 #ifndef OPENGLES
@@ -194,6 +257,7 @@ static const string default_fshader =
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
   "varying lowp vec4 color;\n"
@@ -230,6 +294,22 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+uchar_l_to_rgb(unsigned char *dest, const unsigned char *source,
+               int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -243,6 +323,23 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+uchar_la_to_rgba(unsigned char *dest, const unsigned char *source,
+                 int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -262,6 +359,22 @@ ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+ushort_l_to_rgb(unsigned short *dest, const unsigned short *source,
+                int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -275,6 +388,23 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+ushort_la_to_rgba(unsigned short *dest, const unsigned short *source,
+                  int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -297,6 +427,12 @@ fix_component_ordering(PTA_uchar &new_image,
 
   switch (external_format) {
   case GL_RGB:
+    if (tex->get_num_components() == 1) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 3);
+      uchar_l_to_rgb(new_image, orig_image, orig_image_size);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -320,6 +456,12 @@ fix_component_ordering(PTA_uchar &new_image,
     break;
 
   case GL_RGBA:
+    if (tex->get_num_components() == 2) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 2);
+      uchar_la_to_rgba(new_image, orig_image, orig_image_size / 2);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -394,6 +536,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
+  _has_attrib_depth_range = false;
 
   _white_texture = 0;
 
@@ -401,7 +544,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _shader_point_size = false;
 #endif
 
-#ifdef HAVE_CG
+#if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
 #endif
 
@@ -482,33 +625,43 @@ reset() {
   GraphicsStateGuardian::reset();
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
-  // we do care, about the state.  _inv_state_mask =
-  // RenderState::SlotMask::all_on();
+  // we do care, about the state.
+#ifndef OPENGLES_1
   _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
   _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthBiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+#if !defined(OPENGLES) || defined(OPENGLES_1)
   _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
+  // We only care about this state if we are using the fixed-function pipeline.
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
+  }
+#endif
 
   // Output the vendor and version strings.
   query_gl_version();
@@ -528,7 +681,7 @@ reset() {
     PFNGLGETSTRINGIPROC _glGetStringi =
       (PFNGLGETSTRINGIPROC)get_extension_func("glGetStringi");
 
-    if (_glGetStringi != NULL) {
+    if (_glGetStringi != nullptr) {
       GLint n = 0;
       glGetIntegerv(GL_NUM_EXTENSIONS, &n);
       for (GLint i = 0; i < n; ++i) {
@@ -551,8 +704,31 @@ reset() {
   query_glsl_version();
 
 #ifndef OPENGLES
-  bool core_profile = is_at_least_gl_version(3, 2) &&
-                      !has_extension("GL_ARB_compatibility");
+  // Determine whether this OpenGL context has compatibility features.
+  bool core_profile = false;
+
+  if (_gl_version_major >= 3) {
+    if (_gl_version_major > 3 || _gl_version_minor >= 2) {
+      // OpenGL 3.2 has a built-in way to check this.
+      GLint profile_mask = 0;
+      glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile_mask);
+
+      if (profile_mask & GL_CONTEXT_CORE_PROFILE_BIT) {
+        core_profile = true;
+      } else if (profile_mask & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) {
+        core_profile = false;
+      } else {
+        core_profile = !has_extension("GL_ARB_compatibility");
+      }
+    } else {
+      // OpenGL 3.0/3.1.
+      GLint flags = 0;
+      glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+      if (flags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) {
+        core_profile = true;
+      }
+    }
+  }
 
   if (GLCAT.is_debug()) {
     if (core_profile) {
@@ -570,6 +746,22 @@ reset() {
 
   // Print out a list of all extensions.
   report_extensions();
+
+  // Check if we are running under a profiling tool such as apitrace.
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_debug_marker")) {
+    _glPushGroupMarker = (PFNGLPUSHGROUPMARKEREXTPROC)
+      get_extension_func("glPushGroupMarkerEXT");
+    _glPopGroupMarker = (PFNGLPOPGROUPMARKEREXTPROC)
+      get_extension_func("glPopGroupMarkerEXT");
+
+    // Start a group right away.
+    push_group_marker("reset");
+  } else {
+    _glPushGroupMarker = nullptr;
+    _glPopGroupMarker = nullptr;
+  }
+#endif
 
   // Initialize OpenGL debugging output first, if enabled and supported.
   _supports_debug = false;
@@ -606,18 +798,20 @@ reset() {
         get_extension_func("glDebugMessageControlARB");
       _supports_debug = true;
 #endif
+    } else {
+      _supports_debug = false;
     }
 
     if (_supports_debug) {
       // Set the categories we want to listen to.
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH,
-                             0, NULL, GLCAT.is_error());
+                             0, nullptr, GLCAT.is_error());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
-                             0, NULL, GLCAT.is_warning());
+                             0, nullptr, GLCAT.is_warning());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW,
-                             0, NULL, GLCAT.is_info());
+                             0, nullptr, GLCAT.is_info());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION,
-                             0, NULL, GLCAT.is_debug());
+                             0, nullptr, GLCAT.is_debug());
 
       // Enable the callback.
       _glDebugMessageCallback((GLDEBUGPROC_P) &debug_callback, (void*)this);
@@ -635,10 +829,12 @@ reset() {
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
 
-    if (_supports_debug) {
-      GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
-    } else {
-      GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+    if (GLCAT.is_debug()) {
+      if (_supports_debug) {
+        GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
+      } else {
+        GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+      }
     }
   }
 
@@ -671,7 +867,7 @@ reset() {
       get_extension_func("glPointParameterfvARB");
   }
   if (_supports_point_parameters) {
-    if (_glPointParameterfv == NULL) {
+    if (_glPointParameterfv == nullptr) {
       GLCAT.warning()
         << "glPointParameterfv advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_point_parameters = false;
@@ -701,6 +897,28 @@ reset() {
     _supported_geom_rendering |= Geom::GR_point_sprite;
   }
 
+  // Determine whether we support wide lines (and how wide they can be).
+  {
+    GLfloat aliased_range[2] = {1.0f, 1.0f};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, aliased_range);
+
+    _max_line_width = aliased_range[1];
+
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (has_fixed_function_pipeline()) {
+#ifndef OPENGLES
+      GLfloat range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_LINE_WIDTH_RANGE, range);
+      _max_line_width = std::max(_max_line_width, range[1]);
+#endif
+
+      GLfloat smooth_range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, smooth_range);
+      _max_line_width = std::max(_max_line_width, smooth_range[1]);
+    }
+#endif
+  }
+
 #ifdef OPENGLES_1
   // OpenGL ES 1.0 does not support primitive restart indices.
 
@@ -712,7 +930,7 @@ reset() {
 
 #else
   _explicit_primitive_restart = false;
-  _glPrimitiveRestartIndex = NULL;
+  _glPrimitiveRestartIndex = nullptr;
 
   if (gl_support_primitive_restart_index) {
     if ((is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) &&
@@ -766,7 +984,7 @@ reset() {
       get_extension_func("glDrawRangeElementsEXT");
   }
 #endif
-  if (_glDrawRangeElements == NULL) {
+  if (_glDrawRangeElements == nullptr) {
     GLCAT.warning()
       << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     _glDrawRangeElements = null_glDrawRangeElements;
@@ -795,7 +1013,7 @@ reset() {
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func("glTexSubImage3DEXT");
 
-    _glCopyTexSubImage3D = NULL;
+    _glCopyTexSubImage3D = nullptr;
     if (has_extension("GL_EXT_copy_texture")) {
       _glCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3DPROC)
         get_extension_func("glCopyTexSubImage3DEXT");
@@ -816,7 +1034,7 @@ reset() {
   }
 
   if (_supports_3d_texture) {
-    if (_glTexImage3D == NULL || _glTexSubImage3D == NULL) {
+    if (_glTexImage3D == nullptr || _glTexSubImage3D == nullptr) {
       GLCAT.warning()
         << "3-D textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_3d_texture = false;
@@ -833,8 +1051,10 @@ reset() {
 #endif
     _supports_tex_storage = true;
 
+#ifndef OPENGLES
     _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
       get_extension_func("glTexStorage1D");
+#endif
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2D");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -844,8 +1064,6 @@ reset() {
   else if (has_extension("GL_EXT_texture_storage")) {
     _supports_tex_storage = true;
 
-    _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
-      get_extension_func("glTexStorage1DEXT");
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2DEXT");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -854,7 +1072,11 @@ reset() {
 #endif
 
   if (_supports_tex_storage) {
-    if (_glTexStorage1D == NULL || _glTexStorage2D == NULL || _glTexStorage3D == NULL) {
+    if (
+#ifndef OPENGLES
+        _glTexStorage1D == nullptr ||
+#endif
+        _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
       GLCAT.warning()
         << "Immutable texture storage advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_tex_storage = false;
@@ -866,10 +1088,26 @@ reset() {
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_clear_texture")) {
     _glClearTexImage = (PFNGLCLEARTEXIMAGEPROC)
       get_extension_func("glClearTexImage");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEPROC)
+      get_extension_func("glClearTexSubImage");
 
-    if (_glClearTexImage == NULL) {
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
       GLCAT.warning()
-        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
+#elif !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
+      get_extension_func("glClearTexImageEXT");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEEXTPROC)
+      get_extension_func("glClearTexSubImageEXT");
+
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
+      GLCAT.warning()
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_texture = true;
     }
@@ -882,7 +1120,7 @@ reset() {
     _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
       get_extension_func("glClearBufferData");
 
-    if (_glClearBufferData == NULL) {
+    if (_glClearBufferData == nullptr) {
       GLCAT.warning()
         << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -908,7 +1146,7 @@ reset() {
 #endif
   }
 
-  if (_supports_2d_texture_array && _glFramebufferTextureLayer == NULL) {
+  if (_supports_2d_texture_array && _glFramebufferTextureLayer == nullptr) {
     GLCAT.warning()
       << "Texture arrays advertised as supported by OpenGL runtime, but could not get pointer to glFramebufferTextureLayer function.\n";
   }
@@ -959,14 +1197,14 @@ reset() {
   _supports_compressed_texture = true;
 
   // Supported in the core.  1D textures are not supported by OpenGL ES.
-  _glCompressedTexImage1D = NULL;
+  _glCompressedTexImage1D = nullptr;
   _glCompressedTexImage2D = glCompressedTexImage2D;
-  _glCompressedTexSubImage1D = NULL;
+  _glCompressedTexSubImage1D = nullptr;
   _glCompressedTexSubImage2D = glCompressedTexSubImage2D;
-  _glGetCompressedTexImage = NULL;
+  _glGetCompressedTexImage = nullptr;
 
-  _glCompressedTexImage3D = NULL;
-  _glCompressedTexSubImage3D = NULL;
+  _glCompressedTexImage3D = nullptr;
+  _glCompressedTexSubImage3D = nullptr;
 #ifdef OPENGLES_2
   if (_supports_3d_texture) {
     _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
@@ -1018,13 +1256,13 @@ reset() {
   }
 
   if (_supports_compressed_texture) {
-    if (_glCompressedTexImage1D == NULL ||
-        _glCompressedTexImage2D == NULL ||
-        _glCompressedTexImage3D == NULL ||
-        _glCompressedTexSubImage1D == NULL ||
-        _glCompressedTexSubImage2D == NULL ||
-        _glCompressedTexSubImage3D == NULL ||
-        _glGetCompressedTexImage == NULL) {
+    if (_glCompressedTexImage1D == nullptr ||
+        _glCompressedTexImage2D == nullptr ||
+        _glCompressedTexImage3D == nullptr ||
+        _glCompressedTexSubImage1D == nullptr ||
+        _glCompressedTexSubImage2D == nullptr ||
+        _glCompressedTexSubImage3D == nullptr ||
+        _glGetCompressedTexImage == nullptr) {
       GLCAT.warning()
         << "Compressed textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_compressed_texture = false;
@@ -1109,10 +1347,12 @@ reset() {
   // Note that these extensions only offer support for GL_BGRA, not GL_BGR.
   _supports_bgr = has_extension("GL_EXT_texture_format_BGRA8888") ||
                   has_extension("GL_APPLE_texture_format_BGRA8888");
+  _supports_bgra_read = has_extension("GL_EXT_read_format_bgra");
 #else
   // In regular OpenGL, we have both GL_BGRA and GL_BGR.
   _supports_bgr =
     is_at_least_gl_version(1, 2) || has_extension("GL_EXT_bgra");
+  _supports_bgra_read = _supports_bgr;
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -1135,11 +1375,34 @@ reset() {
   _supports_packed_dabc = false;
   _supports_packed_ufloat = false;
 #else
-  _supports_packed_dabc = is_at_least_gl_version(3, 2) ||
+  _supports_packed_dabc = (is_at_least_gl_version(3, 2) ||
                           has_extension("GL_ARB_vertex_array_bgra") ||
-                          has_extension("GL_EXT_vertex_array_bgra");
+                          has_extension("GL_EXT_vertex_array_bgra")) && gl_support_vertex_array_bgra;
+
   _supports_packed_ufloat = is_at_least_gl_version(4, 4) ||
                             has_extension("GL_ARB_vertex_type_10f_11f_11f_rev");
+
+  if (_supports_packed_dabc) {
+    int number = 0;
+    if (_gl_renderer.compare(0, 14, "AMD Radeon RX ") == 0) {
+      number = atoi(_gl_renderer.c_str() + 14);
+    }
+    else if (_gl_renderer.compare(0, 10, "Radeon RX ") == 0) {
+      number = atoi(_gl_renderer.c_str() + 10);
+    }
+
+    // This is buggy for RDNA cards.  Verified on 5700 XT, reportedly also
+    // occurs on the entire 5*00 and 6*00 line.
+    if (number >= 5000 && number < 8000) {
+      _supports_packed_dabc = false;
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Detected AMD Radeon RX " << number
+          << ", disabling use of GL_BGRA vertex attributes\n";
+      }
+    }
+  }
 #endif
 
 #ifdef OPENGLES
@@ -1239,13 +1502,13 @@ reset() {
   }
 
   if (supports_multitexture) {
-    if (_glActiveTexture == NULL
+    if (_glActiveTexture == nullptr
 #ifdef SUPPORT_FIXED_FUNCTION
-        || (has_fixed_function_pipeline() && _glClientActiveTexture == NULL)
+        || (has_fixed_function_pipeline() && _glClientActiveTexture == nullptr)
 #endif
 #ifdef SUPPORT_IMMEDIATE_MODE
-        || GLf(_glMultiTexCoord1) == NULL || GLf(_glMultiTexCoord2) == NULL
-        || GLf(_glMultiTexCoord3) == NULL || GLf(_glMultiTexCoord4) == NULL
+        || GLf(_glMultiTexCoord1) == nullptr || GLf(_glMultiTexCoord2) == nullptr
+        || GLf(_glMultiTexCoord3) == nullptr || GLf(_glMultiTexCoord4) == nullptr
 #endif
         ) {
       GLCAT.warning()
@@ -1408,9 +1671,9 @@ reset() {
 #endif  // OPENGLES_1
 
   if (_supports_buffers) {
-    if (_glGenBuffers == NULL || _glBindBuffer == NULL ||
-        _glBufferData == NULL || _glBufferSubData == NULL ||
-        _glDeleteBuffers == NULL) {
+    if (_glGenBuffers == nullptr || _glBindBuffer == nullptr ||
+        _glBufferData == nullptr || _glBufferSubData == nullptr ||
+        _glDeleteBuffers == nullptr) {
       GLCAT.warning()
         << "Buffers advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_buffers = false;
@@ -1428,7 +1691,7 @@ reset() {
       get_extension_func("glMapBufferRangeEXT");
 
   } else {
-    _glMapBufferRange = NULL;
+    _glMapBufferRange = nullptr;
   }
 #else
   // Check for various advanced buffer management features.
@@ -1436,14 +1699,14 @@ reset() {
     _glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)
       get_extension_func("glMapBufferRange");
   } else {
-    _glMapBufferRange = NULL;
+    _glMapBufferRange = nullptr;
   }
 
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_buffer_storage")) {
     _glBufferStorage = (PFNGLBUFFERSTORAGEPROC)
       get_extension_func("glBufferStorage");
 
-    if (_glBufferStorage != NULL) {
+    if (_glBufferStorage != nullptr) {
       _supports_buffer_storage = true;
     } else {
       GLCAT.warning()
@@ -1485,8 +1748,8 @@ reset() {
   }
 
   if (_supports_vao) {
-    if (_glBindVertexArray == NULL || _glDeleteVertexArrays == NULL ||
-        _glGenVertexArrays == NULL) {
+    if (_glBindVertexArray == nullptr || _glDeleteVertexArrays == nullptr ||
+        _glGenVertexArrays == nullptr) {
       GLCAT.warning()
         << "Vertex array objects advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vao = false;
@@ -1520,13 +1783,17 @@ reset() {
 
   } else if (has_extension("GL_EXT_geometry_shader4")) {
     _supports_geometry_shaders = true;
-    _glFramebufferTexture = NULL;
+    _glFramebufferTexture = nullptr;
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteriEXT");
 
   } else {
     _supports_geometry_shaders = false;
-    _glFramebufferTexture = NULL;
+    _glFramebufferTexture = nullptr;
+  }
+
+  if (_supports_geometry_shaders) {
+    _supported_geom_rendering |= Geom::GR_adjacency;
   }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
@@ -1581,9 +1848,9 @@ reset() {
         _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -1591,6 +1858,8 @@ reset() {
         _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
       }
     }
+
+    Shader::set_default_caps(_shader_caps);
 
   } else if (_supports_glsl) {
     // No, but we do support GLSL...
@@ -1614,7 +1883,7 @@ reset() {
     _glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC)
       get_extension_func("glDispatchCompute");
 
-    if (_glDispatchCompute != NULL) {
+    if (_glDispatchCompute != nullptr) {
       _supports_compute_shaders = true;
     }
   }
@@ -1698,17 +1967,48 @@ reset() {
        get_extension_func("glVertexAttribPointer");
 
     if (is_at_least_gl_version(3, 0)) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocation");
       _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
          get_extension_func("glVertexAttribIPointer");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uiv");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uiv");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uiv");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uiv");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4ui");
+
+    } else if (has_extension("GL_EXT_gpu_shader4")) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocationEXT");
+      _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
+         get_extension_func("glVertexAttribIPointerEXT");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uivEXT");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uivEXT");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uivEXT");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uivEXT");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4uiEXT");
+
     } else {
-      _glVertexAttribIPointer = NULL;
+      _glBindFragDataLocation = nullptr;
+      _glVertexAttribIPointer = nullptr;
+      _glVertexAttribI4ui = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
          get_extension_func("glVertexAttribLPointer");
     } else {
-      _glVertexAttribLPointer = NULL;
+      _glVertexAttribLPointer = nullptr;
     }
 
     if (_supports_tessellation_shaders) {
@@ -1729,8 +2029,12 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointerARB");
 
-    _glVertexAttribIPointer = NULL;
-    _glVertexAttribLPointer = NULL;
+    _glBindFragDataLocation = nullptr;
+    _glVertexAttribI4ui = nullptr;
+    _glVertexAttribIPointer = nullptr;
+    _glVertexAttribLPointer = nullptr;
+  } else {
+    _glVertexAttribI4ui = nullptr;
   }
 #endif
 
@@ -1762,19 +2066,33 @@ reset() {
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniform1iv = glUniform1iv;
+  _glUniform2iv = glUniform2iv;
+  _glUniform3iv = glUniform3iv;
+  _glUniform4iv = glUniform4iv;
   _glUniformMatrix3fv = glUniformMatrix3fv;
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
   _glVertexAttrib4fv = glVertexAttrib4fv;
   _glVertexAttrib4dv = null_glVertexAttrib4dv;
   _glVertexAttribPointer = glVertexAttribPointer;
-  _glVertexAttribLPointer = NULL;
+  _glVertexAttribLPointer = nullptr;
 
   if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
       get_extension_func("glVertexAttribIPointer");
+    _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+      get_extension_func("glVertexAttribI4ui");
   } else {
-    _glVertexAttribIPointer = NULL;
+    _glVertexAttribIPointer = nullptr;
+    _glVertexAttribI4ui = nullptr;
+  }
+
+  if (has_extension("GL_EXT_blend_func_extended")) {
+    _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+       get_extension_func("glBindFragDataLocationEXT");
+  } else {
+    _glBindFragDataLocation = nullptr;
   }
 #endif
 
@@ -1811,8 +2129,18 @@ reset() {
   // to have a shader applied, or if it failed to compile.  This default
   // shader just outputs a red color, indicating that something went wrong.
 #ifndef OPENGLES_1
-  if (_default_shader == NULL && !has_fixed_function_pipeline()) {
-    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+  if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
+#ifndef OPENGLES
+    bool use_float64 = vertices_float64;
+    if (use_float64 && is_at_least_gl_version(4, 1)) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64_gl41, default_fshader);
+    } else if (use_float64 && has_extension("GL_ARB_vertex_attrib_64bit")) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64, default_fshader);
+    } else
+#endif
+    {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+    }
   }
 #endif
 
@@ -1844,6 +2172,8 @@ reset() {
        get_extension_func("glGetProgramResourceName");
     _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
        get_extension_func("glGetProgramResourceiv");
+    _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
+       get_extension_func("glShaderStorageBlockBinding");
   } else
 #endif
   {
@@ -1979,7 +2309,7 @@ reset() {
 
 #ifndef OPENGLES_1
   if (_supports_geometry_instancing) {
-    if (_glDrawArraysInstanced == NULL || _glDrawElementsInstanced == NULL) {
+    if (_glDrawArraysInstanced == nullptr || _glDrawElementsInstanced == nullptr) {
       GLCAT.warning()
         << "Geometry instancing advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_geometry_instancing = false;
@@ -1987,7 +2317,7 @@ reset() {
   }
 
   if (_supports_vertex_attrib_divisor) {
-    if (_glVertexAttribDivisor == NULL) {
+    if (_glVertexAttribDivisor == nullptr) {
       GLCAT.warning()
         << "Instanced vertex arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vertex_attrib_divisor = false;
@@ -2008,7 +2338,7 @@ reset() {
     _glDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECTPROC)
       get_extension_func("glDrawElementsIndirect");
 
-    if (_glDrawArraysIndirect == NULL || _glDrawElementsIndirect == NULL) {
+    if (_glDrawArraysIndirect == nullptr || _glDrawElementsIndirect == nullptr) {
       GLCAT.warning()
         << "Indirect draw advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
@@ -2045,7 +2375,7 @@ reset() {
       get_extension_func("glGenFramebuffersOES");
     _glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSOESPROC)
       get_extension_func("glCheckFramebufferStatusOES");
-    _glFramebufferTexture1D = NULL;
+    _glFramebufferTexture1D = nullptr;
     _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DOESPROC)
       get_extension_func("glFramebufferTexture2DOES");
     _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFEROESPROC)
@@ -2056,7 +2386,7 @@ reset() {
       get_extension_func("glGenerateMipmapOES");
   } else {
     _supports_framebuffer_object = false;
-    _glGenerateMipmap = NULL;
+    _glGenerateMipmap = nullptr;
   }
 #elif defined(OPENGLES)
   // In OpenGL ES 2.x, FBO's are supported in the core.
@@ -2072,7 +2402,7 @@ reset() {
   _glDeleteFramebuffers = glDeleteFramebuffers;
   _glGenFramebuffers = glGenFramebuffers;
   _glCheckFramebufferStatus = glCheckFramebufferStatus;
-  _glFramebufferTexture1D = NULL;
+  _glFramebufferTexture1D = nullptr;
   _glFramebufferTexture2D = glFramebufferTexture2D;
   _glFramebufferRenderbuffer = glFramebufferRenderbuffer;
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
@@ -2203,7 +2533,7 @@ reset() {
     _supports_framebuffer_object = false;
     _supports_framebuffer_multisample = false;
     _supports_framebuffer_blit = false;
-    _glGenerateMipmap = NULL;
+    _glGenerateMipmap = nullptr;
   }
 #endif
 
@@ -2211,8 +2541,10 @@ reset() {
   if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
+
+    _supports_dsa = true;
   } else {
-    _glGenerateTextureMipmap = NULL;
+    _supports_dsa = false;
   }
 #endif
 
@@ -2242,7 +2574,7 @@ reset() {
 #endif
 
 #if defined(OPENGLES_1)
-  _glDrawBuffers = NULL;
+  _glDrawBuffers = nullptr;
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
@@ -2259,7 +2591,7 @@ reset() {
       get_extension_func("glDrawBuffersNV");
 
   } else {
-    _glDrawBuffers = NULL;
+    _glDrawBuffers = nullptr;
   }
 
 #else
@@ -2272,13 +2604,27 @@ reset() {
       get_extension_func("glDrawBuffersARB");
 
   } else {
-    _glDrawBuffers = NULL;
+    _glDrawBuffers = nullptr;
+  }
+#endif
+
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+  if (is_at_least_gles_version(3, 0)) {
+    _glReadBuffer = (PFNGLREADBUFFERPROC)
+      get_extension_func("glReadBuffer");
+
+  } else if (has_extension("GL_NV_read_buffer")) {
+    _glReadBuffer = (PFNGLREADBUFFERPROC)
+      get_extension_func("glReadBufferNV");
+
+  } else {
+    _glReadBuffer = nullptr;
   }
 #endif
 
 #ifndef OPENGLES_1
   _max_color_targets = 1;
-  if (_glDrawBuffers != NULL) {
+  if (_glDrawBuffers != nullptr) {
     GLint max_draw_buffers = 0;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_color_targets = max_draw_buffers;
@@ -2295,9 +2641,9 @@ reset() {
       get_extension_func("glClearBufferfi");
 
   } else {
-    _glClearBufferfv = NULL;
-    _glClearBufferiv = NULL;
-    _glClearBufferfi = NULL;
+    _glClearBufferfv = nullptr;
+    _glClearBufferiv = nullptr;
+    _glClearBufferfi = nullptr;
   }
 #endif  // !OPENGLES
 
@@ -2312,7 +2658,7 @@ reset() {
     _glDepthRangeArrayv = (PFNGLDEPTHRANGEARRAYVPROC)
       get_extension_func("glDepthRangeArrayv");
 
-    if (_glViewportArrayv == NULL || _glScissorArrayv == NULL || _glDepthRangeArrayv == NULL) {
+    if (_glViewportArrayv == nullptr || _glScissorArrayv == nullptr || _glDepthRangeArrayv == nullptr) {
       GLCAT.warning()
           << "Viewport arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
@@ -2365,9 +2711,9 @@ reset() {
   }
 
   if (_supports_occlusion_query) {
-    if (_glGenQueries == NULL || _glBeginQuery == NULL ||
-        _glEndQuery == NULL || _glDeleteQueries == NULL ||
-        _glGetQueryiv == NULL || _glGetQueryObjectuiv == NULL) {
+    if (_glGenQueries == nullptr || _glBeginQuery == nullptr ||
+        _glEndQuery == nullptr || _glDeleteQueries == nullptr ||
+        _glGetQueryiv == nullptr || _glGetQueryObjectuiv == nullptr) {
       GLCAT.warning()
         << "Occlusion queries advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_occlusion_query = false;
@@ -2408,7 +2754,7 @@ reset() {
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func("glBlendEquationOES");
 
-    if (_glBlendEquation == NULL) {
+    if (_glBlendEquation == nullptr) {
       _glBlendEquation = null_glBlendEquation;
       GLCAT.warning()
         << "BlendEquationOES advertised as supported by OpenGL ES runtime, but "
@@ -2422,7 +2768,7 @@ reset() {
     _glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEOESPROC)
       get_extension_func("glBlendEquationSeparateOES");
 
-    if (_glBlendEquation == NULL) {
+    if (_glBlendEquation == nullptr) {
       _supports_blend_equation_separate = false;
       GLCAT.warning()
         << "BlendEquationSeparateOES advertised as supported by OpenGL ES "
@@ -2432,14 +2778,14 @@ reset() {
     }
   } else {
     _supports_blend_equation_separate = false;
-    _glBlendEquationSeparate = NULL;
+    _glBlendEquationSeparate = nullptr;
   }
 
   if (has_extension("GL_OES_blend_func_separate")) {
     _glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEOESPROC)
       get_extension_func("glBlendFuncSeparateOES");
 
-    if (_glBlendFuncSeparate == NULL) {
+    if (_glBlendFuncSeparate == nullptr) {
       _glBlendFuncSeparate = null_glBlendFuncSeparate;
       GLCAT.warning()
         << "BlendFuncSeparateOES advertised as supported by OpenGL ES runtime, but "
@@ -2466,7 +2812,7 @@ reset() {
     _glBlendEquation = null_glBlendEquation;
   }
 
-  if (_glBlendEquation == NULL) {
+  if (_glBlendEquation == nullptr) {
     _glBlendEquation = null_glBlendEquation;
     GLCAT.warning()
       << "BlendEquation advertised as supported by OpenGL runtime, but could "
@@ -2485,10 +2831,10 @@ reset() {
 
   } else {
     _supports_blend_equation_separate = false;
-    _glBlendEquationSeparate = NULL;
+    _glBlendEquationSeparate = nullptr;
   }
 
-  if (_supports_blend_equation_separate && _glBlendEquationSeparate == NULL) {
+  if (_supports_blend_equation_separate && _glBlendEquationSeparate == nullptr) {
     _supports_blend_equation_separate = false;
     GLCAT.warning()
       << "BlendEquationSeparate advertised as supported by OpenGL runtime, "
@@ -2507,7 +2853,7 @@ reset() {
     _glBlendFuncSeparate = null_glBlendFuncSeparate;
   }
 
-  if (_glBlendFuncSeparate == NULL) {
+  if (_glBlendFuncSeparate == nullptr) {
     _glBlendFuncSeparate = null_glBlendFuncSeparate;
     GLCAT.warning()
       << "BlendFuncSeparate advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
@@ -2516,7 +2862,7 @@ reset() {
 
   // In OpenGL ES 2.x, this is supported in the core.  In 1.x, not at all.
 #ifndef OPENGLES
-  _glBlendColor = NULL;
+  _glBlendColor = nullptr;
   bool supports_blend_color = false;
   if (is_at_least_gl_version(1, 2)) {
     supports_blend_color = true;
@@ -2527,11 +2873,11 @@ reset() {
     _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func("glBlendColorEXT");
   }
-  if (supports_blend_color && _glBlendColor == NULL) {
+  if (supports_blend_color && _glBlendColor == nullptr) {
     GLCAT.warning()
       << "BlendColor advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
   }
-  if (_glBlendColor == NULL) {
+  if (_glBlendColor == nullptr) {
     _glBlendColor = null_glBlendColor;
   }
 #endif
@@ -2637,7 +2983,6 @@ reset() {
   GLint max_3d_texture_size = 0;
   GLint max_2d_texture_array_layers = 0;
   GLint max_cube_map_size = 0;
-  GLint max_buffer_texture_size = 0;
 
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   _max_texture_dimension = max_texture_size;
@@ -2665,6 +3010,7 @@ reset() {
 
 #ifndef OPENGLES
   if (_supports_buffer_texture) {
+    GLint max_buffer_texture_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &max_buffer_texture_size);
     _max_buffer_texture_size = max_buffer_texture_size;
   } else {
@@ -2672,8 +3018,8 @@ reset() {
   }
 #endif  // !OPENGLES
 
-  GLint max_elements_vertices = 0, max_elements_indices = 0;
 #ifndef OPENGLES
+  GLint max_elements_vertices = 0, max_elements_indices = 0;
   if (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_draw_range_elements")) {
     glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
     glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
@@ -2736,7 +3082,7 @@ reset() {
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
           const char *format_str = get_compressed_format_string(formats[i]);
-          if (format_str != NULL) {
+          if (format_str != nullptr) {
             GLCAT.debug(false) << "  " << format_str << '\n';
           } else {
             GLCAT.debug(false)
@@ -2755,7 +3101,9 @@ reset() {
   // Check availability of anisotropic texture filtering.
   _supports_anisotropy = false;
   _max_anisotropy = 1.0;
-  if (has_extension("GL_EXT_texture_filter_anisotropic")) {
+  if (is_at_least_gl_version(4, 6) ||
+      has_extension("GL_EXT_texture_filter_anisotropic") ||
+      has_extension("GL_ARB_texture_filter_anisotropic")) {
     GLfloat max_anisotropy;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
     _max_anisotropy = (PN_stdfloat)max_anisotropy;
@@ -2788,8 +3136,8 @@ reset() {
 #endif
 
   } else {
-    _glBindImageTexture = NULL;
-    _glMemoryBarrier = NULL;
+    _glBindImageTexture = nullptr;
+    _glMemoryBarrier = nullptr;
   }
 #endif  // !OPENGLES_1
 
@@ -2810,10 +3158,10 @@ reset() {
     _glSamplerParameterf = (PFNGLSAMPLERPARAMETERFPROC) get_extension_func("glSamplerParameterf");
     _glSamplerParameterfv = (PFNGLSAMPLERPARAMETERFVPROC) get_extension_func("glSamplerParameterfv");
 
-    if (_glGenSamplers == NULL || _glDeleteSamplers == NULL ||
-        _glBindSampler == NULL || _glSamplerParameteri == NULL ||
-        _glSamplerParameteriv == NULL || _glSamplerParameterf == NULL ||
-        _glSamplerParameterfv == NULL) {
+    if (_glGenSamplers == nullptr || _glDeleteSamplers == nullptr ||
+        _glBindSampler == nullptr || _glSamplerParameteri == nullptr ||
+        _glSamplerParameteriv == nullptr || _glSamplerParameterf == nullptr ||
+        _glSamplerParameterfv == nullptr) {
       GLCAT.warning()
         << "GL_ARB_sampler_objects advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -2841,7 +3189,7 @@ reset() {
         get_extension_func("glBindVertexBuffers");
     }
 
-    if (_glBindTextures != NULL && _glBindImageTextures != NULL) {
+    if (_glBindTextures != nullptr && _glBindImageTextures != nullptr) {
       _supports_multi_bind = true;
     } else {
       GLCAT.warning()
@@ -2859,7 +3207,7 @@ reset() {
     _glGetInternalformativ = (PFNGLGETINTERNALFORMATIVPROC)
       get_extension_func("glGetInternalformativ");
 
-    if (_glGetInternalformativ == NULL) {
+    if (_glGetInternalformativ == nullptr) {
       GLCAT.warning()
         << "ARB_internalformat_query2 advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
@@ -2878,8 +3226,8 @@ reset() {
     _glUniformHandleui64 = (PFNGLUNIFORMHANDLEUI64PROC)
       get_extension_func("glUniformHandleui64ARB");
 
-    if (_glGetTextureHandle == NULL || _glMakeTextureHandleResident == NULL ||
-       _glUniformHandleui64 == NULL) {
+    if (_glGetTextureHandle == nullptr || _glMakeTextureHandleResident == nullptr ||
+       _glUniformHandleui64 == nullptr) {
       GLCAT.warning()
         << "GL_ARB_bindless_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -2905,9 +3253,9 @@ reset() {
       get_extension_func("glProgramParameteri");
 
     GLint num_binary_formats = 0;
-    if (_glGetProgramBinary != NULL &&
-        _glProgramBinary != NULL &&
-        _glProgramParameteri != NULL) {
+    if (_glGetProgramBinary != nullptr &&
+        _glProgramBinary != nullptr &&
+        _glProgramParameteri != nullptr) {
       glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
     }
 
@@ -2982,6 +3330,84 @@ reset() {
   }
 #endif
 
+  // Set depth range from zero to one if requested.
+#ifndef OPENGLES_1
+  _use_depth_zero_to_one = false;
+  _use_remapped_depth_range = false;
+
+  if (gl_depth_zero_to_one) {
+#ifndef OPENGLES
+    PFNGLCLIPCONTROLPROC pglClipControl = nullptr;
+    if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
+      pglClipControl = (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+    }
+#else
+    PFNGLCLIPCONTROLEXTPROC pglClipControl = nullptr;
+    if (has_extension("GL_EXT_clip_control")) {
+      pglClipControl = (PFNGLCLIPCONTROLEXTPROC)get_extension_func("glClipControlEXT");
+    }
+#endif
+
+    if (pglClipControl != nullptr) {
+      pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+      _use_depth_zero_to_one = true;
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Set zero-to-one depth using glClipControl\n";
+      }
+    }/* else if (has_extension("GL_NV_depth_buffer_float")) {
+      // Alternatively, all GeForce 8+ and even some AMD drivers support this
+      // extension, which (unlike the core glDepthRange, which clamps its
+      // input parameters) can compensate for the built-in depth remapping.
+      _glDepthRangedNV = (PFNGLDEPTHRANGEDNVPROC)get_extension_func("glDepthRangedNV");
+
+      if (_glDepthRangedNV != nullptr) {
+        _glDepthRangedNV(-1.0, 1.0);
+        _use_depth_zero_to_one = true;
+        _use_remapped_depth_range = true;
+        _has_attrib_depth_range = false;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glDepthRangedNV\n";
+        }
+      }
+    }*/
+
+    if (!_use_depth_zero_to_one) {
+      GLCAT.warning()
+        << "Zero-to-one depth was requested, but driver does not support it.\n";
+    }
+  }
+#endif
+
+  if (_has_attrib_depth_range) {
+#ifdef OPENGLES
+    glDepthRangef(0.0f, 1.0f);
+#else
+    glDepthRange(0.0, 1.0);
+#endif
+    _depth_range_near = 0;
+    _depth_range_far = 1;
+    _has_attrib_depth_range = false;
+  }
+
+#ifndef OPENGLES_1
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 6) || has_extension("GL_ARB_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClamp");
+  }
+  else
+#endif
+  if (has_extension("GL_EXT_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClampEXT");
+  }
+  else {
+    _glPolygonOffsetClamp = null_glPolygonOffsetClamp;
+  }
+#endif
+
   // Set up all the enableddisabled flags to GL's known initial values:
   // everything off.
   _multisample_mode = 0;
@@ -3001,7 +3427,7 @@ reset() {
 
 #ifndef OPENGLES_1
   _enabled_vertex_attrib_arrays.clear();
-  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+  memset(_vertex_attrib_divisors, 0, sizeof(GLuint) * 32);
 #endif
 
   // Dither is on by default in GL; let's turn it off
@@ -3009,12 +3435,12 @@ reset() {
   _dithering_enabled = false;
 
 #ifndef OPENGLES_1
-  _current_shader = (Shader *)NULL;
-  _current_shader_context = (ShaderContext *)NULL;
-  _vertex_array_shader = (Shader *)NULL;
-  _vertex_array_shader_context = (ShaderContext *)NULL;
-  _texture_binding_shader = (Shader *)NULL;
-  _texture_binding_shader_context = (ShaderContext *)NULL;
+  _current_shader = nullptr;
+  _current_shader_context = nullptr;
+  _vertex_array_shader = nullptr;
+  _vertex_array_shader_context = nullptr;
+  _texture_binding_shader = nullptr;
+  _texture_binding_shader_context = nullptr;
 #endif
 
   // Count the max number of lights
@@ -3118,7 +3544,7 @@ reset() {
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()
-        << "Supported shader binary formats:\n";
+        << "Supported program binary formats:\n";
       GLCAT.debug() << " ";
 
       pset<GLenum>::const_iterator it;
@@ -3130,7 +3556,7 @@ reset() {
       }
       GLCAT.debug(false) << "\n";
     } else {
-      GLCAT.debug() << "No shader binary formats supported.\n";
+      GLCAT.debug() << "No program binary formats supported.\n";
     }
   }
 #endif
@@ -3250,6 +3676,8 @@ reset() {
   }
 #endif
 
+  pop_group_marker();
+
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
@@ -3282,7 +3710,6 @@ finish() {
  */
 void CLP(GraphicsStateGuardian)::
 clear(DrawableRegion *clearable) {
-  PStatGPUTimer timer(this, _clear_pcollector);
   report_my_gl_errors();
 
   if (!clearable->is_any_clear_active()) {
@@ -3296,7 +3723,7 @@ clear(DrawableRegion *clearable) {
   int mask = 0;
 
 #ifndef OPENGLES_1
-  if (_current_fbo != 0 && _glClearBufferfv != NULL) {
+  if (_current_fbo != 0 && _glClearBufferfv != nullptr) {
     // We can use glClearBuffer to clear all the color attachments, which
     // protects us from the overhead of having to call set_draw_buffer for
     // every single attachment.
@@ -3451,7 +3878,7 @@ clear(DrawableRegion *clearable) {
  */
 void CLP(GraphicsStateGuardian)::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, b, w, h;
@@ -3555,6 +3982,33 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
   }
 
+  PN_stdfloat nearv;
+  PN_stdfloat farv;
+  dr->get_depth_range(nearv, farv);
+#ifdef GSG_VERBOSE
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glDepthRange(" << nearv << ", " << farv << ")" << endl;
+  }
+#endif
+
+#ifdef OPENGLES
+  // OpenGL ES uses a single-precision call.
+  glDepthRangef((GLclampf)nearv, (GLclampf)farv);
+#else
+  // Mainline OpenGL uses a double-precision call.
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)nearv, (GLclampd)farv);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(nearv * 2.0 - 1.0, farv * 2.0 - 1.0);
+  }
+#endif  // OPENGLES
+  _has_attrib_depth_range = false;
+  _depth_range_near = nearv;
+  _depth_range_far = farv;
+
   report_my_gl_errors();
 }
 
@@ -3574,8 +4028,8 @@ clear_before_callback() {
 #ifndef OPENGLES_1
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (ShaderContext *)NULL;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
 #endif
   unbind_buffers();
@@ -3586,6 +4040,10 @@ clear_before_callback() {
 #ifdef SUPPORT_FIXED_FUNCTION
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
+
+  // It's also quite reasonable to presume there aren't any funny color write
+  // mask settings active.
+  clear_color_write_mask();
 
   // Clear the bound sampler object, so that we do not inadvertently override
   // the callback's desired sampler settings.
@@ -3611,12 +4069,12 @@ clear_before_callback() {
  */
 CPT(TransformState) CLP(GraphicsStateGuardian)::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)NULL) {
-    return NULL;
+  if (lens == nullptr) {
+    return nullptr;
   }
 
   if (!lens->is_linear()) {
-    return NULL;
+    return nullptr;
   }
 
   // The projection matrix must always be right-handed Y-up, even if our
@@ -3630,6 +4088,19 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4::convert_mat(_internal_coordinate_system,
                           lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
+
+#ifndef OPENGLES
+  if (_use_depth_zero_to_one) {
+    // If we requested that the OpenGL NDC Z goes from zero to one like in
+    // Direct3D, we need to scale the projection matrix, which assumes -1..1.
+    static const LMatrix4 rescale_mat
+      (1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 0.5, 0,
+       0, 0, 0.5, 1);
+    result *= rescale_mat;
+  }
+#endif
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the projection
@@ -3665,12 +4136,6 @@ prepare_lens() {
   }
 #endif
 
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
-  }
-#endif
-
   return true;
 }
 
@@ -3697,12 +4162,21 @@ begin_frame(Thread *current_thread) {
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  int frame_number = ClockObject::get_global_clock()->get_frame_count(current_thread);
+  if (_current_frame_timing == nullptr ||
+      frame_number != _current_frame_timing->_frame_number) {
+
+    _current_frame_timing = begin_frame_timing(frame_number);
+  }
+#endif
+
 #ifndef NDEBUG
   _show_texture_usage = false;
   if (gl_show_texture_usage) {
     // When this is true, then every other second, we show the usage textures
     // instead of the real textures.
-    double now = ClockObject::get_global_clock()->get_frame_time();
+    double now = ClockObject::get_global_clock()->get_frame_time(current_thread);
     int this_second = (int)floor(now);
     if (this_second & 1) {
       _show_texture_usage = true;
@@ -3724,16 +4198,6 @@ begin_frame(Thread *current_thread) {
     }
   }
 #endif  // NDEBUG
-
-#ifdef DO_PSTATS
-  /*if (_supports_timer_query) {
-    // Measure the difference between the OpenGL clock and the PStats clock.
-    GLint64 time_ns;
-    _glGetInteger64v(GL_TIMESTAMP, &time_ns);
-    _timer_delta = time_ns * -0.000000001;
-    _timer_delta += PStatClient::get_global_pstats()->get_real_time();
-  }*/
-#endif
 
 #ifndef OPENGLES
   if (_current_properties->get_srgb_color()) {
@@ -3796,6 +4260,7 @@ end_frame(Thread *current_thread) {
   // connects PStats, at which point it will then correct the assessment.  No
   // harm done.
   if (has_fixed_function_pipeline() && PStatClient::is_connected()) {
+    PStatTimer timer(_check_residency_pcollector);
     check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
     check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
 
@@ -3809,19 +4274,20 @@ end_frame(Thread *current_thread) {
   // This breaks shaders across multiple regions.
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (ShaderContext *)NULL;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
-    _texture_binding_shader = (Shader *)NULL;
-    _texture_binding_shader_context = (ShaderContext *)NULL;
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
   }
   if (_current_shader_context != 0) {
     _current_shader_context->unbind();
-    _current_shader = (Shader *)NULL;
-    _current_shader_context = (ShaderContext *)NULL;
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
+  _state_shader = nullptr;
 #endif
 
   // Respecify the active texture next frame, for good measure.
@@ -3940,6 +4406,129 @@ end_frame(Thread *current_thread) {
 }
 
 /**
+ *
+ */
+CLP(GraphicsStateGuardian)::FrameTiming *CLP(GraphicsStateGuardian)::
+begin_frame_timing(int frame_number) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  if (!_timer_queries_active) {
+    if (pstats_gpu_timing && _supports_timer_query && PStatClient::is_connected()) {
+      _timer_queries_active = true;
+    } else {
+      return nullptr;
+    }
+  }
+
+  PStatClient *client = PStatClient::get_global_pstats();
+  PStatTimer timer(_wait_timer_pcollector);
+
+  _timer_queries_pcollector.clear_level();
+
+  if (_deleted_queries.size() < 128) {
+    // We'll need a lot of timer queries, so allocate a whole bunch up front.
+    size_t alloc_count = 128 - _deleted_queries.size();
+    _deleted_queries.resize(_deleted_queries.size() + alloc_count);
+    _glGenQueries(alloc_count, _deleted_queries.data() + _deleted_queries.size() - alloc_count);
+  }
+
+  // Issue a start query for collector 0, marking the start of this frame.
+  GLuint frame_query = _deleted_queries.back();
+  _deleted_queries.pop_back();
+  _glQueryCounter(frame_query, GL_TIMESTAMP);
+
+  // Synchronize the GL time with the PStats clock.  Note that the driver may
+  // arbitrarily decide to wait a long time on this call if the queue is
+  // saturated with work.  Experimentally, it seems that it queries the time
+  // *after* the wait, so we take the CPU time after it returns.  If we find
+  // that some drivers do it differently, we may have to do multiple calls.
+  GLint64 gl_time;
+  _glGetInteger64v(GL_TIMESTAMP, &gl_time);
+  double cpu_time = client->get_real_time();
+
+  // Check if the results from the previous frame are available.  We just need
+  // to check whether the last query for each frame is available.
+  while (!_frame_timings.empty()) {
+    const FrameTiming &frame = _frame_timings.front();
+    GLuint last_query = frame._queries.back().first;
+    GLuint result;
+    _glGetQueryObjectuiv(last_query, GL_QUERY_RESULT_AVAILABLE, &result);
+    if (result == 0) {
+      // Not ready, so subsequent frames won't be, either.
+      break;
+    }
+    // We've got a frame whose timer queries are ready.
+    end_frame_timing(frame);
+    _frame_timings.pop_front();
+  }
+
+  FrameTiming frame;
+  frame._frame_number = frame_number;
+  frame._gpu_sync_time = gl_time;
+  frame._cpu_sync_time = cpu_time;
+  frame._queries.push_back(std::make_pair(frame_query, 0));
+  _frame_timings.push_back(std::move(frame));
+
+  return &_frame_timings.back();
+#else
+  return nullptr;
+#endif
+}
+
+/**
+ * Gets the timer query results for the given frame and sends them to the
+ * PStats server.
+ */
+void CLP(GraphicsStateGuardian)::
+end_frame_timing(const FrameTiming &frame) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  // This uses the lower-level PStats interfaces for now because of all the
+  // unnecessary overhead that would otherwise be incurred when adding such a
+  // large amount of data at once.
+  if (!PStatClient::is_connected()) {
+    _timer_queries_active = false;
+    return;
+  }
+
+  // We represent each GSG as one thread.  In the future we may change this to
+  // representing each graphics device as one thread, but OpenGL doesn't really
+  // expose this information to us.
+  PStatThread gpu_thread = get_pstats_thread();
+
+  PStatFrameData frame_data;
+  size_t latency_ref_i = 0;
+
+  for (auto &query : frame._queries) {
+    GLuint64 time_ns;
+    _glGetQueryObjectui64v(query.first, GL_QUERY_RESULT, &time_ns);
+
+    if (query.second & 0x10000) {
+      // Latency query.
+      GLint64 ref = frame._latency_refs[latency_ref_i++];
+      double time = ((GLint64)time_ns - ref) * 0.000001;
+      frame_data.add_level(query.second & 0x7fff, time);
+    }
+    else {
+      // Convert GL time to Panda time.
+      double time = ((GLint64)time_ns - frame._gpu_sync_time) * 0.000000001 + frame._cpu_sync_time;
+      if (query.second & 0x8000) {
+        frame_data.add_stop(query.second & 0x7fff, time);
+      }
+      else {
+        frame_data.add_start(query.second & 0x7fff, time);
+      }
+    }
+    _deleted_queries.push_back(query.first);
+  }
+
+  // The end time of the last collector is implicitly the frame's end time.
+  frame_data.add_stop(0, frame_data.get_end());
+  gpu_thread.add_frame(frame._frame_number, frame_data);
+
+  _timer_queries_pcollector.add_level_now(frame._queries.size());
+#endif
+}
+
+/**
  * Called before a sequence of draw_primitive() functions are called, this
  * should prepare the vertex data for rendering.  It returns true if the
  * vertices are ok, false to abort this group of primitives.
@@ -3947,7 +4536,7 @@ end_frame(Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
@@ -3958,16 +4547,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!has_fixed_function_pipeline()) {
     // We can't draw without a shader bound in OpenGL ES 2.  This shouldn't
     // happen anyway unless the default shader failed to compile somehow.
-    if (_current_shader_context == NULL) {
+    if (_current_shader_context == nullptr) {
       return false;
     }
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
+  nassertr(_data_reader != nullptr, false);
+
+#ifndef OPENGLES_1
+  _instance_count = _supports_geometry_instancing ? num_instances : 1;
+#endif
 
   _geom_display_list = 0;
 
@@ -4027,7 +4620,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     unbind_buffers();
 
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
-    nassertr(gc != (GeomContext *)NULL, false);
+    nassertr(gc != nullptr, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
@@ -4170,7 +4763,7 @@ update_standard_vertex_arrays(bool force) {
     _sender.clear();
 
     _sender.add_column(_data_reader, InternalName::get_normal(),
-                       NULL, NULL, GLPf(Normal3), NULL);
+                       nullptr, nullptr, GLPf(Normal3), nullptr);
 #ifndef NDEBUG
     if (_show_texture_usage) {
       // In show_texture_usage mode, all colors are white, so as not to
@@ -4179,7 +4772,7 @@ update_standard_vertex_arrays(bool force) {
     } else
 #endif // NDEBUG
       if (!_sender.add_column(_data_reader, InternalName::get_color(),
-                              NULL, NULL, GLPf(Color3), GLPf(Color4))) {
+                              nullptr, nullptr, GLPf(Color3), GLPf(Color4))) {
         // If we didn't have a color column, the item color is white.
         GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
       }
@@ -4223,7 +4816,7 @@ update_standard_vertex_arrays(bool force) {
     // We must add vertex last, because glVertex3f() is the key function call
     // that actually issues the vertex.
     _sender.add_column(_data_reader, InternalName::get_vertex(),
-                       NULL, GLPf(Vertex2), GLPf(Vertex3), GLPf(Vertex4));
+                       nullptr, GLPf(Vertex2), GLPf(Vertex3), GLPf(Vertex4));
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
@@ -4256,7 +4849,8 @@ update_standard_vertex_arrays(bool force) {
       GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
     } else
 #endif // NDEBUG
-      if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
+      if (_vertex_colors_enabled &&
+          _data_reader->get_color_info(array_reader, num_values, numeric_type,
                                        start, stride)) {
         if (!setup_array_data(client_pointer, array_reader, force)) {
           return false;
@@ -4273,7 +4867,13 @@ update_standard_vertex_arrays(bool force) {
         glDisableClientState(GL_COLOR_ARRAY);
 
         // Since we don't have per-vertex color, the implicit color is white.
-        GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
+        if (_color_scale_via_lighting) {
+          GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+          LColor color = _scene_graph_color;
+          color.componentwise_mult(_current_color_scale);
+          GLPf(Color4)(color[0], color[1], color[2], color[3]);
+        }
       }
 
     // Now set up each of the active texture coordinate stages--or at least
@@ -4359,11 +4959,11 @@ unbind_buffers() {
 
 #ifndef OPENGLES
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
-    _glBindVertexBuffers(0, _current_vertex_buffers.size(), NULL, NULL, NULL);
+    _glBindVertexBuffers(0, _current_vertex_buffers.size(), nullptr, nullptr, nullptr);
   } else {
-    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+    for (size_t i = 0; i < _current_vertex_buffers.size(); ++i) {
       if (_current_vertex_buffers[i] != 0) {
-        _glBindVertexBuffer(i, 0, 0, 0);
+        _glBindVertexBuffer((GLuint)i, 0, 0, 0);
       }
     }
   }
@@ -4437,7 +5037,7 @@ update_shader_vertex_format(const GeomVertexFormat *format) {
       continue;
     }
 
-    if (_vertex_attrib_columns[loc] != NULL &&
+    if (_vertex_attrib_columns[loc] != nullptr &&
         _vertex_attrib_columns[loc]->compare_to(*column) == 0) {
       continue;
     }
@@ -4509,7 +5109,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_TRIANGLES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4525,7 +5125,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_TRIANGLES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4542,6 +5142,68 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_triangles_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_TRIANGLES_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_tri_pcollector.add_level(num_vertices);
+    _primitive_batches_tri_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+
+      if (_instance_count != 1) {
+        _glDrawElementsInstanced(GL_TRIANGLES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_TRIANGLES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_instance_count != 1) {
+        _glDrawArraysInstanced(GL_TRIANGLES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_TRIANGLES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of triangle strips.
@@ -4578,7 +5240,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
           return false;
         }
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_STRIP, num_vertices,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer, _instance_count);
@@ -4594,7 +5256,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         }
       } else {
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                                  reader->get_first_vertex(),
                                  num_vertices, _instance_count);
@@ -4628,7 +5290,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_TRIANGLE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -4650,7 +5312,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_TRIANGLE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -4668,6 +5330,128 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_tristrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_TRIANGLE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+      int num_vertices = reader->get_num_vertices();
+      _vertices_tristrip_pcollector.add_level(num_vertices);
+      _primitive_batches_tristrip_pcollector.add_level(1);
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        if (_instance_count != 1) {
+          _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, num_vertices,
+                                   get_numeric_type(reader->get_index_type()),
+                                   client_pointer, _instance_count);
+        } else {
+          _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                               reader->get_min_vertex(),
+                               reader->get_max_vertex(),
+                               num_vertices,
+                               get_numeric_type(reader->get_index_type()),
+                               client_pointer);
+        }
+      } else {
+        if (_instance_count != 1) {
+          _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 reader->get_first_vertex(),
+                                 num_vertices, _instance_count);
+        } else {
+          glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY,
+                          reader->get_first_vertex(),
+                          num_vertices);
+        }
+      }
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual triangle strips, stepping over the degenerate
+      // vertices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_tristrip_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_instance_count != 1) {
+            _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_instance_count != 1) {
+            _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                         ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of triangle fans.
@@ -4709,7 +5493,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_FAN, ends[i] - start,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer + start * index_stride,
@@ -4730,7 +5514,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_FAN, first_vertex + start,
                                  ends[i] - start, _instance_count);
         } else
@@ -4788,7 +5572,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_PATCHES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4804,7 +5588,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_PATCHES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4854,7 +5638,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4870,7 +5654,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_LINES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4887,6 +5671,66 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_lines_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_LINES_ADJACENCY);
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_other_pcollector.add_level(num_vertices);
+    _primitive_batches_other_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_instance_count != 1) {
+        _glDrawElementsInstanced(GL_LINES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_instance_count != 1) {
+        _glDrawArraysInstanced(GL_LINES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_LINES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of line strips.
@@ -4930,7 +5774,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINE_STRIP, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4970,7 +5814,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_LINE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -4992,7 +5836,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_LINE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -5009,6 +5853,117 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of line strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_linestrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_LINE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+
+      int num_vertices = reader->get_num_vertices();
+      _vertices_other_pcollector.add_level(num_vertices);
+      _primitive_batches_other_pcollector.add_level(1);
+
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_instance_count != 1) {
+        _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual line strips, stepping over the strip-cut indices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_other_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_instance_count != 1) {
+            _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_instance_count != 1) {
+            _glDrawArraysInstanced(GL_LINE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, first_vertex + start, ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of disconnected points.
@@ -5040,7 +5995,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_POINTS, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5056,7 +6011,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_POINTS,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5119,7 +6074,7 @@ end_draw_primitives() {
  */
 void CLP(GraphicsStateGuardian)::
 issue_memory_barrier(GLbitfield barriers) {
-  if (!gl_enable_memory_barriers || _glMemoryBarrier == NULL) {
+  if (!gl_enable_memory_barriers || _glMemoryBarrier == nullptr) {
     return;
   }
 
@@ -5176,12 +6131,13 @@ prepare_texture(Texture *tex, int view) {
   report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't bother to
   // prepare it if we won't.
-  switch (tex->get_texture_type()) {
+  Texture::TextureType texture_type = tex->get_texture_type();
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     if (!_supports_3d_texture) {
       GLCAT.warning()
         << "3-D textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5189,7 +6145,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_2d_texture_array) {
       GLCAT.warning()
         << "2-D texture arrays are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5197,7 +6153,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_cube_map) {
       GLCAT.warning()
         << "Cube map textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5205,7 +6161,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_buffer_texture) {
       GLCAT.warning()
         << "Buffer textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5213,7 +6169,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_cube_map_array) {
       GLCAT.warning()
         << "Cube map arrays are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5222,6 +6178,7 @@ prepare_texture(Texture *tex, int view) {
   }
 
   CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex, view);
+  gtc->_target = get_texture_target(texture_type);
   report_my_gl_errors();
 
   return gtc;
@@ -5316,6 +6273,48 @@ release_texture(TextureContext *tc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the textures.  This function
+ * should never be called directly; instead, call Texture::release() (or
+ * simply let the Texture destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_textures(const pvector<TextureContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size() * 2);
+  GLuint *buffers = indices + contexts.size();
+  size_t num_indices = 0;
+  size_t num_buffers = 0;
+
+  for (TextureContext *tc : contexts) {
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+#ifndef OPENGLES_1
+    _textures_needing_fetch_barrier.erase(gtc);
+    _textures_needing_image_access_barrier.erase(gtc);
+    _textures_needing_update_barrier.erase(gtc);
+    _textures_needing_framebuffer_barrier.erase(gtc);
+#endif
+
+    indices[num_indices++] = gtc->_index;
+
+    if (gtc->_buffer != 0) {
+      buffers[num_buffers++] = gtc->_buffer;
+    }
+
+    delete gtc;
+  }
+
+  glDeleteTextures(num_indices, indices);
+
+  if (num_buffers > 0) {
+    _glDeleteBuffers(num_buffers, buffers);
+  }
+}
+
+/**
  * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
@@ -5332,7 +6331,7 @@ extract_texture_data(Texture *tex) {
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
     TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != (TextureContext *)NULL, false);
+    nassertr(tc != nullptr, false);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
     if (!do_extract_texture_data(gtc)) {
@@ -5356,7 +6355,7 @@ extract_texture_data(Texture *tex) {
  */
 SamplerContext *CLP(GraphicsStateGuardian)::
 prepare_sampler(const SamplerState &sampler) {
-  nassertr(_supports_sampler_objects, NULL);
+  nassertr(_supports_sampler_objects, nullptr);
   PStatGPUTimer timer(this, _prepare_sampler_pcollector);
 
   CLP(SamplerContext) *gsc = new CLP(SamplerContext)(this, sampler);
@@ -5488,46 +6487,50 @@ release_geom(GeomContext *gc) {
  */
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
-  PStatGPUTimer timer(this, _prepare_shader_pcollector);
+  PStatGPUTimer timer(this, se->get_prepare_shader_pcollector());
 
 #ifndef OPENGLES_1
-  ShaderContext *result = NULL;
+  ShaderContext *result = nullptr;
 
   switch (se->get_language()) {
   case Shader::SL_GLSL:
     if (_supports_glsl) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(ShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
         << "Tried to load GLSL shader, but GLSL shaders not supported.\n";
-      return NULL;
+      return nullptr;
     }
 
   case Shader::SL_Cg:
 #if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(CgShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
         << "Tried to load Cg shader, but basic shaders not supported.\n";
-      return NULL;
+      return nullptr;
     }
 #elif defined(OPENGLES)
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
-    return NULL;
+    return nullptr;
 #else
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support not compiled in.\n";
-    return NULL;
+    return nullptr;
 #endif
 
   default:
     GLCAT.error()
       << "Tried to load shader with unsupported shader language!\n";
-    return NULL;
+    return nullptr;
   }
 
   if (result->valid()) {
@@ -5537,7 +6540,7 @@ prepare_shader(Shader *se) {
   delete result;
 #endif  // OPENGLES_1
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5600,7 +6603,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     return gvbc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5627,7 +6630,7 @@ update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -5697,6 +6700,52 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_vertex_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_vbuffer_index == gvbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding vertex buffer " << gvbc->_index << "\n";
+      }
+      _glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _current_vbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting vertex buffer " << gvbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gvbc->_index;
+    gvbc->_index = 0;
+
+    delete gvbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated data array, if
  * appropriate, or to unbind a buffer object if it should be rendered from
  * client memory.
@@ -5716,7 +6765,7 @@ setup_array_data(const unsigned char *&client_pointer,
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     client_pointer = array_reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       array_reader->get_usage_hint() < gl_min_buffer_usage_hint) {
@@ -5731,14 +6780,14 @@ setup_array_data(const unsigned char *&client_pointer,
       _current_vbuffer_index = 0;
     }
     client_pointer = array_reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
 
   // Prepare the buffer object and bind it.
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
     array_reader->prepare_now(get_prepared_objects(), this));
 
-  nassertr(gvbc != (CLP(VertexBufferContext) *)NULL, false);
+  nassertr(gvbc != (CLP(VertexBufferContext) *)nullptr, false);
   if (!update_vertex_buffer(gvbc, array_reader, force)) {
     return false;
   }
@@ -5753,7 +6802,7 @@ setup_array_data(const unsigned char *&client_pointer,
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  client_pointer = NULL;
+  client_pointer = nullptr;
   return true;
 }
 
@@ -5788,7 +6837,7 @@ prepare_index_buffer(GeomPrimitive *data) {
     return gibc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5825,7 +6874,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -5886,6 +6935,52 @@ release_index_buffer(IndexBufferContext *ibc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_index_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_ibuffer_index == gibc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding index buffer " << gibc->_index << "\n";
+      }
+      _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      _current_ibuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting index buffer " << gibc->_index << "\n";
+    }
+
+    indices[num_indices++] = gibc->_index;
+    gibc->_index = 0;
+
+    delete gibc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated primitive's
  * index list, if appropriate, or to unbind a buffer object if it should be
  * rendered from client memory.
@@ -5905,7 +7000,7 @@ setup_primitive(const unsigned char *&client_pointer,
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     client_pointer = reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       reader->get_usage_hint() == Geom::UH_client) {
@@ -5920,18 +7015,18 @@ setup_primitive(const unsigned char *&client_pointer,
       _current_ibuffer_index = 0;
     }
     client_pointer = reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = reader->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, false);
+  nassertr(ibc != nullptr, false);
   if (!apply_index_buffer(ibc, reader, force)) {
     return false;
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  client_pointer = NULL;
+  client_pointer = nullptr;
   return true;
 }
 
@@ -5950,7 +7045,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
   if (_supports_shader_buffers) {
     PStatGPUTimer timer(this, _prepare_shader_buffer_pcollector);
 
-    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects);
+    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gbc->_index);
 
     if (GLCAT.is_debug() && gl_debug_buffers) {
@@ -5962,10 +7057,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
     if (_use_object_labels) {
       string name = data->get_name();
-      _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
+      _glObjectLabel(GL_BUFFER, gbc->_index, name.size(), name.data());
     }
 
-    uint64_t num_bytes = data->get_data_size_bytes();
+    // Some drivers require the buffer to be padded to 16 byte boundary.
+    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {
@@ -5978,7 +7074,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
     return gbc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5987,9 +7083,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
 void CLP(GraphicsStateGuardian)::
 apply_shader_buffer(GLuint base, ShaderBuffer *buffer) {
   GLuint index = 0;
-  if (buffer != NULL) {
+  if (buffer != nullptr) {
     BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
-    if (bc != NULL) {
+    if (bc != nullptr) {
       CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
       index = gbc->_index;
       gbc->set_active(true);
@@ -6049,6 +7145,52 @@ release_shader_buffer(BufferContext *bc) {
 
   delete gbc;
 }
+
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_shader_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_sbuffer_index == gbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding shader buffer " << gbc->_index << "\n";
+      }
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+      _current_sbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting shader buffer " << gbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gbc->_index;
+    gbc->_index = 0;
+
+    delete gbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
 #endif
 
 #ifndef OPENGLES
@@ -6066,7 +7208,7 @@ release_shader_buffer(BufferContext *bc) {
 void CLP(GraphicsStateGuardian)::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
-  nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
+  nassertv(_current_occlusion_query == nullptr);
   PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
 
   _glGenQueries(1, &query->_index);
@@ -6092,7 +7234,7 @@ begin_occlusion_query() {
  */
 PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
-  nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
+  nassertr(_current_occlusion_query != nullptr, nullptr);
   PT(OcclusionQueryContext) result = _current_occlusion_query;
 
   GLuint index = DCAST(CLP(OcclusionQueryContext), result)->_index;
@@ -6102,7 +7244,7 @@ end_occlusion_query() {
       << "ending occlusion query index " << (int)index << "\n";
   }
 
-  _current_occlusion_query = NULL;
+  _current_occlusion_query = nullptr;
   _glEndQuery(GL_SAMPLES_PASSED);
 
   // Temporary hack to try working around an apparent driver bug on iMacs.
@@ -6129,48 +7271,57 @@ end_occlusion_query() {
  * Adds a timer query to the command stream, associated with the given PStats
  * collector index.
  */
-PT(TimerQueryContext) CLP(GraphicsStateGuardian)::
+void CLP(GraphicsStateGuardian)::
 issue_timer_query(int pstats_index) {
 #if defined(DO_PSTATS) && !defined(OPENGLES)
-  nassertr(_supports_timer_query, NULL);
-
-  PT(CLP(TimerQueryContext)) query;
-
-  // Hack
-  if (pstats_index == _command_latency_pcollector.get_index()) {
-    query = new CLP(LatencyQueryContext)(this, pstats_index);
-  } else {
-    query = new CLP(TimerQueryContext)(this, pstats_index);
+  FrameTiming *frame = _current_frame_timing;
+  if (frame == nullptr) {
+    return;
   }
 
-  if (_deleted_queries.size() >= 1) {
-    query->_index = _deleted_queries.back();
-    _deleted_queries.pop_back();
-  } else {
-    _glGenQueries(1, &query->_index);
+  nassertv(_supports_timer_query);
 
-    if (GLCAT.is_spam()) {
-      GLCAT.spam() << "Generating query for " << pstats_index
-                   << ": " << query->_index << "\n";
-    }
+  if (_deleted_queries.empty()) {
+    // Allocate some number at a time, since we'll need a lot of these.
+    _deleted_queries.resize(_deleted_queries.size() + 16);
+    _glGenQueries(16, _deleted_queries.data() + _deleted_queries.size() - 16);
   }
+
+  GLuint index = _deleted_queries.back();
+  _deleted_queries.pop_back();
 
   // Issue the timestamp query.
-  _glQueryCounter(query->_index, GL_TIMESTAMP);
+  _glQueryCounter(index, GL_TIMESTAMP);
 
-  if (_use_object_labels) {
-    // Assign a label to it based on the PStatCollector name.
-    const PStatClient *client = PStatClient::get_global_pstats();
-    string name = client->get_collector_fullname(pstats_index & 0x7fff);
-    _glObjectLabel(GL_QUERY, query->_index, name.size(), name.data());
+  //if (_use_object_labels) {
+  //  // Assign a label to it based on the PStatCollector name.
+  //  const PStatClient *client = PStatClient::get_global_pstats();
+  //  string name = client->get_collector_fullname(pstats_index & 0x7fff);
+  //  _glObjectLabel(GL_QUERY, index, name.size(), name.data());
+  //}
+
+  frame->_queries.push_back(std::make_pair(index, pstats_index));
+#endif
+}
+
+/**
+ * A latency query is a special type of timer query that measures the
+ * difference between CPU time and GPU time, ie. how far the GPU is behind in
+ * processing the commands being generated by the CPU right now.
+ */
+void CLP(GraphicsStateGuardian)::
+issue_latency_query(int pstats_index) {
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  FrameTiming *frame = _current_frame_timing;
+  if (frame == nullptr) {
+    return;
   }
 
-  _pending_timer_queries.push_back((TimerQueryContext *)query);
+  GLint64 time;
+  _glGetInteger64v(GL_TIMESTAMP, &time);
+  issue_timer_query(pstats_index | 0x10000);
 
-  return (TimerQueryContext *)query;
-
-#else
-  return NULL;
+  frame->_latency_refs.push_back(time);
 #endif
 }
 
@@ -6185,7 +7336,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 
   PStatGPUTimer timer(this, _compute_dispatch_pcollector);
   nassertv(_supports_compute_shaders);
-  nassertv(_current_shader_context != NULL);
+  nassertv(_current_shader_context != nullptr);
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
   maybe_gl_finish();
@@ -6211,7 +7362,7 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
   set_read_buffer(rb._buffer_type);
   clear_color_write_mask();
 
@@ -6298,7 +7449,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
+  nassertr(tc != nullptr, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   apply_texture(gtc);
@@ -6314,7 +7465,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   if (uses_mipmaps) {
     if (_supports_generate_mipmap) {
 #ifndef OPENGLES_2
-      if (_glGenerateMipmap == NULL) {
+      if (_glGenerateMipmap == nullptr) {
         glTexParameteri(target, GL_GENERATE_MIPMAP, true);
       }
 #endif
@@ -6374,7 +7525,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
       // to specify them.  Might as well use the actual values.
       GLint external_format = get_external_image_format(tex);
       GLint component_type = get_component_type(tex->get_component_type());
-      _glTexImage3D(target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
+      _glTexImage3D(target, 0, internal_format, width, height, depth, 0, external_format, component_type, nullptr);
     }
 
     _glCopyTexSubImage3D(target, 0, 0, 0, z, xo, yo, w, h);
@@ -6391,13 +7542,14 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     }
   }
 
-  if (uses_mipmaps && _glGenerateMipmap != NULL) {
+  if (uses_mipmaps && _glGenerateMipmap != nullptr) {
     glEnable(target);
     _glGenerateMipmap(target);
     glDisable(target);
   }
 
   gtc->_has_storage = true;
+  gtc->_simple_loaded = false;
   gtc->_uses_mipmaps = uses_mipmaps;
   gtc->_internal_format = internal_format;
   gtc->_width = width;
@@ -6426,7 +7578,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr, const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   clear_color_write_mask();
@@ -6445,7 +7597,10 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   switch (format) {
   case Texture::F_depth_stencil:
     if (_current_properties->get_float_depth()) {
+      //NB. In the future we may need a T_float_32_unsigned_int_24_8 format, but
+      // for now we'll just try to grab the depth component.
       component_type = Texture::T_float;
+      format = Texture::F_depth_component32;
     } else {
       component_type = Texture::T_unsigned_int_24_8;
     }
@@ -6479,16 +7634,75 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       } else {
         format = Texture::F_srgb;
       }
-    } else {
+    } else if (_current_properties->get_float_color()) {
       if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16 &&
+            _current_properties->get_blue_bits() == 16 &&
+            _current_properties->get_alpha_bits() == 16) {
+          format = Texture::F_rgba16;
+        } else {
+          format = Texture::F_rgba32;
+        }
+      } else if (_current_properties->get_blue_bits()) {
+        if (_current_properties->get_red_bits() == 11 &&
+            _current_properties->get_green_bits() == 11 &&
+            _current_properties->get_blue_bits() == 10) {
+          format = Texture::F_r11_g11_b10;
+        } else if (_current_properties->get_red_bits() == 16 &&
+                   _current_properties->get_green_bits() == 16 &&
+                   _current_properties->get_blue_bits() == 16) {
+          format = Texture::F_rgb16;
+        } else {
+          format = Texture::F_rgb32;
+        }
+      } else if (_current_properties->get_green_bits()) {
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16) {
+          format = Texture::F_rg16;
+        } else {
+          format = Texture::F_rg32;
+        }
       } else {
-        format = Texture::F_rgb;
+        if (_current_properties->get_red_bits() == 16) {
+          format = Texture::F_r16;
+        } else {
+          format = Texture::F_r32;
+        }
+      }
+    } else if (_current_properties->get_alpha_bits()) {
+      if (_current_properties->get_red_bits() == 10 &&
+          _current_properties->get_green_bits() == 10 &&
+          _current_properties->get_blue_bits() == 10 &&
+          _current_properties->get_alpha_bits() == 2) {
+        format = Texture::F_rgb10_a2;
+      } else {
+        format = Texture::F_rgba;
+      }
+    } else if (_current_properties->get_blue_bits()) {
+      format = Texture::F_rgb;
+    } else if (_current_properties->get_green_bits()) {
+      if (_current_properties->get_red_bits() == 16 &&
+          _current_properties->get_green_bits() == 16) {
+        format = Texture::F_rg16;
+      } else {
+        format = Texture::F_rg;
+      }
+    } else {
+      if (_current_properties->get_color_bits() == 16) {
+        format = Texture::F_r16;
+      } else {
+        format = Texture::F_red;
       }
     }
+
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
-    } else if (_current_properties->get_color_bits() <= 24) {
+    } else if (_current_properties->get_color_bits() <= 24
+            && _current_properties->get_red_bits() <= 8
+            && _current_properties->get_green_bits() <= 8
+            && _current_properties->get_blue_bits() <= 8
+            && _current_properties->get_alpha_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -6507,21 +7721,34 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     z_size = 1;
   }
 
+  int num_views = tex->get_num_views();
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
       tex->get_z_size() != z_size ||
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
-      tex->get_texture_type() != texture_type) {
+      tex->get_texture_type() != texture_type ||
+      view >= num_views) {
 
-    // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, z_size,
-                       component_type, format);
+    tex->setup_texture(texture_type, w, h, z_size, component_type, format);
+
+    // The above resets the number of views to 1, so set this back.
+    num_views = std::max(view + 1, num_views);
+    if (num_views > 1) {
+      tex->set_num_views(num_views);
+    }
   }
 
   nassertr(z < tex->get_z_size(), false);
 
   GLenum external_format = get_external_image_format(tex);
 
+  // OpenGL ES implementations may support BGRA, but that doesn't imply they
+  // also support it for glReadPixels specifically.
+  if (!_supports_bgra_read && external_format == GL_BGRA) {
+    external_format = GL_RGBA;
+  }
+
+#ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
@@ -6565,9 +7792,71 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     case GL_FLOAT:
       GLCAT.spam(false) << "GL_FLOAT";
       break;
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4";
+      break;
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_5_5_1";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5";
+      break;
 #ifndef OPENGLES_1
     case GL_INT:
       GLCAT.spam(false) << "GL_INT";
+      break;
+    case GL_BYTE:
+      GLCAT.spam(false) << "GL_BYTE";
+      break;
+    case GL_SHORT:
+      GLCAT.spam(false) << "GL_SHORT";
+      break;
+    case GL_UNSIGNED_INT:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT";
+      break;
+    case GL_HALF_FLOAT:
+      GLCAT.spam(false) << "GL_HALF_FLOAT";
+      break;
+#endif
+#ifndef OPENGLES
+    case GL_UNSIGNED_BYTE_3_3_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_3_3_2";
+      break;
+    case GL_UNSIGNED_BYTE_2_3_3_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_2_3_3_REV";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5_REV";
+      break;
+    case GL_UNSIGNED_SHORT_4_4_4_4_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4_REV";
+      break;
+    case GL_UNSIGNED_SHORT_1_5_5_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_1_5_5_5_REV";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8_REV";
+      break;
+    case GL_UNSIGNED_INT_10_10_10_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10_10_10_2";
+      break;
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_2_10_10_10_REV";
+      break;
+    case GL_UNSIGNED_INT_24_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_24_8";
+      break;
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10F_11F_11F_REV";
+      break;
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_5_9_9_9_REV";
+      break;
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+      GLCAT.spam(false) << "GL_FLOAT_32_UNSIGNED_INT_24_8_REV";
       break;
 #endif
     default:
@@ -6577,6 +7866,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     GLCAT.spam(false)
       << ")" << endl;
   }
+#endif  // NDEBUG
 
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();
@@ -6587,6 +7877,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (view > 0) {
       image_ptr += (view * tex->get_z_size()) * image_size;
+      nassertr(view < tex->get_num_views(), false);
     }
   }
 
@@ -6692,13 +7983,15 @@ do_issue_shade_model() {
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
+  PStatTimer timer(_draw_set_state_shader_pcollector);
+
   ShaderContext *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
   // If we don't have a shader, apply the default shader.
   if (!has_fixed_function_pipeline() && !shader) {
     shader = _default_shader;
-    nassertv(shader != NULL);
+    nassertv(shader != nullptr);
   }
 
   if (shader) {
@@ -6713,7 +8006,7 @@ do_issue_shader() {
   if (_default_shader != nullptr && shader != _default_shader &&
       (context == 0 || !context->valid())) {
     shader = _default_shader;
-    nassertv(shader != NULL);
+    nassertv(shader != nullptr);
     if (_current_shader != shader) {
       context = shader->prepare_now(get_prepared_objects(), this);
     } else {
@@ -6731,7 +8024,7 @@ do_issue_shader() {
     if (context != _current_shader_context) {
       // Use a completely different shader than before.  Unbind old shader,
       // bind the new one.
-      if (_current_shader_context != NULL &&
+      if (_current_shader_context != nullptr &&
           _current_shader->get_language() != shader->get_language()) {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
@@ -6802,7 +8095,7 @@ do_issue_render_mode() {
       GLCAT.spam() << "setting thickness to " << thickness << "\n";
     }
 
-    glLineWidth(thickness);
+    glLineWidth(std::min((GLfloat)thickness, _max_line_width));
 #ifndef OPENGLES_2
     glPointSize(thickness);
 #endif
@@ -7042,7 +8335,7 @@ do_issue_fog() {
   if (!target_fog->is_off()) {
     enable_fog(true);
     Fog *fog = target_fog->get_fog();
-    nassertv(fog != (Fog *)NULL);
+    nassertv(fog != nullptr);
     apply_fog(fog);
   } else {
     enable_fog(false);
@@ -7055,35 +8348,67 @@ do_issue_fog() {
  *
  */
 void CLP(GraphicsStateGuardian)::
-do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
-     _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot());
-
+do_issue_depth_bias() {
+  const DepthOffsetAttrib *target_depth_offset;
+  _target_rs->get_attrib_def(target_depth_offset);
   int offset = target_depth_offset->get_offset();
 
-  if (offset != 0) {
+  const DepthBiasAttrib *target_depth_bias;
+  if (_target_rs->get_attrib(target_depth_bias)) {
+    GLfloat slope_factor = target_depth_bias->get_slope_factor();
+    GLfloat constant_factor = target_depth_bias->get_constant_factor();
+
+    slope_factor -= offset;
+    constant_factor -= offset;
+
+#ifndef OPENGLES_1
+    GLfloat clamp = target_depth_bias->get_clamp();
+    _glPolygonOffsetClamp(slope_factor, constant_factor, clamp);
+#else
+    glPolygonOffset(slope_factor, constant_factor);
+#endif
+    enable_polygon_offset(true);
+  }
+  else if (offset != 0) {
     // The relationship between these two parameters is a little unclear and
     // poorly explained in the GL man pages.
     glPolygonOffset((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
-
-  } else {
+  }
+  else {
     enable_polygon_offset(false);
   }
 
   PN_stdfloat min_value = target_depth_offset->get_min_value();
   PN_stdfloat max_value = target_depth_offset->get_max_value();
+  if (min_value != (PN_stdfloat)0.0 ||
+      max_value != (PN_stdfloat)1.0 ||
+      _has_attrib_depth_range) {
+    min_value = _depth_range_far * min_value + _depth_range_near * (1 - min_value);
+    max_value = _depth_range_far * max_value + _depth_range_near * (1 - max_value);
+
 #ifdef GSG_VERBOSE
-    GLCAT.spam()
-      << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    }
 #endif
 #ifdef OPENGLES
-  // OpenGL ES uses a single-precision call.
-  glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
+    // OpenGL ES uses a single-precision call.
+    glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
-  // Mainline OpenGL uses a double-precision call.
-  glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+    // Mainline OpenGL uses a double-precision call.
+    if (!_use_remapped_depth_range) {
+      glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+    } else {
+      // If we have a remapped depth range, we should adjust the values to range
+      // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+      _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+    }
 #endif  // OPENGLES
+
+    _has_attrib_depth_range = true;
+  }
 
   report_my_gl_errors();
 }
@@ -7100,7 +8425,7 @@ do_issue_material() {
   const MaterialAttrib *target_material;
   _target_rs->get_attrib_def(target_material);
 
-  if (target_material == (MaterialAttrib *)NULL ||
+  if (target_material == nullptr ||
       target_material->is_off()) {
     material = &empty;
   } else {
@@ -7129,7 +8454,7 @@ do_issue_material() {
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
   glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
 
-  if (material->has_ambient() && material->has_diffuse()) {
+  if ((material->has_ambient() && material->has_diffuse()) || material->has_base_color()) {
     // The material has both an ambient and diffuse specified.  This means we
     // do not need glMaterialColor().
     glDisable(GL_COLOR_MATERIAL);
@@ -7139,7 +8464,6 @@ do_issue_material() {
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.  The
     // diffuse component comes from the object's color.
-    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_DIFFUSE, _material_force_color);
@@ -7149,11 +8473,11 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
 
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.  The
     // ambient component comes from the object's color.
-    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_AMBIENT, _material_force_color);
@@ -7163,6 +8487,7 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
 
   } else {
     // The material specifies neither a diffuse nor an ambient component.
@@ -7243,7 +8568,6 @@ do_issue_blending() {
 #endif
 
   if (color_channels == ColorWriteAttrib::C_off) {
-    int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     if (gl_color_mask) {
@@ -7476,7 +8800,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   // State:Light:Bind:Directional"); PStatGPUTimer timer(this,
   // _draw_set_state_light_bind_directional_pcollector);
 
-  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
+  std::pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
   DirectionalLightFrameData &fdata = (*lookup.first).second;
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
@@ -7530,7 +8854,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   // _draw_set_state_light_bind_spotlight_pcollector);
 
   Lens *lens = light_obj->get_lens();
-  nassertv(lens != (Lens *)NULL);
+  nassertv(lens != nullptr);
 
   GLenum id = get_light_id(light_id);
   static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
@@ -7583,6 +8907,10 @@ make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
   int flags = GraphicsPipe::BF_refuse_window;
   if (is_point) {
     flags |= GraphicsPipe::BF_size_square;
+  }
+
+  if (host != nullptr) {
+    host = host->get_host();
   }
 
   CLP(GraphicsBuffer) *sbuffer = new CLP(GraphicsBuffer)(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);
@@ -7740,7 +9068,7 @@ get_error_string(GLenum error_code) {
   }
 
   // Other error, somehow?  Just display the error code then.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "GL error " << (int)error_code;
 
   return strm.str();
@@ -7756,7 +9084,7 @@ show_gl_string(const string &name, GLenum id) {
 
   const GLubyte *text = glGetString(id);
 
-  if (text == (const GLubyte *)NULL) {
+  if (text == nullptr) {
     GLCAT.warning()
       << "Unable to query " << name << "\n";
 
@@ -7921,7 +9249,7 @@ query_glsl_version() {
  */
 void CLP(GraphicsStateGuardian)::
 save_extensions(const char *extensions) {
-  if (extensions != (const char *)NULL) {
+  if (extensions != nullptr) {
     vector_string tokens;
     extract_words(extensions, tokens);
 
@@ -7947,10 +9275,9 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    ostream &out = GLCAT.debug();
+    std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
       size_t len = (*ei).size();
@@ -8038,11 +9365,11 @@ get_extension_func(const char *name) {
     { "glDeleteBuffers", (void *)&glDeleteBuffers },
     { "glGenBuffers", (void *)&glGenBuffers },
 #endif
-    { NULL, NULL }
+    { nullptr, nullptr }
   };
 
   int i = 0;
-  while (compiled_function_table[i].name != NULL) {
+  while (compiled_function_table[i].name != nullptr) {
     if (strcmp(compiled_function_table[i].name, name) == 0) {
       return compiled_function_table[i].fptr;
     }
@@ -8062,7 +9389,7 @@ get_extension_func(const char *name) {
  */
 void *CLP(GraphicsStateGuardian)::
 do_get_extension_func(const char *) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -8072,7 +9399,7 @@ do_get_extension_func(const char *) {
  */
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
-#ifndef OPENGLES  // Draw buffers not supported by OpenGL ES. (TODO!)
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES 1.
   if (_current_fbo) {
     GLuint buffers[16];
     int nbuffers = 0;
@@ -8107,9 +9434,14 @@ set_draw_buffer(int rbtype) {
       }
       ++index;
     }
-    _glDrawBuffers(nbuffers, buffers);
+    if (_glDrawBuffers != nullptr) {
+      _glDrawBuffers(nbuffers, buffers);
+    } else {
+      nassertv(nbuffers == 1 && buffers[0] == GL_COLOR_ATTACHMENT0_EXT);
+    }
 
   } else {
+#ifndef OPENGLES
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glDrawBuffer(GL_FRONT);
@@ -8150,8 +9482,9 @@ set_draw_buffer(int rbtype) {
     default:
       break;
     }
-  }
 #endif  // OPENGLES
+  }
+#endif  // OPENGLES_1
 
   // Also ensure that any global color channels are masked out.
   set_color_write_mask(_color_write_mask);
@@ -8166,7 +9499,7 @@ set_draw_buffer(int rbtype) {
  */
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(int rbtype) {
-#ifndef OPENGLES  // Draw buffers not supported by OpenGL ES. (TODO!)
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES 1.
   if (rbtype & (RenderBuffer::T_depth | RenderBuffer::T_stencil)) {
     // Special case: don't have to call ReadBuffer for these.
     return;
@@ -8199,10 +9532,14 @@ set_read_buffer(int rbtype) {
       }
       ++index;
     }
+#ifdef OPENGLES
+    _glReadBuffer(buffer);
+#else
     glReadBuffer(buffer);
+#endif
 
   } else {
-
+#ifndef OPENGLES
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glReadBuffer(GL_FRONT);
@@ -8239,10 +9576,11 @@ set_read_buffer(int rbtype) {
     default:
       break;
     }
+#endif  // OPENGLES
   }
 
   report_my_gl_errors();
-#endif  // OPENGLES
+#endif  // OPENGLES_1
 }
 
 /**
@@ -8422,6 +9760,9 @@ get_panda_wrap_mode(GLenum wm) {
   case GL_REPEAT:
     return SamplerState::WM_repeat;
 
+  case GL_MIRRORED_REPEAT:
+    return SamplerState::WM_mirror;
+
 #ifndef OPENGLES
   case GL_MIRROR_CLAMP_EXT:
   case GL_MIRROR_CLAMP_TO_EDGE_EXT:
@@ -8584,6 +9925,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgba16i:
+      case Texture::F_rgba32i:
       case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
@@ -8595,7 +9938,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb16i:
       case Texture::F_rgb32:
+      case Texture::F_rgb32i:
         return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
@@ -8614,7 +9959,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
+      case Texture::F_rg16i:
       case Texture::F_rg32:
+      case Texture::F_rg32i:
         return GL_COMPRESSED_RG;
 
       case Texture::F_luminance:
@@ -8819,18 +10166,24 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_rgba:
   case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
   case Texture::F_rgba8:
   case Texture::F_rgba12:
+    return _supports_bgr ? GL_BGRA : GL_RGBA;
+
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
   case Texture::F_rgb10_a2:
+#ifdef OPENGLES
+    // OpenGL ES doesn't have sized BGRA formats.
+    return GL_RGBA;
+#else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
+#endif
 
   case Texture::F_luminance:
-  case Texture::F_sluminance:
 #ifdef OPENGLES
     return GL_LUMINANCE;
 #else
@@ -8838,11 +10191,23 @@ get_external_image_format(Texture *tex) const {
 #endif
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
-  case Texture::F_sluminance_alpha:
 #ifdef OPENGLES
     return GL_LUMINANCE_ALPHA;
 #else
     return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RG;
+#endif
+
+  case Texture::F_sluminance:
+#ifdef OPENGLES
+    return GL_LUMINANCE;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE : GL_RGB;
+#endif
+  case Texture::F_sluminance_alpha:
+#ifdef OPENGLES
+    return GL_LUMINANCE_ALPHA;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RGBA;
 #endif
 
 #ifndef OPENGLES_1
@@ -8851,10 +10216,16 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
+  case Texture::F_rg16i:
+  case Texture::F_rg32i:
     return GL_RG_INTEGER;
   case Texture::F_rgb8i:
+  case Texture::F_rgb16i:
+  case Texture::F_rgb32i:
     return GL_RGB_INTEGER;
   case Texture::F_rgba8i:
+  case Texture::F_rgba16i:
+  case Texture::F_rgba32i:
     return GL_RGBA_INTEGER;
 #endif
 
@@ -8882,10 +10253,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     // no compression for render targets
     compression = Texture::CM_off;
   }
-  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture ||
-                tex->get_texture_type() == Texture::TT_2d_texture_array);
+  Texture::ComponentType component_type = tex->get_component_type();
+  Texture::TextureType texture_type = tex->get_texture_type();
+  bool is_3d = (texture_type == Texture::TT_3d_texture ||
+                texture_type == Texture::TT_2d_texture_array);
 
-  if (get_supports_compressed_texture_format(compression)) {
+  if (get_supports_compressed_texture_format(compression) &&
+      texture_type != Texture::TT_buffer_texture) {
     switch (compression) {
     case Texture::CM_on:
       // The user asked for just generic compression.  OpenGL supports
@@ -8906,7 +10280,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r16i:
+      case Texture::F_rg16i:
+      case Texture::F_rgb16i:
+      case Texture::F_rgba16i:
       case Texture::F_r32i:
+      case Texture::F_rg32i:
+      case Texture::F_rgb32i:
+      case Texture::F_rgba32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
@@ -9017,7 +10397,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_R11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_R11_EAC;
@@ -9043,7 +10423,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_RG11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_RG11_EAC;
@@ -9221,7 +10601,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
 
     case Texture::CM_eac:
-      if (Texture::is_unsigned(tex->get_component_type())) {
+      if (Texture::is_unsigned(component_type)) {
         if (tex->get_num_components() == 1) {
           return GL_COMPRESSED_R11_EAC;
         } else {
@@ -9254,7 +10634,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
 #ifndef OPENGLES
-      if (tex->get_component_type() == Texture::T_float) {
+      if (component_type == Texture::T_float) {
         return GL_DEPTH32F_STENCIL8;
       } else
 #endif
@@ -9266,7 +10646,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
   case Texture::F_depth_component:
 #ifndef OPENGLES
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else
 #endif
@@ -9301,7 +10681,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_DEPTH_COMPONENT16_OES;
     }
 #else
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else {
       return GL_DEPTH_COMPONENT32;
@@ -9311,7 +10691,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgba:
   case Texture::F_rgbm:
 #ifndef OPENGLES_1
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
     } else
 #endif
@@ -9321,11 +10701,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return _supports_bgr ? GL_BGRA : GL_RGBA;
     }
 #else
-    if (tex->get_component_type() == Texture::T_unsigned_short) {
+    if (component_type == Texture::T_unsigned_short) {
       return GL_RGBA16;
-    } else if (tex->get_component_type() == Texture::T_short) {
+    } else if (component_type == Texture::T_short) {
       return GL_RGBA16_SNORM;
-    } else if (tex->get_component_type() == Texture::T_byte) {
+    } else if (component_type == Texture::T_byte) {
       return GL_RGBA8_SNORM;
     } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
@@ -9337,37 +10717,37 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifdef OPENGLES
   case Texture::F_rgba8:
-    return GL_RGBA8_OES;
+    return _supports_bgr ? GL_BGRA : GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return force_sized ? GL_RGBA8 : GL_RGBA;
+    return _supports_bgr ? GL_BGRA : (force_sized ? GL_RGBA8 : GL_RGBA);
 #else
   case Texture::F_rgba8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8;
     } else {
       return GL_RGBA8_SNORM;
     }
 
   case Texture::F_r8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R8UI;
     } else {
       return GL_R8I;
     }
   case Texture::F_rg8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RG8UI;
     } else {
       return GL_RG8I;
     }
   case Texture::F_rgb8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8UI;
     } else {
       return GL_RGB8I;
     }
   case Texture::F_rgba8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8UI;
     } else {
       return GL_RGBA8I;
@@ -9377,9 +10757,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 #ifndef OPENGLES
   case Texture::F_rgba16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGBA16;
     } else {
       return GL_RGBA16_SNORM;
@@ -9389,7 +10769,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 
   case Texture::F_rgb:
-    switch (tex->get_component_type()) {
+    switch (component_type) {
     case Texture::T_float: return GL_RGB16F;
 #ifndef OPENGLES
     case Texture::T_unsigned_short: return GL_RGB16;
@@ -9419,7 +10799,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RGB16F;
 #else
   case Texture::F_rgb8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8;
     } else {
       return GL_RGB8_SNORM;
@@ -9427,9 +10807,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgb12:
     return GL_RGB12;
   case Texture::F_rgb16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGB16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGB16;
     } else {
       return GL_RGB16_SNORM;
@@ -9450,26 +10830,44 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RG16F_EXT;
 #elif !defined(OPENGLES_1)
   case Texture::F_r16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_R16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
     }
+  case Texture::F_rg16:
+    if (component_type == Texture::T_float) {
+      return GL_RG16F;
+    } else if (Texture::is_unsigned(component_type)) {
+      return GL_RG16;
+    } else {
+      return GL_RG16_SNORM;
+    }
   case Texture::F_r16i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R16UI;
     } else {
       return GL_R16I;
     }
-  case Texture::F_rg16:
-    if (tex->get_component_type() == Texture::T_float) {
-      return GL_RG16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
-      return GL_RG16;
+  case Texture::F_rg16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG16UI;
     } else {
-      return GL_RG16_SNORM;
+      return GL_RG16I;
+    }
+  case Texture::F_rgb16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB16UI;
+    } else {
+      return GL_RGB16I;
+    }
+  case Texture::F_rgba16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA16UI;
+    } else {
+      return GL_RGBA16I;
     }
 #endif
 
@@ -9483,7 +10881,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_green:
   case Texture::F_blue:
 #ifndef OPENGLES
-    if (!Texture::is_unsigned(tex->get_component_type())) {
+    if (!Texture::is_unsigned(component_type)) {
       return GL_R8_SNORM;
     } else
 #endif
@@ -9508,7 +10906,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE16F_ARB;
@@ -9520,7 +10918,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_R16F;
@@ -9539,7 +10937,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE_ALPHA16F_ARB;
@@ -9551,7 +10949,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_RG16F;
@@ -9572,22 +10970,42 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
-#ifndef OPENGLES
-    return GL_SRGB8;
-#endif
+    return _supports_texture_srgb ? GL_SRGB8 : GL_RGB8;
   case Texture::F_srgb_alpha:
-    return GL_SRGB8_ALPHA8;
+    return _supports_texture_srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 #endif
 #ifndef OPENGLES
   case Texture::F_sluminance:
-    return GL_SLUMINANCE8;
+    return _core_profile ? GL_SRGB8 : GL_SLUMINANCE8;
   case Texture::F_sluminance_alpha:
-    return GL_SLUMINANCE8_ALPHA8;
+    return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   case Texture::F_r32i:
-    return GL_R32I;
+    if (Texture::is_unsigned(component_type)) {
+      return GL_R32UI;
+    } else {
+      return GL_R32I;
+    }
+  case Texture::F_rg32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG32UI;
+    } else {
+      return GL_RG32I;
+    }
+  case Texture::F_rgb32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB32UI;
+    } else {
+      return GL_RGB32I;
+    }
+  case Texture::F_rgba32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA32UI;
+    } else {
+      return GL_RGBA32I;
+    }
 #endif
 
 #ifndef OPENGLES_1
@@ -10087,7 +11505,7 @@ get_compressed_format_string(GLenum format) {
   case 0x93F0: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG";
   case 0x93F1: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG";
   default:
-    return NULL;
+    return nullptr;
   }
 }
 #endif
@@ -10133,6 +11551,85 @@ reissue_transforms() {
   // Might also want to reissue the vertex format, for good measure.
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
+#endif
+
+  // Some libraries (Kivy) leave their buffers bound.  How clumsy of them.
+  if (_supports_buffers) {
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    _current_vbuffer_index = 0;
+    _current_ibuffer_index = 0;
+  }
+#ifndef OPENGLES
+  if (_supports_glsl) {
+    _glDisableVertexAttribArray(0);
+    _glDisableVertexAttribArray(1);
+  }
+#endif
+
+  // Since this is called by clear_state_and_transform(), we also should reset
+  // the states that won't automatically be respecified when clearing the
+  // state mask.
+  _active_color_write_mask = ColorWriteAttrib::C_all;
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+  if (_dithering_enabled) {
+    glEnable(GL_DITHER);
+  } else {
+    glDisable(GL_DITHER);
+  }
+  if (_depth_test_enabled) {
+    glEnable(GL_DEPTH_TEST);
+  } else {
+    glDisable(GL_DEPTH_TEST);
+  }
+  if (_stencil_test_enabled) {
+    glEnable(GL_STENCIL_TEST);
+  } else {
+    glDisable(GL_STENCIL_TEST);
+  }
+  if (_blend_enabled) {
+    glEnable(GL_BLEND);
+  } else {
+    glDisable(GL_BLEND);
+  }
+
+#ifndef OPENGLES_2
+  if (_multisample_mode != 0) {
+    glEnable(GL_MULTISAMPLE);
+  } else {
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+  }
+  if (_line_smooth_enabled) {
+    glEnable(GL_LINE_SMOOTH);
+  } else {
+    glDisable(GL_LINE_SMOOTH);
+  }
+#endif
+
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glEnable(GL_POLYGON_SMOOTH);
+  } else {
+    glDisable(GL_POLYGON_SMOOTH);
+  }
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    if (_alpha_test_enabled) {
+      glEnable(GL_ALPHA_TEST);
+    } else {
+      glDisable(GL_ALPHA_TEST);
+    }
+    if (_point_smooth_enabled) {
+      glEnable(GL_POINT_SMOOTH);
+    } else {
+      glDisable(GL_POINT_SMOOTH);
+    }
+  }
 #endif
 }
 
@@ -10377,9 +11874,10 @@ set_state_and_transform(const RenderState *target,
 #endif
 
   _state_pcollector.add_level(1);
-  PStatGPUTimer timer1(this, _draw_set_state_pcollector);
+  PStatTimer timer1(_draw_set_state_pcollector);
 
-  if (transform != _internal_transform) {
+  bool transform_changed = transform != _internal_transform;
+  if (transform_changed) {
     // PStatGPUTimer timer(this, _draw_set_state_transform_pcollector);
     _transform_state_pcollector.add_level(1);
     _internal_transform = transform;
@@ -10387,27 +11885,38 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+#ifndef OPENGLES_1
+    if (transform_changed) {
+      // The state has not changed, but the transform has. Set the new
+      // transform on the shader, if we have one.
+      if (_current_shader_context != nullptr) {
+        _current_shader_context->set_state_and_transform(_state_rs, transform,
+          _scene_setup->get_camera_transform(), _projection_mat);
+      }
+    }
+#endif
     return;
   }
   _target_rs = target;
 
 #ifndef OPENGLES_1
   determine_target_shader();
-  _instance_count = _target_shader->get_instance_count();
+  _sattr_instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
-    // PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
-  else if (!has_fixed_function_pipeline() && _current_shader == NULL) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+  else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
 
   // Update all of the state that is bound to the shader program.
-  if (_current_shader_context != NULL) {
+  if (_current_shader_context != nullptr) {
     _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
@@ -10466,11 +11975,15 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(cull_face_slot);
   }
 
+  int depth_bias_slot = DepthBiasAttrib::get_class_slot();
   int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
-  if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+  if (_target_rs->get_attrib(depth_bias_slot) != _state_rs->get_attrib(depth_bias_slot) ||
+      _target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+      !_state_mask.get_bit(depth_bias_slot) ||
       !_state_mask.get_bit(depth_offset_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_depth_offset_pcollector);
-    do_issue_depth_offset();
+    do_issue_depth_bias();
+    _state_mask.set_bit(depth_bias_slot);
     _state_mask.set_bit(depth_offset_slot);
   }
 
@@ -10552,9 +12065,8 @@ set_state_and_transform(const RenderState *target,
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
-    // PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+    //PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
-    int prev_active = _num_active_texture_stages;
     do_issue_texture();
 
     // Since the TexGen and TexMatrix states depend partly on the particular
@@ -10662,12 +12174,47 @@ set_state_and_transform(const RenderState *target,
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
 #if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_cg_context != 0) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
+  if (_cg_context) {
+    _destroyed_cg_contexts.push_back(_cg_context);
+    _cg_context = nullptr;
+
+    // Don't destroy the Cg context until the last GSG that uses Cg has been
+    // destroyed.  This works around a Cg bug, see #1117.
+    if (!AtomicAdjust::dec(_num_gsgs_with_cg_contexts)) {
+      for (CGcontext context : _destroyed_cg_contexts) {
+        cgDestroyContext(context);
+      }
+      _destroyed_cg_contexts.clear();
+    }
   }
 #endif
 }
+
+/**
+ * Returns a Cg context for this GSG.
+ */
+#if defined(HAVE_CG) && !defined(OPENGLES)
+CGcontext CLP(GraphicsStateGuardian)::
+get_cg_context() {
+  CGcontext context = _cg_context;
+  if (context == nullptr) {
+    context = cgCreateContext();
+
+#if CG_VERSION_NUM >= 3100
+    // This just sounds like a good thing to do.
+    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
+    if (_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
+      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
+    }
+#endif
+
+    AtomicAdjust::inc(_num_gsgs_with_cg_contexts);
+    _cg_context = context;
+  }
+
+  return context;
+}
+#endif
 
 /**
  * This is called by set_state_and_transform() when the texture state has
@@ -10697,7 +12244,7 @@ do_issue_texture() {
         disable_standard_texture_bindings();
       }
 #endif
-      _current_shader_context->update_shader_texture_bindings(NULL);
+      _current_shader_context->update_shader_texture_bindings(nullptr);
     } else {
       _current_shader_context->
         update_shader_texture_bindings(_texture_binding_shader_context);
@@ -10730,7 +12277,7 @@ update_standard_texture_bindings() {
   // see if our flash_texture is in the texture stack here.  If so, then we
   // need to call the special show_texture method instead of the normal
   // texture stack.
-  if (_flash_texture != (Texture *)NULL) {
+  if (_flash_texture != nullptr) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     int this_second = (int)floor(now);
     if (this_second & 1) {
@@ -10762,7 +12309,7 @@ update_standard_texture_bindings() {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     // Issue the texture on stage i.
     set_active_texture_stage(i);
@@ -10782,7 +12329,7 @@ update_standard_texture_bindings() {
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)NULL) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       continue;
     }
@@ -11017,11 +12564,11 @@ update_show_usage_texture_bindings(int show_stage_index) {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)NULL) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       break;
     }
@@ -11062,7 +12609,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     // Choose the corresponding usage texture and apply it.
     set_active_texture_stage(i);
@@ -11245,17 +12792,16 @@ do_issue_tex_gen() {
   // effectively define an identity matrix that maps the spatial coordinates
   // one-for-one to UV's.  If you want a mapping other than identity, use a
   // TexMatrixAttrib (or a TexProjectorEffect).
+#ifndef OPENGLES
   static const PN_stdfloat s_data[4] = { 1, 0, 0, 0 };
   static const PN_stdfloat t_data[4] = { 0, 1, 0, 0 };
   static const PN_stdfloat r_data[4] = { 0, 0, 1, 0 };
   static const PN_stdfloat q_data[4] = { 0, 0, 0, 1 };
+#endif
 
   _tex_gen_modifies_mat = false;
 
-  bool got_point_sprites = false;
-
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     set_active_texture_stage(i);
     if (_supports_point_sprite) {
 #ifdef OPENGLES
@@ -11271,6 +12817,7 @@ do_issue_tex_gen() {
     glDisable(GL_TEXTURE_GEN_R);
     glDisable(GL_TEXTURE_GEN_Q);
 
+    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
@@ -11446,7 +12993,6 @@ do_issue_tex_gen() {
 #else
         glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
 #endif
-        got_point_sprites = true;
       }
       break;
 
@@ -11483,6 +13029,9 @@ do_issue_tex_gen() {
     }
 #endif  // OPENGLES
   }
+
+  bool got_point_sprites = _supports_point_sprite &&
+    (_target_tex_gen->get_geom_rendering(Geom::GR_point) & GeomEnums::GR_point_sprite) != 0;
 
   if (got_point_sprites != _tex_gen_point_sprite) {
     _tex_gen_point_sprite = got_point_sprites;
@@ -11577,10 +13126,20 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
     }
   }
 
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
-                  get_texture_filter_type(minfilter, !uses_mipmaps));
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
-                  get_texture_filter_type(magfilter, true));
+  if (Texture::is_integer(tex->get_format())) {
+    // Integer format textures can't have filtering enabled, and in fact, some
+    // drivers (looking at you, Intel) will always sample (0, 0, 0, 1) if we
+    // don't set this correctly!
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    uses_mipmaps ? GL_NEAREST_MIPMAP_NEAREST
+                                 : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  } else {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    get_texture_filter_type(minfilter, !uses_mipmaps));
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
+                    get_texture_filter_type(magfilter, true));
+  }
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
@@ -11682,7 +13241,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     // We support sampler objects.  Prepare the sampler object and bind it to
     // the indicated texture unit.
     SamplerContext *sc = sampler.prepare_now(get_prepared_objects(), this);
-    nassertr(sc != (SamplerContext *)NULL, false);
+    nassertr(sc != nullptr, false);
     CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
 
     gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
@@ -11706,7 +13265,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gtc->_simple_loaded && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying to sample it
     // with mipmaps.  We will need to reload it.
     GLCAT.info()
@@ -11749,10 +13308,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       async_reload_texture(gtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -11764,20 +13320,22 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     image = tex->get_uncompressed_ram_image();
   }
 
+  Texture::TextureType texture_type = tex->get_texture_type();
   Texture::CompressionMode image_compression;
   if (image.is_null()) {
     image_compression = Texture::CM_off;
   } else {
     image_compression = tex->get_ram_image_compression();
-  }
 
-  if (!get_supports_compressed_texture_format(image_compression)) {
-    image = tex->get_uncompressed_ram_image();
-    image_compression = Texture::CM_off;
+    if (texture_type == Texture::TT_buffer_texture ||
+        !get_supports_compressed_texture_format(image_compression)) {
+      image = tex->get_uncompressed_ram_image();
+      image_compression = Texture::CM_off;
 
-    // If this triggers, Panda cannot decompress the texture.  Compile with
-    // libsquish support or precompress the texture.
-    nassertr(!image.is_null(), false);
+      // If this triggers, Panda cannot decompress the texture.  Compile with
+      // libsquish support or precompress the texture.
+      nassertr(!image.is_null(), false);
+    }
   }
 
   int mipmap_bias = 0;
@@ -11789,7 +13347,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   // If we'll use immutable texture storage, we have to pick a sized image
   // format.
   bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage) ||
-                     (tex->get_texture_type() == Texture::TT_buffer_texture);
+                     (texture_type == Texture::TT_buffer_texture);
 
   GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
@@ -11818,7 +13376,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   int max_dimension_y;
   int max_dimension_z;
 
-  switch (tex->get_texture_type()) {
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     max_dimension_x = _max_3d_texture_dimension;
     max_dimension_y = _max_3d_texture_dimension;
@@ -11903,10 +13461,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (image_compression != Texture::CM_off) {
-    Texture::QualityLevel quality_level = tex->get_effective_quality_level();
-
 #ifndef OPENGLES
-    switch (quality_level) {
+    switch (tex->get_effective_quality_level()) {
     case Texture::QL_fastest:
       glHint(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
       break;
@@ -11925,7 +13481,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  GLenum target = get_texture_target(tex->get_texture_type());
+  GLenum target = get_texture_target(texture_type);
   uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
 #ifndef OPENGLES
   if (target == GL_TEXTURE_BUFFER) {
@@ -11988,11 +13544,20 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     int num_levels = 1;
     CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
 
+    bool can_generate = _supports_generate_mipmap;
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+    // OpenGL ES doesn't support generating mipmaps for sRGB textures, so we
+    // have to do this on the CPU, unless we have a special extension.
+    if (internal_format == GL_SRGB8 || internal_format == GL_SRGB8_ALPHA8) {
+      can_generate = has_extension("GL_NV_generate_mipmap_sRGB");
+    }
+#endif
+
     if (image.is_null()) {
       // We don't even have a RAM image, so we have no choice but to let
       // mipmaps be generated on the GPU.
       if (uses_mipmaps) {
-        if (_supports_generate_mipmap) {
+        if (can_generate) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
           gtc->_generate_mipmaps = true;
         } else {
@@ -12008,7 +13573,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
         if (num_levels <= 1) {
           // No RAM mipmap levels available.  Should we generate some?
-          if (!_supports_generate_mipmap || !driver_generate_mipmaps ||
+          if (!can_generate || !driver_generate_mipmaps ||
               image_compression != Texture::CM_off) {
             // Yes, the GL can't or won't generate them, so we need to.  Note
             // that some drivers (nVidia) will *corrupt memory* if you ask
@@ -12021,7 +13586,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (num_levels <= 1) {
           // We don't have mipmap levels in RAM.  Ask the GL to generate them
           // if it can.
-          if (_supports_generate_mipmap) {
+          if (can_generate) {
             num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
             gtc->_generate_mipmaps = true;
           } else {
@@ -12041,7 +13606,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES_2
-    if (gtc->_generate_mipmaps && _glGenerateMipmap == NULL) {
+    if (gtc->_generate_mipmaps && _glGenerateMipmap == nullptr) {
       // The old, deprecated way to generate mipmaps.
       glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
     }
@@ -12092,12 +13657,14 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
 
-      switch (tex->get_texture_type()) {
+      switch (texture_type) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
+#ifndef OPENGLES
         _glTexStorage1D(target, num_levels, internal_format, width);
         break;
+#endif
       case Texture::TT_2d_texture:
       case Texture::TT_cube_map:
       case Texture::TT_1d_texture_array:
@@ -12111,6 +13678,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       }
 
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_immutable = true;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
@@ -12137,61 +13705,11 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
   }
 
-  bool success = true;
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
-    // A cube map must load six different 2-d images (which are stored as the
-    // six pages of the system ram image).
-    if (!_supports_cube_map) {
-      report_my_gl_errors();
-      return false;
-    }
-    nassertr(target == GL_TEXTURE_CUBE_MAP, false);
+  bool success = upload_texture_image
+    (gtc, needs_reload, uses_mipmaps, mipmap_bias, target,
+     internal_format, external_format, component_type, image_compression);
 
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-       internal_format, external_format, component_type,
-       true, 0, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-       internal_format, external_format, component_type,
-       true, 1, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-       internal_format, external_format, component_type,
-       true, 2, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-       internal_format, external_format, component_type,
-       true, 3, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-       internal_format, external_format, component_type,
-       true, 4, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-       internal_format, external_format, component_type,
-       true, 5, image_compression);
-
-  } else {
-    // Any other kind of texture can be loaded all at once.
-    success = upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias, target,
-       target, internal_format, external_format,
-       component_type, false, 0, image_compression);
-  }
-
-  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL &&
+  if (gtc->_generate_mipmaps && _glGenerateMipmap != nullptr &&
       !image.is_null()) {
     // We uploaded an image; we may need to generate mipmaps.
     if (GLCAT.is_debug()) {
@@ -12208,6 +13726,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (success) {
     if (needs_reload) {
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
       gtc->_width = width;
@@ -12226,7 +13745,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (tex->has_ram_image()) {
           BamCache *cache = BamCache::get_global_ptr();
           PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-          if (record != (BamCacheRecord *)NULL) {
+          if (record != nullptr) {
             record->set_data(tex, tex);
             cache->store(record);
           }
@@ -12235,7 +13754,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
     GraphicsEngine *engine = get_engine();
-    nassertr(engine != (GraphicsEngine *)NULL, false);
+    nassertr(engine != nullptr, false);
     engine->texture_uploaded(tex);
     gtc->mark_loaded();
 
@@ -12250,21 +13769,13 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 /**
  * Loads a texture image, or one page of a cube map image, from system RAM to
  * texture memory.
- *
- * texture_target is normally the same thing as page_target; both represent
- * the GL target onto which the texture image is loaded, e.g.  GL_TEXTURE_1D,
- * GL_TEXTURE_2D, etc.  The only time they may differ is in the case of cube
- * mapping, in which case texture_target will be target for the overall
- * texture, e.g.  GL_TEXTURE_CUBE_MAP, and page_target will be the target for
- * this particular page, e.g.  GL_TEXTURE_CUBE_MAP_POSITIVE_X.
  */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                      bool uses_mipmaps, int mipmap_bias,
-                     GLenum texture_target, GLenum page_target,
+                     GLenum texture_target,
                      GLint internal_format,
                      GLint external_format, GLenum component_type,
-                     bool one_page_only, int z,
                      Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   clear_my_gl_errors();
@@ -12278,7 +13789,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   }
 
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != nullptr, false);
 
   CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
   int width = tex->get_expected_mipmap_x_size(mipmap_bias);
@@ -12286,7 +13797,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   // Determine the number of images to upload.
-  int num_levels = 1;
+  int num_levels = mipmap_bias + 1;
   if (uses_mipmaps) {
     num_levels = tex->get_expected_num_mipmap_levels();
   }
@@ -12314,34 +13825,37 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     // saving on texture memory fragmentation.
 
     if (GLCAT.is_debug()) {
+      SparseArray pages = gtc->get_image_modified_pages(0);
       if (num_ram_mipmap_levels == 0) {
         if (tex->has_clear_color()) {
           GLCAT.debug()
             << "clearing texture " << tex->get_name() << ", "
-            << width << " x " << height << " x " << depth << ", z = " << z
+            << width << " x " << height << " x " << depth << ", pages " << pages
             << ", uses_mipmaps = " << uses_mipmaps << ", clear_color = "
             << tex->get_clear_color() << "\n";
         } else {
           GLCAT.debug()
             << "not loading NULL image for texture " << tex->get_name()
             << ", " << width << " x " << height << " x " << depth
-            << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+            << ", pages " << pages << ", uses_mipmaps = " << uses_mipmaps << "\n";
         }
       } else {
         GLCAT.debug()
           << "updating image data of texture " << tex->get_name()
           << ", " << width << " x " << height << " x " << depth
-          << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
+          << ", pages " << pages << ", mipmaps " << num_ram_mipmap_levels
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
     }
 
     for (int n = mipmap_bias; n < num_levels; ++n) {
+      SparseArray pages = gtc->get_image_modified_pages(n);
+
       // we grab the mipmap pointer first, if it is NULL we grab the normal
       // mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)NULL) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12363,8 +13877,17 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                 // function.
                 vector_uchar clear_data = tex->get_clear_data();
 
-                _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)&clear_data[0]);
+                if (pages.has_all_of(0, depth)) {
+                  _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                                   component_type, (void *)&clear_data[0]);
+                }
+                else for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+                  int begin = pages.get_subrange_begin(sri);
+                  int num_pages = pages.get_subrange_end(sri) - begin;
+                  _glClearTexSubImage(gtc->_index, n - mipmap_bias, 0, 0, begin,
+                                      width, height, num_pages, external_format,
+                                      component_type, (void *)&clear_data[0]);
+                }
                 continue;
               }
             } else {
@@ -12393,14 +13916,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       }
 
       PTA_uchar bgr_image;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)NULL) {
+      size_t page_size = tex->get_ram_mipmap_page_size(n);
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
+        size_t view_size = tex->get_ram_mipmap_view_size(n);
         image_ptr += view_size * gtc->get_view();
-        if (one_page_only) {
-          view_size = tex->get_ram_mipmap_page_size(n);
-          image_ptr += view_size * z;
-        }
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -12413,21 +13933,29 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
-      int depth = tex->get_expected_mipmap_z_size(n);
 
 #ifdef DO_PSTATS
-      _data_transferred_pcollector.add_level(view_size);
+      _data_transferred_pcollector.add_level(page_size * pages.get_num_on_bits());
 #endif
       switch (texture_target) {
 #ifndef OPENGLES_1
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
-          if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image_ptr);
-          } else {
-            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, view_size, image_ptr);
+          for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+            int begin = pages.get_subrange_begin(sri);
+            int num_pages = pages.get_subrange_end(sri) - begin;
+            const unsigned char *page_ptr = image_ptr + page_size * begin;
+
+            if (image_compression == Texture::CM_off) {
+              _glTexSubImage3D(texture_target, n - mipmap_bias,
+                               0, 0, begin, width, height, num_pages,
+                               external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+                                         0, 0, begin, width, height, num_pages,
+                                         external_format,
+                                         page_size * num_pages, page_ptr);
+            }
           }
         } else {
           report_my_gl_errors();
@@ -12439,11 +13967,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexSubImage1D(page_target, n - mipmap_bias, 0, width,
+          glTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
-                                     external_format, view_size, image_ptr);
+          _glCompressedTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
+                                     external_format, page_size, image_ptr);
         }
         break;
 #endif  // OPENGLES
@@ -12452,12 +13980,21 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_2D_ARRAY:
       case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
-          if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image_ptr);
-          } else {
-            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, view_size, image_ptr);
+          for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+            int begin = pages.get_subrange_begin(sri);
+            int num_pages = pages.get_subrange_end(sri) - begin;
+            const unsigned char *page_ptr = image_ptr + page_size * begin;
+
+            if (image_compression == Texture::CM_off) {
+              _glTexSubImage3D(texture_target, n - mipmap_bias,
+                               0, 0, begin, width, height, num_pages,
+                               external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+                                         0, 0, begin, width, height, num_pages,
+                                         external_format,
+                                         page_size * num_pages, page_ptr);
+            }
           }
         } else {
           report_my_gl_errors();
@@ -12469,7 +14006,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
-          _glBufferSubData(GL_TEXTURE_BUFFER, 0, view_size, image_ptr);
+          _glBufferSubData(GL_TEXTURE_BUFFER, 0, page_size, image_ptr);
         } else {
           report_my_gl_errors();
           return false;
@@ -12477,18 +14014,46 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         break;
 #endif  // OPENGLES
 
+      case GL_TEXTURE_CUBE_MAP:
+        if (_supports_cube_map) {
+          // This is the only texture type that must be specified using separate
+          // per-page calls.
+          if (n == 0) {
+            height = tex->get_y_size() - tex->get_pad_y_size();
+          }
+          for (int z = 0; z < 6; ++z) {
+            if (pages.get_bit(z)) {
+              GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+              const unsigned char *page_ptr = image_ptr + page_size * z;
+
+              if (image_compression == Texture::CM_off) {
+                glTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+                                external_format, component_type, page_ptr);
+              } else {
+                _glCompressedTexSubImage2D(page_target, n - mipmap_bias,
+                                           0, 0, width, height,
+                                           external_format, page_size, page_ptr);
+              }
+            }
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+
       default:
         if (image_compression == Texture::CM_off) {
-          if (n==0) {
+          if (n == 0) {
             // It's unfortunate that we can't adjust the width, too, but
             // TexSubImage2D doesn't accept a row-stride parameter.
             height = tex->get_y_size() - tex->get_pad_y_size();
           }
-          glTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+          glTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
-                                     external_format, view_size, image_ptr);
+          _glCompressedTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
+                                     external_format, page_size, image_ptr);
         }
         break;
       }
@@ -12512,7 +14077,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "loading new texture object for " << tex->get_name() << ", " << width
-        << " x " << height << " x " << depth << ", z = " << z << ", mipmaps "
+        << " x " << height << " x " << depth << ", mipmaps "
         << num_ram_mipmap_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
     }
 
@@ -12538,7 +14103,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     for (int n = mipmap_bias; n < num_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)NULL) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12574,13 +14139,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       PTA_uchar bgr_image;
       size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)NULL) {
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
-        if (one_page_only) {
-          view_size = tex->get_ram_mipmap_page_size(n);
-          image_ptr += view_size * z;
-        }
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -12593,7 +14154,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -12602,12 +14165,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES  // 1-d textures not supported by OpenGL ES.  Fall through.
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexImage1D(page_target, n - mipmap_bias, internal_format,
-                       width, 0,
-                       external_format, component_type, image_ptr);
+          glTexImage1D(texture_target, n - mipmap_bias, internal_format,
+                       width, 0, external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage1D(page_target, n - mipmap_bias, external_format, width,
-                                  0, view_size, image_ptr);
+          _glCompressedTexImage1D(texture_target, n - mipmap_bias, external_format,
+                                  width, 0, view_size, image_ptr);
         }
         break;
 #endif  // OPENGLES  // OpenGL ES will fall through.
@@ -12616,13 +14178,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
-                                    height, depth,
-                                    0, view_size, image_ptr);
+            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+                                    width, height, depth, 0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -12636,13 +14197,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
-                                    height, depth,
-                                    0, view_size, image_ptr);
+            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+                                    width, height, depth, 0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -12663,13 +14223,37 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         break;
 #endif  // OPENGLES
 
+      case GL_TEXTURE_CUBE_MAP:
+        if (_supports_cube_map) {
+          // This is the only texture type that must be specified using separate
+          // per-page calls.
+          size_t page_size = tex->get_ram_mipmap_page_size(n);
+          for (int z = 0; z < 6; ++z) {
+            GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+            const unsigned char *page_ptr = image_ptr + page_size * z;
+
+            if (image_compression == Texture::CM_off) {
+              glTexImage2D(page_target, n - mipmap_bias, internal_format,
+                           width, height, 0,
+                           external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format,
+                                      width, height, 0, page_size, page_ptr);
+            }
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+
       default:
         if (image_compression == Texture::CM_off) {
-          glTexImage2D(page_target, n - mipmap_bias, internal_format,
+          glTexImage2D(texture_target, n - mipmap_bias, internal_format,
                        width, height, 0,
                        external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format,
+          _glCompressedTexImage2D(texture_target, n - mipmap_bias, external_format,
                                   width, height, 0, view_size, image_ptr);
         }
       }
@@ -12698,14 +14282,14 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
-  if (_glGenerateTextureMipmap != NULL) {
+  if (_supports_dsa) {
     // OpenGL 4.5 offers an easy way to do this without binding.
     _glGenerateTextureMipmap(gtc->_index);
     return;
   }
 #endif
 
-  if (_glGenerateMipmap != NULL) {
+  if (_glGenerateMipmap != nullptr) {
     _state_texture = 0;
     update_texture(gtc, true);
     apply_texture(gtc);
@@ -12726,13 +14310,18 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
   PStatGPUTimer timer(this, _load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != nullptr, false);
 
+#ifdef OPENGLES
+  GLenum internal_format = GL_BGRA;
+#else
   GLenum internal_format = GL_RGBA;
+#endif
   GLenum external_format = GL_BGRA;
 
-  const unsigned char *image_ptr = tex->get_simple_ram_image();
-  if (image_ptr == (const unsigned char *)NULL) {
+  CPTA_uchar image = tex->get_simple_ram_image();
+  const unsigned char *image_ptr = image.p();
+  if (image_ptr == nullptr) {
     return false;
   }
 
@@ -12742,6 +14331,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
     // If the GL doesn't claim to support BGR, we may have to reverse the
     // component ordering of the image.
     external_format = GL_RGBA;
+#ifdef OPENGLES
+    internal_format = GL_RGBA;
+#endif
     image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
                                        external_format, tex);
   }
@@ -12771,7 +14363,17 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
                width, height, 0,
                external_format, component_type, image_ptr);
 
-  gtc->mark_simple_loaded();
+  gtc->_has_storage = true;
+  gtc->_simple_loaded = true;
+  gtc->_immutable = false;
+  gtc->_uses_mipmaps = false;
+  gtc->_internal_format = internal_format;
+  gtc->_width = width;
+  gtc->_height = height;
+  gtc->_depth = 1;
+  gtc->update_data_size_bytes(width * height * 4);
+
+  gtc->mark_loaded();
 
   report_my_gl_errors();
   return true;
@@ -12789,7 +14391,6 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
   int height = tex->get_y_size();
   int depth = 1;
   int scale = 1;
-  bool has_mipmaps = tex->uses_mipmaps();
 
   size_t num_bytes = 2;  // Temporary assumption?
 
@@ -12893,7 +14494,7 @@ check_nonresident_texture(BufferContextChain &chain) {
   GLuint *texture_list = (GLuint *)alloca(num_textures * sizeof(GLuint));
   size_t ti = 0;
   BufferContext *node = chain.get_first();
-  while (node != (BufferContext *)NULL) {
+  while (node != nullptr) {
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), node);
     gtc_list[ti] = gtc;
     texture_list[ti] = gtc->_index;
@@ -12945,9 +14546,18 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
       << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
 
+#ifndef OPENGLES
+  if (target == GL_TEXTURE_BUFFER) {
+    _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
+  }
+#endif
+
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
+
+#ifndef OPENGLES
   GLfloat border_color[4];
+#endif
 
 #ifdef OPENGLES
   if (true) {
@@ -13000,7 +14610,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint internal_format = GL_RGBA;
 #ifndef OPENGLES
-  glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  if (target != GL_TEXTURE_BUFFER) {
+    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  } else {
+    // Some drivers give the wrong result for the above call.  No problem; we
+    // already know the internal format of a buffer texture since glTexBuffer
+    // required passing the exact sized format.
+    internal_format = gtc->_internal_format;
+  }
 #endif  // OPENGLES
 
   // Make sure we were able to query those parameters properly.
@@ -13097,7 +14714,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
+#endif
 
+#ifndef OPENGLES_1
   case GL_R8I:
     type = Texture::T_byte;
     format = Texture::F_r8i;
@@ -13136,11 +14755,69 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16I:
+    type = Texture::T_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16I:
+    type = Texture::T_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16I:
+    type = Texture::T_short;
+    format = Texture::F_rgba16i;
+    break;
+
   case GL_R16UI:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba16i;
+    break;
 
+  case GL_R32I:
+    type = Texture::T_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32I:
+    type = Texture::T_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32I:
+    type = Texture::T_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32I:
+    type = Texture::T_int;
+    format = Texture::F_rgba32i;
+    break;
+
+  case GL_R32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgba32i;
+    break;
 #endif
 
 #ifndef OPENGLES_1
@@ -13229,12 +14906,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_red;
     break;
 #endif
-#ifndef OPENGLES
-  case GL_R32I:
-    type = Texture::T_int;
-    format = Texture::F_r32i;
-    break;
-#endif
 
 #ifndef OPENGLES
   case GL_RED:
@@ -13268,9 +14939,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES_1
   case GL_SRGB:
-#ifndef OPENGLES
   case GL_SRGB8:
-#endif
     format = Texture::F_srgb;
     break;
   case GL_SRGB_ALPHA:
@@ -13441,11 +15110,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
     tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
     tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-    tex->set_border_color(LColor(border_color[0], border_color[1],
-                                 border_color[2], border_color[3]));
-
     tex->set_minfilter(get_panda_filter_type(minfilter));
     //tex->set_magfilter(get_panda_filter_type(magfilter));
+
+#ifndef OPENGLES
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
+#endif
   }
 
   PTA_uchar image;
@@ -13456,7 +15127,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  tex->set_ram_image(image, compression, page_size);
+  int num_views = tex->get_num_views();
+  if (num_views == 1) {
+    // Replace the entire image, since we are modifying the only view.
+    tex->set_ram_image(image, compression, page_size);
+  } else {
+    // We're only modifying a single view, so we can't stomp all over the
+    // existing content.
+    PTA_uchar ram_image = tex->modify_ram_image();
+    nassertr(ram_image.size() == image.size() * num_views, false);
+    memcpy(ram_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+  }
 
   if (gtc->_uses_mipmaps) {
     // Also get the mipmap levels.
@@ -13472,7 +15153,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
                                  type, compression, n)) {
         return false;
       }
-      tex->set_ram_mipmap_image(n, image, page_size);
+      if (num_views == 1) {
+        tex->set_ram_mipmap_image(n, image, page_size);
+      } else {
+        PTA_uchar ram_mipmap_image = tex->modify_ram_mipmap_image(n);
+        memcpy(ram_mipmap_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+      }
     }
   }
 
@@ -13489,8 +15175,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
-    nassertr(false, false);
-    return false;
+  nassert_raise("OpenGL ES does not support extracting texture data");
+  return false;
 #else
 
   // Make sure the GL driver does not align textures, otherwise we get corrupt
@@ -13536,13 +15222,13 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 #ifndef OPENGLES
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     _glGetBufferSubData(target, 0, image.size(), image.p());
 #endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     GLenum external_format = get_external_image_format(tex);
     GLenum pixel_type = get_component_type(type);
     glGetTexImage(target, n, external_format, pixel_type, image.p());

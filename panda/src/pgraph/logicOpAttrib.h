@@ -24,6 +24,8 @@ class FactoryParams;
  * If enabled, specifies that a custom logical operation be performed instead
  * of any color blending.  Setting it to a value other than M_none will cause
  * color blending to be disabled and the given logic operation to be performed.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPH LogicOpAttrib : public RenderAttrib {
 PUBLISHED:
@@ -59,7 +61,7 @@ PUBLISHED:
   MAKE_PROPERTY(operation, get_operation);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -105,7 +107,7 @@ private:
   static int _attrib_slot;
 };
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, LogicOpAttrib::Operation op);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, LogicOpAttrib::Operation op);
 
 #include "logicOpAttrib.I"
 

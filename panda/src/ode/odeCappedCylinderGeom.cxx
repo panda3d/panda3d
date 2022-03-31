@@ -23,7 +23,7 @@ OdeCappedCylinderGeom(dGeomID id) :
 
 OdeCappedCylinderGeom::
 OdeCappedCylinderGeom(dReal radius, dReal length) :
-  OdeGeom(dCreateCapsule(0, radius, length)) {
+  OdeGeom(dCreateCapsule(nullptr, radius, length)) {
 }
 
 OdeCappedCylinderGeom::

@@ -21,9 +21,9 @@
  */
 IChunkedStream::
 ~IChunkedStream() {
-  if (_channel != (HTTPChannel *)NULL) {
+  if (_channel != nullptr) {
     _channel->body_stream_destructs(this);
-    _channel = NULL;
+    _channel = nullptr;
   }
 }
 

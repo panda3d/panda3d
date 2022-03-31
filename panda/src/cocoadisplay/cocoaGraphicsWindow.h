@@ -23,14 +23,16 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
+#import <CoreVideo/CoreVideo.h>
+
 /**
  * An interface to the Cocoa system for managing OpenGL windows under Mac OS
  * X.
  */
-class CocoaGraphicsWindow : public GraphicsWindow {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -49,6 +51,7 @@ public:
   void handle_move_event();
   void handle_resize_event();
   void handle_minimize_event(bool minimized);
+  void handle_maximize_event(bool maximized);
   void handle_foreground_event(bool foreground);
   bool handle_close_request();
   void handle_close_event();
@@ -65,19 +68,14 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  CGDisplayModeRef find_display_mode(int width, int height);
+  CFMutableArrayRef find_display_modes(int width, int height);
   bool do_switch_fullscreen(CGDisplayModeRef mode);
-#else
-  CFDictionaryRef find_display_mode(int width, int height);
-  bool do_switch_fullscreen(CFDictionaryRef mode);
-#endif
-
-  virtual void mouse_mode_absolute();
-  virtual void mouse_mode_relative();
 
 private:
+  NSData *load_image_data(const Filename &filename);
   NSImage *load_image(const Filename &filename);
+
+  NSCursor *load_cursor(const Filename &filename);
 
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
   ButtonHandle map_key(unsigned short c) const;
@@ -87,19 +85,17 @@ private:
   NSWindow *_window;
   NSView *_view;
   NSUInteger _modifier_keys;
+  UInt32 _dead_key_state;
   CGDirectDisplayID _display;
+  PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
+  bool _vsync_enabled = false;
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CGDisplayModeRef _fullscreen_mode;
   CGDisplayModeRef _windowed_mode;
-#else
-  CFDictionaryRef _fullscreen_mode;
-  CFDictionaryRef _windowed_mode;
-#endif
 
-  typedef pmap<Filename, NSImage*> IconImages;
+  typedef pmap<Filename, NSData*> IconImages;
   IconImages _images;
 
 public:

@@ -145,7 +145,7 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
  *
  */
 void FLOATNAME(LPlane)::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LPlane(";
   FLOATNAME(LVecBase4)::output(out);
   out << ")";
@@ -155,6 +155,20 @@ output(ostream &out) const {
  *
  */
 void FLOATNAME(LPlane)::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
+}
+
+/**
+ * Returns a string representation of this LPlane.
+ */
+std::string FLOATNAME(LPlane)::
+__repr__() const {
+  std::ostringstream out;
+  out << "LPlane" << FLOATTOKEN << "("
+      << MAYBE_ZERO(_v(0)) << ", "
+      << MAYBE_ZERO(_v(1)) << ", "
+      << MAYBE_ZERO(_v(2)) << ", "
+      << MAYBE_ZERO(_v(3)) << ")";
+  return out.str();
 }

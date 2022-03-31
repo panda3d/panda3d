@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SwitchNode : public SelectiveChildNode {
 PUBLISHED:
-  INLINE explicit SwitchNode(const string &name);
+  INLINE explicit SwitchNode(const std::string &name);
 
 public:
   SwitchNode(const SwitchNode &copy);
@@ -34,7 +34,6 @@ public:
   virtual bool safe_to_combine_children() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual int get_first_visible_child() const;
   virtual bool has_single_child_visibility() const;
 
 PUBLISHED:

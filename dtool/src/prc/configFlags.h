@@ -17,13 +17,14 @@
 #include "dtoolbase.h"
 #include "numeric_types.h"
 #include "atomicAdjust.h"
+#include "memoryBase.h"
 
 /**
  * This class is the base class of both ConfigVariable and ConfigVariableCore.
  * It exists only to provide a convenient name scoping for some enumerated
  * values common to both classes.
  */
-class EXPCL_DTOOLCONFIG ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigFlags {
 PUBLISHED:
   enum ValueType {
     VT_undefined,
@@ -67,7 +68,7 @@ private:
   static TVOLATILE AtomicAdjust::Integer _global_modified;
 };
 
-ostream &operator << (ostream &out, ConfigFlags::ValueType type);
+std::ostream &operator << (std::ostream &out, ConfigFlags::ValueType type);
 
 #include "configFlags.I"
 

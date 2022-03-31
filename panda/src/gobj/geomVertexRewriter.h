@@ -65,11 +65,11 @@ PUBLISHED:
   INLINE int get_start_row() const;
   INLINE bool is_at_end() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexRewriter &rewriter) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexRewriter &rewriter) {
   rewriter.output(out);
   return out;
 }

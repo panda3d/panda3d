@@ -1,8 +1,4 @@
-/* Filename: contextSwitch_longjmp_src.c
- * Created by:  drose (15Apr10)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch_longjmp_src.c
+ * @author drose
+ * @date 2010-04-15
+ */
 
 /* This is the implementation of user-space context switching using
    setmp() / longjmp().  This is the hackier implementation,
@@ -90,14 +89,14 @@ void
 cs_longjmp(cs_jmp_buf env) {
   _asm {
     mov eax, env;
-    
+
     mov ebx, [eax + 0];
     mov edi, [eax + 4];
     mov esi, [eax + 8];
     mov ebp, [eax + 12];
     mov esp, [eax + 16];
     mov edx, [eax + 20];
-    
+
     frstor [eax + 24];  /* restore floating-point state */
 
     mov eax, 1;   /* return 1 from setjmp: pass 2 return */
@@ -251,7 +250,7 @@ setup_context_1(void) {
 }
 
 void
-init_thread_context(struct ThreadContext *context, 
+init_thread_context(struct ThreadContext *context,
                     unsigned char *stack, size_t stack_size,
                     ThreadFunction *thread_func, void *data) {
   /* Copy all of the input parameters to static variables, then begin
@@ -263,7 +262,7 @@ init_thread_context(struct ThreadContext *context,
   st_data = data;
 
   setup_context_1();
-}  
+}
 
 void
 save_thread_context(struct ThreadContext *context,

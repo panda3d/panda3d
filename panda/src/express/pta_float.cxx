@@ -13,11 +13,6 @@
 
 #include "pta_float.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<ReferenceCountedVector<float> >;
 template class PointerToArrayBase<float>;
 template class PointerToArray<float>;

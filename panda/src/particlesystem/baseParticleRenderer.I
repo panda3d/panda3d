@@ -97,7 +97,7 @@ get_cur_alpha(BaseParticle* bp) {
     return bp->get_parameterized_age();
 
   case PR_ALPHA_IN_OUT:
-    return 2.0 * min(bp->get_parameterized_age(),
+    return 2.0 * std::min(bp->get_parameterized_age(),
                      1.0f - bp->get_parameterized_age());
 
   case PR_ALPHA_USER:

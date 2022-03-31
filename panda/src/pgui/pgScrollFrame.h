@@ -19,6 +19,7 @@
 #include "pgVirtualFrame.h"
 #include "pgSliderBarNotify.h"
 #include "pgSliderBar.h"
+#include "patomic.h"
 
 /**
  * This is a special kind of frame that pretends to be much larger than it
@@ -34,7 +35,7 @@
  */
 class EXPCL_PANDA_PGUI PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
 PUBLISHED:
-  explicit PGScrollFrame(const string &name = "");
+  explicit PGScrollFrame(const std::string &name = "");
   virtual ~PGScrollFrame();
 
 protected:
@@ -92,9 +93,7 @@ private:
 private:
   bool _needs_remanage;
   bool _needs_recompute_clip;
-  bool _needs_recompute_canvas;
-
-  LVecBase4 _orig_clip_frame;
+  patomic_flag _canvas_computed;
 
   bool _has_virtual_frame;
   LVecBase4 _virtual_frame;

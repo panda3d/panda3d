@@ -21,7 +21,7 @@
 #ifdef HAVE_PYTHON
 
 /**
- * Extends GraphicsWindowProc to provde callback functionality to a python
+ * Extends GraphicsWindowProc to provide callback functionality to a Python
  * program.
  */
 class PythonGraphicsWindowProc: public GraphicsWindowProc,

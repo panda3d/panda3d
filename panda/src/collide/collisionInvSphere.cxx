@@ -12,8 +12,11 @@
  */
 
 #include "collisionInvSphere.h"
+
 #include "collisionSphere.h"
+#include "collisionCapsule.h"
 #include "collisionLine.h"
+#include "collisionParabola.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "collisionHandler.h"
@@ -47,7 +50,7 @@ make_copy() {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -72,7 +75,7 @@ get_test_pcollector() {
  *
  */
 void CollisionInvSphere::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "invsphere, c (" << get_center() << "), r " << get_radius();
 }
 
@@ -92,7 +95,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -108,7 +111,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat dist2 = dot(vec, vec);
   if (dist2 < (into_radius - from_radius) * (into_radius - from_radius)) {
     // No intersection--the sphere is within the hollow.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -144,7 +147,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), NULL);
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -185,7 +188,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -198,7 +201,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     t1 = t2 = 0.0;
   }
 
-  t2 = max(t2, 0.0);
+  t2 = std::max(t2, 0.0);
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -228,7 +231,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), NULL);
+  DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -254,17 +257,17 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   } else if (t2 <= 1.0) {
     // The bottom edge of the segment intersects the shell.
-    t = min(t2, 1.0);
+    t = std::min(t2, 1.0);
 
   } else if (t1 >= 0.0) {
     // The top edge of the segment intersects the shell.
-    t = max(t1, 0.0);
+    t = std::max(t1, 0.0);
 
   } else {
     // Neither edge of the segment intersects the shell.  It follows that both
     // intersection points are within the hollow center of the sphere;
     // therefore, there is no intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -284,6 +287,231 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     normal.normalize();
     new_entry->set_surface_normal(-normal);
   }
+
+  return new_entry;
+}
+
+
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  double t;
+  LPoint3 into_intersection_point;
+  if (!intersects_parabola(t, local_p, parabola->get_t1(), parabola->get_t2(),
+                           local_p.calc_point(parabola->get_t1()),
+                           local_p.calc_point(parabola->get_t2()), into_intersection_point)) {
+    // No intersection.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = into_intersection_point - get_center();
+  normal.normalize();
+  if (has_effective_normal() && parabola->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(-normal);
+  }
+
+  LPoint3 surface_point = normal * get_radius() + get_center();
+  new_entry->set_surface_point(surface_point);
+
+  return new_entry;
+}
+
+
+bool CollisionInvSphere::
+intersects_parabola(double &t, const LParabola &parabola,
+                    double t1, double t2,
+                    const LPoint3 &p1, const LPoint3 &p2, LPoint3 &into_intersection_point) const {
+
+  /* The method is pretty much identical to CollisionSphere::intersects_parabola:
+   * recursively divide the parabola into "close enough" line segments, and test
+   * their intersection with the sphere using tests similar to
+   * CollisionInvSphere::test_intersection_from_segment. Returns the
+   * point of intersection via pass-by-reference.
+   */
+
+  if (t1 == t2) {
+    // Special case: a single point.
+    if ((p1 - get_center()).length_squared() < get_radius() * get_radius()) {
+      // No intersection.
+      return false;
+    }
+    t = t1;
+    return true;
+  }
+
+  double tmid = (t1 + t2) * 0.5;
+  if (tmid != t1 && tmid != t2) {
+    LPoint3 pmid = parabola.calc_point(tmid);
+    LPoint3 pmid2 = (p1 + p2) * 0.5f;
+
+    if ((pmid - pmid2).length_squared() > 0.001f) {
+      if (intersects_parabola(t, parabola, t1, tmid, p1, pmid, into_intersection_point)) {
+        return true;
+      }
+      return intersects_parabola(t, parabola, tmid, t2, pmid, p2, into_intersection_point);
+    }
+  }
+
+  // Line segment is close enough to parabola. Test for intersections
+  double t1a, t2a;
+  if (!intersects_line(t1a, t2a, p1, p2 - p1, 0.0f)) {
+    // segment is somewhere outside the sphere, so
+    // we have an intersection, simply return the first point
+    t = 0.0;
+  }
+  else {
+    if (t2a <= 0.0) {
+      // segment completely below sphere
+      t = 0.0;
+    }
+    else if (t1a >= 1.0) {
+      // segment acompletely bove sphere
+      t = 1.0;
+    }
+    else if (t2a <= 1.0) {
+      // bottom edge intersects sphere
+      t = t2a;
+    }
+    else if (t1a >= 0.0) {
+      // top edge intersects sphere
+      t = t1a;
+    }
+    else {
+      // completely inside sphere, no intersection
+      return false;
+    }
+  }
+  into_intersection_point = p1 + t * (p2 - p1);
+  return true;
+}
+
+/**
+ *
+ */
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
+
+  LVector3 from_radius_v =
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = from_radius_v.length();
+
+  LPoint3 center = get_center();
+  PN_stdfloat radius = get_radius();
+
+  // Check which one of the points lies furthest inside the sphere.
+  PN_stdfloat dist_a = (from_a - center).length();
+  PN_stdfloat dist_b = (from_b - center).length();
+  if (dist_b > dist_a) {
+    // Store the furthest point into from_a/dist_a.
+    dist_a = dist_b;
+    from_a = from_b;
+  }
+
+  // from_a now contains the furthest point.  Is it inside?
+  if (dist_a < radius - from_radius) {
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = center - from_a;
+  normal.normalize();
+  new_entry->set_surface_point(get_center() - normal * radius);
+  new_entry->set_interior_point(from_a - normal * from_radius);
+
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+/**
+ * Double dispatch point for box as a FROM object
+ */
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 center = get_center();
+  PN_stdfloat radius_sq = get_radius();
+  radius_sq *= radius_sq;
+
+  // Just figure out which box point is furthest from the center.  If it
+  // exceeds the radius, the furthest point wins.
+
+  PN_stdfloat max_dist_sq = -1.0;
+  LPoint3 deepest_vertex;
+
+  for (int i = 0; i < 8; ++i) {
+    LPoint3 point = wrt_mat.xform_point(box->get_point(i));
+
+    PN_stdfloat dist_sq = (point - center).length_squared();
+    if (dist_sq > max_dist_sq) {
+      deepest_vertex = point;
+      max_dist_sq = dist_sq;
+    }
+  }
+
+  if (max_dist_sq < radius_sq) {
+    // The point furthest away from the center is still inside the sphere.
+    // Therefore, no collision.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  // The interior point is just the deepest cube vertex.
+  new_entry->set_interior_point(deepest_vertex);
+
+  // Now extrapolate the surface point and normal from that.
+  LVector3 normal = center - deepest_vertex;
+  normal.normalize();
+  new_entry->set_surface_point(center - normal * get_radius());
+  new_entry->set_surface_normal(
+    (has_effective_normal() && box->get_respect_effective_normal())
+    ? get_effective_normal() : normal);
 
   return new_entry;
 }

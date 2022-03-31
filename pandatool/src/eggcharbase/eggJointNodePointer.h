@@ -41,9 +41,9 @@ public:
 
   virtual bool has_vertices() const;
 
-  virtual EggJointPointer *make_new_joint(const string &name);
+  virtual EggJointPointer *make_new_joint(const std::string &name);
 
-  virtual void set_name(const string &name);
+  virtual void set_name(const std::string &name);
 
 private:
   PT(EggGroup) _joint;

@@ -17,12 +17,14 @@
 #include "mutexHolder.h"
 #include "pointerTo.h"
 
-Mutex *cout_mutex = (Mutex *)NULL;
+using std::cout;
+
+Mutex *cout_mutex = nullptr;
 
 // Test forking a thread with some private data.
 class ThreadWithData : public Thread {
 public:
-  ThreadWithData(const string &name, int parameter);
+  ThreadWithData(const std::string &name, int parameter);
 
   virtual void thread_main();
 
@@ -32,7 +34,7 @@ private:
 
 
 ThreadWithData::
-ThreadWithData(const string &name, int parameter) :
+ThreadWithData(const std::string &name, int parameter) :
   Thread(name, name),
   _parameter(parameter)
 {
@@ -48,7 +50,7 @@ thread_main() {
       MutexHolder holder(cout_mutex);
       cout << "Running thread " << get_name()
            << " with parameter " << _parameter
-           << ", i = " << i << "\n" << flush;
+           << ", i = " << i << "\n" << std::flush;
       Thread *thread = get_current_thread();
       nassertv(thread == this);
     }
@@ -60,7 +62,7 @@ int
 main() {
   cout << "main beginning.\n";
   for (int i = 0; i < 10; i++) {
-    string name = string("thread_") + (char)(i + 'a');
+    std::string name = std::string("thread_") + (char)(i + 'a');
     PT(Thread) thread = new ThreadWithData(name, i);
     if (!thread->start(TP_low, true)) {
       MutexHolder holder(cout_mutex);

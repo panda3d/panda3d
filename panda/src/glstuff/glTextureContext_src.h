@@ -42,7 +42,7 @@ public:
 #endif
 
 #ifdef OPENGLES_1
-  static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
+  static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);
   void mark_incoherent(bool wrote);
@@ -64,6 +64,7 @@ public:
   // or glTexStorage2D() call.  If none of these have changed, we can reload
   // the texture image with a glTexSubImage2D().
   bool _has_storage;
+  bool _simple_loaded;
   bool _immutable;
   bool _uses_mipmaps;
   bool _generate_mipmaps;

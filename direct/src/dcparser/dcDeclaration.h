@@ -26,7 +26,7 @@ class DCSwitch;
  * only purpose is so that classes and typedefs can be stored in one list
  * together so they can be ordered correctly on output.
  */
-class DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCDeclaration {
 public:
   virtual ~DCDeclaration();
 
@@ -36,15 +36,15 @@ PUBLISHED:
   virtual DCSwitch *as_switch();
   virtual const DCSwitch *as_switch() const;
 
-  virtual void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
 public:
-  virtual void output(ostream &out, bool brief) const=0;
-  virtual void write(ostream &out, bool brief, int indent_level) const=0;
+  virtual void output(std::ostream &out, bool brief) const=0;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const=0;
 };
 
-INLINE ostream &operator << (ostream &out, const DCDeclaration &decl) {
+INLINE std::ostream &operator << (std::ostream &out, const DCDeclaration &decl) {
   decl.output(out);
   return out;
 }

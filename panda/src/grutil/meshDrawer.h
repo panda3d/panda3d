@@ -107,8 +107,6 @@ private:
   GeomVertexRewriter *_color;
 
   // billboard vectors
-  LVector4 _colorv;
-  LVector3 _normalv;
   LVector3 _eyePos;
   LVector3 _b1, _b2, _b3, _b4;
   LVector3 _up, _right;

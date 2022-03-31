@@ -26,7 +26,7 @@ class PfmFile;
  */
 class EXPCL_PANDA_PNMIMAGE PNMReader : public PNMImageHeader {
 protected:
-  INLINE PNMReader(PNMFileType *type, istream *file, bool owns_file);
+  INLINE PNMReader(PNMFileType *type, std::istream *file, bool owns_file);
 
 public:
   virtual ~PNMReader();
@@ -51,7 +51,7 @@ private:
 protected:
   PNMFileType *_type;
   bool _owns_file;
-  istream *_file;
+  std::istream *_file;
   bool _is_valid;
 
   int _read_x_size, _read_y_size;

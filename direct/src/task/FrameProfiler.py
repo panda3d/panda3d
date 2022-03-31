@@ -1,7 +1,11 @@
+from panda3d.core import ConfigVariableBool, ClockObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.fsm.StatePush import FunctionCall
-from direct.showbase.PythonUtil import formatTimeExact, normalDistrib
-from direct.task import Task
+from direct.showbase.PythonUtil import formatTimeExact, normalDistrib, serialNum
+from direct.showbase.PythonUtil import Functor
+from .Task import Task
+from .TaskManagerGlobal import taskMgr
+
 
 class FrameProfiler:
     notify = directNotify.newCategory('FrameProfiler')
@@ -15,8 +19,9 @@ class FrameProfiler:
     def __init__(self):
         Hour = FrameProfiler.Hour
         # how long to wait between frame profiles
+        frequent_profiles = ConfigVariableBool('frequent-frame-profiles', False)
         self._period = 2 * FrameProfiler.Minute
-        if config.GetBool('frequent-frame-profiles', 0):
+        if frequent_profiles:
             self._period = 1 * FrameProfiler.Minute
         # used to prevent profile from being taken exactly every 'period' seconds
         self._jitterMagnitude = self._period * .75
@@ -28,7 +33,7 @@ class FrameProfiler:
                              12 * FrameProfiler.Hour,
                               1 * FrameProfiler.Day,
                               ] # day schedule proceeds as 1, 2, 4, 8 days, etc.
-        if config.GetBool('frequent-frame-profiles', 0):
+        if frequent_profiles:
             self._logSchedule = [ 1  * FrameProfiler.Minute,
                                   4  * FrameProfiler.Minute,
                                   12 * FrameProfiler.Minute,
@@ -54,7 +59,7 @@ class FrameProfiler:
     def _setEnabled(self, enabled):
         if enabled:
             self.notify.info('frame profiler started')
-            self._startTime = globalClock.getFrameTime()
+            self._startTime = ClockObject.getGlobalClock().getFrameTime()
             self._profileCounter = 0
             self._jitter = None
             self._period2aggregateProfile = {}
@@ -79,7 +84,7 @@ class FrameProfiler:
 
     def _scheduleNextProfileDoLater(self, task):
         self._scheduleNextProfile()
-        return task.done
+        return Task.done
 
     def _scheduleNextProfile(self):
         self._profileCounter += 1
@@ -105,7 +110,7 @@ class FrameProfiler:
             self._analyzeResults, sessionId))
 
         # schedule the next profile
-        delay = max(time - globalClock.getFrameTime(), 0.)
+        delay = max(time - ClockObject.getGlobalClock().getFrameTime(), 0.)
         self._task = taskMgr.doMethodLater(delay, self._scheduleNextProfileDoLater,
                                            'FrameProfiler-%s' % serialNum())
 

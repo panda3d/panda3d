@@ -27,9 +27,9 @@
  * This defines an interface to the Distributed Class, and is always
  * implemented as a remote procedure method.
  */
-class DCAtomicField : public DCField {
+class EXPCL_DIRECT_DCPARSER DCAtomicField : public DCField {
 public:
-  DCAtomicField(const string &name, DCClass *dclass, bool bogus_field);
+  DCAtomicField(const std::string &name, DCClass *dclass, bool bogus_field);
   virtual ~DCAtomicField();
 
 PUBLISHED:
@@ -40,17 +40,17 @@ PUBLISHED:
   DCParameter *get_element(int n) const;
 
   // These five methods are deprecated and will be removed soon.
-  string get_element_default(int n) const;
+  vector_uchar get_element_default(int n) const;
   bool has_element_default(int n) const;
-  string get_element_name(int n) const;
+  std::string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;
   int get_element_divisor(int n) const;
 
 public:
   void add_element(DCParameter *element);
 
-  virtual void output(ostream &out, bool brief) const;
-  virtual void write(ostream &out, bool brief, int indent_level) const;
+  virtual void output(std::ostream &out, bool brief) const;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
   virtual DCPackerInterface *get_nested_field(int n) const;
@@ -60,7 +60,7 @@ protected:
   virtual bool do_check_match_atomic_field(const DCAtomicField *other) const;
 
 private:
-  void output_element(ostream &out, bool brief, DCParameter *element) const;
+  void output_element(std::ostream &out, bool brief, DCParameter *element) const;
 
   typedef pvector<DCParameter *> Elements;
   Elements _elements;

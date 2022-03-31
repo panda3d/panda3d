@@ -15,7 +15,7 @@
  * Returns true if the font has ever been loaded, false otherwise.
  */
 INLINE bool FontPool::
-has_font(const string &filename) {
+has_font(const std::string &filename) {
   return get_ptr()->ns_has_font(filename);
 }
 
@@ -26,8 +26,8 @@ has_font(const string &filename) {
  * with the same font name will return a valid Font pointer.
  */
 INLINE bool FontPool::
-verify_font(const string &filename) {
-  return load_font(filename) != (TextFont *)NULL;
+verify_font(const std::string &filename) {
+  return load_font(filename) != nullptr;
 }
 
 /**
@@ -37,7 +37,7 @@ verify_font(const string &filename) {
  * returns NULL.
  */
 INLINE TextFont *FontPool::
-load_font(const string &filename) {
+load_font(const std::string &filename) {
   return get_ptr()->ns_load_font(filename);
 }
 
@@ -46,7 +46,7 @@ load_font(const string &filename) {
  * replace any previously-loaded font in the pool that had the same filename.
  */
 INLINE void FontPool::
-add_font(const string &filename, TextFont *font) {
+add_font(const std::string &filename, TextFont *font) {
   get_ptr()->ns_add_font(filename, font);
 }
 
@@ -57,7 +57,7 @@ add_font(const string &filename, TextFont *font) {
  * and fonts will never be freed.
  */
 INLINE void FontPool::
-release_font(const string &filename) {
+release_font(const std::string &filename) {
   get_ptr()->ns_release_font(filename);
 }
 
@@ -83,7 +83,7 @@ garbage_collect() {
  * Lists the contents of the font pool to the indicated output stream.
  */
 INLINE void FontPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 

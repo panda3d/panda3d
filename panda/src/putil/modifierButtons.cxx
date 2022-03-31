@@ -302,9 +302,9 @@ is_down(ButtonHandle button) const {
  * Returns a string which can be used to prefix any button name or event name
  * with the unique set of modifier buttons currently being held.
  */
-string ModifierButtons::
+std::string ModifierButtons::
 get_prefix() const {
-  string prefix;
+  std::string prefix;
   for (int i = 0; i < (int)_button_list.size(); i++) {
     if ((_state & ((BitmaskType)1 << i)) != 0) {
       prefix += _button_list[i].get_name();
@@ -319,7 +319,7 @@ get_prefix() const {
  * Writes a one-line summary of the buttons known to be down.
  */
 void ModifierButtons::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[";
   for (int i = 0; i < (int)_button_list.size(); i++) {
     if ((_state & ((BitmaskType)1 << i)) != 0) {
@@ -334,7 +334,7 @@ output(ostream &out) const {
  * and which ones are known to be down.
  */
 void ModifierButtons::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "ModifierButtons:\n";
   for (int i = 0; i < (int)_button_list.size(); i++) {
     out << "  " << _button_list[i];

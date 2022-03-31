@@ -23,7 +23,7 @@ OdeNullJoint(dJointID id) :
 
 OdeNullJoint::
 OdeNullJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateNull(world.get_id(), 0)) {
+  OdeJoint(dJointCreateNull(world.get_id(), nullptr)) {
 }
 
 OdeNullJoint::

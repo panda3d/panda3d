@@ -30,7 +30,7 @@
  */
 EggMesher::
 EggMesher() {
-  _vertex_pool = NULL;
+  _vertex_pool = nullptr;
   _strip_index = 0;
 }
 
@@ -70,7 +70,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
       if (child->is_of_type(EggPolygon::get_class_type())) {
         EggPolygon *poly = DCAST(EggPolygon, child);
 
-        if (_vertex_pool == (EggVertexPool *)NULL) {
+        if (_vertex_pool == nullptr) {
           _vertex_pool = poly->get_pool();
           add_polygon(poly, EggMesherStrip::MO_user);
 
@@ -93,7 +93,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
     Strips::iterator si;
     for (si = _done.begin(); si != _done.end(); ++si) {
       PT(EggPrimitive) egg_prim = get_prim(*si);
-      if (egg_prim != (EggPrimitive *)NULL) {
+      if (egg_prim != nullptr) {
         output_children->add_child(egg_prim);
       }
     }
@@ -113,7 +113,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
  *
  */
 void EggMesher::
-write(ostream &out) const {
+write(std::ostream &out) const {
   /*
   out << _edges.size() << " edges:\n";
   copy(_edges.begin(), _edges.end(), ostream_iterator<Edge>(out, "\n"));
@@ -164,7 +164,7 @@ clear() {
   _verts.clear();
   _edges.clear();
   _strip_index = 0;
-  _vertex_pool = NULL;
+  _vertex_pool = nullptr;
   _color_sheets.clear();
 }
 
@@ -197,7 +197,7 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
     this_poly = DCAST(EggPolygon, *ci);
   }
 
-  if (_vertex_pool == NULL) {
+  if (_vertex_pool == nullptr) {
     _vertex_pool = this_poly->get_pool();
   } else {
     nassertr(_vertex_pool == this_poly->get_pool(), false);
@@ -557,7 +557,7 @@ build_sheets() {
       int num_rows_b = 0;
       int first_row_id_b = first_row_id;
       double avg_length_b;
-      if (edge_b != NULL) {
+      if (edge_b != nullptr) {
         (*best).measure_sheet(edge_b, true, num_prims_b, num_rows_b,
                              first_row_id_b, 0, 0);
         first_row_id += num_rows_b;
@@ -565,7 +565,7 @@ build_sheets() {
       }
 
       // Which sheet is better?
-      if (edge_b != NULL && avg_length_b >= avg_length_a) {
+      if (edge_b != nullptr && avg_length_b >= avg_length_a) {
         // Sheet b.  That's easy.
         (*best).cut_sheet(first_row_id_b, true, _vertex_pool);
 
@@ -704,8 +704,8 @@ make_quads() {
   // and pair them up right away.  The others we'll get to later.  This way,
   // the uncertain matches won't pollute the quad alignment for everyone else.
 
-  typedef pair<EggMesherStrip *, EggMesherStrip *> Pair;
-  typedef pair<Pair, EggMesherEdge *> Matched;
+  typedef std::pair<EggMesherStrip *, EggMesherStrip *> Pair;
+  typedef std::pair<Pair, EggMesherEdge *> Matched;
   typedef pvector<Matched> SoulMates;
 
   SoulMates soulmates;

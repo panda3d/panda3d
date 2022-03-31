@@ -38,21 +38,21 @@ public:
 
   void merge_from(const RecorderTable &other);
 
-  INLINE void add_recorder(const string &name, RecorderBase *recorder);
-  INLINE RecorderBase *get_recorder(const string &name) const;
-  INLINE bool remove_recorder(const string &name);
+  INLINE void add_recorder(const std::string &name, RecorderBase *recorder);
+  INLINE RecorderBase *get_recorder(const std::string &name) const;
+  INLINE bool remove_recorder(const std::string &name);
 
   void record_frame(BamWriter *manager, Datagram &dg);
   void play_frame(DatagramIterator &scan, BamReader *manager);
   void set_flags(short flags);
   void clear_flags(short flags);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
   // RecorderBase itself doesn't inherit from ReferenceCount, so we can't put
   // a PT() around it.  Instead, we manage the reference count using calls to
   // ref() and unref().
-  typedef pmap<string, RecorderBase*> Recorders;
+  typedef pmap<std::string, RecorderBase*> Recorders;
   Recorders _recorders;
 
   bool _error;

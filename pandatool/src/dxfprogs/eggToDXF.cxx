@@ -52,7 +52,7 @@ run() {
 
   // uniquify_names("layer", _layers.begin(), _layers.end());
 
-  ostream &out = get_output();
+  std::ostream &out = get_output();
 
   // Autodesk says we don't need the header, but some DXF-reading programs
   // might get confused if it's missing.  We'll write an empty header.
@@ -107,7 +107,7 @@ get_layers(EggGroupNode *group) {
  * gets written later, in write_entities().
  */
 void EggToDXF::
-write_tables(ostream &out) {
+write_tables(std::ostream &out) {
   out << "0\nSECTION\n"
       << "2\nTABLES\n"  // Begin TABLES section.
       << "0\nTABLE\n"
@@ -127,7 +127,7 @@ write_tables(ostream &out) {
  * Writes out the "entities", e.g.  polygons, defined for all layers.
  */
 void EggToDXF::
-write_entities(ostream &out) {
+write_entities(std::ostream &out) {
   out << "0\nSECTION\n"
       << "2\nENTITIES\n";  // Begin ENTITIES section.
 

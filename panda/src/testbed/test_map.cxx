@@ -16,6 +16,10 @@
 #include "memoryUsage.h"
 #include "clockObject.h"
 
+using std::cerr;
+using std::cout;
+using std::string;
+
 class Alpha {
 public:
   Alpha(const string &str) : _str(str) { }
@@ -36,7 +40,7 @@ public:
   string _str;
 };
 
-ostream &operator << (ostream &out, const Alpha &alpha) {
+std::ostream &operator << (std::ostream &out, const Alpha &alpha) {
   return out << alpha._str;
 }
 
@@ -113,7 +117,7 @@ test_performance() {
   static const int num_cycles = 10000;
   static const int num_reps = 3;
 
-  vector<KeyType> samples;
+  std::vector<KeyType> samples;
   samples.reserve(sample_size);
   for (int s = 0; s < sample_size; s++) {
     string key;

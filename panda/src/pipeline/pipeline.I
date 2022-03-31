@@ -16,7 +16,7 @@
  */
 INLINE Pipeline *Pipeline::
 get_render_pipeline() {
-  if (_render_pipeline == (Pipeline *)NULL) {
+  if (_render_pipeline == nullptr) {
     make_render_pipeline();
   }
   return _render_pipeline;
@@ -27,7 +27,7 @@ get_render_pipeline() {
  */
 INLINE void Pipeline::
 set_min_stages(int min_stages) {
-  set_num_stages(max(min_stages, get_num_stages()));
+  set_num_stages(std::max(min_stages, get_num_stages()));
 }
 
 /**

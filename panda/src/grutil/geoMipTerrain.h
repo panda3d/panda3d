@@ -31,22 +31,22 @@
  * GeoMipMapping algorithm, or Geometrical MipMapping, based on the LOD (Level
  * of Detail) algorithm.  For more information about the GeoMipMapping
  * algoritm, see this paper, written by Willem H. de Boer:
- * http://flipcode.com/articles/article_geomipmaps.pdf
+ * https://flipcode.com/articles/article_geomipmaps.pdf
  */
 class EXPCL_PANDA_GRUTIL GeoMipTerrain : public TypedObject {
 PUBLISHED:
-  INLINE explicit GeoMipTerrain(const string &name);
+  INLINE explicit GeoMipTerrain(const std::string &name);
   INLINE ~GeoMipTerrain();
 
   INLINE PNMImage &heightfield();
-  bool set_heightfield(const Filename &filename, PNMFileType *type = NULL);
+  bool set_heightfield(const Filename &filename, PNMFileType *type = nullptr);
   INLINE bool set_heightfield(const PNMImage &image);
   INLINE PNMImage &color_map();
   INLINE bool set_color_map(const Filename &filename,
-                                  PNMFileType *type = NULL);
+                                  PNMFileType *type = nullptr);
   INLINE bool set_color_map(const PNMImage &image);
   INLINE bool set_color_map(const Texture *image);
-  INLINE bool set_color_map(const string &path);
+  INLINE bool set_color_map(const std::string &path);
   INLINE bool has_color_map() const;
   INLINE void clear_color_map();
   void calc_ambient_occlusion(PN_stdfloat radius = 32, PN_stdfloat contrast = 2.0f, PN_stdfloat brightness = 0.75f);

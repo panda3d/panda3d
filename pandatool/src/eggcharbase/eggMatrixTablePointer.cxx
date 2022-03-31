@@ -12,10 +12,14 @@
  */
 
 #include "eggMatrixTablePointer.h"
+
 #include "dcast.h"
+#include "eggCharacterDb.h"
 #include "eggSAnimData.h"
 #include "eggXfmAnimData.h"
 #include "eggXfmSAnim.h"
+
+using std::string;
 
 TypeHandle EggMatrixTablePointer::_type_handle;
 
@@ -26,7 +30,7 @@ EggMatrixTablePointer::
 EggMatrixTablePointer(EggObject *object) {
   _table = DCAST(EggTable, object);
 
-  if (_table != (EggTable *)NULL) {
+  if (_table != nullptr) {
     // Now search for the child named "xform".  This contains the actual table
     // data.
     EggGroupNode::iterator ci;
@@ -58,7 +62,7 @@ EggMatrixTablePointer(EggObject *object) {
  */
 double EggMatrixTablePointer::
 get_frame_rate() const {
-  if (_xform == (EggXfmSAnim *)NULL || !_xform->has_fps()) {
+  if (_xform == nullptr || !_xform->has_fps()) {
     return 0.0;
   } else {
     return _xform->get_fps();
@@ -70,7 +74,7 @@ get_frame_rate() const {
  */
 int EggMatrixTablePointer::
 get_num_frames() const {
-  if (_xform == (EggXfmSAnim *)NULL) {
+  if (_xform == nullptr) {
     return 0;
   } else {
     return _xform->get_num_rows();
@@ -82,7 +86,7 @@ get_num_frames() const {
  */
 void EggMatrixTablePointer::
 extend_to(int num_frames) {
-  nassertv(_xform != (EggXfmSAnim *)NULL);
+  nassertv(_xform != nullptr);
   _xform->normalize();
   int num_rows = _xform->get_num_rows();
   LMatrix4d last_mat;
@@ -136,7 +140,7 @@ set_frame(int n, const LMatrix4d &mat) {
  */
 bool EggMatrixTablePointer::
 add_frame(const LMatrix4d &mat) {
-  if (_xform == (EggXfmSAnim *)NULL) {
+  if (_xform == nullptr) {
     return false;
   }
 
@@ -149,10 +153,10 @@ add_frame(const LMatrix4d &mat) {
  */
 void EggMatrixTablePointer::
 do_finish_reparent(EggJointPointer *new_parent) {
-  if (new_parent == (EggJointPointer *)NULL) {
+  if (new_parent == nullptr) {
     // No new parent; unparent the joint.
     EggGroupNode *egg_parent = _table->get_parent();
-    if (egg_parent != (EggGroupNode *)NULL) {
+    if (egg_parent != nullptr) {
       egg_parent->remove_child(_table.p());
     }
 
@@ -184,7 +188,7 @@ do_rebuild(EggCharacterDb &db) {
     return true;
   }
 
-  if (_xform == (EggXfmSAnim *)NULL) {
+  if (_xform == nullptr) {
     return false;
   }
 
@@ -213,7 +217,7 @@ do_rebuild(EggCharacterDb &db) {
  */
 void EggMatrixTablePointer::
 optimize() {
-  if (_xform != (EggXfmSAnim *)NULL) {
+  if (_xform != nullptr) {
     _xform->optimize();
   }
 }
@@ -223,7 +227,7 @@ optimize() {
  */
 void EggMatrixTablePointer::
 zero_channels(const string &components) {
-  if (_xform == (EggXfmSAnim *)NULL) {
+  if (_xform == nullptr) {
     return;
   }
 
@@ -233,7 +237,7 @@ zero_channels(const string &components) {
   for (si = components.begin(); si != components.end(); ++si) {
     string table_name(1, *si);
     EggNode *child = _xform->find_child(table_name);
-    if (child != (EggNode *)NULL) {
+    if (child != nullptr) {
       _xform->remove_child(child);
     }
   }
@@ -245,7 +249,7 @@ zero_channels(const string &components) {
  */
 void EggMatrixTablePointer::
 quantize_channels(const string &components, double quantum) {
-  if (_xform == (EggXfmSAnim *)NULL) {
+  if (_xform == nullptr) {
     return;
   }
 
@@ -255,7 +259,7 @@ quantize_channels(const string &components, double quantum) {
   for (si = components.begin(); si != components.end(); ++si) {
     string table_name(1, *si);
     EggNode *child = _xform->find_child(table_name);
-    if (child != (EggNode *)NULL &&
+    if (child != nullptr &&
         child->is_of_type(EggSAnimData::get_class_type())) {
       EggSAnimData *anim = DCAST(EggSAnimData, child);
       anim->quantize(quantum);
@@ -272,7 +276,7 @@ make_new_joint(const string &name) {
   EggTable *new_table = new EggTable(name);
   _table->add_child(new_table);
   CoordinateSystem cs = CS_default;
-  if (_xform != (EggXfmSAnim *)NULL) {
+  if (_xform != nullptr) {
     cs = _xform->get_coordinate_system();
   }
   EggXfmSAnim *new_xform = new EggXfmSAnim("xform", cs);

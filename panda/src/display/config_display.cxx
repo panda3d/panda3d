@@ -21,15 +21,21 @@
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
-#include "graphicsWindow.h"
 #include "graphicsDevice.h"
+#include "graphicsWindow.h"
+#include "graphicsWindowInputDevice.h"
 #include "graphicsWindowProcCallbackData.h"
+#include "mouseAndKeyboard.h"
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
 #include "windowHandle.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DISPLAY)
+  #error Buildsystem error: BUILDING_PANDA_DISPLAY not defined
+#endif
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -322,6 +328,13 @@ ConfigVariableInt win_origin
 ConfigVariableBool fullscreen
 ("fullscreen", false);
 
+ConfigVariableBool maximized
+("maximized", false,
+ PRC_DESC("Start the window in a maximized state as handled by the window"
+          "manager.  In comparison to the fullscreen setting, this will"
+          "usually not remove the window decoration and not occupy the"
+          "whole screen space."));
+
 ConfigVariableBool undecorated
 ("undecorated", false,
  PRC_DESC("This specifies the default value of the 'undecorated' window "
@@ -369,6 +382,11 @@ ConfigVariableFilename subprocess_window
           "This is specifically used for OSX when the plugin is compiled, "
           "and is not used or needed in other environments.  See "
           "WindowProperties::set_subprocess_window()."));
+
+ConfigVariableBool ime_aware
+("ime-aware", false,
+ PRC_DESC("Set this true to show candidate strings in Panda3D rather than via "
+          "an OS-provided external popup window."));
 
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
@@ -472,14 +490,13 @@ ConfigVariableBool sync_video
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
 
-ConfigVariableBool basic_shaders_only
-("basic-shaders-only", false,
- PRC_DESC("Set this to true if you aren't interested in shader model three "
-          "and beyond.  Setting this flag will cause panda to disable "
-          "bleeding-edge shader functionality which tends to be unreliable "
-          "or broken.  At some point, when functionality that is currently "
-          "flaky becomes reliable, we may expand the definition of what "
-          "constitutes 'basic' shaders."));
+ConfigVariableDouble display_zoom
+("display-zoom", 0.0,
+ PRC_DESC("If this is set to a value other than 0.0, it overrides the detected "
+          "system DPI scaling.  GraphicsPipe::get_display_zoom() will instead "
+          "return whatever was passed in here.  You should generally only "
+          "change this based on a user preference change or to test how the UI "
+          "will look on monitors with different pixel densities."));
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -506,7 +523,9 @@ init_libdisplay() {
   GraphicsPipe::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsWindow::init_type();
+  GraphicsWindowInputDevice::init_type();
   GraphicsWindowProcCallbackData::init_type();
+  MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
   StandardMunger::init_type();

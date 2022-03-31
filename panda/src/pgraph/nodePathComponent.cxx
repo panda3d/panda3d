@@ -50,7 +50,7 @@ NodePathComponent(PandaNode *node, NodePathComponent *next,
     CDStageWriter cdata(_cycler, pipeline_stage_i, current_thread);
     cdata->_next = next;
 
-    if (next != (NodePathComponent *)NULL) {
+    if (next != nullptr) {
       cdata->_length = next->get_length(pipeline_stage_i, current_thread) + 1;
     }
   }
@@ -80,7 +80,7 @@ get_key() const {
 bool NodePathComponent::
 is_top_node(int pipeline_stage, Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-  return (cdata->_next == (NodePathComponent *)NULL);
+  return (cdata->_next == nullptr);
 }
 
 /**
@@ -102,7 +102,7 @@ fix_length(int pipeline_stage, Thread *current_thread) {
   CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
 
   int length_should_be = 1;
-  if (cdata->_next != (NodePathComponent *)NULL) {
+  if (cdata->_next != nullptr) {
     length_should_be = cdata->_next->get_length(pipeline_stage, current_thread) + 1;
   }
 
@@ -121,13 +121,13 @@ fix_length(int pipeline_stage, Thread *current_thread) {
  * the end of the linked list and then outputting from there.
  */
 void NodePathComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
 
   PandaNode *node = get_node();
   NodePathComponent *next = get_next(pipeline_stage, current_thread);
-  if (next != (NodePathComponent *)NULL) {
+  if (next != nullptr) {
     // This is not the head of the list; keep going up.
     next->output(out);
     out << "/";
@@ -157,7 +157,7 @@ output(ostream &out) const {
  */
 void NodePathComponent::
 set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread) {
-  nassertv(next != (NodePathComponent *)NULL);
+  nassertv(next != nullptr);
   CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
   cdata->_next = next;
 }
@@ -169,5 +169,5 @@ set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread) {
 void NodePathComponent::
 set_top_node(int pipeline_stage, Thread *current_thread) {
   CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-  cdata->_next = (NodePathComponent *)NULL;
+  cdata->_next = nullptr;
 }

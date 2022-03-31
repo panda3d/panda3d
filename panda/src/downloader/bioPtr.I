@@ -61,7 +61,7 @@ get_bio() const {
 /**
  * Returns the name of the server we are (or should be) connected to.
  */
-INLINE const string &BioPtr::
+INLINE const std::string &BioPtr::
 get_server_name() const {
   return _server_name;
 }

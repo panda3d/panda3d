@@ -54,7 +54,7 @@ public:
   void join();
   void preempt();
 
-  string get_unique_id() const;
+  std::string get_unique_id() const;
 
   static void prepare_for_exit();
 
@@ -63,7 +63,7 @@ public:
 
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
-  INLINE static bool is_true_threads();
+  static bool is_true_threads();
   INLINE static bool is_simple_threads();
   INLINE static void sleep(double seconds);
   INLINE static void yield();
@@ -75,7 +75,9 @@ public:
 
   INLINE double get_wake_time() const;
 
-  INLINE static void write_status(ostream &out);
+  INLINE static void write_status(std::ostream &out);
+
+  static bool get_context_switches(size_t &total, size_t &involuntary);
 
 private:
   static void st_begin_thread(void *data);
@@ -141,6 +143,9 @@ private:
 #ifdef WIN32
   DWORD _win32_system_thread_id;
 #endif
+
+  size_t _context_switches;
+  size_t _involuntary_context_switches;
 
   friend class ThreadSimpleManager;
 };

@@ -1,12 +1,40 @@
+import pytest, sys
+
 def test_nodepath_empty():
     """Tests NodePath behavior for empty NodePaths."""
+    from panda3d.core import NodePath, ParamNodePath
+    import pickle
+
+    empty = NodePath()
+    assert empty.is_empty()
+    assert not empty
+
+    # Try pickling, which uses __reduce__
+    dumped = pickle.dumps(empty)
+    empty2 = pickle.loads(dumped)
+    assert empty2.is_empty()
+    assert not empty2
+    assert empty == empty2
+
+    # Test write_datagram/fillin, which are invoked when the NodePath is being
+    # serialized indirectly, such as via ParamNodePath
+    dumped = pickle.dumps(ParamNodePath(empty))
+    empty2 = pickle.loads(dumped).get_value()
+    assert empty2.is_empty()
+    assert not empty2
+    assert empty == empty2
+
+def test_nodepath_single():
+    """Tests NodePath behavior for single-node NodePaths."""
     from panda3d.core import NodePath
 
-    empty = NodePath('np')
+    np = NodePath('np')
+    assert not np.is_empty()
+    assert np
 
-    assert empty.get_pos() == (0, 0, 0)
-    assert empty.get_hpr() == (0, 0, 0)
-    assert empty.get_scale() == (1, 1, 1)
+    assert np.get_pos() == (0, 0, 0)
+    assert np.get_hpr() == (0, 0, 0)
+    assert np.get_scale() == (1, 1, 1)
 
 def test_nodepath_parent():
     """Tests NodePath.reparentTo()."""
@@ -79,3 +107,187 @@ def test_nodepath_transform_composition():
     leg2 = node1.get_transform().compose(node3.get_transform())
     relative_transform = leg1.get_inverse().compose(leg2)
     assert np1.get_transform(np2) == relative_transform
+
+
+def test_nodepath_comparison():
+    from panda3d.core import NodePath, PandaNode
+
+    path = NodePath("node")
+
+    # Empty NodePath equals itself
+    assert NodePath() == NodePath()
+    assert not (NodePath() != NodePath())
+    assert not (NodePath() > NodePath())
+    assert not (NodePath() < NodePath())
+    assert NodePath().compare_to(NodePath()) == 0
+
+    # Empty NodePath does not equal non-empty NodePath
+    assert NodePath() != path
+    assert not (NodePath() == path)
+    assert NodePath().compare_to(path) != 0
+    assert path != NodePath()
+    assert not (path == NodePath())
+    assert path.compare_to(NodePath()) != 0
+
+    # Copy of NodePath equals original
+    path2 = NodePath(path)
+    assert path == path2
+    assert path2 == path
+    assert not (path != path2)
+    assert not (path2 != path)
+    assert not (path > path2)
+    assert not (path < path2)
+    assert path.compare_to(path2) == 0
+    assert path2.compare_to(path) == 0
+
+    # NodePath pointing to copy of node is not the same
+    path2 = NodePath(path.node().make_copy())
+    assert path != path2
+    assert path2 != path
+    assert not (path == path2)
+    assert not (path2 == path)
+    assert (path2 > path) or (path > path2)
+    assert (path2 < path) or (path < path2)
+    assert path.compare_to(path2) != 0
+    assert path2.compare_to(path) != 0
+
+
+def test_weak_nodepath_comparison():
+    from panda3d.core import NodePath, WeakNodePath
+
+    path = NodePath("node")
+    weak = WeakNodePath(path)
+
+    assert path == weak
+    assert weak == path
+    assert weak <= path
+    assert path <= weak
+    assert weak >= path
+    assert path >= weak
+    assert not (path != weak)
+    assert not (weak != path)
+    assert not (weak > path)
+    assert not (path > weak)
+    assert not (weak < path)
+    assert not (path < weak)
+
+    assert hash(path) == hash(weak)
+    assert weak.get_node_path() == path
+    assert weak.node() == path.node()
+
+
+def test_nodepath_flatten_tags_identical():
+    from panda3d.core import NodePath, PandaNode
+
+    # Do flatten nodes with same tags
+    node1 = PandaNode("node1")
+    node1.set_tag("key", "value")
+    node2 = PandaNode("node2")
+    node2.set_tag("key", "value")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 1
+
+
+def test_nodepath_flatten_tags_same_key():
+    from panda3d.core import NodePath, PandaNode
+
+    # Don't flatten nodes with different tag keys
+    node1 = PandaNode("node1")
+    node1.set_tag("key1", "value")
+    node2 = PandaNode("node2")
+    node2.set_tag("key2", "value")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 2
+
+
+def test_nodepath_flatten_tags_same_value():
+    from panda3d.core import NodePath, PandaNode
+
+    # Don't flatten nodes with different tag values
+    node1 = PandaNode("node1")
+    node1.set_tag("key", "value1")
+    node2 = PandaNode("node2")
+    node2.set_tag("key", "value2")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 2
+
+
+def test_nodepath_python_tags():
+    from panda3d.core import NodePath
+
+    path = NodePath("node")
+
+    with pytest.raises(KeyError):
+        path.python_tags["foo"]
+
+    path.python_tags["foo"] = "bar"
+
+    assert path.python_tags["foo"] == "bar"
+
+    # Make sure reference count stays the same
+    rc1 = sys.getrefcount(path.python_tags)
+    rc2 = sys.getrefcount(path.python_tags)
+    assert rc1 == rc2
+
+
+def test_nodepath_clear_python_tag():
+    from panda3d.core import NodePath
+
+    path = NodePath("node")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
+
+    path.set_python_tag("a", "value")
+    assert path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.set_python_tag("b", "value")
+    assert path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("a")
+    assert not path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("b")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
+
+
+def test_nodepath_replace_texture():
+    from panda3d.core import NodePath, Texture
+
+    tex1 = Texture()
+    tex2 = Texture()
+
+    path1 = NodePath("node1")
+    path1.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert path1.get_texture() == tex2
+
+    path1 = NodePath("node1")
+    path2 = path1.attach_new_node("node2")
+    path2.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert not path1.has_texture()
+    assert path2.get_texture() == tex2

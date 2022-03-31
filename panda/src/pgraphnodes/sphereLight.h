@@ -22,10 +22,12 @@
 /**
  * A sphere light is like a point light, except that it represents a sphere
  * with a radius, rather than being an infinitely thin point in space.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPHNODES SphereLight : public PointLight {
 PUBLISHED:
-  explicit SphereLight(const string &name);
+  explicit SphereLight(const std::string &name);
 
 protected:
   SphereLight(const SphereLight &copy);
@@ -33,7 +35,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
   INLINE PN_stdfloat get_radius() const;

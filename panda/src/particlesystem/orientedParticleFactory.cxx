@@ -59,7 +59,7 @@ alloc_particle() const {
  * Write a string representation of this instance to <out>.
  */
 void OrientedParticleFactory::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"OrientedParticleFactory";
   #endif //] NDEBUG
@@ -69,7 +69,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void OrientedParticleFactory::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"OrientedParticleFactory:\n";
   BaseParticleFactory::write(out, indent+2);

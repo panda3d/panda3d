@@ -61,12 +61,12 @@ public:
   ~PreparedGraphicsObjects();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   void set_graphics_memory_limit(size_t limit);
   INLINE size_t get_graphics_memory_limit() const;
-  void show_graphics_memory_lru(ostream &out) const;
-  void show_residency_trackers(ostream &out) const;
+  void show_graphics_memory_lru(std::ostream &out) const;
+  void show_residency_trackers(std::ostream &out) const;
 
   INLINE void release_all();
   INLINE int get_num_queued() const;
@@ -164,7 +164,7 @@ public:
    * This is a handle to an enqueued object, from which the result can be
    * obtained upon completion.
    */
-  class EXPCL_PANDA_GOBJ EnqueuedObject FINAL : public AsyncFuture {
+  class EXPCL_PANDA_GOBJ EnqueuedObject final : public AsyncFuture {
   public:
     EnqueuedObject(PreparedGraphicsObjects *pgo, TypedWritableReferenceCount *object);
 
@@ -173,7 +173,7 @@ public:
     void set_result(SavedContext *result);
 
     void notify_removed();
-    virtual bool cancel() FINAL;
+    virtual bool cancel() final;
 
   PUBLISHED:
     MAKE_PROPERTY(object, get_object);
@@ -215,7 +215,7 @@ public:
   void end_frame(Thread *current_thread);
 
 private:
-  static string init_name();
+  static std::string init_name();
 
 private:
   typedef phash_set<TextureContext *, pointer_hash> Textures;
@@ -253,7 +253,7 @@ private:
                                BufferCacheLRU &buffer_cache_lru,
                                size_t &buffer_cache_size,
                                int released_buffer_cache_size,
-                               Buffers &released_buffers);
+                               pvector<BufferContext *> &released_buffers);
   BufferContext *get_cached_buffer(size_t data_size_bytes,
                                    GeomEnums::UsageHint usage_hint,
                                    BufferCache &buffer_cache,
@@ -261,8 +261,9 @@ private:
                                    size_t &buffer_cache_size);
 
   ReMutex _lock;
-  string _name;
-  Textures _prepared_textures, _released_textures;
+  std::string _name;
+  Textures _prepared_textures;
+  pvector<TextureContext *> _released_textures;
   EnqueuedTextures _enqueued_textures;
   PreparedSamplers _prepared_samplers;
   ReleasedSamplers _released_samplers;
@@ -271,11 +272,14 @@ private:
   EnqueuedGeoms _enqueued_geoms;
   Shaders _prepared_shaders, _released_shaders;
   EnqueuedShaders _enqueued_shaders;
-  Buffers _prepared_vertex_buffers, _released_vertex_buffers;
+  Buffers _prepared_vertex_buffers;
+  pvector<BufferContext *> _released_vertex_buffers;
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
-  Buffers _prepared_index_buffers, _released_index_buffers;
+  Buffers _prepared_index_buffers;
+  pvector<BufferContext *> _released_index_buffers;
   EnqueuedIndexBuffers _enqueued_index_buffers;
-  Buffers _prepared_shader_buffers, _released_shader_buffers;
+  Buffers _prepared_shader_buffers;
+  pvector<BufferContext *> _released_shader_buffers;
   EnqueuedShaderBuffers _enqueued_shader_buffers;
 
   BufferCache _vertex_buffer_cache;

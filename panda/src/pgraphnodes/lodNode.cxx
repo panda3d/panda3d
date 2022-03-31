@@ -45,7 +45,7 @@ TypeHandle LODNode::_type_handle;
  * variable.
  */
 PT(LODNode) LODNode::
-make_default_lod(const string &name) {
+make_default_lod(const std::string &name) {
   switch (default_lod_type.get_value()) {
   case LNT_pop:
     return new LODNode(name);
@@ -143,26 +143,56 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
 
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3 center = cdata->_center * rel_transform->get_mat();
-  PN_stdfloat dist2 = center.dot(center);
+  PN_stdfloat lod_scale = cdata->_lod_scale *
+    trav->get_scene()->get_camera_node()->get_lod_scale();
 
-  int num_children = min(get_num_children(), (int)cdata->_switch_vector.size());
-  for (int index = 0; index < num_children; ++index) {
-    const Switch &sw = cdata->_switch_vector[index];
-    bool in_range;
-    if (cdata->_got_force_switch) {
-      in_range = (cdata->_force_switch == index);
-    } else {
-      in_range = sw.in_range_2(dist2 * cdata->_lod_scale
-                   * trav->get_scene()->get_camera_node()->get_lod_scale());
+  Children children = get_children();
+  int num_children = std::min(children.get_num_children(), cdata->_switch_vector.size());
+
+  if (data._instances == nullptr || cdata->_got_force_switch) {
+    LPoint3 center = cdata->_center * rel_transform->get_mat();
+    PN_stdfloat dist2 = center.dot(center);
+
+    for (int index = 0; index < num_children; ++index) {
+      const Switch &sw = cdata->_switch_vector[index];
+      bool in_range;
+      if (cdata->_got_force_switch) {
+        in_range = (cdata->_force_switch == index);
+      } else {
+        in_range = sw.in_range_2(dist2 * lod_scale);
+      }
+
+      if (in_range) {
+        // This switch level is in range.  Draw its children.
+        const PandaNode::DownConnection &child = children.get_child_connection(index);
+        trav->traverse_down(data, child);
+      }
+    }
+  }
+  else {
+    // Figure out which instances in which switch levels should be visible.
+    size_t num_instances = data._instances->size();
+    std::unique_ptr<BitArray[]> in_range(new BitArray[num_children]);
+
+    for (size_t ii = 0; ii < num_instances; ++ii) {
+      LPoint3 inst_center = cdata->_center *
+        rel_transform->compose((*data._instances)[ii].get_transform())->get_mat();
+      PN_stdfloat dist2 = inst_center.dot(inst_center);
+
+      for (int index = 0; index < num_children; ++index) {
+        const Switch &sw = cdata->_switch_vector[index];
+        if (!sw.in_range_2(dist2 * lod_scale)) {
+          in_range[index].set_bit(ii);
+        }
+      }
     }
 
-    if (in_range) {
-      // This switch level is in range.  Draw its children.
-      PandaNode *child = get_child(index);
-      if (child != (PandaNode *)NULL) {
-        CullTraverserData next_data(data, child);
-        trav->traverse(next_data);
+    for (int index = 0; index < num_children; ++index) {
+      CPT(InstanceList) instances = data._instances->without(in_range[index]);
+      if (!instances->empty()) {
+        // At least one instance is visible in this switch level.
+        const PandaNode::DownConnection &child = children.get_child_connection(index);
+        trav->traverse_down(data, child);
       }
     }
   }
@@ -176,7 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void LODNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   CDReader cdata(_cycler);
   out << " center(" << cdata->_center << ") ";
@@ -321,13 +351,30 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
     return cdata->_force_switch;
   }
 
+  PN_stdfloat lod_scale = cdata->_lod_scale *
+    trav->get_scene()->get_camera_node()->get_lod_scale();
+
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  LPoint3 center;
+
+  if (data._instances == nullptr) {
+    center = cdata->_center * rel_transform->get_mat();
+  }
+  else {
+    // Can't really do much with instancing in FadeLODNode; let's instead
+    // just calculate the centroid of the visible instances.
+    center = LPoint3(0);
+    for (const InstanceList::Instance &instance : *data._instances) {
+      center += cdata->_center *
+        rel_transform->compose(instance.get_transform())->get_mat();
+    }
+    center *= 1.0 / data._instances->size();
+  }
+
   PN_stdfloat dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-    if (cdata->_switch_vector[index].in_range_2(dist2 * cdata->_lod_scale
-         * trav->get_scene()->get_camera_node()->get_lod_scale())) {
+    if (cdata->_switch_vector[index].in_range_2(dist2 * lod_scale)) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << data.get_node_path() << " at distance " << sqrt(dist2)
@@ -382,26 +429,23 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
       if (in_range) {
         // This switch level is in range.  Draw its children in the funny
         // wireframe mode.
-        if (index < get_num_children()) {
-          PandaNode *child = get_child(index);
-          if (child != (PandaNode *)NULL) {
-            CullTraverserData next_data3(data, child);
-            next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
-            trav->traverse(next_data3);
-          }
+        Children children = get_children();
+        if ((size_t)index < children.get_num_children()) {
+          const PandaNode::DownConnection &child = children.get_child_connection(index);
+          trav->traverse_down(data, child, data._state->compose(sw.get_viz_model_state()));
         }
 
         // And draw the spindle in this color.
-        CullTraverserData next_data2(data, sw.get_spindle_viz());
-        next_data2.apply_transform(viz_transform);
-        trav->traverse(next_data2);
+        //CullTraverserData next_data2(data, sw.get_spindle_viz());
+        //next_data2.apply_transform(viz_transform);
+        //trav->traverse(next_data2);
       }
 
       // Draw the rings for this switch level.  We do this after we have drawn
       // the geometry and the spindle.
-      CullTraverserData next_data(data, sw.get_ring_viz());
-      next_data.apply_transform(viz_transform);
-      trav->traverse(next_data);
+      //CullTraverserData next_data(data, sw.get_ring_viz());
+      //next_data.apply_transform(viz_transform);
+      //trav->traverse(next_data);
     }
   }
 
@@ -524,7 +568,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
   if (index < get_num_children()) {
     const Switch &sw = cdata->_switch_vector[index];
     PandaNode *child = get_child(index);
-    if (child != (PandaNode *)NULL) {
+    if (child != nullptr) {
       UpdateSeq seq;
       CPT(BoundingVolume) bv = child->get_bounds(seq);
 
@@ -593,7 +637,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // should definitely fit entirely within a bounding sphere that contains
       // all the points of the child.
       LPoint3 box_center = (min_point + max_point) / 2.0f;
-      PN_stdfloat box_radius = min(min(max_point[0] - box_center[0],
+      PN_stdfloat box_radius = std::min(std::min(max_point[0] - box_center[0],
                                  max_point[1] - box_center[1]),
                              max_point[2] - box_center[2]);
 
@@ -642,7 +686,7 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
       PN_stdfloat suggested_radius;
       if (!do_verify_child_bounds(cdata, index, suggested_radius)) {
         const Switch &sw = cdata->_switch_vector[index];
-        ostringstream strm;
+        std::ostringstream strm;
         strm
           << "Level " << index << " geometry of " << data.get_node_path()
           << " is larger than its switch radius; suggest radius of "
@@ -801,7 +845,7 @@ compute_ring_viz() {
   // for the inner edge.
   static const PN_stdfloat edge_ratio = 0.1;  // ratio of edge height to diameter.
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_ring", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.
@@ -925,7 +969,7 @@ compute_spindle_viz() {
   static const int num_slices = 10;
   static const int num_rings = 10;
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_spindle", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.

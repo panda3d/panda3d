@@ -18,7 +18,7 @@
 #include "py_panda.h"
 #include "pythonThread.h"
 #include "callbackData.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 TypeHandle PythonCallbackObject::_type_handle;
 
@@ -29,6 +29,7 @@ ConfigureFn(config_pythonCallbackObject) {
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_PythonCallbackObject;
 #endif
 
 /**
@@ -41,17 +42,16 @@ PythonCallbackObject(PyObject *function) {
 
   set_function(function);
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD)
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
-
-#if PY_VERSION_HEX >= 0x03020000
+  // WITH_THREAD symbol defined within Python.h
   Py_Initialize();
-#endif
 
+#if PY_VERSION_HEX < 0x03090000
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
-#endif
+#endif // PY_VERSION_HEX
+#endif // WITH_THREAD
 }
 
 /**
@@ -86,6 +86,14 @@ get_function() {
 }
 
 /**
+ * Implements pickle support.
+ */
+PyObject *PythonCallbackObject::
+__reduce__() const {
+  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject, _function);
+}
+
+/**
  * This method called when the callback is triggered; it *replaces* the
  * original function.  To continue performing the original function, you must
  * call cbdata->upcall() during the callback.
@@ -111,7 +119,7 @@ do_callback(CallbackData *cbdata) {
  */
 void PythonCallbackObject::
 do_python_callback(CallbackData *cbdata) {
-  nassertv(cbdata != NULL);
+  nassertv(cbdata != nullptr);
 
   // Wrap the cbdata up in a Python object, then put it in a tuple, for the
   // argument list.
@@ -124,7 +132,7 @@ do_python_callback(CallbackData *cbdata) {
   PyObject *result = PythonThread::call_python_func(_function, args);
   Py_DECREF(args);
 
-  if (result == (PyObject *)NULL) {
+  if (result == nullptr) {
     if (PyErr_Occurred() != PyExc_SystemExit) {
       util_cat.error()
         << "Exception occurred in " << *this << "\n";

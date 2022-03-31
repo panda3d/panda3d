@@ -30,6 +30,7 @@
 
 #import "cocoaPandaView.h"
 #import "cocoaPandaWindow.h"
+#import "cocoaPandaAppDelegate.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/NSAutoreleasePool.h>
@@ -44,12 +45,16 @@
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
+#ifndef MAC_OS_X_VERSION_10_15
+#define NSAppKitVersionNumber10_14 1671
+#endif
+
 /**
  *
  */
 CocoaGraphicsWindow::
 CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -71,16 +76,35 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (NSApp == nil) {
     [CocoaPandaApp sharedApplication];
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    [NSApp setDelegate:delegate];
+
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-#endif
+    NSMenu *mainMenu = [[NSMenu alloc] init];
+
+    NSMenuItem *applicationMenuItem = [[NSMenuItem alloc] init];
+    [mainMenu addItem:applicationMenuItem];
+
+    NSMenu *applicationMenu = [[NSMenu alloc] init];
+
+    NSMenuItem *item = [[NSMenuItem alloc] init];
+    item.action = @selector(terminate:);
+    item.keyEquivalent = @"q";
+
+    NSString *appName = [NSRunningApplication currentApplication].localizedName;
+    item.title = [NSString stringWithFormat:@"Quit %@", appName];
+
+    [applicationMenu addItem:item];
+
+    [mainMenu setSubmenu:applicationMenu forItem:applicationMenuItem];
+    [NSApp setMainMenu:mainMenu];
     [NSApp finishLaunching];
-    [NSApp activateIgnoringOtherApps:YES];
   }
 
-  GraphicsWindowInputDevice device =
+  PT(GraphicsWindowInputDevice) device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
-  add_input_device(device);
+  _input_devices.push_back(device.p());
+  _input = std::move(device);
 
   CocoaGraphicsPipe *cocoa_pipe;
   DCAST_INTO_V(cocoa_pipe, _pipe);
@@ -172,8 +196,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       _context_needs_update = true;
       [cocoagsg->_context setView:_view];
 
-      cocoadisplay_cat.spam()
-        << "Switching context to view " << _view << "\n";
+      if (cocoadisplay_cat.is_spam()) {
+        cocoadisplay_cat.spam()
+          << "Switching context to view " << _view << "\n";
+      }
     }
   }
 
@@ -251,6 +277,15 @@ end_flip() {
 
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
+
+    if (_vsync_enabled) {
+      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
+      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
+        cocoagsg->_swap_lock.lock();
+        cocoagsg->_swap_condition.wait();
+        cocoagsg->_swap_lock.unlock();
+      }
+    }
 
     cocoagsg->lock_context();
 
@@ -341,6 +376,13 @@ open_window() {
     }
   }
 
+  if (cocoagsg->_context == nil) {
+    // Could not obtain a proper context.
+    _gsg.clear();
+    close_window();
+    return false;
+  }
+
   // Fill in the blanks.
   if (!_properties.has_origin()) {
     _properties.set_origin(-2, -2);
@@ -363,6 +405,9 @@ open_window() {
   if (!_properties.has_minimized()) {
     _properties.set_minimized(false);
   }
+  if (!_properties.has_maximized()) {
+    _properties.set_maximized(false);
+  }
   if (!_properties.has_z_order()) {
     _properties.set_z_order(WindowProperties::Z_normal);
   }
@@ -384,7 +429,7 @@ open_window() {
       cocoadisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
 
-      void *ptr_handle;
+      void *ptr_handle = nullptr;
 
       // Depending on whether the window handle comes from a Carbon or a Cocoa
       // application, it could be either a HIViewRef or an NSView or NSWindow.
@@ -511,6 +556,8 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
+  // Always disable application HiDPI support, Cocoa will do the eventual upscaling for us.
+  [_view setWantsBestResolutionOpenGLSurface:NO];
   if (_properties.has_icon_filename()) {
     NSImage *image = load_image(_properties.get_icon_filename());
     if (image != nil) {
@@ -524,17 +571,17 @@ open_window() {
   }
 
   if (_properties.has_cursor_filename()) {
-    NSImage *image = load_image(_properties.get_cursor_filename());
-    NSCursor *cursor = nil;
-    // TODO: allow setting the hotspot, read it from file when loading .cur.
-    if (image != nil) {
-      cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
-    }
+    NSCursor *cursor = load_cursor(_properties.get_cursor_filename());
+
     if (cursor != nil) {
+      if (_cursor != nil) {
+        [_cursor release];
+      }
       _cursor = cursor;
     } else {
       _properties.clear_cursor_filename();
     }
+
     // This will ensure that NSView's resetCursorRects gets called, which sets
     // the appropriate cursor rects.
     [[_view window] invalidateCursorRectsForView:_view];
@@ -581,23 +628,32 @@ open_window() {
 
   if (_properties.get_fullscreen()) {
     // Change the display mode.
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    CGDisplayModeRef mode;
-#else
-    CFDictionaryRef mode;
-#endif
+    CFMutableArrayRef modes;
 
-    mode = find_display_mode(_properties.get_x_size(),
-                             _properties.get_y_size());
+    modes = find_display_modes(_properties.get_x_size(),
+                               _properties.get_y_size());
 
-    if (mode == NULL) {
+    if (CFArrayGetCount(modes) > 0) {
+      bool switched = false;
+      for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+        CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+        if (do_switch_fullscreen(mode)) {
+          switched = true;
+          break;
+        }
+      }
+      CFRelease(modes);
+
+      if (!switched) {
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
+        return false;
+      }
+
+    } else {
       cocoadisplay_cat.error()
         << "Could not find a suitable display mode!\n";
-      return false;
-
-    } else if (!do_switch_fullscreen(mode)) {
-      cocoadisplay_cat.error()
-        << "Failed to change display mode.\n";
+      CFRelease(modes);
       return false;
     }
   }
@@ -625,6 +681,9 @@ open_window() {
   }
   _fb_properties = cocoagsg->get_fb_properties();
 
+  // Reset dead key state.
+  _dead_key_state = 0;
+
   // Get the initial mouse position.
   NSPoint pos = [_window mouseLocationOutsideOfEventStream];
   NSPoint loc = [_view convertPoint:pos fromView:nil];
@@ -634,8 +693,10 @@ open_window() {
   // Enable relative mouse mode, if this was requested.
   if (_properties.has_mouse_mode() &&
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
-    mouse_mode_relative();
+    CGAssociateMouseAndMouseCursorPosition(NO);
   }
+
+  _vsync_enabled = sync_video && cocoagsg->setup_vsync();
 
   return true;
 }
@@ -668,8 +729,11 @@ close_window() {
   }
 
   if (_window != nil) {
-    [_window setReleasedWhenClosed: YES];
     [_window close];
+
+    // Process events once more so any pending NSEvents are cleared. Not doing
+    // this causes the window to stick around after calling [_window close].
+    process_events();
     _window = nil;
   }
 
@@ -678,23 +742,9 @@ close_window() {
     _view = nil;
   }
 
+  _vsync_enabled = false;
+
   GraphicsWindow::close_window();
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_absolute() {
-  CGAssociateMouseAndMouseCursorPosition(YES);
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_relative() {
-  CGAssociateMouseAndMouseCursorPosition(NO);
 }
 
 /**
@@ -735,43 +785,48 @@ set_properties_now(WindowProperties &properties) {
           height = _properties.get_y_size();
         }
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-        CGDisplayModeRef mode;
-#else
-        CFDictionaryRef mode;
-#endif
+        CFMutableArrayRef modes = find_display_modes(width, height);
 
-        mode = find_display_mode(width, height);
+        if (CFArrayGetCount(modes) > 0) {
+          bool switched = false;
+          for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+            CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+            if (do_switch_fullscreen(mode)) {
+              switched = true;
+              break;
+            }
+          }
 
-        if (mode == NULL) {
+          if (switched) {
+            if (_window != nil) {
+              // For some reason, setting the style mask makes it give up its
+              // first-responder status.
+              if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+                [_window setStyleMask:NSBorderlessWindowMask];
+              }
+              [_window makeFirstResponder:_view];
+              [_window setLevel:NSMainMenuWindowLevel+1];
+              [_window makeKeyAndOrderFront:nil];
+            }
+
+            // We've already set the size property this way; clear it.
+            properties.clear_size();
+            _properties.set_size(width, height);
+            properties.clear_origin();
+            _properties.set_origin(0, 0);
+            properties.clear_fullscreen();
+            _properties.set_fullscreen(true);
+
+          } else {
+            cocoadisplay_cat.error()
+              << "Failed to change display mode.\n";
+          }
+        } else {
           cocoadisplay_cat.error()
             << "Could not find a suitable display mode with size " << width
             << "x" << height << "!\n";
-
-        } else if (do_switch_fullscreen(mode)) {
-          if (_window != nil) {
-            // For some reason, setting the style mask makes it give up its
-            // first-responder status.
-            if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-              [_window setStyleMask:NSBorderlessWindowMask];
-            }
-            [_window makeFirstResponder:_view];
-            [_window setLevel:NSMainMenuWindowLevel+1];
-            [_window makeKeyAndOrderFront:nil];
-          }
-
-          // We've already set the size property this way; clear it.
-          properties.clear_size();
-          _properties.set_size(width, height);
-          properties.clear_origin();
-          _properties.set_origin(0, 0);
-          properties.clear_fullscreen();
-          _properties.set_fullscreen(true);
-
-        } else {
-          cocoadisplay_cat.error()
-            << "Failed to change display mode.\n";
         }
+        CFRelease(modes);
 
       } else {
         do_switch_fullscreen(NULL);
@@ -817,26 +872,33 @@ set_properties_now(WindowProperties &properties) {
       properties.clear_size();
 
     } else {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-      CGDisplayModeRef mode = find_display_mode(width, height);
-#else
-      CFDictionaryRef mode = find_display_mode(width, height);
-#endif
+      CFMutableArrayRef modes = find_display_modes(width, height);
 
-      if (mode == NULL) {
-        cocoadisplay_cat.error()
-          << "Could not find a suitable display mode with size " << width
-          << "x" << height << "!\n";
+      if (CFArrayGetCount(modes) > 0) {
+        bool switched = false;
+        for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+          CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+          if (do_switch_fullscreen(mode)) {
+            switched = true;
+            break;
+          }
+        }
 
-      } else if (do_switch_fullscreen(mode)) {
-        // Yay!  Our resolution has changed.
-        _properties.set_size(width, height);
-        properties.clear_size();
+        if (switched) {
+          // Yay!  Our resolution has changed.
+          _properties.set_size(width, height);
+          properties.clear_size();
+        } else {
+          cocoadisplay_cat.error()
+            << "Failed to change display mode.\n";
+        }
 
       } else {
         cocoadisplay_cat.error()
-          << "Failed to change display mode.\n";
+          << "Could not find a suitable display mode with size " << width
+          << "x" << height << "!\n";
       }
+      CFRelease(modes);
     }
   }
 
@@ -870,8 +932,11 @@ set_properties_now(WindowProperties &properties) {
       frame.origin.x = x;
       frame.origin.y = container.size.height - y - frame.size.height;
 
-      cocoadisplay_cat.debug()
-        << "Setting window content origin to " << frame.origin.x << ", " << frame.origin.y << "\n";
+      if (cocoadisplay_cat.is_debug()) {
+        cocoadisplay_cat.debug()
+          << "Setting window content origin to "
+          << frame.origin.x << ", " << frame.origin.y << "\n";
+      }
 
       if (_window != nil) {
         [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
@@ -880,6 +945,14 @@ set_properties_now(WindowProperties &properties) {
       }
     }
     properties.clear_origin();
+  }
+
+  if (properties.has_maximized() && _window != nil) {
+    _properties.set_maximized(properties.get_maximized());
+    if (properties.get_maximized() != !![_window isZoomed]) {
+      [_window zoom:nil];
+    }
+    properties.clear_maximized();
   }
 
   if (properties.has_title() && _window != nil) {
@@ -950,7 +1023,7 @@ set_properties_now(WindowProperties &properties) {
 
   if (properties.has_cursor_hidden()) {
     if (properties.get_cursor_hidden() != _properties.get_cursor_hidden()) {
-      if (properties.get_cursor_hidden() && _input_devices[0].get_pointer().get_in_window()) {
+      if (properties.get_cursor_hidden() && _input->get_pointer().get_in_window()) {
         [NSCursor hide];
         _mouse_hidden = true;
       } else if (_mouse_hidden) {
@@ -988,19 +1061,15 @@ set_properties_now(WindowProperties &properties) {
       properties.set_cursor_filename(cursor_filename);
       properties.clear_cursor_filename();
     } else {
-      NSImage *image = load_image(cursor_filename);
-      if (image != nil) {
-        NSCursor *cursor;
-        cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
-        if (cursor != nil) {
-          // Replace the existing cursor.
-          if (_cursor != nil) {
-            [_cursor release];
-          }
-          _cursor = cursor;
-          _properties.set_cursor_filename(cursor_filename);
-          properties.clear_cursor_filename();
+      NSCursor *cursor = load_cursor(cursor_filename);
+      if (cursor != nil) {
+        // Replace the existing cursor.
+        if (_cursor != nil) {
+          [_cursor release];
         }
+        _cursor = cursor;
+        _properties.set_cursor_filename(cursor_filename);
+        properties.clear_cursor_filename();
       }
     }
     // This will ensure that NSView's resetCursorRects gets called, which sets
@@ -1051,26 +1120,62 @@ set_properties_now(WindowProperties &properties) {
  * Returns an appropriate CGDisplayModeRef for the given width and height, or
  * NULL if none was found.
  */
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-CGDisplayModeRef CocoaGraphicsWindow::
-find_display_mode(int width, int height) {
-  CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
+CFMutableArrayRef CocoaGraphicsWindow::
+find_display_modes(int width, int height) {
+  CFDictionaryRef options = NULL;
+  // On macOS 10.15+ (Catalina), we want to select the display mode with the
+  // samescaling factor as the current view to avoid cropping or scaling issues.
+  // This is a workaround until HiDPI display or scaling factor is properly
+  // handled. CGDisplayCopyAllDisplayModes() does not return upscaled display
+  // mode unless explicitly asked with kCGDisplayShowDuplicateLowResolutionModes
+  // (which is undocumented...).
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
+  if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_14) {
+    const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
+    const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
+    options = CFDictionaryCreate(NULL,
+                                 (const void **)dictkeys,
+                                 (const void **)dictvalues,
+                                 1,
+                                 &kCFCopyStringDictionaryKeyCallBacks,
+                                 &kCFTypeDictionaryValueCallBacks);
+  }
+#endif
+  CFMutableArrayRef valid_modes;
+  valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
+  CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
+  if (options != NULL) {
+    CFRelease(options);
+  }
+
   size_t num_modes = CFArrayGetCount(modes);
   CGDisplayModeRef mode;
 
   // Get the current refresh rate and pixel encoding.
   CFStringRef current_pixel_encoding;
-  int refresh_rate;
+  double refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
   // First check if the current mode is adequate.
-  if (CGDisplayModeGetWidth(mode) == width &&
+  // This test not done for macOS 10.15 and above as the mode resolution is
+  // not enough to identify a mode.
+  if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
+      CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
-    return mode;
+    CFArrayAppendValue(valid_modes, mode);
+    CGDisplayModeRelease(mode);
+    return valid_modes;
   }
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
+  // Calculate the pixel width and height of the fullscreen mode we want using
+  // the currentdisplay mode dimensions and pixel dimensions.
+  size_t expected_pixel_width = (size_t(width) * CGDisplayModeGetPixelWidth(mode)) / CGDisplayModeGetWidth(mode);
+  size_t expected_pixel_height = (size_t(height) * CGDisplayModeGetPixelHeight(mode)) / CGDisplayModeGetHeight(mode);
+#endif
   CGDisplayModeRelease(mode);
 
   for (size_t i = 0; i < num_modes; ++i) {
@@ -1078,89 +1183,40 @@ find_display_mode(int width, int height) {
 
     CFStringRef pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
 
+    // As explained above, we want to select the fullscreen display mode using
+    // the same scaling factor, but only for MacOS 10.15+ To do this we check
+    // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
-        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
+        (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
+        (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
+         CGDisplayModeGetPixelHeight(mode) == expected_pixel_height)) &&
+#endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
-      CFRetain(mode);
-      CFRelease(pixel_encoding);
-      CFRelease(current_pixel_encoding);
-      CFRelease(modes);
-      return mode;
+      if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
+        // Exact match for refresh rate, prioritize this.
+        CFArrayInsertValueAtIndex(valid_modes, 0, mode);
+      } else {
+        CFArrayAppendValue(valid_modes, mode);
+      }
     }
+    CFRelease(pixel_encoding);
   }
 
   CFRelease(current_pixel_encoding);
   CFRelease(modes);
-  return NULL;
+  return valid_modes;
 }
-#else // Version for pre-10.6.
-CFDictionaryRef CocoaGraphicsWindow::
-find_display_mode(int width, int height) {
-  // Get the current mode and extract its properties.
-  CFDictionaryRef current_mode = CGDisplayCurrentMode(_display);
-  int current_width, current_height, current_bpp, current_refresh_rate;
-
-  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayWidth),
-    kCFNumberIntType, &current_width);
-
-  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayHeight),
-    kCFNumberIntType, &current_height);
-
-  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayBitsPerPixel),
-    kCFNumberIntType, &current_bpp);
-
-  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayRefreshRate),
-    kCFNumberIntType, &current_refresh_rate);
-
-  // Check if it is suitable and if so, return it.
-  if (current_width == width && current_height == height) {
-    return current_mode;
-  }
-
-  // Iterate over the modes to find a suitable one.
-  CFArrayRef modes = CGDisplayAvailableModes(_display);
-  size_t num_modes = CFArrayGetCount(modes);
-  int mode_width, mode_height, mode_bpp, mode_refresh_rate;
-
-  for (size_t i = 0; i < num_modes; ++i) {
-    CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayWidth),
-      kCFNumberIntType, &mode_width);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayHeight),
-      kCFNumberIntType, &mode_height);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
-      kCFNumberIntType, &mode_bpp);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayRefreshRate),
-      kCFNumberIntType, &mode_refresh_rate);
-
-    if (mode_width == width && mode_height == height &&
-        mode_refresh_rate == current_refresh_rate &&
-        mode_bpp == current_bpp) {
-      return mode;
-    }
-  }
-
-  return NULL;
-}
-#endif
 
 /**
  * Switches to the indicated fullscreen mode, or back to windowed if NULL was
  * given.  Returns true on success, false on failure.
  */
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 bool CocoaGraphicsWindow::
 do_switch_fullscreen(CGDisplayModeRef mode) {
-#else
-bool CocoaGraphicsWindow::
-do_switch_fullscreen(CFDictionaryRef mode) {
-#endif
   if (mode == NULL) {
     if (_windowed_mode == NULL) {
       // Already windowed.
@@ -1168,12 +1224,8 @@ do_switch_fullscreen(CFDictionaryRef mode) {
     }
 
     // Switch back to the mode we were in when we were still windowed.
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
     CGDisplayModeRelease(_windowed_mode);
-#else
-    CGDisplaySwitchToMode(_display, _windowed_mode);
-#endif
     CGDisplayRelease(_display);
     _windowed_mode = NULL;
     _context_needs_update = true;
@@ -1185,20 +1237,12 @@ do_switch_fullscreen(CFDictionaryRef mode) {
     }
 
     // Store the existing mode under _windowed_mode.
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     _windowed_mode = CGDisplayCopyDisplayMode(_display);
-#else
-    _windowed_mode = CGDisplayCurrentMode(_display);
-#endif
     _fullscreen_mode = mode;
     _context_needs_update = true;
 
     CGError err;
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
-#else
-    err = CGDisplaySwitchToMode(_display, _fullscreen_mode);
-#endif
 
     if (err != kCGErrorSuccess) {
       return false;
@@ -1224,11 +1268,12 @@ do_switch_fullscreen(CFDictionaryRef mode) {
 }
 
 /**
- * Loads the indicated filename and returns an NSImage pointer, or NULL on
- * failure.  Must be called from the window thread.
+ * Loads the indicated filename and returns an NSData pointer (which can then
+ * be used to create a CGImageSource or NSImage), or NULL on failure.  Must be
+ * called from the window thread. May return nil.
  */
-NSImage *CocoaGraphicsWindow::
-load_image(const Filename &filename) {
+NSData *CocoaGraphicsWindow::
+load_image_data(const Filename &filename) {
   if (filename.empty()) {
     return nil;
   }
@@ -1248,7 +1293,6 @@ load_image(const Filename &filename) {
   }
 
   // Look in our index.
-  NSImage *image = nil;
   IconImages::const_iterator it = _images.find(resolved);
   if (it != _images.end()) {
     // Found it.
@@ -1258,11 +1302,11 @@ load_image(const Filename &filename) {
   cocoadisplay_cat.info()
     << "Loading NSImage from file " << resolved << "\n";
 
-  PT(VirtualFile) vfile = vfs->get_file(filename);
+  PT(VirtualFile) vfile = vfs->get_file(resolved);
   if (vfile == NULL) {
     return nil;
   }
-  istream *str = vfile->open_read_file(true);
+  std::istream *str = vfile->open_read_file(true);
   if (str == NULL) {
     cocoadisplay_cat.error()
       << "Could not open file " << filename << " for reading\n";
@@ -1276,19 +1320,79 @@ load_image(const Filename &filename) {
 
   NSData *data = [NSData dataWithBytesNoCopy:buffer length:size];
   if (data == nil) {
+    cocoadisplay_cat.error()
+      << "Could not load image data from file " << filename << "\n";
     return nil;
   }
 
-  image = [[NSImage alloc] initWithData:data];
-  [data release];
+  _images[resolved] = data;
+  return data;
+}
+
+/**
+ * Wraps image data loaded by load_image_data with an NSImage. The returned
+ * pointer is autoreleased. May return nil.
+ */
+NSImage *CocoaGraphicsWindow::
+load_image(const Filename &filename) {
+  NSData *image_data = load_image_data(filename);
+  NSImage *image = [[[NSImage alloc] initWithData:image_data] autorelease];
   if (image == nil) {
     cocoadisplay_cat.error()
       << "Could not load image from file " << filename << "\n";
     return nil;
   }
-
-  _images[resolved] = image;
   return image;
+}
+
+/**
+ * Returns a cursor with the proper hotspot if a .cur filename is passed in.
+ * You must release the returned pointer. May return nil.
+ */
+NSCursor *CocoaGraphicsWindow::
+load_cursor(const Filename &filename) {
+  NSData *image_data = load_image_data(cursor_filename);
+  if (image_data == nil) {
+    return nil;
+  }
+
+  // Read the metadata from the image, which should contain hotspotX and
+  // hotspotY properties.
+  CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
+  if (cg_image == NULL) {
+    return nil;
+  }
+
+  NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
+  CFRelease(cg_image);
+
+  if (image_props == nil) {
+    return nil;
+  }
+
+  CGFloat hotspot_x = 0.0f;
+  CGFloat hotspot_y = 0.0f;
+  if (NSNumber *number = image_props[@"hotspotX"]) {
+    hotspot_x = [number floatValue];
+  }
+  if (NSNumber *number = image_props[@"hotspotY"]) {
+    hotspot_y = [number floatValue];
+  }
+  [image_props release];
+
+  NSImage *image = [[NSImage alloc] initWithData:image_data];
+
+  NSCursor *cursor = nil;
+  if (image != nil) {
+    // Apple recognizes that hotspots are usually specified from a .cur
+    // file, whose origin is in the top-left, so there's no need to flip
+    // it like most other Cocoa coordinates.
+    cursor = [[NSCursor alloc] initWithImage:image
+                               hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
+    [image release];
+  }
+
+  return cursor;
 }
 
 /**
@@ -1337,10 +1441,12 @@ handle_resize_event() {
 
   NSRect frame = [_view convertRect:[_view bounds] toView:nil];
 
+  WindowProperties properties;
+  bool changed = false;
+
   if (frame.size.width != _properties.get_x_size() ||
       frame.size.height != _properties.get_y_size()) {
 
-    WindowProperties properties;
     properties.set_size(frame.size.width, frame.size.height);
 
     if (cocoadisplay_cat.is_spam()) {
@@ -1348,6 +1454,18 @@ handle_resize_event() {
         << "Window changed size to (" << frame.size.width
        << ", " << frame.size.height << ")\n";
     }
+    changed = true;
+  }
+
+  if (_window != nil) {
+    bool is_maximized = [_window isZoomed];
+    if (is_maximized != _properties.get_maximized()) {
+      properties.set_maximized(is_maximized);
+      changed = true;
+    }
+  }
+
+  if (changed) {
     system_changed_properties(properties);
   }
 
@@ -1378,6 +1496,31 @@ handle_minimize_event(bool minimized) {
 }
 
 /**
+ * Called by the window delegate when the window is maximized or
+ * demaximized.
+ */
+void CocoaGraphicsWindow::
+handle_maximize_event(bool maximized) {
+  if (maximized == _properties.get_maximized()) {
+    return;
+  }
+
+  if (cocoadisplay_cat.is_debug()) {
+    if (maximized) {
+      cocoadisplay_cat.debug() << "Window was maximized\n";
+    } else {
+      cocoadisplay_cat.debug() << "Window was demaximized\n";
+    }
+  }
+
+  WindowProperties properties;
+  properties.set_maximized(maximized);
+  system_changed_properties(properties);
+}
+
+
+
+/**
  * Called by the window delegate when the window has become the key window or
  * resigned that status.
  */
@@ -1390,6 +1533,8 @@ handle_foreground_event(bool foreground) {
       cocoadisplay_cat.debug() << "Window resigned key\n";
     }
   }
+
+  _dead_key_state = 0;
 
   WindowProperties properties;
   properties.set_foreground(foreground);
@@ -1416,22 +1561,26 @@ handle_foreground_event(bool foreground) {
  */
 bool CocoaGraphicsWindow::
 handle_close_request() {
-  string close_request_event = get_close_request_event();
+  std::string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
     // In this case, the app has indicated a desire to intercept the request
     // and process it directly.
     throw_event(close_request_event);
 
-    cocoadisplay_cat.debug()
-      << "Window requested close.  Rejecting, throwing event "
-      << close_request_event << " instead\n";
+    if (cocoadisplay_cat.is_debug()) {
+      cocoadisplay_cat.debug()
+        << "Window requested close.  Rejecting, throwing event "
+        << close_request_event << " instead\n";
+    }
 
     // Prevent the operating system from closing the window.
     return false;
   }
 
-  cocoadisplay_cat.debug()
-    << "Window requested close, accepting\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Window requested close, accepting\n";
+  }
 
   // Let the operating system close the window normally.
   return true;
@@ -1442,7 +1591,9 @@ handle_close_request() {
  */
 void CocoaGraphicsWindow::
 handle_close_event() {
-  cocoadisplay_cat.debug() << "Window is about to close\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug() << "Window is about to close\n";
+  }
 
   _window = nil;
 
@@ -1457,6 +1608,7 @@ handle_close_event() {
       cocoagsg->unlock_context();
     }
     _gsg.clear();
+    _vsync_enabled = false;
   }
 
   // Dump the view, too
@@ -1525,7 +1677,7 @@ handle_key_event(NSEvent *event) {
     // flaws are: - OS eats unmodified F11, F12, scroll lock, pause - no up
     // events for caps lock - no robust way to distinguish updown for modkeys
     if ([event type] == NSKeyUp) {
-      _input_devices[0].raw_button_up(raw_button);
+      _input->raw_button_up(raw_button);
 
     } else if ([event type] == NSFlagsChanged) {
       bool down = false;
@@ -1547,15 +1699,15 @@ handle_key_event(NSEvent *event) {
         down = (modifierFlags & 0x0010);
       } else if (raw_button == KeyboardButton::caps_lock()) {
         // Emulate down-up, annoying hack!
-        _input_devices[0].raw_button_down(raw_button);
+        _input->raw_button_down(raw_button);
       }
       if (down) {
-        _input_devices[0].raw_button_down(raw_button);
+        _input->raw_button_down(raw_button);
       } else {
-        _input_devices[0].raw_button_up(raw_button);
+        _input->raw_button_up(raw_button);
       }
     } else if (![event isARepeat]) {
-      _input_devices[0].raw_button_down(raw_button);
+      _input->raw_button_down(raw_button);
     }
   }
 
@@ -1564,27 +1716,66 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
-  NSString *str = [event charactersIgnoringModifiers];
-  if (str == nil || [str length] == 0) {
-    return;
-  }
-  nassertv([str length] == 1);
-  unichar c = [str characterAtIndex: 0];
+  TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
+  CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
-  ButtonHandle button = map_key(c);
+  if ([event type] == NSKeyDown) {
+    // Translate it to a unicode character for keystrokes.  I would use
+    // interpretKeyEvents and insertText, but that doesn't handle dead keys.
+    UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;
+    UniChar ustr[8];
+    UniCharCount length;
 
-  if (c < 0xF700 || c >= 0xF900) {
-    // If a down event and not a special function key, process it as keystroke
-    // as well.
-    if ([event type] == NSKeyDown) {
-      NSString *origstr = [event characters];
-      c = [str characterAtIndex: 0];
-      _input_devices[0].keystroke(c);
+    UCKeyTranslate(layout, [event keyCode], kUCKeyActionDown, modifier_state,
+                   LMGetKbdType(), 0, &_dead_key_state, sizeof(ustr), &length, ustr);
+
+    for (int i = 0; i < length; ++i) {
+      UniChar c = ustr[i];
+      if (cocoadisplay_cat.is_spam()) {
+        cocoadisplay_cat.spam()
+          << "Handling keystroke, character " << (int)c;
+        if (c < 128 && isprint(c)) {
+          cocoadisplay_cat.spam(false) << " '" << (char)c << "'";
+        }
+        cocoadisplay_cat.spam(false) << "\n";
+      }
+      _input->keystroke(c);
     }
   }
 
+  // [NSEvent charactersIgnoringModifiers] doesn't ignore the shift key, so we
+  // need to do what that method is doing manually.
+  _dead_key_state = 0;
+  UniChar c;
+  UniCharCount length;
+  UCKeyTranslate(layout, [event keyCode], kUCKeyActionDisplay,
+    0, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &_dead_key_state,
+    sizeof(c), &length, &c);
+  CFRelease(input_source);
+
+  if (length != 1) {
+    return;
+  }
+
+  // If UCKeyTranslate could not map the key into a valid unicode character or
+  // reserved symbol (See NSEvent.h), it returns 0x10 as translated character.
+  // This happens e.g.e with the combination Fn+F1.. keys.
+  // In that case, as fallback, we use charactersIgnoringModifiers to retrieve
+  // the character without modifiers.
+  if (c == 0x10) {
+    NSString *str = [event charactersIgnoringModifiers];
+    if (str == nil || [str length] != 1) {
+      return;
+    }
+    c = [str characterAtIndex: 0];
+  }
+
+  ButtonHandle button = map_key(c);
+
   if (button == ButtonHandle::none()) {
     // That done, continue trying to find out the button handle.
+    NSString *str = [[NSString alloc] initWithCharacters:&c length:length];
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       str = [str lowercaseString];
@@ -1608,9 +1799,9 @@ handle_key_event(NSEvent *event) {
 
   // Let's get it off our chest.
   if ([event type] == NSKeyUp) {
-    _input_devices[0].button_up(button);
+    _input->button_up(button);
   } else {
-    _input_devices[0].button_down(button);
+    _input->button_down(button);
   }
 }
 
@@ -1621,9 +1812,9 @@ void CocoaGraphicsWindow::
 handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button) {
   if ((modifierFlags ^ _modifier_keys) & mask) {
     if (modifierFlags & mask) {
-      _input_devices[0].button_down(button);
+      _input->button_down(button);
     } else {
-      _input_devices[0].button_up(button);
+      _input->button_up(button);
     }
   }
 }
@@ -1635,19 +1826,19 @@ handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button) 
 void CocoaGraphicsWindow::
 handle_mouse_button_event(int button, bool down) {
   if (down) {
-    _input_devices[0].button_down(MouseButton::button(button));
+    _input->button_down(MouseButton::button(button));
 
-#ifndef NDEBUG
-    cocoadisplay_cat.spam()
-      << "Mouse button " << button << " down\n";
-#endif
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Mouse button " << button << " down\n";
+    }
   } else {
-    _input_devices[0].button_up(MouseButton::button(button));
+    _input->button_up(MouseButton::button(button));
 
-#ifndef NDEBUG
-    cocoadisplay_cat.spam()
-      << "Mouse button " << button << " up\n";
-#endif
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Mouse button " << button << " up\n";
+    }
   }
 }
 
@@ -1661,7 +1852,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
 
   if (absolute) {
     if (cocoadisplay_cat.is_spam()) {
-      if (in_window != _input_devices[0].get_pointer().get_in_window()) {
+      if (in_window != _input->get_pointer().get_in_window()) {
         if (in_window) {
           cocoadisplay_cat.spam() << "Mouse pointer entered window\n";
         } else {
@@ -1676,7 +1867,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
 
   } else {
     // We received deltas, so add it to the current mouse position.
-    MouseData md = _input_devices[0].get_pointer();
+    MouseData md = _input->get_pointer();
     nx = md.get_x() + x;
     ny = md.get_y() + y;
   }
@@ -1702,8 +1893,11 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     }
   }
 
-  _input_devices[0].set_pointer(in_window, nx, ny,
-      ClockObject::get_global_clock()->get_frame_time());
+  if (in_window) {
+    _input->set_pointer_in_window(nx, ny);
+  } else {
+    _input->set_pointer_out_of_window();
+  }
 
   if (in_window != _mouse_hidden && _properties.get_cursor_hidden()) {
     // Hide the cursor if the mouse enters the window, and unhide it when the
@@ -1722,24 +1916,29 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
  */
 void CocoaGraphicsWindow::
 handle_wheel_event(double x, double y) {
-  cocoadisplay_cat.spam()
-    << "Wheel delta " << x << ", " << y << "\n";
-
-  if (y > 0.0) {
-    _input_devices[0].button_down(MouseButton::wheel_up());
-    _input_devices[0].button_up(MouseButton::wheel_up());
-  } else if (y < 0.0) {
-    _input_devices[0].button_down(MouseButton::wheel_down());
-    _input_devices[0].button_up(MouseButton::wheel_down());
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "Wheel delta " << x << ", " << y << "\n";
   }
 
-  // TODO: check if this is correct, I don't own a MacBook
-  if (x > 0.0) {
-    _input_devices[0].button_down(MouseButton::wheel_right());
-    _input_devices[0].button_up(MouseButton::wheel_right());
-  } else if (x < 0.0) {
-    _input_devices[0].button_down(MouseButton::wheel_left());
-    _input_devices[0].button_up(MouseButton::wheel_left());
+  if (y > 0.0) {
+    _input->button_down(MouseButton::wheel_up());
+    _input->button_up(MouseButton::wheel_up());
+  } else if (y < 0.0) {
+    _input->button_down(MouseButton::wheel_down());
+    _input->button_up(MouseButton::wheel_down());
+  }
+
+  if (x != 0 && cocoa_invert_wheel_x) {
+    x = -x;
+  }
+
+  if (x < 0.0) {
+    _input->button_down(MouseButton::wheel_right());
+    _input->button_up(MouseButton::wheel_right());
+  } else if (x > 0.0) {
+    _input->button_down(MouseButton::wheel_left());
+    _input->button_up(MouseButton::wheel_left());
   }
 }
 
@@ -1754,7 +1953,7 @@ get_keyboard_map() const {
   const UCKeyboardLayout *layout;
 
   // Get the current keyboard layout data.
-  input_source = TISCopyCurrentKeyboardInputSource();
+  input_source = TISCopyCurrentKeyboardLayoutInputSource();
   layout_data = (CFDataRef) TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
   layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
@@ -1962,6 +2161,7 @@ map_raw_key(unsigned short keycode) const {
   case 0x07: return KeyboardButton::ascii_key('x');
   case 0x08: return KeyboardButton::ascii_key('c');
   case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0A: return KeyboardButton::ascii_key('<');
   case 0x0B: return KeyboardButton::ascii_key('b');
   case 0x0C: return KeyboardButton::ascii_key('q');
   case 0x0D: return KeyboardButton::ascii_key('w');

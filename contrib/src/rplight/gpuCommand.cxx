@@ -57,13 +57,13 @@ GPUCommand::GPUCommand(CommandType command_type) {
  *   in mind that integers might be shown in their binary float representation,
  *   depending on the setting in the GPUCommand::convert_int_to_float method.
  */
-void GPUCommand::write(ostream &out) const {
-  out << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ", data = {" << endl;
+void GPUCommand::write(std::ostream &out) const {
+  out << "GPUCommand(type=" << _command_type << ", size=" << _current_index << ", data = {" << std::endl;
   for (size_t k = 0; k < GPU_COMMAND_ENTRIES; ++k) {
     out << std::setw(12) << std::fixed << std::setprecision(5) << _data[k] << " ";
-    if (k % 6 == 5 || k == GPU_COMMAND_ENTRIES - 1) out << endl;
+    if (k % 6 == 5 || k == GPU_COMMAND_ENTRIES - 1) out << std::endl;
   }
-  out << "})" << endl;
+  out << "})" << std::endl;
 }
 
 /**

@@ -28,13 +28,13 @@
  */
 class EXPCL_PANDA_PGRAPH LensNode : public PandaNode {
 PUBLISHED:
-  explicit LensNode(const string &name, Lens *lens = NULL);
+  explicit LensNode(const std::string &name, Lens *lens = nullptr);
 
 protected:
   LensNode(const LensNode &copy);
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *make_copy() const;

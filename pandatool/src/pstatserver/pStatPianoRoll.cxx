@@ -16,7 +16,7 @@
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
 #include "string_utils.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <algorithm>
 
@@ -126,6 +126,20 @@ update() {
   }
 
   idle();
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string PStatPianoRoll::
+get_label_tooltip(int collector_index) const {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(collector_index)) {
+    return std::string();
+  }
+
+  return client_data->get_collector_fullname(collector_index);
 }
 
 /**

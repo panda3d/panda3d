@@ -33,23 +33,23 @@
  * variable, created by using the same name to the constructor, will not
  * reflect the local changes.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableSearchPath : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableSearchPath(const string &name,
-                                  const string &description = string(),
+  INLINE ConfigVariableSearchPath(const std::string &name,
+                                  const std::string &description = std::string(),
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name,
+  INLINE ConfigVariableSearchPath(const std::string &name,
                                   const DSearchPath &default_value,
-                                  const string &description,
+                                  const std::string &description,
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name,
-                                  const string &default_value,
-                                  const string &description,
+  INLINE ConfigVariableSearchPath(const std::string &name,
+                                  const std::string &default_value,
+                                  const std::string &description,
                                   int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
-  INLINE operator const DSearchPath & () const;
-  INLINE const DSearchPath &get_value() const;
+  INLINE operator DSearchPath () const;
+  INLINE DSearchPath get_value() const;
   INLINE const DSearchPath &get_default_value() const;
   MAKE_PROPERTY(value, get_value);
   MAKE_PROPERTY(default_value, get_default_value);
@@ -59,14 +59,14 @@ PUBLISHED:
   INLINE void clear();
   INLINE void append_directory(const Filename &directory);
   INLINE void prepend_directory(const Filename &directory);
-  INLINE void append_path(const string &path,
-                          const string &separator = string());
+  INLINE void append_path(const std::string &path,
+                          const std::string &separator = std::string());
   INLINE void append_path(const DSearchPath &path);
   INLINE void prepend_path(const DSearchPath &path);
 
   INLINE bool is_empty() const;
   INLINE size_t get_num_directories() const;
-  INLINE const Filename &get_directory(size_t n) const;
+  INLINE Filename get_directory(size_t n) const;
   MAKE_SEQ(get_directories, get_num_directories, get_directory);
   MAKE_SEQ_PROPERTY(directories, get_num_directories, get_directory);
 
@@ -75,12 +75,13 @@ PUBLISHED:
                                DSearchPath::Results &results) const;
   INLINE DSearchPath::Results find_all_files(const Filename &filename) const;
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
+  INLINE void write(std::ostream &out) const;
 
 private:
   void reload_search_path();
 
+  mutable MutexImpl _lock;
   DSearchPath _default_value;
   DSearchPath _prefix, _postfix;
 
@@ -88,7 +89,7 @@ private:
   DSearchPath _cache;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigVariableSearchPath &variable);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigVariableSearchPath &variable);
 
 #include "configVariableSearchPath.I"
 

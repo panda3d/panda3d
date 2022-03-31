@@ -14,7 +14,7 @@
 #ifndef GEOMVERTEXFORMAT_H
 #define GEOMVERTEXFORMAT_H
 
-#include "pandabase.h"
+#include "config_gobj.h"
 #include "typedWritableReferenceCount.h"
 #include "geomVertexAnimationSpec.h"
 #include "geomVertexArrayFormat.h"
@@ -52,7 +52,7 @@ class GeomMunger;
  * standard and/or user-defined columns in your custom GeomVertexFormat
  * constructions.
  */
-class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat final : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);
@@ -72,6 +72,7 @@ PUBLISHED:
   MAKE_PROPERTY(animation, get_animation, set_animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
+  CPT(GeomVertexFormat) get_post_instanced_format() const;
   CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;
 
   INLINE size_t get_num_arrays() const;
@@ -129,9 +130,9 @@ PUBLISHED:
   MAKE_MAP_PROPERTY(columns, has_column, get_column);
   MAKE_MAP_KEYS_SEQ(columns, get_num_columns, get_column_name);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void write_with_data(ostream &out, int indent_level,
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void write_with_data(std::ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
   INLINE static const GeomVertexFormat *get_empty();
@@ -162,6 +163,13 @@ PUBLISHED:
   INLINE static const GeomVertexFormat *get_v3c4t2();
   INLINE static const GeomVertexFormat *get_v3n3c4();
   INLINE static const GeomVertexFormat *get_v3n3c4t2();
+
+  // These are like the above, but automatically select the appropriate format
+  // based on the setting of vertex-colors-prefer-packed.
+  INLINE static const GeomVertexFormat *get_v3c();
+  INLINE static const GeomVertexFormat *get_v3ct2();
+  INLINE static const GeomVertexFormat *get_v3n3c();
+  INLINE static const GeomVertexFormat *get_v3n3ct2();
 
 public:
   bool get_array_info(const InternalName *name,
@@ -222,7 +230,8 @@ private:
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
 
-  const GeomVertexFormat *_post_animated_format;
+  const GeomVertexFormat *_post_animated_format = nullptr;
+  const GeomVertexFormat *_post_instanced_format = nullptr;
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<GeomVertexFormat *, IndirectCompareTo<GeomVertexFormat> > Formats;
@@ -289,7 +298,7 @@ private:
   friend class GeomMunger;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexFormat &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexFormat &obj);
 
 #include "geomVertexFormat.I"
 

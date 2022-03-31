@@ -440,7 +440,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
  *
  */
 void NurbsCurve::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   NurbsCurveInterface::write(out, indent_level);
 }
 
@@ -459,7 +459,7 @@ append_cv_impl(const LVecBase4 &v) {
  * Returns true on success, false on failure.
  */
 bool NurbsCurve::
-format_egg(ostream &out, const string &name, const string &curve_type,
+format_egg(std::ostream &out, const std::string &name, const std::string &curve_type,
            int indent_level) const {
   return NurbsCurveInterface::format_egg(out, name, curve_type, indent_level);
 }

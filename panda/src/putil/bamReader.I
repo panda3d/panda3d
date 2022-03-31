@@ -34,7 +34,7 @@ get_source() {
  */
 INLINE const Filename &BamReader::
 get_filename() const {
-  if (_source != (DatagramGenerator *)NULL) {
+  if (_source != nullptr) {
     return _source->get_filename();
   }
   static const Filename empty_filename;
@@ -64,7 +64,7 @@ set_loader_options(const LoaderOptions &options) {
  */
 INLINE bool BamReader::
 is_eof() const {
-  nassertr(_source != NULL, true);
+  nassertr(_source != nullptr, true);
   return _source->is_eof();
 }
 
@@ -131,7 +131,7 @@ get_current_minor_ver() const {
  */
 INLINE const FileReference *BamReader::
 get_file() {
-  nassertr(_source != NULL, NULL);
+  nassertr(_source != nullptr, nullptr);
   return _source->get_file();
 }
 
@@ -141,7 +141,7 @@ get_file() {
  */
 INLINE VirtualFile *BamReader::
 get_vfile() {
-  nassertr(_source != NULL, NULL);
+  nassertr(_source != nullptr, nullptr);
   return _source->get_vfile();
 }
 
@@ -153,9 +153,9 @@ get_vfile() {
  * pointing to the first byte following the datagram returned after a call to
  * get_datagram().
  */
-INLINE streampos BamReader::
+INLINE std::streampos BamReader::
 get_file_pos() {
-  nassertr(_source != NULL, 0);
+  nassertr(_source != nullptr, 0);
   return _source->get_file_pos();
 }
 
@@ -175,7 +175,7 @@ register_factory(TypeHandle handle, WritableFactory::CreateFunc *func, void *use
  */
 INLINE WritableFactory *BamReader::
 get_factory() {
-  if (_factory == (WritableFactory *)NULL) {
+  if (_factory == nullptr) {
     create_factory();
   }
   return _factory;
@@ -195,7 +195,7 @@ create_factory() {
  */
 INLINE bool BamReader::
 get_datagram(Datagram &datagram) {
-  nassertr(_source != NULL, false);
+  nassertr(_source != nullptr, false);
   if (_source->is_error()) {
     return false;
   }
@@ -221,10 +221,10 @@ AuxData() {
 INLINE BamReader::CreatedObj::
 CreatedObj() :
   _created(false),
-  _ptr(NULL),
-  _ref_ptr(NULL),
-  _change_this(NULL),
-  _change_this_ref(NULL)
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
+  _change_this(nullptr),
+  _change_this_ref(nullptr)
 {
 }
 
@@ -233,7 +233,7 @@ CreatedObj() :
  */
 INLINE BamReader::CreatedObj::
 ~CreatedObj() {
-  set_ptr(NULL, NULL);
+  set_ptr(nullptr, nullptr);
 }
 
 /**
@@ -249,7 +249,7 @@ INLINE BamReader::CreatedObj::
 INLINE void BamReader::CreatedObj::
 set_ptr(TypedWritable *ptr, ReferenceCount *ref_ptr) {
   if (_ptr != ptr) {
-    if (_ref_ptr != NULL) {
+    if (_ref_ptr != nullptr) {
       nassertv(_ref_ptr != ref_ptr);
       unref_delete(_ref_ptr);
     }
@@ -257,7 +257,7 @@ set_ptr(TypedWritable *ptr, ReferenceCount *ref_ptr) {
     _ptr = ptr;
     _ref_ptr = ref_ptr;
 
-    if (_ref_ptr != NULL) {
+    if (_ref_ptr != nullptr) {
       _ref_ptr->ref();
     }
   } else {

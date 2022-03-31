@@ -23,6 +23,8 @@
 
 #include <math.h>
 
+using std::string;
+
 TypeHandle EggXfmSAnim::_type_handle;
 
 const string EggXfmSAnim::_standard_order = "srpht";
@@ -73,7 +75,7 @@ optimize() {
         // default value.
         double value = sanim->get_value(0);
         double default_value;
-        if (sanim->has_name() && strchr("ijk", sanim->get_name()[0]) != NULL) {
+        if (sanim->has_name() && strchr("ijk", sanim->get_name()[0]) != nullptr) {
           default_value = 1.0;
         } else {
           default_value = 0.0;
@@ -138,7 +140,7 @@ is_anim_matrix() const {
  * Writes the data to the indicated output stream in Egg format.
  */
 void EggXfmSAnim::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   test_under_integrity();
 
   write_header(out, indent_level, "<Xfm$Anim_S$>");
@@ -169,10 +171,10 @@ write(ostream &out, int indent_level) const {
       nassertv(sanim->get_name().length() == 1);
       char name = sanim->get_name()[0];
       char *p = (char *)strchr(matrix_component_letters, name);
-      nassertv(p != (char *)NULL);
-      if (p != (char *)NULL) {
+      nassertv(p != nullptr);
+      if (p != nullptr) {
         int index = p - matrix_component_letters;
-        nassertv(tables[index] == (EggSAnimData *)NULL);
+        nassertv(tables[index] == nullptr);
         tables[index] = sanim;
       }
     } else {
@@ -183,7 +185,7 @@ write(ostream &out, int indent_level) const {
 
   // Now write out the table children in our normal order.
   for (int i = 0; i < num_matrix_components; i++) {
-    if (tables[i] != (EggSAnimData *)NULL) {
+    if (tables[i] != nullptr) {
       tables[i]->write(out, indent_level + 2);
     }
   }
@@ -271,7 +273,7 @@ get_num_rows() const {
           min_rows = sanim->get_num_rows();
 
         } else {
-          min_rows = min(min_rows, sanim->get_num_rows());
+          min_rows = std::min(min_rows, sanim->get_num_rows());
         }
       }
     }
@@ -366,7 +368,8 @@ get_value(int row, LMatrix4d &mat) const {
 
       default:
         // One of the child tables had an invalid name.
-        nassertv(false);
+        nassert_raise("invalid name in child table");
+        return;
       }
     }
   }
@@ -400,7 +403,7 @@ set_value(int row, const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)NULL &&
+    nassertr(child != nullptr &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -495,7 +498,7 @@ add_data(const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)NULL &&
+    nassertr(child != nullptr &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -553,7 +556,7 @@ void EggXfmSAnim::
 add_component_data(const string &component_name, double value) {
   EggNode *child = find_child(component_name);
   EggSAnimData *sanim;
-  if (child == (EggNode *)NULL) {
+  if (child == nullptr) {
     // We don't have this component yet; create it.
     sanim = new EggSAnimData(component_name);
     add_child(sanim);

@@ -76,7 +76,7 @@ get_http_version() const {
  * Returns the HTTP version number returned by the server, formatted as a
  * string, e.g.  "HTTP/1.1".
  */
-INLINE const string &HTTPChannel::
+INLINE const std::string &HTTPChannel::
 get_http_version_string() const {
   return _http_version_string;
 }
@@ -103,7 +103,7 @@ get_status_code() const {
  * presented to the user to request an associated username and password (which
  * then should be stored in HTTPClient::set_username()).
  */
-INLINE const string &HTTPChannel::
+INLINE const std::string &HTTPChannel::
 get_www_realm() const {
   return _www_realm;
 }
@@ -114,7 +114,7 @@ get_www_realm() const {
  * string may be presented to the user to request an associated username and
  * password (which then should be stored in HTTPClient::set_username()).
  */
-INLINE const string &HTTPChannel::
+INLINE const std::string &HTTPChannel::
 get_proxy_realm() const {
   return _proxy_realm;
 }
@@ -427,6 +427,23 @@ get_max_updates_per_second() const {
 }
 
 /**
+ * Specifies the Content-Type header, useful for applications that require
+ * different types of content, such as JSON.
+ */
+INLINE void HTTPChannel::
+set_content_type(std::string content_type) {
+  _content_type = content_type;
+}
+
+/**
+ * Returns the value of the Content-Type header.
+ */
+INLINE std::string HTTPChannel::
+get_content_type() const {
+  return _content_type;
+}
+
+/**
  * This may be called immediately after a call to get_document() or some
  * related function to specify the expected size of the document we are
  * retrieving, if we happen to know.  This is used as the return value to
@@ -538,7 +555,7 @@ preserve_status() {
  */
 INLINE void HTTPChannel::
 clear_extra_headers() {
-  _send_extra_headers = string();
+  _send_extra_headers = std::string();
 }
 
 /**
@@ -551,7 +568,7 @@ clear_extra_headers() {
  * request.
  */
 INLINE void HTTPChannel::
-send_extra_header(const string &key, const string &value) {
+send_extra_header(const std::string &key, const std::string &value) {
   _send_extra_headers += key;
   _send_extra_headers += ": ";
   _send_extra_headers += value;
@@ -564,7 +581,7 @@ send_extra_header(const string &key, const string &value) {
  */
 INLINE bool HTTPChannel::
 get_document(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_get, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_get, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_valid();
@@ -579,7 +596,7 @@ get_document(const DocumentSpec &url) {
  */
 INLINE bool HTTPChannel::
 get_subdocument(const DocumentSpec &url, size_t first_byte, size_t last_byte) {
-  begin_request(HTTPEnum::M_get, url, string(), false, first_byte, last_byte);
+  begin_request(HTTPEnum::M_get, url, std::string(), false, first_byte, last_byte);
   while (run()) {
   }
   return is_valid();
@@ -593,7 +610,7 @@ get_subdocument(const DocumentSpec &url, size_t first_byte, size_t last_byte) {
  */
 INLINE bool HTTPChannel::
 get_header(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_head, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_head, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_valid();
@@ -603,7 +620,7 @@ get_header(const DocumentSpec &url) {
  * Posts form data to a particular URL and retrieves the response.
  */
 INLINE bool HTTPChannel::
-post_form(const DocumentSpec &url, const string &body) {
+post_form(const DocumentSpec &url, const std::string &body) {
   begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
   while (run()) {
   }
@@ -615,7 +632,7 @@ post_form(const DocumentSpec &url, const string &body) {
  * the server allows this.
  */
 INLINE bool HTTPChannel::
-put_document(const DocumentSpec &url, const string &body) {
+put_document(const DocumentSpec &url, const std::string &body) {
   begin_request(HTTPEnum::M_put, url, body, false, 0, 0);
   while (run()) {
   }
@@ -627,7 +644,7 @@ put_document(const DocumentSpec &url, const string &body) {
  */
 INLINE bool HTTPChannel::
 delete_document(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_delete, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_delete, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_valid();
@@ -639,7 +656,7 @@ delete_document(const DocumentSpec &url) {
  */
 INLINE bool HTTPChannel::
 get_trace(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_trace, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_trace, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_valid();
@@ -654,7 +671,7 @@ get_trace(const DocumentSpec &url) {
  */
 INLINE bool HTTPChannel::
 connect_to(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_connect, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_connect, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_connection_ready();
@@ -666,7 +683,7 @@ connect_to(const DocumentSpec &url) {
  */
 INLINE bool HTTPChannel::
 get_options(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_options, url, string(), false, 0, 0);
+  begin_request(HTTPEnum::M_options, url, std::string(), false, 0, 0);
   while (run()) {
   }
   return is_valid();
@@ -683,7 +700,7 @@ get_options(const DocumentSpec &url) {
  */
 INLINE void HTTPChannel::
 begin_get_document(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_get, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_get, url, std::string(), true, 0, 0);
 }
 
 /**
@@ -696,7 +713,7 @@ begin_get_document(const DocumentSpec &url) {
 INLINE void HTTPChannel::
 begin_get_subdocument(const DocumentSpec &url, size_t first_byte,
                       size_t last_byte) {
-  begin_request(HTTPEnum::M_get, url, string(), true, first_byte, last_byte);
+  begin_request(HTTPEnum::M_get, url, std::string(), true, first_byte, last_byte);
 }
 
 /**
@@ -705,7 +722,7 @@ begin_get_subdocument(const DocumentSpec &url, size_t first_byte,
  */
 INLINE void HTTPChannel::
 begin_get_header(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_head, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_head, url, std::string(), true, 0, 0);
 }
 
 /**
@@ -718,7 +735,7 @@ begin_get_header(const DocumentSpec &url) {
  * interim, or your form data may not get posted.
  */
 INLINE void HTTPChannel::
-begin_post_form(const DocumentSpec &url, const string &body) {
+begin_post_form(const DocumentSpec &url, const std::string &body) {
   begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
 }
 
@@ -736,7 +753,7 @@ begin_post_form(const DocumentSpec &url, const string &body) {
  */
 INLINE void HTTPChannel::
 begin_connect_to(const DocumentSpec &url) {
-  begin_request(HTTPEnum::M_connect, url, string(), true, 0, 0);
+  begin_request(HTTPEnum::M_connect, url, std::string(), true, 0, 0);
 }
 
 /**

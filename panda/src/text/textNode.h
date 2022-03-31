@@ -24,6 +24,12 @@
 #include "pandaNode.h"
 #include "luse.h"
 #include "geom.h"
+#include "cycleData.h"
+#include "cycleDataLockedReader.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "cycleDataStageReader.h"
+#include "cycleDataStageWriter.h"
 
 /**
  * The primary interface to this module.  This class does basic text assembly;
@@ -45,8 +51,8 @@
  */
 class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
-  explicit TextNode(const string &name);
-  explicit TextNode(const string &name, const TextProperties &copy);
+  explicit TextNode(const std::string &name);
+  explicit TextNode(const std::string &name, const TextProperties &copy);
 protected:
   TextNode(const TextNode &copy);
   virtual PandaNode *make_copy() const;
@@ -97,7 +103,7 @@ PUBLISHED:
   INLINE bool has_frame() const;
   INLINE bool is_frame_as_margin() const;
   INLINE LVecBase4 get_frame_as_set() const;
-  INLINE LVecBase4 get_frame_actual() const;
+  LVecBase4 get_frame_actual() const;
 
   INLINE void set_frame_line_width(PN_stdfloat line_width);
   INLINE PN_stdfloat get_frame_line_width() const;
@@ -114,7 +120,7 @@ PUBLISHED:
   INLINE bool get_card_decal() const;
   INLINE bool is_card_as_margin() const;
   INLINE LVecBase4 get_card_as_set() const;
-  INLINE LVecBase4 get_card_actual() const;
+  LVecBase4 get_card_actual() const;
   INLINE LVecBase4 get_card_transformed() const;
 
   INLINE void set_transform(const LMatrix4 &transform);
@@ -165,7 +171,7 @@ PUBLISHED:
   INLINE void set_shadow(const LVecBase2 &shadow_offset);
   INLINE void clear_shadow();
 
-  INLINE void set_bin(const string &bin);
+  INLINE void set_bin(const std::string &bin);
   INLINE void clear_bin();
 
   INLINE int set_draw_order(int draw_order);
@@ -180,36 +186,24 @@ PUBLISHED:
   INLINE void set_glyph_shift(PN_stdfloat glyph_shift);
   INLINE void clear_glyph_shift();
 
-  // These methods are inherited from TextEncoder, but we override here so we
-  // can flag the TextNode as dirty when they have been changed.
-  INLINE void set_text(const string &text);
-  INLINE void set_text(const string &text, Encoding encoding);
-  INLINE void clear_text();
-  INLINE void append_text(const string &text);
-  INLINE void append_unicode_char(wchar_t character);
-
   // After the text has been set, you can query this to determine how it will
   // be wordwrapped.
-  INLINE string get_wordwrapped_text() const;
+  INLINE std::string get_wordwrapped_text() const;
 
   // These methods calculate the width of a single character or a line of text
   // in the current font.
   PN_stdfloat calc_width(wchar_t character) const;
-  INLINE PN_stdfloat calc_width(const string &line) const;
+  INLINE PN_stdfloat calc_width(const std::string &line) const;
 
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
   bool is_whitespace(wchar_t character) const;
 
-  // Direct support for wide-character strings.
-  INLINE void set_wtext(const wstring &wtext);
-  INLINE void append_wtext(const wstring &text);
+  INLINE std::wstring get_wordwrapped_wtext() const;
+  PN_stdfloat calc_width(const std::wstring &line) const;
 
-  INLINE wstring get_wordwrapped_wtext() const;
-  PN_stdfloat calc_width(const wstring &line) const;
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   // The following functions return information about the text that was last
   // built (and is currently visible).
@@ -225,11 +219,11 @@ PUBLISHED:
 
   INLINE int get_num_rows() const;
 
-  PT(PandaNode) generate();
+  INLINE PT(PandaNode) generate();
   INLINE void update();
   INLINE void force_update();
 
-  PandaNode *get_internal_geom() const;
+  PT(PandaNode) get_internal_geom() const;
 
 PUBLISHED:
   MAKE_PROPERTY(max_rows, get_max_rows, set_max_rows);
@@ -242,8 +236,6 @@ PUBLISHED:
   MAKE_PROPERTY(coordinate_system, get_coordinate_system, set_coordinate_system);
   MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
   MAKE_PROPERTY(flatten_flags, get_flatten_flags, set_flatten_flags);
-
-  MAKE_PROPERTY(text, get_text, set_text);
 
   MAKE_PROPERTY2(font, has_font, get_font, set_font, clear_font);
   MAKE_PROPERTY2(small_caps, has_small_caps, get_small_caps,
@@ -279,6 +271,9 @@ PUBLISHED:
                              set_text_scale, clear_text_scale);
 
 public:
+  // From parent class TextEncoder;
+  virtual void text_changed() final;
+
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
@@ -291,7 +286,6 @@ public:
                       Thread *current_thread) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,
@@ -304,25 +298,24 @@ public:
                                Thread *current_thread);
 
 private:
-  INLINE void invalidate_no_measure();
-  INLINE void invalidate_with_measure();
-  INLINE void check_rebuild() const;
-  INLINE void check_measure() const;
+  class CData;
 
-  void do_rebuild();
-  void do_measure();
+  INLINE void invalidate_no_measure(CData *cdata);
+  INLINE void invalidate_with_measure(CData *cdata);
+  INLINE bool do_needs_rebuild(const CData *cdata) const;
+  INLINE bool do_needs_measure(const CData *cdata) const;
 
-  PT(PandaNode) make_frame();
-  PT(PandaNode) make_card();
-  PT(PandaNode) make_card_with_border();
+  void do_rebuild(CData *cdata);
+  void do_measure(CData *cdata);
+
+  PT(PandaNode) do_generate(CData *cdata);
+  PT(PandaNode) do_get_internal_geom() const;
+
+  PT(PandaNode) do_make_frame(const CData *cdata);
+  PT(PandaNode) do_make_card(const CData *cdata);
+  PT(PandaNode) do_make_card_with_border(const CData *cdata);
 
   static int count_geoms(PandaNode *node);
-
-  PT(PandaNode) _internal_geom;
-
-  PT(Texture) _card_texture;
-  LColor _frame_color;
-  LColor _card_color;
 
   enum Flags {
     F_has_frame        =  0x0001,
@@ -339,27 +332,54 @@ private:
     F_card_decal       =  0x0800,
   };
 
-  int _flags;
-  int _max_rows;
-  GeomEnums::UsageHint _usage_hint;
-  int _flatten_flags;
-  bool _dynamic_merge;
-  PN_stdfloat _frame_width;
-  PN_stdfloat _card_border_size;
-  PN_stdfloat _card_border_uv_portion;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA_TEXT CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return TextNode::get_class_type();
+    }
 
-  LVector2 _frame_ul, _frame_lr;
-  LVector2 _card_ul, _card_lr;
+    // We copy these here because they aren't pipeline-cycled on TextEncoder.
+    std::string _text;
+    std::wstring _wtext;
 
-  LMatrix4 _transform;
-  CoordinateSystem _coordinate_system;
+    PT(PandaNode) _internal_geom;
 
-  LPoint3 _ul3d, _lr3d;
+    PT(Texture) _card_texture;
+    LColor _frame_color;
+    LColor _card_color;
 
-  // Returned from TextAssembler:
-  LVector2 _text_ul, _text_lr;
-  int _num_rows;
-  wstring _wordwrapped_wtext;
+    int _flags;
+    int _max_rows;
+    GeomEnums::UsageHint _usage_hint;
+    int _flatten_flags;
+    PN_stdfloat _frame_width;
+    PN_stdfloat _card_border_size;
+    PN_stdfloat _card_border_uv_portion;
+
+    LVector2 _frame_ul, _frame_lr;
+    LVector2 _card_ul, _card_lr;
+
+    LMatrix4 _transform;
+    CoordinateSystem _coordinate_system;
+
+    LPoint3 _ul3d, _lr3d;
+
+    // Returned from TextAssembler:
+    LVector2 _text_ul, _text_lr;
+    int _num_rows;
+    std::wstring _wordwrapped_wtext;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataLockedReader<CData> CDLockedReader;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
   static PStatCollector _text_generate_pcollector;
 

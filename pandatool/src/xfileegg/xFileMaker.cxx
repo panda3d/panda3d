@@ -234,7 +234,7 @@ bool XFileMaker::
 finalize_mesh(XFileNode *x_parent, XFileMesh *mesh) {
   // Get a unique number for each mesh.
   _mesh_index++;
-  string mesh_index = format_string(_mesh_index);
+  std::string mesh_index = format_string(_mesh_index);
 
   // Finally, create the Mesh object.
   mesh->make_x_mesh(x_parent, mesh_index);

@@ -24,31 +24,6 @@ Semaphore(int initial_count) :
 }
 
 /**
- *
- */
-INLINE Semaphore::
-~Semaphore() {
-}
-
-/**
- * Do not attempt to copy semaphores.
- */
-INLINE Semaphore::
-Semaphore(const Semaphore &copy) :
-  _cvar(_lock)
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy semaphores.
- */
-INLINE void Semaphore::
-operator = (const Semaphore &copy) {
-  nassertv(false);
-}
-
-/**
  * Decrements the internal count.  If the count was already at zero, blocks
  * until the count is nonzero, then decrements it.
  */

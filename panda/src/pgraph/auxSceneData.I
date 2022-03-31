@@ -68,8 +68,8 @@ get_expiration_time() const {
   return _last_render_time + _duration;
 }
 
-INLINE ostream &
-operator << (ostream &out, const AuxSceneData &data) {
+INLINE std::ostream &
+operator << (std::ostream &out, const AuxSceneData &data) {
   data.output(out);
   return out;
 }

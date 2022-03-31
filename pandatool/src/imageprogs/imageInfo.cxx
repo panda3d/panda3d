@@ -29,7 +29,7 @@ ImageInfo() {
      "Report only images that have a non-power-of-two size in either "
      "dimension.  Images whose dimensions are both a power of two will "
      "not be mentioned.",
-     &ImageInfo::dispatch_none, &_report_power_2, NULL);
+     &ImageInfo::dispatch_none, &_report_power_2, nullptr);
 }
 
 /**

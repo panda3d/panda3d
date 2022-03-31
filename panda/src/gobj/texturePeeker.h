@@ -37,9 +37,11 @@ PUBLISHED:
   INLINE int get_z_size() const;
 
   INLINE bool has_pixel(int x, int y) const;
+  INLINE bool has_pixel(int x, int y, int z) const;
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const;
   void fetch_pixel(LColor &color, int x, int y) const;
+  void fetch_pixel(LColor &color, int x, int y, int z) const;
   bool lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void filter_rect(LColor &color,
                    PN_stdfloat min_u, PN_stdfloat min_v,
@@ -77,6 +79,7 @@ private:
   static void get_texel_a(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_l(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_la(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_rg(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_rgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_srgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
@@ -85,8 +88,7 @@ private:
   int _x_size;
   int _y_size;
   int _z_size;
-  int _component_width;
-  int _num_components;
+  int _is_cube;
   int _pixel_width;
   Texture::Format _format;
   Texture::ComponentType _component_type;

@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES ComputeNode : public PandaNode {
 PUBLISHED:
-  explicit ComputeNode(const string &name);
+  explicit ComputeNode(const std::string &name);
 
   INLINE void add_dispatch(const LVecBase3i &num_groups);
   INLINE void add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z);
@@ -47,10 +47,9 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
 
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   class EXPCL_PANDA_PGRAPHNODES Dispatcher : public CallbackObject {

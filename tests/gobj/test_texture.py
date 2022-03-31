@@ -1,5 +1,6 @@
-from panda3d.core import Texture, PNMImage
+from panda3d.core import Texture, PNMImage, LColor
 from array import array
+import math
 
 
 def image_from_stored_pixel(component_type, format, data):
@@ -13,6 +14,20 @@ def image_from_stored_pixel(component_type, format, data):
     img = PNMImage()
     assert tex.store(img)
     return img
+
+
+def peek_tex_with_clear_color(component_type, format, clear_color):
+    """ Creates a 1-pixel texture with the given settings and clear color,
+    then peeks the value at this pixel and returns it. """
+
+    tex = Texture("")
+    tex.setup_1d_texture(1, component_type, format)
+    tex.set_clear_color(clear_color)
+    tex.make_ram_image()
+
+    col = LColor()
+    tex.peek().fetch_pixel(col, 0, 0)
+    return col
 
 
 def test_texture_store_unsigned_byte():
@@ -88,3 +103,34 @@ def test_texture_store_srgb_alpha():
     assert img.maxval == 0xff
     col = img.get_xel_a(0, 0)
     assert col.almost_equal((0.5, 0.5, 0.5, 188 / 255.0), 1 / 255.0)
+
+
+def test_texture_clear_unsigned_byte():
+    col = peek_tex_with_clear_color(Texture.T_unsigned_byte, Texture.F_rgba, (0, 1 / 255.0, 254 / 255.0, 1.0))
+    assert col == LColor(0, 1 / 255.0, 254 / 255.0, 1.0)
+
+
+def test_texture_clear_float():
+    col = peek_tex_with_clear_color(Texture.T_float, Texture.F_rgba, (0, 0.25, -0.5, 2))
+    assert col == LColor(0, 0.25, -0.5, 2)
+
+
+def test_texture_clear_half():
+    col = peek_tex_with_clear_color(Texture.T_half_float, Texture.F_rgba, (0, 0.25, -0.5, 2))
+    assert col == LColor(0, 0.25, -0.5, 2)
+
+    # Test edge cases
+    inf = float('inf')
+    nan = float('nan')
+    col = peek_tex_with_clear_color(Texture.T_half_float, Texture.F_rgba, (65504, 65536, inf, nan))
+    assert col.x == 65504
+    assert col.y == inf
+    assert col.z == inf
+    assert math.isnan(col.w)
+
+    # Negative edge case
+    col = peek_tex_with_clear_color(Texture.T_half_float, Texture.F_rgba, (-65504, -65536, -inf, -nan))
+    assert col.x == -65504
+    assert col.y == -inf
+    assert col.z == -inf
+    assert math.isnan(col.w)

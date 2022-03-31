@@ -16,6 +16,8 @@
 #include "collisionRay.h"
 #include "collisionSphere.h"
 #include "collisionSegment.h"
+#include "collisionParabola.h"
+#include "collisionCapsule.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
@@ -28,12 +30,16 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 #include "geom.h"
+#include "geomLines.h"
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "config_mathutil.h"
 #include "dcast.h"
 
 #include <math.h>
+
+using std::max;
+using std::min;
 
 PStatCollector CollisionBox::_volume_pcollector("Collision Volumes:CollisionBox");
 PStatCollector CollisionBox::_test_pcollector("Collision Tests:CollisionBox");
@@ -60,14 +66,11 @@ make_copy() {
  * Compute parameters for each of the box's sides
  */
 void CollisionBox::
-setup_box(){
-  for(int plane = 0; plane < 6; plane++) {
-    LPoint3 array[4];
-    array[0] = get_point(plane_def[plane][0]);
-    array[1] = get_point(plane_def[plane][1]);
-    array[2] = get_point(plane_def[plane][2]);
-    array[3] = get_point(plane_def[plane][3]);
-    setup_points(array, array+4, plane);
+setup_box() {
+  assert(sizeof(_points) / sizeof(_points[0]) == 6);
+  assert(sizeof(_points[0]) / sizeof(_points[0][0]) == 4);
+  for (int plane = 0; plane < 6; plane++) {
+    setup_points(plane);
   }
 }
 
@@ -75,11 +78,8 @@ setup_box(){
  * Computes the plane and 2d projection of points that make up this side.
  */
 void CollisionBox::
-setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
-  int num_points = end - begin;
-  nassertv(num_points >= 3);
-
-  _points[plane].clear();
+setup_points(int plane) {
+  PointDef *points = _points[plane];
 
   // Construct a matrix that rotates the points from the (X,0,Z) plane into
   // the 3-d plane.
@@ -90,32 +90,15 @@ setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
   _to_2d_mat[plane].invert_from(to_3d_mat);
 
   // Now project all of the points onto the 2-d plane.
-
-  const LPoint3 *pi;
-  for (pi = begin; pi != end; ++pi) {
-    LPoint3 point = (*pi) * _to_2d_mat[plane];
-    _points[plane].push_back(PointDef(point[0], point[2]));
+  for (size_t i = 0; i < 4; ++i) {
+    LPoint3 point = get_point(plane_def[plane][i]) * _to_2d_mat[plane];
+    points[i] = PointDef(point[0], point[2]);
   }
 
-  nassertv(_points[plane].size() >= 3);
-
-#ifndef NDEBUG
-  /*
-  // Now make sure the points define a convex polygon.
-  if (is_concave()) {
-  collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
-  const LPoint3 *pi;
-  for (pi = begin; pi != end; ++pi) {
-  collide_cat.error(false) << "  " << (*pi) << "\n";
+  for (size_t i = 0; i < 4; i++) {
+    points[i]._v = points[(i + 1) % 4]._p - points[i]._p;
+    points[i]._v.normalize();
   }
-  collide_cat.error(false)
-  << "  normal " << normal << " with length " << normal.length() << "\n";
-  _points.clear();
-  }
-  */
-#endif
-
-  compute_vectors(_points[plane]);
 }
 
 /**
@@ -140,10 +123,6 @@ xform(const LMatrix4 &mat) {
   for(int p = 0; p < 6 ; p++) {
     _planes[p] = set_plane(p);
   }
-  _x = _vertex[0].get_x() - _center.get_x();
-  _y = _vertex[0].get_y() - _center.get_y();
-  _z = _vertex[0].get_z() - _center.get_z();
-  _radius = sqrt(_x * _x + _y * _y + _z * _z);
   setup_box();
   mark_viz_stale();
   mark_internal_bounds_stale();
@@ -181,7 +160,8 @@ get_test_pcollector() {
  *
  */
 void CollisionBox::
-output(ostream &out) const {
+output(std::ostream &out) const {
+  out << "box, (" << get_min() << ") to (" << get_max() << ")";
 }
 
 /**
@@ -189,7 +169,11 @@ output(ostream &out) const {
  */
 PT(BoundingVolume) CollisionBox::
 compute_internal_bounds() const {
-  return new BoundingSphere(_center, _radius);
+  PN_stdfloat x = _vertex[0].get_x() - _center.get_x();
+  PN_stdfloat y = _vertex[0].get_y() - _center.get_y();
+  PN_stdfloat z = _vertex[0].get_z() - _center.get_z();
+  PN_stdfloat radius = sqrt(x * x + y * y + z * z);
+  return new BoundingSphere(_center, radius);
 }
 
 /**
@@ -199,7 +183,7 @@ PT(CollisionEntry) CollisionBox::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
@@ -226,10 +210,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LVector3 normal;
 
   for(ip = 0, intersect = false; ip < 6 && !intersect; ip++) {
-    plane = get_plane( ip );
-    if (_points[ip].size() < 3) {
-      continue;
-    }
+    plane = get_plane(ip);
+
     if (wrt_prev_space != wrt_space) {
       // If we have a delta between the previous position and the current
       // position, we use that to determine some more properties of the
@@ -310,22 +292,22 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     PN_stdfloat edge_dist = 0.0f;
 
     const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-    if (cpa != (ClipPlaneAttrib *)NULL) {
+    if (cpa != nullptr) {
       // We have a clip plane; apply it.
       Points new_points;
       if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform(),ip)) {
         // All points are behind the clip plane; just do the default test.
-        edge_dist = dist_to_polygon(p, _points[ip]);
+        edge_dist = dist_to_polygon(p, _points[ip], 4);
       } else if (new_points.empty()) {
         // The polygon is completely clipped.
         continue;
       } else {
         // Test against the clipped polygon.
-        edge_dist = dist_to_polygon(p, new_points);
+        edge_dist = dist_to_polygon(p, new_points.data(), new_points.size());
       }
     } else {
       // No clip plane is in effect.  Do the default test.
-      edge_dist = dist_to_polygon(p, _points[ip]);
+      edge_dist = dist_to_polygon(p, _points[ip], 4);
     }
 
     max_dist = from_radius;
@@ -361,7 +343,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     intersect = true;
   }
   if( !intersect )
-    return NULL;
+    return nullptr;
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -395,6 +377,49 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
+/**
+ *
+ */
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_line(const CollisionEntry &entry) const {
+  const CollisionLine *line;
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
+
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+    // No intersection.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
+
+  if (has_effective_normal() && line->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
 
 /**
  * Double dispatch point for ray as a FROM object
@@ -402,58 +427,16 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = ray->get_origin() * wrt_mat;
   LVector3 from_direction = ray->get_direction() * wrt_mat;
 
-  int i, j;
-  PN_stdfloat t;
-  PN_stdfloat near_t = 0.0;
-  bool intersect;
-  LPlane plane;
-  LPlane near_plane;
-
-  // Returns the details about the first plane of the box that the ray
-  // intersects.
-  for (i = 0, intersect = false, t = 0, j = 0; i < 6 && j < 2; i++) {
-    plane = get_plane(i);
-
-    if (!plane.intersects_line(t, from_origin, from_direction)) {
-      // No intersection.  The ray is parallel to the plane.
-      continue;
-    }
-
-    if (t < 0.0f) {
-      // The intersection point is before the start of the ray, and so the ray
-      // is entirely in front of the plane.
-      continue;
-    }
-    LPoint3 plane_point = from_origin + t * from_direction;
-    LPoint2 p = to_2d(plane_point, i);
-
-    if (!point_is_inside(p, _points[i])){
-      continue;
-    }
-    intersect = true;
-    if (j) {
-      if(t < near_t) {
-        near_plane = plane;
-        near_t = t;
-      }
-    }
-    else {
-      near_plane = plane;
-      near_t = t;
-    }
-    ++j;
-  }
-
-
-  if(!intersect) {
-    // No intersection with ANY of the box's planes has been detected
-    return NULL;
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction) || (t1 < 0.0 && t2 < 0.0)) {
+    // No intersection.
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -461,21 +444,107 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3 into_intersection_point = from_origin + near_t * from_direction;
+  if (t1 < 0.0) {
+    // The origin is inside the box, so we take the exit as our surface point.
+    new_entry->set_interior_point(from_origin);
+    t1 = t2;
+  }
 
-  LVector3 normal =
-    (has_effective_normal() && ray->get_respect_effective_normal())
-    ? get_effective_normal() : near_plane.get_normal();
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
 
-  new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_intersection_point);
+  if (has_effective_normal() && ray->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }
 
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  PN_stdfloat t = FLT_MAX;
+  PN_stdfloat t1, t2;
+  int intersecting_face = -1;
+  for (int i = 0; i < get_num_planes(); i++) {
+    LPlane face = get_plane(i);
+    if (!face.intersects_parabola(t1, t2, local_p)) {
+      // the parabola does not intersect this face, skip to the next one
+      continue;
+    }
+    PN_stdfloat ts[2] = {t1, t2};
+    // iterate through the t values to see if each of them are within our
+    // parabola and the intersection point is behind all other faces
+    for (int j = 0; j < 2; j++) {
+      PN_stdfloat cur_t = ts[j];
+      if (cur_t > t) {
+        // we are looking for the earliest t value
+        // if this t value is greater, don't bother checking it
+        continue;
+      }
+      if (cur_t >= parabola->get_t1() && cur_t <= parabola->get_t2()) {
+        // the parabola does intersect this plane, now we check
+        // if the intersection point is behind all other planes
+        bool behind = true;
+        for (int k = 0; k < get_num_planes(); k++) {
+          if (k == i) {
+            // no need to check the intersecting face
+            continue;
+          }
+          if (get_plane(k).dist_to_plane(local_p.calc_point(cur_t)) > 0.0f) {
+            // our point is in front of this face, turns out the parabola
+            // does not collide with the box at this point
+            behind = false;
+            break;
+          }
+        }
+        if (behind) {
+          // the parabola does indeed collide with the box at this point
+          t = cur_t;
+          intersecting_face = i;
+        }
+      }
+    }
+  }
+
+  if (intersecting_face != -1) {
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "intersection detected from " << entry.get_from_node_path()
+        << " into " << entry.get_into_node_path() << "\n";
+    }
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+    LPlane face = get_plane(intersecting_face);
+
+    LPoint3 into_intersection_point = local_p.calc_point(t);
+    LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : face.get_normal();
+
+    new_entry->set_surface_point(into_intersection_point);
+    new_entry->set_surface_normal(normal);
+    return new_entry;
+  } else {
+    return nullptr;
+  }
+}
 
 /**
  * Double dispatch point for segment as a FROM object
@@ -483,59 +552,18 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *seg;
-  DCAST_INTO_R(seg, entry.get_from(), NULL);
+  DCAST_INTO_R(seg, entry.get_from(), nullptr);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = seg->get_point_a() * wrt_mat;
   LPoint3 from_extent = seg->get_point_b() * wrt_mat;
   LVector3 from_direction = from_extent - from_origin;
 
-  int i, j;
-  PN_stdfloat t;
-  PN_stdfloat near_t = 0.0;
-  bool intersect;
-  LPlane plane;
-  LPlane near_plane;
-
-  // Returns the details about the first plane of the box that the segment
-  // intersects.
-  for(i = 0, intersect = false, t = 0, j = 0; i < 6 && j < 2; i++) {
-    plane = get_plane(i);
-
-    if (!plane.intersects_line(t, from_origin, from_direction)) {
-      // No intersection.  The segment is parallel to the plane.
-      continue;
-    }
-
-    if (t < 0.0f || t > 1.0f) {
-      // The intersection point is before the start of the segment, or after
-      // the end of the segment, so the segment is either entirely in front of
-      // or behind the plane.
-      continue;
-    }
-    LPoint3 plane_point = from_origin + t * from_direction;
-    LPoint2 p = to_2d(plane_point, i);
-
-    if (!point_is_inside(p, _points[i])){
-      continue;
-    }
-    intersect = true;
-    if(j) {
-      if(t < near_t) {
-        near_plane = plane;
-        near_t = t;
-      }
-    }
-    else {
-      near_plane = plane;
-      near_t = t;
-    }
-    ++j;
-  }
-
-  if(!intersect) {
-    // No intersection with ANY of the box's planes has been detected
-    return NULL;
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction) ||
+      (t1 < 0.0 && t2 < 0.0) || (t1 > 1.0 && t2 > 1.0)) {
+    // No intersection.
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -543,17 +571,176 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3 into_intersection_point = from_origin + near_t * from_direction;
+  // In case the segment is entirely inside the cube, we consider the point
+  // closest to the surface as our entry point.
+  if (t1 < (1.0 - t2)) {
+    std::swap(t1, t2);
+  }
 
-  LVector3 normal =
-    (has_effective_normal() && seg->get_respect_effective_normal())
-    ? get_effective_normal() : near_plane.get_normal();
+  // Our interior point is the closest point to t2 that is inside the segment.
+  new_entry->set_interior_point(from_origin + std::min(std::max(t2, 0.0), 1.0) * from_direction);
 
-  new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_intersection_point);
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
+
+  if (has_effective_normal() && seg->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+/**
+ * Double dispatch point for capsule as a FROM object
+ */
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
+  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, capsule->get_radius())).length_squared();
+  PN_stdfloat radius = csqrt(radius_sq);
+
+  LPoint3 box_min = get_min();
+  LPoint3 box_max = get_max();
+  LVector3 dimensions = box_max - box_min;
+
+  // The method below is inspired by Christer Ericson's book Real-Time
+  // Collision Detection.  Instead of testing a capsule against a box, we test
+  // a segment against an box that is oversized by the capsule radius.
+
+  // First, we test if the line segment intersects a box with its faces
+  // expanded outwards by the capsule radius.  If not, there is no collision.
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_a, from_direction, radius)) {
+    return nullptr;
+  }
+
+  if (t2 < 0.0 || t1 > 1.0) {
+    return nullptr;
+  }
+
+  t1 = std::min(1.0, std::max(0.0, (t1 + t2) * 0.5));
+  LPoint3 point = from_a + from_direction * t1;
+
+  // We now have a point of intersection between the line segment and the
+  // oversized box.  Check on how many axes it lies outside the box.  If it is
+  // less than two, we know that it does not lie in one of the rounded regions
+  // of the oversized rounded box, and it is a guaranteed hit.  Otherwise, we
+  // will need to test against the edge regions.
+  if ((point[0] < box_min[0] || point[0] > box_max[0]) +
+      (point[1] < box_min[1] || point[1] > box_max[1]) +
+      (point[2] < box_min[2] || point[2] > box_max[2]) > 1) {
+    // Test the capsule against each edge of the box.
+    static const struct {
+      LPoint3 point;
+      int axis;
+    } edges[] = {
+      {{0, 0, 0}, 0},
+      {{0, 1, 0}, 0},
+      {{0, 0, 1}, 0},
+      {{0, 1, 1}, 0},
+      {{0, 0, 0}, 1},
+      {{0, 0, 1}, 1},
+      {{1, 0, 0}, 1},
+      {{1, 0, 1}, 1},
+      {{0, 0, 0}, 2},
+      {{0, 1, 0}, 2},
+      {{1, 0, 0}, 2},
+      {{1, 1, 0}, 2},
+    };
+
+    PN_stdfloat best_dist_sq = FLT_MAX;
+
+    for (int i = 0; i < 12; ++i) {
+      LPoint3 vertex = edges[i].point;
+      vertex.componentwise_mult(dimensions);
+      vertex += box_min;
+      LVector3 delta(0);
+      delta[edges[i].axis] = dimensions[edges[i].axis];
+      double u1, u2;
+      CollisionCapsule::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
+      PN_stdfloat dist_sq = ((from_a + from_direction * u1) - (vertex + delta * u2)).length_squared();
+      if (dist_sq < best_dist_sq) {
+        best_dist_sq = dist_sq;
+      }
+    }
+
+    if (best_dist_sq > radius_sq) {
+      // It is not actually touching any edge.
+      return nullptr;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  // Which is the longest axis?
+  LVector3 diff = point - _center;
+  diff[0] /= dimensions[0];
+  diff[1] /= dimensions[1];
+  diff[2] /= dimensions[2];
+  int axis = 0;
+  if (cabs(diff[0]) > cabs(diff[1])) {
+    if (cabs(diff[0]) > cabs(diff[2])) {
+      axis = 0;
+    } else {
+      axis = 2;
+    }
+  } else {
+    if (cabs(diff[1]) > cabs(diff[2])) {
+      axis = 1;
+    } else {
+      axis = 2;
+    }
+  }
+  LVector3 normal(0);
+  normal[axis] = std::copysign(1, diff[axis]);
+
+  LPoint3 clamped = point.fmax(box_min).fmin(box_max);
+  LPoint3 surface_point = clamped;
+  surface_point[axis] = (diff[axis] >= 0.0f) ? box_max[axis] : box_min[axis];
+
+  // Is the point inside the box?
+  LVector3 interior_vec;
+  if (clamped != point) {
+    // No, it is outside.  The interior point is in the direction of the
+    // surface point.
+    interior_vec = point - surface_point;
+    if (!interior_vec.normalize()) {
+      interior_vec = normal;
+    }
+  } else {
+    // It is inside.  I think any point will work for this.
+    interior_vec = normal;
+  }
+  new_entry->set_interior_point(point - interior_vec * radius);
+  new_entry->set_surface_point(surface_point);
+
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }
@@ -564,7 +751,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), NULL);
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -603,7 +790,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[0] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[0]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   min_pen = pen;
 
@@ -613,7 +800,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[1] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[1]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -626,7 +813,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[2] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[2]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -640,7 +827,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[0];
   pen = r1 + r2 - cabs(diff.dot(box_x));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -652,7 +839,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[1];
   pen = r1 + r2 - cabs(diff.dot(box_y));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -664,7 +851,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[2];
   pen = r1 + r2 - cabs(diff.dot(box_z));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -674,55 +861,55 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r1 = into_extents[1] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[1]);
   r2 = from_extents[1] * cabs(box_z[0]) + from_extents[2] * cabs(box_y[0]);
   if (cabs(diff[2] * box_x[1] - diff[1] * box_x[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[1] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[1]);
   r2 = from_extents[0] * cabs(box_z[0]) + from_extents[2] * cabs(box_x[0]);
   if (cabs(diff[2] * box_y[1] - diff[1] * box_y[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[1] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[1]);
   r2 = from_extents[0] * cabs(box_y[0]) + from_extents[1] * cabs(box_x[0]);
   if (cabs(diff[2] * box_z[1] - diff[1] * box_z[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[0]);
   r2 = from_extents[1] * cabs(box_z[1]) + from_extents[2] * cabs(box_y[1]);
   if (cabs(diff[0] * box_x[2] - diff[2] * box_x[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[0]);
   r2 = from_extents[0] * cabs(box_z[1]) + from_extents[2] * cabs(box_x[1]);
   if (cabs(diff[0] * box_y[2] - diff[2] * box_y[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[0]);
   r2 = from_extents[0] * cabs(box_y[1]) + from_extents[1] * cabs(box_x[1]);
   if (cabs(diff[0] * box_z[2] - diff[2] * box_z[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_x[1]) + into_extents[1] * cabs(box_x[0]);
   r2 = from_extents[1] * cabs(box_z[2]) + from_extents[2] * cabs(box_y[2]);
   if (cabs(diff[1] * box_x[0] - diff[0] * box_x[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_y[1]) + into_extents[1] * cabs(box_y[0]);
   r2 = from_extents[0] * cabs(box_z[2]) + from_extents[2] * cabs(box_x[2]);
   if (cabs(diff[1] * box_y[0] - diff[0] * box_y[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_z[1]) + into_extents[1] * cabs(box_z[0]);
   r2 = from_extents[0] * cabs(box_y[2]) + from_extents[1] * cabs(box_x[2]);
   if (cabs(diff[1] * box_z[0] - diff[0] * box_z[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -813,11 +1000,82 @@ fill_viz_geom() {
   tris->add_vertices(3, 7, 0);
   tris->add_vertices(0, 7, 4);
 
-  PT(Geom) geom = new Geom(vdata);
-  geom->add_primitive(tris);
+  PT(GeomLines) lines = new GeomLines(Geom::UH_static);
 
-  _viz_geom->add_geom(geom, get_solid_viz_state());
-  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  // Bottom
+  lines->add_vertices(0, 1);
+  lines->add_vertices(1, 2);
+  lines->add_vertices(0, 3);
+  lines->add_vertices(2, 3);
+
+  // Top
+  lines->add_vertices(4, 5);
+  lines->add_vertices(5, 6);
+  lines->add_vertices(4, 7);
+  lines->add_vertices(6, 7);
+
+  // Sides
+  lines->add_vertices(0, 4);
+  lines->add_vertices(1, 5);
+  lines->add_vertices(2, 6);
+  lines->add_vertices(3, 7);
+
+  PT(Geom) geom1 = new Geom(vdata);
+  geom1->add_primitive(tris);
+
+  PT(Geom) geom2 = new Geom(vdata);
+  geom2->add_primitive(lines);
+
+  _viz_geom->add_geom(geom1, get_solid_viz_state());
+  _viz_geom->add_geom(geom2, get_wireframe_viz_state());
+
+  _bounds_viz_geom->add_geom(geom1, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(geom2, get_wireframe_viz_state());
+}
+
+/**
+ * Determine the point(s) of intersection of a parametric line with the box.
+ * The line is infinite in both directions, and passes through "from" and
+ * from+delta.  If the line does not intersect the box, the function returns
+ * false, and t1 and t2 are undefined.  If it does intersect the box, it
+ * returns true, and t1 and t2 are set to the points along the equation
+ * from+t*delta that correspond to the two points of intersection.
+ */
+bool CollisionBox::
+intersects_line(double &t1, double &t2,
+                const LPoint3 &from, const LVector3 &delta,
+                PN_stdfloat inflate_size) const {
+
+  LPoint3 bmin = _min - LVector3(inflate_size);
+  LPoint3 bmax = _max + LVector3(inflate_size);
+
+  double tmin = -DBL_MAX;
+  double tmax = DBL_MAX;
+
+  for (int i = 0; i < 3; ++i) {
+    PN_stdfloat d = delta[i];
+    if (!IS_NEARLY_ZERO(d)) {
+      double tmin2 = (bmin[i] - from[i]) / d;
+      double tmax2 = (bmax[i] - from[i]) / d;
+      if (tmin2 > tmax2) {
+        std::swap(tmin2, tmax2);
+      }
+      tmin = std::max(tmin, tmin2);
+      tmax = std::min(tmax, tmax2);
+
+      if (tmin > tmax) {
+        return false;
+      }
+
+    } else if (from[i] < bmin[i] || from[i] > bmax[i]) {
+      // The line is entirely parallel in this dimension.
+      return false;
+    }
+  }
+
+  t1 = tmin;
+  t2 = tmax;
+  return true;
 }
 
 /**
@@ -846,13 +1104,13 @@ apply_clip_plane(CollisionBox::Points &new_points,
       LPlane plane = plane_node->get_plane() * new_transform->get_mat();
       if (first_plane) {
         first_plane = false;
-        if (!clip_polygon(new_points, _points[plane_no], plane, plane_no)) {
+        if (!clip_polygon(new_points, _points[plane_no], 4, plane, plane_no)) {
           all_in = false;
         }
       } else {
         Points last_points;
         last_points.swap(new_points);
-        if (!clip_polygon(new_points, last_points, plane, plane_no)) {
+        if (!clip_polygon(new_points, last_points.data(), last_points.size(), plane, plane_no)) {
           all_in = false;
         }
       }
@@ -875,10 +1133,10 @@ apply_clip_plane(CollisionBox::Points &new_points,
  */
 bool CollisionBox::
 clip_polygon(CollisionBox::Points &new_points,
-             const CollisionBox::Points &source_points,
+             const PointDef *source_points, size_t num_source_points,
              const LPlane &plane, int plane_no) const {
   new_points.clear();
-  if (source_points.empty()) {
+  if (num_source_points == 0) {
     return true;
   }
 
@@ -890,7 +1148,7 @@ clip_polygon(CollisionBox::Points &new_points,
     if (plane.dist_to_plane(get_plane(plane_no).get_point()) < 0.0) {
       // A point within the polygon is behind the clipping plane: the polygon
       // is all in.
-      new_points = source_points;
+      new_points.insert(new_points.end(), source_points, source_points + num_source_points);
       return true;
     }
     return false;
@@ -911,14 +1169,13 @@ clip_polygon(CollisionBox::Points &new_points,
   // We might increase the number of vertices by as many as 1, if the plane
   // clips off exactly one corner.  (We might also decrease the number of
   // vertices, or keep them the same number.)
-  new_points.reserve(source_points.size() + 1);
+  new_points.reserve(num_source_points + 1);
 
-  LPoint2 last_point = source_points.back()._p;
+  LPoint2 last_point = source_points[num_source_points - 1]._p;
   bool last_is_in = !is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  Points::const_iterator pi;
-  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    const LPoint2 &this_point = (*pi)._p;
+  for (size_t pi = 0; pi < num_source_points; ++pi) {
+    const LPoint2 &this_point = source_points[pi]._p;
     bool this_is_in = !is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to extract this
@@ -951,15 +1208,13 @@ clip_polygon(CollisionBox::Points &new_points,
   return all_in;
 }
 
-
 /**
  * Returns the linear distance from the 2-d point to the nearest part of the
  * polygon defined by the points vector.  The result is negative if the point
  * is within the polygon.
  */
 PN_stdfloat CollisionBox::
-dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
-
+dist_to_polygon(const LPoint2 &p, const PointDef *points, size_t num_points) const {
   // We know that that the polygon is convex and is defined with the points in
   // counterclockwise order.  Therefore, we simply compare the signed distance
   // to each line segment; we ignore any negative values, and take the minimum
@@ -971,10 +1226,9 @@ dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
   bool got_dist = false;
   PN_stdfloat best_dist = -1.0f;
 
-  size_t num_points = points.size();
   for (size_t i = 0; i < num_points - 1; ++i) {
     PN_stdfloat d = dist_to_line_segment(p, points[i]._p, points[i + 1]._p,
-                                   points[i]._v);
+                                         points[i]._v);
     if (d >= 0.0f) {
       if (!got_dist || d < best_dist) {
         best_dist = d;
@@ -984,7 +1238,7 @@ dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
   }
 
   PN_stdfloat d = dist_to_line_segment(p, points[num_points - 1]._p, points[0]._p,
-                                 points[num_points - 1]._v);
+                                       points[num_points - 1]._v);
   if (d >= 0.0f) {
     if (!got_dist || d < best_dist) {
       best_dist = d;
@@ -1167,10 +1421,14 @@ write_datagram(BamWriter *manager, Datagram &me) {
   for(int i=0; i < 8; i++) {
     _vertex[i].write_datagram(me);
   }
-  me.add_stdfloat(_radius);
-  me.add_stdfloat(_x);
-  me.add_stdfloat(_y);
-  me.add_stdfloat(_z);
+  PN_stdfloat x = _vertex[0].get_x() - _center.get_x();
+  PN_stdfloat y = _vertex[0].get_y() - _center.get_y();
+  PN_stdfloat z = _vertex[0].get_z() - _center.get_z();
+  PN_stdfloat radius = sqrt(x * x + y * y + z * z);
+  me.add_stdfloat(radius);
+  me.add_stdfloat(x);
+  me.add_stdfloat(y);
+  me.add_stdfloat(z);
   for(int i=0; i < 6; i++) {
     _planes[i].write_datagram(me);
   }
@@ -1178,8 +1436,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
     _to_2d_mat[i].write_datagram(me);
   }
   for(int i=0; i < 6; i++) {
-    me.add_uint16(_points[i].size());
-    for (size_t j = 0; j < _points[i].size(); j++) {
+    me.add_uint16(4);
+    for (size_t j = 0; j < 4; j++) {
       _points[i][j]._p.write_datagram(me);
       _points[i][j]._v.write_datagram(me);
     }
@@ -1214,10 +1472,10 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   for(int i=0; i < 8; i++) {
     _vertex[i].read_datagram(scan);
   }
-  _radius = scan.get_stdfloat();
-  _x = scan.get_stdfloat();
-  _y = scan.get_stdfloat();
-  _z = scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
   for(int i=0; i < 6; i++) {
     _planes[i].read_datagram(scan);
   }
@@ -1226,12 +1484,10 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   }
   for(int i=0; i < 6; i++) {
     size_t size = scan.get_uint16();
+    nassertv(size == 4);
     for (size_t j = 0; j < size; j++) {
-      LPoint2 p;
-      LVector2 v;
-      p.read_datagram(scan);
-      v.read_datagram(scan);
-      _points[i].push_back(PointDef(p, v));
+      _points[i][j]._p.read_datagram(scan);
+      _points[i][j]._v.read_datagram(scan);
     }
   }
 }

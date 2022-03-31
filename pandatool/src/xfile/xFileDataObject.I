@@ -55,7 +55,7 @@ operator = (double double_value) {
  * value.
  */
 INLINE void XFileDataObject::
-operator = (const string &string_value) {
+operator = (const std::string &string_value) {
   set(string_value);
 }
 
@@ -125,7 +125,7 @@ set(double double_value) {
  * value.
  */
 INLINE void XFileDataObject::
-set(const string &string_value) {
+set(const std::string &string_value) {
   set_string_value(string_value);
 }
 
@@ -194,7 +194,7 @@ d() const {
  * string if the object has no string representation.  See also get_data_def()
  * to determine what kind of representation this object has.
  */
-INLINE string XFileDataObject::
+INLINE std::string XFileDataObject::
 s() const {
   return get_string_value();
 }
@@ -258,7 +258,7 @@ size() const {
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (int n) const {
   const XFileDataObject *element = ((XFileDataObject *)this)->get_element(n);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -268,9 +268,9 @@ operator [] (int n) const {
  * doubt.
  */
 INLINE const XFileDataObject &XFileDataObject::
-operator [] (const string &name) const {
+operator [] (const std::string &name) const {
   const XFileDataObject *element = ((XFileDataObject *)this)->get_element(name);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -281,7 +281,7 @@ operator [] (const string &name) const {
 INLINE XFileDataObject &XFileDataObject::
 operator [] (int n) {
   XFileDataObject *element = get_element(n);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -291,14 +291,14 @@ operator [] (int n) {
  * doubt.
  */
 INLINE XFileDataObject &XFileDataObject::
-operator [] (const string &name) {
+operator [] (const std::string &name) {
   XFileDataObject *element = get_element(name);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
-INLINE ostream &
-operator << (ostream &out, const XFileDataObject &data_object) {
+INLINE std::ostream &
+operator << (std::ostream &out, const XFileDataObject &data_object) {
   data_object.output_data(out);
   return out;
 }

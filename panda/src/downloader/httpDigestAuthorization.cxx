@@ -16,10 +16,15 @@
 #ifdef HAVE_OPENSSL
 
 #include "httpChannel.h"
+#include "string_utils.h"
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
-#include "openssl/md5.h"
+#include <openssl/ssl.h>
+#include <openssl/md5.h>
 #include <time.h>
+
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 const string HTTPDigestAuthorization::_mechanism = "digest";
 
@@ -46,7 +51,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
   _algorithm = A_md5;
   ti = tokens.find("algorithm");
   if (ti != tokens.end()) {
-    string algo_str = HTTPChannel::downcase((*ti).second);
+    string algo_str = downcase((*ti).second);
     if (algo_str == "md5") {
       _algorithm = A_md5;
     } else if (algo_str == "md5-sess") {
@@ -59,7 +64,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
   _qop = 0;
   ti = tokens.find("qop");
   if (ti != tokens.end()) {
-    string qop_str = HTTPChannel::downcase((*ti).second);
+    string qop_str = downcase((*ti).second);
     // A comma-delimited list of tokens.
 
     size_t p = 0;
@@ -86,7 +91,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
 
   // Compute an arbitrary client nonce.
   ostringstream strm;
-  strm << time(NULL) << ":" << clock() << ":"
+  strm << time(nullptr) << ":" << clock() << ":"
        << url.get_url() << ":Panda";
 
   _cnonce = calc_md5(strm.str());
@@ -277,7 +282,7 @@ get_a2(HTTPEnum::Method method, const string &request_path,
 string HTTPDigestAuthorization::
 get_hex_nonce_count() const {
   ostringstream strm;
-  strm << hex << setfill('0') << setw(8) << _nonce_count;
+  strm << std::hex << std::setfill('0') << std::setw(8) << _nonce_count;
   return strm.str();
 }
 

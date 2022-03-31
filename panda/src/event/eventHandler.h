@@ -23,6 +23,10 @@
 #include "pset.h"
 #include "pmap.h"
 
+#ifndef CPPPARSER
+#include <functional>
+#endif
+
 class EventQueue;
 
 /**
@@ -40,33 +44,40 @@ public:
   typedef void EventFunction(const Event *);
   typedef void EventCallbackFunction(const Event *, void *);
 
+#ifdef CPPPARSER
+  typedef EventFunction EventLambda;
+#else
+  typedef std::function<void (const Event *)> EventLambda;
+#endif
+
 PUBLISHED:
   explicit EventHandler(EventQueue *ev_queue);
   ~EventHandler() {}
 
-  AsyncFuture *get_future(const string &event_name);
+  AsyncFuture *get_future(const std::string &event_name);
 
   void process_events();
 
   virtual void dispatch_event(const Event *event);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
-  INLINE static EventHandler *get_global_event_handler(EventQueue *queue = NULL);
+  INLINE static EventHandler *get_global_event_handler(EventQueue *queue = nullptr);
 
 public:
-  bool add_hook(const string &event_name, EventFunction *function);
-  bool add_hook(const string &event_name, EventCallbackFunction *function,
+  bool add_hook(const std::string &event_name, EventFunction *function);
+  bool add_hook(const std::string &event_name, EventCallbackFunction *function,
                 void *data);
-  bool has_hook(const string &event_name) const;
-  bool has_hook(const string &event_name, EventFunction *function) const;
-  bool has_hook(const string &event_name, EventCallbackFunction *function,
+  void add_hook(const std::string &event_name, EventLambda function);
+  bool has_hook(const std::string &event_name) const;
+  bool has_hook(const std::string &event_name, EventFunction *function) const;
+  bool has_hook(const std::string &event_name, EventCallbackFunction *function,
                 void *data) const;
-  bool remove_hook(const string &event_name, EventFunction *function);
-  bool remove_hook(const string &event_name, EventCallbackFunction *function,
+  bool remove_hook(const std::string &event_name, EventFunction *function);
+  bool remove_hook(const std::string &event_name, EventCallbackFunction *function,
                    void *data);
 
-  bool remove_hooks(const string &event_name);
+  bool remove_hooks(const std::string &event_name);
   bool remove_hooks_with(void *data);
 
   void remove_all_hooks();
@@ -74,14 +85,17 @@ public:
 protected:
 
   typedef pset<EventFunction *> Functions;
-  typedef pmap<string, Functions> Hooks;
-  typedef pair<EventCallbackFunction*, void*> CallbackFunction;
+  typedef pmap<std::string, Functions> Hooks;
+  typedef std::pair<EventCallbackFunction*, void*> CallbackFunction;
   typedef pset<CallbackFunction> CallbackFunctions;
-  typedef pmap<string, CallbackFunctions> CallbackHooks;
-  typedef pmap<string, PT(AsyncFuture)> Futures;
+  typedef pmap<std::string, CallbackFunctions> CallbackHooks;
+  typedef pvector<EventLambda> LambdaFunctions;
+  typedef pmap<std::string, LambdaFunctions> LambdaHooks;
+  typedef pmap<std::string, PT(AsyncFuture)> Futures;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;
+  LambdaHooks _lambdahooks;
   Futures _futures;
   EventQueue &_queue;
 
@@ -89,8 +103,8 @@ protected:
   static void make_global_event_handler();
 
 private:
-  void write_hook(ostream &out, const Hooks::value_type &hook) const;
-  void write_cbhook(ostream &out, const CallbackHooks::value_type &hook) const;
+  void write_hook(std::ostream &out, const Hooks::value_type &hook) const;
+  void write_cbhook(std::ostream &out, const CallbackHooks::value_type &hook) const;
 
 
 public:

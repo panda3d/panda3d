@@ -116,7 +116,7 @@ PUBLISHED:
   MAKE_PROPERTY(color, get_color);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -168,8 +168,8 @@ private:
   static int _attrib_slot;
 };
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Mode mode);
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, ColorBlendAttrib::Operand operand);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, ColorBlendAttrib::Mode mode);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, ColorBlendAttrib::Operand operand);
 
 #include "colorBlendAttrib.I"
 

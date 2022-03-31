@@ -39,7 +39,7 @@ operator = (const GraphicsThreadingModel &copy) {
 /**
  * Returns the name of the thread that will handle culling in this model.
  */
-INLINE const string &GraphicsThreadingModel::
+INLINE const std::string &GraphicsThreadingModel::
 get_cull_name() const {
   return _cull_name;
 }
@@ -50,7 +50,7 @@ get_cull_name() const {
  * this only has an effect on newly-opened windows.
  */
 INLINE void GraphicsThreadingModel::
-set_cull_name(const string &cull_name) {
+set_cull_name(const std::string &cull_name) {
   _cull_name = cull_name;
   update_stages();
 }
@@ -69,7 +69,7 @@ get_cull_stage() const {
  * Returns the name of the thread that will handle sending the actual graphics
  * primitives to the graphics API in this model.
  */
-INLINE const string &GraphicsThreadingModel::
+INLINE const std::string &GraphicsThreadingModel::
 get_draw_name() const {
   return _draw_name;
 }
@@ -80,7 +80,7 @@ get_draw_name() const {
  * this only has an effect on newly-opened windows.
  */
 INLINE void GraphicsThreadingModel::
-set_draw_name(const string &draw_name) {
+set_draw_name(const std::string &draw_name) {
   _draw_name = draw_name;
   update_stages();
 }
@@ -140,12 +140,12 @@ is_default() const {
  *
  */
 INLINE void GraphicsThreadingModel::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_model();
 }
 
-INLINE ostream &
-operator << (ostream &out, const GraphicsThreadingModel &threading_model) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GraphicsThreadingModel &threading_model) {
   threading_model.output(out);
   return out;
 }

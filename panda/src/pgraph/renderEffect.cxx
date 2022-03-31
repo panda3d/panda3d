@@ -16,7 +16,7 @@
 #include "indent.h"
 #include "config_pgraph.h"
 
-RenderEffect::Effects *RenderEffect::_effects = NULL;
+RenderEffect::Effects *RenderEffect::_effects = nullptr;
 TypeHandle RenderEffect::_type_handle;
 
 /**
@@ -24,7 +24,7 @@ TypeHandle RenderEffect::_type_handle;
  */
 RenderEffect::
 RenderEffect() {
-  if (_effects == (Effects *)NULL) {
+  if (_effects == nullptr) {
     // Make sure the global _effects map is allocated.  This only has to be
     // done once.  We could make this map static, but then we run into
     // problems if anyone creates a RenderState object at static init time; it
@@ -33,22 +33,6 @@ RenderEffect() {
     _effects = new Effects;
   }
   _saved_entry = _effects->end();
-}
-
-/**
- * RenderEffects are not meant to be copied.
- */
-RenderEffect::
-RenderEffect(const RenderEffect &) {
-  nassertv(false);
-}
-
-/**
- * RenderEffects are not meant to be copied.
- */
-void RenderEffect::
-operator = (const RenderEffect &) {
-  nassertv(false);
 }
 
 /**
@@ -167,7 +151,7 @@ adjust_transform(CPT(TransformState) &, CPT(TransformState) &,
  *
  */
 void RenderEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -175,7 +159,7 @@ output(ostream &out) const {
  *
  */
 void RenderEffect::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
@@ -185,7 +169,7 @@ write(ostream &out, int indent_level) const {
  */
 int RenderEffect::
 get_num_effects() {
-  if (_effects == (Effects *)NULL) {
+  if (_effects == nullptr) {
     return 0;
   }
   return _effects->size();
@@ -197,7 +181,7 @@ get_num_effects() {
  * prepared.
  */
 void RenderEffect::
-list_effects(ostream &out) {
+list_effects(std::ostream &out) {
   out << _effects->size() << " effects:\n";
   Effects::const_iterator si;
   for (si = _effects->begin(); si != _effects->end(); ++si) {
@@ -247,7 +231,7 @@ validate_effects() {
  */
 CPT(RenderEffect) RenderEffect::
 return_new(RenderEffect *effect) {
-  nassertr(effect != (RenderEffect *)NULL, effect);
+  nassertr(effect != nullptr, effect);
 
   // This should be a newly allocated pointer, not one that was used for
   // anything else.
@@ -263,7 +247,7 @@ return_new(RenderEffect *effect) {
   // of this function if no one else uses it.
   CPT(RenderEffect) pt_effect = effect;
 
-  pair<Effects::iterator, bool> result = _effects->insert(effect);
+  std::pair<Effects::iterator, bool> result = _effects->insert(effect);
   if (result.second) {
     // The effect was inserted; save the iterator and return the input effect.
     effect->_saved_entry = result.first;

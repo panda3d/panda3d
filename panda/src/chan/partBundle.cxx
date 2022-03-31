@@ -31,6 +31,10 @@
 
 #include <algorithm>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle PartBundle::_type_handle;
 
 
@@ -85,13 +89,13 @@ make_copy() const {
  */
 void PartBundle::
 merge_anim_preloads(const PartBundle *other) {
-  if (other->_anim_preload == (AnimPreloadTable *)NULL ||
+  if (other->_anim_preload == nullptr ||
       _anim_preload == other->_anim_preload) {
     // No-op.
     return;
   }
 
-  if (_anim_preload == (AnimPreloadTable *)NULL) {
+  if (_anim_preload == nullptr) {
     // Trivial case.
     _anim_preload = other->_anim_preload;
     return;
@@ -128,7 +132,7 @@ set_anim_blend_flag(bool anim_blend_flag) {
       // eliminate all the AnimControls other than the most-recently-added
       // one.
 
-      nassertv(cdataw->_last_control_set != NULL);
+      nassertv(cdataw->_last_control_set != nullptr);
       clear_and_stop_intersecting(cdataw->_last_control_set, cdataw);
     }
 
@@ -150,10 +154,11 @@ apply_transform(const TransformState *transform) {
 
   AppliedTransforms::iterator ati = _applied_transforms.find(transform);
   if (ati != _applied_transforms.end()) {
-    if ((*ati).first.is_valid_pointer() &&
-        (*ati).second.is_valid_pointer()) {
-      // Here's our cached result.
-      return (*ati).second.p();
+    if ((*ati).first.is_valid_pointer()) {
+      if (auto new_bundle = (*ati).second.lock()) {
+        // Here's our cached result.
+        return new_bundle;
+      }
     }
   }
 
@@ -196,7 +201,6 @@ clear_control_effects() {
   if (!cdata->_blend.empty()) {
     CDWriter cdataw(_cycler, cdata);
     cdataw->_blend.clear();
-    cdataw->_net_blend = 0.0f;
     cdataw->_anim_changed = true;
     determine_effective_channels(cdataw);
   }
@@ -247,7 +251,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
     return control;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -275,7 +279,7 @@ PT(AnimControl) PartBundle::
 load_bind_anim(Loader *loader, const Filename &filename,
                int hierarchy_match_flags, const PartSubset &subset,
                bool allow_async) {
-  nassertr(loader != (Loader *)NULL, NULL);
+  nassertr(loader != nullptr, nullptr);
 
   LoaderOptions anim_options(LoaderOptions::LF_search |
                              LoaderOptions::LF_report_errors |
@@ -284,7 +288,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
 
   int anim_index = -1;
   CPT(AnimPreloadTable) anim_preload = _anim_preload.get_read_pointer();
-  if (anim_preload != (AnimPreloadTable *)NULL) {
+  if (anim_preload != nullptr) {
     anim_index = anim_preload->find_anim(basename);
   }
 
@@ -293,19 +297,19 @@ load_bind_anim(Loader *loader, const Filename &filename,
     // Therefore, perform an ordinary synchronous load-and-bind.
 
     PT(PandaNode) model = loader->load_sync(filename, anim_options);
-    if (model == (PandaNode *)NULL) {
+    if (model == nullptr) {
       // Couldn't load the file.
-      return NULL;
+      return nullptr;
     }
     AnimBundle *anim = AnimBundleNode::find_anim_bundle(model);
-    if (anim == (AnimBundle *)NULL) {
+    if (anim == nullptr) {
       // No anim bundle.
-      return NULL;
+      return nullptr;
     }
     PT(AnimControl) control = bind_anim(anim, hierarchy_match_flags, subset);
-    if (control == (AnimControl *)NULL) {
+    if (control == nullptr) {
       // Couldn't bind.
-      return NULL;
+      return nullptr;
     }
     control->set_anim_model(model);
     return control;
@@ -366,7 +370,7 @@ wait_pending() {
 bool PartBundle::
 freeze_joint(const string &joint_name, const TransformState *transform) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)NULL) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -387,7 +391,7 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
 bool PartBundle::
 freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)NULL) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -408,7 +412,7 @@ freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hp
 bool PartBundle::
 freeze_joint(const string &joint_name, PN_stdfloat value) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)NULL) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -430,7 +434,7 @@ freeze_joint(const string &joint_name, PN_stdfloat value) {
 bool PartBundle::
 control_joint(const string &joint_name, PandaNode *node) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)NULL) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -451,7 +455,7 @@ control_joint(const string &joint_name, PandaNode *node) {
 bool PartBundle::
 release_joint(const string &joint_name) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)NULL) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -479,7 +483,7 @@ update() {
     bool anim_changed = cdata->_anim_changed;
     bool frame_blend_flag = cdata->_frame_blend_flag;
 
-    any_changed = do_update(this, cdata, NULL, false, anim_changed,
+    any_changed = do_update(this, cdata, nullptr, false, anim_changed,
                             current_thread);
 
     // Now update all the controls for next time.
@@ -504,7 +508,7 @@ bool PartBundle::
 force_update() {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, false, current_thread);
-  bool any_changed = do_update(this, cdata, NULL, true, true, current_thread);
+  bool any_changed = do_update(this, cdata, nullptr, true, true, current_thread);
 
   // Now update all the controls for next time.
   ChannelBlend::const_iterator cbi;
@@ -540,6 +544,31 @@ control_activated(AnimControl *control) {
 }
 
 /**
+ * Called by the AnimControl when it destructs.  This needs to remove the
+ * AnimControl pointer from all pipeline stages.
+ */
+void PartBundle::
+control_removed(AnimControl *control) {
+  nassertv(control->get_part() == this);
+
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    ChannelBlend::iterator cbi = cdata->_blend.find(control);
+    if (cbi != cdata->_blend.end()) {
+      cdata->_blend.erase(cbi);
+      cdata->_anim_changed = true;
+
+      // We need to make sure that any _effective_channel pointers that point
+      // to this control are cleared.
+      if (pipeline_stage == 0) {
+        determine_effective_channels(cdata);
+      }
+    }
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
+}
+
+/**
  * The internal implementation of bind_anim(), this receives a pointer to an
  * uninitialized AnimControl and fills it in if the bind is successful.
  * Returns true if successful, false otherwise.
@@ -566,9 +595,13 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
     }
   }
 
-  if (!check_hierarchy(anim, NULL, hierarchy_match_flags)) {
+  if (!check_hierarchy(anim, nullptr, hierarchy_match_flags)) {
     return false;
   }
+
+  // Grabbing the lock early prevents any other thread in stage 0 from also
+  // trying to modify the channel list at the same time.
+  CDLockedReader cdata(_cycler);
 
   plist<int> holes;
   int channel_index = 0;
@@ -587,7 +620,6 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
                  subset.is_include_empty(), bound_joints, subset);
   control->setup_anim(this, anim, channel_index, bound_joints);
 
-  CDReader cdata(_cycler);
   determine_effective_channels(cdata);
 
   return true;
@@ -647,7 +679,7 @@ do_set_control_effect(AnimControl *control, PN_stdfloat effect, CData *cdata) {
     cdata->_last_control_set = control;
   }
 
-  recompute_net_blend(cdata);
+  determine_effective_channels(cdata);
 }
 
 /**
@@ -666,23 +698,6 @@ do_get_control_effect(AnimControl *control, const CData *cdata) const {
   }
 }
 
-
-/**
- * Recomputes the total blending amount after a control effect has been
- * adjusted.  This value must be kept up-to-date so we can normalize the
- * blending amounts.
- */
-void PartBundle::
-recompute_net_blend(CData *cdata) {
-  cdata->_net_blend = 0.0f;
-
-  ChannelBlend::const_iterator bti;
-  for (bti = cdata->_blend.begin(); bti != cdata->_blend.end(); ++bti) {
-    cdata->_net_blend += (*bti).second;
-  }
-  determine_effective_channels(cdata);
-}
-
 /**
  * Removes and stops all the currently activated AnimControls that animate
  * some joints also animated by the indicated AnimControl.  This is a special
@@ -691,7 +706,6 @@ recompute_net_blend(CData *cdata) {
  */
 void PartBundle::
 clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
-  double new_net_blend = 0.0f;
   ChannelBlend new_blend;
   bool any_changed = false;
 
@@ -703,7 +717,6 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
       // Save this control--it's either the target control, or it has no
       // joints in common with the target control.
       new_blend.insert(new_blend.end(), (*cbi));
-      new_net_blend += (*cbi).second;
     } else {
       // Remove and stop this control.
       ac->stop();
@@ -712,7 +725,6 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
   }
 
   if (any_changed) {
-    cdata->_net_blend = new_net_blend;
     cdata->_blend.swap(new_blend);
     cdata->_anim_changed = true;
     determine_effective_channels(cdata);
@@ -728,7 +740,7 @@ void PartBundle::
 finalize(BamReader *) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true);
-  do_update(this, cdata, NULL, true, true, current_thread);
+  do_update(this, cdata, nullptr, true, true, current_thread);
 }
 
 /**
@@ -808,8 +820,7 @@ CData() {
   _anim_blend_flag = false;
   _frame_blend_flag = interpolate_frames;
   _root_xform = LMatrix4::ident_mat();
-  _last_control_set = NULL;
-  _net_blend = 0.0f;
+  _last_control_set = nullptr;
   _anim_changed = false;
   _last_update = 0.0;
 }
@@ -825,7 +836,6 @@ CData(const PartBundle::CData &copy) :
   _root_xform(copy._root_xform),
   _last_control_set(copy._last_control_set),
   _blend(copy._blend),
-  _net_blend(copy._net_blend),
   _anim_changed(copy._anim_changed),
   _last_update(copy._last_update)
 {

@@ -12,15 +12,19 @@
  */
 
 #include "physicalNode.h"
+#include "physicsManager.h"
+#include "patomic.h"
 
 // static stuff.
+static patomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;
+
 TypeHandle PhysicalNode::_type_handle;
 
 /**
  * default constructor
  */
 PhysicalNode::
-PhysicalNode(const string &name) :
+PhysicalNode(const std::string &name) :
   PandaNode(name)
 {
 }
@@ -38,13 +42,12 @@ PhysicalNode(const PhysicalNode &copy) :
  */
 PhysicalNode::
 ~PhysicalNode() {
-  PhysicalsVector::iterator it;
-  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
-    Physical *physical = *it;
-    nassertd(physical->_physical_node == this) continue;
-    physical->_physical_node = nullptr;
-    if (physical->_physics_manager != nullptr) {
-      physical->_physics_manager->remove_physical(physical);
+  for (Physical *physical : _physicals) {
+    if (physical->_physical_node == this) {
+      physical->_physical_node = nullptr;
+      if (physical->_physics_manager != nullptr) {
+        physical->_physics_manager->remove_physical(physical);
+      }
     }
   }
 }
@@ -54,6 +57,13 @@ PhysicalNode::
  */
 PandaNode *PhysicalNode::
 make_copy() const {
+  LightMutexHolder holder(_lock);
+  if (!_physicals.empty() && !warned_copy_physical_node.test_and_set()) {
+    // This is a problem, because a Physical can only be on one PhysicalNode.
+    //FIXME: Figure out a solution.
+    physics_cat.warning()
+      << "Detected attempt to copy PhysicalNode object with physicals.\n";
+  }
   return new PhysicalNode(*this);
 }
 
@@ -62,13 +72,13 @@ make_copy() const {
  */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
-  pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
-
+  LightMutexHolder holder(_lock);
+  size_t num_physicals = _physicals.size();
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
 
-  for (; last != _physicals.end(); last++) {
-    (*last)->_physical_node = this;
+  for (size_t i = num_physicals; i < _physicals.size(); ++i) {
+    _physicals[i]->_physical_node = this;
   }
 }
 
@@ -77,6 +87,7 @@ add_physicals_from(const PhysicalNode &other) {
  */
 void PhysicalNode::
 set_physical(size_t index, Physical *physical) {
+  LightMutexHolder holder(_lock);
   nassertv(index < _physicals.size());
 
   _physicals[index]->_physical_node = nullptr;
@@ -89,6 +100,7 @@ set_physical(size_t index, Physical *physical) {
  */
 void PhysicalNode::
 insert_physical(size_t index, Physical *physical) {
+  LightMutexHolder holder(_lock);
   if (index > _physicals.size()) {
     index = _physicals.size();
   }
@@ -102,6 +114,7 @@ insert_physical(size_t index, Physical *physical) {
  */
 void PhysicalNode::
 remove_physical(Physical *physical) {
+  LightMutexHolder holder(_lock);
   pvector< PT(Physical) >::iterator found;
   PT(Physical) ptp = physical;
   found = find(_physicals.begin(), _physicals.end(), ptp);
@@ -119,11 +132,12 @@ remove_physical(Physical *physical) {
  */
 void PhysicalNode::
 remove_physical(size_t index) {
+  LightMutexHolder holder(_lock);
   nassertv(index <= _physicals.size());
 
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
-  (*remove)->_physical_node = (PhysicalNode *) NULL;
+  (*remove)->_physical_node = nullptr;
 
   _physicals.erase(remove);
 }
@@ -132,7 +146,7 @@ remove_physical(size_t index) {
  * Write a string representation of this instance to <out>.
  */
 void PhysicalNode::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PhysicalNode:\n";
   // PandaNode::write(out, indent+2);

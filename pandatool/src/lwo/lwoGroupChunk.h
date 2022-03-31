@@ -35,7 +35,7 @@ public:
 protected:
   bool read_chunks_iff(IffInputFile *in, size_t stop_at);
   bool read_subchunks_iff(IffInputFile *in, size_t stop_at);
-  void write_chunks(ostream &out, int indent_level) const;
+  void write_chunks(std::ostream &out, int indent_level) const;
 
   typedef pvector< PT(IffChunk) > Chunks;
   Chunks _chunks;

@@ -28,7 +28,7 @@ class VirtualFileSystem;
  * VirtualFileSystem.  Normally users don't need to monkey with this class
  * directly.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedReferenceCount {
+class EXPCL_PANDA_EXPRESS VirtualFileMount : public TypedReferenceCount {
 PUBLISHED:
   INLINE VirtualFileMount();
   virtual ~VirtualFileMount();
@@ -54,37 +54,37 @@ public:
   virtual bool is_writable(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
-                         pvector<unsigned char> &result) const;
+                         vector_uchar &result) const;
   virtual bool write_file(const Filename &file, bool do_compress,
                           const unsigned char *data, size_t data_size);
 
-  virtual istream *open_read_file(const Filename &file) const=0;
-  istream *open_read_file(const Filename &file, bool do_uncompress) const;
-  virtual void close_read_file(istream *stream) const;
+  virtual std::istream *open_read_file(const Filename &file) const=0;
+  std::istream *open_read_file(const Filename &file, bool do_uncompress) const;
+  virtual void close_read_file(std::istream *stream) const;
 
-  virtual ostream *open_write_file(const Filename &file, bool truncate);
-  ostream *open_write_file(const Filename &file, bool do_compress, bool truncate);
-  virtual ostream *open_append_file(const Filename &file);
-  virtual void close_write_file(ostream *stream);
+  virtual std::ostream *open_write_file(const Filename &file, bool truncate);
+  std::ostream *open_write_file(const Filename &file, bool do_compress, bool truncate);
+  virtual std::ostream *open_append_file(const Filename &file);
+  virtual void close_write_file(std::ostream *stream);
 
-  virtual iostream *open_read_write_file(const Filename &file, bool truncate);
-  virtual iostream *open_read_append_file(const Filename &file);
-  virtual void close_read_write_file(iostream *stream);
+  virtual std::iostream *open_read_write_file(const Filename &file, bool truncate);
+  virtual std::iostream *open_read_append_file(const Filename &file);
+  virtual void close_read_write_file(std::iostream *stream);
 
-  virtual streamsize get_file_size(const Filename &file, istream *stream) const=0;
-  virtual streamsize get_file_size(const Filename &file) const=0;
+  virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const=0;
+  virtual std::streamsize get_file_size(const Filename &file) const=0;
   virtual time_t get_timestamp(const Filename &file) const=0;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const=0;
 
-  virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);
-  virtual bool atomic_read_contents(const Filename &file, string &contents) const;
+  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_read_contents(const Filename &file, std::string &contents) const;
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 protected:
   VirtualFileSystem *_file_system;
@@ -112,7 +112,7 @@ private:
   friend class VirtualFileSystem;
 };
 
-INLINE ostream &operator << (ostream &out, const VirtualFileMount &mount);
+INLINE std::ostream &operator << (std::ostream &out, const VirtualFileMount &mount);
 
 #include "virtualFileMount.I"
 

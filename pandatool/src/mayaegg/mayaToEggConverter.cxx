@@ -76,6 +76,9 @@
 #include <maya/MSelectionList.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 
 /**
  *
@@ -537,7 +540,7 @@ convert_maya() {
 bool MayaToEggConverter::
 open_api(bool revert_directory) {
 
-  if (_maya == (MayaApi *)NULL || !_maya->is_valid()) {
+  if (_maya == nullptr || !_maya->is_valid()) {
     // maya to egg converter only needs a read license.  only egg2maya need
     // write lisences.
     _maya = MayaApi::open_api(_program_name, true, revert_directory);
@@ -591,7 +594,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   while (frame <= frame_stop) {
     mayaegg_cat.info(false)
       << "frame " << frame.value() << "\n";
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "frame" << frame.value();
     EggGroup *frame_root = new EggGroup(name_strm.str());
     sequence_node->add_child(frame_root);
@@ -653,7 +656,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 
   // Set the frame rate before we start asking for anim tables to be created.
   _tree._fps = output_frame_rate;
-  _tree.clear_egg(get_egg_data(), NULL, skeleton_node, morph_node);
+  _tree.clear_egg(get_egg_data(), nullptr, skeleton_node, morph_node);
 
   // Now we can get the animation data by walking through all of the frames,
   // one at a time, and getting the joint angles at each frame.
@@ -675,7 +678,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     } else {
       // We have to write to cerr instead of mayaegg_cat to allow flushing
       // without writing a newline.
-      cerr << "." << flush;
+      std::cerr << "." << std::flush;
     }
     MGlobal::viewFrame(frame);
 
@@ -758,7 +761,7 @@ convert_hierarchy(EggGroupNode *egg_root) {
   if (_legacy_shader) {
     mayaegg_cat.info() << "will disable modern Phong shader path. using legacy" << endl;
   }
-  _tree.clear_egg(get_egg_data(), egg_root, NULL, NULL);
+  _tree.clear_egg(get_egg_data(), egg_root, nullptr, nullptr);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
     if (!process_model_node(node)) {
@@ -835,12 +838,14 @@ process_model_node(MayaNodeDesc *node_desc) {
       // Extract some interesting Camera data
       if (mayaegg_cat.is_spam()) {
         MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+        MVector upDirection = camera.upDirection(MSpace::kWorld);
+        MVector viewDirection = camera.viewDirection(MSpace::kWorld);
         mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " "
                            << eyePoint.y << " " << eyePoint.z << endl;
-        mayaegg_cat.spam() << "  upDirection: "
-                           << camera.upDirection(MSpace::kWorld) << endl;
-        mayaegg_cat.spam() << "  viewDirection: "
-                           << camera.viewDirection(MSpace::kWorld) << endl;
+        mayaegg_cat.spam() << "  upDirection: " << upDirection.x << " "
+                           << upDirection.y << " " << upDirection.z << endl;
+        mayaegg_cat.spam() << "  viewDirection: " << viewDirection.x << " "
+                           << viewDirection.y << " " << viewDirection.z << endl;
         mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
         mayaegg_cat.spam() << "  horizontalFilmAperture: "
                            << camera.horizontalFilmAperture() << endl;
@@ -919,9 +924,12 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.error() << "light extraction failed" << endl;
       return false;
     }
-    mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
 
-    mayaegg_cat.info() << "\"" << dag_path.partialPathName() << "\" : \n";
+    if (mayaegg_cat.is_info()) {
+      MString name = dag_path.partialPathName();
+      mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
+      mayaegg_cat.info() << "\"" << name.asChar() << "\" : \n";
+    }
 
     // Get the translationrotationscale data
     MObject transformNode = dag_path.transform(&status);
@@ -1489,7 +1497,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                     EggNurbsCurve *egg_curve =
                       make_trim_curve(curve, name, egg_group, trim_curve_index);
                     trim_curve_index++;
-                    if (egg_curve != (EggNurbsCurve *)NULL) {
+                    if (egg_curve != nullptr) {
                       egg_loop.push_back(egg_curve);
                     }
                   }
@@ -1509,7 +1517,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   // trim curves have been added.
   egg_group->add_child(egg_nurbs);
 
-  if (shader != (MayaShader *)NULL) {
+  if (shader != nullptr) {
     set_shader_attributes(*egg_nurbs, *shader);
   }
 
@@ -1542,7 +1550,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         PN_stdfloat weight = weights[maya_vi * num_joints + ji];
         if (weight != 0.0f) {
           EggGroup *joint = joints[ji];
-          if (joint != (EggGroup *)NULL) {
+          if (joint != nullptr) {
             joint->ref_vertex(vert, weight);
           }
         }
@@ -1581,13 +1589,13 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
   status = curve.getCVs(cv_array, MSpace::kWorld);
   if (!status) {
     status.perror("MFnNurbsCurve::getCVs");
-    return (EggNurbsCurve *)NULL;
+    return nullptr;
   }
   MDoubleArray knot_array;
   status = curve.getKnots(knot_array);
   if (!status) {
     status.perror("MFnNurbsCurve::getKnots");
-    return (EggNurbsCurve *)NULL;
+    return nullptr;
   }
 
   /*
@@ -1713,7 +1721,7 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
     }
   }
   MayaShader *shader = _shaders.find_shader_for_node(curve.object(), _legacy_shader);
-  if (shader != (MayaShader *)NULL) {
+  if (shader != nullptr) {
     set_shader_attributes(*egg_curve, *shader);
   }
 }
@@ -1838,7 +1846,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // be two diverging paths for any Maya node with a Material (MayaShader)
     // on it This next bit kicks us out into mayaShader et al.  to pull
     // textures and everything else.
-    MayaShader *shader = NULL;
+    MayaShader *shader = nullptr;
     int index = pi.index();
     nassertv(index >= 0 && index < (int)poly_shader_indices.length());
     int shader_index = poly_shader_indices[index];
@@ -1850,14 +1858,14 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         _shaders.find_shader_for_shading_engine(engine, _legacy_shader); //head out to the other classes
       // does this mean if we didn't find a Maya shader give it a default
       // value anyway?
-    } else if (default_shader != (MayaShader *)NULL) {
+    } else if (default_shader != nullptr) {
       shader = default_shader;
     }
 
-    const MayaShaderColorDef *default_color_def = NULL;
+    const MayaShaderColorDef *default_color_def = nullptr;
 
     // And apply the shader properties to the polygon.
-    if (shader != (MayaShader *)NULL) {
+    if (shader != nullptr) {
       set_shader_attributes(*egg_poly, *shader, true);
       default_color_def = shader->get_color_def();
     }
@@ -1874,7 +1882,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // Furthermore, if _always_show_vertex_color is true, we pretend that the
     // "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
-    if ( default_color_def != (MayaShaderColorDef *)NULL) {
+    if ( default_color_def != nullptr) {
       ignore_vertex_color = default_color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
@@ -1891,7 +1899,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     long i;
     LPoint3d centroid(0.0, 0.0, 0.0);
 
-    if (default_color_def != (MayaShaderColorDef *)NULL && default_color_def->has_projection()) {
+    if (default_color_def != nullptr && default_color_def->has_projection()) {
       // If the shader has a projection, we may need to compute the polygon's
       // centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
@@ -1922,7 +1930,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
       // Go thru all the texture references for this primitive and set uvs
       if (mayaegg_cat.is_spam()) {
-        if (shader != (MayaShader *)NULL) {
+        if (shader != nullptr) {
           mayaegg_cat.spam() << "shader->_color.size is " << shader->_color.size() << endl;
         }
         mayaegg_cat.spam() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
@@ -1946,7 +1954,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         bool project_uv = false;
         LTexCoordd uv_projection;
 
-        if (shader != (MayaShader *)NULL) {
+        if (shader != nullptr) {
           for (size_t tj = 0; tj < shader->_all_maps.size(); ++tj) {
             MayaShaderColorDef *def = shader->_all_maps[tj];
             if (def->_uvset_name == uvset_name) {
@@ -2082,7 +2090,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         PN_stdfloat weight = weights[maya_vi * num_joints + ji];
         if (weight != 0.0f) {
           EggGroup *joint = joints[ji];
-          if (joint != (EggGroup *)NULL) {
+          if (joint != nullptr) {
             joint->ref_vertex(vert, weight);
           }
         }
@@ -2614,7 +2622,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
 
   // determine if the base texture or any of the top texture need to be rgb
   // only
-  MayaShaderColorDef *color_def = NULL;
+  MayaShaderColorDef *color_def = nullptr;
   bool is_rgb = false;
   bool is_decal = false;
   bool is_interpolate = false;
@@ -2644,7 +2652,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
     is_decal = false;
 
   // new decal mode needs an extra dummy layers of textureStage
-  EggTexture *dummy_tex = (EggTexture *)NULL;
+  EggTexture *dummy_tex = nullptr;
   string dummy_uvset_name;
 
   // In Maya, a polygon is either textured or colored.  The texture, if
@@ -2734,7 +2742,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
           // shader on the list is the base one, which should always pick up
           // the alpha from the texture file.  But the top textures may have
           // to strip the alpha
-          if (i!=shader._color.size()-1) {
+          if ((size_t)i != shader._color.size() - 1) {
             if (!i && is_interpolate) {
               // this is the grass path mode where alpha on this texture
               // determines whether to show layer1 or layer2. Since by now
@@ -2838,7 +2846,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         _textures.create_unique_texture(tex, ~0);
 
       if (mesh) {
-        if (uvset_name.find("not found") == -1) {
+        if (uvset_name.find("not found") == string::npos) {
           primitive.add_texture(new_tex);
           color_def->_uvset_name.assign(uvset_name.c_str());
           if (uvset_name != "map1") {
@@ -2856,7 +2864,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
       }
     }
   }
-  if (dummy_tex != (EggTexture *)NULL) {
+  if (dummy_tex != nullptr) {
     primitive.add_texture(dummy_tex);
     dummy_tex->set_uv_name(dummy_uvset_name);
   }
@@ -3052,7 +3060,7 @@ reparent_decals(EggGroupNode *egg_parent) {
 
   // First, walk through all children of this node, looking for the one decal
   // base, if any.
-  EggGroup *decal_base = (EggGroup *)NULL;
+  EggGroup *decal_base = nullptr;
   pvector<EggGroup *> decal_children;
 
   EggGroupNode::iterator ci;
@@ -3061,7 +3069,7 @@ reparent_decals(EggGroupNode *egg_parent) {
     if (child->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, child);
       if (child_group->has_object_type("decalbase")) {
-        if (decal_base != (EggNode *)NULL) {
+        if (decal_base != nullptr) {
           mayaegg_cat.error()
             << "Two children of " << egg_parent->get_name()
             << " both have decalbase set: " << decal_base->get_name()
@@ -3078,7 +3086,7 @@ reparent_decals(EggGroupNode *egg_parent) {
     }
   }
 
-  if (decal_base == (EggGroup *)NULL) {
+  if (decal_base == nullptr) {
     if (!decal_children.empty()) {
       mayaegg_cat.warning()
         << decal_children.front()->get_name()
@@ -3146,7 +3154,7 @@ string_transform_type(const string &arg) {
  */
 void MayaToEggConverter::
 set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color) {
-    if (shader == (MayaShader *)NULL || shader->_legacy_mode) {
+    if (shader == nullptr || shader->_legacy_mode) {
       set_vertex_color_legacy(vert, pi, vert_index, shader, color);
     } else {
       set_vertex_color_modern(vert, pi, vert_index, shader, color);

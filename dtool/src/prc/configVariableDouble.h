@@ -21,14 +21,14 @@
  * This is a convenience class to specialize ConfigVariable as a floating-
  * point type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableDouble : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableDouble(const string &name);
-  INLINE ConfigVariableDouble(const string &name, double default_value,
-                              const string &description = string(),
+  INLINE ConfigVariableDouble(const std::string &name);
+  INLINE ConfigVariableDouble(const std::string &name, double default_value,
+                              const std::string &description = std::string(),
                               int flags = 0);
-  INLINE ConfigVariableDouble(const string &name, const string &default_value,
-                              const string &description = string(),
+  INLINE ConfigVariableDouble(const std::string &name, const std::string &default_value,
+                              const std::string &description = std::string(),
                               int flags = 0);
 
   INLINE void operator = (double value);
@@ -45,6 +45,8 @@ PUBLISHED:
 
   INLINE double get_word(size_t n) const;
   INLINE void set_word(size_t n, double value);
+
+  INLINE bool __bool__() const;
 
 private:
   void set_default_value(double default_value);

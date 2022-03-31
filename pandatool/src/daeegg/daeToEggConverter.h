@@ -23,15 +23,15 @@
 #include "eggNurbsCurve.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDTransform.h"
-#include "FCDocument/FCDEntityInstance.h"
-#include "FCDocument/FCDControllerInstance.h"
-#include "FCDocument/FCDGeometryMesh.h"
-#include "FCDocument/FCDGeometrySpline.h"
-#include "FCDocument/FCDMaterial.h"
-#include "FMath/FMMatrix44.h"
+#include <FCollada.h>
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDTransform.h>
+#include <FCDocument/FCDEntityInstance.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDGeometryMesh.h>
+#include <FCDocument/FCDGeometrySpline.h>
+#include <FCDocument/FCDMaterial.h>
+#include <FMath/FMMatrix44.h>
 
 #include "daeMaterials.h"
 #include "daeCharacter.h"
@@ -49,8 +49,8 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
 
   virtual bool convert_file(const Filename &filename);
   virtual DistanceUnit get_input_units();
@@ -58,7 +58,7 @@ public:
   bool _invert_transparency;
 
 private:
-  string _unit_name;
+  std::string _unit_name;
   double _unit_meters;
   PT(EggTable) _table;
   FCDocument* _document;
@@ -72,8 +72,8 @@ private:
   void process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced = false);
   void process_instance(EggGroup *parent, const FCDEntityInstance* instance);
   void process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
-                    DaeMaterials *materials, DaeCharacter *character = NULL);
-  void process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geometry_spline);
+                    DaeMaterials *materials, DaeCharacter *character = nullptr);
+  void process_spline(EggGroup *parent, const std::string group_name, FCDGeometrySpline* geometry_spline);
   void process_spline(EggGroup *parent, const FCDSpline* spline);
   void process_controller(EggGroup *parent, const FCDControllerInstance* instance);
   void process_extra(EggGroup *group, const FCDExtra* extra);

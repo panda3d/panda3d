@@ -24,6 +24,6 @@ enum CPPVisibility {
   V_unknown
 };
 
-ostream &operator << (ostream &out, CPPVisibility vis);
+std::ostream &operator << (std::ostream &out, CPPVisibility vis);
 
 #endif

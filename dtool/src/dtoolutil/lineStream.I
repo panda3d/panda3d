@@ -15,7 +15,7 @@
  *
  */
 INLINE LineStream::
-LineStream() : ostream(&_lsb) {
+LineStream() : std::ostream(&_lsb) {
 }
 
 /**
@@ -34,7 +34,7 @@ is_text_available() const {
  * has_newline() to determine whether or not there was an explicit newline
  * character written following this line.
  */
-INLINE string LineStream::
+INLINE std::string LineStream::
 get_line() {
   return _lsb.get_line();
 }

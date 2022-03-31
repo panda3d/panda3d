@@ -23,10 +23,10 @@
 #include "pvector.h"
 #include "pStatCollector.h"
 
-class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM GeomParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   explicit GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
-                                PandaNode *geom_node = (PandaNode *) NULL);
+                                PandaNode *geom_node = nullptr);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
   virtual ~GeomParticleRenderer();
 
@@ -57,9 +57,9 @@ PUBLISHED:
 public:
   virtual BaseParticleRenderer *make_copy();
 
-  virtual void output(ostream &out) const;
-  virtual void write_linear_forces(ostream &out, int indent=0) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_linear_forces(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PT(PandaNode) _geom_node;

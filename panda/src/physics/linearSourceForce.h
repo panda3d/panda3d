@@ -19,7 +19,7 @@
 /**
  * Repellant force.
  */
-class EXPCL_PANDAPHYSICS LinearSourceForce : public LinearDistanceForce {
+class EXPCL_PANDA_PHYSICS LinearSourceForce : public LinearDistanceForce {
 PUBLISHED:
   explicit LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
                              PN_stdfloat a = 1.0f, bool mass = true);
@@ -27,8 +27,8 @@ PUBLISHED:
   LinearSourceForce(const LinearSourceForce &copy);
   virtual ~LinearSourceForce();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   virtual LVector3 get_child_vector(const PhysicsObject *po);

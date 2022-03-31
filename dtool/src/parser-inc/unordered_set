@@ -24,6 +24,7 @@
 #include <pair>
 #include <initializer_list>
 #include <functional>
+#include <memory>
 
 namespace std {
 
@@ -46,7 +47,7 @@ namespace std {
     typedef typename allocator_type::const_reference  const_reference;
     typedef size_t size_type;
     typedef std::ptrdiff_t difference_type;
-   
+
     class iterator;
     class const_iterator;
     class local_iterator;

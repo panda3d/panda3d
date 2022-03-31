@@ -22,6 +22,10 @@
 #include "configVariableEnum.h"
 #include "config_pgraph.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle RescaleNormalAttrib::_type_handle;
 int RescaleNormalAttrib::_attrib_slot;
 CPT(RenderAttrib) RescaleNormalAttrib::_attribs[RescaleNormalAttrib::M_auto + 1];

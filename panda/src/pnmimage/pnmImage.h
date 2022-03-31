@@ -58,9 +58,9 @@ class PNMFileType;
 class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
-  explicit PNMImage(const Filename &filename, PNMFileType *type = NULL);
+  explicit PNMImage(const Filename &filename, PNMFileType *type = nullptr);
   INLINE explicit PNMImage(int x_size, int y_size, int num_channels = 3,
-                           xelval maxval = 255, PNMFileType *type = NULL,
+                           xelval maxval = 255, PNMFileType *type = nullptr,
                            ColorSpace color_space = CS_linear);
   INLINE PNMImage(const PNMImage &copy);
   INLINE void operator = (const PNMImage &copy);
@@ -68,14 +68,16 @@ PUBLISHED:
   INLINE ~PNMImage();
 
   INLINE xelval clamp_val(int input_value) const;
+  INLINE xel to_val(const LRGBColorf &input_value) const;
   INLINE xelval to_val(float input_value) const;
   INLINE xelval to_alpha_val(float input_value) const;
+  INLINE LRGBColorf from_val(const xel &input_value) const;
   INLINE float from_val(xelval input_value) const;
   INLINE float from_alpha_val(xelval input_value) const;
 
   void clear();
   void clear(int x_size, int y_size, int num_channels = 3,
-             xelval maxval = 255, PNMFileType *type = NULL,
+             xelval maxval = 255, PNMFileType *type = nullptr,
              ColorSpace color_space = CS_linear);
 
   void copy_from(const PNMImage &copy);
@@ -100,16 +102,16 @@ PUBLISHED:
   INLINE int get_read_y_size() const;
   INLINE ColorSpace get_color_space() const;
 
-  BLOCKING bool read(const Filename &filename, PNMFileType *type = NULL,
+  BLOCKING bool read(const Filename &filename, PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
-  BLOCKING bool read(istream &data, const string &filename = string(),
-                     PNMFileType *type = NULL,
+  BLOCKING bool read(std::istream &data, const std::string &filename = std::string(),
+                     PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
   BLOCKING bool read(PNMReader *reader);
 
-  BLOCKING bool write(const Filename &filename, PNMFileType *type = NULL) const;
-  BLOCKING bool write(ostream &data, const string &filename = string(),
-                      PNMFileType *type = NULL) const;
+  BLOCKING bool write(const Filename &filename, PNMFileType *type = nullptr) const;
+  BLOCKING bool write(std::ostream &data, const std::string &filename = std::string(),
+                      PNMFileType *type = nullptr) const;
   BLOCKING bool write(PNMWriter *writer) const;
 
   INLINE bool is_valid() const;
@@ -254,8 +256,10 @@ PUBLISHED:
                                   int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
+  void quantize(size_t max_colors);
   BLOCKING void perlin_noise_fill(float sx, float sy, int table_size = 256,
-                                  unsigned long seed = 0);
+                                  unsigned long seed = 0,
+                                  float ox = 0, float oy = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
   void remix_channels(const LMatrix4 &conv);
@@ -345,6 +349,9 @@ private:
 
   void setup_rc();
   void setup_encoding();
+
+  void r_quantize(pmap<xel, xel> &color_map, size_t max_colors,
+                  xel *colors, size_t num_colors);
 
 PUBLISHED:
   PNMImage operator ~() const;

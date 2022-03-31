@@ -41,7 +41,7 @@ get_composition_cache() const {
     PyObject *a, *b;
 
     const TransformState *source = _this->_composition_cache.get_key(si);
-    if (source == (TransformState *)NULL) {
+    if (source == nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -50,7 +50,7 @@ get_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_composition_cache.get_data(si)._result;
-    if (result == (TransformState *)NULL) {
+    if (result == nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -96,7 +96,7 @@ get_invert_composition_cache() const {
     PyObject *a, *b;
 
     const TransformState *source = _this->_invert_composition_cache.get_key(si);
-    if (source == (TransformState *)NULL) {
+    if (source == nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -105,7 +105,7 @@ get_invert_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_invert_composition_cache.get_data(si)._result;
-    if (result == (TransformState *)NULL) {
+    if (result == nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -132,18 +132,15 @@ get_invert_composition_cache() const {
 PyObject *Extension<TransformState>::
 get_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
-  if (TransformState::_states == (TransformState::States *)NULL) {
-    return PyList_New(0);
-  }
   LightReMutexHolder holder(*TransformState::_states_lock);
 
-  size_t num_states = TransformState::_states->get_num_entries();
+  size_t num_states = TransformState::_states.get_num_entries();
   PyObject *list = PyList_New(num_states);
   size_t i = 0;
 
-  size_t size = TransformState::_states->get_num_entries();
+  size_t size = TransformState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const TransformState *state = TransformState::_states->get_key(si);
+    const TransformState *state = TransformState::_states.get_key(si);
     state->ref();
     PyObject *a =
       DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState,
@@ -163,15 +160,12 @@ get_states() {
 PyObject *Extension<TransformState>::
 get_unused_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
-  if (TransformState::_states == (TransformState::States *)NULL) {
-    return PyList_New(0);
-  }
   LightReMutexHolder holder(*TransformState::_states_lock);
 
   PyObject *list = PyList_New(0);
-  size_t size = TransformState::_states->get_num_entries();
+  size_t size = TransformState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const TransformState *state = TransformState::_states->get_key(si);
+    const TransformState *state = TransformState::_states.get_key(si);
     if (state->get_cache_ref_count() == state->get_ref_count()) {
       state->ref();
       PyObject *a =

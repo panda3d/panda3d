@@ -19,7 +19,7 @@
  *
  */
 DCKeyword::
-DCKeyword(const string &name, int historical_flag) :
+DCKeyword(const std::string &name, int historical_flag) :
   _name(name),
   _historical_flag(historical_flag)
 {
@@ -35,7 +35,7 @@ DCKeyword::
 /**
  * Returns the name of this keyword.
  */
-const string &DCKeyword::
+const std::string &DCKeyword::
 get_name() const {
   return _name;
 }
@@ -64,7 +64,7 @@ clear_historical_flag() {
  * Write a string representation of this instance to <out>.
  */
 void DCKeyword::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   out << "keyword " << _name;
 }
 
@@ -72,7 +72,7 @@ output(ostream &out, bool brief) const {
  *
  */
 void DCKeyword::
-write(ostream &out, bool, int indent_level) const {
+write(std::ostream &out, bool, int indent_level) const {
   indent(out, indent_level)
     << "keyword " << _name << ";\n";
 }

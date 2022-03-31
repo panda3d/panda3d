@@ -52,7 +52,7 @@ public:
   virtual PT(Lens) make_copy() const;
   virtual bool is_linear() const;
 
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   virtual void do_compute_projection_mat(Lens::CData *lens_cdata);

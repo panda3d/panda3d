@@ -58,7 +58,7 @@ extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
  */
 void Extension<ShaderInput>::
 __init__(CPT_InternalName name, PyObject *value, int priority) {
-  _this->_name = move(name);
+  _this->_name = std::move(name);
   _this->_priority = priority;
 
   if (PyTuple_CheckExact(value) && PyTuple_GET_SIZE(value) <= 4) {
@@ -261,14 +261,6 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
     _this->_stored_ptr = vec;
     _this->_stored_vector = vec;
 
-#if PY_MAJOR_VERSION < 3
-  } else if (PyInt_Check(value)) {
-    LVecBase4i vec((int)PyInt_AS_LONG(value), 0, 0, 0);
-    _this->_type = ShaderInput::M_numeric;
-    _this->_stored_ptr = vec;
-    _this->_stored_vector.set((PN_stdfloat)vec[0], 0, 0, 0);
-#endif
-
   } else if (PyLong_Check(value)) {
     LVecBase4i vec((int)PyLong_AsLong(value), 0, 0, 0);
     _this->_type = ShaderInput::M_numeric;
@@ -282,7 +274,7 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
       return;
     }
 
-    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(value);
+    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(fast);
     if (num_items <= 0) {
       // We can't determine the type of a list of size 0.
       _this->_type = ShaderInput::M_numeric;

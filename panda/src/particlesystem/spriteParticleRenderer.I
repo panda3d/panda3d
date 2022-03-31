@@ -21,7 +21,7 @@
  */
 INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex, PN_stdfloat texels_per_unit) {
-  if (tex != (Texture *)NULL) {
+  if (tex != nullptr) {
     // Clear all texture information
     _anims.clear();
 
@@ -46,8 +46,8 @@ add_texture(Texture *tex, PN_stdfloat texels_per_unit, bool resize) {
   if (_anims.size() == 0) {
     set_texture(tex, texels_per_unit);
   } else {
-    if(tex != (Texture *)NULL) {
-      if (tex != (Texture *)NULL) {
+    if(tex != nullptr) {
+      if (tex != nullptr) {
         _anims.push_back(new SpriteAnim(tex,LTexCoord(0.0f, 0.0f),LTexCoord(1.0f, 1.0f)));
       }
       if(resize) {
@@ -269,9 +269,9 @@ get_texture() const {
 INLINE Texture *SpriteParticleRenderer::
 get_texture(const int anim, const int frame) const {
   if(_anims.size() == 0) {
-    return (Texture*)NULL;
+    return nullptr;
   }
-  nassertr(anim < (int)_anims.size() && anim >= 0, (Texture*)NULL);
+  nassertr(anim < (int)_anims.size() && anim >= 0, nullptr);
   nassertr(frame < (int)_anims[anim]->get_num_frames() && frame >= 0,_anims[anim]->get_frame(0));
   return _anims[anim]->get_frame(frame);
 }
@@ -283,7 +283,7 @@ get_num_anims() const {
 
 INLINE SpriteAnim *SpriteParticleRenderer::
 get_anim(const int n) const {
-  nassertr(n < (int)_anims.size(), (SpriteAnim*)NULL);
+  nassertr(n < (int)_anims.size(), nullptr);
   return _anims[n];
 }
 
@@ -292,7 +292,7 @@ get_last_anim() const {
   if (_anims.size()) {
     return *(_anims.end()-1);
   } else {
-    return (SpriteAnim *)NULL;
+    return nullptr;
   }
 }
 

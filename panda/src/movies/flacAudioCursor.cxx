@@ -25,8 +25,8 @@ extern "C" {
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */
 static size_t cb_read_proc(void *user, void *buffer, size_t size) {
-  istream *stream = (istream *)user;
-  nassertr(stream != NULL, false);
+  std::istream *stream = (std::istream *)user;
+  nassertr(stream != nullptr, false);
 
   stream->read((char *)buffer, size);
 
@@ -42,10 +42,10 @@ static size_t cb_read_proc(void *user, void *buffer, size_t size) {
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */
 static bool cb_seek_proc(void *user, int offset) {
-  istream *stream = (istream *)user;
-  nassertr(stream != NULL, false);
+  std::istream *stream = (std::istream *)user;
+  nassertr(stream != nullptr, false);
 
-  stream->seekg(offset, ios::cur);
+  stream->seekg(offset, std::ios::cur);
   return !stream->fail();
 }
 
@@ -56,17 +56,18 @@ TypeHandle FlacAudioCursor::_type_handle;
  * pointer positioned at the start of the data.
  */
 FlacAudioCursor::
-FlacAudioCursor(FlacAudio *src, istream *stream) :
+FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
-  _drflac(NULL)
+  _drflac(nullptr),
+  _stream(stream)
 {
-  nassertv(stream != NULL);
+  nassertv(stream != nullptr);
   nassertv(stream->good());
 
   _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream);
 
-  if (_drflac == NULL) {
+  if (_drflac == nullptr) {
     movies_cat.error()
       << "Failed to open FLAC file.\n";
     _is_valid = false;
@@ -88,8 +89,11 @@ FlacAudioCursor(FlacAudio *src, istream *stream) :
  */
 FlacAudioCursor::
 ~FlacAudioCursor() {
-  if (_drflac != NULL) {
+  if (_drflac != nullptr) {
     drflac_close(_drflac);
+  }
+  if (_stream != nullptr) {
+    VirtualFileSystem::close_read_file(_stream);
   }
 }
 
@@ -99,7 +103,7 @@ FlacAudioCursor::
  */
 void FlacAudioCursor::
 seek(double t) {
-  t = max(t, 0.0);
+  t = std::max(t, 0.0);
 
   uint64_t sample = t * _drflac->sampleRate;
 
@@ -114,8 +118,10 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FlacAudioCursor::
+int FlacAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
-  _samples_read += drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  _samples_read += n;
+  return n;
 }

@@ -24,11 +24,11 @@
  * put OS-specific filenames, or filenames based on environment variables, in
  * the prc file.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableFilename : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableFilename(const string &name);
-  INLINE ConfigVariableFilename(const string &name, const Filename &default_value,
-                                const string &description = string(), int flags = 0);
+  INLINE ConfigVariableFilename(const std::string &name);
+  INLINE ConfigVariableFilename(const std::string &name, const Filename &default_value,
+                                const std::string &description = std::string(), int flags = 0);
 
   INLINE void operator = (const Filename &value);
   INLINE operator const Filename &() const;
@@ -39,12 +39,12 @@ PUBLISHED:
   INLINE size_t length() const;
   INLINE char operator [] (size_t n) const;
 
-  INLINE string get_fullpath() const;
-  INLINE string get_dirname() const;
-  INLINE string get_basename() const;
-  INLINE string get_fullpath_wo_extension() const;
-  INLINE string get_basename_wo_extension() const;
-  INLINE string get_extension() const;
+  INLINE std::string get_fullpath() const;
+  INLINE std::string get_dirname() const;
+  INLINE std::string get_basename() const;
+  INLINE std::string get_fullpath_wo_extension() const;
+  INLINE std::string get_basename_wo_extension() const;
+  INLINE std::string get_extension() const;
 
   // Comparison operators are handy.
   INLINE bool operator == (const Filename &other) const;
@@ -59,6 +59,8 @@ PUBLISHED:
 
   INLINE Filename get_word(size_t n) const;
   INLINE void set_word(size_t n, const Filename &value);
+
+  INLINE bool __bool__() const;
 
 private:
   void reload_cache();

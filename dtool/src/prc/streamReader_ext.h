@@ -29,9 +29,9 @@
 template<>
 class Extension<StreamReader> : public ExtensionBase<StreamReader> {
 public:
-  BLOCKING PyObject *extract_bytes(size_t size);
-  BLOCKING PyObject *readline();
-  BLOCKING PyObject *readlines();
+  PyObject *extract_bytes(size_t size);
+  PyObject *readline();
+  PyObject *readlines();
 };
 
 #endif  // HAVE_PYTHON

@@ -25,22 +25,25 @@ extern "C" {
 class FlacAudio;
 
 /**
- * Interfaces with the libvorbisfile library to implement decoding of Ogg
- * Vorbis audio files.
+ * Implements decoding of FLAC audio files.
+ *
+ * @see FlacAudio
+ * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  explicit FlacAudioCursor(FlacAudio *src, istream *stream);
+  explicit FlacAudioCursor(FlacAudio *src, std::istream *stream);
   virtual ~FlacAudioCursor();
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
   bool _is_valid;
 
 protected:
   drflac *_drflac;
+  std::istream *_stream;
 
 public:
   static TypeHandle get_class_type() {

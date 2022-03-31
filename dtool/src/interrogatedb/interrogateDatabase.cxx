@@ -16,7 +16,10 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
-InterrogateDatabase *InterrogateDatabase::_global_ptr = NULL;
+using std::map;
+using std::string;
+
+InterrogateDatabase *InterrogateDatabase::_global_ptr = nullptr;
 int InterrogateDatabase::_file_major_version = 0;
 int InterrogateDatabase::_file_minor_version = 0;
 int InterrogateDatabase::_current_major_version = 3;
@@ -37,7 +40,7 @@ InterrogateDatabase() {
  */
 InterrogateDatabase *InterrogateDatabase::
 get_ptr() {
-  if (_global_ptr == (InterrogateDatabase *)NULL) {
+  if (_global_ptr == nullptr) {
     if (interrogatedb_cat->is_debug()) {
       interrogatedb_cat->debug()
         << "Creating interrogate database\n";
@@ -56,7 +59,7 @@ get_ptr() {
 void InterrogateDatabase::
 request_module(InterrogateModuleDef *def) {
   if (interrogatedb_cat->is_debug()) {
-    if (def->library_name == (const char *)NULL) {
+    if (def->library_name == nullptr) {
       interrogatedb_cat->debug()
         << "Got interrogate data for anonymous module\n";
     } else {
@@ -78,13 +81,13 @@ request_module(InterrogateModuleDef *def) {
     _modules.push_back(def);
   }
 
-  if (def->num_unique_names > 0 && def->library_name != (const char *)NULL) {
+  if (def->num_unique_names > 0 && def->library_name != nullptr) {
     // Define a lookup by hash for this module, mainly so we can look up
     // functions by their unique names.
     _modules_by_hash[def->library_hash_name] = def;
   }
 
-  if (def->database_filename != (const char *)NULL) {
+  if (def->database_filename != nullptr) {
     _requests.push_back(def);
   }
 }
@@ -361,7 +364,7 @@ get_fptr(FunctionWrapperIndex wrapper) {
       return def->fptrs[module_index];
     }
   }
-  return (void *)NULL;
+  return nullptr;
 }
 
 /**
@@ -734,7 +737,7 @@ remap_indices(int first_index, IndexRemapper &remap) {
  * Writes the database to the indicated stream for later reading.
  */
 void InterrogateDatabase::
-write(ostream &out, InterrogateModuleDef *def) const {
+write(std::ostream &out, InterrogateModuleDef *def) const {
   // Write out the file header.
   out << def->file_identifier << "\n"
       << _current_major_version << " " << _current_minor_version << "\n";
@@ -793,7 +796,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
  * Returns true if the file is read successfully, false if there is an error.
  */
 bool InterrogateDatabase::
-read(istream &in, InterrogateModuleDef *def) {
+read(std::istream &in, InterrogateModuleDef *def) {
   InterrogateDatabase temp;
   if (!temp.read_new(in, def)) {
     return false;
@@ -830,7 +833,7 @@ load_latest() {
   for (ri = copy_requests.begin(); ri != copy_requests.end(); ++ri) {
     InterrogateModuleDef *def = (*ri);
 
-    if (def->database_filename != (char *)NULL) {
+    if (def->database_filename != nullptr) {
       Filename filename = def->database_filename;
       Filename pathname = filename;
       if (!pathname.empty() && pathname[0] != '/') {
@@ -899,7 +902,7 @@ load_latest() {
  * already has some data in it.
  */
 bool InterrogateDatabase::
-read_new(istream &in, InterrogateModuleDef *def) {
+read_new(std::istream &in, InterrogateModuleDef *def) {
   // We've already read the header.  Read the module definition.
   idf_input_string(in, def->library_name);
   idf_input_string(in, def->library_hash_name);

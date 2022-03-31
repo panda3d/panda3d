@@ -108,7 +108,7 @@ bool GeomTransformer::
 transform_vertices(Geom *geom, const LMatrix4 &mat) {
   PStatTimer timer(_apply_vertex_collector);
 
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
   SourceVertices sv;
   sv._mat = mat;
   sv._vertex_data = geom->get_vertex_data();
@@ -151,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = move(new_geom);
+        entry._geom = std::move(new_geom);
         any_changed = true;
       }
     }
@@ -175,7 +175,7 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
                     InternalName *to_name, const LMatrix4 &mat) {
   PStatTimer timer(_apply_texcoord_collector);
 
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
 
   SourceTexCoords st;
   st._mat = mat;
@@ -271,9 +271,14 @@ set_color(Geom *geom, const LColor &color) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
       new_data._vdata = sc._vertex_data->set_color(color);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       new_data._vdata = sc._vertex_data->set_color
         (color, 1, Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      new_data._vdata = sc._vertex_data->set_color
+        (color, 4, Geom::NT_uint8, Geom::C_color);
     }
   }
 
@@ -319,7 +324,7 @@ bool GeomTransformer::
 transform_colors(Geom *geom, const LVecBase4 &scale) {
   PStatTimer timer(_apply_scale_color_collector);
 
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
 
   SourceColors sc;
   sc._color = scale;
@@ -330,9 +335,14 @@ transform_colors(Geom *geom, const LVecBase4 &scale) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
       new_data._vdata = sc._vertex_data->scale_color(scale);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       new_data._vdata = sc._vertex_data->set_color
         (scale, 1, Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      new_data._vdata = sc._vertex_data->set_color
+        (scale, 4, Geom::NT_uint8, Geom::C_color);
     }
   }
 
@@ -384,10 +394,10 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                      bool keep_vertex_color) {
   PStatTimer timer(_apply_texture_color_collector);
 
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
 
   PT(TexturePeeker) peeker = tex->peek();
-  if (peeker == (TexturePeeker *)NULL) {
+  if (peeker == nullptr) {
     return false;
   }
 
@@ -411,7 +421,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
 
   bool got_mat = false;
   LMatrix4 mat = LMatrix4::ident_mat();
-  if (tma != (TexMatrixAttrib *)NULL && tma->has_stage(ts)) {
+  if (tma != nullptr && tma->has_stage(ts)) {
     mat = tma->get_mat(ts);
     got_mat = !mat.almost_equal(LMatrix4::ident_mat());
   }
@@ -468,17 +478,23 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     // Make sure the vdata has a color column.
     if (stc._vertex_data->has_column(InternalName::get_color())) {
       vdata = new GeomVertexData(*stc._vertex_data);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       // Create a color column where there wasn't one before.
       vdata = new GeomVertexData(*stc._vertex_data->set_color
                                  (LColor(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
+      keep_vertex_color = false;
+    }
+    else {
+      vdata = new GeomVertexData(*stc._vertex_data->set_color
+                                 (LColor(1.0f, 1.0f, 1.0f, 1.0f), 4, Geom::NT_uint8, Geom::C_color));
       keep_vertex_color = false;
     }
 
     // Check whether it has 2-d or 3-d texture coordinates.
     bool tex3d = false;
     const GeomVertexColumn *column = vdata->get_format()->get_column(ts->get_texcoord_name());
-    if (column == (GeomVertexColumn *)NULL) {
+    if (column == nullptr) {
       return false;
     }
     if (column->get_num_components() >= 3) {
@@ -585,7 +601,7 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
     CPT(RenderState) geom_state = state->compose(entry._state);
 
     const TextureAttrib *ta = DCAST(TextureAttrib, geom_state->get_attrib(TextureAttrib::get_class_slot()));
-    if (ta != (TextureAttrib *)NULL) {
+    if (ta != nullptr) {
       CPT(TextureAttrib) ta2 = ta->filter_to_max(1);
       if (ta2->get_num_on_stages() > 0) {
         TextureStage *ts = ta2->get_on_stage(0);
@@ -595,7 +611,7 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
         const ColorAttrib *ca = DCAST(ColorAttrib, geom_state->get_attrib(ColorAttrib::get_class_slot()));
         LColor base_color(1.0f, 1.0f, 1.0f, 1.0f);
         bool keep_vertex_color = true;
-        if (ca != (ColorAttrib *)NULL && ca->get_color_type() == ColorAttrib::T_flat) {
+        if (ca != nullptr && ca->get_color_type() == ColorAttrib::T_flat) {
           base_color = ca->get_color();
           keep_vertex_color = false;
         }
@@ -659,7 +675,7 @@ bool GeomTransformer::
 set_format(Geom *geom, const GeomVertexFormat *new_format) {
   PStatTimer timer(_apply_set_format_collector);
 
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
 
   SourceFormat sf;
   sf._format = new_format;
@@ -742,7 +758,6 @@ make_compatible_state(GeomNode *node) {
   }
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::GeomList::iterator gi;
   PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
 
   // For each geom, calculate a canonicalized RenderState, and classify all
@@ -819,7 +834,7 @@ make_compatible_state(GeomNode *node) {
  */
 bool GeomTransformer::
 reverse_normals(Geom *geom) {
-  nassertr(geom != (Geom *)NULL, false);
+  nassertr(geom != nullptr, false);
   CPT(GeomVertexData) orig_data = geom->get_vertex_data();
   NewVertexData &new_data = _reversed_normals[orig_data];
   if (new_data._vdata.is_null()) {
@@ -1047,7 +1062,7 @@ collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
 int GeomTransformer::
 collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
   int num_adjusted = 0;
-  GeomTransformer *dynamic = NULL;
+  GeomTransformer *dynamic = nullptr;
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
@@ -1061,7 +1076,7 @@ collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
         new_geom->get_vertex_data()->get_usage_hint() < Geom::UH_static) {
       // This one has some dynamic properties.  Collect it independently of
       // the outside world.
-      if (dynamic == (GeomTransformer *)NULL) {
+      if (dynamic == nullptr) {
         dynamic = new GeomTransformer(*this);
       }
       num_adjusted += dynamic->collect_vertex_data(new_geom, collect_bits, format_only);
@@ -1071,7 +1086,7 @@ collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
     }
   }
 
-  if (dynamic != (GeomTransformer *)NULL) {
+  if (dynamic != nullptr) {
     num_adjusted += dynamic->finish_collect(format_only);
     delete dynamic;
   }
@@ -1222,7 +1237,7 @@ apply_collect_changes() {
 
   nassertr(vertex_offset == _num_vertices, 0);
 
-  if (_new_btable != (TransformBlendTable *)NULL) {
+  if (_new_btable != nullptr) {
     _new_btable->set_rows(_new_btable_rows);
     _new_data->set_transform_blend_table(_new_btable);
   }
@@ -1242,7 +1257,7 @@ apply_collect_changes() {
  */
 void GeomTransformer::NewCollectedData::
 append_vdata(const GeomVertexData *vdata, int vertex_offset) {
-  for (int i = 0; i < vdata->get_num_arrays(); ++i) {
+  for (size_t i = 0; i < vdata->get_num_arrays(); ++i) {
     PT(GeomVertexArrayDataHandle) new_handle = _new_data->modify_array_handle(i);
     CPT(GeomVertexArrayDataHandle) old_handle = vdata->get_array_handle(i);
     size_t stride = (size_t)_new_format->get_array(i)->get_stride();
@@ -1258,11 +1273,11 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
   // in the vertices.  Each of these has a slightly different way to handle
   // the remapping, because they have slightly different kinds of data.
 
-  if (vdata->get_transform_table() != (TransformTable *)NULL ||
-      _new_data->get_transform_table() != (TransformTable *)NULL) {
+  if (vdata->get_transform_table() != nullptr ||
+      _new_data->get_transform_table() != nullptr) {
     // The TransformTable.
     CPT(TransformTable) old_table;
-    if (vdata->get_transform_table() != (TransformTable *)NULL) {
+    if (vdata->get_transform_table() != nullptr) {
       old_table = vdata->get_transform_table();
     } else {
       PT(TransformTable) temp_table = new TransformTable;
@@ -1287,7 +1302,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     // modifying the existing one, since a registered TransformTable cannot be
     // modified.
     PT(TransformTable) new_table;
-    if (_new_data->get_transform_table() != (TransformTable *)NULL) {
+    if (_new_data->get_transform_table() != nullptr) {
       new_table = new TransformTable(*_new_data->get_transform_table());
     } else {
       new_table = new TransformTable;
@@ -1335,17 +1350,17 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     }
   }
 
-  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
+  if (vdata->get_transform_blend_table() != nullptr) {
     // The TransformBlendTable.  This one is the easiest, because we can
     // modify it directly, and it will uniquify blend objects for us.
 
-    // We have few special optimizations to handle the TransformBlendTable,
+    // We have a few special optimizations to handle the TransformBlendTable,
     // since it's a very common case and therefore worth spending a bit of
     // effort to optimize deeply.
 
     CPT(TransformBlendTable) old_btable = vdata->get_transform_blend_table();
 
-    if (_new_btable == (TransformBlendTable *)NULL) {
+    if (_new_btable == nullptr) {
       _new_btable = new TransformBlendTable;
       _new_btable->add_blend(TransformBlend());
     }
@@ -1380,7 +1395,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     }
   }
 
-  if (vdata->get_slider_table() != (SliderTable *)NULL) {
+  if (vdata->get_slider_table() != nullptr) {
     // The SliderTable.  This one requires making a copy, like the
     // TransformTable (since it can't be modified once registered either), but
     // at least it uniquifies sliders added to it.  Also, it doesn't require
@@ -1388,7 +1403,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     // vertices with.
     const SliderTable *old_sliders = vdata->get_slider_table();
     PT(SliderTable) new_sliders;
-    if (_new_data->get_slider_table() != (SliderTable *)NULL) {
+    if (_new_data->get_slider_table() != nullptr) {
       new_sliders = new SliderTable(*_new_data->get_slider_table());
     } else {
       new_sliders = new SliderTable;
@@ -1479,7 +1494,7 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   PT(GeomVertexData) new_vdata = new GeomVertexData(*vdata);
   new_vdata->unclean_set_num_rows(new_num_vertices);
 
-  int num_arrays = vdata->get_num_arrays();
+  size_t num_arrays = vdata->get_num_arrays();
   nassertv(num_arrays == new_vdata->get_num_arrays());
 
   GeomVertexDataPipelineReader reader(vdata, current_thread);
@@ -1487,7 +1502,7 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   GeomVertexDataPipelineWriter writer(new_vdata, true, current_thread);
   writer.check_array_writers();
 
-  for (int a = 0; a < num_arrays; ++a) {
+  for (size_t a = 0; a < num_arrays; ++a) {
     const GeomVertexArrayDataHandle *array_reader = reader.get_array_reader(a);
     GeomVertexArrayDataHandle *array_writer = writer.get_array_writer(a);
 

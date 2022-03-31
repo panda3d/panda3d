@@ -43,23 +43,20 @@
 #include <stdlib.h>
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #else
 #include <sys/stat.h>
 #endif
 
+using std::cerr;
+using std::endl;
+using std::string;
+
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
-
-#if defined(_WIN32)
-// Note: Filename::dso_filename changes .so to .dll automatically.
-static const Filename openmaya_filename = "bin/OpenMaya.so";
-#elif defined(IS_OSX)
-static const Filename openmaya_filename = "MacOS/libOpenMaya.dylib";
-#else
-static const Filename openmaya_filename = "lib/libOpenMaya.so";
-#endif  // _WIN32
 
 // Searches for python26.zip or whatever version it is.
 static Filename
@@ -99,6 +96,10 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA2016", "2016"},
   { "MAYA20165", "2016.5"},
   { "MAYA2017", "2017"},
+  { "MAYA2018", "2018"},
+  { "MAYA2019", "2019"},
+  { "MAYA2020", "2020"},
+  { "MAYA2022", "2022"},
   { 0, 0 },
 };
 
@@ -110,6 +111,25 @@ get_version_number(const char *ver) {
     }
   }
   return 0;
+}
+
+static Filename
+get_openmaya_filename(const Filename &maya_location) {
+#ifdef _WIN32
+  // Note: Filename::dso_filename changes .so to .dll automatically.
+  // Maya 2022 has two versions of OpenMaya.dll, one for Python 3 and
+  // one for Python 2, in bin3 and bin2 folders.
+  Filename bin3 = Filename(maya_location, "bin3");
+  Filename bin3_openmaya = Filename::dso_filename(maya_location / "bin3/OpenMaya.so");
+  if (bin3_openmaya.is_regular_file()) {
+    return bin3_openmaya;
+  }
+  return Filename::dso_filename(maya_location / "bin/OpenMaya.so");
+#elif defined(IS_OSX)
+  return Filename::dso_filename(maya_location / "MacOS/libOpenMaya.dylib");
+#else
+  return Filename::dso_filename(maya_location / "lib/libOpenMaya.so");
+#endif  // _WIN32
 }
 
 #if defined(_WIN32)
@@ -133,7 +153,7 @@ get_maya_location(const char *ver, string &loc) {
         DWORD dtype;
         DWORD size = 4096;
         char result[4096 + 1];
-        res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)result, &size);
+        res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", nullptr, &dtype, (LPBYTE)result, &size);
         if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
           result[size] = 0;
           loc = result;
@@ -186,26 +206,22 @@ int
 main(int argc, char *argv[]) {
   // First, get the command line and append _bin, so we will actually run
   // maya2egg_bin.exe, egg2maya_bin.exe, etc.
-  Filename command = Filename::from_os_specific(argv[0]);
-  if (!command.is_fully_qualified()) {
-    DSearchPath path;
-    path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
-#ifdef _WIN32
-    command.set_extension("exe");
-#endif
-    command.resolve_filename(path);
+  Filename command = ExecutionEnvironment::get_binary_name();
+
+  if (command.empty() || command == "unknown" || !command.exists()) {
+    command = Filename::from_os_specific(argv[0]);
+
+    if (!command.is_fully_qualified()) {
+      DSearchPath path;
+      path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
+  #ifdef _WIN32
+      command.set_extension("exe");
+  #endif
+      command.resolve_filename(path);
+    }
   }
 
-#ifdef _WIN32
-  if (command.get_extension() == "exe") {
-    command.set_extension("");
-  }
-#endif
-
-  command = command.get_fullpath() + string("_bin");
-#ifdef _WIN32
-  command.set_extension("exe");
-#endif
+  command.set_basename_wo_extension(command.get_basename_wo_extension() + "_bin");
   string os_command = command.to_os_specific();
 
   // First start with $PANDA_MAYA_LOCATION.  If it is set, it overrides
@@ -222,7 +238,7 @@ main(int argc, char *argv[]) {
     Filename standard_maya_location;
 #ifdef MAYAVERSION
     const char *key = get_version_number(TOSTRING(MAYAVERSION));
-    if (key == NULL) {
+    if (key == nullptr) {
       cerr << "Unknown Maya version: " << TOSTRING(MAYAVERSION) << "\n";
     } else {
       string loc;
@@ -259,8 +275,8 @@ main(int argc, char *argv[]) {
     } else if (maya_location != standard_maya_location) {
       // If it *is* set, we verify that OpenMaya.dll matches the standard
       // version.
-      Filename openmaya_given = Filename::dso_filename(Filename(maya_location, openmaya_filename));
-      Filename openmaya_standard = Filename::dso_filename(Filename(standard_maya_location, openmaya_filename));
+      Filename openmaya_given = get_openmaya_filename(maya_location);
+      Filename openmaya_standard = get_openmaya_filename(standard_maya_location);
 
       if (openmaya_given != openmaya_standard) {
 #ifdef HAVE_OPENSSL
@@ -329,9 +345,9 @@ main(int argc, char *argv[]) {
   }
 
   // Look for OpenMaya.dll as a sanity check.
-  Filename openmaya = Filename::dso_filename(Filename(maya_location, openmaya_filename));
+  Filename openmaya = get_openmaya_filename(maya_location);
   if (!openmaya.is_regular_file()) {
-    cerr << "Could not find $MAYA_LOCATION/" << Filename::dso_filename(openmaya_filename).to_os_specific() << "!\n";
+    cerr << "Could not find OpenMaya library in $MAYA_LOCATION!\n";
     exit(1);
   }
 
@@ -342,7 +358,7 @@ main(int argc, char *argv[]) {
     putenv(putenv_cstr);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   string sep = ";";
 #else
   string sep = ":";
@@ -386,10 +402,21 @@ main(int argc, char *argv[]) {
 #endif
   if (bin.is_directory()) {
     const char *path = getenv("PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
-    string putenv_str = "PATH=" + bin.to_os_specific() + sep + path;
+    string putenv_str = "PATH=";
+
+    // On Windows, there may also be a bin3 or bin2 directory, we should
+    // add either one to the PATH.
+#ifdef _WIN32
+    Filename bin3 = Filename(maya_location, "bin3");
+    if (bin3.is_directory()) {
+      putenv_str += bin3.to_os_specific() + sep;
+    }
+#endif
+    putenv_str += bin.to_os_specific() + sep + path;
+
     char *putenv_cstr = strdup(putenv_str.c_str());
     putenv(putenv_cstr);
   }
@@ -398,7 +425,7 @@ main(int argc, char *argv[]) {
   // And on DYLD_LIBRARY_PATH.
   if (bin.is_directory()) {
     const char *path = getenv("DYLD_LIBRARY_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -411,7 +438,7 @@ main(int argc, char *argv[]) {
   Filename fw_dir = Filename(maya_location, "Frameworks");
   if (fw_dir.is_directory()) {
     const char *path = getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -424,7 +451,7 @@ main(int argc, char *argv[]) {
   // Linux (or other non-Windows OS) gets it added to LD_LIBRARY_PATH.
   if (bin.is_directory()) {
     const char *path = getenv("LD_LIBRARY_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -434,11 +461,6 @@ main(int argc, char *argv[]) {
   }
 
 #endif // IS_OSX
-
-  // When this is set, Panda3D will try not to use any functions from the
-  // CPython API.  This is necessary because Maya links with its own copy of
-  // Python, which may be incompatible with ours.
-  putenv((char *)"PANDA_INCOMPATIBLE_PYTHON=1");
 
   // Now that we have set up the environment variables properly, chain to the
   // actual maya2egg_bin (or whichever) executable.
@@ -451,8 +473,8 @@ main(int argc, char *argv[]) {
   GetStartupInfo(&startup_info);
   BOOL result = CreateProcess(os_command.c_str(),
                               command_line,
-                              NULL, NULL, true, 0,
-                              NULL, NULL,
+                              nullptr, nullptr, true, 0,
+                              nullptr, nullptr,
                               &startup_info,
                               &process_info);
   if (result) {

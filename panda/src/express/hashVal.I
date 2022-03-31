@@ -100,7 +100,7 @@ merge_with(const HashVal &other) {
  * Outputs the HashVal as four unsigned decimal integers.
  */
 INLINE void HashVal::
-output_dec(ostream &out) const {
+output_dec(std::ostream &out) const {
   out << _hv[0] << " " << _hv[1] << " " << _hv[2] << " " << _hv[3];
 }
 
@@ -108,7 +108,7 @@ output_dec(ostream &out) const {
  * Inputs the HashVal as four unsigned decimal integers.
  */
 INLINE void HashVal::
-input_dec(istream &in) {
+input_dec(std::istream &in) {
   in >> _hv[0] >> _hv[1] >> _hv[2] >> _hv[3];
 }
 
@@ -116,7 +116,7 @@ input_dec(istream &in) {
  *
  */
 INLINE void HashVal::
-output(ostream &out) const {
+output(std::ostream &out) const {
   output_hex(out);
 }
 
@@ -181,7 +181,7 @@ hash_ramfile(const Ramfile &ramfile) {
  * functionality) available.
  */
 INLINE void HashVal::
-hash_string(const string &data) {
+hash_string(const std::string &data) {
   hash_buffer(data.data(), data.length());
 }
 
@@ -191,7 +191,7 @@ hash_string(const string &data) {
  * functionality) available.
  */
 INLINE void HashVal::
-hash_bytes(const pvector<unsigned char> &data) {
+hash_bytes(const vector_uchar &data) {
   hash_buffer((const char *)&data[0], data.size());
 }
 #endif  // HAVE_OPENSSL
@@ -221,7 +221,7 @@ fromhex(char digit) {
 }
 
 
-INLINE ostream &operator << (ostream &out, const HashVal &hv) {
+INLINE std::ostream &operator << (std::ostream &out, const HashVal &hv) {
   hv.output(out);
   return out;
 }

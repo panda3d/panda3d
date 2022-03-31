@@ -18,7 +18,7 @@
 #include "mutexImpl.h"
 #include "interrogate_request.h"
 
-#if (defined(WIN32_VC) || defined (WIN64_VC)) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
@@ -26,6 +26,8 @@
 #include "configVariableInt64.h"
 #include <algorithm>
 #include <iterator>
+
+using std::pair;
 
 MemoryUsage *MemoryUsage::_global_ptr;
 
@@ -79,7 +81,7 @@ show() const {
 #ifdef DO_MEMORY_USAGE
   // First, copy the relevant information to a vector so we can sort by
   // counts.  Don't use a pvector.
-  typedef vector<TypeHistogramCountSorter> CountSorter;
+  typedef std::vector<TypeHistogramCountSorter> CountSorter;
   CountSorter count_sorter;
   Counts::const_iterator ci;
   for (ci = _counts.begin(); ci != _counts.end(); ++ci) {
@@ -387,7 +389,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
     // We're recording this pointer as now in use.
     ns_record_void_pointer(ptr, size);
 
-    if (ref_ptr != (ReferenceCount *)NULL) {
+    if (ref_ptr != nullptr) {
       // Make the pointer typed.  This is particularly necessary in case the
       // ref_ptr is a different value than the base void pointer; this may be
       // our only opportunity to associate the two pointers.
@@ -424,7 +426,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
 #endif
 }
 
-#if (defined(WIN32_VC) || defined (WIN64_VC))&& defined(_DEBUG)
+#if defined(_WIN32) && defined(_DEBUG)
 /**
  * This callback is attached to the Win32 debug malloc system to be called
  * whenever a pointer is allocated, reallocated, or freed.  It's used to track
@@ -453,7 +455,7 @@ win32_malloc_hook(int alloc_type, void *ptr,
   mu->_total_size += increment;
   return true;
 }
-#endif  // WIN32_VC && _DEBUG
+#endif  // _WIN32 && _DEBUG
 
 
 
@@ -518,7 +520,7 @@ MemoryUsage(const MemoryHook &copy) :
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
-#if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)
+#ifdef _MSC_VER
   // On a debug Windows build, we can set this malloc hook which allows
   // tracking every malloc call, even from subordinate libraries.
   _CrtSetAllocHook(&win32_malloc_hook);
@@ -599,7 +601,7 @@ ns_record_pointer(ReferenceCount *ptr) {
 
     // We might already have a ReferenceCount pointer, thanks to a previous
     // call to mark_pointer().
-    nassertv(info->_ref_ptr == NULL || info->_ref_ptr == ptr);
+    nassertv(info->_ref_ptr == nullptr || info->_ref_ptr == ptr);
 
     info->_ref_ptr = ptr;
     info->_static_type = ReferenceCount::get_class_type();
@@ -765,7 +767,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
     MemoryInfo *info = (*ti).second;
 
-    if (info->_ref_ptr == NULL) {
+    if (info->_ref_ptr == nullptr) {
       express_cat.error()
         << "Pointer " << (void *)ptr << " deleted twice!\n";
       return;
@@ -777,8 +779,8 @@ ns_remove_pointer(ReferenceCount *ptr) {
         << "Removing ReferenceCount pointer " << (void *)ptr << "\n";
     }
 
-    info->_ref_ptr = (ReferenceCount *)NULL;
-    info->_typed_ptr = (TypedObject *)NULL;
+    info->_ref_ptr = nullptr;
+    info->_typed_ptr = nullptr;
 
     if (info->_freeze_index == _freeze_index) {
       double now = TrueClock::get_global_ptr()->get_long_time();
@@ -791,7 +793,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
       _recursion_protect = false;
     }
 
-    if (ptr != info->_void_ptr || info->_void_ptr == NULL) {
+    if (ptr != info->_void_ptr || info->_void_ptr == nullptr) {
       // Remove the entry from the table.
 
       // We have to protect modifications to the table from recursive calls by
@@ -800,7 +802,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
       _table.erase(ti);
       _recursion_protect = false;
 
-      if (info->_void_ptr == NULL) {
+      if (info->_void_ptr == nullptr) {
         // That was the last entry.  Remove it altogether.
         _total_cpp_size -= info->_size;
         if (info->_freeze_index == _freeze_index) {
@@ -847,7 +849,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     MemoryInfo *info = (*insert_result.first).second;
 
     // We shouldn't already have a void pointer.
-    if (info->_void_ptr != (void *)NULL) {
+    if (info->_void_ptr != nullptr) {
       express_cat.error()
         << "Void pointer " << (void *)ptr << " recorded twice!\n";
       nassertv(false);
@@ -900,14 +902,14 @@ ns_remove_void_pointer(void *ptr) {
 
     MemoryInfo *info = (*ti).second;
 
-    if (info->_void_ptr == (void *)NULL) {
+    if (info->_void_ptr == nullptr) {
       express_cat.error()
         << "Pointer " << (void *)ptr << " deleted twice!\n";
       return;
     }
     nassertv(info->_void_ptr == ptr);
 
-    if (info->_ref_ptr != (ReferenceCount *)NULL) {
+    if (info->_ref_ptr != nullptr) {
       express_cat.error()
         << "Pointer " << (void *)ptr
         << " did not destruct before being deleted!\n";
@@ -916,7 +918,7 @@ ns_remove_void_pointer(void *ptr) {
       }
     }
 
-    info->_void_ptr = NULL;
+    info->_void_ptr = nullptr;
 
     // Remove it from the table.
 
@@ -970,7 +972,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)NULL) {
+        info->_ref_ptr != nullptr) {
       result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
                        now - info->_time);
     }
@@ -997,7 +999,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)NULL) {
+        info->_ref_ptr != nullptr) {
       TypeHandle info_type = info->get_type();
       if (info_type != TypeHandle::none() &&
           info_type.is_derived_from(type)) {
@@ -1029,7 +1031,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)NULL) {
+        info->_ref_ptr != nullptr) {
       double age = now - info->_time;
       if ((age >= from && age <= to) ||
           (age >= to && age <= from)) {
@@ -1071,7 +1073,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)NULL) {
+        info->_ref_ptr != nullptr) {
       if (info->_ref_ptr->get_ref_count() == 0) {
         info->_ref_ptr->ref();
         result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
@@ -1185,7 +1187,7 @@ consolidate_void_ptr(MemoryInfo *info) {
     return;
   }
 
-  if (info->_typed_ptr == (TypedObject *)NULL) {
+  if (info->_typed_ptr == nullptr) {
     // We don't have a typed pointer for this thing yet.
     return;
   }
@@ -1199,7 +1201,7 @@ consolidate_void_ptr(MemoryInfo *info) {
     return;
   }
 
-  nassertv(info->_void_ptr == NULL);
+  nassertv(info->_void_ptr == nullptr);
 
   Table::iterator ti;
   ti = _table.find(typed_ptr);
@@ -1212,7 +1214,7 @@ consolidate_void_ptr(MemoryInfo *info) {
   MemoryInfo *typed_info = (*ti).second;
 
   nassertv(typed_info->_void_ptr == typed_ptr &&
-           typed_info->_ref_ptr == NULL);
+           typed_info->_ref_ptr == nullptr);
 
   info->_void_ptr = typed_info->_void_ptr;
   if (typed_info->is_size_known()) {

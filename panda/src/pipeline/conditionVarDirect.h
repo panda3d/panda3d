@@ -32,10 +32,10 @@
 class EXPCL_PANDA_PIPELINE ConditionVarDirect {
 public:
   INLINE explicit ConditionVarDirect(MutexDirect &mutex);
-  INLINE ~ConditionVarDirect();
-private:
-  INLINE ConditionVarDirect(const ConditionVarDirect &copy);
-  INLINE void operator = (const ConditionVarDirect &copy);
+  ConditionVarDirect(const ConditionVarDirect &copy) = delete;
+  ~ConditionVarDirect() = default;
+
+  ConditionVarDirect &operator = (const ConditionVarDirect &copy) = delete;
 
 PUBLISHED:
   INLINE MutexDirect &get_mutex() const;
@@ -43,15 +43,16 @@ PUBLISHED:
   BLOCKING INLINE void wait();
   BLOCKING INLINE void wait(double timeout);
   INLINE void notify();
-  void output(ostream &out) const;
+  INLINE void notify_all();
+  void output(std::ostream &out) const;
 
 private:
   MutexDirect &_mutex;
   ConditionVarImpl _impl;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ConditionVarDirect &cv) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConditionVarDirect &cv) {
   cv.output(out);
   return out;
 }

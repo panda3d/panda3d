@@ -44,7 +44,7 @@ public:
  */
 class EXPCL_PANDA_GOBJ AdaptiveLru : public Namable {
 PUBLISHED:
-  explicit AdaptiveLru(const string &name, size_t max_size);
+  explicit AdaptiveLru(const std::string &name, size_t max_size);
   ~AdaptiveLru();
 
   INLINE size_t get_total_size() const;
@@ -58,8 +58,8 @@ PUBLISHED:
 
   INLINE bool validate();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   // The following methods are specific to AdaptiveLru, and do not exist in
   // the SimpleLru implementation.  In most cases, the defaults will be
@@ -153,8 +153,8 @@ PUBLISHED:
 
   virtual void evict_lru();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   // Not defined in SimpleLruPage.
   unsigned int get_num_frames() const;
@@ -172,7 +172,6 @@ private:
 
   int _current_frame_usage;
   int _last_frame_usage;
-  int _total_usage;
   int _update_total_usage;
 
   PN_stdfloat _average_frame_utilization;
@@ -180,12 +179,12 @@ private:
   friend class AdaptiveLru;
 };
 
-inline ostream &operator << (ostream &out, const AdaptiveLru &lru) {
+inline std::ostream &operator << (std::ostream &out, const AdaptiveLru &lru) {
   lru.output(out);
   return out;
 }
 
-inline ostream &operator << (ostream &out, const AdaptiveLruPage &page) {
+inline std::ostream &operator << (std::ostream &out, const AdaptiveLruPage &page) {
   page.output(out);
   return out;
 }

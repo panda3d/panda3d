@@ -25,7 +25,7 @@ TypeHandle EggCurve::_type_handle;
  * CurveType value.
  */
 EggCurve::CurveType EggCurve::
-string_curve_type(const string &string) {
+string_curve_type(const std::string &string) {
   if (cmp_nocase_uh(string, "xyz") == 0) {
     return CT_xyz;
   } else if (cmp_nocase_uh(string, "hpr") == 0) {
@@ -40,7 +40,7 @@ string_curve_type(const string &string) {
 /**
  *
  */
-ostream &operator << (ostream &out, EggCurve::CurveType t) {
+std::ostream &operator << (std::ostream &out, EggCurve::CurveType t) {
   switch (t) {
   case EggCurve::CT_none:
     return out << "none";

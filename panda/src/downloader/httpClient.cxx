@@ -21,54 +21,15 @@
 #include "httpBasicAuthorization.h"
 #include "httpDigestAuthorization.h"
 #include "globPattern.h"
+#include "string_utils.h"
 
 #ifdef HAVE_OPENSSL
 
 #include "openSSLWrapper.h"
 
+using std::string;
+
 PT(HTTPClient) HTTPClient::_global_ptr;
-
-/**
- *
- */
-static string
-trim_blanks(const string &str) {
-  size_t start = 0;
-  while (start < str.length() && isspace(str[start])) {
-    start++;
-  }
-
-  size_t end = str.length();
-  while (end > start && isspace(str[end - 1])) {
-    end--;
-  }
-
-  return str.substr(start, end - start);
-}
-
-/**
- * Chops the source string up into pieces delimited by any of the characters
- * specified in delimiters.  Repeated delimiter characters represent zero-
- * length tokens.
- *
- * It is the user's responsibility to ensure the output vector is cleared
- * before calling this function; the results will simply be appended to the
- * end of the vector.
- */
-static void
-tokenize(const string &str, vector_string &words, const string &delimiters) {
-  size_t p = 0;
-  while (p < str.length()) {
-    size_t q = str.find_first_of(delimiters, p);
-    if (q == string::npos) {
-      words.push_back(str.substr(p));
-      return;
-    }
-    words.push_back(str.substr(p, q - p));
-    p = q + 1;
-  }
-  words.push_back(string());
-}
 
 #ifndef NDEBUG
 /**
@@ -78,7 +39,7 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 static void
 ssl_msg_callback(int write_p, int version, int content_type,
                  const void *, size_t len, SSL *, void *) {
-  ostringstream describe;
+  std::ostringstream describe;
   if (write_p) {
     describe << "sent ";
   } else {
@@ -216,7 +177,7 @@ HTTPClient() {
 
   _http_version = HTTPEnum::HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
-  _ssl_ctx = (SSL_CTX *)NULL;
+  _ssl_ctx = nullptr;
 
   set_proxy_spec(http_proxy);
   set_direct_host_spec(http_direct_hosts);
@@ -241,8 +202,8 @@ HTTPClient() {
   _client_certificate_passphrase = http_client_certificate_passphrase;
 
   _client_certificate_loaded = false;
-  _client_certificate_pub = NULL;
-  _client_certificate_priv = NULL;
+  _client_certificate_pub = nullptr;
+  _client_certificate_priv = nullptr;
 
   int num_server_certs = http_preapproved_server_certificate_filename.get_num_unique_values();
   int si;
@@ -271,7 +232,7 @@ HTTPClient() {
  */
 HTTPClient::
 HTTPClient(const HTTPClient &copy) {
-  _ssl_ctx = (SSL_CTX *)NULL;
+  _ssl_ctx = nullptr;
 
   (*this) = copy;
 }
@@ -295,12 +256,12 @@ operator = (const HTTPClient &copy) {
  */
 HTTPClient::
 ~HTTPClient() {
-  if (_ssl_ctx != (SSL_CTX *)NULL) {
+  if (_ssl_ctx != nullptr) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000
     // Before we can free the context, we must remove the X509_STORE pointer
     // from it, so it won't be destroyed along with it (this object is shared
     // among all contexts).
-    _ssl_ctx->cert_store = NULL;
+    _ssl_ctx->cert_store = nullptr;
 #endif
     SSL_CTX_free(_ssl_ctx);
   }
@@ -339,7 +300,7 @@ void HTTPClient::
 set_proxy_spec(const string &proxy_spec) {
   clear_proxy();
 
-  string trim_proxy_spec = trim_blanks(proxy_spec);
+  string trim_proxy_spec = trim(proxy_spec);
 
   // Tokenize the string based on the semicolons.
   if (!trim_proxy_spec.empty()) {
@@ -357,10 +318,10 @@ set_proxy_spec(const string &proxy_spec) {
       size_t equals = spec.find('=');
       if (equals == string::npos) {
         scheme = "";
-        proxy = trim_blanks(spec);
+        proxy = trim(spec);
       } else {
-        scheme = trim_blanks(spec.substr(0, equals));
-        proxy = trim_blanks(spec.substr(equals + 1));
+        scheme = trim(spec.substr(0, equals));
+        proxy = trim(spec.substr(equals + 1));
       }
 
       if (proxy == "DIRECT" || proxy.empty()) {
@@ -424,7 +385,7 @@ set_direct_host_spec(const string &direct_host_spec) {
   for (vector_string::const_iterator hi = hosts.begin();
        hi != hosts.end();
        ++hi) {
-    string spec = trim_blanks(*hi);
+    string spec = trim(*hi);
 
     // We should be careful to avoid adding any empty hostnames to the list.
     // In particular, we will get one empty hostname if the direct_host_spec
@@ -661,7 +622,7 @@ get_proxies_for_url(const URLSpec &url) const {
  * Specifies the username:password string corresponding to a particular server
  * and/or realm, when demanded by the server.  Either or both of the server or
  * realm may be empty; if so, they match anything.  Also, the server may be
- * set to the special string "*proxy", which will match any proxy server.
+ * set to the special string `"*proxy"`, which will match any proxy server.
  *
  * If the username is set to the empty string, this clears the password for
  * the particular server/realm pair.
@@ -701,7 +662,7 @@ set_cookie(const HTTPCookie &cookie) {
     clear_cookie(cookie);
 
   } else {
-    pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
+    std::pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
     if (!result.second) {
       // We already had a cookie matching the supplied domainpathname, so
       // replace it.
@@ -778,7 +739,7 @@ copy_cookies_from(const HTTPClient &other) {
  * host).
  */
 void HTTPClient::
-write_cookies(ostream &out) const {
+write_cookies(std::ostream &out) const {
   Cookies::const_iterator ci;
   for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
     out << *ci << "\n";
@@ -791,7 +752,7 @@ write_cookies(ostream &out) const {
  * also removes expired cookies.
  */
 void HTTPClient::
-send_cookies(ostream &out, const URLSpec &url) {
+send_cookies(std::ostream &out, const URLSpec &url) {
   HTTPDate now = HTTPDate::now();
   bool any_expired = false;
   bool first_cookie = true;
@@ -866,7 +827,7 @@ load_client_certificate() {
 
       ERR_clear_error();
       _client_certificate_priv =
-        PEM_read_bio_PrivateKey(mbio, NULL, NULL,
+        PEM_read_bio_PrivateKey(mbio, nullptr, nullptr,
                                 (char *)_client_certificate_passphrase.c_str());
 
       // Rewind the "file" to the beginning in order to read the public key
@@ -875,7 +836,7 @@ load_client_certificate() {
 
       ERR_clear_error();
       _client_certificate_pub =
-        PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+        PEM_read_bio_X509(mbio, nullptr, nullptr, nullptr);
 
       BIO_free(mbio);
 
@@ -891,18 +852,18 @@ load_client_certificate() {
       }
 
       if (downloader_cat.is_on(sev)) {
-        if (_client_certificate_priv != (EVP_PKEY *)NULL &&
-            _client_certificate_pub != (X509 *)NULL) {
+        if (_client_certificate_priv != nullptr &&
+            _client_certificate_pub != nullptr) {
           downloader_cat.out(sev)
             << "Read client certificate from " << source << "\n";
 
         } else {
-          if (_client_certificate_priv == (EVP_PKEY *)NULL) {
+          if (_client_certificate_priv == nullptr) {
             downloader_cat.out(sev)
               << "Could not read private key from " << source << "\n";
           }
 
-          if (_client_certificate_pub == (X509 *)NULL) {
+          if (_client_certificate_pub == nullptr) {
             downloader_cat.out(sev)
               << "Could not read public key from " << source << "\n";
           }
@@ -911,8 +872,8 @@ load_client_certificate() {
     }
   }
 
-  return (_client_certificate_priv != (EVP_PKEY *)NULL &&
-          _client_certificate_pub != (X509 *)NULL);
+  return (_client_certificate_priv != nullptr &&
+          _client_certificate_pub != nullptr);
 }
 
 /**
@@ -961,10 +922,10 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
   BIO *mbio = BIO_new_mem_buf((void *)pem.data(), pem.length());
 
   ERR_clear_error();
-  X509 *cert = PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+  X509 *cert = PEM_read_bio_X509(mbio, nullptr, nullptr, nullptr);
   BIO_free(mbio);
 
-  if (cert == NULL) {
+  if (cert == nullptr) {
     downloader_cat.warning()
       << "Could not parse PEM data\n";
     return false;
@@ -1003,7 +964,7 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
 bool HTTPClient::
 add_preapproved_server_certificate_name(const URLSpec &url, const string &name) {
   X509_NAME *cert_name = parse_x509_name(name);
-  if (cert_name == NULL) {
+  if (cert_name == nullptr) {
     downloader_cat.warning()
       << "Could not parse certificate name " << name << "\n";
     return false;
@@ -1156,7 +1117,7 @@ get_header(const URLSpec &url) {
  */
 HTTPClient *HTTPClient::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new HTTPClient;
   }
   return _global_ptr;
@@ -1168,7 +1129,7 @@ get_global_ptr() {
  */
 SSL_CTX *HTTPClient::
 get_ssl_ctx() {
-  if (_ssl_ctx != (SSL_CTX *)NULL) {
+  if (_ssl_ctx != nullptr) {
     return _ssl_ctx;
   }
 
@@ -1190,7 +1151,7 @@ get_ssl_ctx() {
 
   X509_STORE *store = sslw->get_x509_store();
 #if OPENSSL_VERSION_NUMBER >= 0x10100000
-  if (store != NULL) {
+  if (store != nullptr) {
     X509_STORE_up_ref(store);
   }
 #endif
@@ -1419,7 +1380,7 @@ select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
   }
 
   // No matching domains.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1441,14 +1402,14 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
     auth = new HTTPDigestAuthorization((*si).second, url, is_proxy);
   }
 
-  if (auth == (HTTPAuthorization *)NULL || !auth->is_valid()) {
+  if (auth == nullptr || !auth->is_valid()) {
     si = schemes.find("basic");
     if (si != schemes.end()) {
       auth = new HTTPBasicAuthorization((*si).second, url, is_proxy);
     }
   }
 
-  if (auth == (HTTPAuthorization *)NULL || !auth->is_valid()) {
+  if (auth == nullptr || !auth->is_valid()) {
     downloader_cat.warning()
       << "Don't know how to use any of the server's available authorization schemes:\n";
     for (si = schemes.begin(); si != schemes.end(); ++si) {
@@ -1475,14 +1436,14 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
  */
 void HTTPClient::
 unload_client_certificate() {
-  if (_client_certificate_priv != (EVP_PKEY *)NULL) {
+  if (_client_certificate_priv != nullptr) {
     EVP_PKEY_free(_client_certificate_priv);
-    _client_certificate_priv = NULL;
+    _client_certificate_priv = nullptr;
   }
 
-  if (_client_certificate_pub != (X509 *)NULL) {
+  if (_client_certificate_pub != nullptr) {
     X509_free(_client_certificate_pub);
-    _client_certificate_pub = NULL;
+    _client_certificate_pub = nullptr;
   }
 
   _client_certificate_loaded = false;
@@ -1494,7 +1455,7 @@ unload_client_certificate() {
  */
 X509_NAME *HTTPClient::
 parse_x509_name(const string &source) {
-  X509_NAME *result = NULL;
+  X509_NAME *result = nullptr;
 
   result = X509_NAME_new();
   bool added_any = false;
@@ -1526,7 +1487,7 @@ parse_x509_name(const string &source) {
           << "Unknown type " << type << " in X509 name: " << source
           << "\n";
         X509_NAME_free(result);
-        return NULL;
+        return nullptr;
       }
 
       string value;
@@ -1556,7 +1517,7 @@ parse_x509_name(const string &source) {
             << "Unable to add " << type << "=" << value << " in X509 name: "
             << source << "\n";
           X509_NAME_free(result);
-          return NULL;
+          return nullptr;
         }
         added_any = true;
       }
@@ -1567,7 +1528,7 @@ parse_x509_name(const string &source) {
     downloader_cat.info()
       << "Invalid empty X509 name: " << source << "\n";
     X509_NAME_free(result);
-    return NULL;
+    return nullptr;
   }
 
   return result;

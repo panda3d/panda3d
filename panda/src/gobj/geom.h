@@ -62,9 +62,10 @@ protected:
   Geom(const Geom &copy);
 
 PUBLISHED:
-  void operator = (const Geom &copy);
   virtual ~Geom();
   ALLOC_DELETED_CHAIN(Geom);
+
+  void operator = (const Geom &copy) = delete;
 
   virtual Geom *make_copy() const;
 
@@ -84,6 +85,8 @@ PUBLISHED:
   void set_vertex_data(const GeomVertexData *data);
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
+
+  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool is_empty() const;
 
@@ -106,6 +109,7 @@ PUBLISHED:
   INLINE PT(Geom) make_points() const;
   INLINE PT(Geom) make_lines() const;
   INLINE PT(Geom) make_patches() const;
+  INLINE PT(Geom) make_adjacency() const;
 
   void decompose_in_place();
   void doubleside_in_place();
@@ -115,6 +119,7 @@ PUBLISHED:
   void make_points_in_place();
   void make_lines_in_place();
   void make_patches_in_place();
+  void make_adjacency_in_place();
 
   virtual bool copy_primitives_from(const Geom *other);
 
@@ -138,8 +143,8 @@ PUBLISHED:
   INLINE void clear_bounds();
   MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   void clear_cache();
   void clear_cache_stage(Thread *current_thread);
@@ -153,8 +158,10 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
+  bool is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const;
+
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomVertexData *vertex_data,
+            const GeomVertexData *vertex_data, size_t num_instances,
             bool force, Thread *current_thread) const;
 
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
@@ -254,9 +261,8 @@ public:
     INLINE CacheKey(const GeomVertexData *source_data,
                     const GeomMunger *modifier);
     INLINE CacheKey(const CacheKey &copy);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
-#endif
+    INLINE CacheKey(CacheKey &&from) noexcept;
+
     INLINE bool operator < (const CacheKey &other) const;
 
     CPT(GeomVertexData) _source_data;
@@ -269,13 +275,12 @@ public:
                       const GeomVertexData *source_data,
                       const GeomMunger *modifier);
     INLINE CacheEntry(Geom *source, const CacheKey &key);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheEntry(Geom *source, CacheKey &&key) NOEXCEPT;
-#endif
+    INLINE CacheEntry(Geom *source, CacheKey &&key) noexcept;
+
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     Geom *_source;  // A back pointer to the containing Geom
     CacheKey _key;
@@ -293,7 +298,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -404,13 +409,12 @@ class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
   INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
-private:
-  GeomPipelineReader(const GeomPipelineReader &copy) DELETED;
-  GeomPipelineReader &operator = (const GeomPipelineReader &copy) DELETED_ASSIGN;
-
-public:
+  GeomPipelineReader(const GeomPipelineReader &copy) = delete;
   INLINE ~GeomPipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
+
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) = delete;
 
   INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;
@@ -432,7 +436,7 @@ public:
 
   bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
-            bool force) const;
+            size_t num_instances, bool force) const;
 
 private:
   const Geom *_object;
@@ -451,7 +455,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Geom &obj);
+INLINE std::ostream &operator << (std::ostream &out, const Geom &obj);
 
 #include "geom.I"
 

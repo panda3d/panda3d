@@ -140,7 +140,6 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
     cs = get_default_coordinate_system();
   }
 
-  FLOATTYPE recip_far_minus_near = 1.0f/(_ffar - _fnear);
   FLOATTYPE recip_r_minus_l = 1.0f/(_r - _l);
   FLOATTYPE recip_t_minus_b = 1.0f/(_t - _b);
   FLOATTYPE two_fnear = 2.0f*_fnear;
@@ -149,8 +148,20 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   FLOATTYPE a = two_fnear * recip_r_minus_l;
   FLOATTYPE e = two_fnear * recip_t_minus_b;
   FLOATTYPE b = (_t + _b) * recip_t_minus_b;
-  FLOATTYPE c = (_ffar + _fnear) * recip_far_minus_near;
-  FLOATTYPE f = -_ffar * two_fnear * recip_far_minus_near;
+  FLOATTYPE c, f;
+
+  // Take the limits if either near or far is infinite.
+  if (cinf(_ffar)) {
+    c = 1;
+    f = -2 * _fnear;
+  } else if (cinf(_fnear)) {
+    c = -1;
+    f = 2 * _ffar;
+  } else {
+    FLOATTYPE recip_far_minus_near = 1.0f / (_ffar - _fnear);
+    c = (_ffar + _fnear) * recip_far_minus_near;
+    f = -_ffar * two_fnear * recip_far_minus_near;
+  }
 
 /*
   FLOATTYPE a = (2.0f * _fnear) / (_r - _l);

@@ -14,6 +14,8 @@
 #include "cppNameComponent.h"
 #include "cppTemplateParameterList.h"
 
+using std::string;
+
 /**
  *
  */
@@ -21,7 +23,7 @@ CPPNameComponent::
 CPPNameComponent(const string &name) :
   _name(name)
 {
-  _templ = (CPPTemplateParameterList *)NULL;
+  _templ = nullptr;
 }
 
 /**
@@ -32,10 +34,10 @@ operator == (const CPPNameComponent &other) const {
   if (_name != other._name) {
     return false;
   }
-  if (_templ == NULL && other._templ == NULL) {
+  if (_templ == nullptr && other._templ == nullptr) {
     return true;
   }
-  if (_templ == NULL || other._templ == NULL) {
+  if (_templ == nullptr || other._templ == nullptr) {
     return false;
   }
   if (*_templ != *other._templ) {
@@ -61,10 +63,10 @@ operator < (const CPPNameComponent &other) const {
   if (_name != other._name) {
     return _name < other._name;
   }
-  if (_templ == NULL && other._templ == NULL) {
+  if (_templ == nullptr && other._templ == nullptr) {
     return false;
   }
-  if (_templ == NULL || other._templ == NULL) {
+  if (_templ == nullptr || other._templ == nullptr) {
     return _templ < other._templ;
   }
   return (*_templ) < (*other._templ);
@@ -83,9 +85,9 @@ get_name() const {
  */
 string CPPNameComponent::
 get_name_with_templ(CPPScope *scope) const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _name;
-  if (_templ != NULL) {
+  if (_templ != nullptr) {
     strm << "< ";
     _templ->output(strm, scope);
     strm << " >";
@@ -114,7 +116,7 @@ empty() const {
  */
 bool CPPNameComponent::
 has_templ() const {
-  return _templ != (CPPTemplateParameterList *)NULL;
+  return _templ != nullptr;
 }
 
 /**
@@ -123,7 +125,7 @@ has_templ() const {
  */
 bool CPPNameComponent::
 is_tbd() const {
-  if (_templ != (CPPTemplateParameterList *)NULL) {
+  if (_templ != nullptr) {
     return _templ->is_tbd();
   }
   return false;
@@ -157,9 +159,9 @@ set_templ(CPPTemplateParameterList *templ) {
  *
  */
 void CPPNameComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name;
-  if (_templ != NULL) {
+  if (_templ != nullptr) {
     out << "< " << *_templ << " >";
   }
 }

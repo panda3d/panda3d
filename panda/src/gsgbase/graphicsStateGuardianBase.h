@@ -147,6 +147,7 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex, int view)=0;
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
+  virtual void release_textures(const pvector<TextureContext *> &contexts)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler)=0;
@@ -160,12 +161,15 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;
   virtual void release_vertex_buffer(VertexBufferContext *vbc)=0;
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data)=0;
   virtual void release_shader_buffer(BufferContext *ibc)=0;
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z)=0;
 
@@ -199,13 +203,17 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force)=0;
+                                     size_t num_instances, bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
+  virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
+  virtual bool draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_patches(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader, bool force)=0;
+  virtual bool draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
+  virtual bool draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual void end_draw_primitives()=0;
 
@@ -230,6 +238,9 @@ public:
     ++_generated_shader_seq;
 #endif
   }
+
+  virtual void push_group_marker(const std::string &marker) {}
+  virtual void pop_group_marker() {}
 
 PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();

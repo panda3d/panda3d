@@ -30,11 +30,11 @@
 template<class EnumType>
 class ConfigVariableEnum : public ConfigVariable {
 public:
-  INLINE ConfigVariableEnum(const string &name, EnumType default_value,
-                            const string &description = string(),
+  INLINE ConfigVariableEnum(const std::string &name, EnumType default_value,
+                            const std::string &description = std::string(),
                             int flags = 0);
-  INLINE ConfigVariableEnum(const string &name, const string &default_value,
-                            const string &description = string(),
+  INLINE ConfigVariableEnum(const std::string &name, const std::string &default_value,
+                            const std::string &description = std::string(),
                             int flags = 0);
   INLINE ~ConfigVariableEnum();
 
@@ -54,8 +54,8 @@ public:
   INLINE void set_word(size_t n, EnumType value);
 
 private:
-  INLINE EnumType parse_string(const string &value) const;
-  INLINE string format_enum(EnumType value) const;
+  INLINE EnumType parse_string(const std::string &value) const;
+  INLINE std::string format_enum(EnumType value) const;
 
 private:
   bool _got_default_value;

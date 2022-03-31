@@ -19,7 +19,7 @@
 /**
  * Describes a linear region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM LineEmitter : public BaseParticleEmitter {
 PUBLISHED:
   LineEmitter();
   LineEmitter(const LineEmitter &copy);
@@ -33,8 +33,8 @@ PUBLISHED:
   INLINE LPoint3 get_endpoint1() const;
   INLINE LPoint3 get_endpoint2() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   LPoint3 _endpoint1;

@@ -15,14 +15,6 @@
  *
  */
 INLINE BlockerSimple::
-BlockerSimple() {
-  _flags = 0;
-}
-
-/**
- *
- */
-INLINE BlockerSimple::
 ~BlockerSimple() {
   nassertv(_flags == 0);
 }

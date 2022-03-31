@@ -49,7 +49,7 @@ set_cursor_in_window() {
 INLINE void WinGraphicsWindow::
 set_cursor_out_of_window() {
   if (_cursor_window == this) {
-    update_cursor_window(NULL);
+    update_cursor_window(nullptr);
   }
 }
 
@@ -74,7 +74,7 @@ get_ime_hwnd() {
   if (_ime_active)
     return _ime_hWnd;
   else
-    return NULL;
+    return nullptr;
 }
 
 /**

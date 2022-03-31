@@ -26,14 +26,14 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
     egg2pg_cat.error()
       << "Invalid NURBSSurface U order for " << egg_surface->get_name() << ": "
       << egg_surface->get_u_order() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   if (egg_surface->get_v_order() < 1 || egg_surface->get_v_order() > 4) {
     egg2pg_cat.error()
       << "Invalid NURBSSurface V order for " << egg_surface->get_name() << ": "
       << egg_surface->get_v_order() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   PT(NurbsSurfaceEvaluator) nurbs = new NurbsSurfaceEvaluator;
@@ -61,7 +61,7 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
       << "Invalid NURBSSurface number of U knots for "
       << egg_surface->get_name() << ": got " << num_u_knots
       << " knots, expected " << nurbs->get_num_u_knots() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   int num_v_knots = egg_surface->get_num_v_knots();
@@ -70,7 +70,7 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
       << "Invalid NURBSSurface number of U knots for "
       << egg_surface->get_name() << ": got " << num_v_knots
       << " knots, expected " << nurbs->get_num_v_knots() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   int i;
@@ -96,7 +96,7 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat) {
     egg2pg_cat.error()
       << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
       << egg_curve->get_order() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   PT(NurbsCurveEvaluator) nurbs = new NurbsCurveEvaluator;
@@ -119,7 +119,7 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat) {
       << "Invalid NURBSCurve number of knots for "
       << egg_curve->get_name() << ": got " << num_knots
       << " knots, expected " << nurbs->get_num_knots() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   for (int i = 0; i < num_knots; i++) {

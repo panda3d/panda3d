@@ -38,7 +38,7 @@ CPT(RenderAttrib) TexGenAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new TexGenAttrib);
   }
 
@@ -190,7 +190,7 @@ get_constant_value(TextureStage *stage) const {
  *
  */
 void TexGenAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

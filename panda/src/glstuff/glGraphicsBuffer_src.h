@@ -23,11 +23,14 @@
  * ARB_draw_buffers extensions.  This design has significant advantages over
  * the older wglGraphicsBuffer and glxGraphicsBuffer:
  *
- * * Can export depth and stencil.  * Supports auxiliary bitplanes.  *
- * Supports non-power-of-two padding.  * Supports tracking of host window
- * size.  * Supports cumulative render-to-texture.  * Faster than pbuffers.  *
- * Can render onto a texture without clearing it first.  * Supports
- * multisample antialiased rendering.
+ * - Can export depth and stencil.
+ * - Supports auxiliary bitplanes.
+ * - Supports non-power-of-two padding.
+ * - Supports tracking of host window size.
+ * - Supports cumulative render-to-texture.
+ * - Faster than pbuffers.
+ * - Can render onto a texture without clearing it first.
+ * - Supports multisample antialiased rendering.
  *
  * Some of these deserve a little explanation.  Auxiliary bitplanes are
  * additional bitplanes above and beyond the normal depth,stencil,color.  One
@@ -45,12 +48,11 @@
  * EXT_framebuffer_blit to allow for multisample antialiasing these offscreen
  * render targets.  If these extensions are unavailable the buffer will render
  * as if multisamples is 0.
- *
  */
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
   CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -58,7 +60,7 @@ public:
                       GraphicsOutput *host);
   virtual ~CLP(GraphicsBuffer)();
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   virtual void clear(Thread *current_thread);
 #endif
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
@@ -135,7 +137,7 @@ protected:
   UpdateSeq _last_textures_seq;
 
   CLP(GraphicsBuffer) *_shared_depth_buffer;
-  list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
+  std::list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
 
   PStatCollector _bind_texture_pcollector;
   PStatCollector _generate_mipmap_pcollector;

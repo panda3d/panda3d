@@ -17,19 +17,7 @@
  */
 INLINE EggMesherEdge::
 EggMesherEdge(int vi_a, int vi_b) : _vi_a(vi_a), _vi_b(vi_b) {
-  _opposite = NULL;
-}
-
-/**
- *
- */
-INLINE EggMesherEdge::
-EggMesherEdge(const EggMesherEdge &copy) :
-  _vi_a(copy._vi_a),
-  _vi_b(copy._vi_b),
-  _strips(copy._strips),
-  _opposite(copy._opposite)
-{
+  _opposite = nullptr;
 }
 
 /**
@@ -58,7 +46,7 @@ matches(const EggMesherEdge &other) const {
  */
 INLINE EggMesherEdge *EggMesherEdge::
 common_ptr() {
-  return min(this, _opposite);
+  return std::min(this, _opposite);
 }
 
 /**

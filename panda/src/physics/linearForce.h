@@ -20,7 +20,7 @@
  * A force that acts on a PhysicsObject by way of an Integrator.  This is a
  * pure virtual base class.
  */
-class EXPCL_PANDAPHYSICS LinearForce : public BaseForce {
+class EXPCL_PANDA_PHYSICS LinearForce : public BaseForce {
 PUBLISHED:
   ~LinearForce();
 
@@ -39,8 +39,8 @@ PUBLISHED:
 
   virtual bool is_linear() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   LinearForce(PN_stdfloat a, bool mass);

@@ -26,10 +26,10 @@
  * different kinds of switching conditions; presently, only a <Distance> type
  * is actually supported.
  */
-class EXPCL_PANDAEGG EggSwitchCondition : public EggObject {
+class EXPCL_PANDA_EGG EggSwitchCondition : public EggObject {
 PUBLISHED:
   virtual EggSwitchCondition *make_copy() const=0;
-  virtual void write(ostream &out, int indent_level) const=0;
+  virtual void write(std::ostream &out, int indent_level) const=0;
 
   virtual void transform(const LMatrix4d &mat)=0;
 
@@ -58,13 +58,13 @@ private:
  * A SwitchCondition that switches the levels-of-detail based on distance from
  * the camera's eyepoint.
  */
-class EXPCL_PANDAEGG EggSwitchConditionDistance : public EggSwitchCondition {
+class EXPCL_PANDA_EGG EggSwitchConditionDistance : public EggSwitchCondition {
 PUBLISHED:
   explicit EggSwitchConditionDistance(double switch_in, double switch_out,
                                       const LPoint3d &center, double fade = 0.0);
 
   virtual EggSwitchCondition *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   virtual void transform(const LMatrix4d &mat);
 

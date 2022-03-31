@@ -4,6 +4,3 @@
 #include "interrogate_datafile.cxx"
 #include "interrogate_interface.cxx"
 #include "interrogate_request.cxx"
-#include "py_panda.cxx"
-#include "py_compat.cxx"
-#include "py_wrappers.cxx"

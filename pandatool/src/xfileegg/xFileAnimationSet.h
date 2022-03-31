@@ -36,7 +36,7 @@ public:
   ~XFileAnimationSet();
 
   bool create_hierarchy(XFileToEggConverter *converter);
-  EggXfmSAnim *get_table(const string &joint_name) const;
+  EggXfmSAnim *get_table(const std::string &joint_name) const;
 
   enum FrameDataFlags {
     FDF_scale    = 0x01,
@@ -65,7 +65,7 @@ public:
     int _flags;
   };
 
-  FrameData &create_frame_data(const string &joint_name);
+  FrameData &create_frame_data(const std::string &joint_name);
 
 public:
   double _frame_rate;
@@ -74,7 +74,7 @@ private:
   void mirror_table(XFileToEggConverter *converter,
                     EggGroup *model_node, EggTable *anim_node);
 
-  typedef pmap<string, FrameData> JointData;
+  typedef pmap<std::string, FrameData> JointData;
   JointData _joint_data;
 
   class TablePair {
@@ -83,7 +83,7 @@ private:
     EggXfmSAnim *_table;
   };
 
-  typedef pmap<string, TablePair> Tables;
+  typedef pmap<std::string, TablePair> Tables;
   Tables _tables;
 };
 

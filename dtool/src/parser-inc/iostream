@@ -1,16 +1,15 @@
-// Filename: iostream
-// Created by:  drose (12May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iostream
+ * @author drose
+ * @date 2000-05-12
+ */
 
 // This file, and all the other files in this directory, aren't
 // intended to be compiled--they're just parsed by CPPParser (and
@@ -21,122 +20,84 @@
 #define IOSTREAM_H
 
 #include <stdtypedefs.h>
-
-#ifdef _WIN64
-typedef long long streamoff;
-typedef long long streamsize;
-#elif defined(_WIN32)
-typedef long streamoff;
-typedef int streamsize;
-#else
-typedef long long streamoff;
-typedef ptrdiff_t streamsize;
-#endif
+#include <ios>
+#include <streambuf>
+#include <ostream>
+#include <Python.h>
 
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
 // available.
 
-// We need to expose one method in each class to force it to publish.
-// But we'd like to expose some of these methods anyway, so no
-// problem.
-class ios_base {
-__published:
-  enum seekdir {
-    beg = 0,
-    cur = 1,
-    end = 2,
+namespace std {
+  class ostream : virtual public ios {
+  __published:
+    ostream(const ostream&) = delete;
+
+    __extension void write(PyObject *b);
+    __extension void writelines(PyObject *lines);
+
+    void put(char c);
+    void flush();
+    streampos tellp();
+    void seekp(streampos pos);
+    void seekp(streamoff off, ios_base::seekdir dir);
+
+  protected:
+    ostream(ostream &&);
   };
-  enum openmode {
+
+  class istream : virtual public ios {
+  __published:
+    istream(const istream&) = delete;
+
+    __extension PyObject *read(Py_ssize_t size=-1);
+    __extension PyObject *read1(Py_ssize_t size=-1);
+    __extension PyObject *readall();
+    __extension std::streamsize readinto(PyObject *b);
+
+    __extension PyObject *readline(Py_ssize_t size=-1);
+    __extension PyObject *readlines(Py_ssize_t hint=-1);
+    __extension PyObject *__iter__(PyObject *self);
+
+    int get();
+    streampos tellg();
+    void seekg(streampos pos);
+    void seekg(streamoff off, ios_base::seekdir dir);
+
+  protected:
+    istream(istream &&);
   };
-  // Don't define these lest interrogate get tempted to actually
-  // substitute in the values, which are implementation-defined.
-  static const openmode app;
-  static const openmode binary;
-  static const openmode in;
-  static const openmode out;
-  static const openmode trunc;
-protected:
-  // Force this to be a non-trivial type.
-  ios_base() {};
-private:
-  ios_base(const ios_base &);
-};
-class ios : public ios_base {
-__published:
-  typedef long fmtflags;
 
-  bool good() const;
-  bool eof() const;
-  bool fail() const;
-  bool bad() const;
-  void clear();
+  class iostream : public istream, public ostream {
+  __published:
+    iostream(const iostream&) = delete;
 
-protected:
-  ios();
-};
+    void flush();
 
-// We actually want to wrap streampos as streamoff.
-#define streampos streamoff
+  protected:
+    iostream(iostream &&);
+  };
 
-class ostream : virtual public ios {
-__published:
-  ostream(const ostream&) = delete;
+  class ofstream : public ostream {
+  __published:
+    ofstream();
+    void close();
+  };
+  class ifstream : public istream {
+  __published:
+    ifstream();
+    void close();
+  };
+  class fstream : public iostream {
+  __published:
+    fstream();
+    void close();
+  };
 
-  void put(char c);
-  void flush();
-  streampos tellp();
-  void seekp(streampos pos);
-  void seekp(streamoff off, ios_base::seekdir dir);
-
-protected:
-  ostream(ostream &&);
-};
-class istream : virtual public ios {
-__published:
-  istream(const istream&) = delete;
-
-  int get();
-  streampos tellg();
-  void seekg(streampos pos);
-  void seekg(streamoff off, ios_base::seekdir dir);
-
-protected:
-  istream(istream &&);
-};
-class iostream : public istream, public ostream {
-__published:
-  iostream(const iostream&) = delete;
-
-  void flush();
-
-protected:
-  iostream(iostream &&);
-};
-
-class ofstream : public ostream {
-__published:
-  ofstream();
-  void close();
-};
-class ifstream : public istream {
-__published:
-  ifstream();
-  void close();
-};
-class fstream : public iostream {
-__published:
-  fstream();
-  void close();
-};
-
-class ostringstream : public ostream {};
-class istringstream : public istream {};
-class stringstream : public iostream {};
-class streambuf {};
-
-extern istream cin;
-extern ostream cout;
-extern ostream cerr;
+  extern istream cin;
+  extern ostream cout;
+  extern ostream cerr;
+}
 
 #endif

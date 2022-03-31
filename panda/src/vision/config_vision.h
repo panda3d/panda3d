@@ -16,8 +16,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(vision, EXPCL_VISION, EXPTP_VISION);
+
+extern ConfigVariableBool v4l_blocking;
 
 extern EXPCL_VISION void init_libvision();
 

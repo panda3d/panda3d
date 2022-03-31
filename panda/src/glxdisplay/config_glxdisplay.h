@@ -20,9 +20,9 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl(glxdisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
+NotifyCategoryDecl(glxdisplay, EXPCL_PANDA_GLXDISPLAY, EXPTP_PANDA_GLXDISPLAY);
 
-extern EXPCL_PANDAGL void init_libglxdisplay();
+extern EXPCL_PANDA_GLXDISPLAY void init_libglxdisplay();
 
 extern ConfigVariableBool glx_get_proc_address;
 extern ConfigVariableBool glx_get_os_address;

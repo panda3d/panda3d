@@ -43,18 +43,18 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceBlockHeader::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " {\n";
   indent(out, indent_level + 2)
-    << "ordinal = 0x" << hex << setfill('0');
+    << "ordinal = 0x" << std::hex << std::setfill('0');
 
-  string::const_iterator si;
+  std::string::const_iterator si;
   for (si = _ordinal.begin(); si != _ordinal.end(); ++si) {
-    out << setw(2) << (int)(unsigned char)(*si);
+    out << std::setw(2) << (int)(unsigned char)(*si);
   }
 
-  out << dec << setfill(' ') << "\n";
+  out << std::dec << std::setfill(' ') << "\n";
 
   write_chunks(out, indent_level + 2);
   indent(out, indent_level)

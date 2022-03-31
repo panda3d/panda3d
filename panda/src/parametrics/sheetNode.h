@@ -31,19 +31,18 @@
  */
 class EXPCL_PANDA_PARAMETRICS SheetNode : public PandaNode {
 PUBLISHED:
-  explicit SheetNode(const string &name);
+  explicit SheetNode(const std::string &name);
 
 protected:
   SheetNode(const SheetNode &copy);
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   virtual PandaNode *make_copy() const;
 
   virtual bool safe_to_transform() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
 PUBLISHED:
   INLINE void set_surface(NurbsSurfaceEvaluator *surface);

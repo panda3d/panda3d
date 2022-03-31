@@ -24,7 +24,7 @@ HTTPEntityTag() {
  * tag string.
  */
 INLINE HTTPEntityTag::
-HTTPEntityTag(bool weak, const string &tag) :
+HTTPEntityTag(bool weak, const std::string &tag) :
   _weak(weak),
   _tag(tag)
 {
@@ -63,7 +63,7 @@ is_weak() const {
 /**
  * Returns the tag as a literal string.
  */
-INLINE const string &HTTPEntityTag::
+INLINE const std::string &HTTPEntityTag::
 get_tag() const {
   return _tag;
 }
@@ -131,13 +131,13 @@ compare_to(const HTTPEntityTag &other) const {
  *
  */
 INLINE void HTTPEntityTag::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_string();
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const HTTPEntityTag &entityTag) {
+INLINE std::ostream &
+operator << (std::ostream &out, const HTTPEntityTag &entityTag) {
   entityTag.output(out);
   return out;
 }

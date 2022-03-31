@@ -23,9 +23,9 @@
  * which include several component triangles, each of which might have its own
  * color and/or normal.
  */
-class EXPCL_PANDAEGG EggCompositePrimitive : public EggPrimitive {
+class EXPCL_PANDA_EGG EggCompositePrimitive : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggCompositePrimitive(const string &name = "");
+  INLINE explicit EggCompositePrimitive(const std::string &name = "");
   INLINE EggCompositePrimitive(const EggCompositePrimitive &copy);
   INLINE EggCompositePrimitive &operator = (const EggCompositePrimitive &copy);
   virtual ~EggCompositePrimitive();
@@ -56,7 +56,7 @@ protected:
 
   virtual bool do_triangulate(EggGroupNode *container) const;
 
-  void write_body(ostream &out, int indent_level) const;
+  void write_body(std::ostream &out, int indent_level) const;
 
 private:
   typedef pvector<EggAttributes *> Components;

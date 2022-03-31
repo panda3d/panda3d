@@ -96,9 +96,9 @@ protected:
   inline LPoint3 get_interpolated_point(CoordinateOrigin origin, float depth);
   LVecBase3 get_snap_offset(const LMatrix4& mat, size_t resolution);
 
-  vector<NodePath> _cam_nodes;
-  vector<Camera*> _cameras;
-  vector<LVecBase2> _max_film_sizes;
+  std::vector<NodePath> _cam_nodes;
+  std::vector<Camera*> _cameras;
+  std::vector<LVecBase2> _max_film_sizes;
 
   // Current near and far points
   // Order: UL, UR, LL, LR (See CoordinateOrigin)

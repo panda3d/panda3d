@@ -16,12 +16,12 @@
 
 #include "pandatoolbase.h"
 
-void vrml_init_lexer(istream &in, const string &filename);
+void vrml_init_lexer(std::istream &in, const std::string &filename);
 int vrml_error_count();
 int vrml_warning_count();
 
-void vrmlyyerror(const string &msg);
-void vrmlyywarning(const string &msg);
+void vrmlyyerror(const std::string &msg);
+void vrmlyywarning(const std::string &msg);
 
 int vrmlyylex();
 

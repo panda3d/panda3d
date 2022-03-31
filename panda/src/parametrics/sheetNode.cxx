@@ -48,7 +48,7 @@ void SheetNode::CData::
 write_datagram(BamWriter *writer, Datagram &dg) const {
   // For now, we write a NULL pointer.  Eventually we will write out the
   // NurbsSurfaceEvaluator pointer.
-  writer->write_pointer(dg, (TypedWritable *)NULL);
+  writer->write_pointer(dg, nullptr);
 }
 
 /**
@@ -66,10 +66,11 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 SheetNode::
-SheetNode(const string &name) :
+SheetNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
+  set_renderable();
 }
 
 /**
@@ -128,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Create some geometry on-the-fly to render the sheet.
   if (get_num_u_subdiv() > 0 && get_num_v_subdiv() > 0) {
     NurbsSurfaceEvaluator *surface = get_surface();
-    if (surface != (NurbsSurfaceEvaluator *)NULL) {
+    if (surface != nullptr) {
       PT(NurbsSurfaceResult) result = surface->evaluate(data.get_node_path());
 
       if (result->get_num_u_segments() > 0 && result->get_num_v_segments() > 0) {
@@ -141,24 +142,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool SheetNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  *
  */
 void SheetNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     out << " " << *surface;
   } else {
     out << " (no surface)";
@@ -169,10 +159,10 @@ output(ostream &out) const {
  *
  */
 void SheetNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     indent(out, indent_level + 2) << *surface << "\n";
   } else {
     indent(out, indent_level + 2) << "(no surface)\n";
@@ -224,7 +214,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   PT(BoundingVolume) bound = new BoundingSphere;
 
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     NurbsSurfaceEvaluator::Vert3Array verts;
     get_surface()->get_vertices(verts, rel_to);
 
@@ -250,7 +240,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
 
   CPT(GeomVertexFormat) format;
   if (use_vertex_color) {
-    format = GeomVertexFormat::get_v3n3cpt2();
+    format = GeomVertexFormat::get_v3n3ct2();
   } else {
     format = GeomVertexFormat::get_v3n3t2();
   }

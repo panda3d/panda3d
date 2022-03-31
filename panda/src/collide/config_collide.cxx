@@ -13,6 +13,7 @@
 
 #include "config_collide.h"
 #include "collisionBox.h"
+#include "collisionCapsule.h"
 #include "collisionEntry.h"
 #include "collisionHandler.h"
 #include "collisionHandlerEvent.h"
@@ -38,9 +39,12 @@
 #include "collisionSolid.h"
 #include "collisionSphere.h"
 #include "collisionTraverser.h"
-#include "collisionTube.h"
 #include "collisionVisualizer.h"
 #include "dconfig.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_COLLIDE)
+  #error Buildsystem error: BUILDING_PANDA_COLLIDE not defined
+#endif
 
 Configure(config_collide);
 NotifyCategoryDef(collide, "");
@@ -122,6 +126,7 @@ init_libcollide() {
   initialized = true;
 
   CollisionBox::init_type();
+  CollisionCapsule::init_type();
   CollisionEntry::init_type();
   CollisionHandler::init_type();
   CollisionHandlerEvent::init_type();
@@ -146,14 +151,18 @@ init_libcollide() {
   CollisionSolid::init_type();
   CollisionSphere::init_type();
   CollisionTraverser::init_type();
-  CollisionTube::init_type();
 
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder::init_type();
   CollisionVisualizer::init_type();
 #endif
 
+  // Record the old name for CollisionCapsule for backwards compatibility.
+  BamWriter::record_obsolete_type_name(CollisionCapsule::get_class_type(),
+                                       "CollisionTube", 6, 44);
+
   CollisionBox::register_with_read_factory();
+  CollisionCapsule::register_with_read_factory();
   CollisionInvSphere::register_with_read_factory();
   CollisionLine::register_with_read_factory();
   CollisionNode::register_with_read_factory();
@@ -164,5 +173,4 @@ init_libcollide() {
   CollisionRay::register_with_read_factory();
   CollisionSegment::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
-  CollisionTube::register_with_read_factory();
 }

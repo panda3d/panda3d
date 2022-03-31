@@ -5,11 +5,8 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-from tkSimpleDialog import askfloat
-import string
-import math
-import types
 from direct.task import Task
+from tkinter.simpledialog import askfloat
 
 FRAMES = 0
 SECONDS = 1
@@ -304,7 +301,7 @@ class BlendAnimPanel(AppShell):
             taskMgr.add(self.playTask, self.id + '_UpdateTask')
             self.stopButton.config(state=NORMAL)
         else:
-            print '----Illegal Animaion name!!', self.animNameA +  ',  '+ self.animNameB
+            print('----Illegal Animaion name!!', self.animNameA +  ',  '+ self.animNameB)
         return
 
     def playTask(self, task):
@@ -348,7 +345,7 @@ class BlendAnimPanel(AppShell):
         # setAnimation(self, animation, AB = 'a')
         # see play(self)
         #################################################################
-        print 'OK!!!'
+        print('OK!!!')
         if AB == 'a':
             if self.animNameA != None:
                 self['actor'].setControlEffect(self.animNameA, 1.0, 'modelRoot','lodRoot')
@@ -427,7 +424,7 @@ class BlendAnimPanel(AppShell):
         #################################################################
         if (self.animNameA in self['animList'])and(self.animNameB in self['animList']):
             # Convert scale value to float
-            frame = string.atof(frame)
+            frame = float(frame)
             # Now convert t to seconds for offset calculations
             if self.unitsVar.get() == FRAMES:
                 frame = frame / self.fps
@@ -519,7 +516,7 @@ class BlendAnimPanel(AppShell):
         # then this function will set Animation A to "a" and animation B
         # to "b" and set the ratio slider to "c" position.
         #################################################################
-        if self.blendDict.has_key(name):
+        if name in self.blendDict:
             self.currentBlendName = name
             animA = self.blendDict[name][0]
             animB = self.blendDict[name][1]
@@ -544,7 +541,7 @@ class BlendAnimPanel(AppShell):
         self.blendDict.clear()
         del self.blendDict
         self.blendDict = dict.copy()
-        print self.blendDict
+        print(self.blendDict)
         if len(self.blendDict)>0:
             self.blendList = self.blendDict.keys()
         else:

@@ -31,14 +31,17 @@ protected:
   AnimBundle(AnimGroup *parent, const AnimBundle &copy);
 
 PUBLISHED:
-  INLINE explicit AnimBundle(const string &name, PN_stdfloat fps, int num_frames);
+  INLINE explicit AnimBundle(const std::string &name, PN_stdfloat fps, int num_frames);
 
   PT(AnimBundle) copy_bundle() const;
 
   INLINE double get_base_frame_rate() const;
   INLINE int get_num_frames() const;
 
-  virtual void output(ostream &out) const;
+  MAKE_PROPERTY(base_frame_rate, get_base_frame_rate);
+  MAKE_PROPERTY(num_frames, get_num_frames);
+
+  virtual void output(std::ostream &out) const;
 
 protected:
   INLINE AnimBundle();
@@ -77,7 +80,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &operator <<(ostream &out, const AnimBundle &bundle) {
+inline std::ostream &operator <<(std::ostream &out, const AnimBundle &bundle) {
   bundle.output(out);
   return out;
 }

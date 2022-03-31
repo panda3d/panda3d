@@ -20,6 +20,8 @@
 #include "cppExtensionType.h"
 #include <algorithm>
 
+using std::string;
+
 CPPType::Types CPPType::_types;
 CPPType::PreferredNames CPPType::_preferred_names;
 CPPType::AltNames CPPType::_alt_names;
@@ -36,7 +38,7 @@ CPPType::
 CPPType(const CPPFile &file) :
   CPPDeclaration(file)
 {
-  _declaration = (CPPTypeDeclaration *)NULL;
+  _declaration = nullptr;
 
   // This is set true by interrogate when the "forcetype" keyword is used.
   _forcetype = false;
@@ -143,11 +145,11 @@ is_parameter_expr() const {
 bool CPPType::
 is_enum() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_enum();
   }
   const CPPExtensionType *ext_type = as_extension_type();
-  if (ext_type != NULL) {
+  if (ext_type != nullptr) {
     return ext_type->_type == CPPExtensionType::T_enum ||
            ext_type->_type == CPPExtensionType::T_enum_struct ||
            ext_type->_type == CPPExtensionType::T_enum_class;
@@ -161,7 +163,7 @@ is_enum() const {
 bool CPPType::
 is_const() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_const();
   }
   return get_subtype() == ST_const;
@@ -173,7 +175,7 @@ is_const() const {
 bool CPPType::
 is_reference() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_reference();
   }
   return get_subtype() == ST_reference;
@@ -186,11 +188,11 @@ is_reference() const {
 bool CPPType::
 is_pointer() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_pointer();
   }
   const CPPConstType *const_type = as_const_type();
-  if (const_type != NULL) {
+  if (const_type != nullptr) {
     return const_type->_wrapped_around->is_pointer();
   }
   return get_subtype() == ST_pointer;
@@ -203,7 +205,7 @@ is_pointer() const {
 CPPType *CPPType::
 remove_const() {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     CPPType *unwrapped = td_type->_type->remove_const();
     if (unwrapped != td_type->_type) {
       return unwrapped;
@@ -212,7 +214,7 @@ remove_const() {
     }
   }
   const CPPConstType *const_type = as_const_type();
-  if (const_type != NULL) {
+  if (const_type != nullptr) {
     return const_type->_wrapped_around->remove_const();
   }
   return this;
@@ -224,7 +226,7 @@ remove_const() {
 CPPType *CPPType::
 remove_reference() {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     CPPType *unwrapped = td_type->_type->remove_reference();
     if (unwrapped != td_type->_type) {
       return unwrapped;
@@ -233,7 +235,7 @@ remove_reference() {
     }
   }
   const CPPReferenceType *ref_type = as_reference_type();
-  if (ref_type != NULL) {
+  if (ref_type != nullptr) {
     return ref_type->_pointing_at;
   }
   return this;
@@ -306,7 +308,7 @@ get_simple_name() const {
  */
 string CPPType::
 get_local_name(CPPScope *scope) const {
-  ostringstream ostrm;
+  std::ostringstream ostrm;
   output(ostrm, 0, scope, false);
   return ostrm.str();
 }
@@ -419,7 +421,7 @@ is_convertible_to(const CPPType *other) const {
  * have special exceptions.
  */
 void CPPType::
-output_instance(ostream &out, const string &name, CPPScope *scope) const {
+output_instance(std::ostream &out, const string &name, CPPScope *scope) const {
   output_instance(out, 0, scope, false, "", name);
 }
 
@@ -429,7 +431,7 @@ output_instance(ostream &out, const string &name, CPPScope *scope) const {
  * have special exceptions.
  */
 void CPPType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
   output(out, indent_level, scope, complete);
@@ -454,7 +456,7 @@ as_type() {
  */
 CPPType *CPPType::
 new_type(CPPType *type) {
-  pair<Types::iterator, bool> result = _types.insert(type);
+  std::pair<Types::iterator, bool> result = _types.insert(type);
   if (result.second) {
     // The insertion has taken place; thus, this is the first time this type
     // has been declared.

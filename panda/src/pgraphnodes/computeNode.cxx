@@ -27,11 +27,12 @@ TypeHandle ComputeNode::_type_handle;
  * assign a shader using a ShaderAttrib.
  */
 ComputeNode::
-ComputeNode(const string &name) :
+ComputeNode(const std::string &name) :
   PandaNode(name),
   _dispatcher(new ComputeNode::Dispatcher)
 {
   set_internal_bounds(new OmniBoundingVolume);
+  set_renderable();
 }
 
 /**
@@ -66,17 +67,6 @@ safe_to_combine() const {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool ComputeNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  * Adds the node's contents to the CullResult we are building up during the
  * cull traversal, so that it will be drawn at render time.  For most nodes
  * other than GeomNodes, this is a do-nothing operation.
@@ -93,7 +83,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // CullableObject for the Dispatcher.  We don't need to pass any Geoms,
   // however.
   CullableObject *object =
-    new CullableObject(NULL, data._state,
+    new CullableObject(nullptr, data._state,
                        data.get_internal_transform(trav));
   object->set_draw_callback(_dispatcher);
   trav->get_cull_handler()->record_object(object, trav);
@@ -105,7 +95,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void ComputeNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

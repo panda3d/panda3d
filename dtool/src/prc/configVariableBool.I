@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const string &name) :
+ConfigVariableBool(const std::string &name) :
   ConfigVariable(name, VT_bool),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableBool(const string &name) :
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const string &name, bool default_value,
-                   const string &description, int flags) :
+ConfigVariableBool(const std::string &name, bool default_value,
+                   const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_bool, description, flags),
 #else
-  ConfigVariable(name, VT_bool, string(), flags),
+  ConfigVariable(name, VT_bool, std::string(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,12 +43,12 @@ ConfigVariableBool(const string &name, bool default_value,
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const string &name, const string &default_value,
-                   const string &description, int flags) :
+ConfigVariableBool(const std::string &name, const std::string &default_value,
+                   const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_bool, description, flags),
 #else
-  ConfigVariable(name, VT_bool, string(), flags),
+  ConfigVariable(name, VT_bool, std::string(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -115,7 +115,7 @@ get_value() const {
 INLINE bool ConfigVariableBool::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_bool_word(0);
   }
   return false;

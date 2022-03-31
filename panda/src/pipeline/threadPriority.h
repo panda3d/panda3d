@@ -27,10 +27,10 @@ enum ThreadPriority {
 };
 END_PUBLISH
 
-EXPCL_PANDA_PIPELINE ostream &
-operator << (ostream &out, ThreadPriority pri);
-EXPCL_PANDA_PIPELINE istream &
-operator >> (istream &in, ThreadPriority &pri);
+EXPCL_PANDA_PIPELINE std::ostream &
+operator << (std::ostream &out, ThreadPriority pri);
+EXPCL_PANDA_PIPELINE std::istream &
+operator >> (std::istream &in, ThreadPriority &pri);
 
 
 #endif

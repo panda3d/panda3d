@@ -22,7 +22,7 @@ TypeHandle ModelSaveRequest::_type_handle;
  * to begin an asynchronous save.
  */
 ModelSaveRequest::
-ModelSaveRequest(const string &name,
+ModelSaveRequest(const std::string &name,
                  const Filename &filename, const LoaderOptions &options,
                  PandaNode *node, Loader *loader) :
   AsyncTask(name),

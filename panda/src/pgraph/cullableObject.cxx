@@ -39,6 +39,7 @@ PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
 PStatCollector CullableObject::_munge_sprites_prims_pcollector("*:Munge:Sprites:Prims");
+PStatCollector CullableObject::_munge_instances_pcollector("*:Munge:Instances");
 PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
@@ -90,6 +91,15 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
       unsupported_bits = geom_rendering & ~gsg_bits;
 
+      if (unsupported_bits & Geom::GR_per_point_size) {
+        // If we have a shader that processes the point size, we can assume it
+        // does the right thing.
+        const ShaderAttrib *sattr;
+        if (_state->get_attrib(sattr) && sattr->get_flag(ShaderAttrib::F_shader_point_size)) {
+          unsupported_bits &= ~Geom::GR_per_point_size;
+        }
+      }
+
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
           if (singular_points ||
@@ -114,8 +124,8 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
           << "munge_points_to_quads() for geometry with bits: "
-          << hex << geom_rendering << ", unsupported: "
-          << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
+          << std::hex << geom_rendering << ", unsupported: "
+          << (unsupported_bits & Geom::GR_point_bits) << std::dec << "\n";
       }
       if (!munge_points_to_quads(traverser, force)) {
         return false;
@@ -161,7 +171,24 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       _munged_data->animate_vertices(force, current_thread);
     if (animated_vertices != _munged_data) {
       cpu_animated = true;
-      swap(_munged_data, animated_vertices);
+      std::swap(_munged_data, animated_vertices);
+    }
+
+    if (sattr != nullptr) {
+      if (_instances != nullptr &&
+          sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
+        // We are under an InstancedNode, and the shader implements hardware.
+        // Munge the instance list into the vertex data.
+        munge_instances(current_thread);
+        _num_instances = _instances->size();
+        _instances = nullptr;
+      } else {
+        // No, use the instance count from the ShaderAttrib.
+        int count = sattr->get_instance_count();
+        _num_instances = (count > 0) ? (size_t)count : 1;
+      }
+    } else {
+      _num_instances = 1;
     }
 
 #ifndef NDEBUG
@@ -187,12 +214,28 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
  *
  */
 void CullableObject::
-output(ostream &out) const {
-  if (_geom != (Geom *)NULL) {
+output(std::ostream &out) const {
+  if (_geom != nullptr) {
     out << *_geom;
   } else {
     out << "(null)";
   }
+}
+
+/**
+ * Returns a GeomVertexData that represents the results of computing the
+ * instance arrays for this data.
+ */
+void CullableObject::
+munge_instances(Thread *current_thread) {
+  PStatTimer timer(_munge_instances_pcollector, current_thread);
+
+  PT(GeomVertexData) instanced_data = new GeomVertexData(*_munged_data);
+  const GeomVertexArrayFormat *array_format = GeomVertexArrayFormat::get_instance_array_format();
+
+  CPT(GeomVertexArrayData) new_array = _instances->get_array_data(array_format);
+  instanced_data->insert_array((size_t)-1, new_array);
+  _munged_data = instanced_data;
 }
 
 /**
@@ -214,36 +257,30 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     return false;
   }
 
+  GeomVertexDataPipelineReader reader(source_data, current_thread);
+  reader.check_array_readers();
+
   PStatTimer timer(_munge_sprites_pcollector, current_thread);
-  _sw_sprites_pcollector.add_level(source_data->get_num_rows());
+  _sw_sprites_pcollector.add_level(reader.get_num_rows());
 
   GraphicsStateGuardianBase *gsg = traverser->get_gsg();
 
-  GeomVertexReader vertex(source_data, InternalName::get_vertex(),
-                          current_thread);
-  GeomVertexReader normal(source_data, InternalName::get_normal(),
-                          current_thread);
-  GeomVertexReader color(source_data, InternalName::get_color(),
-                         current_thread);
-  GeomVertexReader texcoord(source_data, InternalName::get_texcoord(),
-                            current_thread);
-  GeomVertexReader rotate(source_data, InternalName::get_rotate(),
-                          current_thread);
-  GeomVertexReader size(source_data, InternalName::get_size(),
-                        current_thread);
-  GeomVertexReader aspect_ratio(source_data, InternalName::get_aspect_ratio(),
-                                current_thread);
+  GeomVertexReader vertex(&reader, InternalName::get_vertex());
+  GeomVertexReader normal(&reader, InternalName::get_normal());
+  GeomVertexReader rotate(&reader, InternalName::get_rotate());
+  GeomVertexReader size(&reader, InternalName::get_size());
+  GeomVertexReader aspect_ratio(&reader, InternalName::get_aspect_ratio());
 
   bool has_normal = (normal.has_column());
-  bool has_color = (color.has_column());
-  bool has_texcoord = (texcoord.has_column());
+  bool has_color = (reader.has_column(InternalName::get_color()));
+  bool has_texcoord = (reader.has_column(InternalName::get_texcoord()));
   bool has_rotate = (rotate.has_column());
   bool has_size = (size.has_column());
   bool has_aspect_ratio = (aspect_ratio.has_column());
 
   bool sprite_texcoord = false;
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
-  if (tex_gen != (TexGenAttrib *)NULL) {
+  if (tex_gen != nullptr) {
     if (tex_gen->get_mode(TextureStage::get_default()) == TexGenAttrib::M_point_sprite) {
       sprite_texcoord = true;
 
@@ -255,7 +292,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   PN_stdfloat point_size = 1;
   bool perspective = false;
   const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
-  if (render_mode != (RenderModeAttrib *)NULL) {
+  if (render_mode != nullptr) {
     point_size = render_mode->get_thickness();
     perspective = render_mode->get_perspective();
 
@@ -271,7 +308,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   {
     LightMutexHolder holder(_format_lock);
-    SourceFormat sformat(source_data->get_format(), sprite_texcoord);
+    SourceFormat sformat(reader.get_format(), sprite_texcoord);
     FormatMap::iterator fmi = _format_map.find(sformat);
     if (fmi != _format_map.end()) {
       new_format = (*fmi).second;
@@ -295,13 +332,13 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
                                     Geom::C_clip_point);
       }
       if (has_normal) {
-        const GeomVertexColumn *c = normal.get_column();
+        const GeomVertexColumn *c = reader.get_format()->get_normal_column();
         new_array_format->add_column
           (InternalName::get_normal(), c->get_num_components(),
            c->get_numeric_type(), c->get_contents());
       }
       if (has_color) {
-        const GeomVertexColumn *c = color.get_column();
+        const GeomVertexColumn *c = reader.get_format()->get_color_column();
         new_array_format->add_column
           (InternalName::get_color(), c->get_num_components(),
            c->get_numeric_type(), c->get_contents());
@@ -313,10 +350,32 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
            Geom::C_texcoord);
 
       } else if (has_texcoord) {
-        const GeomVertexColumn *c = texcoord.get_column();
+        const GeomVertexColumn *c = reader.get_format()->get_column(InternalName::get_texcoord());
         new_array_format->add_column
           (InternalName::get_texcoord(), c->get_num_components(),
            c->get_numeric_type(), c->get_contents());
+      }
+
+      // Go through the other columns and copy them from the original.
+      for (size_t ai = 0; ai < sformat._format->get_num_arrays(); ++ai) {
+        const GeomVertexArrayFormat *aformat = sformat._format->get_array(ai);
+
+        for (size_t ci = 0; ci < (size_t)aformat->get_num_columns(); ++ci) {
+          const GeomVertexColumn *column = aformat->get_column(ci);
+          const InternalName *name = column->get_name();
+          if (name != InternalName::get_vertex() &&
+              name != InternalName::get_normal() &&
+              name != InternalName::get_color() &&
+              name != InternalName::get_texcoord() &&
+              name != InternalName::get_rotate() &&
+              name != InternalName::get_size() &&
+              name != InternalName::get_aspect_ratio()) {
+
+            new_array_format->add_column(name,
+              column->get_num_components(), column->get_numeric_type(),
+              column->get_contents());
+          }
+        }
       }
 
       new_format = GeomVertexFormat::register_format(new_array_format);
@@ -353,7 +412,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   // Now convert all of the vertices in the GeomVertexData to quads.  We
   // always convert all the vertices, assuming all the vertices are referenced
   // by GeomPrimitives, because we want to optimize for the most common case.
-  int orig_verts = source_data->get_num_rows();
+  int orig_verts = reader.get_num_rows();
   int new_verts = 4 * orig_verts;        // each vertex becomes four.
 
   PT(GeomVertexData) new_data = new GeomVertexData
@@ -362,8 +421,49 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   GeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
   GeomVertexWriter new_normal(new_data, InternalName::get_normal());
-  GeomVertexWriter new_color(new_data, InternalName::get_color());
   GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
+
+  nassertr(new_vertex.has_column(), false);
+  unsigned char *write_ptr = new_vertex.get_array_handle()->get_write_pointer();
+
+  // Collect all other columns that we just need to copy the data of.
+  struct CopyOp {
+    unsigned char *_to_pointer;
+    const unsigned char *_from_pointer;
+    size_t _num_bytes;
+    size_t _from_stride;
+  };
+  pvector<CopyOp> copies;
+
+  const GeomVertexArrayFormat *aformat = new_format->get_array(0);
+  for (size_t ci = 0; ci < (size_t)aformat->get_num_columns(); ++ci) {
+    const GeomVertexColumn *column = aformat->get_column(ci);
+    const InternalName *name = column->get_name();
+    if (name != InternalName::get_vertex() &&
+        (retransform_sprites || name != InternalName::get_normal()) &&
+        (!sprite_texcoord || name != InternalName::get_texcoord())) {
+
+      int source_array;
+      const GeomVertexColumn *source_column;
+      if (reader.get_format()->get_array_info(name, source_array, source_column)) {
+        CopyOp copy;
+        copy._to_pointer = write_ptr + (size_t)column->get_start();
+        copy._from_pointer = reader.get_array_reader(source_array)->get_read_pointer(true) + (size_t)source_column->get_start();
+        copy._num_bytes = (size_t)column->get_total_bytes();
+        copy._from_stride = reader.get_format()->get_array(source_array)->get_stride();
+
+        if (!copies.empty() &&
+            (copy._to_pointer == copies.back()._to_pointer + copies.back()._num_bytes) &&
+            (copy._from_pointer == copies.back()._from_pointer + copies.back()._num_bytes)) {
+          // Merge with previous.
+          copies.back()._num_bytes += copy._num_bytes;
+        } else {
+          copies.push_back(copy);
+        }
+      }
+    }
+  }
+  size_t to_stride = aformat->get_stride();
 
   // We'll keep an array of all of the points' eye-space coordinates, and
   // their distance from the camera, so we can sort the points for each
@@ -438,14 +538,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3])));
 
-        if (has_normal) {
-          const LNormal &c = normal.get_data3();
-          new_normal.set_data3(c);
-          new_normal.set_data3(c);
-          new_normal.set_data3(c);
-          new_normal.set_data3(c);
-        }
-
       } else {
         // Without retransform_sprites, we can simply load the clip-space
         // coordinates.
@@ -455,6 +547,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         new_vertex.set_data4(p4[0] - c0[0], p4[1] - c0[1], p4[2], p4[3]);
 
         if (has_normal) {
+          // We need to transform the normals to clip-space too, then.
           LNormal c = render_transform.xform_vec(normal.get_data3());
           new_normal.set_data3(c);
           new_normal.set_data3(c);
@@ -462,24 +555,24 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           new_normal.set_data3(c);
         }
       }
-      if (has_color) {
-        const LColor &c = color.get_data4();
-        new_color.set_data4(c);
-        new_color.set_data4(c);
-        new_color.set_data4(c);
-        new_color.set_data4(c);
-      }
       if (sprite_texcoord) {
         new_texcoord.set_data2(1.0f, 0.0f);
         new_texcoord.set_data2(0.0f, 0.0f);
         new_texcoord.set_data2(1.0f, 1.0f);
         new_texcoord.set_data2(0.0f, 1.0f);
-      } else if (has_texcoord) {
-        const LVecBase4 &c = texcoord.get_data4();
-        new_texcoord.set_data4(c);
-        new_texcoord.set_data4(c);
-        new_texcoord.set_data4(c);
-        new_texcoord.set_data4(c);
+      }
+
+      // Other columns are simply duplicated for each vertex.
+      for (CopyOp &copy : copies) {
+        memcpy(copy._to_pointer, copy._from_pointer, copy._num_bytes);
+        copy._to_pointer += to_stride;
+        memcpy(copy._to_pointer, copy._from_pointer, copy._num_bytes);
+        copy._to_pointer += to_stride;
+        memcpy(copy._to_pointer, copy._from_pointer, copy._num_bytes);
+        copy._to_pointer += to_stride;
+        memcpy(copy._to_pointer, copy._from_pointer, copy._num_bytes);
+        copy._to_pointer += to_stride;
+        copy._from_pointer += copy._from_stride;
       }
 
       ++vi;
@@ -491,7 +584,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   // Determine the format we should use to store the indices.  Don't choose
   // NT_uint8, as Direct3D 9 doesn't support it.
-  const GeomVertexArrayFormat *new_prim_format = NULL;
+  const GeomVertexArrayFormat *new_prim_format = nullptr;
   if (new_verts < 0xffff) {
     new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
 
@@ -545,7 +638,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
         // Now sort the points in order from back-to-front so they will render
         // properly with transparency, at least with each other.
-        sort(vertices, vertices_end, SortPoints(points));
+        std::sort(vertices, vertices_end, SortPoints(points));
 
         // Go through the points, now in sorted order, and generate a pair of
         // triangles for each one.  We generate indexed triangles instead of
@@ -575,7 +668,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
         int min_vi = primitive->get_min_vertex();
         int max_vi = primitive->get_max_vertex();
-        new_primitive->set_minmax(min_vi * 4, max_vi * 4 + 3, NULL, NULL);
+        new_primitive->set_minmax(min_vi * 4, max_vi * 4 + 3, nullptr, nullptr);
 
         new_geom->add_primitive(new_primitive);
       }
@@ -583,12 +676,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   _geom = new_geom.p();
-
-#ifdef USE_MOVE_SEMANTICS
-  _munged_data = move(new_data);
-#else
-  _munged_data = new_data;
-#endif
+  _munged_data = std::move(new_data);
 
   return true;
 }
@@ -603,8 +691,8 @@ get_flash_cpu_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_cpu_state = (const RenderState *)NULL;
-  if (flash_cpu_state == (const RenderState *)NULL) {
+  static CPT(RenderState) flash_cpu_state = nullptr;
+  if (flash_cpu_state == nullptr) {
     flash_cpu_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),
@@ -624,8 +712,8 @@ get_flash_hardware_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_hardware_state = (const RenderState *)NULL;
-  if (flash_hardware_state == (const RenderState *)NULL) {
+  static CPT(RenderState) flash_hardware_state = nullptr;
+  if (flash_hardware_state == nullptr) {
     flash_hardware_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),

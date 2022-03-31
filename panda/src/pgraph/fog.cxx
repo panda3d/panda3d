@@ -27,8 +27,8 @@
 
 TypeHandle Fog::_type_handle;
 
-ostream &
-operator << (ostream &out, Fog::Mode mode) {
+std::ostream &
+operator << (std::ostream &out, Fog::Mode mode) {
   switch (mode) {
   case Fog::M_linear:
     return out << "linear";
@@ -47,7 +47,7 @@ operator << (ostream &out, Fog::Mode mode) {
  *
  */
 Fog::
-Fog(const string &name) :
+Fog(const std::string &name) :
   PandaNode(name)
 {
   _mode = M_linear;
@@ -112,7 +112,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void Fog::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "fog: " << _mode;
   switch (_mode) {
   case M_linear:
@@ -136,7 +136,6 @@ void Fog::
 adjust_to_camera(const TransformState *camera_transform) {
   LVector3 forward = LVector3::forward();
 
-  LPoint3 onset_point, opaque_point;
   if (get_num_parents() != 0) {
     // Linear fog is relative to the fog's net transform in the scene graph.
     NodePath this_np(this);

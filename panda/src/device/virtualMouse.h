@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_DEVICE VirtualMouse : public DataNode {
 PUBLISHED:
-  explicit VirtualMouse(const string &name);
+  explicit VirtualMouse(const std::string &name);
 
   void set_mouse_pos(int x, int y);
   void set_window_size(int width, int height);

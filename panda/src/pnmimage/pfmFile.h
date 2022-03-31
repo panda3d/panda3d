@@ -38,10 +38,10 @@ PUBLISHED:
   void clear(int x_size, int y_size, int num_channels);
 
   BLOCKING bool read(const Filename &fullpath);
-  BLOCKING bool read(istream &in, const Filename &fullpath = Filename());
+  BLOCKING bool read(std::istream &in, const Filename &fullpath = Filename());
   BLOCKING bool read(PNMReader *reader);
   BLOCKING bool write(const Filename &fullpath);
-  BLOCKING bool write(ostream &out, const Filename &fullpath = Filename());
+  BLOCKING bool write(std::ostream &out, const Filename &fullpath = Filename());
   BLOCKING bool write(PNMWriter *writer);
 
   BLOCKING bool load(const PNMImage &pnmimage);
@@ -168,7 +168,7 @@ PUBLISHED:
   INLINE void apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent);
   void apply_exponent(float c0_exponent, float c1_exponent, float c2_exponent, float c3_exponent);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 #ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_points() const);

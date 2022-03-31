@@ -23,13 +23,13 @@
  * whose contents can be continuously extracted as a sequence of lines of
  * text.
  */
-class EXPCL_DTOOL LineStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL LineStreamBuf : public std::streambuf {
 public:
   LineStreamBuf();
   virtual ~LineStreamBuf();
 
   INLINE bool is_text_available() const;
-  string get_line();
+  std::string get_line();
   INLINE bool has_newline() const;
 
 protected:
@@ -39,7 +39,7 @@ protected:
 private:
   INLINE void write_chars(const char *start, size_t length);
 
-  string _data;
+  std::string _data;
   bool _has_newline;
 };
 

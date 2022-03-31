@@ -104,7 +104,7 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
  * sharing of resources.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsOutput *host, const string &name,
+make_buffer(GraphicsOutput *host, const std::string &name,
             int sort, int x_size, int y_size) {
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
                                        FrameBufferProperties(),
@@ -130,7 +130,7 @@ make_buffer(GraphicsOutput *host, const string &name,
  * the first parameter.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsStateGuardian *gsg, const string &name,
+make_buffer(GraphicsStateGuardian *gsg, const std::string &name,
             int sort, int x_size, int y_size) {
   FrameBufferProperties fb_props = FrameBufferProperties::get_default();
   fb_props.set_back_buffers(0);
@@ -144,7 +144,7 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
                                        WindowProperties::size(x_size, y_size),
                                        GraphicsPipe::BF_refuse_window |
                                        GraphicsPipe::BF_fb_props_optional,
-                                       gsg, NULL);
+                                       gsg, nullptr);
   return result;
 }
 
@@ -152,7 +152,7 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
  * Syntactic shorthand for make_buffer.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_parasite(GraphicsOutput *host, const string &name,
+make_parasite(GraphicsOutput *host, const std::string &name,
               int sort, int x_size, int y_size) {
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
                                        FrameBufferProperties(),

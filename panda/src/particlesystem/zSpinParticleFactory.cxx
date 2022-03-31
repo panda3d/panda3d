@@ -76,7 +76,7 @@ populate_child_particle(BaseParticle *bp) const {
  * Write a string representation of this instance to <out>.
  */
 void ZSpinParticleFactory::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"ZSpinParticleFactory";
   #endif //] NDEBUG
@@ -86,7 +86,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void ZSpinParticleFactory::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ZSpinParticleFactory:\n";
   out.width(indent+2); out<<""; out<<"_initial_angle "<<_initial_angle<<"\n";

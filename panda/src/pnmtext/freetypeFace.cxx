@@ -28,7 +28,7 @@ TypeHandle FreetypeFace::_type_handle;
  */
 FreetypeFace::
 FreetypeFace() : _lock("FreetypeFace::_lock") {
-  _face = NULL;
+  _face = nullptr;
   _char_size = 0;
   _dpi = 0;
   _pixel_width = 0;
@@ -44,7 +44,7 @@ FreetypeFace() : _lock("FreetypeFace::_lock") {
  */
 FreetypeFace::
 ~FreetypeFace() {
-  if (_face != NULL){
+  if (_face != nullptr){
     FT_Done_Face(_face);
   }
 }
@@ -101,7 +101,7 @@ void FreetypeFace::
 set_face(FT_Face face) {
   MutexHolder holder(_lock);
 
-  if (_face != NULL){
+  if (_face != nullptr){
     FT_Done_Face(_face);
   }
   _face = face;
@@ -111,7 +111,7 @@ set_face(FT_Face face) {
   _pixel_height = 0;
 
   _name = _face->family_name;
-  if (_face->style_name != NULL) {
+  if (_face->style_name != nullptr) {
     _name += " ";
     _name += _face->style_name;
   }
@@ -129,7 +129,7 @@ set_face(FT_Face face) {
     pnmtext_cat.debug()
       << "default charmap is " << (void *)_face->charmap << "\n";
   }
-  if (_face->charmap == NULL) {
+  if (_face->charmap == nullptr) {
     // If for some reason FreeType didn't set us up a charmap, then set it up
     // ourselves.
     if (_face->num_charmaps == 0) {

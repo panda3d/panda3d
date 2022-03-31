@@ -47,23 +47,30 @@
 #include "displayRegionCullCallbackData.h"
 #include "displayRegionDrawCallbackData.h"
 #include "callbackGraphicsWindow.h"
+#include "depthTestAttrib.h"
+#include "unionBoundingVolume.h"
 
-#if defined(WIN32)
+#if defined(_WIN32) && defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+#include "winInputDeviceManager.h"
+#endif
+
+#if defined(_WIN32)
   #define WINDOWS_LEAN_AND_MEAN
-  #include <WinSock2.h>
+  #include <winsock2.h>
   #include <wtypes.h>
   #undef WINDOWS_LEAN_AND_MEAN
 #else
   #include <sys/time.h>
 #endif
 
+using std::string;
+
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
-PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
+//PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
 PStatCollector GraphicsEngine::_render_frame_pcollector("App:render_frame");
-PStatCollector GraphicsEngine::_do_frame_pcollector("*:do_frame");
 PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_cull_setup_pcollector("Cull:Setup");
@@ -71,15 +78,12 @@ PStatCollector GraphicsEngine::_cull_sort_pcollector("Cull:Sort");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
 PStatCollector GraphicsEngine::_flip_pcollector("Wait:Flip");
-PStatCollector GraphicsEngine::_flip_begin_pcollector("Wait:Flip:Begin");
-PStatCollector GraphicsEngine::_flip_end_pcollector("Wait:Flip:End");
 PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
 PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
-PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
-PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
+PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("PipelineCyclers:Dirty");
 
 
 PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
@@ -107,8 +111,8 @@ PStatCollector GraphicsEngine::_volume_sphere_pcollector("Collision Volumes:Coll
 PStatCollector GraphicsEngine::_test_sphere_pcollector("Collision Tests:CollisionSphere");
 PStatCollector GraphicsEngine::_volume_box_pcollector("Collision Volumes:CollisionBox");
 PStatCollector GraphicsEngine::_test_box_pcollector("Collision Tests:CollisionBox");
-PStatCollector GraphicsEngine::_volume_tube_pcollector("Collision Volumes:CollisionTube");
-PStatCollector GraphicsEngine::_test_tube_pcollector("Collision Tests:CollisionTube");
+PStatCollector GraphicsEngine::_volume_capsule_pcollector("Collision Volumes:CollisionCapsule");
+PStatCollector GraphicsEngine::_test_capsule_pcollector("Collision Tests:CollisionCapsule");
 PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:CollisionInvSphere");
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
@@ -147,7 +151,7 @@ GraphicsEngine(Pipeline *pipeline) :
   _lock("GraphicsEngine::_lock"),
   _loaded_textures_lock("GraphicsEngine::_loaded_textures_lock")
 {
-  if (_pipeline == (Pipeline *)NULL) {
+  if (_pipeline == nullptr) {
     _pipeline = Pipeline::get_render_pipeline();
   }
 
@@ -174,9 +178,9 @@ GraphicsEngine(Pipeline *pipeline) :
 GraphicsEngine::
 ~GraphicsEngine() {
 #ifdef DO_PSTATS
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   remove_all_windows();
@@ -184,7 +188,7 @@ GraphicsEngine::
 
 /**
  * Specifies how future objects created via make_gsg(), make_buffer(), and
- * make_window() will be threaded.  This does not affect any already-created
+ * make_output() will be threaded.  This does not affect any already-created
  * objects.
  */
 void GraphicsEngine::
@@ -288,7 +292,7 @@ make_output(GraphicsPipe *pipe,
   if ((x_size == 0)&&(y_size == 0)) {
     flags |= GraphicsPipe::BF_size_track_host;
   }
-  if (host != 0) {
+  if (host != nullptr) {
     host = host->get_host();
   }
 
@@ -296,28 +300,28 @@ make_output(GraphicsPipe *pipe,
   // call open_windows to get both ready.  If that fails, give up on using the
   // supplied gsg and host.
 
-  if (host == (GraphicsOutput *)NULL) {
-    if (gsg != (GraphicsStateGuardian*)NULL) {
+  if (host == nullptr) {
+    if (gsg != nullptr) {
       if ((!gsg->is_valid())||(gsg->needs_reset())) {
         open_windows();
       }
       if ((!gsg->is_valid())||(gsg->needs_reset())) {
-        gsg = NULL;
+        gsg = nullptr;
       }
     }
   } else {
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
       open_windows();
     }
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
-      host = NULL;
-      gsg = NULL;
+      host = nullptr;
+      gsg = nullptr;
     } else {
       gsg = host->get_gsg();
     }
@@ -325,21 +329,21 @@ make_output(GraphicsPipe *pipe,
 
   // Sanity check everything.
 
-  nassertr(pipe != (GraphicsPipe *)NULL, NULL);
-  if (gsg != (GraphicsStateGuardian *)NULL) {
-    nassertr(pipe == gsg->get_pipe(), NULL);
-    nassertr(this == gsg->get_engine(), NULL);
+  nassertr(pipe != nullptr, nullptr);
+  if (gsg != nullptr) {
+    nassertr(pipe == gsg->get_pipe(), nullptr);
+    nassertr(this == gsg->get_engine(), nullptr);
   }
 
   // Are we really asking for a callback window?
   if ((flags & GraphicsPipe::BF_require_callback_window)!=0) {
     PT(GraphicsStateGuardian) this_gsg = gsg;
-    if (this_gsg == (GraphicsStateGuardian *)NULL) {
+    if (this_gsg == nullptr) {
       // If we don't already have a GSG, we have to ask the pipe to make a new
       // one, unencumbered by window dressing.
       this_gsg = pipe->make_callback_gsg(this);
     }
-    if (this_gsg != (GraphicsStateGuardian *)NULL) {
+    if (this_gsg != nullptr) {
       CallbackGraphicsWindow *window = new CallbackGraphicsWindow(this, pipe, name, fb_prop, win_prop, flags, this_gsg);
       window->_sort = sort;
       do_add_window(window);
@@ -350,13 +354,13 @@ make_output(GraphicsPipe *pipe,
 
     // Couldn't make a callback window, because the pipe wouldn't make an
     // unencumbered GSG.
-    return NULL;
+    return nullptr;
   }
 
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
-  if ((host != 0)&&
+  if ((host != nullptr)&&
       ((flags&GraphicsPipe::BF_require_window)==0)&&
       ((flags&GraphicsPipe::BF_require_callback_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
@@ -406,7 +410,7 @@ make_output(GraphicsPipe *pipe,
     bool precertify = false;
     PT(GraphicsOutput) window =
       pipe->make_output(name, fb_prop, win_prop, flags, this, gsg, host, retry, precertify);
-    if (window != (GraphicsOutput *)NULL) {
+    if (window != nullptr) {
       window->_sort = sort;
       if (precertify && gsg != nullptr && window->get_gsg() == gsg) {
         do_add_window(window);
@@ -445,8 +449,7 @@ make_output(GraphicsPipe *pipe,
       }
 
       // No good; delete the window and keep trying.
-      bool removed = remove_window(window);
-      nassertr(removed, NULL);
+      remove_window(window);
     }
   }
 
@@ -464,7 +467,7 @@ make_output(GraphicsPipe *pipe,
 
   // Could not create a window to the user's specs.
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -512,7 +515,7 @@ add_window(GraphicsOutput *window, int sort) {
  */
 bool GraphicsEngine::
 remove_window(GraphicsOutput *window) {
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
   Thread *current_thread = Thread::get_current_thread();
 
   // First, make sure we know what this window is.
@@ -544,9 +547,9 @@ remove_window(GraphicsOutput *window) {
   do_remove_window(window, current_thread);
 
   GraphicsStateGuardian *gsg = window->get_gsg();
-  if (gsg != (GraphicsStateGuardian *)NULL) {
+  if (gsg != nullptr) {
     PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
-    if (pgo != (PreparedGraphicsObjects *)NULL) {
+    if (pgo != nullptr) {
       // Check to see if any other still-active windows share this context.
       bool any_common = false;
       {
@@ -554,7 +557,7 @@ remove_window(GraphicsOutput *window) {
         Windows::iterator wi;
         for (wi = _windows.begin(); wi != _windows.end() && !any_common; ++wi) {
           GraphicsStateGuardian *gsg2 = (*wi)->get_gsg();
-          if (gsg2 != (GraphicsStateGuardian *)NULL &&
+          if (gsg2 != nullptr &&
               gsg2->get_prepared_objects() == pgo) {
             any_common = true;
           }
@@ -591,19 +594,25 @@ remove_all_windows() {
   // appeared to be happening, and this worked around it.
   Windows old_windows;
   old_windows.swap(_windows);
-  Windows::iterator wi;
-  for (wi = old_windows.begin(); wi != old_windows.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
-    nassertv(win != NULL);
+  for (GraphicsOutput *win : old_windows) {
+    nassertv(win != nullptr);
     do_remove_window(win, current_thread);
     GraphicsStateGuardian *gsg = win->get_gsg();
-    if (gsg != (GraphicsStateGuardian *)NULL) {
+    if (gsg != nullptr) {
       gsg->release_all();
     }
   }
 
   {
     MutexHolder new_windows_holder(_new_windows_lock, current_thread);
+    for (GraphicsOutput *win : _new_windows) {
+      nassertv(win != nullptr);
+      do_remove_window(win, current_thread);
+      GraphicsStateGuardian *gsg = win->get_gsg();
+      if (gsg != nullptr) {
+        gsg->release_all();
+      }
+    }
     _new_windows.clear();
   }
 
@@ -627,6 +636,12 @@ remove_all_windows() {
 
 #ifdef DO_PSTATS
   PStatClient::get_global_pstats()->disconnect();
+#endif
+
+#if defined(_WIN32) && defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  // Send a message to the input message pump asking it to shut itself down.
+  // If we don't do that, the next call will deadlock.
+  WinInputDeviceManager::stop_thread();
 #endif
 
   // Well, and why not clean up all threads here?
@@ -670,7 +685,7 @@ get_num_windows() const {
  */
 GraphicsOutput *GraphicsEngine::
 get_window(int n) const {
-  nassertr(n >= 0 && n < (int)_windows.size(), NULL);
+  nassertr(n >= 0 && n < (int)_windows.size(), nullptr);
 
   if (!_windows_sorted) {
     ((GraphicsEngine *)this)->do_resort_windows();
@@ -695,9 +710,9 @@ render_frame() {
   // to be App.
 #ifdef DO_PSTATS
   _render_frame_pcollector.start();
-  if (_app_pcollector.is_started()) {
-    _app_pcollector.stop();
-  }
+  //if (_app_pcollector.is_started()) {
+  //  _app_pcollector.stop();
+  //}
 #endif
 
   // Make sure our buffers and windows are fully realized before we render a
@@ -731,7 +746,7 @@ render_frame() {
     Windows::iterator wi;
     for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
       GraphicsOutput *win = (*wi);
-      nassertv(win != NULL);
+      nassertv(win != nullptr);
       if (win->get_delete_flag()) {
         do_remove_window(win, current_thread);
 
@@ -745,8 +760,8 @@ render_frame() {
         // frames, so we won't have to recompute it each frame.
         int num_drs = win->get_num_active_display_regions();
         for (int i = 0; i < num_drs; ++i) {
-          DisplayRegion *dr = win->get_active_display_region(i);
-          if (dr != (DisplayRegion *)NULL) {
+          PT(DisplayRegion) dr = win->get_active_display_region(i);
+          if (dr != nullptr) {
             NodePath camera_np = dr->get_camera(current_thread);
             if (!camera_np.is_empty()) {
               Camera *camera = DCAST(Camera, camera_np.node());
@@ -835,6 +850,7 @@ render_frame() {
     // Reset our pcollectors that track data across the frame.
     CullTraverser::_nodes_pcollector.clear_level();
     CullTraverser::_geom_nodes_pcollector.clear_level();
+    CullTraverser::_pgui_nodes_pcollector.clear_level();
     CullTraverser::_geoms_pcollector.clear_level();
     GeomCacheManager::_geom_cache_active_pcollector.clear_level();
     GeomCacheManager::_geom_cache_record_pcollector.clear_level();
@@ -866,8 +882,8 @@ render_frame() {
     _test_sphere_pcollector.clear_level();
     _volume_box_pcollector.clear_level();
     _test_box_pcollector.clear_level();
-    _volume_tube_pcollector.clear_level();
-    _test_tube_pcollector.clear_level();
+    _volume_capsule_pcollector.clear_level();
+    _test_capsule_pcollector.clear_level();
     _volume_inv_sphere_pcollector.clear_level();
     _test_inv_sphere_pcollector.clear_level();
     _volume_geom_pcollector.clear_level();
@@ -906,10 +922,14 @@ render_frame() {
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
       if (thread->_thread_state == TS_wait) {
+        // Release before notifying, otherwise the other thread will wake up
+        // and get blocked on the mutex straight away.
         thread->_thread_state = TS_do_frame;
+        thread->_cv_mutex.release();
         thread->_cv_start.notify();
+      } else {
+        thread->_cv_mutex.release();
       }
-      thread->_cv_mutex.release();
     }
 
     // Some threads may still be drawing, so indicate that we have to wait for
@@ -931,7 +951,7 @@ render_frame() {
 
   // Anything that happens outside of GraphicsEngine::render_frame() is deemed
   // to be App.
-  _app_pcollector.start();
+  //_app_pcollector.start();
   _render_frame_pcollector.stop();
 }
 
@@ -1017,8 +1037,8 @@ open_windows() {
       }
 
       thread->_thread_state = TS_do_windows;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -1135,11 +1155,11 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     thread->_gsg = gsg;
     thread->_texture = tex;
     thread->_thread_state = TS_do_extract;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the extraction.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1166,7 +1186,8 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
  */
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
-  nassertv(sattr->get_shader() != (Shader *)NULL);
+  const Shader *shader = sattr->get_shader();
+  nassertv(shader != nullptr);
   nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
@@ -1176,8 +1197,10 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
+    gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
     gsg->set_state_and_transform(state, TransformState::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
+    gsg->pop_group_marker();
 
   } else {
     // A multi-threaded environment.  We have to wait until the draw thread
@@ -1200,11 +1223,11 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
     thread->_state = state.p();
     thread->_work_groups = work_groups;
     thread->_thread_state = TS_do_compute;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
 
-    //XXX is this necessary, or is acquiring the mutex enough?
+    // Wait for it to finish the compute task.
     while (thread->_thread_state != TS_wait) {
       thread->_cv_done.wait();
     }
@@ -1220,7 +1243,7 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
  */
 GraphicsEngine *GraphicsEngine::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GraphicsEngine;
     PandaNode::set_scene_root_func(&scene_root_func);
   }
@@ -1249,6 +1272,43 @@ texture_uploaded(Texture *tex) {
 }
 
 /**
+ * Called by DisplayRegion::do_get_screenshot
+ */
+PT(Texture) GraphicsEngine::
+do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg) {
+  // A multi-threaded environment.  We have to wait until the draw thread
+  // has finished its current task.
+
+  ReMutexHolder holder(_lock);
+
+  const std::string &draw_name = gsg->get_threading_model().get_draw_name();
+  WindowRenderer *wr = get_window_renderer(draw_name, 0);
+  RenderThread *thread = (RenderThread *)wr;
+  MutexHolder cv_holder(thread->_cv_mutex);
+
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  // Now that the draw thread is idle, signal it to do the extraction task.
+  thread->_region = region;
+  thread->_thread_state = TS_do_screenshot;
+  thread->_cv_mutex.release();
+  thread->_cv_start.notify();
+  thread->_cv_mutex.acquire();
+
+  // Wait for it to finish the extraction.
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  PT(Texture) tex = std::move(thread->_texture);
+  thread->_region = nullptr;
+  thread->_texture = nullptr;
+  return tex;
+}
+
+/**
  * Fires off a cull traversal using the indicated camera.
  */
 void GraphicsEngine::
@@ -1260,32 +1320,6 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   CullTraverser *trav = dr->get_cull_traverser();
   trav->set_cull_handler(cull_handler);
   trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
-
-  trav->set_view_frustum(NULL);
-  if (view_frustum_cull) {
-    // If we're to be performing view-frustum culling, determine the bounding
-    // volume associated with the current viewing frustum.
-
-    // First, we have to get the current viewing frustum, which comes from the
-    // lens.
-    PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
-
-    if (bv != (BoundingVolume *)NULL && !bv->is_infinite() &&
-        bv->as_geometric_bounding_volume() != NULL) {
-      // Transform it into the appropriate coordinate space.
-      PT(GeometricBoundingVolume) local_frustum;
-      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
-      nassertv(!local_frustum.is_null());
-
-      NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
-      CPT(TransformState) cull_center_transform =
-        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
-      local_frustum->xform(cull_center_transform->get_mat());
-
-      trav->set_view_frustum(local_frustum);
-    }
-  }
-
   trav->traverse(scene_setup->get_scene_root());
   trav->end_traverse();
 }
@@ -1314,8 +1348,8 @@ is_scene_root(const PandaNode *node) {
     if (win->is_active() && win->get_gsg()->is_active()) {
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; i++) {
-        DisplayRegion *dr = win->get_active_display_region(i);
-        if (dr != (DisplayRegion *)NULL) {
+        PT(DisplayRegion) dr = win->get_active_display_region(i);
+        if (dr != nullptr) {
           NodePath camera = dr->get_camera();
           if (camera.is_empty()) {
             continue;
@@ -1375,23 +1409,24 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
     GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
-        {
-          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-          win->begin_flip();
-        }
-        {
-          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-          win->end_flip();
-        }
+        PStatTimer timer(_flip_pcollector, current_thread);
+        win->begin_flip();
+        win->end_flip();
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
-        win->clear(current_thread);
+        if (win->is_any_clear_active()) {
+          GraphicsStateGuardian *gsg = win->get_gsg();
+          PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+          gsg->push_group_marker("Clear");
+          win->clear(current_thread);
+          gsg->pop_group_marker();
+        }
 
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
-          DisplayRegion *dr = win->get_active_display_region(i);
-          if (dr != (DisplayRegion *)NULL) {
+          PT(DisplayRegion) dr = win->get_active_display_region(i);
+          if (dr != nullptr) {
             cull_and_draw_together(win, dr, current_thread);
           }
         }
@@ -1399,14 +1434,9 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
 
         if (_auto_flip) {
           if (win->flip_ready()) {
-            {
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-              win->begin_flip();
-            }
-            {
-              PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-              win->end_flip();
-            }
+            PStatTimer timer(_flip_pcollector, current_thread);
+            win->begin_flip();
+            win->end_flip();
           }
         }
       }
@@ -1421,7 +1451,9 @@ void GraphicsEngine::
 cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
                        Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
-  nassertv(gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(gsg != nullptr);
+
+  gsg->push_group_marker(dr->get_debug_name());
 
   PT(SceneSetup) scene_setup;
 
@@ -1431,13 +1463,14 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     gsg->prepare_display_region(&dr_reader);
 
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr);
     }
 
     scene_setup = setup_scene(gsg, &dr_reader);
   }
 
-  if (scene_setup == (SceneSetup *)NULL) {
+  if (scene_setup == nullptr) {
     // Never mind.
 
   } else if (dr->is_stereo()) {
@@ -1452,7 +1485,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     DrawCullHandler cull_handler(gsg);
     if (gsg->begin_scene()) {
       CallbackObject *cbobj = dr->get_cull_callback();
-      if (cbobj != (CallbackObject *)NULL) {
+      if (cbobj != nullptr) {
         // Issue the cull callback on this DisplayRegion.
         DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
         cbobj->do_callback(&cbdata);
@@ -1467,6 +1500,8 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
       gsg->end_scene();
     }
   }
+
+  gsg->pop_group_marker();
 }
 
 /**
@@ -1486,6 +1521,11 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
   typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
+  // We cull shadow passes last; whether we cull them depends on whether their
+  // respective frusta are in view of a "normal" camera.
+  pvector<PT(SceneSetup)> shadow_passes;
+  pmap<NodePath, UnionBoundingVolume> non_shadow_bounds;
+
   size_t wlist_size = wlist.size();
   for (size_t wi = 0; wi < wlist_size; ++wi) {
     GraphicsOutput *win = wlist[wi];
@@ -1494,7 +1534,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; ++i) {
-        DisplayRegion *dr = win->get_active_display_region(i);
+        PT(DisplayRegion) dr = win->get_active_display_region(i);
         if (dr != nullptr) {
           PT(SceneSetup) scene_setup;
           PT(CullResult) cull_result;
@@ -1512,7 +1552,28 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
             key._lens_index = dr_reader.get_lens_index();
           }
 
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(move(key), nullptr)).first;
+          // If this is a shadow pass, postpone culling it until we've culled
+          // all the other passes, and collected their bounding volumes.
+          Light *light = nullptr;
+          if (!key._camera.is_empty()) {
+            light = key._camera.node()->as_light();
+          }
+          if (light != nullptr) {
+            shadow_passes.push_back(std::move(scene_setup));
+            continue;
+          }
+          else if (!shadow_passes.empty()) {
+            NodePath scene_root = scene_setup->get_scene_root();
+            const GeometricBoundingVolume *gbv = scene_setup->get_view_frustum();
+            UnionBoundingVolume &bounds = non_shadow_bounds[scene_root];
+            if (gbv == nullptr || gbv->is_infinite()) {
+              bounds.set_infinite();
+            } else {
+              bounds.add_component(gbv);
+            }
+          }
+
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(std::move(key), nullptr)).first;
           if ((*aci).second == nullptr) {
             // We have not used this camera already in this thread.  Perform
             // the cull operation.
@@ -1538,10 +1599,45 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
           }
 
           // Save the results for next frame.
-          dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
+          dr->set_cull_result(std::move(cull_result), std::move(scene_setup), current_thread);
         }
       }
     }
+  }
+
+  // Now cull all the shadow passes if their cull bounds are in view.
+  // We don't bother checking the AlreadyCulled list, because we know there is
+  // only one output per GSG+light combination.
+  for (PT(SceneSetup) &scene_setup : shadow_passes) {
+    DisplayRegion *dr = scene_setup->get_display_region();
+    GraphicsOutput *win = dr->get_window();
+    PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
+
+    PT(CullResult) cull_result;
+
+    // Are the cull bounds in view of another camera?
+    GeometricBoundingVolume *frustum = scene_setup->get_view_frustum();
+    if (frustum == nullptr ||
+        non_shadow_bounds[scene_setup->get_scene_root()].contains(frustum)) {
+      GraphicsStateGuardian *gsg = win->get_gsg();
+      cull_result = dr->get_cull_result(current_thread);
+      if (cull_result != nullptr) {
+        cull_result = cull_result->make_next();
+      } else {
+        // This DisplayRegion has no cull results; draw it.
+        cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
+      }
+      cull_to_bins(win, gsg, dr, scene_setup, cull_result, current_thread);
+    }
+    else if (display_cat.is_spam()) {
+      display_cat.spam()
+        << *scene_setup->get_camera_node()
+        << " frustum is not in view, skipping shadow pass\n";
+    }
+
+    // Even save the results if null, to tell the draw pass that we don't want
+    // to draw this at all.
+    dr->set_cull_result(std::move(cull_result), std::move(scene_setup), current_thread);
   }
 }
 
@@ -1555,7 +1651,7 @@ cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
 
   BinCullHandler cull_handler(cull_result);
   CallbackObject *cbobj = dr->get_cull_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     // Issue the cull callback on this DisplayRegion.
     DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
     cbobj->do_callback(&cbdata);
@@ -1578,6 +1674,8 @@ cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
  */
 void GraphicsEngine::
 draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
+  PStatTimer timer(_draw_pcollector, current_thread);
+
   nassertv(wlist.verify_list());
 
   size_t wlist_size = wlist.size();
@@ -1589,16 +1687,9 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
       GraphicsOutput *host = win->get_host();
       if (host->flip_ready()) {
-        {
-          // We can't use a PStatGPUTimer before begin_frame, so when using
-          // GPU timing, it is advisable to set auto-flip to #t.
-          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-          host->begin_flip();
-        }
-        {
-          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-          host->end_flip();
-        }
+        PStatTimer timer(_flip_pcollector, current_thread);
+        host->begin_flip();
+        host->end_flip();
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
@@ -1606,7 +1697,12 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // a current context for PStatGPUTimer to work.
         {
           PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
-          win->clear(current_thread);
+          if (win->is_any_clear_active()) {
+            PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+            win->get_gsg()->push_group_marker("Clear");
+            win->clear(current_thread);
+            win->get_gsg()->pop_group_marker();
+          }
 
           if (display_cat.is_spam()) {
             display_cat.spam()
@@ -1614,8 +1710,8 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           }
           int num_display_regions = win->get_num_active_display_regions();
           for (int i = 0; i < num_display_regions; ++i) {
-            DisplayRegion *dr = win->get_active_display_region(i);
-            if (dr != (DisplayRegion *)NULL) {
+            PT(DisplayRegion) dr = win->get_active_display_region(i);
+            if (dr != nullptr) {
               do_draw(win, gsg, dr, current_thread);
             }
           }
@@ -1623,24 +1719,10 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         win->end_frame(GraphicsOutput::FM_render, current_thread);
 
         if (_auto_flip) {
-#ifdef DO_PSTATS
-          // This is a good time to perform a latency query.
-          if (gsg->get_timer_queries_active()) {
-            gsg->issue_timer_query(GraphicsStateGuardian::_command_latency_pcollector.get_index());
-          }
-#endif
-
           if (win->flip_ready()) {
-            {
-              // begin_flip doesn't do anything interesting, let's not waste
-              // two timer queries on that.
-              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
-              win->begin_flip();
-            }
-            {
-              PStatGPUTimer timer(gsg, GraphicsEngine::_flip_end_pcollector, current_thread);
-              win->end_flip();
-            }
+            PStatGPUTimer timer(gsg, _flip_pcollector, current_thread);
+            win->begin_flip();
+            win->end_flip();
           }
         }
 
@@ -1702,6 +1784,8 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   size_t warray_count = 0;
   GraphicsOutput **warray = (GraphicsOutput **)alloca(warray_size);
 
+  PStatTimer timer(_flip_pcollector, current_thread);
+
   size_t i;
   for (i = 0; i < num_windows; ++i) {
     GraphicsOutput *win = wlist[i];
@@ -1710,14 +1794,12 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       warray[warray_count] = win;
       ++warray_count;
 
-      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
       win->begin_flip();
     }
   }
 
   for (i = 0; i < warray_count; ++i) {
     GraphicsOutput *win = warray[i];
-    PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
     win->end_flip();
   }
 }
@@ -1733,7 +1815,7 @@ ready_flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread)
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
-      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
+      PStatTimer timer(_flip_pcollector, current_thread);
       win->ready_flip();
     }
   }
@@ -1827,8 +1909,8 @@ do_flip_frame(Thread *current_thread) {
       RenderThread *thread = (*ti).second;
       nassertv(thread->_thread_state == TS_wait);
       thread->_thread_state = TS_do_flip;
-      thread->_cv_start.notify();
       thread->_cv_mutex.release();
+      thread->_cv_start.notify();
     }
   }
 
@@ -1848,28 +1930,28 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   GraphicsOutput *window = dr->get_window();
   // The window pointer shouldn't be NULL, since we presumably got to this
   // particular DisplayRegion by walking through a list on a window.
-  nassertr(window != (GraphicsOutput *)NULL, NULL);
+  nassertr(window != nullptr, nullptr);
 
   NodePath camera = dr->get_camera();
   if (camera.is_empty()) {
     // No camera, no draw.
-    return NULL;
+    return nullptr;
   }
 
   Camera *camera_node;
-  DCAST_INTO_R(camera_node, camera.node(), NULL);
+  DCAST_INTO_R(camera_node, camera.node(), nullptr);
 
   if (!camera_node->is_active()) {
     // Camera inactive, no draw.
-    return NULL;
+    return nullptr;
   }
   camera_node->cleanup_aux_scene_data(current_thread);
 
   int lens_index = dr->get_lens_index();
   Lens *lens = camera_node->get_lens(lens_index);
-  if (lens == (Lens *)NULL || !camera_node->get_lens_active(lens_index)) {
+  if (lens == nullptr || !camera_node->get_lens_active(lens_index)) {
     // No lens, no draw.
-    return NULL;
+    return nullptr;
   }
 
   NodePath scene_root = camera_node->get_scene();
@@ -1901,7 +1983,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
         << scene_root.get_scale(NodePath()) << "); cannot render.\n";
       _singular_warning_this_frame = true;
     }
-    return NULL;
+    return nullptr;
   }
 
   if (world_transform->is_invalid()) {
@@ -1912,7 +1994,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
         << camera.get_scale(NodePath()) << "); cannot render.\n";
     }
     _singular_warning_this_frame = true;
-    return NULL;
+    return nullptr;
   }
 
   CPT(RenderState) initial_state = camera_node->get_initial_state();
@@ -1944,6 +2026,29 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
 
+  if (view_frustum_cull) {
+    // If we're to be performing view-frustum culling, determine the bounding
+    // volume associated with the current viewing frustum.
+
+    // First, we have to get the current viewing frustum, which comes from the
+    // lens.
+    PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
+
+    if (bv != nullptr && !bv->is_infinite() &&
+        bv->as_geometric_bounding_volume() != nullptr) {
+      // Transform it into the appropriate coordinate space.
+      PT(GeometricBoundingVolume) local_frustum;
+      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
+      nassertr(!local_frustum.is_null(), nullptr);
+
+      CPT(TransformState) cull_center_transform =
+        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
+      local_frustum->xform(cull_center_transform->get_mat());
+
+      scene_setup->set_view_frustum(local_frustum);
+    }
+  }
+
   return scene_setup;
 }
 
@@ -1954,6 +2059,8 @@ void GraphicsEngine::
 do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thread *current_thread) {
   // Statistics
   PStatGPUTimer timer(gsg, dr->get_draw_region_pcollector(), current_thread);
+
+  gsg->push_group_marker(dr->get_debug_name());
 
   PT(CullResult) cull_result;
   PT(SceneSetup) scene_setup;
@@ -1970,18 +2077,22 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     win->change_scenes(&dr_reader);
     gsg->prepare_display_region(&dr_reader);
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr_reader.get_object());
     }
 
     cbobj = dr_reader.get_draw_callback();
   }
 
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     // Issue the draw callback on this DisplayRegion.
 
-    // Set the GSG to the initial state.
+    // Set the GSG to the initial state.  We disable depth testing since that
+    // is the default OpenGL state, and some libraries (eg. Kivy) expect that.
+    static CPT(RenderState) state = RenderState::make(
+      DepthTestAttrib::make(DepthTestAttrib::M_none));
     gsg->clear_before_callback();
-    gsg->set_state_and_transform(RenderState::make_empty(), TransformState::make_identity());
+    gsg->set_state_and_transform(state, TransformState::make_identity());
 
     DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);
     cbobj->do_callback(&cbdata);
@@ -1989,11 +2100,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     // We don't trust the state the callback may have left us in.
     gsg->clear_state_and_transform();
 
-    // The callback has taken care of the drawing.
-    return;
-  }
-
-  if (cull_result == NULL || scene_setup == NULL) {
+  } else if (cull_result == nullptr || scene_setup == nullptr) {
     // Nothing to see here.
 
   } else if (dr->is_stereo()) {
@@ -2014,10 +2121,12 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
       gsg->end_scene();
     }
   }
+
+  gsg->pop_group_marker();
 }
 
 /**
- * An internal function called by make_window() and make_buffer() and similar
+ * An internal function called by make_output() and make_buffer() and similar
  * functions to add the newly-created GraphicsOutput object to the engine's
  * list of windows, and to request that the window be opened.
  */
@@ -2049,7 +2158,7 @@ do_add_window(GraphicsOutput *window) {
  */
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe) {
-  nassertv(gsg != NULL);
+  nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
@@ -2074,7 +2183,7 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe) {
  */
 void GraphicsEngine::
 do_remove_window(GraphicsOutput *window, Thread *current_thread) {
-  nassertv(window != NULL);
+  nassertv(window != nullptr);
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->clear_pipe();
 
@@ -2228,8 +2337,8 @@ terminate_threads(Thread *current_thread) {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_thread_state = TS_terminate;
-    thread->_cv_start.notify();
     thread->_cv_mutex.release();
+    thread->_cv_start.notify();
   }
 
   // Finally, wait for them all to finish cleaning up.
@@ -2285,8 +2394,8 @@ const RenderState *GraphicsEngine::
 get_invert_polygon_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make(CullFaceAttrib::make_reverse());
   }
 
@@ -2303,7 +2412,7 @@ get_invert_polygon_state() {
  */
 GraphicsEngine::WindowRenderer *GraphicsEngine::
 get_window_renderer(const string &name, int pipeline_stage) {
-  nassertr(_lock.debug_is_locked(), NULL);
+  nassertr(_lock.debug_is_locked(), nullptr);
 
   if (name.empty()) {
     return &_app;
@@ -2362,7 +2471,7 @@ add_window(Windows &wlist, GraphicsOutput *window) {
  */
 void GraphicsEngine::WindowRenderer::
 remove_window(GraphicsOutput *window) {
-  nassertv(window != NULL);
+  nassertv(window != nullptr);
   LightReMutexHolder holder(_wl_lock);
   PT(GraphicsOutput) ptwin = window;
 
@@ -2432,13 +2541,20 @@ resort_windows() {
  */
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
-  PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   LightReMutexHolder holder(_wl_lock);
 
-  engine->cull_to_bins(_cull, current_thread);
-  engine->cull_and_draw_together(_cdraw, current_thread);
-  engine->draw_bins(_draw, current_thread);
-  engine->process_events(_window, current_thread);
+  if (!_cull.empty()) {
+    engine->cull_to_bins(_cull, current_thread);
+  }
+  if (!_cdraw.empty()) {
+    engine->cull_and_draw_together(_cdraw, current_thread);
+  }
+  if (!_draw.empty()) {
+    engine->draw_bins(_draw, current_thread);
+  }
+  if (!_window.empty()) {
+    engine->process_events(_window, current_thread);
+  }
 
   // If any GSG's on the list have no more outstanding pointers, clean them
   // up.  (We are in the draw thread for all of these GSG's.)
@@ -2623,13 +2739,24 @@ thread_main() {
 
     case TS_do_compute:
       nassertd(_gsg != nullptr && _state != nullptr) break;
-      _gsg->set_state_and_transform(_state, TransformState::make_identity());
-      _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+      {
+        const ShaderAttrib *sattr;
+        _state->get_attrib(sattr);
+        _gsg->push_group_marker(std::string("Compute ") + sattr->get_shader()->get_filename(Shader::ST_compute).get_basename());
+        _gsg->set_state_and_transform(_state, TransformState::make_identity());
+        _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+        _gsg->pop_group_marker();
+      }
       break;
 
     case TS_do_extract:
       nassertd(_gsg != nullptr && _texture != nullptr) break;
       _result = _gsg->extract_texture_data(_texture);
+      break;
+
+    case TS_do_screenshot:
+      nassertd(_region != nullptr) break;
+      _texture = _region->get_screenshot();
       break;
 
     case TS_terminate:

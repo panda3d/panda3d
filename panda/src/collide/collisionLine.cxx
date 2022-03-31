@@ -51,7 +51,7 @@ test_intersection(const CollisionEntry &entry) const {
  *
  */
 void CollisionLine::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "line, o (" << get_origin() << "), d (" << get_direction() << ")";
 }
 
@@ -70,7 +70,7 @@ fill_viz_geom() {
   static const double scale = 100.0;
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("collision", GeomVertexFormat::get_v3cp(),
+    ("collision", GeomVertexFormat::get_v3c(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());

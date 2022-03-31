@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_wrappers.h
  * @author rdb
  * @date 2017-11-26
@@ -56,22 +49,12 @@ struct Dtool_GeneratorWrapper {
   iternextfunc _iternext_func;
 };
 
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_SequenceWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MutableSequenceWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MutableMappingWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Items_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Keys_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_MappingWrapper_Values_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_GeneratorWrapper_Type;
-EXPCL_INTERROGATEDB extern PyTypeObject Dtool_StaticProperty_Type;
-
-EXPCL_INTERROGATEDB Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name);
-EXPCL_INTERROGATEDB Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, const char *name);
-EXPCL_INTERROGATEDB Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name);
-EXPCL_INTERROGATEDB Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char *name);
-EXPCL_INTERROGATEDB PyObject *Dtool_NewGenerator(PyObject *self, const char *name, iternextfunc func);
-EXPCL_INTERROGATEDB PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
+EXPCL_PYPANDA Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA PyObject *Dtool_NewGenerator(PyObject *self, iternextfunc func);
+EXPCL_PYPANDA PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
 
 #endif  // HAVE_PYTHON
 

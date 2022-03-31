@@ -28,7 +28,7 @@
 /**
  * Maps a web page (URL root) into the VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountHTTP : public VirtualFileMount {
+class EXPCL_PANDA_DOWNLOADER VirtualFileMountHTTP : public VirtualFileMount {
 PUBLISHED:
   explicit VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
   virtual ~VirtualFileMountHTTP();
@@ -48,15 +48,15 @@ public:
   virtual bool is_directory(const Filename &file) const;
   virtual bool is_regular_file(const Filename &file) const;
 
-  virtual istream *open_read_file(const Filename &file) const;
-  virtual streamsize get_file_size(const Filename &file, istream *stream) const;
-  virtual streamsize get_file_size(const Filename &file) const;
+  virtual std::istream *open_read_file(const Filename &file) const;
+  virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;
+  virtual std::streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
 
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   PT(HTTPChannel) get_channel();
   void recycle_channel(HTTPChannel *channel);

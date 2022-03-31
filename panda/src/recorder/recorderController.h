@@ -52,10 +52,10 @@ PUBLISHED:
   INLINE double get_clock_offset() const;
   INLINE int get_frame_offset() const;
 
-  INLINE void add_recorder(const string &name, RecorderBase *recorder);
-  INLINE bool has_recorder(const string &name) const;
-  INLINE RecorderBase *get_recorder(const string &name) const;
-  INLINE bool remove_recorder(const string &name);
+  INLINE void add_recorder(const std::string &name, RecorderBase *recorder);
+  INLINE bool has_recorder(const std::string &name) const;
+  INLINE RecorderBase *get_recorder(const std::string &name) const;
+  INLINE bool remove_recorder(const std::string &name);
 
   INLINE void set_frame_tie(bool frame_tie);
   INLINE bool get_frame_tie() const;

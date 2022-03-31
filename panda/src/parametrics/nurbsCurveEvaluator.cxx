@@ -177,7 +177,7 @@ evaluate(const NodePath &rel_to, const LMatrix4 &mat) const {
  *
  */
 void NurbsCurveEvaluator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "NurbsCurve, " << get_num_knots() << " knots.";
 }
 

@@ -15,7 +15,7 @@
  *
  */
 INLINE XFileDataDef::
-XFileDataDef(XFile *x_file, const string &name,
+XFileDataDef(XFile *x_file, const std::string &name,
              XFileDataDef::Type type, XFileTemplate *xtemplate) :
   XFileNode(x_file, name),
   _type(type),

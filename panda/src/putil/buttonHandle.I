@@ -15,7 +15,7 @@
  * Constructs a ButtonHandle with the corresponding index number, which may
  * have been returned by an earlier call to ButtonHandle::get_index().
  */
-CONSTEXPR ButtonHandle::
+constexpr ButtonHandle::
 ButtonHandle(int index) : _index(index) {
 }
 
@@ -124,7 +124,7 @@ matches(const ButtonHandle &other) const {
  * opaque classes.  This is provided for the convenience of non-C++ scripting
  * languages to build a hashtable of ButtonHandles.
  */
-CONSTEXPR int ButtonHandle::
+constexpr int ButtonHandle::
 get_index() const {
   return _index;
 }
@@ -133,17 +133,8 @@ get_index() const {
  *
  */
 INLINE void ButtonHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
-}
-
-/**
- * Returns a special zero-valued ButtonHandle that is used to indicate no
- * button.
- */
-INLINE ButtonHandle ButtonHandle::
-none() {
-  return _none;
 }
 
 /**

@@ -24,7 +24,7 @@ set_shader_input(CPT_InternalName name, PyObject *value, int priority) const {
   ShaderAttrib *attrib = new ShaderAttrib(*_this);
 
   ShaderInput &input = attrib->_inputs[name];
-  invoke_extension(&input).__init__(move(name), value);
+  invoke_extension(&input).__init__(std::move(name), value);
 
   return ShaderAttrib::return_new(attrib);
 }
@@ -49,20 +49,16 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) const {
   while (PyDict_Next(kwargs, &pos, &key, &value)) {
     char *buffer;
     Py_ssize_t length;
-#if PY_MAJOR_VERSION >= 3
     buffer = (char *)PyUnicode_AsUTF8AndSize(key, &length);
     if (buffer == nullptr) {
-#else
-    if (PyString_AsStringAndSize(key, &buffer, &length) == -1) {
-#endif
       Dtool_Raise_TypeError("ShaderAttrib.set_shader_inputs accepts only string keywords");
       delete attrib;
       return nullptr;
     }
 
-    CPT_InternalName name(string(buffer, length));
+    CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
-    invoke_extension(&input).__init__(move(name), value);
+    invoke_extension(&input).__init__(std::move(name), value);
   }
 
   return ShaderAttrib::return_new(attrib);

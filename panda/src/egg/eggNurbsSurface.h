@@ -24,7 +24,7 @@
 /**
  * A parametric NURBS surface.
  */
-class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
+class EXPCL_PANDA_EGG EggNurbsSurface : public EggSurface {
 PUBLISHED:
   typedef plist< PT(EggNurbsCurve) > Curves;
   typedef Curves Loop;
@@ -32,7 +32,7 @@ PUBLISHED:
   typedef Loops Trim;
   typedef plist<Trim> Trims;
 
-  INLINE explicit EggNurbsSurface(const string &name = "");
+  INLINE explicit EggNurbsSurface(const std::string &name = "");
   INLINE EggNurbsSurface(const EggNurbsSurface &copy);
   INLINE EggNurbsSurface &operator = (const EggNurbsSurface &copy);
 
@@ -75,7 +75,7 @@ PUBLISHED:
   MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   INLINE EggVertex *get_cv(int ui, int vi) const;
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 public:
   Curves _curves_on_surface;

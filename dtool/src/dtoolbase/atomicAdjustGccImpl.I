@@ -30,11 +30,12 @@ dec(TVOLATILE AtomicAdjustGccImpl::Integer &var) {
 
 /**
  * Atomically computes var += delta.  It is legal for delta to be negative.
+ * Returns the result of the addition.
  */
-INLINE void AtomicAdjustGccImpl::
+INLINE AtomicAdjustGccImpl::Integer AtomicAdjustGccImpl::
 add(TVOLATILE AtomicAdjustGccImpl::Integer &var,
     AtomicAdjustGccImpl::Integer delta) {
-  __atomic_fetch_add(&var, delta, __ATOMIC_SEQ_CST);
+  return __atomic_add_fetch(&var, delta, __ATOMIC_SEQ_CST);
 }
 
 /**

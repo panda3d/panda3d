@@ -28,7 +28,7 @@
  * sparks, etc.
  */
 
-class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);
@@ -51,8 +51,8 @@ PUBLISHED:
   INLINE void set_line_scale_factor(PN_stdfloat sf);
   INLINE PN_stdfloat get_line_scale_factor() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   LColor _head_color;

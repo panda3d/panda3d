@@ -29,7 +29,7 @@
 template<class Parameter>
 class EggMorph : public Namable {
 public:
-  INLINE EggMorph(const string &name, const Parameter &offset);
+  INLINE EggMorph(const std::string &name, const Parameter &offset);
   INLINE void set_offset(const Parameter &offset);
   INLINE const Parameter &get_offset() const;
 
@@ -39,7 +39,7 @@ public:
 
   INLINE int compare_to(const EggMorph<Parameter> &other, double threshold) const;
 
-  INLINE void output(ostream &out, const string &tag,
+  INLINE void output(std::ostream &out, const std::string &tag,
                      int num_dimensions) const;
 
 private:
@@ -49,8 +49,8 @@ private:
 // I'd love to export these, but it produces a strange linker issue with Mac
 // OS X's version of GCC.  We'll do it only on Windows, then.
 #ifdef _MSC_VER
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector3d>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, EggMorph<LVector3d>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, EggMorph<LVector4>);
 #endif
 
 typedef EggMorph<LVector3d> EggMorphVertex;

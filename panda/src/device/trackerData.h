@@ -20,7 +20,7 @@
 /**
  * Stores the kinds of data that a tracker might output.
  */
-class EXPCL_PANDA_DEVICE TrackerData {
+class EXPCL_PANDA_DEVICE TrackerData : public MemoryBase {
 public:
   INLINE TrackerData();
   INLINE TrackerData(const TrackerData &copy);

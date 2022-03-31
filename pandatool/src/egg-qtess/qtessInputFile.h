@@ -18,6 +18,7 @@
 #include "qtessInputEntry.h"
 #include "filename.h"
 #include "pvector.h"
+#include "vector_double.h"
 
 class QtessSurface;
 
@@ -37,7 +38,7 @@ public:
   QtessInputEntry::Type match(QtessSurface *surface);
   int count_tris();
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   void add_default_entry();

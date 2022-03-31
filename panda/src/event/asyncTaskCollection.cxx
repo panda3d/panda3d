@@ -46,7 +46,7 @@ add_task(AsyncTask *task) {
   // If the pointer to our internal array is shared by any other
   // AsyncTaskCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren AsyncTaskCollection objects.
-  nassertv(task != (AsyncTask *)NULL);
+  nassertv(task != nullptr);
 
   if (_tasks.get_ref_count() > 1) {
     AsyncTasks old_tasks = _tasks;
@@ -174,7 +174,7 @@ clear() {
  * if no task has that name.
  */
 AsyncTask *AsyncTaskCollection::
-find_task(const string &name) const {
+find_task(const std::string &name) const {
   size_t num_tasks = get_num_tasks();
   for (size_t i = 0; i < num_tasks; ++i) {
     AsyncTask *task = get_task(i);
@@ -182,7 +182,7 @@ find_task(const string &name) const {
       return task;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -246,7 +246,7 @@ size() const {
  * indicated output stream.
  */
 void AsyncTaskCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_tasks() == 1) {
     out << "1 AsyncTask";
   } else {
@@ -259,7 +259,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void AsyncTaskCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (size_t i = 0; i < get_num_tasks(); i++) {
     indent(out, indent_level) << *get_task(i) << "\n";
   }

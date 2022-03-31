@@ -12,8 +12,25 @@
  */
 
 #include "graphicsWindow_ext.h"
+#include "windowProperties_ext.h"
 
 #ifdef HAVE_PYTHON
+
+/**
+ * Convenient shorthand for requesting properties.
+ */
+void Extension<GraphicsWindow>::
+request_properties(PyObject *args, PyObject *kwds) {
+  extern struct Dtool_PyTypedObject Dtool_WindowProperties;
+
+  WindowProperties props;
+  PyObject *py_props = DTool_CreatePyInstance((void *)&props, Dtool_WindowProperties, false, false);
+
+  invoke_extension(&props).__init__(py_props, args, kwds);
+
+  _this->request_properties(props);
+  Py_DECREF(py_props);
+}
 
 /**
  * Adds a python event handler to be called when a window event occurs.
@@ -30,20 +47,15 @@ add_python_event_handler(PyObject* handler, PyObject* name){
  */
 void Extension<GraphicsWindow>::
 remove_python_event_handler(PyObject* name){
-  list<PythonGraphicsWindowProc*> toRemove;
+  std::list<PythonGraphicsWindowProc*> toRemove;
   GraphicsWindow::PythonWinProcClasses::iterator iter;
   for (iter = _this->_python_window_proc_classes.begin(); iter != _this->_python_window_proc_classes.end(); ++iter) {
     PythonGraphicsWindowProc* pgwp = (PythonGraphicsWindowProc*)*iter;
     if (PyObject_RichCompareBool(pgwp->get_name(), name, Py_EQ) == 1) {
       toRemove.push_back(pgwp);
     }
-#if PY_MAJOR_VERSION < 3
-    else if (PyObject_Compare(pgwp->get_name(), name) == 0) {
-      toRemove.push_back(pgwp);
-    }
-#endif
   }
-  list<PythonGraphicsWindowProc*>::iterator iter2;
+  std::list<PythonGraphicsWindowProc*>::iterator iter2;
   for (iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2) {
     PythonGraphicsWindowProc* pgwp = *iter2;
     _this->remove_window_proc(pgwp);

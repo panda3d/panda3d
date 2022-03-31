@@ -19,13 +19,15 @@
 #include "config_downloader.h"
 #include <zlib.h>
 
+using std::ios;
+
 unsigned long
 check_crc(Filename name) {
   pifstream read_stream;
   name.set_binary();
   if (!name.open_read(read_stream)) {
     downloader_cat.error()
-      << "check_crc() - Failed to open input file: " << name << endl;
+      << "check_crc() - Failed to open input file: " << name << std::endl;
     return 0;
   }
 
@@ -51,7 +53,7 @@ check_adler(Filename name) {
   name.set_binary();
   if (!name.open_read(read_stream)) {
     downloader_cat.error()
-      << "check_adler() - Failed to open input file: " << name << endl;
+      << "check_adler() - Failed to open input file: " << name << std::endl;
     return 0;
   }
 

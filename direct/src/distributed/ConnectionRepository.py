@@ -1,15 +1,18 @@
 from panda3d.core import *
 from panda3d.direct import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
+from direct.showbase.MessengerGlobal import messenger
 from .PyDatagramIterator import PyDatagramIterator
 
-import types
+import inspect
 import gc
 
+__all__ = ["ConnectionRepository", "GCTrigger"]
 
 class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
@@ -174,7 +177,7 @@ class ConnectionRepository(
         def applyFieldValues(distObj, dclass, values):
             for i in range(dclass.getNumInheritedFields()):
                 field = dclass.getInheritedField(i)
-                if field.asMolecularField() == None:
+                if field.asMolecularField() is None:
                     value = values.get(field.getName(), None)
                     if value is None and field.isRequired():
                         # Gee, this could be better.  What would really be
@@ -213,7 +216,7 @@ class ConnectionRepository(
 
         # Construct a new one
         classDef = dclass.getClassDef()
-        if classDef == None:
+        if classDef is None:
             self.notify.error("Could not create an undefined %s object."%(
                 dclass.getName()))
         distObj = classDef(self)
@@ -251,7 +254,7 @@ class ConnectionRepository(
             dcFileNames = [dcFileNames]
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -259,6 +262,7 @@ class ConnectionRepository(
             searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
                 pathname = Filename(dcFileName)
+                vfs = VirtualFileSystem.getGlobalPtr()
                 vfs.resolveFilename(pathname, searchPath)
                 readResult = dcFile.read(pathname)
                 if not readResult:
@@ -320,19 +324,19 @@ class ConnectionRepository(
                 classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
             if classDef is None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
-                if type(classDef) == types.ModuleType:
+                if inspect.ismodule(classDef):
                     if not hasattr(classDef, className):
                         self.notify.warning("Module %s does not define class %s." % (className, className))
                         continue
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                if not inspect.isclass(classDef):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
@@ -377,7 +381,7 @@ class ConnectionRepository(
             # in the DC file.
             for i in range(dcFile.getNumClasses()):
                 dclass = dcFile.getClass(i)
-                if ((dclass.getName()+ownerDcSuffix) in ownerImportSymbols):
+                if (dclass.getName()+ownerDcSuffix) in ownerImportSymbols:
                     number = dclass.getNumber()
                     className = dclass.getName() + ownerDcSuffix
 
@@ -387,7 +391,7 @@ class ConnectionRepository(
                     if classDef is None:
                         self.notify.error("No class definition for %s." % className)
                     else:
-                        if type(classDef) == types.ModuleType:
+                        if inspect.ismodule(classDef):
                             if not hasattr(classDef, className):
                                 self.notify.error("Module %s does not define class %s." % (className, className))
                             classDef = getattr(classDef, className)
@@ -581,7 +585,7 @@ class ConnectionRepository(
         # available.  Returns the HTTPClient (also self.http), or None
         # if not set.
 
-        if self.http == None:
+        if self.http is None:
             try:
                 self.http = HTTPClient()
             except:
@@ -660,7 +664,7 @@ class ConnectionRepository(
             self.setSimulatedDisconnect(0)
 
     def uniqueName(self, idString):
-        return ("%s-%s" % (idString, self.uniqueId))
+        return "%s-%s" % (idString, self.uniqueId)
 
 class GCTrigger:
     # used to trigger garbage collection

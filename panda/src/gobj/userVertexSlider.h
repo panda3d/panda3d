@@ -30,7 +30,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ UserVertexSlider : public VertexSlider {
 PUBLISHED:
-  explicit UserVertexSlider(const string &name);
+  explicit UserVertexSlider(const std::string &name);
   explicit UserVertexSlider(const InternalName *name);
 
   INLINE void set_slider(PN_stdfloat slider);

@@ -51,17 +51,16 @@ class FactoryParams;
  * directly.  Instead, call one of the make() functions to create one for you.
  * And instead of modifying a TransformState object, create a new one.
  */
-class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
-protected:
+class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
+private:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;
@@ -70,13 +69,15 @@ PUBLISHED:
   bool operator == (const TransformState &other) const;
   INLINE size_t get_hash() const;
 
-  static CPT(TransformState) make_identity();
-  static CPT(TransformState) make_invalid();
+  INLINE static CPT(TransformState) make_identity();
+  INLINE static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3 &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3 &hpr);
   INLINE static CPT(TransformState) make_quat(const LQuaternion &quat);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3 &pos,
                                                  const LVecBase3 &hpr);
+  INLINE static CPT(TransformState) make_pos_quat(const LVecBase3 &pos,
+                                                  const LQuaternion &quat);
   INLINE static CPT(TransformState) make_scale(PN_stdfloat scale);
   INLINE static CPT(TransformState) make_scale(const LVecBase3 &scale);
   INLINE static CPT(TransformState) make_shear(const LVecBase3 &shear);
@@ -141,6 +142,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_uniform_scale() const;
   INLINE const LVecBase3 &get_shear() const;
   INLINE const LMatrix4 &get_mat() const;
+  INLINE const LMatrix4 *get_inverse_mat() const;
 
   INLINE LVecBase2 get_pos2d() const;
   INLINE PN_stdfloat get_rotate2d() const;
@@ -195,16 +197,16 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
-  void write_composition_cache(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
+  void write_composition_cache(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
@@ -213,6 +215,11 @@ public:
   static void init_states();
 
   INLINE static void flush_level();
+
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
 
 private:
   INLINE bool do_cache_unref() const;
@@ -253,15 +260,15 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
-  static States *_states;
+  typedef SimpleHashMap<const TransformState *, std::nullptr_t, indirect_equals_hash<const TransformState *> > States;
+  static States _states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
 
   // This iterator records the entry corresponding to this TransformState
   // object in the above global set.  We keep the index around so we can
   // remove it when the TransformState destructs.
-  int _saved_entry;
+  int _saved_entry = -1;
 
   // This data structure manages the job of caching the composition of two
   // TransformStates.  It's complicated because we have to be sure to remove
@@ -275,9 +282,6 @@ private:
   // object destructs.
   class Composition {
   public:
-    INLINE Composition();
-    INLINE Composition(const Composition &copy);
-
     // _result is reference counted if and only if it is not the same pointer
     // as this.
     const TransformState *_result;
@@ -319,8 +323,7 @@ private:
   INLINE void check_quat() const;
   INLINE void check_norm_quat() const;
   INLINE void check_mat() const;
-  INLINE void calc_hash();
-  void do_calc_hash();
+  void calc_hash() const;
   void calc_singular();
   INLINE void calc_components();
   void do_calc_components();
@@ -358,15 +361,20 @@ private:
     F_has_nonzero_shear  = 0x00004000,
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
-    F_hash_known         = 0x00020000,
     F_norm_quat_known    = 0x00040000,
   };
   LPoint3 _pos;
   LVecBase3 _hpr, _scale, _shear;
   LQuaternion _quat, _norm_quat;
   LMatrix4 _mat;
-  LMatrix4 *_inv_mat;
-  size_t _hash;
+  LMatrix4 *_inv_mat = nullptr;
+
+  enum HashValue : AtomicAdjust::Integer {
+    H_unknown = 0,
+    H_identity = 1,
+    H_invalid = 2,
+  };
+  mutable AtomicAdjust::Integer _hash = H_unknown;
 
   unsigned int _flags;
 
@@ -408,7 +416,7 @@ private:
 template<>
 INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const TransformState &state) {
+INLINE std::ostream &operator << (std::ostream &out, const TransformState &state) {
   state.output(out);
   return out;
 }

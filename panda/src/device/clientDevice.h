@@ -15,12 +15,7 @@
 #define CLIENTDEVICE_H
 
 #include "pandabase.h"
-
-#include "typedReferenceCount.h"
-
-#ifdef OLD_HAVE_IPC
-#include <ipc_mutex.h>
-#endif
+#include "inputDevice.h"
 
 class ClientBase;
 
@@ -29,46 +24,36 @@ class ClientBase;
  * ClientBase, including trackers, etc.  This is an abstract interface; the
  * actual implementations are in ClientTrackerDevice, etc.
  */
-class EXPCL_PANDA_DEVICE ClientDevice : public TypedReferenceCount {
+class EXPCL_PANDA_DEVICE ClientDevice : public InputDevice {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,
-               const string &device_name);
+               const std::string &device_name);
 
 public:
   virtual ~ClientDevice();
 
   INLINE ClientBase *get_client() const;
   INLINE TypeHandle get_device_type() const;
-  INLINE const string &get_device_name() const;
 
-  INLINE bool is_connected() const;
   void disconnect();
 
-  void poll();
-  INLINE void acquire();
-  INLINE void unlock();
+  virtual void do_poll() final;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   ClientBase *_client;
   TypeHandle _device_type;
-  string _device_name;
-  bool _is_connected;
-
-#ifdef OLD_HAVE_IPC
-  mutex _lock;
-#endif
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    InputDevice::init_type();
     register_type(_type_handle, "ClientDevice",
-                  TypedReferenceCount::get_class_type());
+                  InputDevice::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -81,7 +66,7 @@ private:
   friend class ClientBase;
 };
 
-INLINE ostream &operator <<(ostream &out, const ClientDevice &device) {
+INLINE std::ostream &operator <<(std::ostream &out, const ClientDevice &device) {
   device.output(out);
   return out;
 }

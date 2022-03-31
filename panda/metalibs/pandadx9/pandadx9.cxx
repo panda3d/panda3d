@@ -9,12 +9,6 @@
 #include "config_dxgsg9.h"
 #include "wdxGraphicsPipe9.h"
 
-// By including checkPandaVersion.h, we guarantee that runtime attempts to
-// load libpandadx9.dll will fail if they inadvertently link with the wrong
-// version of libdtool.dll.
-
-#include "checkPandaVersion.h"
-
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

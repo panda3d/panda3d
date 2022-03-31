@@ -7,6 +7,7 @@ from panda3d.core import *
 from panda3d.direct import *
 # Import the type numbers
 
+
 class PyDatagramIterator(DatagramIterator):
 
     # This is a little helper Dict to replace the huge <if> statement
@@ -23,11 +24,26 @@ class PyDatagramIterator(DatagramIterator):
         STUint64: DatagramIterator.getUint64,
         STFloat64: DatagramIterator.getFloat64,
         STString: DatagramIterator.getString,
-        STBlob: DatagramIterator.getString,
-        STBlob32: DatagramIterator.getString32,
+        STBlob: DatagramIterator.getBlob,
+        STBlob32: DatagramIterator.getBlob32,
         }
 
     getChannel = DatagramIterator.getUint64
+
+    def __init__(self, datagram=None, offset=0):
+        if datagram is not None:
+            super().__init__(datagram, offset)
+
+            # Retain a reference to it so that it doesn't get deleted.
+            self.__datagram = datagram
+        else:
+            super().__init__()
+
+    def getDatagram(self):
+        return self.__datagram
+
+    def get_datagram(self):
+        return self.__datagram
 
     def getArg(self, subatomicType, divisor=1):
         # Import the type numbers
@@ -75,7 +91,7 @@ class PyDatagramIterator(DatagramIterator):
                     b = self.getUint8()
                     retVal.append((a, b))
             else:
-                raise Exception("Error: No such type as: " + str(subAtomicType))
+                raise Exception("Error: No such type as: " + str(subatomicType))
         else:
             # See if it is in the handy dict
             getFunc = self.FuncDict.get(subatomicType)
@@ -121,8 +137,4 @@ class PyDatagramIterator(DatagramIterator):
             else:
                 raise Exception("Error: No such type as: " + str(subatomicType))
 
-
-
         return retVal
-
-

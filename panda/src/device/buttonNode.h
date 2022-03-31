@@ -19,8 +19,6 @@
 #include "clientBase.h"
 #include "clientButtonDevice.h"
 #include "dataNode.h"
-#include "buttonEventList.h"
-
 
 /**
  * This is the primary interface to on/off button devices associated with a
@@ -34,7 +32,8 @@
  */
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
-  explicit ButtonNode(ClientBase *client, const string &device_name);
+  explicit ButtonNode(ClientBase *client, const std::string &device_name);
+  explicit ButtonNode(InputDevice *device);
   virtual ~ButtonNode();
 
   INLINE bool is_valid() const;
@@ -48,11 +47,11 @@ PUBLISHED:
   INLINE bool is_button_known(int index) const;
 
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
-  PT(ClientButtonDevice) _button;
+  PT(InputDevice) _device;
 
 protected:
   // Inherited from DataNode
@@ -63,7 +62,6 @@ protected:
 private:
   // outputs
   int _button_events_output;
-  PT(ButtonEventList) _button_events;
 
 public:
   static TypeHandle get_class_type() {

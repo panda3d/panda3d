@@ -245,7 +245,7 @@ void RemoveNodeCB::proc(INodeTab &nodeTab) {
 }
 
 MaxEggOptions::MaxEggOptions() {
-    _max_interface = NULL;
+    _max_interface = nullptr;
     _anim_type = MaxEggOptions::AT_model;
     _start_frame = INT_MIN;
     _end_frame = INT_MIN;
@@ -593,7 +593,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
     _stprintf(_short_name, _T("%.*s..."), sizeof(_short_name)-4, temp);
   else {
     _tcscpy(_short_name, temp);
-    _short_name[_tcslen(_short_name) - 4] = NULL; //Cut off the .egg
+    _short_name[_tcslen(_short_name) - 4] = 0; //Cut off the .egg
   }
 
   _start_frame = newSF;

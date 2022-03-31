@@ -17,9 +17,11 @@
 #include <errno.h>
 #include <stdio.h>
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   #include <winsock2.h>
 #endif
+
+using std::string;
 
 /**
  *
@@ -151,7 +153,7 @@ string error_to_text(ErrorUtilCode err) {
  */
 int
 get_write_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return EU_error_abort;
 #else
   switch (errno) {
@@ -187,11 +189,11 @@ get_write_error() {
  *
  */
 string handle_socket_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return string(strerror(errno));
 #else
   int err = WSAGetLastError();
-  char *errmsg;
+  const char *errmsg;
   switch (err) {
     case 10022:
       errmsg =  "An invalid argument was supplied";
@@ -229,7 +231,7 @@ string handle_socket_error() {
       errmsg = strerror(errno);
     default:
       if (express_cat.is_debug())
-        express_cat.debug() << "handle_socket_error - unknown error: " << err << endl;
+        express_cat.debug() << "handle_socket_error - unknown error: " << err << std::endl;
       errmsg = "Unknown WSA error";
   }
 
@@ -246,7 +248,7 @@ string handle_socket_error() {
  */
 int
 get_network_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return EU_error_abort;
 #else
   int err = WSAGetLastError();
@@ -282,12 +284,12 @@ get_network_error() {
       if (express_cat.is_debug())
         express_cat.debug()
           << "get_network_error() - WSA error = 0 - error : "
-          << strerror(errno) << endl;
+          << strerror(errno) << std::endl;
       return EU_error_abort;
     default:
       if (express_cat.is_debug())
         express_cat.debug()
-          << "get_network_error() - unknown error: " << err << endl;
+          << "get_network_error() - unknown error: " << err << std::endl;
       return EU_error_abort;
   }
 #endif

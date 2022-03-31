@@ -49,7 +49,7 @@ get_video_height() const {
 INLINE MovieVideoCursor *MovieTexture::
 get_color_cursor(int page) {
   CDReader cdata(_cycler);
-  nassertr(page >= 0 && page < (int)cdata->_pages.size(), NULL);
+  nassertr(page >= 0 && page < (int)cdata->_pages.size(), nullptr);
   return cdata->_pages[page]._color;
 }
 
@@ -60,6 +60,6 @@ get_color_cursor(int page) {
 INLINE MovieVideoCursor *MovieTexture::
 get_alpha_cursor(int page) {
   CDReader cdata(_cycler);
-  nassertr(page >= 0 && page < (int)cdata->_pages.size(), NULL);
+  nassertr(page >= 0 && page < (int)cdata->_pages.size(), nullptr);
   return cdata->_pages[page]._alpha;
 }

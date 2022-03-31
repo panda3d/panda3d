@@ -29,7 +29,7 @@ public:
   wdxGraphicsPipe9();
   virtual ~wdxGraphicsPipe9();
 
-  virtual string get_interface_name() const;
+  virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
   virtual PT(GraphicsDevice) make_device(void *scrn);
@@ -50,7 +50,7 @@ public:
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
@@ -93,7 +93,6 @@ private:
 
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
-  bool __is_dx9_1;
 
 public:
   static TypeHandle get_class_type() {

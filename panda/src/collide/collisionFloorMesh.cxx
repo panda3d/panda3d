@@ -33,6 +33,10 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 #include <algorithm>
+
+using std::max;
+using std::min;
+
 PStatCollector CollisionFloorMesh::_volume_pcollector("Collision Volumes:CollisionFloorMesh");
 PStatCollector CollisionFloorMesh::_test_pcollector("Collision Tests:CollisionFloorMesh");
 TypeHandle CollisionFloorMesh::_type_handle;
@@ -86,7 +90,7 @@ get_collision_origin() const {
  *
  */
 void CollisionFloorMesh::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cfloor";
 }
 
@@ -125,7 +129,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
   LPoint3 from_origin = ray->get_origin() * entry.get_wrt_mat();
 
   double fx = from_origin[0];
@@ -180,7 +184,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     new_entry->set_surface_point(LPoint3(fx, fy, finalz));
     return new_entry;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -190,7 +194,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
   LPoint3 from_origin = sphere->get_center() * entry.get_wrt_mat();
 
   double fx = from_origin[0];
@@ -243,14 +247,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     PN_stdfloat finalz = p0z+vz+(((uz - vz) *u)/(u+v));
     PN_stdfloat dz = fz - finalz;
     if(dz > rad)
-      return NULL;
+      return nullptr;
     PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
     new_entry->set_surface_normal(LPoint3(0, 0, 1));
     new_entry->set_surface_point(LPoint3(fx, fy, finalz));
     return new_entry;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -406,7 +410,7 @@ register_with_read_factory() {
  *
  */
 void CollisionFloorMesh::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 

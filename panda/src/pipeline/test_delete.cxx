@@ -29,7 +29,7 @@ static const int max_doobers_per_chunk = 1000;
 // The number of threads to spawn.
 static const int number_of_threads = 4;
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
@@ -39,7 +39,7 @@ static double
 random_f(double max) {
   MutexHolder l(rand_mutex);
   int i = rand();
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   last_rand = i;
 #endif /* __WIN32__ */
   return max * (double)i / (double)RAND_MAX;
@@ -80,7 +80,7 @@ TypeHandle Doober::_type_handle;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name) : Thread(name, name)
+  MyThread(const std::string &name) : Thread(name, name)
   {
   }
 
@@ -88,7 +88,7 @@ public:
   thread_main() {
     OUTPUT(nout << *this << " beginning.\n");
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
     rand_mutex.acquire();
     srand(last_rand);
     rand_mutex.release();
@@ -106,7 +106,7 @@ public:
           doobers.push_back(new Doober(++counter));
         }
         int num_del = (int)random_f(max_doobers_per_chunk);
-        num_del = min(num_del, (int)doobers.size());
+        num_del = std::min(num_del, (int)doobers.size());
 
         for (int j = 0; j < num_del; ++j) {
           assert(!doobers.empty());
@@ -137,7 +137,7 @@ main(int argc, char *argv[]) {
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
-    PT(MyThread) thread = new MyThread(string(1, name));
+    PT(MyThread) thread = new MyThread(std::string(1, name));
     threads.push_back(thread);
     thread->start(TP_normal, true);
   }

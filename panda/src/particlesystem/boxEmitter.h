@@ -19,7 +19,7 @@
 /**
  * Describes a voluminous box region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS BoxEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM BoxEmitter : public BaseParticleEmitter {
 PUBLISHED:
   BoxEmitter();
   BoxEmitter(const BoxEmitter &copy);
@@ -33,8 +33,8 @@ PUBLISHED:
   INLINE LPoint3 get_min_bound() const;
   INLINE LPoint3 get_max_bound() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   LPoint3 _vmin;

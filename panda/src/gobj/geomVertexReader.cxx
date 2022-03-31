@@ -13,10 +13,9 @@
 
 #include "geomVertexReader.h"
 
-
-#ifndef NDEBUG
-  // This is defined just for the benefit of having something non-NULL to
-  // return from a nassertr() call.
+#ifdef _DEBUG
+// This is defined just for the benefit of having something non-NULL to
+// return from a nassertr() call.
 const unsigned char GeomVertexReader::empty_buffer[100] = { 0 };
 #endif
 
@@ -32,23 +31,23 @@ const unsigned char GeomVertexReader::empty_buffer[100] = { 0 };
  */
 bool GeomVertexReader::
 set_column(int array, const GeomVertexColumn *column) {
-  if (column == (const GeomVertexColumn *)NULL) {
+  if (column == nullptr) {
     // Clear the data type.
     _array = -1;
-    _packer = NULL;
+    _packer = nullptr;
     _stride = 0;
-    _pointer = NULL;
-    _pointer_end = NULL;
+    _pointer = nullptr;
+    _pointer_end = nullptr;
 
     return false;
   }
 
-  if (_vertex_data != (const GeomVertexData *)NULL) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     return set_vertex_column(array, column, &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)NULL) {
+  if (_array_data != nullptr) {
     return set_array_column(column);
   }
 
@@ -60,9 +59,9 @@ set_column(int array, const GeomVertexColumn *column) {
  *
  */
 void GeomVertexReader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   const GeomVertexColumn *column = get_column();
-  if (column == (GeomVertexColumn *)NULL) {
+  if (column == nullptr) {
     out << "GeomVertexReader()";
 
   } else {
@@ -79,10 +78,10 @@ output(ostream &out) const {
 void GeomVertexReader::
 initialize() {
   _array = 0;
-  _packer = NULL;
-  _pointer_begin = NULL;
-  _pointer_end = NULL;
-  _pointer = NULL;
+  _packer = nullptr;
+  _pointer_begin = nullptr;
+  _pointer_end = nullptr;
+  _pointer = nullptr;
   _start_row = 0;
   _force = true;
 }
@@ -94,16 +93,16 @@ initialize() {
 bool GeomVertexReader::
 set_vertex_column(int array, const GeomVertexColumn *column,
                   const GeomVertexDataPipelineReader *data_reader) {
-  if (column == (const GeomVertexColumn *)NULL) {
-    return set_column(0, NULL);
+  if (column == nullptr) {
+    return set_column(0, nullptr);
   }
 
-  nassertr(_vertex_data != (const GeomVertexData *)NULL, false);
+  nassertr(_vertex_data != nullptr, false);
 
 #ifndef NDEBUG
   _array = -1;
-  _packer = NULL;
-  nassertr(array >= 0 && array < _vertex_data->get_num_arrays(), false);
+  _packer = nullptr;
+  nassertr(array >= 0 && (size_t)array < _vertex_data->get_num_arrays(), false);
 #endif
 
   _array = array;
@@ -120,11 +119,11 @@ set_vertex_column(int array, const GeomVertexColumn *column,
  */
 bool GeomVertexReader::
 set_array_column(const GeomVertexColumn *column) {
-  if (column == (const GeomVertexColumn *)NULL) {
-    return set_column(0, NULL);
+  if (column == nullptr) {
+    return set_column(0, nullptr);
   }
 
-  nassertr(_array_data != (const GeomVertexArrayData *)NULL, false);
+  nassertr(_array_data != nullptr, false);
 
   _handle = _array_data->get_handle();
   _stride = _handle->get_array_format()->get_stride();

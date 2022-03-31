@@ -19,6 +19,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+
 enum DatagramElement {
   DE_int32,
   DE_float64,
@@ -31,8 +34,8 @@ operator >> (istream &in, NetDatagram &datagram) {
   datagram.clear();
 
   // First, read a line of text.
-  string line;
-  getline(in, line);
+  std::string line;
+  std::getline(in, line);
 
   // Now parse the text.
   size_t p = 0;
@@ -74,7 +77,7 @@ operator >> (istream &in, NetDatagram &datagram) {
         while (p < line.length() && line[p] != '"') {
           p++;
         }
-        string str = line.substr(start, p - start);
+        std::string str = line.substr(start, p - start);
         datagram.add_int8(DE_string);
         datagram.add_string(str);
         p++;
@@ -85,7 +88,7 @@ operator >> (istream &in, NetDatagram &datagram) {
         while (p < line.length() && !isspace(line[p])) {
           p++;
         }
-        string str = line.substr(start, p - start);
+        std::string str = line.substr(start, p - start);
         datagram.add_int8(DE_string);
         datagram.add_string(str);
       }

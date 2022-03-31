@@ -50,6 +50,27 @@ CollisionHandlerPusher::
 }
 
 /**
+ * Serializes this object, to implement pickle support.
+ */
+void CollisionHandlerPusher::
+write_datagram(Datagram &dg) const {
+  CollisionHandlerPhysical::write_datagram(dg);
+
+  dg.add_bool(_horizontal);
+}
+
+/**
+ * Restores the object state from the given datagram, previously obtained using
+ * __getstate__.
+ */
+void CollisionHandlerPusher::
+read_datagram(DatagramIterator &scan) {
+  CollisionHandlerPhysical::read_datagram(scan);
+
+  _horizontal = scan.get_bool();
+}
+
+/**
  * Called by the parent class after all collisions have been detected, this
  * manages the various collisions and moves around the nodes as necessary.
  *
@@ -91,7 +112,7 @@ handle_entries() {
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
+          nassertr(entry != nullptr, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
 
           LPoint3 surface_point;
@@ -119,7 +140,7 @@ handle_entries() {
 
               ShoveData sd;
               sd._vector = normal;
-              sd._length = (surface_point - interior_point).length();
+              sd._length = (surface_point - interior_point).dot(normal);
               sd._valid = true;
               sd._entry = entry;
 
@@ -171,10 +192,10 @@ handle_entries() {
                   // concave).
                   const CollisionSolid *s1 = sd._entry->get_into();
                   const CollisionSolid *s2 = sd2._entry->get_into();
-                  if (s1 != (CollisionSolid *)NULL &&
-                      s2 != (CollisionSolid *)NULL &&
-                      s1->is_exact_type(CollisionPolygon::get_class_type()) &&
-                      s2->is_exact_type(CollisionPolygon::get_class_type()) &&
+                  if (s1 != nullptr &&
+                      s2 != nullptr &&
+                      s1->is_of_type(CollisionPolygon::get_class_type()) &&
+                      s2->is_of_type(CollisionPolygon::get_class_type()) &&
                       sd._entry->get_into_node_path() ==
                       sd2._entry->get_into_node_path()) {
                     const CollisionPolygon *p1 = DCAST(CollisionPolygon, s1);

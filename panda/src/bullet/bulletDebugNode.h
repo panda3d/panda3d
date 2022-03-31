@@ -11,13 +11,17 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_DEBUG_NODE_H__
-#define __BULLET_DEBUG_NODE_H__
+#ifndef BULLETDEBUGNODE_H
+#define BULLETDEBUGNODE_H
 
 #include "pandabase.h"
 
+#include "pandaNode.h"
+
 #include "bullet_includes.h"
-#include "lightMutex.h"
+
+class CullTraverser;
+class CullTraverserData;
 
 /**
  *
@@ -51,11 +55,10 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
-  void sync_b2p(btDynamicsWorld *world);
+  void do_sync_b2p(btDynamicsWorld *world);
 
   struct Line {
     LVecBase3 _p0;
@@ -70,7 +73,7 @@ private:
     UnalignedLVecBase4 _color;
   };
 
-  class DebugDraw : public btIDebugDraw {
+  class EXPCL_PANDABULLET DebugDraw : public btIDebugDraw {
 
   public:
     DebugDraw() {};
@@ -101,7 +104,6 @@ private:
     int _mode;
   };
 
-  LightMutex _lock;
   DebugDraw _drawer;
 
   bool _debug_stale;
@@ -148,4 +150,4 @@ private:
 
 #include "bulletDebugNode.I"
 
-#endif // __BULLET_DEBUG_NODE_H__
+#endif // BULLETDEBUGNODE_H

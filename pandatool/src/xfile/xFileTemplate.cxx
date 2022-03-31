@@ -20,7 +20,7 @@ TypeHandle XFileTemplate::_type_handle;
  *
  */
 XFileTemplate::
-XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid) :
+XFileTemplate(XFile *x_file, const std::string &name, const WindowsGuid &guid) :
   XFileNode(x_file, name),
   _guid(guid),
   _is_standard(false),
@@ -79,7 +79,7 @@ clear() {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileTemplate::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "template " << get_name() << " {\n";
   indent(out, indent_level + 2)

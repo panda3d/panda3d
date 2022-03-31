@@ -17,6 +17,7 @@
 #include "textureImage.h"
 #include "palettizer.h"
 #include "paletteImage.h"
+#include "sourceTextureImage.h"
 
 #include "indent.h"
 #include "datagram.h"
@@ -25,6 +26,8 @@
 #include "bamWriter.h"
 #include "indirectCompareNames.h"
 #include "pvector.h"
+
+using std::string;
 
 TypeHandle PaletteGroup::_type_handle;
 
@@ -454,7 +457,7 @@ update_unknown_textures(const TxaFile &txa_file) {
  * their textures, to the indicated output stream.
  */
 void PaletteGroup::
-write_image_info(ostream &out, int indent_level) const {
+write_image_info(std::ostream &out, int indent_level) const {
   Pages::const_iterator pai;
   for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
     PalettePage *page = (*pai).second;

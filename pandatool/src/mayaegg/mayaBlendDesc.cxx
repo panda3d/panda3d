@@ -24,11 +24,11 @@ MayaBlendDesc(MFnBlendShapeDeformer &deformer, int weight_index) :
   _deformer(deformer.object()),
   _weight_index(weight_index)
 {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _deformer.name().asChar() << "." << _weight_index;
   set_name(strm.str());
 
-  _anim = (EggSAnimData *)NULL;
+  _anim = nullptr;
 }
 
 /**
@@ -65,5 +65,5 @@ get_slider() const {
  */
 void MayaBlendDesc::
 clear_egg() {
-  _anim = (EggSAnimData *)NULL;
+  _anim = nullptr;
 }

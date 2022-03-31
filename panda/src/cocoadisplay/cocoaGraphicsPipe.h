@@ -33,21 +33,21 @@ class FrameBufferProperties;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on a Cocoa-based (e.g.  Mac OS X) client.
  */
-class CocoaGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsPipe : public GraphicsPipe {
 public:
   CocoaGraphicsPipe(CGDirectDisplayID display = CGMainDisplayID());
   virtual ~CocoaGraphicsPipe();
 
   INLINE CGDirectDisplayID get_display_id() const;
 
-  virtual string get_interface_name() const;
+  virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

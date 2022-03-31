@@ -23,7 +23,7 @@
  *
  */
 SSReader::
-SSReader(istream *stream) : _istream(stream) {
+SSReader(std::istream *stream) : _istream(stream) {
   _data_expected = 0;
   _tcp_header_size = tcp_header_size;
 
@@ -50,17 +50,17 @@ SSReader::
 bool SSReader::
 do_receive_datagram(Datagram &dg) {
   if (_tcp_header_size == 0) {
-    _data_expected = _data_so_far.length();
+    _data_expected = _data_so_far.size();
   }
   if (_data_expected == 0) {
     // Read the first two bytes: the datagram length.
-    while ((int)_data_so_far.length() < _tcp_header_size) {
+    while ((int)_data_so_far.size() < _tcp_header_size) {
       int ch = _istream->get();
-      if (_istream->eof() || _istream->fail()) {
+      if (ch == EOF || _istream->fail()) {
         _istream->clear();
         return false;
       }
-      _data_so_far += (char)ch;
+      _data_so_far.push_back((unsigned char)ch);
     }
 
     Datagram header(_data_so_far);
@@ -70,7 +70,7 @@ do_receive_datagram(Datagram &dg) {
     } else if (_tcp_header_size == 4) {
       _data_expected = di.get_uint32();
     }
-    _data_so_far = _data_so_far.substr(_tcp_header_size);
+    _data_so_far.erase(_data_so_far.begin(), _data_so_far.begin() + _tcp_header_size);
 
     if (_data_expected == 0) {
       // Empty datagram.
@@ -84,20 +84,19 @@ do_receive_datagram(Datagram &dg) {
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-  size_t read_count = min(_data_expected - _data_so_far.length(),
-                          buffer_size);
+  size_t read_count = std::min(_data_expected - _data_so_far.size(), buffer_size);
   _istream->read(buffer, read_count);
   size_t count = _istream->gcount();
   while (count != 0) {
-    _data_so_far.append(buffer, count);
+    _data_so_far.insert(_data_so_far.end(), buffer, buffer + count);
 
-    read_count = min(_data_expected - _data_so_far.length(),
+    read_count = std::min(_data_expected - _data_so_far.size(),
                      buffer_size);
     _istream->read(buffer, read_count);
     count = _istream->gcount();
   }
 
-  if (_data_so_far.length() < _data_expected) {
+  if (_data_so_far.size() < _data_expected) {
     // Not yet here.  Clear the istream error flag and return false to
     // indicate more coming.
     _istream->clear();
@@ -108,7 +107,7 @@ do_receive_datagram(Datagram &dg) {
   dg.append_data(_data_so_far);
 
   _data_expected = 0;
-  _data_so_far = string();
+  _data_so_far.clear();
 
   return true;
 }
@@ -127,7 +126,7 @@ do_receive_datagram(Datagram &dg) {
 void SSReader::
 start_delay(double min_delay, double max_delay) {
   _min_delay = min_delay;
-  _delay_variance = max(max_delay - min_delay, 0.0);
+  _delay_variance = std::max(max_delay - min_delay, 0.0);
   _delay_active = true;
 }
 #endif  // SIMULATE_NETWORK_DELAY
@@ -195,7 +194,7 @@ get_delayed(Datagram &datagram) {
  *
  */
 SSWriter::
-SSWriter(ostream *stream) : _ostream(stream) {
+SSWriter(std::ostream *stream) : _ostream(stream) {
   _collect_tcp = collect_tcp;
   _collect_tcp_interval = collect_tcp_interval;
   _queued_data_start = 0.0;
@@ -249,7 +248,7 @@ send_datagram(const Datagram &dg) {
 ISocketStream::
 ~ISocketStream() {
   // This should already have been cleared by the subclass destructor.
-  nassertv(_channel == NULL);
+  nassertv(_channel == nullptr);
 }
 
 #endif  // HAVE_OPENSSL

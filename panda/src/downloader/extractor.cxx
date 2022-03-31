@@ -63,9 +63,9 @@ set_extract_dir(const Filename &extract_dir) {
 void Extractor::
 reset() {
   if (_initiated) {
-    if (_read != (istream *)NULL) {
+    if (_read != nullptr) {
       Multifile::close_read_subfile(_read);
-      _read = (istream *)NULL;
+      _read = nullptr;
     }
     _write.close();
     _initiated = false;
@@ -125,7 +125,7 @@ step() {
     _subfile_pos = 0;
     _subfile_length = 0;
     _total_bytes_extracted = 0;
-    _read = (istream *)NULL;
+    _read = nullptr;
     _initiated = true;
   }
 
@@ -134,7 +134,7 @@ step() {
   double finish = now + extractor_step_time;
 
   do {
-    if (_read == (istream *)NULL) {
+    if (_read == nullptr) {
       // Time to open the next subfile.
       if (_request_index >= (int)_requests.size()) {
         // All done!
@@ -167,7 +167,7 @@ step() {
       _subfile_length = _multifile->get_subfile_length(_subfile_index);
       _subfile_pos = 0;
       _read = _multifile->open_read_subfile(_subfile_index);
-      if (_read == (istream *)NULL) {
+      if (_read == nullptr) {
         downloader_cat.error()
           << "Unable to read subfile "
           << _multifile->get_subfile_name(_subfile_index) << ".\n";
@@ -183,7 +183,7 @@ step() {
           << "Finished current subfile.\n";
       }
       Multifile::close_read_subfile(_read);
-      _read = (istream *)NULL;
+      _read = nullptr;
       _write.close();
       _request_index++;
 
@@ -192,7 +192,7 @@ step() {
       static const size_t buffer_size = 1024;
       char buffer[buffer_size];
 
-      size_t max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+      size_t max_bytes = std::min(buffer_size, _subfile_length - _subfile_pos);
       _read->read(buffer, max_bytes);
       size_t count = _read->gcount();
       while (count != 0) {
@@ -217,7 +217,7 @@ step() {
           return EU_ok;
         }
 
-        max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+        max_bytes = std::min(buffer_size, _subfile_length - _subfile_pos);
         _read->read(buffer, max_bytes);
         count = _read->gcount();
       }

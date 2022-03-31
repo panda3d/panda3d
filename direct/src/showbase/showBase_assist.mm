@@ -12,7 +12,7 @@
  */
 void
 activate_osx_application() {
-  cerr << "activate_osx_application\n";
+  std::cerr << "activate_osx_application\n";
   [ [NSApplication sharedApplication] activateIgnoringOtherApps: YES ];
 }
 

@@ -19,7 +19,7 @@
  */
 WordWrapStream::
 WordWrapStream(ProgramBase *program) :
-  ostream(&_lsb),
+  std::ostream(&_lsb),
   _lsb(this, program)
 {
 }

@@ -44,27 +44,27 @@ PUBLISHED:
   virtual ~ConnectionManager();
 
   PT(Connection) open_UDP_connection(uint16_t port = 0);
-  PT(Connection) open_UDP_connection(const string &hostname, uint16_t port, bool for_broadcast = false);
+  PT(Connection) open_UDP_connection(const std::string &hostname, uint16_t port, bool for_broadcast = false);
 
   BLOCKING PT(Connection) open_TCP_server_rendezvous(uint16_t port, int backlog);
-  BLOCKING PT(Connection) open_TCP_server_rendezvous(const string &hostname,
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(const std::string &hostname,
                                                      uint16_t port, int backlog);
   BLOCKING PT(Connection) open_TCP_server_rendezvous(const NetAddress &address,
                                                      int backlog);
   BLOCKING PT(Connection) open_TCP_client_connection(const NetAddress &address,
                                                      int timeout_ms);
-  BLOCKING PT(Connection) open_TCP_client_connection(const string &hostname,
+  BLOCKING PT(Connection) open_TCP_client_connection(const std::string &hostname,
                                                      uint16_t port, int timeout_ms);
 
   bool close_connection(const PT(Connection) &connection);
   BLOCKING bool wait_for_readers(double timeout);
 
-  static string get_host_name();
+  static std::string get_host_name();
 
   class EXPCL_PANDA_NET Interface {
   PUBLISHED:
-    const string &get_name() const { return _name; }
-    const string &get_mac_address() const { return _mac_address; }
+    const std::string &get_name() const { return _name; }
+    const std::string &get_mac_address() const { return _mac_address; }
     bool has_ip() const { return (_flags & F_has_ip) != 0; }
     const NetAddress &get_ip() const { return _ip; }
     bool has_netmask() const { return (_flags & F_has_netmask) != 0; }
@@ -74,20 +74,20 @@ PUBLISHED:
     bool has_p2p() const { return (_flags & F_has_p2p) != 0; }
     const NetAddress &get_p2p() const { return _p2p; }
 
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
   public:
     Interface() { _flags = 0; }
-    void set_name(const string &name) { _name = name; }
-    void set_mac_address(const string &mac_address) { _mac_address = mac_address; }
+    void set_name(const std::string &name) { _name = name; }
+    void set_mac_address(const std::string &mac_address) { _mac_address = mac_address; }
     void set_ip(const NetAddress &ip) { _ip = ip; _flags |= F_has_ip; }
     void set_netmask(const NetAddress &ip) { _netmask = ip; _flags |= F_has_netmask; }
     void set_broadcast(const NetAddress &ip) { _broadcast = ip; _flags |= F_has_broadcast; }
     void set_p2p(const NetAddress &ip) { _p2p = ip; _flags |= F_has_p2p; }
 
   private:
-    string _name;
-    string _mac_address;
+    std::string _name;
+    std::string _mac_address;
 
     NetAddress _ip;
     NetAddress _netmask;
@@ -122,7 +122,7 @@ protected:
   void add_writer(ConnectionWriter *writer);
   void remove_writer(ConnectionWriter *writer);
 
-  string format_mac_address(const unsigned char *data, size_t data_size);
+  std::string format_mac_address(const unsigned char *data, size_t data_size);
 
   typedef phash_set< PT(Connection) > Connections;
   typedef phash_set<ConnectionReader *, pointer_hash> Readers;
@@ -143,7 +143,7 @@ private:
   friend class Connection;
 };
 
-INLINE ostream &operator << (ostream &out, const ConnectionManager::Interface &iface) {
+INLINE std::ostream &operator << (std::ostream &out, const ConnectionManager::Interface &iface) {
   iface.output(out);
   return out;
 }

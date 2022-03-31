@@ -22,7 +22,7 @@
  * your sprites to spin without having them be full-blown oriented (i.e.
  * angry quat math), use this.
  */
-class EXPCL_PANDAPHYSICS ZSpinParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM ZSpinParticle : public BaseParticle {
 public:
   ZSpinParticle();
   ZSpinParticle(const ZSpinParticle &copy);
@@ -50,8 +50,8 @@ public:
   INLINE void enable_angular_velocity(bool bEnabled);
   INLINE bool get_angular_velocity_enabled() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _initial_angle;

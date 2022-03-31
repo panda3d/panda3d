@@ -49,6 +49,8 @@
 #define MAXVAL_BYTE     255
 #define MAXVAL_WORD     65535
 
+using std::ostream;
+
 inline void
 put_byte(ostream *out_file, unsigned char b) {
   out_file->put(b);
@@ -88,7 +90,7 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
  */
 PNMFileTypeSGI::Writer::
 ~Writer() {
-  if (table!=NULL) {
+  if (table!=nullptr) {
     // Rewrite the table with the correct values in it.
     _file->seekp(table_start);
     write_table();
@@ -119,7 +121,7 @@ supports_write_row() const {
  */
 bool PNMFileTypeSGI::Writer::
 write_header() {
-  table = NULL;
+  table = nullptr;
 
   switch (_num_channels) {
   case 1:
@@ -133,7 +135,8 @@ write_header() {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
 
   // For some reason, we have problems with SGI image files whose pixmax value
@@ -155,7 +158,7 @@ write_header() {
 
   write_rgb_header(sgi_imagename.c_str());
 
-  if (table!=NULL) {
+  if (table!=nullptr) {
     table_start = _file->tellp();
 
     // The first time we write the table, it has zeroes.  We'll correct this

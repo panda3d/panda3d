@@ -25,10 +25,10 @@ class FltBeadID : public FltBead {
 public:
   FltBeadID(FltHeader *header);
 
-  const string &get_id() const;
-  void set_id(const string &id);
+  const std::string &get_id() const;
+  void set_id(const std::string &id);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);
@@ -38,7 +38,7 @@ protected:
   virtual FltError write_ancillary(FltRecordWriter &writer) const;
 
 private:
-  string _id;
+  std::string _id;
 
 public:
   virtual TypeHandle get_type() const {

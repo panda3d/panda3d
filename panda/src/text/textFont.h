@@ -76,7 +76,7 @@ PUBLISHED:
 
   virtual PN_stdfloat get_kerning(int first, int second) const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   INLINE PN_stdfloat get_total_poly_margin() const;
@@ -84,7 +84,7 @@ public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph)=0;
   TextGlyph *get_invalid_glyph();
 
-  static RenderMode string_render_mode(const string &string);
+  static RenderMode string_render_mode(const std::string &string);
 
 private:
   void make_invalid_glyph();
@@ -114,8 +114,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_TEXT ostream &operator << (ostream &out, TextFont::RenderMode rm);
-EXPCL_PANDA_TEXT istream &operator >> (istream &in, TextFont::RenderMode &rm);
+EXPCL_PANDA_TEXT std::ostream &operator << (std::ostream &out, TextFont::RenderMode rm);
+EXPCL_PANDA_TEXT std::istream &operator >> (std::istream &in, TextFont::RenderMode &rm);
 
 #include "textFont.I"
 

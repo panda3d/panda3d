@@ -19,7 +19,7 @@
 /**
  * Attractor force.  Think black hole.
  */
-class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
+class EXPCL_PANDA_PHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
   explicit LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
                            PN_stdfloat a = 1.0f, bool m = true);
@@ -27,8 +27,8 @@ PUBLISHED:
   LinearSinkForce(const LinearSinkForce &copy);
   virtual ~LinearSinkForce();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   virtual LVector3 get_child_vector(const PhysicsObject *po);

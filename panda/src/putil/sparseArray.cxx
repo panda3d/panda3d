@@ -214,22 +214,29 @@ has_bits_in_common(const SparseArray &other) const {
  *
  */
 void SparseArray::
-output(ostream &out) const {
+output(std::ostream &out) const {
+  if (_subranges.empty()) {
+    out << (_inverse ? "[ all ]" : "[ ]");
+    return;
+  }
   out << "[ ";
   if (_inverse) {
     out << "all except: ";
   }
   Subranges::const_iterator si;
   for (si = _subranges.begin(); si != _subranges.end(); ++si) {
+    if (si != _subranges.begin()) {
+      out << ", ";
+    }
     if ((*si)._end == (*si)._begin + 1) {
       // A single element.
-      out << (*si)._begin << ", ";
+      out << (*si)._begin;
     } else {
       // A range of elements.
-      out << (*si)._begin << "-" << ((*si)._end - 1) << ", ";
+      out << (*si)._begin << "-" << ((*si)._end - 1);
     }
   }
-  out << "]";
+  out << " ]";
 }
 
 /**
@@ -262,8 +269,8 @@ compare_to(const SparseArray &other) const {
       return -1;
     }
 
-    --ai;
-    --bi;
+    ++ai;
+    ++bi;
   }
 
   if (ai != _subranges.rend()) {
@@ -440,9 +447,9 @@ do_remove_range(int begin, int end) {
   if (si == _subranges.end()) {
     if (!_subranges.empty()) {
       si = _subranges.begin() + _subranges.size() - 1;
-      if ((*si)._end >= begin) {
+      if ((*si)._end > begin) {
         // The new range shortens the last element of the array on the right.
-        end = min(end, (*si)._begin);
+        end = std::max(begin, (*si)._begin);
         (*si)._end = end;
         // It might also shorten it on the left; fall through.
       } else {
@@ -462,10 +469,10 @@ do_remove_range(int begin, int end) {
     if (si != _subranges.begin()) {
       Subranges::iterator si2 = si;
       --si2;
-      if ((*si2)._end >= begin) {
+      if ((*si2)._end > begin) {
         // The new range shortens an element within the array on the right
         // (but does not intersect the next element).
-        end = min(end, (*si2)._begin);
+        end = std::max(begin, (*si2)._begin);
         (*si2)._end = end;
         // It might also shorten it on the left; fall through.
         si = si2;
@@ -488,7 +495,7 @@ do_remove_range(int begin, int end) {
   }
 
   // Check if the new range removes any elements to the left.
-  while (begin <= (*si)._begin) {
+  while (begin <= (*si)._begin || (*si)._begin >= (*si)._end) {
     if (si == _subranges.begin()) {
       _subranges.erase(si);
       return;
@@ -499,7 +506,8 @@ do_remove_range(int begin, int end) {
     si = si2;
   }
 
-  (*si)._end = min((*si)._end, begin);
+  (*si)._end = std::min((*si)._end, begin);
+  nassertv((*si)._end > (*si)._begin);
 }
 
 /**

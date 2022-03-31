@@ -24,7 +24,7 @@
  * EggSAnimData or an EggXfmAnimData, which do.  It may also be a parent to
  * another <Table> or <Bundle>, establishing a hierarchy of tables.
  */
-class EXPCL_PANDAEGG EggTable : public EggGroupNode {
+class EXPCL_PANDA_EGG EggTable : public EggGroupNode {
 PUBLISHED:
   enum TableType {
     TT_invalid,
@@ -32,7 +32,7 @@ PUBLISHED:
     TT_bundle,
   };
 
-  INLINE explicit EggTable(const string &name = "");
+  INLINE explicit EggTable(const std::string &name = "");
   INLINE EggTable(const EggTable &copy);
   INLINE EggTable &operator = (const EggTable &copy);
 
@@ -40,9 +40,9 @@ PUBLISHED:
   INLINE TableType get_table_type() const;
 
   bool has_transform() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
-  static TableType string_table_type(const string &string);
+  static TableType string_table_type(const std::string &string);
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
@@ -71,7 +71,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-ostream &operator << (ostream &out, EggTable::TableType t);
+std::ostream &operator << (std::ostream &out, EggTable::TableType t);
 
 #include "eggTable.I"
 

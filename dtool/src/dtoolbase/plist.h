@@ -18,11 +18,12 @@
 #include "pallocator.h"
 #include "register_type.h"
 #include <list>
+#include <initializer_list>
 
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define plist list
+#define plist std::list
 
 #else
 
@@ -32,19 +33,20 @@
  * allocated memory.
  */
 template<class Type>
-class plist : public list<Type, pallocator_single<Type> > {
+class plist : public std::list<Type, pallocator_single<Type> > {
 public:
   typedef pallocator_single<Type> allocator;
-  typedef list<Type, allocator> base_class;
-  typedef TYPENAME base_class::size_type size_type;
+  typedef std::list<Type, allocator> base_class;
+  typedef typename base_class::size_type size_type;
   plist(TypeHandle type_handle = plist_type_handle) : base_class(allocator(type_handle)) { }
   plist(size_type n, TypeHandle type_handle = plist_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   plist(size_type n, const Type &value, TypeHandle type_handle = plist_type_handle) : base_class(n, value, allocator(type_handle)) { }
+  plist(std::initializer_list<Type> init, TypeHandle type_handle = plist_type_handle) : base_class(std::move(init), allocator(type_handle)) { }
 
-  typedef TYPENAME base_class::iterator iterator;
-  typedef TYPENAME base_class::const_iterator const_iterator;
-  typedef TYPENAME base_class::reverse_iterator reverse_iterator;
-  typedef TYPENAME base_class::const_reverse_iterator const_reverse_iterator;
+  typedef typename base_class::iterator iterator;
+  typedef typename base_class::const_iterator const_iterator;
+  typedef typename base_class::reverse_iterator reverse_iterator;
+  typedef typename base_class::const_reverse_iterator const_reverse_iterator;
 
   // This exists because libc++'s remove implementation has a bug with Panda's
   // allocator class.

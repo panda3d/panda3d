@@ -17,8 +17,14 @@
 
 #ifdef HAVE_OPENSSL
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 #endif  // HAVE_OPENSSL
+
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 
 /**
@@ -39,12 +45,12 @@ output_hex(ostream &out) const {
  */
 void HashVal::
 input_hex(istream &in) {
-  in >> ws;
+  in >> std::ws;
   char buffer[32];
   size_t i = 0;
   int ch = in.get();
 
-  while (!in.eof() && !in.fail() && isxdigit(ch)) {
+  while (ch != EOF && !in.fail() && isxdigit(ch)) {
     if (i < 32) {
       buffer[i] = (char)ch;
     }
@@ -53,11 +59,11 @@ input_hex(istream &in) {
   }
 
   if (i != 32) {
-    in.clear(ios::failbit|in.rdstate());
+    in.clear(std::ios::failbit|in.rdstate());
     return;
   }
 
-  if (!in.eof()) {
+  if (ch != EOF) {
     in.putback((char)ch);
   } else {
     in.clear();
@@ -143,11 +149,11 @@ set_from_hex(const string &text) {
 /**
  * Returns the HashVal as a 16-byte binary string.
  */
-string HashVal::
+vector_uchar HashVal::
 as_bin() const {
   Datagram dg;
   write_datagram(dg);
-  return dg.get_message();
+  return vector_uchar((unsigned char *)dg.get_data(), (unsigned char *)dg.get_data() + dg.get_length());
 }
 
 /**
@@ -155,7 +161,7 @@ as_bin() const {
  * false otherwise.
  */
 bool HashVal::
-set_from_bin(const string &text) {
+set_from_bin(const vector_uchar &text) {
   nassertr(text.size() == 16, false);
   Datagram dg(text);
   DatagramIterator dgi(dg);
@@ -174,7 +180,7 @@ hash_file(const Filename &filename) {
   Filename bin_filename = Filename::binary_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(bin_filename, false);
-  if (istr == (istream *)NULL) {
+  if (istr == nullptr) {
     (*this) = HashVal();
     return false;
   }
@@ -203,7 +209,7 @@ hash_stream(istream &stream) {
   char buffer[buffer_size];
 
   // Seek the stream to the beginning in case it wasn't there already.
-  stream.seekg(0, ios::beg);
+  stream.seekg(0, std::ios::beg);
 
   stream.read(buffer, buffer_size);
   size_t count = stream.gcount();

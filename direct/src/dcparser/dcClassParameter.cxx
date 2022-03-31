@@ -119,7 +119,7 @@ get_class() const {
  */
 DCPackerInterface *DCClassParameter::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_fields.size(), nullptr);
   return _nested_fields[n];
 }
 
@@ -128,9 +128,9 @@ get_nested_field(int n) const {
  * identifier.
  */
 void DCClassParameter::
-output_instance(ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+output_instance(std::ostream &out, bool brief, const std::string &prename,
+                const std::string &name, const std::string &postname) const {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {

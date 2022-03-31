@@ -28,6 +28,21 @@
 #define NSAppKitVersionNumber10_7 1138
 #endif
 
+/**
+ * Called whenever a display wants a frame.  The context argument contains the
+ * applicable CocoaGraphicsStateGuardian.
+ */
+static CVReturn
+display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
+                const CVTimeStamp* output_time, CVOptionFlags flags_in,
+                CVOptionFlags *flags_out, void *context) {
+  CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)context;
+  gsg->_swap_lock.lock();
+  gsg->_swap_condition.notify();
+  gsg->_swap_lock.unlock();
+  return kCVReturnSuccess;
+}
+
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
 /**
@@ -36,7 +51,8 @@ TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(engine, pipe)
+  GLGraphicsStateGuardian(engine, pipe),
+  _swap_condition(_swap_lock)
 {
   _share_context = nil;
   _context = nil;
@@ -52,10 +68,58 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
+  if (_format != nil) {
+    [_format release];
+  }
+  if (_display_link != nil) {
+    CVDisplayLinkRelease(_display_link);
+    _display_link = nil;
+    _swap_lock.lock();
+    _swap_condition.notify();
+    _swap_lock.unlock();
+  }
   if (_context != nil) {
     [_context clearDrawable];
     [_context release];
   }
+}
+
+/**
+ * Creates a CVDisplayLink, which tells us when the display the window is on
+ * will want a frame.
+ */
+bool CocoaGraphicsStateGuardian::
+setup_vsync() {
+  if (_display_link != nil) {
+    // Already set up.
+    return true;
+  }
+
+  CVReturn result = CVDisplayLinkCreateWithActiveCGDisplays(&_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(_display_link, (CGLContextObj)[_context CGLContextObj], (CGLPixelFormatObj)[_format CGLPixelFormatObj]);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink's current display.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkSetOutputCallback(_display_link, &display_link_cb, this);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkStart(_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.\n";
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -134,6 +198,12 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   if (accelerated) {
     properties.set_force_hardware(1);
   }
+
+  // Cautiously setting this to true.  It appears that macOS framebuffers are
+  // sRGB-capable, but I don't really know how to verify this.
+  if (color_size == 32 && !color_float) {
+    properties.set_srgb_color(true);
+  }
 }
 
 /**
@@ -178,8 +248,17 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(aux_buffers);
   attribs.push_back(NSOpenGLPFAColorSize);
   attribs.push_back(properties.get_color_bits());
+
+  // Set the depth buffer bits to 24 manually when 1 is requested.
+  // This prevents getting a depth buffer of only 16 bits when requesting 1.
   attribs.push_back(NSOpenGLPFADepthSize);
-  attribs.push_back(properties.get_depth_bits());
+  if (properties.get_depth_bits() == 1) {
+    attribs.push_back(24);
+  }
+  else {
+    attribs.push_back(properties.get_depth_bits());
+  }
+
   attribs.push_back(NSOpenGLPFAStencilSize);
   attribs.push_back(properties.get_stencil_bits());
 
@@ -190,7 +269,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // make it grab one with 8 bits, though.  Dirty hack.  Needs more research.
   if (properties.get_alpha_bits() > 0) {
     attribs.push_back(NSOpenGLPFAAlphaSize);
-    attribs.push_back(max(8, properties.get_alpha_bits()));
+    attribs.push_back(std::max(8, properties.get_alpha_bits()));
   }
 
   if (properties.get_multisamples() > 0) {
@@ -244,26 +323,35 @@ choose_pixel_format(const FrameBufferProperties &properties,
   }
 
   // For now, I'm just using the first virtual screen.
-  cocoadisplay_cat.debug() <<
-    "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug() <<
+      "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
+  }
   get_properties(_fbprops, format, 0);
+
+  // Don't enable sRGB unless it was explicitly requested.
+  if (!properties.get_srgb_color()) {
+    _fbprops.set_srgb_color(false);
+  }
 
   // TODO: print out renderer
 
   _context = [[NSOpenGLContext alloc] initWithFormat:format shareContext:_share_context];
-  [format release];
+  _format = format;
   if (_context == nil) {
     cocoadisplay_cat.error() <<
       "Failed to create OpenGL context!\n";
     return;
   }
 
-  // Set vsync setting on the context
-  GLint swap = sync_video ? 1 : 0;
+  // Disable vsync via the built-in mechanism, which doesn't work on Mojave
+  GLint swap = 0;
   [_context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
 
-  cocoadisplay_cat.debug()
-    << "Created context " << _context << ": " << _fbprops << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Created context " << _context << ": " << _fbprops << "\n";
+  }
 }
 
 /**

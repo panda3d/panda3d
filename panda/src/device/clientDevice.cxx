@@ -23,15 +23,14 @@ TypeHandle ClientDevice::_type_handle;
  */
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type,
-             const string &device_name) :
+             const std::string &device_name) :
+  InputDevice(device_name, DeviceClass::unknown),
   _client(client),
-  _device_type(device_type),
-  _device_name(device_name)
+  _device_type(device_type)
 {
   // We have to explicitly ref the client pointer, since we can't use a
   // PT(ClientBase) for circular include reasons.
   _client->ref();
-  _is_connected = false;
 }
 
 /**
@@ -41,7 +40,7 @@ ClientDevice(ClientBase *client, TypeHandle device_type,
  */
 ClientDevice::
 ~ClientDevice() {
-  nassertv(!_is_connected);
+  nassertv(!is_connected());
 
   // And now we explicitly unref the client pointer.
   unref_delete(_client);
@@ -60,12 +59,10 @@ ClientDevice::
  */
 void ClientDevice::
 disconnect() {
-  if (_is_connected) {
-    acquire();
+  if (is_connected()) {
     bool disconnected =
-      _client->disconnect_device(_device_type, _device_name, this);
-    _is_connected = false;
-    unlock();
+      _client->disconnect_device(_device_type, get_name(), this);
+    set_connected(false);
     nassertv(disconnected);
   }
 }
@@ -79,7 +76,7 @@ disconnect() {
  * ClientDevice to ensure that it is fresh.
  */
 void ClientDevice::
-poll() {
+do_poll() {
   _client->poll();
 }
 
@@ -87,14 +84,14 @@ poll() {
  *
  */
 void ClientDevice::
-output(ostream &out) const {
-  out << get_type() << " " << get_device_name();
+output(std::ostream &out) const {
+  out << get_type() << " " << get_name();
 }
 
 /**
  *
  */
 void ClientDevice::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

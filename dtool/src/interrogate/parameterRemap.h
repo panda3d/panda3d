@@ -47,11 +47,11 @@ public:
   INLINE CPPExpression *get_default_value() const;
   INLINE void set_default_value(CPPExpression *expr);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string prepare_return_expr(ostream &out, int indent_level,
-                                     const string &expression);
-  virtual string get_return_expr(const string &expression);
-  virtual string temporary_to_return(const string &temporary);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string prepare_return_expr(std::ostream &out, int indent_level,
+                                     const std::string &expression);
+  virtual std::string get_return_expr(const std::string &expression);
+  virtual std::string temporary_to_return(const std::string &temporary);
   virtual bool return_value_needs_management();
   virtual FunctionIndex get_return_value_destructor();
   virtual bool return_value_should_be_simple();

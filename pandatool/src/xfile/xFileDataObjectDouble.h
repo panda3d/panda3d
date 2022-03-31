@@ -25,8 +25,8 @@ class XFileDataObjectDouble : public XFileDataObject {
 public:
   XFileDataObjectDouble(const XFileDataDef *data_def, double value);
 
-  virtual void output_data(ostream &out) const;
-  virtual void write_data(ostream &out, int indent_level,
+  virtual void output_data(std::ostream &out) const;
+  virtual void write_data(std::ostream &out, int indent_level,
                           const char *separator) const;
 
 protected:
@@ -35,7 +35,7 @@ protected:
 
   virtual int get_int_value() const;
   virtual double get_double_value() const;
-  virtual string get_string_value() const;
+  virtual std::string get_string_value() const;
 
 private:
   double _value;

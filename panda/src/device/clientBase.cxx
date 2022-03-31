@@ -27,7 +27,7 @@ ClientBase() {
   _cs = CS_default;
 
 #ifdef OLD_HAVE_IPC
-  _client_thread = (thread *)NULL;
+  _client_thread = nullptr;
   _shutdown = false;
 #endif
 }
@@ -85,7 +85,7 @@ fork_asynchronous_thread(double poll_time) {
     if (device_cat.is_debug()) {
       device_cat.debug()
         << "fork_asynchronous_thread() - forking client thread"
-        << endl;
+        << std::endl;
     }
     return true;
   }
@@ -113,7 +113,7 @@ fork_asynchronous_thread(double poll_time) {
  * NULL is returned.
  */
 PT(ClientDevice) ClientBase::
-get_device(TypeHandle device_type, const string &device_name) {
+get_device(TypeHandle device_type, const std::string &device_name) {
   DevicesByName &dbn = _devices[device_type];
 
   DevicesByName::iterator dbni;
@@ -126,9 +126,8 @@ get_device(TypeHandle device_type, const string &device_name) {
   // We need to create a new device for this name.
   PT(ClientDevice) device = make_device(device_type, device_name);
 
-  if (device != (ClientDevice *)NULL) {
+  if (device != nullptr) {
     dbn.insert(DevicesByName::value_type(device_name, device));
-    device->_is_connected = true;
   }
 
   return device;
@@ -143,7 +142,7 @@ get_device(TypeHandle device_type, const string &device_name) {
  * unknown (e.g.  it was disconnected previously).
  */
 bool ClientBase::
-disconnect_device(TypeHandle device_type, const string &device_name,
+disconnect_device(TypeHandle device_type, const std::string &device_name,
                   ClientDevice *device) {
   DevicesByName &dbn = _devices[device_type];
 
@@ -185,9 +184,9 @@ do_poll() {
  */
 void *ClientBase::
 st_callback(void *arg) {
-  nassertr(arg != NULL, NULL);
+  nassertr(arg != nullptr, nullptr);
   ((ClientBase *)arg)->callback();
-  return NULL;
+  return nullptr;
 }
 
 /**

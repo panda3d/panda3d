@@ -13,6 +13,8 @@
 
 #include "bulletMultiSphereShape.h"
 
+#include "bulletWorld.h"
+
 #include "geomVertexReader.h"
 
 TypeHandle BulletMultiSphereShape::_type_handle;
@@ -23,7 +25,7 @@ TypeHandle BulletMultiSphereShape::_type_handle;
 BulletMultiSphereShape::
 BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
 
-  int num_spheres = min(points.size(), radii.size());
+  int num_spheres = std::min(points.size(), radii.size());
 
   // Convert points
   btVector3 *bt_points = new btVector3[num_spheres];
@@ -45,10 +47,62 @@ BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
 /**
  *
  */
+BulletMultiSphereShape::
+BulletMultiSphereShape(const BulletMultiSphereShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
+void BulletMultiSphereShape::
+operator = (const BulletMultiSphereShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape = copy._shape;
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletMultiSphereShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+int BulletMultiSphereShape::
+get_sphere_count() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _shape->getSphereCount();
+}
+
+/**
+ *
+ */
+LPoint3 BulletMultiSphereShape::
+get_sphere_pos(int index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(index >=0 && index <_shape->getSphereCount(), LPoint3::zero());
+  return btVector3_to_LPoint3(_shape->getSpherePosition(index));
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletMultiSphereShape::
+get_sphere_radius(int index) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  nassertr(index >=0 && index <_shape->getSphereCount(), 0.0);
+  return (PN_stdfloat)_shape->getSphereRadius(index);
 }
 
 /**

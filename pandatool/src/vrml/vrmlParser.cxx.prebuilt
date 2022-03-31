@@ -106,7 +106,7 @@
 // Currently-being-define proto.  Prototypes may be nested, so a stack
 // is needed:
 
-stack< VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
+std::stack<VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
 
 // This is used to keep track of which field in which type of node is being
 // parsed.  Field are nested (nodes are contained inside MFNode/SFNode fields)
@@ -117,12 +117,12 @@ typedef struct {
     const VrmlNodeType::NameTypeRec *typeRec;
 } FieldRec;
 
-stack< FieldRec*, plist<FieldRec*> > currentField;
+std::stack<FieldRec*, plist<FieldRec*> > currentField;
 
 // Similarly for the node entries (which contain the actual values for
 // the fields as they are encountered):
 
-stack< VrmlNode*, plist<VrmlNode*> > currentNode;
+std::stack<VrmlNode*, plist<VrmlNode*> > currentNode;
 
 // This is used when the parser knows what kind of token it expects
 // to get next-- used when parsing field values (whose types are declared
@@ -151,14 +151,14 @@ void storeField(const VrmlFieldValue &value);
 void exitField();
 void expect(int type);
 
-extern void vrmlyyerror(const string &);
+extern void vrmlyyerror(const std::string &);
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
 void
-vrml_init_parser(istream &in, const string &filename) {
+vrml_init_parser(std::istream &in, const std::string &filename) {
   //yydebug = 0;
   vrml_init_lexer(in, filename);
 }
@@ -2189,7 +2189,7 @@ endProto()
 
     // Add this proto definition:
     if (currentProtoStack.empty()) {
-        cerr << "Error: Empty PROTO stack!\n";
+        std::cerr << "Error: Empty PROTO stack!\n";
     }
     else {
         VrmlNodeType *t = currentProtoStack.top();
@@ -2232,14 +2232,14 @@ add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *),
     int type = fieldType(typeString);
 
     if (type == 0) {
-        cerr << "Error: invalid field type: " << type << "\n";
+        std::cerr << "Error: invalid field type: " << type << "\n";
     }
 
     // Need to add support for Script nodes:
     // if (inScript) ... ???
 
     if (currentProtoStack.empty()) {
-        cerr << "Error: declaration outside of prototype\n";
+        std::cerr << "Error: declaration outside of prototype\n";
         return 0;
     }
     VrmlNodeType *t = currentProtoStack.top();
@@ -2271,7 +2271,7 @@ fieldType(const char *type)
     if (strcmp(type, "MFVec2f") == 0) return MFVEC2F;
     if (strcmp(type, "MFVec3f") == 0) return MFVEC3F;
 
-    cerr << "Illegal field type: " << type << "\n";
+    std::cerr << "Illegal field type: " << type << "\n";
 
     return 0;
 }
@@ -2306,7 +2306,7 @@ exitNode()
     nassertr(node != NULL, NULL);
     currentNode.pop();
 
-    //    cerr << "Just defined node:\n" << *node << "\n\n";
+    //    std::cerr << "Just defined node:\n" << *node << "\n\n";
 
     delete fr;
     return node;
@@ -2346,7 +2346,7 @@ enterField(const char *fieldName)
             expect(typeRec->type);
         }
         else {
-            cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
+            std::cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
                 " do not have fields/eventIn/eventOut named " <<
                 fieldName << "\n";
             // expect(ANY_FIELD);

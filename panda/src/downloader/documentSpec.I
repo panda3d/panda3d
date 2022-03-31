@@ -25,7 +25,7 @@ DocumentSpec() {
  *
  */
 INLINE DocumentSpec::
-DocumentSpec(const string &url) :
+DocumentSpec(const std::string &url) :
   _url(url)
 {
   _request_mode = RM_any;
@@ -262,16 +262,16 @@ get_cache_control() const {
   return _cache_control;
 }
 
-INLINE istream &
-operator >> (istream &in, DocumentSpec &doc) {
+INLINE std::istream &
+operator >> (std::istream &in, DocumentSpec &doc) {
   if (!doc.input(in)) {
-    in.clear(ios::failbit | in.rdstate());
+    in.clear(std::ios::failbit | in.rdstate());
   }
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const DocumentSpec &doc) {
+INLINE std::ostream &
+operator << (std::ostream &out, const DocumentSpec &doc) {
   doc.output(out);
   return out;
 }

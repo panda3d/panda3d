@@ -15,14 +15,14 @@
  *
  */
 INLINE IFileStream::
-IFileStream() : istream(&_buf) {
+IFileStream() : std::istream(&_buf) {
 }
 
 /**
  *
  */
 INLINE IFileStream::
-IFileStream(const char *filename, ios::openmode mode) : istream(&_buf) {
+IFileStream(const char *filename, std::ios::openmode mode) : std::istream(&_buf) {
   open(filename, mode);
 }
 
@@ -38,11 +38,11 @@ INLINE IFileStream::
  *
  */
 INLINE void IFileStream::
-open(const char *filename, ios::openmode mode) {
+open(const char *filename, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.open(filename, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 
@@ -55,11 +55,11 @@ open(const char *filename, ios::openmode mode) {
  * This function is the Windows-specific variant.
  */
 void IFileStream::
-attach(const char *filename, HANDLE handle, ios::openmode mode) {
+attach(const char *filename, HANDLE handle, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, handle, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32
@@ -73,11 +73,11 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
  * This function is the Posix-specific variant.
  */
 void IFileStream::
-attach(const char *filename, int fd, ios::openmode mode) {
+attach(const char *filename, int fd, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32
@@ -94,14 +94,14 @@ close() {
  *
  */
 INLINE OFileStream::
-OFileStream() : ostream(&_buf) {
+OFileStream() : std::ostream(&_buf) {
 }
 
 /**
  *
  */
 INLINE OFileStream::
-OFileStream(const char *filename, ios::openmode mode) : ostream(&_buf) {
+OFileStream(const char *filename, std::ios::openmode mode) : std::ostream(&_buf) {
   open(filename, mode);
 }
 
@@ -117,11 +117,11 @@ INLINE OFileStream::
  *
  */
 INLINE void OFileStream::
-open(const char *filename, ios::openmode mode) {
+open(const char *filename, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.open(filename, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 
@@ -134,11 +134,11 @@ open(const char *filename, ios::openmode mode) {
  * This function is the Windows-specific variant.
  */
 void OFileStream::
-attach(const char *filename, HANDLE handle, ios::openmode mode) {
+attach(const char *filename, HANDLE handle, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, handle, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32
@@ -152,11 +152,11 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
  * This function is the Posix-specific variant.
  */
 void OFileStream::
-attach(const char *filename, int fd, ios::openmode mode) {
+attach(const char *filename, int fd, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32
@@ -173,14 +173,14 @@ close() {
  *
  */
 INLINE FileStream::
-FileStream() : iostream(&_buf) {
+FileStream() : std::iostream(&_buf) {
 }
 
 /**
  *
  */
 INLINE FileStream::
-FileStream(const char *filename, ios::openmode mode) : iostream(&_buf) {
+FileStream(const char *filename, std::ios::openmode mode) : std::iostream(&_buf) {
   open(filename, mode);
 }
 
@@ -196,11 +196,11 @@ INLINE FileStream::
  *
  */
 INLINE void FileStream::
-open(const char *filename, ios::openmode mode) {
+open(const char *filename, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.open(filename, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 
@@ -213,11 +213,11 @@ open(const char *filename, ios::openmode mode) {
  * This function is the Windows-specific variant.
  */
 void FileStream::
-attach(const char *filename, HANDLE handle, ios::openmode mode) {
+attach(const char *filename, HANDLE handle, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, handle, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32
@@ -231,11 +231,11 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
  * This function is the Posix-specific variant.
  */
 void FileStream::
-attach(const char *filename, int fd, ios::openmode mode) {
+attach(const char *filename, int fd, std::ios::openmode mode) {
   clear((ios_iostate)0);
   _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 #endif  // _WIN32

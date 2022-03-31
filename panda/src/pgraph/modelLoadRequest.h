@@ -34,7 +34,7 @@ public:
   ALLOC_DELETED_CHAIN(ModelLoadRequest);
 
 PUBLISHED:
-  explicit ModelLoadRequest(const string &name,
+  explicit ModelLoadRequest(const std::string &name,
                             const Filename &filename,
                             const LoaderOptions &options,
                             Loader *loader);

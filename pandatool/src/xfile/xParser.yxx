@@ -30,8 +30,8 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
-static XFile *x_file = (XFile *)NULL;
-static XFileNode *current_node = (XFileNode *)NULL;
+static XFile *x_file = nullptr;
+static XFileNode *current_node = nullptr;
 static PT(XFileDataDef) current_data_def;
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ static PT(XFileDataDef) current_data_def;
 ////////////////////////////////////////////////////////////////////
 
 void
-x_init_parser(istream &in, const string &filename, XFile &file) {
+x_init_parser(std::istream &in, const std::string &filename, XFile &file) {
   x_file = &file;
   current_node = &file;
   x_init_lexer(in, filename);
@@ -47,8 +47,8 @@ x_init_parser(istream &in, const string &filename, XFile &file) {
 
 void
 x_cleanup_parser() {
-  x_file = (XFile *)NULL;
-  current_node = (XFileNode *)NULL;
+  x_file = nullptr;
+  current_node = nullptr;
 }
 
 %}
@@ -172,7 +172,7 @@ template_reference:
          singleword_name optional_multiword_name TOKEN_SEMICOLON
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + $1);
   } else {
     current_data_def = new XFileDataDef(x_file, $2, XFileDataDef::T_template, xtemplate);
@@ -237,7 +237,7 @@ array_data_type:
         | singleword_name multiword_name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + $1);
   } else {
     current_data_def = new XFileDataDef(x_file, $2, XFileDataDef::T_template, xtemplate);
@@ -263,7 +263,7 @@ dimension_size:
         | multiword_name
 {
   XFileNode *data_def = current_node->find_child($1);
-  if (data_def == (XFileNode *)NULL) {
+  if (data_def == nullptr) {
     yyerror("Unknown identifier: " + $1);
   } else {
     current_data_def->add_array_def(XFileArrayDef(DCAST(XFileDataDef, data_def)));
@@ -284,7 +284,7 @@ template_option_part:
         singleword_name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + $1);
   } else {
     DCAST(XFileTemplate, current_node)->add_option(xtemplate);
@@ -293,7 +293,7 @@ template_option_part:
         | singleword_name class_id
 {
   XFileTemplate *xtemplate = x_file->find_template($2);
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + $1);
   } else {
     if (xtemplate->get_name() != $1) {
@@ -324,7 +324,7 @@ multiword_name:
 optional_multiword_name:
         empty
 {
-  $$ = string();
+  $$ = std::string();
 }
         | multiword_name
         ;
@@ -351,7 +351,7 @@ object:
   XFileTemplate *xtemplate = x_file->find_template($1);
   $<u.node>$ = current_node;
   
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + $1);
   } else {
     XFileDataNodeTemplate *templ = 
@@ -438,7 +438,7 @@ data_reference:
         multiword_name
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object($1);
-  if (data_object == (XFileDataObject *)NULL) {
+  if (data_object == nullptr) {
     yyerror("Unknown data_object: " + $1);
   }
 
@@ -447,7 +447,7 @@ data_reference:
         | multiword_name class_id
 {
   XFileDataNodeTemplate *data_object = x_file->find_data_object($2);
-  if (data_object == (XFileDataObject *)NULL) {
+  if (data_object == nullptr) {
     yyerror("Unknown data_object: " + $1);
   } else {
     if (data_object->get_name() != $1) {

@@ -18,6 +18,7 @@
 #include "configVariableBool.h"
 #include "filename.h"
 #include "config_prc.h"
+#include "patomic.h"
 
 #include <ctype.h>
 
@@ -27,20 +28,28 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+
+#include "androidLogStream.h"
 #endif
 
-Notify *Notify::_global_ptr = (Notify *)NULL;
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
+Notify *Notify::_global_ptr = nullptr;
 
 /**
  *
  */
 Notify::
 Notify() {
-  _ostream_ptr = &cerr;
+  _ostream_ptr = &std::cerr;
   _owns_ostream_ptr = false;
-  _null_ostream_ptr = new fstream;
+  _null_ostream_ptr = new std::fstream;
 
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = nullptr;
   _assert_failed = false;
 }
 
@@ -67,7 +76,7 @@ set_ostream_ptr(ostream *ostream_ptr, bool delete_later) {
     delete _ostream_ptr;
   }
 
-  if (ostream_ptr == (ostream *)NULL) {
+  if (ostream_ptr == nullptr) {
     _ostream_ptr = &cerr;
     _owns_ostream_ptr = false;
   } else {
@@ -101,7 +110,7 @@ get_literal_flag() {
 
   if (!got_flag) {
 #ifndef PHAVE_IOSTREAM
-    flag = ios::bitalloc();
+    flag = std::ios::bitalloc();
 #else
     // We lost bitalloc in the new iostream?  Ok, this feature will just be
     // disabled for now.  No big deal.
@@ -135,7 +144,7 @@ set_assert_handler(Notify::AssertHandler *assert_handler) {
  */
 void Notify::
 clear_assert_handler() {
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = nullptr;
 }
 
 /**
@@ -143,7 +152,7 @@ clear_assert_handler() {
  */
 bool Notify::
 has_assert_handler() const {
-  return (_assert_handler != (AssertHandler *)NULL);
+  return (_assert_handler != nullptr);
 }
 
 /**
@@ -172,10 +181,10 @@ get_top_category() {
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
   // The string should not contain colons.
-  nassertr(basename.find(':') == string::npos, (NotifyCategory *)NULL);
+  nassertr(basename.find(':') == string::npos, nullptr);
 
   string fullname;
-  if (parent_category != (NotifyCategory *)NULL) {
+  if (parent_category != nullptr) {
     fullname = parent_category->get_fullname() + ":" + basename;
   } else {
     // The parent_category is NULL.  If basename is empty, that means we refer
@@ -187,8 +196,8 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  pair<Categories::iterator, bool> result =
-    _categories.insert(Categories::value_type(fullname, (NotifyCategory *)NULL));
+  std::pair<Categories::iterator, bool> result =
+    _categories.insert(Categories::value_type(fullname, nullptr));
 
   bool inserted = result.second;
   NotifyCategory *&category = (*result.first).second;
@@ -230,7 +239,7 @@ get_category(const string &fullname) {
 
   // No such Category; create one.  First identify the parent name, based on
   // the rightmost colon.
-  NotifyCategory *parent_category = (NotifyCategory *)NULL;
+  NotifyCategory *parent_category = nullptr;
   string basename = fullname;
 
   size_t colon = fullname.rfind(':');
@@ -281,7 +290,7 @@ write_string(const string &str) {
  */
 Notify *Notify::
 ptr() {
-  if (_global_ptr == (Notify *)NULL) {
+  if (_global_ptr == nullptr) {
     init_memory_hook();
     _global_ptr = new Notify;
   }
@@ -346,7 +355,7 @@ assert_failure(const char *expression, int line,
     // Make sure the error message has been flushed to the output.
     nout.flush();
 
-#ifdef WIN32
+#ifdef _MSC_VER
     // How to trigger an exception in VC++ that offers to take us into the
     // debugger?  abort() doesn't do it.  We used to be able to assert(false),
     // but in VC++ 7 that just throws an exception, and an uncaught exception
@@ -361,12 +370,12 @@ assert_failure(const char *expression, int line,
     // debugger otherwise.
 
     // So we'll force a segfault, which works every time.
-    int *ptr = (int *)NULL;
+    int *ptr = nullptr;
     *ptr = 1;
 
-#else  // WIN32
+#else  // _MSC_VER
     abort();
-#endif  // WIN32
+#endif  // _MSC_VER
   }
 
   return true;
@@ -417,28 +426,31 @@ string_severity(const string &str) {
  */
 void Notify::
 config_initialized() {
-  static bool already_initialized = false;
-  if (already_initialized) {
-    nout << "Notify::config_initialized() called more than once.\n";
-    return;
-  }
-  already_initialized = true;
+  // We allow this to be called more than once to allow the user to specify a
+  // notify-output even after the initial import of Panda3D modules.  However,
+  // it cannot be changed after the first time it is set.
 
-  if (_ostream_ptr == &cerr) {
-    ConfigVariableFilename notify_output
+  if (_global_ptr == nullptr || _global_ptr->_ostream_ptr == &cerr) {
+    static ConfigVariableFilename notify_output
       ("notify-output", "",
        "The filename to which to write all the output of notify");
 
-    if (!notify_output.empty()) {
-      if (notify_output == "stdout") {
-        cout.setf(ios::unitbuf);
-        set_ostream_ptr(&cout, false);
+    // We use this to ensure that only one thread can initialize the output.
+    static patomic_flag initialized = ATOMIC_FLAG_INIT;
 
-      } else if (notify_output == "stderr") {
-        set_ostream_ptr(&cerr, false);
+    std::string value = notify_output.get_value();
+    if (!value.empty() && !initialized.test_and_set()) {
+      Notify *ptr = Notify::ptr();
+
+      if (value == "stdout") {
+        cout.setf(std::ios::unitbuf);
+        ptr->set_ostream_ptr(&cout, false);
+
+      } else if (value == "stderr") {
+        ptr->set_ostream_ptr(&cerr, false);
 
       } else {
-        Filename filename = notify_output;
+        Filename filename = value;
         filename.set_text();
 #ifdef BUILD_IPHONE
         // On the iPhone, route everything through cerr, and then send cerr to
@@ -452,7 +464,7 @@ config_initialized() {
           dup2(logfile_fd, STDERR_FILENO);
           close(logfile_fd);
 
-          set_ostream_ptr(&cerr, false);
+          ptr->set_ostream_ptr(&cerr, false);
         }
 #else
         pofstream *out = new pofstream;
@@ -460,11 +472,17 @@ config_initialized() {
           nout << "Unable to open file " << filename << " for output.\n";
           delete out;
         } else {
-          out->setf(ios::unitbuf);
-          set_ostream_ptr(out, true);
+          out->setf(std::ios::unitbuf);
+          ptr->set_ostream_ptr(out, true);
         }
 #endif  // BUILD_IPHONE
       }
+#ifdef ANDROID
+    } else {
+      // By default, we always redirect the notify stream to the Android log.
+      Notify *ptr = Notify::ptr();
+      ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+#endif
     }
   }
 }

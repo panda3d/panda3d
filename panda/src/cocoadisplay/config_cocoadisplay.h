@@ -18,8 +18,10 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(cocoadisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
+NotifyCategoryDecl(cocoadisplay, EXPCL_PANDA_COCOADISPLAY, EXPTP_PANDA_COCOADISPLAY);
 
-extern EXPCL_PANDAGL void init_libcocoadisplay();
+extern ConfigVariableBool cocoa_invert_wheel_x;
+
+extern EXPCL_PANDA_COCOADISPLAY void init_libcocoadisplay();
 
 #endif

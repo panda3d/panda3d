@@ -21,6 +21,7 @@
 #include "typedObject.h"
 #include "indent.h"
 #include "pointerToArray.h"
+#include "extension.h"
 
 #include "checksumHashGenerator.h"
 
@@ -41,12 +42,14 @@ public:
   typedef BitMaskNative MaskType;
   typedef MaskType::WordType WordType;
 
+  INLINE BitArray(WordType init_value);
+
 PUBLISHED:
   enum { num_bits_per_word = MaskType::num_bits };
 
   INLINE BitArray();
-  INLINE BitArray(WordType init_value);
   BitArray(const SparseArray &from);
+  EXTENSION(BitArray(PyObject *init_value));
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();
@@ -54,10 +57,10 @@ PUBLISHED:
   INLINE static BitArray bit(int index);
   INLINE static BitArray range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits() { return false; }
+  constexpr static int get_max_num_bits() { return INT_MAX; }
 
-  CONSTEXPR static int get_num_bits_per_word();
+  constexpr static int get_num_bits_per_word() { return num_bits_per_word; }
   INLINE size_t get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
@@ -91,10 +94,10 @@ PUBLISHED:
   bool has_bits_in_common(const BitArray &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
-  void output_binary(ostream &out, int spaces_every = 4) const;
-  void output_hex(ostream &out, int spaces_every = 4) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void output_binary(std::ostream &out, int spaces_every = 4) const;
+  void output_hex(std::ostream &out, int spaces_every = 4) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool operator == (const BitArray &other) const;
   INLINE bool operator != (const BitArray &other) const;
@@ -125,6 +128,10 @@ PUBLISHED:
   void operator <<= (int shift);
   void operator >>= (int shift);
 
+  EXTENSION(bool __bool__() const);
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
+
 public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
@@ -137,6 +144,8 @@ private:
   typedef PTA(MaskType) Array;
   Array _array;
   int _highest_bits;  // Either 0 or 1.
+
+  friend class Extension<BitArray>;
 
 public:
   void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -156,8 +165,8 @@ private:
 
 #include "bitArray.I"
 
-INLINE ostream &
-operator << (ostream &out, const BitArray &array) {
+INLINE std::ostream &
+operator << (std::ostream &out, const BitArray &array) {
   array.output(out);
   return out;
 }

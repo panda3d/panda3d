@@ -17,8 +17,7 @@
 INLINE MovingPartBase::
 MovingPartBase(const MovingPartBase &copy) :
   PartGroup(copy),
-  _num_effective_channels(0),
-  _effective_control(NULL),
+  _effective_control(nullptr),
   _forced_channel(copy._forced_channel)
 {
   // We don't copy the bound channels.  We do copy the forced_channel, though
@@ -47,6 +46,6 @@ get_max_bound() const {
  */
 INLINE AnimChannelBase *MovingPartBase::
 get_bound(int n) const {
-  nassertr(n >= 0 && n < (int)_channels.size(), NULL);
+  nassertr(n >= 0 && n < (int)_channels.size(), nullptr);
   return _channels[n];
 }

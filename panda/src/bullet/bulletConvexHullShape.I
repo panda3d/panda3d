@@ -19,19 +19,3 @@ INLINE BulletConvexHullShape::
 
   delete _shape;
 }
-
-/**
- *
- */
-INLINE BulletConvexHullShape::
-BulletConvexHullShape(const BulletConvexHullShape &copy) :
-  _shape(copy._shape) {
-}
-
-/**
- *
- */
-INLINE void BulletConvexHullShape::
-operator = (const BulletConvexHullShape &copy) {
-  _shape = copy._shape;
-}

@@ -21,7 +21,7 @@
  * code, but open_write() will fail.
  */
 INLINE void EncryptStreamBuf::
-set_algorithm(const string &algorithm) {
+set_algorithm(const std::string &algorithm) {
   _algorithm = algorithm;
 }
 
@@ -29,7 +29,7 @@ set_algorithm(const string &algorithm) {
  * Returns the encryption algorithm that was specified by set_algorithm(), or
  * was read from the stream by the last successful open_read().
  */
-INLINE const string &EncryptStreamBuf::
+INLINE const std::string &EncryptStreamBuf::
 get_algorithm() const {
   return _algorithm;
 }
@@ -80,4 +80,22 @@ set_iteration_count(int iteration_count) {
 INLINE int EncryptStreamBuf::
 get_iteration_count() const {
   return _iteration_count;
+}
+
+/**
+ * Sets the amount of the encrypted data at the beginning that are skipped
+ * when seeking back to zero.
+ */
+INLINE void EncryptStreamBuf::
+set_magic_length(size_t length) {
+  _magic_length = length;
+}
+
+/**
+ * Sets the amount of the encrypted data at the beginning that are skipped
+ * when seeking back to zero.
+ */
+INLINE size_t EncryptStreamBuf::
+get_magic_length() const {
+  return _magic_length;
 }

@@ -22,15 +22,15 @@
  * A single "patch", a special primitive to be rendered only with a
  * tessellation shader.
  */
-class EXPCL_PANDAEGG EggPatch : public EggPrimitive {
+class EXPCL_PANDA_EGG EggPatch : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggPatch(const string &name = "");
+  INLINE explicit EggPatch(const std::string &name = "");
   INLINE EggPatch(const EggPatch &copy);
   INLINE EggPatch &operator = (const EggPatch &copy);
 
   virtual EggPatch *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 public:
   static TypeHandle get_class_type() {

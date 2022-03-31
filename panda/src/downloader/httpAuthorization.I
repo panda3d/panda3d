@@ -16,7 +16,7 @@
  * supplied string that may have meaning to the user, and describes the
  * general collection of things protected by this password.
  */
-const string &HTTPAuthorization::
+const std::string &HTTPAuthorization::
 get_realm() const {
   return _realm;
 }

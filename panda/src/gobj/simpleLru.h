@@ -27,7 +27,7 @@ class SimpleLruPage;
  */
 class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
-  explicit SimpleLru(const string &name, size_t max_size);
+  explicit SimpleLru(const std::string &name, size_t max_size);
   ~SimpleLru();
 
   INLINE size_t get_total_size() const;
@@ -41,8 +41,8 @@ PUBLISHED:
 
   INLINE bool validate();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
 public:
   static LightMutex &_global_lock;
@@ -83,8 +83,8 @@ PUBLISHED:
 
   virtual void evict_lru();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
   SimpleLru *_lru;
@@ -94,12 +94,12 @@ private:
   friend class SimpleLru;
 };
 
-inline ostream &operator << (ostream &out, const SimpleLru &lru) {
+inline std::ostream &operator << (std::ostream &out, const SimpleLru &lru) {
   lru.output(out);
   return out;
 }
 
-inline ostream &operator << (ostream &out, const SimpleLruPage &page) {
+inline std::ostream &operator << (std::ostream &out, const SimpleLruPage &page) {
   page.output(out);
   return out;
 }

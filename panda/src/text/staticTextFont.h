@@ -41,7 +41,7 @@ PUBLISHED:
 
   virtual PT(TextFont) make_copy() const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
@@ -55,7 +55,6 @@ private:
 
   typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
-  PN_stdfloat _font_height;
   PT(PandaNode) _font;
   CoordinateSystem _cs;
 

@@ -16,18 +16,13 @@
 #include "dcAtomicField.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
-#include "dcmsgtypes.h"
 
 #include "dcClassParameter.h"
 #include <algorithm>
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
+using std::string;
 
 #ifdef WITHIN_PANDA
-#include "pStatTimer.h"
-
 #ifndef CPPPARSER
 PStatCollector DCClass::_update_pcollector("App:Show code:readerPollTask:Update");
 PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Generate");
@@ -80,11 +75,10 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
   _bogus_class(bogus_class)
 {
   _number = -1;
-  _constructor = NULL;
+  _constructor = nullptr;
 
-#ifdef HAVE_PYTHON
-  _class_def = NULL;
-  _owner_class_def = NULL;
+#ifdef WITHIN_PANDA
+  _python_class_defs = nullptr;
 #endif
 }
 
@@ -93,19 +87,12 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
  */
 DCClass::
 ~DCClass() {
-  if (_constructor != (DCField *)NULL) {
-    delete _constructor;
-  }
+  delete _constructor;
 
   Fields::iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     delete (*fi);
   }
-
-#ifdef HAVE_PYTHON
-  Py_XDECREF(_class_def);
-  Py_XDECREF(_owner_class_def);
-#endif
 }
 
 /**
@@ -137,7 +124,7 @@ get_num_parents() const {
  */
 DCClass *DCClass::
 get_parent(int n) const {
-  nassertr(n >= 0 && n < (int)_parents.size(), NULL);
+  nassertr(n >= 0 && n < (int)_parents.size(), nullptr);
   return _parents[n];
 }
 
@@ -147,7 +134,7 @@ get_parent(int n) const {
  */
 bool DCClass::
 has_constructor() const {
-  return (_constructor != (DCField *)NULL);
+  return (_constructor != nullptr);
 }
 
 /**
@@ -177,13 +164,13 @@ DCField *DCClass::
 get_field(int n) const {
   #ifndef NDEBUG //[
   if (n < 0 || n >= (int)_fields.size()) {
-    cerr << *this << " "
+    std::cerr << *this << " "
          << "n:" << n << " _fields.size():"
-         << (int)_fields.size() << endl;
+         << (int)_fields.size() << std::endl;
     // __asm { int 3 }
   }
   #endif //]
-  nassertr_always(n >= 0 && n < (int)_fields.size(), NULL);
+  nassertr_always(n >= 0 && n < (int)_fields.size(), nullptr);
   return _fields[n];
 }
 
@@ -205,13 +192,13 @@ get_field_by_name(const string &name) const {
   Parents::const_iterator pi;
   for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
     DCField *result = (*pi)->get_field_by_name(name);
-    if (result != (DCField *)NULL) {
+    if (result != nullptr) {
       return result;
     }
   }
 
   // Nobody knew what this field is.
-  return (DCField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -232,7 +219,7 @@ get_field_by_index(int index_number) const {
   Parents::const_iterator pi;
   for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
     DCField *result = (*pi)->get_field_by_index(index_number);
-    if (result != (DCField *)NULL) {
+    if (result != nullptr) {
       // Cache this result for future lookups.
       ((DCClass *)this)->_fields_by_index[index_number] = result;
       return result;
@@ -240,7 +227,7 @@ get_field_by_index(int index_number) const {
   }
 
   // Nobody knew what this field is.
-  return (DCField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -250,7 +237,7 @@ get_field_by_index(int index_number) const {
 int DCClass::
 get_num_inherited_fields() const {
   if (dc_multiple_inheritance && dc_virtual_inheritance &&
-      _dc_file != (DCFile *)NULL) {
+      _dc_file != nullptr) {
     _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
@@ -283,12 +270,12 @@ get_num_inherited_fields() const {
 DCField *DCClass::
 get_inherited_field(int n) const {
   if (dc_multiple_inheritance && dc_virtual_inheritance &&
-      _dc_file != (DCFile *)NULL) {
+      _dc_file != nullptr) {
     _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
       ((DCClass *)this)->rebuild_inherited_fields();
     }
-    nassertr(n >= 0 && n < (int)_inherited_fields.size(), NULL);
+    nassertr(n >= 0 && n < (int)_inherited_fields.size(), nullptr);
     return _inherited_fields[n];
 
   } else {
@@ -331,7 +318,7 @@ inherits_from_bogus_class() const {
  * Write a string representation of this instance to <out>.
  */
 void DCClass::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_is_struct) {
     out << "struct";
   } else {
@@ -342,750 +329,11 @@ output(ostream &out) const {
   }
 }
 
-#ifdef HAVE_PYTHON
-/**
- * Returns true if the DCClass object has an associated Python class
- * definition, false otherwise.
- */
-bool DCClass::
-has_class_def() const {
-  return (_class_def != NULL);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Sets the class object associated with this DistributedClass.  This object
- * will be used to construct new instances of the class.
- */
-void DCClass::
-set_class_def(PyObject *class_def) {
-  Py_XINCREF(class_def);
-  Py_XDECREF(_class_def);
-  _class_def = class_def;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Returns the class object that was previously associated with this
- * DistributedClass.  This will return a new reference to the object.
- */
-PyObject *DCClass::
-get_class_def() const {
-  if (_class_def == NULL) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-
-  Py_INCREF(_class_def);
-  return _class_def;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Returns true if the DCClass object has an associated Python owner class
- * definition, false otherwise.
- */
-bool DCClass::
-has_owner_class_def() const {
-  return (_owner_class_def != NULL);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Sets the owner class object associated with this DistributedClass.  This
- * object will be used to construct new owner instances of the class.
- */
-void DCClass::
-set_owner_class_def(PyObject *owner_class_def) {
-  Py_XINCREF(owner_class_def);
-  Py_XDECREF(_owner_class_def);
-  _owner_class_def = owner_class_def;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Returns the owner class object that was previously associated with this
- * DistributedClass.  This will return a new reference to the object.
- */
-PyObject *DCClass::
-get_owner_class_def() const {
-  if (_owner_class_def == NULL) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-
-  Py_INCREF(_owner_class_def);
-  return _owner_class_def;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Extracts the update message out of the packer and applies it to the
- * indicated object by calling the appropriate method.
- */
-void DCClass::
-receive_update(PyObject *distobj, DatagramIterator &di) const {
-#ifdef WITHIN_PANDA
-  PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
-#endif
-    DCPacker packer;
-    const char *data = (const char *)di.get_datagram().get_data();
-    packer.set_unpack_data(data + di.get_current_index(),
-                           di.get_remaining_size(), false);
-
-    int field_id = packer.raw_unpack_uint16();
-    DCField *field = get_field_by_index(field_id);
-    if (field == (DCField *)NULL) {
-            ostringstream strm;
-            strm
-                << "Received update for field " << field_id << ", not in class "
-                << get_name();
-            nassert_raise(strm.str());
-            return;
-    }
-
-    packer.begin_unpack(field);
-    field->receive_update(packer, distobj);
-    packer.end_unpack();
-
-    di.skip_bytes(packer.get_num_unpacked_bytes());
-
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes a big datagram that includes all of the "required" fields that
- * are sent along with a normal "generate with required" message.  This is all
- * of the atomic fields that are marked "broadcast required".
- */
-void DCClass::
-receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const {
-#ifdef WITHIN_PANDA
-  PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
-#endif
-  DCPacker packer;
-  const char *data = (const char *)di.get_datagram().get_data();
-  packer.set_unpack_data(data + di.get_current_index(),
-                         di.get_remaining_size(), false);
-
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->as_molecular_field() == (DCMolecularField *)NULL &&
-        field->is_required() && field->is_broadcast()) {
-      packer.begin_unpack(field);
-      field->receive_update(packer, distobj);
-      if (!packer.end_unpack()) {
-        break;
-      }
-    }
-  }
-
-  di.skip_bytes(packer.get_num_unpacked_bytes());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes a big datagram that includes all of the "required" fields that
- * are sent along with a normal "generate with required" message.  This is all
- * of the atomic fields that are marked "broadcast ownrecv". Should be used
- * for 'owner-view' objects.
- */
-void DCClass::
-receive_update_broadcast_required_owner(PyObject *distobj,
-                                        DatagramIterator &di) const {
-#ifdef WITHIN_PANDA
-  PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
-#endif
-  DCPacker packer;
-  const char *data = (const char *)di.get_datagram().get_data();
-  packer.set_unpack_data(data + di.get_current_index(),
-                         di.get_remaining_size(), false);
-
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->as_molecular_field() == (DCMolecularField *)NULL &&
-        field->is_required()) {
-      packer.begin_unpack(field);
-      if (field->is_ownrecv()) {
-        field->receive_update(packer, distobj);
-      } else {
-        // It's not an ownrecv field; skip over it.  It's difficult to filter
-        // this on the server, ask Roger for the reason.
-        packer.unpack_skip();
-      }
-      if (!packer.end_unpack()) {
-        break;
-      }
-    }
-  }
-
-  di.skip_bytes(packer.get_num_unpacked_bytes());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes a big datagram that includes all of the "required" fields that
- * are sent when an avatar is created.  This is all of the atomic fields that
- * are marked "required", whether they are broadcast or not.
- */
-void DCClass::
-receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
-#ifdef WITHIN_PANDA
-  PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
-#endif
-  DCPacker packer;
-  const char *data = (const char *)di.get_datagram().get_data();
-  packer.set_unpack_data(data + di.get_current_index(),
-                         di.get_remaining_size(), false);
-
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->as_molecular_field() == (DCMolecularField *)NULL &&
-        field->is_required()) {
-      packer.begin_unpack(field);
-      field->receive_update(packer, distobj);
-      if (!packer.end_unpack()) {
-        break;
-      }
-    }
-  }
-
-  di.skip_bytes(packer.get_num_unpacked_bytes());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes a datagram that lists some additional fields that are broadcast
- * in one chunk.
- */
-void DCClass::
-receive_update_other(PyObject *distobj, DatagramIterator &di) const {
-#ifdef WITHIN_PANDA
-  PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
-#endif
-  int num_fields = di.get_uint16();
-  for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
-    receive_update(distobj, di);
-  }
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes an update for a named field from a packed value blob.
- */
-void DCClass::
-direct_update(PyObject *distobj, const string &field_name,
-              const string &value_blob) {
-  DCField *field = get_field_by_name(field_name);
-  nassertv_always(field != NULL);
-
-  DCPacker packer;
-  packer.set_unpack_data(value_blob);
-  packer.begin_unpack(field);
-  field->receive_update(packer, distobj);
-  packer.end_unpack();
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Processes an update for a named field from a packed datagram.
- */
-void DCClass::
-direct_update(PyObject *distobj, const string &field_name,
-              const Datagram &datagram) {
-  direct_update(distobj, field_name, datagram.get_message());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Looks up the current value of the indicated field by calling the
- * appropriate get*() function, then packs that value into the datagram.  This
- * field is presumably either a required field or a specified optional field,
- * and we are building up a datagram for the generate-with-required message.
- *
- * Returns true on success, false on failure.
- */
-bool DCClass::
-pack_required_field(Datagram &datagram, PyObject *distobj,
-                    const DCField *field) const {
-  DCPacker packer;
-  packer.begin_pack(field);
-  if (!pack_required_field(packer, distobj, field)) {
-    return false;
-  }
-  if (!packer.end_pack()) {
-    return false;
-  }
-
-  datagram.append_data(packer.get_data(), packer.get_length());
-  return true;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Looks up the current value of the indicated field by calling the
- * appropriate get*() function, then packs that value into the packer.  This
- * field is presumably either a required field or a specified optional field,
- * and we are building up a datagram for the generate-with-required message.
- *
- * Returns true on success, false on failure.
- */
-bool DCClass::
-pack_required_field(DCPacker &packer, PyObject *distobj,
-                    const DCField *field) const {
-  const DCParameter *parameter = field->as_parameter();
-  if (parameter != (DCParameter *)NULL) {
-    // This is the easy case: to pack a parameter, we just look on the class
-    // object for the data element.
-    string field_name = field->get_name();
-
-    if (!PyObject_HasAttrString(distobj, (char *)field_name.c_str())) {
-      // If the attribute is not defined, but the field has a default value
-      // specified, quietly pack the default value.
-      if (field->has_default_value()) {
-        packer.pack_default_value();
-        return true;
-      }
-
-      // If there is no default value specified, it's an error.
-      ostringstream strm;
-      strm << "Data element " << field_name
-           << ", required by dc file for dclass " << get_name()
-           << ", not defined on object";
-      nassert_raise(strm.str());
-      return false;
-    }
-    PyObject *result =
-      PyObject_GetAttrString(distobj, (char *)field_name.c_str());
-    nassertr(result != (PyObject *)NULL, false);
-
-    // Now pack the value into the datagram.
-    bool pack_ok = parameter->pack_args(packer, result);
-    Py_DECREF(result);
-
-    return pack_ok;
-  }
-
-  if (field->as_molecular_field() != (DCMolecularField *)NULL) {
-    ostringstream strm;
-    strm << "Cannot pack molecular field " << field->get_name()
-         << " for generate";
-    nassert_raise(strm.str());
-    return false;
-  }
-
-  const DCAtomicField *atom = field->as_atomic_field();
-  nassertr(atom != (DCAtomicField *)NULL, false);
-
-  // We need to get the initial value of this field.  There isn't a good,
-  // robust way to get this; presently, we just mangle the "setFoo()" name of
-  // the required field into "getFoo()" and call that.
-  string setter_name = atom->get_name();
-
-  if (setter_name.empty()) {
-    ostringstream strm;
-    strm << "Required field is unnamed!";
-    nassert_raise(strm.str());
-    return false;
-  }
-
-  if (atom->get_num_elements() == 0) {
-    // It sure doesn't make sense to have a required field with no parameters.
-    // What data, exactly, is required?
-    ostringstream strm;
-    strm << "Required field " << setter_name << " has no parameters!";
-    nassert_raise(strm.str());
-    return false;
-  }
-
-  string getter_name = setter_name;
-  if (setter_name.substr(0, 3) == "set") {
-    // If the original method started with "set", we mangle this directly to
-    // "get".
-    getter_name[0] = 'g';
-
-  } else {
-    // Otherwise, we add a "get" prefix, and capitalize the next letter.
-    getter_name = "get" + setter_name;
-    getter_name[3] = toupper(getter_name[3]);
-  }
-
-  // Now we have to look up the getter on the distributed object and call it.
-  if (!PyObject_HasAttrString(distobj, (char *)getter_name.c_str())) {
-    // As above, if there's no getter but the field has a default value
-    // specified, quietly pack the default value.
-    if (field->has_default_value()) {
-      packer.pack_default_value();
-      return true;
-    }
-
-    // Otherwise, with no default value it's an error.
-    ostringstream strm;
-    strm << "Distributed class " << get_name()
-         << " doesn't have getter named " << getter_name
-         << " to match required field " << setter_name;
-    nassert_raise(strm.str());
-    return false;
-  }
-  PyObject *func =
-    PyObject_GetAttrString(distobj, (char *)getter_name.c_str());
-  nassertr(func != (PyObject *)NULL, false);
-
-  PyObject *empty_args = PyTuple_New(0);
-  PyObject *result = PyObject_CallObject(func, empty_args);
-  Py_DECREF(empty_args);
-  Py_DECREF(func);
-  if (result == (PyObject *)NULL) {
-    // We don't set this as an exception, since presumably the Python method
-    // itself has already triggered a Python exception.
-    cerr << "Error when calling " << getter_name << "\n";
-    return false;
-  }
-
-  if (atom->get_num_elements() == 1) {
-    // In this case, we expect the getter to return one object, which we wrap
-    // up in a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, result);
-    result = tuple;
-
-  } else {
-    // Otherwise, it had better already be a sequence or tuple of some sort.
-    if (!PySequence_Check(result)) {
-      ostringstream strm;
-      strm << "Since dclass " << get_name() << " method " << setter_name
-           << " is declared to have multiple parameters, Python function "
-           << getter_name << " must return a list or tuple.\n";
-      nassert_raise(strm.str());
-      return false;
-    }
-  }
-
-  // Now pack the arguments into the datagram.
-  bool pack_ok = atom->pack_args(packer, result);
-  Py_DECREF(result);
-
-  return pack_ok;
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to send an update for
- * the indicated distributed object from the client.
- */
-Datagram DCClass::
-client_format_update(const string &field_name, DOID_TYPE do_id,
-                     PyObject *args) const {
-  DCField *field = get_field_by_name(field_name);
-  if (field == (DCField *)NULL) {
-    ostringstream strm;
-    strm << "No field named " << field_name << " in class " << get_name()
-         << "\n";
-    nassert_raise(strm.str());
-    return Datagram();
-  }
-
-  return field->client_format_update(do_id, args);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to send an update for
- * the indicated distributed object from the AI.
- */
-Datagram DCClass::
-ai_format_update(const string &field_name, DOID_TYPE do_id,
-                 CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
-  DCField *field = get_field_by_name(field_name);
-  if (field == (DCField *)NULL) {
-    ostringstream strm;
-    strm << "No field named " << field_name << " in class " << get_name()
-         << "\n";
-    nassert_raise(strm.str());
-    return Datagram();
-  }
-
-  return field->ai_format_update(do_id, to_id, from_id, args);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to send an update,
- * using the indicated msg type for the indicated distributed object from the
- * AI.
- */
-Datagram DCClass::
-ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
-                 CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const {
-  DCField *field = get_field_by_name(field_name);
-  if (field == (DCField *)NULL) {
-    ostringstream strm;
-    strm << "No field named " << field_name << " in class " << get_name()
-         << "\n";
-    nassert_raise(strm.str());
-    return Datagram();
-  }
-
-  return field->ai_format_update_msg_type(do_id, to_id, from_id, msg_type, args);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to generate a new
- * distributed object from the client.  This requires querying the object for
- * the initial value of its required fields.
- *
- * optional_fields is a list of fieldNames to generate in addition to the
- * normal required fields.
- *
- * This method is only called by the CMU implementation.
- */
-Datagram DCClass::
-client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
-                           ZONEID_TYPE zone_id,
-                           PyObject *optional_fields) const {
-  DCPacker packer;
-
-  packer.raw_pack_uint16(CLIENT_OBJECT_GENERATE_CMU);
-
-  packer.raw_pack_uint32(zone_id);
-  packer.raw_pack_uint16(_number);
-  packer.raw_pack_uint32(do_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      if (!pack_required_field(packer, distobj, field)) {
-        return Datagram();
-      }
-      packer.end_pack();
-    }
-  }
-
-  // Also specify the optional fields.
-  int num_optional_fields = 0;
-  if (PyObject_IsTrue(optional_fields)) {
-    num_optional_fields = PySequence_Size(optional_fields);
-  }
-  packer.raw_pack_uint16(num_optional_fields);
-
-  for (int i = 0; i < num_optional_fields; i++) {
-    PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
-#if PY_MAJOR_VERSION >= 3
-    string field_name = PyUnicode_AsUTF8(py_field_name);
-#else
-    string field_name = PyString_AsString(py_field_name);
-#endif
-    Py_XDECREF(py_field_name);
-
-    DCField *field = get_field_by_name(field_name);
-    if (field == (DCField *)NULL) {
-      ostringstream strm;
-      strm << "No field named " << field_name << " in class " << get_name()
-           << "\n";
-      nassert_raise(strm.str());
-      return Datagram();
-    }
-    packer.raw_pack_uint16(field->get_number());
-    packer.begin_pack(field);
-    if (!pack_required_field(packer, distobj, field)) {
-      return Datagram();
-    }
-    packer.end_pack();
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to generate a new
- * distributed object from the AI. This requires querying the object for the
- * initial value of its required fields.
- *
- * optional_fields is a list of fieldNames to generate in addition to the
- * normal required fields.
- */
-Datagram DCClass::
-ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
-                   DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-                   CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
-                   PyObject *optional_fields) const {
-  DCPacker packer;
-
-  packer.raw_pack_uint8(1);
-  packer.RAW_PACK_CHANNEL(district_channel_id);
-  packer.RAW_PACK_CHANNEL(from_channel_id);
-    // packer.raw_pack_uint8('A');
-
-  bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
-
-  if (has_optional_fields) {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER);
-  } else {
-    packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
-  }
-
-  // Parent is a bit overloaded; this parent is not about inheritance, this
-  // one is about the visibility container parent, i.e.  the zone parent:
-  if (parent_id) {
-    packer.raw_pack_uint32(parent_id);
-  }
-  packer.raw_pack_uint32(zone_id);
-  packer.raw_pack_uint16(_number);
-  packer.raw_pack_uint32(do_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      if (!pack_required_field(packer, distobj, field)) {
-        return Datagram();
-      }
-      packer.end_pack();
-    }
-  }
-
-  // Also specify the optional fields.
-  if (has_optional_fields) {
-    int num_optional_fields = PySequence_Size(optional_fields);
-    packer.raw_pack_uint16(num_optional_fields);
-
-    for (int i = 0; i < num_optional_fields; ++i) {
-      PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
-#if PY_MAJOR_VERSION >= 3
-      string field_name = PyUnicode_AsUTF8(py_field_name);
-#else
-      string field_name = PyString_AsString(py_field_name);
-#endif
-      Py_XDECREF(py_field_name);
-
-      DCField *field = get_field_by_name(field_name);
-      if (field == (DCField *)NULL) {
-        ostringstream strm;
-        strm << "No field named " << field_name << " in class " << get_name()
-             << "\n";
-        nassert_raise(strm.str());
-        return Datagram();
-      }
-
-      packer.raw_pack_uint16(field->get_number());
-
-      packer.begin_pack(field);
-      if (!pack_required_field(packer, distobj, field)) {
-        return Datagram();
-      }
-      packer.end_pack();
-    }
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-#ifdef HAVE_PYTHON
-/**
- * Generates a datagram containing the message necessary to create a new
- * database distributed object from the AI.
- *
- * First Pass is to only include required values (with Defaults).
- */
-Datagram DCClass::
-ai_database_generate_context(
-    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-    CHANNEL_TYPE owner_channel,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const
-{
-  DCPacker packer;
-  packer.raw_pack_uint8(1);
-  packer.RAW_PACK_CHANNEL(database_server_id);
-  packer.RAW_PACK_CHANNEL(from_channel_id);
-  // packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);
-  packer.raw_pack_uint32(zone_id);
-  packer.RAW_PACK_CHANNEL(owner_channel);
-  packer.raw_pack_uint16(_number); // DCD class ID
-  packer.raw_pack_uint32(context_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      packer.pack_default_value();
-      packer.end_pack();
-    }
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-Datagram DCClass::
-ai_database_generate_context_old(
-    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const
-{
-  DCPacker packer;
-  packer.raw_pack_uint8(1);
-  packer.RAW_PACK_CHANNEL(database_server_id);
-  packer.RAW_PACK_CHANNEL(from_channel_id);
-  // packer.raw_pack_uint8('A');
-  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);
-  packer.raw_pack_uint32(zone_id);
-  packer.raw_pack_uint16(_number); // DCD class ID
-  packer.raw_pack_uint32(context_id);
-
-  // Specify all of the required fields.
-  int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; ++i) {
-    DCField *field = get_inherited_field(i);
-    if (field->is_required() && field->as_molecular_field() == NULL) {
-      packer.begin_pack(field);
-      packer.pack_default_value();
-      packer.end_pack();
-    }
-  }
-
-  return Datagram(packer.get_data(), packer.get_length());
-}
-#endif  // HAVE_PYTHON
-
 /**
  * Write a string representation of this instance to <out>.
  */
 void DCClass::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   output_instance(out, brief, "", "", "");
 }
 
@@ -1094,7 +342,7 @@ output(ostream &out, bool brief) const {
  * stream.
  */
 void DCClass::
-write(ostream &out, bool brief, int indent_level) const {
+write(std::ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   if (_is_struct) {
     out << "struct";
@@ -1121,7 +369,7 @@ write(ostream &out, bool brief, int indent_level) const {
   }
   out << "\n";
 
-  if (_constructor != (DCField *)NULL) {
+  if (_constructor != nullptr) {
     _constructor->write(out, brief, indent_level + 2);
   }
 
@@ -1154,7 +402,7 @@ write(ostream &out, bool brief, int indent_level) const {
  * stream.
  */
 void DCClass::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (_is_struct) {
     out << "struct";
@@ -1177,7 +425,7 @@ output_instance(ostream &out, bool brief, const string &prename,
 
   out << " {";
 
-  if (_constructor != (DCField *)NULL) {
+  if (_constructor != nullptr) {
     _constructor->output(out, brief);
     out << "; ";
   }
@@ -1213,7 +461,7 @@ generate_hash(HashGenerator &hashgen) const {
     hashgen.add_int((*pi)->get_number());
   }
 
-  if (_constructor != (DCField *)NULL) {
+  if (_constructor != nullptr) {
     _constructor->generate_hash(hashgen);
   }
 
@@ -1315,7 +563,7 @@ shadow_inherited_field(const string &name) {
   }
 
   // If we get here, the named field wasn't in the list.  Huh.
-  nassertv(false);
+  nassert_raise("named field not in list");
 }
 
 /**
@@ -1326,20 +574,20 @@ shadow_inherited_field(const string &name) {
  */
 bool DCClass::
 add_field(DCField *field) {
-  nassertr(field->get_class() == this || field->get_class() == NULL, false);
+  nassertr(field->get_class() == this || field->get_class() == nullptr, false);
   field->set_class(this);
-  if (_dc_file != (DCFile *)NULL) {
+  if (_dc_file != nullptr) {
     _dc_file->mark_inherited_fields_stale();
   }
 
   if (!field->get_name().empty()) {
     if (field->get_name() == _name) {
       // This field is a constructor.
-      if (_constructor != (DCField *)NULL) {
+      if (_constructor != nullptr) {
         // We already have a constructor.
         return false;
       }
-      if (field->as_atomic_field() == (DCAtomicField *)NULL) {
+      if (field->as_atomic_field() == nullptr) {
         // The constructor must be an atomic field.
         return false;
       }
@@ -1357,7 +605,7 @@ add_field(DCField *field) {
     }
   }
 
-  if (_dc_file != (DCFile *)NULL &&
+  if (_dc_file != nullptr &&
       ((dc_virtual_inheritance && dc_sort_inheritance_by_file) || !is_struct())) {
     if (dc_multiple_inheritance) {
       _dc_file->set_new_index_number(field);

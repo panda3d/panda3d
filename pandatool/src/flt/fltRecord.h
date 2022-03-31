@@ -59,20 +59,20 @@ public:
   void add_ancillary(FltRecord *ancillary);
 
   bool has_comment() const;
-  const string &get_comment() const;
+  const std::string &get_comment() const;
   void clear_comment();
-  void set_comment(const string &comment);
+  void set_comment(const std::string &comment);
 
   void check_remaining_size(const DatagramIterator &di,
-                            const string &name = string()) const;
+                            const std::string &name = std::string()) const;
 
   virtual void apply_converted_filenames();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
-  void write_children(ostream &out, int indent_level) const;
+  void write_children(std::ostream &out, int indent_level) const;
 
   static bool is_ancillary(FltOpcode opcode);
 
@@ -95,7 +95,7 @@ private:
   Records _extensions;
   Records _ancillary;
 
-  string _comment;
+  std::string _comment;
 
 
 public:
@@ -116,7 +116,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FltRecord &record);
+INLINE std::ostream &operator << (std::ostream &out, const FltRecord &record);
 
 #include "fltRecord.I"
 

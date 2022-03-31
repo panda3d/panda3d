@@ -18,6 +18,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAX11)
+  #error Buildsystem error: BUILDING_PANDAX11 not defined
+#endif
+
 Configure(config_x11display);
 NotifyCategoryDef(x11display, "display");
 
@@ -35,6 +39,11 @@ ConfigVariableBool x_error_abort
  PRC_DESC("Set this true to trigger and abort (and a stack trace) on receipt "
           "of an error from the X window system.  This can make it easier "
           "to discover where these errors are generated."));
+
+ConfigVariableBool x_init_threads
+("x-init-threads", false,
+ PRC_DESC("Set this true to ask Panda3D to call XInitThreads() upon loading "
+          "the display module, which may help with some threading issues."));
 
 ConfigVariableInt x_wheel_up_button
 ("x-wheel-up-button", 4,

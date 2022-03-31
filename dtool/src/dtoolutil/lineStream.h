@@ -28,7 +28,7 @@
  * otherwise affected when a line of text is extracted.  More text can still
  * be written to it and continuously extracted.
  */
-class EXPCL_DTOOL LineStream : public ostream {
+class EXPCL_DTOOL_DTOOLUTIL LineStream : public std::ostream {
 PUBLISHED:
   INLINE LineStream();
 
@@ -37,7 +37,7 @@ PUBLISHED:
 #endif
 
   INLINE bool is_text_available() const;
-  INLINE string get_line();
+  INLINE std::string get_line();
   INLINE bool has_newline() const;
 
 private:

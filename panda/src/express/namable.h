@@ -23,22 +23,22 @@
  * A base class for all things which can have a name.  The name is either
  * empty or nonempty, but it is never NULL.
  */
-class EXPCL_PANDAEXPRESS Namable : public MemoryBase {
+class EXPCL_PANDA_EXPRESS Namable : public MemoryBase {
 PUBLISHED:
-  INLINE explicit Namable(const string &initial_name = "");
+  INLINE explicit Namable(const std::string &initial_name = "");
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   MAKE_PROPERTY(name, get_name, set_name);
 
   // In the absence of any definition to the contrary, outputting a Namable
   // will write out its name.
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 private:
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {
@@ -52,7 +52,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Namable &n);
+INLINE std::ostream &operator << (std::ostream &out, const Namable &n);
 
 /**
  * An STL function object for sorting an array of pointers to Namables into

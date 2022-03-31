@@ -31,7 +31,7 @@ GeomCacheEntry::
  */
 PT(GeomCacheEntry) GeomCacheEntry::
 record(Thread *current_thread) {
-  nassertr(_next == (GeomCacheEntry *)NULL && _prev == (GeomCacheEntry *)NULL, NULL);
+  nassertr(_next == nullptr && _prev == nullptr, nullptr);
   PT(GeomCacheEntry) keepme = this;
 
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
@@ -72,7 +72,7 @@ void GeomCacheEntry::
 refresh(Thread *current_thread) {
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
   LightMutexHolder holder(cache_mgr->_lock);
-  nassertv(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL);
+  nassertv(_next != nullptr && _prev != nullptr);
 
   remove_from_list();
   insert_before(cache_mgr->_list);
@@ -93,7 +93,7 @@ refresh(Thread *current_thread) {
  */
 PT(GeomCacheEntry) GeomCacheEntry::
 erase() {
-  nassertr(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL, NULL);
+  nassertr(_next != nullptr && _prev != nullptr, nullptr);
 
   PT(GeomCacheEntry) keepme;
   keepme.cheat() = this;
@@ -133,6 +133,6 @@ evict_callback() {
  *
  */
 void GeomCacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ unknown ]";
 }

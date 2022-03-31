@@ -72,13 +72,13 @@ PUBLISHED:
   INLINE bool get_read_only() const;
 
   PT(BamCacheRecord) lookup(const Filename &source_filename,
-                            const string &cache_extension);
+                            const std::string &cache_extension);
   bool store(BamCacheRecord *record);
 
   void consider_flush_index();
   void flush_index();
 
-  void list_index(ostream &out, int indent_level = 0) const;
+  void list_index(std::ostream &out, int indent_level = 0) const;
 
   INLINE static BamCache *get_global_ptr();
   INLINE static void consider_flush_global_index();
@@ -100,7 +100,7 @@ PUBLISHED:
 private:
   void read_index();
   bool read_index_pathname(Filename &index_pathname,
-                           string &index_ref_contents) const;
+                           std::string &index_ref_contents) const;
   void merge_index(BamCacheIndex *new_index);
   void rebuild_index();
   INLINE void mark_index_stale();
@@ -123,7 +123,7 @@ private:
   static PT(BamCacheRecord) do_read_record(const Filename &cache_pathname,
                                            bool read_data);
 
-  static string hash_filename(const string &filename);
+  static std::string hash_filename(const std::string &filename);
   static void make_global();
 
   bool _active;
@@ -141,7 +141,7 @@ private:
   time_t _index_stale_since;
 
   Filename _index_pathname;
-  string _index_ref_contents;
+  std::string _index_ref_contents;
 
   ReMutex _lock;
 };

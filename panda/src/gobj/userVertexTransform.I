@@ -14,7 +14,7 @@
 /**
  * Returns the name passed to the constructor.  Completely arbitrary.
  */
-INLINE const string &UserVertexTransform::
+INLINE const std::string &UserVertexTransform::
 get_name() const {
   return _name;
 }

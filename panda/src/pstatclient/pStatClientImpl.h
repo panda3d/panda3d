@@ -51,22 +51,22 @@ public:
   PStatClientImpl(PStatClient *client);
   ~PStatClientImpl();
 
-  INLINE void set_client_name(const string &name);
-  INLINE string get_client_name() const;
+  INLINE void set_client_name(const std::string &name);
+  INLINE std::string get_client_name() const;
   INLINE void set_max_rate(double rate);
   INLINE double get_max_rate() const;
 
   INLINE double get_real_time() const;
 
   INLINE void client_main_tick();
-  bool client_connect(string hostname, int port);
+  bool client_connect(std::string hostname, int port);
   void client_disconnect();
   INLINE bool client_is_connected() const;
 
   INLINE void client_resume_after_pause();
 
-  void new_frame(int thread_index);
-  void add_frame(int thread_index, const PStatFrameData &frame_data);
+  void new_frame(int thread_index, int frame_number = -1);
+  void add_frame(int thread_index, int frame_number, const PStatFrameData &frame_data);
 
 private:
   void transmit_frame_data(int thread_index, int frame_number,
@@ -79,7 +79,7 @@ private:
   double _last_frame;
 
   // Networking stuff
-  string get_hostname();
+  std::string get_hostname();
   void send_hello();
   void report_new_collectors();
   void report_new_threads();
@@ -103,14 +103,16 @@ private:
   int _collectors_reported;
   int _threads_reported;
 
-  string _hostname;
-  string _client_name;
+  std::string _hostname;
+  std::string _client_name;
   double _max_rate;
 
   double _tcp_count_factor;
   double _udp_count_factor;
   unsigned int _tcp_count;
   unsigned int _udp_count;
+
+  bool _thread_profiling = false;
 };
 
 #include "pStatClientImpl.I"

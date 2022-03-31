@@ -21,6 +21,10 @@
 #include "bamReader.h"
 #include "thread.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const char * const extensions_png[] = {
   "png"
 };
@@ -118,7 +122,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypePNG::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -129,7 +132,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypePNG::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -162,19 +164,19 @@ PNMFileTypePNG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
-  _png = NULL;
-  _info = NULL;
+  _png = nullptr;
+  _info = nullptr;
   _is_valid = false;
 
-  _png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
+  _png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr,
                                 png_error, png_warning);
-  if (_png == NULL) {
+  if (_png == nullptr) {
     return;
   }
 
   _info = png_create_info_struct(_png);
-  if (_info == NULL) {
-    png_destroy_read_struct(&_png, NULL, NULL);
+  if (_info == nullptr) {
+    png_destroy_read_struct(&_png, nullptr, nullptr);
     return;
   }
 
@@ -201,7 +203,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   double gamma;
 
   png_get_IHDR(_png, _info, &width, &height,
-               &bit_depth, &color_type, NULL, NULL, NULL);
+               &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
   // Look for an sRGB chunk.
   if (png_get_sRGB(_png, _info, &srgb_intent) == PNG_INFO_sRGB) {
@@ -223,10 +225,12 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     }
   }
 
-  pnmimage_png_cat.debug()
-    << "width = " << width << " height = " << height << " bit_depth = "
-    << bit_depth << " color_type = " << color_type
-    << " color_space = " << _color_space << "\n";
+  if (pnmimage_png_cat.is_debug()) {
+    pnmimage_png_cat.debug()
+      << "width = " << width << " height = " << height << " bit_depth = "
+      << bit_depth << " color_type = " << color_type
+      << " color_space = " << _color_space << "\n";
+  }
 
   _x_size = width;
   _y_size = height;
@@ -238,32 +242,42 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   switch (color_type) {
   case PNG_COLOR_TYPE_GRAY:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_GRAY\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_GRAY\n";
+    }
     _num_channels = 1;
     break;
 
   case PNG_COLOR_TYPE_GRAY_ALPHA:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_GRAY_ALPHA\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_GRAY_ALPHA\n";
+    }
     _num_channels = 2;
     break;
 
   case PNG_COLOR_TYPE_RGB:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_RGB\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_RGB\n";
+    }
     _num_channels = 3;
     break;
 
   case PNG_COLOR_TYPE_RGB_ALPHA:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_RGB_ALPHA\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_RGB_ALPHA\n";
+    }
     _num_channels = 4;
     break;
 
   case PNG_COLOR_TYPE_PALETTE:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_PALETTE\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_PALETTE\n";
+    }
     png_set_palette_to_rgb(_png);
     _maxval = 255;
     _num_channels = 3;
@@ -334,11 +348,12 @@ read_data(xel *array, xelval *alpha_data) {
   // format, mainly because we keep array and alpha data separately, and there
   // doesn't appear to be good support to get this stuff out row-at-a-time for
   // interlaced files.
-  png_bytep *rows = (png_bytep *)PANDA_MALLOC_ARRAY(num_rows * sizeof(png_bytep));
+  png_bytep *rows = (png_bytep *)alloca(num_rows * sizeof(png_bytep));
   int yi;
 
+  png_byte *alloc = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte) * num_rows);
   for (yi = 0; yi < num_rows; yi++) {
-    rows[yi] = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte));
+    rows[yi] = alloc + (row_byte_length * sizeof(png_byte)) * yi;
   }
 
   png_read_image(_png, rows);
@@ -398,12 +413,10 @@ read_data(xel *array, xelval *alpha_data) {
     }
 
     nassertr(source <= rows[yi] + row_byte_length, yi);
-    PANDA_FREE_ARRAY(rows[yi]);
   }
 
-  PANDA_FREE_ARRAY(rows);
-
-  png_read_end(_png, NULL);
+  png_read_end(_png, nullptr);
+  PANDA_FREE_ARRAY(alloc);
 
   return _y_size;
 }
@@ -414,7 +427,7 @@ read_data(xel *array, xelval *alpha_data) {
 void PNMFileTypePNG::Reader::
 free_png() {
   if (_is_valid) {
-    png_destroy_read_struct(&_png, &_info, NULL);
+    png_destroy_read_struct(&_png, &_info, nullptr);
     _is_valid = false;
   }
 }
@@ -456,7 +469,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Reader *self = (Reader *)png_get_io_ptr(png_ptr);
-  if (self == (Reader *)NULL) {
+  if (self == nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()
@@ -474,19 +487,19 @@ PNMFileTypePNG::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
-  _png = NULL;
-  _info = NULL;
+  _png = nullptr;
+  _info = nullptr;
   _is_valid = false;
 
-  _png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+  _png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr,
                                  png_error, png_warning);
-  if (_png == NULL) {
+  if (_png == nullptr) {
     return;
   }
 
   _info = png_create_info_struct(_png);
-  if (_info == NULL) {
-    png_destroy_write_struct(&_png, NULL);
+  if (_info == nullptr) {
+    png_destroy_write_struct(&_png, nullptr);
     return;
   }
 
@@ -563,8 +576,10 @@ write_data(xel *array, xelval *alpha_data) {
   if (png_palette) {
     if (png_bit_depth <= 8) {
       if (compute_palette(palette, array, alpha_data, png_max_palette)) {
-        pnmimage_png_cat.debug()
-          << palette.size() << " colors found.\n";
+        if (pnmimage_png_cat.is_debug()) {
+          pnmimage_png_cat.debug()
+            << palette.size() << " colors found.\n";
+        }
 
         int palette_bit_depth = make_png_bit_depth(pm_maxvaltobits(palette.size() - 1));
 
@@ -578,10 +593,12 @@ write_data(xel *array, xelval *alpha_data) {
 
         if (palette_bit_depth < total_bits ||
             _maxval != (1 << true_bit_depth) - 1) {
-          pnmimage_png_cat.debug()
-            << "palette bit depth of " << palette_bit_depth
-            << " improves on bit depth of " << total_bits
-            << "; making a palette image.\n";
+          if (pnmimage_png_cat.is_debug()) {
+            pnmimage_png_cat.debug()
+              << "palette bit depth of " << palette_bit_depth
+              << " improves on bit depth of " << total_bits
+              << "; making a palette image.\n";
+          }
 
           color_type = PNG_COLOR_TYPE_PALETTE;
 
@@ -608,36 +625,40 @@ write_data(xel *array, xelval *alpha_data) {
 
           png_set_PLTE(_png, _info, png_palette_table, palette.size());
           if (has_alpha()) {
-            pnmimage_png_cat.debug()
-              << "palette contains " << num_alpha << " transparent entries.\n";
-            png_set_tRNS(_png, _info, png_trans, num_alpha, NULL);
+            if (pnmimage_png_cat.is_debug()) {
+              pnmimage_png_cat.debug()
+                << "palette contains " << num_alpha << " transparent entries.\n";
+            }
+            png_set_tRNS(_png, _info, png_trans, num_alpha, nullptr);
           }
-        } else {
+        } else if (pnmimage_png_cat.is_debug()) {
           pnmimage_png_cat.debug()
             << "palette bit depth of " << palette_bit_depth
             << " does not improve on bit depth of " << total_bits
             << "; not making a palette image.\n";
         }
 
-      } else {
+      } else if (pnmimage_png_cat.is_debug()) {
         pnmimage_png_cat.debug()
           << "more than " << png_max_palette
           << " colors found; not making a palette image.\n";
       }
-    } else {
+    } else if (pnmimage_png_cat.is_debug()) {
       pnmimage_png_cat.debug()
         << "maxval exceeds 255; not making a palette image.\n";
     }
-  } else {
+  } else if (pnmimage_png_cat.is_debug()) {
     pnmimage_png_cat.debug()
       << "palette images are not enabled.\n";
   }
 
-  pnmimage_png_cat.debug()
-    << "width = " << _x_size << " height = " << _y_size
-    << " maxval = " << _maxval << " bit_depth = "
-    << png_bit_depth << " color_type = " << color_type
-    << " color_space = " << _color_space << "\n";
+  if (pnmimage_png_cat.is_debug()) {
+    pnmimage_png_cat.debug()
+      << "width = " << _x_size << " height = " << _y_size
+      << " maxval = " << _maxval << " bit_depth = "
+      << png_bit_depth << " color_type = " << color_type
+      << " color_space = " << _color_space << "\n";
+  }
 
   png_set_IHDR(_png, _info, _x_size, _y_size, png_bit_depth,
                color_type, PNG_INTERLACE_NONE,
@@ -828,7 +849,7 @@ write_data(xel *array, xelval *alpha_data) {
   }
   PANDA_FREE_ARRAY(row);
 
-  png_write_end(_png, NULL);
+  png_write_end(_png, nullptr);
 
   return _y_size;
 }
@@ -918,7 +939,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Writer *self = (Writer *)png_get_io_ptr(png_ptr);
-  if (self == (Writer *)NULL) {
+  if (self == nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()

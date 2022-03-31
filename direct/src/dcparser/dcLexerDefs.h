@@ -16,14 +16,14 @@
 
 #include "dcbase.h"
 
-void dc_init_lexer(istream &in, const string &filename);
+void dc_init_lexer(std::istream &in, const std::string &filename);
 void dc_start_parameter_value();
 void dc_start_parameter_description();
 int dc_error_count();
 int dc_warning_count();
 
-void dcyyerror(const string &msg);
-void dcyywarning(const string &msg);
+void dcyyerror(const std::string &msg);
+void dcyywarning(const std::string &msg);
 
 int dcyylex();
 

@@ -51,8 +51,8 @@ public:
   virtual LPoint3 get_approx_center() const;
   virtual void xform(const LMatrix4 &mat);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
@@ -79,6 +79,7 @@ protected:
   virtual int contains_lineseg(const LPoint3 &a, const LPoint3 &b) const;
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
+  virtual int contains_plane(const BoundingPlane *plane) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
 
 private:

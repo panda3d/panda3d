@@ -39,30 +39,30 @@ protected:
 PUBLISHED:
   typedef CullBin::BinType BinType;
 
-  int add_bin(const string &name, BinType type, int sort);
+  int add_bin(const std::string &name, BinType type, int sort);
   void remove_bin(int bin_index);
 
   INLINE int get_num_bins() const;
   INLINE int get_bin(int n) const;
   MAKE_SEQ(get_bins, get_num_bins, get_bin);
-  int find_bin(const string &name) const;
+  int find_bin(const std::string &name) const;
 
-  INLINE string get_bin_name(int bin_index) const;
+  INLINE std::string get_bin_name(int bin_index) const;
 
   INLINE BinType get_bin_type(int bin_index) const;
-  INLINE BinType get_bin_type(const string &name) const;
+  INLINE BinType get_bin_type(const std::string &name) const;
   INLINE void set_bin_type(int bin_index, BinType type);
-  INLINE void set_bin_type(const string &name, BinType type);
+  INLINE void set_bin_type(const std::string &name, BinType type);
 
   INLINE int get_bin_sort(int bin_index) const;
-  INLINE int get_bin_sort(const string &name) const;
+  INLINE int get_bin_sort(const std::string &name) const;
   INLINE void set_bin_sort(int bin_index, int sort);
-  INLINE void set_bin_sort(const string &name, int sort);
+  INLINE void set_bin_sort(const std::string &name, int sort);
 
   INLINE bool get_bin_active(int bin_index) const;
-  INLINE bool get_bin_active(const string &name) const;
+  INLINE bool get_bin_active(const std::string &name) const;
   INLINE void set_bin_active(int bin_index, bool active);
-  INLINE void set_bin_active(const string &name, bool active);
+  INLINE void set_bin_active(const std::string &name, bool active);
 
 #ifndef NDEBUG
   INLINE bool get_bin_flash_active(int bin_index) const;
@@ -71,7 +71,7 @@ PUBLISHED:
   INLINE void set_bin_flash_color(int bin_index, const LColor &color);
 #endif
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   INLINE static CullBinManager *get_global_ptr();
 
@@ -83,7 +83,7 @@ public:
   // This defines the factory interface for defining constructors to bin types
   // (the implementations are in the cull directory, not here in pgraph, so we
   // can't call the constructors directly).
-  typedef CullBin *BinConstructor(const string &name,
+  typedef CullBin *BinConstructor(const std::string &name,
                                   GraphicsStateGuardianBase *gsg,
                                   const PStatCollector &draw_region_pcollector);
 
@@ -92,7 +92,7 @@ public:
 private:
   void do_sort_bins();
   void setup_initial_bins();
-  static BinType parse_bin_type(const string &bin_type);
+  static BinType parse_bin_type(const std::string &bin_type);
 
   class EXPCL_PANDA_PGRAPH BinDefinition {
   public:
@@ -101,7 +101,7 @@ private:
     bool _flash_active;
 #endif
     bool _in_use;
-    string _name;
+    std::string _name;
     BinType _type;
     int _sort;
     bool _active;
@@ -116,7 +116,7 @@ private:
     CullBinManager *_manager;
   };
 
-  typedef pmap<string, int> BinsByName;
+  typedef pmap<std::string, int> BinsByName;
   BinsByName _bins_by_name;
 
   typedef vector_int SortedBins;
@@ -131,8 +131,8 @@ private:
   friend class SortBins;
 };
 
-EXPCL_PANDA_PGRAPH ostream &
-operator << (ostream &out, CullBinManager::BinType bin_type);
+EXPCL_PANDA_PGRAPH std::ostream &
+operator << (std::ostream &out, CullBinManager::BinType bin_type);
 
 #include "cullBinManager.I"
 

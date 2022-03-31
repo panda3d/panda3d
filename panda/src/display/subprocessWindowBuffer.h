@@ -17,7 +17,6 @@
 #include <stdio.h>  // perror
 #include <assert.h>
 #include <string>
-using namespace std;
 
 /**
  * This is a special class that is designed to faciliate SubprocessWindow.
@@ -26,8 +25,7 @@ using namespace std;
  * between processes, as well as appropriate synchronization primitives.
  *
  * It's designed to be compiled outside of Panda, so that code that doesn't
- * link with Panda (in particular, the Panda3D plugin core API) may still link
- * with this and use it.
+ * link with Panda may still link with this and use it.
  *
  * At the moment, and maybe indefinitely, it is only compiled on OSX, and only
  * when we are building support for the plugin; because it is only needed
@@ -42,16 +40,16 @@ private:
 
 public:
   static SubprocessWindowBuffer *new_buffer(int &fd, size_t &mmap_size,
-                                            string &filename,
+                                            std::string &filename,
                                             int x_size, int y_size);
   static void destroy_buffer(int fd, size_t mmap_size,
-                             const string &filename,
+                             const std::string &filename,
                              SubprocessWindowBuffer *buffer);
 
   static SubprocessWindowBuffer *open_buffer(int &fd, size_t &mmap_size,
-                                             const string &filename);
+                                             const std::string &filename);
   static void close_buffer(int fd, size_t mmap_size,
-                           const string &filename,
+                           const std::string &filename,
                            SubprocessWindowBuffer *buffer);
 
   bool verify_magic_number() const;

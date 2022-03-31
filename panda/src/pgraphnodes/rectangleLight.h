@@ -22,20 +22,22 @@
 /**
  * This is a type of area light that is an axis aligned rectangle, pointing
  * along the Y axis in the positive direction.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPHNODES RectangleLight : public LightLensNode {
 PUBLISHED:
-  explicit RectangleLight(const string &name);
+  explicit RectangleLight(const std::string &name);
 
 protected:
   RectangleLight(const RectangleLight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
-  INLINE const LColor &get_specular_color() const FINAL;
+  INLINE const LColor &get_specular_color() const final;
 
   INLINE PN_stdfloat get_max_distance() const;
   INLINE void set_max_distance(PN_stdfloat max_distance);

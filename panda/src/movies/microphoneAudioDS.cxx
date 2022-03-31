@@ -91,7 +91,7 @@ public:
   int _samples_per_buffer;
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
   virtual int ready() const;
 
 public:
@@ -146,10 +146,10 @@ find_all_microphones_ds() {
         format.nBlockAlign = 2 * chan;
         format.wBitsPerSample = 16;
         format.cbSize = 0;
-        stat = waveInOpen(NULL, i, &format, NULL, NULL, WAVE_FORMAT_QUERY);
+        stat = waveInOpen(nullptr, i, &format, 0, 0, WAVE_FORMAT_QUERY);
         if (stat == MMSYSERR_NOERROR) {
           PT(MicrophoneAudioDS) p = new MicrophoneAudioDS();
-          ostringstream name;
+          std::ostringstream name;
           name << "WaveIn: " << caps.szPname << " Chan:" << chan << " HZ:" << freq;
           p->set_name(name.str());
           p->_device_id = i;
@@ -235,7 +235,7 @@ open() {
   if (failed) {
     delete_buffers(buffers);
     nassert_raise("Could not allocate audio input buffers.");
-    return NULL;
+    return nullptr;
   }
 
   WAVEFORMATEX format;
@@ -248,12 +248,12 @@ open() {
   format.cbSize = 0;
 
   HWAVEIN hwav;
-  MMRESULT stat = waveInOpen(&hwav, _device_id, &format, NULL, NULL, CALLBACK_NULL);
+  MMRESULT stat = waveInOpen(&hwav, _device_id, &format, 0, 0, CALLBACK_NULL);
 
   if (stat != MMSYSERR_NOERROR) {
     delete_buffers(buffers);
     nassert_raise("Could not open audio input device.");
-    return NULL;
+    return nullptr;
   }
 
   for (int i=0; i<(int)buffers.size(); i++) {
@@ -265,7 +265,7 @@ open() {
       waveInClose(hwav);
       delete_buffers(buffers);
       nassert_raise("Could not queue buffers for audio input device.");
-      return NULL;
+      return nullptr;
     }
   }
   stat = waveInStart(hwav);
@@ -273,7 +273,7 @@ open() {
     waveInClose(hwav);
     delete_buffers(buffers);
     nassert_raise("Could not start recording on input device.");
-    return NULL;
+    return nullptr;
   }
   return new MicrophoneAudioCursorDS(this, buffers, hwav);
 }
@@ -323,7 +323,7 @@ MicrophoneAudioCursorDS::
 /**
  *
  */
-void MicrophoneAudioCursorDS::
+int MicrophoneAudioCursorDS::
 read_samples(int n, int16_t *data) {
   int orign = n;
   if (_handle) {
@@ -373,6 +373,7 @@ read_samples(int n, int16_t *data) {
   if (n > 0) {
     memcpy(data, 0, n*2*_audio_channels);
   }
+  return orign - n;
 }
 
 /**

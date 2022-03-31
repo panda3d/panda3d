@@ -221,7 +221,7 @@ get_read_only() const {
  */
 INLINE BamCache *BamCache::
 get_global_ptr() {
-  if (_global_ptr == (BamCache *)NULL) {
+  if (_global_ptr == nullptr) {
     make_global();
   }
   return _global_ptr;
@@ -232,7 +232,7 @@ get_global_ptr() {
  */
 INLINE void BamCache::
 consider_flush_global_index() {
-  if (_global_ptr != (BamCache *)NULL) {
+  if (_global_ptr != nullptr) {
     _global_ptr->consider_flush_index();
   }
 }
@@ -242,7 +242,7 @@ consider_flush_global_index() {
  */
 INLINE void BamCache::
 flush_global_index() {
-  if (_global_ptr != (BamCache *)NULL) {
+  if (_global_ptr != nullptr) {
     _global_ptr->flush_index();
   }
 }
@@ -254,6 +254,6 @@ flush_global_index() {
 INLINE void BamCache::
 mark_index_stale() {
   if (_index_stale_since == 0) {
-    _index_stale_since = time(NULL);
+    _index_stale_since = time(nullptr);
   }
 }

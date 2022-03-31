@@ -25,7 +25,9 @@
  */
 
 #include "maxEgg.h"
-#include "config_util.h"
+#include "config_putil.h"
+
+using std::string;
 
 /**
  *
@@ -51,7 +53,7 @@ void MaxToEggConverter::reset() {
     _cur_tref = 0;
     _current_frame = 0;
     _textures.clear();
-    _egg_data = NULL;
+    _egg_data = nullptr;
 }
 
 /**
@@ -103,7 +105,7 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
 
     if (_options->_export_whole_scene) {
         _tree._export_mesh = false;
-        all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), NULL, 0);
+        all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), nullptr, 0);
     } else {
         _tree._export_mesh = true;
         all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), &_options->_node_list.front(), _options->_node_list.size());
@@ -211,7 +213,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     // Set the frame rate before we start asking for anim tables to be
     // created.
     _tree._fps = output_frame_rate / frame_inc;
-    _tree.clear_egg(_egg_data, NULL, skeleton_node);
+    _tree.clear_egg(_egg_data, nullptr, skeleton_node);
 
     // Now we can get the animation data by walking through all of the frames,
     // one at a time, and getting the joint angles at each frame.
@@ -241,7 +243,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
                     get_joint_transform(max_node, node_desc->_parent->get_max_node(),
                                         tgroup);
                 } else {
-                    get_joint_transform(max_node, NULL, tgroup);
+                    get_joint_transform(max_node, nullptr, tgroup);
                 }
 
                 EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
@@ -275,7 +277,7 @@ bool MaxToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
     // int num_nodes = _tree.get_num_nodes();
 
-    _tree.clear_egg(_egg_data, egg_root, NULL);
+    _tree.clear_egg(_egg_data, egg_root, nullptr);
     for (int i = 0; i < _tree.get_num_nodes(); i++) {
         if (!process_model_node(_tree.get_node(i))) {
             return false;
@@ -316,7 +318,7 @@ process_model_node(MaxNodeDesc *node_desc) {
         }
     } else {
         if (state.obj) {
-            EggGroup *egg_group = NULL;
+            EggGroup *egg_group = nullptr;
             TriObject *myMaxTriObject;
             Mesh max_mesh;
             // Call the correct exporter based on what type of object this is.
@@ -704,7 +706,7 @@ make_polyset(INode *max_node, Mesh *mesh,
             // standard material to the object
             for (int iChan=0; iChan<pmat._map_channels.size(); iChan++) {
                 int channel = pmat._map_channels[iChan];
-                ostringstream uvname;
+                std::ostringstream uvname;
                 uvname << "m" << channel;
                 UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
                 // changes allow the first channel to be swapped
@@ -885,7 +887,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                             MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                             if (joint_node_desc){
                                 EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                if (joint != (EggGroup *)NULL)
+                                if (joint != nullptr)
                                     joint->ref_vertex(vert, 1.0f);
                             }
                         }
@@ -900,7 +902,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                                     MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                                     if (joint_node_desc){
                                         EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                        if (joint != (EggGroup *)NULL)
+                                        if (joint != nullptr)
                                             joint->ref_vertex(vert, weight);
                                     }
                                 }
@@ -936,7 +938,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                                 MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                                 if (joint_node_desc){
                                     EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                    if (joint != (EggGroup *)NULL) {
+                                    if (joint != nullptr) {
                                         joint->ref_vertex(vert, weight);
                                     }
                                 }
@@ -1272,7 +1274,7 @@ void MaxToEggConverter::add_map_channel(PandaMaterial &pandaMat, int chan) {
  * Generates an arbitrary unused texture name.
  */
 std::string MaxToEggConverter::generate_tex_name() {
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "Tex" << ++_cur_tref;
     return name_strm.str();
 }
@@ -1281,7 +1283,7 @@ std::string MaxToEggConverter::generate_tex_name() {
  * Returns the UV-name of the nth map-channel.
  */
 std::string MaxToEggConverter::get_uv_name(int channel) {
-    ostringstream uvname;
+    std::ostringstream uvname;
     uvname << "m" << channel;
     return uvname.str();
 }
@@ -1322,7 +1324,7 @@ reparent_decals(EggGroupNode *egg_parent) {
 
     // First, walk through all children of this node, looking for the one
     // decal base, if any.
-    EggGroup *decal_base = (EggGroup *)NULL;
+    EggGroup *decal_base = nullptr;
     pvector<EggGroup *> decal_children;
 
     EggGroupNode::iterator ci;
@@ -1331,7 +1333,7 @@ reparent_decals(EggGroupNode *egg_parent) {
         if (child->is_of_type(EggGroup::get_class_type())) {
             EggGroup *child_group = (EggGroup *) child;
             if (child_group->has_object_type("decalbase")) {
-                if (decal_base != (EggNode *)NULL) {
+                if (decal_base != nullptr) {
                     // error
                     okflag = false;
                 }
@@ -1345,7 +1347,7 @@ reparent_decals(EggGroupNode *egg_parent) {
         }
     }
 
-    if (decal_base == (EggGroup *)NULL) {
+    if (decal_base == nullptr) {
         if (!decal_children.empty()) {
             // warning
         }
@@ -1388,7 +1390,7 @@ Modifier* MaxToEggConverter::FindSkinModifier (INode* node, const Class_ID &type
 {
     // Get object from node.  Abort if no object.
     Object* pObj = node->GetObjectRef();
-    if (!pObj) return NULL;
+    if (!pObj) return nullptr;
 
     // Is derived object ?
     while (pObj->SuperClassID() == GEN_DERIVOB_CLASS_ID) {
@@ -1410,5 +1412,5 @@ Modifier* MaxToEggConverter::FindSkinModifier (INode* node, const Class_ID &type
     }
 
     // Not found.
-    return NULL;
+    return nullptr;
 }

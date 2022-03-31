@@ -22,7 +22,7 @@
  *
  */
 DCMolecularField::
-DCMolecularField(const string &name, DCClass *dclass) : DCField(name, dclass) {
+DCMolecularField(const std::string &name, DCClass *dclass) : DCField(name, dclass) {
   _got_keywords = false;
 }
 
@@ -59,7 +59,7 @@ get_num_atomics() const {
  */
 DCAtomicField *DCMolecularField::
 get_atomic(int n) const {
-  nassertr(n >= 0 && n < (int)_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_fields.size(), nullptr);
   return _fields[n];
 }
 
@@ -109,7 +109,7 @@ add_atomic(DCAtomicField *atomic) {
  *
  */
 void DCMolecularField::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   out << _name;
 
   if (!_fields.empty()) {
@@ -130,7 +130,7 @@ output(ostream &out, bool brief) const {
  * stream.
  */
 void DCMolecularField::
-write(ostream &out, bool brief, int indent_level) const {
+write(std::ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   output(out, brief);
   if (!brief) {
@@ -161,7 +161,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 DCPackerInterface *DCMolecularField::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_fields.size(), nullptr);
   return _nested_fields[n];
 }
 

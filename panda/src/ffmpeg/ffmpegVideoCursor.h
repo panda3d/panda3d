@@ -100,7 +100,7 @@ private:
   void cleanup();
 
   Filename _filename;
-  string _sync_name;
+  std::string _sync_name;
   int _max_readahead_frames;
   ThreadPriority _thread_priority;
   PT(GenericThread) _thread;
@@ -134,7 +134,6 @@ private:
 
 private:
   // The following functions will be called in the sub-thread.
-  static void st_thread_main(void *self);
   void thread_main();
   bool do_poll();
 

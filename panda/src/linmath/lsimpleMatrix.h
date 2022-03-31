@@ -28,9 +28,6 @@
 template <class FloatType, int NumRows, int NumCols>
 class LSimpleMatrix {
 public:
-  INLINE LSimpleMatrix();
-  INLINE LSimpleMatrix(const LSimpleMatrix<FloatType, NumRows, NumCols> &copy);
-  INLINE void operator = (const LSimpleMatrix<FloatType, NumRows, NumCols> &copy);
   INLINE const FloatType &operator () (int row, int col) const;
   INLINE FloatType &operator () (int row, int col);
   INLINE const FloatType &operator () (int col) const;

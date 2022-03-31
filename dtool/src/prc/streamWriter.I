@@ -15,10 +15,7 @@
  *
  */
 INLINE StreamWriter::
-StreamWriter(ostream &out) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
+StreamWriter(std::ostream &out) :
   _out(&out),
   _owns_stream(false)
 {
@@ -28,10 +25,7 @@ StreamWriter(ostream &out) :
  *
  */
 INLINE StreamWriter::
-StreamWriter(ostream *out, bool owns_stream) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
+StreamWriter(std::ostream *out, bool owns_stream) :
   _out(out),
   _owns_stream(owns_stream)
 {
@@ -42,16 +36,24 @@ StreamWriter(ostream *out, bool owns_stream) :
  */
 INLINE StreamWriter::
 StreamWriter(const StreamWriter &copy) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(copy._out),
   _owns_stream(false)
 {
 }
 
 /**
- * The copy constructor does not copy ownership of the stream.
+ * The move constructor steals ownership of the stream.
+ */
+INLINE StreamWriter::
+StreamWriter(StreamWriter &&from) noexcept :
+  _out(from._out),
+  _owns_stream(from._owns_stream)
+{
+  from._owns_stream = false;
+}
+
+/**
+ * The copy assignment operator does not copy ownership of the stream.
  */
 INLINE void StreamWriter::
 operator = (const StreamWriter &copy) {
@@ -60,6 +62,19 @@ operator = (const StreamWriter &copy) {
   }
   _out = copy._out;
   _owns_stream = false;
+}
+
+/**
+ * The move assignment operator steals ownership of the stream.
+ */
+INLINE void StreamWriter::
+operator = (StreamWriter &&from) noexcept {
+  if (_owns_stream) {
+    delete _out;
+  }
+  _out = from._out;
+  _owns_stream = from._owns_stream;
+  from._owns_stream = false;
 }
 
 /**
@@ -75,7 +90,7 @@ INLINE StreamWriter::
 /**
  * Returns the stream in use.
  */
-INLINE ostream *StreamWriter::
+INLINE std::ostream *StreamWriter::
 get_ostream() const {
   return _out;
 }
@@ -265,7 +280,7 @@ add_be_float64(PN_float64 value) {
  * followed by n bytes.
  */
 INLINE void StreamWriter::
-add_string(const string &str) {
+add_string(const std::string &str) {
   // The max sendable length for a string is 2^16.
   nassertv(str.length() <= (uint16_t)0xffff);
 
@@ -280,7 +295,7 @@ add_string(const string &str) {
  * Adds a variable-length string to the stream, using a 32-bit length field.
  */
 INLINE void StreamWriter::
-add_string32(const string &str) {
+add_string32(const std::string &str) {
   // Strings always are preceded by their length
   add_uint32((uint32_t)str.length());
 
@@ -292,7 +307,7 @@ add_string32(const string &str) {
  * Adds a variable-length string to the stream, as a NULL-terminated string.
  */
 INLINE void StreamWriter::
-add_z_string(string str) {
+add_z_string(std::string str) {
   // We must not have any nested null characters in the string.
   size_t null_pos = str.find('\0');
   // Add the string (sans the null character).
@@ -308,7 +323,7 @@ add_z_string(string str) {
  * greater than the requested size, this will silently truncate the string.
  */
 INLINE void StreamWriter::
-add_fixed_string(const string &str, size_t size) {
+add_fixed_string(const std::string &str, size_t size) {
   if (str.length() < size) {
     append_data(str);
     pad_bytes(size - str.length());
@@ -330,7 +345,7 @@ append_data(const void *data, size_t size) {
  * Appends some more raw data to the end of the streamWriter.
  */
 INLINE void StreamWriter::
-append_data(const string &data) {
+append_data(const std::string &data) {
   append_data(data.data(), data.length());
 }
 
@@ -347,6 +362,6 @@ flush() {
  * to sys.stderr and/or sys.stdout in Python.
  */
 INLINE void StreamWriter::
-write(const string &data) {
+write(const std::string &data) {
   append_data(data.data(), data.length());
 }

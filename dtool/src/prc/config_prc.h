@@ -19,7 +19,7 @@
 
 class ConfigVariableBool;
 
-NotifyCategoryDecl(prc, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
+NotifyCategoryDecl(prc, EXPCL_DTOOL_PRC, EXPTP_DTOOL_PRC);
 
 // This is aligned to match the shadowed definition in notify.cxx.
 extern ALIGN_16BYTE ConfigVariableBool assert_abort;

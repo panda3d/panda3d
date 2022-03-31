@@ -18,7 +18,7 @@ template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(To *ptr) {
   _void_ptr = (void *)ptr;
-  if (ptr != (To *)NULL) {
+  if (ptr != nullptr) {
     ptr->ref();
 #ifdef DO_MEMORY_USAGE
     update_type(ptr);
@@ -33,7 +33,7 @@ template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(const PointerToBase<T> &copy) {
   _void_ptr = copy._void_ptr;
-  if (_void_ptr != NULL) {
+  if (_void_ptr != nullptr) {
     To *ptr = (To *)_void_ptr;
     ptr->ref();
   }
@@ -44,22 +44,36 @@ PointerToBase(const PointerToBase<T> &copy) {
  */
 template<class T>
 INLINE PointerToBase<T>::
-~PointerToBase() {
-  if (_void_ptr != NULL) {
-    unref_delete((To *)_void_ptr);
-    _void_ptr = NULL;
-  }
+PointerToBase(PointerToBase<T> &&from) noexcept {
+  _void_ptr = from._void_ptr;
+  from._void_ptr = nullptr;
 }
 
-#ifdef USE_MOVE_SEMANTICS
+/**
+ *
+ */
+template<class T>
+template<class Y>
+INLINE PointerToBase<T>::
+PointerToBase(PointerToBase<Y> &&r) noexcept {
+  // If this next line gives an error, you are trying to convert a PointerTo
+  // from an incompatible type of another PointerTo.
+  To *ptr = (Y *)r._void_ptr;
+
+  this->_void_ptr = ptr;
+  r._void_ptr = nullptr;
+}
+
 /**
  *
  */
 template<class T>
 INLINE PointerToBase<T>::
-PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
-  _void_ptr = from._void_ptr;
-  from._void_ptr = (void *)NULL;
+~PointerToBase() {
+  if (_void_ptr != nullptr) {
+    unref_delete((To *)_void_ptr);
+    _void_ptr = nullptr;
+  }
 }
 
 /**
@@ -70,21 +84,45 @@ PointerToBase(PointerToBase<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE void PointerToBase<T>::
-reassign(PointerToBase<T> &&from) NOEXCEPT {
+reassign(PointerToBase<T> &&from) noexcept {
   // Protect against self-move-assignment.
   if (from._void_ptr != this->_void_ptr) {
     To *old_ptr = (To *)this->_void_ptr;
 
     this->_void_ptr = from._void_ptr;
-    from._void_ptr = NULL;
+    from._void_ptr = nullptr;
 
     // Now delete the old pointer.
-    if (old_ptr != (To *)NULL) {
+    if (old_ptr != nullptr) {
       unref_delete(old_ptr);
     }
   }
 }
-#endif  // USE_MOVE_SEMANTICS
+
+/**
+ * Like above, but casts from a compatible pointer type.
+ */
+template<class T>
+template<class Y>
+INLINE void PointerToBase<T>::
+reassign(PointerToBase<Y> &&from) noexcept {
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    To *old_ptr = (To *)this->_void_ptr;
+
+    // If there is a compile error on this line, it means you tried to assign
+    // an incompatible type.
+    To *new_ptr = (Y *)from._void_ptr;
+
+    this->_void_ptr = new_ptr;
+    from._void_ptr = nullptr;
+
+    // Now delete the old pointer.
+    if (old_ptr != nullptr) {
+      unref_delete(old_ptr);
+    }
+  }
+}
 
 /**
  * This is the main work of the PointerTo family.  When the pointer is
@@ -169,7 +207,7 @@ update_type(To *ptr) {
 template<class T>
 ALWAYS_INLINE void PointerToBase<T>::
 clear() {
-  reassign((To *)NULL);
+  reassign(nullptr);
 }
 
 /**
@@ -178,9 +216,9 @@ clear() {
  */
 template<class T>
 INLINE void PointerToBase<T>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _void_ptr;
-  if (_void_ptr != (void *)NULL) {
+  if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();
   }
 }

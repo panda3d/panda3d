@@ -28,7 +28,7 @@ CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file) :
  *
  */
 void CPPUsing::
-output(ostream &out, int, CPPScope *, bool) const {
+output(std::ostream &out, int, CPPScope *, bool) const {
   out << "using ";
   if (_full_namespace) {
     out << "namespace ";

@@ -27,7 +27,7 @@
  * WordWrapStream indicates a paragraph break, and is generally printed as a
  * blank line.  To force a line break without a paragraph break, use '\r'.
  */
-class WordWrapStream : public ostream {
+class WordWrapStream : public std::ostream {
 public:
   WordWrapStream(ProgramBase *program);
 

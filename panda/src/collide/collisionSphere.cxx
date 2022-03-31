@@ -17,7 +17,7 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionParabola.h"
 #include "collisionBox.h"
 #include "config_collide.h"
@@ -31,7 +31,12 @@
 #include "mathNumbers.h"
 #include "geom.h"
 #include "geomTristrips.h"
+#include "geomLinestrips.h"
 #include "geomVertexWriter.h"
+#include "billboardEffect.h"
+
+using std::max;
+using std::min;
 
 PStatCollector CollisionSphere::_volume_pcollector(
   "Collision Volumes:CollisionSphere");
@@ -102,7 +107,7 @@ get_test_pcollector() {
  *
  */
 void CollisionSphere::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "sphere, c (" << get_center() << "), r " << get_radius();
 }
 
@@ -120,7 +125,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
 
@@ -152,13 +157,13 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       LVector3 from_direction = from_b - from_a;
       if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
         // No intersection.
-        return NULL;
+        return nullptr;
       }
 
       if (t2 < 0.0 || t1 > 1.0) {
         // Both intersection points are before the start of the segment or
         // after the end of the segment.
-        return NULL;
+        return nullptr;
       }
 
       // doubles, not floats, to satisfy min and max templates.
@@ -176,7 +181,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       }
     } else {
       // No delta, therefore no intersection.
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -231,7 +236,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), NULL);
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -241,7 +246,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -271,7 +276,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), NULL);
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
 
   // Instead of transforming the box into the sphere's coordinate space, we do
   // it the other way around.  It's easier that way.
@@ -315,7 +320,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   }
 
   if (d > radius_sq) {
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -347,7 +352,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -357,12 +362,12 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0) {
     // Both intersection points are before the start of the ray.
-    return NULL;
+    return nullptr;
   }
 
   t1 = max(t1, 0.0);
@@ -394,7 +399,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), NULL);
+  DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -405,13 +410,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
     // Both intersection points are before the start of the segment or after
     // the end of the segment.
-    return NULL;
+    return nullptr;
   }
 
   t1 = max(t1, 0.0);
@@ -441,30 +446,30 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
  *
  */
 PT(CollisionEntry) CollisionSphere::
-test_intersection_from_tube(const CollisionEntry &entry) const {
-  const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), NULL);
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3 from_a = tube->get_point_a() * wrt_mat;
-  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
   LVector3 from_direction = from_b - from_a;
 
   LVector3 from_radius_v =
-    LVector3(tube->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
   PN_stdfloat from_radius = length(from_radius_v);
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the tube or after
-    // the end of the tube.
-    return NULL;
+    // Both intersection points are before the start of the capsule or after
+    // the end of the capsule.
+    return nullptr;
   }
 
   PN_stdfloat t = (t1 + t2) * (PN_stdfloat)0.5;
@@ -484,7 +489,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   new_entry->set_surface_point(get_center() + normal * get_radius());
   new_entry->set_interior_point(inner_point - normal * from_radius);
 
-  if (has_effective_normal() && tube->get_respect_effective_normal()) {
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
     new_entry->set_surface_normal(normal);
@@ -499,7 +504,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), NULL);
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -512,7 +517,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
                            local_p.calc_point(parabola->get_t1()),
                            local_p.calc_point(parabola->get_t2()))) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -548,34 +553,67 @@ fill_viz_geom() {
   }
 
   static const int num_slices = 16;
-  static const int num_stacks = 8;
+  static const int num_stacks = 24;
+
+  Thread *current_thread = Thread::get_current_thread();
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("collision", GeomVertexFormat::get_v3(),
-     Geom::UH_static);
+    ("collision", GeomVertexFormat::get_v3(), Geom::UH_static);
+  vdata->unclean_set_num_rows(num_slices * num_stacks * 2);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
     PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
     PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
-    vertex.add_data3(compute_point(0.0, longitude0));
+    vertex.set_data3(compute_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; ++st) {
       PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
-      vertex.add_data3(compute_point(latitude, longitude0));
-      vertex.add_data3(compute_point(latitude, longitude1));
+      vertex.set_data3(compute_point(latitude, longitude0));
+      vertex.set_data3(compute_point(latitude, longitude1));
     }
-    vertex.add_data3(compute_point(1.0, longitude0));
+    vertex.set_data3(compute_point(1.0, longitude0));
 
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
   }
 
+  // Also create a ring around the outer edge.
+  PT(GeomLinestrips) ring = new GeomLinestrips(Geom::UH_static);
+  ring->set_index_type(GeomEnums::NT_uint16);
+  {
+    PT(GeomVertexArrayDataHandle) handle = ring->modify_vertices_handle(current_thread);
+    handle->unclean_set_num_rows(num_stacks * 2 + 1);
+    uint16_t *ptr = (uint16_t *)handle->get_write_pointer();
+    *ptr++ = 0;
+    for (int i = 0; i < num_stacks; ++i) {
+      *ptr++ = i * 2 + 1;
+    }
+    int offset = num_slices * num_stacks;
+    for (int i = num_stacks - 1; i > 0; --i) {
+      *ptr++ = offset + i * 2 - 1;
+    }
+    *ptr++ = offset;
+  }
+  ring->close_primitive();
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
+  PT(Geom) ring_geom = new Geom(vdata);
+  ring_geom->add_primitive(ring);
+
+  CPT(TransformState) transform = TransformState::make_pos(get_center());
+
   _viz_geom->add_geom(geom, get_solid_viz_state());
+  _viz_geom->add_geom(ring_geom, get_wireframe_viz_state());
+  _viz_geom->set_transform(transform);
+  _viz_geom->set_effect(BillboardEffect::make_point_eye());
+
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(ring_geom, get_wireframe_bounds_viz_state());
+  _bounds_viz_geom->set_transform(transform);
+  _bounds_viz_geom->set_effect(BillboardEffect::make_point_eye());
 }
 
 /**
@@ -617,14 +655,20 @@ intersects_line(double &t1, double &t2,
 
   double A = dot(delta, delta);
 
-  nassertr(A != 0.0, false);
-
   LVector3 fc = from - get_center();
-  double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
   double radius = get_radius() + inflate_radius;
   double C = fc_d2 - radius * radius;
 
+  if (A == 0.0) {
+    // Degenerate case where delta is zero.  This is effectively a test
+    // against a point (or sphere, for nonzero inflate_radius).
+    t1 = 0.0;
+    t2 = 0.0;
+    return C < 0.0;
+  }
+
+  double B = 2.0f * dot(delta, fc);
   double radical = B*B - 4.0*A*C;
 
   if (IS_NEARLY_ZERO(radical)) {
@@ -719,7 +763,7 @@ compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
   csincos(longitude * 2.0f * MathNumbers::pi, &s2, &c2);
 
   LVertex p(s1 * c2, s1 * s2, c1);
-  return p * get_radius() + get_center();
+  return p * get_radius();
 }
 
 /**

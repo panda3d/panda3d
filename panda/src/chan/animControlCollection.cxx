@@ -13,6 +13,8 @@
 
 #include "animControlCollection.h"
 
+using std::string;
+
 
 /**
  * Returns the AnimControl associated with the given name, or NULL if no such
@@ -20,7 +22,7 @@
  */
 AnimControlCollection::
 AnimControlCollection() {
-  _last_started_control = (AnimControl *)NULL;
+  _last_started_control = nullptr;
 }
 
 /**
@@ -55,7 +57,7 @@ store_anim(AnimControl *control, const string &name) {
     nassertv(index < _controls.size());
     nassertv(_controls[index]._name == name);
     if (_last_started_control == _controls[index]._control) {
-      _last_started_control = (AnimControl *)NULL;
+      _last_started_control = nullptr;
     }
     _controls[index]._control = control;
   }
@@ -69,11 +71,11 @@ AnimControl *AnimControlCollection::
 find_anim(const string &name) const {
   ControlsByName::const_iterator ci = _controls_by_name.find(name);
   if (ci == _controls_by_name.end()) {
-    return (AnimControl *)NULL;
+    return nullptr;
   }
   size_t index = (*ci).second;
-  nassertr(index < _controls.size(), NULL);
-  nassertr(_controls[index]._name == name, NULL);
+  nassertr(index < _controls.size(), nullptr);
+  nassertr(_controls[index]._name == name, nullptr);
   return _controls[index]._control;
 }
 
@@ -93,7 +95,7 @@ unbind_anim(const string &name) {
   nassertr(_controls[index]._name == name, false);
 
   if (_last_started_control == _controls[index]._control) {
-    _last_started_control = (AnimControl *)NULL;
+    _last_started_control = nullptr;
   }
   _controls_by_name.erase(ci);
 
@@ -124,7 +126,7 @@ get_num_anims() const {
  */
 AnimControl *AnimControlCollection::
 get_anim(int n) const {
-  nassertr(n >= 0 && n < (int)_controls.size(), NULL);
+  nassertr(n >= 0 && n < (int)_controls.size(), nullptr);
   return _controls[n]._control;
 }
 
@@ -252,7 +254,7 @@ which_anim_playing() const {
  *
  */
 void AnimControlCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _controls.size() << " anims.";
 }
 
@@ -260,7 +262,7 @@ output(ostream &out) const {
  *
  */
 void AnimControlCollection::
-write(ostream &out) const {
+write(std::ostream &out) const {
   ControlsByName::const_iterator ci;
   for (ci = _controls_by_name.begin();
        ci != _controls_by_name.end();

@@ -81,7 +81,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
     def handleChildArrive(self, child, zoneId):
         DistributedNode.handleChildArrive(self, child, zoneId)
-        if (zoneId >= self.startingZone):
+        if zoneId >= self.startingZone:
             if not child.gridParent:
                 child.gridParent = GridParent(child)
             child.gridParent.setGridParent(self, zoneId)
@@ -91,7 +91,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
     def handleChildArriveZone(self, child, zoneId):
         DistributedNode.handleChildArrive(self, child, zoneId)
-        if (zoneId >= self.startingZone):
+        if zoneId >= self.startingZone:
             if not child.gridParent:
                 child.gridParent = GridParent(child)
             child.gridParent.setGridParent(self, zoneId)
@@ -150,21 +150,21 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
         # sometimes we also need to remove vis avatar from
         # my parent if it is also a grid
-        if (clearAll):
+        if clearAll:
             if event is not None:
                 parentEvent = eventGroup.newEvent('%s.parent.removeInterest' % self.doId)
             else:
                 parentEvent = None
 
             ##HACK BANDAID FOR PVP INSTANCES
-            if(hasattr(self.cr.doId2do[self.parentId],"worldGrid")):
+            if hasattr(self.cr.doId2do[self.parentId], "worldGrid"):
                 self.cr.doId2do[self.parentId].worldGrid.stopProcessVisibility(event=parentEvent)
 
     def processVisibility(self, task):
-        if self.visAvatar == None:
+        if self.visAvatar is None:
             # no avatar to process visibility for
             return Task.done
-        if(self.visAvatar.isDisabled()):
+        if self.visAvatar.isDisabled():
             self.visAvatar = None
             return Task.done
         if self.visAvatar.gameFSM.state == 'Cutscene':
@@ -192,7 +192,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         zoneId = int(self.startingZone + ((row * self.gridSize) + col))
         assert self.notify.debug("processVisibility: %s: row: %s col: %s zoneId: %s" %
                                  (self.doId, row, col, zoneId))
-        if (zoneId == self.visZone):
+        if zoneId == self.visZone:
             assert self.notify.debug(
                 "processVisibility: %s: interest did not change" % (self.doId))
             if self.visDirty:
@@ -314,7 +314,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
             # Load up grid parts to initialize grid object
             # Polygon used to mark grid plane
-            # self.gridBack = loader.loadModel('models/misc/gridBack')
+            # self.gridBack = base.loader.loadModel('models/misc/gridBack')
             # self.gridBack.reparentTo(self)
             # self.gridBack.setColor(0.2, 0.2, 0.2, 0.5)
 
@@ -397,7 +397,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             dx = self.cellWidth * self.gridSize * .5
             for i in range(self.gridSize):
                 for j in range(self.gridSize):
-                    marker = loader.loadModel("models/misc/smiley")
+                    marker = base.loader.loadModel("models/misc/smiley")
                     marker.reparentTo(self.markerParent)
                     marker.setPos(i * self.cellWidth - dx,
                                   j * self.cellWidth - dx,

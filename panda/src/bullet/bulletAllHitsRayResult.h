@@ -11,8 +11,8 @@
  * @date 2010-02-21
  */
 
-#ifndef __BULLET_ALL_HITS_RAY_RESULT_H__
-#define __BULLET_ALL_HITS_RAY_RESULT_H__
+#ifndef BULLETALLHITSRAYRESULT_H
+#define BULLETALLHITSRAYRESULT_H
 
 #include "pandabase.h"
 
@@ -20,13 +20,14 @@
 #include "bullet_utils.h"
 
 #include "luse.h"
+#include "memoryBase.h"
 #include "pandaNode.h"
 #include "collideMask.h"
 
 /**
  *
  */
-struct EXPCL_PANDABULLET BulletRayHit {
+struct EXPCL_PANDABULLET BulletRayHit : public MemoryBase {
 
 PUBLISHED:
   INLINE static BulletRayHit empty();
@@ -61,7 +62,7 @@ private:
 /**
  *
  */
-struct EXPCL_PANDABULLET BulletAllHitsRayResult : public btCollisionWorld::AllHitsRayResultCallback {
+struct EXPCL_PANDABULLET BulletAllHitsRayResult : public btCollisionWorld::AllHitsRayResultCallback, public MemoryBase {
 
 PUBLISHED:
   INLINE static BulletAllHitsRayResult empty();
@@ -98,4 +99,4 @@ private:
 
 #include "bulletAllHitsRayResult.I"
 
-#endif // __BULLET_ALL_HITS_RAY_RESULT_H__
+#endif // BULLETALLHITSRAYRESULT_H

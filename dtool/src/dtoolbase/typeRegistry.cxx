@@ -20,8 +20,13 @@
 
 #include <algorithm>
 
-MutexImpl *TypeRegistry::_lock = NULL;
-TypeRegistry *TypeRegistry::_global_pointer = NULL;
+using std::cerr;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
+MutexImpl TypeRegistry::_lock;
+TypeRegistry *TypeRegistry::_global_pointer = nullptr;
 
 /**
  * Creates a new Type of the given name and assigns a unique value to the
@@ -32,15 +37,15 @@ TypeRegistry *TypeRegistry::_global_pointer = NULL;
  */
 bool TypeRegistry::
 register_type(TypeHandle &type_handle, const string &name) {
-  _lock->acquire();
+  _lock.lock();
 
   if (type_handle != TypeHandle::none()) {
     // Here's a type that was already registered.  Just make sure everything's
     // still kosher.
-    TypeRegistryNode *rnode = look_up(type_handle, NULL);
+    TypeRegistryNode *rnode = look_up(type_handle, nullptr);
     if (&type_handle == &rnode->_ref) {
       // No problem.
-      _lock->release();
+      _lock.unlock();
       assert(rnode->_name == name);
       return false;
     }
@@ -62,7 +67,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     _derivations_fresh = false;
 
     type_handle = new_handle;
-    _lock->release();
+    _lock.unlock();
     return true;
   }
   TypeRegistryNode *rnode = (*ri).second;
@@ -78,7 +83,7 @@ register_type(TypeHandle &type_handle, const string &name) {
 
     if (type_handle == rnode->_handle) {
       // No problem.
-      _lock->release();
+      _lock.unlock();
       return false;
     }
     // But wait--the type_handle has changed!  We kept a reference to the
@@ -87,7 +92,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // time, but now it's different!  Bad juju.
     cerr << "Reregistering " << name << "\n";
     type_handle = rnode->_handle;
-    _lock->release();
+    _lock.unlock();
     return false;
   }
 
@@ -103,7 +108,7 @@ register_type(TypeHandle &type_handle, const string &name) {
 
     type_handle = rnode->_handle;
   }
-  _lock->release();
+  _lock.unlock();
   return false;
 }
 
@@ -114,7 +119,7 @@ register_type(TypeHandle &type_handle, const string &name) {
  */
 TypeHandle TypeRegistry::
 register_dynamic_type(const string &name) {
-  _lock->acquire();
+  _lock.lock();
 
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
@@ -134,14 +139,14 @@ register_dynamic_type(const string &name) {
     _name_registry[name] = rnode;
     _derivations_fresh = false;
 
-    _lock->release();
+    _lock.unlock();
     return *new_handle;
   }
 
   // Return the TypeHandle previously obtained.
   TypeRegistryNode *rnode = (*ri).second;
   TypeHandle handle = rnode->_handle;
-  _lock->release();
+  _lock.unlock();
   return handle;
 }
 
@@ -152,12 +157,12 @@ register_dynamic_type(const string &name) {
  */
 void TypeRegistry::
 record_derivation(TypeHandle child, TypeHandle parent) {
-  _lock->acquire();
+  _lock.lock();
 
-  TypeRegistryNode *cnode = look_up(child, NULL);
-  assert(cnode != (TypeRegistryNode *)NULL);
-  TypeRegistryNode *pnode = look_up(parent, NULL);
-  assert(pnode != (TypeRegistryNode *)NULL);
+  TypeRegistryNode *cnode = look_up(child, nullptr);
+  assert(cnode != nullptr);
+  TypeRegistryNode *pnode = look_up(parent, nullptr);
+  assert(pnode != nullptr);
 
   // First, we'll just run through the list to make sure we hadn't already
   // made this connection.
@@ -171,7 +176,7 @@ record_derivation(TypeHandle child, TypeHandle parent) {
     _derivations_fresh = false;
   }
 
-  _lock->release();
+  _lock.unlock();
 }
 
 /**
@@ -182,15 +187,15 @@ record_derivation(TypeHandle child, TypeHandle parent) {
  */
 void TypeRegistry::
 record_alternate_name(TypeHandle type, const string &name) {
-  _lock->acquire();
+  _lock.lock();
 
-  TypeRegistryNode *rnode = look_up(type, (TypedObject *)NULL);
-  if (rnode != (TypeRegistryNode *)NULL) {
+  TypeRegistryNode *rnode = look_up(type, nullptr);
+  if (rnode != nullptr) {
     NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
 
     if ((*ri).second != rnode) {
-      _lock->release();
+      _lock.unlock();
       cerr
         << "Name " << name << " already assigned to TypeHandle "
         << rnode->_name << "; cannot reassign to " << type << "\n";
@@ -199,8 +204,26 @@ record_alternate_name(TypeHandle type, const string &name) {
 
   }
 
-  _lock->release();
+  _lock.unlock();
 }
+
+#ifdef HAVE_PYTHON
+/**
+ * Records the given Python type pointer in the type registry for the benefit
+ * of interrogate, which expects this to contain a Dtool_PyTypedObject.
+ */
+void TypeRegistry::
+record_python_type(TypeHandle type, PyObject *python_type) {
+  _lock.lock();
+
+  TypeRegistryNode *rnode = look_up(type, nullptr);
+  if (rnode != nullptr) {
+    rnode->_python_type = python_type;
+  }
+
+  _lock.unlock();
+}
+#endif
 
 /**
  * Looks for a previously-registered type of the given name.  Returns its
@@ -208,7 +231,7 @@ record_alternate_name(TypeHandle type, const string &name) {
  */
 TypeHandle TypeRegistry::
 find_type(const string &name) const {
-  _lock->acquire();
+  _lock.lock();
 
   TypeHandle handle = TypeHandle::none();
   NameRegistry::const_iterator ri;
@@ -216,7 +239,7 @@ find_type(const string &name) const {
   if (ri != _name_registry.end()) {
     handle = (*ri).second->_handle;
   }
-  _lock->release();
+  _lock.unlock();
 
   return handle;
 }
@@ -248,11 +271,11 @@ find_type_by_id(int id) const {
  */
 string TypeRegistry::
 get_name(TypeHandle type, TypedObject *object) const {
-  _lock->acquire();
+  _lock.lock();
   TypeRegistryNode *rnode = look_up(type, object);
-  assert(rnode != (TypeRegistryNode *)NULL);
+  assert(rnode != nullptr);
   string name = rnode->_name;
-  _lock->release();
+  _lock.unlock();
 
   return name;
 }
@@ -273,18 +296,18 @@ get_name(TypeHandle type, TypedObject *object) const {
 bool TypeRegistry::
 is_derived_from(TypeHandle child, TypeHandle base,
                 TypedObject *child_object) {
-  _lock->acquire();
+  _lock.lock();
 
   const TypeRegistryNode *child_node = look_up(child, child_object);
-  const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
+  const TypeRegistryNode *base_node = look_up(base, nullptr);
 
-  assert(child_node != (TypeRegistryNode *)NULL);
-  assert(base_node != (TypeRegistryNode *)NULL);
+  assert(child_node != nullptr);
+  assert(base_node != nullptr);
 
   freshen_derivations();
 
   bool result = TypeRegistryNode::is_derived_from(child_node, base_node);
-  _lock->release();
+  _lock.unlock();
   return result;
 }
 
@@ -293,9 +316,9 @@ is_derived_from(TypeHandle child, TypeHandle base,
  */
 int TypeRegistry::
 get_num_typehandles() {
-  _lock->acquire();
+  _lock.lock();
   int num_types = (int)_handle_registry.size();
-  _lock->release();
+  _lock.unlock();
   return num_types;
 }
 
@@ -304,14 +327,14 @@ get_num_typehandles() {
  */
 TypeHandle TypeRegistry::
 get_typehandle(int n) {
-  _lock->acquire();
-  TypeRegistryNode *rnode = NULL;
+  _lock.lock();
+  TypeRegistryNode *rnode = nullptr;
   if (n >= 0 && n < (int)_handle_registry.size()) {
     rnode = _handle_registry[n];
   }
-  _lock->release();
+  _lock.unlock();
 
-  if (rnode != (TypeRegistryNode *)NULL) {
+  if (rnode != nullptr) {
     return rnode->_handle;
   }
 
@@ -324,10 +347,10 @@ get_typehandle(int n) {
  */
 int TypeRegistry::
 get_num_root_classes() {
-  _lock->acquire();
+  _lock.lock();
   freshen_derivations();
   int num_roots = (int)_root_classes.size();
-  _lock->release();
+  _lock.unlock();
   return num_roots;
 }
 
@@ -336,7 +359,7 @@ get_num_root_classes() {
  */
 TypeHandle TypeRegistry::
 get_root_class(int n) {
-  _lock->acquire();
+  _lock.lock();
   freshen_derivations();
   TypeHandle handle;
   if (n >= 0 && n < (int)_root_classes.size()) {
@@ -344,7 +367,7 @@ get_root_class(int n) {
   } else {
     handle = TypeHandle::none();
   }
-  _lock->release();
+  _lock.unlock();
 
   return handle;
 }
@@ -362,11 +385,11 @@ get_root_class(int n) {
  */
 int TypeRegistry::
 get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
-  _lock->acquire();
+  _lock.lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  assert(rnode != (TypeRegistryNode *)NULL);
+  assert(rnode != nullptr);
   int num_parents = (int)rnode->_parent_classes.size();
-  _lock->release();
+  _lock.unlock();
   return num_parents;
 }
 
@@ -376,16 +399,16 @@ get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
  */
 TypeHandle TypeRegistry::
 get_parent_class(TypeHandle child, int index) const {
-  _lock->acquire();
+  _lock.lock();
   TypeHandle handle;
-  TypeRegistryNode *rnode = look_up(child, (TypedObject *)NULL);
-  assert(rnode != (TypeRegistryNode *)NULL);
+  TypeRegistryNode *rnode = look_up(child, nullptr);
+  assert(rnode != nullptr);
   if (index >= 0 && index < (int)rnode->_parent_classes.size()) {
     handle = rnode->_parent_classes[index]->_handle;
   } else {
     handle = TypeHandle::none();
   }
-  _lock->release();
+  _lock.unlock();
   return handle;
 }
 
@@ -399,11 +422,11 @@ get_parent_class(TypeHandle child, int index) const {
  */
 int TypeRegistry::
 get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
-  _lock->acquire();
+  _lock.lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  assert(rnode != (TypeRegistryNode *)NULL);
+  assert(rnode != nullptr);
   int num_children = (int)rnode->_child_classes.size();
-  _lock->release();
+  _lock.unlock();
   return num_children;
 }
 
@@ -413,16 +436,16 @@ get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
  */
 TypeHandle TypeRegistry::
 get_child_class(TypeHandle child, int index) const {
-  _lock->acquire();
+  _lock.lock();
   TypeHandle handle;
-  TypeRegistryNode *rnode = look_up(child, (TypedObject *)NULL);
-  assert(rnode != (TypeRegistryNode *)NULL);
+  TypeRegistryNode *rnode = look_up(child, nullptr);
+  assert(rnode != nullptr);
   if (index >= 0 && index < (int)rnode->_child_classes.size()) {
     handle = rnode->_child_classes[index]->_handle;
   } else {
     handle = TypeHandle::none();
   }
-  _lock->release();
+  _lock.unlock();
   return handle;
 }
 
@@ -439,15 +462,15 @@ get_child_class(TypeHandle child, int index) const {
 TypeHandle TypeRegistry::
 get_parent_towards(TypeHandle child, TypeHandle base,
                    TypedObject *child_object) {
-  _lock->acquire();
+  _lock.lock();
   TypeHandle handle;
   const TypeRegistryNode *child_node = look_up(child, child_object);
-  const TypeRegistryNode *base_node = look_up(base, NULL);
-  assert(child_node != (TypeRegistryNode *)NULL &&
-         base_node != (TypeRegistryNode *)NULL);
+  const TypeRegistryNode *base_node = look_up(base, nullptr);
+  assert(child_node != nullptr &&
+         base_node != nullptr);
   freshen_derivations();
   handle = TypeRegistryNode::get_parent_towards(child_node, base_node);
-  _lock->release();
+  _lock.unlock();
   return handle;
 }
 
@@ -461,19 +484,18 @@ get_parent_towards(TypeHandle child, TypeHandle base,
  */
 void TypeRegistry::
 reregister_types() {
-  init_lock();
-  _lock->acquire();
+  _lock.lock();
   HandleRegistry::iterator ri;
   TypeRegistry *reg = ptr();
   for (ri = reg->_handle_registry.begin();
        ri != reg->_handle_registry.end();
        ++ri) {
     TypeRegistryNode *rnode = (*ri);
-    if (rnode != NULL && rnode->_handle != rnode->_ref) {
+    if (rnode != nullptr && rnode->_handle != rnode->_ref) {
       cerr << "Reregistering " << rnode->_name << "\n";
     }
   }
-  _lock->release();
+  _lock.unlock();
 }
 
 
@@ -483,9 +505,9 @@ reregister_types() {
  */
 void TypeRegistry::
 write(ostream &out) const {
-  _lock->acquire();
+  _lock.lock();
   do_write(out);
-  _lock->release();
+  _lock.unlock();
 }
 
 /**
@@ -496,7 +518,7 @@ TypeRegistry() {
   // We'll start out our handle_registry with a default entry for the
   // TypeHandles whose index number is zero, and are therefore (probably)
   // uninitialized.
-  _handle_registry.push_back(NULL);
+  _handle_registry.push_back(nullptr);
 
   _derivations_fresh = false;
 
@@ -517,7 +539,6 @@ TypeRegistry() {
  */
 void TypeRegistry::
 init_global_pointer() {
-  init_lock();
   init_memory_hook();
   _global_pointer = new TypeRegistry;
 }
@@ -537,7 +558,7 @@ rebuild_derivations() {
        hi != _handle_registry.end();
        ++hi) {
     TypeRegistryNode *node = *hi;
-    if (node != (TypeRegistryNode *)NULL) {
+    if (node != nullptr) {
       node->clear_subtree();
     }
   }
@@ -548,7 +569,7 @@ rebuild_derivations() {
        hi != _handle_registry.end();
        ++hi) {
     TypeRegistryNode *node = *hi;
-    if (node != NULL && node->_parent_classes.empty()) {
+    if (node != nullptr && node->_parent_classes.empty()) {
       _root_classes.push_back(node);
 
       // Also, for each root class, define a subtree.
@@ -570,7 +591,7 @@ do_write(ostream &out) const {
        hi != _handle_registry.end();
        ++hi) {
     const TypeRegistryNode *root = *hi;
-    if (root != NULL && root->_parent_classes.empty()) {
+    if (root != nullptr && root->_parent_classes.empty()) {
       write_node(out, 2, root);
     }
   }
@@ -609,19 +630,19 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
   if (handle._index == 0) {
     // The TypeHandle is unregistered.  This is an error condition.
 
-    if (object != NULL) {
+    if (object != nullptr) {
       // But we're lucky enough to have a TypedObject pointer handy!  Maybe we
       // can use it to resolve the error.  We have to drop the lock while we
       // do this, so we don't get a recursive lock.
-      _lock->release();
+      _lock.unlock();
       handle = object->force_init_type();
-      _lock->acquire();
+      _lock.lock();
 
       if (handle._index == 0) {
         // Strange.
         cerr
           << "Unable to force_init_type() on unregistered TypeHandle.\n";
-        return NULL;
+        return nullptr;
       }
 
       // Now get the name for printing.  We can't use TypeHandle:: get_name()
@@ -629,7 +650,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
       ostringstream name;
       if (handle._index > 0 && handle._index < (int)_handle_registry.size()) {
         TypeRegistryNode *rnode = _handle_registry[handle._index];
-        if (rnode != (TypeRegistryNode *)NULL) {
+        if (rnode != nullptr) {
           name << rnode->_name;
           name << " (index " << handle._index << ")";
         } else {
@@ -650,7 +671,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
           << "Attempt to reference unregistered TypeHandle.  Type is of some\n"
           << "class derived from type " << name.str() << " that doesn't define\n"
           << "a good force_init_type() method.\n";
-        return NULL;
+        return nullptr;
       }
 
     } else {
@@ -660,7 +681,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
         << "Attempt to reference unregistered TypeHandle!\n"
         << "Registered TypeHandles are:\n";
       do_write(cerr);
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -669,7 +690,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
     cerr
       << "Invalid TypeHandle index " << handle._index
       << "!  Is memory corrupt?\n";
-    return NULL;
+    return nullptr;
   }
 #endif  // NDEBUG
 

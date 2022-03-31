@@ -4,6 +4,7 @@ from direct.showbase.DirectObject import DirectObject
 from .DirectUtil import *
 from .DirectGeometry import *
 
+
 class DirectGrid(NodePath, DirectObject):
     def __init__(self,gridSize=100.0,gridSpacing=5.0,planeColor=(0.5,0.5,0.5,0.5),parent = None):
         # Initialize superclass
@@ -13,7 +14,7 @@ class DirectGrid(NodePath, DirectObject):
 
         # Load up grid parts to initialize grid object
         # Polygon used to mark grid plane
-        self.gridBack = loader.loadModel('models/misc/gridBack')
+        self.gridBack = base.loader.loadModel('models/misc/gridBack')
         self.gridBack.reparentTo(self)
         self.gridBack.setColor(*planeColor)
 
@@ -35,7 +36,7 @@ class DirectGrid(NodePath, DirectObject):
         self.centerLines.setThickness(3)
 
         # Small marker to hilight snap-to-grid point
-        self.snapMarker = loader.loadModel('models/misc/sphere')
+        self.snapMarker = base.loader.loadModel('models/misc/sphere')
         self.snapMarker.node().setName('gridSnapMarker')
         self.snapMarker.reparentTo(self)
         self.snapMarker.setColor(1, 0, 0, 1)
@@ -107,7 +108,7 @@ class DirectGrid(NodePath, DirectObject):
         center.create()
         minor.create()
         major.create()
-        if (self.gridBack):
+        if self.gridBack:
             self.gridBack.setScale(scaledSize)
 
     def setXyzSnap(self, fSnap):

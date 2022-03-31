@@ -21,7 +21,6 @@
 #include <windows.h>  // for IsBadWritePtr()
 #endif
 
-#ifdef DO_DCAST
 /**
  * This function performs the actual check that the indicated TypedObject
  * pointer is of the intended type.
@@ -29,8 +28,9 @@
 bool
 _dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr) {
+#ifdef DO_DCAST
   if (get_verify_dcast()) {
-    if (ptr == (const TypedObject *)NULL) {
+    if (ptr == nullptr) {
       // This is allowed these days.  It used to be an error, but what the
       // heck.
       return true;
@@ -54,7 +54,7 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
       return false;
     }
   }
+#endif  // DO_DCAST
 
   return true;
 }
-#endif  // DO_DCAST

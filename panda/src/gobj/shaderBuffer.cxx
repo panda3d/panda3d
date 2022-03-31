@@ -28,7 +28,7 @@ ShaderBuffer::
  *
  */
 void ShaderBuffer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "buffer " << get_name() << ", " << _data_size_bytes << "B, " << _usage_hint;
 }
 
@@ -51,7 +51,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
  */
 bool ShaderBuffer::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
-  if (_contexts == (Contexts *)NULL) {
+  if (_contexts == nullptr) {
     return false;
   }
   Contexts::const_iterator ci;
@@ -76,7 +76,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 BufferContext *ShaderBuffer::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
-  if (_contexts == (Contexts *)NULL) {
+  if (_contexts == nullptr) {
     _contexts = new Contexts;
   }
   Contexts::const_iterator ci;
@@ -86,7 +86,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   BufferContext *vbc = prepared_objects->prepare_shader_buffer_now(this, gsg);
-  if (vbc != (BufferContext *)NULL) {
+  if (vbc != nullptr) {
     (*_contexts)[prepared_objects] = vbc;
   }
   return vbc;
@@ -98,7 +98,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  */
 bool ShaderBuffer::
 release(PreparedGraphicsObjects *prepared_objects) {
-  if (_contexts != (Contexts *)NULL) {
+  if (_contexts != nullptr) {
     Contexts::iterator ci;
     ci = _contexts->find(prepared_objects);
     if (ci != _contexts->end()) {
@@ -120,7 +120,7 @@ int ShaderBuffer::
 release_all() {
   int num_freed = 0;
 
-  if (_contexts != (Contexts *)NULL) {
+  if (_contexts != nullptr) {
     // We have to traverse a copy of the _contexts list, because the
     // PreparedGraphicsObjects object will call clear_prepared() in response
     // to each release_shader_buffer(), and we don't want to be modifying the
@@ -137,10 +137,35 @@ release_all() {
 
     // Now that we've called release_shader_buffer() on every known context,
     // the _contexts list should have completely emptied itself.
-    nassertr(_contexts == NULL, num_freed);
+    nassertr(_contexts == nullptr, num_freed);
   }
 
   return num_freed;
+}
+
+/**
+ * Removes the indicated PreparedGraphicsObjects table from the buffer's
+ * table, without actually releasing the texture.  This is intended to be
+ * called only from PreparedGraphicsObjects::release_shader_buffer(); it
+ * should never be called by user code.
+ */
+void ShaderBuffer::
+clear_prepared(PreparedGraphicsObjects *prepared_objects) {
+  nassertv(_contexts != nullptr);
+
+  Contexts::iterator ci;
+  ci = _contexts->find(prepared_objects);
+  if (ci != _contexts->end()) {
+    _contexts->erase(ci);
+    if (_contexts->empty()) {
+      delete _contexts;
+      _contexts = nullptr;
+    }
+  } else {
+    // If this assertion fails, clear_prepared() was given a prepared_objects
+    // which the data array didn't know about.
+    nassert_raise("unknown PreparedGraphicsObjects");
+  }
 }
 
 /**
@@ -193,7 +218,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (scan.get_bool() && _data_size_bytes > 0) {
     nassertv_always(_data_size_bytes <= scan.get_remaining_size());
-    _initial_data.resize(_data_size_bytes);
+    _initial_data.resize((_data_size_bytes + 15u) & ~15u);
     scan.extract_bytes(&_initial_data[0], _data_size_bytes);
   } else {
     _initial_data.clear();

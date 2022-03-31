@@ -16,6 +16,8 @@
 #include "pnmFileType.h"
 #include "pnmFileTypeRegistry.h"
 
+using std::string;
+
 
 // Extracts the first word of the string into param, and the remainder of the
 // line into value.
@@ -51,8 +53,8 @@ bool
 parse_image_type_request(const string &word, PNMFileType *&color_type,
                          PNMFileType *&alpha_type) {
   PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_global_ptr();
-  color_type = (PNMFileType *)NULL;
-  alpha_type = (PNMFileType *)NULL;
+  color_type = nullptr;
+  alpha_type = nullptr;
 
   string color_name = word;
   string alpha_name;
@@ -66,7 +68,7 @@ parse_image_type_request(const string &word, PNMFileType *&color_type,
 
   if (!color_name.empty()) {
     color_type = registry->get_type_from_extension(color_name);
-    if (color_type == (PNMFileType *)NULL) {
+    if (color_type == nullptr) {
       nout << "Image file type '" << color_name << "' is unknown.\n";
       return false;
     }
@@ -74,7 +76,7 @@ parse_image_type_request(const string &word, PNMFileType *&color_type,
 
   if (!alpha_name.empty()) {
     alpha_type = registry->get_type_from_extension(alpha_name);
-    if (alpha_type == (PNMFileType *)NULL) {
+    if (alpha_type == nullptr) {
       nout << "Image file type '" << alpha_name << "' is unknown.\n";
       return false;
     }

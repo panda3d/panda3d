@@ -13,6 +13,12 @@
 
 #include "pathFind.h"
 
+#include "pathFollow.h"
+
+using std::cout;
+using std::endl;
+using std::string;
+
 PathFind::PathFind(AICharacter *ai_ch) {
   _ai_char = ai_ch;
 
@@ -23,7 +29,7 @@ PathFind::PathFind(AICharacter *ai_ch) {
   _pen->set_color(1.0, 0.0, 0.0);
   _pen->set_thickness(2.0);
 
-  _path_finder_obj = NULL;
+  _path_finder_obj = nullptr;
   _dynamic_avoid = false;
 }
 
@@ -46,7 +52,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
   string fields[10];
 
   // Open data file for reading.
-  ifstream nav_mesh_file (navmesh_filename);
+  std::ifstream nav_mesh_file (navmesh_filename);
 
   if(nav_mesh_file.is_open()) {
     // Capture the grid size from the file.
@@ -56,9 +62,9 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
 
     // Initialize the stage mesh with NULL nodes.
     for(int r = 0; r < _grid_size; ++r) {
-      _nav_mesh.push_back(vector<Node*>());
+      _nav_mesh.push_back(std::vector<Node*>());
       for(int c = 0; c < _grid_size; ++c) {
-        _nav_mesh[r].push_back(NULL);
+        _nav_mesh[r].push_back(nullptr);
       }
     }
 
@@ -68,7 +74,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
     // Begin reading data from the file.
     while(!nav_mesh_file.eof()) {
       getline(nav_mesh_file, line);
-      stringstream linestream (line);
+      std::stringstream linestream (line);
 
       // Stores all the data members in the line to the array.  Data
       // structure:
@@ -111,7 +117,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
  * _nav_mesh.
  */
 void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
-  ifstream nav_mesh_file (navmesh_filename);
+  std::ifstream nav_mesh_file (navmesh_filename);
 
   // Stage variables.
   int gd_x, gd_y, gd_xn, gd_yn;
@@ -125,7 +131,7 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
 
     while(!nav_mesh_file.eof()) {
       getline(nav_mesh_file, ln); // Gets main node data only. No neighbor nodes.
-      stringstream linestream (ln);
+      std::stringstream linestream (ln);
       for(int i = 0; i < 10; ++i) {
         getline(linestream, fields[i], ',');
       }
@@ -135,7 +141,7 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
         gd_y = atoi(fields[3].c_str());
         for(int i = 0; i < 8; ++i) {
           getline(nav_mesh_file, ln); // Gets neighbor node data only. No main nodes.
-          stringstream linestream_n (ln);
+          std::stringstream linestream_n (ln);
           for(int j = 0; j < 10; ++j) {
             getline(linestream_n, fields_n[j], ',');
           }
@@ -150,7 +156,7 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
           }
           else if(fields_n[0] == "1" && fields_n[1] == "1") {
             // NULL neighbor.
-            _nav_mesh[gd_y][gd_x]->_neighbours[i] = NULL;
+            _nav_mesh[gd_y][gd_x]->_neighbours[i] = nullptr;
           }
           else {
             cout<<"Warning: Corrupt data!"<<endl;
@@ -183,7 +189,7 @@ void PathFind::set_path_find(const char* navmesh_filename) {
 
   if(_path_finder_obj) {
     delete _path_finder_obj;
-    _path_finder_obj = NULL;
+    _path_finder_obj = nullptr;
   }
 
   _path_finder_obj = new PathFinder(_nav_mesh);
@@ -207,17 +213,17 @@ void PathFind::path_find(LVecBase3 pos, string type) {
 
   Node* src = find_in_mesh(_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _grid_size);
 
-  if(src == NULL) {
+  if(src == nullptr) {
     cout<<"couldnt find source"<<endl;
   }
 
   Node* dst = find_in_mesh(_nav_mesh, pos, _grid_size);
 
-  if(dst == NULL) {
+  if(dst == nullptr) {
     cout<<"couldnt find destination"<<endl;
   }
 
-  if(src != NULL && dst != NULL) {
+  if(src != nullptr && dst != nullptr) {
     _path_finder_obj->find_path(src, dst);
     trace_path(src);
   }
@@ -248,22 +254,22 @@ void PathFind::path_find(NodePath target, string type) {
 
   Node* src = find_in_mesh(_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _grid_size);
 
-  if(src == NULL) {
+  if(src == nullptr) {
     cout<<"couldnt find source"<<endl;
   }
 
   Node* dst = find_in_mesh(_nav_mesh, _prev_position, _grid_size);
 
-  if(dst == NULL) {
+  if(dst == nullptr) {
     cout<<"couldnt find destination"<<endl;
   }
 
-  if(src != NULL && dst != NULL) {
+  if(src != nullptr && dst != nullptr) {
     _path_finder_obj->find_path(src, dst);
     trace_path(src);
   }
 
-  if(_ai_char->_steering->_path_follow_obj!=NULL) {
+  if(_ai_char->_steering->_path_follow_obj!=nullptr) {
     if(!_ai_char->_steering->_path_follow_obj->_start) {
       _ai_char->_steering->start_follow("pathfind");
     }
@@ -277,12 +283,12 @@ void PathFind::clear_path() {
   // Initialize to zero
   for(int i = 0; i < _grid_size; ++i) {
     for(int j = 0; j < _grid_size; ++j) {
-      if(_nav_mesh[i][j] != NULL) {
+      if(_nav_mesh[i][j] != nullptr) {
         _nav_mesh[i][j]->_status = _nav_mesh[i][j]->neutral;
         _nav_mesh[i][j]->_cost = 0;
         _nav_mesh[i][j]->_heuristic = 0;
         _nav_mesh[i][j]->_score = 0;
-        _nav_mesh[i][j]->_prv_node = NULL;
+        _nav_mesh[i][j]->_prv_node = nullptr;
       }
     }
   }
@@ -333,7 +339,7 @@ void PathFind::add_obstacle_to_mesh(NodePath obstacle) {
 
   Node* temp = find_in_mesh(_nav_mesh, obstacle.get_pos(), _grid_size);
 
-  if(temp != NULL) {
+  if(temp != nullptr) {
     float left = temp->_position.get_x() - np_sphere->get_radius();
     float right = temp->_position.get_x() + np_sphere->get_radius();
     float top = temp->_position.get_y() + np_sphere->get_radius();
@@ -341,7 +347,7 @@ void PathFind::add_obstacle_to_mesh(NodePath obstacle) {
 
     for(int i = 0; i < _grid_size; ++i) {
         for(int j = 0; j < _grid_size; ++j) {
-          if(_nav_mesh[i][j] != NULL && _nav_mesh[i][j]->_type == true) {
+          if(_nav_mesh[i][j] != nullptr && _nav_mesh[i][j]->_type == true) {
             if(_nav_mesh[i][j]->_position.get_x() >= left && _nav_mesh[i][j]->_position.get_x() <= right &&
                _nav_mesh[i][j]->_position.get_y() >= down && _nav_mesh[i][j]->_position.get_y() <= top) {
               _nav_mesh[i][j]->_type = false;

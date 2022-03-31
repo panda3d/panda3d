@@ -26,20 +26,6 @@ PStatCollector(PStatClient *client, int index) :
 }
 
 /**
- * Creates an invalid PStatCollector.  Any attempt to use this collector will
- * crash messily.
- *
- * You can reassign it to a different, valid one later.
- */
-INLINE PStatCollector::
-PStatCollector() :
-  _client(NULL),
-  _index(0),
-  _level(0.0f)
-{
-}
-
-/**
  * Creates a new PStatCollector, ready to start accumulating data.  The name
  * of the collector uniquely identifies it among the other collectors; if two
  * collectors share the same name then they are really the same collector.
@@ -54,10 +40,10 @@ PStatCollector() :
  * register the collector with; otherwise, the global client is used.
  */
 INLINE PStatCollector::
-PStatCollector(const string &name, PStatClient *client) :
+PStatCollector(const std::string &name, PStatClient *client) :
   _level(0.0f)
 {
-  if (client == (PStatClient *)NULL) {
+  if (client == nullptr) {
     client = PStatClient::get_global_pstats();
   }
   (*this) = client->make_collector_with_relname(0, name);
@@ -80,10 +66,10 @@ PStatCollector(const string &name, PStatClient *client) :
  * collector on the same client as its parent.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &name) :
+PStatCollector(const PStatCollector &parent, const std::string &name) :
   _level(0.0f)
 {
-  nassertv(parent._client != (PStatClient *)NULL);
+  nassertv(parent._client != nullptr);
   (*this) =
     parent._client->make_collector_with_relname(parent._index, name);
 }
@@ -115,38 +101,38 @@ operator = (const PStatCollector &copy) {
  */
 INLINE bool PStatCollector::
 is_valid() const {
-  return (_client != (PStatClient *)NULL);
+  return (_client != nullptr);
 }
 
 /**
  * Returns the local name of this collector.  This is the rightmost part of
  * the fullname, after the rightmost colon.
  */
-INLINE string PStatCollector::
+INLINE std::string PStatCollector::
 get_name() const {
-  if (_client != (PStatClient *)NULL) {
+  if (_client != nullptr) {
     return _client->get_collector_name(_index);
   }
-  return string();
+  return std::string();
 }
 
 /**
  * Returns the full name of this collector.  This includes the names of all
  * the collector's parents, concatenated together with colons.
  */
-INLINE string PStatCollector::
+INLINE std::string PStatCollector::
 get_fullname() const {
-  if (_client != (PStatClient *)NULL) {
+  if (_client != nullptr) {
     return _client->get_collector_fullname(_index);
   }
-  return string();
+  return std::string();
 }
 
 /**
  *
  */
 INLINE void PStatCollector::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "PStatCollector(\"" << get_fullname() << "\")";
 }
 
@@ -156,6 +142,7 @@ output(ostream &out) const {
  */
 INLINE bool PStatCollector::
 is_active() {
+  nassertr(_client != nullptr, false);
 #ifndef HAVE_THREADS
   return _client->is_active(_index, 0);
 #else  // HAVE_THREADS
@@ -169,6 +156,7 @@ is_active() {
  */
 INLINE bool PStatCollector::
 is_started() {
+  nassertr(_client != nullptr, false);
 #ifndef HAVE_THREADS
   return _client->is_started(_index, 0);
 #else  // HAVE_THREADS
@@ -182,6 +170,7 @@ is_started() {
  */
 INLINE void PStatCollector::
 start() {
+  nassertv(_client != nullptr);
 #ifndef HAVE_THREADS
   _client->start(_index, 0);
 #else  // HAVE_THREADS
@@ -195,6 +184,7 @@ start() {
  */
 INLINE void PStatCollector::
 stop() {
+  nassertv(_client != nullptr);
 #ifndef HAVE_THREADS
   _client->stop(_index, 0);
 #else  // HAVE_THREADS
@@ -276,6 +266,7 @@ sub_level_now(double decrement) {
 INLINE void PStatCollector::
 flush_level() {
   if (_level != 0.0f) {
+    nassertv(_client != nullptr);
     _client->add_level(_index, 0, _level);
     _level = 0.0f;
   }
@@ -384,7 +375,7 @@ is_started(const PStatThread &thread) {
  */
 INLINE void PStatCollector::
 start(const PStatThread &thread) {
-  nassertv(_client != NULL);
+  nassertv(_client != nullptr);
   _client->start(_index, thread._index);
 }
 
@@ -494,11 +485,11 @@ PStatCollector()
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const string &, PStatClient *client) {
+PStatCollector(const std::string &, PStatClient *client) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
-  if (client == (PStatClient *)NULL) {
+  if (client == nullptr) {
     return;
   }
 #endif
@@ -509,11 +500,11 @@ PStatCollector(const string &, PStatClient *client) {
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &) {
+PStatCollector(const PStatCollector &parent, const std::string &) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
-  if (&parent == (const PStatCollector *)NULL) {
+  if (&parent == nullptr) {
     return;
   }
 #endif

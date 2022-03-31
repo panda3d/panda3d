@@ -53,7 +53,7 @@ has_scoped_name() const {
 /**
  *
  */
-INLINE const string &InterrogateMakeSeq::
+INLINE const std::string &InterrogateMakeSeq::
 get_scoped_name() const {
   return _scoped_name;
 }
@@ -69,7 +69,7 @@ has_comment() const {
 /**
  *
  */
-INLINE const string &InterrogateMakeSeq::
+INLINE const std::string &InterrogateMakeSeq::
 get_comment() const {
   return _comment;
 }
@@ -90,14 +90,14 @@ get_element_getter() const {
   return _element_getter;
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateMakeSeq &make_seq) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateMakeSeq &make_seq) {
   make_seq.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateMakeSeq &make_seq) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateMakeSeq &make_seq) {
   make_seq.input(in);
   return in;
 }

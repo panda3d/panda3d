@@ -25,10 +25,10 @@ class CPPToken {
 public:
   CPPToken(int token, int line_number = 0, int col_number = 0,
            const CPPFile &file = CPPFile(""),
-           const string &str = string(),
+           const std::string &str = std::string(),
            const YYSTYPE &lval = YYSTYPE());
   CPPToken(int token, const YYLTYPE &loc,
-           const string &str = string(),
+           const std::string &str = std::string(),
            const YYSTYPE &lval = YYSTYPE());
   CPPToken(const CPPToken &copy);
   void operator = (const CPPToken &copy);
@@ -36,14 +36,14 @@ public:
   static CPPToken eof();
   bool is_eof() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   int _token;
   YYSTYPE _lval;
   YYLTYPE _lloc;
 };
 
-inline ostream &operator << (ostream &out, const CPPToken &token) {
+inline std::ostream &operator << (std::ostream &out, const CPPToken &token) {
   token.output(out);
   return out;
 }

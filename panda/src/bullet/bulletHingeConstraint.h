@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_HINGE_CONSTRAINT_H__
-#define __BULLET_HINGE_CONSTRAINT_H__
+#ifndef BULLETHINGECONSTRAINT_H
+#define BULLETHINGECONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -69,8 +69,8 @@ PUBLISHED:
   void set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt);
 
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(hinge_angle, get_hinge_angle);
   MAKE_PROPERTY(lower_limit, get_lower_limit);
@@ -108,4 +108,4 @@ private:
 
 #include "bulletHingeConstraint.I"
 
-#endif // __BULLET_HINGE_CONSTRAINT_H__
+#endif // BULLETHINGECONSTRAINT_H

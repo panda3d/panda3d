@@ -16,13 +16,6 @@
 TypeHandle TexturePoolFilter::_type_handle;
 
 /**
- *
- */
-TexturePoolFilter::
-~TexturePoolFilter() {
-}
-
-/**
  * This method is called before each texture is loaded from disk, via the
  * TexturePool, for the first time.  If this method returns NULL, then a new
  * Texture will be allocated and loaded from disk normally by the TexturePool;
@@ -32,7 +25,7 @@ TexturePoolFilter::
 PT(Texture) TexturePoolFilter::
 pre_load(const Filename &, const Filename &, int, int, bool,
          const LoaderOptions &) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -51,6 +44,6 @@ post_load(Texture *tex) {
  *
  */
 void TexturePoolFilter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }

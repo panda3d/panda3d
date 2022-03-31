@@ -86,7 +86,7 @@ get_texture_wrap_mode(SamplerState::WrapMode wm) {
   case SamplerState::WM_border_color:
     return D3DTADDRESS_BORDER;
   }
-  dxgsg9_cat.error() << "Invalid Texture::Mode value" << endl;
+  dxgsg9_cat.error() << "Invalid Texture::Mode value" << std::endl;
   return D3DTADDRESS_WRAP;
 }
 
@@ -103,7 +103,7 @@ get_fog_mode_type(Fog::Mode m) {
   case Fog::M_exponential_squared:
     return D3DFOG_EXP2;
   }
-  dxgsg9_cat.error() << "Invalid Fog::Mode value" << endl;
+  dxgsg9_cat.error() << "Invalid Fog::Mode value" << std::endl;
   return D3DFOG_EXP;
 }
 
@@ -121,7 +121,7 @@ get_tex_mat_sym(int stage_index) {
  */
 INLINE unsigned char *DXGraphicsStateGuardian9::
 get_safe_buffer_start() {
-  if (_temp_buffer == NULL) {
+  if (_temp_buffer == nullptr) {
     // Guarantee we get a buffer of size 0x10000 bytes that begins on an even
     // multiple of 0x10000.  We do this by allocating double the required
     // buffer, and then pointing to the first multiple of 0x10000 within that

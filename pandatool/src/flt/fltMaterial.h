@@ -34,7 +34,7 @@ public:
   };
 
   int _material_index;
-  string _material_name;
+  std::string _material_name;
   unsigned int _flags;
   LRGBColor _ambient;
   LRGBColor _diffuse;

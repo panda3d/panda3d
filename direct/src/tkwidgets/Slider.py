@@ -265,7 +265,7 @@ class SliderWidget(Pmw.MegaWidget):
         self.updateIndicator(self['value'])
 
     def destroy(self):
-        if (self['style'] == VALUATOR_MINI) and self._isPosted:
+        if self['style'] == VALUATOR_MINI and self._isPosted:
             Pmw.popgrab(self._popup)
         Pmw.MegaWidget.destroy(self)
 
@@ -279,7 +279,7 @@ class SliderWidget(Pmw.MegaWidget):
         Set slider to new value, execute command if fCommand == 1
         """
         # Send command if any
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value
@@ -407,8 +407,7 @@ class SliderWidget(Pmw.MegaWidget):
         # Do post callback if any
         if self._fUpdate and self['postCallback']:
             self['postCallback'](*self['callbackData'])
-        if (self._fUnpost or
-            (not (self._firstPress or self._fPressInside))):
+        if self._fUnpost or not (self._firstPress or self._fPressInside):
             self._unpostSlider()
         # Otherwise, continue
         self._fUpdate = 0
@@ -500,4 +499,3 @@ class SliderWidget(Pmw.MegaWidget):
 
     def restoreWidget(self, event):
         self._arrowBtn.itemconfigure('arrow', fill = 'grey50')
-

@@ -13,6 +13,8 @@
 
 #include "bulletSphereShape.h"
 
+#include "bulletWorld.h"
+
 TypeHandle BulletSphereShape::_type_handle;
 
 /**
@@ -24,6 +26,20 @@ BulletSphereShape(PN_stdfloat radius) : _radius(radius) {
   _shape = new btSphereShape(radius);
   _shape->setUserPointer(this);
 }
+
+/**
+ *
+ */
+BulletSphereShape::
+BulletSphereShape(const BulletSphereShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _radius = copy._radius;
+
+  _shape = new btSphereShape(_radius);
+  _shape->setUserPointer(this);
+}
+
 
 /**
  *

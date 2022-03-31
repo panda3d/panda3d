@@ -12,7 +12,7 @@
  */
 
 #include "pfmBba.h"
-#include "config_pfm.h"
+#include "config_pfmprogs.h"
 #include "pfmFile.h"
 
 /**
@@ -73,11 +73,11 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   if (!bba_filename.empty()) {
     bba_filename.set_text();
     PT(BoundingHexahedron) bounds = file.compute_planar_bounds(LPoint2f(0.5, 0.5), pfm_bba_dist[0], pfm_bba_dist[1], false);
-    nassertr(bounds != (BoundingHexahedron *)NULL, false);
+    nassertr(bounds != nullptr, false);
 
     pofstream out;
     if (!bba_filename.open_write(out)) {
-      cerr << "Unable to open " << bba_filename << "\n";
+      std::cerr << "Unable to open " << bba_filename << "\n";
       return false;
     }
 

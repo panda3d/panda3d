@@ -20,7 +20,9 @@ TypeHandle OdeWorld::_type_handle;
 OdeWorld::
 OdeWorld() :
   _id(dWorldCreate()) {
-  odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
+  if (odeworld_cat.is_debug()) {
+    odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
+  }
   _num_surfaces = 0;
 
 }
@@ -34,7 +36,9 @@ OdeWorld(const OdeWorld &copy) :
 
 OdeWorld::
 ~OdeWorld() {
-  odeworld_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
+  if (odeworld_cat.is_debug()) {
+    odeworld_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
+  }
 }
 
 void OdeWorld::
@@ -71,7 +75,9 @@ init_surface_table(uint8_t num_surfaces) {
 
 void OdeWorld::
 set_surface(int pos1, int pos2, sSurfaceParams& entry) {
-  odeworld_cat.debug() << " pos1 " << pos1 << " pos2 " << pos2 << " num surfaces " << (int)_num_surfaces << " endline\n";
+  if (odeworld_cat.is_debug()) {
+    odeworld_cat.debug() << " pos1 " << pos1 << " pos2 " << pos2 << " num surfaces " << (int)_num_surfaces << " endline\n";
+  }
   if((_num_surfaces <= pos1) || (_num_surfaces <= pos2)) {
     odeworld_cat.error() << "surface position exceeds size of surface table, set num_surface in initSurfaceTable higher." << "\n";
     return;
@@ -178,5 +184,5 @@ apply_dampening(float dt, OdeBody& body) {
 
 OdeWorld::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }

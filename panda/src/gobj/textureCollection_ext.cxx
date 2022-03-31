@@ -27,7 +27,7 @@ extern struct Dtool_PyTypedObject Dtool_Texture;
 void Extension<TextureCollection>::
 __init__(PyObject *self, PyObject *sequence) {
   PyObject *fast = PySequence_Fast(sequence, "TextureCollection constructor requires a sequence");
-  if (fast == NULL) {
+  if (fast == nullptr) {
     return;
   }
 
@@ -36,17 +36,17 @@ __init__(PyObject *self, PyObject *sequence) {
 
   for (int i = 0; i < size; ++i) {
     PyObject *item = PySequence_Fast_GET_ITEM(fast, i);
-    if (item == NULL) {
+    if (item == nullptr) {
       return;
     }
 
     Texture *tex;
     DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
-    if (tex == (Texture *)NULL) {
+    if (tex == nullptr) {
       // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
+      std::ostringstream stream;
       stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";
-      string str = stream.str();
+      std::string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       Py_DECREF(fast);
       return;
@@ -72,8 +72,8 @@ __reduce__(PyObject *self) const {
   // necessary to reconstruct this object.
 
   PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   // Since a TextureCollection is itself an iterator, we can simply pass it as

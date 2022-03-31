@@ -29,7 +29,7 @@ PNMReader::
     // vfs->close_read_file() just deletes the file pointer anyway.
     vfs->close_read_file(_file);
   }
-  _file = (istream *)NULL;
+  _file = nullptr;
 }
 
 /**
@@ -249,7 +249,7 @@ get_reduction_shift(int orig_size, int new_size) {
     return 0;
   }
 
-  int reduction = max(orig_size / new_size, 1);
+  int reduction = std::max(orig_size / new_size, 1);
 
   int shift = 0;
 

@@ -44,7 +44,7 @@ make_default() {
  *
  */
 void ColorWriteAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_channels == 0) {
     out << "off";

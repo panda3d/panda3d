@@ -1,5 +1,7 @@
 
 from panda3d.core import *
+from direct.showbase.MessengerGlobal import messenger
+
 
 class DirectLight(NodePath):
     def __init__(self, light, parent):
@@ -58,21 +60,21 @@ class DirectLights(NodePath):
         nameList.sort()
         return nameList
 
-    def create(self, type):
-        type = type.lower()
-        if type == 'ambient':
+    def create(self, ltype):
+        ltype = ltype.lower()
+        if ltype == 'ambient':
             self.ambientCount += 1
             light = AmbientLight('ambient-' + repr(self.ambientCount))
             light.setColor(VBase4(.3, .3, .3, 1))
-        elif type == 'directional':
+        elif ltype == 'directional':
             self.directionalCount += 1
             light = DirectionalLight('directional-' + repr(self.directionalCount))
             light.setColor(VBase4(1))
-        elif type == 'point':
+        elif ltype == 'point':
             self.pointCount += 1
             light = PointLight('point-' + repr(self.pointCount))
             light.setColor(VBase4(1))
-        elif type == 'spot':
+        elif ltype == 'spot':
             self.spotCount += 1
             light = Spotlight('spot-' + repr(self.spotCount))
             light.setColor(VBase4(1))
@@ -130,6 +132,3 @@ class DirectLights(NodePath):
         Turn off the given directLight
         """
         render.clearLight(directLight)
-
-
-

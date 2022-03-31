@@ -130,7 +130,7 @@ fillin(DatagramIterator &scan) {
  */
 PaletteImage::
 PaletteImage() {
-  _page = (PalettePage *)NULL;
+  _page = nullptr;
   _index = 0;
   _new_image = false;
   _got_image = false;
@@ -247,7 +247,7 @@ count_coverage() const {
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
     TextureImage *texture = placement->get_texture();
-    nassertr(texture != (TextureImage *)NULL, 0.0);
+    nassertr(texture != nullptr, 0.0);
 
     int orig_pixels =
       texture->get_x_size() *
@@ -476,7 +476,7 @@ resize_swapped_image(int x_size, int y_size) {
  * indicated output stream, one per line.
  */
 void PaletteImage::
-write_placements(ostream &out, int indent_level) const {
+write_placements(std::ostream &out, int indent_level) const {
   Placements::const_iterator pi;
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
@@ -564,7 +564,7 @@ update_image(bool redo_all) {
       if (texture->is_texture_named()) {
         SourceTextureImage *source = texture->get_preferred_source();
 
-        if (source != (SourceTextureImage *)NULL &&
+        if (source != nullptr &&
             source->get_filename().compare_timestamps(get_filename()) > 0) {
           // The source image is newer than the palette image; we need to
           // regenerate.
@@ -581,7 +581,7 @@ update_image(bool redo_all) {
         if (swapTexture->is_texture_named()) {
           SourceTextureImage *sourceSwapTexture = swapTexture->get_preferred_source();
 
-          if (sourceSwapTexture != (SourceTextureImage *)NULL &&
+          if (sourceSwapTexture != nullptr &&
               sourceSwapTexture->get_filename().compare_timestamps(get_filename()) > 0) {
             // The source image is newer than the palette image; we need to
             // regenerate.
@@ -636,7 +636,7 @@ update_image(bool redo_all) {
 
   write(_image);
 
-  if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+  if (pal->_shadow_color_type != nullptr) {
     _shadow_image.write(_image);
   }
 
@@ -647,7 +647,7 @@ update_image(bool redo_all) {
   for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
     PaletteImage *swappedImage = (*si);
     swappedImage->write(swappedImage->_image);
-    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+    if (pal->_shadow_color_type != nullptr) {
       swappedImage->_shadow_image.write(swappedImage->_image);
     }
     swappedImage->release_image();
@@ -712,9 +712,9 @@ bool PaletteImage::
 setup_filename() {
   // Build up the basename for the palette image, based on the supplied image
   // pattern.
-  _basename = string();
+  _basename = std::string();
 
-  string::iterator si = pal->_generated_image_pattern.begin();
+  std::string::iterator si = pal->_generated_image_pattern.begin();
   while (si != pal->_generated_image_pattern.end()) {
     if ((*si) == '%') {
       // Some keycode.
@@ -794,13 +794,13 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       // Consider the spot at x, y.
       TexturePlacement *overlap = find_overlap(x, y, x_size, y_size);
 
-      if (overlap == (TexturePlacement *)NULL) {
+      if (overlap == nullptr) {
         // Hooray!
         return true;
       }
 
       next_x = overlap->get_placed_x() + overlap->get_placed_x_size();
-      next_y = min(next_y, overlap->get_placed_y() + overlap->get_placed_y_size());
+      next_y = std::min(next_y, overlap->get_placed_y() + overlap->get_placed_y_size());
       nassertr(next_x > x, false);
       x = next_x;
     }
@@ -831,7 +831,7 @@ find_overlap(int x, int y, int x_size, int y_size) const {
     }
   }
 
-  return (TexturePlacement *)NULL;
+  return nullptr;
 }
 
 /**
@@ -845,7 +845,7 @@ get_image() {
   }
 
   if (!_new_image) {
-    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+    if (pal->_shadow_color_type != nullptr) {
       if (_shadow_image.get_filename().exists() && _shadow_image.read(_image)) {
         _got_image = true;
         return;
@@ -891,7 +891,7 @@ get_swapped_image(int index) {
   }
 
   if (!_new_image) {
-    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+    if (pal->_shadow_color_type != nullptr) {
       if (_shadow_image.get_filename().exists() && _shadow_image.read(_image)) {
         _got_image = true;
         return;
@@ -959,7 +959,7 @@ release_image() {
 void PaletteImage::
 remove_image() {
   unlink();
-  if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+  if (pal->_shadow_color_type != nullptr) {
     _shadow_image.unlink();
   }
   _new_image = true;
@@ -1025,7 +1025,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     index++;
   }
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_page, p_list[index], index);
   }
   index++;

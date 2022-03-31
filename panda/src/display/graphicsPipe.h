@@ -52,9 +52,8 @@ class DisplayInformation;
 class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();
-private:
-  GraphicsPipe(const GraphicsPipe &copy) DELETED;
-  GraphicsPipe &operator = (const GraphicsPipe &copy) DELETED_ASSIGN;
+  GraphicsPipe(const GraphicsPipe &copy) = delete;
+  GraphicsPipe &operator = (const GraphicsPipe &copy) = delete;
 
 PUBLISHED:
   virtual ~GraphicsPipe();
@@ -92,15 +91,17 @@ PUBLISHED:
 
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
+  PN_stdfloat get_display_zoom() const;
   MAKE_PROPERTY(display_width, get_display_width);
   MAKE_PROPERTY(display_height, get_display_height);
+  MAKE_PROPERTY(display_zoom, get_display_zoom);
 
   DisplayInformation *get_display_information();
   MAKE_PROPERTY(display_information, get_display_information);
 
   virtual void lookup_cpu_data();
 
-  virtual string get_interface_name() const=0;
+  virtual std::string get_interface_name() const=0;
   MAKE_PROPERTY(interface_name, get_interface_name);
 
 public:
@@ -111,14 +112,16 @@ public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
   INLINE GraphicsDevice *get_device() const;
-  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
+  virtual PT(GraphicsDevice) make_device(void *scrn = nullptr);
 
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 
 protected:
+  INLINE void set_detected_display_zoom(PN_stdfloat zoom);
+
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
@@ -134,6 +137,7 @@ protected:
   int _supported_types;
   int _display_width;
   int _display_height;
+  PN_stdfloat _detected_display_zoom;
   PT(GraphicsDevice) _device;
 
   DisplayInformation *_display_information;

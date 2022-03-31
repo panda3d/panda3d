@@ -31,13 +31,13 @@ public:
 
 PUBLISHED:
   INLINE PStatThread(PStatClient *client, int index);
-  INLINE PStatThread(Thread *thread, PStatClient *client = NULL);
+  INLINE PStatThread(Thread *thread, PStatClient *client = nullptr);
 
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);
 
-  void new_frame();
-  void add_frame(const PStatFrameData &frame_data);
+  void new_frame(int frame_number = -1);
+  void add_frame(int frame_number, const PStatFrameData &frame_data);
 
   Thread *get_thread() const;
   INLINE int get_index() const;

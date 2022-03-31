@@ -16,14 +16,14 @@
 
 #include "pandatoolbase.h"
 
-void x_init_lexer(istream &in, const string &filename);
+void x_init_lexer(std::istream &in, const std::string &filename);
 int x_error_count();
 int x_warning_count();
 
-void xyyerror(const string &msg);
-void xyyerror(const string &msg, int line_number, int col_number,
-              const string &current_line);
-void xyywarning(const string &msg);
+void xyyerror(const std::string &msg);
+void xyyerror(const std::string &msg, int line_number, int col_number,
+              const std::string &current_line);
+void xyywarning(const std::string &msg);
 
 int xyylex();
 

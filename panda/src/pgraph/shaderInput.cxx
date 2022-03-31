@@ -30,10 +30,10 @@ get_blank() {
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
-  _name(MOVE(name)),
-  _type(M_nodepath),
+  _name(std::move(name)),
+  _value(new ParamNodePath(np)),
   _priority(priority),
-  _value(new ParamNodePath(np))
+  _type(M_nodepath)
 {
 }
 
@@ -42,10 +42,10 @@ ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, int n, int priority) :
-  _name(MOVE(name)),
-  _type(M_texture_image),
+  _name(std::move(name)),
+  _value(new ParamTextureImage(tex, read, write, z, n)),
   _priority(priority),
-  _value(new ParamTextureImage(tex, read, write, z, n))
+  _type(M_texture_image)
 {
 }
 
@@ -54,10 +54,10 @@ ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, i
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority) :
-  _name(MOVE(name)),
-  _type(M_texture_sampler),
+  _name(std::move(name)),
+  _value(new ParamTextureSampler(tex, sampler)),
   _priority(priority),
-  _value(new ParamTextureSampler(tex, sampler))
+  _type(M_texture_sampler)
 {
 }
 
@@ -89,7 +89,7 @@ add_hash(size_t hash) const {
  * Warning: no error checking is done.  This *will* crash if get_value_type()
  * is not M_nodepath.
  */
-const NodePath &ShaderInput::
+NodePath ShaderInput::
 get_nodepath() const {
   return DCAST(ParamNodePath, _value)->get_value();
 }
@@ -110,7 +110,7 @@ get_texture() const {
     return DCAST(Texture, _value);
 
   default:
-    return NULL;
+    return nullptr;
   }
 }
 

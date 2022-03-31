@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_TFORM Trackball : public MouseInterfaceNode {
 PUBLISHED:
-  explicit Trackball(const string &name);
+  explicit Trackball(const std::string &name);
   ~Trackball();
 
   void reset();

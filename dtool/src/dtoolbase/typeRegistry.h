@@ -33,23 +33,26 @@ class TypedObject;
  * should be migrated to shared memory as soon as shared memory becomes
  * available.
  */
-class EXPCL_DTOOL TypeRegistry : public MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call TypeRegistry::register_type()
   // or record_derivation() directly; instead, use the register_type
   // convenience function, defined in register_type.h.
-  bool register_type(TypeHandle &type_handle, const string &name);
+  bool register_type(TypeHandle &type_handle, const std::string &name);
 
 PUBLISHED:
-  TypeHandle register_dynamic_type(const string &name);
+  TypeHandle register_dynamic_type(const std::string &name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
-  void record_alternate_name(TypeHandle type, const string &name);
+  void record_alternate_name(TypeHandle type, const std::string &name);
+#ifdef HAVE_PYTHON
+  void record_python_type(TypeHandle type, PyObject *python_type);
+#endif
 
-  TypeHandle find_type(const string &name) const;
+  TypeHandle find_type(const std::string &name) const;
   TypeHandle find_type_by_id(int id) const;
 
-  string get_name(TypeHandle type, TypedObject *object) const;
+  std::string get_name(TypeHandle type, TypedObject *object) const;
   bool is_derived_from(TypeHandle child, TypeHandle base,
                        TypedObject *child_object);
 
@@ -74,7 +77,7 @@ PUBLISHED:
 
   static void reregister_types();
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   // ptr() returns the pointer to the global TypeRegistry object.
   static INLINE TypeRegistry *ptr();
@@ -94,31 +97,29 @@ private:
   INLINE void freshen_derivations();
   void rebuild_derivations();
 
-  void do_write(ostream &out) const;
-  void write_node(ostream &out, int indent_level,
+  void do_write(std::ostream &out) const;
+  void write_node(std::ostream &out, int indent_level,
                   const TypeRegistryNode *node) const;
 
-  static INLINE void init_lock();
-
-  typedef vector<TypeRegistryNode *> HandleRegistry;
+  typedef std::vector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef map<string, TypeRegistryNode *> NameRegistry;
+  typedef std::map<std::string, TypeRegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
-  typedef vector<TypeRegistryNode *> RootClasses;
+  typedef std::vector<TypeRegistryNode *> RootClasses;
   RootClasses _root_classes;
 
   bool _derivations_fresh;
 
-  static MutexImpl *_lock;
+  static MutexImpl _lock;
   static TypeRegistry *_global_pointer;
 
   friend class TypeHandle;
 };
 
 // Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
+extern "C" EXPCL_DTOOL_DTOOLBASE  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
 
 #include "typeHandle.h"
 

@@ -53,7 +53,7 @@ public:
   int get_num_nodes() const;
   PandaNode *get_node(int index) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 PUBLISHED:
   MAKE_PROPERTY(valid, is_valid);
@@ -71,7 +71,7 @@ private:
   PT(PandaNode) _node;
 };
 
-INLINE ostream &operator << (ostream &out, const WorkingNodePath &node_path);
+INLINE std::ostream &operator << (std::ostream &out, const WorkingNodePath &node_path);
 
 #include "workingNodePath.I"
 

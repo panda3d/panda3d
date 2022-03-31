@@ -42,7 +42,7 @@ public:
 
   virtual void xform(const LMatrix4 &mat);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE void set_origin(const LPoint3 &origin);

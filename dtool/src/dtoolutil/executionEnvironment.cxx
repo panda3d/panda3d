@@ -18,11 +18,14 @@
 #include <errno.h>
 #include <stdio.h>  // for perror
 
+using std::cerr;
+using std::string;
+
 #ifdef __APPLE__
 #include <sys/param.h>  // for realpath
 #endif  // __APPLE__
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 // Windows requires this for getcwd().
 #include <direct.h>
 #define getcwd _getcwd
@@ -77,16 +80,54 @@ extern char **environ;
 // GLOBAL_ARGCGLOBAL_ARGV that we can read at static init time to determine
 // our command-line arguments.
 
-#if !defined(WIN32_VC) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
+#if !defined(_WIN32) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
 extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
+
+// One of the responsibilities of ExecutionEnvironment is to determine the path
+// to the binary file that contains itself (this is useful for making other
+// components able to read files relative to Panda's installation directory).
+// When built statically, this is easy - just use the main executable filename.
+// When built shared, ExecutionEnvironment will introspect the memory map of
+// the running process to look for dynamic library paths matching this list of
+// predetermined filenames (ordered most likely to least likely).
+
+#ifndef LINK_ALL_STATIC
+static const char *const libp3dtool_filenames[] = {
+#if defined(LIBP3DTOOL_FILENAMES)
+
+  // The build system is communicating the expected filename(s) for the
+  // libp3dtool dynamic library - no guesswork needed.
+  LIBP3DTOOL_FILENAMES
+
+#elif defined(_WIN32)
+
+#ifdef _DEBUG
+  "libp3dtool_d.dll",
+#else
+  "libp3dtool.dll",
+#endif
+
+#elif defined(__APPLE__)
+
+  "libp3dtool." PANDA_ABI_VERSION_STR ".dylib",
+  "libp3dtool.dylib",
+
+#else
+
+  "libp3dtool.so." PANDA_ABI_VERSION_STR,
+  "libp3dtool.so",
+
+#endif
+};
+#endif /* !LINK_ALL_STATIC */
 
 // Linux with GNU libc does have global argvargc variables, but we can't
 // safely access them at stat init time--at least, not in libc5. (It does seem
 // to work with glibc2, however.)
 
-ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
+ExecutionEnvironment *ExecutionEnvironment::_global_ptr = nullptr;
 
 /**
  * You shouldn't need to construct one of these; there's only one and it
@@ -159,16 +200,16 @@ expand_string(const string &str) {
  */
 Filename ExecutionEnvironment::
 get_cwd() {
-#ifdef WIN32_VC
+#ifdef _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
-  static wchar_t *buffer = NULL;
+  static wchar_t *buffer = nullptr;
 
-  if (buffer == (wchar_t *)NULL) {
+  if (buffer == nullptr) {
     buffer = new wchar_t[bufsize];
   }
 
-  while (_wgetcwd(buffer, bufsize) == (wchar_t *)NULL) {
+  while (_wgetcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -176,22 +217,22 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new wchar_t[bufsize];
-    assert(buffer != (wchar_t *)NULL);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific_w(buffer);
   cwd.make_true_case();
   return cwd;
-#else  // WIN32_VC
+#else  // _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
-  static char *buffer = NULL;
+  static char *buffer = nullptr;
 
-  if (buffer == (char *)NULL) {
+  if (buffer == nullptr) {
     buffer = new char[bufsize];
   }
 
-  while (getcwd(buffer, bufsize) == (char *)NULL) {
+  while (getcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -199,13 +240,13 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new char[bufsize];
-    assert(buffer != (char *)NULL);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific(buffer);
   cwd.make_true_case();
   return cwd;
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**
@@ -214,10 +255,18 @@ get_cwd() {
  */
 bool ExecutionEnvironment::
 ns_has_environment_variable(const string &var) const {
+  if (_variables.count(var) != 0) {
+    return true;
+  }
+
 #ifdef PREREAD_ENVIRONMENT
-  return _variables.count(var) != 0;
+  return false;
+#elif defined(_MSC_VER)
+  size_t size = 0;
+  getenv_s(&size, nullptr, 0, var.c_str());
+  return size != 0;
 #else
-  return getenv(var.c_str()) != (char *)NULL;
+  return getenv(var.c_str()) != nullptr;
 #endif
 }
 
@@ -256,10 +305,23 @@ ns_get_environment_variable(const string &var) const {
   }
 
 #ifndef PREREAD_ENVIRONMENT
+#ifdef _MSC_VER
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    return value;
+  }
+#else
   const char *def = getenv(var.c_str());
-  if (def != (char *)NULL) {
+  if (def != nullptr) {
     return def;
   }
+#endif
 #endif
 
 #ifdef _WIN32
@@ -327,13 +389,13 @@ ns_get_environment_variable(const string &var) const {
     { CSIDL_SYSTEMX86, "SYSTEMX86" },
     { CSIDL_TEMPLATES, "TEMPLATES" },
     { CSIDL_WINDOWS, "WINDOWS" },
-    { 0, NULL },
+    { 0, nullptr },
   };
 
-  for (int i = 0; csidl_table[i].name != NULL; ++i) {
+  for (int i = 0; csidl_table[i].name != nullptr; ++i) {
     if (strcmp(var.c_str(), csidl_table[i].name) == 0) {
       wchar_t buffer[MAX_PATH];
-      if (SHGetSpecialFolderPathW(NULL, buffer, csidl_table[i].id, true)) {
+      if (SHGetSpecialFolderPathW(nullptr, buffer, csidl_table[i].id, true)) {
         Filename pathname = Filename::from_os_specific_w(buffer);
         return pathname.to_os_specific();
       }
@@ -369,12 +431,17 @@ ns_get_environment_variable(const string &var) const {
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
+
+#ifdef _MSC_VER
+  _putenv_s(var.c_str(), value.c_str());
+#else
   string putstr = var + "=" + value;
 
   // putenv() requires us to malloc a new C-style string.
   char *put = (char *)malloc(putstr.length() + 1);
   strcpy(put, putstr.c_str());
   putenv(put);
+#endif
 }
 
 /**
@@ -398,12 +465,27 @@ ns_clear_shadow(const string &var) {
 
 #ifdef PREREAD_ENVIRONMENT
   // Now we have to replace the value in the table.
+#ifdef _MSC_VER
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    (*vi).second = std::move(value);
+  } else {
+    _variables.erase(vi);
+  }
+#else
   const char *def = getenv(var.c_str());
-  if (def != (char *)NULL) {
+  if (def != nullptr) {
     (*vi).second = def;
   } else {
     _variables.erase(vi);
   }
+#endif
 #endif  // PREREAD_ENVIRONMENT
 }
 
@@ -457,7 +539,7 @@ ns_get_dtool_name() const {
  */
 ExecutionEnvironment *ExecutionEnvironment::
 get_ptr() {
-  if (_global_ptr == (ExecutionEnvironment *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ExecutionEnvironment;
   }
   return _global_ptr;
@@ -540,80 +622,90 @@ read_environment_variables() {
  */
 void ExecutionEnvironment::
 read_args() {
-#ifndef ANDROID
   // First, we need to fill in _dtool_name.  This contains the full path to
   // the p3dtool library.
 
-#ifdef WIN32_VC
-#ifdef _DEBUG
-  HMODULE dllhandle = GetModuleHandle("libp3dtool_d.dll");
-#else
-  HMODULE dllhandle = GetModuleHandle("libp3dtool.dll");
-#endif
-  if (dllhandle != 0) {
+#ifndef LINK_ALL_STATIC
+#if defined(_WIN32)
+  for (const char *filename : libp3dtool_filenames) {
+    if (!_dtool_name.empty()) break;
+
+    HMODULE dllhandle = GetModuleHandle(filename);
+    if (!dllhandle) continue;
+
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
     DWORD size = GetModuleFileNameW(dllhandle, buffer, buffer_size);
     if (size != 0) {
-      Filename tmp = Filename::from_os_specific_w(wstring(buffer, size));
+      Filename tmp = Filename::from_os_specific_w(std::wstring(buffer, size));
       tmp.make_true_case();
       _dtool_name = tmp;
     }
   }
-#endif
 
-#if defined(__APPLE__)
+#elif defined(__APPLE__)
   // And on OSX we don't have procselfmaps, but some _dyld_* functions.
 
-  if (_dtool_name.empty()) {
-    uint32_t ic = _dyld_image_count();
-    for (uint32_t i = 0; i < ic; ++i) {
-      const char *buffer = _dyld_get_image_name(i);
-      const char *tail = strrchr(buffer, '/');
-      if (tail && (strcmp(tail, "/libp3dtool." PANDA_ABI_VERSION_STR ".dylib") == 0
-                || strcmp(tail, "/libp3dtool.dylib") == 0)) {
+  uint32_t ic = _dyld_image_count();
+  for (uint32_t i = 0; i < ic; ++i) {
+    if (!_dtool_name.empty()) break;
+
+    const char *buffer = _dyld_get_image_name(i);
+    if (!buffer) continue;
+    const char *tail = strrchr(buffer, '/');
+    if (!tail) continue;
+
+    for (const char *filename : libp3dtool_filenames) {
+      if (strcmp(&tail[1], filename) == 0) {
         _dtool_name = buffer;
+        break;
       }
     }
   }
-#endif
 
-#if defined(IS_FREEBSD) || defined(IS_LINUX)
-  // FreeBSD and Linux have a function to get the origin of a loaded library.
+#elif defined(RTLD_DI_ORIGIN)
+  // When building with glibc/uClibc, we typically have access to RTLD_DI_ORIGIN in Unix-like operating systems.
 
   char origin[PATH_MAX + 1];
 
-  if (_dtool_name.empty()) {
-    void *dtool_handle = dlopen("libp3dtool.so." PANDA_ABI_VERSION_STR, RTLD_NOW | RTLD_NOLOAD);
-    if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
+  for (const char *filename : libp3dtool_filenames) {
+    if (!_dtool_name.empty()) break;
+
+    void *dtool_handle = dlopen(filename, RTLD_NOW | RTLD_NOLOAD);
+    if (dtool_handle != nullptr && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
       _dtool_name = origin;
-      _dtool_name += "/libp3dtool.so." PANDA_ABI_VERSION_STR;
-    } else {
-      // Try the version of libp3dtool.so without ABI suffix.
-      dtool_handle = dlopen("libp3dtool.so", RTLD_NOW | RTLD_NOLOAD);
-      if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
-        _dtool_name = origin;
-        _dtool_name += "/libp3dtool.so";
-      }
+      _dtool_name += '/';
+      _dtool_name += filename;
     }
   }
-#endif
 
-#if defined(IS_FREEBSD)
-  // On FreeBSD, we can use dlinfo to get the linked libraries.
-
+#elif defined(RTLD_DI_LINKMAP)
+  // On platforms without RTLD_DI_ORIGIN, we can use dlinfo with RTLD_DI_LINKMAP to get the origin of a loaded library.
   if (_dtool_name.empty()) {
-    Link_map *map;
-    dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+    struct link_map *map;
+#ifdef RTLD_SELF
+    void *self = RTLD_SELF;
+#else
+    void *self = dlopen(NULL, RTLD_NOW | RTLD_NOLOAD);
+#endif
+    if (dlinfo(self, RTLD_DI_LINKMAP, &map)) {
+      while (map != nullptr) {
+        if (!_dtool_name.empty()) break;
 
-    while (map != NULL) {
-      const char *tail = strrchr(map->l_name, '/');
-      const char *head = strchr(map->l_name, '/');
-      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0)) {
-        _dtool_name = head;
+        const char *head = strchr(map->l_name, '/');
+        if (!head) continue;
+        const char *tail = strrchr(head, '/');
+        if (!tail) continue;
+
+        for (const char *filename : libp3dtool_filenames) {
+          if (strcmp(&tail[1], filename) == 0) {
+            _dtool_name = head;
+            break;
+          }
+        }
+
+        map = map->l_next;
       }
-      map = map->l_next;
     }
   }
 #endif
@@ -628,30 +720,38 @@ read_args() {
     pifstream maps("/proc/self/maps");
 #endif
     while (!maps.fail() && !maps.eof()) {
+      if (!_dtool_name.empty()) break;
+
       char buffer[PATH_MAX];
       buffer[0] = 0;
       maps.getline(buffer, PATH_MAX);
-      const char *tail = strrchr(buffer, '/');
       const char *head = strchr(buffer, '/');
-      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0)) {
-        _dtool_name = head;
+      if (!head) continue;
+      const char *tail = strrchr(head, '/');
+      if (!tail) continue;
+
+      for (const char *filename : libp3dtool_filenames) {
+        if (strcmp(&tail[1], filename) == 0) {
+          _dtool_name = head;
+          break;
+        }
       }
     }
     maps.close();
   }
 #endif
+#endif /* !LINK_ALL_STATIC */
 
   // Now, we need to fill in _binary_name.  This contains the full path to the
   // currently running executable.
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   if (_binary_name.empty()) {
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
-    DWORD size = GetModuleFileNameW(NULL, buffer, buffer_size);
+    DWORD size = GetModuleFileNameW(nullptr, buffer, buffer_size);
     if (size != 0) {
-      Filename tmp = Filename::from_os_specific_w(wstring(buffer, size));
+      Filename tmp = Filename::from_os_specific_w(std::wstring(buffer, size));
       tmp.make_true_case();
       _binary_name = tmp;
     }
@@ -678,7 +778,7 @@ read_args() {
     char buffer[4096];
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
     mib[3] = getpid();
-    if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
+    if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
       perror("sysctl");
     } else {
       _binary_name = buffer;
@@ -707,7 +807,7 @@ read_args() {
   // Next we need to fill in _args, which is a vector containing the command-
   // line arguments that the executable was invoked with.
 
-#if defined(WIN32_VC)
+#if defined(_WIN32)
 
   // We cannot rely on __argv when Python is linked in Unicode mode.  Instead,
   // let's use GetCommandLine.
@@ -716,7 +816,7 @@ read_args() {
   int argc = 0;
   LPWSTR *wargv = CommandLineToArgvW(cmdline, &argc);
 
-  if (wargv == NULL) {
+  if (wargv == nullptr) {
     cerr << "CommandLineToArgvW failed; command-line arguments unavailable to config.\n";
 
   } else {
@@ -724,7 +824,7 @@ read_args() {
     encoder.set_encoding(Filename::get_filesystem_encoding());
 
     for (int i = 0; i < argc; ++i) {
-      wstring wtext(wargv[i]);
+      std::wstring wtext(wargv[i]);
       encoder.set_wtext(wtext);
 
       if (i == 0) {
@@ -742,21 +842,25 @@ read_args() {
 #elif defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
-  size_t bufsize = 4096;
-  char buffer[4096];
+  size_t bufsize = 0;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
   mib[3] = getpid();
-  if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
+  if (sysctl(mib, 4, nullptr, &bufsize, nullptr, 0) == -1) {
     perror("sysctl");
   } else {
-    if (_binary_name.empty()) {
-      _binary_name = buffer;
-    }
-    int idx = strlen(buffer) + 1;
-    while (idx < bufsize) {
-      _args.push_back((char*)(buffer + idx));
-      int newidx = strlen(buffer + idx);
-      idx += newidx + 1;
+    char *buffer = (char *)alloca(bufsize);
+    if (sysctl(mib, 4, buffer, &bufsize, nullptr, 0) == -1) {
+      perror("sysctl");
+    } else {
+      if (_binary_name.empty()) {
+        _binary_name = buffer;
+      }
+      size_t idx = strlen(buffer) + 1;
+      while (idx < bufsize) {
+        _args.push_back((char*)(buffer + idx));
+        size_t newidx = strlen(buffer + idx);
+        idx += newidx + 1;
+      }
     }
   }
 
@@ -765,7 +869,7 @@ read_args() {
 
   // On Windows, __argv can be NULL when the main entry point is compiled in
   // Unicode mode (as is the case with Python 3)
-  if (GLOBAL_ARGV != NULL) {
+  if (GLOBAL_ARGV != nullptr) {
     if (_binary_name.empty() && argc > 0) {
       _binary_name = GLOBAL_ARGV[0];
       // This really needs to be resolved against PATH.
@@ -820,20 +924,18 @@ read_args() {
 
   if (!_binary_name.empty()) {
     char newpath [PATH_MAX + 1];
-    if (realpath(_binary_name.c_str(), newpath) != NULL) {
+    if (realpath(_binary_name.c_str(), newpath) != nullptr) {
       _binary_name = newpath;
     }
   }
 
   if (!_dtool_name.empty()) {
     char newpath [PATH_MAX + 1];
-    if (realpath(_dtool_name.c_str(), newpath) != NULL) {
+    if (realpath(_dtool_name.c_str(), newpath) != nullptr) {
       _dtool_name = newpath;
     }
   }
 #endif  // _WIN32
-
-#endif  // ANDROID
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

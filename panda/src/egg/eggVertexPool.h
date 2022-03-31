@@ -38,7 +38,7 @@
  * list.  The list may also be operated on (read-only) via iterators and
  * begin()/end().
  */
-class EXPCL_PANDAEGG EggVertexPool : public EggNode {
+class EXPCL_PANDA_EGG EggVertexPool : public EggNode {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggVertexPool as an STL
@@ -65,7 +65,7 @@ public:
   // Here begins the actual public interface to EggVertexPool.
 
 PUBLISHED:
-  explicit EggVertexPool(const string &name);
+  explicit EggVertexPool(const std::string &name);
   EggVertexPool(const EggVertexPool &copy);
   ~EggVertexPool();
 
@@ -129,7 +129,7 @@ PUBLISHED:
   void transform(const LMatrix4d &mat);
   void sort_by_external_index();
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,

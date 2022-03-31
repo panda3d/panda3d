@@ -11,8 +11,8 @@
  * @date 2010-03-02
  */
 
-#ifndef __BULLET_GENERIC_CONSTRAINT_H__
-#define __BULLET_GENERIC_CONSTRAINT_H__
+#ifndef BULLETGENERICCONSTRAINT_H
+#define BULLETGENERICCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -57,8 +57,8 @@ PUBLISHED:
 
   // Frames
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(translational_limit_motor, get_translational_limit_motor);
   MAKE_PROPERTY(frame_a, get_frame_a);
@@ -95,4 +95,4 @@ private:
 
 #include "bulletGenericConstraint.I"
 
-#endif // __BULLET_GENERIC_CONSTRAINT_H__
+#endif // BULLETGENERICCONSTRAINT_H

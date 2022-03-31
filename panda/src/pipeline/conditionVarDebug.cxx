@@ -17,6 +17,9 @@
 
 #ifdef DEBUG_THREADS
 
+using std::ostream;
+using std::ostringstream;
+
 /**
  * You must pass in a Mutex to the condition variable constructor.  This mutex
  * may be shared by other condition variables, if desired.  It is the caller's
@@ -57,7 +60,7 @@ ConditionVarDebug::
  */
 void ConditionVarDebug::
 wait() {
-  _mutex._global_lock->acquire();
+  _mutex._global_lock->lock();
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -66,7 +69,7 @@ wait() {
     ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->release();
+    _mutex._global_lock->unlock();
     return;
   }
 
@@ -75,25 +78,24 @@ wait() {
       << *current_thread << " waiting on " << *this << "\n";
   }
 
-  nassertd(current_thread->_waiting_on_cvar == NULL &&
-           current_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == nullptr) {
   }
   current_thread->_waiting_on_cvar = this;
 
-  _mutex.do_release();
+  _mutex.do_unlock();
   _impl.wait();  // temporarily releases _global_lock
-  _mutex.do_acquire(current_thread);
+  _mutex.do_lock(current_thread);
 
   nassertd(current_thread->_waiting_on_cvar == this) {
   }
-  current_thread->_waiting_on_cvar = NULL;
+  current_thread->_waiting_on_cvar = nullptr;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
       << *current_thread << " awake on " << *this << "\n";
   }
 
-  _mutex._global_lock->release();
+  _mutex._global_lock->unlock();
 }
 
 /**
@@ -106,7 +108,7 @@ wait() {
  */
 void ConditionVarDebug::
 wait(double timeout) {
-  _mutex._global_lock->acquire();
+  _mutex._global_lock->lock();
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -115,7 +117,7 @@ wait(double timeout) {
     ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->release();
+    _mutex._global_lock->unlock();
     return;
   }
 
@@ -125,25 +127,24 @@ wait(double timeout) {
       << ", with timeout " << timeout << "\n";
   }
 
-  nassertd(current_thread->_waiting_on_cvar == NULL &&
-           current_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == nullptr) {
   }
   current_thread->_waiting_on_cvar = this;
 
-  _mutex.do_release();
+  _mutex.do_unlock();
   _impl.wait(timeout);  // temporarily releases _global_lock
-  _mutex.do_acquire(current_thread);
+  _mutex.do_lock(current_thread);
 
   nassertd(current_thread->_waiting_on_cvar == this) {
   }
-  current_thread->_waiting_on_cvar = NULL;
+  current_thread->_waiting_on_cvar = nullptr;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
       << *current_thread << " awake on " << *this << "\n";
   }
 
-  _mutex._global_lock->release();
+  _mutex._global_lock->unlock();
 }
 
 /**
@@ -153,33 +154,64 @@ wait(double timeout) {
  * predict which one.  It is possible that more than one thread will be woken
  * up.
  *
- * The caller must be holding the mutex associated with the condition variable
- * before making this call, which will not release the mutex.
- *
  * If no threads are waiting, this is a no-op: the notify event is lost.
  */
 void ConditionVarDebug::
 notify() {
-  _mutex._global_lock->acquire();
+  _mutex._global_lock->lock();
 
-  Thread *current_thread = Thread::get_current_thread();
-
+  /*
   if (!_mutex.do_debug_is_locked()) {
+    Thread *current_thread = Thread::get_current_thread();
     ostringstream ostr;
     ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->release();
+    _mutex._global_lock->unlock();
     return;
   }
+  */
 
   if (thread_cat->is_spam()) {
+    Thread *current_thread = Thread::get_current_thread();
     thread_cat.spam()
       << *current_thread << " notifying " << *this << "\n";
   }
 
   _impl.notify();
-  _mutex._global_lock->release();
+  _mutex._global_lock->unlock();
+}
+
+/**
+ * Informs all of the other threads who are currently blocked on wait() that
+ * the relevant condition has changed.
+ *
+ * If no threads are waiting, this is a no-op: the notify event is lost.
+ */
+void ConditionVarDebug::
+notify_all() {
+  _mutex._global_lock->lock();
+
+  /*
+  if (!_mutex.do_debug_is_locked()) {
+    Thread *current_thread = Thread::get_current_thread();
+    ostringstream ostr;
+    ostr << *current_thread << " attempted to notify "
+         << *this << " without holding " << _mutex;
+    nassert_raise(ostr.str());
+    _mutex._global_lock->unlock();
+    return;
+  }
+  */
+
+  if (thread_cat->is_spam()) {
+    Thread *current_thread = Thread::get_current_thread();
+    thread_cat.spam()
+      << *current_thread << " notifying all " << *this << "\n";
+  }
+
+  _impl.notify_all();
+  _mutex._global_lock->unlock();
 }
 
 /**

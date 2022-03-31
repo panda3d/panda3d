@@ -45,16 +45,16 @@ public:
   bool isMale() {return myGender == MALE;}
 
   void print_relationships();
-  string name() {return _name;}
+  std::string name() {return _name;}
 private:
   Person *_bro, *_sis;
   sex myGender;
-  string _name;
+  std::string _name;
 
 public:
   Person() {}
-  Person(const string &name, const sex Gender) :
-     _name(name), myGender(Gender), _bro((Person*)NULL), _sis((Person*)NULL) {
+  Person(const std::string &name, const sex Gender) :
+     _name(name), myGender(Gender), _bro(nullptr), _sis(nullptr) {
 
   }
   virtual ~Person() {
@@ -100,7 +100,7 @@ private:
 
 public:
   Parent() {}
-  Parent(const string &name, const sex Gender) : Person(name, Gender) {
+  Parent(const std::string &name, const sex Gender) : Person(name, Gender) {
 
   }
   virtual ~Parent() {
@@ -146,7 +146,7 @@ private:
 
 public:
   Child() {}
-  Child(const string &name, const sex Gender) : Person(name, Gender) {
+  Child(const std::string &name, const sex Gender) : Person(name, Gender) {
 
   }
   virtual ~Child() {

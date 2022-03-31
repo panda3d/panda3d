@@ -25,6 +25,9 @@
 #include "dataNodeTransmit.h"
 #include "dataGraphTraverser.h"
 
+using std::max;
+using std::min;
+
 TypeHandle DriveInterface::_type_handle;
 const PN_stdfloat DriveInterface::_hpr_quantize = 0.001;
 
@@ -95,7 +98,7 @@ operator < (const DriveInterface::KeyHeld &other) const {
  *
  */
 DriveInterface::
-DriveInterface(const string &name) :
+DriveInterface(const std::string &name) :
   MouseInterfaceNode(name)
 {
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
@@ -383,7 +386,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   }
 
   // Look for keyboard events.
-  if (required_buttons_match && button_events != (const ButtonEventList *)NULL) {
+  if (required_buttons_match && button_events != nullptr) {
 
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {

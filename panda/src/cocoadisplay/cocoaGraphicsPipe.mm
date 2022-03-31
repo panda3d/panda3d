@@ -21,9 +21,7 @@
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 #import <AppKit/NSRunningApplication.h>
-#endif
 
 #include <mach-o/arch.h>
 
@@ -37,7 +35,7 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _is_valid = true;
 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  [[NSAutoreleasePool alloc] init];
 
   // Put Cocoa into thread-safe mode by spawning a thread which immediately
   // exits.
@@ -53,8 +51,10 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _display_height = CGDisplayPixelsHigh(_display);
   load_display_information();
 
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  }
 }
 
 /**
@@ -68,7 +68,6 @@ load_display_information() {
 
   // Display modes
   size_t num_modes = 0;
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
   if (modes != NULL) {
     num_modes = CFArrayGetCount(modes);
@@ -115,33 +114,6 @@ load_display_information() {
     CFRelease(modes);
   }
 
-#else
-  CFArrayRef modes = CGDisplayAvailableModes(_display);
-  if (modes != NULL) {
-    num_modes = CFArrayGetCount(modes);
-    _display_information->_total_display_modes = num_modes;
-    _display_information->_display_mode_array = new DisplayMode[num_modes];
-  }
-
-  for (size_t i = 0; i < num_modes; ++i) {
-    CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayWidth),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].width);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayHeight),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].height);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].bits_per_pixel);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayRefreshRate),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].refresh_rate);
-
-    _display_information->_display_mode_array[i].fullscreen_only = false;
-  }
-#endif
-
   // Get processor information
   const NXArchInfo *ainfo = NXGetLocalArchInfo();
   _display_information->_cpu_brand_string = strdup(ainfo->description);
@@ -169,7 +141,7 @@ CocoaGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string CocoaGraphicsPipe::
+std::string CocoaGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
@@ -199,7 +171,7 @@ CocoaGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) CocoaGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

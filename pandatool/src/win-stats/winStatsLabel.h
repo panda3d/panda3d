@@ -16,6 +16,9 @@
 
 #include "pandatoolbase.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinStatsMonitor;
@@ -29,22 +32,25 @@ class WinStatsGraph;
 class WinStatsLabel {
 public:
   WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
-                int thread_index, int collector_index, bool use_fullname);
+                int thread_index, int collector_index, bool use_fullname,
+                bool align_right = true);
   ~WinStatsLabel();
 
   void setup(HWND parent_window);
   void set_pos(int x, int y, int width);
 
-  int get_x() const;
-  int get_y() const;
-  int get_width() const;
-  int get_height() const;
-  int get_ideal_width() const;
+  INLINE int get_x() const;
+  INLINE int get_y() const;
+  INLINE int get_width() const;
+  INLINE int get_height() const;
+  INLINE int get_ideal_width() const;
 
-  int get_collector_index() const;
+  INLINE int get_collector_index() const;
 
   void set_highlight(bool highlight);
-  bool get_highlight() const;
+  INLINE bool get_highlight() const;
+
+  void update_text(bool use_fullname);
 
 private:
   void set_mouse_within(bool mouse_within);
@@ -59,12 +65,14 @@ private:
   WinStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
-  string _text;
+  std::string _text;
+  std::string _tooltip_text;
   HWND _window;
-  COLORREF _bg_color;
+  HWND _tooltip_window;
   COLORREF _fg_color;
+  COLORREF _highlight_fg_color;
   HBRUSH _bg_brush;
-  HBRUSH _highlight_brush;
+  HBRUSH _highlight_bg_brush;
 
   int _x;
   int _y;
@@ -73,6 +81,7 @@ private:
   int _ideal_width;
   bool _highlight;
   bool _mouse_within;
+  bool _align_right;
 
   static int _left_margin, _right_margin;
   static int _top_margin, _bottom_margin;
@@ -80,5 +89,7 @@ private:
   static bool _window_class_registered;
   static const char * const _window_class_name;
 };
+
+#include "winStatsLabel.I"
 
 #endif

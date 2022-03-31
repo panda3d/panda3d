@@ -40,7 +40,7 @@ PUBLISHED:
   MAKE_PROPERTY(material, get_material);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

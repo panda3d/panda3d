@@ -20,6 +20,8 @@
 #include "samplerContext.h"
 #include "preparedGraphicsObjects.h"
 
+using std::string;
+
 TypeHandle SamplerState::_type_handle;
 SamplerState SamplerState::_default;
 
@@ -283,7 +285,7 @@ compare_to(const SamplerState &other) const {
  *
  */
 void SamplerState::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out
     << "sampler"
     << " wrap(u=" << _wrap_u << ", v=" << _wrap_v << ", w=" << _wrap_w
@@ -298,7 +300,7 @@ output(ostream &out) const {
  *
  */
 void SamplerState::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "SamplerState\n";
   indent(out, indent_level) << "  wrap_u = " << _wrap_u << "\n";
   indent(out, indent_level) << "  wrap_v = " << _wrap_v << "\n";

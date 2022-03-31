@@ -20,14 +20,14 @@
  */
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LPoint3)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LPoint3)() = default;
   INLINE_LINMATH FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
   INLINE_LINMATH FLOATNAME(LPoint3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LPoint3) &zero();
   INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_x();
@@ -66,6 +66,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LPoint3) __rmul__(FLOATTYPE scalar) const);
+
   // Some special named constructors for LPoint3.
 
   INLINE_LINMATH static const FLOATNAME(LPoint3) &origin(CoordinateSystem cs = CS_default);
@@ -74,7 +76,7 @@ PUBLISHED:
                                        FLOATTYPE up,
                                        CoordinateSystem cs = CS_default);
 
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

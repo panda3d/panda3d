@@ -35,13 +35,13 @@ PUBLISHED:
   AnimControlCollection();
   ~AnimControlCollection();
 
-  void store_anim(AnimControl *control, const string &name);
-  AnimControl *find_anim(const string &name) const;
-  bool unbind_anim(const string &name);
+  void store_anim(AnimControl *control, const std::string &name);
+  AnimControl *find_anim(const std::string &name) const;
+  bool unbind_anim(const std::string &name);
 
   int get_num_anims() const;
   AnimControl *get_anim(int n) const;
-  string get_anim_name(int n) const;
+  std::string get_anim_name(int n) const;
   MAKE_SEQ(get_anims, get_num_anims, get_anim);
   MAKE_SEQ(get_anim_names, get_num_anims, get_anim_name);
 
@@ -50,12 +50,12 @@ PUBLISHED:
   // The following functions are convenience functions that vector directly
   // into the AnimControl's functionality by anim name.
 
-  INLINE bool play(const string &anim_name);
-  INLINE bool play(const string &anim_name, double from, double to);
-  INLINE bool loop(const string &anim_name, bool restart);
-  INLINE bool loop(const string &anim_name, bool restart, double from, double to);
-  INLINE bool stop(const string &anim_name);
-  INLINE bool pose(const string &anim_name, double frame);
+  INLINE bool play(const std::string &anim_name);
+  INLINE bool play(const std::string &anim_name, double from, double to);
+  INLINE bool loop(const std::string &anim_name, bool restart);
+  INLINE bool loop(const std::string &anim_name, bool restart, double from, double to);
+  INLINE bool stop(const std::string &anim_name);
+  INLINE bool pose(const std::string &anim_name, double frame);
 
   // These functions operate on all anims at once.
   void play_all();
@@ -65,36 +65,36 @@ PUBLISHED:
   bool stop_all();
   void pose_all(double frame);
 
-  INLINE int get_frame(const string &anim_name) const;
+  INLINE int get_frame(const std::string &anim_name) const;
   INLINE int get_frame() const;
 
-  INLINE int get_num_frames(const string &anim_name) const;
+  INLINE int get_num_frames(const std::string &anim_name) const;
   INLINE int get_num_frames() const;
 
-  INLINE bool is_playing(const string &anim_name) const;
+  INLINE bool is_playing(const std::string &anim_name) const;
   INLINE bool is_playing() const;
 
-  string which_anim_playing() const;
+  std::string which_anim_playing() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   class ControlDef {
   public:
-    string _name;
+    std::string _name;
     PT(AnimControl) _control;
   };
   typedef pvector<ControlDef> Controls;
   Controls _controls;
 
-  typedef pmap<string, size_t> ControlsByName;
+  typedef pmap<std::string, size_t> ControlsByName;
   ControlsByName _controls_by_name;
 
   AnimControl *_last_started_control;
 };
 
-INLINE ostream &operator << (ostream &out, const AnimControlCollection &collection);
+INLINE std::ostream &operator << (std::ostream &out, const AnimControlCollection &collection);
 
 #include "animControlCollection.I"
 

@@ -19,14 +19,20 @@ TypeHandle IndexBufferContext::_type_handle;
  *
  */
 void IndexBufferContext::
-output(ostream &out) const {
-  out << *get_data() << ", " << get_data_size_bytes();
+output(std::ostream &out) const {
+  GeomPrimitive *prim = get_data();
+  if (prim != nullptr) {
+    out << *prim;
+  } else {
+    out << "NULL";
+  }
+  out << ", " << get_data_size_bytes();
 }
 
 /**
  *
  */
 void IndexBufferContext::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }

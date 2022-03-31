@@ -11,8 +11,8 @@
  * @date 2010-02-05
  */
 
-#ifndef __BULLET_HEIGHTFIELD_SHAPE_H__
-#define __BULLET_HEIGHTFIELD_SHAPE_H__
+#ifndef BULLETHEIGHTFIELDSHAPE_H
+#define BULLETHEIGHTFIELDSHAPE_H
 
 #include "pandabase.h"
 
@@ -34,8 +34,7 @@ private:
 PUBLISHED:
   explicit BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
   explicit BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up=Z_up);
-  INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
-  INLINE void operator = (const BulletHeightfieldShape &copy);
+  BulletHeightfieldShape(const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();
 
   void set_use_diamond_subdivision(bool flag=true);
@@ -82,4 +81,4 @@ private:
 
 #include "bulletHeightfieldShape.I"
 
-#endif // __BULLET_HEIGHTFIELD_SHAPE_H__
+#endif // BULLETHEIGHTFIELDSHAPE_H

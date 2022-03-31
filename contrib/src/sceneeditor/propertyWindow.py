@@ -11,8 +11,7 @@ from direct.tkwidgets import Floater
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
-from pandac.PandaModules import *
-from Tkinter import *
+from panda3d.core import *
 import Pmw
 
 class propertyWindow(AppShell,Pmw.MegaWidget):
@@ -108,7 +107,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
 
         self.curveFrame = None
         #### If nodePath has been binded with any curves
-        if self.info.has_key('curveList'):
+        if 'curveList' in self.info:
             self.createCurveFrame(self.contentFrame)
 
         ## Set all stuff done
@@ -271,7 +270,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # And, it will set the call back function to setNodeColorVec()
         #################################################################
         color = self.nodePath.getColor()
-        print color
+        print(color)
         self.nodeColor = VectorWidgets.ColorEntry(
             contentFrame, text = 'Node Color', value=[color.getX()*255,
                                                       color.getY()*255,
@@ -725,7 +724,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # But, not directly removed be this function.
         # This function will send out a message to notice dataHolder to remove this animation
         #################################################################
-        print anim
+        print(anim)
         widget = self.widgetsDict[anim]
         self.accept('animRemovedFromNode',self.redrawAnimProperty)
         messenger.send('PW_removeAnimFromNode',[self.name, anim])

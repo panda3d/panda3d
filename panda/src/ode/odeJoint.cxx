@@ -30,16 +30,20 @@ TypeHandle OdeJoint::_type_handle;
 
 OdeJoint::
 OdeJoint() :
-  _id(0) {
-  ostream &out = odejoint_cat.debug();
-  out << get_type() << "(" << _id  << ")\n";
+  _id(nullptr) {
+  if (odejoint_cat.is_debug()) {
+    std::ostream &out = odejoint_cat.debug();
+    out << get_type() << "(" << _id  << ")\n";
+  }
 }
 
 OdeJoint::
 OdeJoint(dJointID id) :
   _id(id) {
-  ostream &out = odejoint_cat.debug();
-  out << get_type() << "(" << _id  << ")\n";
+  if (odejoint_cat.is_debug()) {
+    std::ostream &out = odejoint_cat.debug();
+    out << get_type() << "(" << _id  << ")\n";
+  }
 }
 
 OdeJoint::
@@ -60,7 +64,7 @@ destroy() {
 void OdeJoint::
 attach_bodies(const OdeBody &body1, const OdeBody &body2) {
   nassertv(_id);
-  nassertv(body1.get_id() != 0 || body2.get_id() != 0);
+  nassertv(body1.get_id() != nullptr || body2.get_id() != nullptr);
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
 
@@ -72,35 +76,35 @@ attach_bodies(const OdeBody &body1, const OdeBody &body2) {
 void OdeJoint::
 attach_body(const OdeBody &body, int index) {
   nassertv(_id);
-  nassertv(body.get_id() != 0);
+  nassertv(body.get_id() != nullptr);
   nassertv(index == 0 || index == 1);
   if (index == 0) {
-    dJointAttach(_id, body.get_id(), 0);
+    dJointAttach(_id, body.get_id(), nullptr);
   } else {
-    dJointAttach(_id, 0, body.get_id());
+    dJointAttach(_id, nullptr, body.get_id());
   }
 }
 
 void OdeJoint::
 detach() {
   nassertv(_id);
-  dJointAttach(_id, 0, 0);
+  dJointAttach(_id, nullptr, nullptr);
 }
 
 OdeBody OdeJoint::
 get_body(int index) const {
-  nassertr(_id, OdeBody(0));
-  nassertr(index == 0 || index == 1, OdeBody(0));
+  nassertr(_id, OdeBody(nullptr));
+  nassertr(index == 0 || index == 1, OdeBody(nullptr));
   return OdeBody(dJointGetBody(_id, index));
 }
 
 void OdeJoint::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() \
                          << "(id = " << _id \
                          << ", body1 = ";
   OdeBody body = get_body(0);
-  if (body.get_id() != 0) {
+  if (body.get_id() != nullptr) {
     body.write(out);
   }
   else {
@@ -108,7 +112,7 @@ write(ostream &out, unsigned int indent) const {
   }
   out << ", body2 = ";
   body = get_body(1);
-  if (body.get_id() != 0) {
+  if (body.get_id() != nullptr) {
     body.write(out);
   }
   else {
@@ -120,82 +124,82 @@ write(ostream &out, unsigned int indent) const {
 
 OdeJoint::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }
 
 OdeBallJoint OdeJoint::
 convert_to_ball() const {
-  nassertr(_id != 0, OdeBallJoint(0));
-  nassertr(get_joint_type() == JT_ball, OdeBallJoint(0));
+  nassertr(_id != nullptr, OdeBallJoint(nullptr));
+  nassertr(get_joint_type() == JT_ball, OdeBallJoint(nullptr));
   return OdeBallJoint(_id);
 }
 
 OdeHingeJoint OdeJoint::
 convert_to_hinge() const {
-  nassertr(_id != 0, OdeHingeJoint(0));
-  nassertr(get_joint_type() == JT_hinge, OdeHingeJoint(0));
+  nassertr(_id != nullptr, OdeHingeJoint(nullptr));
+  nassertr(get_joint_type() == JT_hinge, OdeHingeJoint(nullptr));
   return OdeHingeJoint(_id);
 }
 
 OdeSliderJoint OdeJoint::
 convert_to_slider() const {
-  nassertr(_id != 0, OdeSliderJoint(0));
-  nassertr(get_joint_type() == JT_slider, OdeSliderJoint(0));
+  nassertr(_id != nullptr, OdeSliderJoint(nullptr));
+  nassertr(get_joint_type() == JT_slider, OdeSliderJoint(nullptr));
   return OdeSliderJoint(_id);
 }
 
 OdeContactJoint OdeJoint::
 convert_to_contact() const {
-  nassertr(_id != 0, OdeContactJoint(0));
-  nassertr(get_joint_type() == JT_contact, OdeContactJoint(0));
+  nassertr(_id != nullptr, OdeContactJoint(nullptr));
+  nassertr(get_joint_type() == JT_contact, OdeContactJoint(nullptr));
   return OdeContactJoint(_id);
 }
 
 OdeUniversalJoint OdeJoint::
 convert_to_universal() const {
-  nassertr(_id != 0, OdeUniversalJoint(0));
-  nassertr(get_joint_type() == JT_universal, OdeUniversalJoint(0));
+  nassertr(_id != nullptr, OdeUniversalJoint(nullptr));
+  nassertr(get_joint_type() == JT_universal, OdeUniversalJoint(nullptr));
   return OdeUniversalJoint(_id);
 }
 
 OdeHinge2Joint OdeJoint::
 convert_to_hinge2() const {
-  nassertr(_id != 0, OdeHinge2Joint(0));
-  nassertr(get_joint_type() == JT_hinge2, OdeHinge2Joint(0));
+  nassertr(_id != nullptr, OdeHinge2Joint(nullptr));
+  nassertr(get_joint_type() == JT_hinge2, OdeHinge2Joint(nullptr));
   return OdeHinge2Joint(_id);
 }
 
 OdeFixedJoint OdeJoint::
 convert_to_fixed() const {
-  nassertr(_id != 0, OdeFixedJoint(0));
-  nassertr(get_joint_type() == JT_fixed, OdeFixedJoint(0));
+  nassertr(_id != nullptr, OdeFixedJoint(nullptr));
+  nassertr(get_joint_type() == JT_fixed, OdeFixedJoint(nullptr));
   return OdeFixedJoint(_id);
 }
 
 OdeNullJoint OdeJoint::
 convert_to_null() const {
-  nassertr(_id != 0, OdeNullJoint(0));
-  nassertr(get_joint_type() == JT_null, OdeNullJoint(0));
+  nassertr(_id != nullptr, OdeNullJoint(nullptr));
+  nassertr(get_joint_type() == JT_null, OdeNullJoint(nullptr));
   return OdeNullJoint(_id);
 }
 
 OdeAMotorJoint OdeJoint::
 convert_to_a_motor() const {
-  nassertr(_id != 0, OdeAMotorJoint(0));
-  nassertr(get_joint_type() == JT_a_motor, OdeAMotorJoint(0));
+  nassertr(_id != nullptr, OdeAMotorJoint(nullptr));
+  nassertr(get_joint_type() == JT_a_motor, OdeAMotorJoint(nullptr));
   return OdeAMotorJoint(_id);
 }
 
 OdeLMotorJoint OdeJoint::
 convert_to_l_motor() const {
-  nassertr(_id != 0, OdeLMotorJoint(0));
-  nassertr(get_joint_type() == JT_l_motor, OdeLMotorJoint(0));
+  nassertr(_id != nullptr, OdeLMotorJoint(nullptr));
+  nassertr(get_joint_type() == JT_l_motor, OdeLMotorJoint(nullptr));
   return OdeLMotorJoint(_id);
 }
 
 OdePlane2dJoint OdeJoint::
 convert_to_plane2d() const {
-  nassertr(_id != 0, OdePlane2dJoint(0));
-  nassertr(get_joint_type() == JT_plane2d, OdePlane2dJoint(0));
+  nassertr(_id != nullptr, OdePlane2dJoint(nullptr));
+  nassertr(get_joint_type() == JT_plane2d, OdePlane2dJoint(nullptr));
   return OdePlane2dJoint(_id);
 }

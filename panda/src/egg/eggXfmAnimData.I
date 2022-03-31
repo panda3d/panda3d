@@ -15,7 +15,7 @@
  *
  */
 INLINE EggXfmAnimData::
-EggXfmAnimData(const string &name, CoordinateSystem cs) : EggAnimData(name) {
+EggXfmAnimData(const std::string &name, CoordinateSystem cs) : EggAnimData(name) {
   _coordsys = cs;
 }
 
@@ -50,7 +50,7 @@ operator = (const EggXfmAnimData &copy) {
  *
  */
 INLINE void EggXfmAnimData::
-set_order(const string &order) {
+set_order(const std::string &order) {
   _order = order;
 }
 
@@ -73,7 +73,7 @@ has_order() const {
 /**
  *
  */
-INLINE const string &EggXfmAnimData::
+INLINE const std::string &EggXfmAnimData::
 get_order() const {
   if (has_order()) {
     return _order;
@@ -87,7 +87,7 @@ get_order() const {
  * the order string must be set to in order to use set_value() or add_data()
  * successfully.
  */
-INLINE const string &EggXfmAnimData::
+INLINE const std::string &EggXfmAnimData::
 get_standard_order() {
   return EggXfmSAnim::get_standard_order();
 }
@@ -97,7 +97,7 @@ get_standard_order() {
  *
  */
 INLINE void EggXfmAnimData::
-set_contents(const string &contents) {
+set_contents(const std::string &contents) {
   _contents = contents;
 }
 
@@ -120,7 +120,7 @@ has_contents() const {
 /**
  *
  */
-INLINE const string &EggXfmAnimData::
+INLINE const std::string &EggXfmAnimData::
 get_contents() const {
   return _contents;
 }

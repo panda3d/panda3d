@@ -40,7 +40,7 @@ EggSingleBase() :
  */
 EggReader *EggSingleBase::
 as_reader() {
-  return (EggReader *)NULL;
+  return nullptr;
 }
 
 /**
@@ -54,7 +54,7 @@ as_reader() {
  */
 EggWriter *EggSingleBase::
 as_writer() {
-  return (EggWriter *)NULL;
+  return nullptr;
 }
 
 /**

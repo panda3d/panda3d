@@ -17,7 +17,7 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cout << "test_touch filename [filename ... ]\n";
+    std::cout << "test_touch filename [filename ... ]\n";
     return (1);
   }
 

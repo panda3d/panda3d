@@ -44,9 +44,9 @@ class PaletteGroup : public TypedWritable, public Namable {
 public:
   PaletteGroup();
 
-  void set_dirname(const string &dirname);
+  void set_dirname(const std::string &dirname);
   bool has_dirname() const;
-  const string &get_dirname() const;
+  const std::string &get_dirname() const;
 
   void clear_depends();
   void group_with(PaletteGroup *other);
@@ -80,17 +80,17 @@ public:
   void place_all();
   void update_unknown_textures(const TxaFile &txa_file);
 
-  void write_image_info(ostream &out, int indent_level = 0) const;
+  void write_image_info(std::ostream &out, int indent_level = 0) const;
   void optimal_resize();
   void reset_images();
   void setup_shadow_images();
   void update_images(bool redo_all);
 
-  void add_texture_swap_info(const string sourceTextureName, const vector_string &swapTextures);
+  void add_texture_swap_info(const std::string sourceTextureName, const vector_string &swapTextures);
   bool is_none_texture_swap() const;
 
 private:
-  string _dirname;
+  std::string _dirname;
   int _egg_count;
   PaletteGroups _dependent;
   int _dependency_level;
@@ -103,7 +103,7 @@ private:
   typedef pmap<TextureProperties, PalettePage *> Pages;
   Pages _pages;
 
-  typedef pmap<string, vector_string> TextureSwapInfo;
+  typedef pmap<std::string, vector_string> TextureSwapInfo;
   TextureSwapInfo _textureSwapInfo;
 
   // The TypedWritable interface follows.

@@ -12,8 +12,10 @@
  */
 
 #include "loaderOptions.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "indent.h"
+
+using std::string;
 
 /**
  *
@@ -25,17 +27,17 @@ LoaderOptions(int flags) :
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
-  // Shadowing the variables in config_util for static init ordering issues.
+  // Shadowing the variables in config_putil for static init ordering issues.
   static ConfigVariableBool *preload_textures;
   static ConfigVariableBool *preload_simple_textures;
   static ConfigVariableBool *compressed_textures;
-  if (preload_textures == NULL) {
+  if (preload_textures == nullptr) {
     preload_textures = new ConfigVariableBool("preload-textures", true);
   }
-  if (preload_simple_textures == NULL) {
+  if (preload_simple_textures == nullptr) {
     preload_simple_textures = new ConfigVariableBool("preload-simple-textures", false);
   }
-  if (compressed_textures == NULL) {
+  if (compressed_textures == nullptr) {
     compressed_textures = new ConfigVariableBool("compressed-textures", false);
   }
 
@@ -54,7 +56,7 @@ LoaderOptions(int flags) :
  *
  */
 void LoaderOptions::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LoaderOptions(";
 
   string sep = "";
@@ -85,6 +87,7 @@ output(ostream &out) const {
   write_texture_flag(out, sep, "TF_allow_1d", TF_allow_1d);
   write_texture_flag(out, sep, "TF_generate_mipmaps", TF_generate_mipmaps);
   write_texture_flag(out, sep, "TF_allow_compression", TF_allow_compression);
+  write_texture_flag(out, sep, "TF_no_filters", TF_no_filters);
   if (sep.empty()) {
     out << "0";
   }
@@ -100,7 +103,7 @@ output(ostream &out) const {
  * Used to implement output().
  */
 void LoaderOptions::
-write_flag(ostream &out, string &sep,
+write_flag(std::ostream &out, string &sep,
            const string &flag_name, int flag) const {
   if ((_flags & flag) == flag) {
     out << sep << flag_name;
@@ -112,7 +115,7 @@ write_flag(ostream &out, string &sep,
  * Used to implement output().
  */
 void LoaderOptions::
-write_texture_flag(ostream &out, string &sep,
+write_texture_flag(std::ostream &out, string &sep,
                    const string &flag_name, int flag) const {
   if ((_texture_flags & flag) == flag) {
     out << sep << flag_name;

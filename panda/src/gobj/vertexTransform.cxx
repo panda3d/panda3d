@@ -68,7 +68,7 @@ accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
  *
  */
 void VertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -76,7 +76,7 @@ output(ostream &out) const {
  *
  */
 void VertexTransform::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << ":\n";
   LMatrix4 mat;

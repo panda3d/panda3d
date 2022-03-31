@@ -15,6 +15,10 @@
 #include "string_utils.h"
 #include "config_gobj.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 
 /**
  *

@@ -5,11 +5,9 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-from tkSimpleDialog import askfloat
-import string
-import math
-import types
 from direct.task import Task
+
+from tkinter.simpledialog import askfloat
 
 FRAMES = 0
 SECONDS = 1
@@ -112,7 +110,7 @@ class AnimPanel(AppShell):
         self.playRateEntry.selectitem('1.0')
 
         ### Loop checkbox
-        Label(actorFrame, text= "Loop:", font=('MSSansSerif', 12)).place(x=420,y=05,anchor=NW)
+        Label(actorFrame, text= "Loop:", font=('MSSansSerif', 12)).place(x=420,y=5,anchor=NW)
 
         self.loopVar = IntVar()
         self.loopVar.set(0)
@@ -250,7 +248,7 @@ class AnimPanel(AppShell):
         self['animList'] = self['actor'].getAnimNames()
         animL = self['actor'].getAnimNames()
         self.AnimEntry.setlist(animL)
-        print '-----',animL
+        print('-----',animL)
         return
 
     def loadAnimation(self):
@@ -278,7 +276,7 @@ class AnimPanel(AppShell):
             taskMgr.add(self.playTask, self.id + '_UpdateTask')
             self.stopButton.config(state=NORMAL)
         else:
-            print '----Illegal Animaion name!!', self.animName
+            print('----Illegal Animaion name!!', self.animName)
         return
 
     def playTask(self, task):
@@ -403,7 +401,7 @@ class AnimPanel(AppShell):
         #################################################################
         if self.animName in self['animList']:
             # Convert scale value to float
-            frame = string.atof(frame)
+            frame = float(frame)
             # Now convert t to seconds for offset calculations
             if self.unitsVar.get() == FRAMES:
                 frame = frame / self.fps
@@ -591,7 +589,7 @@ class LoadAnimPanel(AppShell):
         else:
             self.animList.append(name)
         self.AnimName_1.setlist(self.animList)
-        print self.animDic
+        print(self.animDic)
         return
 
     def ok_press(self):

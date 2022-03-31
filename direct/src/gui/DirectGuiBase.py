@@ -1,49 +1,57 @@
 """
-Base class for all Direct Gui items.  Handles composite widgets and
+Base class for all DirectGui items.  Handles composite widgets and
 command line argument parsing.
 
-Code Overview:
+Code overview:
 
-1   Each widget defines a set of options (optiondefs) as a list of tuples
-    of the form ('name', defaultValue, handler).
+1)  Each widget defines a set of options (optiondefs) as a list of tuples
+    of the form ``('name', defaultValue, handler)``.
     'name' is the name of the option (used during construction of configure)
-    handler can be: None, method, or INITOPT.  If a method is specified,
-    it will be called during widget construction (via initialiseoptions),
-    if the Handler is specified as an INITOPT, this is an option that can
-    only be set during widget construction.
+    handler can be: None, method, or INITOPT.  If a method is specified, it
+    will be called during widget construction (via initialiseoptions), if the
+    Handler is specified as an INITOPT, this is an option that can only be set
+    during widget construction.
 
-2)  DirectGuiBase.defineoptions is called.  defineoption creates:
+2)  :func:`~DirectGuiBase.defineoptions` is called.  defineoption creates:
 
     self._constructorKeywords = { keyword: [value, useFlag] }
-    a dictionary of the keyword options specified as part of the constructor
-    keywords can be of the form 'component_option', where component is
-    the name of a widget's component, a component group or a component alias
+        A dictionary of the keyword options specified as part of the
+        constructor keywords can be of the form 'component_option', where
+        component is the name of a widget's component, a component group or a
+        component alias.
 
-    self._dynamicGroups, a list of group names for which it is permissible
-    to specify options before components of that group are created.
-    If a widget is a derived class the order of execution would be:
-    foo.optiondefs = {}
-    foo.defineoptions()
-      fooParent()
-         fooParent.optiondefs = {}
-         fooParent.defineoptions()
+    self._dynamicGroups
+        A list of group names for which it is permissible to specify options
+        before components of that group are created.
+        If a widget is a derived class the order of execution would be::
 
-3)  addoptions is called.  This combines options specified as keywords to
-    the widget constructor (stored in self._constuctorKeywords)
-    with the default options (stored in optiondefs).  Results are stored in
-    self._optionInfo = { keyword: [default, current, handler] }
+          foo.optiondefs = {}
+          foo.defineoptions()
+            fooParent()
+               fooParent.optiondefs = {}
+               fooParent.defineoptions()
+
+3)  :func:`~DirectGuiBase.addoptions` is called.  This combines options
+    specified as keywords to the widget constructor (stored in
+    self._constructorKeywords) with the default options (stored in optiondefs).
+    Results are stored in
+    ``self._optionInfo = { keyword: [default, current, handler] }``.
     If a keyword is of the form 'component_option' it is left in the
     self._constructorKeywords dictionary (for use by component constructors),
     otherwise it is 'used', and deleted from self._constructorKeywords.
-    Notes: - constructor keywords override the defaults.
-           - derived class default values override parent class defaults
-           - derived class handler functions override parent class functions
+
+    Notes:
+
+    - constructor keywords override the defaults.
+    - derived class default values override parent class defaults
+    - derived class handler functions override parent class functions
 
 4)  Superclass initialization methods are called (resulting in nested calls
     to define options (see 2 above)
 
-5)  Widget components are created via calls to self.createcomponent.
-    User can specify aliases and groups for each component created.
+5)  Widget components are created via calls to
+    :func:`~DirectGuiBase.createcomponent`.  User can specify aliases and groups
+    for each component created.
 
     Aliases are alternate names for components, e.g. a widget may have a
     component with a name 'entryField', which itself may have a component
@@ -55,8 +63,8 @@ Code Overview:
     Groups allow option specifications that apply to all members of the group.
     If a widget has components: 'text1', 'text2', and 'text3' which all belong
     to the 'text' group, they can be all configured with keywords of the form:
-    'text_keyword' (e.g. text_font = 'comic.rgb').  A component's group
-    is stored as the fourth element of its entry in self.__componentInfo
+    'text_keyword' (e.g. ``text_font='comic.rgb'``).  A component's group
+    is stored as the fourth element of its entry in self.__componentInfo.
 
     Note: the widget constructors have access to all remaining keywords in
     _constructorKeywords (those not transferred to _optionInfo by
@@ -71,16 +79,18 @@ Code Overview:
     component.  If any constructor keywords remain at the end of component
     construction (and initialisation), an error is raised.
 
-5)  initialiseoptions is called.  This method calls any option handlers to
-    respond to any keyword/default values, then checks to see if any keywords
-    are left unused.  If so, an error is raised.
+5)  :func:`~DirectGuiBase.initialiseoptions` is called.  This method calls any
+    option handlers to respond to any keyword/default values, then checks to
+    see if any keywords are left unused.  If so, an error is raised.
 """
 
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
 from panda3d.core import *
-from panda3d.direct import get_config_showbase
+from direct.showbase import ShowBaseGlobal
+from direct.showbase.ShowBase import ShowBase
+from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
 from .OnscreenText import *
 from .OnscreenGeom import *
@@ -88,14 +98,9 @@ from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
-import sys
+from direct.task.TaskManagerGlobal import taskMgr
 
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
-
-guiObjectCollector = PStatCollector("Client::GuiObjects")
+_track_gui_items = ConfigVariableBool('track-gui-items', False)
 
 
 class DirectGuiBase(DirectObject.DirectObject):
@@ -430,7 +435,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             info = optionInfo[option]
             func = info[DGG._OPT_FUNCTION]
             if func is not None:
-              func()
+                func()
 
     # Allow index style references
     def __setitem__(self, key, value):
@@ -554,7 +559,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         if widgetClass is None:
             return None
         # Get arguments for widget constructor
-        if len(widgetArgs) == 1 and type(widgetArgs[0]) == tuple:
+        if len(widgetArgs) == 1 and isinstance(widgetArgs[0], tuple):
             # Arguments to the constructor can be specified as either
             # multiple trailing arguments to createcomponent() or as a
             # single tuple argument.
@@ -633,7 +638,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if get_config_showbase().GetBool('debug-directgui-msgs', False):
+        if ConfigVariableBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -662,7 +667,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = get_config_showbase().GetBool('direct-gui-edit', 0)
+    guiEdit = ConfigVariableBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -723,21 +728,22 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if self['guiId']:
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
-        if __dev__:
-            guiObjectCollector.addLevel(1)
-            guiObjectCollector.flushLevel()
+
+        if ShowBaseGlobal.__dev__:
             # track gui items by guiId for tracking down leaks
-            if hasattr(base, 'guiItems'):
-                if self.guiId in base.guiItems:
-                    base.notify.warning('duplicate guiId: %s (%s stomping %s)' %
-                                        (self.guiId, self,
-                                         base.guiItems[self.guiId]))
-                base.guiItems[self.guiId] = self
-                if hasattr(base, 'printGuiCreates'):
-                    printStack()
+            if _track_gui_items:
+                if not hasattr(ShowBase, 'guiItems'):
+                    ShowBase.guiItems = {}
+                if self.guiId in ShowBase.guiItems:
+                    ShowBase.notify.warning('duplicate guiId: %s (%s stomping %s)' %
+                                            (self.guiId, self,
+                                             ShowBase.guiItems[self.guiId]))
+                ShowBase.guiItems[self.guiId] = self
+
         # Attach button to parent and make that self
-        if (parent == None):
-            parent = aspect2d
+        if parent is None:
+            parent = ShowBaseGlobal.aspect2d
+
         self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
         if self['pos']:
@@ -812,7 +818,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def editStart(self, event):
         taskMgr.remove('guiEditTask')
-        vWidget2render2d = self.getPos(render2d)
+        vWidget2render2d = self.getPos(ShowBaseGlobal.render2d)
         vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
         editVec = Vec3(vWidget2render2d - vMouse2render2d)
         if base.mouseWatcherNode.getModifierButtons().isDown(
@@ -838,7 +844,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if mwn.hasMouse():
             vMouse2render2d = Point3(mwn.getMouse()[0], 0, mwn.getMouse()[1])
             newPos = vMouse2render2d + state.editVec
-            self.setPos(render2d, newPos)
+            self.setPos(ShowBaseGlobal.render2d, newPos)
             if DirectGuiWidget.snapToGrid:
                 newPos = self.getPos()
                 newPos.set(
@@ -852,9 +858,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         taskMgr.remove('guiEditTask')
 
     def setState(self):
-        if type(self['state']) == type(0):
+        if isinstance(self['state'], int):
             self.guiItem.setActive(self['state'])
-        elif (self['state'] == DGG.NORMAL) or (self['state'] == 'normal'):
+        elif self['state'] == DGG.NORMAL or self['state'] == 'normal':
             self.guiItem.setActive(1)
         else:
             self.guiItem.setActive(0)
@@ -873,7 +879,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             bw = (0, 0)
 
         else:
-            if fClearFrame and (frameType != PGFrameStyle.TNone):
+            if fClearFrame and frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
                 # To force an update of the button
@@ -881,12 +887,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
-            if ((frameType != PGFrameStyle.TNone) and
-                (frameType != PGFrameStyle.TFlat)):
+            if frameType != PGFrameStyle.TNone and \
+               frameType != PGFrameStyle.TFlat:
                 bw = self['borderWidth']
             else:
                 bw = (0, 0)
@@ -946,9 +952,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setRelief(self, fSetStyle = 1):
         relief = self['relief']
         # Convert None, and string arguments
-        if relief == None:
+        if relief is None:
             relief = PGFrameStyle.TNone
-        elif isinstance(relief, stringType):
+        elif isinstance(relief, str):
             # Convert string to frame style int
             relief = DGG.FrameStyleDict[relief]
         # Set style
@@ -973,8 +979,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameColor(self):
         # this might be a single color or a list of colors
         colors = self['frameColor']
-        if type(colors[0]) == int or \
-           type(colors[0]) == float:
+        if isinstance(colors[0], (int, float)):
             colors = (colors,)
         for i in range(self['numStates']):
             if i >= len(colors):
@@ -987,17 +992,16 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def setFrameTexture(self):
         # this might be a single texture or a list of textures
         textures = self['frameTexture']
-        if textures == None or \
-           isinstance(textures, Texture) or \
-           isinstance(textures, stringType):
+        if textures is None or \
+           isinstance(textures, (Texture, str)):
             textures = (textures,) * self['numStates']
         for i in range(self['numStates']):
             if i >= len(textures):
                 texture = textures[-1]
             else:
                 texture = textures[i]
-            if isinstance(texture, stringType):
-                texture = loader.loadTexture(texture)
+            if isinstance(texture, str):
+                texture = base.loader.loadTexture(texture)
             if texture:
                 self.frameStyle[i].setTexture(texture)
             else:
@@ -1024,17 +1028,10 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     def destroy(self):
         if hasattr(self, "frameStyle"):
-            if __dev__:
-                guiObjectCollector.subLevel(1)
-                guiObjectCollector.flushLevel()
-                if hasattr(base, 'guiItems'):
-                    if self.guiId in base.guiItems:
-                        del base.guiItems[self.guiId]
-                    else:
-                        base.notify.warning(
-                            'DirectGuiWidget.destroy(): '
-                            'gui item %s not in base.guiItems' %
-                            self.guiId)
+            if ShowBaseGlobal.__dev__:
+                if hasattr(ShowBase, 'guiItems'):
+                    ShowBase.guiItems.pop(self.guiId, None)
+
             # Destroy children
             for child in self.getChildren():
                 childGui = self.guiDict.get(child.getName())
@@ -1076,10 +1073,10 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self[key] = value[1]
 
     def taskName(self, idString):
-        return (idString + "-" + str(self.guiId))
+        return idString + "-" + str(self.guiId)
 
     def uniqueName(self, idString):
-        return (idString + "-" + str(self.guiId))
+        return idString + "-" + str(self.guiId)
 
     def setProp(self, propString, value):
         """

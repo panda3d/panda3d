@@ -50,7 +50,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 RectangleLight::
-RectangleLight(const string &name) :
+RectangleLight(const std::string &name) :
   LightLensNode(name)
 {
 }
@@ -80,7 +80,7 @@ make_copy() const {
  *
  */
 void RectangleLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   LightLensNode::write(out, indent_level);
   indent(out, indent_level) << *this << "\n";
 }

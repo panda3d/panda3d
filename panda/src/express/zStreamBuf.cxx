@@ -18,6 +18,10 @@
 #include "pnotify.h"
 #include "config_express.h"
 
+using std::ios;
+using std::streamoff;
+using std::streampos;
+
 #if !defined(USE_MEMORY_NOWRAPPERS) && !defined(CPPPARSER)
 // Define functions that hook zlib into panda's memory allocation system.
 static void *
@@ -35,9 +39,9 @@ do_zlib_free(voidpf opaque, voidpf address) {
  */
 ZStreamBuf::
 ZStreamBuf() {
-  _source = (istream *)NULL;
+  _source = nullptr;
   _owns_source = false;
-  _dest = (ostream *)NULL;
+  _dest = nullptr;
   _owns_dest = false;
 
 #ifdef PHAVE_IOSTREAM
@@ -69,8 +73,9 @@ ZStreamBuf::
  *
  */
 void ZStreamBuf::
-open_read(istream *source, bool owns_source) {
+open_read(std::istream *source, bool owns_source, std::streamsize source_length, bool header) {
   _source = source;
+  _source_bytes_left = source_length;
   _owns_source = owns_source;
 
   _z_source.next_in = Z_NULL;
@@ -87,7 +92,7 @@ open_read(istream *source, bool owns_source) {
   _z_source.opaque = Z_NULL;
   _z_source.msg = (char *)"no error message";
 
-  int result = inflateInit2(&_z_source, 32 + 15);
+  int result = inflateInit2(&_z_source, header ? 32 + 15 : -15);
   if (result < 0) {
     show_zlib_error("inflateInit2", result, _z_source);
     close_read();
@@ -100,7 +105,9 @@ open_read(istream *source, bool owns_source) {
  */
 void ZStreamBuf::
 close_read() {
-  if (_source != (istream *)NULL) {
+  _source_bytes_left = 0;
+
+  if (_source != nullptr) {
 
     int result = inflateEnd(&_z_source);
     if (result < 0) {
@@ -112,7 +119,7 @@ close_read() {
       delete _source;
       _owns_source = false;
     }
-    _source = (istream *)NULL;
+    _source = nullptr;
   }
 }
 
@@ -120,7 +127,7 @@ close_read() {
  *
  */
 void ZStreamBuf::
-open_write(ostream *dest, bool owns_dest, int compression_level) {
+open_write(std::ostream *dest, bool owns_dest, int compression_level, bool header) {
   _dest = dest;
   _owns_dest = owns_dest;
 
@@ -138,9 +145,10 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   _z_dest.opaque = Z_NULL;
   _z_dest.msg = (char *)"no error message";
 
-  int result = deflateInit(&_z_dest, compression_level);
+  int result = deflateInit2(&_z_dest, compression_level, Z_DEFLATED,
+                            header ? 15 : -15, 8, Z_DEFAULT_STRATEGY);
   if (result < 0) {
-    show_zlib_error("deflateInit", result, _z_dest);
+    show_zlib_error("deflateInit2", result, _z_dest);
     close_write();
   }
   thread_consider_yield();
@@ -151,7 +159,7 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
  */
 void ZStreamBuf::
 close_write() {
-  if (_dest != (ostream *)NULL) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n, Z_FINISH);
     pbump(-(int)n);
@@ -166,7 +174,7 @@ close_write() {
       delete _dest;
       _owns_dest = false;
     }
-    _dest = (ostream *)NULL;
+    _dest = nullptr;
   }
 }
 
@@ -198,8 +206,8 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   gbump(n);
 
-  _source->seekg(0, ios::beg);
-  if (_source->tellg() == (streampos)0) {
+  if (_source->rdbuf()->pubseekpos(0, ios::in) == (streampos)0) {
+    _source->clear();
     _z_source.next_in = Z_NULL;
     _z_source.avail_in = 0;
     _z_source.next_out = Z_NULL;
@@ -250,12 +258,12 @@ overflow(int ch) {
  */
 int ZStreamBuf::
 sync() {
-  if (_source != (istream *)NULL) {
+  if (_source != nullptr) {
     size_t n = egptr() - gptr();
     gbump(n);
   }
 
-  if (_dest != (ostream *)NULL) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n, Z_SYNC_FLUSH);
     pbump(-(int)n);
@@ -306,13 +314,22 @@ read_chars(char *start, size_t length) {
   _z_source.next_out = (Bytef *)start;
   _z_source.avail_out = length;
 
-  bool eof = (_source->eof() || _source->fail());
+  bool eof = (_source_bytes_left == 0 || _source->eof() || _source->fail());
   int flush = 0;
 
   while (_z_source.avail_out > 0) {
     if (_z_source.avail_in == 0 && !eof) {
-      _source->read(decompress_buffer, decompress_buffer_size);
-      size_t read_count = _source->gcount();
+      size_t read_count = 0;
+      if (_source_bytes_left >= 0) {
+        // Don't read more than the specified limit.
+        _source->read(decompress_buffer,
+          std::min(_source_bytes_left, (std::streamsize)decompress_buffer_size));
+        read_count = _source->gcount();
+        _source_bytes_left -= read_count;
+      } else {
+        _source->read(decompress_buffer, decompress_buffer_size);
+        read_count = _source->gcount();
+      }
       eof = (read_count == 0 || _source->eof() || _source->fail());
 
       _z_source.next_in = (Bytef *)decompress_buffer;
@@ -392,7 +409,7 @@ write_chars(const char *start, size_t length, int flush) {
  */
 void ZStreamBuf::
 show_zlib_error(const char *function, int error_code, z_stream &z) {
-  stringstream error_line;
+  std::stringstream error_line;
 
   error_line
     << "zlib error in " << function << ": ";
@@ -427,7 +444,7 @@ show_zlib_error(const char *function, int error_code, z_stream &z) {
   default:
     error_line << error_code;
   }
-  if (z.msg != (char *)NULL) {
+  if (z.msg != nullptr) {
     error_line
       << " = " << z.msg;
   }

@@ -16,6 +16,10 @@
 #include "pnmImage.h"
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::string;
+
 /**
  *
  */
@@ -40,36 +44,36 @@ ImageTransformColors() {
      "space, instead of the default RGB space.  In this mode, the first "
      "component controls hue, the second controls lightness, and the third "
      "controls saturation.",
-     &ImageTransformColors::dispatch_none, &_hls, NULL);
+     &ImageTransformColors::dispatch_none, &_hls, nullptr);
 
   add_option
     ("range", "min,max", 0,
      "Compresses the overall dynamic range from 0,1 to min,max.  If min,max "
      "exceed 0,1, the dynamic range is expanded.  This doesn't make sense in "
      "HLS mode.",
-     &ImageTransformColors::dispatch_range, NULL, &_mat);
+     &ImageTransformColors::dispatch_range, nullptr, &_mat);
 
   add_option
     ("scale", "r,g,b", 0,
      "Scales the r,g,b components by the indicated values.  In HLS mode, "
      "the scale is applied to the h,l,s components.",
-     &ImageTransformColors::dispatch_scale, NULL, &_mat);
+     &ImageTransformColors::dispatch_scale, nullptr, &_mat);
 
   add_option
     ("add", "r,g,b", 0,
      "Adds the indicated values to the r,g,b components.  In HLS mode, "
      "the sum is applied to the h,l,s components.",
-     &ImageTransformColors::dispatch_add, NULL, &_mat);
+     &ImageTransformColors::dispatch_add, nullptr, &_mat);
 
   add_option
     ("mat4", "m00,m01,m02,m03,m10,m11,m12,m13,m20,m21,m22,m23,m30,m31,m32,m33",
      0, "Defines an arbitrary 4x4 RGB matrix.",
-     &ImageTransformColors::dispatch_mat4, NULL, &_mat);
+     &ImageTransformColors::dispatch_mat4, nullptr, &_mat);
 
   add_option
     ("mat3", "m00,m01,m02,m10,m11,m12,m20,m21,m22", 0,
      "Defines an arbitrary 3x3 RGB matrix.",
-     &ImageTransformColors::dispatch_mat3, NULL, &_mat);
+     &ImageTransformColors::dispatch_mat3, nullptr, &_mat);
 
   add_option
     ("o", "filename", 50,

@@ -62,7 +62,7 @@
  */
 class EXPCL_PANDA_PUTIL BamWriter : public BamEnums {
 PUBLISHED:
-  explicit BamWriter(DatagramSink *target = NULL);
+  explicit BamWriter(DatagramSink *target = nullptr);
   ~BamWriter();
 
   void set_target(DatagramSink *target);
@@ -111,6 +111,10 @@ public:
   bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
+  static std::string get_obsolete_type_name(TypeHandle type, int major, int minor);
+  static void record_obsolete_type_name(TypeHandle type, std::string name,
+                                        int before_major, int before_minor);
+
 private:
   void object_destructs(TypedWritable *object);
 
@@ -140,8 +144,9 @@ private:
     int _object_id;
     UpdateSeq _written_seq;
     UpdateSeq _modified;
+    const ReferenceCount *_refcount;
 
-    StoreState(int object_id) : _object_id(object_id) {}
+    StoreState(int object_id) : _object_id(object_id), _refcount(nullptr) {}
   };
   typedef phash_map<const TypedWritable *, StoreState, pointer_hash> StateMap;
   StateMap _state_map;

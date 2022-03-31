@@ -26,6 +26,9 @@
 #include <math.h>
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggVertex::_type_handle;
 
 
@@ -34,7 +37,7 @@ TypeHandle EggVertex::_type_handle;
  */
 EggVertex::
 EggVertex() {
-  _pool = NULL;
+  _pool = nullptr;
   _forward_reference = false;
   _index = -1;
   _external_index = -1;
@@ -59,7 +62,7 @@ EggVertex(const EggVertex &copy)
     _uv_map(copy._uv_map),
     _aux_map(copy._aux_map)
 {
-  _pool = NULL;
+  _pool = nullptr;
   _forward_reference = false;
   _index = -1;
   test_pref_integrity();
@@ -96,7 +99,7 @@ EggVertex::
 ~EggVertex() {
   // We should never destruct a vertex while it still thinks it belongs to a
   // VertexPool.  If we do, we've probably lost a reference count somewhere.
-  nassertv(_pool == NULL);
+  nassertv(_pool == nullptr);
 
   // Also, a vertex shouldn't be destructed while it's being referenced by a
   // group or a primitive, for the same reason.
@@ -244,7 +247,7 @@ get_uv_obj(const string &name) const {
   if (ui != _uv_map.end()) {
     return (*ui).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -259,7 +262,7 @@ get_aux_obj(const string &name) const {
   if (xi != _aux_map.end()) {
     return (*xi).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -278,7 +281,7 @@ modify_uv_obj(const string &name) {
     return (*ui).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -297,7 +300,7 @@ modify_aux_obj(const string &name) {
     return (*xi).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -346,12 +349,12 @@ clear_aux(const string &name) {
 PT(EggVertex) EggVertex::
 make_average(const EggVertex *first, const EggVertex *second) {
   PT(EggVertexPool) pool = first->get_pool();
-  nassertr(pool == second->get_pool(), NULL);
+  nassertr(pool == second->get_pool(), nullptr);
 
   // If both vertices are in a pool, the new vertex will be part of the pool
   // as well.
   PT(EggVertex) middle;
-  if (pool == NULL) {
+  if (pool == nullptr) {
     middle = new EggVertex;
   } else {
     middle = pool->make_new_vertex();
@@ -375,7 +378,7 @@ make_average(const EggVertex *first, const EggVertex *second) {
     const EggVertexUV *first_uv = it->second;
     const EggVertexUV *second_uv = second->get_uv_obj(it->first);
 
-    if (first_uv != NULL && second_uv != NULL) {
+    if (first_uv != nullptr && second_uv != nullptr) {
       middle->set_uv_obj(EggVertexUV::make_average(first_uv, second_uv));
     }
   }
@@ -386,7 +389,7 @@ make_average(const EggVertex *first, const EggVertex *second) {
     const EggVertexAux *first_aux = ai->second;
     const EggVertexAux *second_aux = second->get_aux_obj(ai->first);
 
-    if (first_aux != NULL && second_aux != NULL) {
+    if (first_aux != nullptr && second_aux != nullptr) {
       middle->set_aux_obj(EggVertexAux::make_average(first_aux, second_aux));
     }
   }
@@ -755,7 +758,7 @@ copy_grefs_from(const EggVertex &other) {
 
   for (gri = other.gref_begin(); gri != other.gref_end(); ++gri) {
     EggGroup *group = *gri;
-    nassertv(group != NULL);
+    nassertv(group != nullptr);
 
     group->ref_vertex(this, group->get_vertex_membership(&other));
   }
@@ -771,7 +774,7 @@ clear_grefs() {
   GroupRef::const_iterator gri;
   for (gri = gref_copy.begin(); gri != gref_copy.end(); ++gri) {
     EggGroup *group = *gri;
-    nassertv(group != NULL);
+    nassertv(group != nullptr);
     group->unref_vertex(this);
   }
 
@@ -836,7 +839,7 @@ test_gref_integrity() const {
 
   for (gri = gref_begin(); gri != gref_end(); ++gri) {
     EggGroup *group = *gri;
-    nassertv(group != NULL);
+    nassertv(group != nullptr);
     group->test_ref_count_integrity();
 
     double membership = group->get_vertex_membership(this);
@@ -856,7 +859,7 @@ test_pref_integrity() const {
 
   for (pri = pref_begin(); pri != pref_end(); ++pri) {
     EggPrimitive *prim = *pri;
-    nassertv(prim != NULL);
+    nassertv(prim != nullptr);
     prim->test_ref_count_integrity();
 
     EggPrimitive::iterator vi;
@@ -872,7 +875,7 @@ test_pref_integrity() const {
  */
 void EggVertex::
 output(ostream &out) const {
-  if (get_pool() == NULL) {
+  if (get_pool() == nullptr) {
     out << "(null):" << get_index();
   } else {
     out << get_pool()->get_name() << ":" << get_index();

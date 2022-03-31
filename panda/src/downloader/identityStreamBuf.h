@@ -28,7 +28,7 @@ class HTTPChannel;
 /**
  * The streambuf object that implements IIdentityStream.
  */
-class EXPCL_PANDAEXPRESS IdentityStreamBuf : public streambuf {
+class EXPCL_PANDA_DOWNLOADER IdentityStreamBuf : public std::streambuf {
 public:
   IdentityStreamBuf();
   virtual ~IdentityStreamBuf();

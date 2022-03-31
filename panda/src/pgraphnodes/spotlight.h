@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
-  Spotlight(const string &name);
+  Spotlight(const std::string &name);
 
 protected:
   Spotlight(const Spotlight &copy);
@@ -39,23 +39,23 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   virtual bool get_vector_to_light(LVector3 &result,
                                    const LPoint3 &from_object_point,
                                    const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE PN_stdfloat get_exponent() const FINAL;
+  INLINE PN_stdfloat get_exponent() const final;
   INLINE void set_exponent(PN_stdfloat exponent);
   MAKE_PROPERTY(exponent, get_exponent, set_exponent);
 
-  INLINE const LColor &get_specular_color() const FINAL;
+  INLINE const LColor &get_specular_color() const final;
   INLINE void set_specular_color(const LColor &color);
   INLINE void clear_specular_color();
   MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
 
-  INLINE const LVecBase3 &get_attenuation() const FINAL;
+  INLINE const LVecBase3 &get_attenuation() const final;
   INLINE void set_attenuation(const LVecBase3 &attenuation);
   MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
 
@@ -127,7 +127,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Spotlight &light) {
+INLINE std::ostream &operator << (std::ostream &out, const Spotlight &light) {
   light.output(out);
   return out;
 }

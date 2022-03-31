@@ -20,7 +20,7 @@
 #include "collisionVisualizer.h"
 #include "collisionSphere.h"
 #include "collisionBox.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPolygon.h"
 #include "collisionPlane.h"
 #include "config_collide.h"
@@ -37,6 +37,8 @@
 #include "indent.h"
 
 #include <algorithm>
+
+using std::min;
 
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 
@@ -67,13 +69,13 @@ public:
  *
  */
 CollisionTraverser::
-CollisionTraverser(const string &name) :
+CollisionTraverser(const std::string &name) :
   Namable(name),
   _this_pcollector(_collisions_pcollector, name)
 {
   _respect_prev_transform = respect_prev_transform;
   #ifdef DO_COLLISION_RECORDING
-  _recorder = (CollisionRecorder *)NULL;
+  _recorder = nullptr;
   #endif
 }
 
@@ -100,7 +102,7 @@ void CollisionTraverser::
 add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
   nassertv(!collider.is_empty() && collider.node()->is_collision_node());
-  nassertv(handler != (CollisionHandler *)NULL);
+  nassertv(handler != nullptr);
 
   Colliders::iterator ci = _colliders.find(collider);
   if (ci != _colliders.end()) {
@@ -231,7 +233,7 @@ get_handler(const NodePath &collider) const {
   if (ci != _colliders.end()) {
     return (*ci).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -246,7 +248,10 @@ clear_colliders() {
 }
 
 /**
- *
+ * Perform the traversal. Begins at the indicated root and detects all
+ * collisions with any of its collider objects against nodes at or below the
+ * indicated root, calling the appropriate CollisionHandler for each detected
+ * collision.
  */
 void CollisionTraverser::
 traverse(const NodePath &root) {
@@ -283,7 +288,9 @@ traverse(const NodePath &root) {
 #ifdef DO_PSTATS
         PStatTimer pass_timer(get_pass_collector(pass));
 #endif
-        r_traverse_single(level_states[pass], pass);
+        if (level_states[pass].any_in_bounds()) {
+          r_traverse_single(level_states[pass], pass);
+        }
       }
     }
   }
@@ -343,13 +350,13 @@ traverse(const NodePath &root) {
   _geom_volume_pcollector.flush_level();
 
   CollisionSphere::flush_level();
-  CollisionTube::flush_level();
+  CollisionCapsule::flush_level();
   CollisionPolygon::flush_level();
   CollisionPlane::flush_level();
   CollisionBox::flush_level();
 }
 
-#ifdef DO_COLLISION_RECORDING
+#if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
 /**
  * Uses the indicated CollisionRecorder object to start recording the
  * intersection tests made by each subsequent call to traverse() on this
@@ -368,25 +375,27 @@ traverse(const NodePath &root) {
  */
 void CollisionTraverser::
 set_recorder(CollisionRecorder *recorder) {
+#ifdef DO_COLLISION_RECORDING
   if (recorder != _recorder) {
     // Remove the old recorder, if any.
-    if (_recorder != (CollisionRecorder *)NULL) {
+    if (_recorder != nullptr) {
       nassertv(_recorder->_trav == this);
-      _recorder->_trav = (CollisionTraverser *)NULL;
+      _recorder->_trav = nullptr;
     }
 
     _recorder = recorder;
 
     // Tell the new recorder about his new owner.
-    if (_recorder != (CollisionRecorder *)NULL) {
+    if (_recorder != nullptr) {
       nassertv(_recorder->_trav != this);
-      if (_recorder->_trav != (CollisionTraverser *)NULL) {
+      if (_recorder->_trav != nullptr) {
         _recorder->_trav->clear_recorder();
       }
-      nassertv(_recorder->_trav == (CollisionTraverser *)NULL);
+      nassertv(_recorder->_trav == nullptr);
       _recorder->_trav = this;
     }
   }
+#endif
 }
 
 /**
@@ -395,13 +404,17 @@ set_recorder(CollisionRecorder *recorder) {
  * should be any node in the scene graph; typically, the top node (e.g.
  * render).  The CollisionVisualizer will be attached to this node.
  */
-CollisionVisualizer *CollisionTraverser::
+PandaNode *CollisionTraverser::
 show_collisions(const NodePath &root) {
+#ifdef DO_COLLISION_RECORDING
   hide_collisions();
   CollisionVisualizer *viz = new CollisionVisualizer("show_collisions");
   _collision_visualizer_np = root.attach_new_node(viz);
   set_recorder(viz);
   return viz;
+#else
+  return nullptr;
+#endif
 }
 
 /**
@@ -409,10 +422,12 @@ show_collisions(const NodePath &root) {
  */
 void CollisionTraverser::
 hide_collisions() {
+#ifdef DO_COLLISION_RECORDING
   if (!_collision_visualizer_np.is_empty()) {
     _collision_visualizer_np.remove_node();
   }
   clear_recorder();
+#endif
 }
 
 #endif  // DO_COLLISION_RECORDING
@@ -421,7 +436,7 @@ hide_collisions() {
  *
  */
 void CollisionTraverser::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CollisionTraverser, " << _colliders.size()
       << " colliders and " << _handlers.size() << " handlers.\n";
 }
@@ -430,7 +445,7 @@ output(ostream &out) const {
  *
  */
 void CollisionTraverser::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionTraverser, " << _colliders.size()
     << " colliders and " << _handlers.size() << " handlers:\n";
@@ -447,7 +462,7 @@ write(ostream &out, int indent_level) const {
     nassertv(ci != _colliders.end());
 
     CollisionHandler *handler = (*ci).second;
-    nassertv(handler != (CollisionHandler *)NULL);
+    nassertv(handler != nullptr);
 
     indent(out, indent_level + 2)
       << cnode_path;
@@ -495,7 +510,7 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {
@@ -549,22 +564,13 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
  */
 void CollisionTraverser::
 r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
-  if (!level_state.any_in_bounds()) {
-    return;
-  }
   if (!level_state.apply_transform()) {
     return;
   }
 
   PandaNode *node = level_state.node();
   if (node->is_collision_node()) {
-    CollisionNode *cnode;
-    DCAST_INTO_V(cnode, node);
-    CPT(BoundingVolume) node_bv = cnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    CollisionNode *cnode = (CollisionNode *)node;
 
     CollisionEntry entry;
     entry._into_node = cnode;
@@ -576,13 +582,14 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; ++c) {
       if (level_state.has_collider(c)) {
-        entry._from_node = level_state.get_collider_node(c);
+        CollisionNode *from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
+        if ((from_node->get_from_collide_mask() &
              cnode->get_into_collide_mask()) != 0) {
           #ifdef DO_PSTATS
           // PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
+          entry._from_node = from_node;
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
 
@@ -590,7 +597,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -603,13 +610,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     }
     #endif
 
-    GeomNode *gnode;
-    DCAST_INTO_V(gnode, node);
-    CPT(BoundingVolume) node_bv = gnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    GeomNode *gnode = (GeomNode *)node;
 
     CollisionEntry entry;
     entry._into_node = gnode;
@@ -635,7 +636,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -645,9 +646,14 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     // If it's a switch node or sequence node, visit just the one visible
     // child.
     int index = node->get_visible_child();
-    if (index >= 0 && index < node->get_num_children()) {
-      CollisionLevelStateSingle next_state(level_state, node->get_child(index));
-      r_traverse_single(next_state, pass);
+    PandaNode::Children children = node->get_children();
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
+      const PandaNode::DownConnection &child = children.get_child_connection(index);
+      CollisionLevelStateSingle::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateSingle next_state(level_state, child, mask);
+        r_traverse_single(next_state, pass);
+      }
     }
 
   } else if (node->is_lod_node()) {
@@ -660,12 +666,16 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateSingle next_state(level_state, children.get_child(i));
-      if (i != index) {
-        next_state.set_include_mask(next_state.get_include_mask() &
-          ~GeomNode::get_default_collide_mask());
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateSingle::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateSingle next_state(level_state, child, mask);
+        if (i != index) {
+          next_state.set_include_mask(next_state.get_include_mask() &
+            ~GeomNode::get_default_collide_mask());
+        }
+        r_traverse_single(next_state, pass);
       }
-      r_traverse_single(next_state, pass);
     }
 
   } else {
@@ -673,8 +683,12 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateSingle next_state(level_state, children.get_child(i));
-      r_traverse_single(next_state, pass);
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateSingle::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateSingle next_state(level_state, child, mask);
+        r_traverse_single(next_state, pass);
+      }
     }
   }
 }
@@ -706,7 +720,7 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {
@@ -760,22 +774,13 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
  */
 void CollisionTraverser::
 r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
-  if (!level_state.any_in_bounds()) {
-    return;
-  }
   if (!level_state.apply_transform()) {
     return;
   }
 
   PandaNode *node = level_state.node();
   if (node->is_collision_node()) {
-    CollisionNode *cnode;
-    DCAST_INTO_V(cnode, node);
-    CPT(BoundingVolume) node_bv = cnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    CollisionNode *cnode = (CollisionNode *)node;
 
     CollisionEntry entry;
     entry._into_node = cnode;
@@ -801,7 +806,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -814,13 +819,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     }
     #endif
 
-    GeomNode *gnode;
-    DCAST_INTO_V(gnode, node);
-    CPT(BoundingVolume) node_bv = gnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    GeomNode *gnode = (GeomNode *)node;
 
     CollisionEntry entry;
     entry._into_node = gnode;
@@ -846,7 +845,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -856,9 +855,14 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     // If it's a switch node or sequence node, visit just the one visible
     // child.
     int index = node->get_visible_child();
-    if (index >= 0 && index < node->get_num_children()) {
-      CollisionLevelStateDouble next_state(level_state, node->get_child(index));
-      r_traverse_double(next_state, pass);
+    PandaNode::Children children = node->get_children();
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
+      const PandaNode::DownConnection &child = children.get_child_connection(index);
+      CollisionLevelStateDouble::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateDouble next_state(level_state, child, mask);
+        r_traverse_double(next_state, pass);
+      }
     }
 
   } else if (node->is_lod_node()) {
@@ -867,16 +871,20 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     // visit all other levels without GeomNode::get_default_collide_mask(),
     // allowing only collision with CollisionNodes and special geometry under
     // higher levels of detail.
-    int index = DCAST(LODNode, node)->get_lowest_switch();
+    int index = ((LODNode *)node)->get_lowest_switch();
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateDouble next_state(level_state, children.get_child(i));
-      if (i != index) {
-        next_state.set_include_mask(next_state.get_include_mask() &
-          ~GeomNode::get_default_collide_mask());
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateDouble::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateDouble next_state(level_state, child, mask);
+        if (i != index) {
+          next_state.set_include_mask(next_state.get_include_mask() &
+            ~GeomNode::get_default_collide_mask());
+        }
+        r_traverse_double(next_state, pass);
       }
-      r_traverse_double(next_state, pass);
     }
 
   } else {
@@ -884,8 +892,12 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateDouble next_state(level_state, children.get_child(i));
-      r_traverse_double(next_state, pass);
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateDouble::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateDouble next_state(level_state, child, mask);
+        r_traverse_double(next_state, pass);
+      }
     }
   }
 }
@@ -917,7 +929,7 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {
@@ -971,22 +983,13 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
  */
 void CollisionTraverser::
 r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
-  if (!level_state.any_in_bounds()) {
-    return;
-  }
   if (!level_state.apply_transform()) {
     return;
   }
 
   PandaNode *node = level_state.node();
   if (node->is_collision_node()) {
-    CollisionNode *cnode;
-    DCAST_INTO_V(cnode, node);
-    CPT(BoundingVolume) node_bv = cnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    CollisionNode *cnode = (CollisionNode *)node;
 
     CollisionEntry entry;
     entry._into_node = cnode;
@@ -1012,7 +1015,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -1025,13 +1028,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     }
     #endif
 
-    GeomNode *gnode;
-    DCAST_INTO_V(gnode, node);
-    CPT(BoundingVolume) node_bv = gnode->get_bounds();
-    const GeometricBoundingVolume *node_gbv = NULL;
-    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_V(node_gbv, node_bv);
-    }
+    GeomNode *gnode = (GeomNode *)node;
 
     CollisionEntry entry;
     entry._into_node = gnode;
@@ -1057,7 +1054,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
               entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
-              node_gbv);
+              level_state.get_node_bound());
         }
       }
     }
@@ -1067,9 +1064,14 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     // If it's a switch node or sequence node, visit just the one visible
     // child.
     int index = node->get_visible_child();
-    if (index >= 0 && index < node->get_num_children()) {
-      CollisionLevelStateQuad next_state(level_state, node->get_child(index));
-      r_traverse_quad(next_state, pass);
+    PandaNode::Children children = node->get_children();
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
+      const PandaNode::DownConnection &child = children.get_child_connection(index);
+      CollisionLevelStateQuad::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateQuad next_state(level_state, child, mask);
+        r_traverse_quad(next_state, pass);
+      }
     }
 
   } else if (node->is_lod_node()) {
@@ -1078,16 +1080,20 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     // visit all other levels without GeomNode::get_default_collide_mask(),
     // allowing only collision with CollisionNodes and special geometry under
     // higher levels of detail.
-    int index = DCAST(LODNode, node)->get_lowest_switch();
+    int index = ((LODNode *)node)->get_lowest_switch();
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateQuad next_state(level_state, children.get_child(i));
-      if (i != index) {
-        next_state.set_include_mask(next_state.get_include_mask() &
-          ~GeomNode::get_default_collide_mask());
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateQuad::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateQuad next_state(level_state, child, mask);
+        if (i != index) {
+          next_state.set_include_mask(next_state.get_include_mask() &
+            ~GeomNode::get_default_collide_mask());
+        }
+        r_traverse_quad(next_state, pass);
       }
-      r_traverse_quad(next_state, pass);
     }
 
   } else {
@@ -1095,8 +1101,12 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateQuad next_state(level_state, children.get_child(i));
-      r_traverse_quad(next_state, pass);
+      const PandaNode::DownConnection &child = children.get_child_connection(i);
+      CollisionLevelStateQuad::CurrentMask mask = level_state.get_child_mask(child);
+      if (!mask.is_zero()) {
+        CollisionLevelStateQuad next_state(level_state, child, mask);
+        r_traverse_quad(next_state, pass);
+      }
     }
   }
 }
@@ -1110,8 +1120,8 @@ compare_collider_to_node(CollisionEntry &entry,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
-      into_node_gbv != (GeometricBoundingVolume *)NULL) {
+  if (from_parent_gbv != nullptr &&
+      into_node_gbv != nullptr) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
     _cnode_volume_pcollector.add_level(1);
   }
@@ -1149,10 +1159,7 @@ compare_collider_to_node(CollisionEntry &entry,
         // CollisionNodes.  We are already filtering out tests for a
         // CollisionNode into itself.
         CPT(BoundingVolume) solid_bv = entry._into->get_bounds();
-        const GeometricBoundingVolume *solid_gbv = nullptr;
-        if (solid_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-          solid_gbv = (const GeometricBoundingVolume *)solid_bv.p();
-        }
+        const GeometricBoundingVolume *solid_gbv = solid_bv->as_geometric_bounding_volume();
 
         compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
       }
@@ -1169,8 +1176,8 @@ compare_collider_to_geom_node(CollisionEntry &entry,
                               const GeometricBoundingVolume *from_node_gbv,
                               const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
-      into_node_gbv != (GeometricBoundingVolume *)NULL) {
+  if (from_parent_gbv != nullptr &&
+      into_node_gbv != nullptr) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
     _gnode_volume_pcollector.add_level(1);
   }
@@ -1180,19 +1187,18 @@ compare_collider_to_geom_node(CollisionEntry &entry,
     DCAST_INTO_V(gnode, entry._into_node);
     int num_geoms = gnode->get_num_geoms();
     for (int s = 0; s < num_geoms; ++s) {
-      entry._into = (CollisionSolid *)NULL;
+      entry._into = nullptr;
       const Geom *geom = DCAST(Geom, gnode->get_geom(s));
-      if (geom != (Geom *)NULL) {
+      if (geom != nullptr) {
         CPT(BoundingVolume) geom_bv = geom->get_bounds();
-        const GeometricBoundingVolume *geom_gbv = NULL;
-        if (num_geoms > 1 &&
-            geom_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+        const GeometricBoundingVolume *geom_gbv = nullptr;
+        if (num_geoms > 1) {
           // Only bother to test against each geom's bounding volume if we
           // have more than one geom in the node, as a slight optimization.
           // (If the node contains just one geom, then the node's bounding
           // volume, which we just tested, is the same as the geom's bounding
           // volume.)
-          DCAST_INTO_V(geom_gbv, geom_bv);
+          geom_gbv = geom_bv->as_geometric_bounding_volume();
         }
 
         compare_collider_to_geom(entry, geom, from_node_gbv, geom_gbv);
@@ -1209,8 +1215,8 @@ compare_collider_to_solid(CollisionEntry &entry,
                           const GeometricBoundingVolume *from_node_gbv,
                           const GeometricBoundingVolume *solid_gbv) {
   bool within_solid_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
-      solid_gbv != (GeometricBoundingVolume *)NULL) {
+  if (from_node_gbv != nullptr &&
+      solid_gbv != nullptr) {
     within_solid_bounds = (solid_gbv->contains(from_node_gbv) != 0);
     #ifdef DO_PSTATS
     ((CollisionSolid *)entry.get_into())->get_volume_pcollector().add_level(1);
@@ -1240,8 +1246,8 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *geom_gbv) {
   bool within_geom_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
-      geom_gbv != (GeometricBoundingVolume *)NULL) {
+  if (from_node_gbv != nullptr &&
+      geom_gbv != nullptr) {
     within_geom_bounds = (geom_gbv->contains(from_node_gbv) != 0);
     _geom_volume_pcollector.add_level(1);
   }
@@ -1252,7 +1258,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
 
     if (geom->get_primitive_type() == Geom::PT_polygons) {
       Thread *current_thread = Thread::get_current_thread();
-      CPT(GeomVertexData) data = geom->get_vertex_data()->animate_vertices(true, current_thread);
+      CPT(GeomVertexData) data = geom->get_animated_vertex_data(true, current_thread);
       GeomVertexReader vertex(data, InternalName::get_vertex());
 
       int num_primitives = geom->get_num_primitives();
@@ -1278,16 +1284,16 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             // in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
-              if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+              if (from_node_gbv != nullptr) {
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }
@@ -1308,16 +1314,16 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             // in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
-              if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+              if (from_node_gbv != nullptr) {
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }
@@ -1389,7 +1395,7 @@ PStatCollector &CollisionTraverser::
 get_pass_collector(int pass) {
   nassertr(pass >= 0, _this_pcollector);
   while ((int)_pass_collectors.size() <= pass) {
-    ostringstream name;
+    std::ostringstream name;
     name << "pass" << (_pass_collectors.size() + 1);
     PStatCollector col(_this_pcollector, name.str());
     _pass_collectors.push_back(col);

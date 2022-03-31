@@ -1,0 +1,23 @@
+#pragma once
+
+namespace std {
+  class partial_ordering {
+    static inline constexpr partial_ordering less;
+    static inline constexpr partial_ordering equivalent;
+    static inline constexpr partial_ordering greater;
+    static inline constexpr partial_ordering unordered;
+  };
+
+  class strong_ordering {
+    static inline constexpr strong_ordering less;
+    static inline constexpr strong_ordering equivalent;
+    static inline constexpr strong_ordering equal;
+    static inline constexpr strong_ordering greater;
+  };
+
+  class weak_ordering {
+    static inline constexpr weak_ordering less;
+    static inline constexpr weak_ordering equivalent;
+    static inline constexpr weak_ordering greater;
+  };
+};

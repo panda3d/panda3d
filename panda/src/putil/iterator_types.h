@@ -24,9 +24,9 @@
 template<class pair_iterator>
 class first_of_pair_iterator : public pair_iterator {
 public:
-  typedef TYPENAME pair_iterator::value_type::first_type value_type;
+  typedef typename pair_iterator::value_type::first_type value_type;
 
-  first_of_pair_iterator() DEFAULT_CTOR;
+  first_of_pair_iterator() = default;
   first_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }
 
   value_type operator *() {
@@ -42,9 +42,9 @@ public:
 template<class pair_iterator>
 class second_of_pair_iterator : public pair_iterator {
 public:
-  typedef TYPENAME pair_iterator::value_type::second_type value_type;
+  typedef typename pair_iterator::value_type::second_type value_type;
 
-  second_of_pair_iterator() DEFAULT_CTOR;
+  second_of_pair_iterator() = default;
   second_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }
 
   value_type operator *() {
@@ -61,7 +61,7 @@ class typecast_iterator : public base_iterator {
 public:
   typedef new_type value_type;
 
-  typecast_iterator() DEFAULT_CTOR;
+  typecast_iterator() = default;
   typecast_iterator(const base_iterator &init) : base_iterator(init) { }
 
   value_type operator *() {

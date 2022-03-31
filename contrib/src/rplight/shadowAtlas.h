@@ -28,7 +28,7 @@
 #define SHADOWATLAS_H
 
 #include "pandabase.h"
-#include "lvecBase4.h"
+#include "luse.h"
 
 NotifyCategoryDecl(shadowatlas, EXPORT_CLASS, EXPORT_TEMPL);
 

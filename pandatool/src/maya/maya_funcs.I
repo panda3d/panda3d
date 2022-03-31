@@ -14,13 +14,13 @@
 /**
  *
  */
-INLINE ostream &operator << (ostream &out, const MString &str) {
+INLINE std::ostream &operator << (std::ostream &out, const MString &str) {
   return out << str.asChar();
 }
 
 /**
  *
  */
-INLINE ostream &operator << (ostream &out, const MVector &vec) {
+INLINE std::ostream &operator << (std::ostream &out, const MVector &vec) {
   return out << vec.x << " " << vec.y << " " << vec.z;
 }

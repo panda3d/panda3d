@@ -28,7 +28,7 @@ is_pending() const {
  */
 INLINE bool AnimControl::
 has_anim() const {
-  return (_anim != (AnimBundle *)NULL);
+  return (_anim != nullptr);
 }
 
 /**
@@ -88,8 +88,8 @@ get_anim_model() const {
   return _anim_model;
 }
 
-INLINE ostream &
-operator << (ostream &out, const AnimControl &control) {
+INLINE std::ostream &
+operator << (std::ostream &out, const AnimControl &control) {
   control.output(out);
   return out;
 }

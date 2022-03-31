@@ -51,7 +51,7 @@ class DataNodeTransmit;
  */
 class EXPCL_PANDA_DGRAPH DataNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit DataNode(const string &name);
+  INLINE explicit DataNode(const std::string &name);
 
 protected:
   INLINE DataNode(const DataNode &copy);
@@ -66,13 +66,13 @@ public:
   INLINE int get_num_outputs() const;
 
 PUBLISHED:
-  void write_inputs(ostream &out) const;
-  void write_outputs(ostream &out) const;
-  void write_connections(ostream &out) const;
+  void write_inputs(std::ostream &out) const;
+  void write_outputs(std::ostream &out) const;
+  void write_connections(std::ostream &out) const;
 
 protected:
-  int define_input(const string &name, TypeHandle data_type);
-  int define_output(const string &name, TypeHandle data_type);
+  int define_input(const std::string &name, TypeHandle data_type);
+  int define_output(const std::string &name, TypeHandle data_type);
 
 protected:
   // Inherited from PandaNode
@@ -92,7 +92,7 @@ private:
     int _index;
   };
 
-  typedef pmap<string, WireDef> Wires;
+  typedef pmap<std::string, WireDef> Wires;
 
   Wires _input_wires;
   Wires _output_wires;

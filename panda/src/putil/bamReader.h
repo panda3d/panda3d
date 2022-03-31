@@ -42,7 +42,7 @@
 #define READ_PTA(Manager, source, Read_func, array)   \
 {                                                     \
   void *t;                                            \
-  if ((t = Manager->get_pta(source)) == (void*)NULL)  \
+  if ((t = Manager->get_pta(source)) == nullptr)  \
   {                                                   \
     array = Read_func(Manager, source);               \
     Manager->register_pta(array.get_void_ptr());      \
@@ -58,7 +58,7 @@
  * object's read pass.  To use this, subclass BamReaderAuxData and add
  * whatever additional data you require.
  */
-class EXPCL_PANDA_PGRAPH BamReaderAuxData : public TypedReferenceCount {
+class EXPCL_PANDA_PUTIL BamReaderAuxData : public TypedReferenceCount {
 public:
   INLINE BamReaderAuxData();
 
@@ -115,7 +115,7 @@ public:
 
 PUBLISHED:
   // The primary interface for a caller.
-  explicit BamReader(DatagramGenerator *source = NULL);
+  explicit BamReader(DatagramGenerator *source = nullptr);
   ~BamReader();
 
   void set_source(DatagramGenerator *source);
@@ -124,8 +124,8 @@ PUBLISHED:
   bool init();
 
   class AuxData;
-  void set_aux_data(TypedWritable *obj, const string &name, AuxData *data);
-  AuxData *get_aux_data(TypedWritable *obj, const string &name) const;
+  void set_aux_data(TypedWritable *obj, const std::string &name, AuxData *data);
+  AuxData *get_aux_data(TypedWritable *obj, const std::string &name) const;
 
   INLINE const Filename &get_filename() const;
 
@@ -172,11 +172,11 @@ public:
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
                   void *extra_data);
 
-  void set_int_tag(const string &tag, int value);
-  int get_int_tag(const string &tag) const;
+  void set_int_tag(const std::string &tag, int value);
+  int get_int_tag(const std::string &tag) const;
 
-  void set_aux_tag(const string &tag, BamReaderAuxData *value);
-  BamReaderAuxData *get_aux_tag(const string &tag) const;
+  void set_aux_tag(const std::string &tag, BamReaderAuxData *value);
+  BamReaderAuxData *get_aux_tag(const std::string &tag) const;
 
   void register_finalize(TypedWritable *whom);
 
@@ -194,11 +194,11 @@ public:
 
   INLINE const FileReference *get_file();
   INLINE VirtualFile *get_vfile();
-  INLINE streampos get_file_pos();
+  INLINE std::streampos get_file_pos();
 
 public:
   INLINE static void register_factory(TypeHandle type, WritableFactory::CreateFunc *func,
-                                      void *user_data = NULL);
+                                      void *user_data = nullptr);
   INLINE static WritableFactory *get_factory();
 
 PUBLISHED:
@@ -228,7 +228,7 @@ public:
   class AuxData : public ReferenceCount {
   public:
     INLINE AuxData();
-    virtual ~AuxData();
+    virtual ~AuxData() = default;
   };
 
 private:
@@ -282,8 +282,8 @@ private:
   // which read_pointer() was called, so that we may call the appropriate
   // complete_pointers() later.
   typedef phash_map<PipelineCyclerBase *, vector_int, pointer_hash> CyclerPointers;
-  typedef pmap<string, int> IntTags;
-  typedef pmap<string, PT(BamReaderAuxData) > AuxTags;
+  typedef pmap<std::string, int> IntTags;
+  typedef pmap<std::string, PT(BamReaderAuxData) > AuxTags;
   class PointerReference {
   public:
     vector_int _objects;
@@ -328,7 +328,7 @@ private:
   static NewTypes _new_types;
 
   // This is used in support of set_aux_data() and get_aux_data().
-  typedef pmap<string, PT(AuxData)> AuxDataNames;
+  typedef pmap<std::string, PT(AuxData)> AuxDataNames;
   typedef phash_map<TypedWritable *, AuxDataNames, pointer_hash> AuxDataTable;
   AuxDataTable _aux_data;
 

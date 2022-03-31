@@ -22,10 +22,7 @@ void CacheStats::
 init() {
 #ifndef NDEBUG
   // Let's not use the clock at static init time.
-  reset(0.0);
-  // reset(ClockObject::get_global_clock()->get_real_time());
-  _total_cache_size = 0;
-  _num_states = 0;
+  //reset(ClockObject::get_global_clock()->get_real_time());
 
   _cache_report = ConfigVariableBool("cache-report", false);
   _cache_report_interval = ConfigVariableDouble("cache-report-interval", 5.0);
@@ -52,14 +49,15 @@ reset(double now) {
  *
  */
 void CacheStats::
-write(ostream &out, const char *name) const {
+write(std::ostream &out, const char *name) const {
 #ifndef NDEBUG
+  int num_states = _num_states.load(std::memory_order_relaxed);
   out << name << " cache: " << _cache_hits << " hits, "
       << _cache_misses << " misses\n"
       << _cache_adds + _cache_new_adds << "(" << _cache_new_adds << ") adds(new), "
       << _cache_dels << " dels, "
-      << _total_cache_size << " / " << _num_states << " = "
-      << (double)_total_cache_size / (double)_num_states
+      << _total_cache_size << " / " << num_states << " = "
+      << (double)_total_cache_size / (double)num_states
       << " average cache size\n";
 #endif  // NDEBUG
 }

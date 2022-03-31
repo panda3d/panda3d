@@ -16,6 +16,10 @@
 #include "typedSkel.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDASKEL)
+  #error Buildsystem error: BUILDING_PANDASKEL not defined
+#endif
+
 Configure(config_skel);
 NotifyCategoryDef(skel, "");
 

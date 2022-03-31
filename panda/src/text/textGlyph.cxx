@@ -17,6 +17,9 @@
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+
 TypeHandle TextGlyph::_type_handle;
 
 /**
@@ -51,11 +54,11 @@ get_geom(Geom::UsageHint usage_hint) const {
     if (_has_quad) {
       ((TextGlyph *)this)->make_quad_geom();
       if (_geom.is_null()) {
-        return (Geom *)NULL;
+        return nullptr;
       }
     } else {
       // Nope.
-      return (Geom *)NULL;
+      return nullptr;
     }
   }
 
@@ -67,7 +70,7 @@ get_geom(Geom::UsageHint usage_hint) const {
   PT(Geom) new_geom = new GeomTextGlyph(*_geom, this);
   new_geom->set_usage_hint(usage_hint);
   const GeomVertexData *vdata = new_geom->get_vertex_data();
-  nassertr(vdata != NULL, new_geom);
+  nassertr(vdata != nullptr, new_geom);
   if (vdata->get_usage_hint() != usage_hint) {
     new_geom->modify_vertex_data()->set_usage_hint(usage_hint);
   }
@@ -168,66 +171,63 @@ check_quad_geom() {
 
   // Check that the vertices are arranged in a square.
   GeomVertexReader vertex(vdata, InternalName::get_vertex());
+  GeomVertexReader texcoord(vdata, InternalName::get_texcoord());
   LVecBase3 v = vertex.get_data3();
   if (!IS_NEARLY_ZERO(v[1])) {
     return;
+  }
+  LTexCoord uv(0);
+  if (texcoord.has_column()) {
+    uv = texcoord.get_data2();
   }
   PN_stdfloat minx = v[0];
   PN_stdfloat maxx = v[0];
   PN_stdfloat miny = v[2];
   PN_stdfloat maxy = v[2];
+  PN_stdfloat minu = uv[0];
+  PN_stdfloat maxu = uv[0];
+  PN_stdfloat minv = uv[1];
+  PN_stdfloat maxv = uv[1];
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 1; i < 4; ++i) {
     v = vertex.get_data3();
     if (!IS_NEARLY_ZERO(v[1])) {
       return;
+    }
+    if (texcoord.has_column()) {
+      uv = texcoord.get_data2();
     }
     if (!IS_NEARLY_EQUAL(v[0], minx) && !IS_NEARLY_EQUAL(v[0], maxx)) {
       if (!IS_NEARLY_EQUAL(minx, maxx)) {
         return;
       }
-      minx = min(v[0], minx);
-      maxx = max(v[0], maxx);
+      if (v[0] < minx) {
+        minx = v[0];
+        minu = uv[0];
+      }
+      if (v[0] > maxx) {
+        maxx = v[0];
+        maxu = uv[0];
+      }
     }
     if (!IS_NEARLY_EQUAL(v[2], miny) && !IS_NEARLY_EQUAL(v[2], maxy)) {
       if (!IS_NEARLY_EQUAL(miny, maxy)) {
         return;
       }
-      miny = min(v[2], miny);
-      maxy = max(v[2], maxy);
+      if (v[2] < miny) {
+        miny = v[2];
+        minv = uv[1];
+      }
+      if (v[2] > maxy) {
+        maxy = v[2];
+        maxv = uv[1];
+      }
     }
-  }
-
-  PN_stdfloat minu = 0;
-  PN_stdfloat maxu = 0;
-  PN_stdfloat minv = 0;
-  PN_stdfloat maxv = 0;
-
-  // Same for the texcoord data.
-  if (format->has_column(InternalName::get_texcoord())) {
-    GeomVertexReader texcoord(vdata, InternalName::get_texcoord());
-    LVecBase2 tc = texcoord.get_data2();
-    minu = tc[0];
-    maxu = tc[0];
-    minv = tc[1];
-    maxv = tc[1];
-
-    for (int i = 0; i < 3; ++i) {
-      tc = texcoord.get_data2();
-      if (!IS_NEARLY_EQUAL(tc[0], minu) && !IS_NEARLY_EQUAL(tc[0], maxu)) {
-        if (!IS_NEARLY_EQUAL(minu, maxu)) {
-          return;
-        }
-        minu = min(tc[0], minu);
-        maxu = max(tc[0], maxu);
-      }
-      if (!IS_NEARLY_EQUAL(tc[1], minv) && !IS_NEARLY_EQUAL(tc[1], maxv)) {
-        if (!IS_NEARLY_EQUAL(minv, maxv)) {
-          return;
-        }
-        minv = min(tc[1], minv);
-        maxv = max(tc[1], maxv);
-      }
+    if (!IS_NEARLY_EQUAL(uv[0], minu) && !IS_NEARLY_EQUAL(uv[0], maxu)) {
+      return;
+    }
+    if (!IS_NEARLY_EQUAL(uv[1], minv) && !IS_NEARLY_EQUAL(uv[1], maxv)) {
+      return;
     }
   }
 
@@ -252,7 +252,7 @@ make_quad_geom() {
   // rather than a single triangle strip, to avoid the bad vertex duplication
   // behavior with lots of two-triangle strips.
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3t2(), Geom::UH_static);
+    (std::string(), GeomVertexFormat::get_v3t2(), Geom::UH_static);
   vdata->unclean_set_num_rows(4);
 
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);

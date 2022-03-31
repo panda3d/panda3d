@@ -27,7 +27,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler, Thread *current_thread) :
   _current_thread(current_thread)
 {
   _pointer = _cycler->write(_current_thread);
-  nassertv(_pointer != (CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
 }
 
 /**
@@ -45,7 +45,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
   _current_thread(current_thread)
 {
   _pointer = _cycler->write_upstream(force_to_0, _current_thread);
-  nassertv(_pointer != (CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
 }
 
 /**
@@ -64,7 +64,7 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataType *locked_cda
   _current_thread(current_thread)
 {
   _pointer = locked_cdata;
-  nassertv(_pointer != (CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
 }
 
 /**
@@ -77,7 +77,7 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
   _current_thread(copy._current_thread),
   _pointer(copy._pointer)
 {
-  nassertv(_pointer != (CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_write(_pointer);
 }
 
@@ -87,13 +87,13 @@ CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void CycleDataWriter<CycleDataType>::
 operator = (const CycleDataWriter<CycleDataType> &copy) {
-  nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
 
-  nassertv(_pointer != (CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_write(_pointer);
 }
 
@@ -130,18 +130,17 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                                             force_to_0, _current_thread);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
-CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT :
+CycleDataWriter(CycleDataWriter<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
   _pointer(from._pointer)
 {
-  from._pointer = NULL;
+  from._pointer = nullptr;
 }
 
 /**
@@ -149,16 +148,15 @@ CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT :
  */
 template<class CycleDataType>
 INLINE void CycleDataWriter<CycleDataType>::
-operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT {
-  nassertv(_pointer == (CycleDataType *)NULL);
+operator = (CycleDataWriter<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == from._current_thread);
 
   _cycler = from._cycler;
   _pointer = from._pointer;
 
-  from._pointer = NULL;
+  from._pointer = nullptr;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
@@ -166,7 +164,7 @@ operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT {
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 ~CycleDataWriter() {
-  if (_pointer != (CycleDataType *)NULL) {
+  if (_pointer != nullptr) {
     _cycler->release_write(_pointer);
   }
 }
@@ -177,7 +175,7 @@ INLINE CycleDataWriter<CycleDataType>::
 template<class CycleDataType>
 INLINE CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -187,7 +185,7 @@ operator -> () {
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataWriter<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -198,7 +196,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 operator CycleDataType * () {
-  nassertr(_pointer != (CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 

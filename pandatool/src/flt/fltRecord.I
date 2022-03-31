@@ -11,8 +11,8 @@
  * @date 2000-08-24
  */
 
-INLINE ostream &
-operator << (ostream &out, const FltRecord &record) {
+INLINE std::ostream &
+operator << (std::ostream &out, const FltRecord &record) {
   record.output(out);
   return out;
 }

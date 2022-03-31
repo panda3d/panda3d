@@ -23,6 +23,9 @@
 #include "boundingHexahedron.h"
 #include "lens.h"
 
+using std::max;
+using std::min;
+
 TypeHandle ScissorEffect::_type_handle;
 
 /**
@@ -58,7 +61,7 @@ ScissorEffect(const ScissorEffect &copy) :
  */
 CPT(RenderEffect) ScissorEffect::
 make_screen(const LVecBase4 &frame, bool clip) {
-  ScissorEffect *effect = new ScissorEffect(true, frame, NULL, 0, clip);
+  ScissorEffect *effect = new ScissorEffect(true, frame, nullptr, 0, clip);
   return return_new(effect);
 }
 
@@ -69,7 +72,7 @@ make_screen(const LVecBase4 &frame, bool clip) {
  */
 CPT(RenderEffect) ScissorEffect::
 make_node(bool clip) {
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), NULL, 0, clip);
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), nullptr, 0, clip);
   return return_new(effect);
 }
 
@@ -155,7 +158,7 @@ xform(const LMatrix4 &mat) const {
  *
  */
 void ScissorEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_screen()) {
     out << "screen [" << _frame << "]";
@@ -273,7 +276,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   // Set up the culling.  We do this by extruding the four corners of the
   // frame into the eight corners of the bounding frustum.
   PT(GeometricBoundingVolume) frustum = make_frustum(lens, frame);
-  if (frustum != (GeometricBoundingVolume *)NULL) {
+  if (frustum != nullptr) {
     frustum->xform(modelview_transform->get_inverse()->get_mat());
     data._view_frustum = frustum;
   }
@@ -362,7 +365,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ScissorEffect::
 make_from_bam(const FactoryParams &params) {
-  ScissorEffect *effect = new ScissorEffect(true, LVecBase4::zero(), NULL, 0, false);
+  ScissorEffect *effect = new ScissorEffect(true, LVecBase4::zero(), nullptr, 0, false);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -415,28 +418,28 @@ make_frustum(const Lens *lens, const LVecBase4 &frame) const{
 
   // Upper left.
   if (!lens->extrude(corner, nul, ful)) {
-    return (GeometricBoundingVolume *)NULL;
+    return nullptr;
   }
 
   corner[0] = f2[1]; corner[1] = f2[3];
 
   // Upper right.
   if (!lens->extrude(corner, nur, fur)) {
-    return (GeometricBoundingVolume *)NULL;
+    return nullptr;
   }
 
   corner[0] = f2[1]; corner[1] = f2[2];
 
   // Lower right.
   if (!lens->extrude(corner, nlr, flr)) {
-    return (GeometricBoundingVolume *)NULL;
+    return nullptr;
   }
 
   corner[0] = f2[0]; corner[1] = f2[2];
 
   // Lower left.
   if (!lens->extrude(corner, nll, fll)) {
-    return (GeometricBoundingVolume *)NULL;
+    return nullptr;
   }
 
   return new BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);

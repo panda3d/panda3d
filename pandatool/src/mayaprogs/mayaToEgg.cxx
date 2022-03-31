@@ -43,6 +43,7 @@
 #include "config_mayaegg.h"
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
+#include "mayaConversionServer.h"
 
 /**
  *
@@ -76,7 +77,7 @@ MayaToEgg() :
      "Specify the fit tolerance for Maya polygon tesselation.  The smaller "
      "the number, the more polygons will be generated.  The default is "
      "0.01.",
-     &MayaToEgg::dispatch_double, NULL, &_polygon_tolerance);
+     &MayaToEgg::dispatch_double, nullptr, &_polygon_tolerance);
 
   add_option
     ("bface", "", 0,
@@ -124,13 +125,19 @@ MayaToEgg() :
      "Legacy option.  Same as -pc.",
      &MayaToEgg::dispatch_filename, &_legacy_copytex, &_legacy_copytex_dir);
 
+  add_option("server", "", 0,
+    "Runs the Maya model conversion server. This server can be used in tandem "
+    "with the egg2maya_client and maya2egg_client utilities to batch convert "
+    "both Maya and Panda3D model files.",
+    &MayaToEgg::dispatch_none, &_run_server);
+
   add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
      "dcs, or none.  The default is model, which means only transforms on "
      "nodes that have the model flag or the dcs flag are preserved.",
-     &MayaToEgg::dispatch_transform_type, NULL, &_transform_type);
+     &MayaToEgg::dispatch_transform_type, nullptr, &_transform_type);
 
   add_option
     ("subroot", "name", 0,
@@ -140,7 +147,7 @@ MayaToEgg() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_subroots);
+     &MayaToEgg::dispatch_vector_string, nullptr, &_subroots);
 
   add_option
     ("subset", "name", 0,
@@ -150,7 +157,7 @@ MayaToEgg() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_subsets);
+     &MayaToEgg::dispatch_vector_string, nullptr, &_subsets);
 
   add_option
     ("exclude", "name", 0,
@@ -159,7 +166,7 @@ MayaToEgg() :
      "name matches the parameter (which may include globbing characters "
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_excludes);
+     &MayaToEgg::dispatch_vector_string, nullptr, &_excludes);
 
   add_option
     ("ignore-slider", "name", 0,
@@ -168,19 +175,19 @@ MayaToEgg() :
      "and it will not become a part of the animation.  This "
      "parameter may including globbing characters, and it may be repeated "
      "as needed.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_ignore_sliders);
+     &MayaToEgg::dispatch_vector_string, nullptr, &_ignore_sliders);
 
   add_option
     ("force-joint", "name", 0,
      "Specifies the name of a DAG node that maya2egg "
      "should treat as a joint, even if it does not appear to be a Maya joint "
      "and does not appear to be animated.",
-     &MayaToEgg::dispatch_vector_string, NULL, &_force_joints);
+     &MayaToEgg::dispatch_vector_string, nullptr, &_force_joints);
 
   add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
-     &MayaToEgg::dispatch_count, NULL, &_verbose);
+     &MayaToEgg::dispatch_count, nullptr, &_verbose);
 
   add_option
     ("legacy-shaders", "", 0,
@@ -203,7 +210,34 @@ MayaToEgg() :
 /**
  *
  */
-void MayaToEgg::
+MayaToEgg::
+~MayaToEgg() {
+}
+
+/**
+ * Attempts to create the global Maya API.
+ * Exits the program if unsuccessful.
+ */
+PT(MayaApi) MayaToEgg::
+open_api() {
+  if (!MayaApi::is_api_valid()) {
+    nout << "Initializing Maya...\n";
+  }
+
+  PT(MayaApi) api = MayaApi::open_api(_program_name, true, true);
+
+  if (!api || !api->is_valid()) {
+    nout << "Unable to initialize Maya.\n";
+    exit(1);
+  }
+
+  return api;
+}
+
+/**
+ * Returns true if the model has been successfully converted.
+ */
+bool MayaToEgg::
 run() {
   // Set the verbose level by using Notify.
   if (_verbose >= 3) {
@@ -229,14 +263,8 @@ run() {
     _path_replace->_path_directory.make_absolute();
   }
 
-  nout << "Initializing Maya.\n";
+  open_api();
   MayaToEggConverter converter(_program_name);
-  // reverting directories is really not needed for maya2egg.  It's more
-  // needed for mayaeggloader and such
-  if (!converter.open_api(false)) {
-    nout << "Unable to initialize Maya.\n";
-    exit(1);
-  }
 
   // Copy in the command-line parameters.
   converter._polygon_output = _polygon_output;
@@ -299,7 +327,7 @@ run() {
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";
-    exit(1);
+    return false;
   }
 
   // Use the standard Maya units, if the user didn't specify otherwise.  This
@@ -310,8 +338,10 @@ run() {
     _input_units = converter.get_input_units();
   }
 
+  // Write output file
   write_egg_file();
-  nout << "\n";
+  close_output();
+  return true;
 }
 
 /**
@@ -319,7 +349,7 @@ run() {
  * option.
  */
 bool MayaToEgg::
-dispatch_transform_type(const string &opt, const string &arg, void *var) {
+dispatch_transform_type(const std::string &opt, const std::string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
   (*ip) = MayaToEggConverter::string_transform_type(arg);
 
@@ -332,9 +362,22 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-int main(int argc, char *argv[]) {
-  MayaToEgg prog;
-  prog.parse_command_line(argc, argv);
-  prog.run();
-  return 0;
+/**
+ * Processes the arguments parsed by the program.
+ *
+ * If the server flag is specified, the Maya conversion server is started
+ * up rather than the usual conversion utility functionality.
+ */
+bool MayaToEgg::
+handle_args(ProgramBase::Args &args) {
+  if (_run_server) {
+    open_api();
+
+    MayaConversionServer server;
+    server.listen();
+    exit(0);
+    return true;
+  }
+
+  return SomethingToEgg::handle_args(args);
 }

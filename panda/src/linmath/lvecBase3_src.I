@@ -795,7 +795,7 @@ almost_equal(const FLOATNAME(LVecBase3) &other) const {
  *
  */
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << MAYBE_ZERO(_v(0)) << " "
       << MAYBE_ZERO(_v(1)) << " "
       << MAYBE_ZERO(_v(2));

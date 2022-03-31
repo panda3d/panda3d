@@ -17,7 +17,7 @@
 #include "virtualFileSystem.h"
 #include "virtualFile.h"
 #include "indent.h"
-#include "config_util.h" // util_cat
+#include "config_putil.h" // util_cat
 
 TypeHandle BamCacheRecord::_type_handle;
 
@@ -29,8 +29,8 @@ BamCacheRecord() :
   _recorded_time(0),
   _record_size(0),
   _source_timestamp(0),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(0)
 {
 }
@@ -46,8 +46,8 @@ BamCacheRecord(const Filename &source_pathname,
   _recorded_time(0),
   _record_size(0),
   _source_timestamp(0),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(0)
 {
 }
@@ -62,8 +62,8 @@ BamCacheRecord(const BamCacheRecord &copy) :
   _recorded_time(copy._recorded_time),
   _record_size(copy._record_size),
   _source_timestamp(copy._source_timestamp),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(copy._record_access_time)
 {
 }
@@ -93,7 +93,7 @@ dependents_unchanged() const {
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
     PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-    if (file == (VirtualFile *)NULL) {
+    if (file == nullptr) {
       // No such file.
       if (dfile._timestamp != 0) {
         if (util_cat.is_debug()) {
@@ -153,7 +153,7 @@ add_dependent_file(const Filename &pathname) {
   dfile._pathname.make_absolute();
 
   PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     // No such file.
     dfile._timestamp = 0;
     dfile._size = 0;
@@ -190,7 +190,7 @@ add_dependent_file(const VirtualFile *file) {
  *
  */
 void BamCacheRecord::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "BamCacheRecord " << get_source_pathname();
 }
 
@@ -198,7 +198,7 @@ output(ostream &out) const {
  *
  */
 void BamCacheRecord::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BamCacheRecord " << get_source_pathname() << "\n";
   indent(out, indent_level)
@@ -212,7 +212,7 @@ write(ostream &out, int indent_level) const {
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
     indent(out, indent_level + 2)
-      << setw(10) << dfile._size << " "
+      << std::setw(10) << dfile._size << " "
       << format_timestamp(dfile._timestamp) << " "
       << dfile._pathname << "\n";
   }
@@ -221,7 +221,7 @@ write(ostream &out, int indent_level) const {
 /**
  * Returns a timestamp value formatted nicely for output.
  */
-string BamCacheRecord::
+std::string BamCacheRecord::
 format_timestamp(time_t timestamp) {
   static const size_t buffer_size = 512;
   char buffer[buffer_size];
@@ -231,7 +231,7 @@ format_timestamp(time_t timestamp) {
     return "  (no date) ";
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm atm;
 #ifdef _WIN32
   localtime_s(&atm, &timestamp);

@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_GHOST_NODE_H__
-#define __BULLET_GHOST_NODE_H__
+#ifndef BULLETGHOSTNODE_H
+#define BULLETGHOSTNODE_H
 
 #include "pandabase.h"
 
@@ -34,17 +34,17 @@ PUBLISHED:
   INLINE ~BulletGhostNode();
 
   // Overlapping
-  INLINE int get_num_overlapping_nodes() const;
-  INLINE PandaNode *get_overlapping_node(int idx) const;
+  int get_num_overlapping_nodes() const;
+  PandaNode *get_overlapping_node(int idx) const;
   MAKE_SEQ(get_overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
-  
+
   MAKE_SEQ_PROPERTY(overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
 
 public:
   virtual btCollisionObject *get_object() const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
   virtual void parents_changed();
@@ -56,6 +56,16 @@ private:
   bool _sync_local;
 
   btPairCachingGhostObject *_ghost;
+
+  void do_transform_changed();
+
+public:
+  static void register_with_read_factory();
+  virtual PandaNode *make_copy() const;
+
+protected:
+  BulletGhostNode(const BulletGhostNode &copy);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -80,4 +90,4 @@ private:
 
 #include "bulletGhostNode.I"
 
-#endif // __BULLET_GHOST_NODE_H__
+#endif // BULLETGHOSTNODE_H

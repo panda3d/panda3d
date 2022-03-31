@@ -38,8 +38,8 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
   virtual bool supports_convert_to_node(const LoaderOptions &options) const;
 
@@ -48,8 +48,8 @@ public:
 
 protected:
   bool process(const Filename &filename);
-  bool process_line(const string &line);
-  bool process_ref_plane_res(const string &line);
+  bool process_line(const std::string &line);
+  bool process_ref_plane_res(const std::string &line);
 
   bool process_v(vector_string &words);
   bool process_vt(vector_string &words);
@@ -59,11 +59,11 @@ protected:
   bool process_f(vector_string &words);
   bool process_g(vector_string &words);
 
-  EggVertex *get_face_vertex(const string &face_reference);
+  EggVertex *get_face_vertex(const std::string &face_reference);
   void generate_egg_points();
 
   bool process_node(const Filename &filename);
-  bool process_line_node(const string &line);
+  bool process_line_node(const std::string &line);
 
   bool process_f_node(vector_string &words);
   bool process_g_node(vector_string &words);
@@ -88,7 +88,7 @@ protected:
   bool _v4_given, _vt3_given;
   bool _f_given;
 
-  pset<string> _ignored_tags;
+  pset<std::string> _ignored_tags;
 
   // Structures filled when creating an egg file.
   PT(EggVertexPool) _vpool;
@@ -101,7 +101,7 @@ protected:
   class VertexEntry {
   public:
     VertexEntry();
-    VertexEntry(const ObjToEggConverter *converter, const string &obj_vertex);
+    VertexEntry(const ObjToEggConverter *converter, const std::string &obj_vertex);
 
     INLINE bool operator < (const VertexEntry &other) const;
     INLINE bool operator == (const VertexEntry &other) const;
@@ -119,7 +119,7 @@ protected:
 
   class VertexData {
   public:
-    VertexData(PandaNode *parent, const string &name);
+    VertexData(PandaNode *parent, const std::string &name);
 
     int add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry);
     void add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0,
@@ -128,7 +128,7 @@ protected:
     void close_geom(const ObjToEggConverter *converter);
 
     PT(PandaNode) _parent;
-    string _name;
+    std::string _name;
     PT(GeomNode) _geom_node;
 
     PT(GeomPrimitive) _prim;

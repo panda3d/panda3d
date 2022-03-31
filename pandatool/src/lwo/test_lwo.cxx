@@ -30,7 +30,7 @@ main(int argc, char *argv[]) {
   }
 
   PT(IffChunk) chunk = in.get_chunk();
-  while (chunk != (IffChunk *)NULL) {
+  while (chunk != nullptr) {
     nout << "Got chunk type " << chunk->get_type() << ":\n";
     chunk->write(nout, 2);
     chunk = in.get_chunk();

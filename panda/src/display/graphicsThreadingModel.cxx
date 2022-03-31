@@ -13,6 +13,8 @@
 
 #include "graphicsThreadingModel.h"
 
+using std::string;
+
 /**
  * The threading model accepts a string representing the names of the two
  * threads that will process cull and draw for the given window, separated by

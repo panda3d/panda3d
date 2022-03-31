@@ -85,11 +85,11 @@
  * }
  * @endcode
  */
-class EXPCL_DTOOL TypedObject : public MemoryBase {
+class EXPCL_DTOOL_DTOOLBASE TypedObject : public MemoryBase {
 public:
-  INLINE TypedObject() DEFAULT_CTOR;
-  INLINE TypedObject(const TypedObject &copy) DEFAULT_CTOR;
-  INLINE TypedObject &operator = (const TypedObject &copy) DEFAULT_ASSIGN;
+  INLINE TypedObject() = default;
+  INLINE TypedObject(const TypedObject &copy) = default;
+  INLINE TypedObject &operator = (const TypedObject &copy) = default;
 
 PUBLISHED:
   // A virtual destructor is just a good idea.

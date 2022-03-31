@@ -116,7 +116,7 @@ PUBLISHED:
   OdeSpace get_space() const;
   EXTENSION(INLINE PyObject *get_converted_space() const);
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeGeom &other) const;
 

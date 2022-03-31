@@ -37,6 +37,9 @@
 #include "pnmImage.h"
 #include "pfmFile.h"
 
+using std::max;
+using std::min;
+
 // WorkType is an abstraction that allows the filtering process to be
 // recompiled to use either floating-point or integer arithmetic.  On SGI
 // machines, there doesn't seem to be much of a performance difference-- if
@@ -107,7 +110,8 @@ filter_row(StoreType dest[], int dest_len,
            const StoreType source[], int source_len,
            float scale,                    //  == dest_len / source_len
            const WorkType filter[],
-           float filter_width) {
+           float filter_width,
+           int actual_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
   // fractional granularity.  Hence, we scale our filter index by scale.  If
   // we are compressing (scale < 1.0), we don't need to fiddle with the filter
@@ -144,13 +148,15 @@ filter_row(StoreType dest[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x) + 0.5f);
+      index = (int)cfloor(iscale * (center - source_x) + 0.5f);
+      nassertv(index >= 0 && index < actual_width);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center) + 0.5f);
+      index = (int)cfloor(iscale * (source_x - center) + 0.5f);
+      nassertv(index >= 0 && index < actual_width);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
@@ -171,15 +177,16 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
                   const StoreType source[], const StoreType source_weight[], int source_len,
                   float scale,                    //  == dest_len / source_len
                   const WorkType filter[],
-                  float filter_width) {
+                  float filter_width,
+                  int actual_width) {
   // If we are expanding the row (scale > 1.0), we need to look at a
   // fractional granularity.  Hence, we scale our filter index by scale.  If
   // we are compressing (scale < 1.0), we don't need to fiddle with the filter
   // index, so we leave it at one.
 
   float iscale;
-  if (scale < 1.0) {
-    iscale = 1.0;
+  if (scale < 1.0f) {
+    iscale = 1.0f;
     filter_width /= scale;
   } else {
     iscale = scale;
@@ -208,13 +215,15 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x) + 0.5f);
+      index = (int)cfloor(iscale * (center - source_x) + 0.5f);
+      nassertv(index >= 0 && index < actual_width);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center) + 0.5f);
+      index = (int)cfloor(iscale * (source_x - center) + 0.5f);
+      nassertv(index >= 0 && index < actual_width);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
@@ -241,11 +250,12 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
 // corresponding to values in the range -filter_width to filter_width.
 
 typedef void FilterFunction(float scale, float width,
-                            WorkType *&filter, float &filter_width);
+                            WorkType *&filter, float &filter_width, int &actual_width);
 
 static void
 box_filter_impl(float scale, float width,
-                WorkType *&filter, float &filter_width) {
+                WorkType *&filter, float &filter_width,
+                int &actual_width) {
   float fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of the
@@ -260,7 +270,11 @@ box_filter_impl(float scale, float width,
     fscale = scale;
   }
   filter_width = width;
-  int actual_width = (int)cceil((filter_width + 1) * fscale) + 1;
+
+  // It seems we need a buffer of two extra values in the filter array
+  // to allow room for all calculations (especially including the 1/2
+  // pixel offset).
+  actual_width = (int)cceil((filter_width + 1) * fscale) + 2;
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
 
@@ -271,7 +285,8 @@ box_filter_impl(float scale, float width,
 
 static void
 gaussian_filter_impl(float scale, float width,
-                     WorkType *&filter, float &filter_width) {
+                     WorkType *&filter, float &filter_width,
+                     int &actual_width) {
   float fscale;
   if (scale < 1.0) {
     // If we are compressing the image, we want to expand the range of the
@@ -288,7 +303,11 @@ gaussian_filter_impl(float scale, float width,
 
   float sigma = width/2;
   filter_width = 3.0 * sigma;
-  int actual_width = (int)cceil((filter_width + 1) * fscale);
+
+  // It seems we need a buffer of two extra values in the filter array
+  // to allow room for all calculations (especially including the 1/2
+  // pixel offset).
+  actual_width = (int)cceil((filter_width + 1) * fscale) + 2;
 
   // G(x, y) = (1(2 pi sigma^2)) * exp( - (x^2 + y^2)  (2 sigma^2))
 

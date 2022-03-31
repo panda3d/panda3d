@@ -37,10 +37,10 @@ public:
   void reset();
   void add_placement(TexturePlacement *placement);
 
-  void report(ostream &out, int indent_level);
+  void report(std::ostream &out, int indent_level);
 
 private:
-  static ostream &format_memory_fraction(ostream &out, int fraction_bytes,
+  static std::ostream &format_memory_fraction(std::ostream &out, int fraction_bytes,
                                          int palette_bytes);
   void add_palette(PaletteImage *image);
   void add_texture(TextureImage *texture, int bytes);

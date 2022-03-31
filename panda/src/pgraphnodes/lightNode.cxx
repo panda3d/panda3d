@@ -23,7 +23,7 @@ TypeHandle LightNode::_type_handle;
  *
  */
 LightNode::
-LightNode(const string &name) :
+LightNode(const std::string &name) :
   PandaNode(name)
 {
 }
@@ -59,7 +59,7 @@ as_light() {
  *
  */
 void LightNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 
@@ -67,7 +67,7 @@ output(ostream &out) const {
  *
  */
 void LightNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
 }
 

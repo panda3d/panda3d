@@ -70,7 +70,7 @@ PUBLISHED:
 
   LVecBase4 get_internal_frame(const LVecBase4 &frame) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   bool xform(const LMatrix4 &mat);
@@ -92,8 +92,8 @@ private:
   LVecBase2 _visible_scale;
 };
 
-INLINE ostream &operator << (ostream &out, const PGFrameStyle &pfs);
-ostream &operator << (ostream &out, PGFrameStyle::Type type);
+INLINE std::ostream &operator << (std::ostream &out, const PGFrameStyle &pfs);
+std::ostream &operator << (std::ostream &out, PGFrameStyle::Type type);
 
 #include "pgFrameStyle.I"
 

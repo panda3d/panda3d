@@ -22,7 +22,7 @@ TypeHandle EggVertexUV::_type_handle;
  *
  */
 EggVertexUV::
-EggVertexUV(const string &name, const LTexCoordd &uv) :
+EggVertexUV(const std::string &name, const LTexCoordd &uv) :
   EggNamedObject(name),
   _flags(0),
   _uvw(uv[0], uv[1], 0.0)
@@ -36,7 +36,7 @@ EggVertexUV(const string &name, const LTexCoordd &uv) :
  *
  */
 EggVertexUV::
-EggVertexUV(const string &name, const LTexCoord3d &uvw) :
+EggVertexUV(const std::string &name, const LTexCoord3d &uvw) :
   EggNamedObject(name),
   _flags(F_has_w),
   _uvw(uvw)
@@ -88,7 +88,7 @@ EggVertexUV::
  */
 PT(EggVertexUV) EggVertexUV::
 make_average(const EggVertexUV *first, const EggVertexUV *second) {
-  nassertr(first->get_name() == second->get_name(), NULL);
+  nassertr(first->get_name() == second->get_name(), nullptr);
   int flags = first->_flags & second->_flags;
 
   LTexCoord3d uvw = (first->_uvw + second->_uvw) / 2;
@@ -124,8 +124,8 @@ transform(const LMatrix4d &mat) {
  *
  */
 void EggVertexUV::
-write(ostream &out, int indent_level) const {
-  string inline_name = get_name();
+write(std::ostream &out, int indent_level) const {
+  std::string inline_name = get_name();
   if (!inline_name.empty()) {
     inline_name += ' ';
   }
@@ -145,7 +145,10 @@ write(ostream &out, int indent_level) const {
     } else {
       indent(out, indent_level+2) << get_uv() << "\n";
     }
-    if (has_tangent()) {
+    if (has_tangent4()) {
+      indent(out, indent_level + 2)
+        << "<Tangent> { " << get_tangent4() << " }\n";
+    } else if (has_tangent()) {
       indent(out, indent_level + 2)
         << "<Tangent> { " << get_tangent() << " }\n";
     }

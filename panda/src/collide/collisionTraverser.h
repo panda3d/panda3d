@@ -24,6 +24,7 @@
 
 #include "pset.h"
 #include "register_type.h"
+#include "extension.h"
 
 class CollisionNode;
 class CollisionRecorder;
@@ -44,12 +45,12 @@ class CollisionEntry;
  */
 class EXPCL_PANDA_COLLIDE CollisionTraverser : public Namable {
 PUBLISHED:
-  explicit CollisionTraverser(const string &name = "ctrav");
+  explicit CollisionTraverser(const std::string &name = "ctrav");
   ~CollisionTraverser();
 
   INLINE void set_respect_prev_transform(bool flag);
   INLINE bool get_respect_prev_transform() const;
-  MAKE_PROPERTY(respect_preV_transform, get_respect_prev_transform,
+  MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform,
                                         set_respect_prev_transform);
 
   void add_collider(const NodePath &collider, CollisionHandler *handler);
@@ -62,9 +63,9 @@ PUBLISHED:
   void clear_colliders();
   MAKE_SEQ_PROPERTY(colliders, get_num_colliders, get_collider);
 
-  void traverse(const NodePath &root);
+  BLOCKING void traverse(const NodePath &root);
 
-#ifdef DO_COLLISION_RECORDING
+#if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
   void set_recorder(CollisionRecorder *recorder);
   INLINE bool has_recorder() const;
   INLINE CollisionRecorder *get_recorder() const;
@@ -72,12 +73,15 @@ PUBLISHED:
   MAKE_PROPERTY2(recorder, has_recorder, get_recorder,
                            set_recorder, clear_recorder);
 
-  CollisionVisualizer *show_collisions(const NodePath &root);
+  PandaNode *show_collisions(const NodePath &root);
   void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
+
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
 
 private:
   typedef pvector<CollisionLevelStateSingle> LevelStatesSingle;
@@ -111,7 +115,6 @@ private:
 
 private:
   PT(CollisionHandler) _default_handler;
-  TypeHandle _graph_type;
 
   class OrderedColliderDef {
   public:
@@ -133,6 +136,9 @@ private:
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder *_recorder;
   NodePath _collision_visualizer_np;
+#else
+  CollisionRecorder *_recorder_disabled = nullptr;
+  NodePath _collision_visualizer_np_disabled;
 #endif  // DO_COLLISION_RECORDING
 
   // Statistics
@@ -164,7 +170,7 @@ private:
   friend class SortByColliderSort;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {
+INLINE std::ostream &operator << (std::ostream &out, const CollisionTraverser &trav) {
   trav.output(out);
   return out;
 }

@@ -19,6 +19,9 @@
 #include "bmp.h"
 #include "pnmbitio.h"
 
+using std::istream;
+using std::string;
+
 // Much code in this file is borrowed from Netpbm, specifically bmptoppm.c.
 /*
  * bmptoppm.c - Converts from a Microsoft Windows or OS/2 .BMP file to a
@@ -332,13 +335,13 @@ BMPreadrow(
         pixval         *G,
         pixval         *B)
 {
-        BITSTREAM       b = NULL;
+        BITSTREAM       b = nullptr;
         unsigned        nbyte = 0;
         int             rc;
         unsigned        x;
 
         if (indexed) {
-          if ((b = pm_bitinit(fp, "r")) == (BITSTREAM) 0)
+          if ((b = pm_bitinit(fp, "r")) == nullptr)
             {
               return -1;
             }

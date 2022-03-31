@@ -52,7 +52,7 @@ PUBLISHED:
     AQUADRATIC,
   };
 
-  explicit PolylightNode(const string &name);
+  explicit PolylightNode(const std::string &name);
   INLINE void enable();
   INLINE void disable();
   INLINE void set_pos(const LPoint3 &position);
@@ -120,7 +120,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

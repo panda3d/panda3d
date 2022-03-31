@@ -18,6 +18,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
+#undef Configure
 #include <d3d9.h>
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"

@@ -29,9 +29,9 @@ class ParameterRemapPTToPointer : public ParameterRemap {
 public:
   ParameterRemapPTToPointer(CPPType *orig_type);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string get_return_expr(const string &expression);
-  virtual string temporary_to_return(const string &temporary);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string get_return_expr(const std::string &expression);
+  virtual std::string temporary_to_return(const std::string &temporary);
 
 private:
   CPPType *_pointer_type;

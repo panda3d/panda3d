@@ -37,7 +37,7 @@ DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) 
  *
  */
 void DisplayRegionDrawCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_cull_result << ", "
       << (void *)_scene_setup << ")";
 }
@@ -57,7 +57,7 @@ upcall() {
   DisplayRegion *dr = _scene_setup->get_display_region();
   GraphicsStateGuardian *gsg = dr->get_window()->get_gsg();
 
-  if (_cull_result == NULL || _scene_setup == NULL) {
+  if (_cull_result == nullptr || _scene_setup == nullptr) {
     // Nothing to see here.
 
   } else if (dr->is_stereo()) {

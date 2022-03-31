@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include "typeRegistry.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 // Windows case.
 #ifndef WIN32_LEAN_AND_MEAN
@@ -37,6 +37,8 @@
 
 #endif  // WIN32
 
+using std::cerr;
+
 // Ensure we made the right decisions about the alignment size.
 static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(size_t),
               "MEMORY_HOOK_ALIGNMENT should at least be sizeof(size_t)");
@@ -48,6 +50,18 @@ static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
               "MEMORY_HOOK_ALIGNMENT should be a power of two");
 
 #if defined(CPPPARSER)
+
+#elif defined(USE_MEMORY_MIMALLOC)
+
+// mimalloc is a modern memory manager by Microsoft that is very fast as well
+// as thread-safe.
+
+#include "mimalloc.h"
+
+#define call_malloc mi_malloc
+#define call_realloc mi_realloc
+#define call_free mi_free
+#undef MEMORY_HOOK_MALLOC_LOCK
 
 #elif defined(USE_MEMORY_DLMALLOC)
 
@@ -189,7 +203,7 @@ ptr_to_alloc(void *ptr, size_t &size) {
  */
 MemoryHook::
 MemoryHook() {
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
   SYSTEM_INFO sysinfo;
@@ -216,16 +230,16 @@ MemoryHook() {
  */
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
-  _page_size(copy._page_size),
   _total_heap_single_size(copy._total_heap_single_size),
   _total_heap_array_size(copy._total_heap_array_size),
   _requested_heap_size(copy._requested_heap_size),
   _total_mmap_size(copy._total_mmap_size),
-  _max_heap_size(copy._max_heap_size) {
+  _max_heap_size(copy._max_heap_size),
+  _page_size(copy._page_size) {
 
-  copy._lock.acquire();
+  copy._lock.lock();
   _deleted_chains = copy._deleted_chains;
-  copy._lock.release();
+  copy._lock.unlock();
 }
 
 /**
@@ -249,19 +263,19 @@ heap_alloc_single(size_t size) {
   size_t inflated_size = inflate_size(size);
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   void *alloc = call_malloc(inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)NULL) {
+  while (alloc == nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc = call_malloc(inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc = call_malloc(inflated_size);
 #endif
@@ -305,9 +319,9 @@ heap_free_single(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   call_free(alloc);
-  _lock.release();
+  _lock.unlock();
 #else
   call_free(alloc);
 #endif
@@ -326,19 +340,19 @@ heap_alloc_array(size_t size) {
   size_t inflated_size = inflate_size(size);
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   void *alloc = call_malloc(inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)NULL) {
+  while (alloc == nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc = call_malloc(inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc = call_malloc(inflated_size);
 #endif
@@ -380,23 +394,23 @@ heap_realloc_array(void *ptr, size_t size) {
 
   void *alloc1 = alloc;
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   alloc1 = call_realloc(alloc1, inflated_size);
-  _lock.release();
+  _lock.unlock();
 #else
   alloc1 = call_realloc(alloc1, inflated_size);
 #endif
 
-  while (alloc1 == (void *)NULL) {
+  while (alloc1 == nullptr) {
     alloc_fail(inflated_size);
 
     // Recover the original pointer.
     alloc1 = alloc;
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-    _lock.acquire();
+    _lock.lock();
     alloc1 = call_realloc(alloc1, inflated_size);
-    _lock.release();
+    _lock.unlock();
 #else
     alloc1 = call_realloc(alloc1, inflated_size);
 #endif
@@ -423,7 +437,7 @@ heap_realloc_array(void *ptr, size_t size) {
   size_t orig_delta = (char *)ptr - (char *)alloc;
   size_t new_delta = (char *)ptr1 - (char *)alloc1;
   if (orig_delta != new_delta) {
-    memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, min(size, orig_size));
+    memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, std::min(size, orig_size));
   }
 
   root[-2] = size;
@@ -453,9 +467,9 @@ heap_free_array(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.acquire();
+  _lock.lock();
   call_free(alloc);
-  _lock.release();
+  _lock.unlock();
 #else
   call_free(alloc);
 #endif
@@ -478,14 +492,14 @@ heap_trim(size_t pad) {
   // Since malloc_trim() isn't standard C, we can't be sure it exists on a
   // given platform.  But if we're using dlmalloc, we know we have
   // dlmalloc_trim.
-  _lock.acquire();
+  _lock.lock();
   if (dlmalloc_trim(pad)) {
     trimmed = true;
   }
-  _lock.release();
+  _lock.unlock();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   // Also, on Windows we have _heapmin().
   if (_heapmin() == 0) {
     trimmed = true;
@@ -514,19 +528,19 @@ mmap_alloc(size_t size, bool allow_exec) {
   _total_mmap_size += size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
-  void *ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE,
+  void *ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE,
                            allow_exec ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
-  if (ptr == (void *)NULL) {
+  if (ptr == nullptr) {
     DWORD err = GetLastError();
     cerr << "Couldn't allocate memory page of size " << size << ": ";
 
     PVOID buffer;
     DWORD length =
       FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                    NULL, err, 0, (LPTSTR)&buffer, 0, NULL);
+                    nullptr, err, 0, (LPTSTR)&buffer, 0, nullptr);
     if (length != 0) {
       cerr << (char *)buffer << "\n";
     } else {
@@ -545,7 +559,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   if (allow_exec) {
     prot |= PROT_EXEC;
   }
-  void *ptr = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
+  void *ptr = mmap(nullptr, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
   if (ptr == (void *)-1) {
     perror("mmap");
     abort();
@@ -569,7 +583,7 @@ mmap_free(void *ptr, size_t size) {
   _total_mmap_size -= size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   VirtualFree(ptr, 0, MEM_RELEASE);
 #else
   munmap(ptr, size);
@@ -596,7 +610,7 @@ DeletedBufferChain *MemoryHook::
 get_deleted_chain(size_t buffer_size) {
   DeletedBufferChain *chain;
 
-  _lock.acquire();
+  _lock.lock();
   DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
   if (dci != _deleted_chains.end()) {
     chain = (*dci).second;
@@ -606,7 +620,7 @@ get_deleted_chain(size_t buffer_size) {
     _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
   }
 
-  _lock.release();
+  _lock.unlock();
   return chain;
 }
 

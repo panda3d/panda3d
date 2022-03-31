@@ -1,9 +1,10 @@
-forcetype ofstream
-forcetype ifstream
-forcetype fstream
+forcetype std::ofstream
+forcetype std::ifstream
+forcetype std::fstream
 
-forcetype ios_base
-forcetype ios
-forcetype istream
-forcetype ostream
-forcetype iostream
+forcetype std::ios_base
+forcetype std::basic_ios<char>
+forcetype std::ios
+forcetype std::istream
+forcetype std::ostream
+forcetype std::iostream

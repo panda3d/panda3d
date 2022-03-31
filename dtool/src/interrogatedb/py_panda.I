@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.I
  * @author rdb
  * @date 2016-06-06
@@ -26,11 +19,13 @@
 template<class T> INLINE bool
 DtoolInstance_GetPointer(PyObject *self, T *&into) {
   if (DtoolInstance_Check(self)) {
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
     if (target_class != nullptr) {
       if (_IS_FINAL(T)) {
         if (DtoolInstance_TYPE(self) == target_class) {
           into = (T *)DtoolInstance_VOID_PTR(self);
+        } else {
+          return false;
         }
       } else {
         into = (T *)DtoolInstance_UPCAST(self, *target_class);
@@ -52,6 +47,8 @@ DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_c
     if (_IS_FINAL(T)) {
       if (DtoolInstance_TYPE(self) == &target_class) {
         into = (T *)DtoolInstance_VOID_PTR(self);
+      } else {
+        return false;
       }
     } else {
       into = (T *)DtoolInstance_UPCAST(self, target_class);
@@ -63,34 +60,104 @@ DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_c
 }
 
 /**
+ * Function to create a hash from a wrapped Python object.
+ */
+INLINE Py_hash_t DtoolInstance_HashPointer(PyObject *self) {
+  if (self != nullptr && DtoolInstance_Check(self)) {
+    return (Py_hash_t)(intptr_t)DtoolInstance_VOID_PTR(self);
+  }
+  return -1;
+}
+
+/**
+ * Python 2-style comparison function that compares objects by pointer.
+ */
+INLINE int DtoolInstance_ComparePointers(PyObject *v1, PyObject *v2) {
+  void *v1_this = DtoolInstance_Check(v1) ? DtoolInstance_VOID_PTR(v1) : nullptr;
+  void *v2_this = DtoolInstance_Check(v2) ? DtoolInstance_VOID_PTR(v2) : nullptr;
+  if (v1_this != nullptr && v2_this != nullptr) {
+    return (v1_this > v2_this) - (v1_this < v2_this);
+  } else {
+    return (v1 > v2) - (v1 < v2);
+  }
+}
+
+/**
+ * Rich comparison function that compares objects by pointer.
+ */
+INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, int op) {
+  int cmpval = DtoolInstance_ComparePointers(v1, v2);
+  Py_RETURN_RICHCOMPARE(cmpval, 0, op);
+}
+
+/**
+ * Utility function for assigning a PyObject pointer while managing refcounts.
+ */
+ALWAYS_INLINE void
+Dtool_Assign_PyObject(PyObject *&ptr, PyObject *value) {
+  PyObject *prev_value = ptr;
+  if (prev_value != value) {
+    Py_XINCREF(value);
+    ptr = value;
+    Py_XDECREF(prev_value);
+  }
+}
+
+/**
+ * Converts the enum value to a C long.
+ */
+INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
+  PyObject *val = PyObject_GetAttrString(value, "value");
+  if (val != nullptr) {
+    long as_long = PyLongOrInt_AS_LONG(val);
+    Py_DECREF(val);
+    return as_long;
+  } else {
+    return -1;
+  }
+}
+
+/**
  * These functions wrap a pointer for a class that defines get_type_handle().
  */
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
+}
+
+/**
+ * Finishes initializing the Dtool_PyInstDef.
+ */
+INLINE int
+DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
+  ((Dtool_PyInstDef *)self)->_My_Type = type;
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
+  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
+  ((Dtool_PyInstDef *)self)->_is_const = is_const;
+  return 0;
 }
 
 /**
@@ -180,7 +247,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(double value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
-  if (value == (const char *)NULL) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -193,7 +260,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const wchar_t *value) {
-  if (value == (const wchar_t *)NULL) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -214,7 +281,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring &value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
-  if (value == (const std::string *)NULL) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -227,7 +294,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value) {
-  if (value == (const std::wstring *)NULL) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -247,7 +314,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value) {
   return PyUnicode_FromWideChar(&value, 1);
 }
 
-ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t) {
+ALWAYS_INLINE PyObject *Dtool_WrapValue(std::nullptr_t) {
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -266,7 +333,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value) {
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value) {
-  if (value == (Py_buffer *)NULL) {
+  if (value == nullptr) {
     return value;
   } else {
     return PyMemoryView_FromBuffer(value);

@@ -20,7 +20,7 @@ INLINE BulletDebugNode::
 }
 
 /**
- *
+ * If true, displays collision shapes in wireframe mode.
  */
 INLINE void BulletDebugNode::
 show_wireframe(bool show) {
@@ -39,7 +39,8 @@ get_show_wireframe() const {
 }
 
 /**
- *
+ * If true, display limits defined for constraints, e.g. a pivot axis or maximum
+ * amplitude.
  */
 INLINE void BulletDebugNode::
 show_constraints(bool show) {
@@ -58,7 +59,7 @@ get_show_constraints() const {
 }
 
 /**
- *
+ * If true, displays axis aligned bounding boxes for objects.
  */
 INLINE void BulletDebugNode::
 show_bounding_boxes(bool show) {
@@ -77,7 +78,7 @@ get_show_bounding_boxes() const {
 }
 
 /**
- *
+ * If true, displays normal vectors for triangle mesh and heightfield faces.
  */
 INLINE void BulletDebugNode::
 show_normals(bool show) {

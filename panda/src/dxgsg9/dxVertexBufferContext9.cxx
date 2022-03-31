@@ -31,7 +31,7 @@ DXVertexBufferContext9(DXGraphicsStateGuardian9 *dxgsg,
                        PreparedGraphicsObjects *pgo,
                        GeomVertexArrayData *data) :
   VertexBufferContext(pgo, data),
-  _vbuffer(NULL)
+  _vbuffer(nullptr)
 {
   // Now fill in the FVF code.
   const GeomVertexArrayFormat *array_format = data->get_array_format();
@@ -174,9 +174,9 @@ void DXVertexBufferContext9::
 evict_lru() {
   dequeue_lru();
 
-  if ( _vbuffer != NULL ) {
+  if ( _vbuffer != nullptr ) {
     _vbuffer->Release();
-    _vbuffer = NULL;
+    _vbuffer = nullptr;
   }
 
   update_data_size_bytes(0);

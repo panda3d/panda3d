@@ -21,7 +21,7 @@
 
 #include <stdarg.h>
 extern "C" {
-  #include "libavformat/avio.h"
+  #include <libavformat/avio.h>
 }
 
 struct URLContext;
@@ -34,12 +34,11 @@ struct AVFormatContext;
 class EXPCL_FFMPEG FfmpegVirtualFile {
 public:
   FfmpegVirtualFile();
+  FfmpegVirtualFile(const FfmpegVirtualFile &copy) = delete;
   ~FfmpegVirtualFile();
-private:
-  FfmpegVirtualFile(const FfmpegVirtualFile &copy);
-  void operator = (const FfmpegVirtualFile &copy);
 
-public:
+  FfmpegVirtualFile &operator = (const FfmpegVirtualFile &copy) = delete;
+
   bool open_vfs(const Filename &filename);
   bool open_subfile(const SubfileInfo &info);
   void close();
@@ -59,9 +58,9 @@ private:
 private:
   AVIOContext *_io_context;
   AVFormatContext *_format_context;
-  streampos _start;
-  streamsize _size;
-  istream *_in;
+  std::streampos _start;
+  std::streamsize _size;
+  std::istream *_in;
   pifstream _file_in;
   bool _owns_in;
   int _buffer_size;

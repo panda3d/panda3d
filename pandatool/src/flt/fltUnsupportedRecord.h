@@ -27,7 +27,7 @@ class FltUnsupportedRecord : public FltRecord {
 public:
   FltUnsupportedRecord(FltHeader *header);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

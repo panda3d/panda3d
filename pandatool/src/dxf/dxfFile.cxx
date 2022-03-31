@@ -15,6 +15,10 @@
 #include "string_utils.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
   { 1, 1, 1 },        // Color 0 is not used.
   { 1, 0, 0 },        // Color 1 = Red
@@ -280,9 +284,9 @@ DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
  */
 DXFFile::
 DXFFile() {
-  _in = NULL;
+  _in = nullptr;
   _owns_in = false;
-  _layer = NULL;
+  _layer = nullptr;
   reset_entity();
   _color_index = -1;
 }
@@ -308,7 +312,7 @@ process(Filename filename) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  if (in == nullptr) {
     return;
   }
   process(in, true);
@@ -552,7 +556,7 @@ get_group() {
       in.get();
     }
 
-    getline(in, _string);
+    std::getline(in, _string);
     _string = trim_right(_string);
 
     if (!in) {
@@ -620,7 +624,7 @@ change_section(Section new_section) {
  */
 void DXFFile::
 change_layer(const string &layer_name) {
-  if (_layer == NULL || _layer->get_name() != layer_name) {
+  if (_layer == nullptr || _layer->get_name() != layer_name) {
     _layer = _layers.get_layer(layer_name, this);
   }
 }

@@ -15,8 +15,8 @@
  *
  */
 INLINE EggNode::
-EggNode(const string &name) : EggNamedObject(name) {
-  _parent = NULL;
+EggNode(const std::string &name) : EggNamedObject(name) {
+  _parent = nullptr;
   _depth = 0;
   _under_flags = 0;
 }
@@ -26,7 +26,7 @@ EggNode(const string &name) : EggNamedObject(name) {
  */
 INLINE EggNode::
 EggNode(const EggNode &copy) : EggNamedObject(copy) {
-  _parent = NULL;
+  _parent = nullptr;
   _depth = 0;
   _under_flags = 0;
 }
@@ -106,7 +106,7 @@ is_local_coord() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_vertex_frame() const {
-  if (_vertex_frame == (LMatrix4d *)NULL) {
+  if (_vertex_frame == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_frame;
@@ -120,7 +120,7 @@ get_vertex_frame() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_node_frame() const {
-  if (_node_frame == (LMatrix4d *)NULL) {
+  if (_node_frame == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_node_frame;
@@ -133,7 +133,7 @@ get_node_frame() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_vertex_frame_inv() const {
-  if (_vertex_frame_inv == (LMatrix4d *)NULL) {
+  if (_vertex_frame_inv == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_frame_inv;
@@ -147,7 +147,7 @@ get_vertex_frame_inv() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_node_frame_inv() const {
-  if (_node_frame_inv == (LMatrix4d *)NULL) {
+  if (_node_frame_inv == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_node_frame_inv;
@@ -164,7 +164,7 @@ get_node_frame_inv() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_vertex_to_node() const {
-  if (_vertex_to_node == (LMatrix4d *)NULL) {
+  if (_vertex_to_node == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_vertex_to_node;
@@ -181,7 +181,7 @@ get_vertex_to_node() const {
  */
 INLINE const LMatrix4d &EggNode::
 get_node_to_vertex() const {
-  if (_node_to_vertex == (LMatrix4d *)NULL) {
+  if (_node_to_vertex == nullptr) {
     return LMatrix4d::ident_mat();
   } else {
     return *_node_to_vertex;

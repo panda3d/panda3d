@@ -13,10 +13,12 @@
 
 #include "doubleBitMask.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class DoubleBitMask<BitMaskNative>;
 template class DoubleBitMask<DoubleBitMaskNative>;
+
+#if !defined(CPPPARSER) && !defined(__APPLE__)
+#include <type_traits>
+
+static_assert(std::is_literal_type<DoubleBitMaskNative>::value, "DoubleBitMaskNative is not a literal type");
+static_assert(std::is_literal_type<QuadBitMaskNative>::value, "QuadBitMaskNative is not a literal type");
+#endif

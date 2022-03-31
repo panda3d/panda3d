@@ -49,7 +49,7 @@ clear_pointer(TypeHandle type) {
  */
 INLINE GlobalPointerRegistry *GlobalPointerRegistry::
 get_global_ptr() {
-  if (_global_ptr == (GlobalPointerRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GlobalPointerRegistry;
   }
   return _global_ptr;

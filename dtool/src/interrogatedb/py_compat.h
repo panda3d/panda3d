@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_compat.h
  * @author rdb
  * @date 2017-12-02
@@ -36,7 +29,15 @@
 // See PEP 353
 #define PY_SSIZE_T_CLEAN 1
 
-#include "Python.h"
+#include <Python.h>
+
+#ifndef LINK_ALL_STATIC
+#  define EXPCL_PYPANDA
+#elif defined(__GNUC__)
+#  define EXPCL_PYPANDA __attribute__((weak))
+#else
+#  define EXPCL_PYPANDA extern inline
+#endif
 
 /* Python 2.4 */
 
@@ -106,7 +107,7 @@ typedef int Py_ssize_t;
 // PyInt_FromSize_t automatically picks the right type.
 #  define PyLongOrInt_AS_LONG PyInt_AsLong
 
-EXPCL_INTERROGATEDB size_t PyLongOrInt_AsSize_t(PyObject *);
+EXPCL_PYPANDA size_t PyLongOrInt_AsSize_t(PyObject *);
 #endif
 
 // Which character to use in PyArg_ParseTuple et al for a byte string.
@@ -136,13 +137,29 @@ typedef long Py_hash_t;
 #  endif
 #endif
 
+/* Python 3.4 */
+#if PY_VERSION_HEX < 0x03040000
+#define PyGILState_Check() (PyGILState_GetThisThreadState() == _PyThreadState_Current)
+#endif
+
 /* Python 3.6 */
 
-// Used to implement _PyObject_CallNoArg
-extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)
+#  define _PyObject_CallNoArg PyObject_CallNoArgs
+#endif
 
-#ifndef _PyObject_CallNoArg
-#  define _PyObject_CallNoArg(func) PyObject_Call((func), (PyObject *)&Dtool_EmptyTuple, nullptr)
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_FastCall)
+INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t nargs) {
+  PyObject *tuple = PyTuple_New(nargs);
+  for (Py_ssize_t i = 0; i < nargs; ++i) {
+    PyTuple_SET_ITEM(tuple, i, args[i]);
+    Py_INCREF(args[i]);
+  }
+  PyObject *result = PyObject_Call(func, tuple, nullptr);
+  Py_DECREF(tuple);
+  return result;
+}
+#  define _PyObject_FastCall _PyObject_FastCall
 #endif
 
 // Python versions before 3.6 didn't require longlong support to be enabled.
@@ -159,6 +176,69 @@ extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
 
 #ifndef PyDict_GET_SIZE
 #  define PyDict_GET_SIZE(mp) (((PyDictObject *)mp)->ma_used)
+#endif
+
+#ifndef Py_RETURN_RICHCOMPARE
+#  define Py_RETURN_RICHCOMPARE(val1, val2, op)                         \
+  do {                                                                  \
+    switch (op) {                                                       \
+    NODEFAULT                                                           \
+    case Py_EQ: if ((val1) == (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_NE: if ((val1) != (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_LT: if ((val1) < (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+    case Py_GT: if ((val1) > (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+    case Py_LE: if ((val1) <= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_GE: if ((val1) >= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    }                                                                   \
+  } while (0)
+#endif
+
+/* Python 3.8 */
+#if PY_VERSION_HEX < 0x03080000
+INLINE PyObject *_PyLong_Rshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Rshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Lshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+#endif
+
+/* Python 3.9 */
+
+#if PY_VERSION_HEX < 0x03090000
+INLINE PyObject *PyObject_CallNoArgs(PyObject *func) {
+#if PY_VERSION_HEX >= 0x03080000
+  return _PyObject_Vectorcall(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03070000
+  return _PyObject_FastCallDict(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(func, nullptr, 0);
+#else
+  return PyObject_CallObject(func, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallOneArg(PyObject *callable, PyObject *arg) {
+#if PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(callable, &arg, 1);
+#else
+  return PyObject_CallFunctionObjArgs(callable, arg, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallMethodNoArgs(PyObject *obj, PyObject *name) {
+  return PyObject_CallMethodObjArgs(obj, name, nullptr);
+}
+
+INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObject *arg) {
+  return PyObject_CallMethodObjArgs(obj, name, arg, nullptr);
+}
 #endif
 
 /* Other Python implementations */

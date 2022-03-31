@@ -168,7 +168,7 @@ is_closed_v() const {
  * Writes the nurbsSurface to the indicated output stream in Egg format.
  */
 void EggNurbsSurface::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<NurbsSurface>");
 
   Trims::const_iterator ti;

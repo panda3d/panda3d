@@ -24,7 +24,7 @@
 #ifdef HAVE_STL_HASH
 #include <hash_map>  // for hash_compare
 
-template<class Key, class Compare = less<Key> >
+template<class Key, class Compare = std::less<Key> >
 class stl_hash_compare : public stdext::hash_compare<Key, Compare> {
 public:
   INLINE bool is_equal(const Key &a, const Key &b) const {
@@ -37,7 +37,7 @@ public:
 #include <map>  // for less
 
 // This is declared for the cases in which we don't have STL_HASH available.
-template<class Key, class Compare = less<Key> >
+template<class Key, class Compare = std::less<Key> >
 class stl_hash_compare : public Compare {
 public:
   INLINE size_t operator () (const Key &key) const {
@@ -118,7 +118,7 @@ public:
  * size_t typecast operator).  It is the same as the system-provided
  * hash_compare.
  */
-template<class Key, class Compare = less<Key> >
+template<class Key, class Compare = std::less<Key> >
 class integer_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE static size_t add_hash(size_t start, const Key &key);
@@ -128,7 +128,7 @@ public:
  * This is the default hash_compare class, which assumes the Key is a pointer
  * value.  It is the same as the system-provided hash_compare.
  */
-class pointer_hash : public stl_hash_compare<const void *, less<const void *> > {
+class pointer_hash : public stl_hash_compare<const void *, std::less<const void *> > {
 public:
   INLINE static size_t add_hash(size_t start, const void *key);
 };
@@ -150,7 +150,7 @@ public:
  * This hash_compare class hashes a string.  It assumes the Key is a string or
  * provides begin() and end() methods that iterate through Key::value_type.
  */
-template<class Key, class Compare = less<Key> >
+template<class Key, class Compare = std::less<Key> >
 class sequence_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE size_t operator () (const Key &key) const;
@@ -164,7 +164,7 @@ public:
  * This hash_compare class hashes a class object.  It assumes the Key provides
  * a method called get_hash() that returns a size_t.
  */
-template<class Key, class Compare = less<Key> >
+template<class Key, class Compare = std::less<Key> >
 class method_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE size_t operator () (const Key &key) const;
@@ -208,8 +208,8 @@ typedef floating_point_hash<float> float_hash;
 typedef floating_point_hash<double> double_hash;
 typedef integer_hash<int> int_hash;
 typedef integer_hash<size_t> size_t_hash;
-typedef sequence_hash<string> string_hash;
-typedef sequence_hash<wstring> wstring_hash;
+typedef sequence_hash<std::string> string_hash;
+typedef sequence_hash<std::wstring> wstring_hash;
 
 template<class Key>
 class indirect_less_hash : public indirect_method_hash<Key, indirect_less<Key> > {

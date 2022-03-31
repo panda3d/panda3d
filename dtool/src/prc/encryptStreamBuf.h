@@ -24,25 +24,31 @@ typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.
  */
-class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
+class EXPCL_DTOOL_PRC EncryptStreamBuf : public std::streambuf {
 public:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();
 
-  void open_read(istream *source, bool owns_source, const string &password);
+  void open_read(std::istream *source, bool owns_source, const std::string &password);
   void close_read();
 
-  void open_write(ostream *dest, bool owns_dest, const string &password);
+  void open_write(std::ostream *dest, bool owns_dest, const std::string &password);
   void close_write();
 
-  INLINE void set_algorithm(const string &algorithm);
-  INLINE const string &get_algorithm() const;
+  INLINE void set_algorithm(const std::string &algorithm);
+  INLINE const std::string &get_algorithm() const;
 
   INLINE void set_key_length(int key_length);
   INLINE int get_key_length() const;
 
   INLINE void set_iteration_count(int iteration_count);
   INLINE int get_iteration_count() const;
+
+  INLINE void set_magic_length(size_t length);
+  INLINE size_t get_magic_length() const;
+
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
 protected:
   virtual int overflow(int c);
@@ -54,13 +60,13 @@ private:
   void write_chars(const char *start, size_t length);
 
 private:
-  istream *_source;
+  std::istream *_source;
   bool _owns_source;
 
-  ostream *_dest;
+  std::ostream *_dest;
   bool _owns_dest;
 
-  string _algorithm;
+  std::string _algorithm;
   int _key_length;
   int _iteration_count;
 
@@ -71,6 +77,9 @@ private:
 
   EVP_CIPHER_CTX *_write_ctx;
   size_t _write_block_size;
+
+  size_t _magic_length = 0;
+  bool _finished = false;
 };
 
 #include "encryptStreamBuf.I"

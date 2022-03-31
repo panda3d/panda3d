@@ -18,10 +18,10 @@
  */
 CPPTypeDeclaration::
 CPPTypeDeclaration(CPPType *type) :
-  CPPInstance(type, (CPPIdentifier *)NULL)
+  CPPInstance(type, nullptr)
 {
-  assert(_type != NULL);
-  if (_type->_declaration == (CPPTypeDeclaration *)NULL) {
+  assert(_type != nullptr);
+  if (_type->_declaration == nullptr) {
     _type->_declaration = this;
   }
 }
@@ -34,11 +34,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
   CPPDeclaration *decl =
     CPPInstance::substitute_decl(subst, current_scope, global_scope);
-  assert(decl != NULL);
+  assert(decl != nullptr);
   if (decl->as_type_declaration()) {
     return decl;
   }
-  assert(decl->as_instance() != NULL);
+  assert(decl->as_instance() != nullptr);
   return new CPPTypeDeclaration(decl->as_instance()->_type);
 }
 
@@ -46,7 +46,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTypeDeclaration::
-output(ostream &out, int indent_level, CPPScope *scope, bool) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
   _type->output(out, indent_level, scope, true);
 }
 

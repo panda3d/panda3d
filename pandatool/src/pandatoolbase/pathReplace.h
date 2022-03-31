@@ -42,11 +42,11 @@ public:
   INLINE bool had_error() const;
 
   INLINE void clear();
-  INLINE void add_pattern(const string &orig_prefix, const string &replacement_prefix);
+  INLINE void add_pattern(const std::string &orig_prefix, const std::string &replacement_prefix);
 
   INLINE int get_num_patterns() const;
-  INLINE const string &get_orig_prefix(int n) const;
-  INLINE const string &get_replacement_prefix(int n) const;
+  INLINE const std::string &get_orig_prefix(int n) const;
+  INLINE const std::string &get_replacement_prefix(int n) const;
 
   INLINE bool is_empty() const;
 
@@ -62,7 +62,7 @@ public:
                          Filename &resolved_path,
                          Filename &output_path);
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   // This is used (along with _entries) to support match_path().
@@ -88,7 +88,7 @@ private:
 
   class Component {
   public:
-    INLINE Component(const string &component);
+    INLINE Component(const std::string &component);
     INLINE Component(const Component &copy);
     INLINE void operator = (const Component &copy);
 
@@ -99,17 +99,17 @@ private:
 
   class Entry {
   public:
-    Entry(const string &orig_prefix, const string &replacement_prefix);
+    Entry(const std::string &orig_prefix, const std::string &replacement_prefix);
     INLINE Entry(const Entry &copy);
     INLINE void operator = (const Entry &copy);
 
     bool try_match(const Filename &filename, Filename &new_filename) const;
     size_t r_try_match(const vector_string &components, size_t oi, size_t ci) const;
 
-    string _orig_prefix;
+    std::string _orig_prefix;
     Components _orig_components;
     bool _is_local;
-    string _replacement_prefix;
+    std::string _replacement_prefix;
   };
 
   typedef pvector<Entry> Entries;

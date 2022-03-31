@@ -15,14 +15,13 @@
 #define RAMFILE_H
 
 #include "pandabase.h"
-#include "typedef.h"
 #include "referenceCount.h"
 #include "extension.h"
 
 /**
  * An in-memory buffer specifically designed for downloading files to memory.
  */
-class EXPCL_PANDAEXPRESS Ramfile {
+class EXPCL_PANDA_EXPRESS Ramfile {
 PUBLISHED:
   INLINE Ramfile();
 
@@ -36,13 +35,16 @@ PUBLISHED:
   INLINE size_t get_data_size() const;
   INLINE void clear();
 
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
+
 public:
-  string read(size_t length);
-  string readline();
-  INLINE const string &get_data() const;
+  std::string read(size_t length);
+  std::string readline();
+  INLINE const std::string &get_data() const;
 
   size_t _pos;
-  string _data;
+  std::string _data;
 
   friend class Extension<Ramfile>;
 };

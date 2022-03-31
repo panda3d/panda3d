@@ -34,7 +34,7 @@ PUBLISHED:
   INLINE PfmFile &get_pfm();
   INLINE const PfmFile &get_pfm() const;
 
-  BLOCKING void project(const Lens *lens, const PfmFile *undist_lut = NULL);
+  BLOCKING void project(const Lens *lens, const PfmFile *undist_lut = nullptr);
   BLOCKING void extrude(const Lens *lens);
 
   INLINE void set_vis_inverse(bool vis_inverse);
@@ -70,8 +70,8 @@ PUBLISHED:
   void clear_vis_columns();
   void add_vis_column(ColumnType source, ColumnType target,
                       InternalName *name,
-                      const TransformState *transform = NULL, const Lens *lens = NULL,
-                      const PfmFile *undist_lut = NULL);
+                      const TransformState *transform = nullptr, const Lens *lens = nullptr,
+                      const PfmFile *undist_lut = nullptr);
 
   BLOCKING NodePath generate_vis_points() const;
 
@@ -120,8 +120,8 @@ private:
   static void add_vis_column(VisColumns &vis_columns,
                              ColumnType source, ColumnType target,
                              InternalName *name,
-                             const TransformState *transform = NULL,
-                             const Lens *lens = NULL, const PfmFile *undist_lut = NULL);
+                             const TransformState *transform = nullptr,
+                             const Lens *lens = nullptr, const PfmFile *undist_lut = nullptr);
   void build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const;
   CPT(GeomVertexFormat) make_array_format(const VisColumns &vis_columns) const;
 

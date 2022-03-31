@@ -15,7 +15,7 @@
  *
  */
 INLINE EggLine::
-EggLine(const string &name) :
+EggLine(const std::string &name) :
   EggCompositePrimitive(name),
   _has_thick(false)
 {

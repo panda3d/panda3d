@@ -17,6 +17,7 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
 from direct.task import Task
+import math
 
 class DirectManipulationControl(DirectObject):
     def __init__(self):
@@ -520,7 +521,7 @@ class ObjectHandles(NodePath,DirectObject):
         # To avoid recreating a vec every frame
         self.hitPt = Vec3(0)
         # Get a handle on the components
-        self.xHandles = self.find('**/X')
+        self.xHandles = self.find('**/ohScalingNode')
         self.xPostGroup = self.xHandles.find('**/x-post-group')
         self.xPostCollision = self.xHandles.find('**/x-post')
         self.xRingGroup = self.xHandles.find('**/x-ring-group')
@@ -601,7 +602,7 @@ class ObjectHandles(NodePath,DirectObject):
         self.reparentTo(hidden)
 
     def enableHandles(self, handles):
-        if type(handles) == types.ListType:
+        if type(handles) is list:
             for handle in handles:
                 self.enableHandle(handle)
         elif handles == 'x':
@@ -642,7 +643,7 @@ class ObjectHandles(NodePath,DirectObject):
             self.zDiscGroup.reparentTo(self.zHandles)
 
     def disableHandles(self, handles):
-        if type(handles) == types.ListType:
+        if type(handles) is list:
             for handle in handles:
                 self.disableHandle(handle)
         elif handles == 'x':

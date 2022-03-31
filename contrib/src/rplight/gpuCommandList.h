@@ -48,7 +48,7 @@ PUBLISHED:
   MAKE_PROPERTY(num_commands, get_num_commands);
 
 protected:
-  queue<GPUCommand> _commands;
+  std::queue<GPUCommand> _commands;
 };
 
 #endif // GPUCOMMANDLIST_H

@@ -16,8 +16,8 @@
 /**
  *
  */
-ostream &
-indent(ostream &out, int indent_level) {
+std::ostream &
+indent(std::ostream &out, int indent_level) {
   for (int i = 0; i < indent_level; i++) {
     out << ' ';
   }

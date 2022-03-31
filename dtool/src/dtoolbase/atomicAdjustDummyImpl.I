@@ -30,10 +30,13 @@ dec(TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
 
 /**
  * Atomically computes var += delta.  It is legal for delta to be negative.
+ * Returns the result of the addition.
  */
-ALWAYS_INLINE void AtomicAdjustDummyImpl::
+ALWAYS_INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
 add(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Integer delta) {
-  var += delta;
+  Integer new_value = var + delta;
+  var = new_value;
+  return new_value;
 }
 
 /**

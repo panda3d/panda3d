@@ -55,14 +55,6 @@ is_threading_supported() {
  *
  */
 INLINE bool ThreadSimpleImpl::
-is_true_threads() {
-  return (is_os_threads != 0);
-}
-
-/**
- *
- */
-INLINE bool ThreadSimpleImpl::
 is_simple_threads() {
   return true;
 }
@@ -130,7 +122,7 @@ get_wake_time() const {
  * Writes a list of threads running and threads blocked.
  */
 void ThreadSimpleImpl::
-write_status(ostream &out) {
+write_status(std::ostream &out) {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   manager->write_status(out);
 }

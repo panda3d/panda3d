@@ -11,14 +11,16 @@
  * @date 2010-01-27
  */
 
-#ifndef __BULLET_CAPSULE_SHAPE_H__
-#define __BULLET_CAPSULE_SHAPE_H__
+#ifndef BULLETCAPSULESHAPE_H
+#define BULLETCAPSULESHAPE_H
 
 #include "pandabase.h"
 
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 #include "bulletShape.h"
+
+#include "collisionCapsule.h"
 
 /**
  *
@@ -30,9 +32,10 @@ private:
 
 PUBLISHED:
   explicit BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
-  INLINE BulletCapsuleShape(const BulletCapsuleShape &copy);
-  INLINE void operator = (const BulletCapsuleShape &copy);
+  BulletCapsuleShape(const BulletCapsuleShape &copy);
   INLINE ~BulletCapsuleShape();
+
+  static BulletCapsuleShape *make_from_solid(const CollisionCapsule *solid);
 
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_half_height() const;
@@ -50,6 +53,7 @@ private:
   btCapsuleShape *_shape;
   PN_stdfloat _radius;
   PN_stdfloat _height;
+  BulletUpAxis _up;
 
 public:
   static void register_with_read_factory();
@@ -82,4 +86,4 @@ private:
 
 #include "bulletCapsuleShape.I"
 
-#endif // __BULLET_CAPSULE_SHAPE_H__
+#endif // BULLETCAPSULESHAPE_H

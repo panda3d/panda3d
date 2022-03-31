@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __AUDIO_MANAGER_H__
-#define __AUDIO_MANAGER_H__
+#ifndef AUDIOMANAGER_H
+#define AUDIOMANAGER_H
 
 #include "config_audio.h"
 #include "audioSound.h"
@@ -86,7 +86,7 @@ PUBLISHED:
   virtual bool is_valid() = 0;
 
   // Get a sound:
-  virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false, int mode=SM_heuristic) = 0;
+  virtual PT(AudioSound) get_sound(const Filename &file_name, bool positional = false, int mode=SM_heuristic) = 0;
   virtual PT(AudioSound) get_sound(MovieAudio *source, bool positional = false, int mode=SM_heuristic) = 0;
 
   PT(AudioSound) get_null_sound();
@@ -95,7 +95,7 @@ PUBLISHED:
   // doesn't break any connection between AudioSounds that have already given
   // by get_sound() from this manager.  It's only affecting whether the
   // AudioManager keeps a copy of the sound in its poolcache.
-  virtual void uncache_sound(const string& file_name) = 0;
+  virtual void uncache_sound(const Filename &file_name) = 0;
   virtual void clear_cache() = 0;
   virtual void set_cache_limit(unsigned int count) = 0;
   virtual unsigned int get_cache_limit() const = 0;
@@ -106,13 +106,11 @@ PUBLISHED:
   virtual void set_volume(PN_stdfloat volume) = 0;
   virtual PN_stdfloat get_volume() const = 0;
 
-/*
- * Turn the manager on or off.  If you play a sound while the manager is
- * inactive, it won't start.  If you deactivate the manager while sounds are
- * playing, they'll stop.  If you activate the manager while looping sounds
- * are playing (those that have a loop_count of zero), they will start playing
- * from the beginning of their loop.  inits to true.
- */
+  // Turn the manager on or off.  If you play a sound while the manager is
+  // inactive, it won't start.  If you deactivate the manager while sounds are
+  // playing, they'll stop.  If you activate the manager while looping sounds
+  // are playing (those that have a loop_count of zero), they will start
+  // playing from the beginning of their loop.  Defaults to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() const = 0;
 
@@ -175,11 +173,8 @@ PUBLISHED:
   static Filename get_dls_pathname();
   MAKE_PROPERTY(dls_pathname, get_dls_pathname);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out) const;
-
-  // set_speaker_configuration is a Miles only method.
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
@@ -214,12 +209,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &
-operator << (ostream &out, const AudioManager &mgr) {
+inline std::ostream &
+operator << (std::ostream &out, const AudioManager &mgr) {
   mgr.output(out);
   return out;
 }
 
 #include "audioManager.I"
 
-#endif /* __AUDIO_MANAGER_H__ */
+#endif /* AUDIOMANAGER_H */

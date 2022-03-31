@@ -79,7 +79,7 @@ set_flat_texcoord_name(InternalName *flat_texcoord_name) {
  */
 INLINE void PfmVizzer::
 clear_flat_texcoord_name() {
-  _flat_texcoord_name = NULL;
+  _flat_texcoord_name = nullptr;
 }
 
 /**
@@ -149,7 +149,7 @@ set_vis_blend(const PNMImage *vis_blend) {
  */
 INLINE void PfmVizzer::
 clear_vis_blend() {
-  _vis_blend = NULL;
+  _vis_blend = nullptr;
 }
 
 /**
@@ -171,7 +171,7 @@ get_vis_blend() const {
  */
 INLINE void PfmVizzer::
 set_aux_pfm(const PfmFile *pfm) {
-  assert(pfm == NULL || (pfm->get_x_size() == _pfm.get_x_size() &&
+  assert(pfm == nullptr || (pfm->get_x_size() == _pfm.get_x_size() &&
                          pfm->get_y_size() == _pfm.get_y_size()));
   _aux_pfm = pfm;
 }
@@ -181,7 +181,7 @@ set_aux_pfm(const PfmFile *pfm) {
  */
 INLINE void PfmVizzer::
 clear_aux_pfm() {
-  _aux_pfm = NULL;
+  _aux_pfm = nullptr;
 }
 
 /**
@@ -199,5 +199,5 @@ get_aux_pfm() const {
  */
 INLINE PfmVizzer::VisColumn::
 VisColumn() {
-  _undist_lut = NULL;
+  _undist_lut = nullptr;
 }

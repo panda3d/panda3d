@@ -45,8 +45,8 @@ operator = (const RecorderTable &copy) {
  * Adds the named recorder to the set of recorders.
  */
 INLINE void RecorderTable::
-add_recorder(const string &name, RecorderBase *recorder) {
-  nassertv(recorder != (RecorderBase *)NULL);
+add_recorder(const std::string &name, RecorderBase *recorder) {
+  nassertv(recorder != nullptr);
   recorder->ref();
 
   std::pair<Recorders::iterator, bool> result =
@@ -64,12 +64,12 @@ add_recorder(const string &name, RecorderBase *recorder) {
  * recorder.
  */
 INLINE RecorderBase *RecorderTable::
-get_recorder(const string &name) const {
+get_recorder(const std::string &name) const {
   Recorders::const_iterator ri = _recorders.find(name);
   if (ri != _recorders.end()) {
     return (*ri).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -77,7 +77,7 @@ get_recorder(const string &name) const {
  * false if there was no such recorder.
  */
 INLINE bool RecorderTable::
-remove_recorder(const string &name) {
+remove_recorder(const std::string &name) {
   Recorders::iterator ri = _recorders.find(name);
   if (ri != _recorders.end()) {
     unref_delete(ri->second);

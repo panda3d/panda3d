@@ -22,7 +22,7 @@ EggFilenameNode() {
  *
  */
 INLINE EggFilenameNode::
-EggFilenameNode(const string &node_name, const Filename &filename) :
+EggFilenameNode(const std::string &node_name, const Filename &filename) :
   EggNode(node_name),
   _filename(filename),
   _fullpath(filename)

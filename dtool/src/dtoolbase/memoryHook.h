@@ -34,7 +34,7 @@ class DeletedBufferChain;
  * employed for classes which inherit from MemoryBase; otherwise, use the
  * PANDA_MALLOC macros.)
  */
-class EXPCL_DTOOL MemoryHook {
+class EXPCL_DTOOL_DTOOLBASE MemoryHook {
 public:
   MemoryHook();
   MemoryHook(const MemoryHook &copy);
@@ -52,7 +52,9 @@ public:
 
   bool heap_trim(size_t pad);
 
-  CONSTEXPR static size_t get_memory_alignment();
+  constexpr static size_t get_memory_alignment() {
+    return MEMORY_HOOK_ALIGNMENT;
+  }
 
   virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);
@@ -82,7 +84,7 @@ protected:
 private:
   size_t _page_size;
 
-  typedef map<size_t, DeletedBufferChain *> DeletedChains;
+  typedef std::map<size_t, DeletedBufferChain *> DeletedChains;
   DeletedChains _deleted_chains;
 
   mutable MutexImpl _lock;

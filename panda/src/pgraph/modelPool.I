@@ -33,7 +33,7 @@ has_model(const Filename &filename) {
  */
 INLINE bool ModelPool::
 verify_model(const Filename &filename) {
-  return load_model(filename) != (ModelRoot *)NULL;
+  return load_model(filename) != nullptr;
 }
 
 /**
@@ -63,8 +63,7 @@ load_model(const Filename &filename, const LoaderOptions &options) {
  * Adds the indicated already-loaded model to the pool.  The model will
  * replace any previously-loaded model in the pool that had the same filename.
  *
- * This two-parameter version of this method is deprecated; use the one-
- * parameter add_model(model) instead.
+ * @deprecated Use the one-parameter add_model(model) instead.
  */
 INLINE void ModelPool::
 add_model(const Filename &filename, ModelRoot *model) {
@@ -77,8 +76,7 @@ add_model(const Filename &filename, ModelRoot *model) {
  * called, a reference count will be maintained on every model every loaded,
  * and models will never be freed.
  *
- * This version of this method is deprecated; use release_model(model)
- * instead.
+ * @deprecated Use release_model(model) instead.
  */
 INLINE void ModelPool::
 release_model(const Filename &filename) {
@@ -130,7 +128,7 @@ garbage_collect() {
  * Lists the contents of the model pool to the indicated output stream.
  */
 INLINE void ModelPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -139,7 +137,7 @@ list_contents(ostream &out) {
  */
 INLINE void ModelPool::
 list_contents() {
-  get_ptr()->ns_list_contents(cout);
+  get_ptr()->ns_list_contents(std::cout);
 }
 
 /**

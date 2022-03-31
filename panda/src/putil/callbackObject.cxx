@@ -20,7 +20,7 @@ TypeHandle CallbackObject::_type_handle;
  *
  */
 void CallbackObject::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 

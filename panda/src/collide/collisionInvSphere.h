@@ -42,7 +42,7 @@ public:
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -55,8 +55,19 @@ protected:
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_parabola(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
+
+ protected:
+  bool intersects_parabola(double &t, const LParabola &parabola,
+		                   double t1, double t2,
+		                   const LPoint3 &p1, const LPoint3 &p2, LPoint3 &into_intersection_point) const;
 
 private:
   static PStatCollector _volume_pcollector;

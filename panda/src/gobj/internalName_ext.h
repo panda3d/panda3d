@@ -29,11 +29,9 @@
 template<>
 class Extension<InternalName> : public ExtensionBase<InternalName> {
 public:
-#if PY_MAJOR_VERSION >= 3
-  static PT(InternalName) make(PyUnicodeObject *str);
-#else
-  static PT(InternalName) make(PyStringObject *str);
-#endif
+  static PT(InternalName) make(PyObject *str);
+
+  PyObject *__reduce__() const;
 };
 
 #endif  // HAVE_PYTHON

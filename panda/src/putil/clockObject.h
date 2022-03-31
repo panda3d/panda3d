@@ -31,9 +31,9 @@
 class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:
   INLINE TimeVal();
-  INLINE ulong get_sec() const;
-  INLINE ulong get_usec() const;
-  ulong tv[2];
+  INLINE unsigned long get_sec() const;
+  INLINE unsigned long get_usec() const;
+  unsigned long tv[2];
 };
 
 /**
@@ -188,10 +188,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_PUTIL ostream &
-operator << (ostream &out, ClockObject::Mode mode);
-EXPCL_PANDA_PUTIL istream &
-operator >> (istream &in, ClockObject::Mode &mode);
+EXPCL_PANDA_PUTIL std::ostream &
+operator << (std::ostream &out, ClockObject::Mode mode);
+EXPCL_PANDA_PUTIL std::istream &
+operator >> (std::istream &in, ClockObject::Mode &mode);
 
 #include "clockObject.I"
 

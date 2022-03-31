@@ -21,13 +21,15 @@
 
 #include "physical.h"
 #include "config_physics.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 /**
  * Graph node that encapsulated a series of physical objects
  */
-class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
+class EXPCL_PANDA_PHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
-  explicit PhysicalNode(const string &name);
+  explicit PhysicalNode(const std::string &name);
   INLINE void clear();
   INLINE Physical *get_physical(size_t index) const;
   INLINE size_t get_num_physicals() const;
@@ -43,7 +45,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical,
                     remove_physical, insert_physical);
 
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 public:
   virtual ~PhysicalNode();
@@ -54,6 +56,7 @@ protected:
   PhysicalNode(const PhysicalNode &copy);
 
 private:
+  LightMutex _lock;
   typedef pvector<PT(Physical)> PhysicalsVector;
   PhysicalsVector _physicals;
 

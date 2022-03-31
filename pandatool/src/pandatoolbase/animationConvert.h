@@ -31,9 +31,9 @@ enum AnimationConvert {
   AC_both,     // A character model and tables in the same file.
 };
 
-string format_animation_convert(AnimationConvert unit);
+std::string format_animation_convert(AnimationConvert unit);
 
-ostream &operator << (ostream &out, AnimationConvert unit);
-AnimationConvert string_animation_convert(const string &str);
+std::ostream &operator << (std::ostream &out, AnimationConvert unit);
+AnimationConvert string_animation_convert(const std::string &str);
 
 #endif

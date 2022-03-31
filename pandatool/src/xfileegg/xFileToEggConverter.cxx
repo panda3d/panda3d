@@ -19,12 +19,15 @@
 
 #include "eggData.h"
 #include "eggGroup.h"
+#include "eggTable.h"
 #include "eggXfmSAnim.h"
 #include "eggGroupUniquifier.h"
 #include "datagram.h"
 #include "eggMaterialCollection.h"
 #include "eggTextureCollection.h"
 #include "dcast.h"
+
+using std::string;
 
 /**
  *
@@ -34,7 +37,7 @@ XFileToEggConverter() {
   _make_char = false;
   _frame_rate = 0.0;
   _x_file = new XFile(true);
-  _dart_node = NULL;
+  _dart_node = nullptr;
 }
 
 /**
@@ -46,7 +49,7 @@ XFileToEggConverter(const XFileToEggConverter &copy) :
   _make_char(copy._make_char)
 {
   _x_file = new XFile(true);
-  _dart_node = NULL;
+  _dart_node = nullptr;
 }
 
 /**
@@ -226,9 +229,9 @@ find_joint(const string &joint_name) {
   ji = _joints.find(joint_name);
   if (ji != _joints.end()) {
     EggGroup *joint = (*ji).second;
-    if (joint == (EggGroup *)NULL) {
+    if (joint == nullptr) {
       // An invalid joint detected earlier.
-      return NULL;
+      return nullptr;
     }
 
     return joint;
@@ -240,9 +243,9 @@ find_joint(const string &joint_name) {
     xfile_cat.warning()
       << "Joint name " << joint_name << " in animation data is undefined.\n";
   }
-  _joints[joint_name] = NULL;
+  _joints[joint_name] = nullptr;
 
-  return NULL;
+  return nullptr;
 }
 
 /**

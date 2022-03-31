@@ -27,11 +27,18 @@ extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #include "camera.h"
 #include "graphicsPipeSelection.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>  // For SystemParametersInfo()
 STICKYKEYS g_StartupStickyKeys = {sizeof(STICKYKEYS), 0};
 TOGGLEKEYS g_StartupToggleKeys = {sizeof(TOGGLEKEYS), 0};
 FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};
+#endif
+
+using std::max;
+using std::min;
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_SHOWBASE)
+  #error Buildsystem error: BUILDING_DIRECT_SHOWBASE not defined
 #endif
 
 ConfigureDef(config_showbase);
@@ -52,14 +59,6 @@ get_particle_path() {
 void
 throw_new_frame() {
   throw_event("NewFrame");
-}
-
-// Returns the configure object for accessing config variables from a
-// scripting language.
-DConfig &
-get_config_showbase() {
-  static DConfig config_showbase;
-  return config_showbase;
 }
 
 // Initialize the application for making a Gui-based app, such as wx.  At the
@@ -92,47 +91,9 @@ init_app_for_gui() {
   */
 }
 
-// klunky interface since we cant pass array from python->C++ to use
-// verify_window_sizes directly
-static int num_fullscreen_testsizes = 0;
-#define MAX_FULLSCREEN_TESTS 10
-static int fullscreen_testsizes[MAX_FULLSCREEN_TESTS * 2];
-
-void
-add_fullscreen_testsize(int xsize, int ysize) {
-  if ((xsize == 0) && (ysize == 0)) {
-    num_fullscreen_testsizes = 0;
-    return;
-  }
-
-  // silently fail if maxtests exceeded
-  if (num_fullscreen_testsizes < MAX_FULLSCREEN_TESTS) {
-    fullscreen_testsizes[num_fullscreen_testsizes * 2] = xsize;
-    fullscreen_testsizes[num_fullscreen_testsizes * 2 + 1] = ysize;
-    num_fullscreen_testsizes++;
-  }
-}
-
-void
-runtest_fullscreen_sizes(GraphicsWindow *win) {
-  win->verify_window_sizes(num_fullscreen_testsizes, fullscreen_testsizes);
-}
-
-bool
-query_fullscreen_testresult(int xsize, int ysize) {
-  // stupid linear search that works ok as long as total tests are small
-  int i;
-  for (i=0; i < num_fullscreen_testsizes; i++) {
-    if((fullscreen_testsizes[i * 2] == xsize) &&
-       (fullscreen_testsizes[i * 2 + 1] == ysize))
-      return true;
-  }
-  return false;
-}
-
 void
 store_accessibility_shortcut_keys() {
-#ifdef WIN32
+#ifdef _WIN32
   SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &g_StartupStickyKeys, 0);
   SystemParametersInfo(SPI_GETTOGGLEKEYS, sizeof(TOGGLEKEYS), &g_StartupToggleKeys, 0);
   SystemParametersInfo(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &g_StartupFilterKeys, 0);
@@ -141,7 +102,7 @@ store_accessibility_shortcut_keys() {
 
 void
 allow_accessibility_shortcut_keys(bool allowKeys) {
-#ifdef WIN32
+#ifdef _WIN32
   if( allowKeys )
   {
     // Restore StickyKeysetc to original state and enable Windows key
@@ -197,7 +158,7 @@ add_grid_zone(unsigned int x,
   // zoneBase is the first zone in the grid (e.g.  the upper left)
   // zoneResolution is the number of cells on each axsis.  returns the next
   // available zoneBase (i.e.  zoneBase+xZoneResolution*yZoneResolution)
-  cerr<<"adding grid zone with a zoneBase of "<<zoneBase<<" and a zoneResolution of "<<zoneResolution;
+  std::cerr<<"adding grid zone with a zoneBase of "<<zoneBase<<" and a zoneResolution of "<<zoneResolution;
   _grids.append(TempGridZoneManager::GridZone(x, y, width, height, zoneBase, xZoneResolution, yZoneResolution));
   return zoneBase+xZoneResolution*yZoneResolution;
 }
@@ -277,7 +238,7 @@ get_zone_list(int x, int y, int resolution) {
   if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0) {
     return 0;
   }
-  cerr<<"resolution="<<resolution;
+  std::cerr<<"resolution="<<resolution;
   xCell=min(int(x*resolution), resolution-1)
   yCell=min(int(y*resolution), resolution-1)
   cell=yCell*resolution+xCell

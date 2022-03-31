@@ -38,7 +38,7 @@ public:
   int map_from(int from) const;
 
 private:
-  map<int, int> _map_int;
+  std::map<int, int> _map_int;
 };
 
 #endif

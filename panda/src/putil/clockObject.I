@@ -110,7 +110,7 @@ INLINE double ClockObject::
 get_dt(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   if (_max_dt > 0.0) {
-    return min(_max_dt, cdata->_dt);
+    return std::min(_max_dt, cdata->_dt);
   }
   return cdata->_dt;
 }
@@ -242,7 +242,7 @@ TimeVal() {
 /**
  *
  */
-INLINE ulong TimeVal::
+INLINE unsigned long TimeVal::
 get_sec() const {
   return tv[0];
 }
@@ -250,7 +250,7 @@ get_sec() const {
 /**
  *
  */
-INLINE ulong TimeVal::
+INLINE unsigned long TimeVal::
 get_usec() const {
   return tv[1];
 }

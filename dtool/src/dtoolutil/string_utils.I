@@ -12,38 +12,38 @@
  */
 
 template<class Thing>
-INLINE string
+INLINE std::string
 format_string(const Thing &thing) {
-  ostringstream str;
+  std::ostringstream str;
   str << thing;
   return str.str();
 }
 
-INLINE string
-format_string(const string &value) {
+INLINE std::string
+format_string(const std::string &value) {
   return value;
 }
 
-INLINE string
+INLINE std::string
 format_string(bool value) {
-  return string(value ? "true" : "false");
+  return std::string(value ? "true" : "false");
 }
 
-INLINE string
+INLINE std::string
 format_string(float value) {
   char buffer[32];
-  pdtoa(value, buffer);
-  return string(buffer);
+  pdtoa((double)value, buffer);
+  return std::string(buffer);
 }
 
-INLINE string
+INLINE std::string
 format_string(double value) {
   char buffer[32];
   pdtoa(value, buffer);
-  return string(buffer);
+  return std::string(buffer);
 }
 
-INLINE string
+INLINE std::string
 format_string(unsigned int value) {
   char buffer[11];
   char *p = buffer + 10;
@@ -53,10 +53,10 @@ format_string(unsigned int value) {
     value /= 10;
   } while (value > 0);
 
-  return string(p);
+  return std::string(p);
 }
 
-INLINE string
+INLINE std::string
 format_string(int value) {
   char buffer[12];
   char *p = buffer + 11;
@@ -76,10 +76,10 @@ format_string(int value) {
     } while (value > 0);
   }
 
-  return string(p);
+  return std::string(p);
 }
 
-INLINE string
+INLINE std::string
 format_string(int64_t value) {
   char buffer[21];
   char *p = buffer + 20;
@@ -99,5 +99,5 @@ format_string(int64_t value) {
     } while (value > 0);
   }
 
-  return string(p);
+  return std::string(p);
 }

@@ -14,29 +14,10 @@
 /**
  * Returns the name of the server as passed to the VrpnClient constructor.
  */
-INLINE const string &VrpnClient::
+INLINE const std::string &VrpnClient::
 get_server_name() const {
   return _server_name;
 }
-
-/**
- * Returns true if everything seems to be kosher with the server (even if
- * there is no connection), or false otherwise.
- */
-INLINE bool VrpnClient::
-is_valid() const {
-  return (_connection->doing_okay() != 0);
-}
-
-/**
- * Returns true if the connection is established successfully, false
- * otherwise.
- */
-INLINE bool VrpnClient::
-is_connected() const {
-  return (_connection->connected() != 0);
-}
-
 
 /**
  * Little inline function to convert a struct timeval to only seconds
@@ -55,7 +36,7 @@ convert_to_secs(struct timeval msg_time) {
  *
  */
 INLINE VrpnClient::
-VrpnClient(const string &server) :
+VrpnClient(const std::string &server) :
   ClientBase(server)
 {
   _connection = vrpn_get_connection_by_name(server.c_str());
@@ -66,7 +47,7 @@ VrpnClient(const string &server) :
  * particular sensor we have interest in)
  */
 INLINE void VrpnClient::
-tracker_position(const string &tracker, const vrpn_TRACKERCB info) {
+tracker_position(const std::string &tracker, const vrpn_TRACKERCB info) {
   double ptime = convert_to_secs(info.msg_time);
   LPoint3 pos(info.pos[0], info.pos[1], info.pos[2]);
   LVector4 pquat(info.quat[0], info.quat[1], info.quat[2], info.quat[3]);
@@ -79,7 +60,7 @@ tracker_position(const string &tracker, const vrpn_TRACKERCB info) {
  * particular sensor we have interest in)
  */
 INLINE void VrpnClient::
-tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
+tracker_velocity(const std::string &tracker, const vrpn_TRACKERVELCB info) {
   double vtime = convert_to_secs(info.msg_time);
   LPoint3 vel(info.vel[0], info.vel[1], info.vel[2]);
   LVector4 vquat(info.vel_quat[0], info.vel_quat[1],
@@ -93,7 +74,7 @@ tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
  * particular sensor we have interest in)
  */
 INLINE void VrpnClient::
-tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info) {
+tracker_acceleration(const std::string &tracker, const vrpn_TRACKERACCCB info) {
   double atime = convert_to_secs(info.msg_time);
   LPoint3 acc(info.acc[0], info.acc[1], info.acc[2]);
   LVector4 aquat(info.acc_quat[0], info.acc_quat[1],
@@ -107,7 +88,7 @@ tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info) {
  * Stores the latest information as sent by the analog device
  */
 INLINE void VrpnClient::
-analog(const string &analog, const vrpn_ANALOGCB info) {
+analog(const std::string &analog, const vrpn_ANALOGCB info) {
   double atime = convert_to_secs(info.msg_time);
 
   push_analog(analog, atime, info.channel, info.num_channel);
@@ -117,7 +98,7 @@ analog(const string &analog, const vrpn_ANALOGCB info) {
  * Stores the latest button pressed information as sent by the button
  */
 INLINE void VrpnClient::
-button(const string &button, const vrpn_BUTTONCB info) {
+button(const std::string &button, const vrpn_BUTTONCB info) {
   double btime = convert_to_secs(info.msg_time);
 
   push_button(button, btime, info.button, info.state);
@@ -127,7 +108,7 @@ button(const string &button, const vrpn_BUTTONCB info) {
  * Stores the latest change information as sent by the dial
  */
 INLINE void VrpnClient::
-dial(const string &dial, const vrpn_DIALCB info) {
+dial(const std::string &dial, const vrpn_DIALCB info) {
   double dtime = convert_to_secs(info.msg_time);
 
   push_dial(dial, dtime, info.dial, info.change);

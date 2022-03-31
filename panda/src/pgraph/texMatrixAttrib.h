@@ -60,7 +60,7 @@ PUBLISHED:
   INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

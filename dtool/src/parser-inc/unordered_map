@@ -24,9 +24,10 @@
 #include <pair>
 #include <initializer_list>
 #include <functional>
+#include <memory>
 
 namespace std {
- 
+
   template <class Key,
     class T,
     class Hash = hash<Key>,

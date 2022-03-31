@@ -20,6 +20,8 @@
 #include "pnotify.h"
 #include "pnmFileTypeRegistry.h"
 
+using std::string;
+
 /**
  *
  */
@@ -32,7 +34,7 @@ TxaFile() {
  * there is an error.
  */
 bool TxaFile::
-read(istream &in, const string &filename) {
+read(std::istream &in, const string &filename) {
   string line;
   int line_number = 1;
 
@@ -160,7 +162,7 @@ match_texture(TextureImage *texture) const {
  * output stream.  This is primarily useful for debugging.
  */
 void TxaFile::
-write(ostream &out) const {
+write(std::ostream &out) const {
   Lines::const_iterator li;
   for (li = _lines.begin(); li != _lines.end(); ++li) {
     out << (*li) << "\n";
@@ -173,7 +175,7 @@ write(ostream &out) const {
  * line, or EOF if the end of file has been reached.
  */
 int TxaFile::
-get_line_or_semicolon(istream &in, string &line) {
+get_line_or_semicolon(std::istream &in, string &line) {
   line = string();
   int ch = in.get();
   char semicolon = ';';

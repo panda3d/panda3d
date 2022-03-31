@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_CHAN AnimBundleNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit AnimBundleNode(const string &name, AnimBundle *bundle);
+  INLINE explicit AnimBundleNode(const std::string &name, AnimBundle *bundle);
 
 protected:
   INLINE AnimBundleNode();
@@ -41,12 +41,16 @@ public:
 PUBLISHED:
   INLINE AnimBundle *get_bundle() const;
 
+  MAKE_PROPERTY(bundle, get_bundle);
+
   static AnimBundle *find_anim_bundle(PandaNode *root);
 
 private:
   PT(AnimBundle) _bundle;
 
 public:
+  virtual void output(std::ostream &out) const;
+
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
   virtual int complete_pointers(TypedWritable **p_list,

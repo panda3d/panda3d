@@ -30,6 +30,9 @@
 template<>
 class Extension<OdeBody> : public ExtensionBase<OdeBody> {
 public:
+  void set_data(PyObject *);
+  INLINE PyObject *get_data() const;
+
   INLINE PyObject *get_converted_joint(int i) const;
 };
 

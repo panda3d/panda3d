@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
-  explicit PGSliderBar(const string &name = "");
+  explicit PGSliderBar(const std::string &name = "");
   virtual ~PGSliderBar();
 
 protected:
@@ -93,8 +93,8 @@ PUBLISHED:
   INLINE void clear_right_button();
   INLINE PGButton *get_right_button() const;
 
-  INLINE static string get_adjust_prefix();
-  INLINE string get_adjust_event() const;
+  INLINE static std::string get_adjust_prefix();
+  INLINE std::string get_adjust_event() const;
 
   virtual void set_active(bool active);
 

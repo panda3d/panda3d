@@ -18,17 +18,9 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
-NotifyCategoryDecl(particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
+ConfigureDecl(config_particlesystem, EXPCL_PANDA_PARTICLESYSTEM, EXPTP_PANDA_PARTICLESYSTEM);
+NotifyCategoryDecl(particlesystem, EXPCL_PANDA_PARTICLESYSTEM, EXPTP_PANDA_PARTICLESYSTEM);
 
-extern EXPCL_PANDAPHYSICS void init_libparticlesystem();
-
-#ifndef NDEBUG //[
-  // Non-release build:
-  #define PARTICLE_SYSTEM_DEBUG
-#else //][
-  // Release build:
-  #undef PARTICLE_SYSTEM_DEBUG
-#endif //]
+extern EXPCL_PANDA_PARTICLESYSTEM void init_libparticlesystem();
 
 #endif // CONFIG_PARTICLESYSTEM_H

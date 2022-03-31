@@ -53,11 +53,11 @@ reset() {
 void TextureMemoryCounter::
 add_placement(TexturePlacement *placement) {
   TextureImage *texture = placement->get_texture();
-  nassertv(texture != (TextureImage *)NULL);
+  nassertv(texture != nullptr);
 
   if (placement->get_omit_reason() == OR_none) {
     PaletteImage *image = placement->get_image();
-    nassertv(image != (PaletteImage *)NULL);
+    nassertv(image != nullptr);
     add_palette(image);
 
     int bytes = count_bytes(image, placement->get_placed_x_size(),
@@ -67,7 +67,7 @@ add_placement(TexturePlacement *placement) {
 
   } else {
     DestTextureImage *dest = placement->get_dest();
-    if (dest != (DestTextureImage *)NULL) {
+    if (dest != nullptr) {
       int bytes = count_bytes(dest);
       add_texture(texture, bytes);
 
@@ -81,7 +81,7 @@ add_placement(TexturePlacement *placement) {
  * Reports the measured texture memory usage.
  */
 void TextureMemoryCounter::
-report(ostream &out, int indent_level) {
+report(std::ostream &out, int indent_level) {
   indent(out, indent_level)
     << _num_placed << " of " << _num_textures << " textures appear on "
     << _num_palettes << " palette images with " << _num_unplaced
@@ -120,8 +120,8 @@ report(ostream &out, int indent_level) {
  * Writes to the indicated ostream an indication of the fraction of the total
  * memory usage that is represented by fraction_bytes.
  */
-ostream &TextureMemoryCounter::
-format_memory_fraction(ostream &out, int fraction_bytes, int palette_bytes) {
+std::ostream &TextureMemoryCounter::
+format_memory_fraction(std::ostream &out, int fraction_bytes, int palette_bytes) {
   out << floor(1000.0 * (double)fraction_bytes / (double)palette_bytes + 0.5) / 10.0
       << "% (" << (fraction_bytes + 512) / 1024 << "k)";
   return out;
@@ -156,7 +156,7 @@ add_palette(PaletteImage *image) {
  */
 void TextureMemoryCounter::
 add_texture(TextureImage *texture, int bytes) {
-  pair<Textures::iterator, bool> result;
+  std::pair<Textures::iterator, bool> result;
   result = _textures.insert(Textures::value_type(texture, bytes));
   if (result.second) {
     // If it was inserted, no problem--no duplicates.
@@ -167,8 +167,8 @@ add_texture(TextureImage *texture, int bytes) {
   // If it was not inserted, we have a duplicate.
   Textures::iterator ti = result.first;
 
-  _duplicate_bytes += min(bytes, (*ti).second);
-  (*ti).second = max(bytes, (*ti).second);
+  _duplicate_bytes += std::min(bytes, (*ti).second);
+  (*ti).second = std::max(bytes, (*ti).second);
 }
 
 /**

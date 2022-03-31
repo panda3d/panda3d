@@ -52,7 +52,7 @@ CPT(RenderAttrib) TextureAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new TextureAttrib);
   }
 
@@ -67,7 +67,7 @@ CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     TextureAttrib *attrib = new TextureAttrib;
     attrib->_off_all_stages = true;
     _all_off_attrib = return_new(attrib);
@@ -109,16 +109,18 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = false;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._has_sampler = false;
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }
@@ -132,17 +134,19 @@ add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._sampler = sampler;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = true;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._sampler = sampler;
+  sn._has_sampler = true;
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }
@@ -158,9 +162,6 @@ remove_on_stage(TextureStage *stage) const {
   Stages::iterator si = attrib->_on_stages.find(StageNode(stage));
   if (si != attrib->_on_stages.end()) {
     attrib->_on_stages.erase(si);
-
-    attrib->_sort_seq = UpdateSeq::old();
-    attrib->_filtered_seq = UpdateSeq::old();
   }
 
   return return_new(attrib);
@@ -182,8 +183,6 @@ add_off_stage(TextureStage *stage, int override) const {
     Stages::iterator si = attrib->_on_stages.find(sn);
     if (si != attrib->_on_stages.end()) {
       attrib->_on_stages.erase(si);
-      attrib->_sort_seq = UpdateSeq::old();
-      attrib->_filtered_seq = UpdateSeq::old();
     }
   }
   return return_new(attrib);
@@ -248,6 +247,34 @@ unify_texture_stages(TextureStage *stage) const {
   }
 
   return return_new(attrib);
+}
+
+/**
+ * Returns a new TextureAttrib, just like this one, but with all references to
+ * the given texture replaced with the new texture.
+ *
+ * @since 1.10.4
+ */
+CPT(RenderAttrib) TextureAttrib::
+replace_texture(Texture *tex, Texture *new_tex) const {
+  TextureAttrib *attrib = nullptr;
+
+  for (size_t i = 0; i < _on_stages.size(); ++i) {
+    const StageNode &sn = _on_stages[i];
+    if (sn._texture == tex) {
+      if (attrib == nullptr) {
+        attrib = new TextureAttrib(*this);
+      }
+
+      attrib->_on_stages[i]._texture = new_tex;
+    }
+  }
+
+  if (attrib != nullptr) {
+    return return_new(attrib);
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -345,7 +372,7 @@ lower_attrib_can_override() const {
  *
  */
 void TextureAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   check_sorted();
 
   out << get_type() << ":";
@@ -768,7 +795,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
     TextureStage *stage = (*si)._stage;
     Texture *tex = (*si)._texture;
-    nassertv(tex != (Texture *)NULL);
+    nassertv(tex != nullptr);
 
     manager->write_pointer(dg, stage);
     manager->write_pointer(dg, tex);
@@ -811,7 +838,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // have to do anything special here.
     Texture *tex = DCAST(Texture, p_list[pi++]);
 
-    if (tex != (Texture *)NULL) {
+    if (tex != nullptr) {
       StageNode &sn = _on_stages[sni];
       sn._stage = ts;
       sn._texture = tex;
@@ -867,7 +894,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _off_stages.reserve(num_off_stages);
   for (i = 0; i < num_off_stages; i++) {
     manager->read_pointer(scan);
-    _off_stages.push_back(StageNode(NULL));
+    _off_stages.push_back(StageNode(nullptr));
   }
 
   // Read the _on_stages data.
@@ -891,9 +918,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       override = scan.get_int32();
     }
 
-    _next_implicit_sort = max(_next_implicit_sort, implicit_sort + 1);
+    _next_implicit_sort = std::max(_next_implicit_sort, implicit_sort + 1);
     Stages::iterator si =
-      _on_stages.insert_nonunique(StageNode(NULL, _next_implicit_sort, override));
+      _on_stages.insert_nonunique(StageNode(nullptr, _next_implicit_sort, override));
     ++_next_implicit_sort;
 
     if (manager->get_file_minor_ver() >= 36) {
@@ -923,8 +950,8 @@ sort_on_stages() {
     StageNode &sn = (*si);
     TextureStage *stage = sn._stage;
     Texture *texture = sn._texture;
-    nassertv(stage != NULL);
-    nassertv(texture != NULL);
+    nassertv(stage != nullptr);
+    nassertv(texture != nullptr);
     if (stage->is_fixed_function() && texture->get_texture_type() != Texture::TT_2d_texture_array) {
       const InternalName *name = stage->get_texcoord_name();
 

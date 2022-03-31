@@ -19,7 +19,7 @@
  *
  */
 void PointerEvent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << (_in_window ? "In@" : "Out@")
       << _xpos << "," << _ypos << " ";
 }
@@ -29,7 +29,7 @@ output(ostream &out) const {
  */
 void PointerEvent::
 write_datagram(Datagram &dg) const {
-  nassertv(false && "This function not implemented yet.");
+  nassert_raise("This function not implemented yet.");
 }
 
 /**
@@ -37,5 +37,5 @@ write_datagram(Datagram &dg) const {
  */
 void PointerEvent::
 read_datagram(DatagramIterator &scan) {
-  nassertv(false && "This function not implemented yet.");
+  nassert_raise("This function not implemented yet.");
 }

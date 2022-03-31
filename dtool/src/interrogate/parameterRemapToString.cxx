@@ -15,6 +15,8 @@
 #include "interrogate.h"
 #include "typeManager.h"
 
+using std::string;
+
 /**
  *
  */
@@ -22,13 +24,13 @@ ParameterRemapToString::
 ParameterRemapToString(CPPType *orig_type) :
   ParameterRemap(orig_type)
 {
-  static CPPType *char_star_type = (CPPType *)NULL;
-  if (char_star_type == (CPPType *)NULL) {
+  static CPPType *char_star_type = nullptr;
+  if (char_star_type == nullptr) {
     char_star_type = parser.parse_type("char *");
   }
 
-  static CPPType *const_char_star_type = (CPPType *)NULL;
-  if (const_char_star_type == (CPPType *)NULL) {
+  static CPPType *const_char_star_type = nullptr;
+  if (const_char_star_type == nullptr) {
     const_char_star_type = parser.parse_type("const char *");
   }
 
@@ -44,7 +46,7 @@ ParameterRemapToString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapToString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 
@@ -75,8 +77,8 @@ ParameterRemapToWString::
 ParameterRemapToWString(CPPType *orig_type) :
   ParameterRemap(orig_type)
 {
-  static CPPType *char_star_type = (CPPType *)NULL;
-  if (char_star_type == (CPPType *)NULL) {
+  static CPPType *char_star_type = nullptr;
+  if (char_star_type == nullptr) {
     char_star_type = parser.parse_type("const wchar_t *");
   }
 
@@ -88,7 +90,7 @@ ParameterRemapToWString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapToWString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 

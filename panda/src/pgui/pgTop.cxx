@@ -24,10 +24,14 @@ TypeHandle PGTop::_type_handle;
  *
  */
 PGTop::
-PGTop(const string &name) :
+PGTop(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
+
+  // We flag the PGTop as renderable, even though it technically doesn't have
+  // anything to render, but we do need the traverser to visit it every frame.
+  set_renderable();
 
   _start_sort = 0;
 
@@ -47,7 +51,7 @@ PGTop(const string &name) :
  */
 PGTop::
 ~PGTop() {
-  set_mouse_watcher((MouseWatcher *)NULL);
+  set_mouse_watcher(nullptr);
 }
 
 /**
@@ -83,7 +87,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // We create a new MouseWatcherGroup for the purposes of collecting a new
   // set of regions visible onscreen.
   PT(PGMouseWatcherGroup) old_watcher_group;
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+  if (_watcher_group != nullptr) {
     _watcher_group->clear_top(this);
     old_watcher_group = _watcher_group;
     _watcher_group = new PGMouseWatcherGroup(this);
@@ -102,8 +106,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // shouldn't do this until the frame that we're about to render has been
   // presented; otherwise, we may make regions active before they are actually
   // visible.  But no one has complained about this so far.
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
-    nassertr(_watcher != (MouseWatcher *)NULL, false);
+  if (_watcher_group != nullptr) {
+    nassertr(_watcher != nullptr, false);
     _watcher->replace_group(old_watcher_group, _watcher_group);
   }
 
@@ -112,35 +116,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool PGTop::
-is_renderable() const {
-  // We flag the PGTop as renderable, even though it technically doesn't have
-  // anything to render, but we do need the traverser to visit it every frame.
-  return true;
-}
-
-/**
  * Sets the MouseWatcher pointer that the PGTop object registers its PG items
  * with.  This must be set before the PG items are active.
  */
 void PGTop::
 set_mouse_watcher(MouseWatcher *watcher) {
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+  if (_watcher_group != nullptr) {
     _watcher_group->clear_top(this);
   }
-  if (_watcher != (MouseWatcher *)NULL) {
+  if (_watcher != nullptr) {
     _watcher->remove_group(_watcher_group);
   }
 
   _watcher = watcher;
-  _watcher_group = (PGMouseWatcherGroup *)NULL;
+  _watcher_group = nullptr;
 
-  if (_watcher != (MouseWatcher *)NULL) {
+  if (_watcher != nullptr) {
     _watcher_group = new PGMouseWatcherGroup(this);
     _watcher->add_group(_watcher_group);
   }

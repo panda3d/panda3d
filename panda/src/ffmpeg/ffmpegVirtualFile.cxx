@@ -17,9 +17,12 @@
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
 
+using std::streampos;
+using std::streamsize;
+
 extern "C" {
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
 }
 
 #ifndef AVSEEK_SIZE
@@ -31,9 +34,9 @@ extern "C" {
  */
 FfmpegVirtualFile::
 FfmpegVirtualFile() :
-  _io_context(NULL),
-  _format_context(NULL),
-  _in(NULL),
+  _io_context(nullptr),
+  _format_context(nullptr),
+  _in(nullptr),
   _owns_in(false),
   _buffer_size(ffmpeg_read_buffer_size)
 {
@@ -45,22 +48,6 @@ FfmpegVirtualFile() :
 FfmpegVirtualFile::
 ~FfmpegVirtualFile() {
   close();
-}
-
-/**
- * These objects are not meant to be copied.
- */
-FfmpegVirtualFile::
-FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
- * These objects are not meant to be copied.
- */
-void FfmpegVirtualFile::
-operator = (const FfmpegVirtualFile &copy) {
-  nassertv(false);
 }
 
 /**
@@ -81,12 +68,12 @@ open_vfs(const Filename &filename) {
   Filename fname = filename;
   fname.set_binary();
   PT(VirtualFile) vfile = vfs->get_file(fname);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     return false;
   }
 
   _in = vfile->open_read_file(true);
-  if (_in == NULL) {
+  if (_in == nullptr) {
     return false;
   }
 
@@ -100,18 +87,14 @@ open_vfs(const Filename &filename) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
-    avformat_open_input(&_format_context, "", NULL, NULL);
-#else
-    av_open_input_file(&_format_context, "", NULL, 0, NULL);
-#endif
+    avformat_open_input(&_format_context, "", nullptr, nullptr);
   if (result < 0) {
     close();
     return false;
@@ -152,18 +135,14 @@ open_subfile(const SubfileInfo &info) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
-    avformat_open_input(&_format_context, fname.c_str(), NULL, NULL);
-#else
-    av_open_input_file(&_format_context, fname.c_str(), NULL, 0, NULL);
-#endif
+    avformat_open_input(&_format_context, fname.c_str(), nullptr, nullptr);
   if (result < 0) {
     close();
     return false;
@@ -178,29 +157,24 @@ open_subfile(const SubfileInfo &info) {
  */
 void FfmpegVirtualFile::
 close() {
-  if (_format_context != NULL) {
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 17, 0)
+  if (_format_context != nullptr) {
     avformat_close_input(&_format_context);
-#else
-    av_close_input_file(_format_context);
-    _format_context = NULL;
-#endif
   }
 
-  if (_io_context != NULL) {
-    if (_io_context->buffer != NULL) {
+  if (_io_context != nullptr) {
+    if (_io_context->buffer != nullptr) {
       av_free(_io_context->buffer);
     }
     av_free(_io_context);
-    _io_context = NULL;
+    _io_context = nullptr;
   }
 
   if (_owns_in) {
-    nassertv(_in != NULL);
+    nassertv(_in != nullptr);
     VirtualFileSystem::close_read_file(_in);
     _owns_in = false;
   }
-  _in = NULL;
+  _in = nullptr;
 }
 
 /**
@@ -215,12 +189,13 @@ register_protocol() {
   }
 
   // Here's a good place to call this global ffmpeg initialization function.
+  // However, ffmpeg (but not libav) deprecated this, hence this check.
+#if LIBAVFORMAT_VERSION_MICRO < 100 || LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
   av_register_all();
+#endif
 
   // And this one.
-#if LIBAVFORMAT_VERSION_INT >= 0x351400
   avformat_network_init();
-#endif
 
   // Let's also register the logging to Panda's notify callback.
   av_log_set_callback(&log_callback);
@@ -233,14 +208,14 @@ int FfmpegVirtualFile::
 read_packet(void *opaque, uint8_t *buf, int size) {
   streampos ssize = (streampos)size;
   FfmpegVirtualFile *self = (FfmpegVirtualFile *) opaque;
-  istream *in = self->_in;
+  std::istream *in = self->_in;
 
   // Since we may be simulating a subset of the opened stream, don't allow it
   // to read past the "end".
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
   if (remaining < ssize) {
     if (remaining <= 0) {
-      return 0;
+      return AVERROR_EOF;
     }
 
     ssize = remaining;
@@ -259,21 +234,21 @@ read_packet(void *opaque, uint8_t *buf, int size) {
 int64_t FfmpegVirtualFile::
 seek(void *opaque, int64_t pos, int whence) {
   FfmpegVirtualFile *self = (FfmpegVirtualFile *) opaque;
-  istream *in = self->_in;
+  std::istream *in = self->_in;
 
   switch (whence) {
   case SEEK_SET:
-    in->seekg(self->_start + (streampos)pos, ios::beg);
+    in->seekg(self->_start + (streampos)pos, std::ios::beg);
     break;
 
   case SEEK_CUR:
-    in->seekg(pos, ios::cur);
+    in->seekg(pos, std::ios::cur);
     break;
 
   case SEEK_END:
     // For seeks relative to the end, we actually compute the end based on
     // _start + _size, and then use ios::beg.
-    in->seekg(self->_start + (streampos)self->_size + (streampos)pos, ios::beg);
+    in->seekg(self->_start + (streampos)self->_size + (streampos)pos, std::ios::beg);
     break;
 
   case AVSEEK_SIZE:

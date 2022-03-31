@@ -24,7 +24,7 @@
 class EXPCL_PANDA_PIPELINE ExternalThread : public Thread {
 private:
   ExternalThread();
-  ExternalThread(const string &name, const string &sync_name);
+  ExternalThread(const std::string &name, const std::string &sync_name);
   virtual void thread_main();
 
 PUBLISHED:

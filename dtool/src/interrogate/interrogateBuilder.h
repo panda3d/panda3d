@@ -52,41 +52,41 @@ class InterfaceMaker;
  */
 class InterrogateBuilder {
 public:
-  void add_source_file(const string &filename);
-  void read_command_file(istream &in);
-  void do_command(const string &command, const string &params);
+  void add_source_file(const std::string &filename);
+  void read_command_file(std::istream &in);
+  void do_command(const std::string &command, const std::string &params);
   void build();
-  void write_code(ostream &out_code, ostream *out_include, InterrogateModuleDef *def);
+  void write_code(std::ostream &out_code, std::ostream *out_include, InterrogateModuleDef *def);
   InterrogateModuleDef *make_module_def(int file_identifier);
 
-  static string clean_identifier(const string &name);
-  static string descope(const string &name);
+  static std::string clean_identifier(const std::string &name);
+  static std::string descope(const std::string &name);
   FunctionIndex get_destructor_for(CPPType *type);
 
-  string get_preferred_name(CPPType *type);
-  static string hash_string(const string &name, int shift_offset);
+  std::string get_preferred_name(CPPType *type);
+  static std::string hash_string(const std::string &name, int shift_offset);
   TypeIndex get_type(CPPType *type, bool global);
 
 public:
-  typedef set<string> Commands;
-  typedef map<string, string> CommandParams;
+  typedef std::set<std::string> Commands;
+  typedef std::map<std::string, std::string> CommandParams;
   void insert_param_list(InterrogateBuilder::Commands &commands,
-                         const string &params);
+                         const std::string &params);
 
-  bool in_forcetype(const string &name) const;
-  string in_renametype(const string &name) const;
-  bool in_ignoretype(const string &name) const;
-  string in_defconstruct(const string &name) const;
-  bool in_ignoreinvolved(const string &name) const;
+  bool in_forcetype(const std::string &name) const;
+  std::string in_renametype(const std::string &name) const;
+  bool in_ignoretype(const std::string &name) const;
+  std::string in_defconstruct(const std::string &name) const;
+  bool in_ignoreinvolved(const std::string &name) const;
   bool in_ignoreinvolved(CPPType *type) const;
-  bool in_ignorefile(const string &name) const;
-  bool in_ignoremember(const string &name) const;
-  bool in_noinclude(const string &name) const;
-  bool should_include(const string &filename) const;
+  bool in_ignorefile(const std::string &name) const;
+  bool in_ignoremember(const std::string &name) const;
+  bool in_noinclude(const std::string &name) const;
+  bool should_include(const std::string &filename) const;
 
   bool is_inherited_published(CPPInstance *function, CPPStructType *struct_type);
 
-  void remap_indices(vector<FunctionRemap *> &remaps);
+  void remap_indices(std::vector<FunctionRemap *> &remaps);
   void scan_function(CPPFunctionGroup *fgroup);
   void scan_function(CPPInstance *function);
   void scan_struct_type(CPPStructType *type);
@@ -96,18 +96,18 @@ public:
   ElementIndex scan_element(CPPInstance *element, CPPStructType *struct_type,
                             CPPScope *scope);
 
-  FunctionIndex get_getter(CPPType *expr_type, string expression,
+  FunctionIndex get_getter(CPPType *expr_type, std::string expression,
                            CPPStructType *struct_type, CPPScope *scope,
                            CPPInstance *element);
-  FunctionIndex get_setter(CPPType *expr_type, string expression,
+  FunctionIndex get_setter(CPPType *expr_type, std::string expression,
                            CPPStructType *struct_type, CPPScope *scope,
                            CPPInstance *element);
   FunctionIndex get_cast_function(CPPType *to_type, CPPType *from_type,
-                                  const string &prefix);
+                                  const std::string &prefix);
   FunctionIndex
-  get_function(CPPInstance *function, string description,
+  get_function(CPPInstance *function, std::string description,
                CPPStructType *struct_type, CPPScope *scope,
-               int flags, const string &expression = string());
+               int flags, const std::string &expression = std::string());
 
   ElementIndex
   get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope);
@@ -133,19 +133,19 @@ public:
   void define_extension_type(InterrogateType &itype,
                              CPPExtensionType *cpptype);
 
-  static string trim_blanks(const string &str);
+  static std::string trim_blanks(const std::string &str);
 
-  typedef map<string, TypeIndex> TypesByName;
-  typedef map<string, FunctionIndex> FunctionsByName;
-  typedef map<string, MakeSeqIndex> MakeSeqsByName;
-  typedef map<string, ElementIndex> PropertiesByName;
+  typedef std::map<std::string, TypeIndex> TypesByName;
+  typedef std::map<std::string, FunctionIndex> FunctionsByName;
+  typedef std::map<std::string, MakeSeqIndex> MakeSeqsByName;
+  typedef std::map<std::string, ElementIndex> PropertiesByName;
 
   TypesByName _types_by_name;
   FunctionsByName _functions_by_name;
   MakeSeqsByName _make_seqs_by_name;
   PropertiesByName _properties_by_name;
 
-  typedef map<string, char> IncludeFiles;
+  typedef std::map<std::string, char> IncludeFiles;
   IncludeFiles _include_files;
 
   Commands _forcetype;
@@ -157,7 +157,7 @@ public:
   Commands _ignoremember;
   Commands _noinclude;
 
-  string _library_hash_name;
+  std::string _library_hash_name;
 
   friend class FunctionRemap;
 };

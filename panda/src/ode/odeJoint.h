@@ -83,12 +83,12 @@ PUBLISHED:
   INLINE void set_feedback(bool flag = true);
   INLINE OdeJointFeedback *get_feedback();
 
-  EXTENSION(void attach(const OdeBody *body1, const OdeBody *body2));
+  EXTENSION(void attach(PyObject *body1, PyObject *body2));
   void attach_bodies(const OdeBody &body1, const OdeBody &body2);
   void attach_body(const OdeBody &body, int index);
   void detach();
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   INLINE int compare_to(const OdeJoint &other) const;
   INLINE bool operator == (const OdeJoint &other) const;
   operator bool () const;

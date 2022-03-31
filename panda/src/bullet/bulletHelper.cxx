@@ -12,12 +12,16 @@
  */
 
 #include "bulletHelper.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletSoftBodyNode.h"
 #include "bulletGhostNode.h"
 
 #include "geomLines.h"
 #include "geomTriangles.h"
 #include "geomVertexRewriter.h"
+
+#include "bullet_utils.h"
 
 PT(InternalName) BulletHelper::_sb_index;
 PT(InternalName) BulletHelper::_sb_flip;
@@ -37,7 +41,7 @@ from_collision_solids(NodePath &np, bool clear) {
     NodePath cnp = npc.get_path(i);
     CollisionNode *cnode = DCAST(CollisionNode, cnp.node());
 
-    PT(PandaNode) bnode = NULL;
+    PT(PandaNode) bnode = nullptr;
 
     // Create a either a new rigid body or a new ghost for each CollisionNode,
     // and add one shape per CollisionSolid contained in the CollisionNode
@@ -83,7 +87,7 @@ from_collision_solids(NodePath &np, bool clear) {
 bool BulletHelper::
 is_tangible(CollisionNode *cnode) {
 
-  for (int j=0; j<cnode->get_num_solids(); j++) {
+  for (size_t j = 0; j < cnode->get_num_solids(); ++j) {
     CPT(CollisionSolid) solid = cnode->get_solid(j);
     if (solid->is_tangible()) {
         return true;
@@ -179,8 +183,8 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
   CPT(GeomVertexFormat) fmt = (format) ? format : GeomVertexFormat::get_v3n3t2();
   fmt = BulletHelper::add_sb_flip_column(fmt);
 
-  nassertr(fmt->has_column(InternalName::get_vertex()), NULL);
-  nassertr(fmt->has_column(InternalName::get_normal()), NULL);
+  nassertr(fmt->has_column(InternalName::get_vertex()), nullptr);
+  nassertr(fmt->has_column(InternalName::get_normal()), nullptr);
 
   btSoftBody::tNodeArray &nodes(body->m_nodes);
 

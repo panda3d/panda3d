@@ -12,7 +12,7 @@
 #
 #################################################################
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 import math
@@ -41,10 +41,10 @@ class LineNodePath(NodePath):
         ls.setColor(colorVec)
 
     def moveTo( self, *_args ):
-        apply( self.lineSegs.moveTo, _args )
+        self.lineSegs.moveTo(*_args)
 
     def drawTo( self, *_args ):
-        apply( self.lineSegs.drawTo, _args )
+        self.lineSegs.drawTo(*_args)
 
     def create( self, frameAccurate = 0 ):
         self.lineSegs.create( self.lineNode, frameAccurate )
@@ -60,13 +60,13 @@ class LineNodePath(NodePath):
         self.lineSegs.setThickness( thickness )
 
     def setColor( self, *_args ):
-        apply( self.lineSegs.setColor, _args )
+        self.lineSegs.setColor(*_args)
 
     def setVertex( self, *_args):
-        apply( self.lineSegs.setVertex, _args )
+        self.lineSegs.setVertex(*_args)
 
     def setVertexColor( self, vertex, *_args ):
-        apply( self.lineSegs.setVertexColor, (vertex,) + _args )
+        self.lineSegs.setVertexColor(*(vertex,) + _args)
 
     def getCurrentPosition( self ):
         return self.lineSegs.getCurrentPosition()
@@ -132,9 +132,9 @@ class LineNodePath(NodePath):
         Given a list of lists of points, draw a separate line for each list
         """
         for pointList in lineList:
-            apply(self.moveTo, pointList[0])
+            self.moveTo(*pointList[0])
             for point in pointList[1:]:
-                apply(self.drawTo, point)
+                self.drawTo(*point)
 
 ##
 ## Given a point in space, and a direction, find the point of intersection

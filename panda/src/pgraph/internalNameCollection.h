@@ -44,15 +44,15 @@ PUBLISHED:
   INLINE void operator += (const InternalNameCollection &other);
   INLINE InternalNameCollection operator + (const InternalNameCollection &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(CPT(InternalName)) InternalNames;
   InternalNames _names;
 };
 
-INLINE ostream &operator << (ostream &out, const InternalNameCollection &col) {
+INLINE std::ostream &operator << (std::ostream &out, const InternalNameCollection &col) {
   col.output(out);
   return out;
 }

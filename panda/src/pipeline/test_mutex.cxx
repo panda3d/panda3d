@@ -22,7 +22,7 @@ static const double thread_duration = 5.0;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name, MutexImpl &m1, double period) :
+  MyThread(const std::string &name, MutexImpl &m1, double period) :
     Thread(name, name),
     _m1(m1), _period(period)
   {
@@ -33,9 +33,9 @@ public:
     double start = clock->get_short_time();
     double end = start + thread_duration;
     while (clock->get_short_time() < end) {
-      _m1.acquire();
+      _m1.lock();
       Thread::sleep(_period);
-      _m1.release();
+      _m1.unlock();
     }
   }
 
@@ -47,14 +47,14 @@ int
 main(int argc, char *argv[]) {
   MutexImpl _m1;
 
-  _m1.acquire();
-  _m1.release();
+  _m1.lock();
+  _m1.unlock();
 
-  cerr << "Making threads.\n";
+  std::cerr << "Making threads.\n";
   MyThread *a = new MyThread("a", _m1, 1.0);
   MyThread *b = new MyThread("b", _m1, 0.9);
 
-  cerr << "Starting threads.\n";
+  std::cerr << "Starting threads.\n";
   a->start(TP_normal, true);
   b->start(TP_normal, true);
 

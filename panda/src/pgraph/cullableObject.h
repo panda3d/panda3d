@@ -30,6 +30,7 @@
 #include "lightMutex.h"
 #include "callbackObject.h"
 #include "geomDrawCallbackData.h"
+#include "instanceList.h"
 
 class CullTraverser;
 class GeomMunger;
@@ -65,7 +66,7 @@ public:
 public:
   ALLOC_DELETED_CHAIN(CullableObject);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   CPT(Geom) _geom;
@@ -73,8 +74,11 @@ public:
   CPT(RenderState) _state;
   CPT(TransformState) _internal_transform;
   PT(CallbackObject) _draw_callback;
+  CPT(InstanceList) _instances;
+  int _num_instances = 1;
 
 private:
+  void munge_instances(Thread *current_thread);
   bool munge_points_to_quads(const CullTraverser *traverser, bool force);
 
   static CPT(RenderState) get_flash_cpu_state();
@@ -113,6 +117,7 @@ private:
   static PStatCollector _munge_sprites_pcollector;
   static PStatCollector _munge_sprites_verts_pcollector;
   static PStatCollector _munge_sprites_prims_pcollector;
+  static PStatCollector _munge_instances_pcollector;
   static PStatCollector _sw_sprites_pcollector;
 
 public:
@@ -127,7 +132,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const CullableObject &object) {
+INLINE std::ostream &operator << (std::ostream &out, const CullableObject &object) {
   object.output(out);
   return out;
 }

@@ -67,7 +67,7 @@ remove_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(TypeHandle type) const {
-  return get_attrib(type) != (RenderAttrib *)NULL;
+  return get_attrib(type) != nullptr;
 }
 
 /**
@@ -76,7 +76,7 @@ has_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(int slot) const {
-  return get_attrib(slot) != (RenderAttrib *)NULL;
+  return get_attrib(slot) != nullptr;
 }
 
 /**
@@ -105,7 +105,7 @@ get_attrib(int slot) const {
  */
 INLINE const RenderAttrib *RenderState::
 get_attrib_def(int slot) const {
-  if (_attributes[slot]._attrib != (RenderAttrib *)NULL) {
+  if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
@@ -389,22 +389,6 @@ consider_update_pstats(int old_referenced_bits) const {
 /**
  *
  */
-INLINE RenderState::Composition::
-Composition() {
-}
-
-/**
- *
- */
-INLINE RenderState::Composition::
-Composition(const RenderState::Composition &copy) :
-  _result(copy._result)
-{
-}
-
-/**
- *
- */
 INLINE RenderState::Attribute::
 Attribute(const RenderAttrib *attrib, int override) :
   _attrib(attrib),
@@ -448,9 +432,9 @@ operator = (const Attribute &copy) {
 INLINE int RenderState::Attribute::
 compare_to(const Attribute &other) const {
   if (_attrib != other._attrib) {
-    if (_attrib == NULL) {
+    if (_attrib == nullptr) {
       return -1;
-    } else if (other._attrib == NULL) {
+    } else if (other._attrib == nullptr) {
       return 1;
     }
 
@@ -481,24 +465,63 @@ flush_level() {
   _cache_counter.flush_level();
 }
 
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_ref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_ref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_ref_only();
+#endif  // DO_PSTATS
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_unref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_unref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_unref_only();
+#endif  // DO_PSTATS
+}
+
 #ifndef CPPPARSER
 /**
- * Handy templated version of get_attrib that costs to the right type.
+ * Handy templated version of get_attrib that casts to the right type.
  * Returns true if the attribute was present, false otherwise.
  */
 template<class AttribType>
 INLINE bool RenderState::
 get_attrib(const AttribType *&attrib) const {
   attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
-  return (attrib != (const AttribType *)NULL);
+  return (attrib != nullptr);
+}
+template<class AttribType>
+INLINE bool RenderState::
+get_attrib(CPT(AttribType) &attrib) const {
+  attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
+  return (attrib != nullptr);
 }
 
 /**
- * Handy templated version of get_attrib_def that costs to the right type.
+ * Handy templated version of get_attrib_def that casts to the right type.
  */
 template<class AttribType>
 INLINE void RenderState::
 get_attrib_def(const AttribType *&attrib) const {
+  attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
+}
+template<class AttribType>
+INLINE void RenderState::
+get_attrib_def(CPT(AttribType) &attrib) const {
   attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
 }
 #endif  // CPPPARSER
@@ -522,7 +545,7 @@ check_hash() const {
  */
 INLINE bool RenderState::
 do_cache_unref() const {
-  cache_unref_only();
+  NodeCachedReferenceCount::cache_unref_only();
   return unref();
 }
 

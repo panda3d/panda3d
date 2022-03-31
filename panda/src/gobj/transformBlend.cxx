@@ -54,7 +54,7 @@ add_transform(const VertexTransform *transform, PN_stdfloat weight) {
     TransformEntry entry;
     entry._transform = transform;
     entry._weight = weight;
-    pair<Entries::iterator, bool> result = _entries.insert(entry);
+    std::pair<Entries::iterator, bool> result = _entries.insert(entry);
     if (!result.second) {
       // If the new value was not inserted, it was already there; increment
       // the existing weight factor.
@@ -168,7 +168,7 @@ get_weight(const VertexTransform *transform) const {
  *
  */
 void TransformBlend::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_entries.empty()) {
     out << "empty";
   } else {
@@ -186,7 +186,7 @@ output(ostream &out) const {
  *
  */
 void TransformBlend::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Thread *current_thread = Thread::get_current_thread();
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
@@ -218,7 +218,7 @@ recompute_result(CData *cdata, Thread *current_thread) {
   UpdateSeq seq;
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
-    seq = max(seq, (*ei)._transform->get_modified(current_thread));
+    seq = std::max(seq, (*ei)._transform->get_modified(current_thread));
   }
 
   if (cdata->_modified != seq) {

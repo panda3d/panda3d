@@ -32,10 +32,10 @@
  * we can use, and thus makes it difficult to support one GSG rendering into
  * an offscreen buffer and also into a window.
  */
-class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
+class EXPCL_PANDA_WGLDISPLAY wglGraphicsBuffer : public GraphicsBuffer {
 public:
   wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,

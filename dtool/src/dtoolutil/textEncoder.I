@@ -86,10 +86,11 @@ get_default_encoding() {
  * decoded version of the string.
  */
 INLINE void TextEncoder::
-set_text(const string &text) {
+set_text(const std::string &text) {
   if (!has_text() || _text != text) {
     _text = text;
     _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
   }
 }
 
@@ -100,8 +101,12 @@ set_text(const string &text) {
  * whichever encoding is specified by set_encoding().
  */
 INLINE void TextEncoder::
-set_text(const string &text, TextEncoder::Encoding encoding) {
-  set_wtext(decode_text(text, encoding));
+set_text(const std::string &text, TextEncoder::Encoding encoding) {
+  if (encoding == _encoding) {
+    set_text(text);
+  } else {
+    set_wtext(decode_text(text, encoding));
+  }
 }
 
 /**
@@ -109,9 +114,10 @@ set_text(const string &text, TextEncoder::Encoding encoding) {
  */
 INLINE void TextEncoder::
 clear_text() {
-  _text = string();
-  _wtext = wstring();
+  _text = std::string();
+  _wtext = std::wstring();
   _flags |= (F_got_text | F_got_wtext);
+  text_changed();
 }
 
 /**
@@ -129,7 +135,7 @@ has_text() const {
 /**
  * Returns the current text, as encoded via the current encoding system.
  */
-INLINE string TextEncoder::
+INLINE std::string TextEncoder::
 get_text() const {
   if ((_flags & F_got_text) == 0) {
     ((TextEncoder *)this)->_text = encode_wtext(_wtext);
@@ -141,7 +147,7 @@ get_text() const {
 /**
  * Returns the current text, as encoded via the indicated encoding system.
  */
-INLINE string TextEncoder::
+INLINE std::string TextEncoder::
 get_text(TextEncoder::Encoding encoding) const {
   return encode_wtext(get_wtext(), encoding);
 }
@@ -150,9 +156,12 @@ get_text(TextEncoder::Encoding encoding) const {
  * Appends the indicates string to the end of the stored text.
  */
 INLINE void TextEncoder::
-append_text(const string &text) {
-  _text = get_text() + text;
-  _flags = (_flags | F_got_text) & ~F_got_wtext;
+append_text(const std::string &text) {
+  if (!text.empty()) {
+    _text = get_text() + text;
+    _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
+  }
 }
 
 /**
@@ -160,9 +169,25 @@ append_text(const string &text) {
  * wide character, up to 16 bits in Unicode.
  */
 INLINE void TextEncoder::
-append_unicode_char(int character) {
-  _wtext = get_wtext() + wstring(1, (wchar_t)character);
+append_unicode_char(char32_t character) {
+#if WCHAR_MAX >= 0x10FFFF
+  // wchar_t might be UTF-32.
+  _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+#else
+  if ((character & ~0xffff) == 0) {
+    _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+  } else {
+    // Encode as a surrogate pair.
+    uint32_t v = (uint32_t)character - 0x10000u;
+    wchar_t wstr[2] = {
+      (wchar_t)((v >> 10u) | 0xd800u),
+      (wchar_t)((v & 0x3ffu) | 0xdc00u),
+    };
+    _wtext = get_wtext() + std::wstring(wstr, 2);
+  }
+#endif
   _flags = (_flags | F_got_wtext) & ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -195,11 +220,12 @@ get_unicode_char(size_t index) const {
  * according to set_encoding().
  */
 INLINE void TextEncoder::
-set_unicode_char(size_t index, int character) {
+set_unicode_char(size_t index, char32_t character) {
   get_wtext();
   if (index < _wtext.length()) {
     _wtext[index] = character;
     _flags &= ~F_got_text;
+    text_changed();
   }
 }
 
@@ -207,7 +233,7 @@ set_unicode_char(size_t index, int character) {
  * Returns the nth char of the stored text, as a one-, two-, or three-byte
  * encoded string.
  */
-INLINE string TextEncoder::
+INLINE std::string TextEncoder::
 get_encoded_char(size_t index) const {
   return get_encoded_char(index, get_encoding());
 }
@@ -216,9 +242,9 @@ get_encoded_char(size_t index) const {
  * Returns the nth char of the stored text, as a one-, two-, or three-byte
  * encoded string.
  */
-INLINE string TextEncoder::
+INLINE std::string TextEncoder::
 get_encoded_char(size_t index, TextEncoder::Encoding encoding) const {
-  wstring wch(1, (wchar_t)get_unicode_char(index));
+  std::wstring wch(1, (wchar_t)get_unicode_char(index));
   return encode_wtext(wch, encoding);
 }
 
@@ -235,7 +261,7 @@ get_encoded_char(size_t index, TextEncoder::Encoding encoding) const {
  * will be converted to ASCII, and the nonconvertible characters will remain
  * encoded in the encoding specified by set_encoding().
  */
-INLINE string TextEncoder::
+INLINE std::string TextEncoder::
 get_text_as_ascii() const {
   return encode_wtext(get_wtext_as_ascii());
 }
@@ -246,8 +272,8 @@ get_text_as_ascii() const {
  * and returns the newly encoded string.  This does not change or affect any
  * properties on the TextEncoder itself.
  */
-INLINE string TextEncoder::
-reencode_text(const string &text, TextEncoder::Encoding from,
+INLINE std::string TextEncoder::
+reencode_text(const std::string &text, TextEncoder::Encoding from,
               TextEncoder::Encoding to) {
   return encode_wtext(decode_text(text, from), to);
 }
@@ -257,9 +283,9 @@ reencode_text(const string &text, TextEncoder::Encoding from,
  * otherwise.  This is akin to ctype's isalpha(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isalpha(int character) {
+unicode_isalpha(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_upper ||
@@ -271,9 +297,9 @@ unicode_isalpha(int character) {
  * otherwise.  This is akin to ctype's isdigit(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isdigit(int character) {
+unicode_isdigit(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     // The digits aren't actually listed in the map.
     return (character >= '0' && character <= '9');
   }
@@ -286,11 +312,11 @@ unicode_isdigit(int character) {
  * otherwise.  This is akin to ctype's ispunct(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_ispunct(int character) {
+unicode_ispunct(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     // Some punctuation marks aren't listed in the map.
-    return (character >= 0 && character < 128 && ispunct(character));
+    return (character < 128 && ispunct(character));
   }
   return entry->_char_type == UnicodeLatinMap::CT_punct;
 }
@@ -300,9 +326,9 @@ unicode_ispunct(int character) {
  * otherwise.  This is akin to ctype's isupper(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isupper(int character) {
+unicode_isupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_upper;
@@ -313,7 +339,7 @@ unicode_isupper(int character) {
  * otherwise.  This is akin to ctype's isspace(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isspace(int character) {
+unicode_isspace(char32_t character) {
   switch (character) {
   case ' ':
   case '\t':
@@ -330,9 +356,9 @@ unicode_isspace(int character) {
  * otherwise.  This is akin to ctype's islower(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_islower(int character) {
+unicode_islower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_lower;
@@ -343,9 +369,9 @@ unicode_islower(int character) {
  * akin to ctype's toupper(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_toupper(int character) {
+unicode_toupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     return character;
   }
   return entry->_toupper_character;
@@ -356,9 +382,9 @@ unicode_toupper(int character) {
  * akin to ctype's tolower(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_tolower(int character) {
+unicode_tolower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == nullptr) {
     return character;
   }
   return entry->_tolower_character;
@@ -368,8 +394,8 @@ unicode_tolower(int character) {
  * Converts the string to uppercase, assuming the string is encoded in the
  * default encoding.
  */
-INLINE string TextEncoder::
-upper(const string &source) {
+INLINE std::string TextEncoder::
+upper(const std::string &source) {
   return upper(source, get_default_encoding());
 }
 
@@ -377,8 +403,8 @@ upper(const string &source) {
  * Converts the string to uppercase, assuming the string is encoded in the
  * indicated encoding.
  */
-INLINE string TextEncoder::
-upper(const string &source, TextEncoder::Encoding encoding) {
+INLINE std::string TextEncoder::
+upper(const std::string &source, TextEncoder::Encoding encoding) {
   TextEncoder encoder;
   encoder.set_encoding(encoding);
   encoder.set_text(source);
@@ -390,8 +416,8 @@ upper(const string &source, TextEncoder::Encoding encoding) {
  * Converts the string to lowercase, assuming the string is encoded in the
  * default encoding.
  */
-INLINE string TextEncoder::
-lower(const string &source) {
+INLINE std::string TextEncoder::
+lower(const std::string &source) {
   return lower(source, get_default_encoding());
 }
 
@@ -399,8 +425,8 @@ lower(const string &source) {
  * Converts the string to lowercase, assuming the string is encoded in the
  * indicated encoding.
  */
-INLINE string TextEncoder::
-lower(const string &source, TextEncoder::Encoding encoding) {
+INLINE std::string TextEncoder::
+lower(const std::string &source, TextEncoder::Encoding encoding) {
   TextEncoder encoder;
   encoder.set_encoding(encoding);
   encoder.set_text(source);
@@ -414,10 +440,11 @@ lower(const string &source, TextEncoder::Encoding encoding) {
  * encoded version of the string.
  */
 INLINE void TextEncoder::
-set_wtext(const wstring &wtext) {
+set_wtext(const std::wstring &wtext) {
   if (!has_text() || _wtext != wtext) {
     _wtext = wtext;
     _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
   }
 }
 
@@ -425,7 +452,7 @@ set_wtext(const wstring &wtext) {
  * Returns the text associated with the TextEncoder, as a wide-character
  * string.
  */
-INLINE const wstring &TextEncoder::
+INLINE const std::wstring &TextEncoder::
 get_wtext() const {
   if ((_flags & F_got_wtext) == 0) {
     ((TextEncoder *)this)->_wtext = decode_text(_text);
@@ -438,17 +465,20 @@ get_wtext() const {
  * Appends the indicates string to the end of the stored wide-character text.
  */
 INLINE void TextEncoder::
-append_wtext(const wstring &wtext) {
-  _wtext = get_wtext() + wtext;
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
+append_wtext(const std::wstring &wtext) {
+  if (!wtext.empty()) {
+    _wtext = get_wtext() + wtext;
+    _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
+  }
 }
 
 /**
  * Encodes a wide-text string into a single-char string, according to the
  * current encoding.
  */
-INLINE string TextEncoder::
-encode_wtext(const wstring &wtext) const {
+INLINE std::string TextEncoder::
+encode_wtext(const std::wstring &wtext) const {
   return encode_wtext(wtext, _encoding);
 }
 
@@ -456,16 +486,16 @@ encode_wtext(const wstring &wtext) const {
  * Returns the given wstring decoded to a single-byte string, via the current
  * encoding system.
  */
-INLINE wstring TextEncoder::
-decode_text(const string &text) const {
+INLINE std::wstring TextEncoder::
+decode_text(const std::string &text) const {
   return decode_text(text, _encoding);
 }
 
 /**
  * Uses the current default encoding to output the wstring.
  */
-INLINE ostream &
-operator << (ostream &out, const wstring &str) {
+INLINE std::ostream &
+operator << (std::ostream &out, const std::wstring &str) {
   TextEncoder encoder;
   encoder.set_wtext(str);
   out << encoder.get_text();

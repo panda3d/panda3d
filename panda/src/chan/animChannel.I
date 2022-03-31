@@ -26,7 +26,7 @@ TypeHandle AnimChannel<SwitchType>::_type_handle;
  */
 template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
-AnimChannel(const string &name)
+AnimChannel(const std::string &name)
   : AnimChannelBase(name) {
 }
 
@@ -48,7 +48,7 @@ AnimChannel(AnimGroup *parent, const AnimChannel &copy) :
  */
 template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
-AnimChannel(AnimGroup *parent, const string &name)
+AnimChannel(AnimGroup *parent, const std::string &name)
   : AnimChannelBase(parent, name) {
 }
 
@@ -59,21 +59,6 @@ template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
 ~AnimChannel() {
 }
-
-#if defined(WIN32_VC) || defined(WIN64_VC)
-/**
- * Gets the value of the channel at the indicated frame.  This is a pure
- * virtual function and normally would not need a function body, except that
- * VC++ seems to be unhappy about instantiating the template without it.
- *
- * However, GCC seems to get confused when it *is* defined.  So this whole
- * thing is protected within an ifdef.
- */
-template<class SwitchType>
-void AnimChannel<SwitchType>::
-get_value(int, TYPENAME AnimChannel<SwitchType>::ValueType &) {
-}
-#endif
 
 /**
  * Returns the value associated with the current frame, with no scale or share

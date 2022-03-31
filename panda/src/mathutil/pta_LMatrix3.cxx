@@ -13,11 +13,6 @@
 
 #include "pta_LMatrix3.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<ReferenceCountedVector<LMatrix3f> >;
 template class PointerToArrayBase<LMatrix3f>;
 template class PointerToArray<LMatrix3f>;

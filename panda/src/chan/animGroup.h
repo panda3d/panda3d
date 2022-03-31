@@ -32,20 +32,20 @@ class FactoryParams;
  */
 class EXPCL_PANDA_CHAN AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
-  AnimGroup(const string &name = "");
+  AnimGroup(const std::string &name = "");
   AnimGroup(AnimGroup *parent, const AnimGroup &copy);
 
 PUBLISHED:
   // This is the normal AnimGroup constructor.
-  explicit AnimGroup(AnimGroup *parent, const string &name);
+  explicit AnimGroup(AnimGroup *parent, const std::string &name);
   virtual ~AnimGroup();
 
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
 
-  AnimGroup *get_child_named(const string &name) const;
-  AnimGroup *find_child(const string &name) const;
+  AnimGroup *get_child_named(const std::string &name) const;
+  AnimGroup *find_child(const std::string &name) const;
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
@@ -54,11 +54,11 @@ public:
   virtual TypeHandle get_value_type() const;
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
-  void write_descendants(ostream &out, int indent_level) const;
+  void write_descendants(std::ostream &out, int indent_level) const;
 
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
   PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
@@ -80,7 +80,7 @@ protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 private:
-  typedef pvector< string > frozenJoints;
+  typedef pvector< std::string > frozenJoints;
   int _num_children;
 
 public:
@@ -102,7 +102,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &operator << (ostream &out, const AnimGroup &anim) {
+inline std::ostream &operator << (std::ostream &out, const AnimGroup &anim) {
   anim.output(out);
   return out;
 }

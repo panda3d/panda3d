@@ -40,6 +40,8 @@ public:
   INLINE void set_data(PyObject *data);
   INLINE PyObject *get_subdata(size_t n, size_t count) const;
 
+  INLINE PyObject *__reduce__(PyObject *self) const;
+
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
@@ -75,6 +77,8 @@ public:
   INLINE PyObject *get_data() const;
   INLINE PyObject *get_subdata(size_t n, size_t count) const;
 
+  INLINE PyObject *__reduce__(PyObject *self) const;
+
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
@@ -97,11 +101,11 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 
 #ifdef _MSC_VER
 // Ugh... MSVC needs this because they still don't have a decent linker.
-#include "PTA_uchar.h"
-#include "PTA_ushort.h"
-#include "PTA_float.h"
-#include "PTA_double.h"
-#include "PTA_int.h"
+#include "pta_uchar.h"
+#include "pta_ushort.h"
+#include "pta_float.h"
+#include "pta_double.h"
+#include "pta_int.h"
 
 template class EXPORT_THIS Extension<PTA_uchar>;
 template class EXPORT_THIS Extension<PTA_ushort>;
@@ -125,7 +129,7 @@ template class EXPORT_THIS Extension<CPTA_int>;
 
 template<class T>
 INLINE const char *_get_format_code(const T *) {
-  return NULL;
+  return nullptr;
 }
 
 define_format_code("c", char);

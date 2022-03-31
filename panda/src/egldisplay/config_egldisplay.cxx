@@ -12,12 +12,18 @@
  */
 
 #include "config_egldisplay.h"
+#include "eglGraphicsBuffer.h"
 #include "eglGraphicsPipe.h"
+#include "eglGraphicsPixmap.h"
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES) && !defined(BUILDING_PANDAGLES2) && !defined(BUILDING_PANDAGL)
+  #error Buildsystem error: BUILDING_PANDAGL(ES(2)) not defined
+#endif
 
 Configure(config_egldisplay);
 NotifyCategoryDef(egldisplay, "display");
@@ -40,8 +46,12 @@ init_libegldisplay() {
   }
   initialized = true;
 
+  eglGraphicsBuffer::init_type();
   eglGraphicsPipe::init_type();
+#ifdef USE_X11
+  eglGraphicsPixmap::init_type();
   eglGraphicsWindow::init_type();
+#endif
   eglGraphicsStateGuardian::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
@@ -51,15 +61,17 @@ init_libegldisplay() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
 #ifdef OPENGLES_2
   ps->set_system_tag("OpenGL ES 2", "window_system", "EGL");
-#else
+#elif defined(OPENGLES_1)
   ps->set_system_tag("OpenGL ES", "window_system", "EGL");
+#else
+  ps->set_system_tag("OpenGL", "window_system", "EGL");
 #endif
 }
 
 /**
  * Returns the given EGL error as string.
  */
-const string get_egl_error_string(int error) {
+const std::string get_egl_error_string(int error) {
   switch (error) {
     case 0x3000: return "EGL_SUCCESS"; break;
     case 0x3001: return "EGL_NOT_INITIALIZED"; break;

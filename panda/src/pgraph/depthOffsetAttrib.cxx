@@ -41,8 +41,8 @@ make(int offset) {
  */
 CPT(RenderAttrib) DepthOffsetAttrib::
 make(int offset, PN_stdfloat min_value, PN_stdfloat max_value) {
-  nassertr(min_value >= 0.0f && min_value <= 1.0f, NULL);
-  nassertr(max_value >= 0.0f && max_value <= 1.0f, NULL);
+  nassertr(min_value >= 0.0f && min_value <= 1.0f, nullptr);
+  nassertr(max_value >= 0.0f && max_value <= 1.0f, nullptr);
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset, min_value, max_value);
   return return_new(attrib);
 }
@@ -60,7 +60,7 @@ make_default() {
  *
  */
 void DepthOffsetAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":(" << get_offset() << ", " << get_min_value()
       << ", " << get_max_value() << ")";
 }

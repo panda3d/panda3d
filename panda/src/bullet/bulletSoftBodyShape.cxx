@@ -12,7 +12,9 @@
  */
 
 #include "bulletSoftBodyShape.h"
+
 #include "bulletSoftBodyNode.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletSoftBodyShape::_type_handle;
 
@@ -40,12 +42,13 @@ ptr() const {
  */
 BulletSoftBodyNode *BulletSoftBodyShape::
 get_body() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   if (_shape->m_body) {
     return (BulletSoftBodyNode *)_shape->m_body->getUserPointer();
   }
   else
   {
-    return NULL;
+    return nullptr;
   }
 }

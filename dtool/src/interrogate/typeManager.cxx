@@ -30,6 +30,8 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
  * we were given; instead, we ask CPPParser to parse a new type of the same
@@ -37,7 +39,7 @@
  */
 CPPType *TypeManager::
 resolve_type(CPPType *type, CPPScope *scope) {
-  if (scope == (CPPScope *)NULL) {
+  if (scope == nullptr) {
     scope = &parser;
   }
 
@@ -116,6 +118,26 @@ is_reference(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     return is_reference(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated type is some kind of an rvalue reference.
+ */
+bool TypeManager::
+is_rvalue_reference(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_rvalue_reference(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return type->as_reference_type()->_value_category == CPPReferenceType::VC_rvalue;
+
+  case CPPDeclaration::ST_typedef:
+    return is_rvalue_reference(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -302,6 +324,26 @@ is_struct(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     return is_struct(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated type is an enum class, const or otherwise.
+ */
+bool TypeManager::
+is_scoped_enum(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_enum:
+    return ((CPPEnumType *)type)->is_scoped();
+
+  case CPPDeclaration::ST_const:
+    return is_scoped_enum(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_scoped_enum(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -550,7 +592,7 @@ is_char(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           simple_type->_type == CPPSimpleType::T_char &&
           simple_type->_flags == 0;
@@ -581,7 +623,7 @@ is_unsigned_char(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
 
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           (simple_type->_type == CPPSimpleType::T_char) &&
           (simple_type->_flags & CPPSimpleType::F_unsigned) != 0;
@@ -613,7 +655,7 @@ is_signed_char(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
 
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           (simple_type->_type == CPPSimpleType::T_char) &&
           (simple_type->_flags & CPPSimpleType::F_signed) != 0;
@@ -717,7 +759,7 @@ is_const_unsigned_char_pointer(CPPType *type) {
 bool TypeManager::
 is_basic_string_char(CPPType *type) {
   CPPType *string_type = get_basic_string_char_type();
-  if (string_type != (CPPType *)NULL &&
+  if (string_type != nullptr &&
       string_type->get_local_name(&parser) == type->get_local_name(&parser)) {
     return true;
   }
@@ -822,7 +864,7 @@ is_wchar(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return simple_type->_type == CPPSimpleType::T_wchar_t;
       }
     }
@@ -865,7 +907,7 @@ is_wchar_pointer(CPPType *type) {
 bool TypeManager::
 is_basic_string_wchar(CPPType *type) {
   CPPType *string_type = get_basic_string_wchar_type();
-  if (string_type != (CPPType *)NULL &&
+  if (string_type != nullptr &&
       string_type->get_local_name(&parser) == type->get_local_name(&parser)) {
     return true;
   }
@@ -965,6 +1007,7 @@ is_wstring(CPPType *type) {
 bool TypeManager::
 is_vector_unsigned_char(CPPType *type) {
   if (type->get_local_name(&parser) == "vector< unsigned char >" ||
+      type->get_local_name(&parser) == "std::vector< unsigned char >" ||
       type->get_local_name(&parser) == "pvector< unsigned char >") {
     return true;
   }
@@ -1030,7 +1073,7 @@ is_bool(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           simple_type->_type == CPPSimpleType::T_bool;
       }
@@ -1063,11 +1106,12 @@ is_integer(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_wchar_t ||
+           simple_type->_type == CPPSimpleType::T_char8_t ||
            simple_type->_type == CPPSimpleType::T_char16_t ||
            simple_type->_type == CPPSimpleType::T_char32_t ||
            simple_type->_type == CPPSimpleType::T_int);
@@ -1098,14 +1142,15 @@ is_unsigned_integer(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           ((simple_type->_type == CPPSimpleType::T_bool ||
             simple_type->_type == CPPSimpleType::T_char ||
             simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
            (simple_type->_flags & CPPSimpleType::F_unsigned) != 0) ||
-           (simple_type->_type == CPPSimpleType::T_char16_t ||
+           (simple_type->_type == CPPSimpleType::T_char8_t ||
+            simple_type->_type == CPPSimpleType::T_char16_t ||
             simple_type->_type == CPPSimpleType::T_char32_t);
       }
     }
@@ -1187,7 +1232,7 @@ is_long(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & CPPSimpleType::F_long) != 0);
       }
@@ -1217,7 +1262,7 @@ is_short(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & CPPSimpleType::F_short) != 0);
       }
@@ -1246,7 +1291,7 @@ is_unsigned_short(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & (CPPSimpleType::F_short | CPPSimpleType::F_unsigned)) == (CPPSimpleType::F_short | CPPSimpleType::F_unsigned));
       }
@@ -1276,7 +1321,7 @@ is_longlong(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & CPPSimpleType::F_longlong) != 0);
       }
@@ -1306,7 +1351,7 @@ is_unsigned_longlong(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_int &&
                 (simple_type->_flags & (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned)) == (CPPSimpleType::F_longlong | CPPSimpleType::F_unsigned));
       }
@@ -1335,7 +1380,7 @@ is_double(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return (simple_type->_type == CPPSimpleType::T_double);
       }
     }
@@ -1364,7 +1409,7 @@ is_float(CPPType *type) {
   case CPPDeclaration::ST_simple:
     {
       CPPSimpleType *simple_type = type->as_simple_type();
-      if (simple_type != (CPPSimpleType *)NULL) {
+      if (simple_type != nullptr) {
         return
           (simple_type->_type == CPPSimpleType::T_float ||
            simple_type->_type == CPPSimpleType::T_double);
@@ -1388,7 +1433,7 @@ is_float(CPPType *type) {
 bool TypeManager::
 is_void(CPPType *type) {
   CPPSimpleType *simple_type = type->as_simple_type();
-  if (simple_type != (CPPSimpleType *)NULL) {
+  if (simple_type != nullptr) {
     return
       simple_type->_type == CPPSimpleType::T_void &&
       simple_type->_flags == 0;
@@ -1399,12 +1444,12 @@ is_void(CPPType *type) {
 
 /**
  * Returns true if the indicated type is some class that derives from
- * ReferenceCount, or false otherwise.
+ * ReferenceCount, or defines ref and unref(), or false otherwise.
  */
 bool TypeManager::
 is_reference_count(CPPType *type) {
   CPPType *refcount_type = get_reference_count_type();
-  if (refcount_type != (CPPType *)NULL &&
+  if (refcount_type != nullptr &&
       refcount_type->get_local_name(&parser) == type->get_local_name(&parser)) {
     return true;
   }
@@ -1416,6 +1461,14 @@ is_reference_count(CPPType *type) {
   case CPPDeclaration::ST_struct:
     {
       CPPStructType *stype = type->as_struct_type();
+
+      // If we have methods named ref() and unref(), this is good enough.
+      if (stype->_scope->_functions.count("ref") &&
+          stype->_scope->_functions.count("unref") &&
+          stype->_scope->_functions.count("get_ref_count")) {
+        return true;
+      }
+
       CPPStructType::Derivation::const_iterator di;
       for (di = stype->_derivation.begin();
            di != stype->_derivation.end();
@@ -1804,7 +1857,9 @@ bool TypeManager::is_ostream(CPPType *type) {
     return is_ostream(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "ostream");
+    return (type->get_local_name(&parser) == "std::ostream" ||
+            type->get_local_name(&parser) == "ostream" ||
+            type->get_local_name(&parser) == "std::basic_ostream< char >");
 
   case CPPDeclaration::ST_typedef:
     return is_ostream(type->as_typedef_type()->_type);
@@ -1859,7 +1914,7 @@ involves_unpublished(CPPType *type) {
   case CPPDeclaration::ST_struct:
     // A struct type is unpublished only if all of its members are
     // unpublished.
-    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+    if (type->_declaration != nullptr) {
       if (type->_declaration->_vis <= min_vis) {
         return false;
       }
@@ -1881,7 +1936,7 @@ involves_unpublished(CPPType *type) {
     }
 
   case CPPDeclaration::ST_function:
-    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+    if (type->_declaration != nullptr) {
       if (type->_declaration->_vis <= min_vis) {
         return false;
       }
@@ -1909,7 +1964,7 @@ involves_unpublished(CPPType *type) {
     return involves_unpublished(type->as_typedef_type()->_type);
 
   default:
-    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+    if (type->_declaration != nullptr) {
       return (type->_declaration->_vis > min_vis);
     }
     return false;
@@ -1955,7 +2010,7 @@ involves_protected(CPPType *type) {
     return involves_protected(type->as_typedef_type()->_type);
 
   default:
-    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+    if (type->_declaration != nullptr) {
       return (type->_declaration->_vis > V_public);
     }
     return false;
@@ -2073,7 +2128,7 @@ get_pointer_type(CPPStructType *pt_type) {
          ++ii) {
       CPPInstance *function = (*ii);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      assert(ftype != (CPPFunctionType *)NULL);
+      assert(ftype != nullptr);
       if (ftype->_parameters->_parameters.empty()) {
         // Here's the function p().  What's its return type?
         return resolve_type(ftype->_return_type);
@@ -2081,7 +2136,7 @@ get_pointer_type(CPPStructType *pt_type) {
     }
   }
 
-  return (CPPType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -2106,15 +2161,15 @@ get_template_parameter_type(CPPType *source_type, int i) {
   }
 
   CPPStructType *type = source_type->as_struct_type();
-  if (type == NULL) {
-    return NULL;
+  if (type == nullptr) {
+    return nullptr;
   }
 
   // I'm not sure how reliable this is, but I don't know if there is a more
   // proper way to access this.
   CPPTemplateParameterList *templ = type->_ident->_names.back().get_templ();
-  if (templ == NULL || i >= (int)templ->_parameters.size()) {
-    return NULL;
+  if (templ == nullptr || i >= (int)templ->_parameters.size()) {
+    return nullptr;
   }
 
   CPPDeclaration *decl = templ->_parameters[i];
@@ -2134,7 +2189,7 @@ wrap_pointer(CPPType *source_type) {
  */
 CPPType *TypeManager::
 wrap_const_pointer(CPPType *source_type) {
-  if (source_type->as_const_type() != (CPPConstType *)NULL) {
+  if (source_type->as_const_type() != nullptr) {
     // It's already const.
     return
       CPPType::new_type(new CPPPointerType(source_type));
@@ -2149,7 +2204,7 @@ wrap_const_pointer(CPPType *source_type) {
  */
 CPPType *TypeManager::
 wrap_const_reference(CPPType *source_type) {
-  if (source_type->as_const_type() != (CPPConstType *)NULL) {
+  if (source_type->as_const_type() != nullptr) {
     // It's already const.
     return
       CPPType::new_type(new CPPReferenceType(source_type));
@@ -2166,7 +2221,7 @@ wrap_const_reference(CPPType *source_type) {
 CPPType *TypeManager::
 get_basic_string_char_type() {
   static bool got_type = false;
-  static CPPType *type = (CPPType *)NULL;
+  static CPPType *type = nullptr;
   if (!got_type) {
     type = parser.parse_type("std::basic_string<char>");
     got_type = true;
@@ -2181,7 +2236,7 @@ get_basic_string_char_type() {
 CPPType *TypeManager::
 get_basic_string_wchar_type() {
   static bool got_type = false;
-  static CPPType *type = (CPPType *)NULL;
+  static CPPType *type = nullptr;
   if (!got_type) {
     type = parser.parse_type("std::basic_string<wchar_t>");
     got_type = true;
@@ -2196,7 +2251,7 @@ get_basic_string_wchar_type() {
 CPPType *TypeManager::
 get_reference_count_type() {
   static bool got_type = false;
-  static CPPType *type = (CPPType *)NULL;
+  static CPPType *type = nullptr;
   if (!got_type) {
     type = parser.parse_type("ReferenceCount");
     got_type = true;
@@ -2210,7 +2265,7 @@ get_reference_count_type() {
 CPPType *TypeManager::
 get_void_type() {
   static bool got_type = false;
-  static CPPType *type = (CPPType *)NULL;
+  static CPPType *type = nullptr;
   if (!got_type) {
     type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_void));
     got_type = true;
@@ -2224,7 +2279,7 @@ get_void_type() {
 CPPType *TypeManager::
 get_int_type() {
   static bool got_type = false;
-  static CPPType *type = (CPPType *)NULL;
+  static CPPType *type = nullptr;
   if (!got_type) {
     type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
     got_type = true;
@@ -2246,9 +2301,9 @@ string TypeManager::
 get_function_signature(CPPInstance *function,
                        int num_default_parameters) {
   CPPFunctionType *ftype = function->_type->as_function_type();
-  assert(ftype != (CPPFunctionType *)NULL);
+  assert(ftype != nullptr);
 
-  ostringstream out;
+  std::ostringstream out;
 
   // It's tempting to mark static methods with a different function signature
   // than non-static, because a static method doesn't have an implicit 'this'
@@ -2315,7 +2370,7 @@ get_function_name(CPPInstance *function) {
 bool TypeManager::
 has_protected_destructor(CPPType *type) {
   CPPStructType *struct_type = type->as_struct_type();
-  if (struct_type == (CPPStructType *)NULL) {
+  if (struct_type == nullptr) {
     // It's not even a struct type!
     return false;
   }
@@ -2332,7 +2387,7 @@ has_protected_destructor(CPPType *type) {
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
         // Here's a function declaration.
         CPPFunctionType *ftype = inst->_type->as_function_type();
-        assert(ftype != (CPPFunctionType *)NULL);
+        assert(ftype != nullptr);
         if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
           // Here's the destructor!  Is it protected?
           return (inst->_vis > V_public);

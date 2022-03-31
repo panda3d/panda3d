@@ -19,7 +19,7 @@
  * Formats the InterrogateMakeSeq data for output to a data file.
  */
 void InterrogateMakeSeq::
-output(ostream &out) const {
+output(std::ostream &out) const {
   InterrogateComponent::output(out);
   out << _length_getter << " "
       << _element_getter << " ";
@@ -31,7 +31,7 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateMakeSeq::
-input(istream &in) {
+input(std::istream &in) {
   InterrogateComponent::input(in);
 
   in >> _length_getter >> _element_getter;

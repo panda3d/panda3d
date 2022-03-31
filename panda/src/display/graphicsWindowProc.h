@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -32,6 +32,7 @@ class GraphicsWindow;
 class EXPCL_PANDA_DISPLAY GraphicsWindowProc {
 public:
   GraphicsWindowProc();
+  virtual ~GraphicsWindowProc() = default;
 #if defined(__WIN32__) || defined(_WIN32)
   virtual LONG wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd,
                         UINT msg, WPARAM wparam, LPARAM lparam);

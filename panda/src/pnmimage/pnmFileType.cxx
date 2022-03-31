@@ -18,7 +18,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-bool PNMFileType::_did_init_pnm = false;
+using std::string;
+
 TypeHandle PNMFileType::_type_handle;
 
 /**
@@ -91,8 +92,8 @@ matches_magic_number(const string &) const {
  * returns NULL.
  */
 PNMReader *PNMFileType::
-make_reader(istream *, bool, const string &) {
-  return NULL;
+make_reader(std::istream *, bool, const string &) {
+  return nullptr;
 }
 
 /**
@@ -101,23 +102,8 @@ make_reader(istream *, bool, const string &) {
  * NULL.
  */
 PNMWriter *PNMFileType::
-make_writer(ostream *, bool) {
-  return NULL;
-}
-
-/**
- * Initializes the underlying PNM library, if it has not already been
- * initialized.  This should be called by every implementation of
- * make_reader() and make_writer(), to ensure that the library is properly
- * initialized before any I/O is attempted.
- */
-void PNMFileType::
-init_pnm() {
-  if (!_did_init_pnm) {
-    _did_init_pnm = true;
-
-    // No reason to do anything here nowadays.
-  }
+make_writer(std::ostream *, bool) {
+  return nullptr;
 }
 
 /**

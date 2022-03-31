@@ -33,11 +33,11 @@ PUBLISHED:
 
   void append(const PartSubset &other);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   bool is_include_empty() const;
-  bool matches_include(const string &joint_name) const;
-  bool matches_exclude(const string &joint_name) const;
+  bool matches_include(const std::string &joint_name) const;
+  bool matches_exclude(const std::string &joint_name) const;
 
 private:
   typedef pvector<GlobPattern> Joints;
@@ -45,7 +45,7 @@ private:
   Joints _exclude_joints;
 };
 
-INLINE ostream &operator << (ostream &out, const PartSubset &subset) {
+INLINE std::ostream &operator << (std::ostream &out, const PartSubset &subset) {
   subset.output(out);
   return out;
 }

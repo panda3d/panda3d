@@ -1,5 +1,5 @@
-#ifndef __SOCKET_UDP_INCOMING_H__
-#define __SOCKET_UDP_INCOMING_H__
+#ifndef SOCKET_UDP_INCOMING_H
+#define SOCKET_UDP_INCOMING_H
 
 #include "pandabase.h"
 #include "socket_ip.h"
@@ -186,4 +186,4 @@ SendTo(const char *data, int len, const Socket_Address &address) {
   return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
 }
 
-#endif //__SOCKET_UDP_INCOMING_H__
+#endif //SOCKET_UDP_INCOMING_H

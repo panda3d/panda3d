@@ -28,17 +28,17 @@
 #define TIXML_USE_STL
 #endif
 
-NotifyCategoryDecl(dxml, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(dxml, EXPCL_PANDA_DXML, EXPTP_PANDA_DXML);
 
-extern EXPCL_PANDA void init_libdxml();
+extern EXPCL_PANDA_DXML void init_libdxml();
 
 class TiXmlDocument;
 class TiXmlNode;
 BEGIN_PUBLISH
-EXPCL_PANDA TiXmlDocument *read_xml_stream(istream &in);
-EXPCL_PANDA void write_xml_stream(ostream &out, TiXmlDocument *doc);
-EXPCL_PANDA void print_xml(TiXmlNode *xnode);
-EXPCL_PANDA void print_xml_to_file(const Filename &filename, TiXmlNode *xnode);
+EXPCL_PANDA_DXML TiXmlDocument *read_xml_stream(std::istream &in);
+EXPCL_PANDA_DXML void write_xml_stream(std::ostream &out, TiXmlDocument *doc);
+EXPCL_PANDA_DXML void print_xml(TiXmlNode *xnode);
+EXPCL_PANDA_DXML void print_xml_to_file(const Filename &filename, TiXmlNode *xnode);
 END_PUBLISH
 
 #endif

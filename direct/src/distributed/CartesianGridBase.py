@@ -29,8 +29,8 @@ class CartesianGridBase:
         # Compute which zone we are in
         zoneId = int(self.startingZone + ((row * self.gridSize) + col))
 
-        if (wantRowAndCol):
-            return (zoneId,col,row)
+        if wantRowAndCol:
+            return (zoneId, col, row)
         else:
             return zoneId
 
@@ -113,9 +113,9 @@ class CartesianGridBase:
             else:
                 # in a middle column, only look at top and bottom rows
                 possibleRows = []
-                if (topOffset == radius):
+                if topOffset == radius:
                     possibleRows.append(0)
-                if (bottomOffset == radius):
+                if bottomOffset == radius:
                     possibleRows.append(bottomOffset + topOffset)
             #print "on column %s and looking at rows %s"%(currCol,possibleRows)
             for currRow in possibleRows:

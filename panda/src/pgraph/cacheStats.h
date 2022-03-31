@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "clockObject.h"
+#include "patomic.h"
 #include "pnotify.h"
 
 /**
@@ -24,9 +25,10 @@
  */
 class EXPCL_PANDA_PGRAPH CacheStats {
 public:
+  constexpr CacheStats() = default;
   void init();
   void reset(double now);
-  void write(ostream &out, const char *name) const;
+  void write(std::ostream &out, const char *name) const;
   INLINE void maybe_report(const char *name);
 
   INLINE void inc_hits();
@@ -38,17 +40,17 @@ public:
 
 private:
 #ifndef NDEBUG
-  int _cache_hits;
-  int _cache_misses;
-  int _cache_adds;
-  int _cache_new_adds;
-  int _cache_dels;
-  int _total_cache_size;
-  int _num_states;
-  double _last_reset;
+  int _cache_hits = 0;
+  int _cache_misses = 0;
+  int _cache_adds = 0;
+  int _cache_new_adds = 0;
+  int _cache_dels = 0;
+  int _total_cache_size = 0;
+  patomic<int> _num_states {0};
+  double _last_reset = 0.0;
 
-  bool _cache_report;
-  double _cache_report_interval;
+  bool _cache_report = false;
+  double _cache_report_interval = 0.0;
 #endif  // NDEBUG
 };
 

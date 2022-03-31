@@ -61,7 +61,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 PointLight::
-PointLight(const string &name) :
+PointLight(const std::string &name) :
   LightLensNode(name) {
   PT(Lens) lens;
   lens = new PerspectiveLens(90, 90);
@@ -127,7 +127,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void PointLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";

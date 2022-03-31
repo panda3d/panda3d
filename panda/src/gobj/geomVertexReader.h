@@ -47,14 +47,14 @@
 class EXPCL_PANDA_GOBJ GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 
@@ -119,7 +119,7 @@ PUBLISHED:
   INLINE const LVecBase3i &get_data3i();
   INLINE const LVecBase4i &get_data4i();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 protected:
   INLINE GeomVertexColumn::Packer *get_packer() const;
@@ -155,15 +155,15 @@ private:
   int _start_row;
   bool _force;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
   static const unsigned char empty_buffer[100];
 #endif
 };
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexReader &reader) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexReader &reader) {
   reader.output(out);
   return out;
 }

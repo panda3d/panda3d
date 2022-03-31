@@ -19,6 +19,7 @@
 #include "pvector.h"
 #include "config_interval.h"
 #include "pStatCollector.h"
+#include "extension.h"
 
 class CIntervalManager;
 
@@ -32,13 +33,13 @@ class CIntervalManager;
  * C++ will inherit from this class; Intervals that must be implemented in
  * Python will inherit from the similar Python class.
  */
-class EXPCL_DIRECT CInterval : public TypedReferenceCount {
+class EXPCL_DIRECT_INTERVAL CInterval : public TypedReferenceCount {
 public:
-  CInterval(const string &name, double duration, bool open_ended);
+  CInterval(const std::string &name, double duration, bool open_ended);
   virtual ~CInterval();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   INLINE double get_duration() const;
   INLINE bool get_open_ended() const;
 
@@ -63,8 +64,8 @@ PUBLISHED:
   INLINE State get_state() const;
   INLINE bool is_stopped() const;
 
-  INLINE void set_done_event(const string &event);
-  INLINE const string &get_done_event() const;
+  INLINE void set_done_event(const std::string &event);
+  INLINE const std::string &get_done_event() const;
 
   void set_t(double t);
   INLINE double get_t() const;
@@ -110,8 +111,8 @@ PUBLISHED:
   virtual void priv_reverse_finalize();
   virtual void priv_interrupt();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   void setup_play(double start_time, double end_time, double play_rate,
                   bool do_loop);
@@ -120,6 +121,8 @@ PUBLISHED:
   bool step_play();
 
 PUBLISHED:
+  EXTENSION(PyObject *__await__(PyObject *self));
+
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(duration, get_duration);
   MAKE_PROPERTY(open_ended, get_open_ended);
@@ -147,9 +150,9 @@ protected:
 
   State _state;
   double _curr_t;
-  string _name;
-  string _pname;
-  string _done_event;
+  std::string _name;
+  std::string _pname;
+  std::string _done_event;
   double _duration;
 
   bool _auto_pause;
@@ -201,8 +204,8 @@ private:
   friend class CMetaInterval;
 };
 
-INLINE ostream &operator << (ostream &out, const CInterval &ival);
-EXPCL_DIRECT ostream &operator << (ostream &out, CInterval::State state);
+INLINE std::ostream &operator << (std::ostream &out, const CInterval &ival);
+EXPCL_DIRECT_INTERVAL std::ostream &operator << (std::ostream &out, CInterval::State state);
 
 #include "cInterval.I"
 

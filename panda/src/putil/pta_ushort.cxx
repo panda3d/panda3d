@@ -13,12 +13,7 @@
 
 #include "pta_ushort.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
-template class PointerToBase<ReferenceCountedVector<ushort> >;
-template class PointerToArrayBase<ushort>;
+template class PointerToBase<ReferenceCountedVector<unsigned short> >;
+template class PointerToArrayBase<unsigned short>;
 template class PointerToArray<unsigned short>;
 template class ConstPointerToArray<unsigned short>;

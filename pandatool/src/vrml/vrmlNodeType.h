@@ -42,7 +42,7 @@ union VrmlFieldValue {
 typedef pvector<VrmlFieldValue> MFArray;
 
 
-ostream &output_value(ostream &out, const VrmlFieldValue &value, int type,
+std::ostream &output_value(std::ostream &out, const VrmlFieldValue &value, int type,
                       int indent = 0);
 
 
@@ -70,13 +70,13 @@ public:
   
   // Routines for adding/getting eventIns/Outs/fields
   void addEventIn(const char *name, int type, 
-                  const VrmlFieldValue *dflt = NULL);
+                  const VrmlFieldValue *dflt = nullptr);
   void addEventOut(const char *name, int type,
-                   const VrmlFieldValue *dflt = NULL);
+                   const VrmlFieldValue *dflt = nullptr);
   void addField(const char *name, int type,
-                const VrmlFieldValue *dflt = NULL);
+                const VrmlFieldValue *dflt = nullptr);
   void addExposedField(const char *name, int type,
-                       const VrmlFieldValue *dflt = NULL);
+                       const VrmlFieldValue *dflt = nullptr);
   
   typedef struct {
     char *name;

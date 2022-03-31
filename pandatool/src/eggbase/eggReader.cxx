@@ -14,7 +14,7 @@
 #include "eggReader.h"
 
 #include "pnmImage.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "eggTextureCollection.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"
@@ -50,11 +50,12 @@ EggReader() {
      "which should be self-contained and include only relative pathnames.",
      &EggReader::dispatch_none, &_noabs);
 
-  _tex_type = (PNMFileType *)NULL;
+  _tex_type = nullptr;
   _delod = -1.0;
 
   _got_tex_dirname = false;
   _got_tex_extension = false;
+  _exit_on_failure = true;
 }
 
 /**
@@ -90,7 +91,7 @@ add_texture_options() {
      "the image format can be determined by the extension, but sometimes "
      "the extension is insufficient to unambiguously specify an image "
      "type.",
-     &EggReader::dispatch_image_type, NULL, &_tex_type);
+     &EggReader::dispatch_image_type, nullptr, &_tex_type);
 }
 
 /**
@@ -111,7 +112,7 @@ add_delod_options(double default_delod) {
        "a camera at the indicated fixed distance from each LOD.  "
        "Use -delod -1 to keep all the LOD's as they are, which is "
        "the default.\n",
-       &EggReader::dispatch_double, NULL, &_delod);
+       &EggReader::dispatch_double, nullptr, &_delod);
 
   } else {
     add_option
@@ -120,8 +121,18 @@ add_delod_options(double default_delod) {
        "a camera at the indicated fixed distance from each LOD.  "
        "Use -delod -1 to keep all the LOD's as they are.  The default value "
        "is " + format_string(default_delod) + ".",
-       &EggReader::dispatch_double, NULL, &_delod);
+       &EggReader::dispatch_double, nullptr, &_delod);
   }
+}
+
+/**
+ * Sets whether the reader will quit the program upon encountering a fatal error.
+ *
+ * If true, the entire program will quit as soon as an egg loading error occurs.
+ */
+void EggReader::
+set_exit_on_failure(bool exit_on_failure) {
+  _exit_on_failure = exit_on_failure;
 }
 
 /**
@@ -175,18 +186,27 @@ handle_args(ProgramBase::Args &args) {
         // Rather than returning false, we simply exit here, so the ProgramBase
         // won't try to tell the user how to run the program just because we got
         // a bad egg file.
-        exit(1);
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     } else {
-      if (!file_data.read(cin)) {
-        exit(1);
+      if (!file_data.read(std::cin)) {
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     }
 
     if (_noabs && file_data.original_had_absolute_pathnames()) {
       nout << filename.get_basename()
            << " includes absolute pathnames!\n";
-      exit(1);
+      if (_exit_on_failure) {
+        exit(1);
+      }
+      return false;
     }
 
     DSearchPath file_path;
@@ -194,7 +214,10 @@ handle_args(ProgramBase::Args &args) {
 
     if (_force_complete) {
       if (!file_data.load_externals(file_path)) {
-        exit(1);
+        if (_exit_on_failure) {
+          exit(1);
+        }
+        return false;
       }
     }
 

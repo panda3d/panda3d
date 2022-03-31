@@ -36,7 +36,7 @@ TypeHandle glxGraphicsWindow::_type_handle;
  */
 glxGraphicsWindow::
 glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -57,7 +57,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -89,12 +89,41 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   glxgsg->reset_if_new();
 
   if (mode == FM_render) {
+    glxgsg->push_group_marker(std::string("glxGraphicsWindow ") + get_name());
     // begin_render_texture();
     clear_cube_map_selection();
   }
 
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
+}
+
+
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
+void glxGraphicsWindow::
+end_frame(FrameMode mode, Thread *current_thread) {
+  end_frame_spam(mode);
+  nassertv(_gsg != nullptr);
+
+  if (mode == FM_render) {
+    // end_render_texture();
+    copy_to_textures();
+  }
+
+  _gsg->end_frame(current_thread);
+
+  if (mode == FM_render) {
+    trigger_flip();
+    clear_cube_map_selection();
+
+    glxGraphicsStateGuardian *glxgsg;
+    DCAST_INTO_V(glxgsg, _gsg);
+    glxgsg->pop_group_marker();
+  }
 }
 
 /**
@@ -106,7 +135,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
  */
 void glxGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -125,8 +154,10 @@ end_flip() {
  */
 void glxGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    glXMakeCurrent(_display, None, NULL);
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+
+  if (_gsg != nullptr) {
+    glXMakeCurrent(_display, None, nullptr);
     _gsg.clear();
   }
 
@@ -144,9 +175,9 @@ open_window() {
 
   // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
-    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
+    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, nullptr);
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false, false);
     _gsg = glxgsg;
   } else {
@@ -160,7 +191,7 @@ open_window() {
     }
   }
 
-  if (glxgsg->_context == NULL) {
+  if (glxgsg->_context == nullptr) {
     // We're supposed to have a context at this point.
     glxdisplay_cat.error()
       << "No GLX context: cannot open window.\n";
@@ -168,12 +199,14 @@ open_window() {
   }
 
   _visual_info = glxgsg->_visual;
-  if (_visual_info == NULL) {
+  if (_visual_info == nullptr) {
     // No X visual for this fbconfig; how can we open the window?
     glxdisplay_cat.error()
       << "No X visual: cannot open window.\n";
     return false;
   }
+
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
@@ -212,7 +245,7 @@ setup_colormap(GLXFBConfig fbconfig) {
   nassertv(glxgsg->_supports_fbconfig);
 
   XVisualInfo *visual_info = glxgsg->_glXGetVisualFromFBConfig(_display, fbconfig);
-  if (visual_info == NULL) {
+  if (visual_info == nullptr) {
     // No X visual; no need to set up a colormap.
     return;
   }

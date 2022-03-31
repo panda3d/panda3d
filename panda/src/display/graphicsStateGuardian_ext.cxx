@@ -25,10 +25,11 @@ static bool traverse_callback(TextureContext *tc, void *data) {
   PyObject *element =
     DTool_CreatePyInstanceTyped(tex, Dtool_Texture,
                                 true, false, tex->get_type_index());
-  tex->ref();
+  tex.cheat() = nullptr;
 
   PyObject *list = (PyObject *) data;
   PyList_Append(list, element);
+  Py_DECREF(element);
 
   return true;
 }
@@ -41,8 +42,8 @@ PyObject *Extension<GraphicsStateGuardian>::
 get_prepared_textures() const {
   PyObject *list = PyList_New(0);
 
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
 
   _this->traverse_prepared_textures(&traverse_callback, (void *)list);

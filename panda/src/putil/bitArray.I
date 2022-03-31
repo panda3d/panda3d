@@ -79,44 +79,6 @@ range(int low_bit, int size) {
 }
 
 /**
- * Returns true if there is a maximum number of bits that may be stored in
- * this structure, false otherwise.  If this returns true, the number may be
- * queried in get_max_num_bits().
- *
- * This method always returns false.  The BitArray has no maximum number of
- * bits.  This method is defined so generic programming algorithms can use
- * BitMask or BitArray interchangeably.
- */
-CONSTEXPR bool BitArray::
-has_max_num_bits() {
-  return false;
-}
-
-/**
- * If get_max_num_bits() returned true, this method may be called to return
- * the maximum number of bits that may be stored in this structure.  It is an
- * error to call this if get_max_num_bits() return false.
- *
- * It is always an error to call this method.  The BitArray has no maximum
- * number of bits.  This method is defined so generic programming algorithms
- * can use BitMask or BitArray interchangeably.
- */
-CONSTEXPR int BitArray::
-get_max_num_bits() {
-  return INT_MAX;
-}
-
-/**
- * Returns the number of bits stored per word internally.  This is of interest
- * only in that it limits the maximum number of bits that may be queried or
- * set at once by extract() and store().
- */
-CONSTEXPR int BitArray::
-get_num_bits_per_word() {
-  return num_bits_per_word;
-}
-
-/**
  * Returns the current number of possibly different bits in this array.  There
  * are actually an infinite number of bits, but every bit higher than this bit
  * will have the same value, either 0 or 1 (see get_highest_bits()).

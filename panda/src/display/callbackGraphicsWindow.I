@@ -32,7 +32,7 @@ set_events_callback(CallbackObject *object) {
  */
 INLINE void CallbackGraphicsWindow::
 clear_events_callback() {
-  set_events_callback(NULL);
+  set_events_callback(nullptr);
 }
 
 /**
@@ -66,7 +66,7 @@ set_properties_callback(CallbackObject *object) {
  */
 INLINE void CallbackGraphicsWindow::
 clear_properties_callback() {
-  set_properties_callback(NULL);
+  set_properties_callback(nullptr);
 }
 
 /**
@@ -96,7 +96,7 @@ set_render_callback(CallbackObject *object) {
  */
 INLINE void CallbackGraphicsWindow::
 clear_render_callback() {
-  set_render_callback(NULL);
+  set_render_callback(nullptr);
 }
 
 /**

@@ -64,11 +64,11 @@ PUBLISHED:
   EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
   INLINE vector_uchar encode_to_bam_stream() const;
-  bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = NULL) const;
+  bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = nullptr) const;
   static bool decode_raw_from_bam_stream(TypedWritable *&ptr,
                                          ReferenceCount *&ref_ptr,
                                          vector_uchar data,
-                                         BamReader *reader = NULL);
+                                         BamReader *reader = nullptr);
 
 private:
   void add_bam_writer(BamWriter *writer);

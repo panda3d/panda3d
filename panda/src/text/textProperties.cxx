@@ -21,6 +21,7 @@
 #include "colorAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
+#include "zStream.h"
 
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;
@@ -253,13 +254,13 @@ add_properties(const TextProperties &other) {
  *
  */
 void TextProperties::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (!is_any_specified()) {
     indent(out, indent_level)
       << "default properties\n";
   }
   if (has_font()) {
-    if (get_font() != (TextFont *)NULL) {
+    if (get_font() != nullptr) {
       indent(out, indent_level)
         << "with font " << _font->get_name() << "\n";
     } else {
@@ -408,7 +409,7 @@ get_text_state() const {
     state = state->add_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 2));
   }
 
-  swap(_text_state, state);
+  std::swap(_text_state, state);
   return _text_state;
 }
 
@@ -433,7 +434,7 @@ get_shadow_state() const {
     state = state->add_attrib(CullBinAttrib::make(get_bin(), get_draw_order() + 1));
   }
 
-  swap(_shadow_state, state);
+  std::swap(_shadow_state, state);
   return _shadow_state;
 }
 
@@ -450,7 +451,7 @@ load_default_font() {
   if (!text_default_font.empty()) {
     // First, attempt to load the user-specified filename.
     _default_font = FontPool::load_font(text_default_font.get_value());
-    if (_default_font != (TextFont *)NULL && _default_font->is_valid()) {
+    if (_default_font != nullptr && _default_font->is_valid()) {
       return;
     }
   }
@@ -466,22 +467,22 @@ load_default_font() {
 
 #else
   // The compiled-in Bam font requires creating a BamFile object to decode it.
-  string data((const char *)default_font_data, default_font_size);
+  std::string data((const char *)default_font_data, default_font_size);
 
 #ifdef HAVE_ZLIB
   // The font data is stored compressed; decompress it on-the-fly.
-  istringstream inz(data);
+  std::istringstream inz(data);
   IDecompressStream in(&inz, false);
 
 #else
   // The font data is stored uncompressed, so just load it.
-  istringstream in(data);
+  std::istringstream in(data);
 #endif  // HAVE_ZLIB
 
   BamFile bam_file;
   if (bam_file.open_read(in, "default font stream")) {
     PT(PandaNode) node = bam_file.read_node();
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       _default_font = new StaticTextFont(node);
     }
   }

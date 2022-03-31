@@ -157,6 +157,30 @@ set_dimensions(const LVecBase4 &dimensions) {
 }
 
 /**
+ * Changes the range of the depth buffer this DisplayRegion writes to.
+ * The parameters range from 0 to 1.  It is legal for the near value to be
+ * larger than the far value.
+ *
+ * @since 1.11.0
+ */
+INLINE void DisplayRegion::
+set_depth_range(PN_stdfloat near_depth, PN_stdfloat far_depth) {
+  CDWriter cdata(_cycler, true);
+  cdata->_depth_range.set(near_depth, far_depth);
+}
+
+/**
+ *
+ */
+INLINE void DisplayRegion::
+get_depth_range(PN_stdfloat &near_depth, PN_stdfloat &far_depth) const {
+  CDReader cdata(_cycler);
+  const LVecBase2 &range = cdata->_depth_range;
+  near_depth = range[0];
+  far_depth = range[1];
+}
+
+/**
  * Returns the GraphicsOutput that this DisplayRegion is ultimately associated
  * with, or NULL if no window is associated.
  */
@@ -306,7 +330,7 @@ set_cull_callback(CallbackObject *object) {
  */
 INLINE void DisplayRegion::
 clear_cull_callback() {
-  set_cull_callback(NULL);
+  set_cull_callback(nullptr);
 }
 
 /**
@@ -354,7 +378,7 @@ set_draw_callback(CallbackObject *object) {
  */
 INLINE void DisplayRegion::
 clear_draw_callback() {
-  set_draw_callback(NULL);
+  set_draw_callback(nullptr);
 }
 
 /**
@@ -479,13 +503,8 @@ INLINE void DisplayRegion::
 set_cull_result(PT(CullResult) cull_result, PT(SceneSetup) scene_setup,
                 Thread *current_thread) {
   CDCullWriter cdata(_cycler_cull, true, current_thread);
-#ifdef USE_MOVE_SEMANTICS
-  cdata->_cull_result = move(cull_result);
-  cdata->_scene_setup = move(scene_setup);
-#else
-  swap(cdata->_cull_result, cull_result);
-  swap(cdata->_scene_setup, scene_setup);
-#endif
+  cdata->_cull_result = std::move(cull_result);
+  cdata->_scene_setup = std::move(scene_setup);
 }
 
 /**
@@ -526,6 +545,14 @@ get_cull_region_pcollector() {
 INLINE PStatCollector &DisplayRegion::
 get_draw_region_pcollector() {
   return _draw_region_pcollector;
+}
+
+/**
+ * Returns a unique name used for debugging.
+ */
+INLINE const std::string &DisplayRegion::
+get_debug_name() const {
+  return _debug_name;
 }
 
 /**
@@ -573,22 +600,6 @@ DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread) :
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE DisplayRegionPipelineReader::
-DisplayRegionPipelineReader(const DisplayRegionPipelineReader &) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void DisplayRegionPipelineReader::
-operator = (const DisplayRegionPipelineReader &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE DisplayRegionPipelineReader::
@@ -602,8 +613,8 @@ INLINE DisplayRegionPipelineReader::
   _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -704,6 +715,16 @@ get_bottom(int i) const {
 INLINE PN_stdfloat DisplayRegionPipelineReader::
 get_top(int i) const {
   return _cdata->_regions[i]._dimensions[3];
+}
+
+/**
+ *
+ */
+INLINE void DisplayRegionPipelineReader::
+get_depth_range(PN_stdfloat &near_depth, PN_stdfloat &far_depth) const {
+  const LVecBase2 &range = _cdata->_depth_range;
+  near_depth = range[0];
+  far_depth = range[1];
 }
 
 /**
@@ -884,8 +905,8 @@ get_pixel_height(int i) const {
   return _cdata->_regions[i]._pixels[3] - _cdata->_regions[i]._pixels[2];
 }
 
-INLINE ostream &
-operator << (ostream &out, const DisplayRegion &dr) {
+INLINE std::ostream &
+operator << (std::ostream &out, const DisplayRegion &dr) {
   dr.output(out);
   return out;
 }

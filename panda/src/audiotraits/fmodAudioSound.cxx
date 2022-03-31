@@ -26,6 +26,10 @@
 #include "subfileInfo.h"
 #include "reMutexHolder.h"
 #include "virtualFileSystem.h"
+#include "vector_uchar.h"
+
+using std::istream;
+using std::string;
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -35,9 +39,10 @@ TypeHandle FmodAudioSound::_type_handle;
  */
 
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
+FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
-  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
+  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
+              << file->get_original_filename());
 
   _active = manager->get_active();
   _paused = false;
@@ -73,20 +78,14 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   _manager = fmanager;
 
   _channel = 0;
-  _file_name = file_name;
+  _file_name = file->get_original_filename();
   _file_name.set_binary();
 
   // Get the Speaker Mode [Important for later on.]
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == (VirtualFile *)NULL) {
-    // File not found.  We will display the appropriate error message below.
-    result = FMOD_ERR_FILE_NOTFOUND;
-
-  } else {
+  {
     bool preload = (fmod_audio_preload_threshold < 0) || (file->get_file_size() < fmod_audio_preload_threshold);
     int flags = FMOD_SOFTWARE;
     flags |= positional ? FMOD_3D : FMOD_2D;
@@ -99,7 +98,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     if (ext == "mid") {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
-      if (sound_info.dlsname != NULL) {
+      if (sound_info.dlsname != nullptr) {
         audio_debug("Using DLS file " << sound_info.dlsname);
       }
     }
@@ -107,7 +106,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     const char *name_or_data = _file_name.c_str();
     string os_filename;
 
-    pvector<unsigned char> mem_buffer;
+    vector_uchar mem_buffer;
     SubfileInfo info;
     if (preload) {
       // Pre-read the file right now, and pass it in as a memory buffer.  This
@@ -124,50 +123,62 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
           << "Reading " << _file_name << " into memory (" << sound_info.length
           << " bytes)\n";
       }
-
-    } else if (file->get_system_info(info)) {
-      // The file exists on disk (or it's part of a multifile that exists on
-      // disk), so we can have FMod read the file directly.  This is also
-      // safe, because FMod uses its own IO operations that don't involve
-      // Panda, so this can safely happen in an FMod thread.
-      os_filename = info.get_filename().to_os_specific();
-      name_or_data = os_filename.c_str();
-      sound_info.fileoffset = (unsigned int)info.get_start();
-      sound_info.length = (unsigned int)info.get_size();
-      flags |= FMOD_CREATESTREAM;
-      if (fmodAudio_cat.is_debug()) {
-        fmodAudio_cat.debug()
-          << "Streaming " << _file_name << " from disk (" << name_or_data
-          << ", " << sound_info.fileoffset << ", " << sound_info.length << ")\n";
-      }
-
-    } else {
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-      // Otherwise, if the Panda threading system is compiled in, we can
-      // assign callbacks to read the file through the VFS.
-      name_or_data = (const char *)file.p();
-      sound_info.length = (unsigned int)info.get_size();
-      sound_info.useropen = open_callback;
-      sound_info.userclose = close_callback;
-      sound_info.userread = read_callback;
-      sound_info.userseek = seek_callback;
-      flags |= FMOD_CREATESTREAM;
-      if (fmodAudio_cat.is_debug()) {
-        fmodAudio_cat.debug()
-          << "Streaming " << _file_name << " from disk using callbacks\n";
-      }
-
-#else  // HAVE_THREADS && !SIMPLE_THREADS
-      // Without threads, we can't safely read this file.
-      name_or_data = "";
-
-      fmodAudio_cat.warning()
-        << "Cannot stream " << _file_name << "; file is not literally on disk.\n";
-#endif
+      result =
+        _manager->_system->createSound(name_or_data, flags, &sound_info, &_sound);
     }
+    else {
+      result = FMOD_ERR_FILE_BAD;
 
-    result =
-      _manager->_system->createSound(name_or_data, flags, &sound_info, &_sound);
+      if (file->get_system_info(info)) {
+        // The file exists on disk (or it's part of a multifile that exists on
+        // disk), so we can have FMod read the file directly.  This is also
+        // safe, because FMod uses its own IO operations that don't involve
+        // Panda, so this can safely happen in an FMod thread.
+        os_filename = info.get_filename().to_os_specific();
+        name_or_data = os_filename.c_str();
+        sound_info.fileoffset = (unsigned int)info.get_start();
+        sound_info.length = (unsigned int)info.get_size();
+        flags |= FMOD_CREATESTREAM;
+        if (fmodAudio_cat.is_debug()) {
+          fmodAudio_cat.debug()
+            << "Streaming " << _file_name << " from disk (" << name_or_data
+            << ", " << sound_info.fileoffset << ", " << sound_info.length << ")\n";
+        }
+
+        result =
+          _manager->_system->createSound(name_or_data, flags, &sound_info, &_sound);
+      }
+
+      // If FMOD can't directly read the file (eg. if Panda is locking it for
+      // write, or it's compressed) we have to use the callback interface.
+      if (result == FMOD_ERR_FILE_BAD) {
+  #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+        // Otherwise, if the Panda threading system is compiled in, we can
+        // assign callbacks to read the file through the VFS.
+        name_or_data = (const char *)file;
+        sound_info.fileoffset = 0;
+        sound_info.length = (unsigned int)info.get_size();
+        sound_info.useropen = open_callback;
+        sound_info.userclose = close_callback;
+        sound_info.userread = read_callback;
+        sound_info.userseek = seek_callback;
+        flags |= FMOD_CREATESTREAM;
+        if (fmodAudio_cat.is_debug()) {
+          fmodAudio_cat.debug()
+            << "Streaming " << _file_name << " from disk using callbacks\n";
+        }
+        result =
+          _manager->_system->createSound(name_or_data, flags, &sound_info, &_sound);
+
+  #else  // HAVE_THREADS && !SIMPLE_THREADS
+        // Without threads, we can't safely read this file.
+        name_or_data = "";
+
+        fmodAudio_cat.warning()
+          << "Cannot stream " << _file_name << "; file is not literally on disk.\n";
+  #endif
+      }
+    }
   }
 
   if (result != FMOD_OK) {
@@ -248,6 +259,7 @@ stop() {
     }
   }
   _start_time = 0.0;
+  _paused = false;
 }
 
 
@@ -652,7 +664,7 @@ get_3d_max_distance() const {
  * a balance [pan] function what is the point?
  */
 PN_stdfloat FmodAudioSound::
-get_speaker_mix(AudioManager::SpeakerId speaker) {
+get_speaker_mix(int speaker) {
   ReMutexHolder holder(FmodAudioManager::_lock);
   if (_channel == 0) {
     return 0.0;
@@ -816,12 +828,13 @@ set_active(bool active) {
     } else {
       // ...deactivate the sound.
       if (status() == PLAYING) {
+        PN_stdfloat time = get_time();
+        stop();
         if (get_loop_count() == 0) {
           // ...we're pausing a looping sound.
           _paused = true;
-          _start_time = get_time();
+          _start_time = time;
         }
-        stop();
       }
     }
   }
@@ -880,7 +893,7 @@ sound_end_callback(FMOD_CHANNEL *  channel,
   // have to worry about thread-related issues here.
   if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
-    void *userdata = NULL;
+    void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
     fmod_audio_errcheck("channel->getUserData()", result);
     FmodAudioSound *fsound = (FmodAudioSound*)userdata;
@@ -897,7 +910,7 @@ open_callback(const char *name, int, unsigned int *file_size,
               void **handle, void **user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     return FMOD_ERR_FILE_NOTFOUND;
   }
   if (fmodAudio_cat.is_spam()) {

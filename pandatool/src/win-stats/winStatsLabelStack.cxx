@@ -61,7 +61,7 @@ setup(HWND parent_window) {
   for (li = _labels.begin(); li != _labels.end(); ++li) {
     WinStatsLabel *label = (*li);
     label->setup(_window);
-    _ideal_width = max(_ideal_width, label->get_ideal_width());
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
   }
 }
 
@@ -192,12 +192,96 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
     label->setup(_window);
     label->set_pos(0, yp, _width);
   }
-  _ideal_width = max(_ideal_width, label->get_ideal_width());
+  _ideal_width = std::max(_ideal_width, label->get_ideal_width());
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);
 
   return label_index;
+}
+
+/**
+ * Replaces the labels with the given collector indices.
+ */
+void WinStatsLabelStack::
+replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
+               int thread_index, const vector_int &collector_indices,
+               bool use_fullname) {
+
+  _ideal_width = 0;
+
+  // First skip the part of the stack that hasn't changed.
+  size_t li = 0;
+  size_t ci = 0;
+  while (ci < collector_indices.size() && li < _labels.size()) {
+    WinStatsLabel *label = _labels[li];
+    if (collector_indices[ci] != label->get_collector_index()) {
+      // Mismatch.
+      break;
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    ++ci;
+    ++li;
+  }
+
+  if (ci == collector_indices.size()) {
+    if (ci == _labels.size()) {
+      // Perfect, nothing changed.
+      return;
+    }
+
+    // Simple case, just delete the rest.
+    while (li < _labels.size()) {
+      delete _labels[li++];
+    }
+    _labels.resize(ci);
+    return;
+  }
+
+  int yp = _height;
+  if (li > 0) {
+    WinStatsLabel *label = _labels[li - 1];
+    yp = label->get_y() - label->get_height();
+  }
+
+  // Make a map of remaining labels.
+  std::map<int, WinStatsLabel *> label_map;
+  for (size_t li2 = li; li2 < _labels.size(); ++li2) {
+    WinStatsLabel *label = _labels[li2];
+    label_map[label->get_collector_index()] = label;
+  }
+
+  _labels.resize(collector_indices.size());
+
+  while (ci < collector_indices.size()) {
+    int collector_index = collector_indices[ci++];
+
+    WinStatsLabel *label;
+    auto it = label_map.find(collector_index);
+    if (it == label_map.end()) {
+      // It's not in the map.  Create a new label.
+      label = new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
+      if (_window) {
+        label->setup(_window);
+      }
+    } else {
+      // Erase it from the map, so that it's not deleted.
+      label = it->second;
+      label_map.erase(it);
+    }
+    if (_window) {
+      label->set_pos(0, yp, _width);
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    yp -= label->get_height();
+
+    _labels[li++] = label;
+  }
+
+  // Anything that's remaining in the label map should be deleted.
+  for (auto it = label_map.begin(); it != label_map.end(); ++it) {
+    delete it->second;
+  }
 }
 
 /**
@@ -225,7 +309,6 @@ highlight_label(int collector_index) {
   }
 }
 
-
 /**
  * Creates the window for this stack.
  */
@@ -235,13 +318,13 @@ create_window(HWND parent_window) {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
   _window =
     CreateWindow(_window_class_name, "label stack", WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
-                 parent_window, NULL, application, 0);
+                 parent_window, nullptr, application, 0);
   if (!_window) {
     nout << "Could not create Label Stack window!\n";
     exit(1);
@@ -266,8 +349,8 @@ register_window_class(HINSTANCE application) {
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.lpszMenuName = NULL;
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -287,7 +370,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsLabelStack::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsLabelStack *self = (WinStatsLabelStack *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsLabelStack *)NULL && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -306,7 +389,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       HDC hdc = BeginPaint(hwnd, &ps);
 
       RECT rect = { 0, 0, _width, _height };
-      FillRect(hdc, &rect, (HBRUSH)COLOR_BACKGROUND);
+      FillRect(hdc, &rect, (HBRUSH)COLOR_WINDOW);
       EndPaint(hwnd, &ps);
       return 0;
     }

@@ -25,6 +25,10 @@
 
 #include <pthread.h>
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Thread;
 
 /**
@@ -40,12 +44,12 @@ public:
   void join();
   INLINE void preempt();
 
-  string get_unique_id() const;
+  std::string get_unique_id() const;
 
   INLINE static void prepare_for_exit();
 
   INLINE static Thread *get_current_thread();
-  INLINE static void bind_thread(Thread *thread);
+  static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
   INLINE static bool is_simple_threads();
@@ -53,9 +57,17 @@ public:
   INLINE static void yield();
   INLINE static void consider_yield();
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+  bool attach_java_vm();
+  static void bind_java_thread();
+#endif
+
+  static bool get_context_switches(size_t &total, size_t &involuntary);
+
 private:
   static void *root_func(void *data);
-  static void init_pt_ptr_index();
+  static Thread *init_current_thread();
 
   // There appears to be a name collision with the word "Status".
   enum PStatus {
@@ -72,8 +84,11 @@ private:
   bool _detached;
   PStatus _status;
 
-  static pthread_key_t _pt_ptr_index;
-  static bool _got_pt_ptr_index;
+#ifdef ANDROID
+  JNIEnv *_jni_env;
+#endif
+
+  static __thread Thread *_current_thread;
 };
 
 #include "threadPosixImpl.I"

@@ -30,9 +30,14 @@
 #include "renderAttrib.h"
 #include "shaderInput.h"
 #include "boundingBox.h"
+#include "boundingSphere.h"
 #include "samplerState.h"
 #include "config_grutil.h"
 #include "typeHandle.h"
+
+using std::endl;
+using std::max;
+using std::min;
 
 ConfigVariableBool stm_use_hexagonal_layout
 ("stm-use-hexagonal-layout", false,
@@ -51,6 +56,18 @@ ConfigVariableInt stm_max_views
  PRC_DESC("Controls the maximum amount of different views the Terrain can be rendered "
           "with. Each camera rendering the terrain corresponds to a view. Lowering this "
           "value will reduce the data that has to be transferred to the GPU."));
+
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_minfilter
+("stm-heightfield-minfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the minfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
+
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_magfilter
+("stm-heightfield-magfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the magfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
 
 PStatCollector ShaderTerrainMesh::_basic_collector("Cull:ShaderTerrainMesh:Setup");
 PStatCollector ShaderTerrainMesh::_lod_collector("Cull:ShaderTerrainMesh:CollectLOD");
@@ -82,16 +99,15 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _size(0),
   _chunk_size(32),
   _generate_patches(false),
-  _data_texture(NULL),
-  _chunk_geom(NULL),
+  _heightfield_tex(nullptr),
+  _chunk_geom(nullptr),
+  _data_texture(nullptr),
   _current_view_index(0),
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
-  _update_enabled(true),
-  _heightfield_tex(NULL)
+  _update_enabled(true)
 {
-  set_final(true);
-  set_bounds(new OmniBoundingVolume());
+  set_renderable();
 }
 
 /**
@@ -106,6 +122,7 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
  * @return true if the terrain was initialized, false if an error occured
  */
 bool ShaderTerrainMesh::generate() {
+  MutexHolder holder(_lock);
   if (!do_check_heightfield())
     return false;
 
@@ -139,7 +156,9 @@ bool ShaderTerrainMesh::generate() {
  *   the chunks, and the PNMImage is destroyed afterwards.
  */
 void ShaderTerrainMesh::do_extract_heightfield() {
-  nassertv(_heightfield_tex->has_ram_image()); // Heightfield not in RAM, extract ram image first
+  if (!_heightfield_tex->has_ram_image()) {
+    _heightfield_tex->reload();
+  }
 
   _heightfield_tex->store(_heightfield);
 
@@ -148,8 +167,10 @@ void ShaderTerrainMesh::do_extract_heightfield() {
   } else {
     _heightfield_tex->set_format(Texture::F_r16);
   }
-  _heightfield_tex->set_minfilter(SamplerState::FT_linear);
-  _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_minfilter(stm_heightfield_minfilter);
+  _heightfield_tex->set_magfilter(stm_heightfield_magfilter);
+  _heightfield_tex->set_wrap_u(SamplerState::WM_clamp);
+  _heightfield_tex->set_wrap_v(SamplerState::WM_clamp);
 }
 
 /**
@@ -186,6 +207,7 @@ bool ShaderTerrainMesh::do_check_heightfield() {
 void ShaderTerrainMesh::do_init_data_texture() {
   _data_texture = new Texture("TerrainDataTexture");
   _data_texture->setup_2d_texture(stm_max_chunk_count, stm_max_views, Texture::T_float, Texture::F_rgba32);
+  _data_texture->set_compression(Texture::CM_off);
   _data_texture->set_clear_color(LVector4(0));
   _data_texture->clear_image();
 }
@@ -247,7 +269,7 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
   } else {
     // Final chunk, initialize all children to zero
     for (size_t i = 0; i < 4; ++i) {
-      chunk->children[i] = NULL;
+      chunk->children[i] = nullptr;
     }
   }
 }
@@ -361,7 +383,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
   GeomVertexWriter vertex_writer(gvd, "vertex");
 
   // Create primitive
-  PT(GeomPrimitive) triangles = NULL;
+  PT(GeomPrimitive) triangles = nullptr;
   if (_generate_patches) {
     triangles = new GeomPatches(3, Geom::UH_static);
   } else {
@@ -419,14 +441,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
 }
 
 /**
- * @copydoc PandaNode::is_renderable()
- */
-bool ShaderTerrainMesh::is_renderable() const {
-  return true;
-}
-
-/**
- * @copydoc PandaNode::is_renderable()
+ * @copydoc PandaNode::safe_to_flatten()
  */
 bool ShaderTerrainMesh::safe_to_flatten() const {
   return false;
@@ -443,11 +458,12 @@ bool ShaderTerrainMesh::safe_to_combine() const {
  * @copydoc PandaNode::add_for_draw()
  */
 void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
+  MutexHolder holder(_lock);
 
   // Make sure the terrain was properly initialized, and the geom was created
   // successfully
-  nassertv(_data_texture != NULL);
-  nassertv(_chunk_geom != NULL);
+  nassertv(_data_texture != nullptr);
+  nassertv(_chunk_geom != nullptr);
 
   _basic_collector.start();
 
@@ -510,7 +526,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   // Should never happen
-  nassertv(current_shader_attrib != NULL);
+  nassertv(current_shader_attrib != nullptr);
 
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
     ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)));
@@ -528,7 +544,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   state = state->set_attrib(current_shader_attrib, 10000);
 
   // Emit chunk
-  CullableObject *object = new CullableObject(_chunk_geom, move(state), move(modelview_transform));
+  CullableObject *object = new CullableObject(_chunk_geom, std::move(state), std::move(modelview_transform));
   trav->get_cull_handler()->record_object(object, trav);
 
   // After rendering, increment the view index
@@ -539,6 +555,64 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   _basic_collector.stop();
+}
+
+/**
+ * This is used to support NodePath::calc_tight_bounds().  It is not intended
+ * to be called directly, and it has nothing to do with the normal Panda
+ * bounding-volume computation.
+ *
+ * If the node contains any geometry, this updates min_point and max_point to
+ * enclose its bounding box.  found_any is to be set true if the node has any
+ * geometry at all, or left alone if it has none.  This method may be called
+ * over several nodes, so it may enter with min_point, max_point, and
+ * found_any already set.
+ */
+CPT(TransformState) ShaderTerrainMesh::
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
+                  const TransformState *transform, Thread *current_thread) const {
+  CPT(TransformState) next_transform =
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
+                                 current_thread);
+
+  const LMatrix4 &mat = next_transform->get_mat();
+  LPoint3 terrain_min_point = LPoint3(0, 0, 0) * mat;
+  LPoint3 terrain_max_point = LPoint3(1, 1, 1) * mat;
+  if (!found_any) {
+    min_point = terrain_min_point;
+    max_point = terrain_max_point;
+    found_any = true;
+  } else {
+    min_point = min_point.fmin(terrain_min_point);
+    max_point = max_point.fmax(terrain_max_point);
+  }
+
+  return next_transform;
+}
+
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
+void ShaderTerrainMesh::
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
+                        Thread *current_thread) const {
+
+  BoundingVolume::BoundsType btype = get_bounds_type();
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
+  if (btype == BoundingVolume::BT_sphere) {
+    internal_bounds = new BoundingSphere(LPoint3(0.5, 0.5, 0.5), csqrt(0.75));
+  } else {
+    internal_bounds = new BoundingBox(LPoint3(0, 0, 0), LPoint3(1, 1, 1));
+  }
+
+  internal_vertices = 0;
 }
 
 /**
@@ -693,11 +767,12 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
  * @return World-Space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
-  nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
+  MutexHolder holder(_lock);
+  nassertr(_heightfield_tex != nullptr, LPoint3(0)); // Heightfield not set yet
   nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
 
   PT(TexturePeeker) peeker = _heightfield_tex->peek();
-  nassertr(peeker != NULL, LPoint3(0));
+  nassertr(peeker != nullptr, LPoint3(0));
 
   LColor result;
   if (!peeker->lookup_bilinear(result, coord.get_x(), coord.get_y())) {

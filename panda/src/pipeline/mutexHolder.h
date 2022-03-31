@@ -27,10 +27,10 @@ public:
   INLINE MutexHolder(const Mutex &mutex);
   INLINE MutexHolder(const Mutex &mutex, Thread *current_thread);
   INLINE MutexHolder(Mutex *&mutex);
+  MutexHolder(const MutexHolder &copy) = delete;
   INLINE ~MutexHolder();
-private:
-  INLINE MutexHolder(const MutexHolder &copy);
-  INLINE void operator = (const MutexHolder &copy);
+
+  MutexHolder &operator = (const MutexHolder &copy) = delete;
 
 private:
   // If HAVE_THREADS is defined, the Mutex class implements an actual mutex

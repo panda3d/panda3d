@@ -36,9 +36,9 @@ class ClockObject;
  * channel or window.  If this is done, it creates a DisplayRegion for itself
  * and renders itself in the upper-right-hand corner.
  */
-class EXPCL_PANDA SceneGraphAnalyzerMeter : public TextNode {
+class EXPCL_PANDA_GRUTIL SceneGraphAnalyzerMeter : public TextNode {
 PUBLISHED:
-  explicit SceneGraphAnalyzerMeter(const string &name, PandaNode *node);
+  explicit SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node);
   virtual ~SceneGraphAnalyzerMeter();
 
   void setup_window(GraphicsOutput *window);
@@ -71,6 +71,9 @@ private:
   double _last_update;
   PandaNode *_node;
   ClockObject *_clock_object;
+
+  PN_stdfloat _last_aspect_ratio;
+  CPT(TransformState) _aspect_ratio_transform;
 
   static PStatCollector _show_analyzer_pcollector;
 

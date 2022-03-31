@@ -16,7 +16,7 @@ class FLOATNAME(UnalignedLMatrix4);
 /**
  * This is a 4-by-4 transform matrix.
  */
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) : public MemoryBase {
 public:
   typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
@@ -36,6 +36,7 @@ PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH FLOATTYPE &operator [](int i);
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase4) &() const;
   public:
     FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
@@ -46,24 +47,29 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase4) &() const;
   public:
     const FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
   };
 
-  INLINE_LINMATH FLOATNAME(LMatrix4)();
-  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix4)() = default;
+  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
-      const FLOATNAME(LMatrix4) &other);
+      const FLOATNAME(LMatrix4) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
       const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
 
-  INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-                                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-                                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-                                     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+  INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
@@ -183,6 +189,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator /= (FLOATTYPE scalar);
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LMatrix4) __rmul__(FLOATTYPE scalar) const);
+
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix4) &other);
 
   INLINE_LINMATH void transpose_from(const FLOATNAME(LMatrix4) &other);
@@ -263,9 +271,9 @@ PUBLISHED:
                     FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix4) &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   void generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE scale) const;
@@ -324,11 +332,11 @@ PUBLISHED:
     num_components = 16
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)();
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)() = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(UnalignedLMatrix4) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(UnalignedLMatrix4) &copy) = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
                                               FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                                               FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
@@ -363,7 +371,7 @@ private:
 };
 
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix4) &mat) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LMatrix4) &mat) {
   mat.output(out);
   return out;
 }

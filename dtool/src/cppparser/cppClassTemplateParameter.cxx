@@ -40,13 +40,13 @@ is_fully_specified() const {
  *
  */
 void CPPClassTemplateParameter::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
     out << "class";
     if (_packed) {
       out << "...";
     }
-    if (_ident != NULL) {
+    if (_ident != nullptr) {
       out << " ";
       _ident->output(out, scope);
     }
@@ -83,7 +83,7 @@ as_class_template_parameter() {
 bool CPPClassTemplateParameter::
 is_equal(const CPPDeclaration *other) const {
   const CPPClassTemplateParameter *ot = ((CPPDeclaration *)other)->as_class_template_parameter();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_default_type != ot->_default_type) {
     return false;
@@ -93,7 +93,7 @@ is_equal(const CPPDeclaration *other) const {
     return false;
   }
 
-  if (_ident == NULL || ot->_ident == NULL) {
+  if (_ident == nullptr || ot->_ident == nullptr) {
     return _ident == ot->_ident;
   }
 
@@ -108,7 +108,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPClassTemplateParameter::
 is_less(const CPPDeclaration *other) const {
   const CPPClassTemplateParameter *ot = ((CPPDeclaration *)other)->as_class_template_parameter();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_default_type != ot->_default_type) {
     return _default_type < ot->_default_type;
@@ -118,7 +118,7 @@ is_less(const CPPDeclaration *other) const {
     return _packed < ot->_packed;
   }
 
-  if (_ident == NULL || ot->_ident == NULL) {
+  if (_ident == nullptr || ot->_ident == nullptr) {
     return _ident < ot->_ident;
   }
 

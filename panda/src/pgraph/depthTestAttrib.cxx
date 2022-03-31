@@ -44,7 +44,7 @@ make_default() {
  *
  */
 void DepthTestAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   output_comparefunc(out,_mode);
 }

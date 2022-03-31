@@ -362,16 +362,16 @@ class Placer(AppShell):
         # Set prefix
         namePrefix = ''
         self.movementMode = movementMode
-        if (movementMode == 'Relative To:'):
+        if movementMode == 'Relative To:':
             namePrefix = 'Relative '
-        elif (movementMode == 'Orbit:'):
+        elif movementMode == 'Orbit:':
             namePrefix = 'Orbit '
         # Update pos widgets
         self.posX['text'] = namePrefix + 'X'
         self.posY['text'] = namePrefix + 'Y'
         self.posZ['text'] = namePrefix + 'Z'
         # Update hpr widgets
-        if (movementMode == 'Orbit:'):
+        if movementMode == 'Orbit:':
             namePrefix = 'Orbit delta '
         self.hprH['text'] = namePrefix + 'H'
         self.hprP['text'] = namePrefix + 'P'
@@ -382,9 +382,9 @@ class Placer(AppShell):
     def setScalingMode(self):
         if self['nodePath']:
             scale = self['nodePath'].getScale()
-            if ((scale[0] != scale[1]) or
-                (scale[0] != scale[2]) or
-                (scale[1] != scale[2])):
+            if scale[0] != scale[1] or \
+               scale[0] != scale[2] or \
+               scale[1] != scale[2]:
                 self.scalingMode.set('Scale Free')
 
     def selectNodePathNamed(self, name):
@@ -399,7 +399,7 @@ class Placer(AppShell):
             self.addNodePath(nodePath)
         else:
             nodePath = self.nodePathDict.get(name, None)
-            if (nodePath == None):
+            if nodePath is None:
                 # See if this evaluates into a node path
                 try:
                     nodePath = eval(name)
@@ -427,8 +427,7 @@ class Placer(AppShell):
             self.nodePathMenuEntry.configure(
                 background = self.nodePathMenuBG)
             # Check to see if node path and ref node path are the same
-            if ((self.refCS != None) and
-                (self.refCS == self['nodePath'])):
+            if self.refCS is not None and self.refCS == self['nodePath']:
                 # Yes they are, use temp CS as ref
                 # This calls updatePlacer
                 self.setReferenceNodePath(self.tempCS)
@@ -457,7 +456,7 @@ class Placer(AppShell):
             nodePath = self['nodePath'].getParent()
         else:
             nodePath = self.refNodePathDict.get(name, None)
-            if (nodePath == None):
+            if nodePath is None:
                 # See if this evaluates into a node path
                 try:
                     nodePath = eval(name)
@@ -473,7 +472,7 @@ class Placer(AppShell):
                     listbox = self.refNodePathMenu.component('scrolledlist')
                     listbox.setlist(self.refNodePathNames)
         # Check to see if node path and ref node path are the same
-        if (nodePath != None) and (nodePath == self['nodePath']):
+        if nodePath is not None and nodePath == self['nodePath']:
             # Yes they are, use temp CS and update listbox accordingly
             nodePath = self.tempCS
             self.refNodePathMenu.selectitem('parent')
@@ -523,7 +522,7 @@ class Placer(AppShell):
         hpr = Vec3(0)
         scale = Vec3(1)
         np = self['nodePath']
-        if (np != None) and isinstance(np, NodePath):
+        if np is not None and isinstance(np, NodePath):
             # Update temp CS
             self.updateAuxiliaryCoordinateSystems()
             # Update widgets
@@ -595,7 +594,7 @@ class Placer(AppShell):
 
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
-        if (nodePath != None) and (self.refCS != None):
+        if nodePath is not None and self.refCS is not None:
             if axis == 'x':
                 nodePath.setX(self.refCS, value)
             elif axis == 'y':
@@ -614,8 +613,8 @@ class Placer(AppShell):
 
     def xformOrbit(self, value, axis):
         nodePath = self['nodePath']
-        if ((nodePath != None) and (self.refCS != None) and
-            (self.orbitFromCS != None) and (self.orbitToCS != None)):
+        if nodePath is not None and self.refCS is not None and \
+           self.orbitFromCS is not None and self.orbitToCS is not None:
             if axis == 'x':
                 self.posOffset.setX(value)
             elif axis == 'y':
@@ -645,11 +644,11 @@ class Placer(AppShell):
                 scale.set(value, value, value)
             elif mode == 'Scale Proportional':
                 if axis == 'sx':
-                    sf = value/scale[0]
+                    sf = value / scale[0]
                 elif axis == 'sy':
-                    sf = value/scale[1]
+                    sf = value / scale[1]
                 elif axis == 'sz':
-                    sf = value/scale[2]
+                    sf = value / scale[2]
                 scale = scale * sf
             self['nodePath'].setScale(scale)
 

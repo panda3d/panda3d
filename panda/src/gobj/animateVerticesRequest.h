@@ -30,7 +30,7 @@
  * requests are being run (presumably on multiple CPUs/cores), to ensure that
  * the data has been computed by the time it's needed.
  */
-class EXPCL_PANDA_PGRAPH AnimateVerticesRequest : public AsyncTask {
+class EXPCL_PANDA_GOBJ AnimateVerticesRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(AnimateVerticesRequest);
 

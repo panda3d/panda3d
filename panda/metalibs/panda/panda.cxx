@@ -11,14 +11,12 @@
 #include "config_display.h"
 #include "config_pgraph.h"
 #ifdef DO_PSTATS
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #endif
 
-// By including checkPandaVersion.h, we guarantee that runtime attempts to
-// load libpanda.so.dll will fail if they inadvertently link with the wrong
-// version of libdtool.so.dll.
-
-#include "checkPandaVersion.h"
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_LIBPANDA)
+  #error Buildsystem error: BUILDING_LIBPANDA not defined
+#endif
 
 /**
  * Initializes the library.  This must be called at least once before any of

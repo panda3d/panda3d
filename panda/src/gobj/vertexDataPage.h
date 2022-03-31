@@ -21,7 +21,6 @@
 #include "vertexDataSaveFile.h"
 #include "pmutex.h"
 #include "conditionVar.h"
-#include "conditionVarFull.h"
 #include "thread.h"
 #include "mutexHolder.h"
 #include "pdeque.h"
@@ -74,8 +73,8 @@ PUBLISHED:
   static void stop_threads();
   static void flush_threads();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   INLINE unsigned char *get_page_data(bool force);
@@ -114,7 +113,7 @@ private:
   class PageThreadManager;
   class EXPCL_PANDA_GOBJ PageThread : public Thread {
   public:
-    PageThread(PageThreadManager *manager, const string &name);
+    PageThread(PageThreadManager *manager, const std::string &name);
 
   protected:
     virtual void thread_main();
@@ -147,7 +146,7 @@ private:
 
     // Signaled when anything new is added to either of the above queues, or
     // when _shutdown is set true.  This wakes up any pending thread.
-    ConditionVarFull _pending_cvar;
+    ConditionVar _pending_cvar;
 
     PageThreads _threads;
     friend class PageThread;
@@ -176,7 +175,7 @@ private:
   public:
     DeflatePage() {
       _used_size = 0;
-      _next = NULL;
+      _next = nullptr;
     }
     ALLOC_DELETED_CHAIN(DeflatePage);
 
@@ -228,7 +227,7 @@ private:
   friend class VertexDataBook;
 };
 
-inline ostream &operator << (ostream &out, const VertexDataPage &page) {
+inline std::ostream &operator << (std::ostream &out, const VertexDataPage &page) {
   page.output(out);
   return out;
 }

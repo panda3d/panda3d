@@ -34,8 +34,8 @@ public:
 
 private:
   void get_layers(EggGroupNode *group);
-  void write_tables(ostream &out);
-  void write_entities(ostream &out);
+  void write_tables(std::ostream &out);
+  void write_entities(std::ostream &out);
 
   EggToDXFLayers _layers;
 };

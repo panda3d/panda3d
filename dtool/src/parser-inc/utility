@@ -1,0 +1,16 @@
+#pragma once
+
+#include <initializer_list>
+
+namespace std {
+  template<class T> void swap(T &a, T &b);
+  template<class T, size_t N> void swap(T (&a)[N], T (&b)[N]);
+
+  template<class T> struct remove_reference      {typedef T type;};
+  template<class T> struct remove_reference<T&>  {typedef T type;};
+  template<class T> struct remove_reference<T&&> {typedef T type;};
+
+  template<class T> constexpr remove_reference<T>::type &&move(T &&) noexcept;
+
+  template<class T1, class T2> struct pair;
+}

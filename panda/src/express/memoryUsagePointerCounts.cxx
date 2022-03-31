@@ -34,7 +34,7 @@ add_info(MemoryInfo *info) {
  *
  */
 void MemoryUsagePointerCounts::
-output(ostream &out) const {
+output(std::ostream &out) const {
 #ifdef DO_MEMORY_USAGE
   out << _count << " pointers";
   if (_unknown_size_count < _count) {
@@ -56,7 +56,7 @@ output(ostream &out) const {
  * units.
  */
 void MemoryUsagePointerCounts::
-output_bytes(ostream &out, size_t size) {
+output_bytes(std::ostream &out, size_t size) {
 #ifdef DO_MEMORY_USAGE
   if (size < 4 * 1024) {
     out << size << " bytes";

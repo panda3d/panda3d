@@ -60,7 +60,7 @@ PUBLISHED:
   INLINE double get_full_fframe() const;
   INLINE bool is_playing() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
@@ -113,7 +113,7 @@ private:
     double get_full_fframe() const;
     bool is_playing() const;
 
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     void internal_set_rate(double frame_rate, double play_rate);
     double get_f() const;
@@ -153,7 +153,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AnimInterface &ai);
+INLINE std::ostream &operator << (std::ostream &out, const AnimInterface &ai);
 
 #include "animInterface.I"
 

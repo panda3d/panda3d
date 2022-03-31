@@ -20,10 +20,10 @@
 
 #ifdef IS_OSX
 
-string get_osx_home_directory();
-string get_osx_temp_directory();
-string get_osx_user_appdata_directory();
-string get_osx_common_appdata_directory();
+std::string get_osx_home_directory();
+std::string get_osx_temp_directory();
+std::string get_osx_user_appdata_directory();
+std::string get_osx_common_appdata_directory();
 
 #endif  // IS_OSX
 

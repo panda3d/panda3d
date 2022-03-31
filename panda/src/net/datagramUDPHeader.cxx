@@ -24,10 +24,11 @@
  */
 DatagramUDPHeader::
 DatagramUDPHeader(const NetDatagram &datagram) {
-  const string &str = datagram.get_message();
+  const unsigned char *begin = (const unsigned char *)datagram.get_data();
+  const unsigned char *end = begin + datagram.get_length();
   uint16_t checksum = 0;
-  for (size_t p = 0; p < str.size(); p++) {
-    checksum += (uint16_t)(uint8_t)str[p];
+  for (const unsigned char *p = begin; p != end; ++p) {
+    checksum += (uint16_t)(uint8_t)*p;
   }
 
   // Now pack the header.
@@ -49,11 +50,11 @@ DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
  */
 bool DatagramUDPHeader::
 verify_datagram(const NetDatagram &datagram) const {
-  const string &str = datagram.get_message();
-
+  const unsigned char *begin = (const unsigned char *)datagram.get_data();
+  const unsigned char *end = begin + datagram.get_length();
   uint16_t checksum = 0;
-  for (size_t p = 0; p < str.size(); p++) {
-    checksum += (uint16_t)(uint8_t)str[p];
+  for (const unsigned char *p = begin; p != end; ++p) {
+    checksum += (uint16_t)(uint8_t)*p;
   }
 
   if (checksum == get_datagram_checksum()) {
@@ -72,7 +73,7 @@ verify_datagram(const NetDatagram &datagram) const {
     // We write the hex dump into a ostringstream first, to guarantee an
     // atomic write to the output stream in case we're threaded.
 
-    ostringstream hex;
+    std::ostringstream hex;
     datagram.dump_hex(hex);
     hex << "\n";
     net_cat.debug(false) << hex.str();

@@ -33,7 +33,7 @@ protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
 
 public:
-  MovingPartBase(PartGroup *parent, const string &name);
+  MovingPartBase(PartGroup *parent, const std::string &name);
 
 PUBLISHED:
   INLINE int get_max_bound() const;
@@ -47,9 +47,9 @@ PUBLISHED:
   virtual bool clear_forced_channel();
   virtual AnimChannelBase *get_forced_channel() const;
 
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void write_with_value(ostream &out, int indent_level) const;
-  virtual void output_value(ostream &out) const=0;
+  virtual void write(std::ostream &out, int indent_level) const;
+  virtual void write_with_value(std::ostream &out, int indent_level) const;
+  virtual void output_value(std::ostream &out) const=0;
 
 public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
@@ -78,13 +78,9 @@ protected:
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
 
-  // This is the number of channels in the above _channels vector that
-  // actually have an effect on this part.
-  int _num_effective_channels;
-
   // This is the single channel that has an effect on this part, as determined
   // by determine_effective_channels().  It is only set if there is exactly
-  // one channel that affects this part (i.e.  _num_effective_channels is 1).
+  // one channel that affects this part (i.e. num_effective_channels is 1).
   // If there are multiple channels, or no channels at all, it is NULL.
   AnimControl *_effective_control;
   PT(AnimChannelBase) _effective_channel;

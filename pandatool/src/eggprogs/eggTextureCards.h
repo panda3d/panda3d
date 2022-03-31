@@ -36,10 +36,10 @@ public:
 protected:
   virtual bool handle_args(Args &args);
 
-  static bool dispatch_wrap_mode(const string &opt, const string &arg, void *var);
-  static bool dispatch_filter_type(const string &opt, const string &arg, void *var);
-  static bool dispatch_quality_level(const string &opt, const string &arg, void *var);
-  static bool dispatch_format(const string &opt, const string &arg, void *var);
+  static bool dispatch_wrap_mode(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_filter_type(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_quality_level(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_format(const std::string &opt, const std::string &arg, void *var);
 
 private:
   bool scan_texture(const Filename &filename, LVecBase4d &geometry,

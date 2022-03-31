@@ -85,7 +85,7 @@ is_trivial() const {
  */
 bool CPPArrayType::
 is_default_constructible() const {
-  return _bounds != NULL && _element_type->is_default_constructible();
+  return _bounds != nullptr && _element_type->is_default_constructible();
 }
 
 /**
@@ -93,7 +93,21 @@ is_default_constructible() const {
  */
 bool CPPArrayType::
 is_copy_constructible() const {
-  return false;
+  // This is technically not exactly true, but array data members do not
+  // prevent C++ implicit copy constructor generation rules, so we need to
+  // return true here.
+  // If this is a problem, we will need to create a separate method for the
+  // purpose of checking copyability as a data member.
+  return true;
+}
+
+/**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPArrayType::
+is_copy_assignable() const {
+  // Same story as is_copy_constructible.
+  return true;
 }
 
 /**
@@ -105,7 +119,7 @@ is_copy_constructible() const {
 bool CPPArrayType::
 is_equivalent(const CPPType &other) const {
   const CPPArrayType *ot = ((CPPType *)&other)->as_array_type();
-  if (ot == (CPPArrayType *)NULL) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -128,7 +142,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     _element_type->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
-  if (_bounds != NULL) {
+  if (_bounds != nullptr) {
     rep->_bounds =
       _bounds->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
@@ -148,7 +162,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPArrayType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   /*
   _element_type->output(out, indent_level, scope, complete);
   out << "[";
@@ -166,16 +180,16 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPArrayType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
-  ostringstream brackets;
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
+  std::ostringstream brackets;
   brackets << "[";
-  if (_bounds != NULL) {
+  if (_bounds != nullptr) {
     brackets << *_bounds;
   }
   brackets << "]";
-  string bracketsstr = brackets.str();
+  std::string bracketsstr = brackets.str();
 
   _element_type->output_instance(out, indent_level, scope, complete,
                                  prename, name + bracketsstr);
@@ -204,13 +218,13 @@ as_array_type() {
 bool CPPArrayType::
 is_equal(const CPPDeclaration *other) const {
   const CPPArrayType *ot = ((CPPDeclaration *)other)->as_array_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
-  if (_bounds != NULL && ot->_bounds != NULL) {
+  if (_bounds != nullptr && ot->_bounds != nullptr) {
     if (*_bounds != *ot->_bounds) {
       return false;
     }
-  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
+  } else if ((_bounds == nullptr) != (ot->_bounds == nullptr)) {
     return false;
   }
 
@@ -225,13 +239,13 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPArrayType::
 is_less(const CPPDeclaration *other) const {
   const CPPArrayType *ot = ((CPPDeclaration *)other)->as_array_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
-  if (_bounds != NULL && ot->_bounds != NULL) {
+  if (_bounds != nullptr && ot->_bounds != nullptr) {
     if (*_bounds != *ot->_bounds) {
       return *_bounds < *ot->_bounds;
     }
-  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
+  } else if ((_bounds == nullptr) != (ot->_bounds == nullptr)) {
     return _bounds < ot->_bounds;
   }
 

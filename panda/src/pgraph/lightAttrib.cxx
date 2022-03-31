@@ -38,7 +38,7 @@ public:
     nassertr(!a.is_empty() && !b.is_empty(), a < b);
     Light *la = a.node()->as_light();
     Light *lb = b.node()->as_light();
-    nassertr(la != (Light *)NULL && lb != (Light *)NULL, a < b);
+    nassertr(la != nullptr && lb != nullptr, a < b);
 
     if (la->get_priority() != lb->get_priority()) {
       return la->get_priority() > lb->get_priority();
@@ -89,8 +89,7 @@ LightAttrib::
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicated light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
@@ -116,7 +115,7 @@ make(LightAttrib::Operation op, Light *light) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -124,8 +123,7 @@ make(LightAttrib::Operation op, Light *light) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2) {
@@ -154,7 +152,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -162,8 +160,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -196,7 +193,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -204,8 +201,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -241,7 +237,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -261,9 +257,9 @@ make_default() {
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 LightAttrib::Operation LightAttrib::
 get_operation() const {
@@ -284,9 +280,9 @@ get_operation() const {
 /**
  * Returns the number of lights listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 int LightAttrib::
 get_num_lights() const {
@@ -303,9 +299,9 @@ get_num_lights() const {
 /**
  * Returns the nth light listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 Light *LightAttrib::
 get_light(int n) const {
@@ -323,9 +319,9 @@ get_light(int n) const {
  * Returns true if the indicated light is listed in the attrib, false
  * otherwise.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 bool LightAttrib::
 has_light(Light *light) const {
@@ -343,8 +339,7 @@ has_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights.
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
@@ -362,8 +357,7 @@ add_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * removed from the list of lights.
  *
- * This method is now deprecated.  Use remove_on_light() or remove_off_light()
- * instead.
+ * @deprecated Use remove_on_light() or remove_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
@@ -384,7 +378,7 @@ CPT(RenderAttrib) LightAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new LightAttrib);
   }
 
@@ -399,7 +393,7 @@ CPT(RenderAttrib) LightAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     LightAttrib *attrib = new LightAttrib;
     attrib->_off_all_lights = true;
     _all_off_attrib = return_new(attrib);
@@ -420,7 +414,7 @@ add_on_light(const NodePath &light) const {
 
   LightAttrib *attrib = new LightAttrib(*this);
 
-  pair<Lights::iterator, bool> insert_result =
+  std::pair<Lights::iterator, bool> insert_result =
     attrib->_on_lights.insert(Lights::value_type(light));
   if (insert_result.second) {
     lobj->attrib_ref();
@@ -451,6 +445,37 @@ remove_on_light(const NodePath &light) const {
 
 /**
  * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_on_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_on_lights.find(source);
+  if (it != attrib->_on_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+    attrib->_on_lights.sort();
+  }
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights turned off by this attrib.
  */
 CPT(RenderAttrib) LightAttrib::
@@ -475,9 +500,40 @@ add_off_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 remove_off_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty() && light.node()->as_light() != nullptr, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_off_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_off_lights.find(source);
+  if (it != attrib->_off_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+    attrib->_off_lights.sort();
+  }
   return return_new(attrib);
 }
 
@@ -523,7 +579,7 @@ get_ambient_contribution() const {
  *
  */
 void LightAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_off_lights.empty()) {
     if (_on_lights.empty()) {
@@ -572,7 +628,7 @@ output(ostream &out) const {
  *
  */
 void LightAttrib::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":";
   if (_off_lights.empty()) {
     if (_on_lights.empty()) {
@@ -734,8 +790,8 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new LightAttrib that will hold the result.
   LightAttrib *new_attrib = new LightAttrib;
-  back_insert_iterator<Lights> result =
-    back_inserter(new_attrib->_on_lights);
+  std::back_insert_iterator<Lights> result =
+    std::back_inserter(new_attrib->_on_lights);
 
   while (ai != _on_lights.end() &&
          bi != ta->_on_lights.end() &&
@@ -840,6 +896,9 @@ compose_impl(const RenderAttrib *other) const {
     nassertd(lobj != nullptr) continue;
     lobj->attrib_ref();
   }
+
+  // This is needed since _sorted_on_lights is not yet populated.
+  new_attrib->_sort_seq = UpdateSeq::old();
 
   return return_new(new_attrib);
 }
@@ -964,7 +1023,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   } else {
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertr(aux != NULL, pi);
+    nassertr(aux != nullptr, pi);
 
     int i;
     aux->_off_list.reserve(aux->_num_off_lights);
@@ -1020,7 +1079,7 @@ finalize(BamReader *manager) {
   } else {
     // Now it's safe to convert our saved PandaNodes into NodePaths.
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertv(aux != NULL);
+    nassertv(aux != nullptr);
     nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
     nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
 

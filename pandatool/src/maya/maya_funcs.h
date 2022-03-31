@@ -28,80 +28,79 @@
 #include <maya/MVector.h>
 #include "post_maya_include.h"
 
-class MObject;
 
 bool
-get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug);
+get_maya_plug(MObject &node, const std::string &attribute_name, MPlug &plug);
 
 bool
-is_connected(MObject &node, const string &attribute_name);
+is_connected(MObject &node, const std::string &attribute_name);
 
 template<class ValueType>
 bool
-get_maya_attribute(MObject &node, const string &attribute_name,
+get_maya_attribute(MObject &node, const std::string &attribute_name,
                    ValueType &value);
 
 template<class ValueType>
 bool
-set_maya_attribute(MObject &node, const string &attribute_name,
+set_maya_attribute(MObject &node, const std::string &attribute_name,
                    ValueType &value);
 
 bool
-has_attribute(MObject &node, const string &attribute_name);
+has_attribute(MObject &node, const std::string &attribute_name);
 
 bool
-remove_attribute(MObject &node, const string &attribute_name);
+remove_attribute(MObject &node, const std::string &attribute_name);
 
 bool
-get_bool_attribute(MObject &node, const string &attribute_name,
+get_bool_attribute(MObject &node, const std::string &attribute_name,
                    bool &value);
 
 bool
-get_angle_attribute(MObject &node, const string &attribute_name,
+get_angle_attribute(MObject &node, const std::string &attribute_name,
                     double &value);
 
 bool
-get_vec2_attribute(MObject &node, const string &attribute_name,
+get_vec2_attribute(MObject &node, const std::string &attribute_name,
                     LVecBase2 &value);
 
 bool
-get_vec3_attribute(MObject &node, const string &attribute_name,
+get_vec3_attribute(MObject &node, const std::string &attribute_name,
                     LVecBase3 &value);
 
 bool
-get_vec2d_attribute(MObject &node, const string &attribute_name,
+get_vec2d_attribute(MObject &node, const std::string &attribute_name,
                     LVecBase2d &value);
 
 bool
-get_vec3d_attribute(MObject &node, const string &attribute_name,
+get_vec3d_attribute(MObject &node, const std::string &attribute_name,
                     LVecBase3d &value);
 
 bool
-get_mat4d_attribute(MObject &node, const string &attribute_name,
+get_mat4d_attribute(MObject &node, const std::string &attribute_name,
                     LMatrix4d &value);
 
 void
-get_tag_attribute_names(MObject &node, pvector<string> &tag_names);
+get_tag_attribute_names(MObject &node, pvector<std::string> &tag_names);
 
 bool
-get_enum_attribute(MObject &node, const string &attribute_name,
-                   string &value);
+get_enum_attribute(MObject &node, const std::string &attribute_name,
+                   std::string &value);
 
 bool
-get_string_attribute(MObject &node, const string &attribute_name,
-                     string &value);
+get_string_attribute(MObject &node, const std::string &attribute_name,
+                     std::string &value);
 
 bool
-set_string_attribute(MObject &node, const string &attribute_name,
-                     const string &value);
+set_string_attribute(MObject &node, const std::string &attribute_name,
+                     const std::string &value);
 
 void
-describe_maya_attribute(MObject &node, const string &attribute_name);
+describe_maya_attribute(MObject &node, const std::string &attribute_name);
 
 bool
 describe_compound_attribute(MObject &node);
 
-string
+std::string
 string_mfndata_type(MFnData::Type type);
 
 void
@@ -110,8 +109,8 @@ list_maya_attributes(MObject &node);
 // Also, we must define some output functions for Maya objects, since we can't
 // use those built into Maya (which forward-defines the ostream type
 // incorrectly).
-INLINE ostream &operator << (ostream &out, const MString &str);
-INLINE ostream &operator << (ostream &out, const MVector &vec);
+INLINE std::ostream &operator << (std::ostream &out, const MString &str);
+INLINE std::ostream &operator << (std::ostream &out, const MVector &vec);
 
 #include "maya_funcs.I"
 #include "maya_funcs.T"

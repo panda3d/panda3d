@@ -26,12 +26,12 @@ class WavAudio;
  */
 class EXPCL_PANDA_MOVIES WavAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  explicit WavAudioCursor(WavAudio *src, istream *stream);
+  explicit WavAudioCursor(WavAudio *src, std::istream *stream);
   virtual ~WavAudioCursor();
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
   bool _is_valid;
 
@@ -46,7 +46,7 @@ protected:
     F_extensible = 0xfffe,
   };
 
-  istream *_stream;
+  std::istream *_stream;
   StreamReader _reader;
 
   Format _format;
@@ -54,8 +54,8 @@ protected:
   int _block_align;
   int _bytes_per_sample;
 
-  streampos _data_start;
-  streampos _data_pos;
+  std::streampos _data_start;
+  std::streampos _data_pos;
   size_t _data_size;
 
 public:

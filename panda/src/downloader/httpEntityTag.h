@@ -21,17 +21,17 @@
  * identify a particular version of a document or resource, particularly
  * useful for verifying caches.
  */
-class EXPCL_PANDAEXPRESS HTTPEntityTag {
+class EXPCL_PANDA_DOWNLOADER HTTPEntityTag {
 PUBLISHED:
   INLINE HTTPEntityTag();
-  HTTPEntityTag(const string &text);
-  INLINE HTTPEntityTag(bool weak, const string &tag);
+  HTTPEntityTag(const std::string &text);
+  INLINE HTTPEntityTag(bool weak, const std::string &tag);
   INLINE HTTPEntityTag(const HTTPEntityTag &copy);
   INLINE void operator = (const HTTPEntityTag &copy);
 
   INLINE bool is_weak() const;
-  INLINE const string &get_tag() const;
-  string get_string() const;
+  INLINE const std::string &get_tag() const;
+  std::string get_string() const;
 
   INLINE bool strong_equiv(const HTTPEntityTag &other) const;
   INLINE bool weak_equiv(const HTTPEntityTag &other) const;
@@ -41,14 +41,14 @@ PUBLISHED:
   INLINE bool operator < (const HTTPEntityTag &other) const;
   INLINE int compare_to(const HTTPEntityTag &other) const;
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 private:
   bool _weak;
-  string _tag;
+  std::string _tag;
 };
 
-INLINE ostream &operator << (ostream &out, const HTTPEntityTag &url);
+INLINE std::ostream &operator << (std::ostream &out, const HTTPEntityTag &url);
 
 #include "httpEntityTag.I"
 

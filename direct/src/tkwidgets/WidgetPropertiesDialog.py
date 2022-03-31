@@ -3,15 +3,8 @@
 __all__ = ['WidgetPropertiesDialog']
 
 from direct.showbase.TkGlobal import *
-import Pmw, sys
+import Pmw
 
-"""
-TODO:
-  Checkboxes for None?
-  Floaters to adjust float values
-  OK and Cancel to allow changes to be delayed
-  Something other than Return to accept a new value
-"""
 
 class WidgetPropertiesDialog(Toplevel):
     """Class to open dialogs to adjust widget properties."""
@@ -31,12 +24,8 @@ class WidgetPropertiesDialog(Toplevel):
             self.propertyList.sort()
         # Use default parent if none specified
         if not parent:
-            if sys.version_info >= (3, 0):
-                import tkinter
-                parent = tkinter._default_root
-            else:
-                import Tkinter
-                parent = Tkinter._default_root
+            import tkinter
+            parent = tkinter._default_root
         # Create toplevel window
         Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -231,5 +220,3 @@ class WidgetPropertiesDialog(Toplevel):
         This method is called automatically to process the data, *after*
         the dialog is destroyed. By default, it does nothing.
         """
-        pass # override
-

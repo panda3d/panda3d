@@ -105,7 +105,7 @@ assign_initial_velocity(LVector3& vel) {
  * Write a string representation of this instance to <out>.
  */
 void RingEmitter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"RingEmitter";
   #endif //] NDEBUG
@@ -115,7 +115,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void RingEmitter::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"RingEmitter:\n";
   out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";

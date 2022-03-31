@@ -30,14 +30,17 @@
 #include "boundingSphere.h"
 #include "boundingBox.h"
 #include "config_mathutil.h"
+#include "pipeline.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"
 #endif
 
+using std::string;
+
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
-PGItem *PGItem::_focus_item = (PGItem *)NULL;
+PGItem *PGItem::_focus_item = nullptr;
 PGItem::BackgroundFocus PGItem::_background_focus;
 
 
@@ -55,16 +58,16 @@ is_right(const LVector2 &v1, const LVector2 &v2) {
 PGItem::
 PGItem(const string &name) :
   PandaNode(name),
-  _lock(name)
+  _lock(name),
+  _notify(nullptr),
+  _has_frame(false),
+  _frame(0, 0, 0, 0),
+  _state(0),
+  _flags(0),
+  _region(new PGMouseWatcherRegion(this))
 {
   set_cull_callback();
-
-  _notify = NULL;
-  _has_frame = false;
-  _frame.set(0, 0, 0, 0);
-  _region = new PGMouseWatcherRegion(this);
-  _state = 0;
-  _flags = 0;
+  set_renderable();
 }
 
 /**
@@ -72,17 +75,17 @@ PGItem(const string &name) :
  */
 PGItem::
 ~PGItem() {
-  if (_notify != (PGItemNotify *)NULL) {
+  if (_notify != nullptr) {
     _notify->remove_item(this);
-    _notify = NULL;
+    _notify = nullptr;
   }
 
   nassertv(_region->_item == this);
-  _region->_item = (PGItem *)NULL;
+  _region->_item = nullptr;
 
   set_background_focus(false);
   if (_focus_item == this) {
-    _focus_item = (PGItem *)NULL;
+    _focus_item = nullptr;
   }
 }
 
@@ -92,17 +95,16 @@ PGItem::
 PGItem::
 PGItem(const PGItem &copy) :
   PandaNode(copy),
+  _notify(nullptr),
   _has_frame(copy._has_frame),
   _frame(copy._frame),
   _state(copy._state),
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _region(new PGMouseWatcherRegion(this))
 #ifdef HAVE_AUDIO
   , _sounds(copy._sounds)
 #endif
 {
-  _notify = NULL;
-  _region = new PGMouseWatcherRegion(this);
-
   // We give our region the same name as the region for the PGItem we're
   // copying--so that this PGItem will generate the same event names when the
   // user interacts with it.
@@ -124,6 +126,13 @@ PGItem(const PGItem &copy) :
     new_sd._frame_style = old_sd._frame_style;
 
     _state_defs.push_back(new_sd);
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      ((PGItem &)copy).update_frame((int)i);
+      update_frame((int)i);
+    }
+#endif
   }
 }
 
@@ -147,8 +156,8 @@ void PGItem::
 transform_changed() {
   LightReMutexHolder holder(_lock);
   PandaNode::transform_changed();
-  if (has_notify()) {
-    get_notify()->item_transform_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_transform_changed(this);
   }
 }
 
@@ -161,8 +170,8 @@ void PGItem::
 draw_mask_changed() {
   LightReMutexHolder holder(_lock);
   PandaNode::draw_mask_changed();
-  if (has_notify()) {
-    get_notify()->item_draw_mask_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_draw_mask_changed(this);
   }
 }
 
@@ -186,9 +195,33 @@ draw_mask_changed() {
  */
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  LightReMutexHolder holder(_lock);
-  bool this_node_hidden = data.is_this_node_hidden(trav->get_camera_mask());
-  if (!this_node_hidden && has_frame() && get_active()) {
+  CullTraverser::_pgui_nodes_pcollector.add_level(1);
+
+  // We try not to hold the lock for longer than necessary.
+  PT(PandaNode) state_def_root;
+  bool has_frame;
+  PGMouseWatcherRegion *region;
+  {
+    LightReMutexHolder holder(_lock);
+    has_frame = _has_frame && ((_flags & F_active) != 0);
+    region = _region;
+
+    int state = _state;
+    if (state >= 0 && (size_t)state < _state_defs.size()) {
+      StateDef &state_def = _state_defs[state];
+      if (!state_def._root.is_empty()) {
+        if (Thread::get_current_pipeline_stage() == 0) {
+          if (state_def._frame_stale) {
+            update_frame(state);
+          }
+        }
+
+        state_def_root = state_def._root.node();
+      }
+    }
+  }
+
+  if (has_frame && !data.is_this_node_hidden(trav->get_camera_mask())) {
     // The item has a frame, so we want to generate a region for it and update
     // the MouseWatcher.
 
@@ -198,8 +231,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PGCullTraverser *pg_trav;
       DCAST_INTO_R(pg_trav, trav, true);
 
-      CPT(TransformState) net_transform = data.get_net_transform(trav);
-      const LMatrix4 &transform = net_transform->get_mat();
+      const LMatrix4 &transform = data.get_net_transform(trav)->get_mat();
 
       // Consider the cull bin this object is in.  Since the binning affects
       // the render order, we want bins that render later to get higher sort
@@ -236,34 +268,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // the existing interface which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      if (activate_region(transform, sort,
-                          DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot())),
-                          DCAST(ScissorAttrib, data._state->get_attrib(ScissorAttrib::get_class_slot())))) {
-        pg_trav->_top->add_region(get_region());
+      const ClipPlaneAttrib *clip = nullptr;
+      const ScissorAttrib *scissor = nullptr;
+      data._state->get_attrib(clip);
+      data._state->get_attrib(scissor);
+      if (activate_region(transform, sort, clip, scissor)) {
+        pg_trav->_top->add_region(region);
       }
     }
   }
 
-  if (has_state_def(get_state())) {
+  if (state_def_root != nullptr) {
     // This item has a current state definition that we should use to render
     // the item.
-    NodePath &root = get_state_def(get_state());
-    CullTraverserData next_data(data, root.node());
-    trav->traverse(next_data);
+    trav->traverse_down(data, state_def_root);
   }
 
   // Now continue to render everything else below this node.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool PGItem::
-is_renderable() const {
   return true;
 }
 
@@ -302,7 +323,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // get_state_def() on each one, to ensure that the frames are updated
   // correctly before we measure their bounding volumes.
   for (int i = 0; i < (int)_state_defs.size(); i++) {
-    NodePath &root = ((PGItem *)this)->get_state_def(i);
+    NodePath &root = ((PGItem *)this)->do_get_state_def(i);
     if (!root.is_empty()) {
       PandaNode *node = root.node();
       child_volumes.push_back(node->get_bounds(current_thread));
@@ -327,9 +348,8 @@ void PGItem::
 r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
                 GeomTransformer &transformer, Thread *current_thread) {
   LightReMutexHolder holder(_lock);
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    NodePath &root = (*di)._root;
+  for (StateDef &def : _state_defs) {
+    NodePath &root = def._root;
     if (!root.is_empty()) {
       PandaNode *child = root.node();
       CPT(RenderState) child_state = node_state->compose(child->get_state());
@@ -355,9 +375,9 @@ xform(const LMatrix4 &mat) {
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
 
   // Transform the individual states and their frame styles.
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    NodePath &root = (*di)._root;
+  for (size_t state = 0; state < _state_defs.size(); ++state) {
+    StateDef &def = _state_defs[state];
+    NodePath &root = def._root;
     // Apply the matrix to the previous transform.
     root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
 
@@ -366,8 +386,16 @@ xform(const LMatrix4 &mat) {
     gr.apply_attribs(root.node());
 
     // Transform the frame style too.
-    if ((*di)._frame_style.xform(mat)) {
-      (*di)._frame_stale = true;
+    if (def._frame_style.xform(mat)) {
+#ifdef THREADED_PIPELINE
+      if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+        update_frame((int)state);
+      }
+      else
+#endif
+      {
+        def._frame_stale = true;
+      }
     }
   }
   mark_internal_bounds_stale();
@@ -384,6 +412,9 @@ bool PGItem::
 activate_region(const LMatrix4 &transform, int sort,
                 const ClipPlaneAttrib *cpa,
                 const ScissorAttrib *sa) {
+  using std::min;
+  using std::max;
+
   LightReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This way the
   // region works (mostly) even if has been rotated.
@@ -415,7 +446,7 @@ activate_region(const LMatrix4 &transform, int sort,
   }
 
   LVecBase4 frame;
-  if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
+  if (cpa != nullptr && cpa->get_num_on_planes() != 0) {
     // Apply the clip plane(s) andor scissor region now that we are here in
     // world space.
 
@@ -462,7 +493,7 @@ activate_region(const LMatrix4 &transform, int sort,
               max(max(ll[up_axis], lr[up_axis]), max(ul[up_axis], ur[up_axis])));
   }
 
-  if (sa != (ScissorAttrib *)NULL) {
+  if (sa != nullptr) {
     // Also restrict it to within the scissor region.
     const LVecBase4 &sf = sa->get_frame();
     // Expand sf from 0..1 to -1..1.
@@ -507,8 +538,8 @@ enter_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_enter(this, param);
+  if (_notify != nullptr) {
+    _notify->item_enter(this, param);
   }
 }
 
@@ -531,8 +562,8 @@ exit_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_exit(this, param);
+  if (_notify != nullptr) {
+    _notify->item_exit(this, param);
   }
 
   // pgui_cat.info() << get_name() << "::exit()" << endl;
@@ -557,8 +588,8 @@ within_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_within(this, param);
+  if (_notify != nullptr) {
+    _notify->item_within(this, param);
   }
 }
 
@@ -579,8 +610,8 @@ without_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_without(this, param);
+  if (_notify != nullptr) {
+    _notify->item_without(this, param);
   }
 }
 
@@ -600,8 +631,8 @@ focus_in() {
   play_sound(event);
   throw_event(event);
 
-  if (has_notify()) {
-    get_notify()->item_focus_in(this);
+  if (_notify != nullptr) {
+    _notify->item_focus_in(this);
   }
 }
 
@@ -621,8 +652,8 @@ focus_out() {
   play_sound(event);
   throw_event(event);
 
-  if (has_notify()) {
-    get_notify()->item_focus_out(this);
+  if (_notify != nullptr) {
+    _notify->item_focus_out(this);
   }
 }
 
@@ -650,8 +681,8 @@ press(const MouseWatcherParameter &param, bool background) {
     throw_event(event, EventParameter(ep));
   }
 
-  if (has_notify()) {
-    get_notify()->item_press(this, param);
+  if (_notify != nullptr) {
+    _notify->item_press(this, param);
   }
 }
 
@@ -674,8 +705,8 @@ release(const MouseWatcherParameter &param, bool background) {
     throw_event(event, EventParameter(ep));
   }
 
-  if (has_notify()) {
-    get_notify()->item_release(this, param);
+  if (_notify != nullptr) {
+    _notify->item_release(this, param);
   }
 }
 
@@ -734,8 +765,8 @@ move(const MouseWatcherParameter &param) {
       << *this << "::move(" << param << ")\n";
   }
 
-  if (has_notify()) {
-    get_notify()->item_move(this, param);
+  if (_notify != nullptr) {
+    _notify->item_move(this, param);
   }
 }
 
@@ -744,9 +775,7 @@ move(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_press(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->press(param, true);
     }
@@ -758,9 +787,7 @@ background_press(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_release(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->release(param, true);
     }
@@ -772,9 +799,7 @@ background_release(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_keystroke(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->keystroke(param, true);
     }
@@ -786,9 +811,7 @@ background_keystroke(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_candidate(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->candidate(param, true);
     }
@@ -835,7 +858,7 @@ set_focus(bool focus) {
 
     // Set the keyboard focus to this item.
     if (_focus_item != this) {
-      if (_focus_item != (PGItem *)NULL) {
+      if (_focus_item != nullptr) {
         // Clear the focus from whatever item currently has it.
         _focus_item->set_focus(false);
       }
@@ -849,7 +872,7 @@ set_focus(bool focus) {
   } else {
     if (_focus_item == this) {
       // Remove this item from the focus.
-      _focus_item = (PGItem *)NULL;
+      _focus_item = nullptr;
     }
 
     if (get_focus()) {
@@ -929,30 +952,12 @@ clear_state_def(int state) {
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
-}
 
-/**
- * Returns the Node that is the root of the subgraph that will be drawn when
- * the PGItem is in the indicated state.  The first time this is called for a
- * particular state index, it may create the Node.
- */
-NodePath &PGItem::
-get_state_def(int state) {
-  LightReMutexHolder holder(_lock);
-  nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
-  slot_state_def(state);
-
-  if (_state_defs[state]._root.is_empty()) {
-    // Create a new node.
-    _state_defs[state]._root = NodePath("state_" + format_string(state));
-    _state_defs[state]._frame_stale = true;
-  }
-
-  if (_state_defs[state]._frame_stale) {
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
     update_frame(state);
   }
-
-  return _state_defs[state]._root;
+#endif
 }
 
 /**
@@ -969,7 +974,7 @@ instance_to_state_def(int state, const NodePath &path) {
 
   mark_internal_bounds_stale();
 
-  return path.instance_to(get_state_def(state));
+  return path.instance_to(do_get_state_def(state));
 }
 
 /**
@@ -992,15 +997,19 @@ get_frame_style(int state) {
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
-  // Get the state def node, mainly to ensure that this state is slotted and
-  // listed as having been defined.
-  NodePath &root = get_state_def(state);
-  nassertv(!root.is_empty());
+
+  slot_state_def(state);
+
+  if (_state_defs[state]._root.is_empty()) {
+    // Create a new node.
+    _state_defs[state]._root = NodePath("state_" + format_string(state));
+  }
 
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
+  update_frame(state);
 }
 
 #ifdef HAVE_AUDIO
@@ -1033,7 +1042,7 @@ get_sound(const string &event) const {
   if (si != _sounds.end()) {
     return (*si).second;
   }
-  return (AudioSound *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1054,7 +1063,7 @@ has_sound(const string &event) const {
  */
 TextNode *PGItem::
 get_text_node() {
-  if (_text_node == (TextNode *)NULL) {
+  if (_text_node == nullptr) {
     _text_node = new TextNode("pguiText");
     _text_node->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -1093,7 +1102,10 @@ play_sound(const string &event) {
  */
 void PGItem::
 reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
-  if (obscurer != (PGItem *)NULL && !obscurer->is_overall_hidden()) {
+  using std::min;
+  using std::max;
+
+  if (obscurer != nullptr && !obscurer->is_overall_hidden()) {
     LVecBase4 oframe = get_relative_frame(obscurer);
 
     // Determine the four rectangular regions on the four sides of the
@@ -1120,6 +1132,9 @@ reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
  */
 LVecBase4 PGItem::
 get_relative_frame(PGItem *item) const {
+  using std::min;
+  using std::max;
+
   NodePath this_np = NodePath::any_path((PGItem *)this);
   NodePath item_np = this_np.find_path_to(item);
   if (item_np.is_empty()) {
@@ -1160,18 +1175,43 @@ mouse_to_local(const LPoint2 &mouse_point) const {
 }
 
 /**
- * Called when the user changes the frame size.
+ * Called when the user changes the frame size.  Assumes the lock is held.
  */
 void PGItem::
 frame_changed() {
   mark_frames_stale();
-  if (has_notify()) {
-    get_notify()->item_frame_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_frame_changed(this);
   }
 }
 
 /**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ *
+ * Assumes the lock is already held.
+ */
+NodePath &PGItem::
+do_get_state_def(int state) {
+  slot_state_def(state);
+
+  if (_state_defs[state]._root.is_empty()) {
+    // Create a new node.
+    _state_defs[state]._root = NodePath("state_" + format_string(state));
+    _state_defs[state]._frame_stale = true;
+  }
+
+  if (_state_defs[state]._frame_stale) {
+    update_frame(state);
+  }
+
+  return _state_defs[state]._root;
+}
+
+/**
  * Ensures there is a slot in the array for the given state definition.
+ * Assumes the lock is already held.
  */
 void PGItem::
 slot_state_def(int state) {
@@ -1182,6 +1222,7 @@ slot_state_def(int state) {
 
 /**
  * Generates a new instance of the frame geometry for the indicated state.
+ * Assumes the lock is already held.
  */
 void PGItem::
 update_frame(int state) {
@@ -1196,7 +1237,7 @@ update_frame(int state) {
 
   // Now create new frame geometry.
   if (has_frame()) {
-    NodePath &root = get_state_def(state);
+    NodePath &root = do_get_state_def(state);
     _state_defs[state]._frame =
       _state_defs[state]._frame_style.generate_into(root, _frame);
   }
@@ -1204,15 +1245,26 @@ update_frame(int state) {
 
 /**
  * Marks all the frames in all states stale, so that they will be regenerated
- * the next time each state is requested.
+ * the next time each state is requested.  Assumes the lock is already held.
  */
 void PGItem::
 mark_frames_stale() {
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    // Remove the old frame, if any.
-    (*di)._frame.remove_node();
-    (*di)._frame_stale = true;
+#ifdef THREADED_PIPELINE
+  // If we are using the threaded pipeline, we must update the frame geometry
+  // immediately on the App thread, since this class isn't pipeline-cycled.
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    for (int state = 0; state < (int)_state_defs.size(); ++state) {
+      update_frame(state);
+    }
+  }
+  else
+#endif
+  {
+    for (StateDef &def : _state_defs) {
+      // Remove the old frame, if any.
+      def._frame.remove_node();
+      def._frame_stale = true;
+    }
   }
   mark_internal_bounds_stale();
 }
@@ -1264,9 +1316,8 @@ clip_frame(ClipPoints &source_points, const LPlane &plane) const {
   LPoint2 last_point(source_points.back());
   bool last_is_in = is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  ClipPoints::const_iterator pi;
-  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    LPoint2 this_point(*pi);
+
+  for (LPoint2 this_point : source_points) {
     bool this_is_in = is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to extract this

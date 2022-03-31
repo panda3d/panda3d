@@ -27,6 +27,12 @@
 #include "config_mathutil.h"
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
+#include "decalEffect.h"
+#include "showBoundsEffect.h"
+
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
@@ -36,10 +42,9 @@ TypeHandle PandaNode::BamReaderAuxDataDown::_type_handle;
 
 PandaNode::SceneRootFunc *PandaNode::_scene_root_func;
 
-PandaNodeChain PandaNode::_dirty_prev_transforms("_dirty_prev_transforms");
+UpdateSeq PandaNode::_reset_prev_transform_seq;
 DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 
-PStatCollector PandaNode::_reset_prev_pcollector("App:Collisions:Reset");
 PStatCollector PandaNode::_update_bounds_pcollector("*:Bounds");
 
 TypeHandle PandaNode::_type_handle;
@@ -72,15 +77,12 @@ PandaNode::
 PandaNode(const string &name) :
   Namable(name),
   _paths_lock("PandaNode::_paths_lock"),
-  _dirty_prev_transform(false)
+  _prev_transform_valid(_reset_prev_transform_seq)
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
       << "Constructing " << (void *)this << ", " << get_name() << "\n";
   }
-#ifndef NDEBUG
-  _unexpected_change_flags = 0;
-#endif // !NDEBUG
 
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -95,12 +97,6 @@ PandaNode::
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
       << "Destructing " << (void *)this << ", " << get_name() << "\n";
-  }
-
-  if (_dirty_prev_transform) {
-    // Need to have this held before we grab any other locks.
-    LightMutexHolder holder(_dirty_prev_transforms._lock);
-    do_clear_dirty_prev_transform();
   }
 
   // We shouldn't have any parents left by the time we destruct, or there's a
@@ -130,8 +126,9 @@ PandaNode(const PandaNode &copy) :
   TypedWritableReferenceCount(copy),
   Namable(copy),
   _paths_lock("PandaNode::_paths_lock"),
-  _dirty_prev_transform(false),
-  _python_tag_data(copy._python_tag_data)
+  _prev_transform_valid(_reset_prev_transform_seq),
+  _python_tag_data(copy._python_tag_data),
+  _unexpected_change_flags(0)
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
@@ -140,13 +137,6 @@ PandaNode(const PandaNode &copy) :
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
-  // Copying a node does not copy its children.
-#ifndef NDEBUG
-  _unexpected_change_flags = 0;
-#endif // !NDEBUG
-
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
 
   // Copy the other node's state.
   {
@@ -154,9 +144,10 @@ PandaNode(const PandaNode &copy) :
     CDWriter cdata(_cycler, true);
     cdata->_state = copy_cdata->_state;
     cdata->_transform = copy_cdata->_transform;
-    cdata->_prev_transform = copy_cdata->_prev_transform;
-    if (cdata->_transform != cdata->_prev_transform) {
-      do_set_dirty_prev_transform();
+    if (copy._prev_transform_valid == _reset_prev_transform_seq) {
+      cdata->_prev_transform = copy_cdata->_prev_transform;
+    } else {
+      cdata->_prev_transform = copy_cdata->_transform;
     }
 
     cdata->_effects = copy_cdata->_effects;
@@ -166,22 +157,13 @@ PandaNode(const PandaNode &copy) :
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
     cdata->_bounds_type = copy_cdata->_bounds_type;
     cdata->_user_bounds = copy_cdata->_user_bounds;
-    cdata->_internal_bounds = NULL;
+    cdata->_internal_bounds = nullptr;
     cdata->_internal_bounds_computed = UpdateSeq::initial();
     cdata->_internal_bounds_mark = UpdateSeq::initial();
     ++cdata->_internal_bounds_mark;
     cdata->_final_bounds = copy_cdata->_final_bounds;
     cdata->_fancy_bits = copy_cdata->_fancy_bits;
   }
-}
-
-/**
- * Do not call the copy assignment operator at all.  Use make_copy() or
- * copy_subgraph() to make a copy of a node.
- */
-void PandaNode::
-operator = (const PandaNode &copy) {
-  nassertv(false);
 }
 
 /**
@@ -342,7 +324,7 @@ combine_with(PandaNode *other) {
   }
 
   // We're something other than an ordinary PandaNode.  Don't combine.
-  return (PandaNode *)NULL;
+  return nullptr;
 }
 
 /**
@@ -400,46 +382,6 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 
 /**
  * Should be overridden by derived classes to return true if this kind of node
- * has some restrictions on the set of children that should be rendered.  Node
- * with this property include LODNodes, SwitchNodes, and SequenceNodes.
- *
- * If this function returns true, get_first_visible_child() and
- * get_next_visible_child() will be called to walk through the list of
- * children during cull, instead of iterating through the entire list.  This
- * method is called after cull_callback(), so cull_callback() may be
- * responsible for the decisions as to which children are visible at the
- * moment.
- */
-bool PandaNode::
-has_selective_visibility() const {
-  return false;
-}
-
-/**
- * Returns the index number of the first visible child of this node, or a
- * number >= get_num_children() if there are no visible children of this node.
- * This is called during the cull traversal, but only if
- * has_selective_visibility() has already returned true.  See
- * has_selective_visibility().
- */
-int PandaNode::
-get_first_visible_child() const {
-  return 0;
-}
-
-/**
- * Returns the index number of the next visible child of this node following
- * the indicated child, or a number >= get_num_children() if there are no more
- * visible children of this node.  See has_selective_visibility() and
- * get_first_visible_child().
- */
-int PandaNode::
-get_next_visible_child(int n) const {
-  return n + 1;
-}
-
-/**
- * Should be overridden by derived classes to return true if this kind of node
  * has the special property that just one of its children is visible at any
  * given time, and furthermore that the particular visible child can be
  * determined without reference to any external information (such as a
@@ -471,7 +413,8 @@ get_visible_child() const {
  */
 bool PandaNode::
 is_renderable() const {
-  return false;
+  CDReader cdata(_cycler);
+  return (cdata->_fancy_bits & FB_renderable) != 0;
 }
 
 /**
@@ -532,7 +475,7 @@ count_num_descendants() const {
  */
 void PandaNode::
 add_child(PandaNode *child_node, int sort, Thread *current_thread) {
-  nassertv(child_node != (PandaNode *)NULL);
+  nassertv(child_node != nullptr);
 
   if (!verify_child_no_cycles(child_node)) {
     // Whoops, adding this child node would introduce a cycle in the scene
@@ -605,7 +548,7 @@ remove_child(int child_index, Thread *current_thread) {
  */
 bool PandaNode::
 remove_child(PandaNode *child_node, Thread *current_thread) {
-  nassertr(child_node != (PandaNode *)NULL, false);
+  nassertr(child_node != nullptr, false);
 
   // Make sure the child node is not destructed during the execution of this
   // method.
@@ -642,8 +585,8 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child,
               Thread *current_thread) {
-  nassertr(orig_child != (PandaNode *)NULL, false);
-  nassertr(new_child != (PandaNode *)NULL, false);
+  nassertr(orig_child != nullptr, false);
+  nassertr(new_child != nullptr, false);
 
   if (orig_child == new_child) {
     // Trivial no-op.
@@ -1014,7 +957,15 @@ set_effect(const RenderEffect *effect) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->add_effect(effect);
+
     cdata->set_fancy_bit(FB_effects, true);
+    if (effect->get_type() == DecalEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_decal, true);
+    }
+    else if (effect->get_type() == ShowBoundsEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_show_bounds, true);
+      cdata->set_fancy_bit(FB_show_tight_bounds, ((const ShowBoundsEffect *)effect)->get_tight());
+    }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1029,7 +980,14 @@ clear_effect(TypeHandle type) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->remove_effect(type);
+
     cdata->set_fancy_bit(FB_effects, !cdata->_effects->is_empty());
+    if (type == DecalEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_decal, false);
+    }
+    else if (type == ShowBoundsEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_show_bounds | FB_show_tight_bounds, false);
+    }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1078,6 +1036,9 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = effects;
     cdata->set_fancy_bit(FB_effects, !effects->is_empty());
+    cdata->set_fancy_bit(FB_decal, effects->has_decal());
+    cdata->set_fancy_bit(FB_show_bounds, effects->has_show_bounds());
+    cdata->set_fancy_bit(FB_show_tight_bounds, effects->has_show_tight_bounds());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1089,8 +1050,7 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
  */
 void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
+  nassertv(!transform->is_invalid());
 
   // Apply this operation to the current stage as well as to all upstream
   // stages.
@@ -1098,15 +1058,17 @@ set_transform(const TransformState *transform, Thread *current_thread) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_transform != transform) {
+      if (pipeline_stage == 0) {
+        // Back up the previous transform.
+        if (_prev_transform_valid != _reset_prev_transform_seq) {
+          cdata->_prev_transform = std::move(cdata->_transform);
+          _prev_transform_valid = _reset_prev_transform_seq;
+        }
+      }
+
       cdata->_transform = transform;
       cdata->set_fancy_bit(FB_transform, !transform->is_identity());
       any_changed = true;
-
-      if (pipeline_stage == 0) {
-        if (cdata->_transform != cdata->_prev_transform) {
-          do_set_dirty_prev_transform();
-        }
-      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1125,8 +1087,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
  */
 void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
+  nassertv(!transform->is_invalid());
 
   // Apply this operation to the current stage as well as to all upstream
   // stages.
@@ -1134,11 +1095,7 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_prev_transform = transform;
     if (pipeline_stage == 0) {
-      if (cdata->_transform != cdata->_prev_transform) {
-        do_set_dirty_prev_transform();
-      } else {
-        do_clear_dirty_prev_transform();
-      }
+      _prev_transform_valid = _reset_prev_transform_seq;
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1152,10 +1109,6 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
  */
 void PandaNode::
 reset_prev_transform(Thread *current_thread) {
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-  do_clear_dirty_prev_transform();
-
   // Apply this operation to the current stage as well as to all upstream
   // stages.
 
@@ -1164,41 +1117,22 @@ reset_prev_transform(Thread *current_thread) {
     cdata->_prev_transform = cdata->_transform;
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
-  mark_bam_modified();
 }
 
 /**
- * Visits all nodes in the world with the _dirty_prev_transform flag--that is,
- * all nodes whose _prev_transform is different from the _transform in
- * pipeline stage 0--and resets the _prev_transform to be the same as
- * _transform.
+ * Makes sure that all nodes reset their prev_transform value to be the same as
+ * their transform value.  This should be called at the start of each frame.
  */
 void PandaNode::
 reset_all_prev_transform(Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
 
-  PStatTimer timer(_reset_prev_pcollector, current_thread);
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
-  LinkedListNode *list_node = _dirty_prev_transforms._next;
-  while (list_node != &_dirty_prev_transforms) {
-    PandaNode *panda_node = (PandaNode *)list_node;
-    nassertv(panda_node->_dirty_prev_transform);
-    panda_node->_dirty_prev_transform = false;
-
-    CDStageWriter cdata(panda_node->_cycler, 0, current_thread);
-    cdata->_prev_transform = cdata->_transform;
-
-    list_node = panda_node->_next;
-#ifndef NDEBUG
-    panda_node->_prev = NULL;
-    panda_node->_next = NULL;
-#endif  // NDEBUG
-    panda_node->mark_bam_modified();
-  }
-
-  _dirty_prev_transforms._prev = &_dirty_prev_transforms;
-  _dirty_prev_transforms._next = &_dirty_prev_transforms;
+  // Rather than keeping a linked list of all nodes that have changed their
+  // transform, we simply increment this counter.  All the nodes compare this
+  // value to their own _prev_transform_valid value, and if it's different,
+  // they should disregard their _prev_transform field and assume it's the same
+  // as their _transform.
+  ++_reset_prev_transform_seq;
 }
 
 /**
@@ -1332,7 +1266,7 @@ compare_tags(const PandaNode *other) const {
       return cmp;
     }
 
-    cmp = strcmp(a_data.get_key(ai).c_str(), b_data.get_key(bi).c_str());
+    cmp = strcmp(a_data.get_data(ai).c_str(), b_data.get_data(bi).c_str());
     if (cmp != 0) {
       return cmp;
     }
@@ -1371,9 +1305,6 @@ copy_all_properties(PandaNode *other) {
     return;
   }
 
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
   bool any_transform_changed = false;
   bool any_state_changed = false;
   bool any_draw_mask_changed = false;
@@ -1394,7 +1325,11 @@ copy_all_properties(PandaNode *other) {
     }
 
     cdataw->_transform = cdatar->_transform;
-    cdataw->_prev_transform = cdatar->_prev_transform;
+    if (other->_prev_transform_valid == _reset_prev_transform_seq) {
+      cdataw->_prev_transform = cdatar->_prev_transform;
+    } else {
+      cdataw->_prev_transform = cdatar->_transform;
+    }
     cdataw->_state = cdatar->_state;
     cdataw->_effects = cdatar->_effects;
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
@@ -1409,15 +1344,14 @@ copy_all_properties(PandaNode *other) {
     }
 
     static const int change_bits = (FB_transform | FB_state | FB_effects |
-                                    FB_tag | FB_draw_mask);
+                                    FB_tag | FB_draw_mask | FB_decal |
+                                    FB_show_bounds | FB_show_tight_bounds);
     cdataw->_fancy_bits =
       (cdataw->_fancy_bits & ~change_bits) |
       (cdatar->_fancy_bits & change_bits);
 
     if (pipeline_stage == 0) {
-      if (cdataw->_transform != cdataw->_prev_transform) {
-        do_set_dirty_prev_transform();
-      }
+      _prev_transform_valid = _reset_prev_transform_seq;
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1777,7 +1711,7 @@ is_scene_root() const {
   // This function pointer has to be filled in when the global GraphicsEngine
   // is created, because we can't link with the GraphicsEngine functions
   // directly.
-  if (_scene_root_func != (SceneRootFunc *)NULL) {
+  if (_scene_root_func != nullptr) {
     return (*_scene_root_func)(this);
   }
   return false;
@@ -1915,8 +1849,8 @@ set_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    if (volume == NULL) {
-      cdata->_user_bounds = NULL;
+    if (volume == nullptr) {
+      cdata->_user_bounds = nullptr;
     } else {
       cdata->_user_bounds = volume->make_copy();
     }
@@ -2100,7 +2034,7 @@ is_collision_node() const {
  */
 Light *PandaNode::
 as_light() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -2127,7 +2061,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, move(data), reader)) {
+  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, std::move(data), reader)) {
     return DCAST(PandaNode, object);
   } else {
     return nullptr;
@@ -2144,7 +2078,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     UpdateSeq mark;
     {
       CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-      if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+      if (cdata->_user_bounds != nullptr) {
         return cdata->_user_bounds;
       }
 
@@ -2161,7 +2095,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     int internal_vertices;
     compute_internal_bounds(internal_bounds, internal_vertices,
                             pipeline_stage, current_thread);
-    nassertr(!internal_bounds.is_null(), NULL);
+    nassertr(!internal_bounds.is_null(), nullptr);
 
     // Now, acquire the lock, and apply the above-computed bounds.
     CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage);
@@ -2323,6 +2257,59 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 }
 
 /**
+ * Returns a BoundingVolume that represents the external contents of the node.
+ * This should encompass the internal bounds, but also the bounding volumes of
+ * of all this node's children, which are passed in.
+ */
+void PandaNode::
+compute_external_bounds(CPT(BoundingVolume) &external_bounds,
+                        BoundingVolume::BoundsType btype,
+                        const BoundingVolume **volumes, size_t num_volumes,
+                        int pipeline_stage, Thread *current_thread) const {
+
+  CPT(TransformState) transform = get_transform(current_thread);
+  PT(GeometricBoundingVolume) gbv;
+
+  if (btype == BoundingVolume::BT_box) {
+    gbv = new BoundingBox;
+  }
+  else if (btype == BoundingVolume::BT_sphere || !transform->is_identity()) {
+    gbv = new BoundingSphere;
+  }
+  else {
+    // If all of the child volumes are a BoundingBox, and we have no
+    // transform, then our volume is also a BoundingBox.
+    bool all_box = true;
+
+    for (size_t i = 0; i < num_volumes; ++i) {
+      if (volumes[i]->as_bounding_box() == nullptr) {
+        all_box = false;
+      }
+    }
+
+    if (all_box) {
+      gbv = new BoundingBox;
+    } else {
+      gbv = new BoundingSphere;
+    }
+  }
+
+  if (num_volumes > 0) {
+    const BoundingVolume **child_begin = &volumes[0];
+    const BoundingVolume **child_end = child_begin + num_volumes;
+    ((BoundingVolume *)gbv)->around(child_begin, child_end);
+
+    // If we have a transform, apply it to the bounding volume we just
+    // computed.
+    if (!transform->is_identity()) {
+      gbv->xform(transform->get_mat());
+    }
+  }
+
+  external_bounds = gbv;
+}
+
+/**
  * Called after a scene graph update that either adds or remove parents from
  * this node, this just provides a hook for derived PandaNode objects that
  * need to update themselves based on the set of parents the node has.
@@ -2382,13 +2369,14 @@ draw_mask_changed() {
 PT(PandaNode) PandaNode::
 r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const {
   PT(PandaNode) copy = make_copy();
-  nassertr(copy != (PandaNode *)NULL, NULL);
+  nassertr(copy != nullptr, nullptr);
   if (copy->get_type() != get_type()) {
     pgraph_cat.warning()
       << "Don't know how to copy nodes of type " << get_type() << "\n";
 
     if (no_unsupported_copy) {
-      nassertr(false, NULL);
+      nassert_raise("unsupported copy");
+      return nullptr;
     }
   }
 
@@ -2487,6 +2475,24 @@ disable_cull_callback() {
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
+}
+
+/**
+ * Called by a derived class to indicate that there is some value to visiting
+ * this particular node during the cull traversal for any camera.  This will be
+ * used to optimize the result of get_net_draw_show_mask(), so that any subtrees
+ * that contain only nodes for which is_renderable() is false need not be
+ * visited.  It also indicates that add_for_draw() should be called if the
+ * object is determined to be in view of the camera.
+ */
+void PandaNode::
+set_renderable() {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->set_fancy_bit(FB_renderable, true);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 /**
@@ -2675,11 +2681,11 @@ find_node_above(PandaNode *node) {
 PT(NodePathComponent) PandaNode::
 attach(NodePathComponent *parent, PandaNode *child_node, int sort,
        int pipeline_stage, Thread *current_thread) {
-  if (parent == (NodePathComponent *)NULL) {
+  if (parent == nullptr) {
     // Attaching to NULL means to create a new "instance" with no attachments,
     // and no questions asked.
     PT(NodePathComponent) child =
-      new NodePathComponent(child_node, (NodePathComponent *)NULL,
+      new NodePathComponent(child_node, nullptr,
                             pipeline_stage, current_thread);
     LightReMutexHolder holder(child_node->_paths_lock);
     child_node->_paths.insert(child);
@@ -2690,7 +2696,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
   // use that same NodePathComponent.
   PT(NodePathComponent) child = get_component(parent, child_node, pipeline_stage, current_thread);
 
-  if (child == (NodePathComponent *)NULL) {
+  if (child == nullptr) {
     // The child was not already attached to the parent, so get a new
     // component.
     child = get_top_component(child_node, true, pipeline_stage, current_thread);
@@ -2709,7 +2715,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
  */
 void PandaNode::
 detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)NULL);
+  nassertv(child != nullptr);
 
   for (int pipeline_stage_i = pipeline_stage;
        pipeline_stage_i >= 0;
@@ -2729,7 +2735,7 @@ detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
 void PandaNode::
 detach_one_stage(NodePathComponent *child, int pipeline_stage,
                  Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)NULL);
+  nassertv(child != nullptr);
   if (child->is_top_node(pipeline_stage, current_thread)) {
     return;
   }
@@ -2795,7 +2801,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed, int pipeline_stage, Thread *current_thread) {
   bool any_ok = false;
 
-  if (new_parent != (NodePathComponent *)NULL &&
+  if (new_parent != nullptr &&
       !new_parent->get_node()->verify_child_no_cycles(child->get_node())) {
     // Whoops, adding this child node would introduce a cycle in the scene
     // graph.
@@ -2811,7 +2817,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
     }
   }
 
-  if (new_parent != (NodePathComponent *)NULL) {
+  if (new_parent != nullptr) {
     new_parent->get_node()->children_changed();
     new_parent->get_node()->mark_bam_modified();
   }
@@ -2834,7 +2840,7 @@ bool PandaNode::
 reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
                    int sort, bool as_stashed, int pipeline_stage,
                    Thread *current_thread) {
-  nassertr(child != (NodePathComponent *)NULL, false);
+  nassertr(child != nullptr, false);
 
   // Keep a reference count to the new parent, since detaching the child might
   // lose the count.
@@ -2844,7 +2850,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
     detach(child, pipeline_stage, current_thread);
   }
 
-  if (new_parent != (NodePathComponent *)NULL) {
+  if (new_parent != nullptr) {
     PandaNode *child_node = child->get_node();
     PandaNode *parent_node = new_parent->get_node();
 
@@ -2896,7 +2902,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 PT(NodePathComponent) PandaNode::
 get_component(NodePathComponent *parent, PandaNode *child_node,
               int pipeline_stage, Thread *current_thread) {
-  nassertr(parent != (NodePathComponent *)NULL, (NodePathComponent *)NULL);
+  nassertr(parent != nullptr, nullptr);
   PandaNode *parent_node = parent->get_node();
 
   LightReMutexHolder holder(child_node->_paths_lock);
@@ -2925,7 +2931,7 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
     return child;
   } else {
     // They aren't related.  Return NULL.
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -2957,13 +2963,13 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   if (!force) {
     // If we don't care to force the point, return NULL to indicate there's
     // not already a top component.
-    return NULL;
+    return nullptr;
   }
 
   // We don't already have such a NodePathComponent; create and return a new
   // one.
   PT(NodePathComponent) child =
-    new NodePathComponent(child_node, (NodePathComponent *)NULL,
+    new NodePathComponent(child_node, nullptr,
                           pipeline_stage, current_thread);
   child_node->_paths.insert(child);
 
@@ -3178,7 +3184,7 @@ r_list_descendants(ostream &out, int indent_level) const {
  */
 int PandaNode::
 do_find_child(PandaNode *node, const PandaNode::Down *down) const {
-  nassertr(node != (PandaNode *)NULL, -1);
+  nassertr(node != nullptr, -1);
 
   // We have to search for the child by brute force, since we don't know what
   // sort index it was added as.
@@ -3225,7 +3231,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     // Start with a clean slate.
     CollideMask net_collide_mask = cdata->_into_collide_mask;
     DrawMask net_draw_control_mask, net_draw_show_mask;
-    bool renderable = is_renderable();
+    bool renderable = (cdata->_fancy_bits & FB_renderable) != 0;
 
     if (renderable) {
       // If this node is itself renderable, it contributes to the net draw
@@ -3241,20 +3247,26 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         << "\n";
     }
     CPT(RenderAttrib) off_clip_planes = cdata->_state->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (off_clip_planes == (RenderAttrib *)NULL) {
+    if (off_clip_planes == nullptr) {
       off_clip_planes = ClipPlaneAttrib::make();
     }
 
-    // Also get the list of the node's children.
-    Children children(cdata);
-
     int num_vertices = cdata->_internal_vertices;
+
+    // Also get the list of the node's children.  When the cdataw destructs, it
+    // will also release the lock, since we've got all the data we need from the
+    // node.
+    PT(Down) down;
+    {
+      CDStageWriter cdataw(_cycler, pipeline_stage, cdata);
+      down = cdataw->modify_down();
+    }
 
     // Now that we've got all the data we need from the node, we can release
     // the lock.
-    _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
+    //_cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
-    int num_children = children.get_num_children();
+    int num_children = down->size();
 
     // We need to keep references to the bounding volumes, since in a threaded
     // environment the pointers might go away while we're working (since we're
@@ -3269,8 +3281,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
     int child_volumes_i = 0;
 
-    bool all_box = true;
-    CPT(BoundingVolume) internal_bounds = NULL;
+    CPT(BoundingVolume) internal_bounds = nullptr;
 
     if (update_bounds) {
       child_volumes = (const BoundingVolume **)alloca(sizeof(BoundingVolume *) * (num_children + 1));
@@ -3282,16 +3293,14 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
         nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
         child_volumes[child_volumes_i++] = internal_bounds;
-        if (internal_bounds->as_bounding_box() == NULL) {
-          all_box = false;
-        }
       }
     }
 
     // Now expand those contents to include all of our children.
 
     for (int i = 0; i < num_children; ++i) {
-      PandaNode *child = children.get_child(i);
+      DownConnection &connection = (*down)[i];
+      PandaNode *child = connection.get_child();
 
       const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
 
@@ -3305,7 +3314,9 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         // Child needs update.
         CDStageWriter child_cdataw = child->update_cached(update_bounds, pipeline_stage, child_cdata);
 
-        net_collide_mask |= child_cdataw->_net_collide_mask;
+        CollideMask child_collide_mask = child_cdataw->_net_collide_mask;
+        net_collide_mask |= child_collide_mask;
+        connection._net_collide_mask = child_collide_mask;
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
@@ -3380,16 +3391,20 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
-            if (child_cdataw->_external_bounds->as_bounding_box() == NULL) {
-              all_box = false;
-            }
           }
           num_vertices += child_cdataw->_nested_vertices;
+
+          connection._external_bounds = child_cdataw->_external_bounds->as_geometric_bounding_volume();
         }
+
+        connection._net_draw_control_mask = child_control_mask;
+        connection._net_draw_show_mask = child_show_mask;
 
       } else {
         // Child is good.
-        net_collide_mask |= child_cdata->_net_collide_mask;
+        CollideMask child_collide_mask = child_cdata->_net_collide_mask;
+        net_collide_mask |= child_collide_mask;
+        connection._net_collide_mask = child_collide_mask;
 
         // See comments in similar block above.
         if (drawmask_cat.is_debug()) {
@@ -3435,12 +3450,14 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
-            if (child_cdata->_external_bounds->as_bounding_box() == NULL) {
-              all_box = false;
-            }
           }
           num_vertices += child_cdata->_nested_vertices;
+
+          connection._external_bounds = child_cdata->_external_bounds->as_geometric_bounding_volume();
         }
+
+        connection._net_draw_control_mask = child_control_mask;
+        connection._net_draw_show_mask = child_show_mask;
       }
     }
 
@@ -3491,38 +3508,17 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         if (update_bounds) {
           cdataw->_nested_vertices = num_vertices;
 
-          CPT(TransformState) transform = get_transform(current_thread);
-          PT(GeometricBoundingVolume) gbv;
-
           BoundingVolume::BoundsType btype = cdataw->_bounds_type;
           if (btype == BoundingVolume::BT_default) {
             btype = bounds_type;
           }
 
-          if (btype == BoundingVolume::BT_box ||
-              (btype != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
-            // If all of the child volumes are a BoundingBox, and we have no
-            // transform, then our volume is also a BoundingBox.
+          compute_external_bounds(cdataw->_external_bounds, btype,
+                                  child_volumes, child_volumes_i,
+                                  pipeline_stage, current_thread);
 
-            gbv = new BoundingBox;
-          } else {
-            // Otherwise, it's a sphere.
-            gbv = new BoundingSphere;
-          }
+          nassertr(cdataw->_external_bounds != nullptr, cdataw);
 
-          if (child_volumes_i > 0) {
-            const BoundingVolume **child_begin = &child_volumes[0];
-            const BoundingVolume **child_end = child_begin + child_volumes_i;
-            ((BoundingVolume *)gbv)->around(child_begin, child_end);
-          }
-
-          // If we have a transform, apply it to the bounding volume we just
-          // computed.
-          if (!transform->is_identity()) {
-            gbv->xform(transform->get_mat());
-          }
-
-          cdataw->_external_bounds = gbv;
           cdataw->_last_bounds_update = next_update;
         }
 
@@ -3677,7 +3673,7 @@ CData() :
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
   _bounds_type(BoundingVolume::BT_default),
-  _user_bounds(NULL),
+  _user_bounds(nullptr),
   _final_bounds(false),
   _fancy_bits(0),
 
@@ -3798,9 +3794,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
   // Get the state and transform pointers.
-  _state = DCAST(RenderState, p_list[pi++]);
-  _transform = DCAST(TransformState, p_list[pi++]);
-  _prev_transform = _transform;
+  RenderState *state;
+  DCAST_INTO_R(state, p_list[pi++], pi);
+  _state = state;
+
+  TransformState *transform;
+  DCAST_INTO_R(transform, p_list[pi++], pi);
+  _prev_transform = _transform = transform;
 
 /*
  * Finalize these pointers now to decrement their artificially-held reference
@@ -3817,7 +3817,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
 
   // Get the effects pointer.
-  _effects = DCAST(RenderEffects, p_list[pi++]);
+  RenderEffects *effects;
+  DCAST_INTO_R(effects, p_list[pi++], pi);
+  _effects = effects;
 
 /*
  * Finalize these pointers now to decrement their artificially-held reference
@@ -3843,9 +3845,15 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   set_fancy_bit(FB_state, !_state->is_empty());
   set_fancy_bit(FB_effects, !_effects->is_empty());
   set_fancy_bit(FB_tag, !_tag_data.is_empty());
+  set_fancy_bit(FB_decal, _effects->has_decal());
+  set_fancy_bit(FB_show_bounds, _effects->has_show_bounds());
+  set_fancy_bit(FB_show_tight_bounds, _effects->has_show_tight_bounds());
 
   // Mark the bounds stale.
   ++_next_update;
+
+  nassertr(!_transform->is_invalid(), pi);
+  nassertr(!_prev_transform->is_invalid(), pi);
 
   return pi;
 }
@@ -4078,7 +4086,7 @@ fillin_down_list(PandaNode::Down &down_list, const string &tag,
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
     int sort = scan.get_int32();
-    DownConnection connection(NULL, sort);
+    DownConnection connection(nullptr, sort);
     new_down_list.push_back(connection);
   }
 
@@ -4107,7 +4115,7 @@ check_cached(bool update_bounds) const {
 #ifdef DO_PIPELINING
     node_unref_delete((CycleData *)_cdata);
 #endif  // DO_PIPELINING
-    ((PandaNodePipelineReader *)this)->_cdata = NULL;
+    ((PandaNodePipelineReader *)this)->_cdata = nullptr;
     int pipeline_stage = _current_thread->get_pipeline_stage();
     PandaNode::CDLockedStageReader fresh_cdata(_node->_cycler, pipeline_stage, _current_thread);
     if (fresh_cdata->_last_update == fresh_cdata->_next_update &&

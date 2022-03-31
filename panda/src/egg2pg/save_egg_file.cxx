@@ -17,7 +17,7 @@
 #include "modelRoot.h"
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 /**
  * A convenience function; converts the indicated scene graph to an egg file

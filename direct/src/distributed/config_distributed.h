@@ -21,13 +21,13 @@
 #include "configVariableDouble.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(distributed, EXPCL_DIRECT, EXPTP_DIRECT);
+NotifyCategoryDecl(distributed, EXPCL_DIRECT_DISTRIBUTED, EXPTP_DIRECT_DISTRIBUTED);
 
-extern ConfigVariableInt game_server_timeout_ms;
-extern ConfigVariableDouble min_lag;
-extern ConfigVariableDouble max_lag;
-extern ConfigVariableBool handle_datagrams_internally;
+extern EXPCL_DIRECT_DISTRIBUTED ConfigVariableInt game_server_timeout_ms;
+extern EXPCL_DIRECT_DISTRIBUTED ConfigVariableDouble min_lag;
+extern EXPCL_DIRECT_DISTRIBUTED ConfigVariableDouble max_lag;
+extern EXPCL_DIRECT_DISTRIBUTED ConfigVariableBool handle_datagrams_internally;
 
-extern EXPCL_DIRECT void init_libdistributed();
+extern EXPCL_DIRECT_DISTRIBUTED void init_libdistributed();
 
 #endif

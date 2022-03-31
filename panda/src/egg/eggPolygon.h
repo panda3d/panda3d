@@ -21,9 +21,9 @@
 /**
  * A single polygon.
  */
-class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
+class EXPCL_PANDA_EGG EggPolygon : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggPolygon(const string &name = "");
+  INLINE explicit EggPolygon(const std::string &name = "");
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);
 
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE bool triangulate_into(EggGroupNode *container, bool convex_also) const;
   PT(EggPolygon) triangulate_in_place(bool convex_also);
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 private:
   bool decomp_concave(EggGroupNode *container, int asum, int x, int y) const;

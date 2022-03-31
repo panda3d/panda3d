@@ -20,7 +20,7 @@
  * MutexDirect.
  */
 void MutexDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Mutex " << (void *)this;
 }
 

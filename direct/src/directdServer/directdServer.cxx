@@ -13,6 +13,10 @@
 
 #include "directdServer.h"
 
+using std::cerr;
+using std::endl;
+using std::string;
+
 DirectDServer::DirectDServer() {
 }
 
@@ -61,8 +65,8 @@ void
 DirectDServer::read_command(string& cmd) {
   try {
     pifstream f;
-    f.open("directdCommand", ios::in | ios::binary);
-    stringstream ss;
+    f.open("directdCommand", std::ios::in | std::ios::binary);
+    std::stringstream ss;
     const int buf_size=512;
     char buf[buf_size];
     f.getline(buf, buf_size);

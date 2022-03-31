@@ -20,8 +20,8 @@ ParameterRemap(CPPType *orig_type) :
   _new_type(orig_type)
 {
   _is_valid = true;
-  _temporary_type = (CPPType *)NULL;
-  _default_value = (CPPExpression *)NULL;
+  _temporary_type = nullptr;
+  _default_value = nullptr;
 }
 
 /**
@@ -57,7 +57,7 @@ get_new_type() const {
  */
 INLINE CPPType *ParameterRemap::
 get_temporary_type() const {
-  if (_temporary_type == (CPPType *)NULL) {
+  if (_temporary_type == nullptr) {
     return _new_type;
   } else {
     return _temporary_type;
@@ -69,7 +69,7 @@ get_temporary_type() const {
  */
 INLINE bool ParameterRemap::
 has_default_value() const {
-  return (_default_value != (CPPExpression *)NULL);
+  return (_default_value != nullptr);
 }
 
 /**

@@ -15,7 +15,7 @@
  *
  */
 INLINE URLSpec::
-URLSpec(const string &url, bool server_name_expected) {
+URLSpec(const std::string &url, bool server_name_expected) {
   set_url(url, server_name_expected);
 }
 
@@ -23,7 +23,7 @@ URLSpec(const string &url, bool server_name_expected) {
  *
  */
 INLINE void URLSpec::
-operator = (const string &url) {
+operator = (const std::string &url) {
   set_url(url);
 }
 
@@ -115,7 +115,7 @@ has_query() const {
  * Returns the authority specified by the URL (this includes username, server,
  * and/or port), or empty string if no authority is specified.
  */
-INLINE string URLSpec::
+INLINE std::string URLSpec::
 get_authority() const {
   return _url.substr(_username_start, _port_end - _username_start);
 }
@@ -125,7 +125,7 @@ get_authority() const {
  * a password, e.g.  "username:password", although putting a password on the
  * URL is probably a bad idea.
  */
-INLINE string URLSpec::
+INLINE std::string URLSpec::
 get_username() const {
   return _url.substr(_username_start, _username_end - _username_start);
 }
@@ -134,7 +134,7 @@ get_username() const {
  * Returns the server name specified by the URL, if any.  In case of an IPv6
  * address, does not include the enclosing brackets.
  */
-INLINE string URLSpec::
+INLINE std::string URLSpec::
 get_server() const {
   return _url.substr(_server_start, _server_end - _server_start);
 }
@@ -144,7 +144,7 @@ get_server() const {
  * no port is specified.  Compare this with get_port(), which returns a
  * default port number if no port is specified.
  */
-INLINE string URLSpec::
+INLINE std::string URLSpec::
 get_port_str() const {
   return _url.substr(_port_start, _port_end - _port_start);
 }
@@ -153,7 +153,7 @@ get_port_str() const {
  * Returns the query specified by the URL, or empty string if no query is
  * specified.
  */
-INLINE string URLSpec::
+INLINE std::string URLSpec::
 get_query() const {
   return _url.substr(_query_start);
 }
@@ -180,7 +180,7 @@ is_ssl() const {
 /**
  * Returns the complete URL specification.
  */
-INLINE const string &URLSpec::
+INLINE const std::string &URLSpec::
 get_url() const {
   return _url;
 }
@@ -189,7 +189,7 @@ get_url() const {
  *
  */
 INLINE URLSpec::
-operator const string & () const {
+operator const std::string & () const {
   return _url;
 }
 
@@ -244,16 +244,16 @@ operator [] (size_t n) const {
   return _url[n];
 }
 
-INLINE istream &
-operator >> (istream &in, URLSpec &url) {
+INLINE std::istream &
+operator >> (std::istream &in, URLSpec &url) {
   if (!url.input(in)) {
-    in.clear(ios::failbit | in.rdstate());
+    in.clear(std::ios::failbit | in.rdstate());
   }
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const URLSpec &url) {
+INLINE std::ostream &
+operator << (std::ostream &out, const URLSpec &url) {
   url.output(out);
   return out;
 }

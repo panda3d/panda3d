@@ -57,7 +57,7 @@ public:
   virtual void update_shadow_sources() = 0;
   virtual void write_to_command(GPUCommand &cmd);
 
-  inline int get_num_shadow_sources() const;
+  inline size_t get_num_shadow_sources() const;
   inline ShadowSource* get_shadow_source(size_t index) const;
   inline void clear_shadow_sources();
 
@@ -122,7 +122,7 @@ protected:
   LightType _light_type;
   float _near_plane;
 
-  vector<ShadowSource*> _shadow_sources;
+  std::vector<ShadowSource*> _shadow_sources;
 };
 
 #include "rpLight.I"

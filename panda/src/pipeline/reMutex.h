@@ -37,11 +37,15 @@ PUBLISHED:
 public:
   INLINE explicit ReMutex(const char *name);
 PUBLISHED:
-  INLINE explicit ReMutex(const string &name);
-  INLINE ~ReMutex();
-private:
-  INLINE ReMutex(const ReMutex &copy);
-  INLINE void operator = (const ReMutex &copy);
+  INLINE explicit ReMutex(const std::string &name);
+  ReMutex(const ReMutex &copy) = delete;
+  ~ReMutex() = default;
+
+  void operator = (const ReMutex &copy) = delete;
+
+  EXTENSION(bool acquire(bool blocking=true) const);
+  EXTENSION(bool __enter__());
+  EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 };
 
 #include "reMutex.I"

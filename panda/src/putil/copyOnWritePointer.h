@@ -30,18 +30,16 @@
  */
 class EXPCL_PANDA_PUTIL CopyOnWritePointer {
 public:
-  INLINE CopyOnWritePointer(CopyOnWriteObject *object = NULL);
+  INLINE CopyOnWritePointer(CopyOnWriteObject *object = nullptr);
   INLINE CopyOnWritePointer(const CopyOnWritePointer &copy);
-  INLINE void operator = (const CopyOnWritePointer &copy);
-  INLINE void operator = (CopyOnWriteObject *object);
+  INLINE CopyOnWritePointer(CopyOnWritePointer &&from) noexcept;
+  INLINE CopyOnWritePointer(PointerTo<CopyOnWriteObject> &&from) noexcept;
   INLINE ~CopyOnWritePointer();
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE CopyOnWritePointer(CopyOnWritePointer &&from) NOEXCEPT;
-  INLINE CopyOnWritePointer(PointerTo<CopyOnWriteObject> &&from) NOEXCEPT;
-  INLINE void operator = (CopyOnWritePointer &&from) NOEXCEPT;
-  INLINE void operator = (PointerTo<CopyOnWriteObject> &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (const CopyOnWritePointer &copy);
+  INLINE void operator = (CopyOnWritePointer &&from) noexcept;
+  INLINE void operator = (PointerTo<CopyOnWriteObject> &&from) noexcept;
+  INLINE void operator = (CopyOnWriteObject *object);
 
   INLINE bool operator == (const CopyOnWritePointer &other) const;
   INLINE bool operator != (const CopyOnWritePointer &other) const;
@@ -80,17 +78,15 @@ public:
 #ifndef CPPPARSER
   typedef T To;
 
-  INLINE CopyOnWritePointerTo(To *object = NULL);
+  INLINE CopyOnWritePointerTo(To *object = nullptr);
   INLINE CopyOnWritePointerTo(const CopyOnWritePointerTo<T> &copy);
+  INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&from) noexcept;
+  INLINE CopyOnWritePointerTo(PointerTo<T> &&from) noexcept;
+
   INLINE void operator = (const CopyOnWritePointerTo<T> &copy);
   INLINE void operator = (To *object);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&from) NOEXCEPT;
-  INLINE CopyOnWritePointerTo(PointerTo<T> &&from) NOEXCEPT;
-  INLINE void operator = (CopyOnWritePointerTo &&from) NOEXCEPT;
-  INLINE void operator = (PointerTo<T> &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (CopyOnWritePointerTo &&from) noexcept;
+  INLINE void operator = (PointerTo<T> &&from) noexcept;
 
 #ifdef COW_THREADED
   INLINE CPT(To) get_read_pointer(Thread *current_thread = Thread::get_current_thread()) const;

@@ -29,7 +29,7 @@
  * these are not sufficient, you can always rederive your own further
  * specialization of this class.
  */
-class EXPCL_PANDAEGG EggPolysetMaker : public EggBinMaker {
+class EXPCL_PANDA_EGG EggPolysetMaker : public EggBinMaker {
 PUBLISHED:
   // The BinNumber serves to identify why a particular EggBin was created.
   enum BinNumber {

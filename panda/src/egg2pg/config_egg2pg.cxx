@@ -20,6 +20,10 @@
 #include "configVariableCore.h"
 #include "eggRenderState.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_EGG2PG)
+  #error Buildsystem error: BUILDING_PANDA_EGG2PG not defined
+#endif
+
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
 
@@ -189,6 +193,13 @@ ConfigVariableBool egg_implicit_alpha_binary
           "file that appears to specify only a binary (0 or 1) value for alpha "
           "will automatically be downgraded to alpha type \"binary\" instead of "
           "whatever appears in the egg file."));
+
+ConfigVariableBool egg_force_srgb_textures
+("egg-force-srgb-textures", false,
+ PRC_DESC("If this is true, Panda3D will automatically assign the F_srgb or "
+          "F_srgb_alpha format to all textures loaded from egg files, unless "
+          "their envtype is set to a non-color map.  Keep in mind that the "
+          "model-cache must be cleared after changing this setting."));
 
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();

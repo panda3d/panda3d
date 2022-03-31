@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
-  explicit DirectionalLight(const string &name);
+  explicit DirectionalLight(const std::string &name);
 
 protected:
   DirectionalLight(const DirectionalLight &copy);
@@ -32,14 +32,14 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   virtual bool get_vector_to_light(LVector3 &result,
                                    const LPoint3 &from_object_point,
                                    const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE const LColor &get_specular_color() const FINAL;
+  INLINE const LColor &get_specular_color() const final;
   INLINE void set_specular_color(const LColor &color);
   INLINE void clear_specular_color();
   MAKE_PROPERTY(specular_color, get_specular_color, set_specular_color);
@@ -106,7 +106,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const DirectionalLight &light) {
+INLINE std::ostream &operator << (std::ostream &out, const DirectionalLight &light) {
   light.output(out);
   return out;
 }

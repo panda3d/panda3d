@@ -16,7 +16,7 @@
  */
 INLINE bool OpenCVTexture::VideoStream::
 is_valid() const {
-  return (_capture != NULL);
+  return (_capture != nullptr);
 }
 
 /**

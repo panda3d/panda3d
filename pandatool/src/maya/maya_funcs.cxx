@@ -31,6 +31,9 @@
 #include <maya/MMatrix.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 /**
  * Gets the named MPlug associated, if any.
  */
@@ -516,8 +519,8 @@ describe_compound_attribute(MObject &node) {
   for (size_t i = 0; i < comp_attr.numChildren(); i++) {
     MObject child = comp_attr.child(i, &status);
     if (child.apiType() == MFn::kAttribute3Float){
-      LRGBColor color;
       /*
+      LRGBColor color;
       if (get_vec3_attribute(child, "color", color)) {
         maya_cat.info() << "color: " << color << endl;
       }

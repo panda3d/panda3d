@@ -145,7 +145,7 @@ do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
  * Write a string representation of this instance to <out>.
  */
 void ParticleSystemManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"ParticleSystemManager";
   #endif //] NDEBUG
@@ -155,7 +155,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void ParticleSystemManager::
-write_ps_list(ostream &out, int indent) const {
+write_ps_list(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_ps_list ("<<_ps_list.size()<<" systems)\n";
@@ -171,7 +171,7 @@ write_ps_list(ostream &out, int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void ParticleSystemManager::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ParticleSystemManager:\n";
   out.width(indent+2); out<<""; out<<"_nth_frame "<<_nth_frame<<"\n";

@@ -13,6 +13,9 @@
 
 #include "arrival.h"
 
+#include "pursue.h"
+#include "seek.h"
+
 Arrival::Arrival(AICharacter *ai_ch, double distance) {
   _ai_char = ai_ch;
 
@@ -48,7 +51,7 @@ LVecBase3 Arrival::do_arrival() {
     _ai_char->_steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);
     _ai_char->_steering->_arrival_force = LVecBase3(0.0, 0.0, 0.0);
 
-    if(_ai_char->_steering->_seek_obj != NULL) {
+    if(_ai_char->_steering->_seek_obj != nullptr) {
       _ai_char->_steering->turn_off("arrival");
       _ai_char->_steering->turn_on("arrival_activate");
     }
@@ -62,11 +65,11 @@ LVecBase3 Arrival::do_arrival() {
   double u = _ai_char->get_velocity().length();
   LVecBase3 desired_force = ((u * u) / (2 * distance)) * _ai_char->get_mass();
 
-  if(_ai_char->_steering->_seek_obj != NULL) {
+  if(_ai_char->_steering->_seek_obj != nullptr) {
     return(desired_force);
   }
 
-  if(_ai_char->_steering->_pursue_obj != NULL) {
+  if(_ai_char->_steering->_pursue_obj != nullptr) {
 
     if(distance > _arrival_distance) {
       _ai_char->_steering->turn_off("arrival");
@@ -77,7 +80,7 @@ LVecBase3 Arrival::do_arrival() {
     return(desired_force);
   }
 
-  cout<<"Arrival works only with seek and pursue"<<endl;
+  std::cout << "Arrival works only with seek and pursue" << std::endl;
   return(LVecBase3(0.0, 0.0, 0.0));
 }
 

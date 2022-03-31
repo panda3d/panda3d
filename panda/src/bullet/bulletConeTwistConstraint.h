@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_CONE_TWIST_CONSTRAINT_H__
-#define __BULLET_CONE_TWIST_CONSTRAINT_H__
+#ifndef BULLETCONETWISTCONSTRAINT_H
+#define BULLETCONETWISTCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -53,8 +53,8 @@ PUBLISHED:
   void set_motor_target_in_constraint_space(const LQuaternion &quat);
 
   void set_frames(const TransformState *ts_a, const TransformState *ts_b);
-  INLINE CPT(TransformState) get_frame_a() const;
-  INLINE CPT(TransformState) get_frame_b() const;
+  CPT(TransformState) get_frame_a() const;
+  CPT(TransformState) get_frame_b() const;
 
   MAKE_PROPERTY(fix_threshold, get_fix_threshold, set_fix_threshold);
   MAKE_PROPERTY(frame_a, get_frame_a);
@@ -89,4 +89,4 @@ private:
 
 #include "bulletConeTwistConstraint.I"
 
-#endif // __BULLET_CONE_TWIST_CONSTRAINT_H__
+#endif // BULLETCONETWISTCONSTRAINT_H

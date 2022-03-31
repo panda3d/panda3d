@@ -30,16 +30,17 @@ public:
   GeomTextGlyph(const GeomVertexData *data);
   GeomTextGlyph(const GeomTextGlyph &copy);
   GeomTextGlyph(const Geom &copy, const TextGlyph *glyph);
-  void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();
   ALLOC_DELETED_CHAIN(GeomTextGlyph);
+
+  void operator = (const GeomTextGlyph &copy) = delete;
 
   virtual Geom *make_copy() const;
   virtual bool copy_primitives_from(const Geom *other);
   void count_geom(const Geom *other);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   void add_glyph(const TextGlyph *glyph);
 

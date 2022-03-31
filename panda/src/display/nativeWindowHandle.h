@@ -19,7 +19,7 @@
 #include "windowHandle.h"
 #include "get_x11.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -33,7 +33,7 @@
  * This class exists for name scoping only.  Don't use the constructor
  * directly; use one of the make_* methods.
  */
-class EXPCL_PANDA_DISPLAY NativeWindowHandle : public WindowHandle {
+class EXPCL_PANDA_DISPLAY NativeWindowHandle final : public WindowHandle {
 private:
   INLINE NativeWindowHandle();
   INLINE NativeWindowHandle(const NativeWindowHandle &copy);
@@ -47,7 +47,7 @@ public:
   static PT(WindowHandle) make_x11(X11_Window window);
 #endif  // HAVE_X11
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
   static PT(WindowHandle) make_win(HWND window);
 #endif  // WIN32
 
@@ -56,7 +56,7 @@ public:
   public:
     INLINE IntHandle(size_t handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE size_t get_handle() const;
 
@@ -84,7 +84,7 @@ public:
   class EXPCL_PANDA_DISPLAY SubprocessHandle : public OSHandle {
   public:
     INLINE SubprocessHandle(const Filename &filename);
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE const Filename &get_filename() const;
 
@@ -114,7 +114,7 @@ public:
   public:
     INLINE X11Handle(X11_Window handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE X11_Window get_handle() const;
 
@@ -141,12 +141,12 @@ public:
 #endif  // HAVE_X11
 
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
   class EXPCL_PANDA_DISPLAY WinHandle : public OSHandle {
   public:
     INLINE WinHandle(HWND handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE HWND get_handle() const;
 
@@ -186,7 +186,7 @@ public:
 #if defined(HAVE_X11) && !defined(CPPPARSER)
     X11Handle::init_type();
 #endif
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
     WinHandle::init_type();
 #endif
   }

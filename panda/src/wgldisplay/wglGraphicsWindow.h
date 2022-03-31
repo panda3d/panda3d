@@ -20,10 +20,10 @@
 /**
  * A single graphics window for rendering OpenGL under Microsoft Windows.
  */
-class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
+class EXPCL_PANDA_WGLDISPLAY wglGraphicsWindow : public WinGraphicsWindow {
 public:
   wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -34,7 +34,6 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
-  virtual void begin_flip();
   virtual void ready_flip();
   virtual void end_flip();
 

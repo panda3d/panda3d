@@ -30,17 +30,17 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ UserVertexTransform : public VertexTransform {
 PUBLISHED:
-  explicit UserVertexTransform(const string &name);
+  explicit UserVertexTransform(const std::string &name);
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   INLINE void set_matrix(const LMatrix4 &matrix);
   virtual void get_matrix(LMatrix4 &matrix) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
-  string _name;
+  std::string _name;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {

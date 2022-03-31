@@ -28,7 +28,7 @@ public:
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   virtual IffChunk *make_new_chunk(IffInputFile *in, IffId id);
 

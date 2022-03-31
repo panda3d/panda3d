@@ -21,11 +21,13 @@
 #include "throw_event.h"
 #include "string_utils.h"
 
+using std::string;
+
 TypeHandle GraphicsWindow::_type_handle;
 
 /**
  * Normally, the GraphicsWindow constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsWindow::
 GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -37,6 +39,7 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                GraphicsOutput *host) :
   GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host, true),
   _input_lock("GraphicsWindow::_input_lock"),
+  _latency_pcollector(name + " latency"),
   _properties_lock("GraphicsWindow::_properties_lock")
 {
 #ifdef DO_MEMORY_USAGE
@@ -52,6 +55,7 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _properties.set_undecorated(false);
   _properties.set_fullscreen(false);
   _properties.set_minimized(false);
+  _properties.set_maximized(false);
   _properties.set_cursor_hidden(false);
 
   request_properties(WindowProperties::get_default());
@@ -246,6 +250,17 @@ get_num_input_devices() const {
 }
 
 /**
+ * Returns the nth input device associated with the window.  Typically, a
+ * window will have exactly one input device: the keyboard/mouse pair.
+ */
+InputDevice *GraphicsWindow::
+get_input_device(int device) const {
+  LightMutexHolder holder(_input_lock);
+  nassertr(device >= 0 && device < (int)_input_devices.size(), NULL);
+  return _input_devices[device];
+}
+
+/**
  * Returns the name of the nth input device.
  */
 string GraphicsWindow::
@@ -254,7 +269,7 @@ get_input_device_name(int device) const {
   {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), "");
-    result = _input_devices[device].get_name();
+    result = _input_devices[device]->get_name();
   }
   return result;
 }
@@ -269,7 +284,7 @@ has_pointer(int device) const {
   {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-    result = _input_devices[device].has_pointer();
+    result = _input_devices[device]->has_pointer();
   }
   return result;
 }
@@ -283,7 +298,7 @@ has_keyboard(int device) const {
   {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-    result = _input_devices[device].has_keyboard();
+    result = _input_devices[device]->has_keyboard();
   }
   return result;
 }
@@ -294,7 +309,7 @@ has_keyboard(int device) const {
  */
 ButtonMap *GraphicsWindow::
 get_keyboard_map() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -304,7 +319,7 @@ void GraphicsWindow::
 enable_pointer_events(int device) {
   LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
-  _input_devices[device].enable_pointer_events();
+  _input_devices[device]->enable_pointer_events();
 }
 
 /**
@@ -314,33 +329,35 @@ void GraphicsWindow::
 disable_pointer_events(int device) {
   LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
-  _input_devices[device].disable_pointer_events();
+  _input_devices[device]->disable_pointer_events();
 }
 
 /**
  * See GraphicsWindowInputDevice::enable_pointer_mode
  */
+/*
 void GraphicsWindow::
 enable_pointer_mode(int device, double speed) {
   LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
-  _input_devices[device].enable_pointer_mode(speed);
-}
+  _input_devices[device]->enable_pointer_mode(speed);
+}*/
 
 /**
  * See GraphicsWindowInputDevice::disable_pointer_mode
  */
+/*
 void GraphicsWindow::
 disable_pointer_mode(int device) {
   LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
-  _input_devices[device].disable_pointer_mode();
-}
+  _input_devices[device]->disable_pointer_mode();
+}*/
 
 /**
- * Returns the MouseData associated with the nth input device's pointer.  This
- * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
- * mice, use the InputDeviceManager interface.
+ * Returns the MouseData associated with the nth input device's pointer.
+ * Using this to access raw mice (with an index other than 0) is deprecated,
+ * see the InputDeviceManager interface instead.
  */
 MouseData GraphicsWindow::
 get_pointer(int device) const {
@@ -348,7 +365,7 @@ get_pointer(int device) const {
   {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
-    result = _input_devices[device].get_pointer();
+    result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
   }
   return result;
 }
@@ -373,70 +390,6 @@ move_pointer(int, int, int) {
 void GraphicsWindow::
 close_ime() {
   return;
-}
-
-/**
- * Returns true if the indicated device has a pending button event (a mouse
- * button or keyboard button down/up), false otherwise.  If this returns true,
- * the particular event may be extracted via get_button_event().
- */
-bool GraphicsWindow::
-has_button_event(int device) const {
-  bool result;
-  {
-    LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-    result = _input_devices[device].has_button_event();
-  }
-  return result;
-}
-
-/**
- * Assuming a previous call to has_button_event() returned true, this returns
- * the pending button event.
- */
-ButtonEvent GraphicsWindow::
-get_button_event(int device) {
-  ButtonEvent result;
-  {
-    LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), ButtonEvent());
-    nassertr(_input_devices[device].has_button_event(), ButtonEvent());
-    result = _input_devices[device].get_button_event();
-  }
-  return result;
-}
-
-/**
- * Returns true if the indicated device has a pending pointer event (a mouse
- * movement).  If this returns true, the particular event may be extracted via
- * get_pointer_events().
- */
-bool GraphicsWindow::
-has_pointer_event(int device) const {
-  bool result;
-  {
-    LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-    result = _input_devices[device].has_pointer_event();
-  }
-  return result;
-}
-
-/**
- * Assuming a previous call to has_pointer_event() returned true, this returns
- * the pending pointer event list.
- */
-PT(PointerEventList) GraphicsWindow::
-get_pointer_events(int device) {
-  PT(PointerEventList) result;
-  {
-    LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), NULL);
-    nassertr(_input_devices[device].has_pointer_event(), NULL);
-    result = _input_devices[device].get_pointer_events();
-  }
-  return result;
 }
 
 /**
@@ -648,14 +601,34 @@ close_window() {
     << "Closing " << get_type() << "\n";
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)NULL &&
-      _parent_window_handle != (WindowHandle *)NULL) {
+  if (_window_handle != nullptr &&
+      _parent_window_handle != nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 
-  _window_handle = NULL;
-  _parent_window_handle = NULL;
+  _window_handle = nullptr;
+  _parent_window_handle = nullptr;
   _is_valid = false;
+}
+
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip at the next video
+ * sync, but it should not wait.
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
+void GraphicsWindow::
+begin_flip() {
+#ifdef DO_PSTATS
+  if (_gsg->get_timer_queries_active()) {
+    _gsg->issue_latency_query(_latency_pcollector.get_index());
+  }
+#endif
 }
 
 /**
@@ -737,29 +710,11 @@ system_changed_size(int x_size, int y_size) {
  * new device.
  */
 int GraphicsWindow::
-add_input_device(const GraphicsWindowInputDevice &device) {
+add_input_device(InputDevice *device) {
   LightMutexHolder holder(_input_lock);
   int index = (int)_input_devices.size();
   _input_devices.push_back(device);
-  _input_devices.back().set_device_index(index);
   return index;
-}
-
-/**
- * detaches mouse.  Only mouse delta from now on.
- *
- */
-void GraphicsWindow::
-mouse_mode_relative() {
-}
-
-/**
- * reattaches mouse to location
- *
- */
-void GraphicsWindow::
-mouse_mode_absolute() {
-
 }
 
 /**

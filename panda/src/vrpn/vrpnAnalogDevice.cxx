@@ -20,7 +20,7 @@ TypeHandle VrpnAnalogDevice::_type_handle;
  *
  */
 VrpnAnalogDevice::
-VrpnAnalogDevice(VrpnClient *client, const string &device_name,
+VrpnAnalogDevice(VrpnClient *client, const std::string &device_name,
                  VrpnAnalog *vrpn_analog) :
   ClientAnalogDevice(client, device_name),
   _vrpn_analog(vrpn_analog)

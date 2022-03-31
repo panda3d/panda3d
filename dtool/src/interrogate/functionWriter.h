@@ -26,14 +26,14 @@ public:
   FunctionWriter();
   virtual ~FunctionWriter();
 
-  const string &get_name() const;
+  const std::string &get_name() const;
   virtual int compare_to(const FunctionWriter &other) const;
 
-  virtual void write_prototype(ostream &out);
-  virtual void write_code(ostream &out);
+  virtual void write_prototype(std::ostream &out);
+  virtual void write_code(std::ostream &out);
 
 protected:
-  string _name;
+  std::string _name;
 };
 
 #endif

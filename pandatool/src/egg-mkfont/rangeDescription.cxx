@@ -15,6 +15,8 @@
 #include "string_utils.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  *
  */
@@ -71,7 +73,7 @@ parse_parameter(const string &param) {
  *
  */
 void RangeDescription::
-output(ostream &out) const {
+output(std::ostream &out) const {
   bool first_time = true;
   RangeList::const_iterator ri;
   for (ri = _range_list.begin(); ri != _range_list.end(); ++ri) {

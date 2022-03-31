@@ -18,7 +18,7 @@ INLINE DatagramOutputFile::
 DatagramOutputFile() {
   _error = false;
   _wrote_first_datagram = false;
-  _out = (ostream *)NULL;
+  _out = nullptr;
   _owns_out = false;
 }
 
@@ -42,9 +42,9 @@ open(const Filename &filename) {
 /**
  * Returns the ostream represented by the output file.
  */
-INLINE ostream &DatagramOutputFile::
+INLINE std::ostream &DatagramOutputFile::
 get_stream() {
-  static ofstream null_stream;
-  nassertr(_out != NULL, null_stream);
+  static std::ofstream null_stream;
+  nassertr(_out != nullptr, null_stream);
   return *_out;
 }

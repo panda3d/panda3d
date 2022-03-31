@@ -34,7 +34,7 @@ AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) :
  *
  */
 AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(const string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) :
+AnimChannelMatrixFixed(const std::string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) :
   AnimChannel<ACMatrixSwitchType>(name),
   _pos(pos), _hpr(hpr), _scale(scale)
 {
@@ -116,7 +116,7 @@ get_shear(int, LVecBase3 &shear) {
  *
  */
 void AnimChannelMatrixFixed::
-output(ostream &out) const {
+output(std::ostream &out) const {
   AnimChannel<ACMatrixSwitchType>::output(out);
   out << ": pos " << _pos << " hpr " << _hpr << " scale " << _scale;
 }

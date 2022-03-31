@@ -21,7 +21,7 @@
 #include "pointerTo.h"
 #include "typedReferenceCount.h"
 #include "ordered_vector.h"
-#include "pvector.h"
+#include "vector_uchar.h"
 
 class VirtualFileMount;
 class VirtualFileList;
@@ -32,7 +32,7 @@ class VirtualFileSystem;
  * The abstract base class for a file or directory within the
  * VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFile : public TypedReferenceCount {
+class EXPCL_PANDA_EXPRESS VirtualFile : public TypedReferenceCount {
 public:
   INLINE VirtualFile();
 
@@ -52,51 +52,51 @@ PUBLISHED:
 
   BLOCKING PT(VirtualFileList) scan_directory() const;
 
-  void output(ostream &out) const;
-  BLOCKING void ls(ostream &out = cout) const;
-  BLOCKING void ls_all(ostream &out = cout) const;
+  void output(std::ostream &out) const;
+  BLOCKING void ls(std::ostream &out = std::cout) const;
+  BLOCKING void ls_all(std::ostream &out = std::cout) const;
 
   EXTENSION(PyObject *read_file(bool auto_unwrap) const);
-  BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
-  BLOCKING virtual void close_read_file(istream *stream) const;
+  BLOCKING virtual std::istream *open_read_file(bool auto_unwrap) const;
+  BLOCKING virtual void close_read_file(std::istream *stream) const;
   virtual bool was_read_successful() const;
 
   EXTENSION(PyObject *write_file(PyObject *data, bool auto_wrap));
-  BLOCKING virtual ostream *open_write_file(bool auto_wrap, bool truncate);
-  BLOCKING virtual ostream *open_append_file();
-  BLOCKING virtual void close_write_file(ostream *stream);
+  BLOCKING virtual std::ostream *open_write_file(bool auto_wrap, bool truncate);
+  BLOCKING virtual std::ostream *open_append_file();
+  BLOCKING virtual void close_write_file(std::ostream *stream);
 
-  BLOCKING virtual iostream *open_read_write_file(bool truncate);
-  BLOCKING virtual iostream *open_read_append_file();
-  BLOCKING virtual void close_read_write_file(iostream *stream);
+  BLOCKING virtual std::iostream *open_read_write_file(bool truncate);
+  BLOCKING virtual std::iostream *open_read_append_file();
+  BLOCKING virtual void close_read_write_file(std::iostream *stream);
 
-  BLOCKING virtual streamsize get_file_size(istream *stream) const;
-  BLOCKING virtual streamsize get_file_size() const;
+  BLOCKING virtual std::streamsize get_file_size(std::istream *stream) const;
+  BLOCKING virtual std::streamsize get_file_size() const;
   BLOCKING virtual time_t get_timestamp() const;
 
   virtual bool get_system_info(SubfileInfo &info);
 
 public:
-  virtual bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents);
-  virtual bool atomic_read_contents(string &contents) const;
+  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_read_contents(std::string &contents) const;
 
-  INLINE string read_file(bool auto_unwrap) const;
-  INLINE bool write_file(const string &data, bool auto_wrap);
+  INLINE std::string read_file(bool auto_unwrap) const;
+  INLINE bool write_file(const std::string &data, bool auto_wrap);
 
   INLINE void set_original_filename(const Filename &filename);
-  bool read_file(string &result, bool auto_unwrap) const;
-  virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+  bool read_file(std::string &result, bool auto_unwrap) const;
+  virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
   virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
-  static bool simple_read_file(istream *stream, pvector<unsigned char> &result);
-  static bool simple_read_file(istream *stream, pvector<unsigned char> &result, size_t max_bytes);
+  static bool simple_read_file(std::istream *stream, vector_uchar &result);
+  static bool simple_read_file(std::istream *stream, vector_uchar &result, size_t max_bytes);
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list,
-                                    const ov_set<string> &mount_points) const;
+                                    const ov_set<std::string> &mount_points) const;
 
 private:
-  void r_ls_all(ostream &out, const Filename &root) const;
+  void r_ls_all(std::ostream &out, const Filename &root) const;
 
   Filename _original_filename;
 
@@ -121,7 +121,7 @@ private:
   friend class VirtualFileComposite;
 };
 
-INLINE ostream &operator << (ostream &out, const VirtualFile &file);
+INLINE std::ostream &operator << (std::ostream &out, const VirtualFile &file);
 
 
 #include "virtualFile.I"

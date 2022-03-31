@@ -25,10 +25,18 @@
 #include <ImfChannelList.h>
 #include <ImfVersion.h>
 #include <ImfIO.h>
+#include <ImfFrameBuffer.h>
+#include <ImfHeader.h>
+
+#include <ImathBox.h>
 
 #ifndef IMATH_NAMESPACE
 #define IMATH_NAMESPACE Imath
 #endif
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 TypeHandle PNMFileTypeEXR::_type_handle;
 
@@ -46,6 +54,15 @@ public:
     _strm.write(c, n);
   }
 
+#if OPENEXR_VERSION_MAJOR >= 3
+  virtual uint64_t tellp() {
+    return _strm.tellp();
+  }
+
+  virtual void seekp(uint64_t pos) {
+    _strm.seekp(pos);
+  }
+#else
   virtual IMF::Int64 tellp() {
     return _strm.tellp();
   }
@@ -53,6 +70,7 @@ public:
   virtual void seekp(IMF::Int64 pos) {
     _strm.seekp(pos);
   }
+#endif
 
 private:
   std::ostream &_strm;
@@ -84,6 +102,15 @@ public:
     return not_eof;
   }
 
+#if OPENEXR_VERSION_MAJOR >= 3
+  virtual uint64_t tellg() {
+    return _strm.tellg();
+  }
+
+  virtual void seekg(uint64_t pos) {
+    _strm.seekg(pos);
+  }
+#else
   virtual IMF::Int64 tellg() {
     return _strm.tellg();
   }
@@ -91,6 +118,7 @@ public:
   virtual void seekg(IMF::Int64 pos) {
     _strm.seekg(pos);
   }
+#endif
 
   virtual void clear() {
     _strm.clear();
@@ -176,7 +204,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeEXR::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -187,7 +214,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeEXR::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -216,8 +242,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   // grayscale/alpha images correctly, but also incorrectly detects
   // luminance/chroma images as grayscale only.  However, these kind
   // of images are a pain to handle anyway, so maybe that's OK.
-  const char *possible_channel_names[] = { "R", "G", "B", "Y", "A", NULL };
-  for (const char **pni = possible_channel_names; *pni != NULL; ++pni) {
+  const char *possible_channel_names[] = { "R", "G", "B", "Y", "A", nullptr };
+  for (const char **pni = possible_channel_names; *pni != nullptr; ++pni) {
     std::string name = *pni;
     IMF::ChannelList::ConstIterator ci = channels.find(name.c_str());
     if (ci != channels.end()) {
@@ -376,7 +402,7 @@ write_pfm(const PfmFile &pfm) {
   const char *channel_names_2[] = { "G", "A" };
   const char *channel_names_3[] = { "R", "G", "B" };
   const char *channel_names_4[] = { "R", "G", "B", "A" };
-  const char **channel_names = NULL;
+  const char **channel_names = nullptr;
 
   switch (pfm.get_num_channels()) {
   case 1:

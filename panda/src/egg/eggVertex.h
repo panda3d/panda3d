@@ -36,12 +36,12 @@ class EggPrimitive;
  * Any one-, two-, three-, or four-component vertex, possibly with attributes
  * such as a normal.
  */
-class EXPCL_PANDAEGG EggVertex : public EggObject, public EggAttributes {
+class EXPCL_PANDA_EGG EggVertex : public EggObject, public EggAttributes {
 public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
-  typedef pmap< string, PT(EggVertexUV) > UVMap;
-  typedef pmap< string, PT(EggVertexAux) > AuxMap;
+  typedef pmap< std::string, PT(EggVertexUV) > UVMap;
+  typedef pmap< std::string, PT(EggVertexAux) > AuxMap;
 
   typedef second_of_pair_iterator<UVMap::const_iterator> uv_iterator;
   typedef uv_iterator const_uv_iterator;
@@ -85,26 +85,26 @@ PUBLISHED:
   INLINE LTexCoordd get_uv() const;
   INLINE void set_uv(const LTexCoordd &texCoord);
   INLINE void clear_uv();
-  bool has_uv(const string &name) const;
-  bool has_uvw(const string &name) const;
-  LTexCoordd get_uv(const string &name) const;
-  const LTexCoord3d &get_uvw(const string &name) const;
-  void set_uv(const string &name, const LTexCoordd &texCoord);
-  void set_uvw(const string &name, const LTexCoord3d &texCoord);
-  const EggVertexUV *get_uv_obj(const string &name) const;
-  EggVertexUV *modify_uv_obj(const string &name);
+  bool has_uv(const std::string &name) const;
+  bool has_uvw(const std::string &name) const;
+  LTexCoordd get_uv(const std::string &name) const;
+  const LTexCoord3d &get_uvw(const std::string &name) const;
+  void set_uv(const std::string &name, const LTexCoordd &texCoord);
+  void set_uvw(const std::string &name, const LTexCoord3d &texCoord);
+  const EggVertexUV *get_uv_obj(const std::string &name) const;
+  EggVertexUV *modify_uv_obj(const std::string &name);
   void set_uv_obj(EggVertexUV *vertex_uv);
-  void clear_uv(const string &name);
+  void clear_uv(const std::string &name);
 
   INLINE bool has_aux() const;
   INLINE void clear_aux();
-  bool has_aux(const string &name) const;
-  const LVecBase4d &get_aux(const string &name) const;
-  void set_aux(const string &name, const LVecBase4d &aux);
-  const EggVertexAux *get_aux_obj(const string &name) const;
-  EggVertexAux *modify_aux_obj(const string &name);
+  bool has_aux(const std::string &name) const;
+  const LVecBase4d &get_aux(const std::string &name) const;
+  void set_aux(const std::string &name, const LVecBase4d &aux);
+  const EggVertexAux *get_aux_obj(const std::string &name) const;
+  EggVertexAux *modify_aux_obj(const std::string &name);
   void set_aux_obj(EggVertexAux *vertex_aux);
-  void clear_aux(const string &name);
+  void clear_aux(const std::string &name);
 
   static PT(EggVertex) make_average(const EggVertex *first,
                                     const EggVertex *second);
@@ -126,7 +126,7 @@ PUBLISHED:
   INLINE void set_external_index2(int external_index2);
   INLINE int get_external_index2() const;
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
   INLINE bool sorts_less_than(const EggVertex &other) const;
   int compare_to(const EggVertex &other) const;
 
@@ -160,7 +160,7 @@ PUBLISHED:
   void test_pref_integrity() const { }
 #endif  // _DEBUG
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   EggMorphVertexList _dxyzs;
 
@@ -201,7 +201,7 @@ private:
   friend class EggPrimitive;
 };
 
-INLINE ostream &operator << (ostream &out, const EggVertex &vert) {
+INLINE std::ostream &operator << (std::ostream &out, const EggVertex &vert) {
   vert.output(out);
   return out;
 }
@@ -211,7 +211,7 @@ INLINE ostream &operator << (ostream &out, const EggVertex &vert) {
  * Returns true if the two referenced EggVertex pointers are in sorted order,
  * false otherwise.
  */
-class EXPCL_PANDAEGG UniqueEggVertices {
+class EXPCL_PANDA_EGG UniqueEggVertices {
 public:
   INLINE bool operator ()(const EggVertex *v1, const EggVertex *v2) const;
 };

@@ -48,8 +48,8 @@ CData(const VertexTransform::CData &copy) :
 {
 }
 
-INLINE ostream &
-operator << (ostream &out, const VertexTransform &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const VertexTransform &obj) {
   obj.output(out);
   return out;
 }

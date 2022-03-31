@@ -30,7 +30,7 @@ CPT(RenderAttrib) ColorAttrib::_vertex;
  */
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
-  if (_vertex != 0) {
+  if (_vertex != nullptr) {
     return _vertex;
   }
   ColorAttrib *attrib = new ColorAttrib(T_vertex, LColor::zero());
@@ -54,7 +54,7 @@ make_flat(const LColor &color) {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
-  if (_off != 0) {
+  if (_off != nullptr) {
     return _off;
   }
   ColorAttrib *attrib = new ColorAttrib(T_off, LColor(1.0f, 1.0f, 1.0f, 1.0f));
@@ -68,14 +68,14 @@ make_off() {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_default() {
-  return make_off();
+  return make_vertex();
 }
 
 /**
  *
  */
 void ColorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_color_type()) {
   case T_vertex:
@@ -133,17 +133,17 @@ get_hash_impl() const {
 }
 
 /**
- * Quantizes the color color to the nearest multiple of 1000, just to prevent
+ * Quantizes the flat color to the nearest multiple of 1024, just to prevent
  * runaway accumulation of only slightly-different ColorAttribs.
  */
 void ColorAttrib::
 quantize_color() {
   switch (_type) {
   case T_flat:
-    _color[0] = cfloor(_color[0] * 1000.0f + 0.5f) * 0.001f;
-    _color[1] = cfloor(_color[1] * 1000.0f + 0.5f) * 0.001f;
-    _color[2] = cfloor(_color[2] * 1000.0f + 0.5f) * 0.001f;
-    _color[3] = cfloor(_color[3] * 1000.0f + 0.5f) * 0.001f;
+    _color[0] = cfloor(_color[0] * 1024.0f + 0.5f) / 1024.0f;
+    _color[1] = cfloor(_color[1] * 1024.0f + 0.5f) / 1024.0f;
+    _color[2] = cfloor(_color[2] * 1024.0f + 0.5f) / 1024.0f;
+    _color[3] = cfloor(_color[3] * 1024.0f + 0.5f) / 1024.0f;
     break;
 
   case T_off:

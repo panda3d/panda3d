@@ -15,6 +15,7 @@
 #define _AICHARACTER_H
 
 #include "aiBehaviors.h"
+#include "referenceCount.h"
 
 /**
  * This class is used for creating the AI characters.  It assigns both physics
@@ -25,13 +26,13 @@
 class AIBehaviors;
 class AIWorld;
 
-class EXPCL_PANDAAI AICharacter {
+class EXPCL_PANDAAI AICharacter : public ReferenceCount {
  public:
   double _mass;
   double _max_force;
   LVecBase3 _velocity;
   LVecBase3 _steering_force;
-  string _name;
+  std::string _name;
   double _movt_force;
   unsigned int _ai_char_flock_id;
   AIWorld *_world;
@@ -44,6 +45,8 @@ class EXPCL_PANDAAI AICharacter {
   void set_velocity(LVecBase3 vel);
   void set_char_render(NodePath render);
   NodePath get_char_render();
+
+  std::string get_name();
 
 PUBLISHED:
     double get_mass();
@@ -62,8 +65,10 @@ PUBLISHED:
     // This function is used to enable or disable the guides for path finding.
     void set_pf_guide(bool pf_guide);
 
-    explicit AICharacter(string model_name, NodePath model_np, double mass, double movt_force, double max_force);
+    explicit AICharacter(std::string model_name, NodePath model_np, double mass, double movt_force, double max_force);
     ~AICharacter();
+
+  MAKE_PROPERTY(name, get_name);
 };
 
 #endif

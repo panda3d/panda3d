@@ -23,6 +23,7 @@
 #include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "deletedChain.h"
+#include "patomic.h"
 
 #include <stdlib.h>
 
@@ -35,7 +36,7 @@
  * ReferenceCount works in conjunction with PointerTo to automatically delete
  * objects when the last pointer to them goes away.
  */
-class EXPCL_PANDAEXPRESS ReferenceCount : public MemoryBase {
+class EXPCL_PANDA_EXPRESS ReferenceCount : public MemoryBase {
 protected:
   INLINE ReferenceCount();
   INLINE ReferenceCount(const ReferenceCount &);
@@ -60,8 +61,11 @@ public:
   INLINE bool has_weak_list() const;
   INLINE WeakReferenceList *get_weak_list() const;
 
-  INLINE void weak_ref(WeakPointerToVoid *ptv);
-  INLINE void weak_unref(WeakPointerToVoid *ptv);
+  INLINE WeakReferenceList *weak_ref();
+  INLINE void weak_unref();
+
+  INLINE bool ref_if_nonzero() const;
+  INLINE bool unref_if_one() const;
 
 protected:
   bool do_test_ref_count_integrity() const;
@@ -86,8 +90,8 @@ private:
     deleted_ref_count = -100,
   };
 
-  mutable AtomicAdjust::Integer _ref_count;
-  AtomicAdjust::Pointer _weak_list;  // WeakReferenceList *
+  mutable patomic<int> _ref_count;
+  patomic<WeakReferenceList *> _weak_list;
 
 public:
   static TypeHandle get_class_type() {

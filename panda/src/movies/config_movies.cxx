@@ -32,6 +32,10 @@
 #include "wavAudio.h"
 #include "wavAudioCursor.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_MOVIES)
+  #error Buildsystem error: BUILDING_PANDA_MOVIES not defined
+#endif
+
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
 
@@ -64,7 +68,7 @@ ConfigVariableBool vorbis_enable_seek
           "using the Ogg Vorbis decoder."));
 
 ConfigVariableBool vorbis_seek_lap
-("vorbis-seek-lap", true,
+("vorbis-seek-lap", false,
  PRC_DESC("If this is set to true, the Ogg Vorbis decoder will automatically "
           "crosslap the transition from the previous playback position into "
           "the new playback position when seeking in order to eliminate "

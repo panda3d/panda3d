@@ -43,11 +43,15 @@ PUBLISHED:
 public:
   INLINE Mutex(const char *name);
 PUBLISHED:
-  INLINE explicit Mutex(const string &name);
-  INLINE ~Mutex();
-private:
-  INLINE Mutex(const Mutex &copy);
-  INLINE void operator = (const Mutex &copy);
+  INLINE explicit Mutex(const std::string &name);
+  Mutex(const Mutex &copy) = delete;
+  ~Mutex() = default;
+
+  void operator = (const Mutex &copy) = delete;
+
+  EXTENSION(bool acquire(bool blocking=true) const);
+  EXTENSION(bool __enter__());
+  EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 
 public:
   // This is a global mutex set aside for the purpose of protecting Notify

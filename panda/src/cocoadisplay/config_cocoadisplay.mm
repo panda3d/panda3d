@@ -20,12 +20,21 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_COCOADISPLAY)
+  #error Buildsystem error: BUILDING_PANDA_COCOADISPLAY not defined
+#endif
+
 Configure(config_cocoadisplay);
 NotifyCategoryDef(cocoadisplay, "display");
 
 ConfigureFn(config_cocoadisplay) {
   init_libcocoadisplay();
 }
+
+ConfigVariableBool cocoa_invert_wheel_x
+("cocoa-invert-wheel-x", false,
+ PRC_DESC("Set this to true to swap the wheel_left and wheel_right mouse "
+          "button events, to restore to the pre-1.10.12 behavior."));
 
 /**
  * Initializes the library.  This must be called at least once before any of

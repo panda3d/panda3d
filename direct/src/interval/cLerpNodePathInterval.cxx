@@ -47,7 +47,7 @@ TypeHandle CLerpNodePathInterval::_type_handle;
  * otherwise, it is reset.
  */
 CLerpNodePathInterval::
-CLerpNodePathInterval(const string &name, double duration,
+CLerpNodePathInterval(const std::string &name, double duration,
                       CLerpInterval::BlendType blend_type,
                       bool bake_in_start, bool fluid,
                       const NodePath &node, const NodePath &other) :
@@ -57,7 +57,7 @@ CLerpNodePathInterval(const string &name, double duration,
   _flags(0),
   _texture_stage(TextureStage::get_default()),
   _override(0),
-  _slerp(NULL)
+  _slerp(nullptr)
 {
   if (bake_in_start) {
     _flags |= F_bake_in_start;
@@ -174,14 +174,14 @@ priv_step(double t) {
           setup_slerp();
 
         } else if ((_flags & F_bake_in_start) != 0) {
-          set_start_quat(transform->get_quat());
+          set_start_quat(transform->get_norm_quat());
           setup_slerp();
 
         } else {
           if (_prev_d == 1.0) {
             _start_quat = _end_quat;
           } else {
-            LQuaternion prev_value = transform->get_quat();
+            LQuaternion prev_value = transform->get_norm_quat();
             _start_quat = (prev_value - _prev_d * _end_quat) / (1.0 - _prev_d);
           }
           setup_slerp();
@@ -191,7 +191,7 @@ priv_step(double t) {
           _flags &= ~F_slerp_setup;
         }
       }
-      nassertv(_slerp != NULL);
+      nassertv(_slerp != nullptr);
       (this->*_slerp)(quat, d);
     }
     if ((_flags & F_end_scale) != 0) {
@@ -404,7 +404,7 @@ priv_step(double t) {
         color.set(1.0f, 1.0f, 1.0f, 1.0f);
         const RenderAttrib *attrib =
           state->get_attrib(ColorAttrib::get_class_type());
-        if (attrib != (const RenderAttrib *)NULL) {
+        if (attrib != nullptr) {
           const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
           if (ca->get_color_type() == ColorAttrib::T_flat) {
             color = ca->get_color();
@@ -428,7 +428,7 @@ priv_step(double t) {
         color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
         const RenderAttrib *attrib =
           state->get_attrib(ColorScaleAttrib::get_class_type());
-        if (attrib != (const RenderAttrib *)NULL) {
+        if (attrib != nullptr) {
           const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
           color_scale = csa->get_scale();
         }
@@ -446,7 +446,7 @@ priv_step(double t) {
       const RenderAttrib *attrib =
         state->get_attrib(TexMatrixAttrib::get_class_type());
       CPT(TexMatrixAttrib) tma;
-      if (attrib != (const TexMatrixAttrib *)NULL) {
+      if (attrib != nullptr) {
         tma = DCAST(TexMatrixAttrib, attrib);
         transform = tma->get_transform(_texture_stage);
       } else {
@@ -544,7 +544,7 @@ priv_reverse_instant() {
  *
  */
 void CLerpNodePathInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
 
   if ((_flags & F_end_pos) != 0) {

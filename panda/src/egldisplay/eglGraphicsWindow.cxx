@@ -12,6 +12,9 @@
  */
 
 #include "eglGraphicsWindow.h"
+
+#ifdef USE_X11
+
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
@@ -27,6 +30,14 @@
 #include "nativeWindowHandle.h"
 #include "get_x11.h"
 
+#ifndef EGL_GL_COLORSPACE_KHR
+#define EGL_GL_COLORSPACE_KHR 0x309D
+#endif
+
+#ifndef EGL_GL_COLORSPACE_SRGB_KHR
+#define EGL_GL_COLORSPACE_SRGB_KHR 0x3089
+#endif
+
 TypeHandle eglGraphicsWindow::_type_handle;
 
 /**
@@ -34,7 +45,7 @@ TypeHandle eglGraphicsWindow::_type_handle;
  */
 eglGraphicsWindow::
 eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -44,7 +55,7 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_V(egl_pipe, _pipe);
-  _egl_display = egl_pipe->_egl_display;
+  _egl_display = egl_pipe->get_egl_display();
   _egl_surface = 0;
 }
 
@@ -54,44 +65,6 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 eglGraphicsWindow::
 ~eglGraphicsWindow() {
 }
-
-/**
- * Forces the pointer to the indicated position within the window, if
- * possible.
- *
- * Returns true if successful, false on failure.  This may fail if the mouse
- * is not currently within the window, or if the API doesn't support this
- * operation.
- */
-bool eglGraphicsWindow::
-move_pointer(int device, int x, int y) {
-  // Note: this is not thread-safe; it should be called only from App.
-  // Probably not an issue.
-  if (device == 0) {
-    // Move the system mouse pointer.
-    if (!_properties.get_foreground() ||
-        !_input_devices[0].get_pointer().get_in_window()) {
-      // If the window doesn't have input focus, or the mouse isn't currently
-      // within the window, forget it.
-      return false;
-    }
-
-    const MouseData &md = _input_devices[0].get_pointer();
-    if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
-      XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
-      _input_devices[0].set_pointer_in_window(x, y);
-    }
-    return true;
-  } else {
-    // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
-      return false;
-    }
-    _input_devices[device].set_pointer_in_window(x, y);
-    return true;
-  }
-}
-
 
 /**
  * This function will be called within the draw thread before beginning
@@ -104,7 +77,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -156,7 +129,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void eglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -180,7 +153,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void eglGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -199,7 +172,7 @@ end_flip() {
  */
 void eglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";
@@ -207,9 +180,9 @@ close_window() {
     _gsg.clear();
   }
 
-  if (_ic != (XIC)NULL) {
+  if (_ic != (XIC)nullptr) {
     XDestroyIC(_ic);
-    _ic = (XIC)NULL;
+    _ic = (XIC)nullptr;
   }
 
   if (_egl_surface != 0) {
@@ -219,9 +192,9 @@ close_window() {
     }
   }
 
-  if (_xwindow != (X11_Window)NULL) {
+  if (_xwindow != (X11_Window)nullptr) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (X11_Window)NULL;
+    _xwindow = (X11_Window)nullptr;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -243,8 +216,8 @@ open_window() {
   eglGraphicsStateGuardian *eglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, NULL);
-    eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
+    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
+    eglgsg->choose_pixel_format(_fb_properties, egl_pipe, true, false, false);
     _gsg = eglgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -252,13 +225,13 @@ open_window() {
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
-      eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
+      eglgsg->choose_pixel_format(_fb_properties, egl_pipe, true, false, false);
       _gsg = eglgsg;
     }
   }
 
   _visual_info = eglgsg->_visual;
-  if (_visual_info == NULL) {
+  if (_visual_info == nullptr) {
     // No X visual for this fbconfig; how can we open the window?
     egldisplay_cat.error()
       << "No X visual: cannot open window.\n";
@@ -271,7 +244,16 @@ open_window() {
     return false;
   }
 
-  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, NULL);
+  EGLint attribs[4];
+  EGLint *attribs_p = nullptr;
+  if (eglgsg->get_fb_properties().get_srgb_color()) {
+    attribs[0] = EGL_GL_COLORSPACE_KHR;
+    attribs[1] = EGL_GL_COLORSPACE_SRGB_KHR;
+    attribs[2] = EGL_NONE;
+    attribs[3] = EGL_NONE;
+    attribs_p = attribs;
+  }
+  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, attribs_p);
   if (eglGetError() != EGL_SUCCESS) {
     egldisplay_cat.error()
       << "Failed to create window surface.\n";
@@ -296,3 +278,5 @@ open_window() {
 
   return true;
 }
+
+#endif  // USE_X11

@@ -29,7 +29,7 @@ CPT(RenderAttrib) LightRampAttrib::_default;
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_default() {
-  if (_default == 0) {
+  if (_default == nullptr) {
     LightRampAttrib *attrib = new LightRampAttrib();
     _default = return_new(attrib);
   }
@@ -176,7 +176,7 @@ make_hdr2() {
  *
  */
 void LightRampAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (_mode) {
   case LRT_default:

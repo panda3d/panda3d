@@ -40,7 +40,7 @@ class World(DirectObject):
 
         # creating the offscreen buffer.
 
-        winprops = WindowProperties.size(512, 512)
+        winprops = WindowProperties(size=(512, 512))
         props = FrameBufferProperties()
         props.setRgbColor(1)
         props.setAlphaBits(1)

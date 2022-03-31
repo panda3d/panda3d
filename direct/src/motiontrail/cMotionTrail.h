@@ -21,11 +21,12 @@
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
 #include "luse.h"
+#include "memoryBase.h"
 #include "nurbsCurveEvaluator.h"
 #include "plist.h"
 #include "epvector.h"
 
-class CMotionTrailVertex {
+class CMotionTrailVertex : public MemoryBase {
 public:
   LPoint4 _vertex;
   LVecBase4 _start_color;
@@ -69,7 +70,7 @@ public:
  * coordinate of the texture corresponds to time and the v coordinate
  * corresponds to the "shape" of the motion trail.
  */
-class EXPCL_DIRECT CMotionTrail : public TypedReferenceCount {
+class EXPCL_DIRECT_MOTIONTRAIL CMotionTrail : public TypedReferenceCount {
 PUBLISHED:
   CMotionTrail();
   ~CMotionTrail();

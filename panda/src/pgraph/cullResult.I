@@ -26,7 +26,7 @@ INLINE CullResult::
 INLINE CullBin *CullResult::
 get_bin(int bin_index) {
   if (bin_index >= 0 && bin_index < (int)_bins.size() &&
-      _bins[bin_index] != (CullBin *)NULL) {
+      _bins[bin_index] != nullptr) {
     return _bins[bin_index];
   }
   return make_new_bin(bin_index);

@@ -26,10 +26,11 @@ TypeHandle CallbackNode::_type_handle;
  *
  */
 CallbackNode::
-CallbackNode(const string &name) :
+CallbackNode(const std::string &name) :
   PandaNode(name)
 {
   PandaNode::set_cull_callback();
+  PandaNode::set_renderable();
 
   // Set up a default, infinite bounding volume, unless the user tells us
   // otherwise.  Not sure if this is a great idea, because it means a naive
@@ -90,7 +91,7 @@ safe_to_combine() const {
 bool CallbackNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CallbackObject *cbobj = get_cull_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     NodeCullCallbackData cbdata(trav, data);
     cbobj->do_callback(&cbdata);
 
@@ -99,17 +100,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   // Recurse onto the node's children.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool CallbackNode::
-is_renderable() const {
   return true;
 }
 
@@ -130,9 +120,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // CullableObject for the draw_callback, if any.  We don't need to pass any
   // Geoms, however.
   CallbackObject *cbobj = get_draw_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     CullableObject *object =
-      new CullableObject(NULL, data._state,
+      new CullableObject(nullptr, data._state,
                          data.get_internal_transform(trav));
     object->set_draw_callback(cbobj);
     trav->get_cull_handler()->record_object(object, trav);
@@ -145,7 +135,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void CallbackNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

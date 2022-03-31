@@ -57,9 +57,9 @@ public:
   void set_in(const LVecBase3 &in);
   void set_out(const LVecBase3 &out);
   void set_type(int type);
-  void set_name(const string &name);
+  void set_name(const std::string &name);
 
-  void format_egg(ostream &out, int indent, int num_dimensions,
+  void format_egg(std::ostream &out, int indent, int num_dimensions,
               bool show_in, bool show_out,
               PN_stdfloat scale_in, PN_stdfloat scale_out) const;
 
@@ -68,7 +68,7 @@ public:
 
   LVecBase3 _p, _in, _out;
   int _type;
-  string _name;
+  std::string _name;
 };
 
 /**
@@ -122,10 +122,10 @@ PUBLISHED:
   const LVecBase3 &get_cv_out(int n) const;
   void get_cv_out(int n, LVecBase3 &v) const;
   PN_stdfloat get_cv_tstart(int n) const;
-  string get_cv_name(int n) const;
+  std::string get_cv_name(int n) const;
 
-  virtual void output(ostream &out) const;
-  void write_cv(ostream &out, int n) const;
+  virtual void output(std::ostream &out) const;
+  void write_cv(std::ostream &out, int n) const;
 
 public:
 
@@ -140,8 +140,8 @@ public:
                    int rtype3, PN_stdfloat t3, const LVecBase4 &v3);
 
 protected:
-  virtual bool format_egg(ostream &out, const string &name,
-                          const string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, const std::string &name,
+                          const std::string &curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
   int find_cv(PN_stdfloat t);

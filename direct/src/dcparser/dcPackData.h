@@ -19,7 +19,7 @@
 /**
  * This is a block of data that receives the results of DCPacker.
  */
-class DCPackData {
+class EXPCL_DIRECT_DCPARSER DCPackData {
 PUBLISHED:
   INLINE DCPackData();
   INLINE ~DCPackData();
@@ -34,7 +34,7 @@ public:
   INLINE char *get_rewrite_pointer(size_t position, size_t size);
 
 PUBLISHED:
-  INLINE string get_string() const;
+  INLINE std::string get_string() const;
   INLINE size_t get_length() const;
 public:
   INLINE const char *get_data() const;

@@ -19,7 +19,7 @@ ConditionVarPosixImpl(MutexPosixImpl &mutex) :
   _mutex(mutex)
 {
   TAU_PROFILE("ConditionVarPosixImpl::ConditionVarPosixImpl()", " ", TAU_USER);
-  int result = pthread_cond_init(&_cvar, NULL);
+  int result = pthread_cond_init(&_cvar, nullptr);
   nassertv(result == 0);
 }
 
@@ -39,7 +39,11 @@ INLINE ConditionVarPosixImpl::
 INLINE void ConditionVarPosixImpl::
 wait() {
   TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
+#ifdef DO_PSTATS
+  int result = _wait_func(&_cvar, &_mutex._lock);
+#else
   int result = pthread_cond_wait(&_cvar, &_mutex._lock);
+#endif
 #ifndef NDEBUG
   if (result != 0) {
     pipeline_cat.error()

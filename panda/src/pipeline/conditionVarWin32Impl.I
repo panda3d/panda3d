@@ -15,19 +15,7 @@
  *
  */
 INLINE ConditionVarWin32Impl::
-ConditionVarWin32Impl(MutexWin32Impl &mutex) {
-  _external_mutex = &mutex._lock;
-
-  // Create an auto-reset event.
-  _event_signal = CreateEvent(NULL, false, false, NULL);
-}
-
-/**
- *
- */
-INLINE ConditionVarWin32Impl::
-~ConditionVarWin32Impl() {
-  CloseHandle(_event_signal);
+ConditionVarWin32Impl(MutexWin32Impl &mutex) : _mutex(mutex) {
 }
 
 /**
@@ -35,12 +23,11 @@ INLINE ConditionVarWin32Impl::
  */
 INLINE void ConditionVarWin32Impl::
 wait() {
-  LeaveCriticalSection(_external_mutex);
-
-  DWORD result = WaitForSingleObject(_event_signal, INFINITE);
-  nassertv(result == WAIT_OBJECT_0);
-
-  EnterCriticalSection(_external_mutex);
+#ifdef DO_PSTATS
+  _wait_func(&_cvar, &_mutex._lock, INFINITE, 0);
+#else
+  SleepConditionVariableSRW(&_cvar, &_mutex._lock, INFINITE, 0);
+#endif
 }
 
 /**
@@ -48,12 +35,11 @@ wait() {
  */
 INLINE void ConditionVarWin32Impl::
 wait(double timeout) {
-  LeaveCriticalSection(_external_mutex);
-
-  DWORD result = WaitForSingleObject(_event_signal, (DWORD)(timeout * 1000.0));
-  nassertv(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT);
-
-  EnterCriticalSection(_external_mutex);
+#ifdef DO_PSTATS
+  _wait_func(&_cvar, &_mutex._lock, (DWORD)(timeout * 1000.0), 0);
+#else
+  SleepConditionVariableSRW(&_cvar, &_mutex._lock, (DWORD)(timeout * 1000.0), 0);
+#endif
 }
 
 /**
@@ -61,5 +47,13 @@ wait(double timeout) {
  */
 INLINE void ConditionVarWin32Impl::
 notify() {
-  SetEvent(_event_signal);
+  WakeConditionVariable(&_cvar);
+}
+
+/**
+ *
+ */
+INLINE void ConditionVarWin32Impl::
+notify_all() {
+  WakeAllConditionVariable(&_cvar);
 }

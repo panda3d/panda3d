@@ -26,6 +26,6 @@ PGMouseWatcherParameter::
  *
  */
 void PGMouseWatcherParameter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MouseWatcherParameter::output(out);
 }

@@ -24,7 +24,9 @@
 #include "trueClock.h"
 #include "pstrtod.h"
 
-#ifdef WIN32_VC
+using std::cerr;
+
+#ifdef _WIN32
 // Under Windows, the rand() function seems to return a sequence per-thread,
 // so we use this trick to set each thread to a different seed.
 static int last_rand = 0;
@@ -36,13 +38,13 @@ static double random_f(double max)
 {
   MutexHolder l(rand_mutex);
   int i = rand();
-#ifdef WIN32_VC
+#ifdef _WIN32
   last_rand = i;
 #endif /* __WIN32__ */
   return max * (double)i / (double)RAND_MAX;
 }
 
-#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << std::flush; }
 
 // n philosophers sharing n chopsticks.  Philosophers are poor folk and can't
 // afford luxuries like 2 chopsticks per person.
@@ -50,7 +52,7 @@ static double random_f(double max)
 
 class ChopstickMutex : public Mutex {
 public:
-  void output(ostream &out) const {
+  void output(std::ostream &out) const {
     out << "chopstick " << _n;
   }
   int _n;
@@ -74,7 +76,7 @@ class philosopher : public Thread {
 private:
   int _id;
   void thread_main() {
-#ifdef WIN32_VC
+#ifdef _WIN32
     rand_mutex.acquire();
     srand(last_rand);
     rand_mutex.release();
@@ -121,7 +123,7 @@ public:
     _id = id;
   }
 
-  virtual void output(ostream &out) const {
+  virtual void output(std::ostream &out) const {
     out << "philosopher " << _id;
   }
 };

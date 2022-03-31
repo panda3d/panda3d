@@ -15,7 +15,7 @@
  * Returns the name of the button device that was used to create this
  * VrpnButton.
  */
-INLINE const string &VrpnButton::
+INLINE const std::string &VrpnButton::
 get_button_name() const {
   return _button_name;
 }
@@ -27,13 +27,4 @@ get_button_name() const {
 INLINE bool VrpnButton::
 is_empty() const {
   return _devices.empty();
-}
-
-/**
- * Polls the connected device.  Normally you should not call this directly;
- * this will be called by the VrpnClient.
- */
-INLINE void VrpnButton::
-poll() {
-  _button->mainloop();
 }

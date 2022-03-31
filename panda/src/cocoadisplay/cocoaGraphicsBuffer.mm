@@ -25,7 +25,7 @@ TypeHandle CocoaGraphicsBuffer::_type_handle;
  */
 CocoaGraphicsBuffer::
 CocoaGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -103,6 +103,12 @@ open_buffer() {
       cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->get_display_id(), false);
       _gsg = cocoagsg;
     }
+  }
+
+  if (cocoagsg->_context == nil) {
+    // Could not obtain a proper context.
+    _gsg.clear();
+    return false;
   }
 
   FrameBufferProperties desired_props(_fb_properties);

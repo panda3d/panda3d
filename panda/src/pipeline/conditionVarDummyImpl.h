@@ -16,7 +16,6 @@
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
-#include "thread.h"
 
 #include "pnotify.h"
 
@@ -31,8 +30,8 @@ public:
   INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
   INLINE ~ConditionVarDummyImpl();
 
-  INLINE void wait();
-  INLINE void wait(double timeout);
+  void wait();
+  void wait(double timeout);
   INLINE void notify();
   INLINE void notify_all();
 };

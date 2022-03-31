@@ -23,8 +23,8 @@ DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
   GraphicsDevice(pipe) {
 
   ZeroMemory(&_Scrn,sizeof(_Scrn));
-  _d3d_device = NULL;
-  _swap_chain = NULL;
+  _d3d_device = nullptr;
+  _swap_chain = nullptr;
 }
 
 /**

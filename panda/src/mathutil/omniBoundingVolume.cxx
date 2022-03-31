@@ -46,7 +46,7 @@ xform(const LMatrix4 &) {
  *
  */
 void OmniBoundingVolume::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "omni";
 }
 

@@ -34,7 +34,7 @@ public:
   int _fade_out;
   int _fade_in;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   static TypeHandle get_class_type() {

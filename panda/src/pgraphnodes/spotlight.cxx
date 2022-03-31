@@ -64,7 +64,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 Spotlight::
-Spotlight(const string &name) :
+Spotlight(const std::string &name) :
   LightLensNode(name) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
@@ -104,7 +104,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void Spotlight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";
@@ -123,7 +123,7 @@ write(ostream &out, int indent_level) const {
   }
 
   Lens *lens = get_lens();
-  if (lens != (Lens *)NULL) {
+  if (lens != nullptr) {
     lens->write(out, indent_level + 2);
   }
 }
@@ -214,12 +214,12 @@ bind(GraphicsStateGuardianBase *gsg, const NodePath &light, int light_id) {
 void Spotlight::
 fill_viz_geom(GeomNode *viz_geom) {
   Lens *lens = get_lens();
-  if (lens == (Lens *)NULL) {
+  if (lens == nullptr) {
     return;
   }
 
   PT(Geom) geom = lens->make_geometry();
-  if (geom == (Geom *)NULL) {
+  if (geom == nullptr) {
     return;
   }
 

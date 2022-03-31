@@ -14,36 +14,13 @@
 /**
  *
  */
-INLINE LoaderOptions::
+constexpr LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
-}
-
-/**
- *
- */
-INLINE LoaderOptions::
-LoaderOptions(const LoaderOptions &copy) :
-  _flags(copy._flags),
-  _texture_flags(copy._texture_flags),
-  _texture_num_views(copy._texture_num_views),
-  _auto_texture_scale(copy._auto_texture_scale)
-{
-}
-
-/**
- *
- */
-INLINE void LoaderOptions::
-operator = (const LoaderOptions &copy) {
-  _flags = copy._flags;
-  _texture_flags = copy._texture_flags;
-  _texture_num_views = copy._texture_num_views;
-  _auto_texture_scale = copy._auto_texture_scale;
 }
 
 /**

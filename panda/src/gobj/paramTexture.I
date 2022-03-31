@@ -55,7 +55,7 @@ INLINE ParamTextureImage::
 ParamTextureImage(Texture *tex, bool read, bool write, int z, int n) :
   _texture(tex),
   _access(0),
-  _bind_level(min(n, 127)),
+  _bind_level(std::min(n, 127)),
   _bind_layer(z)
 {
   if (read) {

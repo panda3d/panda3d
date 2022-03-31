@@ -18,6 +18,7 @@
 
 #include "typeHandle.h"
 #include "numeric_types.h"
+#include "patomic.h"
 
 #include <assert.h>
 #include <vector>
@@ -27,9 +28,9 @@
  * directly access this class; this class is hidden within the TypeRegistry
  * accessors.
  */
-class EXPCL_DTOOL TypeRegistryNode {
+class EXPCL_DTOOL_DTOOLBASE TypeRegistryNode {
 public:
-  TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
+  TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref);
 
   static bool is_derived_from(const TypeRegistryNode *child,
                               const TypeRegistryNode *base);
@@ -37,17 +38,20 @@ public:
   static TypeHandle get_parent_towards(const TypeRegistryNode *child,
                                        const TypeRegistryNode *base);
 
+  INLINE PyObject *get_python_type() const;
+
   void clear_subtree();
   void define_subtree();
 
   TypeHandle _handle;
-  string _name;
+  std::string _name;
   TypeHandle &_ref;
-  typedef vector<TypeRegistryNode *> Classes;
+  typedef std::vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;
   Classes _child_classes;
+  PyObject *_python_type = nullptr;
 
-  AtomicAdjust::Integer _memory_usage[TypeHandle::MC_limit];
+  patomic<size_t> _memory_usage[TypeHandle::MC_limit];
 
   static bool _paranoid_inheritance;
 
@@ -72,10 +76,12 @@ private:
     SubtreeMaskType _mask;
     SubtreeMaskType _bits;
   };
-  typedef vector<Inherit> TopInheritance;
+  typedef std::vector<Inherit> TopInheritance;
 
   void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
+
+  PyObject *r_get_python_type() const;
 
   static bool check_derived_from(const TypeRegistryNode *child,
                                  const TypeRegistryNode *base);

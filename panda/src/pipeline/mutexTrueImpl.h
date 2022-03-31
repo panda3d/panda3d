@@ -43,6 +43,13 @@ typedef MutexImpl MutexTrueImpl;
 #if HAVE_REMUTEXIMPL
 typedef ReMutexImpl ReMutexTrueImpl;
 #define HAVE_REMUTEXTRUEIMPL 1
+
+#elif MUTEX_SPINLOCK
+// This is defined here because it needs code from pipeline.
+#include "reMutexSpinlockImpl.h"
+typedef ReMutexSpinlockImpl ReMutexTrueImpl;
+#define HAVE_REMUTEXTRUEIMPL 1
+
 #else
 #undef HAVE_REMUTEXTRUEIMPL
 #endif // HAVE_REMUTEXIMPL

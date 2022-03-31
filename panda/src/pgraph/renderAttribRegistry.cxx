@@ -28,7 +28,7 @@ RenderAttribRegistry() {
 
   // Reserve slot 0 for TypeHandle::none(), and for types that exceed
   // max_slots.
-  _registry.push_back(RegistryNode(TypeHandle::none(), 0, NULL));
+  _registry.push_back(RegistryNode(TypeHandle::none(), 0, nullptr));
 }
 
 /**
@@ -78,7 +78,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
     pgraph_cat->error()
       << "Too many registered RenderAttribs; not registering "
       << type_handle << "\n";
-    nassertr(false, 0);
+    nassert_raise("out of RenderAttrib slots");
     return 0;
   }
 
@@ -86,14 +86,14 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   // it even if the state cache is disabled, because we can't read the
   // state_cache config variable yet at this time.  It probably doesn't hurt
   // to have these 32 entries around in the attrib cache.
-  if (default_attrib != (RenderAttrib *)NULL) {
+  if (default_attrib != nullptr) {
     default_attrib->calc_hash();
 
     if (default_attrib->_saved_entry == -1) {
       // If this attribute was already registered, something odd is going on.
-      nassertr(RenderAttrib::_attribs->find(default_attrib) == -1, 0);
+      nassertr(RenderAttrib::_attribs.find(default_attrib) == -1, 0);
       default_attrib->_saved_entry =
-        RenderAttrib::_attribs->store(default_attrib, nullptr);
+        RenderAttrib::_attribs.store(default_attrib, nullptr);
     }
 
     // It effectively lives forever.  Might as well make it official.
@@ -105,7 +105,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   _registry.push_back(RegistryNode(type_handle, sort, default_attrib));
 
   _sorted_slots.push_back(slot);
-  ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
+  std::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
 
   return slot;
 }
@@ -123,7 +123,7 @@ set_slot_sort(int slot, int sort) {
   for (int i = 1; i < (int)_registry.size(); ++i) {
     _sorted_slots.push_back(i);
   }
-  ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
+  std::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
 }
 
 /**

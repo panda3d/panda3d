@@ -22,6 +22,7 @@
  * @param filename Heightfield texture
  */
 INLINE void ShaderTerrainMesh::set_heightfield(Texture* heightfield) {
+  MutexHolder holder(_lock);
   _heightfield_tex = heightfield;
 }
 
@@ -33,6 +34,7 @@ INLINE void ShaderTerrainMesh::set_heightfield(Texture* heightfield) {
  * @return Path to the heightfield
  */
 INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
+  MutexHolder holder(_lock);
   return _heightfield_tex;
 }
 
@@ -54,6 +56,7 @@ INLINE Texture* ShaderTerrainMesh::get_heightfield() const {
  * @param chunk_size Size of the chunks, has to be a power of two
  */
 INLINE void ShaderTerrainMesh::set_chunk_size(size_t chunk_size) {
+  MutexHolder holder(_lock);
   _chunk_size = chunk_size;
 }
 
@@ -63,6 +66,7 @@ INLINE void ShaderTerrainMesh::set_chunk_size(size_t chunk_size) {
  * @return Chunk size
  */
 INLINE size_t ShaderTerrainMesh::get_chunk_size() const {
+  MutexHolder holder(_lock);
   return _chunk_size;
 }
 
@@ -81,6 +85,7 @@ INLINE size_t ShaderTerrainMesh::get_chunk_size() const {
  * @param generate_patches [description]
  */
 INLINE void ShaderTerrainMesh::set_generate_patches(bool generate_patches) {
+  MutexHolder holder(_lock);
   _generate_patches = generate_patches;
 }
 
@@ -92,6 +97,7 @@ INLINE void ShaderTerrainMesh::set_generate_patches(bool generate_patches) {
  * @return Whether to generate patches
  */
 INLINE bool ShaderTerrainMesh::get_generate_patches() const {
+  MutexHolder holder(_lock);
   return _generate_patches;
 }
 
@@ -107,6 +113,7 @@ INLINE bool ShaderTerrainMesh::get_generate_patches() const {
  * @param target_triangle_width Desired triangle width in pixels
  */
 INLINE void ShaderTerrainMesh::set_target_triangle_width(PN_stdfloat target_triangle_width) {
+  MutexHolder holder(_lock);
   _target_triangle_width = target_triangle_width;
 }
 
@@ -118,6 +125,7 @@ INLINE void ShaderTerrainMesh::set_target_triangle_width(PN_stdfloat target_tria
  * @return Target triangle width
  */
 INLINE PN_stdfloat ShaderTerrainMesh::get_target_triangle_width() const {
+  MutexHolder holder(_lock);
   return _target_triangle_width;
 }
 
@@ -131,6 +139,7 @@ INLINE PN_stdfloat ShaderTerrainMesh::get_target_triangle_width() const {
  * @param update_enabled Whether to update the terrain
  */
 INLINE void ShaderTerrainMesh::set_update_enabled(bool update_enabled) {
+  MutexHolder holder(_lock);
   _update_enabled = update_enabled;
 }
 
@@ -142,6 +151,7 @@ INLINE void ShaderTerrainMesh::set_update_enabled(bool update_enabled) {
  * @return Whether to update the terrain
  */
 INLINE bool ShaderTerrainMesh::get_update_enabled() const {
+  MutexHolder holder(_lock);
   return _update_enabled;
 }
 
@@ -153,7 +163,7 @@ INLINE bool ShaderTerrainMesh::get_update_enabled() const {
 INLINE void ShaderTerrainMesh::Chunk::clear_children() {
   for (size_t i = 0; i < 4; ++i) {
     delete children[i];
-    children[i] = NULL;
+    children[i] = nullptr;
   }
 }
 
@@ -163,7 +173,7 @@ INLINE void ShaderTerrainMesh::Chunk::clear_children() {
  */
 INLINE ShaderTerrainMesh::Chunk::Chunk() {
   for (size_t i = 0; i < 4; ++i)
-    children[i] = NULL;
+    children[i] = nullptr;
 }
 
 /**

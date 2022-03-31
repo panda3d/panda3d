@@ -23,6 +23,9 @@
 
 #include "pnotify.h"
 
+using std::istream;
+using std::string;
+
 // Much code in this file is borrowed from Netpbm, specifically sgitopnm.c.
 
 /* sgitopnm.c - read an SGI image and and produce a portable anymap
@@ -86,7 +89,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   eof_err = false;
-  table = NULL;
+  table = nullptr;
 
   if (!read_magic_number(_file, magic_number, 4)) {
     // No magic number.  No image.
@@ -121,7 +124,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   _x_size = head.xsize;
   _y_size = head.ysize;
-  _num_channels = min((int)head.zsize, 4);
+  _num_channels = std::min((int)head.zsize, 4);
   bpc = head.bpc;
 
   current_row = _y_size - 1;
@@ -146,7 +149,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
  */
 PNMFileTypeSGI::Reader::
 ~Reader() {
-  if (table != NULL) {
+  if (table != nullptr) {
     free(table);
   }
 }
@@ -333,7 +336,7 @@ read_channel(istream *ifp,
              TabEntry *table,
              ScanElem *channel_data, long table_start,
              int channel, int row) {
-    ScanElem *temp = NULL;
+    ScanElem *temp = nullptr;
     int sgi_index, i;
     long offset, length;
 
@@ -486,10 +489,10 @@ xmalloc(int bytes) {
     void *mem;
 
     if( bytes == 0 )
-        return NULL;
+        return nullptr;
 
     mem = malloc(bytes);
-    if( mem == NULL )
+    if( mem == nullptr )
         pm_error("out of memory allocating %d bytes", bytes);
     return mem;
 }

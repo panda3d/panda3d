@@ -28,8 +28,8 @@ public:
   FunctionWriterPtrFromPython(CPPType *type);
   virtual ~FunctionWriterPtrFromPython();
 
-  virtual void write_prototype(ostream &out);
-  virtual void write_code(ostream &out);
+  virtual void write_prototype(std::ostream &out);
+  virtual void write_code(std::ostream &out);
   CPPType *get_type() const;
   CPPType *get_pointer_type() const;
 

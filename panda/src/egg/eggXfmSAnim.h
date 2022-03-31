@@ -25,9 +25,9 @@ class EggXfmAnimData;
  * It's implemented as a group that can contain any number of EggSAnimData
  * children.
  */
-class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
+class EXPCL_PANDA_EGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
-  INLINE explicit EggXfmSAnim(const string &name = "",
+  INLINE explicit EggXfmSAnim(const std::string &name = "",
                               CoordinateSystem cs = CS_default);
   EggXfmSAnim(const EggXfmAnimData &convert_from);
 
@@ -39,11 +39,11 @@ PUBLISHED:
   INLINE bool has_fps() const;
   INLINE double get_fps() const;
 
-  INLINE void set_order(const string &order);
+  INLINE void set_order(const std::string &order);
   INLINE void clear_order();
   INLINE bool has_order() const;
-  INLINE const string &get_order() const;
-  INLINE static const string &get_standard_order();
+  INLINE const std::string &get_order() const;
+  INLINE static const std::string &get_standard_order();
 
   INLINE CoordinateSystem get_coordinate_system() const;
 
@@ -57,18 +57,18 @@ PUBLISHED:
 
   INLINE void clear_data();
   bool add_data(const LMatrix4d &mat);
-  void add_component_data(const string &component_name, double value);
+  void add_component_data(const std::string &component_name, double value);
   void add_component_data(int component, double value);
 
   virtual bool is_anim_matrix() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   static void compose_with_order(LMatrix4d &mat,
                                  const LVecBase3d &scale,
                                  const LVecBase3d &shear,
                                  const LVecBase3d &hpr,
                                  const LVecBase3d &trans,
-                                 const string &order,
+                                 const std::string &order,
                                  CoordinateSystem cs);
 
 protected:
@@ -84,10 +84,10 @@ private:
 private:
   double _fps;
   bool _has_fps;
-  string _order;
+  std::string _order;
   CoordinateSystem _coordsys;
 
-  static const string _standard_order;
+  static const std::string _standard_order;
 
 public:
 

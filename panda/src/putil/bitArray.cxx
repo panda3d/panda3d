@@ -16,6 +16,10 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle BitArray::_type_handle;
 
 /**
@@ -83,7 +87,7 @@ is_all_on() const {
  */
 bool BitArray::
 has_any_of(int low_bit, int size) const {
-  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+  if ((size_t)(low_bit + size) > get_num_bits()) {
     // This range touches the highest bits.
     if (_highest_bits) {
       return true;
@@ -93,7 +97,7 @@ has_any_of(int low_bit, int size) const {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words()) {
+  if (w >= (int)get_num_words()) {
     // This range is entirely among the highest bits.
     return (_highest_bits != 0);
   }
@@ -110,6 +114,11 @@ has_any_of(int low_bit, int size) const {
   ++w;
 
   while (size > 0) {
+    if ((size_t)w >= get_num_words()) {
+      // Now we're up to the highest bits.
+      return (_highest_bits != 0);
+    }
+
     if (size <= num_bits_per_word) {
       // The remainder fits within one word of the array.
       return _array[w].has_any_of(0, size);
@@ -121,11 +130,6 @@ has_any_of(int low_bit, int size) const {
     }
     size -= num_bits_per_word;
     ++w;
-
-    if (w >= get_num_words()) {
-      // Now we're up to the highest bits.
-      return (_highest_bits != 0);
-    }
   }
 
   return false;
@@ -136,7 +140,7 @@ has_any_of(int low_bit, int size) const {
  */
 bool BitArray::
 has_all_of(int low_bit, int size) const {
-  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+  if ((size_t)(low_bit + size) > get_num_bits()) {
     // This range touches the highest bits.
     if (!_highest_bits) {
       return false;
@@ -146,7 +150,7 @@ has_all_of(int low_bit, int size) const {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words()) {
+  if (w >= (int)get_num_words()) {
     // This range is entirely among the highest bits.
     return (_highest_bits != 0);
   }
@@ -175,7 +179,7 @@ has_all_of(int low_bit, int size) const {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words()) {
+    if (w >= (int)get_num_words()) {
       // Now we're up to the highest bits.
       return (_highest_bits != 0);
     }
@@ -192,7 +196,7 @@ set_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words() && _highest_bits) {
+  if (w >= (int)get_num_words() && _highest_bits) {
     // All the highest bits are already on.
     return;
   }
@@ -225,7 +229,7 @@ set_range(int low_bit, int size) {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words() && _highest_bits) {
+    if (w >= (int)get_num_words() && _highest_bits) {
       // All the highest bits are already on.
       normalize();
       return;
@@ -242,7 +246,7 @@ clear_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words() && !_highest_bits) {
+  if (w >= (int)get_num_words() && !_highest_bits) {
     // All the highest bits are already off.
     return;
   }
@@ -275,7 +279,7 @@ clear_range(int low_bit, int size) {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words() && !_highest_bits) {
+    if (w >= (int)get_num_words() && !_highest_bits) {
       // All the highest bits are already off.
       normalize();
       return;
@@ -905,10 +909,14 @@ normalize() {
  */
 void BitArray::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  dg.add_uint32(_array.size());
-  Array::const_iterator ai;
-  for (ai = _array.begin(); ai != _array.end(); ++ai) {
-    dg.add_uint32((*ai).get_word());
+  dg.add_uint32(_array.size() * (num_bits_per_word >> 5));
+
+  for (MaskType &item : _array) {
+    WordType word = item.get_word();
+    for (size_t i = 0; i < num_bits_per_word; i += 32) {
+      dg.add_uint32(word);
+      word >>= 32;
+    }
   }
   dg.add_uint8(_highest_bits);
 }
@@ -918,10 +926,16 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
  */
 void BitArray::
 read_datagram(DatagramIterator &scan, BamReader *manager) {
-  size_t num_words = scan.get_uint32();
-  _array = Array::empty_array(num_words);
-  for (size_t i = 0; i < num_words; ++i) {
-    _array[i] = WordType(scan.get_uint32());
+  size_t num_words32 = scan.get_uint32();
+  size_t num_bits = num_words32 << 5;
+
+  _array = Array::empty_array((num_bits + num_bits_per_word - 1) / num_bits_per_word);
+
+  for (size_t i = 0; i < num_bits; i += 32) {
+    int w = i / num_bits_per_word;
+    int b = i % num_bits_per_word;
+
+    _array[w].store(scan.get_uint32(), b, 32);
   }
   _highest_bits = scan.get_uint8();
 }

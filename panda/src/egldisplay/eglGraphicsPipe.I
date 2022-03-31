@@ -10,3 +10,11 @@
  * @author rdb
  * @date 2009-05-21
  */
+
+/**
+ *
+ */
+INLINE EGLDisplay eglGraphicsPipe::
+get_egl_display() const {
+  return _egl_display;
+}

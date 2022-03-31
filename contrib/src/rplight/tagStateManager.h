@@ -52,36 +52,36 @@ PUBLISHED:
   TagStateManager(NodePath main_cam_node);
   ~TagStateManager();
 
-  inline void apply_state(const string& state, NodePath np, Shader* shader, const string &name, int sort);
+  inline void apply_state(const std::string& state, NodePath np, Shader* shader, const std::string &name, int sort);
   void cleanup_states();
 
-  inline void register_camera(const string& state, Camera* source);
-  inline void unregister_camera(const string& state, Camera* source);
-  inline BitMask32 get_mask(const string &container_name);
+  inline void register_camera(const std::string& state, Camera* source);
+  inline void unregister_camera(const std::string& state, Camera* source);
+  inline BitMask32 get_mask(const std::string &container_name);
 
 private:
-  typedef vector<Camera*> CameraList;
-  typedef pmap<string, CPT(RenderState)> TagStateList;
+  typedef std::vector<Camera*> CameraList;
+  typedef pmap<std::string, CPT(RenderState)> TagStateList;
 
   struct StateContainer {
     CameraList cameras;
     TagStateList tag_states;
-    string tag_name;
+    std::string tag_name;
     BitMask32 mask;
     bool write_color;
 
     StateContainer() {};
-    StateContainer(const string &tag_name, size_t mask, bool write_color)
+    StateContainer(const std::string &tag_name, size_t mask, bool write_color)
       : tag_name(tag_name), mask(BitMask32::bit(mask)), write_color(write_color) {};
   };
 
   void apply_state(StateContainer& container, NodePath np, Shader* shader,
-                   const string& name, int sort);
+                   const std::string& name, int sort);
   void cleanup_container_states(StateContainer& container);
   void register_camera(StateContainer &container, Camera* source);
   void unregister_camera(StateContainer &container, Camera* source);
 
-  typedef pmap<string, StateContainer> ContainerList;
+  typedef pmap<std::string, StateContainer> ContainerList;
   ContainerList _containers;
 
   NodePath _main_cam_node;

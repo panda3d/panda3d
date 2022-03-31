@@ -18,6 +18,8 @@
 #include "recorderController.h"
 #include "indent.h"
 
+using std::string;
+
 TypeHandle RecorderTable::_type_handle;
 
 /**
@@ -140,7 +142,7 @@ clear_flags(short flags) {
  *
  */
 void RecorderTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "RecorderTable:\n";
 
@@ -216,7 +218,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     RecorderBase *recorder =
       RecorderController::get_factory()->make_instance_more_general(type, fparams);
-    if (recorder == (RecorderBase *)NULL) {
+    if (recorder == nullptr) {
       recorder_cat.error()
         << "Unable to create Recorder of type " << type << "\n";
       _error = true;

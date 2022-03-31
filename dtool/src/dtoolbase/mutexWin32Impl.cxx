@@ -13,16 +13,19 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#if defined(_WIN32) && !defined(CPPPARSER)
 
 #include "mutexWin32Impl.h"
+
+// The number of spins to do before suspending the thread.
+static const unsigned int spin_count = 4000;
 
 /**
  *
  */
-MutexWin32Impl::
-MutexWin32Impl() {
-  InitializeCriticalSectionAndSpinCount(&_lock, 4000);
+ReMutexWin32Impl::
+ReMutexWin32Impl() {
+  InitializeCriticalSectionAndSpinCount(&_lock, spin_count);
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32

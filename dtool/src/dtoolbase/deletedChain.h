@@ -85,7 +85,9 @@ public:
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    StaticDeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
+    if (ptr != nullptr) {                                    \
+      StaticDeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -104,7 +106,9 @@ public:
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    _deleted_chain.deallocate((Type *)ptr, get_type_handle(Type)); \
+    if (ptr != nullptr) {                                    \
+      _deleted_chain.deallocate((Type *)ptr, get_type_handle(Type)); \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -122,11 +126,11 @@ public:
 
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DECL(Type)                       \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DEF(Type)
 

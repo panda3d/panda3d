@@ -28,7 +28,7 @@ TypeHandle glxGraphicsPixmap::_type_handle;
  */
 glxGraphicsPixmap::
 glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -67,14 +67,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL ||
+  if (_gsg == nullptr ||
       _glx_pixmap == None) {
     return false;
   }
 
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
+  {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
+  }
 
   // Now that we have made the context current to a window, we can reset the
   // GSG state if this is the first time it has been used.  (We can't just
@@ -108,7 +111,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void glxGraphicsPixmap::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -127,8 +130,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void glxGraphicsPixmap::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    glXMakeCurrent(_display, None, NULL);
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+  if (_gsg != nullptr) {
+    glXMakeCurrent(_display, None, nullptr);
     _gsg.clear();
   }
 
@@ -156,9 +160,9 @@ open_buffer() {
 
   // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
-    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
+    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, nullptr);
     glxgsg->choose_pixel_format(_fb_properties, _display, glx_pipe->get_screen(), false, true);
     _gsg = glxgsg;
   } else {
@@ -179,7 +183,7 @@ open_buffer() {
   }
 
   XVisualInfo *visual_info = glxgsg->_visual;
-  if (visual_info == NULL) {
+  if (visual_info == nullptr) {
     // No X visual for this fbconfig; how can we create the pixmap?
     glxdisplay_cat.error()
       << "No X visual: cannot create pixmap.\n";
@@ -187,7 +191,7 @@ open_buffer() {
   }
 
   _drawable = glx_pipe->get_root();
-  if (_host != NULL) {
+  if (_host != nullptr) {
     if (_host->is_of_type(glxGraphicsWindow::get_class_type())) {
       glxGraphicsWindow *win = DCAST(glxGraphicsWindow, _host);
       _drawable = win->get_xwindow();
@@ -197,6 +201,7 @@ open_buffer() {
     }
   }
 
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   _x_pixmap = XCreatePixmap(_display, _drawable,
                             get_x_size(), get_y_size(), visual_info->depth);
   if (_x_pixmap == None) {
@@ -208,7 +213,7 @@ open_buffer() {
 
   if (glxgsg->_fbconfig) {
     // Use the FBConfig to create the pixmap.
-    _glx_pixmap = glxgsg->_glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, NULL);
+    _glx_pixmap = glxgsg->_glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, nullptr);
   } else {
     // Use the XVisual to create the pixmap.
     _glx_pixmap = glXCreateGLXPixmap(_display, visual_info, _x_pixmap);

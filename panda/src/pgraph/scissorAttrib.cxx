@@ -19,6 +19,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+
 TypeHandle ScissorAttrib::_type_handle;
 int ScissorAttrib::_attrib_slot;
 CPT(RenderAttrib) ScissorAttrib::_off_attrib;
@@ -44,7 +47,7 @@ ScissorAttrib(const LVecBase4 &frame) :
  */
 CPT(RenderAttrib) ScissorAttrib::
 make_off() {
-  if (_off_attrib != NULL) {
+  if (_off_attrib != nullptr) {
     return _off_attrib;
   }
   ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -78,7 +81,7 @@ make_default() {
  *
  */
 void ScissorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":[" << _frame << "]";
 }
 
@@ -98,7 +101,7 @@ int ScissorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ScissorAttrib *ta = (const ScissorAttrib *)other;
 
-  if (!_off && !ta->_off) {
+  if (_off && ta->_off) {
     return 0;
   }
 

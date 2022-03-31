@@ -26,19 +26,19 @@
 template<class SwitchType>
 class MovingPart : public MovingPartBase {
 public:
-  typedef TYPENAME SwitchType::ValueType ValueType;
+  typedef typename SwitchType::ValueType ValueType;
   typedef AnimChannel<SwitchType> ChannelType;
 
 protected:
   INLINE MovingPart(const MovingPart &copy);
 
 public:
-  INLINE MovingPart(PartGroup *parent, const string &name,
+  INLINE MovingPart(PartGroup *parent, const std::string &name,
                     const ValueType &default_value);
 
   virtual TypeHandle get_value_type() const;
   virtual AnimChannelBase *make_default_channel() const;
-  virtual void output_value(ostream &out) const;
+  virtual void output_value(std::ostream &out) const;
 
   ValueType _value;
   ValueType _default_value;

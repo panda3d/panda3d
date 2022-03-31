@@ -23,7 +23,7 @@ OdeContactJoint(dJointID id) :
 
 OdeContactJoint::
 OdeContactJoint(OdeWorld &world, const OdeContact &contact) :
-  OdeJoint(dJointCreateContact(world.get_id(), 0, contact.get_contact_ptr())) {
+  OdeJoint(dJointCreateContact(world.get_id(), nullptr, contact.get_contact_ptr())) {
 }
 
 OdeContactJoint::

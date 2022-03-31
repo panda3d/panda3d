@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_CONSTRAINT_H__
-#define __BULLET_CONSTRAINT_H__
+#ifndef BULLETCONSTRAINT_H
+#define BULLETCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -87,4 +87,4 @@ private:
 
 #include "bulletConstraint.I"
 
-#endif // __BULLET_CONSTRAINT_H__
+#endif // BULLETCONSTRAINT_H

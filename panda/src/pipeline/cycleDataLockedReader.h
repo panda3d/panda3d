@@ -45,12 +45,10 @@ public:
   INLINE CycleDataLockedReader(const PipelineCycler<CycleDataType> &cycler,
                                Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataLockedReader<CycleDataType> &copy);
+  INLINE CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept;
 
-#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
-  INLINE CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT;
-  INLINE void operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (const CycleDataLockedReader<CycleDataType> &copy);
+  INLINE void operator = (CycleDataLockedReader<CycleDataType> &&from) noexcept;
 
   INLINE ~CycleDataLockedReader();
 

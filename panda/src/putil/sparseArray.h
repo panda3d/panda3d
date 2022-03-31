@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "ordered_vector.h"
+#include "extension.h"
 
 class BitArray;
 class BamWriter;
@@ -80,7 +81,7 @@ PUBLISHED:
   bool has_bits_in_common(const SparseArray &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   INLINE bool operator == (const SparseArray &other) const;
   INLINE bool operator != (const SparseArray &other) const;
@@ -116,6 +117,10 @@ PUBLISHED:
   INLINE int get_subrange_begin(size_t n) const;
   INLINE int get_subrange_end(size_t n) const;
 
+  EXTENSION(bool __bool__() const);
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
+
 private:
   void do_add_range(int begin, int end);
   void do_remove_range(int begin, int end);
@@ -140,6 +145,8 @@ private:
   Subranges _subranges;
   bool _inverse;
 
+  friend class Extension<SparseArray>;
+
 public:
   void write_datagram(BamWriter *manager, Datagram &dg) const;
   void read_datagram(DatagramIterator &scan, BamReader *manager);
@@ -158,8 +165,8 @@ private:
 
 #include "sparseArray.I"
 
-INLINE ostream &
-operator << (ostream &out, const SparseArray &array) {
+INLINE std::ostream &
+operator << (std::ostream &out, const SparseArray &array) {
   array.output(out);
   return out;
 }

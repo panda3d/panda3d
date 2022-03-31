@@ -17,7 +17,7 @@
 #include "callbackObject.cxx"
 #include "clockObject.cxx"
 #include "colorSpace.cxx"
-#include "config_util.cxx"
+#include "config_putil.cxx"
 #include "configurable.cxx"
 #include "copyOnWriteObject.cxx"
 #include "copyOnWritePointer.cxx"
@@ -29,4 +29,3 @@
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"
-#include "globalPointerRegistry.cxx"

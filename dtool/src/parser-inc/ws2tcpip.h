@@ -1,1 +1,1 @@
-typedef DWORD socklen_t;
+typedef int socklen_t;

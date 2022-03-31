@@ -23,7 +23,7 @@ OdePlane2dJoint(dJointID id) :
 
 OdePlane2dJoint::
 OdePlane2dJoint(OdeWorld &world) :
-  OdeJoint(dJointCreatePlane2D(world.get_id(), 0)) {
+  OdeJoint(dJointCreatePlane2D(world.get_id(), nullptr)) {
 }
 
 OdePlane2dJoint::

@@ -17,15 +17,22 @@
 #include "encryptStream.h"
 #include "virtualFileSystem.h"
 #include "config_express.h"
+#include "stringStream.h"
+
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 /**
  * Encrypts the indicated source string using the given password, and the
- * algorithm specified by encryption-algorithm.  Returns the encrypted string.
+ * algorithm specified by encryption-algorithm.  Returns the encrypted data.
  */
-string
+vector_uchar
 encrypt_string(const string &source, const string &password,
                const string &algorithm, int key_length, int iteration_count) {
-  ostringstream dest;
+  StringStream dest;
 
   {
     OEncryptStream encrypt;
@@ -42,11 +49,13 @@ encrypt_string(const string &source, const string &password,
     encrypt.write(source.data(), source.length());
 
     if (encrypt.fail()) {
-      return string();
+      return vector_uchar();
     }
   }
 
-  return dest.str();
+  vector_uchar result;
+  dest.swap_data(result);
+  return result;
 }
 
 /**
@@ -58,8 +67,8 @@ encrypt_string(const string &source, const string &password,
  * easily be detected, and the return value may simply be a garbage string.
  */
 string
-decrypt_string(const string &source, const string &password) {
-  istringstream source_stream(source);
+decrypt_string(const vector_uchar &source, const string &password) {
+  StringStream source_stream(source);
   ostringstream dest_stream;
 
   if (!decrypt_stream(source_stream, dest_stream, password)) {
@@ -75,7 +84,7 @@ decrypt_string(const string &source, const string &password) {
  * to the dest file, overwriting its contents.  The return value is bool on
  * success, or false on failure.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const string &password,
              const string &algorithm, int key_length, int iteration_count) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -85,14 +94,14 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
     source_filename.set_binary();
   }
   istream *source_stream = vfs->open_read_file(source_filename, true);
-  if (source_stream == NULL) {
+  if (source_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
 
   Filename dest_filename = Filename::binary_filename(dest);
   ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
-  if (dest_stream == NULL) {
+  if (dest_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;
@@ -115,12 +124,12 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
  * Note that a decryption error, including an incorrect password, cannot
  * easily be detected, and the output may simply be a garbage string.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const string &password) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *source_stream = vfs->open_read_file(source_filename, false);
-  if (source_stream == NULL) {
+  if (source_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
@@ -131,7 +140,7 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
     dest_filename.set_binary();
   }
   ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
-  if (dest_stream == NULL) {
+  if (dest_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;

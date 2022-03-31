@@ -20,6 +20,8 @@
 
 #include <stdio.h>  // for sprintf()
 
+using std::ostream;
+
 
 //
 // Static list of node types.
@@ -98,7 +100,7 @@ output_value(ostream &out, const VrmlFieldValue &value, int type,
       return out << "NULL";
 
     case SFNodeRef::T_unnamed:
-      nassertr(value._sfnode._p != NULL, out);
+      nassertr(value._sfnode._p != nullptr, out);
       value._sfnode._p->output(out, indent);
       return out;
 
@@ -145,7 +147,7 @@ output_value(ostream &out, const VrmlFieldValue &value, int type,
 
 VrmlNodeType::VrmlNodeType(const char *nm)
 {
-    nassertv(nm != NULL);
+    nassertv(nm != nullptr);
     name = strdup(nm);
 }
 
@@ -176,9 +178,9 @@ VrmlNodeType::~VrmlNodeType()
 void
 VrmlNodeType::addToNameSpace(VrmlNodeType *_type)
 {
-    if (find(_type->getName()) != NULL) {
-        cerr << "PROTO " << _type->getName() << " already defined\n";
-        return;
+    if (find(_type->getName()) != nullptr) {
+      std::cerr << "PROTO " << _type->getName() << " already defined\n";
+      return;
     }
     typeList.push_front(_type);
 }
@@ -191,7 +193,7 @@ VrmlNodeType::addToNameSpace(VrmlNodeType *_type)
 void
 VrmlNodeType::pushNameSpace()
 {
-    typeList.push_front(NULL);
+    typeList.push_front(nullptr);
 }
 
 void
@@ -204,7 +206,7 @@ VrmlNodeType::popNameSpace()
         ++i;
         typeList.pop_front();
 
-        if (nodeType == NULL) {
+        if (nodeType == nullptr) {
             break;
         }
         else {
@@ -224,11 +226,11 @@ VrmlNodeType::find(const char *_name)
     plist<VrmlNodeType*>::iterator i;
     for (i = typeList.begin(); i != typeList.end(); i++) {
         const VrmlNodeType *nt = *i;
-        if (nt != NULL && strcmp(nt->getName(),_name) == 0) {
+        if (nt != nullptr && strcmp(nt->getName(),_name) == 0) {
             return nt;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void
@@ -268,7 +270,7 @@ VrmlNodeType::add(plist<NameTypeRec*> &recs, const char *name, int type,
     NameTypeRec *r = new NameTypeRec;
     r->name = strdup(name);
     r->type = type;
-    if (dflt != NULL) {
+    if (dflt != nullptr) {
       r->dflt = *dflt;
     } else {
       memset(&r->dflt, 0, sizeof(r->dflt));
@@ -305,19 +307,19 @@ VrmlNodeType::hasExposedField(const char *name) const
     base = has(fields, name);
 
     sprintf(tmp, "set_%s\n", name);
-    nassertr(strlen(tmp) < 1000, NULL);
+    nassertr(strlen(tmp) < 1000, nullptr);
     set_name = has(eventIns, tmp);
 
     sprintf(tmp, "%s_changed\n", name);
-    nassertr(strlen(tmp) < 1000, NULL);
+    nassertr(strlen(tmp) < 1000, nullptr);
     name_changed = has(eventOuts, tmp);
 
-    if (base == NULL || set_name == NULL || name_changed == NULL) {
-      return NULL;
+    if (base == nullptr || set_name == nullptr || name_changed == nullptr) {
+      return nullptr;
     }
 
     if (base->type != set_name->type || base->type != name_changed->type) {
-      return NULL;
+      return nullptr;
     }
 
     return base;
@@ -331,6 +333,6 @@ VrmlNodeType::has(const plist<NameTypeRec*> &recs, const char *name) const
         if (strcmp((*i)->name, name) == 0)
             return (*i);
     }
-    return NULL;
+    return nullptr;
 }
 

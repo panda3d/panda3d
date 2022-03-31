@@ -53,18 +53,19 @@ public:
 
   static CPT(CullPlanes) make_empty();
   CPT(CullPlanes) xform(const LMatrix4 &mat) const;
-  CPT(CullPlanes) apply_state(const CullTraverser *trav,
-                              const CullTraverserData *data,
-                              const ClipPlaneAttrib *net_attrib,
-                              const ClipPlaneAttrib *off_attrib,
-                              const OccluderEffect *node_effect) const;
+  static void apply_state(CPT(CullPlanes) &planes,
+                          const CullTraverser *trav,
+                          const CullTraverserData *data,
+                          const ClipPlaneAttrib *net_attrib,
+                          const ClipPlaneAttrib *off_attrib,
+                          const OccluderEffect *node_effect);
   CPT(CullPlanes) do_cull(int &result, CPT(RenderState) &state,
                           const GeometricBoundingVolume *node_gbv) const;
 
   CPT(CullPlanes) remove_plane(const NodePath &clip_plane) const;
   CPT(CullPlanes) remove_occluder(const NodePath &occluder) const;
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   typedef pmap<NodePath, PT(BoundingPlane) > Planes;

@@ -16,7 +16,7 @@
  */
 INLINE AttribNodeRegistry *AttribNodeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (AttribNodeRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     make_global_ptr();
   }
   return _global_ptr;
@@ -37,7 +37,7 @@ Entry(const NodePath &node) :
  *
  */
 INLINE AttribNodeRegistry::Entry::
-Entry(TypeHandle type, const string &name) :
+Entry(TypeHandle type, const std::string &name) :
   _type(type),
   _name(name)
 {

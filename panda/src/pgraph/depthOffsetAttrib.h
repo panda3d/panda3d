@@ -46,6 +46,8 @@ class FactoryParams;
  * Also, and only tangentially related, the DepthOffsetAttrib can be used to
  * constrain the Z output value to a subset of the usual [0, 1] range (or
  * reversing its direction) by specifying a new min_value and max_value.
+ *
+ * @deprecated See DepthBiasAttrib and DisplayRegion::set_depth_range() instead.
  */
 class EXPCL_PANDA_PGRAPH DepthOffsetAttrib : public RenderAttrib {
 private:
@@ -66,7 +68,7 @@ PUBLISHED:
   MAKE_PROPERTY(max_value, get_max_value);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

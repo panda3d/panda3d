@@ -31,7 +31,7 @@ protected:
   INLINE CallbackData();
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual void upcall();
 
@@ -53,7 +53,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &operator << (ostream &out, const CallbackData &cbd) {
+inline std::ostream &operator << (std::ostream &out, const CallbackData &cbd) {
   cbd.output(out);
   return out;
 }

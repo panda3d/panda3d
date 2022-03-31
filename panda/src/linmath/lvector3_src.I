@@ -183,10 +183,10 @@ angle_rad(const FLOATNAME(LVector3) &other) const {
   // poorly as dot(other) approaches 1.0.
   if (dot(other) < 0.0f) {
     FLOATTYPE a = ((*this)+other).length() / 2.0f;
-    return MathNumbers::cpi((FLOATTYPE)0.0f) - 2.0f * casin(min(a, (FLOATTYPE)1.0));
+    return MathNumbers::cpi((FLOATTYPE)0.0f) - 2.0f * casin(std::min(a, (FLOATTYPE)1.0));
   } else {
     FLOATTYPE a = ((*this)-other).length() / 2.0f;
-    return 2.0f * casin(min(a, (FLOATTYPE)1.0));
+    return 2.0f * casin(std::min(a, (FLOATTYPE)1.0));
   }
 }
 
@@ -230,7 +230,7 @@ signed_angle_deg(const FLOATNAME(LVector3) &other,
 }
 
 /**
- * This method is deprecated.  Do not use.
+ * @deprecated Do not use.
  */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_rad(const FLOATNAME(LVector3) &other) const {
@@ -238,7 +238,7 @@ relative_angle_rad(const FLOATNAME(LVector3) &other) const {
 }
 
 /**
- * This method is deprecated.  Do not use.
+ * @deprecated Do not use.
  */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_deg(const FLOATNAME(LVector3) &other) const {

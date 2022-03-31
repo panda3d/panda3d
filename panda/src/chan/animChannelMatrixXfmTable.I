@@ -41,7 +41,7 @@ has_table(char table_id) const {
   if (table_index < 0) {
     return false;
   }
-  return !(_tables[table_index] == (const PN_stdfloat *)NULL);
+  return !(_tables[table_index] == nullptr);
 }
 
 /**
@@ -51,7 +51,7 @@ INLINE void AnimChannelMatrixXfmTable::
 clear_table(char table_id) {
   int table_index = get_table_index(table_id);
   if (table_index >= 0) {
-    _tables[table_index] = NULL;
+    _tables[table_index] = nullptr;
   }
 }
 

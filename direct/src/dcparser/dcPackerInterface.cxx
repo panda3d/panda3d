@@ -17,6 +17,8 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
+using std::string;
+
 /**
  *
  */
@@ -32,7 +34,7 @@ DCPackerInterface(const string &name) :
   _has_nested_fields = false;
   _num_nested_fields = -1;
   _pack_type = PT_invalid;
-  _catalog = NULL;
+  _catalog = nullptr;
 }
 
 /**
@@ -50,7 +52,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
   _num_nested_fields(copy._num_nested_fields),
   _pack_type(copy._pack_type)
 {
-  _catalog = NULL;
+  _catalog = nullptr;
 }
 
 /**
@@ -58,9 +60,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
  */
 DCPackerInterface::
 ~DCPackerInterface() {
-  if (_catalog != (DCPackerCatalog *)NULL) {
-    delete _catalog;
-  }
+  delete _catalog;
 }
 
 /**
@@ -83,7 +83,7 @@ find_seek_index(const string &name) const {
  */
 DCField *DCPackerInterface::
 as_field() {
-  return (DCField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -91,7 +91,7 @@ as_field() {
  */
 const DCField *DCPackerInterface::
 as_field() const {
-  return (DCField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -99,7 +99,7 @@ as_field() const {
  */
 DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() {
-  return (DCSwitchParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -107,7 +107,7 @@ as_switch_parameter() {
  */
 const DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() const {
-  return (DCSwitchParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -115,7 +115,7 @@ as_switch_parameter() const {
  */
 DCClassParameter *DCPackerInterface::
 as_class_parameter() {
-  return (DCClassParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -123,7 +123,7 @@ as_class_parameter() {
  */
 const DCClassParameter *DCPackerInterface::
 as_class_parameter() const {
-  return (DCClassParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -139,13 +139,13 @@ bool DCPackerInterface::
 check_match(const string &description, DCFile *dcfile) const {
   bool match = false;
 
-  istringstream strm(description);
+  std::istringstream strm(description);
   dc_init_parser_parameter_description(strm, "check_match", dcfile);
   dcyyparse();
   dc_cleanup_parser();
 
   DCField *field = dc_get_parameter_description();
-  if (field != NULL) {
+  if (field != nullptr) {
     match = check_match(field);
     delete field;
   }
@@ -184,7 +184,7 @@ calc_num_nested_fields(size_t) const {
  */
 DCPackerInterface *DCPackerInterface::
 get_nested_field(int) const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -247,6 +247,14 @@ pack_string(DCPackData &, const string &, bool &pack_error, bool &) const {
 }
 
 /**
+ * Packs the indicated numeric or string value into the stream.
+ */
+void DCPackerInterface::
+pack_blob(DCPackData &, const vector_uchar &, bool &pack_error, bool &) const {
+  pack_error = true;
+}
+
+/**
  * Packs the field's specified default value (or a sensible default if no
  * value is specified) into the stream.  Returns true if the default value is
  * packed, false if the field doesn't know how to pack its default value.
@@ -301,6 +309,14 @@ unpack_uint64(const char *, size_t, size_t &, uint64_t &, bool &pack_error, bool
  */
 void DCPackerInterface::
 unpack_string(const char *, size_t, size_t &, string &, bool &pack_error, bool &) const {
+  pack_error = true;
+}
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+void DCPackerInterface::
+unpack_blob(const char *, size_t, size_t &, vector_uchar &, bool &pack_error, bool &) const {
   pack_error = true;
 }
 
@@ -367,7 +383,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
  */
 const DCPackerCatalog *DCPackerInterface::
 get_catalog() const {
-  if (_catalog == (DCPackerCatalog *)NULL) {
+  if (_catalog == nullptr) {
     ((DCPackerInterface *)this)->make_catalog();
   }
   return _catalog;
@@ -432,8 +448,8 @@ do_check_match_molecular_field(const DCMolecularField *) const {
  */
 void DCPackerInterface::
 make_catalog() {
-  nassertv(_catalog == (DCPackerCatalog *)NULL);
+  nassertv(_catalog == nullptr);
   _catalog = new DCPackerCatalog(this);
 
-  _catalog->r_fill_catalog("", this, NULL, 0);
+  _catalog->r_fill_catalog("", this, nullptr, 0);
 }

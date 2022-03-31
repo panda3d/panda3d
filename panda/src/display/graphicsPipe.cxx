@@ -38,7 +38,7 @@
 // CPUID is only available on i386 and x86-64 architectures.
 #if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 
-#if defined(__GNUC__) && !defined(__APPLE__)
+#ifdef __GNUC__
 // GCC and Clang offer a useful cpuid.h header.
 #include <cpuid.h>
 #endif
@@ -56,36 +56,28 @@ union cpuid_info {
 };
 
 /**
- * Returns the highest cpuid leaf that is supported by the CPU.
+ * Gets cpuid info for the given leaf.
  */
-static inline uint32_t get_cpuid_max(uint32_t leaf) {
-#if defined(__GNUC__) && !defined(__APPLE__)
-  return __get_cpuid_max(leaf, 0);
+static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
+#if defined(__GNUC__)
+  __get_cpuid(leaf, &info.eax, &info.ebx, &info.ecx, &info.edx);
 #elif defined(_MSC_VER)
-  uint32_t p[4] = {0};
-  __cpuid((int *)p, leaf);
-  return p[0];
+  __cpuid((int *)info.str, leaf);
 #else
-  unsigned int eax = 0;
-  __asm__ ("cpuid\n\t"
-           : "=a" (eax)
-           : "0" (leaf));
-  return eax;
+#  error No CPUID intrinsic is known for this compiler!
 #endif
 }
 
 /**
- * Gets cpuid info for the given leaf.
+ * Returns the highest cpuid leaf that is supported by the CPU.
  */
-static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
-#if defined(__GNUC__) && !defined(__APPLE__)
-  __cpuid(leaf, info.eax, info.ebx, info.ecx, info.edx);
-#elif defined(_MSC_VER)
-  __cpuid((int *)info.str, leaf);
+static inline uint32_t get_cpuid_max(uint32_t leaf) {
+#if defined(__GNUC__)
+  return __get_cpuid_max(leaf, nullptr);
 #else
-  __asm__ ("cpuid\n\t"
-           : "=a" (info.eax), "=b" (info.ebx), "=c" (info.ecx), "=d" (info.edx)
-           : "0" (leaf));
+  cpuid_info info;
+  get_cpuid(leaf, info);
+  return info.eax;
 #endif
 }
 #endif
@@ -124,6 +116,7 @@ GraphicsPipe() :
 
   _display_width = 0;
   _display_height = 0;
+  _detected_display_zoom = 1.0;
 
   _display_information = new DisplayInformation();
 
@@ -134,8 +127,8 @@ GraphicsPipe() :
 
   if (max_cpuid >= 1) {
     get_cpuid(0, info);
-    swap(info.ecx, info.edx);
-    _display_information->_cpu_vendor_string = string(info.str + 4, 12);
+    std::swap(info.ecx, info.edx);
+    _display_information->_cpu_vendor_string = std::string(info.str + 4, 12);
 
     get_cpuid(1, info);
     _display_information->_cpu_version_information = info.eax;
@@ -158,17 +151,17 @@ GraphicsPipe() :
 #if defined(IS_OSX)
   // macOS exposes a lot of useful information through sysctl.
   size_t len = sizeof(uint64_t);
-  sysctlbyname("hw.memsize", &_display_information->_physical_memory, &len, NULL, 0);
+  sysctlbyname("hw.memsize", &_display_information->_physical_memory, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency", &_display_information->_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency", &_display_information->_cpu_frequency, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency", &_display_information->_current_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency", &_display_information->_current_cpu_frequency, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency_max", &_display_information->_maximum_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency_max", &_display_information->_maximum_cpu_frequency, &len, nullptr, 0);
   len = sizeof(int);
-  sysctlbyname("hw.physicalcpu", &_display_information->_num_cpu_cores, &len, NULL, 0);
+  sysctlbyname("hw.physicalcpu", &_display_information->_num_cpu_cores, &len, nullptr, 0);
   len = sizeof(int);
-  sysctlbyname("hw.logicalcpu", &_display_information->_num_logical_cpus, &len, NULL, 0);
+  sysctlbyname("hw.logicalcpu", &_display_information->_num_logical_cpus, &len, nullptr, 0);
 
 #elif defined(IS_LINUX)
   _display_information->_get_memory_information_function = &update_memory_info;
@@ -176,9 +169,9 @@ GraphicsPipe() :
 
 #elif defined(IS_FREEBSD)
   size_t len = sizeof(uint64_t);
-  sysctlbyname("hw.physmem", &_display_information->_physical_memory, &len, NULL, 0);
+  sysctlbyname("hw.physmem", &_display_information->_physical_memory, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("vm.swap_total", &_display_information->_page_file_size, &len, NULL, 0);
+  sysctlbyname("vm.swap_total", &_display_information->_page_file_size, &len, nullptr, 0);
 
 #elif defined(_WIN32)
   MEMORYSTATUSEX status;
@@ -228,7 +221,7 @@ GraphicsPipe::get_preferred_window_thread() const {
  */
 PT(GraphicsStateGuardian) GraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -239,7 +232,7 @@ PT(GraphicsDevice) GraphicsPipe::
 make_device(void *scrn) {
   display_cat.error()
     << "make_device() unimplemented by " << get_type() << "\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -251,7 +244,7 @@ make_device(void *scrn) {
  */
 void GraphicsPipe::
 close_gsg(GraphicsStateGuardian *gsg) {
-  if (gsg != (GraphicsStateGuardian *)NULL) {
+  if (gsg != nullptr) {
     gsg->close_gsg();
   }
 }
@@ -260,7 +253,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) GraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -271,7 +264,28 @@ make_output(const string &name,
             bool &precertify) {
   display_cat.error()
     << get_type() << " cannot create buffers or windows.\n";
-  return NULL;
+  return nullptr;
+}
+
+/**
+ * Returns the display zoom factor configured in the operating system.  If the
+ * operating system automatically scales windows to match the DPI (such as when
+ * dpi-aware is set to false), this will be 1.0.  Otherwise, this will be set to
+ * a value approximating the density of the monitor divided by the standard
+ * density of the operating system (usually 96), yielding a value like 1.5 or
+ * 2.0.
+ *
+ * @since 1.10.8
+ */
+PN_stdfloat GraphicsPipe::
+get_display_zoom() const {
+  if (display_zoom.get_num_words() > 0) {
+    double override = display_zoom.get_value();
+    if (override != 0.0) {
+      return override;
+    }
+  }
+  return _detected_display_zoom;
 }
 
 /**

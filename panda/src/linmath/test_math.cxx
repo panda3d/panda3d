@@ -19,6 +19,10 @@
 #include "pnotify.h"
 #include <stdlib.h>
 
+using std::cerr;
+using std::cout;
+using std::endl;
+
 void test() {
   LMatrix4f x = LMatrix4f::ident_mat();
   LMatrix4f y = LMatrix4f::ident_mat();

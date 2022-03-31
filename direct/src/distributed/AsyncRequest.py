@@ -1,6 +1,7 @@
 #from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from .ConnectionRepository import *
 from panda3d.core import ConfigVariableDouble, ConfigVariableInt, ConfigVariableBool
 
@@ -15,7 +16,7 @@ if __debug__:
 
 class AsyncRequest(DirectObject):
     """
-    This class is used to make asynchronos reads and creates to a database.
+    This class is used to make asynchronous reads and creates to a database.
 
     You can create a list of self.neededObjects and then ask for each to be
     read or created, or if you only have one object that you need you can
@@ -254,7 +255,8 @@ class AsyncRequest(DirectObject):
                         print("\n\nself.avatarId =", self.avatarId)
                     print("\nself.neededObjects =", self.neededObjects)
                     print("\ntimed out after %s seconds.\n\n"%(task.delayTime,))
-                    import pdb; pdb.set_trace()
+                    import pdb
+                    pdb.set_trace()
             self.delete()
             return Task.done
 

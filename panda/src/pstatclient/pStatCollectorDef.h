@@ -29,7 +29,7 @@ class PStatClientVersion;
 class EXPCL_PANDA_PSTATCLIENT PStatCollectorDef {
 public:
   PStatCollectorDef();
-  PStatCollectorDef(int index, const string &name);
+  PStatCollectorDef(int index, const std::string &name);
   void set_parent(const PStatCollectorDef &parent);
 
   void write_datagram(Datagram &destination) const;
@@ -40,11 +40,11 @@ public:
   };
 
   int _index;
-  string _name;
+  std::string _name;
   int _parent_index;
   ColorDef _suggested_color;
   int _sort;
-  string _level_units;
+  std::string _level_units;
   double _suggested_scale;
   double _factor;
   bool _is_active;

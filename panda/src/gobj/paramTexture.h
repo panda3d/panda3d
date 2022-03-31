@@ -37,7 +37,7 @@ PUBLISHED:
   MAKE_PROPERTY(texture, get_texture);
   MAKE_PROPERTY(sampler, get_sampler);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   PT(Texture) _texture;
@@ -106,7 +106,7 @@ PUBLISHED:
   MAKE_PROPERTY(bind_level, get_bind_level);
   MAKE_PROPERTY2(bind_layer, get_bind_layered, get_bind_layer);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   PT(Texture) _texture;

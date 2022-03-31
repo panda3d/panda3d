@@ -37,12 +37,13 @@ TypeHandle CollisionNode::_type_handle;
  *
  */
 CollisionNode::
-CollisionNode(const string &name) :
+CollisionNode(const std::string &name) :
   PandaNode(name),
   _from_collide_mask(get_default_collide_mask()),
   _collider_sort(0)
 {
   set_cull_callback();
+  set_renderable();
 
   // CollisionNodes are hidden by default.
   set_overall_hidden(true);
@@ -58,6 +59,7 @@ CollisionNode::
 CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
+  _collider_sort(copy._collider_sort),
   _solids(copy._solids)
 {
 }
@@ -142,7 +144,7 @@ combine_with(PandaNode *other) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -184,12 +186,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     CPT(CollisionSolid) solid = (*si).get_read_pointer();
     PT(PandaNode) node = solid->get_viz(trav, data, false);
-    if (node != (PandaNode *)NULL) {
-      CullTraverserData next_data(data, node);
-
+    if (node != nullptr) {
       // We don't want to inherit the render state from above for these guys.
-      next_data._state = RenderState::make_empty();
-      trav->traverse(next_data);
+      trav->traverse_down(data, node, data._net_transform, RenderState::make_empty());
     }
   }
 
@@ -206,30 +205,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       for (si = _solids.begin(); si != _solids.end(); ++si) {
         CPT(CollisionSolid) solid = (*si).get_read_pointer();
         PT(PandaNode) node = solid->get_viz(trav, data, false);
-        if (node != (PandaNode *)NULL) {
-          CullTraverserData next_data(data, node);
-
-          next_data._net_transform =
-            next_data._net_transform->compose(transform);
-          next_data._state = get_last_pos_state();
-          trav->traverse(next_data);
+        if (node != nullptr) {
+          trav->traverse_down(data, node,
+            data._net_transform->compose(transform), get_last_pos_state());
         }
       }
     }
   }
 
   // Now carry on to render our child nodes.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool CollisionNode::
-is_renderable() const {
   return true;
 }
 
@@ -252,7 +236,7 @@ is_collision_node() const {
  * classes to include some information relevant to the class.
  */
 void CollisionNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " (" << _solids.size() << " solids)";
 }
@@ -331,8 +315,8 @@ CPT(RenderState) CollisionNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
@@ -422,7 +406,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for(int i = 0; i < num_solids; i++) {
     manager->read_pointer(scan);
     // Push back a NULL for each solid, for now.  We'll fill them in later.
-    _solids.push_back((CollisionSolid *)NULL);
+    _solids.push_back(nullptr);
   }
 
   _from_collide_mask.set_word(scan.get_uint32());

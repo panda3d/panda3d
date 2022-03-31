@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PIPELINE BlockerSimple {
 protected:
-  INLINE BlockerSimple();
+  constexpr BlockerSimple() = default;
   INLINE ~BlockerSimple();
 
 protected:
@@ -38,7 +38,7 @@ protected:
     F_has_waiters  = 0x40000000,
   };
 
-  unsigned int _flags;
+  unsigned int _flags = 0;
 
   friend class ThreadSimpleManager;
 };

@@ -25,7 +25,7 @@ get_num_eggs() const {
  */
 INLINE EggData *EggCharacterCollection::
 get_egg(int i) const {
-  nassertr(i >= 0 && i < (int)_eggs.size(), (EggData *)NULL);
+  nassertr(i >= 0 && i < (int)_eggs.size(), nullptr);
   return _eggs[i]._egg;
 }
 
@@ -71,7 +71,7 @@ get_num_characters() const {
  */
 INLINE EggCharacterData *EggCharacterCollection::
 get_character(int i) const {
-  nassertr(i >= 0 && i < (int)_characters.size(), (EggCharacterData *)NULL);
+  nassertr(i >= 0 && i < (int)_characters.size(), nullptr);
   return _characters[i];
 }
 
@@ -81,7 +81,7 @@ get_character(int i) const {
 INLINE EggCharacterData *EggCharacterCollection::
 get_character_by_model_index(int model_index) const {
   nassertr(model_index >= 0 && model_index < (int)_characters_by_model_index.size(),
-           (EggCharacterData *)NULL);
+           nullptr);
   return _characters_by_model_index[model_index];
 }
 
@@ -90,5 +90,5 @@ get_character_by_model_index(int model_index) const {
  */
 INLINE EggCharacterCollection::ModelDescription::
 ModelDescription() {
-  _root_node = (EggObject *)NULL;
+  _root_node = nullptr;
 }

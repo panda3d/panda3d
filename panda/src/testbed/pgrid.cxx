@@ -22,6 +22,8 @@
 
 #define RANDFRAC (rand()/(PN_stdfloat)(RAND_MAX))
 
+using std::string;
+
 class GriddedFilename {
 public:
   Filename _filename;
@@ -177,7 +179,7 @@ void
 get_command_line_filenames(int argc, char *argv[],
                            pvector<Filename> &static_filenames,
                            GriddedFilenames &gridded_filenames) {
-  for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
+  for (int i = 1; i < argc && argv[i] != nullptr; i++) {
     const string &arg = argv[i];
     size_t comma = arg.find(',');
     if (comma == string::npos) {
@@ -226,7 +228,7 @@ load_gridded_models(WindowFramework *window,
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     GriddedFilename &gf = (*fi);
     PT(PandaNode) node = loader.load_sync(gf._filename, options);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       gf._model = NodePath(node);
       grid_count += gf._count;
     }
@@ -244,7 +246,7 @@ load_gridded_models(WindowFramework *window,
   }
 
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-  wander_area_pos_offset = -max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
+  wander_area_pos_offset = -std::max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
   // Now walk through the list again, copying models into the scene graph as
   // we go.
@@ -252,7 +254,7 @@ load_gridded_models(WindowFramework *window,
   PN_stdfloat xpos = grid_pos_offset;
   PN_stdfloat ypos = grid_pos_offset;
 
-  srand( (unsigned)time( NULL ) );
+  srand( (unsigned)time( nullptr ) );
   double now = ClockObject::get_global_clock()->get_frame_time();
 
   int model_count = 0;
@@ -273,7 +275,7 @@ load_gridded_models(WindowFramework *window,
         ++model_count;
         PT(PandaNode) node = loader.load_sync(gf._filename, options);
         NodePath model;
-        if (node == (PandaNode *)NULL) {
+        if (node == nullptr) {
           model = gf._model.copy_to(NodePath());
         } else {
           model = NodePath(node);
@@ -400,7 +402,7 @@ main(int argc, char **argv) {
   get_command_line_filenames(argc, argv, static_filenames, gridded_filenames);
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     window->enable_keyboard();

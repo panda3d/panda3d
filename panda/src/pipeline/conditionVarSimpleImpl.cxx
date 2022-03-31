@@ -23,14 +23,14 @@
  */
 void ConditionVarSimpleImpl::
 wait() {
-  _mutex.release_quietly();
+  _mutex.unlock_quietly();
 
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   ThreadSimpleImpl *thread = manager->get_current_thread();
   manager->enqueue_block(thread, this);
   manager->next_context();
 
-  _mutex.acquire();
+  _mutex.lock();
 }
 
 /**
@@ -38,7 +38,7 @@ wait() {
  */
 void ConditionVarSimpleImpl::
 wait(double timeout) {
-  _mutex.release_quietly();
+  _mutex.unlock_quietly();
 
   // TODO.  For now this will release every frame, since we don't have an
   // interface yet on ThreadSimpleManager to do a timed wait.  Maybe that's
@@ -49,7 +49,7 @@ wait(double timeout) {
   manager->enqueue_ready(thread, true);
   manager->next_context();
 
-  _mutex.acquire();
+  _mutex.lock();
 }
 
 /**

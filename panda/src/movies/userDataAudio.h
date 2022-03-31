@@ -37,11 +37,11 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
 
   void append(int16_t *data, int n);
   void append(DatagramIterator *src, int len=0x40000000);
-  void append(const string &str);
+  void append(const vector_uchar &);
   void done(); // A promise not to write any more samples.
 
  private:
-  void read_samples(int n, int16_t *data);
+  int read_samples(int n, int16_t *data);
   void update_cursor();
   int _desired_rate;
   int _desired_channels;

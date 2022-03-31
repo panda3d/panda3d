@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle ColorBlendAttrib::_type_handle;
 int ColorBlendAttrib::_attrib_slot;
 
@@ -33,8 +35,9 @@ make_off() {
 }
 
 /**
- * Constructs a new ColorBlendAttrib object.  This constructor is deprecated;
- * use the one below, which takes three or four parameters, instead.
+ * Constructs a new ColorBlendAttrib object.
+ *
+ * @deprecated Use the three- or four-parameter constructor instead.
  */
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {

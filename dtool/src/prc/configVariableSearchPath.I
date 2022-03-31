@@ -15,12 +15,12 @@
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
-                         const string &description, int flags) :
+ConfigVariableSearchPath(const std::string &name,
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(Filename(".")),
   _local_modified(initial_invalid_cache())
@@ -28,7 +28,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -38,13 +38,13 @@ ConfigVariableSearchPath(const string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
+ConfigVariableSearchPath(const std::string &name,
                          const DSearchPath &default_value,
-                         const string &description, int flags) :
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(default_value),
   _local_modified(initial_invalid_cache())
@@ -52,7 +52,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -62,13 +62,13 @@ ConfigVariableSearchPath(const string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
-                         const string &default_value,
-                         const string &description, int flags) :
+ConfigVariableSearchPath(const std::string &name,
+                         const std::string &default_value,
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(Filename(default_value)),
   _local_modified(initial_invalid_cache())
@@ -76,7 +76,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -93,20 +93,24 @@ INLINE ConfigVariableSearchPath::
  * Returns the variable's value.
  */
 INLINE ConfigVariableSearchPath::
-operator const DSearchPath & () const {
+operator DSearchPath () const {
   return get_value();
 }
 
 /**
  *
  */
-INLINE const DSearchPath &ConfigVariableSearchPath::
+INLINE DSearchPath ConfigVariableSearchPath::
 get_value() const {
   TAU_PROFILE("const DSearchPath &ConfigVariableSearchPath::get_value() const", " ", TAU_USER);
+  DSearchPath value;
+  _lock.lock();
   if (!is_cache_valid(_local_modified)) {
     ((ConfigVariableSearchPath *)this)->reload_search_path();
   }
-  return _cache;
+  value = _cache;
+  _lock.unlock();
+  return value;
 }
 
 /**
@@ -123,7 +127,8 @@ get_default_value() const {
  */
 INLINE bool ConfigVariableSearchPath::
 clear_local_value() {
-  nassertr(_core != (ConfigVariableCore *)NULL, false);
+  _lock.lock();
+  nassertr(_core != nullptr, false);
 
   bool any_to_clear = !_prefix.is_empty() || _postfix.is_empty();
   _prefix.clear();
@@ -134,6 +139,7 @@ clear_local_value() {
   }
 
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
   return any_to_clear;
 }
 
@@ -151,8 +157,10 @@ clear() {
  */
 INLINE void ConfigVariableSearchPath::
 append_directory(const Filename &directory) {
+  _lock.lock();
   _postfix.append_directory(directory);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -160,8 +168,10 @@ append_directory(const Filename &directory) {
  */
 INLINE void ConfigVariableSearchPath::
 prepend_directory(const Filename &directory) {
+  _lock.lock();
   _prefix.prepend_directory(directory);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -169,9 +179,11 @@ prepend_directory(const Filename &directory) {
  * search list.
  */
 INLINE void ConfigVariableSearchPath::
-append_path(const string &path, const string &separator) {
+append_path(const std::string &path, const std::string &separator) {
+  _lock.lock();
   _postfix.append_path(path, separator);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -180,8 +192,10 @@ append_path(const string &path, const string &separator) {
  */
 INLINE void ConfigVariableSearchPath::
 append_path(const DSearchPath &path) {
+  _lock.lock();
   _postfix.append_path(path);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -190,8 +204,10 @@ append_path(const DSearchPath &path) {
  */
 INLINE void ConfigVariableSearchPath::
 prepend_path(const DSearchPath &path) {
+  _lock.lock();
   _prefix.prepend_path(path);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -213,9 +229,13 @@ get_num_directories() const {
 /**
  * Returns the nth directory on the search list.
  */
-INLINE const Filename &ConfigVariableSearchPath::
+INLINE Filename ConfigVariableSearchPath::
 get_directory(size_t n) const {
-  return get_value().get_directory(n);
+  Filename dir;
+  _lock.lock();
+  dir = _cache.get_directory(n);
+  _lock.unlock();
+  return dir;
 }
 
 /**
@@ -256,7 +276,7 @@ find_all_files(const Filename &filename) const {
  *
  */
 INLINE void ConfigVariableSearchPath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   get_value().output(out);
 }
 
@@ -264,12 +284,12 @@ output(ostream &out) const {
  *
  */
 INLINE void ConfigVariableSearchPath::
-write(ostream &out) const {
+write(std::ostream &out) const {
   get_value().write(out);
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableSearchPath &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableSearchPath &variable) {
   variable.output(out);
   return out;
 }

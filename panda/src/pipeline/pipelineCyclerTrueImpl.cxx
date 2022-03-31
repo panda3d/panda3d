@@ -27,7 +27,7 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _dirty(0),
   _lock(this)
 {
-  if (_pipeline == (Pipeline *)NULL) {
+  if (_pipeline == nullptr) {
     _pipeline = Pipeline::get_render_pipeline();
   }
 
@@ -64,7 +64,7 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
 
   for (int i = 0; i < _num_stages; ++i) {
     PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
-    if (new_pt == NULL) {
+    if (new_pt == nullptr) {
       new_pt = copy._data[i]._cdata->make_copy();
     }
     _data[i]._cdata = new_pt.p();
@@ -90,7 +90,7 @@ operator = (const PipelineCyclerTrueImpl &copy) {
 
   for (int i = 0; i < _num_stages; ++i) {
     PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
-    if (new_pt == NULL) {
+    if (new_pt == nullptr) {
       new_pt = copy._data[i]._cdata->make_copy();
     }
     _data[i]._cdata = new_pt.p();
@@ -111,7 +111,7 @@ PipelineCyclerTrueImpl::
   _pipeline->remove_cycler(this);
 
   delete[] _data;
-  _data = NULL;
+  _data = nullptr;
   _num_stages = 0;
 }
 
@@ -128,7 +128,7 @@ write_stage(int pipeline_stage, Thread *current_thread) {
 #ifndef NDEBUG
   nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
     _lock.release();
-    return NULL;
+    return nullptr;
   }
 #endif  // NDEBUG
 
@@ -176,7 +176,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
 #ifndef NDEBUG
   nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
     _lock.release();
-    return NULL;
+    return nullptr;
   }
 #endif  // NDEBUG
 
@@ -209,7 +209,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
 
       k = pipeline_stage - 1;
       while (k >= 0 && (_data[k]._cdata == old_data || force_to_0)) {
-        nassertr(_data[k]._writes_outstanding == 0, NULL);
+        nassertr(_data[k]._writes_outstanding == 0, nullptr);
         _data[k]._cdata = new_data.p();
         --k;
       }
@@ -228,7 +228,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
       // There are no external pointers, so no need to copy-on-write, but the
       // current pointer doesn't go all the way back.  Make it do so.
       while (k >= 0) {
-        nassertr(_data[k]._writes_outstanding == 0, NULL);
+        nassertr(_data[k]._writes_outstanding == 0, nullptr);
         _data[k]._cdata = old_data;
         --k;
       }
@@ -324,7 +324,7 @@ set_num_stages(int num_stages) {
  *
  */
 void PipelineCyclerTrueImpl::CyclerMutex::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CyclerMutex ";
   _cycler->cheat()->output(out);
 }

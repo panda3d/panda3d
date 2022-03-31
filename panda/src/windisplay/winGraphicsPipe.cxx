@@ -18,8 +18,8 @@
 #include "dtool_config.h"
 #include "pbitops.h"
 
-#include "psapi.h"
-#include "powrprof.h"
+#include <psapi.h>
+#include <powrprof.h>
 #include <intrin.h>
 
 TypeHandle WinGraphicsPipe::_type_handle;
@@ -48,7 +48,6 @@ typedef long (__stdcall *CallNtPowerInformationType) (POWER_INFORMATION_LEVEL in
 
 static int initialize = false;
 static HMODULE psapi_dll = 0;
-static HMODULE power_dll = 0;
 static GetProcessMemoryInfoType GetProcessMemoryInfoFunction = 0;
 static CallNtPowerInformationType CallNtPowerInformationFunction = 0;
 
@@ -123,7 +122,7 @@ int update_cpu_frequency_function(int processor_number, DisplayInformation *disp
     }
 
     information_level = ProcessorInformation;
-    input_buffer = NULL;
+    input_buffer = nullptr;
     output_buffer = processor_power_information_array;
     input_buffer_size = 0;
     output_buffer_size = sizeof(PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS;
@@ -156,38 +155,26 @@ count_number_of_cpus(DisplayInformation *display_information) {
   int num_cpu_cores = 0;
   int num_logical_cpus = 0;
 
-  // Get a pointer to the GetLogicalProcessorInformation function.
-  typedef BOOL (WINAPI *LPFN_GLPI)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
-                                   PDWORD);
-  LPFN_GLPI glpi;
-  glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
-                                    "GetLogicalProcessorInformation");
-  if (glpi == NULL) {
-    windisplay_cat.info()
-      << "GetLogicalProcessorInformation is not supported.\n";
-    return;
-  }
-
   // Allocate a buffer to hold the result of the
   // GetLogicalProcessorInformation call.
-  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = nullptr;
   DWORD buffer_length = 0;
-  DWORD rc = glpi(buffer, &buffer_length);
+  DWORD rc = GetLogicalProcessorInformation(buffer, &buffer_length);
   while (!rc) {
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-      if (buffer != NULL) {
+      if (buffer != nullptr) {
         PANDA_FREE_ARRAY(buffer);
       }
 
       buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)PANDA_MALLOC_ARRAY(buffer_length);
-      nassertv(buffer != NULL);
+      nassertv(buffer != nullptr);
     } else {
       windisplay_cat.info()
         << "GetLogicalProcessorInformation failed: " << GetLastError()
         << "\n";
       return;
     }
-    rc = glpi(buffer, &buffer_length);
+    rc = GetLogicalProcessorInformation(buffer, &buffer_length);
   }
 
   // Now get the results.
@@ -225,13 +212,13 @@ WinGraphicsPipe() {
   _supported_types = OT_window | OT_fullscreen_window;
 
   HMODULE user32 = GetModuleHandleA("user32.dll");
-  if (user32 != NULL) {
+  if (user32 != nullptr) {
     if (dpi_aware) {
       typedef HRESULT (WINAPI *PFN_SETPROCESSDPIAWARENESS)(Process_DPI_Awareness);
       PFN_SETPROCESSDPIAWARENESS pfnSetProcessDpiAwareness =
         (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(user32, "SetProcessDpiAwarenessInternal");
 
-      if (pfnSetProcessDpiAwareness == NULL) {
+      if (pfnSetProcessDpiAwareness == nullptr) {
         if (windisplay_cat.is_debug()) {
           windisplay_cat.debug() << "Unable to find SetProcessDpiAwareness in user32.dll.\n";
         }
@@ -240,6 +227,22 @@ WinGraphicsPipe() {
           windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
         }
         pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
+
+        HDC dc = GetDC(nullptr);
+        if (dc) {
+          int dpi = GetDeviceCaps(dc, LOGPIXELSX);
+          if (dpi > 0) {
+            PN_stdfloat zoom = (double)dpi / 96.0;
+            set_detected_display_zoom(zoom);
+
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug()
+                << "Determined display zoom to be " << zoom
+                << " based on LOGPIXELSX " << dpi << "\n";
+            }
+          }
+          ReleaseDC(nullptr, dc);
+        }
       }
     }
   }
@@ -261,9 +264,9 @@ WinGraphicsPipe() {
       windisplay_cat.debug() << "Using EnumDisplaySettings to fetch display information.\n";
     }
     pvector<DisplayMode> display_modes;
-    DEVMODE dm = {0};
+    DEVMODE dm{};
     dm.dmSize = sizeof(dm);
-    for (int i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; ++i) {
+    for (int i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
       DisplayMode mode;
       mode.width = dm.dmPelsWidth;
       mode.height = dm.dmPelsHeight;
@@ -293,7 +296,7 @@ WinGraphicsPipe() {
   version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (GetVersionEx(&version_info)) {
     if (windisplay_cat.is_info()) {
-      sprintf(string, "OS version: %d.%d.%d.%d\n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
+      sprintf(string, "OS version: %lu.%lu.%lu.%lu\n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
       windisplay_cat.info() << string;
       windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
     }

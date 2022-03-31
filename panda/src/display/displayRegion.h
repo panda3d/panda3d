@@ -57,10 +57,8 @@ class CullTraverser;
 class EXPCL_PANDA_DISPLAY DisplayRegion : public TypedReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
-
-private:
-  DisplayRegion(const DisplayRegion &copy);
-  void operator = (const DisplayRegion &copy);
+  DisplayRegion(const DisplayRegion &copy) = delete;
+  void operator = (const DisplayRegion &copy) = delete;
 
 public:
   virtual ~DisplayRegion();
@@ -83,6 +81,9 @@ PUBLISHED:
   INLINE void set_dimensions(const LVecBase4 &dimensions);
   virtual void set_dimensions(int i, const LVecBase4 &dimensions);
   MAKE_PROPERTY(dimensions, get_dimensions, set_dimensions);
+
+  INLINE void set_depth_range(PN_stdfloat near, PN_stdfloat far);
+  INLINE void get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -152,16 +153,17 @@ PUBLISHED:
   INLINE LVecBase2i get_pixel_size(int i = 0) const;
   MAKE_PROPERTY(pixel_size, get_pixel_size);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   static Filename make_screenshot_filename(
-    const string &prefix = "screenshot");
-  Filename save_screenshot_default(const string &prefix = "screenshot");
+    const std::string &prefix = "screenshot");
+  Filename save_screenshot_default(const std::string &prefix = "screenshot");
   bool save_screenshot(
-    const Filename &filename, const string &image_comment = "");
+    const Filename &filename, const std::string &image_comment = "");
   bool get_screenshot(PNMImage &image);
   PT(Texture) get_screenshot();
 
+  void clear_cull_result();
   virtual PT(PandaNode) make_cull_result_graph();
 
 public:
@@ -185,6 +187,8 @@ public:
 
   INLINE PStatCollector &get_cull_region_pcollector();
   INLINE PStatCollector &get_draw_region_pcollector();
+
+  INLINE const std::string &get_debug_name() const;
 
   struct Region {
     INLINE Region();
@@ -232,6 +236,7 @@ private:
     }
 
     Regions _regions;
+    LVecBase2 _depth_range;  // near, far
 
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
 
@@ -279,6 +284,7 @@ private:
 
   PStatCollector _cull_region_pcollector;
   PStatCollector _draw_region_pcollector;
+  std::string _debug_name;
 
 public:
   static TypeHandle get_class_type() {
@@ -310,9 +316,8 @@ private:
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);
-private:
-  INLINE DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy);
-  INLINE void operator = (const DisplayRegionPipelineReader &copy);
+  DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy) = delete;
+  void operator = (const DisplayRegionPipelineReader &copy) = delete;
 
 public:
   INLINE ~DisplayRegionPipelineReader();
@@ -331,6 +336,8 @@ public:
   INLINE PN_stdfloat get_right(int i = 0) const;
   INLINE PN_stdfloat get_bottom(int i = 0) const;
   INLINE PN_stdfloat get_top(int i = 0) const;
+
+  INLINE void get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -374,7 +381,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);
+INLINE std::ostream &operator << (std::ostream &out, const DisplayRegion &dr);
 
 #include "displayRegion.I"
 

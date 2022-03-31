@@ -54,8 +54,8 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename);
@@ -91,7 +91,7 @@ private:
   bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltBead *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltTexture *flt_texture, EggNode *egg_node);
-  bool parse_comment(const string &comment, const string &name,
+  bool parse_comment(const std::string &comment, const std::string &name,
                      EggNode *egg_node);
 
   PT_EggVertex make_egg_vertex(const FltVertex *flt_vertex);

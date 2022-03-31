@@ -84,7 +84,7 @@ PUBLISHED:
   ~NonlinearImager();
 
   int add_screen(ProjectionScreen *screen);
-  int add_screen(const NodePath &screen, const string &name);
+  int add_screen(const NodePath &screen, const std::string &name);
   int find_screen(const NodePath &screen) const;
   void remove_screen(int index);
   void remove_all_screens();
@@ -146,7 +146,7 @@ private:
   public:
     NodePath _screen;
     PT(ProjectionScreen) _screen_node;
-    string _name;
+    std::string _name;
     PT(GraphicsOutput) _buffer;
     NodePath _source_camera;
     int _tex_width, _tex_height;

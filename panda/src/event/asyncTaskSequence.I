@@ -34,7 +34,7 @@ get_repeat_count() const {
  * Returns the index of the task within the sequence that is currently being
  * executed (or that will be executed at the next epoch).
  */
-INLINE int AsyncTaskSequence::
+INLINE size_t AsyncTaskSequence::
 get_current_task_index() const {
   return _task_index;
 }

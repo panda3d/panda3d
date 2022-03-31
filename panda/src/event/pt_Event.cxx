@@ -13,11 +13,6 @@
 
 #include "pt_Event.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<Event>;
 template class PointerTo<Event>;
 template class ConstPointerTo<Event>;

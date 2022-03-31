@@ -22,7 +22,7 @@ PNMWriter::
   if (_owns_file) {
     delete _file;
   }
-  _file = (ostream *)NULL;
+  _file = nullptr;
 }
 
 /**

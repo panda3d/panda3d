@@ -15,7 +15,6 @@
 #define ERROR_UTILS_H
 
 #include "pandabase.h"
-#include "typedef.h"
 
 BEGIN_PUBLISH
 
@@ -74,12 +73,12 @@ enum ErrorUtilCode {
   EU_error_zlib = -80,
 };
 
-EXPCL_PANDAEXPRESS string error_to_text(ErrorUtilCode err);
-EXPCL_PANDAEXPRESS int get_write_error();
+EXPCL_PANDA_EXPRESS std::string error_to_text(ErrorUtilCode err);
+EXPCL_PANDA_EXPRESS int get_write_error();
 
 #ifdef HAVE_NET
-EXPCL_PANDAEXPRESS string handle_socket_error();
-EXPCL_PANDAEXPRESS int get_network_error();
+EXPCL_PANDA_EXPRESS std::string handle_socket_error();
+EXPCL_PANDA_EXPRESS int get_network_error();
 #endif
 
 END_PUBLISH

@@ -13,18 +13,22 @@
 
 #include "animateVerticesRequest.h"
 #include "bufferContext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_gobj.h"
 #include "geom.h"
 #include "geomCacheEntry.h"
 #include "geomMunger.h"
 #include "geomPrimitive.h"
 #include "geomTriangles.h"
+#include "geomTrianglesAdjacency.h"
 #include "geomTristrips.h"
+#include "geomTristripsAdjacency.h"
 #include "geomTrifans.h"
 #include "geomPatches.h"
 #include "geomLines.h"
+#include "geomLinesAdjacency.h"
 #include "geomLinestrips.h"
+#include "geomLinestripsAdjacency.h"
 #include "geomPoints.h"
 #include "geomVertexArrayData.h"
 #include "geomVertexArrayFormat.h"
@@ -44,7 +48,6 @@
 #include "textureReloadRequest.h"
 #include "textureStage.h"
 #include "textureContext.h"
-#include "timerQueryContext.h"
 #include "samplerContext.h"
 #include "samplerState.h"
 #include "shader.h"
@@ -65,6 +68,10 @@
 
 #include "dconfig.h"
 #include "string_utils.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_GOBJ)
+  #error Buildsystem error: BUILDING_PANDA_GOBJ not defined
+#endif
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
@@ -252,18 +259,6 @@ ConfigVariableBool cache_generated_shaders
  PRC_DESC("Set this true to cause all generated shaders to be cached in "
           "memory.  This is useful to prevent unnecessary recompilation."));
 
-ConfigVariableBool enforce_attrib_lock
-("enforce-attrib-lock", true,
- PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "
-          "constructed, the corresponding Material, Texture, or Light "
-          "is 'attrib locked.'  The attrib lock prevents qualitative "
-          "changes to the object.  This makes it possible to hardwire "
-          "information about material, light, and texture properties "
-          "into generated shaders.  This config variable can disable "
-          "the attrib lock.  Disabling the lock will break the shader "
-          "generator, but doing so may be necessary for backward "
-          "compatibility with old code."));
-
 ConfigVariableBool vertices_float64
 ("vertices-float64", false,
  PRC_DESC("When this is true, the default float format for vertices "
@@ -304,6 +299,22 @@ ConfigVariableBool vertex_animation_align_16
           "affect unanimated vertices, which are always packed tightly.  This also "
           "impacts only vertex formats created within Panda subsystems; custom "
           "vertex formats are not affected."));
+
+ConfigVariableBool vertex_colors_prefer_packed
+("vertex-colors-prefer-packed",
+#ifdef _WIN32
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("This specifies whether to optimize vertex colors for OpenGL or for "
+          "DirectX 9.  If set to true (the default on Windows), Panda will "
+          "generate DirectX-style vertex colors, which are also supported in "
+          "newer OpenGL versions (although they may be buggy on some cards, "
+          "such as AMD RDNA).  If false, Panda will always use OpenGL-style "
+          "vertex colors, causing a minor performance penalty in DirectX 9.  "
+          "You probably should set this to false if you know you will not be "
+          "using DirectX 9."));
 
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
@@ -353,6 +364,23 @@ ConfigVariableDouble simple_image_threshold
           "simple-image-size.  Larger numbers will result in smaller "
           "simple images.  Generally the value should be considerably "
           "less than 1."));
+
+ConfigVariableInt texture_reload_num_threads
+ ("texture-reload-num-threads", 1,
+  PRC_DESC("The number of threads that will be started by the Texture class "
+           "to reload textures asynchronously.  These threads will only be "
+           "started if the asynchronous interface is used, and if threading "
+           "support is compiled into Panda.  The default is one thread, "
+           "which allows textures to be loaded one at a time in a single "
+           "asychronous thread.  You can set this higher, particularly if "
+           "you have many CPU's available, to allow loading multiple models "
+           "simultaneously."));
+
+ConfigVariableEnum<ThreadPriority> texture_reload_thread_priority
+ ("texture-reload-thread-priority", TP_normal,
+  PRC_DESC("The default thread priority to assign to the threads created for "
+           "asynchronous texture loading.  The default is 'normal'; you may "
+           "also specify 'low', 'high', or 'urgent'."));
 
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
@@ -491,7 +519,7 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
          "in seconds, that is imposed on every asynchronous load attempt "
          "(within the thread).  Its purpose is to help debug errors that "
          "may occur when an asynchronous load is delayed.  The "
-         "delay is per-model, and all aync loads will be queued "
+         "delay is per-model, and all async loads will be queued "
          "up behind the delay--it is as if the time it takes to read a "
          "file is increased by this amount per read."));
 
@@ -514,6 +542,15 @@ ConfigVariableBool stereo_lens_old_convergence
           "since been corrected, but if your application relies on the "
           "old, incorrect behavior, this may be set to 'true' to switch "
           "back to the old calculation."));
+
+ConfigVariableBool basic_shaders_only
+("basic-shaders-only", false,
+ PRC_DESC("Set this to true if you aren't interested in shader model three "
+          "and beyond.  Setting this flag will cause panda to disable "
+          "bleeding-edge shader functionality which tends to be unreliable "
+          "or broken.  At some point, when functionality that is currently "
+          "flaky becomes reliable, we may expand the definition of what "
+          "constitutes 'basic' shaders."));
 
 ConfigVariableString cg_glsl_version
 ("cg-glsl-version", "",
@@ -546,14 +583,18 @@ ConfigureFn(config_gobj) {
   GeomPipelineReader::init_type();
   GeomContext::init_type();
   GeomLines::init_type();
+  GeomLinesAdjacency::init_type();
   GeomLinestrips::init_type();
+  GeomLinestripsAdjacency::init_type();
   GeomMunger::init_type();
   GeomPoints::init_type();
   GeomPrimitive::init_type();
   GeomPrimitivePipelineReader::init_type();
   GeomTriangles::init_type();
+  GeomTrianglesAdjacency::init_type();
   GeomTrifans::init_type();
   GeomTristrips::init_type();
+  GeomTristripsAdjacency::init_type();
   GeomPatches::init_type();
   GeomVertexArrayData::init_type();
   GeomVertexArrayDataHandle::init_type();
@@ -584,7 +625,6 @@ ConfigureFn(config_gobj) {
   TexturePoolFilter::init_type();
   TextureReloadRequest::init_type();
   TextureStage::init_type();
-  TimerQueryContext::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();
@@ -601,11 +641,15 @@ ConfigureFn(config_gobj) {
   // factory
   Geom::register_with_read_factory();
   GeomLines::register_with_read_factory();
+  GeomLinesAdjacency::register_with_read_factory();
   GeomLinestrips::register_with_read_factory();
+  GeomLinestripsAdjacency::register_with_read_factory();
   GeomPoints::register_with_read_factory();
   GeomTriangles::register_with_read_factory();
+  GeomTrianglesAdjacency::register_with_read_factory();
   GeomTrifans::register_with_read_factory();
   GeomTristrips::register_with_read_factory();
+  GeomTristripsAdjacency::register_with_read_factory();
   GeomPatches::register_with_read_factory();
   GeomVertexArrayData::register_with_read_factory();
   GeomVertexArrayFormat::register_with_read_factory();

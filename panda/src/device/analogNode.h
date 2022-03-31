@@ -38,7 +38,8 @@
  */
 class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
-  explicit AnalogNode(ClientBase *client, const string &device_name);
+  explicit AnalogNode(ClientBase *client, const std::string &device_name);
+  explicit AnalogNode(InputDevice *device);
   virtual ~AnalogNode();
 
   INLINE bool is_valid() const;
@@ -54,7 +55,7 @@ PUBLISHED:
   INLINE bool is_output_flipped(int channel) const;
 
 public:
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   class OutputData {
@@ -67,7 +68,7 @@ private:
   enum { max_outputs = 2 };
   OutputData _outputs[max_outputs];
 
-  PT(ClientAnalogDevice) _analog;
+  PT(InputDevice) _analog;
 
 protected:
   // Inherited from DataNode

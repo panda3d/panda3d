@@ -31,6 +31,7 @@ public:
 
   void add_texture_options();
   void add_delod_options(double default_delod = -1.0);
+  void set_exit_on_failure(bool exit_on_failure);
 
   virtual EggReader *as_reader();
   virtual void pre_process_egg_file();
@@ -47,11 +48,12 @@ private:
 
 protected:
   bool _force_complete;
+  bool _exit_on_failure;
 
 private:
   Filename _tex_dirname;
   bool _got_tex_dirname;
-  string _tex_extension;
+  std::string _tex_extension;
   bool _got_tex_extension;
   PNMFileType *_tex_type;
   double _delod;

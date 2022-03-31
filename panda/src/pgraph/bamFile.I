@@ -17,7 +17,7 @@
  */
 INLINE bool BamFile::
 is_valid_read() const {
-  return (_reader != (BamReader *)NULL);
+  return (_reader != nullptr);
 }
 
 
@@ -27,5 +27,5 @@ is_valid_read() const {
  */
 INLINE bool BamFile::
 is_valid_write() const {
-  return (_writer != (BamWriter *)NULL);
+  return (_writer != nullptr);
 }

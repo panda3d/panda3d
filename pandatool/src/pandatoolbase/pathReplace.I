@@ -44,7 +44,7 @@ clear() {
  * orig_prefix, that prefix will be replaced with replacement_prefix.
  */
 INLINE void PathReplace::
-add_pattern(const string &orig_prefix, const string &replacement_prefix) {
+add_pattern(const std::string &orig_prefix, const std::string &replacement_prefix) {
   _entries.push_back(Entry(orig_prefix, replacement_prefix));
 }
 
@@ -59,7 +59,7 @@ get_num_patterns() const {
 /**
  * Returns the original prefix associated with the nth pattern.
  */
-INLINE const string &PathReplace::
+INLINE const std::string &PathReplace::
 get_orig_prefix(int n) const {
   nassertr(n >= 0 && n < (int)_entries.size(), _entries[0]._orig_prefix);
   return _entries[n]._orig_prefix;
@@ -68,7 +68,7 @@ get_orig_prefix(int n) const {
 /**
  * Returns the replacement prefix associated with the nth pattern.
  */
-INLINE const string &PathReplace::
+INLINE const std::string &PathReplace::
 get_replacement_prefix(int n) const {
   nassertr(n >= 0 && n < (int)_entries.size(), _entries[0]._replacement_prefix);
   return _entries[n]._replacement_prefix;
@@ -98,7 +98,7 @@ convert_path(const Filename &orig_filename, const DSearchPath &additional_path) 
  *
  */
 INLINE PathReplace::Component::
-Component(const string &component) :
+Component(const std::string &component) :
   _orig_prefix(component),
   _double_star(component == "**")
 {

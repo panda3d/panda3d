@@ -21,6 +21,11 @@
 #include <stdio.h>
 #include <time.h>
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::string;
+
 
 bool create = false;           // -c
 bool append = false;           // -r
@@ -52,6 +57,7 @@ string dont_compress_str = "jpg,png,mp3,ogg";
 // Default text extensions.  May be overridden with -X.
 string text_ext_str = "txt";
 
+time_t source_date_epoch = (time_t)-1;
 bool got_record_timestamp_flag = false;
 bool record_timestamp_flag = true;
 
@@ -245,7 +251,7 @@ const string &
 get_password() {
   if (!got_password) {
     cerr << "Enter password: ";
-    getline(cin, password);
+    std::getline(std::cin, password);
     got_password = true;
   }
 
@@ -425,6 +431,12 @@ add_files(const vector_string &params) {
     needs_repack = true;
   }
 
+  if (multifile->get_record_timestamp() && source_date_epoch != (time_t)-1) {
+    if (multifile->get_timestamp() > source_date_epoch) {
+      multifile->set_timestamp(source_date_epoch);
+    }
+  }
+
   if (needs_repack) {
     if (!multifile->repack()) {
       cerr << "Failed to write " << multifile_name << ".\n";
@@ -528,6 +540,12 @@ kill_files(const vector_string &params) {
     }
   }
 
+  if (multifile->get_record_timestamp() && source_date_epoch != (time_t)-1) {
+    if (multifile->get_timestamp() > source_date_epoch) {
+      multifile->set_timestamp(source_date_epoch);
+    }
+  }
+
   bool okflag = true;
 
   if (multifile->needs_repack()) {
@@ -610,7 +628,7 @@ format_timestamp(bool record_timestamp, time_t timestamp) {
     return "  (no date) ";
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm *tm_p = localtime(&timestamp);
 
   if (timestamp > now || (now - timestamp > 86400 * 365)) {
@@ -634,8 +652,8 @@ list_files(const vector_string &params) {
   // We happen to know that we can read the index without doing a seek.
   // So this is the only place where we accept a .pz/.gz compressed .mf.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *istr = vfs->open_read_file(multifile_name, true);
-  if (istr == NULL) {
+  std::istream *istr = vfs->open_read_file(multifile_name, true);
+  if (istr == nullptr) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }
@@ -650,7 +668,7 @@ list_files(const vector_string &params) {
 
   int i;
   if (verbose) {
-    cout << num_subfiles << " subfiles:\n" << flush;
+    cout << num_subfiles << " subfiles:\n" << std::flush;
     for (i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile->get_subfile_name(i);
       if (is_named(subfile_name, params)) {
@@ -772,6 +790,18 @@ main(int argc, char **argv) {
       strcpy(new_arg + 1, argv[1]);
       argv[1] = new_arg;
     }
+  }
+
+#ifdef _MSC_VER
+  char source_date_epoch_str[64];
+  size_t source_date_epoch_size = 0;
+  if (getenv_s(&source_date_epoch_size, source_date_epoch_str,
+               sizeof(source_date_epoch_str), "SOURCE_DATE_EPOCH"), source_date_epoch_size > 1) {
+#else
+  const char *source_date_epoch_str = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch_str != nullptr && source_date_epoch_str[0] != 0) {
+#endif
+    source_date_epoch = (time_t)strtoll(source_date_epoch_str, nullptr, 10);
   }
 
   extern char *optarg;

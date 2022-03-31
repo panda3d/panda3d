@@ -14,10 +14,14 @@
 #include "boundingHexahedron.h"
 #include "boundingSphere.h"
 #include "boundingBox.h"
+#include "boundingPlane.h"
 #include "config_mathutil.h"
 
 #include <math.h>
 #include <algorithm>
+
+using std::max;
+using std::min;
 
 TypeHandle BoundingHexahedron::_type_handle;
 
@@ -151,7 +155,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingHexahedron::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bhexahedron, empty";
   } else if (is_infinite()) {
@@ -165,7 +169,7 @@ output(ostream &out) const {
  *
  */
 void BoundingHexahedron::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (is_empty()) {
     indent(out, indent_level) << "bhexahedron, empty\n";
   } else if (is_infinite()) {
@@ -351,6 +355,14 @@ contains_box(const BoundingBox *box) const {
   }
 
   return result;
+}
+
+/**
+ *
+ */
+int BoundingHexahedron::
+contains_plane(const BoundingPlane *plane) const {
+  return plane->contains_hexahedron(this) & ~IF_all;
 }
 
 /**

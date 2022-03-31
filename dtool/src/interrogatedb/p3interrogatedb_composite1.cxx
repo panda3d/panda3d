@@ -1,5 +1,4 @@
 #include "config_interrogatedb.cxx"
-#include "dtool_super_base.cxx"
 #include "indexRemapper.cxx"
 #include "interrogateComponent.cxx"
 #include "interrogateDatabase.cxx"

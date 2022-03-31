@@ -13,6 +13,10 @@
 
 #include "interrogate_datafile.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 
 /**
  * Writes the indicated string to the output file.  Uses the given whitespace
@@ -53,7 +57,7 @@ idf_input_string(istream &in, string &str) {
  */
 void
 idf_output_string(ostream &out, const char *str, char whitespace) {
-  if (str == (const char *)NULL) {
+  if (str == nullptr) {
     out << "0 ";
   } else {
     out << strlen(str) << whitespace;

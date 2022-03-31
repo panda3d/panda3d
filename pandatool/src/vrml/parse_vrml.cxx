@@ -30,6 +30,10 @@
 #include "zStream.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::istringstream;
+using std::string;
+
 extern int vrmlyyparse();
 extern void vrmlyyResetLineNumber();
 extern int vrmlyydebug;
@@ -83,9 +87,9 @@ parse_vrml(Filename filename) {
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  if (in == nullptr) {
     nout << "Cannot open " << filename << " for reading.\n";
-    return NULL;
+    return nullptr;
   }
   VrmlScene *result = parse_vrml(*in, filename);
   vfs->close_read_file(in);
@@ -99,11 +103,11 @@ parse_vrml(Filename filename) {
 VrmlScene *
 parse_vrml(istream &in, const string &filename) {
   if (!get_standard_nodes()) {
-    cerr << "Internal error--unable to parse VRML.\n";
-    return NULL;
+    std::cerr << "Internal error--unable to parse VRML.\n";
+    return nullptr;
   }
 
-  VrmlScene *scene = NULL;
+  VrmlScene *scene = nullptr;
   VrmlNodeType::pushNameSpace();
 
   vrml_init_parser(in, filename);
@@ -121,16 +125,16 @@ parse_vrml(istream &in, const string &filename) {
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cerr << "parse_vrml filename.wrl\n";
+    std::cerr << "parse_vrml filename.wrl\n";
     exit(1);
   }
 
   VrmlScene *scene = parse_vrml(argv[1]);
-  if (scene == (VrmlScene *)NULL) {
+  if (scene == nullptr) {
     exit(1);
   }
 
-  cout << *scene << "\n";
+  std::cout << *scene << "\n";
   return (0);
 }
 #endif

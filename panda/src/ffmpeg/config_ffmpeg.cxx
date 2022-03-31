@@ -17,12 +17,33 @@
 #include "ffmpegVideoCursor.h"
 #include "ffmpegAudio.h"
 #include "ffmpegAudioCursor.h"
-
 #include "movieTypeRegistry.h"
+#include "pandaSystem.h"
 
 extern "C" {
-  #include "libavcodec/avcodec.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
+  #include <libavutil/avutil.h>
 }
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_FFMPEG)
+  #error Buildsystem error: BUILDING_FFMPEG not defined
+#endif
+
+// Minimum supported versions:
+// FFmpeg: 1.1
+// libav: 9.20 (for Ubuntu 14.04)
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 35, 1)
+  #error Minimum supported version of libavcodec is 54.35.1.
+#endif
+
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 20, 4)
+  #error Minimum supported version of libavformat is 54.20.4.
+#endif
+
+#if LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 3, 0)
+  #error Minimum supported version of libavutil is 52.3.0.
+#endif
 
 ConfigureDef(config_ffmpeg);
 NotifyCategoryDef(ffmpeg, "");
@@ -107,6 +128,9 @@ init_libffmpeg() {
 
   FfmpegVideo::register_with_read_factory();
   FfmpegVideoCursor::register_with_read_factory();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("FFmpeg");
 
   // Register ffmpeg as catch-all audiovideo type.
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();

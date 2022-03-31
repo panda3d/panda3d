@@ -24,13 +24,13 @@ TypeHandle PythonThread::_type_handle;
  */
 PythonThread::
 PythonThread(PyObject *function, PyObject *args,
-             const string &name, const string &sync_name) :
+             const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
   _function = function;
   Py_INCREF(_function);
-  _args = NULL;
-  _result = NULL;
+  _args = nullptr;
+  _result = nullptr;
 
   if (!PyCallable_Check(_function)) {
     nassert_raise("Invalid function passed to PythonThread constructor");
@@ -38,11 +38,11 @@ PythonThread(PyObject *function, PyObject *args,
 
   set_args(args);
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD) && PY_VERSION_HEX < 0x03090000
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
+  // WITH_THREAD symbol defined within Python.h
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
 #endif
 }
 
@@ -78,7 +78,7 @@ PyObject *PythonThread::
 join() {
   Thread::join();
 
-  if (_result == NULL) {
+  if (_result == nullptr) {
     // No result; return None.
     Py_INCREF(Py_None);
     return Py_None;
@@ -107,11 +107,11 @@ set_args(PyObject *args) {
     // None means no arguments; create an empty tuple.
     _args = PyTuple_New(0);
   } else {
-    _args = NULL;
+    _args = nullptr;
     if (PySequence_Check(args)) {
       _args = PySequence_Tuple(args);
     }
-    if (_args == NULL) {
+    if (_args == nullptr) {
       Dtool_Raise_TypeError("PythonThread args must be a tuple");
     }
   }
@@ -130,13 +130,13 @@ call_python_func(PyObject *function, PyObject *args) {
 
   // Create a new Python thread state data structure, so Python can properly
   // lock itself.
-  PyObject *result = NULL;
+  PyObject *result = nullptr;
 
   if (current_thread == get_main_thread()) {
     // In the main thread, just call the function.
-    result = PyObject_Call(function, args, NULL);
+    result = PyObject_Call(function, args, nullptr);
 
-    if (result == (PyObject *)NULL) {
+    if (result == nullptr) {
       if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
         // If we caught SystemExit, let it pass by without bothering to print
         // a callback.
@@ -161,7 +161,8 @@ call_python_func(PyObject *function, PyObject *args) {
 #ifndef HAVE_THREADS
     // Shouldn't be possible to come here without having some kind of
     // threading support enabled.
-    nassertr(false, NULL);
+    nassert_raise("threading support disabled");
+    return nullptr;
 #else
 
 #ifdef SIMPLE_THREADS
@@ -193,8 +194,8 @@ call_python_func(PyObject *function, PyObject *args) {
     PyThreadState_Swap(new_thread_state);
 
     // Call the user's function.
-    result = PyObject_Call(function, args, NULL);
-    if (result == (PyObject *)NULL && PyErr_Occurred()) {
+    result = PyObject_Call(function, args, nullptr);
+    if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
       PyObject *exc, *val, *tb;
@@ -225,7 +226,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
     } else {
       // No exception.  Restore the thread state normally.
-      PyThreadState *state = PyThreadState_Swap(orig_thread_state);
+      PyThreadState_Swap(orig_thread_state);
       thread_states.push_back(new_thread_state);
       // PyThreadState_Clear(new_thread_state);
       // PyThreadState_Delete(new_thread_state);
@@ -237,27 +238,35 @@ call_python_func(PyObject *function, PyObject *args) {
     gstate = PyGILState_Ensure();
 
     // Call the user's function.
-    result = PyObject_Call(function, args, NULL);
-    if (result == (PyObject *)NULL && PyErr_Occurred()) {
+    result = PyObject_Call(function, args, nullptr);
+    if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
       PyObject *exc, *val, *tb;
       PyErr_Fetch(&exc, &val, &tb);
 
-      thread_cat.error()
-        << "Exception occurred within " << *current_thread << "\n";
-
       // Temporarily restore the exception state so we can print a callback
-      // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
+      // on-the-spot, except if it's a SystemExit, which would cause PyErr_Print
+      // to exit the process immediately.
+      if (exc != PyExc_SystemExit) {
+        thread_cat.error()
+          << "Exception occurred within " << *current_thread << "\n";
+
+        Py_XINCREF(exc);
+        Py_XINCREF(val);
+        Py_XINCREF(tb);
+        PyErr_Restore(exc, val, tb);
+        PyErr_Print();
+      } else {
+        thread_cat.info()
+          << "SystemExit occurred within " << *current_thread << "\n";
+      }
 
       PyGILState_Release(gstate);
 
-      PyErr_Restore(exc, val, tb);
+      if (PyGILState_Check()) {
+        PyErr_Restore(exc, val, tb);
+      }
     } else {
       // No exception.  Restore the thread state normally.
       PyGILState_Release(gstate);

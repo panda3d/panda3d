@@ -22,16 +22,16 @@
  * A connected strip of triangles.  This does not normally appear in an egg
  * file; it is typically generated as a result of meshing.
  */
-class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
+class EXPCL_PANDA_EGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE explicit EggTriangleStrip(const string &name = "");
+  INLINE explicit EggTriangleStrip(const std::string &name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
   virtual ~EggTriangleStrip();
 
   virtual EggTriangleStrip *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 protected:
   virtual int get_num_lead_vertices() const override;

@@ -85,8 +85,10 @@ PUBLISHED:
 
   CPT(RenderAttrib) add_on_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_on_light(const NodePath &light) const;
+  CPT(RenderAttrib) replace_on_light(const NodePath &source, const NodePath &dest) const;
   CPT(RenderAttrib) add_off_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
+  CPT(RenderAttrib) replace_off_light(const NodePath &source, const NodePath &dest) const;
 
   NodePath get_most_important_light() const;
   LColor get_ambient_contribution() const;
@@ -95,8 +97,8 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(off_lights, get_num_off_lights, get_off_light);
 
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

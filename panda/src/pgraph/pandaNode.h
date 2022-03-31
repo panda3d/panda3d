@@ -39,13 +39,13 @@
 #include "pnotify.h"
 #include "updateSeq.h"
 #include "deletedChain.h"
-#include "pandaNodeChain.h"
 #include "pStatCollector.h"
 #include "copyOnWriteObject.h"
 #include "copyOnWritePointer.h"
 #include "lightReMutex.h"
 #include "extension.h"
 #include "simpleHashMap.h"
+#include "geometricBoundingVolume.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -62,17 +62,17 @@ class GraphicsStateGuardianBase;
  * properties.
  */
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
-                                     public Namable, public LinkedListNode {
+                                     public Namable {
 PUBLISHED:
-  explicit PandaNode(const string &name);
+  explicit PandaNode(const std::string &name);
   virtual ~PandaNode();
   // published so that characters can be combined.
   virtual PandaNode *combine_with(PandaNode *other);
 
 protected:
   PandaNode(const PandaNode &copy);
-private:
-  void operator = (const PandaNode &copy);
+
+  PandaNode &operator = (const PandaNode &copy) = delete;
 
 public:
   virtual PandaNode *dupe_for_flatten() const;
@@ -97,12 +97,9 @@ public:
                       Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool has_selective_visibility() const;
-  virtual int get_first_visible_child() const;
-  virtual int get_next_visible_child(int n) const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
-  virtual bool is_renderable() const;
+  virtual bool is_renderable() const final; //CHANGED: see set_renderable()
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
@@ -189,19 +186,19 @@ PUBLISHED:
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
   MAKE_PROPERTY(prev_transform, get_prev_transform);
 
-  void set_tag(const string &key, const string &value,
+  void set_tag(const std::string &key, const std::string &value,
                Thread *current_thread = Thread::get_current_thread());
-  INLINE string get_tag(const string &key,
+  INLINE std::string get_tag(const std::string &key,
                         Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE bool has_tag(const string &key,
+  INLINE bool has_tag(const std::string &key,
                       Thread *current_thread = Thread::get_current_thread()) const;
-  void clear_tag(const string &key,
+  void clear_tag(const std::string &key,
                  Thread *current_thread = Thread::get_current_thread());
 
 public:
   void get_tag_keys(vector_string &keys) const;
   INLINE size_t get_num_tags() const;
-  INLINE string get_tag_key(size_t i) const;
+  INLINE std::string get_tag_key(size_t i) const;
 
 PUBLISHED:
   MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
@@ -221,7 +218,7 @@ PUBLISHED:
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
-  void list_tags(ostream &out, const string &separator = "\n") const;
+  void list_tags(std::ostream &out, const std::string &separator = "\n") const;
 
   int compare_tags(const PandaNode *other) const;
 
@@ -272,10 +269,10 @@ PUBLISHED:
   bool is_scene_root() const;
   bool is_under_scene_root() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
-  INLINE void ls(ostream &out, int indent_level) const;
+  INLINE void ls(std::ostream &out, int indent_level) const;
 
   // A node has three bounding volumes: an "external" bounding volume that
   // represents the node and all of its children, an "internal" bounding
@@ -326,6 +323,10 @@ PUBLISHED:
     FB_tag                  = 0x0010,
     FB_draw_mask            = 0x0020,
     FB_cull_callback        = 0x0040,
+    FB_renderable           = 0x0080,
+    FB_decal                = 0x0100,
+    FB_show_bounds          = 0x0200,
+    FB_show_tight_bounds    = 0x0400,
   };
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -351,6 +352,12 @@ protected:
                                        int &internal_vertices,
                                        int pipeline_stage,
                                        Thread *current_thread) const;
+  virtual void compute_external_bounds(CPT(BoundingVolume) &external_bounds,
+                                       BoundingVolume::BoundsType btype,
+                                       const BoundingVolume **volumes,
+                                       size_t num_volumes,
+                                       int pipeline_stage,
+                                       Thread *current_thread) const;
   virtual void parents_changed();
   virtual void children_changed();
   virtual void transform_changed();
@@ -358,13 +365,15 @@ protected:
   virtual void draw_mask_changed();
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
-  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
-                                        Thread *current_thread) const;
+  PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
+                                Thread *current_thread) const;
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
                                Thread *current_thread);
 
   void set_cull_callback();
   void disable_cull_callback();
+  void set_renderable();
+
 public:
   virtual void r_prepare_scene(GraphicsStateGuardianBase *gsg,
                                const RenderState *node_state,
@@ -437,10 +446,7 @@ private:
   static void new_connection(PandaNode *parent_node, PandaNode *child_node,
                              int pipeline_stage, Thread *current_thread);
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
-  void r_list_descendants(ostream &out, int indent_level) const;
-
-  INLINE void do_set_dirty_prev_transform();
-  INLINE void do_clear_dirty_prev_transform();
+  void r_list_descendants(std::ostream &out, int indent_level) const;
 
 public:
   // This must be declared public so that VC6 will allow the nested CData
@@ -453,11 +459,26 @@ public:
     INLINE void set_child(PandaNode *child);
     INLINE int get_sort() const;
 
+    INLINE CollideMask get_net_collide_mask() const;
+    INLINE const GeometricBoundingVolume *get_bounds() const;
+
+    INLINE bool compare_draw_mask(DrawMask running_draw_mask,
+                                  DrawMask camera_mask) const;
+
   private:
     // Child pointers are reference counted.  That way, holding a pointer to
     // the root of a subgraph keeps the entire subgraph around.
     PT(PandaNode) _child;
     int _sort;
+
+    // These values are cached here so that a traverser can efficiently check
+    // whether a node is in view before recursing.
+    CollideMask _net_collide_mask;
+    CPT(GeometricBoundingVolume) _external_bounds;
+    DrawMask _net_draw_control_mask;
+    DrawMask _net_draw_show_mask;
+
+    friend class PandaNode;
   };
 
 private:
@@ -515,12 +536,14 @@ private:
   Paths _paths;
   LightReMutex _paths_lock;
 
-  bool _dirty_prev_transform;
-  static PandaNodeChain _dirty_prev_transforms;
+  // This is not part of CData because we only care about modifications to the
+  // transform in the App stage.
+  UpdateSeq _prev_transform_valid;
+  static UpdateSeq _reset_prev_transform_seq;
 
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
-  typedef SimpleHashMap<string, string, string_hash> TagData;
+  typedef SimpleHashMap<std::string, std::string, string_hash> TagData;
 
   // This is actually implemented in pandaNode_ext.h, but defined here so
   // that we can destruct it from the C++ side.  Note that it isn't cycled,
@@ -532,9 +555,7 @@ private:
   };
   PT(PythonTagData) _python_tag_data;
 
-#ifndef NDEBUG
-  unsigned int _unexpected_change_flags;
-#endif // !NDEBUG
+  unsigned int _unexpected_change_flags = 0;
 
   // This is the data that must be cycled between pipeline stages.
 
@@ -567,11 +588,6 @@ private:
     // likely to change as often: tags, collide mask.
 
     INLINE void set_fancy_bit(int bits, bool value);
-
-#ifdef HAVE_PYTHON
-    void inc_py_refs();
-    void dec_py_refs();
-#endif
 
     CPT(RenderEffects) _effects;
 
@@ -647,13 +663,13 @@ private:
                          BamWriter *manager, Datagram &dg) const;
     void update_up_list(const Up &up_list, BamWriter *manager) const;
     void update_down_list(const Down &down_list, BamWriter *manager) const;
-    int complete_up_list(Up &up_list, const string &tag,
+    int complete_up_list(Up &up_list, const std::string &tag,
                          TypedWritable **p_list, BamReader *manager);
-    int complete_down_list(Down &down_list, const string &tag,
+    int complete_down_list(Down &down_list, const std::string &tag,
                            TypedWritable **p_list, BamReader *manager);
-    void fillin_up_list(Up &up_list, const string &tag,
+    void fillin_up_list(Up &up_list, const std::string &tag,
                         DatagramIterator &scan, BamReader *manager);
-    void fillin_down_list(Down &down_list, const string &tag,
+    void fillin_down_list(Down &down_list, const std::string &tag,
                           DatagramIterator &scan, BamReader *manager);
 
     INLINE CPT(Down) get_down() const;
@@ -695,7 +711,6 @@ private:
 
   static DrawMask _overall_bit;
 
-  static PStatCollector _reset_prev_pcollector;
   static PStatCollector _update_bounds_pcollector;
 
 PUBLISHED:
@@ -710,16 +725,18 @@ PUBLISHED:
     INLINE Children();
     INLINE Children(const CData *cdata);
     INLINE Children(const Children &copy);
-    INLINE void operator = (const Children &copy);
+    INLINE Children(Children &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Children(Children &&from) NOEXCEPT;
-    INLINE void operator = (Children &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Children &copy);
+    INLINE void operator = (Children &&from) noexcept;
 
     INLINE size_t get_num_children() const;
     INLINE PandaNode *get_child(size_t n) const;
     INLINE int get_child_sort(size_t n) const;
+
+    INLINE const DownConnection &get_child_connection(size_t n) const {
+      return (*_down)[n];
+    }
 
   PUBLISHED:
     INLINE PandaNode *operator [](size_t n) const { return get_child(n); }
@@ -735,12 +752,10 @@ PUBLISHED:
     INLINE Stashed();
     INLINE Stashed(const CData *cdata);
     INLINE Stashed(const Stashed &copy);
-    INLINE void operator = (const Stashed &copy);
+    INLINE Stashed(Stashed &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Stashed(Stashed &&from) NOEXCEPT;
-    INLINE void operator = (Stashed &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Stashed &copy);
+    INLINE void operator = (Stashed &&from) noexcept;
 
     INLINE size_t get_num_stashed() const;
     INLINE PandaNode *get_stashed(size_t n) const;
@@ -760,12 +775,10 @@ PUBLISHED:
     INLINE Parents();
     INLINE Parents(const CData *cdata);
     INLINE Parents(const Parents &copy);
-    INLINE void operator = (const Parents &copy);
+    INLINE Parents(Parents &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Parents(Parents &&from) NOEXCEPT;
-    INLINE void operator = (Parents &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Parents &copy);
+    INLINE void operator = (Parents &&from) noexcept;
 
     INLINE size_t get_num_parents() const;
     INLINE PandaNode *get_parent(size_t n) const;
@@ -872,6 +885,7 @@ public:
 
   INLINE int get_num_children() const;
   INLINE PandaNode *get_child(int n) const;
+  INLINE const PandaNode::DownConnection &get_child_connection(int n) const;
   INLINE int get_child_sort(int n) const;
   INLINE int find_child(PandaNode *node) const;
 
@@ -885,8 +899,8 @@ public:
   INLINE const TransformState *get_transform() const;
   INLINE const TransformState *get_prev_transform() const;
 
-  INLINE string get_tag(const string &key) const;
-  INLINE bool has_tag(const string &key) const;
+  INLINE std::string get_tag(const std::string &key) const;
+  INLINE bool has_tag(const std::string &key) const;
 
   INLINE CollideMask get_net_collide_mask() const;
   INLINE const RenderAttrib *get_off_clip_planes() const;
@@ -922,7 +936,7 @@ private:
 template<>
 INLINE void PointerToBase<PandaNode>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const PandaNode &node) {
+INLINE std::ostream &operator << (std::ostream &out, const PandaNode &node) {
   node.output(out);
   return out;
 }

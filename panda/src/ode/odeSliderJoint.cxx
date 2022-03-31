@@ -23,7 +23,7 @@ OdeSliderJoint(dJointID id) :
 
 OdeSliderJoint::
 OdeSliderJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateSlider(world.get_id(), 0)) {
+  OdeJoint(dJointCreateSlider(world.get_id(), nullptr)) {
 }
 
 OdeSliderJoint::

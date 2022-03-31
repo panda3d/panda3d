@@ -35,29 +35,29 @@ public:
   InterfaceMakerPythonSimple(InterrogateModuleDef *def);
   virtual ~InterfaceMakerPythonSimple();
 
-  virtual void write_prototypes(ostream &out,ostream *out_h);
-  virtual void write_functions(ostream &out);
+  virtual void write_prototypes(std::ostream &out,std::ostream *out_h);
+  virtual void write_functions(std::ostream &out);
 
-  virtual void write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def);
+  virtual void write_module(std::ostream &out,std::ostream *out_h, InterrogateModuleDef *def);
 
   virtual bool synthesize_this_parameter();
 
 protected:
-  virtual string get_wrapper_prefix();
-  virtual string get_unique_prefix();
+  virtual std::string get_wrapper_prefix();
+  virtual std::string get_unique_prefix();
 
   virtual void
   record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
 private:
-  void write_prototype_for(ostream &out, Function *func);
-  void write_function_for(ostream &out, Function *func);
-  void write_function_instance(ostream &out, Function *func,
+  void write_prototype_for(std::ostream &out, Function *func);
+  void write_function_for(std::ostream &out, Function *func);
+  void write_function_instance(std::ostream &out, Function *func,
                                FunctionRemap *remap);
 
-  void pack_return_value(ostream &out, int indent_level,
-                         FunctionRemap *remap, string return_expr);
+  void pack_return_value(std::ostream &out, int indent_level,
+                         FunctionRemap *remap, std::string return_expr);
 };
 
 #endif

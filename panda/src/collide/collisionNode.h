@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
-  explicit CollisionNode(const string &name);
+  explicit CollisionNode(const std::string &name);
 
 protected:
   CollisionNode(const CollisionNode &copy);
@@ -43,10 +43,9 @@ public:
   virtual CollideMask get_legal_collide_mask() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
   virtual bool is_collision_node() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE void set_collide_mask(CollideMask mask);

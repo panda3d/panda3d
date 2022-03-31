@@ -15,20 +15,20 @@
 
 // Continue all of the vector import definitions.
 
-#define EXPCL EXPCL_PANDAEGG
-#define EXPTP EXPTP_PANDAEGG
+#define EXPCL EXPCL_PANDA_EGG
+#define EXPTP EXPTP_PANDA_EGG
 #define TYPE LVector3d
 #define NAME vector_LVector3d
 #include "vector_src.cxx"
 
-#define EXPCL EXPCL_PANDAEGG
-#define EXPTP EXPTP_PANDAEGG
+#define EXPCL EXPCL_PANDA_EGG
+#define EXPTP EXPTP_PANDA_EGG
 #define TYPE LVector2d
 #define NAME vector_LVector2d
 #include "vector_src.cxx"
 
-#define EXPCL EXPCL_PANDAEGG
-#define EXPTP EXPTP_PANDAEGG
+#define EXPCL EXPCL_PANDA_EGG
+#define EXPTP EXPTP_PANDA_EGG
 #define TYPE LVector4
 #define NAME vector_LVector4
 #include "vector_src.cxx"

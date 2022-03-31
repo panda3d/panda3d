@@ -56,7 +56,7 @@ make_default() {
  *
  */
 void MaterialAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_material != nullptr) {
     out << *_material;

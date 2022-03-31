@@ -18,8 +18,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <crtdbg.h>
-#include "errno.h"
-#include "Max.h"
+#include <errno.h>
+
+using std::min;
+using std::max;
+
 #include "eggGroup.h"
 #include "eggTable.h"
 #include "eggXfmSAnim.h"
@@ -27,26 +30,25 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
-#include "modstack.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
-#include "windef.h"
-#include "windows.h"
+#include <windef.h>
+#include <windows.h>
 
-#include "Max.h"
-#include "iparamb2.h"
-#include "iparamm2.h"
-#include "istdplug.h"
-#include "iskin.h"
-#include "maxResource.h"
-#include "stdmat.h"
-#include "phyexp.h"
-#include "surf_api.h"
-#include "bipexp.h"
+#include <Max.h>
+#include <iparamb2.h>
+#include <iparamm2.h>
+#include <istdplug.h>
+#include <iskin.h>
+#include <stdmat.h>
+#include <phyexp.h>
+#include <surf_api.h>
+#include <bipexp.h>
+#include <modstack.h>
 
 #include "eggCoordinateSystem.h"
 #include "eggGroup.h"
@@ -63,6 +65,7 @@
 #include "maxNodeDesc.h"
 #include "maxNodeTree.h"
 #include "maxOptionsDialog.h"
+#include "maxResource.h"
 #include "maxToEggConverter.h"
 
 #define MaxEggPlugin_CLASS_ID   Class_ID(0x7ac0d6b7, 0x55731ef6)
@@ -119,7 +122,7 @@ class MaxEggPlugin : public HelperObject
 
   void AddEgg(MaxOptionsDialog *newEgg);
   void RemoveEgg(int i);
-  MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : NULL; }
+  MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : nullptr; }
 
   // Required implimented virtual methods: inherited virtual methods for
   // Reference-management

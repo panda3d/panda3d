@@ -39,8 +39,8 @@ public:
   Type _type;
 
   // Used for T_hello
-  string _server_hostname;
-  string _server_progname;
+  std::string _server_hostname;
+  std::string _server_progname;
   int _udp_port;
 };
 

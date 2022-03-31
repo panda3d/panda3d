@@ -51,9 +51,7 @@ PUBLISHED:
   INLINE void set_auto_disable_flag(int do_auto_disable);
   INLINE void set_auto_disable_defaults();
   INLINE void set_data(void *data);
-#ifdef HAVE_PYTHON
-  void set_data(PyObject *data);
-#endif
+  EXTENSION(void set_data(PyObject *data));
 
   INLINE void set_position(dReal x, dReal y, dReal z);
   INLINE void set_position(const LVecBase3f &pos);
@@ -71,11 +69,10 @@ PUBLISHED:
   INLINE int   get_auto_disable_steps() const;
   INLINE dReal get_auto_disable_time() const;
   INLINE int   get_auto_disable_flag() const;
-#ifdef HAVE_PYTHON
-  PyObject* get_data() const;
-#else
-  INLINE void* get_data() const;
+#ifndef CPPPARSER
+  INLINE void *get_data() const;
 #endif
+  EXTENSION(PyObject *get_data() const);
 
   INLINE LVecBase3f  get_position() const;
   INLINE LMatrix3f  get_rotation() const;
@@ -136,6 +133,7 @@ PUBLISHED:
   OdeJoint get_joint(int index) const;
   MAKE_SEQ(get_joints, get_num_joints, get_joint);
   EXTENSION(INLINE PyObject *get_converted_joint(int i) const);
+  MAKE_SEQ_PROPERTY(joints, get_num_joints, get_converted_joint);
 
   INLINE void enable();
   INLINE void disable();
@@ -143,12 +141,16 @@ PUBLISHED:
   INLINE void set_gravity_mode(int mode);
   INLINE int get_gravity_mode() const;
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeBody &other) const;
 
 private:
   dBodyID _id;
+
+public:
+  typedef void (*DestroyCallback)(OdeBody &body);
+  DestroyCallback _destroy_callback = nullptr;
 
 public:
   static TypeHandle get_class_type() {

@@ -34,9 +34,9 @@ public:
   INLINE bool operator != (const IffId &other) const;
   INLINE bool operator < (const IffId &other) const;
 
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   union {
@@ -47,7 +47,7 @@ private:
 
 #include "iffId.I"
 
-INLINE ostream &operator << (ostream &out, const IffId &id) {
+INLINE std::ostream &operator << (std::ostream &out, const IffId &id) {
   id.output(out);
   return out;
 }

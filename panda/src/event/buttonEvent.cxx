@@ -21,7 +21,7 @@
  *
  */
 void ButtonEvent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_type) {
   case T_down:
     out << "button " << _button << " down";
@@ -84,7 +84,7 @@ write_datagram(Datagram &dg) const {
     break;
 
   case T_keystroke:
-    dg.add_int16(_keycode);
+    dg.add_uint16(_keycode);
     break;
 
   case T_candidate:
@@ -119,7 +119,7 @@ read_datagram(DatagramIterator &scan) {
     break;
 
   case T_keystroke:
-    _keycode = scan.get_int16();
+    _keycode = scan.get_uint16();
     break;
 
   case T_candidate:

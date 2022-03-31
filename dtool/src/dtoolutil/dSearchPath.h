@@ -25,9 +25,9 @@
  * traditional searchpath-style string, e.g.  a list of directory names
  * delimited by spaces or colons, but it can also be built up explicitly.
  */
-class EXPCL_DTOOL DSearchPath {
+class EXPCL_DTOOL_DTOOLUTIL DSearchPath {
 PUBLISHED:
-  class EXPCL_DTOOL Results {
+  class EXPCL_DTOOL_DTOOLUTIL Results {
   PUBLISHED:
     Results();
     Results(const Results &copy);
@@ -41,8 +41,8 @@ PUBLISHED:
     INLINE Filename operator [] (size_t n) const;
     INLINE size_t size() const;
 
-    void output(ostream &out) const;
-    void write(ostream &out, int indent_level = 0) const;
+    void output(std::ostream &out) const;
+    void write(std::ostream &out, int indent_level = 0) const;
 
   public:
     void add_file(const Filename &file);
@@ -52,18 +52,21 @@ PUBLISHED:
     Files _files;
   };
 
-  DSearchPath();
-  DSearchPath(const string &path, const string &separator = string());
+  DSearchPath() = default;
+  DSearchPath(const std::string &path, const std::string &separator = std::string());
   DSearchPath(const Filename &directory);
-  DSearchPath(const DSearchPath &copy);
-  void operator = (const DSearchPath &copy);
-  ~DSearchPath();
+  DSearchPath(const DSearchPath &copy) = default;
+  DSearchPath(DSearchPath &&from) = default;
+  ~DSearchPath() = default;
+
+  DSearchPath &operator = (const DSearchPath &copy) = default;
+  DSearchPath &operator = (DSearchPath &&from) = default;
 
   void clear();
   void append_directory(const Filename &directory);
   void prepend_directory(const Filename &directory);
-  void append_path(const string &path,
-                   const string &separator = string());
+  void append_path(const std::string &path,
+                   const std::string &separator = std::string());
   void append_path(const DSearchPath &path);
   void prepend_path(const DSearchPath &path);
 
@@ -78,18 +81,18 @@ PUBLISHED:
   INLINE Results find_all_files(const Filename &filename) const;
 
   INLINE static Filename
-  search_path(const Filename &filename, const string &path,
-              const string &separator = string());
+  search_path(const Filename &filename, const std::string &path,
+              const std::string &separator = std::string());
 
-  void output(ostream &out, const string &separator = string()) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out, const std::string &separator = std::string()) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef pvector<Filename> Directories;
   Directories _directories;
 };
 
-INLINE ostream &operator << (ostream &out, const DSearchPath &sp) {
+INLINE std::ostream &operator << (std::ostream &out, const DSearchPath &sp) {
   sp.output(out);
   return out;
 }

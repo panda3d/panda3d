@@ -12,28 +12,12 @@
  */
 
 /**
- * Do not attempt to copy threads.
- */
-INLINE Thread::
-Thread(const Thread &copy) : _impl(this) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy threads.
- */
-INLINE void Thread::
-operator = (const Thread &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the sync name of the thread.  This name collects threads into "sync
  * groups", which are expected to run synchronously.  This is mainly used for
  * the benefit of PStats; threads with the same sync name can be ticked all at
  * once via the thread_tick() call.
  */
-INLINE const string &Thread::
+INLINE const std::string &Thread::
 get_sync_name() const {
   return _sync_name;
 }
@@ -62,7 +46,7 @@ get_python_index() const {
  * Returns a string that is guaranteed to be unique to this thread, across all
  * processes on the machine, during at least the lifetime of this process.
  */
-INLINE string Thread::
+INLINE std::string Thread::
 get_unique_id() const {
   return _impl.get_unique_id();
 }
@@ -91,7 +75,7 @@ get_pipeline_stage() const {
  */
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  set_pipeline_stage(max(_pipeline_stage, min_pipeline_stage));
+  set_pipeline_stage(std::max(_pipeline_stage, min_pipeline_stage));
 }
 
 /**
@@ -100,7 +84,7 @@ set_min_pipeline_stage(int min_pipeline_stage) {
  */
 INLINE Thread *Thread::
 get_main_thread() {
-  if (_main_thread == (Thread *)NULL) {
+  if (_main_thread == nullptr) {
     init_main_thread();
   }
   return _main_thread;
@@ -114,7 +98,7 @@ get_main_thread() {
  */
 INLINE Thread *Thread::
 get_external_thread() {
-  if (_external_thread == (Thread *)NULL) {
+  if (_external_thread == nullptr) {
     init_external_thread();
   }
   return _external_thread;
@@ -137,7 +121,7 @@ get_current_thread() {
   return get_main_thread();
 #else  // HAVE_THREADS
   Thread *thread = ThreadImpl::get_current_thread();
-  if (thread == (Thread *)NULL) {
+  if (thread == nullptr) {
     return Thread::get_external_thread();
   }
   return thread;
@@ -207,7 +191,11 @@ is_simple_threads() {
 INLINE void Thread::
 sleep(double seconds) {
   TAU_PROFILE("void Thread::sleep(double)", " ", TAU_USER);
+#ifdef DO_PSTATS
+  _sleep_func(seconds);
+#else
   ThreadImpl::sleep(seconds);
+#endif
 }
 
 /**
@@ -216,7 +204,11 @@ sleep(double seconds) {
 INLINE void Thread::
 force_yield() {
   TAU_PROFILE("void Thread::yield()", " ", TAU_USER);
+#ifdef DO_PSTATS
+  _yield_func();
+#else
   ThreadImpl::yield();
+#endif
 }
 
 /**
@@ -228,6 +220,32 @@ INLINE void Thread::
 consider_yield() {
   TAU_PROFILE("void Thread::consider_yield()", " ", TAU_USER);
   ThreadImpl::consider_yield();
+}
+
+/**
+ * Equivalent to the pause instruction on x86 or the yield instruction on ARM,
+ * to be called in spin loops.
+ */
+INLINE void Thread::
+relax() {
+#ifdef _MSC_VER
+  YieldProcessor();
+#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64))
+  __asm__ __volatile__("pause");
+#elif defined(__arm__) || defined(__aarch64__)
+  __asm__ __volatile__ ("yield" ::: "memory");
+#endif
+}
+
+/**
+ * Returns thread statistics.  The first number is the total number of context
+ * switches reported by the OS, and the second number is the number of
+ * involuntary context switches (ie. the thread was scheduled out by the OS),
+ * if known.
+ */
+INLINE bool Thread::
+get_context_switches(size_t &total, size_t &involuntary) {
+  return ThreadImpl::get_context_switches(total, involuntary);
 }
 
 /**
@@ -300,6 +318,17 @@ prepare_for_exit() {
   ThreadImpl::prepare_for_exit();
 }
 
+#ifdef ANDROID
+/**
+ * Enables interaction with the Java VM on Android.  Returns null if the
+ * thread is not attached to the Java VM (or bind_thread was not called).
+ */
+INLINE JNIEnv *Thread::
+get_jni_env() const {
+  return _impl.get_jni_env();
+}
+#endif
+
 /**
  * Stores a PStats index to be associated with this thread.  This is used
  * internally by the PStatClient; you should not need to call this directly.
@@ -328,8 +357,8 @@ get_pstats_callback() const {
   return _pstats_callback;
 }
 
-INLINE ostream &
-operator << (ostream &out, const Thread &thread) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Thread &thread) {
   thread.output(out);
   return out;
 }

@@ -25,7 +25,7 @@
 /**
  * Applies a patch synchronously
  */
-class EXPCL_PANDAEXPRESS Patcher {
+class EXPCL_PANDA_DOWNLOADER Patcher {
 PUBLISHED:
   Patcher();
   explicit Patcher(PT(Buffer) buffer);

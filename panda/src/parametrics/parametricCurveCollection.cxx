@@ -44,7 +44,7 @@ add_curve(ParametricCurve *curve) {
 void ParametricCurveCollection::
 insert_curve(size_t index, ParametricCurve *curve) {
   prepare_add_curve(curve);
-  index = min(index, _curves.size());
+  index = std::min(index, _curves.size());
   _curves.insert(_curves.begin() + index, curve);
   redraw();
 }
@@ -150,8 +150,8 @@ clear() {
  */
 void ParametricCurveCollection::
 clear_timewarps() {
-  PT(ParametricCurve) xyz_curve = (ParametricCurve *)NULL;
-  PT(ParametricCurve) hpr_curve = (ParametricCurve *)NULL;
+  PT(ParametricCurve) xyz_curve = nullptr;
+  PT(ParametricCurve) hpr_curve = nullptr;
 
   ParametricCurves::iterator ci;
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
@@ -159,7 +159,7 @@ clear_timewarps() {
 
     switch (curve->get_curve_type()) {
     case PCT_XYZ:
-      if (xyz_curve == (ParametricCurve *)NULL) {
+      if (xyz_curve == nullptr) {
         xyz_curve = curve;
       } else {
         prepare_remove_curve(curve);
@@ -167,7 +167,7 @@ clear_timewarps() {
       break;
 
     case PCT_HPR:
-      if (hpr_curve == (ParametricCurve *)NULL) {
+      if (hpr_curve == nullptr) {
         hpr_curve = curve;
       } else {
         prepare_remove_curve(curve);
@@ -182,7 +182,7 @@ clear_timewarps() {
   _curves.clear();
   _curves.push_back(xyz_curve);
 
-  if (hpr_curve != (ParametricCurve *)NULL) {
+  if (hpr_curve != nullptr) {
     _curves.push_back(hpr_curve);
   }
 
@@ -202,7 +202,7 @@ get_xyz_curve() const {
       return curve;
     }
   }
-  return (ParametricCurve *)NULL;
+  return nullptr;
 }
 
 /**
@@ -218,7 +218,7 @@ get_hpr_curve() const {
       return curve;
     }
   }
-  return (ParametricCurve *)NULL;
+  return nullptr;
 }
 
 /**
@@ -229,7 +229,7 @@ get_hpr_curve() const {
 ParametricCurve *ParametricCurveCollection::
 get_default_curve() const {
   ParametricCurve *xyz_curve = get_xyz_curve();
-  if (xyz_curve != (ParametricCurve *)NULL) {
+  if (xyz_curve != nullptr) {
     return xyz_curve;
   }
 
@@ -240,7 +240,7 @@ get_default_curve() const {
       return curve;
     }
   }
-  return (ParametricCurve *)NULL;
+  return nullptr;
 }
 
 /**
@@ -276,8 +276,8 @@ get_timewarp_curve(int n) const {
       n--;
     }
   }
-  nassertr(false, (ParametricCurve *)NULL);
-  return (ParametricCurve *)NULL;
+  nassert_raise("index out of range");
+  return nullptr;
 }
 
 /**
@@ -295,7 +295,7 @@ get_timewarp_curve(int n) const {
 void ParametricCurveCollection::
 make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
   ParametricCurve *xyz_curve = get_xyz_curve();
-  if (xyz_curve == (ParametricCurve *)NULL) {
+  if (xyz_curve == nullptr) {
     parametrics_cat.error()
       << "No XYZ curve for make_even().\n";
     return;
@@ -307,7 +307,7 @@ make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
   // the same length as all the others.
   CurveFitter fitter;
 
-  int num_segments = max(1, (int)cfloor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
+  int num_segments = std::max(1, (int)cfloor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
 
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
@@ -349,7 +349,7 @@ make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
   fitter.compute_tangents(1);
   PT(ParametricCurveCollection) fit = fitter.make_nurbs();
   ParametricCurve *t_curve = fit->get_xyz_curve();
-  nassertv(t_curve != (ParametricCurve *)NULL);
+  nassertv(t_curve != nullptr);
   t_curve->set_curve_type(PCT_T);
   add_curve(t_curve);
 }
@@ -362,7 +362,7 @@ make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
 void ParametricCurveCollection::
 face_forward(PN_stdfloat segments_per_unit) {
   ParametricCurve *xyz_curve = get_xyz_curve();
-  if (xyz_curve == (ParametricCurve *)NULL) {
+  if (xyz_curve == nullptr) {
     parametrics_cat.error()
       << "No XYZ curve for face_forward().\n";
     return;
@@ -412,7 +412,7 @@ face_forward(PN_stdfloat segments_per_unit) {
   fitter.compute_tangents(1);
   PT(ParametricCurveCollection) fit = fitter.make_nurbs();
   ParametricCurve *hpr_curve = fit->get_hpr_curve();
-  nassertv(hpr_curve != (ParametricCurve *)NULL);
+  nassertv(hpr_curve != nullptr);
   add_curve(hpr_curve, xyz_index + 1);
 }
 
@@ -452,9 +452,9 @@ bool ParametricCurveCollection::
 evaluate(PN_stdfloat t, LVecBase3 &xyz, LVecBase3 &hpr) const {
   // First, apply all the timewarps in sequence, from back to front.  Also
   // take note of the XYZ and HPR curves.
-  ParametricCurve *xyz_curve = (ParametricCurve *)NULL;
-  ParametricCurve *hpr_curve = (ParametricCurve *)NULL;
-  ParametricCurve *default_curve = (ParametricCurve *)NULL;
+  ParametricCurve *xyz_curve = nullptr;
+  ParametricCurve *hpr_curve = nullptr;
+  ParametricCurve *default_curve = nullptr;
 
   PN_stdfloat t0 = t;
   LVecBase3 point;
@@ -484,18 +484,18 @@ evaluate(PN_stdfloat t, LVecBase3 &xyz, LVecBase3 &hpr) const {
     }
   }
 
-  if (xyz_curve == (ParametricCurve *)NULL) {
+  if (xyz_curve == nullptr) {
     xyz_curve = default_curve;
   }
 
   // Now compute the position and orientation.
-  if (xyz_curve != (ParametricCurve *)NULL) {
+  if (xyz_curve != nullptr) {
     if (!xyz_curve->get_point(t0, xyz)) {
       return false;
     }
   }
 
-  if (hpr_curve != (ParametricCurve *)NULL) {
+  if (hpr_curve != nullptr) {
     if (!hpr_curve->get_point(t0, hpr)) {
       return false;
     }
@@ -564,7 +564,7 @@ evaluate_t(PN_stdfloat t) const {
 bool ParametricCurveCollection::
 adjust_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
   ParametricCurve *xyz_curve = get_xyz_curve();
-  if (xyz_curve == (ParametricCurve *)NULL) {
+  if (xyz_curve == nullptr) {
     return false;
   }
 
@@ -583,7 +583,7 @@ adjust_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
 bool ParametricCurveCollection::
 adjust_hpr(PN_stdfloat t, const LVecBase3 &hpr) {
   ParametricCurve *hpr_curve = get_hpr_curve();
-  if (hpr_curve == (ParametricCurve *)NULL) {
+  if (hpr_curve == nullptr) {
     return false;
   }
 
@@ -631,7 +631,7 @@ stitch(const ParametricCurveCollection *a,
 
   clear();
 
-  if (a_xyz != (ParametricCurve *)NULL && b_xyz != (ParametricCurve *)NULL) {
+  if (a_xyz != nullptr && b_xyz != nullptr) {
     PT(NurbsCurve) new_xyz = new NurbsCurve;
     if (!new_xyz->stitch(a_xyz, b_xyz)) {
       return false;
@@ -640,7 +640,7 @@ stitch(const ParametricCurveCollection *a,
     add_curve(new_xyz);
   }
 
-  if (a_hpr != (ParametricCurve *)NULL && b_hpr != (ParametricCurve *)NULL) {
+  if (a_hpr != nullptr && b_hpr != nullptr) {
     PT(NurbsCurve) new_hpr = new NurbsCurve;
     if (!new_hpr->stitch(a_hpr, b_hpr)) {
       return false;
@@ -657,7 +657,7 @@ stitch(const ParametricCurveCollection *a,
  * indicated output stream.
  */
 void ParametricCurveCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_curves() == 1) {
     out << "1 ParametricCurve";
   } else {
@@ -670,7 +670,7 @@ output(ostream &out) const {
  * to the indicated output stream.
  */
 void ParametricCurveCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   ParametricCurves::const_iterator ci;
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
     ParametricCurve *curve = (*ci);
@@ -700,7 +700,7 @@ write_egg(Filename filename, CoordinateSystem cs) {
  * specified output stream.  Returns true if the file is successfully written.
  */
 bool ParametricCurveCollection::
-write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
+write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -740,7 +740,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
     if (!curve->has_name()) {
       // If we don't have a name, come up with one.
-      string name = filename.get_basename_wo_extension();
+      std::string name = filename.get_basename_wo_extension();
 
       switch (curve->get_curve_type()) {
       case PCT_XYZ:

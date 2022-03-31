@@ -43,7 +43,7 @@ ThreadSimpleImpl(Thread *parent_obj) :
   _wake_time = 0.0;
 
   _context = alloc_thread_context();
-  _stack = NULL;
+  _stack = nullptr;
   _stack_size = 0;
 
   // Save this pointer for convenience.
@@ -55,6 +55,9 @@ ThreadSimpleImpl(Thread *parent_obj) :
 #ifdef WIN32
   _win32_system_thread_id = 0;
 #endif
+
+  _context_switches = 0;
+  _involuntary_context_switches = 0;
 }
 
 /**
@@ -70,7 +73,7 @@ ThreadSimpleImpl::
 
   free_thread_context(_context);
 
-  if (_stack != (void *)NULL) {
+  if (_stack != nullptr) {
     memory_hook->mmap_free(_stack, _stack_size);
   }
   _manager->remove_thread(this);
@@ -107,7 +110,7 @@ start(ThreadPriority priority, bool joinable) {
 
   nassertr(_status == TS_new, false);
 
-  nassertr(_stack == NULL, false);
+  nassertr(_stack == nullptr, false);
   _stack_size = memory_hook->round_up_to_page_size((size_t)thread_stack_size);
   if (needs_stack_prealloc) {
     _stack = (unsigned char *)memory_hook->mmap_alloc(_stack_size, true);
@@ -141,8 +144,8 @@ start(ThreadPriority priority, bool joinable) {
 
 #ifdef HAVE_PYTHON
   // Query the current Python thread state.
-  _python_state = PyThreadState_Swap(NULL);
-  PyThreadState_Swap(_python_state);
+  _python_state = thread_state_swap(nullptr);
+  thread_state_swap(_python_state);
 #endif  // HAVE_PYTHON
 
   init_thread_context(_context, _stack, _stack_size, st_begin_thread, this);
@@ -178,9 +181,9 @@ preempt() {
 /**
  *
  */
-string ThreadSimpleImpl::
+std::string ThreadSimpleImpl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
 #ifdef WIN32
   strm << GetCurrentProcessId();
 #else
@@ -204,6 +207,14 @@ prepare_for_exit() {
 /**
  *
  */
+bool ThreadSimpleImpl::
+is_true_threads() {
+  return (is_os_threads != 0);
+}
+
+/**
+ *
+ */
 void ThreadSimpleImpl::
 sleep_this(double seconds) {
   _manager->enqueue_sleep(this, seconds);
@@ -221,6 +232,32 @@ yield_this(bool volunteer) {
   }
   _manager->enqueue_ready(this, true);
   _manager->next_context();
+  if (!volunteer) {
+    // Technically all context switches are voluntary here, but to make this
+    // distinction meaningful, we count it as involuntary on consider_yield().
+    ++_involuntary_context_switches;
+  }
+}
+
+/**
+ * Returns the number of context switches that occurred on the current thread.
+ * The first number is the total number of context switches reported by the OS,
+ * and the second number is the number of involuntary context switches (ie. the
+ * thread was scheduled out by the OS), if known, otherwise zero.
+ * Returns true if context switch information was available, false otherwise.
+ */
+bool ThreadSimpleImpl::
+get_context_switches(size_t &total, size_t &involuntary) {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  if (manager->is_same_system_thread()) {
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    if (thread != nullptr) {
+      total = thread->_context_switches;
+      involuntary = thread->_involuntary_context_switches;
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -238,7 +275,7 @@ st_begin_thread(void *data) {
 void ThreadSimpleImpl::
 begin_thread() {
 #ifdef HAVE_PYTHON
-  PyThreadState_Swap(_python_state);
+  thread_state_swap(_python_state);
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_POSIX_THREADS

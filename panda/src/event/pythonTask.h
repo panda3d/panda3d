@@ -26,9 +26,9 @@
  * This class exists to allow association of a Python function or coroutine
  * with the AsyncTaskManager.
  */
-class PythonTask FINAL : public AsyncTask {
+class PythonTask final : public AsyncTask {
 PUBLISHED:
-  PythonTask(PyObject *function = Py_None, const string &name = string());
+  PythonTask(PyObject *function = Py_None, const std::string &name = std::string());
   virtual ~PythonTask();
   ALLOC_DELETED_CHAIN(PythonTask);
 
@@ -55,15 +55,12 @@ public:
 PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
-  PyObject *__getattr__(PyObject *attr) const;
+  PyObject *__getattribute__(PyObject *self, PyObject *attr) const;
 
   int __traverse__(visitproc visit, void *arg);
   int __clear__();
 
 PUBLISHED:
-  // The name of this task.
-  MAKE_PROPERTY(name, get_name, set_name);
-
   // The amount of seconds that have elapsed since the task was started,
   // according to the task manager's clock.
   MAKE_PROPERTY(time, get_elapsed_time);
@@ -88,15 +85,13 @@ PUBLISHED:
   // according to the task manager's clock.
   MAKE_PROPERTY(frame, get_elapsed_frames);
 
-  // This is a number guaranteed to be unique for each different AsyncTask
-  // object in the universe.
-  MAKE_PROPERTY(id, get_task_id);
-
   // This is a special variable to hold the instance dictionary in which
   // custom variables may be stored.
   PyObject *__dict__;
 
 protected:
+  virtual bool cancel();
+
   virtual bool is_runnable();
   virtual DoneStatus do_task();
   DoneStatus do_python_task();
@@ -120,12 +115,13 @@ private:
   PyObject *_exc_traceback;
 
   PyObject *_generator;
-  PyObject *_future_done;
+  PyObject *_fut_waiter;
 
   bool _append_task;
   bool _ignore_return;
   bool _registered_to_owner;
   mutable bool _retrieved_exception;
+  bool _must_cancel = false;
 
   friend class Extension<AsyncFuture>;
 

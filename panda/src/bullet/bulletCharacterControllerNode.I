@@ -17,6 +17,8 @@
 INLINE BulletCharacterControllerNode::
 ~BulletCharacterControllerNode() {
 
+  delete _character;
+  delete _ghost;
 }
 
 /**

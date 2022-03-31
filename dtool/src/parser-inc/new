@@ -1,0 +1,23 @@
+#pragma once
+
+#include <stdtypedefs.h>
+
+namespace std {
+  class bad_alloc;
+  class bad_array_new_length;
+
+  struct nothrow_t {
+    explicit nothrow_t() = default;
+  };
+  extern const nothrow_t nothrow;
+
+  using new_handler = void (*)();
+
+  inline constexpr size_t hardware_destructive_interference_size;
+  inline constexpr size_t hardware_constructive_interference_size;
+
+  struct destroying_delete_t {
+    explicit destroying_delete_t() = default;
+  };
+  inline constexpr destroying_delete_t destroying_delete {};
+}

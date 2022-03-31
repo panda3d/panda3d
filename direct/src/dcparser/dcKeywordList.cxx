@@ -57,7 +57,7 @@ DCKeywordList::
  * Returns true if this list includes the indicated keyword, false otherwise.
  */
 bool DCKeywordList::
-has_keyword(const string &name) const {
+has_keyword(const std::string &name) const {
   return (_keywords_by_name.find(name) != _keywords_by_name.end());
 }
 
@@ -83,7 +83,7 @@ get_num_keywords() const {
  */
 const DCKeyword *DCKeywordList::
 get_keyword(int n) const {
-  nassertr(n >= 0 && n < (int)_keywords.size(), NULL);
+  nassertr(n >= 0 && n < (int)_keywords.size(), nullptr);
   return _keywords[n];
 }
 
@@ -92,14 +92,14 @@ get_keyword(int n) const {
  * is no keyword in the list with that name.
  */
 const DCKeyword *DCKeywordList::
-get_keyword_by_name(const string &name) const {
+get_keyword_by_name(const std::string &name) const {
   KeywordsByName::const_iterator ni;
   ni = _keywords_by_name.find(name);
   if (ni != _keywords_by_name.end()) {
     return (*ni).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -148,7 +148,7 @@ clear_keywords() {
  *
  */
 void DCKeywordList::
-output_keywords(ostream &out) const {
+output_keywords(std::ostream &out) const {
   Keywords::const_iterator ki;
   for (ki = _keywords.begin(); ki != _keywords.end(); ++ki) {
     out << " " << (*ki)->get_name();

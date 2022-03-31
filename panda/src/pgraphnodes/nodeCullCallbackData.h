@@ -28,7 +28,7 @@ public:
   INLINE NodeCullCallbackData(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE CullTraverser *get_trav() const;
   INLINE CullTraverserData &get_data() const;

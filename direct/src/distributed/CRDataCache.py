@@ -2,6 +2,8 @@ from direct.distributed.CachedDOData import CachedDOData
 from panda3d.core import ConfigVariableInt
 
 
+__all__ = ["CRDataCache"]
+
 class CRDataCache:
     # Stores cached data for DistributedObjects between instantiations on the client
 
@@ -112,4 +114,3 @@ if __debug__:
     dc._stopMemLeakCheck()
     dc.destroy()
     del dc
-

@@ -20,6 +20,10 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const float imageVersionNumber = 3.0;
 static const int imageCommentLength = 80;
 static const char imageComment[imageCommentLength+1] =
@@ -273,7 +277,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeSoftImage::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -284,7 +287,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeSoftImage::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -322,7 +324,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   read_float(_file);
 
   // Skip comment
-  _file->seekg(imageCommentLength, ios::cur);
+  _file->seekg(imageCommentLength, std::ios::cur);
 
   char pict_id[4];
   _file->read(pict_id, 4);

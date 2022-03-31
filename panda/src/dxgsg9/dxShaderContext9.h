@@ -79,13 +79,15 @@ public:
   int _num_bound_streams;
 
   // FOR DEBUGGING
-  string _name;
+  std::string _name;
 
 private:
 #ifdef HAVE_CG
   CGprogram _cg_program;
   pvector <CGparameter> _cg_parameter_map;
 #endif
+
+  LMatrix4 *_mat_part_cache = nullptr;
 
 private:
   void release_resources(void);

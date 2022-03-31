@@ -21,36 +21,51 @@ ReMutexDirect()
 #endif
 {
 #ifndef HAVE_REMUTEXTRUEIMPL
-  _locking_thread = NULL;
+  _locking_thread = nullptr;
   _lock_count = 0;
 #endif
 }
 
 /**
- *
- */
-INLINE ReMutexDirect::
-~ReMutexDirect() {
-}
-
-/**
- * Do not attempt to copy reMutexes.
- */
-INLINE ReMutexDirect::
-ReMutexDirect(const ReMutexDirect &copy)
-#ifndef HAVE_REMUTEXTRUEIMPL
-  : _cvar_impl(_lock_impl)
-#endif
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy reMutexes.
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
  */
 INLINE void ReMutexDirect::
-operator = (const ReMutexDirect &copy) {
-  nassertv(false);
+lock() {
+  TAU_PROFILE("void ReMutexDirect::acquire()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.lock();
+#else
+  ((ReMutexDirect *)this)->do_lock();
+#endif  // HAVE_REMUTEXTRUEIMPL
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool ReMutexDirect::
+try_lock() {
+  TAU_PROFILE("void ReMutexDirect::try_acquire()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
+  return _impl.try_lock();
+#else
+  return ((ReMutexDirect *)this)->do_try_lock();
+#endif  // HAVE_REMUTEXTRUEIMPL
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void ReMutexDirect::
+unlock() {
+  TAU_PROFILE("void ReMutexDirect::unlock()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
+  _impl.unlock();
+#else
+  ((ReMutexDirect *)this)->do_unlock();
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
@@ -67,9 +82,9 @@ INLINE void ReMutexDirect::
 acquire() const {
   TAU_PROFILE("void ReMutexDirect::acquire()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 #else
-  ((ReMutexDirect *)this)->do_acquire();
+  ((ReMutexDirect *)this)->do_lock();
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
@@ -81,37 +96,41 @@ INLINE void ReMutexDirect::
 acquire(Thread *current_thread) const {
   TAU_PROFILE("void ReMutexDirect::acquire(Thread *)", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 #else
-  ((ReMutexDirect *)this)->do_acquire(current_thread);
+  ((ReMutexDirect *)this)->do_lock(current_thread);
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
  * Returns immediately, with a true value indicating the mutex has been
  * acquired, and false indicating it has not.
+ *
+ * @deprecated Python users should use acquire(False), C++ users try_lock()
  */
 INLINE bool ReMutexDirect::
 try_acquire() const {
   TAU_PROFILE("void ReMutexDirect::acquire(bool)", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  return ((ReMutexDirect *)this)->_impl.try_acquire();
+  return _impl.try_lock();
 #else
-  return ((ReMutexDirect *)this)->do_try_acquire();
+  return ((ReMutexDirect *)this)->do_try_lock();
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
  * Returns immediately, with a true value indicating the mutex has been
  * acquired, and false indicating it has not.
+ *
+ * @deprecated Python users should use acquire(False), C++ users try_lock()
  */
 INLINE bool ReMutexDirect::
 try_acquire(Thread *current_thread) const {
   TAU_PROFILE("void ReMutexDirect::acquire(bool)", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  return ((ReMutexDirect *)this)->_impl.try_acquire();
+  return _impl.try_lock();
 #else
-  return ((ReMutexDirect *)this)->do_try_acquire(current_thread);
+  return ((ReMutexDirect *)this)->do_try_lock(current_thread);
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
@@ -129,7 +148,7 @@ INLINE void ReMutexDirect::
 elevate_lock() const {
   TAU_PROFILE("void ReMutexDirect::elevate_lock()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 #else
   ((ReMutexDirect *)this)->do_elevate_lock();
 #endif  // HAVE_REMUTEXTRUEIMPL
@@ -146,9 +165,9 @@ INLINE void ReMutexDirect::
 release() const {
   TAU_PROFILE("void ReMutexDirect::release()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.release();
+  _impl.unlock();
 #else
-  ((ReMutexDirect *)this)->do_release();
+  ((ReMutexDirect *)this)->do_unlock();
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
@@ -167,7 +186,7 @@ debug_is_locked() const {
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
 INLINE void ReMutexDirect::
-set_name(const string &) {
+set_name(const std::string &) {
 }
 
 /**
@@ -188,9 +207,9 @@ has_name() const {
 /**
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
-INLINE string ReMutexDirect::
+INLINE std::string ReMutexDirect::
 get_name() const {
-  return string();
+  return std::string();
 }
 
 #ifndef HAVE_REMUTEXTRUEIMPL
@@ -201,8 +220,8 @@ get_name() const {
  * mutex).
  */
 INLINE void ReMutexDirect::
-do_acquire() {
-  do_acquire(Thread::get_current_thread());
+do_lock() {
+  do_lock(Thread::get_current_thread());
 }
 #endif
 
@@ -214,7 +233,7 @@ do_acquire() {
  * mutex).
  */
 INLINE bool ReMutexDirect::
-do_try_acquire() {
-  return do_try_acquire(Thread::get_current_thread());
+do_try_lock() {
+  return do_try_lock(Thread::get_current_thread());
 }
 #endif

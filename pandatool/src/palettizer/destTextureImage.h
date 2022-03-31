@@ -65,8 +65,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &
-operator << (ostream &out, const DestTextureImage &dest) {
+INLINE std::ostream &
+operator << (std::ostream &out, const DestTextureImage &dest) {
   dest.output_filename(out);
   return out;
 }

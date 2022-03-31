@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPatch::
-EggPatch(const string &name) : EggPrimitive(name) {
+EggPatch(const std::string &name) : EggPrimitive(name) {
 }
 
 /**

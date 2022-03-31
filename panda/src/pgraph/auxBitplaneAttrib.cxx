@@ -28,7 +28,7 @@ CPT(RenderAttrib) AuxBitplaneAttrib::_default;
  */
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make() {
-  if (_default == 0) {
+  if (_default == nullptr) {
     AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
     _default = return_new(attrib);
   }
@@ -57,7 +57,7 @@ make_default() {
  *
  */
 void AuxBitplaneAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << _outputs << ")";
 }
 

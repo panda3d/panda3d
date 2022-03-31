@@ -46,7 +46,7 @@ operator = (const InterrogateComponent &copy) {
 INLINE bool InterrogateComponent::
 has_library_name() const {
   const char *name = get_library_name();
-  return (name != (const char *)NULL && name[0] != '\0');
+  return (name != nullptr && name[0] != '\0');
 }
 
 /**
@@ -57,10 +57,10 @@ has_library_name() const {
  */
 INLINE const char *InterrogateComponent::
 get_library_name() const {
-  if (_def != (InterrogateModuleDef *)NULL) {
+  if (_def != nullptr) {
     return _def->library_name;
   }
-  return (const char *)NULL;
+  return nullptr;
 }
 
 /**
@@ -70,7 +70,7 @@ get_library_name() const {
 INLINE bool InterrogateComponent::
 has_module_name() const {
   const char *name = get_module_name();
-  return (name != (const char *)NULL && name[0] != '\0');
+  return (name != nullptr && name[0] != '\0');
 }
 
 /**
@@ -81,10 +81,10 @@ has_module_name() const {
  */
 INLINE const char *InterrogateComponent::
 get_module_name() const {
-  if (_def != (InterrogateModuleDef *)NULL) {
+  if (_def != nullptr) {
     return _def->module_name;
   }
-  return (const char *)NULL;
+  return nullptr;
 }
 
 /**
@@ -98,7 +98,7 @@ has_name() const {
 /**
  *
  */
-INLINE const string &InterrogateComponent::
+INLINE const std::string &InterrogateComponent::
 get_name() const {
   return _name;
 }
@@ -114,7 +114,7 @@ get_num_alt_names() const {
 /**
  *
  */
-INLINE const string &InterrogateComponent::
+INLINE const std::string &InterrogateComponent::
 get_alt_name(int n) const {
   if (n >= 0 && n < (int)_alt_names.size()) {
     return _alt_names[n];

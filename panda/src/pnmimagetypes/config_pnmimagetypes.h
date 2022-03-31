@@ -46,8 +46,8 @@ enum SGIStorageType {
   SST_verbatim = STORAGE_VERBATIM,
 };
 
-EXPCL_PANDA_PNMIMAGETYPES ostream &operator << (ostream &out, SGIStorageType sst);
-EXPCL_PANDA_PNMIMAGETYPES istream &operator >> (istream &in, SGIStorageType &sst);
+EXPCL_PANDA_PNMIMAGETYPES std::ostream &operator << (std::ostream &out, SGIStorageType sst);
+EXPCL_PANDA_PNMIMAGETYPES std::istream &operator >> (std::istream &in, SGIStorageType &sst);
 
 extern ConfigVariableEnum<SGIStorageType> sgi_storage_type;
 extern ConfigVariableString sgi_imagename;
@@ -68,8 +68,8 @@ enum IMGHeaderType {
   IHT_long,
 };
 
-EXPCL_PANDA_PNMIMAGETYPES ostream &operator << (ostream &out, IMGHeaderType iht);
-EXPCL_PANDA_PNMIMAGETYPES istream &operator >> (istream &in, IMGHeaderType &iht);
+EXPCL_PANDA_PNMIMAGETYPES std::ostream &operator << (std::ostream &out, IMGHeaderType iht);
+EXPCL_PANDA_PNMIMAGETYPES std::istream &operator >> (std::istream &in, IMGHeaderType &iht);
 
 extern ConfigVariableEnum<IMGHeaderType> img_header_type;
 extern ConfigVariableInt img_size;

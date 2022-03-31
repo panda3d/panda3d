@@ -69,7 +69,7 @@ populate_particle(BaseParticle *bp) {
  * Write a string representation of this instance to <out>.
  */
 void BaseParticleFactory::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"BaseParticleFactory";
   #endif //] NDEBUG
@@ -79,7 +79,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseParticleFactory::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseParticleFactory:\n";
   out.width(indent+2); out<<""; out<<"_lifespan_base "<<_lifespan_base<<"\n";

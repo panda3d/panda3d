@@ -28,16 +28,11 @@
  * file, rather than defining the vector again.
  */
 
-#define EXPCL EXPCL_PANDAEGG
-#define EXPTP EXPTP_PANDAEGG
+#define EXPCL EXPCL_PANDA_EGG
+#define EXPTP EXPTP_PANDA_EGG
 #define TYPE PT_EggTexture
 #define NAME vector_PT_EggTexture
 
 #include "vector_src.h"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

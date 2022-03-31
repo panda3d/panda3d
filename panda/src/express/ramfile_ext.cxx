@@ -23,14 +23,10 @@ PyObject *Extension<Ramfile>::
 read(size_t length) {
   size_t data_length = _this->get_data_size();
   const char *data = _this->_data.data() + _this->_pos;
-  length = min(length, data_length - _this->_pos);
-  _this->_pos = min(_this->_pos + length, data_length);
+  length = std::min(length, data_length - _this->_pos);
+  _this->_pos = std::min(_this->_pos + length, data_length);
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)data, length);
-#else
-  return PyString_FromStringAndSize((char *)data, length);
-#endif
 }
 
 /**
@@ -43,12 +39,8 @@ read(size_t length) {
  */
 PyObject *Extension<Ramfile>::
 readline() {
-  string line = _this->readline();
-#if PY_MAJOR_VERSION >= 3
+  std::string line = _this->readline();
   return PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-  return PyString_FromStringAndSize(line.data(), line.size());
-#endif
 }
 
 /**
@@ -58,17 +50,13 @@ readline() {
 PyObject *Extension<Ramfile>::
 readlines() {
   PyObject *lst = PyList_New(0);
-  if (lst == NULL) {
-    return NULL;
+  if (lst == nullptr) {
+    return nullptr;
   }
 
-  string line = _this->readline();
+  std::string line = _this->readline();
   while (!line.empty()) {
-#if PY_MAJOR_VERSION >= 3
     PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-    PyObject *py_line = PyString_FromStringAndSize(line.data(), line.size());
-#endif
 
     PyList_Append(lst, py_line);
     Py_DECREF(py_line);
@@ -83,11 +71,31 @@ readlines() {
  */
 PyObject *Extension<Ramfile>::
 get_data() const {
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(_this->_data.data(), _this->_data.size());
-#else
-  return PyString_FromStringAndSize(_this->_data.data(), _this->_data.size());
-#endif
+}
+
+/**
+ *
+ */
+PyObject *Extension<Ramfile>::
+__getstate__() const {
+  PyObject *state = PyTuple_New(2);
+  PyTuple_SET_ITEM(state, 0, get_data());
+  PyTuple_SET_ITEM(state, 1, PyLong_FromSize_t(_this->tell()));
+  return state;
+}
+
+/**
+ *
+ */
+void Extension<Ramfile>::
+__setstate__(PyObject *state) {
+  char *str;
+  Py_ssize_t len;
+  if (PyBytes_AsStringAndSize(PyTuple_GET_ITEM(state, 0), &str, &len) >= 0) {
+    _this->_data = std::string(str, len);
+  }
+  _this->seek(PyLong_AsSize_t(PyTuple_GET_ITEM(state, 1)));
 }
 
 #endif

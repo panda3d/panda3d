@@ -20,7 +20,7 @@ TypeHandle ForceNode::_type_handle;
  * default constructor
  */
 ForceNode::
-ForceNode(const string &name) :
+ForceNode(const std::string &name) :
   PandaNode(name) {
 }
 
@@ -114,7 +114,7 @@ remove_force(size_t index) {
 
   pvector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;
-  (*remove)->_force_node = (ForceNode *) NULL;
+  (*remove)->_force_node = nullptr;
   (*remove)->_force_node_path = NodePath();
 
   _forces.erase(remove);
@@ -124,7 +124,7 @@ remove_force(size_t index) {
  * Write a string representation of this instance to <out>.
  */
 void ForceNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out<<" ("<<_forces.size()<<" forces)";
 }
@@ -133,7 +133,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void ForceNode::
-write_forces(ostream &out, unsigned int indent) const {
+write_forces(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"_forces ("<<_forces.size()<<" forces)"<<"\n";
   for (ForceVector::const_iterator i=_forces.begin();
@@ -149,7 +149,7 @@ write_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void ForceNode::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ForceNode (id "<<this<<") ";
   // #*#PandaNode::output(out);

@@ -18,13 +18,16 @@
 #include "occluderEffect.h"
 #include "boundingBox.h"
 
+using std::max;
+using std::min;
+
 /**
  * Returns a pointer to an empty CullPlanes object.
  */
 CPT(CullPlanes) CullPlanes::
 make_empty() {
   static CPT(CullPlanes) empty;
-  if (empty == NULL) {
+  if (empty == nullptr) {
     empty = new CullPlanes;
     // Artificially tick the reference count, just to ensure we won't
     // accidentally modify this object in any of the copy-on-write operations
@@ -76,26 +79,33 @@ xform(const LMatrix4 &mat) const {
  * will be added to the state, unless those ClipPlanes are also listed in
  * off_attrib.
  */
-CPT(CullPlanes) CullPlanes::
-apply_state(const CullTraverser *trav, const CullTraverserData *data,
+void CullPlanes::
+apply_state(CPT(CullPlanes) &planes,
+            const CullTraverser *trav, const CullTraverserData *data,
             const ClipPlaneAttrib *net_attrib,
             const ClipPlaneAttrib *off_attrib,
-            const OccluderEffect *node_effect) const {
-  if (net_attrib == (ClipPlaneAttrib *)NULL && node_effect == (OccluderEffect *)NULL) {
-    return this;
+            const OccluderEffect *node_effect) {
+  if (net_attrib == nullptr && node_effect == nullptr) {
+    return;
   }
 
   PT(CullPlanes) new_planes;
-  if (get_ref_count() == 1) {
-    new_planes = (CullPlanes *)this;
-  } else {
-    new_planes = new CullPlanes(*this);
+  if (planes != nullptr) {
+    if (planes->get_ref_count() == 1) {
+      new_planes = (CullPlanes *)planes.p();
+    } else {
+      new_planes = new CullPlanes(*planes);
+    }
   }
 
-  CPT(TransformState) net_transform = NULL;
+  CPT(TransformState) net_transform = nullptr;
 
-  if (net_attrib != (ClipPlaneAttrib *)NULL) {
+  if (net_attrib != nullptr) {
     int num_on_planes = net_attrib->get_num_on_planes();
+    if (num_on_planes > 0 && new_planes.is_null()) {
+      new_planes = new CullPlanes;
+    }
+
     for (int i = 0; i < num_on_planes; ++i) {
       NodePath clip_plane = net_attrib->get_on_plane(i);
       Planes::const_iterator pi = new_planes->_planes.find(clip_plane);
@@ -103,7 +113,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         if (!off_attrib->has_off_plane(clip_plane)) {
           // Here's a new clip plane; add it to the list.  For this we need
           // the net transform to this node.
-          if (net_transform == (TransformState *)NULL) {
+          if (net_transform == nullptr) {
             net_transform = data->get_net_transform(trav);
           }
 
@@ -118,27 +128,31 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
     }
   }
 
-  if (node_effect != (OccluderEffect *)NULL) {
-    CPT(TransformState) center_transform = NULL;
+  if (node_effect != nullptr) {
+    CPT(TransformState) center_transform = nullptr;
     // We'll need to know the occluder's frustum in cull-center space.
     SceneSetup *scene = trav->get_scene();
     const Lens *lens = scene->get_lens();
 
     int num_on_occluders = node_effect->get_num_on_occluders();
+    if (num_on_occluders > 0 && new_planes.is_null()) {
+      new_planes = new CullPlanes;
+    }
+
     for (int i = 0; i < num_on_occluders; ++i) {
       NodePath occluder = node_effect->get_on_occluder(i);
       Occluders::const_iterator oi = new_planes->_occluders.find(occluder);
       if (oi == new_planes->_occluders.end()) {
         // Here's a new occluder; consider adding it to the list.
         OccluderNode *occluder_node = DCAST(OccluderNode, occluder.node());
-        nassertr(occluder_node->get_num_vertices() == 4, new_planes);
+        nassertv(occluder_node->get_num_vertices() == 4);
 
         CPT(TransformState) occluder_transform = occluder.get_transform(scene->get_cull_center());
 
         // And the transform from cull-center space into the current node's
         // coordinate space.
-        if (center_transform == (TransformState *)NULL) {
-          if (net_transform == (TransformState *)NULL) {
+        if (center_transform == nullptr) {
+          if (net_transform == nullptr) {
             net_transform = data->get_net_transform(trav);
           }
 
@@ -177,7 +191,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         occluder_gbv = new BoundingBox(ccp_min, ccp_max);
 
-        if (data->_view_frustum != (GeometricBoundingVolume *)NULL) {
+        if (data->_view_frustum != nullptr) {
           int occluder_result = data->_view_frustum->contains(occluder_gbv);
           if (occluder_result == BoundingVolume::IF_no_intersection) {
             // This occluder is outside the view frustum; ignore it.
@@ -200,8 +214,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         if (plane.get_normal().dot(LVector3::forward()) >= 0.0) {
           if (occluder_node->is_double_sided()) {
-            swap(points_near[0], points_near[3]);
-            swap(points_near[1], points_near[2]);
+            std::swap(points_near[0], points_near[3]);
+            std::swap(points_near[1], points_near[2]);
             plane = LPlane(points_near[0], points_near[1], points_near[2]);
           } else {
             // This occluder is facing the wrong direction.  Ignore it.
@@ -244,7 +258,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // existing occluder volumes.
         bool is_enclosed = false;
         Occluders::const_iterator oi;
-        for (oi = _occluders.begin(); oi != _occluders.end(); ++oi) {
+        for (oi = new_planes->_occluders.begin(); oi != new_planes->_occluders.end(); ++oi) {
           int occluder_result = (*oi).second->contains(occluder_gbv);
           if ((occluder_result & BoundingVolume::IF_all) != 0) {
             is_enclosed = true;
@@ -289,14 +303,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         if (show_occluder_volumes) {
           // Draw the frustum for visualization.
-          nassertr(net_transform != NULL, new_planes);
+          nassertv(net_transform != nullptr);
           trav->draw_bounding_volume(frustum, data->get_internal_transform(trav));
         }
       }
     }
   }
 
-  return new_planes;
+  planes = std::move(new_planes);
 }
 
 /**
@@ -429,7 +443,7 @@ remove_occluder(const NodePath &occluder) const {
  *
  */
 void CullPlanes::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "CullPlanes (" << _planes.size() << " planes and "
       << _occluders.size() << " occluders):\n";
   Planes::const_iterator pi;

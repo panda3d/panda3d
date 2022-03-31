@@ -33,7 +33,7 @@ class BamWriter;
  */
 class EXPCL_PANDA_RECORDER MouseRecorder : public DataNode, public RecorderBase {
 PUBLISHED:
-  explicit MouseRecorder(const string &name);
+  explicit MouseRecorder(const std::string &name);
   virtual ~MouseRecorder();
 
 public:
@@ -41,8 +41,8 @@ public:
   virtual void play_frame(DatagramIterator &scan, BamReader *manager);
 
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   // Inherited from DataNode
@@ -77,9 +77,9 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
-  INLINE virtual int get_ref_count() const FINAL { return ReferenceCount::get_ref_count(); };
-  INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
-  INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
+  INLINE virtual int get_ref_count() const final { return ReferenceCount::get_ref_count(); };
+  INLINE virtual void ref() const final { ReferenceCount::ref(); };
+  INLINE virtual bool unref() const final { return ReferenceCount::unref(); };
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

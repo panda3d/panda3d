@@ -12,7 +12,7 @@
  */
 
 #include "globalPointerRegistry.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 // In general, we use the util_cat->info() syntax in this file (instead of
 // util_cat.info()), because much of this work is done at static init time,
@@ -34,7 +34,7 @@ ns_get_pointer(TypeHandle type) const {
   Pointers::const_iterator pi;
   pi = _pointers.find(type);
   if (pi == _pointers.end()) {
-    return (void *)NULL;
+    return nullptr;
   }
 
   return (*pi).second;
@@ -51,13 +51,13 @@ ns_store_pointer(TypeHandle type, void *ptr) {
     util_cat->error()
       << "GlobalPointerRegistry::store_pointer() called on empty TypeHandle\n";
   }
-  if (ptr == (void *)NULL) {
+  if (ptr == nullptr) {
     util_cat->error()
       << "Invalid attempt to store a NULL pointer for " << type << "\n";
     clear_pointer(type);
     return;
   }
-  pair<Pointers::iterator, bool> result =
+  std::pair<Pointers::iterator, bool> result =
     _pointers.insert(Pointers::value_type(type, ptr));
 
   if (!result.second) {

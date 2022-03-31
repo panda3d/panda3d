@@ -12,19 +12,40 @@
  */
 
 /**
- * Do not attempt to copy mutexes.
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
  */
-INLINE MutexDebug::
-MutexDebug(const MutexDebug &copy) : _cvar_impl(*get_global_lock()) {
-  nassertv(false);
+INLINE void MutexDebug::
+lock() {
+  TAU_PROFILE("void MutexDebug::acquire()", " ", TAU_USER);
+  _global_lock->lock();
+  ((MutexDebug *)this)->do_lock(Thread::get_current_thread());
+  _global_lock->unlock();
 }
 
 /**
- * Do not attempt to copy mutexes.
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool MutexDebug::
+try_lock() {
+  TAU_PROFILE("void MutexDebug::try_lock()", " ", TAU_USER);
+  _global_lock->lock();
+  bool acquired = ((MutexDebug *)this)->do_try_lock(Thread::get_current_thread());
+  _global_lock->unlock();
+  return acquired;
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
  */
 INLINE void MutexDebug::
-operator = (const MutexDebug &copy) {
-  nassertv(false);
+unlock() {
+  TAU_PROFILE("void MutexDebug::unlock()", " ", TAU_USER);
+  _global_lock->lock();
+  ((MutexDebug *)this)->do_unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -41,22 +62,24 @@ INLINE void MutexDebug::
 acquire(Thread *current_thread) const {
   TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
   nassertv(current_thread == Thread::get_current_thread());
-  _global_lock->acquire();
-  ((MutexDebug *)this)->do_acquire(current_thread);
-  _global_lock->release();
+  _global_lock->lock();
+  ((MutexDebug *)this)->do_lock(current_thread);
+  _global_lock->unlock();
 }
 
 /**
  * Returns immediately, with a true value indicating the mutex has been
  * acquired, and false indicating it has not.
+ *
+ * @deprecated Python users should use acquire(False), C++ users try_lock()
  */
 INLINE bool MutexDebug::
 try_acquire(Thread *current_thread) const {
-  TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
+  TAU_PROFILE("void MutexDebug::try_acquire(Thread *)", " ", TAU_USER);
   nassertr(current_thread == Thread::get_current_thread(), false);
-  _global_lock->acquire();
-  bool acquired = ((MutexDebug *)this)->do_try_acquire(current_thread);
-  _global_lock->release();
+  _global_lock->lock();
+  bool acquired = ((MutexDebug *)this)->do_try_lock(current_thread);
+  _global_lock->unlock();
   return acquired;
 }
 
@@ -93,9 +116,9 @@ elevate_lock() const {
 INLINE void MutexDebug::
 release() const {
   TAU_PROFILE("void MutexDebug::release()", " ", TAU_USER);
-  _global_lock->acquire();
-  ((MutexDebug *)this)->do_release();
-  _global_lock->release();
+  _global_lock->lock();
+  ((MutexDebug *)this)->do_unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -107,9 +130,9 @@ release() const {
 INLINE bool MutexDebug::
 debug_is_locked() const {
   TAU_PROFILE("bool MutexDebug::debug_is_locked()", " ", TAU_USER);
-  _global_lock->acquire();
+  _global_lock->lock();
   bool is_locked = do_debug_is_locked();
-  _global_lock->release();
+  _global_lock->unlock();
   return is_locked;
 }
 
@@ -121,7 +144,7 @@ debug_is_locked() const {
  */
 INLINE MutexTrueImpl *MutexDebug::
 get_global_lock() {
-  if (_global_lock == (MutexTrueImpl *)NULL) {
+  if (_global_lock == nullptr) {
     _global_lock = new MutexTrueImpl;
   }
   return _global_lock;

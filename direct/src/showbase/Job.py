@@ -1,16 +1,25 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.PythonUtil import ScratchPad, SerialNumGen
 
 if __debug__:
     from panda3d.core import PStatCollector
 
-class Job(DirectObject):
-    # Base class for cpu-intensive or non-time-critical operations that
-    # are run through the JobManager.
 
-    # values to yield from your run() generator method
+class Job(DirectObject):
+    """Base class for cpu-intensive or non-time-critical operations that
+    are run through the :class:`.JobManager`.
+
+    To use, subclass and override the `run()` method.
+    """
+
+    #: Yielded from the `run()` generator method when the job is done.
     Done = object()
-    Continue = None # 'yield None' is acceptable in place of 'yield Job.Continue'
-    Sleep = object() # yield any remaining time for this job until next frame
+
+    #: ``yield None`` is acceptable in place of ``yield Job.Continue``
+    Continue = None
+
+    #: Yield any remaining time for this job until next frame.
+    Sleep = object()
 
     # These priorities determine how many timeslices a job gets relative to other
     # jobs. A job with priority of 1000 will run 10 times more often than a job
@@ -37,13 +46,14 @@ class Job(DirectObject):
         return 'job-finished-%s' % self._id
 
     def run(self):
-        # this is a generator
-        # override and do your processing
-        # yield Job.Continue when possible/reasonable
-        # try not to run longer than the JobManager's timeslice between yields
-        #
-        # when done, yield Job.Done
-        #
+        """This should be overridden with a generator that does the
+        needful processing.
+
+        yield `Job.Continue` when possible/reasonable, and try not to run
+        longer than the JobManager's timeslice between yields.
+
+        When done, yield `Job.Done`.
+        """
         raise NotImplementedError("don't call down")
 
     def getPriority(self):
@@ -57,23 +67,22 @@ class Job(DirectObject):
         self._printing = False
 
     def resume(self):
-        # called every time JobManager is going to start running this job
-        """
-        if self._printing:
-            # we may be suspended/resumed multiple times per frame, that gets spammy
-            # if we need to pick out the output of a job, put a prefix onto each line
-            # of the output
-            print 'JOB:%s:RESUME' % self._name
-            """
-        pass
+        """Called every time JobManager is going to start running this job."""
+        #if self._printing:
+        #    # we may be suspended/resumed multiple times per frame, that gets spammy
+        #    # if we need to pick out the output of a job, put a prefix onto each line
+        #    # of the output
+        #    print('JOB:%s:RESUME' % self._name)
+
     def suspend(self):
-        # called when JobManager is going to stop running this job for a while
+        """Called when JobManager is going to stop running this job for a
+        while.
         """
-        if self._printing:
-            #print 'JOB:%s:SUSPEND' % self._name
-            pass
-            """
-        pass
+
+        #if self._printing:
+        #    #print('JOB:%s:SUSPEND' % self._name)
+        #    pass
+        #    """
 
     def _setFinished(self):
         self._finished = True
@@ -99,7 +108,6 @@ class Job(DirectObject):
             self._generator = None
 
 if __debug__: # __dev__ not yet available at this point
-    from direct.showbase.Job import Job
     class TestJob(Job):
         def __init__(self):
             Job.__init__(self, 'TestJob')
@@ -126,4 +134,5 @@ if __debug__: # __dev__ not yet available at this point
                     yield None
 
     def addTestJob():
+        from direct.showbase.JobManagerGlobal import jobMgr
         jobMgr.add(TestJob())

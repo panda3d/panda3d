@@ -13,11 +13,6 @@
 
 #include "pt_EggMaterial.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<EggMaterial>;
 template class PointerTo<EggMaterial>;
 template class ConstPointerTo<EggMaterial>;

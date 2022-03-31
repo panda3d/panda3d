@@ -41,8 +41,8 @@ PUBLISHED:
 
   INLINE double get_expiration_time() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   double _duration;
@@ -66,7 +66,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AuxSceneData &data);
+INLINE std::ostream &operator << (std::ostream &out, const AuxSceneData &data);
 
 #include "auxSceneData.I"
 

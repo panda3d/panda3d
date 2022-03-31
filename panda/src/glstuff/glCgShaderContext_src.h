@@ -25,7 +25,7 @@ class CLP(GraphicsStateGuardian);
 /**
  * xyz
  */
-class EXPCL_GL CLP(CgShaderContext) FINAL : public ShaderContext {
+class EXPCL_GL CLP(CgShaderContext) final : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -68,12 +68,14 @@ private:
   GLuint _glsl_program;
 
   pvector<GLint> _attributes;
+  BitMask32 _used_generic_attribs;
   GLint _color_attrib_index;
   CGparameter _transform_table_param;
   CGparameter _slider_table_param;
   long _transform_table_size;
   long _slider_table_size;
 
+  LMatrix4 *_mat_part_cache = nullptr;
   pvector<CGparameter> _cg_parameter_map;
 
   WCPT(RenderState) _state_rs;

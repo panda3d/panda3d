@@ -16,7 +16,7 @@
  */
 INLINE DatagramIterator::
 DatagramIterator() :
-    _datagram((Datagram *)NULL),
+    _datagram(nullptr),
     _current_index(0) {
 }
 
@@ -54,7 +54,7 @@ get_bool() {
  */
 INLINE int8_t DatagramIterator::
 get_int8() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index < _datagram->get_length(), 0);
   // Get the Data:
@@ -70,7 +70,7 @@ get_int8() {
  */
 INLINE uint8_t DatagramIterator::
 get_uint8() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   // Avoid reading junk data off the end of the datagram:
   nassertr(_current_index < _datagram->get_length(), 0);
   // Get the Data:
@@ -86,7 +86,7 @@ get_uint8() {
  */
 INLINE int16_t DatagramIterator::
 get_int16() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int16_t tempvar;
@@ -105,7 +105,7 @@ get_int16() {
  */
 INLINE int32_t DatagramIterator::
 get_int32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int32_t tempvar;
@@ -124,7 +124,7 @@ get_int32() {
  */
 INLINE int64_t DatagramIterator::
 get_int64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int64_t tempvar;
@@ -143,7 +143,7 @@ get_int64() {
  */
 INLINE uint16_t DatagramIterator::
 get_uint16() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint16_t tempvar;
@@ -162,7 +162,7 @@ get_uint16() {
  */
 INLINE uint32_t DatagramIterator::
 get_uint32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint32_t tempvar;
@@ -181,7 +181,7 @@ get_uint32() {
  */
 INLINE uint64_t DatagramIterator::
 get_uint64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint64_t tempvar;
@@ -200,7 +200,7 @@ get_uint64() {
  */
 INLINE PN_float32 DatagramIterator::
 get_float32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  nassertr(_datagram != nullptr, 0.0);
   nassertr(_current_index < _datagram->get_length(), 0.0);
 
   PN_float32 tempvar;
@@ -219,7 +219,7 @@ get_float32() {
  */
 INLINE PN_float64 DatagramIterator::
 get_float64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  nassertr(_datagram != nullptr, 0.0);
   nassertr(_current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
@@ -240,7 +240,7 @@ get_float64() {
  */
 INLINE PN_stdfloat DatagramIterator::
 get_stdfloat() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  nassertr(_datagram != nullptr, 0.0);
   if (_datagram->get_stdfloat_double()) {
     return (PN_stdfloat)get_float64();
   } else {
@@ -253,7 +253,7 @@ get_stdfloat() {
  */
 INLINE int16_t DatagramIterator::
 get_be_int16() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int16_t tempvar;
@@ -272,7 +272,7 @@ get_be_int16() {
  */
 INLINE int32_t DatagramIterator::
 get_be_int32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int32_t tempvar;
@@ -291,7 +291,7 @@ get_be_int32() {
  */
 INLINE int64_t DatagramIterator::
 get_be_int64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   int64_t tempvar;
@@ -310,7 +310,7 @@ get_be_int64() {
  */
 INLINE uint16_t DatagramIterator::
 get_be_uint16() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint16_t tempvar;
@@ -329,7 +329,7 @@ get_be_uint16() {
  */
 INLINE uint32_t DatagramIterator::
 get_be_uint32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint32_t tempvar;
@@ -348,7 +348,7 @@ get_be_uint32() {
  */
 INLINE uint64_t DatagramIterator::
 get_be_uint64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
   uint64_t tempvar;
@@ -367,7 +367,7 @@ get_be_uint64() {
  */
 INLINE PN_float32 DatagramIterator::
 get_be_float32() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  nassertr(_datagram != nullptr, 0.0);
   nassertr(_current_index < _datagram->get_length(), 0.0);
 
   PN_float32 tempvar;
@@ -386,7 +386,7 @@ get_be_float32() {
  */
 INLINE PN_float64 DatagramIterator::
 get_be_float64() {
-  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  nassertr(_datagram != nullptr, 0.0);
   nassertr(_current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
@@ -401,11 +401,27 @@ get_be_float64() {
 }
 
 /**
+ * Extracts a variable-length binary blob.
+ */
+INLINE vector_uchar DatagramIterator::
+get_blob() {
+  return extract_bytes(get_uint16());
+}
+
+/**
+ * Extracts a variable-length binary blob with a 32-bit size field.
+ */
+INLINE vector_uchar DatagramIterator::
+get_blob32() {
+  return extract_bytes(get_uint32());
+}
+
+/**
  * Skips over the indicated number of bytes in the datagram.
  */
 INLINE void DatagramIterator::
 skip_bytes(size_t size) {
-  nassertv(_datagram != (const Datagram *)NULL);
+  nassertv(_datagram != nullptr);
   nassertv((int)size >= 0);
 #ifndef NDEBUG
   if (_current_index + size > _datagram->get_length()) {
@@ -422,14 +438,13 @@ skip_bytes(size_t size) {
  * Returns the remaining bytes in the datagram as a string, but does not
  * extract them from the iterator.
  */
-INLINE string DatagramIterator::
+INLINE vector_uchar DatagramIterator::
 get_remaining_bytes() const {
-  nassertr(_datagram != (const Datagram *)NULL, "");
-  nassertr(_current_index <= _datagram->get_length(), "");
+  nassertr(_datagram != nullptr, vector_uchar());
+  nassertr(_current_index <= _datagram->get_length(), vector_uchar());
 
-  const char *ptr = (const char *)_datagram->get_data();
-  size_t remaining_size = _datagram->get_length() - _current_index;
-  return string(ptr + _current_index, remaining_size);
+  const unsigned char *ptr = (const unsigned char *)_datagram->get_data();
+  return vector_uchar(ptr + _current_index, ptr + _datagram->get_length());
 }
 
 /**
@@ -478,11 +493,16 @@ generic_read_datagram(double &result, DatagramIterator &source) {
 }
 
 INLINE void
-generic_read_datagram(string &result, DatagramIterator &source) {
+generic_read_datagram(std::string &result, DatagramIterator &source) {
   result = source.get_string();
 }
 
 INLINE void
-generic_read_datagram(wstring &result, DatagramIterator &source) {
+generic_read_datagram(std::wstring &result, DatagramIterator &source) {
   result = source.get_wstring();
+}
+
+INLINE void
+generic_read_datagram(vector_uchar &result, DatagramIterator &source) {
+  result = source.get_blob();
 }

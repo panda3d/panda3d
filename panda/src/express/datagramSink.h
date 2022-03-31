@@ -26,7 +26,7 @@ class Filename;
  * This class defines the abstract interface to sending datagrams to any
  * target, whether it be into a file or across the net
  */
-class EXPCL_PANDAEXPRESS DatagramSink {
+class EXPCL_PANDA_EXPRESS DatagramSink {
 PUBLISHED:
   INLINE DatagramSink();
   virtual ~DatagramSink();
@@ -39,7 +39,7 @@ PUBLISHED:
 
   virtual const Filename &get_filename();
   virtual const FileReference *get_file();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
 
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(file, get_file);

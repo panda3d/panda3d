@@ -21,16 +21,16 @@
 
 #include "eggExternalReference.h"
 
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDController.h"
-#include "FCDocument/FCDGeometry.h"
-#include "FCDocument/FCDSceneNodeTools.h"
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDController.h>
+#include <FCDocument/FCDGeometry.h>
+#include <FCDocument/FCDSceneNodeTools.h>
 
-#include "FCDocument/FCDSceneNode.h"
-#include "FCDocument/FCDTransform.h"
-#include "FCDocument/FCDAnimated.h"
-#include "FCDocument/FCDAnimationCurve.h"
-#include "FCDocument/FCDAnimationKey.h"
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDTransform.h>
+#include <FCDocument/FCDAnimated.h>
+#include <FCDocument/FCDAnimationCurve.h>
+#include <FCDocument/FCDAnimationKey.h>
 
 TypeHandle DaeCharacter::_type_handle;
 
@@ -42,14 +42,14 @@ DaeCharacter(EggGroup *node_group, const FCDControllerInstance *instance) :
   _node_group(node_group),
   _name(node_group->get_name()),
   _instance(instance),
-  _skin_controller(NULL),
-  _skin_mesh(NULL) {
+  _skin_controller(nullptr),
+  _skin_mesh(nullptr) {
 
   _bind_shape_mat = LMatrix4d::ident_mat();
 
   // If it's a skin controller, add the controller joints.
   const FCDController *controller = (const FCDController *)instance->GetEntity();
-  if (controller == NULL) {
+  if (controller == nullptr) {
     return;
   }
   _skin_mesh = controller->GetBaseGeometry()->GetMesh();
@@ -76,7 +76,7 @@ bind_joints(JointMap &joint_map) {
   // Record the bind pose for each joint.
   for (size_t j = 0; j < num_joints; ++j) {
     const FCDSkinControllerJoint *skin_joint = _skin_controller->GetJoint(j);
-    string sid = FROM_FSTRING(skin_joint->GetId());
+    std::string sid = FROM_FSTRING(skin_joint->GetId());
     LMatrix4d bind_pose;
     bind_pose.invert_from(DAEToEggConverter::convert_matrix(
                           skin_joint->GetBindPoseInverse()));
@@ -86,7 +86,7 @@ bind_joints(JointMap &joint_map) {
     if (ji != joint_map.end()) {
       Joint &joint = ji->second;
 
-      if (joint._character != (DaeCharacter *)NULL) {
+      if (joint._character != nullptr) {
         // In some cases, though, multiple controllers share the same joints.
         // We can't support this without duplicating the joint structure, so
         // we check if the bind poses are the same.
@@ -108,7 +108,7 @@ bind_joints(JointMap &joint_map) {
         << "Unknown joint sid being referenced: '" << sid << "'\n";
 
       // We still have to add a dummy joint or the index will be off.
-      _joints.push_back(Joint(NULL, NULL));
+      _joints.push_back(Joint(nullptr, nullptr));
     }
   }
 }
@@ -126,7 +126,7 @@ adjust_joints(FCDSceneNode *node, const JointMap &joint_map,
   LMatrix4d this_transform = transform;
 
   if (node->IsJoint()) {
-    string sid = FROM_FSTRING(node->GetSubId());
+    std::string sid = FROM_FSTRING(node->GetSubId());
 
     JointMap::const_iterator ji = joint_map.find(sid);
     if (ji != joint_map.end()) {
@@ -179,7 +179,7 @@ influence_vertex(int index, EggVertex *vertex) {
 
     if (jwpair->jointIndex >= 0 && jwpair->jointIndex < (int)_joints.size()) {
       EggGroup *joint = _joints[jwpair->jointIndex]._group.p();
-      if (joint != NULL) {
+      if (joint != nullptr) {
         joint->ref_vertex(vertex, jwpair->weight);
       }
     } else {
@@ -218,7 +218,7 @@ r_collect_keys(FCDSceneNode* node, pset<float> &keys) {
     FCDTransform *transform = node->GetTransform(t);
     FCDAnimated *animated = transform->GetAnimated();
 
-    if (animated != NULL) {
+    if (animated != nullptr) {
       const FCDAnimationCurveListList &all_curves = animated->GetCurves();
 
       for (size_t ci = 0; ci < all_curves.size(); ++ci) {
@@ -243,7 +243,7 @@ r_collect_keys(FCDSceneNode* node, pset<float> &keys) {
  */
 void DaeCharacter::
 build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
-  nassertv(node != NULL);
+  nassertv(node != nullptr);
 
   if (!node->IsJoint()) {
     for (size_t ch = 0; ch < node->GetChildrenCount(); ++ch) {
@@ -252,7 +252,7 @@ build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
     return;
   }
 
-  string node_id = FROM_FSTRING(node->GetDaeId());
+  std::string node_id = FROM_FSTRING(node->GetDaeId());
   PT(EggTable) table = new EggTable(node_id);
   table->set_table_type(EggTable::TT_table);
   parent->add_child(table);
@@ -267,7 +267,7 @@ build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
   for (size_t t = 0; t < node->GetTransformCount(); ++t) {
     FCDTransform *transform = node->GetTransform(t);
     FCDAnimated *animated = transform->GetAnimated();
-    if (animated != (FCDAnimated *)NULL) {
+    if (animated != nullptr) {
       if (animated->HasCurve()) {
         animateds.push_back(animated);
       }

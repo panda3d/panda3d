@@ -25,7 +25,7 @@
  * equivalent without the accent mark; as well as how to switch case from
  * upper to lower while retaining the Unicode accent marks.
  */
-class EXPCL_DTOOL UnicodeLatinMap {
+class EXPCL_DTOOL_DTOOLUTIL UnicodeLatinMap {
 public:
   enum AccentType {
     AT_none,
@@ -112,17 +112,17 @@ public:
 
   class Entry {
   public:
-    wchar_t _character;
+    char32_t _character;
     CharType _char_type;
     char _ascii_equiv;
     char _ascii_additional;
-    wchar_t _tolower_character;
-    wchar_t _toupper_character;
+    char32_t _tolower_character;
+    char32_t _toupper_character;
     AccentType _accent_type;
     int _additional_flags;
   };
 
-  static const Entry *look_up(wchar_t character);
+  static const Entry *look_up(char32_t character);
 
   static wchar_t get_combining_accent(AccentType accent);
 
@@ -130,7 +130,7 @@ private:
   static void init();
   static bool _initialized;
 
-  typedef phash_map<wchar_t, const Entry *, integer_hash<wchar_t> > ByCharacter;
+  typedef phash_map<char32_t, const Entry *, integer_hash<char32_t> > ByCharacter;
   static ByCharacter *_by_character;
   enum { max_direct_chars = 256 };
   static const Entry *_direct_chars[max_direct_chars];

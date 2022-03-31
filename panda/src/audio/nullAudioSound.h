@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __NULL_AUDIO_SOUND_H__
-#define __NULL_AUDIO_SOUND_H__
+#ifndef NULLAUDIOSOUND_H
+#define NULLAUDIOSOUND_H
 
 #include "audioSound.h"
 
@@ -23,7 +23,7 @@
 class EXPCL_PANDA_AUDIO NullAudioSound : public AudioSound {
   // All of these methods are stubbed out to some degree.  If you're looking
   // for a starting place for a new AudioManager, please consider looking at
-  // the milesAudioManager.
+  // the openalAudioManager.
 
 public:
   ~NullAudioSound();
@@ -52,10 +52,10 @@ public:
   void set_active(bool);
   bool get_active() const;
 
-  void set_finished_event(const string& event);
-  const string& get_finished_event() const;
+  void set_finished_event(const std::string& event);
+  const std::string& get_finished_event() const;
 
-  const string& get_name() const;
+  const std::string& get_name() const;
 
   PN_stdfloat length() const;
 
@@ -91,4 +91,4 @@ private:
   friend class NullAudioManager;
 };
 
-#endif /* __NULL_AUDIO_SOUND_H__ */
+#endif /* NULLAUDIOSOUND_H */

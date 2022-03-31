@@ -32,7 +32,7 @@ public:
   ALLOC_DELETED_CHAIN(CallbackObject);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   EXTENSION(static PT(CallbackObject) make(PyObject *function));
 
@@ -57,7 +57,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &operator << (ostream &out, const CallbackObject &cbo) {
+inline std::ostream &operator << (std::ostream &out, const CallbackObject &cbo) {
   cbo.output(out);
   return out;
 }

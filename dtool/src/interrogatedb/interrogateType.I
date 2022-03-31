@@ -31,7 +31,7 @@ has_scoped_name() const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_scoped_name() const {
   return _scoped_name;
 }
@@ -47,7 +47,7 @@ has_true_name() const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_true_name() const {
   return _true_name;
 }
@@ -63,7 +63,7 @@ has_comment() const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_comment() const {
   return _comment;
 }
@@ -224,7 +224,7 @@ number_of_enum_values() const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_enum_value_name(int n) const {
   if (n >= 0 && n < (int)_enum_values.size()) {
     return _enum_values[n]._name;
@@ -235,7 +235,7 @@ get_enum_value_name(int n) const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_enum_value_scoped_name(int n) const {
   if (n >= 0 && n < (int)_enum_values.size()) {
     return _enum_values[n]._scoped_name;
@@ -246,7 +246,7 @@ get_enum_value_scoped_name(int n) const {
 /**
  *
  */
-INLINE const string &InterrogateType::
+INLINE const std::string &InterrogateType::
 get_enum_value_comment(int n) const {
   if (n >= 0 && n < (int)_enum_values.size()) {
     return _enum_values[n]._comment;
@@ -547,38 +547,38 @@ get_nested_type(int n) const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateType &type) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateType &type) {
   type.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateType &type) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateType &type) {
   type.input(in);
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateType::Derivation &d) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateType::Derivation &d) {
   d.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateType::Derivation &d) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateType::Derivation &d) {
   d.input(in);
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateType::EnumValue &ev) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateType::EnumValue &ev) {
   ev.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateType::EnumValue &ev) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateType::EnumValue &ev) {
   ev.input(in);
   return in;
 }

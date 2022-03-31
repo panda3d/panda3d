@@ -41,7 +41,7 @@ public:
   bool listen(int port = -1);
 
   void poll();
-  void main_loop(bool *interrupt_flag = NULL);
+  void main_loop(bool *interrupt_flag = nullptr);
 
   virtual PStatMonitor *make_monitor()=0;
   void add_reader(Connection *connection, PStatReader *reader);

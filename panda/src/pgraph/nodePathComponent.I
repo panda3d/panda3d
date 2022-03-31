@@ -30,28 +30,11 @@ CData(const NodePathComponent::CData &copy) :
 }
 
 /**
- * NodePathComponents should not be copied.
- */
-INLINE NodePathComponent::
-NodePathComponent(const NodePathComponent &copy) {
-  nassertv(false);
-}
-
-/**
- * NodePathComponents should not be copied.
- */
-INLINE void NodePathComponent::
-operator = (const NodePathComponent &copy) {
-  nassertv(false);
-}
-
-
-/**
  *
  */
 INLINE NodePathComponent::
 ~NodePathComponent() {
-  nassertv(_node != (PandaNode *)NULL);
+  nassertv(_node != nullptr);
   _node->delete_component(this);
 }
 
@@ -60,7 +43,7 @@ INLINE NodePathComponent::
  */
 INLINE PandaNode *NodePathComponent::
 get_node() const {
-  nassertr(_node != (PandaNode *)NULL, _node);
+  nassertr(_node != nullptr, _node);
   return _node;
 }
 
@@ -84,7 +67,7 @@ get_next(int pipeline_stage, Thread *current_thread) const {
   return cdata->_next;
 }
 
-INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {
+INLINE std::ostream &operator << (std::ostream &out, const NodePathComponent &comp) {
   comp.output(out);
   return out;
 }

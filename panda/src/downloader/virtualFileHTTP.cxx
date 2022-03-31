@@ -13,10 +13,17 @@
 
 #include "virtualFileHTTP.h"
 #include "virtualFileMountHTTP.h"
+#include "ramfile.h"
 #include "stringStream.h"
 #include "zStream.h"
 
+#include <iterator>
+
 #ifdef HAVE_OPENSSL
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 TypeHandle VirtualFileHTTP::_type_handle;
 
@@ -121,7 +128,7 @@ is_regular_file() const {
 istream *VirtualFileHTTP::
 open_read_file(bool auto_unwrap) const {
   if (_status_only) {
-    return NULL;
+    return nullptr;
   }
 
   // We pre-download the file into a StringStream, then return a buffer to
@@ -130,10 +137,30 @@ open_read_file(bool auto_unwrap) const {
   StringStream *strstream = new StringStream;
   if (!fetch_file(strstream)) {
     delete strstream;
-    return NULL;
+    return nullptr;
   }
 
   return return_file(strstream, auto_unwrap);
+}
+
+/**
+ * Fills up the indicated pvector with the contents of the file, if it is a
+ * regular file.  Returns true on success, false otherwise.
+ */
+bool VirtualFileHTTP::
+read_file(vector_uchar &result, bool auto_unwrap) const {
+  if (_status_only) {
+    return false;
+  }
+
+  Ramfile ramfile;
+  if (!_channel->download_to_ram(&ramfile, false)) {
+    return false;
+  }
+
+  const string &data = ramfile.get_data();
+  std::copy(data.begin(), data.end(), std::back_inserter(result));
+  return true;
 }
 
 /**
@@ -178,7 +205,7 @@ return_file(istream *buffer_stream, bool auto_unwrap) const {
 
   istream *result = buffer_stream;
 #ifdef HAVE_ZLIB
-  if (result != (istream *)NULL && do_unwrap) {
+  if (result != nullptr && do_unwrap) {
     // We have to slip in a layer to decompress the file on the fly.
     IDecompressStream *wrapper = new IDecompressStream(result, true);
     result = wrapper;
@@ -205,7 +232,7 @@ was_read_successful() const {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileHTTP::
+std::streamsize VirtualFileHTTP::
 get_file_size(istream *stream) const {
   return _channel->get_file_size();
 }
@@ -214,7 +241,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileHTTP::
+std::streamsize VirtualFileHTTP::
 get_file_size() const {
   return _channel->get_file_size();
 }

@@ -39,6 +39,7 @@
 #include "boundingSphere.h"
 #include "config_mathutil.h"
 #include "preparedGraphicsObjects.h"
+#include "instanceList.h"
 
 
 bool allow_flatten_color = ConfigVariableBool
@@ -51,13 +52,15 @@ TypeHandle GeomNode::_type_handle;
  *
  */
 GeomNode::
-GeomNode(const string &name) :
+GeomNode(const std::string &name) :
   PandaNode(name)
 {
   _preserved = preserve_geom_nodes;
 
   // GeomNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
+
+  set_renderable();
 }
 
 /**
@@ -115,7 +118,6 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    GeomList::iterator gi;
     PT(GeomList) geoms = cdata->modify_geoms();
 
     // Iterate based on the number of geoms, not using STL iterators.  This
@@ -134,7 +136,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
         CPT(RenderAttrib) ra = geom_attribs._color;
-        if (ra != (const RenderAttrib *)NULL) {
+        if (ra != nullptr) {
           int override = geom_attribs._color_override;
           entry->_state = entry->_state->add_attrib(ra, override);
         }
@@ -155,7 +157,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
       }
       if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-        if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
+        if (geom_attribs._color_scale != nullptr) {
           CPT(ColorScaleAttrib) csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
           if (csa->get_scale() != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
 
@@ -198,7 +200,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       }
 
       if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-        if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
+        if (geom_attribs._tex_matrix != nullptr) {
           // Determine which texture coordinate names are used more than once.
           // This assumes we have discovered all of the textures that are in
           // effect on the GeomNode; this may not be true if there is a
@@ -206,7 +208,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           // started the flatten operation, but caveat programmer.
           NameCount name_count;
 
-          if (geom_attribs._texture != (RenderAttrib *)NULL) {
+          if (geom_attribs._texture != nullptr) {
             const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
             int num_on_stages = ta->get_num_on_stages();
             for (int si = 0; si < num_on_stages; si++) {
@@ -254,7 +256,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       // applied in the above.
 
       if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
-        if (geom_attribs._cull_face != (const RenderAttrib *)NULL) {
+        if (geom_attribs._cull_face != nullptr) {
           const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, geom_attribs._cull_face);
           CullFaceAttrib::Mode mode = cfa->get_effective_mode();
           switch (mode) {
@@ -377,8 +379,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     geom = transformer.premunge_geom(geom, munger);
 
     // Prepare each of the vertex arrays in the munged Geom.
-    CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
-    vdata = vdata->animate_vertices(false, current_thread);
+    CPT(GeomVertexData) vdata = geom->get_animated_vertex_data(false, current_thread);
     GeomVertexDataPipelineReader vdata_reader(vdata, current_thread);
     int num_arrays = vdata_reader.get_num_arrays();
     for (int i = 0; i < num_arrays; ++i) {
@@ -393,9 +394,24 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
+    // As well as the shaders.
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
+      }
+      else if (sa->auto_shader()) {
+        gsg->ensure_generated_shader(geom_state);
+      }
+      else if (munger->is_of_type(StateMunger::get_class_type())) {
+        // Premunge the state for the fixed-function pipeline.
+        StateMunger *state_munger = (StateMunger *)munger.p();
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
+      }
+      // TODO: prepare the shader inputs.
     }
 
     // And now prepare each of the textures.
@@ -409,16 +425,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           prepared_objects->enqueue_texture(texture);
         }
       }
-    }
-
-    // As well as the shaders.
-    const ShaderAttrib *sa;
-    if (geom_state->get_attrib(sa)) {
-      Shader *shader = (Shader *)sa->get_shader();
-      if (shader != nullptr) {
-        prepared_objects->enqueue_shader(shader);
-      }
-      // TODO: prepare the shader inputs.
     }
   }
 
@@ -475,23 +481,12 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     CPT(Geom) geom = (*gi)._geom.get_read_pointer();
     geom->calc_tight_bounds(min_point, max_point, found_any,
-                            geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread),
+                            geom->get_animated_vertex_data(true, current_thread),
                             !next_transform->is_identity(), mat,
                             current_thread);
   }
 
   return next_transform;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool GeomNode::
-is_renderable() const {
-  return true;
 }
 
 /**
@@ -509,46 +504,64 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       << " draw_mask = " << data._draw_mask << "\n";
   }
 
+  Thread *current_thread = trav->get_current_thread();
+
   // Get all the Geoms, with no decalling.
-  Geoms geoms = get_geoms(trav->get_current_thread());
+  Geoms geoms = get_geoms(current_thread);
   int num_geoms = geoms.get_num_geoms();
   trav->_geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
-  for (int i = 0; i < num_geoms; i++) {
-    CPT(Geom) geom = geoms.get_geom(i);
-    if (geom->is_empty()) {
-      continue;
-    }
-
-    CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-    if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
-      // Cull.
-      continue;
-    }
-
-    // Cull the Geom bounding volume against the view frustum andor the cull
-    // planes.  Don't bother unless we've got more than one Geom, since
-    // otherwise the bounding volume of the GeomNode is (probably) the same as
-    // that of the one Geom, and we've already culled against that.
-    if (num_geoms > 1) {
-      if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
-        // Cull the individual Geom against the view frustum.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
-        const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
-
-        int result = data._view_frustum->contains(geom_gbv);
-        if (result == BoundingVolume::IF_no_intersection) {
-          // Cull this Geom.
-          continue;
-        }
+  if (num_geoms == 1) {
+    // If there's only one Geom, we don't need to bother culling each individual
+    // Geom bounding volume against the view frustum, since we've already
+    // checked the one on the GeomNode itself.
+    CPT(Geom) geom = geoms.get_geom(0);
+    if (!geom->is_empty()) {
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(0));
+      if (!state->has_cull_callback() || state->cull_callback(trav, data)) {
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), std::move(internal_transform));
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
       }
-      if (!data._cull_planes->is_empty()) {
+    }
+  }
+  else {
+    // More than one Geom.
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(Geom) geom = geoms.get_geom(i);
+      if (geom->is_empty()) {
+        continue;
+      }
+
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+      if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
+        // Cull.
+        continue;
+      }
+
+      if (data._instances != nullptr) {
+        // Draw each individual instance.  We don't bother culling each
+        // individual Geom for each instance; that is probably way too slow.
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), internal_transform);
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
+        continue;
+      }
+
+      // Cull the individual Geom against the view frustum.
+      if (data._view_frustum != nullptr &&
+          !geom->is_in_view(data._view_frustum, current_thread)) {
+        // Cull this Geom.
+        continue;
+      }
+      if (data._cull_planes != nullptr) {
         // Also cull the Geom against the cull planes.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
+          geom_volume->as_geometric_bounding_volume();
         int result;
         data._cull_planes->do_cull(result, state, geom_gbv);
         if (result == BoundingVolume::IF_no_intersection) {
@@ -556,11 +569,11 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
           continue;
         }
       }
-    }
 
-    CullableObject *object =
-      new CullableObject(move(geom), move(state), internal_transform);
-    trav->get_cull_handler()->record_object(object, trav);
+      CullableObject *object =
+        new CullableObject(std::move(geom), std::move(state), internal_transform);
+      trav->get_cull_handler()->record_object(object, trav);
+    }
   }
 }
 
@@ -584,9 +597,9 @@ get_legal_collide_mask() const {
  */
 void GeomNode::
 add_geom(Geom *geom, const RenderState *state) {
-  nassertv(geom != (Geom *)NULL);
+  nassertv(geom != nullptr);
   nassertv(geom->check_valid());
-  nassertv(state != (RenderState *)NULL);
+  nassertv(state != nullptr);
 
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
@@ -635,7 +648,7 @@ add_geoms_from(const GeomNode *other) {
  */
 void GeomNode::
 set_geom(int n, Geom *geom) {
-  nassertv(geom != (Geom *)NULL);
+  nassertv(geom != nullptr);
   nassertv(geom->check_valid());
 
   CDWriter cdata(_cycler, true);
@@ -782,7 +795,7 @@ unify(int max_indices, bool preserve_order) {
  * Writes a short description of all the Geoms in the node.
  */
 void GeomNode::
-write_geoms(ostream &out, int indent_level) const {
+write_geoms(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
@@ -798,7 +811,7 @@ write_geoms(ostream &out, int indent_level) const {
  * Writes a detailed description of all the Geoms in the node.
  */
 void GeomNode::
-write_verbose(ostream &out, int indent_level) const {
+write_verbose(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
@@ -816,7 +829,7 @@ write_verbose(ostream &out, int indent_level) const {
  *
  */
 void GeomNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // Accumulate the total set of RenderAttrib types that are applied to any of
   // our Geoms, so we can output them too.  The result will be the list of
   // attrib types that might be applied to some Geoms, but not necessarily to
@@ -1144,7 +1157,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_geoms; i++) {
     manager->read_pointer(scan);
     manager->read_pointer(scan);
-    geoms->push_back(GeomEntry(NULL, NULL));
+    geoms->push_back(GeomEntry(nullptr, nullptr));
   }
   _geoms = geoms;
 }

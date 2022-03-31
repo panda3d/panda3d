@@ -23,6 +23,9 @@
 #include "pnmImage.h"
 #include "config_grutil.h"
 
+using std::max;
+using std::min;
+
 /**
  * The PfmVizzer constructor receives a reference to a PfmFile which it will
  * operate on.  It does not keep ownership of this reference; it is your
@@ -34,8 +37,8 @@ PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_inverse = false;
   _vis_2d = false;
   _keep_beyond_lens = false;
-  _vis_blend = NULL;
-  _aux_pfm = NULL;
+  _vis_blend = nullptr;
+  _aux_pfm = nullptr;
 }
 
 /**
@@ -73,7 +76,7 @@ project(const Lens *lens, const PfmFile *undist_lut) {
         // these to [0, 1].
         LPoint3f uvw = LCAST(float, film * to_uv);
 
-        if (undist_lut != NULL) {
+        if (undist_lut != nullptr) {
           // Apply the undistortion map, if given.
           LPoint3f p2;
           undist_lut->calc_bilinear_point(p2, uvw[0], 1.0 - uvw[1]);
@@ -244,7 +247,7 @@ generate_vis_points() const {
   nassertr(_pfm.is_valid(), NodePath());
 
   bool check_aux_pfm = uses_aux_pfm();
-  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
+  nassertr(!check_aux_pfm || (_aux_pfm != nullptr && _aux_pfm->is_valid()), NodePath());
 
   CPT(GeomVertexFormat) format;
   if (_vis_inverse) {
@@ -323,8 +326,7 @@ generate_vis_points() const {
 NodePath PfmVizzer::
 generate_vis_mesh(MeshFace face) const {
   nassertr(_pfm.is_valid(), NodePath());
-  bool check_aux_pfm = uses_aux_pfm();
-  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
+  nassertr(!uses_aux_pfm() || (_aux_pfm != nullptr && _aux_pfm->is_valid()), NodePath());
   nassertr(face != 0, NodePath());
 
   if (_pfm.get_num_channels() == 1 && _vis_columns.empty()) {
@@ -778,7 +780,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       num_vertices = x_size * y_size;
       max_indices = (x_size - 1) * (y_size - 1) * 6;
 
-      ostringstream mesh_name;
+      std::ostringstream mesh_name;
       mesh_name << "mesh_" << xci << "_" << yci;
       PT(GeomVertexData) vdata = new GeomVertexData
         (mesh_name.str(), format, Geom::UH_static);
@@ -878,11 +880,11 @@ add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
   column._target = target;
   column._name = name;
   column._transform = transform;
-  if (transform == NULL) {
+  if (transform == nullptr) {
     column._transform = TransformState::make_identity();
   }
   column._lens = lens;
-  if (undist_lut != NULL && undist_lut->is_valid()) {
+  if (undist_lut != nullptr && undist_lut->is_valid()) {
     column._undist_lut = undist_lut;
   }
   vis_columns.push_back(column);
@@ -923,12 +925,12 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
     }
   }
 
-  if (_flat_texcoord_name != (InternalName *)NULL) {
+  if (_flat_texcoord_name != nullptr) {
     // We need an additional texcoord column for the flat texcoords.
     add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, _flat_texcoord_name);
   }
 
-  if (_vis_blend != (PNMImage *)NULL) {
+  if (_vis_blend != nullptr) {
     // The blend map, if specified, also gets applied to the vertices.
     add_vis_column(vis_columns, CT_blend1, CT_blend1, InternalName::get_color());
   }
@@ -996,7 +998,7 @@ make_array_format(const VisColumns &vis_columns) const {
       contents = GeomEnums::C_color;
       break;
     }
-    nassertr(num_components != 0, NULL);
+    nassertr(num_components != 0, nullptr);
 
     array_format->add_column(name, num_components, numeric_type, contents);
   }
@@ -1050,7 +1052,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 
   case CT_aux_vertex1:
     {
-      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      nassertr(vizzer.get_aux_pfm() != nullptr, false);
       PN_float32 p = vizzer.get_aux_pfm()->get_point1(xi, yi);
       LPoint2f point(p, 0.0);
       if (!transform_point(point)) {
@@ -1072,7 +1074,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 
   case CT_aux_vertex2:
     {
-      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      nassertr(vizzer.get_aux_pfm() != nullptr, false);
       LPoint2f point = vizzer.get_aux_pfm()->get_point2(xi, yi);
       if (!transform_point(point)) {
         success = false;
@@ -1156,7 +1158,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_blend1:
     {
       const PNMImage *vis_blend = vizzer.get_vis_blend();
-      if (vis_blend != NULL) {
+      if (vis_blend != nullptr) {
         double gray = vis_blend->get_gray(xi, yi);
         vwriter.set_data3d(gray, gray, gray);
       }
@@ -1189,7 +1191,7 @@ transform_point(LPoint3f &point) const {
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat()).xform_point_in_place(point);
   }
-  if (_lens != (Lens *)NULL) {
+  if (_lens != nullptr) {
     static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
                            0.0, 0.5, 0.0, 0.0,
                            0.0, 0.0, 1.0, 0.0,
@@ -1201,7 +1203,7 @@ transform_point(LPoint3f &point) const {
     point = to_uv.xform_point(LCAST(PN_float32, film));
   }
 
-  if (_undist_lut != NULL) {
+  if (_undist_lut != nullptr) {
     LPoint3f p;
     if (!_undist_lut->calc_bilinear_point(p, point[0], 1.0 - point[1])) {
       // Point is missing.

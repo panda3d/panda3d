@@ -15,6 +15,10 @@
 
 #include <ctype.h>
 
+using std::setfill;
+using std::setw;
+using std::string;
+
 static const int num_weekdays = 7;
 static const char * const weekdays[num_weekdays] = {
   "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
@@ -182,7 +186,7 @@ HTTPDate(const string &format) {
   if (t.tm_year < 100) {
     // Two-digit year.  Assume it's in the same century, unless that
     // assumption puts it more than 50 years in the future.
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *tp = gmtime(&now);
     t.tm_year += 100 * (tp->tm_year / 100);
     if (t.tm_year - tp->tm_year > 50) {
@@ -205,33 +209,13 @@ HTTPDate(const string &format) {
     return;
   }
 
-  // Everything checks out; convert the date.  rdb made this an if 0 check as
-  // timegm is a nonstandard extension so it fails in some situations even if
-  // the compiler defines __GNUC__
-#if 0
-
-  _time = timegm(&t);
-
-#else  // __GNUC__
-  // Without the GNU extension timegm, we have to use mktime() instead.
+  // Everything checks out; convert the date.
   _time = mktime(&t);
 
   if (_time != (time_t)-1) {
     // Unfortunately, mktime() assumes local time; convert this back to GMT.
-#if defined(IS_FREEBSD)
-    time_t now = time(NULL);
-    struct tm *tp = localtime(&now);
-    _time -= tp->tm_gmtoff;
-#elif defined(_WIN32)
-    long int timezone;
-    _get_timezone(&timezone);
-    _time -= timezone;
-#else
-    extern long int timezone;
-    _time -= timezone;
-#endif
+    _time += (mktime(localtime(&_time)) - mktime(gmtime(&_time)));
   }
-#endif  // __GNUC__
 }
 
 /**
@@ -245,7 +229,7 @@ get_string() const {
 
   struct tm *tp = gmtime(&_time);
 
-  ostringstream result;
+  std::ostringstream result;
   result
     << weekdays[tp->tm_wday] << ", "
     << setw(2) << setfill('0') << tp->tm_mday << " "
@@ -263,7 +247,7 @@ get_string() const {
  *
  */
 bool HTTPDate::
-input(istream &in) {
+input(std::istream &in) {
   (*this) = HTTPDate();
 
   // Extract out the quoted date string.
@@ -275,7 +259,7 @@ input(istream &in) {
 
   string date;
   ch = in.get();
-  while (!in.fail() && !in.eof() && ch != '"') {
+  while (!in.fail() && ch != '"') {
     date += ch;
     ch = in.get();
   }
@@ -294,7 +278,7 @@ input(istream &in) {
  *
  */
 void HTTPDate::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // We put quotes around the string on output, so we can reliably detect the
   // end of the date string on input, above.
   out << '"' << get_string() << '"';
