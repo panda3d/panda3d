@@ -1433,6 +1433,10 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
     GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
+        if (display_cat.is_spam()) {
+          display_cat.spam()
+            << "Flipping window " << win->get_name() << "\n";
+        }
         {
           PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
           win->begin_flip();
@@ -1452,6 +1456,11 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
           gsg->pop_group_marker();
         }
 
+        if (display_cat.is_spam()) {
+          display_cat.spam()
+            << "Culling and drawing window " << win->get_name() << "\n";
+        }
+
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
           PT(DisplayRegion) dr = win->get_active_display_region(i);
@@ -1463,6 +1472,10 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
 
         if (_auto_flip) {
           if (win->flip_ready()) {
+            if (display_cat.is_spam()) {
+              display_cat.spam()
+                << "Flipping window " << win->get_name() << "\n";
+            }
             {
               PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
               win->begin_flip();
@@ -1559,6 +1572,11 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
   for (size_t wi = 0; wi < wlist_size; ++wi) {
     GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
+      if (display_cat.is_spam()) {
+        display_cat.spam()
+          << "Culling window " << win->get_name() << "\n";
+      }
+
       GraphicsStateGuardian *gsg = win->get_gsg();
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
@@ -1658,6 +1676,10 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 
       GraphicsOutput *host = win->get_host();
       if (host->flip_ready()) {
+        if (display_cat.is_spam()) {
+          display_cat.spam()
+            << "Flipping window " << win->get_name() << "\n";
+        }
         {
           // We can't use a PStatGPUTimer before begin_frame, so when using
           // GPU timing, it is advisable to set auto-flip to #t.
@@ -1705,6 +1727,10 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 #endif
 
           if (win->flip_ready()) {
+            if (display_cat.is_spam()) {
+              display_cat.spam()
+                << "Flipping window " << win->get_name() << "\n";
+            }
             {
               // begin_flip doesn't do anything interesting, let's not waste
               // two timer queries on that.
@@ -1780,6 +1806,11 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (i = 0; i < num_windows; ++i) {
     GraphicsOutput *win = wlist[i];
     if (win->flip_ready()) {
+      if (display_cat.is_spam()) {
+        display_cat.spam()
+          << "Flipping window " << win->get_name() << "\n";
+      }
+
       nassertv(warray_count < num_windows);
       warray[warray_count] = win;
       ++warray_count;
@@ -2185,6 +2216,11 @@ do_remove_window(GraphicsOutput *window, Thread *current_thread) {
 void GraphicsEngine::
 do_resort_windows() {
   _windows_sorted = true;
+
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "Re-sorting window list.\n";
+  }
 
   _app.resort_windows();
   Threads::const_iterator ti;
