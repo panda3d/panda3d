@@ -2,6 +2,7 @@ DOWN_4 = """
 //Cg
 
 void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
              out float2 l_texcoordNW : TEXCOORD0,
              out float2 l_texcoordNE : TEXCOORD1,
@@ -11,8 +12,8 @@ void vshader(float4 vtx_position : POSITION,
              uniform float4 texpix_src,
              uniform float4x4 mat_modelproj)
 {
-  l_position=mul(mat_modelproj, vtx_position);
-  float2 c=(vtx_position.xz * texpad_src.xy) + texpad_src.xy;
+  l_position = mul(mat_modelproj, vtx_position);
+  float2 c = vtx_texcoord * texpad_src.xy * 2;
   l_texcoordNW = c + float2( texpix_src.x, -texpix_src.y);
   l_texcoordNE = c + float2( texpix_src.x,  texpix_src.y);
   l_texcoordSW = c + float2(-texpix_src.x, -texpix_src.y);
