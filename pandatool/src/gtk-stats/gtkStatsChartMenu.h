@@ -32,6 +32,7 @@ public:
 
   GtkWidget *get_menu_widget();
   void add_to_menu_bar(GtkWidget *menu_bar, int position);
+  void remove_from_menu_bar(GtkWidget *menu_bar);
 
   void check_update();
   void do_update();
@@ -41,12 +42,16 @@ private:
                 bool show_level);
 
   static void remove_menu_child(GtkWidget *widget, gpointer data);
+  static void activate_close_all(GtkWidget *widget, gpointer data);
+  static void activate_reopen_default(GtkWidget *widget, gpointer data);
+  static void activate_save_default(GtkWidget *widget, gpointer data);
 
   GtkStatsMonitor *_monitor;
   int _thread_index;
 
   int _last_level_index;
   GtkWidget *_menu;
+  GtkWidget *_menu_item = nullptr;
 };
 
 #endif

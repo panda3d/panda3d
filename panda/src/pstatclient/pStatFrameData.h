@@ -57,8 +57,8 @@ public:
   INLINE int get_level_collector(size_t n) const;
   INLINE double get_level(size_t n) const;
 
-  bool write_datagram(Datagram &destination, PStatClient *client) const;
-  void read_datagram(DatagramIterator &source, PStatClientVersion *version);
+  bool write_datagram(Datagram &destination, PStatClient *client = nullptr) const;
+  void read_datagram(DatagramIterator &source, PStatClientVersion *version = nullptr);
 
 private:
   class DataPoint {

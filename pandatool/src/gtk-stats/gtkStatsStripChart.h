@@ -56,6 +56,11 @@ protected:
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
 
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
+
   virtual void additional_graph_window_paint(cairo_t *cr);
   virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int graph_x, int graph_y);

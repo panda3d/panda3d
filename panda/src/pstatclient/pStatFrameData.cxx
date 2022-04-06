@@ -81,5 +81,5 @@ read_datagram(DatagramIterator &source, PStatClientVersion *) {
     dp._value = source.get_float32();
     _level_data.push_back(dp);
   }
-  nassertv(source.get_remaining_size() == 0);
+  //nassertv(source.get_remaining_size() == 0);
 }

@@ -76,6 +76,8 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
 
   _start_time = _lowest_start_time;
   _target_start_time = _start_time;
+
+  monitor->_timelines.insert(this);
 }
 
 /**
@@ -83,6 +85,7 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
  */
 PStatTimeline::
 ~PStatTimeline() {
+  _monitor->_timelines.erase(this);
 }
 
 /**
@@ -116,7 +119,7 @@ new_data(int thread_index, int frame_number) {
         _highest_end_time = frame_end;
       }
 
-      while (thread_index >= _threads.size()) {
+      while (thread_index >= (int)_threads.size()) {
         _threads_changed = true;
         if (_threads.size() == 0) {
           _threads.resize(1);
@@ -262,6 +265,42 @@ get_bar_tooltip(int row, int x) const {
 }
 
 /**
+ * Writes the graph state to a datagram.
+ */
+void PStatTimeline::
+write_datagram(Datagram &dg) const {
+  dg.add_float64(_time_scale);
+  dg.add_float64(_start_time);
+  dg.add_float64(_lowest_start_time);
+  dg.add_float64(_highest_end_time);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatTimeline::
+read_datagram(DatagramIterator &scan) {
+  _time_scale = scan.get_float64();
+  _start_time = scan.get_float64();
+  _lowest_start_time = scan.get_float64();
+  _highest_end_time = scan.get_float64();
+
+  _scroll_speed = 0.0;
+  _zoom_speed = 0.0;
+
+  _have_start_time = true;
+  _target_start_time = _start_time;
+  _target_time_scale = _time_scale;
+
+  PStatGraph::read_datagram(scan);
+
+  normal_guide_bars();
+  force_redraw();
+}
+
+/**
  * To be called by the user class when the widget size has changed.  This
  * updates the chart's internal data and causes it to issue redraw commands to
  * reflect the new size.
@@ -324,12 +363,12 @@ force_redraw(int row, int from_x, int to_x) {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     ThreadRow &thread_row = _threads[ti];
-    if (thread_row._row_offset > row) {
+    if ((int)thread_row._row_offset > row) {
       break;
     }
 
     int row_index = row - (int)thread_row._row_offset;
-    if (row_index < thread_row._rows.size()) {
+    if (row_index < (int)thread_row._rows.size()) {
       draw_row((int)ti, row_index, start_time, end_time);
     }
   }
@@ -644,12 +683,12 @@ find_bar(int row, int x, ColorBar &bar) const {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     const ThreadRow &thread_row = _threads[ti];
-    if (thread_row._row_offset > row) {
+    if ((int)thread_row._row_offset > row) {
       break;
     }
 
     int row_index = row - (int)thread_row._row_offset;
-    if (row_index < thread_row._rows.size()) {
+    if (row_index < (int)thread_row._rows.size()) {
       // Find the first element whose end time is larger than the given time.
       const Row &bars = thread_row._rows[row_index];
       Row::const_iterator it = std::lower_bound(bars.begin(), bars.end(), ColorBar {time, time});

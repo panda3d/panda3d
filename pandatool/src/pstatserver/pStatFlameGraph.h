@@ -60,6 +60,9 @@ public:
   std::string get_bar_tooltip(int depth, int x) const;
   int get_bar_collector(int depth, int x) const;
 
+  virtual void write_datagram(Datagram &dg) const final;
+  virtual void read_datagram(DatagramIterator &scan) final;
+
 protected:
   void update_data();
   void changed_size(int xsize, int ysize);

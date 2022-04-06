@@ -128,10 +128,20 @@ void GtkStatsLabelStack::
 highlight_label(int collector_index) {
   if (_highlight_label != collector_index) {
     _highlight_label = collector_index;
-    Labels::iterator li;
-    for (li = _labels.begin(); li != _labels.end(); ++li) {
-      GtkStatsLabel *label = (*li);
+    for (GtkStatsLabel *label : _labels) {
       label->set_highlight(label->get_collector_index() == _highlight_label);
+    }
+  }
+}
+
+/**
+ * Refreshes the color of the label with the given index.
+ */
+void GtkStatsLabelStack::
+update_label_color(int collector_index) {
+  for (GtkStatsLabel *label : _labels) {
+    if (label->get_collector_index() == collector_index) {
+      label->update_color();
     }
   }
 }

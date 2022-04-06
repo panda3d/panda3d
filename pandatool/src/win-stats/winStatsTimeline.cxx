@@ -248,6 +248,25 @@ animate(double time, double dt) {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+bool WinStatsTimeline::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsTimeline::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+}
+
+/**
  *
  */
 LONG WinStatsTimeline::
@@ -417,6 +436,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
             AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
             AppendMenu(popup, MF_STRING, 104, "Open Piano Roll");
+            AppendMenu(popup, MF_STRING | MF_SEPARATOR, 0, nullptr);
+            AppendMenu(popup, MF_STRING, 105, "Change Color...");
+            AppendMenu(popup, MF_STRING, 106, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _graph_window, nullptr);
           }
         }
@@ -446,6 +468,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case 104:
       WinStatsGraph::_monitor->open_piano_roll(_popup_bar._thread_index);
+      return 0;
+
+    case 105:
+      WinStatsGraph::_monitor->choose_collector_color(_popup_bar._collector_index);
+      return 0;
+
+    case 106:
+      WinStatsGraph::_monitor->reset_collector_color(_popup_bar._collector_index);
       return 0;
     }
     break;

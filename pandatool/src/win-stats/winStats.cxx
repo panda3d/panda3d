@@ -26,66 +26,6 @@
 // Enable common controls version 6, necessary for modern visual styles
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-static const char *toplevel_class_name = "pstats";
-static WinStatsServer *server = nullptr;
-
-/**
- *
- */
-static LONG WINAPI
-toplevel_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  switch (msg) {
-  case WM_TIMER:
-    server->poll();
-    break;
-
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    break;
-
-  default:
-    break;
-  }
-
-  return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-
-
-/**
- * Creates the initial, toplevel window for the application.
- */
-static HWND
-create_toplevel_window(HINSTANCE application) {
-  WNDCLASS wc;
-
-  ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.lpfnWndProc = (WNDPROC)toplevel_window_proc;
-  wc.hInstance = application;
-  wc.lpszClassName = toplevel_class_name;
-
-  if (!RegisterClass(&wc)) {
-    nout << "Could not register window class!\n";
-    exit(1);
-  }
-
-  DWORD window_style = WS_POPUP | WS_SYSMENU | WS_ICONIC;
-
-  std::ostringstream strm;
-  strm << "PStats " << pstats_port;
-  std::string window_name = strm.str();
-
-  HWND toplevel_window =
-    CreateWindow(toplevel_class_name, window_name.c_str(), window_style,
-                 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                 nullptr, nullptr, application, 0);
-  if (!toplevel_window) {
-    nout << "Could not create toplevel window!\n";
-    exit(1);
-  }
-
-  return toplevel_window;
-}
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   // Initialize commctl32.dll.
   INITCOMMONCONTROLSEX icc;
@@ -96,27 +36,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   // Signal DPI awareness.
   SetProcessDPIAware();
 
-  HINSTANCE application = GetModuleHandle(nullptr);
-  HWND toplevel_window = create_toplevel_window(application);
-
-  ShowWindow(toplevel_window, SW_SHOWMINIMIZED);
-
-  // Create the server object.
-  server = new WinStatsServer;
-  if (!server->listen()) {
-    std::ostringstream stream;
-    stream
-      << "Unable to open port " << pstats_port
-      << ".  Try specifying a different\n"
-      << "port number using pstats-port in your Config file.";
-    std::string str = stream.str();
-    MessageBox(toplevel_window, str.c_str(), "PStats error",
-               MB_OK | MB_ICONEXCLAMATION);
-    exit(1);
-  }
-
-  // Set up a timer to poll the pstats every so often.
-  SetTimer(toplevel_window, 1, 200, nullptr);
+  // Create the server window.
+  WinStatsServer *server = new WinStatsServer;
+  server->new_session();
 
   // Now get lost in the Windows message loop.
   MSG msg;

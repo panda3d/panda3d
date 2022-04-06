@@ -94,6 +94,7 @@ void PStatReader::
 lost_connection() {
   _client_data->_is_alive = false;
   _monitor->lost_connection();
+  _manager->lost_connection(_monitor);
   _client_data.clear();
 
   _manager->close_connection(_tcp_connection);

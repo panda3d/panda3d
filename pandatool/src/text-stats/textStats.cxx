@@ -69,7 +69,7 @@ TextStats() {
  *
  */
 PStatMonitor *TextStats::
-make_monitor() {
+make_monitor(const NetAddress &address) {
 
   return new TextMonitor(this, _outFile, _show_raw_data, _json);
 }

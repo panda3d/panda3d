@@ -37,8 +37,9 @@ class PStatView;
  */
 class PStatStripChart : public PStatGraph {
 public:
-  PStatStripChart(PStatMonitor *monitor, PStatView &view,
-                  int thread_index, int collector_index, int xsize, int ysize);
+  PStatStripChart(PStatMonitor *monitor,
+                  int thread_index, int collector_index, bool show_level,
+                  int xsize, int ysize);
   virtual ~PStatStripChart();
 
   void new_data(int frame_number);
@@ -72,6 +73,9 @@ public:
   bool is_title_unknown() const;
   std::string get_title_text();
   std::string get_label_tooltip(int collector_index) const;
+
+  virtual void write_datagram(Datagram &dg) const final;
+  virtual void read_datagram(DatagramIterator &scan) final;
 
 protected:
   class ColorData {
