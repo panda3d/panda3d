@@ -2,6 +2,7 @@ BLOOM_X = """
 //Cg
 
 void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
              out float4 l_texcoord0 : TEXCOORD0,
              out float4 l_texcoord1 : TEXCOORD1,
@@ -10,8 +11,8 @@ void vshader(float4 vtx_position : POSITION,
              uniform float4 texpix_src,
              uniform float4x4 mat_modelproj)
 {
-  l_position=mul(mat_modelproj, vtx_position);
-  float2 c=(vtx_position.xz * texpad_src.xy) + texpad_src.xy;
+  l_position = mul(mat_modelproj, vtx_position);
+  float2 c = vtx_texcoord * texpad_src.xy * 2;
   float offset = texpix_src.x;
   float pad = texpad_src.x * 2;
   l_texcoord0 = float4(min(c.x-offset* -4, pad), min(c.x-offset* -3, pad), min(c.x-offset* -2, pad), c.y);
