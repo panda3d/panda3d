@@ -859,6 +859,50 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     // case RTP_stencil: gl_format = GL_STENCIL_INDEX8; break
     default:
       if (_fb_properties.get_alpha_bits() == 0) {
+#ifndef OPENGLES_1
+        if (_fb_properties.get_float_color() &&
+            glgsg->has_extension("GL_EXT_color_buffer_float")) {
+          // This extension supports the full range of floating-point formats.
+          if (_fb_properties.get_color_bits() > 16 * 3 ||
+              _fb_properties.get_red_bits() > 16 ||
+              _fb_properties.get_green_bits() > 16 ||
+              _fb_properties.get_blue_bits() > 16) {
+            // 32-bit, which is always floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32 * 2) {
+              gl_format = GL_RGB32F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RG32F;
+            } else {
+              gl_format = GL_R32F;
+            }
+          } else {
+            // 16-bit floating-point.
+            if (_fb_properties.get_blue_bits() > 10 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16F;
+            } else {
+              gl_format = GL_R16F;
+            }
+          }
+        } else if (_fb_properties.get_float_color() &&
+                   glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+          gl_format = GL_RGB16F_EXT;
+        } else
+#endif
         if (_fb_properties.get_color_bits() <= 16) {
           gl_format = GL_RGB565_OES;
         } else if (_fb_properties.get_color_bits() <= 24) {
@@ -866,6 +910,15 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         } else {
           gl_format = GL_RGB10_EXT;
         }
+#ifndef OPENGLES_1
+      } else if (_fb_properties.get_float_color() &&
+                 _fb_properties.get_color_bits() > 16 * 3 &&
+                 glgsg->has_extension("GL_EXT_color_buffer_float")) {
+        gl_format = GL_RGBA32F_EXT;
+      } else if (_fb_properties.get_float_color() &&
+                 glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+        gl_format = GL_RGBA16F_EXT;
+#endif
       } else if (_fb_properties.get_color_bits() == 0) {
         gl_format = GL_ALPHA8_EXT;
       } else if (_fb_properties.get_color_bits() <= 12

@@ -1707,7 +1707,8 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       if (host->flip_ready()) {
         if (display_cat.is_spam()) {
           display_cat.spam()
-            << "Flipping window " << win->get_name() << "\n";
+            << "Flipping window " << host->get_name()
+            << " before drawing window " << win->get_name() << "\n";
         }
         PStatTimer timer(_flip_pcollector, current_thread);
         host->begin_flip();
