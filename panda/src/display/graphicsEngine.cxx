@@ -1678,7 +1678,8 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
       if (host->flip_ready()) {
         if (display_cat.is_spam()) {
           display_cat.spam()
-            << "Flipping window " << win->get_name() << "\n";
+            << "Flipping window " << host->get_name()
+            << " before drawing window " << win->get_name() << "\n";
         }
         {
           // We can't use a PStatGPUTimer before begin_frame, so when using
