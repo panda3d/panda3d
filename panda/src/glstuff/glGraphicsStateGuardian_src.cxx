@@ -10648,8 +10648,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   }
 
 #if defined(__EMSCRIPTEN__) && defined(OPENGLES)
-  // WebGL has no sized formats, it would seem.
-  return get_external_image_format(tex);
+  // WebGL 1 has no sized formats, it would seem.
+  if (!is_at_least_gles_version(3, 0)) {
+    return get_external_image_format(tex);
+  }
 #endif
 
   switch (format) {
