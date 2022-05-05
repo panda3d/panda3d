@@ -10322,9 +10322,15 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     } else {
       return GL_RGBA16_SNORM;
     }
+#elif !defined(OPENGLES_1)
+  case Texture::F_rgba16:
+    return GL_RGBA16F;
+#endif  // OPENGLES
+
+#ifndef OPENGLES_1
   case Texture::F_rgba32:
     return GL_RGBA32F;
-#endif  // OPENGLES
+#endif
 
   case Texture::F_rgb:
     switch (component_type) {
