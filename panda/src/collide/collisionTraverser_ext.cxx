@@ -21,7 +21,6 @@
 PyObject *Extension<CollisionTraverser>::
 __getstate__() const {
   extern struct Dtool_PyTypedObject Dtool_CollisionHandler;
-  extern struct Dtool_PyTypedObject Dtool_CollisionTraverser;
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   const std::string &name = _this->get_name();

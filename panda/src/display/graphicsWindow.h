@@ -126,6 +126,8 @@ public:
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
 
+  virtual void begin_flip();
+
 protected:
   virtual void close_window();
   virtual bool open_window();
@@ -151,6 +153,8 @@ protected:
   PT(WindowHandle) _parent_window_handle;
 
   bool _got_expose_event;
+
+  PStatCollector _latency_pcollector;
 
 private:
   LightReMutex _properties_lock;

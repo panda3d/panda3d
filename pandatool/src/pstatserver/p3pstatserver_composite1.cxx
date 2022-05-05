@@ -8,5 +8,6 @@
 #include "pStatServer.cxx"
 #include "pStatStripChart.cxx"
 #include "pStatThreadData.cxx"
+#include "pStatTimeline.cxx"
 #include "pStatView.cxx"
 #include "pStatViewLevel.cxx"

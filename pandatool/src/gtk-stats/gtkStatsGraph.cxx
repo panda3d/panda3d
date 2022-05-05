@@ -30,7 +30,7 @@ const double GtkStatsGraph::rgb_user_guide_bar[3] = {
  *
  */
 GtkStatsGraph::
-GtkStatsGraph(GtkStatsMonitor *monitor) :
+GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   _monitor(monitor)
 {
   _parent_window = nullptr;
@@ -40,21 +40,25 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   GtkWidget *parent_window = monitor->get_window();
 
-  GdkDisplay *display = gdk_window_get_display(gtk_widget_get_window(parent_window));
+  GdkWindow *window = gtk_widget_get_window(parent_window);
+  GdkDisplay *display = gdk_window_get_display(window);
   _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
+
+  int scale = gdk_window_get_scale_factor(window);
+  _pixel_scale = scale * monitor->get_resolution() * 4 / 96;
 
   _cr_surface = nullptr;
   _cr = nullptr;
+  _cr_scale = scale;
+  _pango_attrs = nullptr;
 
   _surface_xsize = 0;
   _surface_ysize = 0;
 
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-  // These calls were intended to kind of emulate the Windows MDI behavior,
-  // but it's just weird.  gtk_window_set_transient_for(GTK_WINDOW(_window),
-  // GTK_WINDOW(parent_window));
-  // gtk_window_set_destroy_with_parent(GTK_WINDOW(_window), TRUE);
+  gtk_window_set_type_hint(GTK_WINDOW(_window), GDK_WINDOW_TYPE_HINT_UTILITY);
+  //gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
+  //gtk_window_set_position(GTK_WINDOW(_window), GTK_WIN_POS_CENTER_ON_PARENT);
 
   gtk_widget_add_events(_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
@@ -63,17 +67,17 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
        G_CALLBACK(window_delete_event), this);
   g_signal_connect(G_OBJECT(_window), "destroy",
        G_CALLBACK(window_destroy), this);
-  g_signal_connect(G_OBJECT(_window), "button_press_event",
-       G_CALLBACK(button_press_event_callback), this);
-  g_signal_connect(G_OBJECT(_window), "button_release_event",
-       G_CALLBACK(button_release_event_callback), this);
-  g_signal_connect(G_OBJECT(_window), "motion_notify_event",
-       G_CALLBACK(motion_notify_event_callback), this);
+  //g_signal_connect(G_OBJECT(_window), "button_press_event",
+  //     G_CALLBACK(button_press_event_callback), this);
+  //g_signal_connect(G_OBJECT(_window), "button_release_event",
+  //     G_CALLBACK(button_release_event_callback), this);
+  //g_signal_connect(G_OBJECT(_window), "motion_notify_event",
+  //     G_CALLBACK(motion_notify_event_callback), this);
 
   _graph_window = gtk_drawing_area_new();
   gtk_widget_add_events(_graph_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-      GDK_POINTER_MOTION_MASK);
+      GDK_POINTER_MOTION_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(_graph_window), "draw",
        G_CALLBACK(graph_draw_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "configure_event",
@@ -84,37 +88,41 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
        G_CALLBACK(button_release_event_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "motion_notify_event",
        G_CALLBACK(motion_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "leave_notify_event",
+       G_CALLBACK(leave_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "query-tooltip",
+       G_CALLBACK(query_tooltip_callback), this);
 
-  // An overlay inside the frame, for charts that want to display widgets on
-  // top of the graph.
-  _graph_overlay = gtk_overlay_new();
-  gtk_container_add(GTK_CONTAINER(_graph_overlay), _graph_window);
+  gtk_widget_set_has_tooltip(_graph_window, TRUE);
 
   // A Frame to hold the graph.
   _graph_frame = gtk_frame_new(nullptr);
   gtk_frame_set_shadow_type(GTK_FRAME(_graph_frame), GTK_SHADOW_IN);
-  gtk_container_add(GTK_CONTAINER(_graph_frame), _graph_overlay);
+  gtk_container_add(GTK_CONTAINER(_graph_frame), _graph_window);
 
   // A VBox to hold the graph's frame, and any numbers (scale legend?  total?)
   // above it.
   _graph_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_end(GTK_BOX(_graph_vbox), _graph_frame,
-       TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(_graph_vbox), _graph_frame, TRUE, TRUE, 0);
 
   // An HBox to hold the graph's frame, and the scale legend to the right of
   // it.
   _graph_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(_graph_hbox), _graph_vbox,
-         TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(_graph_hbox), _graph_vbox, TRUE, TRUE, 0);
 
   // An HPaned to hold the label stack and the graph hbox.
-  _hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_paned_set_wide_handle(GTK_PANED(_hpaned), TRUE);
-  gtk_container_add(GTK_CONTAINER(_window), _hpaned);
-  gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
+  if (has_label_stack) {
+    _hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_paned_set_wide_handle(GTK_PANED(_hpaned), TRUE);
+    gtk_container_add(GTK_CONTAINER(_window), _hpaned);
+    gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
 
-  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), FALSE, FALSE);
-  gtk_paned_pack2(GTK_PANED(_hpaned), _graph_hbox, TRUE, TRUE);
+    gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), FALSE, FALSE);
+    gtk_paned_pack2(GTK_PANED(_hpaned), _graph_hbox, TRUE, TRUE);
+  }
+  else {
+    gtk_container_add(GTK_CONTAINER(_window), _graph_hbox);
+  }
 
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
@@ -128,6 +136,11 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
  */
 GtkStatsGraph::
 ~GtkStatsGraph() {
+  if (_timer_id != 0) {
+    gtk_widget_remove_tick_callback(_graph_window, _timer_id);
+    _timer_id = 0;
+  }
+
   _monitor = nullptr;
   release_surface();
 
@@ -136,8 +149,14 @@ GtkStatsGraph::
     cairo_pattern_destroy(item.second.second);
   }
   _brushes.clear();
+  _text_colors.clear();
 
   _label_stack.clear_labels();
+
+  if (_pango_attrs != nullptr) {
+    pango_attr_list_unref(_pango_attrs);
+    _pango_attrs = nullptr;
+  }
 
   if (_window != nullptr) {
     GtkWidget *window = _window;
@@ -212,6 +231,13 @@ on_click_label(int collector_index) {
 }
 
 /**
+ * Called when a pop-up menu should be shown for the label.
+ */
+void GtkStatsGraph::
+on_popup_label(int collector_index) {
+}
+
+/**
  * Called when the user hovers the mouse over a label.
  */
 void GtkStatsGraph::
@@ -261,6 +287,29 @@ close() {
 }
 
 /**
+ * Turns on the animation timer, if it hasn't already been turned on.
+ */
+void GtkStatsGraph::
+start_animation() {
+  if (_timer_id != 0) {
+    return;
+  }
+
+  _time = 0;
+  _timer_id = gtk_widget_add_tick_callback(_graph_window, tick_callback,
+                                           this, nullptr);
+}
+
+/**
+ * Overridden by a derived class to implement an animation.  If it returns
+ * false, the animation timer is stopped.
+ */
+bool GtkStatsGraph::
+animate(double time, double dt) {
+  return false;
+}
+
+/**
  * Returns a pattern suitable for drawing in the indicated collector's color.
  */
 cairo_pattern_t *GtkStatsGraph::
@@ -287,11 +336,43 @@ get_collector_pattern(int collector_index, bool highlight) {
 }
 
 /**
+ * Returns a text color suitable for the given collector.
+ */
+LRGBColor GtkStatsGraph::
+get_collector_text_color(int collector_index, bool highlight) {
+  TextColors::iterator tci;
+  tci = _text_colors.find(collector_index);
+  if (tci != _text_colors.end()) {
+    return highlight ? (*tci).second.second : (*tci).second.first;
+  }
+
+  LRGBColor rgb = _monitor->get_collector_color(collector_index);
+  double bright =
+    rgb[0] * 0.2126 +
+    rgb[1] * 0.7152 +
+    rgb[2] * 0.0722;
+  LRGBColor color = bright >= 0.5 ? LRGBColor(0) : LRGBColor(1);
+  LRGBColor hcolor = bright * 0.75 >= 0.5 ? LRGBColor(0) : LRGBColor(1);
+
+  _text_colors[collector_index] = std::make_pair(color, hcolor);
+  return highlight ? hcolor : color;
+}
+
+/**
  * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsGraph::
 additional_graph_window_paint(cairo_t *cr) {
+}
+
+/**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsGraph::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  return std::string();
 }
 
 /**
@@ -318,9 +399,8 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
  * window.
  */
 gboolean GtkStatsGraph::
-handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-        bool double_click) {
-  if (_potential_drag_mode != DM_none) {
+handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
+  if (_potential_drag_mode != DM_none && button == 1) {
     set_drag_mode(_potential_drag_mode);
     _drag_start_x = graph_x;
     _drag_start_y = graph_y;
@@ -334,18 +414,18 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
  * window.
  */
 gboolean GtkStatsGraph::
-handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
+handle_button_release(int graph_x, int graph_y) {
   set_drag_mode(DM_none);
   // ReleaseCapture();
 
-  return handle_motion(widget, graph_x, graph_y);
+  return handle_motion(graph_x, graph_y);
 }
 
 /**
  * Called when the mouse is moved within the window, or any nested window.
  */
 gboolean GtkStatsGraph::
-handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
+handle_motion(int graph_x, int graph_y) {
   _potential_drag_mode = consider_drag_start(graph_x, graph_y);
 
   GdkWindow *window = gtk_widget_get_window(_window);
@@ -353,8 +433,8 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   if (_potential_drag_mode == DM_guide_bar ||
       _drag_mode == DM_guide_bar) {
     gdk_window_set_cursor(window, _hand_cursor);
-
-  } else {
+  }
+  else {
     gdk_window_set_cursor(window, nullptr);
   }
 
@@ -362,20 +442,38 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
 }
 
 /**
+ * Called when the mouse has left the graph window.
+ */
+gboolean GtkStatsGraph::
+handle_leave() {
+  return FALSE;
+}
+
+/**
  * Sets up a backing-store bitmap of the indicated size.
  */
 void GtkStatsGraph::
-setup_surface(int xsize, int ysize) {
+setup_surface(int xsize, int ysize, int scale) {
   release_surface();
 
-  _surface_xsize = std::max(xsize, 0);
-  _surface_ysize = std::max(ysize, 0);
+  _surface_xsize = xsize;
+  _surface_ysize = ysize;
+  _pixel_scale = scale * _monitor->get_resolution() * 4 / 96;
 
-  _cr_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, _surface_xsize, _surface_ysize);
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
+  _cr_surface = gdk_window_create_similar_image_surface(window, CAIRO_FORMAT_RGB24, _surface_xsize, _surface_ysize, 1);
   _cr = cairo_create(_cr_surface);
+  _cr_scale = scale;
 
   cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
   cairo_paint(_cr);
+
+  // Cache the font scale attribute.
+  _pango_attrs = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_scale_new(scale * 0.9);
+  attr->start_index = 0;
+  attr->end_index = -1;
+  pango_attr_list_insert(_pango_attrs, attr);
 }
 
 /**
@@ -386,6 +484,13 @@ release_surface() {
   if (_cr_surface != nullptr) {
     cairo_surface_destroy(_cr_surface);
     cairo_destroy(_cr);
+    _cr_surface = nullptr;
+    _cr = nullptr;
+  }
+
+  if (_pango_attrs != nullptr) {
+    pango_attr_list_unref(_pango_attrs);
+    _pango_attrs = nullptr;
   }
 }
 
@@ -416,6 +521,8 @@ graph_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
   if (self->_cr_surface != nullptr) {
+    double scale = 1.0 / self->_cr_scale;
+    cairo_scale(cr, scale, scale);
     cairo_set_source_surface(cr, self->_cr_surface, 0, 0);
     cairo_paint(cr);
   }
@@ -430,12 +537,21 @@ graph_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
  */
 gboolean GtkStatsGraph::
 configure_graph_callback(GtkWidget *widget, GdkEventConfigure *event,
-       gpointer data) {
+                         gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
-  self->changed_graph_size(event->width, event->height);
-  self->setup_surface(event->width, event->height);
-  self->force_redraw();
+  GdkWindow *window = gtk_widget_get_window(widget);
+  int scale = gdk_window_get_scale_factor(window);
+  int scaled_xsize = std::max(event->width * scale, 0);
+  int scaled_ysize = std::max(event->height * scale, 0);
+
+  if (self->_cr == nullptr ||
+      self->_cr_scale != scale ||
+      self->_surface_xsize != scaled_xsize ||
+      self->_surface_ysize != scaled_ysize) {
+    self->setup_surface(scaled_xsize, scaled_ysize, scale);
+    self->changed_graph_size(scaled_xsize, scaled_ysize);
+  }
 
   return TRUE;
 }
@@ -446,16 +562,19 @@ configure_graph_callback(GtkWidget *widget, GdkEventConfigure *event,
  */
 gboolean GtkStatsGraph::
 button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
-          gpointer data) {
+                            gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
   int graph_x, graph_y;
   gtk_widget_translate_coordinates(widget, self->_graph_window,
-           (int)event->x, (int)event->y,
-           &graph_x, &graph_y);
+                                   (int)event->x, (int)event->y,
+                                   &graph_x, &graph_y);
+  graph_x *= self->_cr_scale;
+  graph_y *= self->_cr_scale;
 
   bool double_click = (event->type == GDK_2BUTTON_PRESS);
 
-  return self->handle_button_press(widget, graph_x, graph_y, double_click);
+  return self->handle_button_press(graph_x, graph_y,
+                                   double_click, event->button);
 }
 
 /**
@@ -464,14 +583,16 @@ button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
  */
 gboolean GtkStatsGraph::
 button_release_event_callback(GtkWidget *widget, GdkEventButton *event,
-            gpointer data) {
+                              gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
   int graph_x, graph_y;
   gtk_widget_translate_coordinates(widget, self->_graph_window,
-           (int)event->x, (int)event->y,
-           &graph_x, &graph_y);
+                                   (int)event->x, (int)event->y,
+                                   &graph_x, &graph_y);
+  graph_x *= self->_cr_scale;
+  graph_y *= self->_cr_scale;
 
-  return self->handle_button_release(widget, graph_x, graph_y);
+  return self->handle_button_release(graph_x, graph_y);
 }
 
 /**
@@ -479,12 +600,65 @@ button_release_event_callback(GtkWidget *widget, GdkEventButton *event,
  */
 gboolean GtkStatsGraph::
 motion_notify_event_callback(GtkWidget *widget, GdkEventMotion *event,
-           gpointer data) {
+                             gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
   int graph_x, graph_y;
   gtk_widget_translate_coordinates(widget, self->_graph_window,
-           (int)event->x, (int)event->y,
-           &graph_x, &graph_y);
+                                   (int)event->x, (int)event->y,
+                                   &graph_x, &graph_y);
+  graph_x *= self->_cr_scale;
+  graph_y *= self->_cr_scale;
 
-  return self->handle_motion(widget, graph_x, graph_y);
+  return self->handle_motion(graph_x, graph_y);
+}
+
+/**
+ * Called when the mouse has left the graph window.
+ */
+gboolean GtkStatsGraph::
+leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
+                            gpointer data) {
+  GtkStatsGraph *self = (GtkStatsGraph *)data;
+  return self->handle_leave();
+}
+
+/**
+ * Called when a tooltip should be displayed.
+ */
+gboolean GtkStatsGraph::
+query_tooltip_callback(GtkWidget *widget, gint x, gint y,
+                       gboolean keyboard_tip, GtkTooltip *tooltip,
+                       gpointer data) {
+  GtkStatsGraph *self = (GtkStatsGraph *)data;
+  x *= self->_cr_scale;
+  y *= self->_cr_scale;
+
+  std::string text = self->get_graph_tooltip(x, y);
+  gtk_tooltip_set_text(tooltip, text.c_str());
+  return !text.empty();
+}
+
+/**
+ * Called to update the animations.
+ */
+gboolean GtkStatsGraph::
+tick_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer data) {
+  GtkStatsGraph *graph = (GtkStatsGraph *)data;
+  gint64 new_time = gdk_frame_clock_get_frame_time(clock);
+  if (graph->_time == 0) {
+    // First frame, so we don't have a dt yet.
+    graph->_time = new_time;
+    return TRUE;
+  }
+  gint64 delta = new_time - graph->_time;
+  if (delta == 0) {
+    return TRUE;
+  }
+  if (graph->animate(new_time / 1000000.0, delta / 1000000.0)) {
+    graph->_time = new_time;
+    return TRUE;
+  } else {
+    graph->_timer_id = 0;
+    return FALSE;
+  }
 }

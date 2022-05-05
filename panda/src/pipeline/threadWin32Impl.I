@@ -17,7 +17,8 @@
 INLINE ThreadWin32Impl::
 ThreadWin32Impl(Thread *parent_obj) :
   _cv(_mutex),
-  _parent_obj(parent_obj)
+  _parent_obj(parent_obj),
+  _profiling(0)
 {
   _thread = 0;
   _joinable = false;
@@ -75,7 +76,7 @@ sleep(double seconds) {
  */
 INLINE void ThreadWin32Impl::
 yield() {
-  Sleep(1);
+  Sleep(0);
 }
 
 /**

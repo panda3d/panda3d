@@ -95,9 +95,11 @@ PUBLISHED:
   INLINE static void resume_after_pause();
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &sync_name);
 
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
   bool client_connect(std::string hostname, int port);
   void client_disconnect();
@@ -127,6 +129,7 @@ private:
   void start(int collector_index, int thread_index, double as_of);
   void stop(int collector_index, int thread_index);
   void stop(int collector_index, int thread_index, double as_of);
+  void start_stop(int collector_index, int thread_index, double start, double stop);
 
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, double level);
@@ -214,6 +217,8 @@ private:
     bool _is_active;
     int _frame_number;
     double _next_packet;
+    size_t _context_switches = 0;
+    size_t _involuntary_context_switches = 0;
 
     bool _thread_active;
 
@@ -291,10 +296,12 @@ PUBLISHED:
   INLINE static void resume_after_pause() { }
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &);
 
 public:
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
   bool client_connect(std::string hostname, int port);
   void client_disconnect();
@@ -317,6 +324,7 @@ private:
   void start(int collector_index, int thread_index, double as_of);
   void stop(int collector_index, int thread_index);
   void stop(int collector_index, int thread_index, double as_of);
+  void start_stop(int collector_index, int thread_index, double start, double stop);
 
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, double level);

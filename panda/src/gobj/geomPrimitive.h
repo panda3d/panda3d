@@ -61,9 +61,10 @@ protected:
 PUBLISHED:
   explicit GeomPrimitive(UsageHint usage_hint);
   GeomPrimitive(const GeomPrimitive &copy);
-  void operator = (const GeomPrimitive &copy);
   virtual ~GeomPrimitive();
   ALLOC_DELETED_CHAIN(GeomPrimitive);
+
+  void operator = (const GeomPrimitive &copy) = delete;
 
   virtual PT(GeomPrimitive) make_copy() const=0;
 

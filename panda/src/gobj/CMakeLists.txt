@@ -61,7 +61,6 @@ set(P3GOBJ_HEADERS
   textureReloadRequest.I textureReloadRequest.h
   textureStage.I textureStage.h
   textureStagePool.I textureStagePool.h
-  timerQueryContext.I timerQueryContext.h
   transformBlend.I transformBlend.h
   transformBlendTable.I transformBlendTable.h
   transformTable.I transformTable.h
@@ -141,7 +140,6 @@ set(P3GOBJ_SOURCES
   textureReloadRequest.cxx
   textureStage.cxx
   textureStagePool.cxx
-  timerQueryContext.cxx
   transformBlend.cxx
   transformBlendTable.cxx
   transformTable.cxx
@@ -182,6 +180,11 @@ target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 if(HAVE_SQUISH)
   target_compile_definitions(p3gobj PRIVATE HAVE_SQUISH)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # Keep symbols from libsquish internal.
+    target_link_options(p3gobj PRIVATE "LINKER:--exclude-libs,libsquish.a")
+  endif()
 endif()
 
 if(PHAVE_LOCKF)

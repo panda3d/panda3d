@@ -32,7 +32,7 @@ TypeHandle ClockObject::_type_handle;
  *
  */
 ClockObject::
-ClockObject(Mode mode) : _ticks(get_class_type()), _mode(mode) {
+ClockObject(Mode mode) : _mode(mode), _ticks(get_class_type()) {
   _true_clock = TrueClock::get_global_ptr();
 
   _start_short_time = _true_clock->get_short_time();

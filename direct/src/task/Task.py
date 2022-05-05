@@ -16,11 +16,17 @@ from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
+import sys
 
-try:
-    import _signal as signal
-except ImportError:
+# On Android, there's no use handling SIGINT, and in fact we can't, since we
+# run the application in a separate thread from the main thread.
+if hasattr(sys, 'getandroidapilevel'):
     signal = None
+else:
+    try:
+        import _signal as signal
+    except ImportError:
+        signal = None
 
 from panda3d.core import *
 from direct.extensions_native import HTTPChannel_extensions
@@ -31,7 +37,6 @@ def print_exc_plus():
     Print the usual traceback information, followed by a listing of all the
     local variables in each frame.
     """
-    import sys
     import traceback
 
     tb = sys.exc_info()[2]
@@ -1271,7 +1276,6 @@ class TaskManager:
 
 if __debug__:
     def checkLeak():
-        import sys
         import gc
         gc.enable()
         from direct.showbase.DirectObject import DirectObject

@@ -360,7 +360,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       for (size_t ai = 0; ai < sformat._format->get_num_arrays(); ++ai) {
         const GeomVertexArrayFormat *aformat = sformat._format->get_array(ai);
 
-        for (size_t ci = 0; ci < aformat->get_num_columns(); ++ci) {
+        for (size_t ci = 0; ci < (size_t)aformat->get_num_columns(); ++ci) {
           const GeomVertexColumn *column = aformat->get_column(ci);
           const InternalName *name = column->get_name();
           if (name != InternalName::get_vertex() &&
@@ -436,7 +436,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   pvector<CopyOp> copies;
 
   const GeomVertexArrayFormat *aformat = new_format->get_array(0);
-  for (size_t ci = 0; ci < aformat->get_num_columns(); ++ci) {
+  for (size_t ci = 0; ci < (size_t)aformat->get_num_columns(); ++ci) {
     const GeomVertexColumn *column = aformat->get_column(ci);
     const InternalName *name = column->get_name();
     if (name != InternalName::get_vertex() &&

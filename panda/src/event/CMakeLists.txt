@@ -9,7 +9,6 @@ set(P3EVENT_HEADERS
   config_event.h
   buttonEvent.I buttonEvent.h
   buttonEventList.I buttonEventList.h
-  functionAsyncTask.h functionAsyncTask.I
   genericAsyncTask.h genericAsyncTask.I
   pointerEvent.I pointerEvent.h
   pointerEventList.I pointerEventList.h
@@ -29,7 +28,6 @@ set(P3EVENT_SOURCES
   asyncTaskSequence.cxx
   buttonEvent.cxx
   buttonEventList.cxx
-  functionAsyncTask.cxx
   genericAsyncTask.cxx
   pointerEvent.cxx
   pointerEventList.cxx

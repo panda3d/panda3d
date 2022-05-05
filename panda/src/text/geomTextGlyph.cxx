@@ -70,15 +70,6 @@ GeomTextGlyph(const Geom &copy, const TextGlyph *glyph) :
 /**
  *
  */
-void GeomTextGlyph::
-operator = (const GeomTextGlyph &copy) {
-  Geom::operator = (copy);
-  _glyphs = copy._glyphs;
-}
-
-/**
- *
- */
 GeomTextGlyph::
 ~GeomTextGlyph() {
 }

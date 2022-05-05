@@ -226,8 +226,8 @@ output(std::ostream &out) const {
         out << "$1";
       }
 
-      for (int i = 1; i < _num_parameters; ++i) {
-        if (_variadic_param == i) {
+      for (size_t i = 1; i < _num_parameters; ++i) {
+        if (_variadic_param == (int)i) {
           out << ", ...";
         } else {
           out << ", $" << i + 1;

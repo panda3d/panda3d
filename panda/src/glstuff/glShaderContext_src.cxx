@@ -2105,7 +2105,7 @@ set_state_and_transform(const RenderState *target_rs,
  */
 void CLP(ShaderContext)::
 issue_parameters(int altered) {
-  PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
+  PStatTimer timer(_glgsg->_draw_set_state_shader_parameters_pcollector);
 
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -2689,7 +2689,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
     return;
   }
 
+#ifndef OPENGLES
   GLbitfield barriers = 0;
+#endif
 
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature
   // right now.
@@ -2738,9 +2740,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
           _glgsg->update_texture(gtc, true);
           gl_tex = gtc->_index;
 
+#ifndef OPENGLES
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
             barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
           }
+#endif
         }
       }
       input._writable = false;
@@ -2857,6 +2861,12 @@ update_shader_texture_bindings(ShaderContext *prev) {
         GLCAT.error()
           << "Sampler type of GLSL shader input p3d_LightSource[" << spec._stage
           << "].shadowMap does not match type of texture " << *tex << ".\n";
+        break;
+
+      default:
+        GLCAT.error()
+          << "Sampler type of GLSL shader input does not match type of "
+             "texture " << *tex << ".\n";
         break;
       }
       // TODO: also check whether shadow sampler textures have shadow filter

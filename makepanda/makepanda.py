@@ -860,7 +860,6 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
-    SmartPkgEnable("OPENEXR",   "OpenEXR",   ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), ("OpenEXR", "Imath", "OpenEXR/ImfOutputFile.h"))
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
@@ -914,6 +913,23 @@ if (COMPILER=="GCC"):
                 for ffmpeg_lib in ffmpeg_libs:
                     LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
+    if not PkgSkip("OPENEXR"):
+        # OpenEXR libraries have different names depending on the version.
+        openexr_libdir = os.path.join(GetThirdpartyDir(), "openexr", "lib")
+        openexr_incs = ("OpenEXR", "Imath", "OpenEXR/ImfOutputFile.h")
+        if os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR-3_1.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR-3_1", "IlmThread-3_1", "Imath-3_1", "Iex-3_1"), openexr_incs)
+        if os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR-3_0.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR-3_0", "IlmThread-3_0", "Imath-3_0", "Iex-3_0"), openexr_incs)
+        elif os.path.isfile(os.path.join(openexr_libdir, "libOpenEXR.a")):
+            SmartPkgEnable("OPENEXR", "", ("OpenEXR", "IlmThread", "Imath", "Iex"), openexr_incs)
+        elif os.path.isfile(os.path.join(openexr_libdir, "libIlmImf.a")):
+            SmartPkgEnable("OPENEXR", "", ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), openexr_incs)
+        else:
+            # Find it in the system, preferably using pkg-config, otherwise
+            # using the OpenEXR 3 naming scheme.
+            SmartPkgEnable("OPENEXR", "OpenEXR", ("OpenEXR", "IlmThread", "Imath", "Iex"), openexr_incs)
+
     if GetTarget() not in ("darwin", "emscripten"):
         for fcollada_lib in fcollada_libs:
             LibName("FCOLLADA", "-Wl,--exclude-libs,lib%s.a" % (fcollada_lib))
@@ -945,6 +961,9 @@ if (COMPILER=="GCC"):
             LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImfUtil.a")
             LibName("OPENEXR", "-Wl,--exclude-libs,libIlmThread.a")
             LibName("OPENEXR", "-Wl,--exclude-libs,libImath.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXR.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXRCore.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libOpenEXRUtil.a")
 
         if not PkgSkip("VORBIS"):
             LibName("VORBIS", "-Wl,--exclude-libs,libogg.a")
@@ -1072,8 +1091,6 @@ if (COMPILER=="GCC"):
             LibName("FFMPEG", "-undefined dynamic_lookup")
         if not PkgSkip("ASSIMP"):
             LibName("ASSIMP", "-undefined dynamic_lookup")
-        if not PkgSkip("OPENEXR"):
-            LibName("OPENEXR", "-undefined dynamic_lookup")
         if not PkgSkip("VRPN"):
             LibName("VRPN", "-undefined dynamic_lookup")
 
@@ -1214,7 +1231,7 @@ def CompileCxx(obj,src,opts):
             cmd = "cl "
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
-            cmd += "/wd4996 /wd4275 /wd4273 "
+            cmd += "/wd4996 "
 
             # Set the minimum version to Windows Vista.
             cmd += "/DWINVER=0x600 "
@@ -1246,7 +1263,7 @@ def CompileCxx(obj,src,opts):
             if (building):
                 cmd += " /DBUILDING_" + building
 
-            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
+            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64' or not PkgSkip("EIGEN"):
                 cmd += " /bigobj"
 
             cmd += " /Zm300"
@@ -1264,7 +1281,7 @@ def CompileCxx(obj,src,opts):
             cmd = "icl "
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
-            cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+            cmd += "/wd4996 /wd4267 /wd4101 "
             cmd += "/DWINVER=0x600 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
@@ -1377,6 +1394,10 @@ def CompileCxx(obj,src,opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
+        elif 'clang' not in GetCXX().split('/')[-1]:
+            # Enable interprocedural optimizations in GCC.
+            cmd += " -fno-semantic-interposition"
+
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
                 cmd += ' --sysroot=%s' % (SDK["SYSROOT"])
@@ -1477,10 +1498,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
 
         # Enable more warnings.
-        cmd += " -Wall -Wno-unused-function"
-
-        if not src.endswith(".c"):
-            cmd += " -Wno-reorder"
+        cmd += " -Wall -Wno-unused-function -Werror=return-type"
 
         # Ignore unused variables in NDEBUG builds, often used in asserts.
         if optlevel == 4:
@@ -6137,17 +6155,21 @@ for VER in MAYAVERSIONS:
     TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
 if MAYA_BUILT:
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', 'NOARCH:ARM64']
+
     TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
 
     TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
     TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
     TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
     TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg_client.exe', opts=['NOARCH:ARM64'])
 
     TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
     TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
     TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
     TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya_client.exe', opts=['NOARCH:ARM64'])
 
 #
 # DIRECTORY: contrib/src/ai/
@@ -6228,6 +6250,9 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
         PyTargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
     elif GetTarget() == 'android':
+        TargetAdd('org/jnius/NativeInvocationHandler.class', opts=OPTS, input='NativeInvocationHandler.java')
+        TargetAdd('classes.dex', input='org/jnius/NativeInvocationHandler.class')
+
         PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
         PyTargetAdd('deploy-stubw_android_log.obj', opts=OPTS, input='android_log.c')
         PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
@@ -6356,6 +6381,8 @@ def ParallelMake(tasklist):
             tasklist = extras
         sys.stdout.flush()
         if tasksqueued == 0:
+            if len(tasklist) > 0:
+                continue
             break
         donetask = donequeue.get()
         if donetask == 0:

@@ -31,8 +31,8 @@ CollisionLevelStateBase(const CollisionLevelStateBase &parent, PandaNode *child)
   _node_path(parent._node_path, child),
   _colliders(parent._colliders),
   _include_mask(parent._include_mask),
-  _local_bounds(parent._local_bounds),
-  _node_gbv(child->get_bounds()->as_geometric_bounding_volume())
+  _node_gbv(child->get_bounds()->as_geometric_bounding_volume()),
+  _local_bounds(parent._local_bounds)
 {
 }
 
@@ -44,8 +44,8 @@ CollisionLevelStateBase(const CollisionLevelStateBase &parent, const PandaNode::
   _node_path(parent._node_path, child.get_child()),
   _colliders(parent._colliders),
   _include_mask(parent._include_mask),
-  _local_bounds(parent._local_bounds),
-  _node_gbv(child.get_bounds())
+  _node_gbv(child.get_bounds()),
+  _local_bounds(parent._local_bounds)
 {
 }
 
@@ -57,9 +57,9 @@ CollisionLevelStateBase(const CollisionLevelStateBase &copy) :
   _node_path(copy._node_path),
   _colliders(copy._colliders),
   _include_mask(copy._include_mask),
+  _node_gbv(copy._node_gbv),
   _local_bounds(copy._local_bounds),
-  _parent_bounds(copy._parent_bounds),
-  _node_gbv(copy._node_gbv)
+  _parent_bounds(copy._parent_bounds)
 {
 }
 
@@ -71,9 +71,9 @@ operator = (const CollisionLevelStateBase &copy) {
   _node_path = copy._node_path;
   _colliders = copy._colliders;
   _include_mask = copy._include_mask;
+  _node_gbv = copy._node_gbv;
   _local_bounds = copy._local_bounds;
   _parent_bounds = copy._parent_bounds;
-  _node_gbv = copy._node_gbv;
 }
 
 /**

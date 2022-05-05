@@ -374,6 +374,14 @@ main_tick() {
 }
 
 /**
+ * A convenience function to call new_frame() for the current thread.
+ */
+void PStatClient::
+thread_tick() {
+  get_global_pstats()->client_thread_tick();
+}
+
+/**
  * A convenience function to call new_frame() on any threads with the
  * indicated sync_name
  */
@@ -395,6 +403,8 @@ client_main_tick() {
       return;
     }
 
+    ClockObject *clock = ClockObject::get_global_clock();
+
     _impl->client_main_tick();
 
     MultiThingsByName::const_iterator ni =
@@ -404,9 +414,23 @@ client_main_tick() {
       for (vector_int::const_iterator vi = indices.begin();
            vi != indices.end();
            ++vi) {
-        _impl->new_frame(*vi);
+        int frame_number = clock->get_frame_count(get_thread_object(*vi));
+        _impl->new_frame(*vi, frame_number);
       }
     }
+  }
+}
+
+/**
+ * A convenience function to call new_frame() on the current thread.
+ */
+void PStatClient::
+client_thread_tick() {
+  ReMutexHolder holder(_lock);
+
+  if (has_impl()) {
+    PStatThread thread = do_get_current_thread();
+    _impl->new_frame(thread.get_index());
   }
 }
 
@@ -882,6 +906,38 @@ stop(int collector_index, int thread_index, double as_of) {
 }
 
 /**
+ * Adds a pair of start/stop times in the given collector.  Used in low-level
+ * code that knows there will not be any other collectors started and stopped
+ * in the meantime, and can be more efficient than a pair of start/stop times.
+ */
+void PStatClient::
+start_stop(int collector_index, int thread_index, double start, double stop) {
+  if (!client_is_connected()) {
+    return;
+  }
+
+#ifdef _DEBUG
+  nassertv(collector_index >= 0 && collector_index < get_num_collectors());
+  nassertv(thread_index >= 0 && thread_index < get_num_threads());
+#endif
+
+  Collector *collector = get_collector_ptr(collector_index);
+  InternalThread *thread = get_thread_ptr(thread_index);
+
+  if (collector->is_active() && thread->_is_active) {
+    LightMutexHolder holder(thread->_thread_lock);
+    if (collector->_per_thread[thread_index]._nested_count == 0) {
+      // This collector wasn't already started in this thread; record a new
+      // data point.
+      if (thread->_thread_active) {
+        thread->_frame_data.add_start(collector_index, start);
+        thread->_frame_data.add_stop(collector_index, stop);
+      }
+    }
+  }
+}
+
+/**
  * Removes the level value from the indicated collector.  The collector will
  * no longer be reported as having any particular level value.
  *
@@ -1041,7 +1097,7 @@ stop_clock_wait() {
 void PStatClient::
 add_collector(PStatClient::Collector *collector) {
   int num_collectors = get_num_collectors();
-  if (num_collectors >= _collectors_size) {
+  if (num_collectors >= (int)_collectors_size) {
     // We need to grow the array.  We have to be careful here, because there
     // might be clients accessing the array right now who are not protected by
     // the lock.
@@ -1080,7 +1136,7 @@ add_thread(PStatClient::InternalThread *thread) {
   _threads_by_name[thread->_name].push_back(num_threads);
   _threads_by_sync_name[thread->_sync_name].push_back(num_threads);
 
-  if (num_threads >= _threads_size) {
+  if (num_threads >= (int)_threads_size) {
     // We need to grow the array.  We have to be careful here, because there
     // might be clients accessing the array right now who are not protected by
     // the lock.
@@ -1286,11 +1342,19 @@ main_tick() {
 }
 
 void PStatClient::
+thread_tick() {
+}
+
+void PStatClient::
 thread_tick(const std::string &) {
 }
 
 void PStatClient::
 client_main_tick() {
+}
+
+void PStatClient::
+client_thread_tick() {
 }
 
 void PStatClient::

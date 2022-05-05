@@ -6,83 +6,6 @@
 #   linked into them. A library of libraries - a "metalibrary."
 
 #
-# Function: target_link_libraries(...)
-#
-# Overrides CMake's target_link_libraries() to support "linking" object
-# libraries. This is a partial reimplementation of CMake commit dc38970f83,
-# which is only available in CMake 3.12+
-#
-if(CMAKE_VERSION VERSION_LESS "3.12")
-  function(target_link_libraries target)
-    get_target_property(target_type "${target}" TYPE)
-    if(NOT target_type STREQUAL "OBJECT_LIBRARY")
-      _target_link_libraries("${target}" ${ARGN})
-      return()
-    endif()
-
-    foreach(library ${ARGN})
-      # This is a quick and dirty regex to tell targets apart from other stuff.
-      # It just checks if it's alphanumeric and starts with p3/panda.
-      if(library MATCHES "^(PKG::|p3|panda)[A-Za-z0-9]*$")
-        # We need to add "library"'s include directories to "target"
-        # (and transitively to INTERFACE_INCLUDE_DIRECTORIES so further
-        # dependencies will work)
-        set(include_directories "$<TARGET_PROPERTY:${library},INTERFACE_INCLUDE_DIRECTORIES>")
-        set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
-        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
-
-        # SYSTEM include directories should still be reported as SYSTEM, so
-        # that warnings from those includes are suppressed
-        set(sys_include_directories
-          "$<TARGET_PROPERTY:${library},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>")
-        target_include_directories("${target}" SYSTEM PUBLIC "${sys_include_directories}")
-
-        # And for INTERFACE_COMPILE_DEFINITIONS as well
-        set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
-        set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
-        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS "${compile_definitions}")
-
-        # Build up some generator expressions for determining whether `library`
-        # is a component library or not.
-        if(library MATCHES ".*::.*")
-          # "::" messes up CMake's genex parser; fortunately, a library whose
-          # name contains that is either an interface library or alias, and
-          # definitely not a component
-          set(is_component 0)
-          set(name_of_component "")
-          set(name_of_non_component "${library}")
-
-        else()
-          set(is_component "$<TARGET_PROPERTY:${library},IS_COMPONENT>")
-
-          # CMake complains if we lookup IS_COMPONENT on an INTERFACE library :(
-          set(is_object "$<STREQUAL:$<TARGET_PROPERTY:${library},TYPE>,OBJECT_LIBRARY>")
-          set(is_component "$<BOOL:$<${is_object}:${is_component}>>")
-
-          set(name_of_component "$<${is_component}:$<TARGET_NAME:${library}>>")
-          set(name_of_non_component "$<$<NOT:${is_component}>:$<TARGET_NAME:${library}>>")
-
-        endif()
-
-        # Libraries are only linked transitively if they aren't components.
-        set_property(TARGET "${target}" APPEND PROPERTY
-          INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
-
-      else()
-        # This is a file path to an out-of-tree library - this needs to be
-        # recorded so that the metalib can link them. (They aren't needed at
-        # all for the object libraries themselves, so they don't have to work
-        # transitively.)
-        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
-
-      endif()
-
-    endforeach(library)
-
-  endfunction(target_link_libraries)
-endif()
-
-#
 # Function: add_component_library(target [SYMBOL building_symbol]
 #                                 [SOURCES] [[NOINIT]/[INIT func [header]]])
 #
@@ -305,6 +228,7 @@ function(add_metalib target_name)
   set(interface_defines)
   set(includes)
   set(libs)
+  set(link_options)
   set(component_init_funcs "")
   foreach(component ${components})
     if(NOT TARGET "${component}")
@@ -392,6 +316,16 @@ function(add_metalib target_name)
         endif()
       endforeach(component_library)
 
+      # All the linker options applied to an individual component get applied
+      # when building the metalib (for things like --exclude-libs).
+      get_target_property(component_link_options "${component}" LINK_OPTIONS)
+      foreach(component_link_option ${component_link_options})
+        if(component_link_option)
+          list(APPEND link_options "${component_link_option}")
+
+        endif()
+      endforeach(component_link_option)
+
       # Consume this component's objects
       list(APPEND sources "$<TARGET_OBJECTS:${component}>")
 
@@ -419,6 +353,7 @@ function(add_metalib target_name)
     PRIVATE ${private_defines}
     INTERFACE ${interface_defines})
   target_link_libraries("${target_name}" ${libs})
+  target_link_options("${target_name}" PRIVATE ${link_options})
   target_include_directories("${target_name}"
     PUBLIC ${includes}
     INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/panda3d>")

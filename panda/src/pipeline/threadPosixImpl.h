@@ -63,6 +63,8 @@ public:
   static void bind_java_thread();
 #endif
 
+  static bool get_context_switches(size_t &total, size_t &involuntary);
+
 private:
   static void *root_func(void *data);
   static Thread *init_current_thread();

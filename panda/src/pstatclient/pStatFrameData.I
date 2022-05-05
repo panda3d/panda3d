@@ -105,7 +105,7 @@ add_level(int index, double level) {
  */
 INLINE double PStatFrameData::
 get_start() const {
-  if (is_empty()) {
+  if (is_time_empty()) {
     return 0.0;
   }
 
@@ -118,7 +118,7 @@ get_start() const {
  */
 INLINE double PStatFrameData::
 get_end() const {
-  nassertr(!is_empty(), 0.0);
+  nassertr(!is_time_empty(), 0.0);
 
   return _time_data.back()._value;
 }
@@ -128,7 +128,7 @@ get_end() const {
  */
 INLINE double PStatFrameData::
 get_net_time() const {
-  nassertr(!is_empty(), 0.0);
+  nassertr(!is_time_empty(), 0.0);
 
   return _time_data.back()._value - _time_data.front()._value;
 }

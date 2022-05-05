@@ -28,7 +28,7 @@ class WinStatsLabel;
 class WinStatsFlameGraph : public PStatFlameGraph, public WinStatsGraph {
 public:
   WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
-                     int collector_index=0);
+                     int collector_index=-1);
   virtual ~WinStatsFlameGraph();
 
   virtual void new_data(int thread_index, int frame_number);
@@ -39,28 +39,30 @@ public:
   virtual void on_click_label(int collector_index);
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
-  virtual std::string get_label_tooltip(int collector_index) const;
 
 protected:
-  virtual void update_labels();
-  virtual void update_label(int collector_index, int row, int x, int width);
   virtual void normal_guide_bars();
 
   void clear_region();
   virtual void begin_draw();
+  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
   virtual void end_draw();
   virtual void idle();
+
+  virtual bool animate(double time, double dt);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void move_graph_window(int graph_left, int graph_top,
                                  int graph_xsize, int graph_ysize);
 
 private:
+  int pixel_to_depth(int y) const;
   void draw_guide_bar(HDC hdc, const GuideBar &bar);
   void draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar);
   void create_window();
@@ -69,9 +71,8 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   std::string _net_value_text;
-  pmap<int, WinStatsLabel *> _labels;
-
   HWND _average_check_box;
+  int _popup_index = -1;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "luse.h"
+#include "memoryBase.h"
 #include "eggObject.h"
 
 /**
@@ -26,7 +27,7 @@
  * This may be either a 3-d transform, and therefore described by a 4x4
  * matrix, or a 2-d transform, described by a 3x3 matrix.
  */
-class EXPCL_PANDA_EGG EggTransform {
+class EXPCL_PANDA_EGG EggTransform : public MemoryBase {
 PUBLISHED:
   EggTransform();
   EggTransform(const EggTransform &copy);

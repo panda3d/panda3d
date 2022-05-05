@@ -116,7 +116,7 @@ from _frozen_importlib import _imp, FrozenImporter
 
 sys.frozen = True
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.version_info < (3, 10):
     # Make sure the preferred encoding is something we actually support.
     import _bootlocale
     enc = _bootlocale.getpreferredencoding().lower()
@@ -155,7 +155,9 @@ from android_log import write as android_log_write
 
 
 sys.frozen = True
-sys.platform = "android"
+
+# Temporary hack for plyer to detect Android, see kivy/plyer#670
+os.environ['ANDROID_ARGUMENT'] = ''
 
 
 # Replace stdout/stderr with something that writes to the Android log.
@@ -465,6 +467,12 @@ class build_apps(setuptools.Command):
         elif not self.android_abis:
             self.android_abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86']
 
+        supported_abis = 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64', 'mips', 'mips64'
+        unsupported_abis = set(self.android_abis) - set(supported_abis)
+        if unsupported_abis:
+            raise ValueError(f'Unrecognized value(s) for android_abis: {", ".join(unsupported_abis)}\n'
+                             f'Valid ABIs are: {", ".join(supported_abis)}')
+
         self.icon_objects = {}
         for app, iconpaths in self.icons.items():
             if not isinstance(iconpaths, list) and not isinstance(iconpaths, tuple):
@@ -513,7 +521,9 @@ class build_apps(setuptools.Command):
                     else: # e.g. x86, x86_64, mips, mips64
                         suffix = '_' + abi.replace('-', '_')
 
-                    self.build_binaries(lib_dir, platform + suffix)
+                    # We end up copying the data multiple times to the same
+                    # directory, but that's probably fine for now.
+                    self.build_binaries(platform + suffix, lib_dir, data_dir)
 
                 # Write out the icons to the res directory.
                 for appname, icon in self.icon_objects.items():
@@ -532,13 +542,13 @@ class build_apps(setuptools.Command):
                     if icon.getLargestSize() >= 192:
                         icon.writeSize(192, os.path.join(res_dir, 'mipmap-xxxhdpi-v4', basename))
 
-                self.build_data(data_dir, platform)
+                self.build_assets(platform, data_dir)
 
                 # Generate an AndroidManifest.xml
                 self.generate_android_manifest(os.path.join(build_dir, 'AndroidManifest.xml'))
             else:
-                self.build_binaries(build_dir, platform)
-                self.build_data(build_dir, platform)
+                self.build_binaries(platform, build_dir, build_dir)
+                self.build_assets(platform, build_dir)
 
             # Bundle into an .app on macOS
             if self.macos_main_app and 'macosx' in platform:
@@ -727,7 +737,7 @@ class build_apps(setuptools.Command):
 
         for appname in self.gui_apps:
             activity = ET.SubElement(application, 'activity')
-            activity.set('android:name', 'org.panda3d.android.PandaActivity')
+            activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
             activity.set('android:theme', '@android:style/Theme.NoTitleBar')
             activity.set('android:configChanges', 'orientation|keyboardHidden')
@@ -750,7 +760,7 @@ class build_apps(setuptools.Command):
         with open(path, 'wb') as fh:
             tree.write(fh, encoding='utf-8', xml_declaration=True)
 
-    def build_binaries(self, binary_dir, platform):
+    def build_binaries(self, platform, binary_dir, data_dir=None):
         """ Builds the binary data for the given platform. """
 
         use_wheels = True
@@ -1015,7 +1025,7 @@ class build_apps(setuptools.Command):
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
-            for suffix in freezer.moduleSuffixes:
+            for suffix in freezer.mf.suffixes:
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
 
@@ -1030,12 +1040,9 @@ class build_apps(setuptools.Command):
             self.warn("Detected use of tkinter, but tkinter is not specified in requirements.txt!")
 
         # Copy extension modules
-        whl_modules = []
-        whl_modules_ext = ''
+        whl_modules = {}
         if use_wheels:
             # Get the module libs
-            whl_modules = []
-
             for i in p3dwhl.namelist():
                 if not i.startswith('deploy_libs/'):
                     continue
@@ -1050,8 +1057,7 @@ class build_apps(setuptools.Command):
 
                 base = os.path.basename(i)
                 module, _, ext = base.partition('.')
-                whl_modules.append(module)
-                whl_modules_ext = ext
+                whl_modules[module] = i
 
         # Make sure to copy any builtins that have shared objects in the
         # deploy libs, assuming they are not already in freezer_extras.
@@ -1103,7 +1109,7 @@ class build_apps(setuptools.Command):
             else:
                 # Builtin module, but might not be builtin in wheel libs, so double check
                 if module in whl_modules:
-                    source_path = os.path.join(p3dwhlfn, 'deploy_libs/{}.{}'.format(module, whl_modules_ext))#'{0}/deploy_libs/{1}.{2}'.format(p3dwhlfn, module, whl_modules_ext)
+                    source_path = os.path.join(p3dwhlfn, whl_modules[module])
                     basename = os.path.basename(source_path)
                     #XXX should we remove python version string here too?
                 else:
@@ -1125,6 +1131,9 @@ class build_apps(setuptools.Command):
                       os.path.join(binary_dir, '..', '..', 'classes.dex'))
 
         # Extract any other data files from dependency packages.
+        if data_dir is None:
+            return
+
         for module, datadesc in self.package_data_dirs.items():
             if module not in freezer_modules:
                 continue
@@ -1165,11 +1174,11 @@ class build_apps(setuptools.Command):
                             else:
                                 self.copy(source_path, target_path)
 
-    def build_data(self, data_dir, platform):
+    def build_assets(self, platform, data_dir):
         """ Builds the data files for the given platform. """
 
         # Copy Game Files
-        self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
+        self.announce('Copying assets for platform: {}'.format(platform), distutils.log.INFO)
         ignore_copy_list = [
             '**/__pycache__/**',
             '**/*.pyc',

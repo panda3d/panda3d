@@ -53,6 +53,8 @@ PandaSystem() :
   set_system_tag("system", "malloc", "dlmalloc");
 #elif defined(USE_MEMORY_PTMALLOC2)
   set_system_tag("system", "malloc", "ptmalloc2");
+#elif defined(USE_MEMORY_MIMALLOC)
+  set_system_tag("system", "malloc", "mimalloc");
 #else
   set_system_tag("system", "malloc", "malloc");
 #endif

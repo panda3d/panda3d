@@ -37,7 +37,7 @@
  * This is a small container class that can hold any one of the value types
  * that can be passed as input to a shader.
  */
-class EXPCL_PANDA_PGRAPH ShaderInput {
+class EXPCL_PANDA_PGRAPH ShaderInput : public MemoryBase {
 PUBLISHED:
   // Used when binding texture images.
   enum AccessFlags {

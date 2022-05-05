@@ -39,7 +39,6 @@
 #include "pnotify.h"
 #include "updateSeq.h"
 #include "deletedChain.h"
-#include "pandaNodeChain.h"
 #include "pStatCollector.h"
 #include "copyOnWriteObject.h"
 #include "copyOnWritePointer.h"
@@ -63,7 +62,7 @@ class GraphicsStateGuardianBase;
  * properties.
  */
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
-                                     public Namable, public LinkedListNode {
+                                     public Namable {
 PUBLISHED:
   explicit PandaNode(const std::string &name);
   virtual ~PandaNode();
@@ -449,9 +448,6 @@ private:
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
   void r_list_descendants(std::ostream &out, int indent_level) const;
 
-  INLINE void do_set_dirty_prev_transform();
-  INLINE void do_clear_dirty_prev_transform();
-
 public:
   // This must be declared public so that VC6 will allow the nested CData
   // class to access it.
@@ -540,8 +536,10 @@ private:
   Paths _paths;
   LightReMutex _paths_lock;
 
-  bool _dirty_prev_transform;
-  static PandaNodeChain _dirty_prev_transforms;
+  // This is not part of CData because we only care about modifications to the
+  // transform in the App stage.
+  UpdateSeq _prev_transform_valid;
+  static UpdateSeq _reset_prev_transform_seq;
 
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
@@ -713,7 +711,6 @@ private:
 
   static DrawMask _overall_bit;
 
-  static PStatCollector _reset_prev_pcollector;
   static PStatCollector _update_bounds_pcollector;
 
 PUBLISHED:

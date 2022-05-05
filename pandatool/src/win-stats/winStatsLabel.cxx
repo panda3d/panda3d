@@ -66,7 +66,7 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
   } else {
     _fg_color = RGB(255, 255, 255);
   }
-  if (bright >= 0.5 * 0.75) {
+  if (bright * 0.75 >= 0.5) {
     _highlight_fg_color = RGB(0, 0, 0);
   } else {
     _highlight_fg_color = RGB(255, 255, 255);
@@ -282,6 +282,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     _graph->on_click_label(_collector_index);
     return 0;
 
+  case WM_CONTEXTMENU:
+    _graph->on_popup_label(_collector_index);
+    return 0;
+
   case WM_MOUSEMOVE:
     {
       // When the mouse enters the label area, highlight the label.
@@ -318,13 +322,23 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
       HFONT hfnt = _monitor->get_font();
       SelectObject(hdc, hfnt);
-      SetTextAlign(hdc, (_align_right ? TA_RIGHT : TA_LEFT) | TA_TOP);
+      SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
       SetBkMode(hdc, TRANSPARENT);
       SetTextColor(hdc, (_highlight || _mouse_within) ? _highlight_fg_color : _fg_color);
 
-      TextOut(hdc, _align_right ? (_width - _right_margin) : _left_margin,
-              _top_margin, _text.data(), _text.length());
+      if (_width > 8) {
+        UINT format = DT_END_ELLIPSIS | DT_SINGLELINE;
+        if (_align_right) {
+          format |= DT_RIGHT;
+        } else {
+          format |= DT_LEFT;
+        }
+
+        RECT margins = { _left_margin, _top_margin, _width - _right_margin, _height - _bottom_margin };
+        DrawText(hdc, _text.data(), _text.length(), &margins, format);
+      }
+
       EndPaint(hwnd, &ps);
       return 0;
     }

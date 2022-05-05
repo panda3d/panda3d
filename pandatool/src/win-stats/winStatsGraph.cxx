@@ -14,6 +14,7 @@
 #include "winStatsGraph.h"
 #include "winStatsMonitor.h"
 #include "winStatsLabelStack.h"
+#include "trueClock.h"
 #include "convert_srgb.h"
 
 #include <commctrl.h>
@@ -21,7 +22,7 @@
 #define IDC_GRAPH 100
 
 DWORD WinStatsGraph::graph_window_style =
-WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+  WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
 /**
  *
@@ -32,6 +33,7 @@ WinStatsGraph(WinStatsMonitor *monitor) :
 {
   _window = 0;
   _graph_window = 0;
+  _tooltip_window = 0;
   _sizewe_cursor = LoadCursor(nullptr, IDC_SIZEWE);
   _hand_cursor = LoadCursor(nullptr, IDC_HAND);
   _bitmap = 0;
@@ -47,9 +49,11 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _dark_color = RGB(51, 51, 51);
   _light_color = RGB(154, 154, 154);
   _user_guide_bar_color = RGB(130, 150, 255);
+  _frame_guide_bar_color = RGB(255, 10, 10);
   _dark_pen = CreatePen(PS_SOLID, 1, _dark_color);
   _light_pen = CreatePen(PS_SOLID, 1, _light_color);
   _user_guide_bar_pen = CreatePen(PS_DASH, 1, _user_guide_bar_color);
+  _frame_guide_bar_pen = CreatePen(PS_DASH, 1, _frame_guide_bar_color);
 
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
@@ -69,12 +73,14 @@ WinStatsGraph::
   DeleteObject(_dark_pen);
   DeleteObject(_light_pen);
   DeleteObject(_user_guide_bar_pen);
+  DeleteObject(_frame_guide_bar_pen);
 
   for (auto &item : _brushes) {
     DeleteObject(item.second.first);
     DeleteObject(item.second.second);
   }
   _brushes.clear();
+  _text_colors.clear();
 
   if (_graph_window) {
     DestroyWindow(_graph_window);
@@ -84,6 +90,11 @@ WinStatsGraph::
   if (_window) {
     DestroyWindow(_window);
     _window = 0;
+  }
+
+  if (_tooltip_window) {
+    DestroyWindow(_tooltip_window);
+    _tooltip_window = 0;
   }
 }
 
@@ -151,12 +162,20 @@ on_click_label(int collector_index) {
 }
 
 /**
+ * Called when a pop-up menu should be shown for the label.
+ */
+void WinStatsGraph::
+on_popup_label(int collector_index) {
+}
+
+/**
  * Called when the user hovers the mouse over a label.
  */
 void WinStatsGraph::
 on_enter_label(int collector_index) {
   if (collector_index != _highlighted_index) {
     _highlighted_index = collector_index;
+    clear_graph_tooltip();
     force_redraw();
   }
 }
@@ -168,6 +187,7 @@ void WinStatsGraph::
 on_leave_label(int collector_index) {
   if (collector_index == _highlighted_index && collector_index != -1) {
     _highlighted_index = -1;
+    clear_graph_tooltip();
     force_redraw();
   }
 }
@@ -179,6 +199,16 @@ on_leave_label(int collector_index) {
 std::string WinStatsGraph::
 get_label_tooltip(int collector_index) const {
   return std::string();
+}
+
+/**
+ * Hides the graph tooltip.
+ */
+void WinStatsGraph::
+clear_graph_tooltip() {
+  if (_tooltip_window != 0) {
+    SendMessage(_tooltip_window, TTM_POP, 0, 0);
+  }
 }
 
 /**
@@ -230,6 +260,28 @@ move_label_stack() {
 }
 
 /**
+ * Turns on the animation timer, if it hasn't already been turned on.
+ */
+void WinStatsGraph::
+start_animation() {
+  if (!_timer_running) {
+    TrueClock *clock = TrueClock::get_global_ptr();
+    _time = clock->get_short_time();
+    SetTimer(_window, 0x100, 16, nullptr);
+    _timer_running = true;
+  }
+}
+
+/**
+ * Overridden by a derived class to implement an animation.  If it returns
+ * false, the animation timer is stopped.
+ */
+bool WinStatsGraph::
+animate(double time, double dt) {
+  return false;
+}
+
+/**
  * Returns a brush suitable for drawing in the indicated collector's color.
  */
 HBRUSH WinStatsGraph::
@@ -254,6 +306,29 @@ get_collector_brush(int collector_index, bool highlight) {
 
   _brushes[collector_index] = std::make_pair(brush, hbrush);
   return highlight ? hbrush : brush;
+}
+
+/**
+ * Returns a text color suitable for the given collector.
+ */
+COLORREF WinStatsGraph::
+get_collector_text_color(int collector_index, bool highlight) {
+  TextColors::iterator tci;
+  tci = _text_colors.find(collector_index);
+  if (tci != _text_colors.end()) {
+    return highlight ? (*tci).second.second : (*tci).second.first;
+  }
+
+  LRGBColor rgb = _monitor->get_collector_color(collector_index);
+  double bright =
+    rgb[0] * 0.2126 +
+    rgb[1] * 0.7152 +
+    rgb[2] * 0.0722;
+  COLORREF color = bright >= 0.5 ? RGB(0, 0, 0) : RGB(255, 255, 255);
+  COLORREF hcolor = bright * 0.75 >= 0.5 ? RGB(0, 0, 0) : RGB(255, 255, 255);
+
+  _text_colors[collector_index] = std::make_pair(color, hcolor);
+  return highlight ? hcolor : color;
 }
 
 /**
@@ -339,8 +414,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_MOUSEMOVE:
     if (_drag_mode == DM_left_margin) {
       int16_t x = LOWORD(lparam);
-      _left_margin += (x - _drag_start_x);
-      _drag_start_x = x;
+      int new_left_margin = _left_margin + (x - _drag_start_x);
+      _left_margin = std::max(new_left_margin, _pixel_scale * 2);
+      _drag_start_x = x - (new_left_margin - _left_margin);
       InvalidateRect(hwnd, nullptr, TRUE);
       move_label_stack();
       return 0;
@@ -407,6 +483,33 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_TIMER:
+    {
+      TrueClock *clock = TrueClock::get_global_ptr();
+      double new_time = clock->get_short_time();
+      if (!animate(new_time, new_time - _time)) {
+        KillTimer(hwnd, 0x100);
+        _timer_running = false;
+      }
+      _time = new_time;
+    }
+    return 0;
+
+  case WM_NOTIFY:
+    switch (((LPNMHDR)lparam)->code) {
+    case TTN_GETDISPINFO:
+      {
+        NMTTDISPINFO &info = *(NMTTDISPINFO *)lparam;
+        POINT point;
+        if (GetCursorPos(&point) && ScreenToClient(_graph_window, &point)) {
+          _tooltip_text = get_graph_tooltip(point.x, point.y);
+          info.lpszText = (char *)_tooltip_text.c_str();
+        }
+      }
+      return 0;
+    }
+    break;
+
   default:
     break;
   }
@@ -466,6 +569,15 @@ additional_window_paint(HDC hdc) {
  */
 void WinStatsGraph::
 additional_graph_window_paint(HDC hdc) {
+}
+
+/**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsGraph::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  return std::string();
 }
 
 /**
@@ -576,6 +688,25 @@ create_graph_window() {
   EnableWindow(_graph_window, TRUE);
 
   SetWindowSubclass(_graph_window, &static_graph_subclass_proc, 1234, (DWORD_PTR)this);
+
+  // Create the tooltip window.  This will cause a TTN_GETDISPINFO message to
+  // be sent to the window to acquire the tooltip text.
+  _tooltip_window = CreateWindow(TOOLTIPS_CLASS, nullptr,
+                                 WS_POPUP,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 _window, nullptr,
+                                 application, nullptr);
+
+  if (_tooltip_window != 0) {
+    TOOLINFO info = { 0 };
+    info.cbSize = sizeof(info);
+    info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    info.hwnd = _window;
+    info.uId = (UINT_PTR)_graph_window;
+    info.lpszText = LPSTR_TEXTCALLBACK;
+    SendMessage(_tooltip_window, TTM_ADDTOOL, 0, (LPARAM)&info);
+  }
 }
 
 /**

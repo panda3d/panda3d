@@ -177,35 +177,32 @@ directory which you can install using `pkg install`.
 Android
 -------
 
-Note: building on Android is very experimental and not guaranteed to work.
+Although it's possible to build Panda3D on an Android device itself using the
+[termux](https://termux.com/) shell, the recommended route is to cross-compile
+.whl files using the SDK and NDK, which can then be used by the `build_apps`
+command to build a Python application into an .apk or .aab bundle.  You will
+need to get the latest thirdparty packages, which can be obtained from the
+artifacts page of the last successful run here:
 
-You can experimentally build the Android Python runner via the [termux](https://termux.com/)
-shell.  You will need to install [Termux](https://play.google.com/store/apps/details?id=com.termux)
-and [Termux API](https://play.google.com/store/apps/details?id=com.termux.api)
-from the Play Store.  Many of the dependencies can be installed by running the
-following command in the Termux shell:
+https://github.com/rdb/panda3d-thirdparty/actions?query=branch%3Amain+is%3Asuccess+event%3Apush
+
+This does not include Python at the moment, which can be extracted from
+[this archive](https://rdb.name/thirdparty-android.tar.gz) instead.
+
+These commands show how to compile wheels for the supported Android ABIs:
 
 ```bash
-pkg install python ndk-sysroot clang bison freetype harfbuzz libpng eigen openal-soft opusfile libvorbis assimp libopus ecj dx patchelf aapt apksigner libcrypt openssl pkg-config
+export ANDROID_SDK_ROOT=/home/rdb/local/android
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
 ```
 
-Then, you can build the .apk using this command:
+It is now possible to use the generated wheels with `build_apps`, as explained
+on this page:
 
-```bash
-python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
-```
-
-You can install the generated panda3d.apk by browsing to the panda3d folder
-using a file manager.  You may need to copy it to `/sdcard` to be able to
-access it from other apps.
-
-To launch a Python program from Termux, you can use the `run_python.sh` script
-inside the `panda/src/android` directory.  It will launch Python in a separate
-activity, load it with the Python script you passed as argument, and use a
-socket for returning the command-line output to the Termux shell.  Do note
-that this requires the Python application to reside on the SD card and that
-Termux needs to be set up with access to the SD card (using the
-`termux-setup-storage` command).
+https://discourse.panda3d.org/t/deployment-for-android/28226
 
 Running Tests
 =============
