@@ -35,15 +35,13 @@ class PyDatagramIterator(DatagramIterator):
             super().__init__(datagram, offset)
 
             # Retain a reference to it so that it doesn't get deleted.
-            self.__datagram = datagram
+            self.__initialDatagram = datagram
         else:
             super().__init__()
 
-    def getDatagram(self):
-        return self.__datagram
-
-    def get_datagram(self):
-        return self.__datagram
+    def assign(self, datagram, offset = 0):
+        super().assign(datagram, offset)
+        self.__initialDatagram = datagram
 
     def getArg(self, subatomicType, divisor=1):
         # Import the type numbers

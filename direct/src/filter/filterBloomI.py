@@ -32,6 +32,7 @@ BLOOM_I = """
 
 
 void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
              out float2 l_texcoordNW : TEXCOORD0,
              out float2 l_texcoordNE : TEXCOORD1,
@@ -42,7 +43,7 @@ void vshader(float4 vtx_position : POSITION,
              uniform float4x4 mat_modelproj)
 {
   l_position=mul(mat_modelproj, vtx_position);
-  float2 c=(vtx_position.xz * texpad_src.xy) + texpad_src.xy;
+  float2 c = vtx_texcoord * texpad_src.xy * 2;
   float4 offs = texpix_src * 0.5;
   l_texcoordNW = c + float2( offs.x, -offs.y);
   l_texcoordNE = c + float2( offs.x,  offs.y);

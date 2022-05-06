@@ -116,7 +116,7 @@ from _frozen_importlib import _imp, FrozenImporter
 
 sys.frozen = True
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.version_info < (3, 10):
     # Make sure the preferred encoding is something we actually support.
     import _bootlocale
     enc = _bootlocale.getpreferredencoding().lower()

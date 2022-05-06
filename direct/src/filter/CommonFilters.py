@@ -20,6 +20,7 @@ from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import AuxBitplaneAttrib
 from panda3d.core import Texture, Shader, ATSNone
 from panda3d.core import FrameBufferProperties
+from panda3d.core import getDefaultCoordinateSystem, CS_zup_right, CS_zup_left
 
 from direct.task.TaskManagerGlobal import taskMgr
 
@@ -52,6 +53,7 @@ o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
 SSAO_BODY = """//Cg
 
 void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
              out float2 l_texcoord : TEXCOORD0,
              out float2 l_texcoordD : TEXCOORD1,
@@ -61,9 +63,9 @@ void vshader(float4 vtx_position : POSITION,
              uniform float4x4 mat_modelproj)
 {
   l_position = mul(mat_modelproj, vtx_position);
-  l_texcoord = vtx_position.xz;
-  l_texcoordD = (vtx_position.xz * texpad_depth.xy) + texpad_depth.xy;
-  l_texcoordN = (vtx_position.xz * texpad_normal.xy) + texpad_normal.xy;
+  l_texcoord = vtx_texcoord;
+  l_texcoordD = vtx_texcoord * texpad_depth.xy * 2;
+  l_texcoordN = vtx_texcoord * texpad_normal.xy * 2;
 }
 
 float3 sphere[16] = float3[](float3(0.53812504, 0.18565957, -0.43192),float3(0.13790712, 0.24864247, 0.44301823),float3(0.33715037, 0.56794053, -0.005789503),float3(-0.6999805, -0.04511441, -0.0019965635),float3(0.06896307, -0.15983082, -0.85477847),float3(0.056099437, 0.006954967, -0.1843352),float3(-0.014653638, 0.14027752, 0.0762037),float3(0.010019933, -0.1924225, -0.034443386),float3(-0.35775623, -0.5301969, -0.43581226),float3(-0.3169221, 0.106360726, 0.015860917),float3(0.010350345, -0.58698344, 0.0046293875),float3(-0.08972908, -0.49408212, 0.3287904),float3(0.7119986, -0.0154690035, -0.09183723),float3(-0.053382345, 0.059675813, -0.5411899),float3(0.035267662, -0.063188605, 0.54602677),float3(-0.47761092, 0.2847911, -0.0271716));
@@ -292,11 +294,19 @@ class CommonFilters:
             text += "{\n"
             text += "  l_position = mul(mat_modelproj, vtx_position);\n"
 
+            # The card is oriented differently depending on our chosen
+            # coordinate system.  We could just use vtx_texcoord, but this
+            # saves on an additional variable.
+            if getDefaultCoordinateSystem() in (CS_zup_right, CS_zup_left):
+                pos = "vtx_position.xz"
+            else:
+                pos = "vtx_position.xy"
+
             for texcoord, padTex in texcoordPadding.items():
                 if padTex is None:
-                    text += "  %s = vtx_position.xz * float2(0.5, 0.5) + float2(0.5, 0.5);\n" % (texcoord)
+                    text += "  %s = %s * float2(0.5, 0.5) + float2(0.5, 0.5);\n" % (texcoord, pos)
                 else:
-                    text += "  %s = (vtx_position.xz * texpad_tx%s.xy) + texpad_tx%s.xy;\n" % (texcoord, padTex, padTex)
+                    text += "  %s = (%s * texpad_tx%s.xy) + texpad_tx%s.xy;\n" % (texcoord, pos, padTex, padTex)
 
                     if "HalfPixelShift" in configuration:
                         text += "  %s += texpix_tx%s.xy * 0.5;\n" % (texcoord, padTex)
