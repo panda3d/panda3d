@@ -1074,6 +1074,10 @@ scan_function(CPPInstance *function) {
     return;
   }
 
+  if (TypeManager::involves_rvalue_reference(ftype)) {
+    return;
+  }
+
   get_function(function, "",
                nullptr, scope,
                InterrogateFunction::F_global);
@@ -2986,6 +2990,9 @@ define_method(CPPInstance *function, InterrogateType &itype,
     // If it isn't, we should publish this method anyway.
   }
 
+  if (TypeManager::involves_rvalue_reference(ftype)) {
+    return;
+  }
 
   FunctionIndex index = get_function(function, "", struct_type, scope, 0);
   if (index != 0) {
