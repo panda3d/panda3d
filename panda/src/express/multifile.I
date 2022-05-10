@@ -431,6 +431,6 @@ is_cert_special() const {
  */
 INLINE std::streampos Multifile::Subfile::
 get_last_byte_pos() const {
-  return std::max(_index_start + (std::streampos)_index_length,
+  return (std::max)(_index_start + (std::streampos)_index_length,
              _data_start + (std::streampos)_data_length) - (std::streampos)1;
 }
