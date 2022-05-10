@@ -151,6 +151,17 @@ parameter_is_this(int n) const {
 /**
  *
  */
+INLINE bool InterrogateFunctionWrapper::
+parameter_is_optional(int n) const {
+  if (n >= 0 && n < (int)_parameters.size()) {
+    return (_parameters[n]._parameter_flags & PF_is_optional) != 0;
+  }
+  return false;
+}
+
+/**
+ *
+ */
 INLINE const std::string &InterrogateFunctionWrapper::
 get_unique_name() const {
   return _unique_name;
