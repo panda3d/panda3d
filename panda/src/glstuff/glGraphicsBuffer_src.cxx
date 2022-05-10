@@ -855,6 +855,26 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         gl_format = GL_DEPTH_COMPONENT16;
       }
       break;
+#ifndef OPENGLES_1
+    case RTP_aux_hrgba_0:
+    case RTP_aux_hrgba_1:
+    case RTP_aux_hrgba_2:
+    case RTP_aux_hrgba_3:
+    case RTP_aux_float_0:
+    case RTP_aux_float_1:
+    case RTP_aux_float_2:
+    case RTP_aux_float_3:
+      if (glgsg->has_extension("GL_EXT_color_buffer_float")) {
+        if (slot >= RTP_aux_float_0 && slot <= RTP_aux_float_3) {
+          gl_format = GL_RGBA32F;
+        } else {
+          gl_format = GL_RGBA16F;
+        }
+      }
+      else if (glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+        gl_format = GL_RGBA16F_EXT;
+      }
+#endif
     // NB: we currently use RTP_stencil to store the right eye for stereo.
     // case RTP_stencil: gl_format = GL_STENCIL_INDEX8; break
     default:
@@ -912,9 +932,12 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         }
 #ifndef OPENGLES_1
       } else if (_fb_properties.get_float_color() &&
-                 _fb_properties.get_color_bits() > 16 * 3 &&
                  glgsg->has_extension("GL_EXT_color_buffer_float")) {
-        gl_format = GL_RGBA32F_EXT;
+        if (_fb_properties.get_color_bits() > 16 * 3) {
+          gl_format = GL_RGBA32F;
+        } else {
+          gl_format = GL_RGBA16F;
+        }
       } else if (_fb_properties.get_float_color() &&
                  glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
         gl_format = GL_RGBA16F_EXT;

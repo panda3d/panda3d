@@ -42,7 +42,7 @@ get_curve(int index) const {
  */
 INLINE void ParametricCurveCollection::
 add_curve(ParametricCurve *curve, int index) {
-  insert_curve(std::max(index, 0), curve);
+  insert_curve((std::max)(index, 0), curve);
 }
 
 /**

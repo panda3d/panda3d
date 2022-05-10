@@ -1383,13 +1383,13 @@ inc_add_pointer() {
       _handle = nullptr;
       GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
       writer.check_array_writers();
-      writer.set_num_rows(std::max(write_row + 1, writer.get_num_rows()));
+      writer.set_num_rows((std::max)(write_row + 1, writer.get_num_rows()));
       _handle = writer.get_array_writer(_array);
 
     } else {
       // Otherwise, we can get away with modifying only the one array we're
       // using.
-      _handle->set_num_rows(std::max(write_row + 1, _handle->get_num_rows()));
+      _handle->set_num_rows((std::max)(write_row + 1, _handle->get_num_rows()));
     }
 
     set_pointer(write_row);

@@ -46,7 +46,7 @@ matches(const EggMesherEdge &other) const {
  */
 INLINE EggMesherEdge *EggMesherEdge::
 common_ptr() {
-  return std::min(this, _opposite);
+  return (std::min)(this, _opposite);
 }
 
 /**
