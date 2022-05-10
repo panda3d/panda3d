@@ -50,7 +50,7 @@ typedef ConditionVarPosixImpl ConditionVarFullImpl;
 
 #endif
 
-#if defined(WIN32_VC)
+#if defined(WIN32_VC) || (defined(_WIN32) && !defined(HAVE_POSIX_THREADS))
 #include "conditionVarWin32Impl.h"
 typedef ConditionVarWin32Impl TrueConditionVarImpl;
 

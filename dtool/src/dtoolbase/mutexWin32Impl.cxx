@@ -13,7 +13,7 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 
 #include "mutexWin32Impl.h"
 
@@ -25,4 +25,4 @@ MutexWin32Impl() {
   InitializeCriticalSectionAndSpinCount(&_lock, 4000);
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32

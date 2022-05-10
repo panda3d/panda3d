@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#if defined(WIN32_VC)
+#ifdef _WIN32
 
 #include "mutexWin32Impl.h"
 #include "pnotify.h"
@@ -58,6 +58,6 @@ private:
 
 #include "conditionVarFullWin32Impl.I"
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif
