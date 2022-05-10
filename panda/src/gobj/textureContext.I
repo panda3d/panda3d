@@ -122,7 +122,7 @@ mark_loaded() {
   // _data_size_bytes = _data->get_texture_size_bytes();
   _properties_modified = get_texture()->get_properties_modified();
   _image_modified = get_texture()->get_image_modified();
-  update_modified(std::max(_properties_modified, _image_modified));
+  update_modified((std::max)(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
   set_resident(true);

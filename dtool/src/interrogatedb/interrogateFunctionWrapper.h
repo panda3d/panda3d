@@ -45,6 +45,7 @@ public:
   INLINE bool parameter_has_name(int n) const;
   INLINE const std::string &parameter_get_name(int n) const;
   INLINE bool parameter_is_this(int n) const;
+  INLINE bool parameter_is_optional(int n) const;
 
   INLINE const std::string &get_unique_name() const;
 
@@ -66,6 +67,7 @@ private:
   enum ParameterFlags {
     PF_has_name       = 0x0001,
     PF_is_this        = 0x0002,
+    PF_is_optional    = 0x0004,
   };
 
   int _flags;

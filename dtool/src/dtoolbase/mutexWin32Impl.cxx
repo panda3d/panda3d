@@ -13,7 +13,7 @@
 
 #include "selectThreadImpl.h"
 
-#if defined(_WIN32) && !defined(CPPPARSER)
+#ifdef _WIN32
 
 #include "mutexWin32Impl.h"
 

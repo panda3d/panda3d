@@ -167,8 +167,8 @@ get_y_size() const {
  */
 INLINE LVecBase2i GraphicsOutput::
 get_fb_size() const {
-  return LVecBase2i(std::max(int(_size.get_x() * get_pixel_factor()), 1),
-                    std::max(int(_size.get_y() * get_pixel_factor()), 1));
+  return LVecBase2i((std::max)(int(_size.get_x() * get_pixel_factor()), 1),
+                    (std::max)(int(_size.get_y() * get_pixel_factor()), 1));
 }
 
 /**
@@ -178,7 +178,7 @@ get_fb_size() const {
  */
 INLINE int GraphicsOutput::
 get_fb_x_size() const {
-  return std::max(int(_size.get_x() * get_pixel_factor()), 1);
+  return (std::max)(int(_size.get_x() * get_pixel_factor()), 1);
 }
 
 /**
@@ -188,7 +188,7 @@ get_fb_x_size() const {
  */
 INLINE int GraphicsOutput::
 get_fb_y_size() const {
-  return std::max(int(_size.get_y() * get_pixel_factor()), 1);
+  return (std::max)(int(_size.get_y() * get_pixel_factor()), 1);
 }
 
 /**
@@ -200,8 +200,8 @@ INLINE LVecBase2i GraphicsOutput::
 get_sbs_left_size() const {
   PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
   PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
-  return LVecBase2i(std::max(int(_size.get_x() * left_w), 1),
-                    std::max(int(_size.get_y() * left_h), 1));
+  return LVecBase2i((std::max)(int(_size.get_x() * left_w), 1),
+                    (std::max)(int(_size.get_y() * left_h), 1));
 }
 
 /**
@@ -212,7 +212,7 @@ get_sbs_left_size() const {
 INLINE int GraphicsOutput::
 get_sbs_left_x_size() const {
   PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
-  return std::max(int(_size.get_x() * left_w), 1);
+  return (std::max)(int(_size.get_x() * left_w), 1);
 }
 
 /**
@@ -223,7 +223,7 @@ get_sbs_left_x_size() const {
 INLINE int GraphicsOutput::
 get_sbs_left_y_size() const {
   PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
-  return std::max(int(_size.get_y() * left_h), 1);
+  return (std::max)(int(_size.get_y() * left_h), 1);
 }
 
 /**
@@ -235,8 +235,8 @@ INLINE LVecBase2i GraphicsOutput::
 get_sbs_right_size() const {
   PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
   PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
-  return LVecBase2i(std::max(int(_size.get_x() * right_w), 1),
-                    std::max(int(_size.get_y() * right_h), 1));
+  return LVecBase2i((std::max)(int(_size.get_x() * right_w), 1),
+                    (std::max)(int(_size.get_y() * right_h), 1));
 }
 
 /**
@@ -247,7 +247,7 @@ get_sbs_right_size() const {
 INLINE int GraphicsOutput::
 get_sbs_right_x_size() const {
   PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
-  return std::max(int(_size.get_x() * right_w), 1);
+  return (std::max)(int(_size.get_x() * right_w), 1);
 }
 
 /**
@@ -258,7 +258,7 @@ get_sbs_right_x_size() const {
 INLINE int GraphicsOutput::
 get_sbs_right_y_size() const {
   PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
-  return std::max(int(_size.get_y() * right_h), 1);
+  return (std::max)(int(_size.get_y() * right_h), 1);
 }
 
 /**

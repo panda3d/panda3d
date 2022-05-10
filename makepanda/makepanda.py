@@ -5130,8 +5130,10 @@ if GetTarget() == 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
 # DIRECTORY: panda/src/tinydisplay/
 #
 
-if (GetTarget() in ('windows', 'darwin') or not PkgSkip("X11")) and not PkgSkip("TINYDISPLAY"):
+if not PkgSkip("TINYDISPLAY"):
     OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY', 'X11']
+    if not PkgSkip("X11"):
+        OPTS += ['X11']
     TargetAdd('p3tinydisplay_composite1.obj', opts=OPTS, input='p3tinydisplay_composite1.cxx')
     TargetAdd('p3tinydisplay_composite2.obj', opts=OPTS, input='p3tinydisplay_composite2.cxx')
     TargetAdd('p3tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
@@ -5142,7 +5144,7 @@ if (GetTarget() in ('windows', 'darwin') or not PkgSkip("X11")) and not PkgSkip(
     if GetTarget() == 'windows':
         TargetAdd('libp3tinydisplay.dll', input='libp3windisplay.dll')
         TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
-    elif GetTarget() != 'darwin':
+    elif GetTarget() != 'darwin' and not PkgSkip("X11"):
         TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
         TargetAdd('libp3tinydisplay.dll', opts=['X11'])
     TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')

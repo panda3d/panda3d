@@ -210,6 +210,8 @@ EXPCL_INTERROGATEDB const char *interrogate_function_prototype(FunctionIndex fun
 // if the function is a class method.
 EXPCL_INTERROGATEDB bool interrogate_function_is_method(FunctionIndex function);
 EXPCL_INTERROGATEDB TypeIndex interrogate_function_class(FunctionIndex function);
+EXPCL_INTERROGATEDB bool interrogate_function_is_constructor(FunctionIndex function);
+EXPCL_INTERROGATEDB bool interrogate_function_is_destructor(FunctionIndex function);
 
 // This returns the module name reported for the function, if available.
 EXPCL_INTERROGATEDB bool interrogate_function_has_module_name(FunctionIndex function);
@@ -299,6 +301,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_wrapper_parameter_type(FunctionWrapper
 EXPCL_INTERROGATEDB bool interrogate_wrapper_parameter_has_name(FunctionWrapperIndex wrapper, int n);
 EXPCL_INTERROGATEDB const char *interrogate_wrapper_parameter_name(FunctionWrapperIndex wrapper, int n);
 EXPCL_INTERROGATEDB bool interrogate_wrapper_parameter_is_this(FunctionWrapperIndex wrapper, int n);
+EXPCL_INTERROGATEDB bool interrogate_wrapper_parameter_is_optional(FunctionWrapperIndex wrapper, int n);
 
 // This returns a pointer to a function that may be called to invoke the
 // function, if the -fptrs option to return function pointers was specified to
@@ -423,6 +426,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_type_wrapped_type(TypeIndex type);
 // If interrogate_type_is_enum() returns true, this is an enumerated type,
 // which means it may take any one of a number of named integer values.
 EXPCL_INTERROGATEDB bool interrogate_type_is_enum(TypeIndex type);
+EXPCL_INTERROGATEDB bool interrogate_type_is_scoped_enum(TypeIndex type);
 EXPCL_INTERROGATEDB int interrogate_type_number_of_enum_values(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_enum_value_name(TypeIndex type, int n);
 EXPCL_INTERROGATEDB const char *interrogate_type_enum_value_scoped_name(TypeIndex type, int n);
@@ -499,6 +503,7 @@ EXPCL_INTERROGATEDB FunctionIndex interrogate_type_get_cast(TypeIndex type, int 
 // list of base classes for this particular type.
 EXPCL_INTERROGATEDB int interrogate_type_number_of_derivations(TypeIndex type);
 EXPCL_INTERROGATEDB TypeIndex interrogate_type_get_derivation(TypeIndex type, int n);
+EXPCL_INTERROGATEDB bool interrogate_type_is_final(TypeIndex type);
 
 // For each base class, we might need to define an explicit upcast or downcast
 // operation to convert the pointer to the derived class to an appropriate

@@ -267,6 +267,18 @@ interrogate_function_class(FunctionIndex function) {
 }
 
 bool
+interrogate_function_is_constructor(FunctionIndex function) {
+  // cerr << "interrogate_function_is_constructor(" << function << ")\n";
+  return InterrogateDatabase::get_ptr()->get_function(function).is_constructor();
+}
+
+bool
+interrogate_function_is_destructor(FunctionIndex function) {
+  // cerr << "interrogate_function_is_destructor(" << function << ")\n";
+  return InterrogateDatabase::get_ptr()->get_function(function).is_destructor();
+}
+
+bool
 interrogate_function_has_module_name(FunctionIndex function) {
   // cerr << "interrogate_function_has_module_name(" << function << ")\n";
   return InterrogateDatabase::get_ptr()->get_function(function).has_module_name();
@@ -409,6 +421,12 @@ bool
 interrogate_wrapper_parameter_is_this(FunctionWrapperIndex wrapper, int n) {
   // cerr << "interrogate_wrapper_is_this(" << wrapper << ", " << n << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).parameter_is_this(n);
+}
+
+bool
+interrogate_wrapper_parameter_is_optional(FunctionWrapperIndex wrapper, int n) {
+  // cerr << "interrogate_wrapper_is_optional(" << wrapper << ", " << n << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).parameter_is_optional(n);
 }
 
 bool
@@ -674,6 +692,12 @@ interrogate_type_is_enum(TypeIndex type) {
   return InterrogateDatabase::get_ptr()->get_type(type).is_enum();
 }
 
+bool
+interrogate_type_is_scoped_enum(TypeIndex type) {
+  // cerr << "interrogate_type_is_scoped_enum(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_scoped_enum();
+}
+
 int
 interrogate_type_number_of_enum_values(TypeIndex type) {
   // cerr << "interrogate_type_number_of_enum_values(" << type << ")\n";
@@ -826,6 +850,12 @@ TypeIndex
 interrogate_type_get_derivation(TypeIndex type, int n) {
   // cerr << "interrogate_type_get_derivation(" << type << ", " << n << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).get_derivation(n);
+}
+
+bool
+interrogate_type_is_final(TypeIndex type) {
+  // cerr << "interrogate_type_is_final(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_final();
 }
 
 bool

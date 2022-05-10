@@ -344,7 +344,7 @@ is_axis_known(size_t index) const {
 INLINE void InputDevice::
 set_vibration(double strong, double weak) {
   LightMutexHolder holder(_lock);
-  do_set_vibration(std::max(std::min(strong, 1.0), 0.0), std::max(std::min(weak, 1.0), 0.0));
+  do_set_vibration((std::max)((std::min)(strong, 1.0), 0.0), (std::max)((std::min)(weak, 1.0), 0.0));
 }
 
 /**
