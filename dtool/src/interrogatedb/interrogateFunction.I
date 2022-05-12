@@ -55,6 +55,22 @@ is_operator_typecast() const {
 }
 
 /**
+ * Returns true if the function is a constructor.
+ */
+INLINE bool InterrogateFunction::
+is_constructor() const {
+  return (_flags & F_constructor) != 0;
+}
+
+/**
+ * Returns true if the function is a destructor.
+ */
+INLINE bool InterrogateFunction::
+is_destructor() const {
+  return (_flags & F_destructor) != 0;
+}
+
+/**
  * Return the class that owns the method, if is_method() returns true.
  */
 INLINE TypeIndex InterrogateFunction::

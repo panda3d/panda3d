@@ -558,7 +558,7 @@ set_wtext(const std::wstring &wtext) {
     update_text();
   }
 #endif
-  set_cursor_position(std::min(_cursor_position, _text.get_num_characters()));
+  set_cursor_position((std::min)(_cursor_position, _text.get_num_characters()));
   return ret;
 }
 

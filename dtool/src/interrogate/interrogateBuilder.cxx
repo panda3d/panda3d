@@ -1071,6 +1071,10 @@ scan_function(CPPInstance *function) {
     return;
   }
 
+  if (TypeManager::involves_rvalue_reference(ftype)) {
+    return;
+  }
+
   get_function(function, "",
                nullptr, scope,
                InterrogateFunction::F_global);
@@ -1768,6 +1772,16 @@ get_function(CPPInstance *function, string description,
   if (ftype->_flags & CPPFunctionType::F_operator_typecast) {
     // This is a special typecast operator.
     ifunction->_flags |= InterrogateFunction::F_operator_typecast;
+  }
+
+  if (ftype->_flags & CPPFunctionType::F_constructor) {
+    // This is a constructor.
+    ifunction->_flags |= InterrogateFunction::F_constructor;
+  }
+
+  if (ftype->_flags & CPPFunctionType::F_destructor) {
+    // This is a destructor.
+    ifunction->_flags |= InterrogateFunction::F_destructor;
   }
 
   if (function->_storage_class & CPPInstance::SC_virtual) {
@@ -2747,7 +2761,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
     function->_vis = V_published;
 
-    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(),
+                                       InterrogateFunction::F_constructor);
     if (find(itype._constructors.begin(), itype._constructors.end(),
              index) == itype._constructors.end()) {
       itype._constructors.push_back(index);
@@ -2773,7 +2788,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
     function->_vis = V_published;
 
-    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(),
+                                       InterrogateFunction::F_constructor);
     if (find(itype._constructors.begin(), itype._constructors.end(),
              index) == itype._constructors.end()) {
       itype._constructors.push_back(index);
@@ -2814,7 +2830,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
     itype._destructor = get_function(function, "",
                                      cpptype, cpptype->get_scope(),
-                                     0);
+                                     InterrogateFunction::F_destructor);
     itype._flags |= InterrogateType::F_implicit_destructor;
   }
 }
@@ -2988,6 +3004,9 @@ define_method(CPPInstance *function, InterrogateType &itype,
     // If it isn't, we should publish this method anyway.
   }
 
+  if (TypeManager::involves_rvalue_reference(ftype)) {
+    return;
+  }
 
   FunctionIndex index = get_function(function, "", struct_type, scope, 0);
   if (index != 0) {
