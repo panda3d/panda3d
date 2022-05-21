@@ -40,12 +40,36 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   [thread start];
   [thread autorelease];
 
+  // If the application is dpi-aware, iterate over all the screens to find the
+  // one with our display ID and get the backing scale factor to configure the
+  // detected display zoom. Otherwise the detected display zoom keeps its
+  // default value of 1.0
+
+  if (dpi_aware) {
+    NSScreen *screen;
+    NSEnumerator *e = [[NSScreen screens] objectEnumerator];
+    while (screen = (NSScreen *) [e nextObject]) {
+      NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
+      if (_display == (CGDirectDisplayID) [num longValue]) {
+        set_detected_display_zoom([screen backingScaleFactor]);
+        if (cocoadisplay_cat.is_debug()) {
+          cocoadisplay_cat.debug()
+            << "Display zoom is " << [screen backingScaleFactor] << "\n";
+        }
+        break;
+      }
+    }
+  }
+
   // We used to also obtain the corresponding NSScreen here, but this causes
   // the application icon to start bouncing, which may be undesirable for
   // apps that will never open a window.
 
-  _display_width = CGDisplayPixelsWide(_display);
-  _display_height = CGDisplayPixelsHigh(_display);
+  // Although the name of these functions mention pixels, they actually return
+  // display points, we use the detected display zoom to transform the values
+  // into pixels.
+  _display_width = CGDisplayPixelsWide(_display) * _detected_display_zoom;
+  _display_height = CGDisplayPixelsHigh(_display) * _detected_display_zoom;
   load_display_information();
 
   if (cocoadisplay_cat.is_debug()) {
@@ -64,19 +88,36 @@ load_display_information() {
   // _display_information->_device_id = CGDisplaySerialNumber(_display);
 
   // Display modes
+  CFDictionaryRef options = NULL;
+  const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
+  const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
+  options = CFDictionaryCreate(NULL,
+                               (const void **)dictkeys,
+                               (const void **)dictvalues,
+                               1,
+                               &kCFCopyStringDictionaryKeyCallBacks,
+                               &kCFTypeDictionaryValueCallBacks);
   size_t num_modes = 0;
-  CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
+  CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
   if (modes != NULL) {
     num_modes = CFArrayGetCount(modes);
     _display_information->_total_display_modes = num_modes;
     _display_information->_display_mode_array = new DisplayMode[num_modes];
   }
+  if (options != NULL) {
+    CFRelease(options);
+  }
 
   for (size_t i = 0; i < num_modes; ++i) {
     CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
 
-    _display_information->_display_mode_array[i].width = CGDisplayModeGetWidth(mode);
-    _display_information->_display_mode_array[i].height = CGDisplayModeGetHeight(mode);
+    if (dpi_aware) {
+      _display_information->_display_mode_array[i].width = CGDisplayModeGetPixelWidth(mode);
+      _display_information->_display_mode_array[i].height = CGDisplayModeGetPixelHeight(mode);
+    } else {
+      _display_information->_display_mode_array[i].width = CGDisplayModeGetWidth(mode);
+      _display_information->_display_mode_array[i].height = CGDisplayModeGetHeight(mode);
+    }
     _display_information->_display_mode_array[i].refresh_rate = CGDisplayModeGetRefreshRate(mode);
     _display_information->_display_mode_array[i].fullscreen_only = false;
 
