@@ -139,10 +139,10 @@ move_pointer(int device, int x, int y) {
   if (device == 0) {
     CGPoint point;
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(x, y + 1);
+      point = CGPointMake(x, y);
     } else {
       point = CGPointMake(x + _properties.get_x_origin(),
-                          y + _properties.get_y_origin() + 1);
+                          y + _properties.get_y_origin());
     }
 
     // I don't know what the difference between these two methods is.  if
@@ -1966,9 +1966,8 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
       }
     }
 
-    // Strangely enough, in Cocoa, mouse Y coordinates are 1-based.
     nx = x;
-    ny = y - 1;
+    ny = y;
 
   } else {
     // We received deltas, so add it to the current mouse position.
@@ -1985,10 +1984,10 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     ny = std::max(0., std::min((double) get_y_size() - 1, ny));
 
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(nx, ny + 1);
+      point = CGPointMake(nx, ny);
     } else {
       point = CGPointMake(nx + _properties.get_x_origin(),
-                          ny + _properties.get_y_origin() + 1);
+                          ny + _properties.get_y_origin());
     }
 
     if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
