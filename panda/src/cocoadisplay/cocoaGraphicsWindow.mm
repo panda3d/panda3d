@@ -143,9 +143,11 @@ move_pointer(int device, int x, int y) {
                           y + _properties.get_y_origin());
     }
 
-    // I don't know what the difference between these two methods is.  if
-    // (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
-    if (CGDisplayMoveCursorToPoint(_display, point) == kCGErrorSuccess) {
+    if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+      //After moving (or warping) the mouse position, CG starts an event
+      // suppression interval during which no more mouse events can occur
+      // This interval can be interupted by the following call :
+      CGAssociateMouseAndMouseCursorPosition(YES);
       // Generate a mouse event.
       NSPoint pos = [_window mouseLocationOutsideOfEventStream];
       NSPoint loc = [_view convertPoint:pos fromView:nil];
@@ -1886,6 +1888,10 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     }
 
     if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+      //After moving (or warping) the mouse position, CG starts an event
+      // suppression interval during which no more mouse events can occur
+      // This interval can be interupted by the following call :
+      CGAssociateMouseAndMouseCursorPosition(YES);
       in_window = true;
     } else {
       cocoadisplay_cat.warning() << "Failed to return mouse pointer to window\n";
