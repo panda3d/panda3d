@@ -77,11 +77,11 @@ Windows Vista, which requires the Windows 8.1 SDK.
 makepanda\makepanda.bat --everything --installer --msvc-version=14.3 --windows-sdk=10 --no-eigen --threads=2
 ```
 
-When the build succeeds, it will produce an .exe file that you can use to
+When the build succeeds, it will produce a .exe file that you can use to
 install Panda3D on your system.
 
-Note: you may choose to remove --no-eigen and build with Eigen support in
-order to improve runtime performance. However, this will cause the build to
+**Note:** You may choose to remove `--no-eigen` and build with Eigen support in
+order to improve runtime performance.  However, this will cause the build to
 take hours to complete, as Eigen is a heavily template-based library, and the
 MSVC compiler does not perform well under those circumstances.
 
