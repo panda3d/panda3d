@@ -76,7 +76,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (NSApp == nil) {
     [CocoaPandaApp sharedApplication];
 
-    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] initWithEngine:engine];
     [NSApp setDelegate:delegate];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
