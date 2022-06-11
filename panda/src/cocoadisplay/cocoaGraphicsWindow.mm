@@ -99,7 +99,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (NSApp == nil) {
     [CocoaPandaApp sharedApplication];
 
-    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] initWithEngine:engine];
     [NSApp setDelegate:delegate];
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
