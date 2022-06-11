@@ -761,6 +761,19 @@ close_window() {
  */
 void CocoaGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
+
+  // This test is done first as if the application is shutting down, _pipe will
+  // be null and the rest of the method will be skipped.
+  if (properties.has_open() && !properties.get_open()) {
+    if (_windowed_mode != NULL) {
+      // Switch back to the mode we were in when we were still windowed.
+      CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
+      CGDisplayModeRelease(_windowed_mode);
+      CGDisplayRelease(_display);
+      _windowed_mode = NULL;
+    }
+  }
+
   if (_pipe == (GraphicsPipe *)NULL) {
     // If the pipe is null, we're probably closing down.
     GraphicsWindow::set_properties_now(properties);
@@ -1591,8 +1604,18 @@ handle_close_request() {
  */
 void CocoaGraphicsWindow::
 handle_close_event() {
+  WindowProperties properties;
   if (cocoadisplay_cat.is_debug()) {
     cocoadisplay_cat.debug() << "Window is about to close\n";
+  }
+
+  if (_windowed_mode != NULL) {
+    // Switch back to the mode we were in when we were still windowed.
+    CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
+    CGDisplayModeRelease(_windowed_mode);
+    CGDisplayRelease(_display);
+    _windowed_mode = NULL;
+    properties.set_fullscreen(false);
   }
 
   _window = nil;
@@ -1629,7 +1652,6 @@ handle_close_event() {
     _cursor = nil;
   }
 
-  WindowProperties properties;
   properties.set_open(false);
   properties.set_cursor_hidden(false);
   system_changed_properties(properties);
