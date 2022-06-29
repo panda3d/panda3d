@@ -2717,6 +2717,8 @@ reset() {
 
     _glGetInteger64v = (PFNGLGETINTEGER64VPROC)
       get_extension_func("glGetInteger64v");
+
+    _glGetInteger64v(GL_TIMESTAMP, &_timer_query_epoch);
   }
 #endif
 
@@ -6889,6 +6891,7 @@ issue_timer_query(int pstats_index) {
     query = new CLP(LatencyQueryContext)(this, pstats_index);
   } else {
     query = new CLP(TimerQueryContext)(this, pstats_index);
+    query->_epoch = _timer_query_epoch;
   }
 
   if (_deleted_queries.size() >= 1) {

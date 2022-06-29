@@ -90,7 +90,7 @@ get_timestamp() const {
 
   _glgsg->_glGetQueryObjectui64v(_index, GL_QUERY_RESULT, &time_ns);
 
-  return time_ns * 0.000000001;
+  return (time_ns - _epoch) * 0.000000001;
 }
 
 #endif  // OPENGLES

@@ -1139,6 +1139,10 @@ public:
 
   BufferResidencyTracker _renderbuffer_residency;
 
+#ifndef OPENGLES
+  GLint64 _timer_query_epoch = 0;
+#endif
+
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;

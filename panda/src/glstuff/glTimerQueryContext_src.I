@@ -19,6 +19,7 @@ CLP(TimerQueryContext)(CLP(GraphicsStateGuardian) *glgsg,
                        int pstats_index) :
   TimerQueryContext(pstats_index),
   _glgsg(glgsg),
-  _index(0)
+  _index(0),
+  _epoch(0)
 {
 }

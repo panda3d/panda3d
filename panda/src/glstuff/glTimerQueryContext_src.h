@@ -39,6 +39,7 @@ public:
 
   GLuint _index;
   WPT(CLP(GraphicsStateGuardian)) _glgsg;
+  GLint64 _epoch;
 
 public:
   static TypeHandle get_class_type() {

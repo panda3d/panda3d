@@ -26,10 +26,6 @@ public:
 
   ALLOC_DELETED_CHAIN(CLP(LatencyQueryContext));
 
-  virtual double get_timestamp() const;
-
-  GLint64 _timestamp;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
