@@ -208,10 +208,22 @@ set_owner(PyObject *owner) {
 #ifndef NDEBUG
   if (owner != Py_None) {
     PyObject *add = PyObject_GetAttrString(owner, "_addTask");
+    PyErr_Clear();
     PyObject *clear = PyObject_GetAttrString(owner, "_clearTask");
+    PyErr_Clear();
 
-    if (add == nullptr || !PyCallable_Check(add) ||
-        clear == nullptr || !PyCallable_Check(clear)) {
+    bool valid_add = false;
+    if (add != nullptr) {
+      valid_add = PyCallable_Check(add);
+      Py_DECREF(add);
+    }
+    bool valid_clear = false;
+    if (clear != nullptr) {
+      valid_clear = PyCallable_Check(clear);
+      Py_DECREF(clear);
+    }
+
+    if (!valid_add || !valid_clear) {
       Dtool_Raise_TypeError("owner object should have _addTask and _clearTask methods");
       return;
     }

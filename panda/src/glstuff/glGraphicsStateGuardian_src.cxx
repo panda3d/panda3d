@@ -10691,7 +10691,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgba:
   case Texture::F_rgbm:
 #ifndef OPENGLES_1
-    if (component_type == Texture::T_float) {
+    if (component_type == Texture::T_float ||
+        component_type == Texture::T_half_float) {
       return GL_RGBA16F;
     } else
 #endif
@@ -10757,7 +10758,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 #ifndef OPENGLES
   case Texture::F_rgba16:
-    if (component_type == Texture::T_float) {
+    if (component_type == Texture::T_float ||
+        component_type == Texture::T_half_float) {
       return GL_RGBA16F;
     } else if (Texture::is_unsigned(component_type)) {
       return GL_RGBA16;
@@ -10777,6 +10779,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgb:
     switch (component_type) {
     case Texture::T_float: return GL_RGB16F;
+    case Texture::T_half_float: return GL_RGB16F;
 #ifndef OPENGLES
     case Texture::T_unsigned_short: return GL_RGB16;
     case Texture::T_short: return GL_RGB16_SNORM;
@@ -10813,7 +10816,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgb12:
     return GL_RGB12;
   case Texture::F_rgb16:
-    if (component_type == Texture::T_float) {
+    if (component_type == Texture::T_float ||
+        component_type == Texture::T_half_float) {
       return GL_RGB16F;
     } else if (Texture::is_unsigned(component_type)) {
       return GL_RGB16;
@@ -10836,7 +10840,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RG16F_EXT;
 #elif !defined(OPENGLES_1)
   case Texture::F_r16:
-    if (component_type == Texture::T_float) {
+    if (component_type == Texture::T_float ||
+        component_type == Texture::T_half_float) {
       return GL_R16F;
     } else if (Texture::is_unsigned(component_type)) {
       return GL_R16;
@@ -10844,7 +10849,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_R16_SNORM;
     }
   case Texture::F_rg16:
-    if (component_type == Texture::T_float) {
+    if (component_type == Texture::T_float ||
+        component_type == Texture::T_half_float) {
       return GL_RG16F;
     } else if (Texture::is_unsigned(component_type)) {
       return GL_RG16;
