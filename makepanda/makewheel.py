@@ -800,6 +800,21 @@ if __debug__:
 
             whl.write_file(target_path, source_path)
 
+    # Include the special sysconfigdata module.
+    if os.name == 'posix':
+        import sysconfig
+
+        if hasattr(sysconfig, '_get_sysconfigdata_name'):
+            modname = sysconfig._get_sysconfigdata_name() + '.py'
+        else:
+            modname = '_sysconfigdata.py'
+
+        for entry in sys.path:
+            source_path = os.path.join(entry, modname)
+            if os.path.isfile(source_path):
+                whl.write_file('deploy_libs/' + modname, source_path)
+                break
+
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
         plugin_name = 'lib' + lib

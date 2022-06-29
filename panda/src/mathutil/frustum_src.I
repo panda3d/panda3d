@@ -66,12 +66,7 @@ make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
 }
 
 /**
- * Behaves like gluPerspective (Aspect = width/height, Yfov in degrees) aspect
- * +------------+ |            | 1 |            | yfov |            |
- * +------------+
- *
- * -------+------ \     | \    | \   | \  | \ | \| W yfov
- *
+ * Behaves like gluPerspective (Aspect = width/height, Yfov in degrees)
  */
 INLINE_MATHUTIL void FLOATNAME(LFrustum)::
 make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
@@ -84,7 +79,9 @@ make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
   _b = -_t;
 }
 
-
+/**
+ *
+ */
 INLINE_MATHUTIL void FLOATNAME(LFrustum)::
 make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
                       FLOATTYPE ffar) {
@@ -96,7 +93,9 @@ make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
   _l = -_r;
 }
 
-
+/**
+ *
+ */
 INLINE_MATHUTIL void FLOATNAME(LFrustum)::
 make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
                  FLOATTYPE ffar) {
