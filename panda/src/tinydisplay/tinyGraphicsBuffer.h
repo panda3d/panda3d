@@ -35,6 +35,8 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
+  virtual void set_size(int x, int y);
+
   INLINE ZBuffer *get_frame_buffer();
 
 protected:
