@@ -44,16 +44,18 @@ class DirectObject:
 
     #This function must be used if you want a managed task
     def addTask(self, *args, **kwargs):
-        if(not hasattr(self,"_taskList")):
+        from direct.task.TaskManagerGlobal import taskMgr
+        if not hasattr(self, "_taskList"):
             self._taskList = {}
-        kwargs['owner']=self
+        kwargs['owner'] = self
         task = taskMgr.add(*args, **kwargs)
         return task
 
     def doMethodLater(self, *args, **kwargs):
-        if(not hasattr(self,"_taskList")):
-            self._taskList ={}
-        kwargs['owner']=self
+        from direct.task.TaskManagerGlobal import taskMgr
+        if not hasattr(self, "_taskList"):
+            self._taskList = {}
+        kwargs['owner'] = self
         task = taskMgr.doMethodLater(*args, **kwargs)
         return task
 
@@ -69,7 +71,7 @@ class DirectObject:
             taskOrName.remove()
 
     def removeAllTasks(self):
-        if hasattr(self,'_taskList'):
+        if hasattr(self, '_taskList'):
             for task in list(self._taskList.values()):
                 task.remove()
 
