@@ -18,6 +18,7 @@
 #include "pta_LVecBase3.h"
 #include "lvecBase3.h"
 #include "config_navmeshgen.h"
+#include "navMesh.h"
 
 #define _USE_MATH_DEFINES
 #include <string>
@@ -133,7 +134,7 @@ void NavMeshBuilder::add_polygon(PTA_LVecBase3f &vec) {
  */
 bool NavMeshBuilder::from_geom(PT(Geom) geom) {
   CPT(Geom) const_geom = geom;
-  process_geom(const_geom, TransformState::make_identity());
+  process_geom(const_geom, TransformState::make_identity(), false);
   _loaded = true;
   return true;
 }
@@ -141,13 +142,13 @@ bool NavMeshBuilder::from_geom(PT(Geom) geom) {
 /**
  * Adds all visible geometry under the given node to the NavMesh.
  */
-bool NavMeshBuilder::from_node_path(NodePath node) {
+bool NavMeshBuilder::from_node_path(NodePath node, bool tracked_node) {
   CPT(TransformState) transform = node.get_transform(_parent);
 
-  process_node_path(node, transform);
+  process_node_path(node, transform, tracked_node);
 
-  for (auto &tri_verts : _tri_verticies) {
-    add_triangle(_vertex_map[tri_verts.a], _vertex_map[tri_verts.b], _vertex_map[tri_verts.c]);
+  if (tracked_node) {
+    _tracked_nodes.emplace_back(node);
   }
 
   _loaded = true;
@@ -157,13 +158,14 @@ bool NavMeshBuilder::from_node_path(NodePath node) {
 /**
  * Adds all collision geometry under the given node to the NavMesh.
  */
-bool NavMeshBuilder::from_coll_node_path(NodePath node, BitMask32 mask) {
+bool NavMeshBuilder::from_coll_node_path(NodePath node, BitMask32 mask, bool tracked_node) {
   CPT(TransformState) transform = node.get_transform(_parent);
 
-  process_coll_node_path(node, transform, mask);
+  process_coll_node_path(node, transform, mask, tracked_node);
 
-  for (auto &tri_verts : _tri_verticies) {
-    add_triangle(_vertex_map[tri_verts.a], _vertex_map[tri_verts.b], _vertex_map[tri_verts.c]);
+  if (tracked_node) {
+    TrackedCollInfo info = { node, mask };
+    _tracked_coll_nodes.emplace_back(info);
   }
 
   _loaded = true;
@@ -173,7 +175,7 @@ bool NavMeshBuilder::from_coll_node_path(NodePath node, BitMask32 mask) {
 /**
  * Function to find vertices and faces in a geom primitive.
  */
-void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, CPT(TransformState) &transform) {
+void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, LMatrix4 &transform, bool tracked_node) {
 
   GeomVertexReader vertex(vdata, "vertex");
 
@@ -189,91 +191,83 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
       int a = prim->get_vertex(s);
       vertex.set_row(a);
       v1 = vertex.get_data3();
-      transform->get_mat().xform_point_general_in_place(v1);
+      transform.xform_point_general_in_place(v1);
+      update_bounds(v1);
 
       int b = prim->get_vertex(s + 1);
       vertex.set_row(b);
       v2 = vertex.get_data3();
-      transform->get_mat().xform_point_general_in_place(v2);
+      transform.xform_point_general_in_place(v2);
+      update_bounds(v2);
 
       int c = prim->get_vertex(s + 2);
       vertex.set_row(c);
       v3 = vertex.get_data3();
-      transform->get_mat().xform_point_general_in_place(v3);
+      transform.xform_point_general_in_place(v3);
+      update_bounds(v3);
 
       _tri_verticies.emplace_back((TriVertGroup){v1, v2, v3});
+      if (!tracked_node) {
+        _untracked_tris.emplace_back((TriVertGroup){v1, v2, v3});
+      }
     } else if (e - s > 3) {
       for (int i = s + 2; i < e; ++i) {
         int a = prim->get_vertex(s);
         vertex.set_row(a);
         v1 = vertex.get_data3();
-        transform->get_mat().xform_point_general_in_place(v1);
+        transform.xform_point_general_in_place(v1);
+        update_bounds(v1);
 
         int b = prim->get_vertex(i - 1);
         vertex.set_row(b);
         v2 = vertex.get_data3();
-        transform->get_mat().xform_point_general_in_place(v2);
+        transform.xform_point_general_in_place(v2);
+        update_bounds(v2);
 
         int c = prim->get_vertex(i);
         vertex.set_row(c);
         v3 = vertex.get_data3();
-        transform->get_mat().xform_point_general_in_place(v3);
+        transform.xform_point_general_in_place(v3);
+        update_bounds(v3);
 
         _tri_verticies.emplace_back((TriVertGroup){v1, v2, v3});
+        if (!tracked_node) {
+          _untracked_tris.emplace_back((TriVertGroup){v1, v2, v3});
+        }
       }
     }
     else continue;
-
-  }
-  
-}
-
-/**
- * Function to find vertices from GeomVertexData.
- */
-void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, CPT(TransformState) &transform) {
-  GeomVertexReader vertex(vdata, "vertex");
-
-  while (!vertex.is_at_end()) {
-
-    LVector3 v = vertex.get_data3();
-    transform->get_mat().xform_point_general_in_place(v);
-    if (_vertex_map.find(v) == _vertex_map.end()) {
-      LVecBase3 vec = mat_to_y.xform_point(v);
-      add_vertex(vec[0], vec[1], vec[2]);
-
-      _vertex_map[v] = index_temp++;
-      _vertex_vector.push_back(v);
-    }
   }
 }
 
 /**
  * Function to process geom to find primitives.
  */
-void NavMeshBuilder::process_geom(CPT(Geom) &geom, CPT(TransformState) transform) {
+void NavMeshBuilder::process_geom(CPT(Geom) &geom, const CPT(TransformState) &transform, bool tracked_node) {
+  // Chain in the matrix to convert to y-up here.
+  LMatrix4 transform_mat = transform->get_mat() * mat_to_y;
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
-  process_vertex_data(vdata, transform);
+  //process_vertex_data(vdata, transform);
 
   for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
-    process_primitive(prim, vdata, transform);
+    process_primitive(prim, vdata, transform_mat, tracked_node);
   }
 }
 
 /**
  * Function to process geom node to find geoms.
  */
-void NavMeshBuilder::process_geom_node(PT(GeomNode) &geomnode, CPT(TransformState) &transform) {
+void NavMeshBuilder::process_geom_node(PT(GeomNode) &geomnode, CPT(TransformState) &transform, bool tracked_node) {
   for (int j = 0; j < geomnode->get_num_geoms(); ++j) {
     CPT(Geom) geom = geomnode->get_geom(j);
-    process_geom(geom, transform);
+    process_geom(geom, transform, tracked_node);
   }
 }
 
-void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &transform) {
+void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &transform, bool tracked_node) {
   // Do not process stashed nodes.
   if (node.is_stashed()) {
     return;
@@ -281,7 +275,7 @@ void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &tran
 
   if (node.node()->is_of_type(GeomNode::get_class_type())) {
     PT(GeomNode) g = DCAST(GeomNode, node.node());
-    process_geom_node(g, transform);
+    process_geom_node(g, transform, tracked_node);
   }
 
   NodePathCollection children = node.get_children();
@@ -289,11 +283,11 @@ void NavMeshBuilder::process_node_path(NodePath &node, CPT(TransformState) &tran
     NodePath cnp = children.get_path(i);
     CPT(TransformState) child_transform = cnp.get_transform();
     CPT(TransformState) net_transform = transform->compose(child_transform);
-    process_node_path(cnp, net_transform);
+    process_node_path(cnp, net_transform, tracked_node);
   }
 }
 
-void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform, BitMask32 mask) {
+void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) &transform, BitMask32 mask, bool tracked_node) {
   // Do not process stashed nodes.
   if (node.is_stashed()) {
     return;
@@ -304,7 +298,7 @@ void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) 
     if ((g->get_into_collide_mask() & mask) != 0) {
       for (int i = 0; i < g->get_num_solids(); i++) {
         PT(GeomNode) gn = g->get_solid(i)->get_viz();
-        process_geom_node(gn, transform);
+        process_geom_node(gn, transform, tracked_node);
       }
     }
   }
@@ -314,7 +308,7 @@ void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) 
     NodePath cnp = children.get_path(i);
     CPT(TransformState) child_transform = cnp.get_transform();
     CPT(TransformState) net_transform = transform->compose(child_transform);
-    process_coll_node_path(cnp, net_transform, mask);
+    process_coll_node_path(cnp, net_transform, mask, tracked_node);
   }
 }
 
@@ -323,11 +317,16 @@ void NavMeshBuilder::process_coll_node_path(NodePath &node, CPT(TransformState) 
  */
 void NavMeshBuilder::cleanup()
 {
-  _triareas = nullptr;
+  _triareas.clear();
+  rcFreeHeightField(_solid);
   _solid = nullptr;
+  rcFreeCompactHeightfield(_chf);
   _chf = nullptr;
+  rcFreeContourSet(_cset);
   _cset = nullptr;
+  rcFreePolyMesh(_pmesh);
   _pmesh = nullptr;
+  rcFreePolyMeshDetail(_dmesh);
   _dmesh = nullptr;
 }
 
@@ -349,11 +348,21 @@ void NavMeshBuilder::reset_common_settings()
   _verts_per_poly = 6.0f;
   _detail_sample_dist = 6.0f;
   _detail_sample_max_error = 1.0f;
-  _partition_type = SAMPLE_PARTITION_WATERSHED;
+  _partition_type = NavMeshParams::SAMPLE_PARTITION_LAYERS;
+  _tile_size = 32;
+
+  // Max tiles and max polys affect how the tile IDs are calculated.
+  // There are 22 bits available for identifying a tile and a polygon.
+  // We will default to the max recommended number of tile bits.
+  int tileBits = 14;
+  int polyBits = 22 - tileBits;
+  _max_tiles = 1 << tileBits;
+  _max_polys_per_tile = 1 << polyBits;
 }
 
 static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
 static const int NAVMESHSET_VERSION = 1;
+
 
 /**
  * Function to build the navigation mesh from the vertex array, triangles array
@@ -368,306 +377,98 @@ PT(NavMesh) NavMeshBuilder::build() {
     return _nav_mesh_obj;
   }
 
-  cleanup();
-
-  rcCalcBounds(_verts.data(), get_vert_count(), _mesh_bMin, _mesh_bMax);
-
-  const float *bmin = _mesh_bMin;
-  const float *bmax = _mesh_bMax;
-  navmeshgen_cat.info() << "BMIN: " << bmin[0] << " " << bmin[1] << std::endl;
-  navmeshgen_cat.info() << "BMAX: " << bmax[0] << " " << bmax[1] << std::endl;
+  navmeshgen_cat.info() << "BMIN: " << _mesh_bMin[0] << " " << _mesh_bMin[1] << std::endl;
+  navmeshgen_cat.info() << "BMAX: " << _mesh_bMax[0] << " " << _mesh_bMax[1] << std::endl;
   navmeshgen_cat.info() << "vert count: " << get_vert_count() << std::endl;
 
-  //
-  // Step 1. Initialize build config.
-  //
-  // Init build configuration from GUI
-  memset(&_cfg, 0, sizeof(_cfg));
-  _cfg.cs = _cell_size;
-  _cfg.ch = _cell_height;
-  _cfg.walkableSlopeAngle = _agent_max_slope;
-  _cfg.walkableHeight = (int)ceilf(_agent_height / _cfg.ch);
-  _cfg.walkableClimb = (int)floorf(_agent_max_climb / _cfg.ch);
-  _cfg.walkableRadius = (int)ceilf(_agent_radius / _cfg.cs);
-  _cfg.maxEdgeLen = (int)(_edge_max_len / _cell_size);
-  _cfg.maxSimplificationError = _edge_max_error;
-  _cfg.minRegionArea = (int)rcSqr(_region_min_size);    // Note: area = size*size
-  _cfg.mergeRegionArea = (int)rcSqr(_region_merge_size);  // Note: area = size*size
-  _cfg.maxVertsPerPoly = (int)_verts_per_poly;
-  _cfg.detailSampleDist = _detail_sample_dist < 0.9f ? 0 : _cell_size * _detail_sample_dist;
-  _cfg.detailSampleMaxError = _cell_height * _detail_sample_max_error;
+  int gw = 0, gh = 0;
+  rcCalcGridSize(_mesh_bMin, _mesh_bMax, _cell_size, &gw, &gh);
+  const int ts = (int)_tile_size;
+  const int tw = (gw + ts-1) / ts;
+  const int th = (gh + ts-1) / ts;
+  const float tcs = _tile_size*_cell_size;
 
-  // Set the area where the navigation will be build.
-  // Here the bounds of the input mesh are used, but the
-  // area could be specified by an user defined box, etc.
-  rcVcopy(_cfg.bmin, bmin);
-  rcVcopy(_cfg.bmax, bmax);
-  rcCalcGridSize(_cfg.bmin, _cfg.bmax, _cfg.cs, &_cfg.width, &_cfg.height);
+  float tileBmin[3] = { 0, 0, 0 };
+  float tileBmax[3] = { 0, 0, 0 };
 
-  // Reset build times gathering.
-  _ctx->resetTimers();
-
-  // Start the build process. 
-  _ctx->startTimer(RC_TIMER_TOTAL);
-
-  _ctx->log(RC_LOG_PROGRESS, "Building navigation mesh:");
-  navmeshgen_cat.info() << "Building navigation mesh:" << std::endl;
-  _ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", _cfg.width, _cfg.height);
-  navmeshgen_cat.info() << " - " << _cfg.width << " x " << _cfg.height << " cells" << std::endl;
-  _ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", get_vert_count() / 1000.0, get_tri_count() / 1000.0);
-  navmeshgen_cat.info() << " - " << get_vert_count() / 1000.0 << "K vetrs, " << get_tri_count() / 1000.0 << "K tris" << std::endl;
-
-  //
-  // Step 2. Rasterize input polygon soup.
-  //
-
-  // Allocate voxel heightfield where we rasterize our input data to.
-  _solid = rcAllocHeightfield();
-  if (!_solid) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'solid'.");
-    navmeshgen_cat.error() << "build(): Out of memory 'solid'." << std::endl;
-    return _nav_mesh_obj;
-  }
-  if (!rcCreateHeightfield(_ctx, *_solid, _cfg.width, _cfg.height, _cfg.bmin, _cfg.bmax, _cfg.cs, _cfg.ch)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not create solid heightfield.");
-    navmeshgen_cat.error() << "build(): Could not create solid heightfield." << std::endl;
+  dtNavMesh *navMesh = dtAllocNavMesh();
+  if (!navMesh)
+  {
+    navmeshgen_cat.error() << "buildTiledNavigation: Could not allocate navmesh." << std::endl;
     return _nav_mesh_obj;
   }
 
-  // Allocate array that can hold triangle area types.
-  // If you have multiple meshes you need to process, allocate
-  // an array which can hold the max number of triangles you need to process.
-  _triareas = new unsigned char[get_tri_count()];
-  if (!_triareas) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory '_triareas' (%d).", get_tri_count());
-    navmeshgen_cat.error() << "build(): Out of memory '_triareas' (" << get_tri_count() << ")." << std::endl;
+  dtNavMeshParams params = {};
+  rcVcopy(params.orig, _mesh_bMin);
+  params.tileWidth = _tile_size*_cell_size;
+  params.tileHeight = _tile_size*_cell_size;
+  params.maxTiles = _max_tiles;
+  params.maxPolys = _max_polys_per_tile;
+
+  dtStatus status;
+
+  status = navMesh->init(&params);
+  if (dtStatusFailed(status))
+  {
+    navmeshgen_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
     return _nav_mesh_obj;
   }
 
-  // Find triangles which are walkable based on their slope and rasterize them.
-  // If your input data is multiple meshes, you can transform them here, calculate
-  // the are type for each of the meshes and rasterize them.
-  memset(_triareas, 0, get_tri_count() * sizeof(unsigned char));
-  
-  rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, _verts.data(), get_vert_count(), _tris.data(), get_tri_count(), _triareas);
+  std::vector<float> verts;
+  std::vector<int> tris;
+  get_vert_tris(verts, tris);
 
-  if (!rcRasterizeTriangles(_ctx, _verts.data(), get_vert_count(), _tris.data(), _triareas, get_tri_count(), *_solid, _cfg.walkableClimb)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not rasterize triangles.");
-    navmeshgen_cat.error() << "build(): Could not rasterize triangles." << std::endl;
-    return _nav_mesh_obj;
-  }
+  for (int y = 0; y < th; ++y) {
+    for (int x = 0; x < tw; ++x) {
+      tileBmin[0] = _mesh_bMin[0] + x*tcs;
+      tileBmin[1] = _mesh_bMin[1];
+      tileBmin[2] = _mesh_bMin[2] + y*tcs;
 
+      tileBmax[0] = _mesh_bMin[0] + (x+1)*tcs;
+      tileBmax[1] = _mesh_bMax[1];
+      tileBmax[2] = _mesh_bMin[2] + (y+1)*tcs;
 
-  //
-  // Step 3. Filter walkables surfaces.
-  //
-
-  // Once all geoemtry is rasterized, we do initial pass of filtering to
-  // remove unwanted overhangs caused by the conservative rasterization
-  // as well as filter spans where the character cannot possibly stand.
-  if (_filter_low_hanging_obstacles)
-    rcFilterLowHangingWalkableObstacles(_ctx, _cfg.walkableClimb, *_solid);
-  if (_filter_ledge_spans)
-    rcFilterLedgeSpans(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid);
-  if (_filter_walkable_low_height_spans)
-    rcFilterWalkableLowHeightSpans(_ctx, _cfg.walkableHeight, *_solid);
-
-
-  //
-  // Step 4. Partition walkable surface to simple regions.
-  //
-
-  // Compact the heightfield so that it is faster to handle from now on.
-  // This will result more cache coherent data as well as the neighbours
-  // between walkable cells will be calculated.
-  _chf = rcAllocCompactHeightfield();
-  if (!_chf) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'chf'.");
-    navmeshgen_cat.error() << "build(): Out of memory 'chf'." << std::endl;
-    return _nav_mesh_obj;
-  }
-  if (!rcBuildCompactHeightfield(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid, *_chf)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not build compact data.");
-    navmeshgen_cat.error() << "build(): Could not build compact data." << std::endl;
-    return _nav_mesh_obj;
-  }
-
-
-  // Erode the walkable area by agent radius.
-  if (!rcErodeWalkableArea(_ctx, _cfg.walkableRadius, *_chf)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not erode.");
-    navmeshgen_cat.error() << "build(): Could not erode." << std::endl;
-    return _nav_mesh_obj;
-  }
-
-
-  // Partition the heightfield so that we can use simple algorithm later to triangulate the walkable areas.
-  // There are 3 martitioning methods, each with some pros and cons:
-  // 1) Watershed partitioning
-  //   - the classic Recast partitioning
-  //   - creates the nicest tessellation
-  //   - usually slowest
-  //   - partitions the heightfield into nice regions without holes or overlaps
-  //   - the are some corner cases where this method creates produces holes and overlaps
-  //      - holes may appear when a small obstacles is close to large open area (triangulation can handle this)
-  //      - overlaps may occur if you have narrow spiral corridors (i.e stairs), this make triangulation to fail
-  //   * generally the best choice if you precompute the nacmesh, use this if you have large open areas
-  // 2) Monotone partioning
-  //   - fastest
-  //   - partitions the heightfield into regions without holes and overlaps (guaranteed)
-  //   - creates long thin polygons, which sometimes causes paths with detours
-  //   * use this if you want fast navmesh generation
-  // 3) Layer partitoining
-  //   - quite fast
-  //   - partitions the heighfield into non-overlapping regions
-  //   - relies on the triangulation code to cope with holes (thus slower than monotone partitioning)
-  //   - produces better triangles than monotone partitioning
-  //   - does not have the corner cases of watershed partitioning
-  //   - can be slow and create a bit ugly tessellation (still better than monotone)
-  //     if you have large open areas with small obstacles (not a problem if you use tiles)
-  //   * good choice to use for tiled navmesh with medium and small sized tiles
-
-  switch (_partition_type) {
-    case SAMPLE_PARTITION_WATERSHED:
-      // Prepare for region partitioning, by calculating distance field along the walkable surface.
-      if (!rcBuildDistanceField(_ctx, *_chf)) {
-        _ctx->log(RC_LOG_ERROR, "build(): Could not build distance field.");
-        navmeshgen_cat.error() << "build(): Could not build distance field." << std::endl;
-        return _nav_mesh_obj;
+      int dataSize = 0;
+      unsigned char* data = buildTileMesh(x, y, tileBmin, tileBmax, dataSize, verts, tris);
+      if (data)
+      {
+        // Remove any previous data (navmesh owns and deletes the data).
+        navMesh->removeTile(navMesh->getTileRefAt(x, y,0), 0, 0);
+        // Let the navmesh own the data.
+        dtStatus status = navMesh->addTile(data,dataSize,DT_TILE_FREE_DATA,0,0);
+        if (dtStatusFailed(status)) {
+          dtFree(data);
+          navmeshgen_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
+        }
       }
-
-      // Partition the walkable surface into simple regions without holes.
-      if (!rcBuildRegions(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-        _ctx->log(RC_LOG_ERROR, "build(): Could not build watershed regions.");
-        navmeshgen_cat.error() << "build(): Could not build watershed regions." << std::endl;
-        return _nav_mesh_obj;
-      }
-      break;
-    case SAMPLE_PARTITION_MONOTONE:
-      // Partition the walkable surface into simple regions without holes.
-      // Monotone partitioning does not need distancefield.
-      if (!rcBuildRegionsMonotone(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-        _ctx->log(RC_LOG_ERROR, "build(): Could not build monotone regions.");
-        navmeshgen_cat.error() << "build(): Could not build monotone regions." << std::endl;
-        return _nav_mesh_obj;
-      }
-      break;
-    case SAMPLE_PARTITION_LAYERS:
-      // Partition the walkable surface into simple regions without holes.
-      if (!rcBuildLayerRegions(_ctx, *_chf, 0, _cfg.minRegionArea)) {
-        _ctx->log(RC_LOG_ERROR, "build(): Could not build layer regions.");
-        navmeshgen_cat.error() << "build(): Could not build layer regions." << std::endl;
-        return _nav_mesh_obj;
-      }
-      break;
-  }
-
-  //
-  // Step 5. Trace and simplify region contours.
-  //
-
-  // Create contours.
-  _cset = rcAllocContourSet();
-  if (!_cset) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'cset'.");
-    navmeshgen_cat.error() << "build(): Out of memory 'cset'." << std::endl;
-    return _nav_mesh_obj;
-  }
-  if (!rcBuildContours(_ctx, *_chf, _cfg.maxSimplificationError, _cfg.maxEdgeLen, *_cset)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not create contours.");
-    navmeshgen_cat.error() << "build(): Could not create contours." << std::endl;
-    return _nav_mesh_obj;
-  }
-
-  //
-  // Step 6. Build polygons mesh from contours.
-  //
-
-  // Build polygon navmesh from the contours.
-  _pmesh = rcAllocPolyMesh();
-  if (!_pmesh) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmesh'.");
-    navmeshgen_cat.error() << "build(): Out of memory 'pmesh'." << std::endl;
-    return _nav_mesh_obj;
-  }
-  if (!rcBuildPolyMesh(_ctx, *_cset, _cfg.maxVertsPerPoly, *_pmesh)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not triangulate contours.");
-    navmeshgen_cat.error() << "build(): Could not triangulate contours." << std::endl;
-    return _nav_mesh_obj;
-  }
-
-  //
-  // Step 7. Create detail mesh which allows to access approximate height on each polygon.
-  //
-
-  _dmesh = rcAllocPolyMeshDetail();
-  if (!_dmesh) {
-    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmdtl'.");
-    navmeshgen_cat.error() << "build(): Out of memory 'pmdt1'." << std::endl;
-    return _nav_mesh_obj;
-  }
-
-  if (!rcBuildPolyMeshDetail(_ctx, *_pmesh, *_chf, _cfg.detailSampleDist, _cfg.detailSampleMaxError, *_dmesh)) {
-    _ctx->log(RC_LOG_ERROR, "build(): Could not build detail mesh.");
-    navmeshgen_cat.error() << "build(): Could not build detail mesh." << std::endl;
-    return _nav_mesh_obj;
-  }
-  navmeshgen_cat.info() << "Number of vertices: " << _pmesh->nverts << std::endl;
-  navmeshgen_cat.info() << "Number of polygons: " << _pmesh->npolys << std::endl;
-  navmeshgen_cat.info() << "Number of allocated polygons: " << _pmesh->maxpolys << std::endl;
-
-  // At this point the navigation mesh data is ready, you can access it from _pmesh.
-  // See duDebugDrawPolyMesh or dtCreateNavMeshData as examples how to access the data.
-
-
-  //
-  // Step 8. Create Detour data from Recast poly mesh.
-  //
-  // The GUI may allow more max points per polygon than Detour can handle.
-  // Only build the detour navmesh if we do not exceed the limit.
-  if (_cfg.maxVertsPerPoly <= DT_VERTS_PER_POLYGON) {
-    for (int i = 0; i < _pmesh->npolys; ++i) {
-      // Initialize all polygons to 1, so they are enabled by default.
-      _pmesh->flags[i] = 1;
     }
-    
-    NavMeshParams mesh_params;
-
-    mesh_params.verts = _pmesh->verts;
-    mesh_params.vert_count = _pmesh->nverts;
-    mesh_params.polys = _pmesh->polys;
-    mesh_params.poly_areas = _pmesh->areas;
-    mesh_params.poly_flags = _pmesh->flags;
-    mesh_params.poly_count = _pmesh->npolys;
-    mesh_params.nvp = _pmesh->nvp;
-    mesh_params.detail_meshes = _dmesh->meshes;
-    mesh_params.detail_verts = _dmesh->verts;
-    mesh_params.detail_vert_count = _dmesh->nverts;
-    mesh_params.detail_tris = _dmesh->tris;
-    mesh_params.detail_tri_count = _dmesh->ntris;
-
-    mesh_params.walkable_height = _agent_height;
-    mesh_params.walkable_radius = _agent_radius;
-    mesh_params.walkable_climb = _agent_max_climb;
-    rcVcopy(mesh_params.b_min, _pmesh->bmin);
-    rcVcopy(mesh_params.b_max, _pmesh->bmax);
-    mesh_params.cs = _cfg.cs;
-    mesh_params.ch = _cfg.ch;
-    mesh_params.build_bv_tree = true;
-
-    mesh_params.border_index = RC_MESH_NULL_IDX;
-    
-    _nav_mesh_obj = new NavMesh(mesh_params);
-
   }
 
-  _ctx->stopTimer(RC_TIMER_TOTAL);
+  NavMeshParams nav_params{};
+  nav_params.cell_size = _cell_size;
+  nav_params.cell_height = _cell_height;
+  nav_params.tile_size = _tile_size;
+  nav_params.max_tiles = _max_tiles;
+  nav_params.max_polys_per_tile = _max_polys_per_tile;
+  nav_params.agent_height = _agent_height;
+  nav_params.agent_radius = _agent_radius;
+  nav_params.agent_max_climb = _agent_max_climb;
+  nav_params.agent_max_slope = _agent_max_slope;
+  nav_params.region_min_size = _region_min_size;
+  nav_params.region_merge_size = _region_merge_size;
+  nav_params.edge_max_len = _edge_max_len;
+  nav_params.edge_max_error = _edge_max_error;
+  nav_params.verts_per_poly = _verts_per_poly;
+  nav_params.detail_sample_dist = _detail_sample_dist;
+  nav_params.detail_sample_max_error = _detail_sample_max_error;
+  nav_params.partition_type = _partition_type;
+  rcVcopy(nav_params.orig_bound_min, _mesh_bMin);
+  nav_params.tile_cell_size = tcs;
+  nav_params.filter_low_hanging_obstacles = _filter_low_hanging_obstacles;
+  nav_params.filter_ledge_spans = _filter_ledge_spans;
+  nav_params.filter_walkable_low_height_spans = _filter_walkable_low_height_spans;
 
-  // Show performance stats.
-  _ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", _pmesh->nverts, _pmesh->npolys);
-
-  _total_build_time_ms = _ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f;
-
+  _nav_mesh_obj = new NavMesh(navMesh, nav_params, _untracked_tris, _tracked_nodes, _tracked_coll_nodes, _tri_verticies);
   return _nav_mesh_obj;
 }
 
@@ -733,4 +534,358 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
   node->add_geom(polymeshgeom);
   navmeshgen_cat.info() << "Number of Polygons: " << _pmesh->npolys << std::endl;
   return node;
+}
+
+void NavMeshBuilder::get_vert_tris(std::vector<float> &verts, std::vector<int> &tris) {
+  std::unordered_map<LVector3, int> vert_map;
+  int num_verts = 0;
+  for (const auto &tri_group : _tri_verticies) {
+    auto a_itr = vert_map.find(tri_group.a);
+    int a_idx = -1;
+    if (a_itr == vert_map.end()) {
+      a_idx = num_verts++;
+      verts.emplace_back(tri_group.a[0]);
+      verts.emplace_back(tri_group.a[1]);
+      verts.emplace_back(tri_group.a[2]);
+    } else {
+      a_idx = (*a_itr).second;
+    }
+
+    auto b_itr = vert_map.find(tri_group.b);
+    int b_idx = -1;
+    if (b_itr == vert_map.end()) {
+      b_idx = num_verts++;
+      verts.emplace_back(tri_group.b[0]);
+      verts.emplace_back(tri_group.b[1]);
+      verts.emplace_back(tri_group.b[2]);
+    } else {
+      b_idx = (*b_itr).second;
+    }
+
+    auto c_itr = vert_map.find(tri_group.c);
+    int c_idx = -1;
+    if (c_itr == vert_map.end()) {
+      c_idx = num_verts++;
+      verts.emplace_back(tri_group.c[0]);
+      verts.emplace_back(tri_group.c[1]);
+      verts.emplace_back(tri_group.c[2]);
+    } else {
+      c_idx = (*c_itr).second;
+    }
+
+    tris.emplace_back(a_idx);
+    tris.emplace_back(b_idx);
+    tris.emplace_back(c_idx);
+  }
+}
+
+unsigned char* NavMeshBuilder::buildTileMesh(const int tx, const int ty,
+                                             const float* bmin, const float* bmax, int& dataSize,
+                                             std::vector<float> &verts, std::vector<int> &tris)
+{
+  memset(&_cfg, 0, sizeof(_cfg));
+  _cfg.cs = _cell_size;
+  _cfg.ch = _cell_height;
+  _cfg.walkableSlopeAngle = _agent_max_slope;
+  _cfg.walkableHeight = (int)ceilf(_agent_height / _cfg.ch);
+  _cfg.walkableClimb = (int)floorf(_agent_max_climb / _cfg.ch);
+  _cfg.walkableRadius = (int)ceilf(_agent_radius / _cfg.cs);
+  _cfg.maxEdgeLen = (int)(_edge_max_len / _cell_size);
+  _cfg.maxSimplificationError = _edge_max_error;
+  _cfg.minRegionArea = (int)rcSqr(_region_min_size);    // Note: area = size*size
+  _cfg.mergeRegionArea = (int)rcSqr(_region_merge_size);  // Note: area = size*size
+  _cfg.maxVertsPerPoly = (int)_verts_per_poly;
+  _cfg.tileSize = (int)_tile_size;
+  _cfg.borderSize = _cfg.walkableRadius + 3; // Reserve enough padding.
+  _cfg.width = _cfg.tileSize + _cfg.borderSize*2;
+  _cfg.height = _cfg.tileSize + _cfg.borderSize*2;
+  _cfg.detailSampleDist = _detail_sample_dist < 0.9f ? 0 : _cell_size * _detail_sample_dist;
+  _cfg.detailSampleMaxError = _cell_height * _detail_sample_max_error;
+
+  // Expand the heighfield bounding box by border size to find the extents of geometry we need to build this tile.
+  //
+  // This is done in order to make sure that the navmesh tiles connect correctly at the borders,
+  // and the obstacles close to the border work correctly with the dilation process.
+  // No polygons (or contours) will be created on the border area.
+  //
+  // IMPORTANT!
+  //
+  //   :''''''''':
+  //   : +-----+ :
+  //   : |     | :
+  //   : |     |<--- tile to build
+  //   : |     | :
+  //   : +-----+ :<-- geometry needed
+  //   :.........:
+  //
+  // You should use this bounding box to query your input geometry.
+  //
+  // For example if you build a navmesh for terrain, and want the navmesh tiles to match the terrain tile size
+  // you will need to pass in data from neighbour terrain tiles too! In a simple case, just pass in all the 8 neighbours,
+  // or use the bounding box below to only pass in a sliver of each of the 8 neighbours.
+  rcVcopy(_cfg.bmin, bmin);
+  rcVcopy(_cfg.bmax, bmax);
+  _cfg.bmin[0] -= _cfg.borderSize*_cfg.cs;
+  _cfg.bmin[2] -= _cfg.borderSize*_cfg.cs;
+  _cfg.bmax[0] += _cfg.borderSize*_cfg.cs;
+  _cfg.bmax[2] += _cfg.borderSize*_cfg.cs;
+
+  // Allocate voxel heightfield where we rasterize our input data to.
+  _solid = rcAllocHeightfield();
+  if (!_solid)
+  {
+    navmeshgen_cat.error() << "buildNavigation: Out of memory 'solid'." << std::endl;
+    return nullptr;
+  }
+  if (!rcCreateHeightfield(_ctx, *_solid, _cfg.width, _cfg.height, _cfg.bmin, _cfg.bmax, _cfg.cs, _cfg.ch))
+  {
+    navmeshgen_cat.error() << "buildNavigation: Could not create solid heightfield." << std::endl;
+    return nullptr;
+  }
+
+  float tbmin[2], tbmax[2];
+  tbmin[0] = _cfg.bmin[0];
+  tbmin[1] = _cfg.bmin[2];
+  tbmax[0] = _cfg.bmax[0];
+  tbmax[1] = _cfg.bmax[2];
+
+  // Allocate array that can hold triangle area types.
+  // If you have multiple meshes you need to process, allocate
+  // an array which can hold the max number of triangles you need to process.
+  _triareas.clear();
+  _triareas.resize(static_cast<int>(tris.size() / 3), 0);
+
+  // Find triangles which are walkable based on their slope and rasterize them.
+  // If your input data is multiple meshes, you can transform them here, calculate
+  // the are type for each of the meshes and rasterize them.
+  rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, verts.data(), static_cast<int>(verts.size() / 3), tris.data(), static_cast<int>(tris.size() / 3), _triareas.data());
+
+  if (!rcRasterizeTriangles(_ctx, verts.data(), static_cast<int>(verts.size() / 3), tris.data(), _triareas.data(), static_cast<int>(tris.size() / 3), *_solid, _cfg.walkableClimb)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not rasterize triangles.");
+    navmeshgen_cat.error() << "build(): Could not rasterize triangles." << std::endl;
+    return nullptr;
+  }
+
+
+  //
+  // Step 3. Filter walkables surfaces.
+  //
+
+  // Once all geoemtry is rasterized, we do initial pass of filtering to
+  // remove unwanted overhangs caused by the conservative rasterization
+  // as well as filter spans where the character cannot possibly stand.
+  if (_filter_low_hanging_obstacles)
+    rcFilterLowHangingWalkableObstacles(_ctx, _cfg.walkableClimb, *_solid);
+  if (_filter_ledge_spans)
+    rcFilterLedgeSpans(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid);
+  if (_filter_walkable_low_height_spans)
+    rcFilterWalkableLowHeightSpans(_ctx, _cfg.walkableHeight, *_solid);
+
+
+  //
+  // Step 4. Partition walkable surface to simple regions.
+  //
+
+  // Compact the heightfield so that it is faster to handle from now on.
+  // This will result more cache coherent data as well as the neighbours
+  // between walkable cells will be calculated.
+  _chf = rcAllocCompactHeightfield();
+  if (!_chf) {
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'chf'.");
+    navmeshgen_cat.error() << "build(): Out of memory 'chf'." << std::endl;
+    return nullptr;
+  }
+  if (!rcBuildCompactHeightfield(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid, *_chf)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not build compact data.");
+    navmeshgen_cat.error() << "build(): Could not build compact data." << std::endl;
+    return nullptr;
+  }
+
+  rcFreeHeightField(_solid);
+  _solid = nullptr;
+
+  // Erode the walkable area by agent radius.
+  if (!rcErodeWalkableArea(_ctx, _cfg.walkableRadius, *_chf)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not erode.");
+    navmeshgen_cat.error() << "build(): Could not erode." << std::endl;
+    return nullptr;
+  }
+
+
+  // Partition the heightfield so that we can use simple algorithm later to triangulate the walkable areas.
+  // There are 3 martitioning methods, each with some pros and cons:
+  // 1) Watershed partitioning
+  //   - the classic Recast partitioning
+  //   - creates the nicest tessellation
+  //   - usually slowest
+  //   - partitions the heightfield into nice regions without holes or overlaps
+  //   - the are some corner cases where this method creates produces holes and overlaps
+  //      - holes may appear when a small obstacles is close to large open area (triangulation can handle this)
+  //      - overlaps may occur if you have narrow spiral corridors (i.e stairs), this make triangulation to fail
+  //   * generally the best choice if you precompute the nacmesh, use this if you have large open areas
+  // 2) Monotone partioning
+  //   - fastest
+  //   - partitions the heightfield into regions without holes and overlaps (guaranteed)
+  //   - creates long thin polygons, which sometimes causes paths with detours
+  //   * use this if you want fast navmesh generation
+  // 3) Layer partitoining
+  //   - quite fast
+  //   - partitions the heighfield into non-overlapping regions
+  //   - relies on the triangulation code to cope with holes (thus slower than monotone partitioning)
+  //   - produces better triangles than monotone partitioning
+  //   - does not have the corner cases of watershed partitioning
+  //   - can be slow and create a bit ugly tessellation (still better than monotone)
+  //     if you have large open areas with small obstacles (not a problem if you use tiles)
+  //   * good choice to use for tiled navmesh with medium and small sized tiles
+
+  switch (_partition_type) {
+    case NavMeshParams::SAMPLE_PARTITION_WATERSHED:
+      // Prepare for region partitioning, by calculating distance field along the walkable surface.
+      if (!rcBuildDistanceField(_ctx, *_chf)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build distance field.");
+        navmeshgen_cat.error() << "build(): Could not build distance field." << std::endl;
+        return nullptr;
+      }
+
+      // Partition the walkable surface into simple regions without holes.
+      if (!rcBuildRegions(_ctx, *_chf, _cfg.borderSize, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build watershed regions.");
+        navmeshgen_cat.error() << "build(): Could not build watershed regions." << std::endl;
+        return nullptr;
+      }
+      break;
+    case NavMeshParams::SAMPLE_PARTITION_MONOTONE:
+      // Partition the walkable surface into simple regions without holes.
+      // Monotone partitioning does not need distancefield.
+      if (!rcBuildRegionsMonotone(_ctx, *_chf, _cfg.borderSize, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build monotone regions.");
+        navmeshgen_cat.error() << "build(): Could not build monotone regions." << std::endl;
+        return nullptr;
+      }
+      break;
+    case NavMeshParams::SAMPLE_PARTITION_LAYERS:
+      // Partition the walkable surface into simple regions without holes.
+      if (!rcBuildLayerRegions(_ctx, *_chf, _cfg.borderSize, _cfg.minRegionArea)) {
+        _ctx->log(RC_LOG_ERROR, "build(): Could not build layer regions.");
+        navmeshgen_cat.error() << "build(): Could not build layer regions." << std::endl;
+        return nullptr;
+      }
+      break;
+  }
+
+  //
+  // Step 5. Trace and simplify region contours.
+  //
+
+  // Create contours.
+  _cset = rcAllocContourSet();
+  if (!_cset) {
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'cset'.");
+    navmeshgen_cat.error() << "build(): Out of memory 'cset'." << std::endl;
+    return nullptr;
+  }
+  if (!rcBuildContours(_ctx, *_chf, _cfg.maxSimplificationError, _cfg.maxEdgeLen, *_cset)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not create contours.");
+    navmeshgen_cat.error() << "build(): Could not create contours." << std::endl;
+    return nullptr;
+  }
+
+  //
+  // Step 6. Build polygons mesh from contours.
+  //
+
+  // Build polygon navmesh from the contours.
+  _pmesh = rcAllocPolyMesh();
+  if (!_pmesh) {
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmesh'.");
+    navmeshgen_cat.error() << "build(): Out of memory 'pmesh'." << std::endl;
+    return nullptr;
+  }
+  if (!rcBuildPolyMesh(_ctx, *_cset, _cfg.maxVertsPerPoly, *_pmesh)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not triangulate contours.");
+    navmeshgen_cat.error() << "build(): Could not triangulate contours." << std::endl;
+    return nullptr;
+  }
+
+  //
+  // Step 7. Create detail mesh which allows to access approximate height on each polygon.
+  //
+
+  _dmesh = rcAllocPolyMeshDetail();
+  if (!_dmesh) {
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmdtl'.");
+    navmeshgen_cat.error() << "build(): Out of memory 'pmdt1'." << std::endl;
+    return nullptr;
+  }
+
+  if (!rcBuildPolyMeshDetail(_ctx, *_pmesh, *_chf, _cfg.detailSampleDist, _cfg.detailSampleMaxError, *_dmesh)) {
+    _ctx->log(RC_LOG_ERROR, "build(): Could not build detail mesh.");
+    navmeshgen_cat.error() << "build(): Could not build detail mesh." << std::endl;
+    return nullptr;
+  }
+  navmeshgen_cat.info() << "Number of vertices: " << _pmesh->nverts << std::endl;
+  navmeshgen_cat.info() << "Number of polygons: " << _pmesh->npolys << std::endl;
+  navmeshgen_cat.info() << "Number of allocated polygons: " << _pmesh->maxpolys << std::endl;
+
+  rcFreeCompactHeightfield(_chf);
+  _chf = nullptr;
+  rcFreeContourSet(_cset);
+  _cset = nullptr;
+
+  if (_pmesh->npolys == 0) {
+    // There are no matching polys. Skip this tile.
+    return nullptr;
+  }
+
+  unsigned char* navData = nullptr;
+  int navDataSize = 0;
+  if (_cfg.maxVertsPerPoly <= DT_VERTS_PER_POLYGON)
+  {
+    if (_pmesh->nverts >= 0xffff)
+    {
+      // The vertex indices are ushorts, and cannot point to more than 0xffff vertices.
+      navmeshgen_cat.error() << "Too many vertices per tile " << _pmesh->nverts << " (max: " << 0xffff << ")." << std::endl;
+      return nullptr;
+    }
+
+    for (int i = 0; i < _pmesh->npolys; ++i) {
+      // Initialize all polygons to 1, so they are enabled by default.
+      _pmesh->flags[i] = 1;
+    }
+
+    dtNavMeshCreateParams params;
+    memset(&params, 0, sizeof(params));
+    params.verts = _pmesh->verts;
+    params.vertCount = _pmesh->nverts;
+    params.polys = _pmesh->polys;
+    params.polyAreas = _pmesh->areas;
+    params.polyFlags = _pmesh->flags;
+    params.polyCount = _pmesh->npolys;
+    params.nvp = _pmesh->nvp;
+    params.detailMeshes = _dmesh->meshes;
+    params.detailVerts = _dmesh->verts;
+    params.detailVertsCount = _dmesh->nverts;
+    params.detailTris = _dmesh->tris;
+    params.detailTriCount = _dmesh->ntris;
+    params.walkableHeight = _agent_height;
+    params.walkableRadius = _agent_radius;
+    params.walkableClimb = _agent_max_climb;
+    params.tileX = tx;
+    params.tileY = ty;
+    params.tileLayer = 0;
+    rcVcopy(params.bmin, _pmesh->bmin);
+    rcVcopy(params.bmax, _pmesh->bmax);
+    params.cs = _cfg.cs;
+    params.ch = _cfg.ch;
+    params.buildBvTree = false;
+
+    if (!dtCreateNavMeshData(&params, &navData, &navDataSize))
+    {
+      navmeshgen_cat.error() << "Could not build Detour navmesh." << std::endl;
+      return nullptr;
+    }
+  }
+
+  dataSize = navDataSize;
+  return navData;
 }

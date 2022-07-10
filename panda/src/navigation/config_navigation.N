@@ -1,3 +1,6 @@
 forcetype pvector<NavMeshPoly>
 forcetype pvector<LPoint3>
 forcetype std::vector<LPoint3>
+forcetype pvector<NodePath>
+forcetype pvector<TriVertGroup>
+forcetype pvector<TrackedCollInfo>
