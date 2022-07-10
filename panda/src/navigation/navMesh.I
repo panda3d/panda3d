@@ -13,38 +13,6 @@
 
 
 /**
- * Returns the vertex count in the general navigation mesh.
- */
-INLINE int NavMesh::
-get_vert_count() const {
-  return _params.vertCount;
-}
-
-/**
- * Returns the polygon count in the general navigation mesh.
- */
-INLINE int NavMesh::
-get_poly_count() const {
-  return _params.polyCount;
-}
-
-/**
- * Returns the vertex count in the detailed navigation mesh.
- */
-INLINE int NavMesh::
-get_detail_vert_count() const {
-  return _params.detailVertsCount;
-}
-
-/**
- * Returns the tri count in the detailed navigation mesh.
- */
-INLINE int NavMesh::
-get_detail_tri_count() const {
-  return _params.detailTriCount;
-}
-
-/**
  * Returns the color that the specified detour Poly will show() as.
  *
  * Defaults to blue.
@@ -73,4 +41,36 @@ set_poly_debug_color(dtPolyRef poly, LColor color) {
 INLINE void NavMesh::
 reset_debug_colors() {
   _debug_colors.clear();
+}
+
+/**
+ * Clears any debug colors that have been set on this NavMesh.
+ */
+INLINE NavMeshParams NavMesh::
+get_params() {
+  return _params;
+}
+
+/**
+ * Clears any debug colors that have been set on this NavMesh.
+ */
+INLINE NodePaths NavMesh::
+get_tracked_nodes() {
+  return _tracked_nodes;
+}
+
+/**
+ * Clears any debug colors that have been set on this NavMesh.
+ */
+INLINE TrackedCollInfos NavMesh::
+get_tracked_coll_nodes() {
+  return _tracked_coll_nodes;
+}
+
+/**
+ * Clears any debug colors that have been set on this NavMesh.
+ */
+INLINE TriVertGroups NavMesh::
+get_untracked_tris() {
+  return _untracked_tris;
 }

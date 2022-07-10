@@ -201,6 +201,22 @@ get_cell_height() const {
 }
 
 /**
+ * Sets the horizontal plane cell size to use for fields.
+ */
+INLINE void NavMeshBuilder::
+set_tile_size(float cs) {
+  _tile_size = cs;
+}
+
+/**
+ * Returns the horizontal plane cell size to use for fields.
+ */
+INLINE float NavMeshBuilder::
+get_tile_size() const {
+  return _tile_size;
+}
+
+/**
  * Sets the partitioning method to use when building the mesh.
  *
  * There are 3 partitioning methods, each with some pros and cons:
@@ -229,14 +245,14 @@ get_cell_height() const {
  *   * Good choice to use for tiled navmesh with medium and small sized tiles
  */
 INLINE void NavMeshBuilder::
-set_partition_type(NavMeshBuilder::PartitionType partition) {
+set_partition_type(NavMeshParams::PartitionType partition) {
   _partition_type = partition;
 }
 
 /**
  * Returns the partitioning method to use when building the mesh.
  */
-INLINE NavMeshBuilder::PartitionType NavMeshBuilder::
+INLINE NavMeshParams::PartitionType NavMeshBuilder::
 get_partition_type() const {
   return _partition_type;
 }
@@ -279,4 +295,38 @@ get_pmesh_poly_count() const {
 INLINE float NavMeshBuilder::
 get_build_time_ms() const {
   return _total_build_time_ms;
+}
+
+INLINE void NavMeshBuilder::
+update_bounds(LVector3 vert) {
+  if (!_bounds_set) {
+    _mesh_bMin[0] = vert[0];
+    _mesh_bMin[1] = vert[1];
+    _mesh_bMin[2] = vert[2];
+    _mesh_bMax[0] = vert[0];
+    _mesh_bMax[1] = vert[1];
+    _mesh_bMax[2] = vert[2];
+    _bounds_set = true;
+    return;
+  }
+
+  if (vert[0] < _mesh_bMin[0]) {
+    _mesh_bMin[0] = vert[0];
+  }
+  if (vert[1] < _mesh_bMin[1]) {
+    _mesh_bMin[1] = vert[1];
+  }
+  if (vert[2] < _mesh_bMin[2]) {
+    _mesh_bMin[2] = vert[2];
+  }
+
+  if (vert[0] > _mesh_bMax[0]) {
+    _mesh_bMax[0] = vert[0];
+  }
+  if (vert[1] > _mesh_bMax[1]) {
+    _mesh_bMax[1] = vert[1];
+  }
+  if (vert[2] > _mesh_bMax[2]) {
+    _mesh_bMax[2] = vert[2];
+  }
 }

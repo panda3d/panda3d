@@ -3,7 +3,7 @@ from direct.gui.OnscreenText import OnscreenText
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.actor.Actor import Actor
-from direct.interval.IntervalGlobal import Sequence
+from direct.interval.IntervalGlobal import *
 from panda3d.navigation import NavMeshNode, NavMeshQuery
 from panda3d.navmeshgen import NavMeshBuilder
 
@@ -45,14 +45,32 @@ class NavigationDemo(ShowBase):
         self.scene.flatten_light()
         self.scene.reparent_to(self.render)
 
+        self.setFrameRateMeter(1)
+
+        maze = self.scene.find('**/maze')
+        maze.setX(-10)
+        self.scene.flatten_light()
+        self.movement_loop = LerpPosInterval(maze, 3, maze.get_pos() + (20, 0, 0))
+        self.movement_loop.loop()
+
+        #obstacle = self.loader.loadModel("models/panda-model")
+        #obstacle.reparent_to(self.render)
+        #obstacle.set_scale(0.01)
+        #self.movement_loop = LerpPosInterval(obstacle, 3, (20, 0, 0))
+        #self.movement_loop.loop()
+
         # NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
         self.builder = NavMeshBuilder()
         # Take NodePath as input. This method only uses the collision nodes that are under this node.
-        self.builder.from_coll_node_path(self.scene)
+        self.builder.from_coll_node_path(self.scene, tracked_node=True)
+
+        #self.builder.from_node_path(obstacle, tracked_node=True)
 
         self.builder.actor_height = 10
         self.builder.actor_radius = 4
         self.builder.actor_max_climb = 2
+        self.builder.tile_size = 64
+        self.builder.cell_size = 1
         self.navmesh = self.builder.build()
 
         self.navmeshnode = NavMeshNode("scene", self.navmesh)
@@ -129,6 +147,12 @@ class NavigationDemo(ShowBase):
         self.accept("escape", sys.exit)
         self.accept('shift-mouse1', self.handle_mouse_click)
 
+        taskMgr.doMethodLater(0.25, self.update, 'NavMesh-update')
+
+    def update(self, task):
+        self.navmesh.update()
+        return task.again
+
     def toggle_nav_mesh(self):
         if self.navmeshnodepath.is_hidden():
             self.navmeshnodepath.show()
@@ -150,6 +174,8 @@ class NavigationDemo(ShowBase):
                 # Get the closest object.
                 collision_entry = self.clickHandler.get_entry(0)
 
+                self.navmesh.update()
+
                 # Find the point on the geometry that we hit relative to the scene.
                 self.pos2 = collision_entry.get_surface_point(self.scene)
 
@@ -158,7 +184,7 @@ class NavigationDemo(ShowBase):
 
                 self.query.nearest_point(self.pos2)
                 self.destinationMarker.set_pos(self.pos2)
-                path = self.query.find_path(self.pos1, self.pos2)
+                path = self.query.find_smooth_path(self.pos1, self.pos2)
                 path_points = list(path.points)
                 self.pathLine = LineSegs()
                 self.pathLine.set_color(0, 1, 0)
