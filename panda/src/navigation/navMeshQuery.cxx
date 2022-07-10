@@ -414,7 +414,7 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
     static const float SLOP = 0.01f;
     static const int MAX_SMOOTH = 2048;
 
-    smooth_path.insert(smooth_path.begin(), std::begin(iterPos), std::end(iterPos));
+    smooth_path.insert(smooth_path.end(), std::begin(iterPos), std::end(iterPos));
 
     // Move towards target a small advancement at a time until target reached or
     // when ran out of memory to store the path.
@@ -466,7 +466,7 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
         dtVcopy(iterPos, targetPos);
         if (smooth_path.size() / 3 < MAX_SMOOTH)
         {
-          smooth_path.insert(smooth_path.begin(), std::begin(iterPos), std::end(iterPos));
+          smooth_path.insert(smooth_path.end(), std::begin(iterPos), std::end(iterPos));
         }
         break;
       }
@@ -494,12 +494,12 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
         {
           if (smooth_path.size() / 3 < MAX_SMOOTH)
           {
-            smooth_path.insert(smooth_path.begin(), std::begin(startPos), std::end(startPos));
+            smooth_path.insert(smooth_path.end(), std::begin(startPos), std::end(startPos));
 
             // Hack to make the dotted path not visible during off-mesh connection.
             if (smooth_path.size() / 3 & 1)
             {
-              smooth_path.insert(smooth_path.begin(), std::begin(startPos), std::end(startPos));
+              smooth_path.insert(smooth_path.end(), std::begin(startPos), std::end(startPos));
             }
           }
           // Move position at the other side of the off-mesh link.
@@ -513,7 +513,7 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
       // Store results.
       if (smooth_path.size() / 3 < MAX_SMOOTH)
       {
-        smooth_path.insert(smooth_path.begin(), std::begin(iterPos), std::end(iterPos));
+        smooth_path.insert(smooth_path.end(), std::begin(iterPos), std::end(iterPos));
       }
     }
   }
