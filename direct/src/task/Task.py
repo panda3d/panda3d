@@ -153,9 +153,9 @@ class TaskManager:
         # most things are imported.
         from direct.fsm.StatePush import StateVar
         self._profileTasks = StateVar(False)
-        self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
+        self.setProfileTasks(ConfigVariableBool('profile-task-spikes', False).getValue())
         self._profileFrames = StateVar(False)
-        self.setProfileFrames(ConfigVariableBool('profile-frames', 0).getValue())
+        self.setProfileFrames(ConfigVariableBool('profile-frames', False).getValue())
 
     def destroy(self):
         # This should be safe to call multiple times.

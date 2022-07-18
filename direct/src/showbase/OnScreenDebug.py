@@ -22,17 +22,17 @@ class OnScreenDebug:
         if self.onScreenText:
             return
 
-        fontPath = ConfigVariableString("on-screen-debug-font", "cmtt12").value
-        fontScale = ConfigVariableDouble("on-screen-debug-font-scale", 0.05).value
+        fontPath = ConfigVariableString("on-screen-debug-font", "cmtt12").getValue()
+        fontScale = ConfigVariableDouble("on-screen-debug-font-scale", 0.05).getValue()
 
         color = {
             "black": Vec4(0, 0, 0, 1),
             "white": Vec4(1, 1, 1, 1),
             }
-        fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").value]
-        bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").value]
-        fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
-        bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).value)
+        fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").getValue()]
+        bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").getValue()]
+        fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).getValue())
+        bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).getValue())
 
         font = base.loader.loadFont(fontPath)
         if not font.isValid():

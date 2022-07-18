@@ -641,7 +641,7 @@ if __debug__:
             def _profiled(*args, **kArgs):
                 name = '(%s) %s from %s' % (category, f.__name__, f.__module__)
 
-                if category is None or ConfigVariableBool('want-profile-%s' % category, False).value:
+                if category is None or ConfigVariableBool('want-profile-%s' % category, False).getValue():
                     return profileFunc(Functor(f, *args, **kArgs), name, terse)
                 else:
                     return f(*args, **kArgs)

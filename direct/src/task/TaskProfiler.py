@@ -17,7 +17,7 @@ class TaskTracker:
         self._avgSession = None
         if TaskTracker.MinSamples is None:
             # number of samples required before spikes start getting identified
-            TaskTracker.MinSamples = ConfigVariableInt('profile-task-spike-min-samples', 30).value
+            TaskTracker.MinSamples = ConfigVariableInt('profile-task-spike-min-samples', 30).getValue()
             # defines spike as longer than this multiple of avg task duration
             TaskTracker.SpikeThreshold = TaskProfiler.GetDefaultSpikeThreshold()
 
@@ -120,7 +120,7 @@ class TaskProfiler:
 
     @staticmethod
     def GetDefaultSpikeThreshold():
-        return ConfigVariableDouble('profile-task-spike-threshold', 5.).value
+        return ConfigVariableDouble('profile-task-spike-threshold', 5.).getValue()
 
     @staticmethod
     def SetSpikeThreshold(spikeThreshold):

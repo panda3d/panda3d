@@ -47,7 +47,7 @@ class BufferViewer(DirectObject):
         self.task = 0
         self.dirty = 1
         self.accept("render-texture-targets-changed", self.refreshReadout)
-        if ConfigVariableBool("show-buffers", 0):
+        if ConfigVariableBool("show-buffers", False).getValue():
             self.enable(1)
 
     def refreshReadout(self):

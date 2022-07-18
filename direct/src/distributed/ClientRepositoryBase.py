@@ -42,7 +42,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.deferredGenerates = []
         self.deferredDoIds = {}
         self.lastGenerate = 0
-        self.setDeferInterval(ConfigVariableDouble('deferred-generate-interval', 0.2).value)
+        self.setDeferInterval(ConfigVariableDouble('deferred-generate-interval', 0.2).getValue())
         self.noDefer = False  # Set this True to temporarily disable deferring.
 
         self.recorder = base.recorder
@@ -69,7 +69,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
         # Keep track of how recently we last sent a heartbeat message.
         # We want to keep these coming at heartbeatInterval seconds.
-        self.heartbeatInterval = ConfigVariableDouble('heartbeat-interval', 10).value
+        self.heartbeatInterval = ConfigVariableDouble('heartbeat-interval', 10).getValue()
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
 

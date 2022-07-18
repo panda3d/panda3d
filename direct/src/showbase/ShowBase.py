@@ -110,9 +110,9 @@ class ShowBase(DirectObject.DirectObject):
         self.__dev__ = ShowBaseGlobal.__dev__
         builtins.__dev__ = self.__dev__
 
-        logStackDump = (ConfigVariableBool('log-stack-dump', False).value or
-                        ConfigVariableBool('client-log-stack-dump', False).value)
-        uploadStackDump = ConfigVariableBool('upload-stack-dump', False).value
+        logStackDump = (ConfigVariableBool('log-stack-dump', False).getValue() or
+                        ConfigVariableBool('client-log-stack-dump', False).getValue())
+        uploadStackDump = ConfigVariableBool('upload-stack-dump', False).getValue()
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
@@ -147,18 +147,18 @@ class ShowBase(DirectObject.DirectObject):
         self.__deadInputs = 0
 
         # Store dconfig variables
-        self.sfxActive = ConfigVariableBool('audio-sfx-active', True).value
-        self.musicActive = ConfigVariableBool('audio-music-active', True).value
-        self.wantFog = ConfigVariableBool('want-fog', True).value
-        self.wantRender2dp = ConfigVariableBool('want-render2dp', True).value
+        self.sfxActive = ConfigVariableBool('audio-sfx-active', True).getValue()
+        self.musicActive = ConfigVariableBool('audio-music-active', True).getValue()
+        self.wantFog = ConfigVariableBool('want-fog', True).getValue()
+        self.wantRender2dp = ConfigVariableBool('want-render2dp', True).getValue()
 
-        self.screenshotExtension = ConfigVariableString('screenshot-extension', 'jpg').value
+        self.screenshotExtension = ConfigVariableString('screenshot-extension', 'jpg').getValue()
         self.musicManager = None
         self.musicManagerIsValid = None
         self.sfxManagerList = []
         self.sfxManagerIsValidList = []
 
-        self.wantStats = ConfigVariableBool('want-pstats', False).value
+        self.wantStats = ConfigVariableBool('want-pstats', False).getValue()
         self.wantTk = False
         self.wantWx = False
         self.wantDirect = False
@@ -185,7 +185,7 @@ class ShowBase(DirectObject.DirectObject):
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
         # If you need to know the actual aspect ratio call base.getAspectRatio()
-        self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).value
+        self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).getValue()
         # This variable is used to see if the aspect ratio has changed when
         # we get a window-event.
         self.__oldAspectRatio = None
@@ -195,8 +195,8 @@ class ShowBase(DirectObject.DirectObject):
         #: be 'onscreen' (the default), 'offscreen' or 'none'.
         self.windowType = windowType
         if self.windowType is None:
-            self.windowType = ConfigVariableString('window-type', 'onscreen').value
-        self.requireWindow = ConfigVariableBool('require-window', True).value
+            self.windowType = ConfigVariableString('window-type', 'onscreen').getValue()
+        self.requireWindow = ConfigVariableBool('require-window', True).getValue()
 
         #: This is the main, or only window; see `winList` for a list of *all* windows.
         self.win = None
@@ -407,18 +407,18 @@ class ShowBase(DirectObject.DirectObject):
         # - pcalt-# (# is CPU number, 0-based)
         # - client-cpu-affinity config
         # - auto-single-cpu-affinity config
-        affinityMask = ConfigVariableInt('client-cpu-affinity-mask', -1).value
+        affinityMask = ConfigVariableInt('client-cpu-affinity-mask', -1).getValue()
         if affinityMask != -1:
             TrueClock.getGlobalPtr().setCpuAffinity(affinityMask)
         else:
             # this is useful on machines that perform better with each process
             # assigned to a single CPU
-            autoAffinity = ConfigVariableBool('auto-single-cpu-affinity', False).value
+            autoAffinity = ConfigVariableBool('auto-single-cpu-affinity', False).getValue()
             affinity = None
             if autoAffinity and hasattr(builtins, 'clientIndex'):
                 affinity = abs(int(builtins.clientIndex))
             else:
-                affinity = ConfigVariableInt('client-cpu-affinity', -1).value
+                affinity = ConfigVariableInt('client-cpu-affinity', -1).getValue()
             if (affinity in (None, -1)) and autoAffinity:
                 affinity = 0
             if affinity not in (None, -1):
@@ -476,13 +476,13 @@ class ShowBase(DirectObject.DirectObject):
 
         self.createBaseAudioManagers()
 
-        if self.__dev__ and ConfigVariableBool('track-gui-items', False):
+        if self.__dev__ and ConfigVariableBool('track-gui-items', False).getValue():
             # dict of guiId to gui item, for tracking down leaks
             if not hasattr(ShowBase, 'guiItems'):
                 ShowBase.guiItems = {}
 
         # optionally restore the default gui sounds from 1.7.2 and earlier
-        if ConfigVariableBool('orig-gui-sounds', False).value:
+        if ConfigVariableBool('orig-gui-sounds', False).getValue():
             from direct.gui import DirectGuiGlobals as DGG
             DGG.setDefaultClickSound(self.loader.loadSfx("audio/sfx/GUI_click.wav"))
             DGG.setDefaultRolloverSound(self.loader.loadSfx("audio/sfx/GUI_rollover.wav"))
@@ -549,7 +549,7 @@ class ShowBase(DirectObject.DirectObject):
         except ImportError:
             return
 
-        profile.Profile.bias = ConfigVariableDouble("profile-bias", 0.0).value
+        profile.Profile.bias = ConfigVariableDouble("profile-bias", 0.0).getValue()
 
         def f8(x):
             return ("%" + "8.%df" % ConfigVariableInt("profile-decimals", 3)) % x
@@ -2245,7 +2245,7 @@ class ShowBase(DirectObject.DirectObject):
         # between collisionLoop and igLoop
         self.taskMgr.add(self.__collisionLoop, 'collisionLoop', sort = 30)
 
-        if ConfigVariableBool('garbage-collect-states').value:
+        if ConfigVariableBool('garbage-collect-states', False).getValue()
             self.taskMgr.add(self.__garbageCollectStates, 'garbageCollectStates', sort = 46)
         # give the igLoop task a reasonably "late" sort,
         # so that it will get run after most tasks
@@ -3218,7 +3218,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Disable the Windows message loop, since Tcl wants to handle this all
         # on its own.
-        ConfigVariableBool('disable-message-loop', False).value = True
+        ConfigVariableBool('disable-message-loop', False).setValue(True)
 
         if ConfigVariableBool('tk-main-loop', True):
             # Put Tkinter in charge of the main loop.  It really
@@ -3307,10 +3307,10 @@ class ShowBase(DirectObject.DirectObject):
         self.__directStarted = False
 
         # Start Tk, Wx and DIRECT if specified by Config.prc
-        fTk = ConfigVariableBool('want-tk', False).value
-        fWx = ConfigVariableBool('want-wx', False).value
+        fTk = ConfigVariableBool('want-tk', False).getValue()
+        fWx = ConfigVariableBool('want-wx', False).getValue()
         # Start DIRECT if specified in Config.prc or in cluster mode
-        fDirect = (ConfigVariableBool('want-directtools', 0).value or
+        fDirect = (ConfigVariableBool('want-directtools', False).getValue() or
                    (not ConfigVariableString("cluster-mode", '').empty()))
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)

@@ -130,7 +130,7 @@ class JobManager:
     def getDefaultTimeslice():
         # run for 1/2 millisecond per frame by default
         # config is in milliseconds, this func returns value in seconds
-        return ConfigVariableDouble('job-manager-timeslice-ms', .5).value / 1000.
+        return ConfigVariableDouble('job-manager-timeslice-ms', .5).getValue() / 1000.
 
     def getTimeslice(self):
         if self._timeslice:
@@ -147,7 +147,7 @@ class JobManager:
 
     def _process(self, task=None):
         if self._useOverflowTime is None:
-            self._useOverflowTime = ConfigVariableBool('job-use-overflow-time', 1).value
+            self._useOverflowTime = ConfigVariableBool('job-use-overflow-time', True).getValue()
 
         if len(self._pri2jobId2job) > 0:
             clock = ClockObject.getGlobalClock()

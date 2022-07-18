@@ -21,7 +21,7 @@ from panda3d.core import NodePath, PGTop
 from . import DConfig as config
 import warnings
 
-__dev__ = ConfigVariableBool('want-dev', __debug__).value
+__dev__ = ConfigVariableBool('want-dev', __debug__).getValue()
 
 #: The global instance of the :ref:`virtual-file-system`, as obtained using
 #: :meth:`panda3d.core.VirtualFileSystem.getGlobalPtr()`.
