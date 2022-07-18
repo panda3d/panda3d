@@ -43,7 +43,7 @@ import functools
 
 __report_indent = 3
 
-from panda3d.core import ConfigVariableBool, ClockObject
+from panda3d.core import ConfigVariableBool, ConfigVariableString, ClockObject
 
 
 ## with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
@@ -1916,7 +1916,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             prefixes = set()
 
         for param in dConfigParamList:
-            prefix = config.GetString('prefix-%s-report' % (param,), '')
+            prefix = ConfigVariableString('prefix-%s-report' % (param,), '').getValue()
             if prefix:
                 prefixes.add(prefix)
 
@@ -2441,7 +2441,7 @@ def configIsToday(configName):
     # TODO: replace usage of strptime with something else
     # returns true if config string is a valid representation of today's date
     today = time.localtime()
-    confStr = config.GetString(configName, '')
+    confStr = ConfigVariableString(configName, '').getValue()
     for format in ('%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y'):
         try:
             confDate = time.strptime(confStr, format)

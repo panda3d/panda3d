@@ -38,8 +38,8 @@ class WxPandaShell(WxAppShell):
         if not base:
             base = ShowBase(False, windowType='none')
 
-        fDirect = (base.config.GetBool('want-directtools', 0) or
-                   (base.config.GetString("cluster-mode", '') != ''))
+        fDirect = (ConfigVariableBool('want-directtools', False).getValue() or
+                   (ConfigVariableString("cluster-mode", '').getValue() != ''))
 
         self.fStartDirect = fStartDirect or fDirect
 

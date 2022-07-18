@@ -2,13 +2,13 @@
 
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import ScratchPad, Stack, AlphabetCounter
 from direct.showbase.PythonUtil import itype, deeptype, fastRepr
 from direct.showbase.Job import Job
 from direct.showbase.JobManagerGlobal import jobMgr
 from direct.showbase.MessengerGlobal import messenger
-import direct.showbase.DConfig as config
 import gc
 import types
 
@@ -562,7 +562,7 @@ class _CFGLGlobals:
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
-    if numGarbage > 0 and config.GetBool('auto-garbage-logging', 0):
+    if numGarbage > 0 and ConfigVariableBool('auto-garbage-logging', False).getValue():
         if numGarbage != _CFGLGlobals.LastNumGarbage:
             print("")
             gr = GarbageReport('found garbage', threaded=False, collect=False)
@@ -572,7 +572,7 @@ def checkForGarbageLeaks():
             messenger.send(GarbageCycleCountAnnounceEvent, [gr.getDesc2numDict()])
             gr.destroy()
         notify = directNotify.newCategory("GarbageDetect")
-        if config.GetBool('allow-garbage-cycles', 1):
+        if ConfigVariableBool('allow-garbage-cycles', True).getValue():
             func = notify.warning
         else:
             func = notify.error

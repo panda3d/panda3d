@@ -2245,7 +2245,7 @@ class ShowBase(DirectObject.DirectObject):
         # between collisionLoop and igLoop
         self.taskMgr.add(self.__collisionLoop, 'collisionLoop', sort = 30)
 
-        if ConfigVariableBool('garbage-collect-states', False).getValue()
+        if ConfigVariableBool('garbage-collect-states', False).getValue():
             self.taskMgr.add(self.__garbageCollectStates, 'garbageCollectStates', sort = 46)
         # give the igLoop task a reasonably "late" sort,
         # so that it will get run after most tasks
