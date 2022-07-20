@@ -141,6 +141,8 @@ set(P3EXPRESS_IGATEEXT
   virtualFileSystem_ext.h
   virtualFile_ext.cxx
   virtualFile_ext.h
+  multifile_ext.h
+  multifile_ext.I
 )
 
 composite_sources(p3express P3EXPRESS_SOURCES)
