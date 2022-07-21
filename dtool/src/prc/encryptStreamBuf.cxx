@@ -122,7 +122,19 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
   int key_length = sr.get_uint16();
   int count = sr.get_uint16();
 
+#if OPENSSL_VERSION_MAJOR >= 3
+  EVP_CIPHER *cipher = nullptr;
+
+  // First, convert the cipher's nid to its full name.
+  const char *cipher_name = OBJ_nid2ln(nid);
+
+  if (cipher_name != nullptr) {
+    // Now, fetch the cipher known by this name.
+    cipher = EVP_CIPHER_fetch(nullptr, cipher_name, nullptr);
+  }
+#else
   const EVP_CIPHER *cipher = EVP_get_cipherbynid(nid);
+#endif
 
   if (cipher == nullptr) {
     prc_cat.error()
@@ -145,15 +157,12 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _read_block_size = EVP_CIPHER_block_size(cipher);
 
-  unsigned char *iv = (unsigned char *)alloca(iv_length);
-  iv_length = (int)sr.extract_bytes(iv, iv_length);
-
   _read_ctx = EVP_CIPHER_CTX_new();
   nassertv(_read_ctx != nullptr);
 
   // Initialize the context
   int result;
-  result = EVP_DecryptInit(_read_ctx, cipher, nullptr, (unsigned char *)iv);
+  result = EVP_DecryptInit_ex(_read_ctx, cipher, nullptr, nullptr, nullptr);
   nassertv(result > 0);
 
   result = EVP_CIPHER_CTX_set_key_length(_read_ctx, key_length);
@@ -166,6 +175,9 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
     return;
   }
 
+  unsigned char *iv = (unsigned char *)alloca(iv_length);
+  iv_length = (int)sr.extract_bytes(iv, iv_length);
+
   // Hash the supplied password into a key of the appropriate length.
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
@@ -176,7 +188,7 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
   nassertv(result > 0);
 
   // Store the key within the context.
-  result = EVP_DecryptInit(_read_ctx, nullptr, key, nullptr);
+  result = EVP_DecryptInit_ex(_read_ctx, nullptr, nullptr, key, iv);
   nassertv(result > 0);
 
   _read_overflow_buffer = new unsigned char[_read_block_size];
@@ -220,8 +232,13 @@ open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
   _dest = dest;
   _owns_dest = owns_dest;
 
+#if OPENSSL_VERSION_MAJOR >= 3
+  EVP_CIPHER *cipher =
+    EVP_CIPHER_fetch(nullptr, _algorithm.c_str(), nullptr);
+#else
   const EVP_CIPHER *cipher =
     EVP_get_cipherbyname(_algorithm.c_str());
+#endif
 
   if (cipher == nullptr) {
     prc_cat.error()
@@ -234,16 +251,11 @@ open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _write_block_size = EVP_CIPHER_block_size(cipher);
 
-  // Generate a random IV.  It doesn't need to be cryptographically secure,
-  // just unique.
-  unsigned char *iv = (unsigned char *)alloca(iv_length);
-  RAND_bytes(iv, iv_length);
-
   _write_ctx = EVP_CIPHER_CTX_new();
   nassertv(_write_ctx != nullptr);
 
   int result;
-  result = EVP_EncryptInit(_write_ctx, cipher, nullptr, iv);
+  result = EVP_EncryptInit_ex(_write_ctx, cipher, nullptr, nullptr, nullptr);
   nassertv(result > 0);
 
   // Store the appropriate key length in the context.
@@ -272,6 +284,11 @@ open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
       << " extra times.\n";
   }
 
+  // Generate a random IV.  It doesn't need to be cryptographically secure,
+  // just unique.
+  unsigned char *iv = (unsigned char *)alloca(iv_length);
+  RAND_bytes(iv, iv_length);
+
   // Hash the supplied password into a key of the appropriate length.
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
@@ -280,8 +297,8 @@ open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
                            key_length, key);
   nassertv(result > 0);
 
-  // Store the key in the context.
-  result = EVP_EncryptInit(_write_ctx, nullptr, key, nullptr);
+  // Store the key and IV in the context.
+  result = EVP_EncryptInit_ex(_write_ctx, nullptr, nullptr, key, iv);
   nassertv(result > 0);
 
   // Now write the header information to the stream.
