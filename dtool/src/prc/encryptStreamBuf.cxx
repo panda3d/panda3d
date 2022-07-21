@@ -23,6 +23,10 @@
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 
+#if OPENSSL_VERSION_MAJOR >= 3
+#include <openssl/provider.h>
+#endif
+
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 
@@ -106,7 +110,12 @@ EncryptStreamBuf::
  */
 void EncryptStreamBuf::
 open_read(std::istream *source, bool owns_source, const std::string &password) {
+#if OPENSSL_VERSION_MAJOR >= 3
+  OSSL_PROVIDER_load(NULL, "legacy");
+  OSSL_PROVIDER_load(NULL, "default");
+#else
   OpenSSL_add_all_algorithms();
+#endif
 
   _source = source;
   _owns_source = owns_source;
@@ -226,7 +235,12 @@ close_read() {
  */
 void EncryptStreamBuf::
 open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
+#if OPENSSL_VERSION_MAJOR >= 3
+  OSSL_PROVIDER_load(NULL, "legacy");
+  OSSL_PROVIDER_load(NULL, "default");
+#else
   OpenSSL_add_all_algorithms();
+#endif
 
   close_write();
   _dest = dest;
