@@ -37,10 +37,10 @@ EncryptStreamBuf() {
   _owns_dest = false;
 
   ConfigVariableString encryption_algorithm
-    ("encryption-algorithm", "bf-cbc",
+    ("encryption-algorithm", "aes-256-cbc",
      PRC_DESC("This defines the OpenSSL encryption algorithm which is used to "
               "encrypt any streams created by the current runtime.  The default is "
-              "Blowfish; the complete set of available algorithms is defined by "
+              "AES-256; the complete set of available algorithms is defined by "
               "the current version of OpenSSL.  This value is used only to control "
               "encryption; the correct algorithm will automatically be selected on "
               "decryption."));
