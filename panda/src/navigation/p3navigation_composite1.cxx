@@ -5,3 +5,4 @@
 #include "navMeshPath.cxx"
 #include "navMeshPoly.cxx"
 #include "navMeshQueryFilter.cxx"
+#include "navMeshBuilder.cxx"

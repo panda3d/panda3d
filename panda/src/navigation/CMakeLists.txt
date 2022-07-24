@@ -4,6 +4,12 @@ endif()
 
 set(P3NAVIGATION_HEADERS
         config_navigation.h
+        navTriVertGroup.h
+        navTriVertGroup.I
+        navMeshParams.h
+        navMeshParams.I
+        navTrackedCollInfo.h
+        navTrackedCollInfo.I
         navMesh.h
         navMesh.I
         navMeshNode.h
@@ -16,7 +22,8 @@ set(P3NAVIGATION_HEADERS
         navMeshQuery.I
         navMeshQueryFilter.h
         navMeshQueryFilter.I
-        )
+        navMeshBuilder.h
+        navMeshBuilder.I)
 
 set(P3NAVIGATION_SOURCES
         config_navigation.cxx
@@ -26,7 +33,7 @@ set(P3NAVIGATION_SOURCES
         navMeshPoly.cxx
         navMeshQuery.cxx
         navMeshQueryFilter.cxx
-        )
+        navMeshBuilder.cxx)
 
 composite_sources(p3navigation P3NAVIGATION_SOURCES)
 add_library(p3navigation ${P3NAVIGATION_HEADERS} ${P3NAVIGATION_SOURCES})

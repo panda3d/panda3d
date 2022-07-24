@@ -15,8 +15,6 @@
 /**
  * Returns the include mask that will filter the walkable polygons.
  */
-#include "navMeshQueryFilter.h"
-
 INLINE BitMask16 NavMeshQueryFilter::
 get_include_mask() const {
   return _include_mask;
