@@ -494,9 +494,20 @@ interrogate_make_seq_num_name(MakeSeqIndex make_seq) {
 const char *
 interrogate_make_seq_element_name(MakeSeqIndex make_seq) {
   // cerr << "interrogate_make_seq_element_name(" << make_seq << ")\n";
-  static string result;
   FunctionIndex function = InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_element_getter();
   return interrogate_function_name(function);
+}
+
+FunctionIndex
+interrogate_make_seq_num_getter(MakeSeqIndex make_seq) {
+  // cerr << "interrogate_make_seq_num_getter(" << make_seq << ")\n";
+  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_length_getter();
+}
+
+FunctionIndex
+interrogate_make_seq_element_getter(MakeSeqIndex make_seq) {
+  // cerr << "interrogate_make_seq_element_getter(" << make_seq << ")\n";
+  return InterrogateDatabase::get_ptr()->get_make_seq(make_seq).get_element_getter();
 }
 
 int
