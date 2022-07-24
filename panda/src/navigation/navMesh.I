@@ -44,33 +44,37 @@ reset_debug_colors() {
 }
 
 /**
- * Clears any debug colors that have been set on this NavMesh.
+ * Returns the parameters of this nav mesh. They cannot be changed after the mesh is built.
  */
-INLINE NavMeshParams NavMesh::
-get_params() {
+INLINE const NavMeshParams& NavMesh::
+get_params() const {
   return _params;
 }
 
 /**
- * Clears any debug colors that have been set on this NavMesh.
+ * Returns the list of NodePaths that this NavMesh will track.
  */
-INLINE NodePaths NavMesh::
-get_tracked_nodes() {
+INLINE const NodePaths& NavMesh::
+get_tracked_nodes() const {
   return _tracked_nodes;
 }
 
 /**
- * Clears any debug colors that have been set on this NavMesh.
+ * Returns the list of NodePaths the collisions from which will
+ * be tracked.
  */
-INLINE TrackedCollInfos NavMesh::
-get_tracked_coll_nodes() {
+INLINE const TrackedCollInfos& NavMesh::
+get_tracked_coll_nodes() const {
   return _tracked_coll_nodes;
 }
 
 /**
- * Clears any debug colors that have been set on this NavMesh.
+ * Returns a list of raw tris that are static and not tracked to
+ * a specific NodePath.
+ *
+ * Note: All vertices will be in the y-up system.
  */
-INLINE TriVertGroups NavMesh::
-get_untracked_tris() {
+INLINE const NavTriVertGroups& NavMesh::
+get_untracked_tris() const {
   return _untracked_tris;
 }

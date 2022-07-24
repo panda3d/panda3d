@@ -39,7 +39,6 @@ add_subdirectory(src/mathutil)
 add_subdirectory(src/movies)
 add_subdirectory(src/nativenet)
 add_subdirectory(src/navigation)
-add_subdirectory(src/navmeshgen)
 add_subdirectory(src/net)
 add_subdirectory(src/pandabase)
 add_subdirectory(src/parametrics)
@@ -195,10 +194,6 @@ bdist_apps = direct.dist.commands:bdist_apps
     add_python_module(panda3d.navigation p3navigation IMPORT panda3d.core COMPONENT NavigationPython)
 
     export_targets(NavigationPython NAMESPACE "Panda3D::Python::" COMPONENT NavigationDevel)
-
-    add_python_module(panda3d.navmeshgen p3navmeshgen IMPORT panda3d.core COMPONENT NavMeshGenPython)
-
-    export_targets(NavMeshGenPython NAMESPACE "Panda3D::Python::" COMPONENT NavMeshGenDevel)
   endif()
 
   export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)

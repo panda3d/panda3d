@@ -15,6 +15,7 @@
 #define CONFIG_NAVIGATION_H
 
 #include "pandabase.h"
+#include "nodePath.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableDouble.h"
 #include "configVariableString.h"
@@ -23,5 +24,7 @@
 NotifyCategoryDecl(navigation, EXPCL_NAVIGATION, EXPTP_NAVIGATION);
 
 extern EXPCL_NAVIGATION void init_libnavigation();
+
+typedef pvector<NodePath> NodePaths;
 
 #endif

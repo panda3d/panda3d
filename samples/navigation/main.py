@@ -4,8 +4,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import *
-from panda3d.navigation import NavMeshNode, NavMeshQuery
-from panda3d.navmeshgen import NavMeshBuilder
+from panda3d.navigation import NavMeshNode, NavMeshQuery, NavMeshBuilder
 
 
 # Function to put instructions on the screen.
@@ -50,28 +49,30 @@ class NavigationDemo(ShowBase):
         maze = self.scene.find('**/maze')
         maze.setX(-10)
         self.scene.flatten_light()
-        self.movement_loop = LerpPosInterval(maze, 3, maze.get_pos() + (20, 0, 0))
-        self.movement_loop.loop()
-
-        #obstacle = self.loader.loadModel("models/panda-model")
-        #obstacle.reparent_to(self.render)
-        #obstacle.set_scale(0.01)
-        #self.movement_loop = LerpPosInterval(obstacle, 3, (20, 0, 0))
+        #self.movement_loop = LerpPosInterval(maze, 3, maze.get_pos() + (20, 0, 0))
         #self.movement_loop.loop()
+
+        obstacle = self.loader.loadModel("models/panda-model")
+        obstacle.reparent_to(self.render)
+        obstacle.set_scale(0.01)
+        self.movement_loop = LerpPosInterval(obstacle, 3, (20, 0, 0))
+        self.movement_loop.loop()
 
         # NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
         self.builder = NavMeshBuilder()
-        # Take NodePath as input. This method only uses the collision nodes that are under this node.
-        self.builder.from_coll_node_path(self.scene, tracked_node=True)
 
-        #self.builder.from_node_path(obstacle, tracked_node=True)
-
-        self.builder.actor_height = 10
-        self.builder.actor_radius = 4
-        self.builder.actor_max_climb = 2
-        self.builder.tile_size = 64
-        self.builder.cell_size = 1
+        self.builder.params.actor_height = 10
+        self.builder.params.actor_radius = 4
+        self.builder.params.actor_max_climb = 2
+        self.builder.params.tile_size = 64
+        self.builder.params.cell_size = 1
         self.navmesh = self.builder.build()
+
+        # Add an untracked collision mesh.
+        self.navmesh.add_coll_node_path(self.scene, tracked=False)
+
+        # Add a tracked obstacle.
+        self.navmesh.add_node_path(obstacle)
 
         self.navmeshnode = NavMeshNode("scene", self.navmesh)
         self.navmeshnodepath: NodePath = self.scene.attach_new_node(self.navmeshnode)
