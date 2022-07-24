@@ -27,70 +27,11 @@
 #include "navMeshPoly.h"
 #include <unordered_map>
 #include <set>
+#include "navMeshBuilder.h"
+#include "navTriVertGroup.h"
+#include "navTrackedCollInfo.h"
+#include "navMeshParams.h"
 
-/**
- * NavMeshParams class stores all the parameters of a navigation mesh.
- */
-class EXPCL_NAVIGATION NavMeshParams {
-PUBLISHED:
-  enum PartitionType {
-    SAMPLE_PARTITION_WATERSHED,
-    SAMPLE_PARTITION_MONOTONE,
-    SAMPLE_PARTITION_LAYERS,
-  };
-
-  float cell_size;
-  float cell_height;
-  float tile_size;
-  int max_tiles;
-  int max_polys_per_tile;
-  float agent_height;
-  float agent_radius;
-  float agent_max_climb;
-  float agent_max_slope;
-  float region_min_size;
-  float region_merge_size;
-  float edge_max_len;
-  float edge_max_error;
-  float verts_per_poly;
-  float detail_sample_dist;
-  float detail_sample_max_error;
-  float orig_bound_min[3];
-  float tile_cell_size;
-  PartitionType partition_type;
-  bool filter_low_hanging_obstacles;
-  bool filter_ledge_spans;
-  bool filter_walkable_low_height_spans;
-};
-
-
-struct TriVertGroup {
-  LVector3 a;
-  LVector3 b;
-  LVector3 c;
-};
-
-inline bool operator==(const TriVertGroup& lhs, const TriVertGroup& rhs)
-{
-  return std::tie(lhs.a, lhs.b, lhs.c) ==
-         std::tie(rhs.a, rhs.b, rhs.c);
-}
-
-inline bool operator<(const TriVertGroup& lhs, const TriVertGroup& rhs)
-{
-  return std::tie(lhs.a, lhs.b, lhs.c) <
-         std::tie(rhs.a, rhs.b, rhs.c);
-}
-
-struct TrackedCollInfo {
-  NodePath node;
-  BitMask32 mask;
-};
-
-typedef pvector<NavMeshPoly> NavMeshPolys;
-typedef pvector<NodePath> NodePaths;
-typedef pvector<TriVertGroup> TriVertGroups;
-typedef pvector<TrackedCollInfo> TrackedCollInfos;
 
 class NavMeshBuilder;
 
@@ -104,10 +45,7 @@ class EXPCL_NAVIGATION NavMesh : public TypedWritableReferenceCount
 public:
   explicit NavMesh(dtNavMesh *nav_mesh,
                    NavMeshParams params,
-                   TriVertGroups &untracked_tris,
-                   NodePaths &tracked_nodes,
-                   TrackedCollInfos &tracked_coll_nodes,
-                   pvector<TriVertGroup> &last_tris);
+                   std::set<NavTriVertGroup> &untracked_tris);
 
 PUBLISHED:
   explicit NavMesh(NavMeshParams mesh_params);
@@ -122,19 +60,31 @@ PUBLISHED:
 
   INLINE void reset_debug_colors();
 
-  INLINE NavMeshParams get_params();
+  void add_node_path(NodePath node, bool tracked = true);
+  void add_coll_node_path(NodePath node, BitMask32 mask = BitMask32::all_on(), bool tracked = true);
+  void add_geom(PT(Geom) geom);
 
-  INLINE NodePaths get_tracked_nodes();
+  INLINE const NavMeshParams& get_params() const;
+  INLINE const NodePaths& get_tracked_nodes() const;
+  INLINE const TrackedCollInfos& get_tracked_coll_nodes() const;
+  INLINE const NavTriVertGroups& get_untracked_tris() const;
 
-  INLINE TrackedCollInfos get_tracked_coll_nodes();
-
-  INLINE TriVertGroups get_untracked_tris();
+  MAKE_PROPERTY(params, get_params);
+  MAKE_PROPERTY(tracked_nodes, get_tracked_nodes);
+  MAKE_PROPERTY(tracked_coll_nodes, get_tracked_coll_nodes);
+  MAKE_PROPERTY(untracked_tris, get_untracked_tris);
 
   void update();
 
 private:
   dtNavMesh *_nav_mesh;
   int border_index = 0;
+
+  NavTriVertGroups _untracked_tris;
+  NodePaths _tracked_nodes;
+  TrackedCollInfos _tracked_coll_nodes;
+  NavMeshParams _params;
+  NavMeshBuilder _internal_rebuilder;
 
   std::unordered_map<dtPolyRef, LColor> _debug_colors;
 
@@ -177,13 +127,6 @@ protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
-  unsigned char* buildTileMesh(int tx, int ty, const float* bmin, const float* bmax, int& dataSize, pvector<float> &verts, pvector<int> &tris) const;
-
-  TriVertGroups _untracked_tris;
-  NodePaths _tracked_nodes;
-  TrackedCollInfos _tracked_coll_nodes;
-  NavMeshParams _params;
-  std::set<TriVertGroup> _last_tris;
 };
 
 #include "navMesh.I"

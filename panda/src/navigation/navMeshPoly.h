@@ -59,6 +59,8 @@ private:
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
 };
 
+typedef pvector<NavMeshPoly> NavMeshPolys;
+
 #include "navMeshPoly.I"
 
 #endif // NAVMESHPOLY_H

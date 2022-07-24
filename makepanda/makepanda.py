@@ -102,8 +102,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
   "MIMALLOC",                                          # Memory allocators
-  "NAVIGATION",				                           # Detour Toolset
-  "NAVMESHGEN",                                        # Recast Toolset
+  "NAVIGATION",				                           # Recast Detour Toolset
 ])
 
 CheckPandaSourceTree()
@@ -820,10 +819,6 @@ if (COMPILER == "MSVC"):
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Detour.lib")
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Recast.lib")
         IncDirectory("NAVIGATION", GetThirdpartyDir() + "recast/include")
-    if (PkgSkip("NAVMESHGEN")==0):
-        LibName("NAVMESHGEN", GetThirdpartyDir() + "recast/lib/Detour.lib")
-        LibName("NAVMESHGEN", GetThirdpartyDir() + "recast/lib/Recast.lib")
-        IncDirectory("NAVMESHGEN", GetThirdpartyDir() + "recast/include")
 
 
 if (COMPILER=="GCC"):
@@ -890,7 +885,6 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
     SmartPkgEnable("NAVIGATION",  "",        ("Detour", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
-    SmartPkgEnable("NAVMESHGEN",  "",        ("Detour", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
@@ -1407,7 +1401,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++11 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++11 -ftemplate-depth-100 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -2960,8 +2954,6 @@ if not PkgSkip("VISION"):
     panda_modules.append('vision')
 if not PkgSkip("NAVIGATION"):
     panda_modules.append('navigation')
-if not PkgSkip("NAVMESHGEN"):
-    panda_modules.append('navmeshgen')
 if not PkgSkip("SKEL"):
     panda_modules.append('skel')
 if not PkgSkip("EGG"):
@@ -3386,14 +3378,10 @@ CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
 if not PkgSkip("VISION"):
     CopyAllHeaders('panda/src/vision')
-if not PkgSkip("NAVIGATION"):
-    CopyAllHeaders('panda/src/navigation')
-if not PkgSkip("NAVMESHGEN"):
-    CopyAllHeaders('panda/src/navmeshgen')
 if not PkgSkip("FFMPEG"):
     CopyAllHeaders('panda/src/ffmpeg')
-if not PkgSkip("RECASTDETOUR"):
-    CopyAllHeaders('panda/src/recastdetour')
+if not PkgSkip("NAVIGATION"):
+    CopyAllHeaders('panda/src/navigation')
 CopyAllHeaders('panda/src/tform')
 CopyAllHeaders('panda/src/collide')
 CopyAllHeaders('panda/src/parametrics')
@@ -4483,33 +4471,6 @@ if not PkgSkip("NAVIGATION"):
   PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
   PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
-
-#
-# DIRECTORY: panda/src/navmeshgen/
-#
-
-if not PkgSkip("NAVMESHGEN"):
-    OPTS=['DIR:panda/src/navmeshgen', 'BUILDING:NAVMESHGEN', 'NAVMESHGEN']
-    TargetAdd('p3navmeshgen_composite1.obj', opts=OPTS, input='p3navmeshgen_composite1.cxx')
-
-    TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_composite1.obj')
-    TargetAdd('libp3navmeshgen.dll', input='libp3navigation.dll')
-    TargetAdd('libp3navmeshgen.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3navmeshgen.dll', opts=OPTS)
-
-    IGATEFILES=GetDirectoryContents('panda/src/navmeshgen', ["*.h", "*_composite*.cxx"])
-    TargetAdd('libp3navmeshgen.in', opts=OPTS, input=IGATEFILES)
-    TargetAdd('libp3navmeshgen.in', opts=['IMOD:panda3d.navmeshgen', 'ILIB:libp3navmeshgen', 'SRCDIR:panda/src/navmeshgen'])
-
-    PyTargetAdd('navmeshgen_module.obj', input='libp3navmeshgen.in')
-    PyTargetAdd('navmeshgen_module.obj', opts=OPTS)
-    PyTargetAdd('navmeshgen_module.obj', opts=['IMOD:panda3d.navmeshgen', 'ILIB:navmeshgen', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('navmeshgen.pyd', input='navmeshgen_module.obj')
-  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen_igate.obj')
-  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen.dll')
-  PyTargetAdd('navmeshgen.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('navmeshgen.pyd', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: panda/src/p3skel
