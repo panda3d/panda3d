@@ -348,7 +348,8 @@ EXPCL_INTERROGATEDB const char *interrogate_make_seq_comment(ElementIndex elemen
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_num_name(MakeSeqIndex make_seq);
 // The name of the real method that returns the nth element, e.g.  "get_thing"
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_element_name(MakeSeqIndex make_seq);
-
+EXPCL_INTERROGATEDB FunctionIndex interrogate_make_seq_num_getter(MakeSeqIndex make_seq);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_make_seq_element_getter(MakeSeqIndex make_seq);
 
 // Types
 
