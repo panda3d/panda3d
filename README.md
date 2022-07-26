@@ -58,7 +58,7 @@ You will also need to install the [Windows SDK](https://developer.microsoft.com/
 and if you intend to target Windows Vista, you will also need the
 [Windows 8.1 SDK](https://go.microsoft.com/fwlink/p/?LinkId=323507).
 
-You will also need to have the third-party dependency libraries available for
+You will also need the thirdparty dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
@@ -177,7 +177,7 @@ directory which you can install using `pkg install`.
 Android
 -------
 
-Although it's possible to build Panda3D on an Android device itself using the
+Although it's possible to build Panda3D on an Android device using the
 [termux](https://termux.com/) shell, the recommended route is to cross-compile
 .whl files using the SDK and NDK, which can then be used by the `build_apps`
 command to build a Python application into an .apk or .aab bundle.  You will
