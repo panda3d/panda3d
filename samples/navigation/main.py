@@ -74,6 +74,8 @@ class NavigationDemo(ShowBase):
         # Add a tracked obstacle.
         self.navmesh.add_node_path(obstacle)
 
+        self.navmesh.update()
+
         self.navmeshnode = NavMeshNode("scene", self.navmesh)
         self.navmeshnodepath: NodePath = self.scene.attach_new_node(self.navmeshnode)
 
@@ -91,7 +93,7 @@ class NavigationDemo(ShowBase):
 
         self.destinationMarker = self.loader.loadModel("misc/objectHandles.egg")
         self.destinationMarker.set_scale(3)
-        self.destinationMarker.reparent_to(self.scene)
+        self.destinationMarker.reparent_to(render)
 
         self.pandaActor = Actor("models/panda-model",
                                 {"walk": "models/panda-walk4"})
