@@ -78,7 +78,6 @@ PUBLISHED:
 
 private:
   dtNavMesh *_nav_mesh;
-  int border_index = 0;
 
   NavTriVertGroups _untracked_tris;
   NodePaths _tracked_nodes;
@@ -95,7 +94,6 @@ private:
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
   
 public:
-  bool init_nav_mesh();
   dtNavMesh *get_nav_mesh() { return _nav_mesh; }
   ~NavMesh();
 

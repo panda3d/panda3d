@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE float get_region_merge_size() const;
   INLINE float get_edge_max_len() const;
   INLINE float get_edge_max_error() const;
-  INLINE float get_verts_per_poly() const;
+  INLINE int get_verts_per_poly() const;
   INLINE float get_cell_size() const;
   INLINE float get_cell_height() const;
   INLINE float get_tile_size() const;
@@ -64,7 +64,7 @@ PUBLISHED:
   INLINE void set_region_merge_size(float region_merge_size);
   INLINE void set_edge_max_len(float max_len);
   INLINE void set_edge_max_error(float max_error);
-  INLINE void set_verts_per_poly(float verts_per_poly);
+  INLINE void set_verts_per_poly(int verts_per_poly);
   INLINE void set_cell_size(float cs);
   INLINE void set_cell_height(float ch);
   INLINE void set_tile_size(float cs);
@@ -111,7 +111,7 @@ protected:
   float region_merge_size;
   float edge_max_len;
   float edge_max_error;
-  float verts_per_poly;
+  int verts_per_poly;
   float cell_size;
   float cell_height;
   float tile_size;
