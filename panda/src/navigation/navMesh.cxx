@@ -54,53 +54,30 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh,
 /**
  * NavMesh constructor to store NavMesh Parameters.
  */
-NavMesh::NavMesh(NavMeshParams mesh_params):
-  _nav_mesh(nullptr) {
-  //memset(&(_params), 0, sizeof(_params));
-  _params = {};
-/*
-  _params.verts = mesh_params.verts;
-  _params.vertCount = mesh_params.vert_count;
-  _params.polys = mesh_params.polys;
-  _params.polyAreas = mesh_params.poly_areas;
-  _params.polyFlags = mesh_params.poly_flags;
-  _params.polyCount = mesh_params.poly_count;
-  _params.nvp = mesh_params.nvp;
-  _params.detailMeshes = mesh_params.detail_meshes;
-  _params.detailVerts = mesh_params.detail_verts;
-  _params.detailVertsCount = mesh_params.detail_vert_count;
-  _params.detailTris = mesh_params.detail_tris;
-  _params.detailTriCount = mesh_params.detail_tri_count;
+NavMesh::NavMesh(NavMeshParams params) :
+                 _params(params),
+                 _internal_rebuilder(this) {
+  _nav_mesh = dtAllocNavMesh();
+  if (!_nav_mesh)
+  {
+    navigation_cat.error() << "buildTiledNavigation: Could not allocate navmesh." << std::endl;
+    return;
+  }
 
+  dtNavMeshParams vmParams = {};
+  rcVcopy(vmParams.orig, _params.get_orig_bound_min().get_data());
+  vmParams.tileWidth = _params.get_tile_size()*_params.get_cell_size();
+  vmParams.tileHeight = _params.get_tile_size()*_params.get_cell_size();
+  vmParams.maxTiles = _params.get_max_tiles();
+  vmParams.maxPolys = _params.get_max_polys_per_tile();
 
-  _params.walkableHeight = mesh_params.walkable_height;
-  _params.walkableRadius = mesh_params.walkable_radius;
-  _params.walkableClimb = mesh_params.walkable_climb;
+  dtStatus status;
 
-  _params.bmin[0] = mesh_params.b_min[0];
-  _params.bmin[1] = mesh_params.b_min[1];
-  _params.bmin[2] = mesh_params.b_min[2];
-  _params.bmax[0] = mesh_params.b_max[0];
-  _params.bmax[1] = mesh_params.b_max[1];
-  _params.bmax[2] = mesh_params.b_max[2];
-  
-  _params.cs = mesh_params.cs;
-  _params.ch = mesh_params.ch;
-  _params.buildBvTree = mesh_params.build_bv_tree;
-  
-  border_index = mesh_params.border_index;
-  */
-  init_nav_mesh();
-}
-
-/**
- * Function to build navigation mesh from the parameters.
- */
-bool NavMesh::init_nav_mesh() {
-  unsigned char *nav_data = nullptr;
-  int nav_data_size = 0;
-
-  return true;
+  status = _nav_mesh->init(&vmParams);
+  if (dtStatusFailed(status))
+  {
+    navigation_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
+  }
 }
 
 /**
@@ -360,15 +337,72 @@ register_with_read_factory() {
 /**
  * Writes the contents of this object to the datagram for shipping out to a
  * Bam file.
+ *
+ * Note: Tracked nodes are NOT saved.
  */
 void NavMesh::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  //NavMesh::write_datagram(manager, dg);
+  TypedWritableReferenceCount::write_datagram(manager, dg);
 
+  // Version
+  dg.add_int16(1);
 
-  //border_index
-  dg.add_int32(border_index);
+  // Using double precision floats for storage as recast detour might
+  // be able to switch to double later on.
+  dg.add_float64(_params.get_cell_size());
+  dg.add_float64(_params.get_cell_height());
+  dg.add_float64(_params.get_actor_height());
+  dg.add_float64(_params.get_actor_radius());
+  dg.add_float64(_params.get_actor_max_climb());
+  dg.add_float64(_params.get_actor_max_slope());
+  dg.add_float64(_params.get_region_min_size());
+  dg.add_float64(_params.get_region_merge_size());
+  dg.add_float64(_params.get_edge_max_len());
+  dg.add_float64(_params.get_edge_max_error());
+  dg.add_int32(_params.get_verts_per_poly());
+  dg.add_float64(_params.get_detail_sample_dist());
+  dg.add_float64(_params.get_detail_sample_max_error());
+  dg.add_int32(_params.get_partition_type());
+  dg.add_float64(_params.get_tile_size());
+  dg.add_bool(_params.get_filter_low_hanging_obstacles());
+  dg.add_bool(_params.get_filter_ledge_spans());
+  dg.add_bool(_params.get_filter_walkable_low_height_spans());
 
+  // Need to reassign to const variable as it
+  const dtNavMesh *mesh = _nav_mesh;
+
+  int num_tiles = 0;
+
+  for (int i = 0; i < mesh->getMaxTiles(); ++i)
+  {
+    const dtMeshTile* tile = mesh->getTile(i);
+    if (!tile || !tile->header || !tile->dataSize) continue;
+    num_tiles++;
+  }
+
+  dg.add_int32(num_tiles);
+
+  for (int i = 0; i < mesh->getMaxTiles(); ++i)
+  {
+    const dtMeshTile* tile = mesh->getTile(i);
+    if (!tile || !tile->header || !tile->dataSize) continue;
+    dg.add_blob({tile->data, tile->data + tile->dataSize});
+    dg.add_uint32(mesh->getTileRef(tile));
+  }
+
+  dg.add_uint64(_untracked_tris.size());
+
+  for (auto &tri_group : _untracked_tris) {
+    dg.add_float64(tri_group.a[0]);
+    dg.add_float64(tri_group.a[1]);
+    dg.add_float64(tri_group.a[2]);
+    dg.add_float64(tri_group.b[0]);
+    dg.add_float64(tri_group.b[1]);
+    dg.add_float64(tri_group.b[2]);
+    dg.add_float64(tri_group.c[0]);
+    dg.add_float64(tri_group.c[1]);
+    dg.add_float64(tri_group.c[2]);
+  }
 }
 
 /**
@@ -378,11 +412,37 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *NavMesh::
 make_from_bam(const FactoryParams &params) {
-  NavMesh *param = new NavMesh;
   DatagramIterator scan;
   BamReader *manager;
 
   parse_params(params, scan, manager);
+
+  NavMeshParams navParams;
+
+  // Version
+  int version = scan.get_int16();
+  nassertr(version == 1, nullptr);
+
+  navParams.set_cell_size(scan.get_float64());
+  navParams.set_cell_height(scan.get_float64());
+  navParams.set_actor_height(scan.get_float64());
+  navParams.set_actor_radius(scan.get_float64());
+  navParams.set_actor_max_climb(scan.get_float64());
+  navParams.set_actor_max_slope(scan.get_float64());
+  navParams.set_region_min_size(scan.get_float64());
+  navParams.set_region_merge_size(scan.get_float64());
+  navParams.set_edge_max_len(scan.get_float64());
+  navParams.set_edge_max_error(scan.get_float64());
+  navParams.set_verts_per_poly(scan.get_int32());
+  navParams.set_detail_sample_dist(scan.get_float64());
+  navParams.set_detail_sample_max_error(scan.get_float64());
+  navParams.set_partition_type(static_cast<NavMeshParams::PartitionType>(scan.get_int32()));
+  navParams.set_tile_size(scan.get_float64());
+  navParams.set_filter_low_hanging_obstacles(scan.get_bool());
+  navParams.set_filter_ledge_spans(scan.get_bool());
+  navParams.set_filter_walkable_low_height_spans(scan.get_bool());
+
+  auto param = new NavMesh(navParams);
   param->fillin(scan, manager);
 
   return param;
@@ -394,71 +454,40 @@ make_from_bam(const FactoryParams &params) {
  */
 void NavMesh::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  
-  int vert_count = scan.get_int32();
-  int poly_count = scan.get_int32();
-  int nvp = scan.get_int32();
-  int detail_vert_count = scan.get_int32();
-  int detail_tri_count = scan.get_int32();
-  float walkable_height = scan.get_float32();
-  float walkable_radius = scan.get_float32();
-  float walkable_climb = scan.get_float32();
-  float cs = scan.get_float32();
-  float ch = scan.get_float32();
-  bool build_bv_tree = scan.get_bool();
+  int num_tiles = scan.get_int32();
 
-  float b_min[3];
-  for (float &f : b_min) {
-    f = scan.get_float32();
-  }
-  float b_max[3];
-  for (float &f : b_max) {
-    f = scan.get_float32();
+  for (int i = 0; i < num_tiles; ++i)
+  {
+    auto data = scan.get_blob();
+    uint32_t ref = scan.get_uint32();
+    // Need to make a copy of the tile data for the NavMesh to own.
+    auto tile_data = static_cast<unsigned char *>(malloc(data.size()));
+    std::copy(data.begin(), data.end(), tile_data);
+    _nav_mesh->addTile(tile_data, data.size(), DT_TILE_FREE_DATA, ref, 0);
   }
 
-  //POLYGON MESH ATTRIBUTES
+  uint64_t num_tris = scan.get_uint64();
 
-  unsigned short *verts = new unsigned short[3 * vert_count];
-  for (int i=0 ; i < 3 * vert_count ; i++) {
-    verts[i] = scan.get_uint16();
+  for (int i = 0; i < num_tris; ++i) {
+    _untracked_tris.push_back(
+        {
+            {
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64())
+            },
+            {
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64())
+            },
+            {
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64()),
+                static_cast<float>(scan.get_float64())
+            }
+        });
   }
 
-  unsigned short *polys = new unsigned short[poly_count * 2 * nvp];
-  for (int i=0 ; i < poly_count * 2 * nvp ; i++) {
-    polys[i] = scan.get_uint16();
-  }
-
-  unsigned short *poly_flags = new unsigned short[poly_count];
-  for (int i=0 ; i < poly_count; i++) {
-    poly_flags[i] = scan.get_uint16();
-  }
-
-  unsigned char *poly_areas = new unsigned char[poly_count];
-  for (int i=0 ; i < poly_count; i++) {
-    poly_areas[i] = scan.get_uint8();
-  }
-
-  //POLYGON MESH DETAIL ATTRIBUTES
-
-  unsigned int *detail_meshes = new unsigned int[poly_count * 4];
-  for (int i=0 ; i < poly_count * 4 ;i++) {
-    detail_meshes[i] = scan.get_uint32();
-  }
-
-  float *detail_verts = new float[detail_vert_count * 3];
-  for (int i=0 ; i < detail_vert_count * 3 ;i++) {
-    detail_verts[i] = scan.get_float32();
-  }
-
-  unsigned char *detail_tris = new unsigned char[detail_tri_count * 4];
-  for (int i=0 ; i < detail_tri_count * 4 ;i++) {
-    detail_tris[i] = scan.get_uint8();
-  }
-
-  //border_index
-  border_index = scan.get_int32();
-
-  memset(&(_params), 0, sizeof(_params));
-
-  init_nav_mesh();
+  std::copy(_untracked_tris.begin(), _untracked_tris.end(), std::inserter(_internal_rebuilder._last_tris, _internal_rebuilder._last_tris.begin()));
 }

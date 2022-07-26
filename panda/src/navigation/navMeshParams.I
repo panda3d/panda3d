@@ -187,7 +187,7 @@ get_edge_max_error() const {
  * contour to polygon conversion process. Must be greater than or equal to 3.
  */
 INLINE void NavMeshParams::
-set_verts_per_poly(float _verts_per_poly) {
+set_verts_per_poly(int _verts_per_poly) {
   verts_per_poly = _verts_per_poly;
 }
 
@@ -195,7 +195,7 @@ set_verts_per_poly(float _verts_per_poly) {
  * Returns the maximum number of vertices allowed for polygons generated during the
  * contour to polygon conversion process. Must be greater than or equal to 3.
  */
-INLINE float NavMeshParams::
+INLINE int NavMeshParams::
 get_verts_per_poly() const {
   return verts_per_poly;
 }
