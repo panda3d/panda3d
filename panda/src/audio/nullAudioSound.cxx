@@ -58,6 +58,14 @@ unsigned long NullAudioSound::get_loop_count() const {
   return 0;
 }
 
+void NullAudioSound::set_loop_start(PN_stdfloat) {
+  // Intentionally blank.
+}
+
+PN_stdfloat NullAudioSound::get_loop_start() const {
+  return 0;
+}
+
 void NullAudioSound::set_time(PN_stdfloat) {
   // Intentionally blank.
 }
