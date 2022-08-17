@@ -379,6 +379,7 @@ Py_FrozenMain(int argc, char **argv)
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
     Py_NoSiteFlag = 1;
     Py_NoUserSiteDirectory = 1;
+    Py_OptimizeFlag = 2;
 
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\\0')
         inspect = 1;
