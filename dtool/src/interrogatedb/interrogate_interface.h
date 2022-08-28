@@ -426,7 +426,7 @@ EXPCL_INTERROGATEDB bool interrogate_type_is_const(TypeIndex type);
 EXPCL_INTERROGATEDB bool interrogate_type_is_typedef(TypeIndex type);
 EXPCL_INTERROGATEDB TypeIndex interrogate_type_wrapped_type(TypeIndex type);
 
-// If interrogate_type_is_array() return strue, this is an array.
+// If interrogate_type_is_array() returns true, this is an array type.
 EXPCL_INTERROGATEDB bool interrogate_type_is_array(TypeIndex type);
 EXPCL_INTERROGATEDB int interrogate_type_array_size(TypeIndex type);
 
