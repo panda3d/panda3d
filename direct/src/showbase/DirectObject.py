@@ -44,14 +44,14 @@ class DirectObject:
     def addTask(self, *args, **kwargs):
         if not hasattr(self, "_taskList"):
             self._taskList = {}
-        kwargs['owner']=self
+        kwargs['owner'] = self
         task = taskMgr.add(*args, **kwargs)
         return task
 
     def doMethodLater(self, *args, **kwargs):
         if not hasattr(self, "_taskList"):
             self._taskList = {}
-        kwargs['owner']=self
+        kwargs['owner'] = self
         task = taskMgr.doMethodLater(*args, **kwargs)
         return task
 

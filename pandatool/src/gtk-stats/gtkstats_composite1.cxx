@@ -8,3 +8,4 @@
 #include "gtkStatsPianoRoll.cxx"
 #include "gtkStatsServer.cxx"
 #include "gtkStatsStripChart.cxx"
+#include "gtkStatsTimeline.cxx"

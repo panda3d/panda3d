@@ -17,14 +17,14 @@
 INLINE SamplerState::
 SamplerState() :
   _border_color(0, 0, 0, 1),
-  _wrap_u(WM_repeat),
-  _wrap_v(WM_repeat),
-  _wrap_w(WM_repeat),
-  _minfilter(FT_default),
-  _magfilter(FT_default),
   _min_lod(-1000),
   _max_lod(1000),
   _lod_bias(0),
+  _minfilter(FT_default),
+  _magfilter(FT_default),
+  _wrap_u(WM_repeat),
+  _wrap_v(WM_repeat),
+  _wrap_w(WM_repeat),
   _anisotropic_degree(0)
 {
 }

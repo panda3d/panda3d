@@ -78,17 +78,6 @@ GeomPrimitive(const GeomPrimitive &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a GeomPrimitive
- * that is actively being used for rendering.
- */
-void GeomPrimitive::
-operator = (const GeomPrimitive &copy) {
-  CopyOnWriteObject::operator = (copy);
-  _cycler = copy._cycler;
-}
-
-/**
  *
  */
 GeomPrimitive::

@@ -14,6 +14,7 @@ set(WINSTATS_HEADERS
   winStatsPianoRoll.h
   winStatsServer.h
   winStatsStripChart.h
+  winStatsTimeline.h
 )
 
 set(WINSTATS_SOURCES
@@ -27,6 +28,7 @@ set(WINSTATS_SOURCES
   winStatsPianoRoll.cxx
   winStatsServer.cxx
   winStatsStripChart.cxx
+  winStatsTimeline.cxx
 )
 
 composite_sources(win-stats WINSTATS_SOURCES)

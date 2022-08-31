@@ -326,7 +326,13 @@ clear_transform(Thread *current_thread) {
 INLINE CPT(TransformState) PandaNode::
 get_prev_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_prev_transform.p();
+  if (_prev_transform_valid == _reset_prev_transform_seq) {
+    return cdata->_prev_transform.p();
+  } else {
+    // If these values are different, someone called reset_prev_transform(),
+    // and we haven't changed our transform since then.
+    return cdata->_transform.p();
+  }
 }
 
 /**
@@ -334,10 +340,19 @@ get_prev_transform(Thread *current_thread) const {
  * indicates its _prev_transform is different from its _transform value (in
  * pipeline stage 0).  In this case, the node will be visited by
  * reset_prev_transform().
+ *
+ * @deprecated Simply check prev_transform != transform instead.
  */
 INLINE bool PandaNode::
 has_dirty_prev_transform() const {
-  return _dirty_prev_transform;
+  CDStageReader cdata(_cycler, 0);
+  if (_prev_transform_valid == _reset_prev_transform_seq) {
+    return cdata->_prev_transform != cdata->_transform;
+  } else {
+    // If these values are different, someone called reset_prev_transform(),
+    // and we haven't changed our transform since then.
+    return false;
+  }
 }
 
 /**
@@ -699,34 +714,6 @@ verify_child_no_cycles(PandaNode *child_node) {
   }
 #endif  // NDEBUG
   return true;
-}
-
-/**
- * Sets the dirty_prev_transform flag, and adds the node to the
- * _dirty_prev_transforms chain.  Assumes _dirty_prev_transforms._lock is
- * already held.
- */
-INLINE void PandaNode::
-do_set_dirty_prev_transform() {
-  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
-  if (!_dirty_prev_transform) {
-    LinkedListNode::insert_before(&_dirty_prev_transforms);
-    _dirty_prev_transform = true;
-  }
-}
-
-/**
- * Clears the dirty_prev_transform flag, and removes the node from the
- * _dirty_prev_transforms chain.  Assumes _dirty_prev_transforms._lock is
- * already held.
- */
-INLINE void PandaNode::
-do_clear_dirty_prev_transform() {
-  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
-  if (_dirty_prev_transform) {
-    LinkedListNode::remove_from_list();
-    _dirty_prev_transform = false;
-  }
 }
 
 /**
@@ -1513,7 +1500,11 @@ get_transform() const {
  */
 const TransformState *PandaNodePipelineReader::
 get_prev_transform() const {
-  return _cdata->_prev_transform;
+  if (_node->_prev_transform_valid == PandaNode::_reset_prev_transform_seq) {
+    return _cdata->_prev_transform;
+  } else {
+    return _cdata->_transform;
+  }
 }
 
 /**

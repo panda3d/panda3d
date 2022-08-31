@@ -40,6 +40,7 @@ public:
     DM_guide_bar,
     DM_new_guide_bar,
     DM_sizing,
+    DM_pan,
   };
 
 public:
@@ -57,9 +58,12 @@ public:
 
   void user_guide_bars_changed();
   virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
   virtual std::string get_label_tooltip(int collector_index) const;
+
+  void clear_graph_tooltip();
 
   HWND get_window();
 
@@ -69,13 +73,18 @@ protected:
   void setup_label_stack();
   void move_label_stack();
 
+  void start_animation();
+  virtual bool animate(double time, double dt);
+
   HBRUSH get_collector_brush(int collector_index, bool highlight = false);
+  COLORREF get_collector_text_color(int collector_index, bool highlight = false);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void set_drag_mode(DragMode drag_mode);
@@ -88,10 +97,15 @@ protected:
   typedef pmap<int, std::pair<HBRUSH, HBRUSH> > Brushes;
   Brushes _brushes;
 
+  typedef pmap<int, std::pair<COLORREF, COLORREF> > TextColors;
+  TextColors _text_colors;
+
   WinStatsMonitor *_monitor;
   HWND _window;
   HWND _graph_window;
+  HWND _tooltip_window;
   WinStatsLabelStack _label_stack;
+  std::string _tooltip_text;
 
   HCURSOR _sizewe_cursor;
   HCURSOR _hand_cursor;
@@ -108,9 +122,11 @@ protected:
   COLORREF _dark_color;
   COLORREF _light_color;
   COLORREF _user_guide_bar_color;
+  COLORREF _frame_guide_bar_color;
   HPEN _dark_pen;
   HPEN _light_pen;
   HPEN _user_guide_bar_pen;
+  HPEN _frame_guide_bar_pen;
 
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
@@ -121,6 +137,9 @@ protected:
   int _highlighted_index = -1;
 
   bool _pause;
+
+  bool _timer_running = false;
+  double _time;
 
 private:
   void setup_bitmap(int xsize, int ysize);

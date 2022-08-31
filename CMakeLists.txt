@@ -1,18 +1,6 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
-
-if(CMAKE_VERSION VERSION_GREATER "3.11" OR POLICY CMP0072)
-  # Prefer GLVND over libGL when available; this will be enabled by default
-  # once the minimum CMake version is at least 3.11.
-  cmake_policy(SET CMP0072 NEW)
-endif()
-
-if(CMAKE_VERSION VERSION_GREATER "3.12" OR POLICY CMP0074)
-  # Needed for THIRDPARTY_DIRECTORY support; this will be enabled by default
-  # once the minimum CMake version is at least 3.12.
-  cmake_policy(SET CMP0074 NEW)
-endif()
 
 if(POLICY CMP0091)
   # Needed for CMake to pass /MD flag properly with non-VC generators.
@@ -20,17 +8,7 @@ if(POLICY CMP0091)
 endif()
 
 # Determine whether we are using a multi-config generator.
-if(CMAKE_VERSION VERSION_GREATER "3.8")
-  get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-else()
-  message(WARNING "Multi-configuration builds may not work properly when using
-a CMake < 3.9. Making a guess if this is a multi-config generator.")
-  if(DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(IS_MULTICONFIG ON)
-  else()
-    set(IS_MULTICONFIG OFF)
-  endif()
-endif()
+get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 # Set the default CMAKE_BUILD_TYPE before calling project().
 if(IS_MULTICONFIG)
@@ -89,11 +67,9 @@ string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INT
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros/")
 
-if(CMAKE_VERSION VERSION_GREATER "3.8")
-  # When using the Xcode generator, don't append the platform name to the
-  # intermediate configuration directory.
-  set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
-endif()
+# When using the Xcode generator, don't append the platform name to the
+# intermediate configuration directory.
+set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
 
 # Include modules builtin to CMake
 include(GNUInstallDirs)     # Defines CMAKE_INSTALL_<dir> variables

@@ -25,12 +25,12 @@
  *
  */
 PStatFlameGraph::
-PStatFlameGraph(PStatMonitor *monitor, PStatView &view,
+PStatFlameGraph(PStatMonitor *monitor,
                 int thread_index, int collector_index, int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
   _thread_index(thread_index),
-  _view(view),
-  _collector_index(collector_index)
+  _collector_index(collector_index),
+  _orig_collector_index(collector_index)
 {
   _average_mode = true;
   _average_cursor = 0;
@@ -70,8 +70,6 @@ update() {
         _current_frame = frame_number;
 
         update_data();
-        force_redraw();
-        update_labels();
       }
     }
   }
@@ -85,12 +83,20 @@ update() {
  */
 void PStatFlameGraph::
 set_collector_index(int collector_index) {
+  if (collector_index == -1) {
+    // First go back to the collector where we originally opened this graph,
+    // and only then go back to the root.
+    collector_index = _orig_collector_index;
+    if (_collector_index == _orig_collector_index) {
+      collector_index = -1;
+      _orig_collector_index = -1;
+    }
+  }
   if (_collector_index != collector_index) {
     _collector_index = collector_index;
     _title_unknown = true;
+    _stack.clear();
     update_data();
-    force_redraw();
-    update_labels();
   }
 }
 
@@ -104,45 +110,61 @@ get_title_text() {
   _title_unknown = false;
 
   const PStatClientData *client_data = _monitor->get_client_data();
-  if (client_data->has_collector(_collector_index)) {
-    text = client_data->get_collector_fullname(_collector_index);
-    text += " flame graph";
-  } else {
-    _title_unknown = true;
-  }
-
-  if (_thread_index != 0) {
-    if (client_data->has_thread(_thread_index)) {
-      text += " (" + client_data->get_thread_name(_thread_index) + " thread)";
+  if (_collector_index >= 0) {
+    if (client_data->has_collector(_collector_index)) {
+      text = client_data->get_collector_fullname(_collector_index);
+      text += " flame graph";
     } else {
       _title_unknown = true;
     }
+
+    if (_thread_index != 0) {
+      if (client_data->has_thread(_thread_index)) {
+        text += " (" + client_data->get_thread_name(_thread_index) + " thread)";
+      } else {
+        _title_unknown = true;
+      }
+    }
+  }
+  else if (client_data->has_thread(_thread_index)) {
+    text += client_data->get_thread_name(_thread_index) + " thread flame graph";
+  }
+  else {
+    _title_unknown = true;
   }
 
   return text;
 }
 
 /**
- * Called when the mouse hovers over a label, and should return the text that
+ * Called when the mouse hovers over the graph, and should return the text that
  * should appear on the tooltip.
  */
 std::string PStatFlameGraph::
-get_label_tooltip(int collector_index) const {
-  const PStatClientData *client_data = _monitor->get_client_data();
-  if (!client_data->has_collector(collector_index)) {
-    return std::string();
+get_bar_tooltip(int depth, int x) const {
+  const StackLevel *level = _stack.locate(depth, pixel_to_height(x), _average_mode);
+  if (level != nullptr) {
+    const PStatClientData *client_data = _monitor->get_client_data();
+    if (client_data != nullptr && client_data->has_collector(level->_collector_index)) {
+      std::ostringstream text;
+      text << client_data->get_collector_fullname(level->_collector_index);
+      text << " (" << format_number(level->get_net_value(_average_mode), GBU_show_units | GBU_ms) << ")";
+      return text.str();
+    }
   }
+  return std::string();
+}
 
-  std::ostringstream text;
-  text << client_data->get_collector_fullname(collector_index);
-
-  Data::const_iterator it = _data.find(collector_index);
-  if (it != _data.end()) {
-    const CollectorData &cd = it->second;
-    text << " (" << format_number(cd._net_value, get_guide_bar_units(), get_guide_bar_unit_name()) << ")";
+/**
+ * Returns the collector index corresponding to the bar at the given location.
+ */
+int PStatFlameGraph::
+get_bar_collector(int depth, int x) const {
+  const StackLevel *level = _stack.locate(depth, pixel_to_height(x), _average_mode);
+  if (level != nullptr) {
+    return level->_collector_index;
   }
-
-  return text.str();
+  return -1;
 }
 
 /**
@@ -150,66 +172,73 @@ get_label_tooltip(int collector_index) const {
  */
 void PStatFlameGraph::
 update_data() {
-  // First clear the net values, so we'll know which labels should be deleted.
-  for (auto it = _data.begin(); it != _data.end(); ++it) {
-    it->second._net_value = 0;
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data == nullptr) {
+    return;
   }
 
-  _view.set_to_frame(_current_frame);
-
-  const PStatViewLevel *level = _view.get_level(_collector_index);
-  double offset = 0;
-  update_data(level, 0, offset);
-
-  _time_width = (offset != 0) ? offset : 1.0 / pstats_target_frame_rate;
-  normal_guide_bars();
-
-  // Cycle through the ring buffers.
-  _average_cursor = (_average_cursor + 1) % _num_average_frames;
-}
-
-/**
- * Recursive helper for get_frame_data.
- */
-void PStatFlameGraph::
-update_data(const PStatViewLevel *level, int depth, double &offset) {
-  double net_value = level->get_net_value();
-
-  Data::iterator it;
-  bool inserted;
-  std::tie(it, inserted) = _data.insert(std::make_pair(level->get_collector(), CollectorData()));
-  CollectorData &cd = it->second;
-  cd._offset = offset;
-  cd._depth = depth;
-
-  if (inserted || !_average_mode) {
-    // Initialize the values array.
-    for (double &v : cd._values) {
-      v = net_value;
-    }
-    cd._net_value = net_value;
-  } else {
-    cd._values[_average_cursor] = net_value;
-
-    // Calculate the average.
-    cd._net_value = 0;
-    for (double value : cd._values) {
-      cd._net_value += value;
-    }
-    cd._net_value /= _num_average_frames;
+  const PStatThreadData *thread_data = client_data->get_thread_data(_thread_index);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return;
   }
 
-  if (cd._net_value != 0.0) {
-    cd._net_value = std::max(cd._net_value, 0.0);
+  const PStatFrameData &frame_data = thread_data->get_frame(_current_frame);
 
-    double child_offset = offset;
-    offset += cd._net_value;
+  bool first_time = _stack._children.empty();
 
-    int num_children = level->get_num_children();
-    for (int i = 0; i < num_children; i++) {
-      const PStatViewLevel *child = level->get_child(i);
-      update_data(child, depth + 1, child_offset);
+  StackLevel *top = &_stack;
+  top->reset();
+
+  size_t num_events = frame_data.get_num_events();
+  for (size_t ei = 0; ei < num_events; ++ei) {
+    int collector_index = frame_data.get_time_collector(ei);
+    double time = frame_data.get_time(ei);
+
+    if (frame_data.is_start(ei)) {
+      // If we have a collector index, use it to determine which bottom-level
+      // stack frames we are interested in.
+      if (_collector_index < 0 ||
+          _collector_index == collector_index ||
+          top != &_stack) {
+        top = top->start(collector_index, time);
+      }
+      else {
+        // Check whether one of the parents matches, perhaps.
+        int parent_index = collector_index;
+        do {
+          const PStatCollectorDef &def = client_data->get_collector_def(parent_index);
+          if (parent_index == def._parent_index) {
+            break;
+          }
+          parent_index = def._parent_index;
+          if (parent_index == _collector_index) {
+            // Yes, let it through.
+            top = top->start(collector_index, time);
+            break;
+          }
+        }
+        while (parent_index >= 0 && client_data->has_collector(parent_index));
+      }
     }
+    else {
+      top = top->stop(collector_index, time);
+    }
+  }
+  top = top->stop_all(frame_data.get_end());
+  nassertv(top == &_stack);
+
+  if (first_time) {
+    _stack.reset_averages();
+  }
+
+  if (!_average_mode) {
+    // Redraw right away, except in average mode, where it's done in animate().
+    _time_width = _stack.get_net_value(false);
+    if (_time_width == 0.0) {
+      _time_width = 1.0 / pstats_target_frame_rate;
+    }
+    normal_guide_bars();
+    force_redraw();
   }
 }
 
@@ -226,7 +255,6 @@ changed_size(int xsize, int ysize) {
 
     normal_guide_bars();
     force_redraw();
-    update_labels();
   }
 }
 
@@ -237,20 +265,8 @@ changed_size(int xsize, int ysize) {
 void PStatFlameGraph::
 force_redraw() {
   begin_draw();
+  r_draw_level(_stack);
   end_draw();
-}
-
-/**
- * Resets the list of labels.
- */
-void PStatFlameGraph::
-update_labels() {
-  for (auto it = _data.begin(); it != _data.end(); ++it) {
-    int collector_index = it->first;
-    const CollectorData &cd = it->second;
-
-    update_label(collector_index, cd._depth, height_to_pixel(cd._offset), height_to_pixel(cd._net_value));
-  }
 }
 
 /**
@@ -281,6 +297,14 @@ begin_draw() {
 }
 
 /**
+ * Should be overridden by the user class.  Should draw a single bar at the
+ * indicated location.
+ */
+void PStatFlameGraph::
+draw_bar(int depth, int from_x, int to_x, int collector_index) {
+}
+
+/**
  * Should be overridden by the user class.  This hook will be called after
  * drawing a series of color bars in the chart.
  */
@@ -294,4 +318,216 @@ end_draw() {
  */
 void PStatFlameGraph::
 idle() {
+}
+
+/**
+ * Should be called periodically to update any animated values.  Returns false
+ * to indicate that the animation is done and no longer needs to be called.
+ */
+bool PStatFlameGraph::
+animate(double time, double dt) {
+  if (!_average_mode) {
+    return false;
+  }
+
+  if (_stack.update_averages(_average_cursor)) {
+    _time_width = _stack.get_net_value(true);
+    if (_time_width == 0.0) {
+      _time_width = 1.0 / pstats_target_frame_rate;
+    }
+    normal_guide_bars();
+    force_redraw();
+  }
+
+  // Cycle through the ring buffers.
+  _average_cursor = (_average_cursor + 1) % _num_average_frames;
+  return true;
+}
+
+/**
+ * Resets all the nodes by setting their _net_value to 0.0.
+ */
+void PStatFlameGraph::StackLevel::
+reset() {
+  _start_time = 0.0;
+  _net_value = 0.0;
+  _started = false;
+
+  for (auto &item : _children) {
+    item.second.reset();
+  }
+}
+
+/**
+ * Starts the given collector, which starts a new stack frame as a child of
+ * the current one.  Returns the new child, which is the new stack top.
+ */
+PStatFlameGraph::StackLevel *PStatFlameGraph::StackLevel::
+start(int collector_index, double time) {
+  StackLevel &child = _children[collector_index];
+  child._parent = this;
+  child._collector_index = collector_index;
+  child._start_time = std::max(_start_time, time);
+  child._started = true;
+  return &child;
+}
+
+/**
+ * Stops the given collector, which is assumed to be somewhere up the
+ * hierarchy.  Should only be called on the top of the stack, usually.
+ * Returns the new top of the stack.
+ */
+PStatFlameGraph::StackLevel *PStatFlameGraph::StackLevel::
+stop(int collector_index, double time) {
+  StackLevel *new_top = r_stop(collector_index, time);
+  if (new_top != nullptr) {
+    return new_top;
+  }
+  // We have a stop event without a preceding start event.  Measure the
+  // the time from the start of the current stack frame to the stop time.
+  // Actually, don't do this, because it means that a child may end up with
+  // more time than the parent.  Need a better solution for this - or not?
+  //start(collector_index, _start_time)->stop(collector_index, time);
+  return this;
+}
+
+/**
+ * Stops all still started collectors.  Returns the bottom of the stack,
+ * which is also the new top of the stack.
+ */
+PStatFlameGraph::StackLevel *PStatFlameGraph::StackLevel::
+stop_all(double time) {
+  if (_parent != nullptr) {
+    nassertr(_started, this);
+    _net_value += time - _start_time;
+    return _parent->stop_all(time);
+  } else {
+    return this;
+  }
+}
+
+/**
+ * Resets the average calculator, used when first enabling average mode.
+ */
+void PStatFlameGraph::StackLevel::
+reset_averages() {
+  double net_value = get_net_value(false);
+
+  for (double &value : _values) {
+    value = net_value;
+  }
+  _avg_net_value = net_value;
+
+  for (auto &item : _children) {
+    item.second.reset_averages();
+  }
+}
+
+/**
+ * Recursively calculates the averages.  Returns true if any value was changed.
+ */
+bool PStatFlameGraph::StackLevel::
+update_averages(size_t cursor) {
+  _values[cursor] = get_net_value(false);
+
+  bool changed = false;
+
+  double sum = 0;
+  for (double value : _values) {
+    sum += value;
+  }
+  double avg = sum / _num_average_frames;
+  if (avg != _avg_net_value) {
+    _avg_net_value = avg;
+    changed = true;
+  }
+
+  for (auto &item : _children) {
+    if (item.second.update_averages(cursor)) {
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
+/**
+ * Locates a stack level at the given depth and the given time offset.
+ */
+const PStatFlameGraph::StackLevel *PStatFlameGraph::StackLevel::
+locate(int depth, double time, bool average) const {
+  if (time < 0.0) {
+    return nullptr;
+  }
+  for (const auto &item : _children) {
+    double value = item.second.get_net_value(average);
+    if (time < value) {
+      if (depth == 0) {
+        // This is it.
+        return &item.second;
+      } else {
+        // Recurse.
+        return item.second.locate(depth - 1, time, average);
+      }
+    }
+    time -= value;
+  }
+  return nullptr;
+}
+
+/**
+ * Clears everything.
+ */
+void PStatFlameGraph::StackLevel::
+clear() {
+  _children.clear();
+  _net_value = 0.0;
+}
+
+/**
+ * Recursive helper used by stop().
+ */
+PStatFlameGraph::StackLevel *PStatFlameGraph::StackLevel::
+r_stop(int collector_index, double time) {
+  if (_collector_index == collector_index) {
+    // Found it.
+    nassertr(_started, nullptr);
+    _net_value += time - _start_time;
+    _started = false;
+    nassertr(_parent != nullptr, nullptr);
+    return _parent;
+  }
+  else if (_parent != nullptr) {
+    StackLevel *level = _parent->r_stop(collector_index, time);
+    if (level != nullptr) {
+      nassertr(_started, nullptr);
+      _net_value += time - _start_time;
+      _started = false;
+      return level;
+    }
+  }
+  return nullptr;
+}
+
+/**
+ * Recursively draws a level.
+ */
+void PStatFlameGraph::
+r_draw_level(const StackLevel &level, int depth, double offset) {
+  for (const auto &item : level._children) {
+    const StackLevel &child = item.second;
+
+    double value = child.get_net_value(_average_mode);
+
+    int from_x = height_to_pixel(offset);
+    int to_x = height_to_pixel(offset + value);
+
+    // No need to recurse if the bars have become smaller than a pixel.
+    if (to_x > from_x) {
+      draw_bar(depth, from_x, to_x, child._collector_index);
+      r_draw_level(child, depth + 1, offset);
+    }
+
+    offset += value;
+  }
 }

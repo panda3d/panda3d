@@ -1930,7 +1930,11 @@ class ShowBase(DirectObject.DirectObject):
         if port is None:
             port = -1
         PStatClient.connect(hostname, port)
-        return PStatClient.isConnected()
+        if PStatClient.isConnected():
+            PStatClient.mainTick()
+            return True
+        else:
+            return False
 
     def addSfxManager(self, extraSfxManager):
         """

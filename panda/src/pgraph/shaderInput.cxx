@@ -31,9 +31,9 @@ get_blank() {
 ShaderInput::
 ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
   _name(std::move(name)),
-  _type(M_nodepath),
+  _value(new ParamNodePath(np)),
   _priority(priority),
-  _value(new ParamNodePath(np))
+  _type(M_nodepath)
 {
 }
 
@@ -43,9 +43,9 @@ ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, int n, int priority) :
   _name(std::move(name)),
-  _type(M_texture_image),
+  _value(new ParamTextureImage(tex, read, write, z, n)),
   _priority(priority),
-  _value(new ParamTextureImage(tex, read, write, z, n))
+  _type(M_texture_image)
 {
 }
 
@@ -55,9 +55,9 @@ ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, i
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority) :
   _name(std::move(name)),
-  _type(M_texture_sampler),
+  _value(new ParamTextureSampler(tex, sampler)),
   _priority(priority),
-  _value(new ParamTextureSampler(tex, sampler))
+  _type(M_texture_sampler)
 {
 }
 

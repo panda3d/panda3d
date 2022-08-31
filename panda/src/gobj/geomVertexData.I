@@ -605,8 +605,8 @@ CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept :
  */
 INLINE GeomVertexData::CData::
 CData() :
-  _format(nullptr),
-  _usage_hint(UH_unspecified)
+  _usage_hint(UH_unspecified),
+  _format(nullptr)
 {
 }
 
@@ -615,8 +615,8 @@ CData() :
  */
 INLINE GeomVertexData::CData::
 CData(const GeomVertexFormat *format, GeomVertexData::UsageHint usage_hint) :
-  _format(format),
-  _usage_hint(usage_hint)
+  _usage_hint(usage_hint),
+  _format(format)
 {
   size_t num_arrays = format->get_num_arrays();
   for (size_t i = 0; i < num_arrays; ++i) {

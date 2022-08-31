@@ -152,10 +152,22 @@ get_panda_root() {
 
   if (panda_root == nullptr) {
     panda_root = new string;
+
+#ifdef _MSC_VER
+    char *envvar = nullptr;
+    size_t size = 0;
+    while (getenv_s(&size, envvar, size, "PANDA_ROOT") == ERANGE) {
+      envvar = (char *)alloca(size);
+    }
+    if (size != 0) {
+      (*panda_root) = front_to_back_slash(envvar);
+    }
+#else
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
+#endif
 
     // Ensure the string ends in a backslash.  If PANDA_ROOT is empty or
     // undefined, this function must return a single backslash--not an empty
@@ -477,7 +489,8 @@ get_home_directory() {
   if (AtomicAdjust::get_ptr(_home_directory) == nullptr) {
     Filename home_directory;
 
-    // In all environments, check $HOME first.
+    // In all environments except Windows, check $HOME first.
+#ifndef _WIN32
     char *home = getenv("HOME");
     if (home != nullptr) {
       Filename dirname = from_os_specific(home);
@@ -487,6 +500,7 @@ get_home_directory() {
         }
       }
     }
+#endif
 
     if (home_directory.empty()) {
 #ifdef _WIN32

@@ -361,8 +361,6 @@ void CLP(init_classes)() {
 
 #ifndef OPENGLES
   CLP(OcclusionQueryContext)::init_type();
-  CLP(TimerQueryContext)::init_type();
-  CLP(LatencyQueryContext)::init_type();
 #endif
 
   PandaSystem *ps = PandaSystem::get_global_ptr();

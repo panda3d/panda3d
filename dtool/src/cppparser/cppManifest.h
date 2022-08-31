@@ -43,7 +43,7 @@ public:
 
   std::string _name;
   bool _has_parameters;
-  int _num_parameters;
+  size_t _num_parameters;
   int _variadic_param;
   cppyyltype _loc;
   CPPExpression *_expr;

@@ -213,9 +213,9 @@ set_data(PyObject *data) {
 template<class Element>
 INLINE PyObject *Extension<PointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
 }
 
@@ -269,9 +269,9 @@ get_data() const {
 template<class Element>
 INLINE PyObject *Extension<ConstPointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
 }
 

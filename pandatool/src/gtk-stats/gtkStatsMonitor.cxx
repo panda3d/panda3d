@@ -18,10 +18,10 @@
 #include "gtkStatsChartMenu.h"
 #include "gtkStatsPianoRoll.h"
 #include "gtkStatsFlameGraph.h"
+#include "gtkStatsTimeline.h"
 #include "gtkStatsMenuId.h"
 #include "pStatGraph.h"
 #include "pStatCollectorDef.h"
-#include "indent.h"
 
 /**
  *
@@ -34,6 +34,8 @@ GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
   _time_units = 0;
   _scroll_speed = 0.0;
   _pause = false;
+
+  _resolution = gdk_screen_get_resolution(gdk_screen_get_default());
 }
 
 /**
@@ -154,10 +156,12 @@ new_thread(int thread_index) {
  */
 void GtkStatsMonitor::
 new_data(int thread_index, int frame_number) {
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    GtkStatsGraph *graph = (*gi);
+  for (GtkStatsGraph *graph : _graphs) {
     graph->new_data(thread_index, frame_number);
+  }
+
+  if (thread_index == 0) {
+    update_status_bar();
   }
 }
 
@@ -193,6 +197,10 @@ idle() {
     sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
 
     gtk_label_set_text(GTK_LABEL(_frame_rate_label), buffer);
+
+    if (!_status_bar_labels.empty()) {
+      gtk_label_set_text(GTK_LABEL(_status_bar_labels[0]), buffer);
+    }
   }
 }
 
@@ -226,6 +234,14 @@ get_window() const {
 }
 
 /**
+ * Returns the screen DPI.
+ */
+double GtkStatsMonitor::
+get_resolution() const {
+  return _resolution;
+}
+
+/**
  * Opens a new strip chart showing the indicated data.
  */
 void GtkStatsMonitor::
@@ -256,8 +272,21 @@ open_piano_roll(int thread_index) {
  * Opens a new flame graph showing the indicated data.
  */
 void GtkStatsMonitor::
-open_flame_graph(int thread_index) {
-  GtkStatsFlameGraph *graph = new GtkStatsFlameGraph(this, thread_index);
+open_flame_graph(int thread_index, int collector_index) {
+  GtkStatsFlameGraph *graph = new GtkStatsFlameGraph(this, thread_index, collector_index);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+}
+
+/**
+ * Opens a new timeline.
+ */
+void GtkStatsMonitor::
+open_timeline() {
+  GtkStatsTimeline *graph = new GtkStatsTimeline(this);
   add_graph(graph);
 
   graph->set_time_units(_time_units);
@@ -371,7 +400,7 @@ create_window() {
   gtk_window_set_default_size(GTK_WINDOW(_window), 500, 360);
 
   // Set up the menu.
-   GtkAccelGroup *accel_group = gtk_accel_group_new();
+  GtkAccelGroup *accel_group = gtk_accel_group_new();
   gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
   _menu_bar = gtk_menu_bar_new();
   _next_chart_index = 2;
@@ -390,8 +419,21 @@ create_window() {
   gtk_container_add(GTK_CONTAINER(_window), main_vbox);
   gtk_box_pack_start(GTK_BOX(main_vbox), _menu_bar, FALSE, TRUE, 0);
 
+  // Create the status bar.
+  _status_bar = gtk_flow_box_new();
+  gtk_flow_box_set_activate_on_single_click(GTK_FLOW_BOX(_status_bar), FALSE);
+  gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(_status_bar), GTK_SELECTION_NONE);
+  g_signal_connect(G_OBJECT(_status_bar), "button_press_event",
+    G_CALLBACK(status_bar_button_event), this);
+  gtk_box_pack_end(GTK_BOX(main_vbox), _status_bar, FALSE, FALSE, 0);
+  update_status_bar();
+
+  GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_box_pack_end(GTK_BOX(main_vbox), sep, FALSE, FALSE, 0);
+
   gtk_widget_show_all(_window);
   gtk_widget_show(_window);
+  gtk_widget_realize(_window);
 }
 
 /**
@@ -572,10 +614,207 @@ setup_frame_rate_label() {
   _frame_rate_menu_item = gtk_menu_item_new();
   _frame_rate_label = gtk_label_new("");
   gtk_container_add(GTK_CONTAINER(_frame_rate_menu_item), _frame_rate_label);
+  gtk_widget_set_sensitive(_frame_rate_menu_item, FALSE);
 
   gtk_widget_show(_frame_rate_menu_item);
   gtk_widget_show(_frame_rate_label);
   gtk_menu_item_set_right_justified(GTK_MENU_ITEM(_frame_rate_menu_item), TRUE);
 
   gtk_menu_shell_append(GTK_MENU_SHELL(_menu_bar), _frame_rate_menu_item);
+}
+
+/**
+ * Updates the status bar.
+ */
+void GtkStatsMonitor::
+update_status_bar() {
+  const PStatClientData *client_data = get_client_data();
+  if (client_data == nullptr) {
+    return;
+  }
+
+  const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return;
+  }
+  int frame_number = thread_data->get_latest_frame_number();
+  const PStatFrameData &frame_data = thread_data->get_latest_frame();
+
+  pvector<int> collectors;
+
+  // The first label displays the frame rate.
+  size_t li = 1;
+  collectors.push_back(0);
+  if (_status_bar_labels.empty()) {
+    GtkWidget *label = gtk_label_new("");
+    gtk_container_add(GTK_CONTAINER(_status_bar), label);
+    _status_bar_labels.push_back(label);
+  }
+
+  // Gather the top-level collector list.
+  int num_toplevel_collectors = client_data->get_num_toplevel_collectors();
+  for (int tc = 0; tc < num_toplevel_collectors; tc++) {
+    int collector = client_data->get_toplevel_collector(tc);
+    if (client_data->has_collector(collector) &&
+        client_data->get_collector_has_level(collector, 0)) {
+      PStatView &view = get_level_view(collector, 0);
+      view.set_to_frame(frame_data);
+      double value = view.get_net_value();
+      if (value == 0.0) {
+        // Don't include it unless we've included it before.
+        if (std::find(_status_bar_collectors.begin(), _status_bar_collectors.end(), collector) == _status_bar_collectors.end()) {
+          continue;
+        }
+      }
+
+      // Add the value for other threads that have this collector.
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = get_level_view(collector, thread_index);
+        view.set_to_frame(frame_number);
+        value += view.get_net_value();
+      }
+
+      const PStatCollectorDef &def = client_data->get_collector_def(collector);
+      std::string text = def._name;
+      text += ": " + PStatGraph::format_number(value, PStatGraph::GBU_named | PStatGraph::GBU_show_units, def._level_units);
+
+      GtkWidget *label;
+      if (li < _status_bar_labels.size()) {
+        label = _status_bar_labels[li++];
+        gtk_label_set_text(GTK_LABEL(label), text.c_str());
+      }
+      else {
+        label = gtk_label_new(text.c_str());
+        gtk_container_add(GTK_CONTAINER(_status_bar), label);
+        _status_bar_labels.push_back(label);
+      }
+
+      collectors.push_back(collector);
+    }
+  }
+
+  _status_bar_collectors = std::move(collectors);
+
+  gtk_widget_show_all(_status_bar);
+}
+
+/**
+ * Handles clicks on a partion of the status bar.
+ */
+gboolean GtkStatsMonitor::
+status_bar_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+  GtkStatsMonitor *monitor = (GtkStatsMonitor *)data;
+
+  GtkFlowBoxChild *child = gtk_flow_box_get_child_at_pos(
+    GTK_FLOW_BOX(monitor->_status_bar), event->x, event->y);
+  if (child == nullptr) {
+    return FALSE;
+  }
+
+  // Which child is this?
+  GList *children = gtk_container_get_children(GTK_CONTAINER(monitor->_status_bar));
+  int index = g_list_index(children, child);
+  g_list_free(children);
+  if (index < 0 || index >= monitor->_status_bar_labels.size()) {
+    return FALSE;
+  }
+
+  const PStatClientData *client_data = monitor->get_client_data();
+  if (client_data == nullptr) {
+    return FALSE;
+  }
+
+  int collector = monitor->_status_bar_collectors[index];
+
+  if (event->type == GDK_2BUTTON_PRESS && event->button == 1) {
+    monitor->open_strip_chart(0, collector, collector != 0);
+
+    // Also open a strip chart for other threads with data for this
+    // collector.
+    if (collector != 0) {
+      for (int thread_index = 1; thread_index < client_data->get_num_threads(); ++thread_index) {
+        PStatView &view = monitor->get_level_view(collector, thread_index);
+        if (view.get_net_value() > 0.0) {
+          monitor->open_strip_chart(thread_index, collector, true);
+        }
+      }
+    }
+    return TRUE;
+  }
+  else if (event->type == GDK_BUTTON_PRESS && event->button == 3 && index > 0) {
+    PStatView &level_view = monitor->get_level_view(collector, 0);
+    const PStatViewLevel *view_level = level_view.get_top_level();
+    int num_children = view_level->get_num_children();
+    if (num_children == 0) {
+      return FALSE;
+    }
+
+    GtkWidget *menu = gtk_menu_new();
+
+    // Reverse the order since the menus are listed from the top down; we want
+    // to be visually consistent with the graphs, which list these labels from
+    // the bottom up.
+    for (int c = num_children - 1; c >= 0; c--) {
+      const PStatViewLevel *child_level = view_level->get_child(c);
+
+      int child_collector = child_level->get_collector();
+      const MenuDef *menu_def = monitor->add_menu({0, child_collector, CT_strip_chart, true});
+
+      double value = child_level->get_net_value();
+
+      const PStatCollectorDef &def = client_data->get_collector_def(child_collector);
+      std::string text = def._name;
+      text += ": " + PStatGraph::format_number(value, PStatGraph::GBU_named | PStatGraph::GBU_show_units, def._level_units);
+
+      GtkWidget *menu_item = gtk_menu_item_new_with_label(text.c_str());
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(menu_activate),
+                       (void *)menu_def);
+    }
+
+    gtk_widget_show_all(menu);
+
+    GtkWidget *label = monitor->_status_bar_labels[index];
+    gtk_menu_popup_at_widget(GTK_MENU(menu), label,
+                             GDK_GRAVITY_NORTH_WEST,
+                             GDK_GRAVITY_SOUTH_WEST, nullptr);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Callback when a menu item is selected.
+ */
+void GtkStatsMonitor::
+menu_activate(GtkWidget *widget, gpointer data) {
+  const MenuDef *menu_def = (const MenuDef *)data;
+  GtkStatsMonitor *monitor = menu_def->_monitor;
+
+  if (monitor == nullptr) {
+    return;
+  }
+
+  switch (menu_def->_chart_type) {
+  case CT_timeline:
+    monitor->open_timeline();
+    break;
+
+  case CT_strip_chart:
+    monitor->open_strip_chart(menu_def->_thread_index,
+                              menu_def->_collector_index,
+                              menu_def->_show_level);
+    break;
+
+  case CT_flame_graph:
+    monitor->open_flame_graph(menu_def->_thread_index,
+                              menu_def->_collector_index);
+    break;
+
+  case CT_piano_roll:
+    monitor->open_piano_roll(menu_def->_thread_index);
+    break;
+  }
 }

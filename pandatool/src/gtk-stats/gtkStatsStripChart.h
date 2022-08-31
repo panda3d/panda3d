@@ -41,6 +41,7 @@ public:
   virtual void set_time_units(int unit_mask);
   virtual void set_scroll_speed(double scroll_speed);
   virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
   virtual std::string get_label_tooltip(int collector_index) const;
   void set_vertical_scale(double value_height);
 
@@ -56,13 +57,15 @@ protected:
   virtual void end_draw(int from_x, int to_x);
 
   virtual void additional_graph_window_paint(cairo_t *cr);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
-  virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-               bool double_click);
-  virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
-  virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
+  virtual gboolean handle_button_press(int graph_x, int graph_y,
+                                       bool double_click, int button);
+  virtual gboolean handle_button_release(int graph_x, int graph_y);
+  virtual gboolean handle_motion(int graph_x, int graph_y);
+  virtual gboolean handle_leave();
 
 private:
   void draw_guide_bar(cairo_t *cr, int from_x, int to_x,
@@ -79,6 +82,8 @@ private:
   GtkWidget *_top_hbox;
   GtkWidget *_smooth_check_box;
   GtkWidget *_total_label;
+
+  int _popup_index = -1;
 };
 
 #endif

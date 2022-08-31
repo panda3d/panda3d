@@ -46,10 +46,6 @@ math(EXPR PANDA_NUMERIC_VERSION "${PROJECT_VERSION_MAJOR}*1000000 + ${PROJECT_VE
 
 # If SOURCE_DATE_EPOCH is set, it affects PandaSystem::get_build_date()
 if(DEFINED ENV{SOURCE_DATE_EPOCH})
-  if(CMAKE_VERSION VERSION_LESS "3.8")
-    message(FATAL_ERROR "CMake 3.8 is required to support SOURCE_DATE_EPOCH properly.")
-  endif()
-
   string(TIMESTAMP _build_date "%b %d %Y %H:%M:%S" UTC)
 
   # CMake doesn't support %e, replace leading zero in day with space

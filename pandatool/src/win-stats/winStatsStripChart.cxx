@@ -18,8 +18,6 @@
 
 #include <commctrl.h>
 
-using std::string;
-
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
 
@@ -33,7 +31,7 @@ WinStatsStripChart::
 WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
                    int collector_index, bool show_level) :
   PStatStripChart(monitor,
-                  show_level ? monitor->get_level_view(collector_index, thread_index) : monitor->get_view(thread_index),
+                  show_level ? monitor->get_level_view(0, thread_index) : monitor->get_view(thread_index),
                   thread_index,
                   collector_index,
                   monitor->get_pixel_scale() * default_strip_chart_width / 4,
@@ -82,7 +80,7 @@ new_collector(int collector_index) {
 }
 
 /**
- * Called as each frame's data is made available.  There is no gurantee the
+ * Called as each frame's data is made available.  There is no guarantee the
  * frames will arrive in order, or that all of them will arrive at all.  The
  * monitor should be prepared to accept frames received out-of-order or
  * missing.
@@ -90,7 +88,7 @@ new_collector(int collector_index) {
 void WinStatsStripChart::
 new_data(int thread_index, int frame_number) {
   if (is_title_unknown()) {
-    string window_title = get_title_text();
+    std::string window_title = get_title_text();
     if (!is_title_unknown()) {
       SetWindowText(_window, window_title.c_str());
     }
@@ -99,7 +97,7 @@ new_data(int thread_index, int frame_number) {
   if (!_pause) {
     update();
 
-    string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+    std::string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
     if (_net_value_text != text) {
       _net_value_text = text;
       RECT rect;
@@ -194,12 +192,59 @@ on_click_label(int collector_index) {
 }
 
 /**
+ * Called when the user right-clicks on a label.
+ */
+void WinStatsStripChart::
+on_popup_label(int collector_index) {
+  POINT point;
+  if (collector_index >= 0 && GetCursorPos(&point)) {
+    _popup_index = collector_index;
+
+    HMENU popup = CreatePopupMenu();
+
+    std::string label = get_label_tooltip(collector_index);
+    if (!label.empty()) {
+      AppendMenu(popup, MF_STRING | MF_DISABLED, 0, label.c_str());
+    }
+    if (collector_index == 0 && get_collector_index() == 0) {
+      AppendMenu(popup, MF_STRING | MF_DISABLED, 101, "Set as Focus");
+    } else {
+      AppendMenu(popup, MF_STRING, 101, "Set as Focus");
+    }
+    AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
+    if (get_view().get_show_level()) {
+      AppendMenu(popup, MF_STRING | MF_DISABLED, 103, "Open Flame Graph");
+    } else {
+      AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+    }
+    TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
+  }
+}
+
+/**
  * Called when the mouse hovers over a label, and should return the text that
  * should appear on the tooltip.
  */
 std::string WinStatsStripChart::
 get_label_tooltip(int collector_index) const {
   return PStatStripChart::get_label_tooltip(collector_index);
+}
+
+/**
+ * Changes the collector represented by this strip chart.  This may force a
+ * redraw.
+ */
+void WinStatsStripChart::
+set_collector_index(int collector_index) {
+  if (get_collector_index() != collector_index) {
+    PStatStripChart::set_collector_index(collector_index);
+
+    // Redraw the scale labels.
+    RECT rect;
+    GetClientRect(_window, &rect);
+    rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+  }
 }
 
 /**
@@ -355,6 +400,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         return 0;
       }
       break;
+
+    case 101:
+      set_collector_index(_popup_index);
+      break;
+
+    case 102:
+      WinStatsGraph::_monitor->open_strip_chart(get_thread_index(), _popup_index,
+                                                get_view().get_show_level());
+      return 0;
+
+    case 103:
+      WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
+      return 0;
     }
     break;
 
@@ -416,9 +474,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     if (_drag_mode == DM_scale) {
       int16_t y = HIWORD(lparam);
-      double ratio = 1.0f - ((double)y / (double)get_ysize());
-      if (ratio > 0.0f) {
-        set_vertical_scale(_drag_scale_start / ratio);
+      double ratio = 1.0 - ((double)y / (double)get_ysize());
+      if (ratio > 0.0) {
+        double new_scale = _drag_scale_start / ratio;
+        if (!IS_NEARLY_EQUAL(get_vertical_scale(), new_scale)) {
+          // Disable smoothing while we do this expensive operation.
+          set_average_mode(false);
+          set_vertical_scale(_drag_scale_start / ratio);
+        }
       }
       return 0;
 
@@ -471,6 +534,19 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
       on_click_label(get_collector_under_pixel(x, y));
+      return 0;
+    }
+    break;
+
+  case WM_CONTEXTMENU:
+    {
+      POINT point;
+      if (GetCursorPos(&point) && ScreenToClient(_graph_window, &point)) {
+        int collector_index = get_collector_under_pixel(point.x, point.y);
+        if (collector_index >= 0) {
+          on_popup_label(collector_index);
+        }
+      }
       return 0;
     }
     break;
@@ -535,6 +611,18 @@ additional_graph_window_paint(HDC hdc) {
 }
 
 /**
+ * Called when the mouse hovers over the graph, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsStripChart::
+get_graph_tooltip(int mouse_x, int mouse_y) const {
+  if (_highlighted_index != -1) {
+    return get_label_tooltip(_highlighted_index);
+  }
+  return std::string();
+}
+
+/**
  * Based on the mouse position within the window's client area, look for
  * draggable things the mouse might be hovering over and return the
  * apprioprate DragMode enum or DM_none if nothing is indicated.
@@ -569,16 +657,7 @@ void WinStatsStripChart::
 set_drag_mode(WinStatsGraph::DragMode drag_mode) {
   WinStatsGraph::set_drag_mode(drag_mode);
 
-  switch (_drag_mode) {
-  case DM_scale:
-  case DM_left_margin:
-  case DM_right_margin:
-  case DM_sizing:
-    // Disable smoothing for these expensive operations.
-    set_average_mode(false);
-    break;
-
-  default:
+  if (_drag_mode == DM_none) {
     // Restore smoothing according to the current setting of the check box.
     int result = SendMessage(_smooth_check_box, BM_GETCHECK, 0, 0);
     set_average_mode(result == BST_CHECKED);
@@ -654,7 +733,7 @@ draw_guide_label(HDC hdc, int x, const PStatGraph::GuideBar &bar, int last_y) {
   }
 
   int y = height_to_pixel(bar._height);
-  const string &label = bar._label;
+  const std::string &label = bar._label;
   SIZE size;
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
@@ -691,7 +770,8 @@ create_window() {
   HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
-  string window_title = get_title_text();
+  std::string window_title = get_title_text();
+  POINT window_pos = WinStatsGraph::_monitor->get_new_window_pos();
 
   RECT win_rect = {
     0, 0,
@@ -703,11 +783,13 @@ create_window() {
   AdjustWindowRect(&win_rect, graph_window_style, FALSE);
 
   _window =
-    CreateWindow(_window_class_name, window_title.c_str(), graph_window_style,
-                 CW_USEDEFAULT, CW_USEDEFAULT,
-                 win_rect.right - win_rect.left,
-                 win_rect.bottom - win_rect.top,
-                 WinStatsGraph::_monitor->get_window(), nullptr, application, 0);
+    CreateWindowEx(WS_EX_DLGMODALFRAME, _window_class_name,
+                   window_title.c_str(), graph_window_style,
+                   window_pos.x, window_pos.y,
+                   win_rect.right - win_rect.left,
+                   win_rect.bottom - win_rect.top,
+                   WinStatsGraph::_monitor->get_window(),
+                   nullptr, application, 0);
   if (!_window) {
     nout << "Could not create StripChart window!\n";
     exit(1);

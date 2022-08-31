@@ -266,7 +266,7 @@ rebuild_bitplanes() {
 
   // Decide how big the bitplanes should be.
 
-  if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
+  if (_host != nullptr && (_creation_flags & GraphicsPipe::BF_size_track_host) != 0) {
     if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
@@ -739,7 +739,7 @@ bool wdxGraphicsBuffer9::
 open_buffer() {
 
   // GSG creationinitialization.
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // The code below doesn't support creating a GSG on the fly.  Just error
     // out for now.  _dxgsg = new DXGraphicsStateGuardian9(_engine, _pipe);
     // _gsg = _dxgsg;

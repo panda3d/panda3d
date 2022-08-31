@@ -3040,6 +3040,15 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
   case ColorBlendAttrib::O_incoming_color_saturate:
     return 1;
 
+  case ColorBlendAttrib::O_incoming1_color:
+    return 1;
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+    return 0;
+  case ColorBlendAttrib::O_incoming1_alpha:
+    return 1;
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    return 0;
+
   case ColorBlendAttrib::O_color_scale:
     return 10;
   case ColorBlendAttrib::O_one_minus_color_scale:

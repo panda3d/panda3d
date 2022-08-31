@@ -12,15 +12,15 @@
  */
 
 /**
- * Returns the View this chart represents.
+ * Returns the particular thread whose data this flame graph reflects.
  */
-INLINE PStatView &PStatFlameGraph::
-get_view() const {
-  return _view;
+INLINE int PStatFlameGraph::
+get_thread_index() const {
+  return _thread_index;
 }
 
 /**
- * Returns the particular collector whose data this strip chart reflects.
+ * Returns the particular collector whose data this flame graph reflects.
  */
 INLINE int PStatFlameGraph::
 get_collector_index() const {
@@ -41,11 +41,19 @@ get_horizontal_scale() const {
  * the color values over pstats_average_time seconds, which hides spikes and
  * makes the overall trends easier to read.  When false, the strip chart shows
  * the actual data as it is happening.
+ *
+ * If you set this to true, you need to call animate() periodically so that the
+ * averages are smoothly updated over time.
  */
 INLINE void PStatFlameGraph::
 set_average_mode(bool average_mode) {
   if (_average_mode != average_mode) {
     _average_mode = average_mode;
+    _stack.reset_averages();
+    if (!average_mode) {
+      _time_width = _stack.get_net_value(false);
+      normal_guide_bars();
+    }
     force_redraw();
   }
 }
@@ -86,4 +94,19 @@ pixel_to_height(int x) const {
 INLINE bool PStatFlameGraph::
 is_title_unknown() const {
   return _title_unknown;
+}
+/**
+ * Returns the net value of this stack level.
+ */
+INLINE double PStatFlameGraph::StackLevel::
+get_net_value(bool average) const {
+  if (_collector_index >= 0) {
+    return average ? _avg_net_value : _net_value;
+  } else {
+    double sum = 0.0;
+    for (auto &item : _children) {
+      sum += item.second.get_net_value(average);
+    }
+    return sum;
+  }
 }

@@ -572,6 +572,26 @@ def GetFlexVersion():
         Warn("Unable to detect flex version")
         return (0, 0, 0)
 
+SEVENZIP = None
+def GetSevenZip():
+    global SEVENZIP
+    if SEVENZIP is not None:
+        return SEVENZIP
+
+    win_util = os.path.join(GetThirdpartyBase(), 'win-util')
+    if GetHost() == 'windows' and os.path.isdir(win_util):
+        SEVENZIP = GetThirdpartyBase() + "/win-util/7za.exe"
+    elif LocateBinary('7z'):
+        SEVENZIP = '7z'
+    else:
+        # We don't strictly need it, so don't give an error
+        return None
+
+    return SEVENZIP
+
+def HasSevenZip():
+    return GetSevenZip() is not None
+
 ########################################################################
 ##
 ## LocateBinary
@@ -634,6 +654,9 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             os.chdir(cwd)
 
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
+
+        if res == -1073741510: # 0xc000013a
+            exit("keyboard interrupt")
 
         if cwd is not None:
             os.chdir(pwd)
@@ -854,8 +877,11 @@ def JavaGetImports(path):
     imports = []
     try:
         for match in JavaImportRegex.finditer(source, 0):
-            impname = match.group(1)
-            imports.append(impname.strip())
+            impname = match.group(1).strip()
+            if not impname.startswith('java.') and \
+               not impname.startswith('dalvik.') and \
+               not impname.startswith('android.'):
+                imports.append(impname.strip())
     except:
         print("Failed to determine dependencies of \"" + path  +"\".")
         raise
@@ -3300,7 +3326,12 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if CrossCompiling():
+    if GetTarget() == 'windows':
+        if GetTargetArch() == 'x64':
+            return '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        else:
+            return '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+    elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
         import _imp

@@ -13,6 +13,7 @@ set(P3PSTATSERVER_HEADERS
   pStatServer.h
   pStatStripChart.h pStatStripChart.I
   pStatThreadData.h pStatThreadData.I
+  pStatTimeline.h pStatTimeline.I
   pStatView.h pStatView.I
   pStatViewLevel.h pStatViewLevel.I
 )
@@ -22,10 +23,15 @@ set(P3PSTATSERVER_SOURCES
   pStatFlameGraph.cxx
   pStatGraph.cxx
   pStatListener.cxx
-  pStatMonitor.cxx pStatPianoRoll.cxx
-  pStatReader.cxx pStatServer.cxx
-  pStatStripChart.cxx pStatThreadData.cxx
-  pStatView.cxx pStatViewLevel.cxx
+  pStatMonitor.cxx
+  pStatPianoRoll.cxx
+  pStatReader.cxx
+  pStatServer.cxx
+  pStatStripChart.cxx
+  pStatThreadData.cxx
+  pStatTimeline.cxx
+  pStatView.cxx
+  pStatViewLevel.cxx
 )
 
 composite_sources(p3pstatserver P3PSTATSERVER_SOURCES)

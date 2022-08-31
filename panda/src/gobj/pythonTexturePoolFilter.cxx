@@ -67,6 +67,7 @@ init(PyObject *tex_filter) {
   nassertr(_post_load_func == nullptr, false);
 
   _pre_load_func = PyObject_GetAttrString(tex_filter, "pre_load");
+  PyErr_Clear();
   _post_load_func = PyObject_GetAttrString(tex_filter, "post_load");
   PyErr_Clear();
 

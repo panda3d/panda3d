@@ -20,6 +20,14 @@ get_view() const {
 }
 
 /**
+ * Returns the particular thread whose data this strip chart reflects.
+ */
+INLINE int PStatStripChart::
+get_thread_index() const {
+  return _thread_index;
+}
+
+/**
  * Returns the particular collector whose data this strip chart reflects.
  */
 INLINE int PStatStripChart::

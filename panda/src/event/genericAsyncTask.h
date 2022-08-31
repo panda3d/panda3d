@@ -22,8 +22,6 @@
  * Associates a generic C-style function pointer with an AsyncTask object.
  * You can use this when you want to create an AsyncTask without having to
  * subclass.
- *
- * @deprecated See FunctionAsyncTask instead, which is more powerful.
  */
 class EXPCL_PANDA_EVENT GenericAsyncTask : public AsyncTask {
 public:

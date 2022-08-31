@@ -70,7 +70,7 @@
 
 // With MingW32 this raises the error:
 // Redefinition of '_XINPUT_BATTERY_INFORMATION'
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _WIN32_WINNT < 0x0602
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;
   BYTE BatteryLevel;

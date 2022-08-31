@@ -100,8 +100,6 @@ from direct.showbase import DirectObject
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 
-guiObjectCollector = PStatCollector("Client::GuiObjects")
-
 _track_gui_items = ConfigVariableBool('track-gui-items', False)
 
 
@@ -732,8 +730,6 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.guiId = self.guiItem.getId()
 
         if ShowBaseGlobal.__dev__:
-            guiObjectCollector.addLevel(1)
-            guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
             if _track_gui_items:
                 if not hasattr(ShowBase, 'guiItems'):
@@ -1033,8 +1029,6 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     def destroy(self):
         if hasattr(self, "frameStyle"):
             if ShowBaseGlobal.__dev__:
-                guiObjectCollector.subLevel(1)
-                guiObjectCollector.flushLevel()
                 if hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems.pop(self.guiId, None)
 

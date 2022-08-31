@@ -40,7 +40,6 @@ private:
   void add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
                 bool show_level);
 
-  static void handle_menu(gpointer data);
   static void remove_menu_child(GtkWidget *widget, gpointer data);
 
   GtkStatsMonitor *_monitor;

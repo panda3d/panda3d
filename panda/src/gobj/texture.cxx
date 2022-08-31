@@ -1065,7 +1065,7 @@ async_ensure_ram_image(bool allow_compression, int priority) {
   double delay = async_load_delay;
 
   // This texture has not yet been queued to be reloaded.  Queue it up now.
-  task = new FunctionAsyncTask(task_name, [=](AsyncTask *task) {
+  task = task_mgr->add(task_name, [=](AsyncTask *task) {
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
@@ -1076,9 +1076,8 @@ async_ensure_ram_image(bool allow_compression, int priority) {
     }
     return AsyncTask::DS_done;
   });
-  task->set_task_chain("texture_reload");
   task->set_priority(priority);
-  task_mgr->add(task);
+  task->set_task_chain("texture_reload");
   cdataw->_reload_task = task;
   return (AsyncFuture *)task;
 }
@@ -1117,7 +1116,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
   if (cdata->_component_width == 1) {
     if (format == "RGBA" && cdata->_num_components == 4) {
       imgsize *= 4;
-      for (int p = 0; p < imgsize; p += 4) {
+      for (size_t p = 0; p < imgsize; p += 4) {
         newdata[p + 2] = image[p    ];
         newdata[p + 1] = image[p + 1];
         newdata[p    ] = image[p + 2];
@@ -1128,7 +1127,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     }
     if (format == "RGB" && cdata->_num_components == 3) {
       imgsize *= 3;
-      for (int p = 0; p < imgsize; p += 3) {
+      for (size_t p = 0; p < imgsize; p += 3) {
         newdata[p + 2] = image[p    ];
         newdata[p + 1] = image[p + 1];
         newdata[p    ] = image[p + 2];
@@ -1139,13 +1138,13 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     if (format == "A" && cdata->_num_components != 3) {
       // We can generally rely on alpha to be the last component.
       int component = cdata->_num_components - 1;
-      for (int p = 0; p < imgsize; ++p) {
+      for (size_t p = 0; p < imgsize; ++p) {
         newdata[component] = image[p];
       }
       do_set_ram_image(cdata, newdata);
       return;
     }
-    for (int p = 0; p < imgsize; ++p) {
+    for (size_t p = 0; p < imgsize; ++p) {
       for (unsigned char s = 0; s < format.size(); ++s) {
         signed char component = -1;
         if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
@@ -1177,7 +1176,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     do_set_ram_image(cdata, newdata);
     return;
   }
-  for (int p = 0; p < imgsize; ++p) {
+  for (size_t p = 0; p < imgsize; ++p) {
     for (unsigned char s = 0; s < format.size(); ++s) {
       signed char component = -1;
       if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
@@ -7512,7 +7511,8 @@ get_ram_image_as(const string &requested_format) {
     gobj_cat.error() << "Couldn't find an uncompressed RAM image!\n";
     return CPTA_uchar(get_class_type());
   }
-  int imgsize = cdata->_x_size * cdata->_y_size;
+  size_t imgsize = (size_t)cdata->_x_size * (size_t)cdata->_y_size *
+                   (size_t)cdata->_z_size * (size_t)cdata->_num_views;
   nassertr(cdata->_num_components > 0 && cdata->_num_components <= 4, CPTA_uchar(get_class_type()));
   nassertr(data.size() == (size_t)(cdata->_component_width * cdata->_num_components * imgsize), CPTA_uchar(get_class_type()));
 
@@ -7550,7 +7550,7 @@ get_ram_image_as(const string &requested_format) {
       const uint32_t *src = (const uint32_t *)data.p();
       uint32_t *dst = (uint32_t *)newdata.p();
 
-      for (int p = 0; p < imgsize; ++p) {
+      for (size_t p = 0; p < imgsize; ++p) {
         uint32_t v = *src++;
         *dst++ = ((v & 0xff00ff00u)) |
                  ((v & 0x00ff0000u) >> 16) |
@@ -7637,14 +7637,14 @@ get_ram_image_as(const string &requested_format) {
     }
     if (format == "A" && cdata->_num_components != 3) {
       // We can generally rely on alpha to be the last component.
-      for (int p = 0; p < imgsize; ++p) {
+      for (size_t p = 0; p < imgsize; ++p) {
         dst[p] = src[alpha];
         src += cdata->_num_components;
       }
       return newdata;
     }
     // Fallback case for other 8-bit-per-channel formats.
-    for (int p = 0; p < imgsize; ++p) {
+    for (size_t p = 0; p < imgsize; ++p) {
       for (size_t i = 0; i < format.size(); ++i) {
         if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
           *dst++ = src[0];
@@ -7670,7 +7670,7 @@ get_ram_image_as(const string &requested_format) {
   }
 
   // The slow and general case.
-  for (int p = 0; p < imgsize; ++p) {
+  for (size_t p = 0; p < imgsize; ++p) {
     for (size_t i = 0; i < format.size(); ++i) {
       int component = 0;
       if (format[i] == 'B' || (cdata->_num_components <= 2 && format[i] != 'A')) {
