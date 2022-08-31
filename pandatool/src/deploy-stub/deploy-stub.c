@@ -388,6 +388,10 @@ int Py_FrozenMain(int argc, char **argv)
     Py_NoSiteFlag = 0;
     Py_NoUserSiteDirectory = 1;
 
+#if PY_VERSION_HEX >= 0x03020000
+    Py_OptimizeFlag = 2;
+#endif
+
 #ifndef NDEBUG
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\0')
         inspect = 1;

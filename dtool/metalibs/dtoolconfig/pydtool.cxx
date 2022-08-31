@@ -60,6 +60,8 @@ static PyObject *_inP07ytISgV(PyObject *self, PyObject *args);
 static PyObject *_inP07ytH3bx(PyObject *self, PyObject *args);
 static PyObject *_inP07ytzeUk(PyObject *self, PyObject *args);
 static PyObject *_inP07ytUeI5(PyObject *self, PyObject *args);
+static PyObject *_inP07ytbmxJ(PyObject *self, PyObject *args);
+static PyObject *_inP07ytY8Lc(PyObject *self, PyObject *args);
 static PyObject *_inP07ytJAAI(PyObject *self, PyObject *args);
 static PyObject *_inP07yt0UXw(PyObject *self, PyObject *args);
 static PyObject *_inP07ytuSvx(PyObject *self, PyObject *args);
@@ -95,6 +97,8 @@ static PyObject *_inP07ytiytI(PyObject *self, PyObject *args);
 static PyObject *_inP07ytZc07(PyObject *self, PyObject *args);
 static PyObject *_inP07ytfaH0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytGB9D(PyObject *self, PyObject *args);
+static PyObject *_inP07ytrppS(PyObject *self, PyObject *args);
+static PyObject *_inP07ytO50x(PyObject *self, PyObject *args);
 static PyObject *_inP07ytsxxs(PyObject *self, PyObject *args);
 static PyObject *_inP07ytMT0z(PyObject *self, PyObject *args);
 static PyObject *_inP07ytiW3v(PyObject *self, PyObject *args);
@@ -126,6 +130,8 @@ static PyObject *_inP07ytDyRd(PyObject *self, PyObject *args);
 static PyObject *_inP07ytMnKa(PyObject *self, PyObject *args);
 static PyObject *_inP07ytRtji(PyObject *self, PyObject *args);
 static PyObject *_inP07ytCnbQ(PyObject *self, PyObject *args);
+static PyObject *_inP07ytoxqc(PyObject *self, PyObject *args);
+static PyObject *_inP07ytZQIS(PyObject *self, PyObject *args);
 static PyObject *_inP07ytdUVN(PyObject *self, PyObject *args);
 static PyObject *_inP07ytZtNk(PyObject *self, PyObject *args);
 static PyObject *_inP07ytihbt(PyObject *self, PyObject *args);
@@ -830,6 +836,34 @@ _inP07ytUeI5(PyObject *, PyObject *args) {
 
 /*
  * Python simple wrapper for
+ * bool interrogate_function_is_unary_op(FunctionIndex function)
+ */
+static PyObject *
+_inP07ytbmxJ(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_function_is_unary_op)((FunctionIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_function_is_operator_typecast(FunctionIndex function)
+ */
+static PyObject *
+_inP07ytY8Lc(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_function_is_operator_typecast)((FunctionIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
  * bool interrogate_function_is_constructor(FunctionIndex function)
  */
 static PyObject *
@@ -1407,6 +1441,42 @@ _inP07ytGB9D(PyObject *, PyObject *args) {
 
 /*
  * Python simple wrapper for
+ * FunctionIndex interrogate_make_seq_num_getter(MakeSeqIndex make_seq)
+ */
+static PyObject *
+_inP07ytrppS(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_make_seq_num_getter)((MakeSeqIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_make_seq_element_getter(MakeSeqIndex make_seq)
+ */
+static PyObject *
+_inP07ytO50x(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_make_seq_element_getter)((MakeSeqIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
  * int interrogate_number_of_global_types(void)
  */
 static PyObject *
@@ -1892,6 +1962,38 @@ _inP07ytCnbQ(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
     TypeIndex return_value = (::interrogate_type_wrapped_type)((TypeIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_type_is_array(TypeIndex type)
+ */
+static PyObject *
+_inP07ytoxqc(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_type_is_array)((TypeIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * int interrogate_type_array_size(TypeIndex type)
+ */
+static PyObject *
+_inP07ytZQIS(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    int return_value = (::interrogate_type_array_size)((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
@@ -2565,6 +2667,8 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_function_prototype", &_inP07ytH3bx, METH_VARARGS, nullptr },
   { "interrogate_function_is_method", &_inP07ytzeUk, METH_VARARGS, nullptr },
   { "interrogate_function_class", &_inP07ytUeI5, METH_VARARGS, nullptr },
+  { "interrogate_function_is_unary_op", &_inP07ytbmxJ, METH_VARARGS, nullptr },
+  { "interrogate_function_is_operator_typecast", &_inP07ytY8Lc, METH_VARARGS, nullptr },
   { "interrogate_function_is_constructor", &_inP07ytJAAI, METH_VARARGS, nullptr },
   { "interrogate_function_is_destructor", &_inP07yt0UXw, METH_VARARGS, nullptr },
   { "interrogate_function_has_module_name", &_inP07ytuSvx, METH_VARARGS, nullptr },
@@ -2600,6 +2704,8 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_make_seq_comment", &_inP07ytZc07, METH_VARARGS, nullptr },
   { "interrogate_make_seq_num_name", &_inP07ytfaH0, METH_VARARGS, nullptr },
   { "interrogate_make_seq_element_name", &_inP07ytGB9D, METH_VARARGS, nullptr },
+  { "interrogate_make_seq_num_getter", &_inP07ytrppS, METH_VARARGS, nullptr },
+  { "interrogate_make_seq_element_getter", &_inP07ytO50x, METH_VARARGS, nullptr },
   { "interrogate_number_of_global_types", &_inP07ytsxxs, METH_VARARGS, nullptr },
   { "interrogate_get_global_type", &_inP07ytMT0z, METH_VARARGS, nullptr },
   { "interrogate_number_of_types", &_inP07ytiW3v, METH_VARARGS, nullptr },
@@ -2631,6 +2737,8 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_type_is_const", &_inP07ytMnKa, METH_VARARGS, nullptr },
   { "interrogate_type_is_typedef", &_inP07ytRtji, METH_VARARGS, nullptr },
   { "interrogate_type_wrapped_type", &_inP07ytCnbQ, METH_VARARGS, nullptr },
+  { "interrogate_type_is_array", &_inP07ytoxqc, METH_VARARGS, nullptr },
+  { "interrogate_type_array_size", &_inP07ytZQIS, METH_VARARGS, nullptr },
   { "interrogate_type_is_enum", &_inP07ytdUVN, METH_VARARGS, nullptr },
   { "interrogate_type_is_scoped_enum", &_inP07ytZtNk, METH_VARARGS, nullptr },
   { "interrogate_type_number_of_enum_values", &_inP07ytihbt, METH_VARARGS, nullptr },

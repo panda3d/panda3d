@@ -475,6 +475,12 @@ ConfigVariableInt shadow_depth_bits
  PRC_DESC("The minimum number of depth buffer bits requested when rendering "
           "shadow maps.  Set this to 32 for more depth resolution in shadow "
           "maps."));
+ConfigVariableBool shadow_cube_map_filter
+("shadow-cube-map-filter", false,
+ PRC_DESC("If true, Panda enables hardware depth map comparison mode for "
+          "point lights, if supported.  If false, does not.  Keep this set to "
+          "false if you want the shader generator to work correctly for point "
+          "light shadows."));
 
 ConfigVariableColor background_color
 ("background-color", "0.41 0.41 0.41 0.0",

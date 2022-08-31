@@ -267,6 +267,19 @@ interrogate_function_class(FunctionIndex function) {
 }
 
 bool
+interrogate_function_is_unary_op(FunctionIndex function) {
+  // cerr << "interrogate_function_is_unary_op(" << function << ")\n";
+  return InterrogateDatabase::get_ptr()->get_function(function).is_unary_op();
+}
+
+bool
+interrogate_function_is_operator_typecast(FunctionIndex function) {
+  // cerr << "interrogate_function_is_operator_typecast(" << function <<
+  // ")\n";
+  return InterrogateDatabase::get_ptr()->get_function(function).is_operator_typecast();
+}
+
+bool
 interrogate_function_is_constructor(FunctionIndex function) {
   // cerr << "interrogate_function_is_constructor(" << function << ")\n";
   return InterrogateDatabase::get_ptr()->get_function(function).is_constructor();
@@ -695,6 +708,18 @@ TypeIndex
 interrogate_type_wrapped_type(TypeIndex type) {
   // cerr << "interrogate_type_wrapped_type(" << type << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).get_wrapped_type();
+}
+
+bool
+interrogate_type_is_array(TypeIndex type) {
+  // cerr << "interrogate_type_is_array(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_array();
+}
+
+int
+interrogate_type_array_size(TypeIndex type) {
+  // cerr << "interrogate_type_array_size(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).get_array_size();
 }
 
 bool
