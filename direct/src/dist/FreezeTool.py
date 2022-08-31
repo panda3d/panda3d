@@ -1217,22 +1217,31 @@ class Freezer:
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
-        if 'sysconfig' in self.mf.modules:
+        missing = []
+        if 'sysconfig' in self.mf.modules and \
+           ('linux' in self.platform or 'mac' in self.platform):
+            modname = '_sysconfigdata'
             if sys.version_info >= (3, 6):
+                modname += '_'
+                if sys.version_info < (3, 8):
+                    modname += 'm'
+
                 if 'linux' in self.platform:
                     arch = self.platform.split('_', 1)[1]
-                    self.__loadModule(self.ModuleDef('_sysconfigdata__linux_' + arch + '-linux-gnu', implicit=True))
+                    modname += '_linux_' + arch + '-linux-gnu'
                 elif 'mac' in self.platform:
-                    self.__loadModule(self.ModuleDef('_sysconfigdata__darwin_darwin', implicit=True))
-            elif 'linux' in self.platform or 'mac' in self.platform:
-                self.__loadModule(self.ModuleDef('_sysconfigdata', implicit=True))
+                    modname += '_darwin_darwin'
+
+            try:
+                self.__loadModule(self.ModuleDef(modname, implicit=True))
+            except:
+                missing.append(modname)
 
         # Now, any new modules we found get added to the export list.
         for origName in list(self.mf.modules.keys()):
             if origName not in origToNewName:
                 self.modules[origName] = self.ModuleDef(origName, implicit = True)
 
-        missing = []
         for origName in self.mf.any_missing_maybe()[0]:
             if origName in startupModules:
                 continue
