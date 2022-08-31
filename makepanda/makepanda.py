@@ -451,7 +451,7 @@ elif target == 'darwin':
     else:
         maj, min = platform.mac_ver()[0].split('.')[:2]
         osxver = int(maj), int(min)
-        if osxver[0] == 11:
+        if osxver[0] >= 11:
             # I think Python pins minor version to 0 from macOS 11 onward
             osxver = (osxver[0], 0)
 
