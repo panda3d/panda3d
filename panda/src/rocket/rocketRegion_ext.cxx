@@ -16,7 +16,7 @@
 
 #ifdef HAVE_PYTHON
 
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) && PY_MAJOR_VERSION < 3
 #define HAVE_LONG_LONG 1
 #include <Rocket/Core/Context.h>
 #include <Rocket/Core/Python/Utilities.h>
@@ -30,6 +30,7 @@
  */
 PyObject* Extension<RocketRegion>::
 get_context() const {
+#if PY_MAJOR_VERSION < 3
   try {
     Rocket::Core::Context* context = _this->get_context();
     python::object py_context = Rocket::Core::Python::Utilities::MakeObject(context);
@@ -44,6 +45,7 @@ get_context() const {
     (void)e;
     // Return NULL, which will trigger the exception in Python
   }
+#endif
   return nullptr;
 }
 

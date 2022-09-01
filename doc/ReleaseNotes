@@ -42,6 +42,7 @@ Miscellaneous
 * Add additional helpful debug/spam prints to display code
 
 Build
+* Support building with Python 3.11
 * Support building with OpenSSL 1.1.1 on Windows
 * Support building with OpenEXR 3.0 or 3.1 on Windows
 * Fix errors when compiling Panda headers with MinGW
