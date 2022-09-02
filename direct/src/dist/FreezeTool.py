@@ -84,6 +84,12 @@ hiddenImports = {
     ],
     'pandas.compat': ['lzma', 'cmath'],
     'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
+    'scipy.linalg': ['scipy.linalg.cython_blas', 'scipy.linalg.cython_lapack'],
+    'scipy.sparse.csgraph': ['scipy.sparse.csgraph._validation'],
+    'scipy.spatial._qhull': ['scipy._lib.messagestream'],
+    'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
+    'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
+    'scipy.stats._stats': ['scipy.special.cython_special'],
 }
 
 if sys.version_info >= (3,):

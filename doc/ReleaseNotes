@@ -24,6 +24,7 @@ Deployment
 * Include _sysconfigdata module properly when using sysconfig module
 * Fix building deploy-stub on platforms that use DT_RUNPATH instead of DT_RPATH
 * `sys.flags.optimize` is now set to 2 in Python 3.2 and above
+* Fix import errors when using scipy
 
 Miscellaneous
 * `Texture::get_ram_image_as()` fixed for 3D textures
