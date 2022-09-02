@@ -1,3 +1,59 @@
+-----------------------  RELEASE 1.10.12  -----------------------
+
+Recommended maintenance release containing primarily bug fixes.
+
+Windowing
+* Windows: Fix origin not respected when switching to windowed mode
+* macOS: Fix origin not being updated when resizing window
+* macOS: Fix off-by-one errors with mouse cursor position
+* macOS: Fix issues with confined mouse mode
+* macOS: Fix events being suppressed when moving the mouse pointer
+* macOS: Invert horizontal scroll, set `cocoa-invert-wheel-x true` to revert
+
+Rendering
+* Add `shadow-cube-map-filter` setting to enable cube map shadow filtering
+* Support floating-point FBOs in OpenGL ES 2+
+* Fix texture format selection in OpenGL with T_half_float component type
+* Added `egl-device-index` config var to select EGL device
+* Offscreen windows in tinydisplay renderer are now resizeable
+* CommonFilters now supports alternative coordinate systems
+* Fix BufferViewer frame when using a different coordinate system
+
+Deployment
+* Fix _bootlocale error in deployed application on Windows with Python 3.10
+* Include _sysconfigdata module properly when using sysconfig module
+* Fix building deploy-stub on platforms that use DT_RUNPATH instead of DT_RPATH
+* `sys.flags.optimize` is now set to 2 in Python 3.2 and above
+* Fix import errors when using scipy
+
+Miscellaneous
+* `Texture::get_ram_image_as()` fixed for 3D textures
+* Fix PStats GPU timing not working with newer NVIDIA drivers
+* Fix false negative in collision test when sphere is fully inside box
+* Resolve segmentation fault when statically linking ffmpeg module
+* Fix issue with failed mmap when using WebcamVideo on Linux
+* macOS: Keyboard/mouse devices are no longer enumerated by default
+* Fix repr of LPlane class
+* Remove dependency on ShowBase in FilterManager
+* Many new functions added to interrogatedb module to query additional info
+* Interrogate no longer writes wrappers with rvalue references to interrogatedb
+* PStats on Linux: Fix mouse motion detected outside strip chart graph area
+* Fix assertion when reading bam file with Bullet convex hull shape
+* Fix memory leak when specifying owner of a task
+* Add additional helpful debug/spam prints to display code
+
+Build
+* Support building with Python 3.11
+* Support building with OpenSSL 1.1.1 on Windows
+* Support building with OpenEXR 3.0 or 3.1 on Windows
+* Fix errors when compiling Panda headers with MinGW
+* Allow compiling Panda headers on Windows without NOMINMAX set
+* Fix wheel platform tag on manylinux aarch64
+* Experimentally allow building with mimalloc on Windows
+* Makepanda records cache timestamps as integers instead of floats
+* Makepanda can now also build tinydisplay on Linux without X11
+* Fix naming of built wheels when building for macOS 12
+
 -----------------------  RELEASE 1.10.11  -----------------------
 
 Maintenance release containing assorted bug fixes and minor improvements.
