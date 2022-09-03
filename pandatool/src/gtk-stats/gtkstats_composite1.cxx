@@ -1,5 +1,6 @@
 #include "gtkStats.cxx"
 #include "gtkStatsChartMenu.cxx"
+#include "gtkStatsFlameGraph.cxx"
 #include "gtkStatsGraph.cxx"
 #include "gtkStatsLabel.cxx"
 #include "gtkStatsLabelStack.cxx"
@@ -7,3 +8,4 @@
 #include "gtkStatsPianoRoll.cxx"
 #include "gtkStatsServer.cxx"
 #include "gtkStatsStripChart.cxx"
+#include "gtkStatsTimeline.cxx"

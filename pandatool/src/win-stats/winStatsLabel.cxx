@@ -14,6 +14,9 @@
 #include "winStatsLabel.h"
 #include "winStatsMonitor.h"
 #include "winStatsGraph.h"
+#include "convert_srgb.h"
+
+#include <commctrl.h>
 
 int WinStatsLabel::_left_margin = 2;
 int WinStatsLabel::_right_margin = 2;
@@ -28,38 +31,45 @@ const char * const WinStatsLabel::_window_class_name = "label";
  */
 WinStatsLabel::
 WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
-              int thread_index, int collector_index, bool use_fullname) :
+              int thread_index, int collector_index, bool use_fullname,
+              bool align_right) :
   _monitor(monitor),
   _graph(graph),
   _thread_index(thread_index),
-  _collector_index(collector_index)
+  _collector_index(collector_index),
+  _align_right(align_right),
+  _window(0),
+  _tooltip_window(0)
 {
-  _window = 0;
-  if (use_fullname) {
-    _text = _monitor->get_client_data()->get_collector_fullname(_collector_index);
-  } else {
-    _text = _monitor->get_client_data()->get_collector_name(_collector_index);
-  }
+  update_text(use_fullname);
 
   LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  int r = (int)(rgb[0] * 255.0f);
-  int g = (int)(rgb[1] * 255.0f);
-  int b = (int)(rgb[2] * 255.0f);
-  _bg_color = RGB(r, g, b);
+  int r = (int)encode_sRGB_uchar((float)rgb[0]);
+  int g = (int)encode_sRGB_uchar((float)rgb[1]);
+  int b = (int)encode_sRGB_uchar((float)rgb[2]);
   _bg_brush = CreateSolidBrush(RGB(r, g, b));
+
+  // Calculate the color when it is highlighted.
+  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
+  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
+  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
+  _highlight_bg_brush = CreateSolidBrush(RGB(hr, hg, hb));
 
   // Should our foreground be black or white?
   double bright =
-    rgb[0] * 0.299 +
-    rgb[1] * 0.587 +
-    rgb[2] * 0.114;
+    rgb[0] * 0.2126 +
+    rgb[1] * 0.7152 +
+    rgb[2] * 0.0722;
 
   if (bright >= 0.5) {
     _fg_color = RGB(0, 0, 0);
-    _highlight_brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
   } else {
     _fg_color = RGB(255, 255, 255);
-    _highlight_brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+  }
+  if (bright * 0.75 >= 0.5) {
+    _highlight_fg_color = RGB(0, 0, 0);
+  } else {
+    _highlight_fg_color = RGB(255, 255, 255);
   }
 
   _x = 0;
@@ -77,6 +87,10 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
 WinStatsLabel::
 ~WinStatsLabel() {
   if (_window) {
+    if (_tooltip_window) {
+      DestroyWindow(_tooltip_window);
+      _tooltip_window = 0;
+    }
     DestroyWindow(_window);
     _window = 0;
   }
@@ -96,7 +110,7 @@ setup(HWND parent_window) {
   create_window(parent_window);
 
   HDC hdc = GetDC(_window);
-  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
+  HFONT hfnt = _monitor->get_font();
   SelectObject(hdc, hfnt);
 
   SIZE size;
@@ -113,59 +127,13 @@ setup(HWND parent_window) {
  */
 void WinStatsLabel::
 set_pos(int x, int y, int width) {
-  _x = x;
-  _y = y;
-  _width = width;
-  SetWindowPos(_window, 0, x, y - _height, _width, _height,
-               SWP_NOZORDER | SWP_SHOWWINDOW);
-}
-
-/**
- * Returns the x position of the label on its parent.
- */
-int WinStatsLabel::
-get_x() const {
-  return _x;
-}
-
-/**
- * Returns the y position of the label on its parent.
- */
-int WinStatsLabel::
-get_y() const {
-  return _y;
-}
-
-/**
- * Returns the width of the label as we requested it.
- */
-int WinStatsLabel::
-get_width() const {
-  return _width;
-}
-
-/**
- * Returns the height of the label as we requested it.
- */
-int WinStatsLabel::
-get_height() const {
-  return _height;
-}
-
-/**
- * Returns the width the label would really prefer to be.
- */
-int WinStatsLabel::
-get_ideal_width() const {
-  return _ideal_width;
-}
-
-/**
- * Returns the collector this label represents.
- */
-int WinStatsLabel::
-get_collector_index() const {
-  return _collector_index;
+  if (x != _x || y != _y || width != _width) {
+    _x = x;
+    _y = y;
+    _width = width;
+    SetWindowPos(_window, 0, x, y - _height, _width, _height,
+                 SWP_NOZORDER | SWP_SHOWWINDOW);
+  }
 }
 
 /**
@@ -180,11 +148,29 @@ set_highlight(bool highlight) {
 }
 
 /**
- * Returns true if the visual highlight for this label is enabled.
+ * Set to true if the full name of the collector should be shown.
  */
-bool WinStatsLabel::
-get_highlight() const {
-  return _highlight;
+void WinStatsLabel::
+update_text(bool use_fullname) {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  _tooltip_text = client_data->get_collector_fullname(_collector_index);
+  if (use_fullname) {
+    _text = _tooltip_text;
+  } else {
+    _text = client_data->get_collector_name(_collector_index);
+  }
+
+  // Recalculate the dimensions.
+  if (_window) {
+    HDC hdc = GetDC(_window);
+    HFONT hfnt = _monitor->get_font();
+    SelectObject(hdc, hfnt);
+
+    SIZE size;
+    GetTextExtentPoint32(hdc, _text.data(), _text.length(), &size);
+    _height = size.cy + _top_margin + _bottom_margin;
+    _ideal_width = size.cx + _left_margin + _right_margin;
+  }
 }
 
 /**
@@ -220,6 +206,25 @@ create_window(HWND parent_window) {
   }
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
+
+  // Create the tooltip window.  This will cause a TTN_GETDISPINFO message to
+  // be sent to the window to acquire the tooltip text.
+  _tooltip_window = CreateWindow(TOOLTIPS_CLASS, nullptr,
+                                 WS_POPUP,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 _window, nullptr,
+                                 application, nullptr);
+
+  if (_tooltip_window != 0) {
+    TOOLINFO info = { 0 };
+    info.cbSize = sizeof(info);
+    info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    info.hwnd = _window;
+    info.uId = (UINT_PTR)_window;
+    info.lpszText = LPSTR_TEXTCALLBACK;
+    SendMessage(_tooltip_window, TTM_ADDTOOL, 0, (LPARAM)&info);
+  }
 }
 
 /**
@@ -274,13 +279,20 @@ LONG WinStatsLabel::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDBLCLK:
-    _graph->clicked_label(_collector_index);
+    _graph->on_click_label(_collector_index);
+    return 0;
+
+  case WM_CONTEXTMENU:
+    _graph->on_popup_label(_collector_index);
     return 0;
 
   case WM_MOUSEMOVE:
     {
       // When the mouse enters the label area, highlight the label.
-      set_mouse_within(true);
+      if (!_mouse_within) {
+        set_mouse_within(true);
+        _graph->on_enter_label(_collector_index);
+      }
 
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the label.
       TRACKMOUSEEVENT tme = {
@@ -294,7 +306,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_MOUSELEAVE:
-    set_mouse_within(false);
+    if (_mouse_within) {
+      set_mouse_within(false);
+      _graph->on_leave_label(_collector_index);
+    }
     break;
 
   case WM_PAINT:
@@ -303,25 +318,42 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       HDC hdc = BeginPaint(hwnd, &ps);
 
       RECT rect = { 0, 0, _width, _height };
-      FillRect(hdc, &rect, _bg_brush);
+      FillRect(hdc, &rect, (_highlight || _mouse_within) ? _highlight_bg_brush : _bg_brush);
 
-      if (_highlight || _mouse_within) {
-        FrameRect(hdc, &rect, _highlight_brush);
+      HFONT hfnt = _monitor->get_font();
+      SelectObject(hdc, hfnt);
+      SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
+
+      SetBkMode(hdc, TRANSPARENT);
+      SetTextColor(hdc, (_highlight || _mouse_within) ? _highlight_fg_color : _fg_color);
+
+      if (_width > 8) {
+        UINT format = DT_END_ELLIPSIS | DT_SINGLELINE;
+        if (_align_right) {
+          format |= DT_RIGHT;
+        } else {
+          format |= DT_LEFT;
+        }
+
+        RECT margins = { _left_margin, _top_margin, _width - _right_margin, _height - _bottom_margin };
+        DrawText(hdc, _text.data(), _text.length(), &margins, format);
       }
 
-      HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
-      SelectObject(hdc, hfnt);
-      SetTextAlign(hdc, TA_RIGHT | TA_TOP);
-
-      SetBkColor(hdc, _bg_color);
-      SetBkMode(hdc, OPAQUE);
-      SetTextColor(hdc, _fg_color);
-
-      TextOut(hdc, _width - _right_margin, _top_margin,
-              _text.data(), _text.length());
       EndPaint(hwnd, &ps);
       return 0;
     }
+
+  case WM_NOTIFY:
+    switch (((LPNMHDR)lparam)->code) {
+    case TTN_GETDISPINFO:
+      {
+        NMTTDISPINFO &info = *(NMTTDISPINFO *)lparam;
+        _tooltip_text = _graph->get_label_tooltip(_collector_index);
+        info.lpszText = (char *)_tooltip_text.c_str();
+      }
+      return 0;
+    }
+    break;
 
   default:
     break;

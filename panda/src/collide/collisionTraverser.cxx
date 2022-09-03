@@ -647,7 +647,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     // child.
     int index = node->get_visible_child();
     PandaNode::Children children = node->get_children();
-    if (index >= 0 && index < children.get_num_children()) {
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
       const PandaNode::DownConnection &child = children.get_child_connection(index);
       CollisionLevelStateSingle::CurrentMask mask = level_state.get_child_mask(child);
       if (!mask.is_zero()) {
@@ -856,7 +856,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     // child.
     int index = node->get_visible_child();
     PandaNode::Children children = node->get_children();
-    if (index >= 0 && index < children.get_num_children()) {
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
       const PandaNode::DownConnection &child = children.get_child_connection(index);
       CollisionLevelStateDouble::CurrentMask mask = level_state.get_child_mask(child);
       if (!mask.is_zero()) {
@@ -1065,7 +1065,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     // child.
     int index = node->get_visible_child();
     PandaNode::Children children = node->get_children();
-    if (index >= 0 && index < children.get_num_children()) {
+    if (index >= 0 && (size_t)index < children.get_num_children()) {
       const PandaNode::DownConnection &child = children.get_child_connection(index);
       CollisionLevelStateQuad::CurrentMask mask = level_state.get_child_mask(child);
       if (!mask.is_zero()) {

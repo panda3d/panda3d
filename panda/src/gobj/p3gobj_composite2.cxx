@@ -22,7 +22,6 @@
 #include "textureReloadRequest.cxx"
 #include "textureStage.cxx"
 #include "textureStagePool.cxx"
-#include "timerQueryContext.cxx"
 #include "transformBlend.cxx"
 #include "transformBlendTable.cxx"
 #include "transformTable.cxx"

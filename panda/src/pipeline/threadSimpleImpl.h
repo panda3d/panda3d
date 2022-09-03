@@ -77,6 +77,8 @@ public:
 
   INLINE static void write_status(std::ostream &out);
 
+  static bool get_context_switches(size_t &total, size_t &involuntary);
+
 private:
   static void st_begin_thread(void *data);
   void begin_thread();
@@ -141,6 +143,9 @@ private:
 #ifdef WIN32
   DWORD _win32_system_thread_id;
 #endif
+
+  size_t _context_switches;
+  size_t _involuntary_context_switches;
 
   friend class ThreadSimpleManager;
 };

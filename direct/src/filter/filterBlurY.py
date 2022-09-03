@@ -4,14 +4,14 @@ BLUR_Y = """
 //Cg profile arbvp1 arbfp1
 
 void vshader(float4 vtx_position : POSITION,
-             float2 vtx_texcoord0 : TEXCOORD0,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
-      	     out float2 l_texcoord0 : TEXCOORD0,
+             out float2 l_texcoord0 : TEXCOORD0,
              uniform float4 texpad_src,
              uniform float4x4 mat_modelproj)
 {
-  l_position=mul(mat_modelproj, vtx_position);
-  l_texcoord0 = (vtx_position.xz * texpad_src.xy) + texpad_src.xy;
+  l_position = mul(mat_modelproj, vtx_position);
+  l_texcoord0 = vtx_texcoord * texpad_src.xy * 2;
 }
 
 

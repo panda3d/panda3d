@@ -27,7 +27,7 @@ validate(void *ptr) {
 
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   const ObjectNode *obj = buffer_to_node(ptr);
-  return AtomicAdjust::get(obj->_flag) == DCF_alive;
+  return obj->_flag.load(std::memory_order_relaxed) == DCF_alive;
 #else
   return true;
 #endif  // USE_DELETEDCHAINFLAG

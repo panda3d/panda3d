@@ -20,7 +20,7 @@
  */
 GtkStatsLabelStack::
 GtkStatsLabelStack() {
-  _widget = gtk_vbox_new(FALSE, 0);
+  _widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   _highlight_label = -1;
 }
 
@@ -48,9 +48,12 @@ int GtkStatsLabelStack::
 get_label_y(int label_index, GtkWidget *target_widget) const {
   nassertr(label_index >= 0 && label_index < (int)_labels.size(), 0);
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(_widget, &allocation);
+
   // Assume all labels have the same height.
   int height = _labels[0]->get_height();
-  int start_y = _widget->allocation.height - height * label_index;
+  int start_y = allocation.height - height * label_index;
 
   int x, y;
   gtk_widget_translate_coordinates(_widget, target_widget,
@@ -81,9 +84,7 @@ get_label_collector_index(int label_index) const {
  */
 void GtkStatsLabelStack::
 clear_labels(bool delete_widgets) {
-  Labels::iterator li;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    GtkStatsLabel *label = (*li);
+  for (GtkStatsLabel *label : _labels) {
     if (delete_widgets) {
       gtk_container_remove(GTK_CONTAINER(_widget), label->get_widget());
     }

@@ -6,6 +6,7 @@
 ########################################################################
 
 import configparser
+from distutils import sysconfig # DO NOT CHANGE to sysconfig - see #1230
 import fnmatch
 import getpass
 import glob
@@ -17,7 +18,6 @@ import shutil
 import signal
 import subprocess
 import sys
-import sysconfig
 import threading
 import _thread as thread
 import time
@@ -572,6 +572,26 @@ def GetFlexVersion():
         Warn("Unable to detect flex version")
         return (0, 0, 0)
 
+SEVENZIP = None
+def GetSevenZip():
+    global SEVENZIP
+    if SEVENZIP is not None:
+        return SEVENZIP
+
+    win_util = os.path.join(GetThirdpartyBase(), 'win-util')
+    if GetHost() == 'windows' and os.path.isdir(win_util):
+        SEVENZIP = GetThirdpartyBase() + "/win-util/7za.exe"
+    elif LocateBinary('7z'):
+        SEVENZIP = '7z'
+    else:
+        # We don't strictly need it, so don't give an error
+        return None
+
+    return SEVENZIP
+
+def HasSevenZip():
+    return GetSevenZip() is not None
+
 ########################################################################
 ##
 ## LocateBinary
@@ -634,6 +654,9 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             os.chdir(cwd)
 
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
+
+        if res == -1073741510: # 0xc000013a
+            exit("keyboard interrupt")
 
         if cwd is not None:
             os.chdir(pwd)
@@ -717,7 +740,7 @@ def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
     try:
-        date = os.path.getmtime(path)
+        date = int(os.path.getmtime(path))
     except:
         date = 0
     TIMESTAMPCACHE[path] = date
@@ -854,8 +877,11 @@ def JavaGetImports(path):
     imports = []
     try:
         for match in JavaImportRegex.finditer(source, 0):
-            impname = match.group(1)
-            imports.append(impname.strip())
+            impname = match.group(1).strip()
+            if not impname.startswith('java.') and \
+               not impname.startswith('dalvik.') and \
+               not impname.startswith('android.'):
+                imports.append(impname.strip())
     except:
         print("Failed to determine dependencies of \"" + path  +"\".")
         raise
@@ -871,7 +897,7 @@ def JavaGetImports(path):
 ##
 ########################################################################
 
-DCACHE_VERSION = 2
+DCACHE_VERSION = 3
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():
@@ -1640,7 +1666,10 @@ def LocateLibrary(lib, lpath=[], prefer_static=False):
                 return os.path.join(dir, 'lib%s.a' % lib)
 
     for dir in lpath:
-        if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
+        if target == 'windows':
+            if os.path.isfile(os.path.join(dir, lib + '.lib')):
+                return os.path.join(dir, lib + '.lib')
+        elif target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
             return os.path.join(dir, 'lib%s.dylib' % lib)
         elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
             return os.path.join(dir, 'lib%s.so' % lib)
@@ -2178,12 +2207,12 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
-    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_path("include"))
+    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
     #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
-        SDK["PYTHON"] = sysconfig.get_path("include")
+        SDK["PYTHON"] = sysconfig.get_python_inc()
         SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
@@ -3318,7 +3347,12 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if CrossCompiling():
+    if GetTarget() == 'windows':
+        if GetTargetArch() == 'x64':
+            return '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        else:
+            return '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+    elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
         import _imp
@@ -3460,8 +3494,8 @@ def GetCurrentPythonVersionInfo():
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
-        "purelib": sysconfig.get_path("purelib"),
-        "platlib": sysconfig.get_path("platlib"),
+        "purelib": sysconfig.get_python_lib(False),
+        "platlib": sysconfig.get_python_lib(True),
     }
 
 

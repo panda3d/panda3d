@@ -20,7 +20,7 @@ class FLOATNAME(UnalignedLVecBase4);
 /**
  * This is the base class for all three-component vectors and points.
  */
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) : public MemoryBase {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;

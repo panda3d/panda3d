@@ -333,7 +333,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2016, macOS-11]
+        os: [ubuntu-18.04, windows-2019, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
@@ -347,16 +347,16 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.10/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.11/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz
-        tar -xf panda3d-1.10.10-tools-mac.tar.gz
-        mv panda3d-1.10.10/thirdparty thirdparty
-        rmdir panda3d-1.10.10
+        curl -O https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-mac.tar.gz
+        tar -xf panda3d-1.10.11-tools-mac.tar.gz
+        mv panda3d-1.10.11/thirdparty thirdparty
+        rmdir panda3d-1.10.11
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
@@ -365,7 +365,7 @@ jobs:
     - name: Build Python 3.9
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -378,7 +378,7 @@ jobs:
     - name: Build Python 3.8
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -391,7 +391,7 @@ jobs:
     - name: Build Python 3.7
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.7
       shell: bash
       run: |

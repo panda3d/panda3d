@@ -201,6 +201,90 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
 }
 
 /**
+ * Replaces the labels with the given collector indices.
+ */
+void WinStatsLabelStack::
+replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
+               int thread_index, const vector_int &collector_indices,
+               bool use_fullname) {
+
+  _ideal_width = 0;
+
+  // First skip the part of the stack that hasn't changed.
+  size_t li = 0;
+  size_t ci = 0;
+  while (ci < collector_indices.size() && li < _labels.size()) {
+    WinStatsLabel *label = _labels[li];
+    if (collector_indices[ci] != label->get_collector_index()) {
+      // Mismatch.
+      break;
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    ++ci;
+    ++li;
+  }
+
+  if (ci == collector_indices.size()) {
+    if (ci == _labels.size()) {
+      // Perfect, nothing changed.
+      return;
+    }
+
+    // Simple case, just delete the rest.
+    while (li < _labels.size()) {
+      delete _labels[li++];
+    }
+    _labels.resize(ci);
+    return;
+  }
+
+  int yp = _height;
+  if (li > 0) {
+    WinStatsLabel *label = _labels[li - 1];
+    yp = label->get_y() - label->get_height();
+  }
+
+  // Make a map of remaining labels.
+  std::map<int, WinStatsLabel *> label_map;
+  for (size_t li2 = li; li2 < _labels.size(); ++li2) {
+    WinStatsLabel *label = _labels[li2];
+    label_map[label->get_collector_index()] = label;
+  }
+
+  _labels.resize(collector_indices.size());
+
+  while (ci < collector_indices.size()) {
+    int collector_index = collector_indices[ci++];
+
+    WinStatsLabel *label;
+    auto it = label_map.find(collector_index);
+    if (it == label_map.end()) {
+      // It's not in the map.  Create a new label.
+      label = new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
+      if (_window) {
+        label->setup(_window);
+      }
+    } else {
+      // Erase it from the map, so that it's not deleted.
+      label = it->second;
+      label_map.erase(it);
+    }
+    if (_window) {
+      label->set_pos(0, yp, _width);
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    yp -= label->get_height();
+
+    _labels[li++] = label;
+  }
+
+  // Anything that's remaining in the label map should be deleted.
+  for (auto it = label_map.begin(); it != label_map.end(); ++it) {
+    delete it->second;
+  }
+}
+
+/**
  * Returns the number of labels in the stack.
  */
 int WinStatsLabelStack::
@@ -224,7 +308,6 @@ highlight_label(int collector_index) {
     }
   }
 }
-
 
 /**
  * Creates the window for this stack.
@@ -306,7 +389,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       HDC hdc = BeginPaint(hwnd, &ps);
 
       RECT rect = { 0, 0, _width, _height };
-      FillRect(hdc, &rect, (HBRUSH)COLOR_BACKGROUND);
+      FillRect(hdc, &rect, (HBRUSH)COLOR_WINDOW);
       EndPaint(hwnd, &ps);
       return 0;
     }

@@ -178,7 +178,13 @@ format_number(double value, int guide_bar_units, const string &unit_name) {
 
   if ((guide_bar_units & GBU_named) != 0) {
     // Units are whatever is specified by unit_name, not a time unit at all.
-    label = format_number(value);
+    int int_value = (int)value;
+    if ((double)int_value == value) {
+      // Probably a counter or something, don't display .0 suffix.
+      label = format_string(int_value);
+    } else {
+      label = format_number(value);
+    }
     if ((guide_bar_units & GBU_show_units) != 0 && !unit_name.empty()) {
       label += " ";
       label += unit_name;
@@ -187,10 +193,32 @@ format_number(double value, int guide_bar_units, const string &unit_name) {
   } else {
     // Units are either milliseconds or hz, or both.
     if ((guide_bar_units & GBU_ms) != 0) {
-      double ms = value * 1000.0;
-      label += format_number(ms);
-      if ((guide_bar_units & GBU_show_units) != 0) {
-        label += " ms";
+      if ((guide_bar_units & GBU_show_units) != 0 &&
+          value > 0 && value < 0.000001) {
+        double ns = value * 1000000000.0;
+        label += format_number(ns);
+        label += " ns";
+      }
+      else if ((guide_bar_units & GBU_show_units) != 0 &&
+          value > 0 && value < 0.001) {
+        double us = value * 1000000.0;
+        label += format_number(us);
+#ifdef _WIN32
+        label += " \xb5s";
+#else
+        label += " us";
+#endif
+      }
+      else if ((guide_bar_units & GBU_show_units) == 0 || value < 1.0) {
+        double ms = value * 1000.0;
+        label += format_number(ms);
+        if ((guide_bar_units & GBU_show_units) != 0) {
+          label += " ms";
+        }
+      }
+      else {
+        label += format_number(value);
+        label += " s";
       }
     }
 

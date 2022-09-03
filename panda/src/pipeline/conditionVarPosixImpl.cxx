@@ -18,6 +18,12 @@
 #include "conditionVarPosixImpl.h"
 #include <sys/time.h>
 
+int (*ConditionVarPosixImpl::_wait_func)(pthread_cond_t *,
+                                         pthread_mutex_t *) = &pthread_cond_wait;
+int (*ConditionVarPosixImpl::_timedwait_func)(pthread_cond_t *,
+                                              pthread_mutex_t *,
+                                              const struct timespec *) = &pthread_cond_timedwait;
+
 /**
  *
  */
@@ -41,7 +47,11 @@ wait(double timeout) {
     ++ts.tv_sec;
   }
 
+#ifdef DO_PSTATS
+  int result = _timedwait_func(&_cvar, &_mutex._lock, &ts);
+#else
   int result = pthread_cond_timedwait(&_cvar, &_mutex._lock, &ts);
+#endif
 #ifndef NDEBUG
   if (result != 0 && result != ETIMEDOUT) {
     pipeline_cat.error()

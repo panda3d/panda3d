@@ -430,7 +430,7 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // This switch level is in range.  Draw its children in the funny
         // wireframe mode.
         Children children = get_children();
-        if (index < children.get_num_children()) {
+        if ((size_t)index < children.get_num_children()) {
           const PandaNode::DownConnection &child = children.get_child_connection(index);
           trav->traverse_down(data, child, data._state->compose(sw.get_viz_model_state()));
         }

@@ -562,6 +562,7 @@ class WheelFile(object):
             print("Adding {0} from {1}".format(target_path, orig_source_path))
 
         zinfo = zipfile.ZipInfo.from_file(source_path, target_path)
+        zinfo.compress_type = self.zip_file.compression
         if zinfo.date_time > self.max_date_time:
             zinfo.date_time = self.max_date_time
 
@@ -653,7 +654,7 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2010")
                 elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
                     platform = platform.replace("linux", "manylinux2014")
-                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so"):
+                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so"):
                     platform = platform.replace("linux", "manylinux_2_24")
 
     platform = platform.replace('-', '_').replace('.', '_')
@@ -785,6 +786,10 @@ if __debug__:
 
     for file in sorted(os.listdir(ext_mod_dir)):
         if file.endswith(ext_suffix):
+            if file.startswith('_tkinter.'):
+                # Tkinter is supplied in a separate wheel.
+                continue
+
             source_path = os.path.join(ext_mod_dir, file)
 
             if file.endswith('.pyd') and platform.startswith('cygwin'):
@@ -794,6 +799,21 @@ if __debug__:
                 target_path = 'deploy_libs/' + file
 
             whl.write_file(target_path, source_path)
+
+    # Include the special sysconfigdata module.
+    if os.name == 'posix':
+        import sysconfig
+
+        if hasattr(sysconfig, '_get_sysconfigdata_name'):
+            modname = sysconfig._get_sysconfigdata_name() + '.py'
+        else:
+            modname = '_sysconfigdata.py'
+
+        for entry in sys.path:
+            source_path = os.path.join(entry, modname)
+            if os.path.isfile(source_path):
+                whl.write_file('deploy_libs/' + modname, source_path)
+                break
 
     # Add plug-ins.
     for lib in PLUGIN_LIBS:

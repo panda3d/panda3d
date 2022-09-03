@@ -37,11 +37,11 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
-  _munge_color(false),
-  _munge_color_scale(false),
   _auto_shader(false),
   _shader_skinning(false),
-  _remove_material(false)
+  _remove_material(false),
+  _munge_color(false),
+  _munge_color_scale(false)
 {
   const ShaderAttrib *shader_attrib;
   state->get_attrib_def(shader_attrib);

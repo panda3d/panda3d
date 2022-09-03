@@ -123,8 +123,8 @@ class FilterManager(DirectObject):
             winy = winy // div
 
         if mul != 1:
-            winx = winx * mul
-            winy = winy * mul
+            winx = int(round(winx * mul))
+            winy = int(round(winy * mul))
 
         return winx,winy
 
@@ -323,7 +323,7 @@ class FilterManager(DirectObject):
             props.setAuxRgba(1)
         if auxtex1 is not None:
             props.setAuxRgba(2)
-        buffer=base.graphicsEngine.makeOutput(
+        buffer=self.engine.makeOutput(
             self.win.getPipe(), name, -1,
             props, winprops, GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self.win.getGsg(), self.win)

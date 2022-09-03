@@ -744,7 +744,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }
@@ -768,7 +768,7 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }

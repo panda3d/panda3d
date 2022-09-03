@@ -16,11 +16,17 @@ from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
+import sys
 
-try:
-    import _signal as signal
-except ImportError:
+# On Android, there's no use handling SIGINT, and in fact we can't, since we
+# run the application in a separate thread from the main thread.
+if hasattr(sys, 'getandroidapilevel'):
     signal = None
+else:
+    try:
+        import _signal as signal
+    except ImportError:
+        signal = None
 
 from panda3d.core import *
 from direct.extensions_native import HTTPChannel_extensions
@@ -31,7 +37,6 @@ def print_exc_plus():
     Print the usual traceback information, followed by a listing of all the
     local variables in each frame.
     """
-    import sys
     import traceback
 
     tb = sys.exc_info()[2]
@@ -127,6 +132,8 @@ class TaskManager:
         self.destroyed = False
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
+        if signal:
+            self.__prevHandler = signal.default_int_handler
 
         self._frameProfileQueue = []
 
@@ -168,7 +175,7 @@ class TaskManager:
         print('*** allowing mid-frame keyboard interrupt.')
         # Restore default interrupt handler
         if signal:
-            signal.signal(signal.SIGINT, signal.default_int_handler)
+            signal.signal(signal.SIGINT, self.__prevHandler)
         # and invoke it
         raise KeyboardInterrupt
 
@@ -475,25 +482,30 @@ class TaskManager:
         chains that are in sub-threads or that have frame budgets
         might execute their tasks differently. """
 
+        startFrameTime = self.globalClock.getRealTime()
+
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
+
         if signal:
-            signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
+            self.__prevHandler = signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
-        startFrameTime = self.globalClock.getRealTime()
+        try:
+            self.mgr.poll()
 
-        self.mgr.poll()
+            # This is the spot for an internal yield function
+            nextTaskTime = self.mgr.getNextWakeTime()
+            self.doYield(startFrameTime, nextTaskTime)
 
-        # This is the spot for an internal yield function
-        nextTaskTime = self.mgr.getNextWakeTime()
-        self.doYield(startFrameTime, nextTaskTime)
+        finally:
+            # Restore previous interrupt handler
+            if signal:
+                signal.signal(signal.SIGINT, self.__prevHandler)
+                self.__prevHandler = signal.default_int_handler
 
-        # Restore default interrupt handler
-        if signal:
-            signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
 
@@ -1264,7 +1276,6 @@ class TaskManager:
 
 if __debug__:
     def checkLeak():
-        import sys
         import gc
         gc.enable()
         from direct.showbase.DirectObject import DirectObject

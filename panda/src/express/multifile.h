@@ -69,8 +69,6 @@ PUBLISHED:
 
   INLINE void set_encryption_flag(bool flag);
   INLINE bool get_encryption_flag() const;
-  INLINE void set_encryption_password(const std::string &encryption_password);
-  INLINE const std::string &get_encryption_password() const;
 
   INLINE void set_encryption_algorithm(const std::string &encryption_algorithm);
   INLINE const std::string &get_encryption_algorithm() const;
@@ -85,6 +83,9 @@ PUBLISHED:
                      int compression_level);
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                         int compression_level);
+
+  EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
+  EXTENSION(INLINE PyObject *get_encryption_password() const);
 
 #ifdef HAVE_OPENSSL
   bool add_signature(const Filename &certificate,
@@ -143,6 +144,9 @@ PUBLISHED:
   INLINE const std::string &get_header_prefix() const;
 
 public:
+  INLINE void set_encryption_password(const std::string &encryption_password);
+  INLINE const std::string &get_encryption_password() const;
+
 #ifdef HAVE_OPENSSL
   class CertRecord {
   public:

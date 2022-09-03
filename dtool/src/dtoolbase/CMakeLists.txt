@@ -46,6 +46,7 @@ set(P3DTOOLBASE_HEADERS
   typeRegistryNode.I typeRegistryNode.h
   typedObject.I typedObject.h
   pallocator.T pallocator.h
+  patomic.h patomic.I
   pdeque.h plist.h pmap.h pset.h
   pvector.h epvector.h
   lookup3.h
@@ -70,6 +71,7 @@ set(P3DTOOLBASE_SOURCES
   mutexWin32Impl.cxx
   mutexSpinlockImpl.cxx
   neverFreeMemory.cxx
+  patomic.cxx
   pdtoa.cxx
   pstrtod.cxx
   register_type.cxx
@@ -92,8 +94,13 @@ add_component_library(p3dtoolbase NOINIT SYMBOL BUILDING_DTOOL_DTOOLBASE
 target_include_directories(p3dtoolbase PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${PANDA_OUTPUT_DIR}/include>)
-target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS)
+target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS PKG::MIMALLOC)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
+
+if(HAVE_MIMALLOC AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  target_link_options(p3dtoolbase PRIVATE "LINKER:--exclude-libs,libmimalloc.a")
+endif()
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3dtoolbase

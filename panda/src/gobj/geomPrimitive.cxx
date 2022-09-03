@@ -78,17 +78,6 @@ GeomPrimitive(const GeomPrimitive &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a GeomPrimitive
- * that is actively being used for rendering.
- */
-void GeomPrimitive::
-operator = (const GeomPrimitive &copy) {
-  CopyOnWriteObject::operator = (copy);
-  _cycler = copy._cycler;
-}
-
-/**
  *
  */
 GeomPrimitive::
@@ -2358,6 +2347,25 @@ get_num_primitives() const {
   } else {
     // This is a simple primitive type like a triangle: each primitive uses
     // the same number of vertices.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
+}
+
+/**
+ *
+ */
+int GeomPrimitivePipelineReader::
+get_num_faces() const {
+  int num_vertices_per_primitive = _object->get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    int num_primitives = _cdata->_ends.size();
+    int num_vertices = get_num_vertices();
+    int min_num_vertices_per_primitive = _object->get_min_num_vertices_per_primitive();
+    int num_unused_vertices_per_primitive = _object->get_num_unused_vertices_per_primitive();
+    return num_vertices - (num_primitives * (min_num_vertices_per_primitive - 1)) - ((num_primitives - 1) * num_unused_vertices_per_primitive);
+  } else {
+    // Same as the number of primitives.
     return (get_num_vertices() / num_vertices_per_primitive);
   }
 }

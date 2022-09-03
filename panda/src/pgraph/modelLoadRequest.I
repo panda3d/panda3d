@@ -46,7 +46,7 @@ get_loader() const {
  */
 INLINE bool ModelLoadRequest::
 is_ready() const {
-  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
+  return (FutureState)_future_state.load(std::memory_order_relaxed) == FS_finished;
 }
 
 /**

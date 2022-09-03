@@ -65,8 +65,8 @@ public:
 
   INLINE void client_resume_after_pause();
 
-  void new_frame(int thread_index);
-  void add_frame(int thread_index, const PStatFrameData &frame_data);
+  void new_frame(int thread_index, int frame_number = -1);
+  void add_frame(int thread_index, int frame_number, const PStatFrameData &frame_data);
 
 private:
   void transmit_frame_data(int thread_index, int frame_number,
@@ -111,6 +111,8 @@ private:
   double _udp_count_factor;
   unsigned int _tcp_count;
   unsigned int _udp_count;
+
+  bool _thread_profiling = false;
 };
 
 #include "pStatClientImpl.I"
