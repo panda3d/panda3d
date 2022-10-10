@@ -261,9 +261,18 @@ EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_function_python_wrapper(Fun
 // not identical.
 EXPCL_INTERROGATEDB const char *interrogate_wrapper_name(FunctionWrapperIndex wrapper);
 
+// Returns the function that this wrapper belongs to.
+EXPCL_INTERROGATEDB FunctionIndex interrogate_wrapper_function(FunctionWrapperIndex wrapper);
+
 // This returns true if -fnames was given to interrogate, making the wrapper
 // function callable directly by its name.
 EXPCL_INTERROGATEDB bool interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper);
+
+// This returns true if this is a copy constructor.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_copy_constructor(FunctionWrapperIndex wrapper);
+
+// This returns true if this is a constructor that is not marked "explicit".
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper);
 
 // This returns the C++ comment written for the function wrapper, usually from
 // the .cpp file.  There may be a different comment for each overload of a

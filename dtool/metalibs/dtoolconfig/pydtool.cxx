@@ -74,7 +74,10 @@ static PyObject *_inP07yt3zru(PyObject *self, PyObject *args);
 static PyObject *_inP07ytRrg2(PyObject *self, PyObject *args);
 static PyObject *_inP07ytEJCx(PyObject *self, PyObject *args);
 static PyObject *_inP07ytWAZr(PyObject *self, PyObject *args);
+static PyObject *_inP07ytHQi6(PyObject *self, PyObject *args);
 static PyObject *_inP07ytrD_M(PyObject *self, PyObject *args);
+static PyObject *_inP07ytYaah(PyObject *self, PyObject *args);
+static PyObject *_inP07yt2otr(PyObject *self, PyObject *args);
 static PyObject *_inP07ytjolz(PyObject *self, PyObject *args);
 static PyObject *_inP07ytt_JD(PyObject *self, PyObject *args);
 static PyObject *_inP07ytwEts(PyObject *self, PyObject *args);
@@ -1062,6 +1065,24 @@ _inP07ytWAZr(PyObject *, PyObject *args) {
 
 /*
  * Python simple wrapper for
+ * FunctionIndex interrogate_wrapper_function(FunctionWrapperIndex wrapper)
+ */
+static PyObject *
+_inP07ytHQi6(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_wrapper_function)((FunctionWrapperIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
  * bool interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper)
  */
 static PyObject *
@@ -1069,6 +1090,34 @@ _inP07ytrD_M(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
     bool return_value = (::interrogate_wrapper_is_callable_by_name)((FunctionWrapperIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_wrapper_is_copy_constructor(FunctionWrapperIndex wrapper)
+ */
+static PyObject *
+_inP07ytYaah(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_wrapper_is_copy_constructor)((FunctionWrapperIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper)
+ */
+static PyObject *
+_inP07yt2otr(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_wrapper_is_coerce_constructor)((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
   return nullptr;
@@ -2681,7 +2730,10 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_function_number_of_python_wrappers", &_inP07ytRrg2, METH_VARARGS },
   { "interrogate_function_python_wrapper", &_inP07ytEJCx, METH_VARARGS },
   { "interrogate_wrapper_name", &_inP07ytWAZr, METH_VARARGS },
+  { "interrogate_wrapper_function", &_inP07ytHQi6, METH_VARARGS },
   { "interrogate_wrapper_is_callable_by_name", &_inP07ytrD_M, METH_VARARGS },
+  { "interrogate_wrapper_is_copy_constructor", &_inP07ytYaah, METH_VARARGS },
+  { "interrogate_wrapper_is_coerce_constructor", &_inP07yt2otr, METH_VARARGS },
   { "interrogate_wrapper_has_comment", &_inP07ytjolz, METH_VARARGS },
   { "interrogate_wrapper_comment", &_inP07ytt_JD, METH_VARARGS },
   { "interrogate_wrapper_has_return_value", &_inP07ytwEts, METH_VARARGS },

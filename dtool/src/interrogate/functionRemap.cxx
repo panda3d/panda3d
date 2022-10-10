@@ -312,6 +312,14 @@ make_wrapper_entry(FunctionIndex function_index) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
   }
 
+  if (_flags & F_copy_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_copy_constructor;
+  }
+
+  if (_flags & F_coerce_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_coerce_constructor;
+  }
+
   Parameters::const_iterator pi;
   for (pi = _parameters.begin();
        pi != _parameters.end();

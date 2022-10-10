@@ -359,10 +359,28 @@ interrogate_wrapper_name(FunctionWrapperIndex wrapper) {
   return result.c_str();
 }
 
+FunctionIndex
+interrogate_wrapper_function(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_function(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).get_function();
+}
+
 bool
 interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_is_callable_by_name(" << wrapper << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_callable_by_name();
+}
+
+bool
+interrogate_wrapper_is_copy_constructor(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_copy_constructor(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_copy_constructor();
+}
+
+bool
+interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_coerce_constructor(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_coerce_constructor();
 }
 
 bool
