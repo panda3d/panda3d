@@ -417,8 +417,8 @@ main(int argc, char **argv) {
       break;
 
     case CO_python_native:
-        build_python_native = true;
-        break;
+      build_python_native = true;
+      break;
 
     case CO_track_interpreter:
       track_interpreter = true;
@@ -595,22 +595,21 @@ main(int argc, char **argv) {
       << " *\n"
       << " */\n\n";
 
-    if(the_output_include != nullptr)
-    {
-        output_code << "#include \""<<output_include_filename<<"\"\n";
-        *the_output_include << "#include \"" << output_include_filename.get_fullpath_wo_extension() << "_pynative.h\"\n";
+    if (the_output_include != nullptr) {
+      output_code << "#include \"" << output_include_filename << "\"\n";
+      *the_output_include << "#include \"" << output_include_filename.get_fullpath_wo_extension() << "_pynative.h\"\n";
     }
 
     if (output_code.fail()) {
       nout << "Unable to write to " << output_code_filename << "\n";
     } else {
-      builder.write_code(output_code,the_output_include, def);
+      builder.write_code(output_code, the_output_include, def);
     }
   }
 
-
-  if(the_output_include != nullptr)
-      *the_output_include << "#endif  // #define   " << output_include_filename.get_basename_wo_extension() << "__HH__\n";
+  if (the_output_include != nullptr) {
+    *the_output_include << "#endif  // #define   " << output_include_filename.get_basename_wo_extension() << "__HH__\n";
+  }
 
   // And now output the bulk of the database.
   if (!output_data_filename.empty()) {
