@@ -3680,6 +3680,7 @@ if (PkgSkip("DIRECT")==0):
     CopyAllHeaders('direct/src/distributed')
     CopyAllHeaders('direct/src/interval')
     CopyAllHeaders('direct/src/showbase')
+    CopyAllHeaders('direct/src/motiontrail')
     CopyAllHeaders('direct/src/dcparse')
 
 if (RUNTIME or RTDIST):
