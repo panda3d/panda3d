@@ -77,7 +77,7 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
   static int size() { return 3; }
-  void output(std::ostream &out) {
+  void output(std::ostream &out) const {
     out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
   }
 #endif

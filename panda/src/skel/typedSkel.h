@@ -31,11 +31,11 @@ PUBLISHED:
 
   // These inline functions allow you to get and set _value.
   INLINE void set_value(int n);
-  INLINE int  get_value();
+  INLINE int get_value() const;
 
   // These do the same thing as the functions above.
   void set_value_alt(int n);
-  int  get_value_alt();
+  int get_value_alt() const;
 
 private:
   int _value;
