@@ -41,7 +41,7 @@ typedef unsigned char gray;
 struct pixel {
 PUBLISHED:
   pixel() = default;
-  pixel(gray fill) : r(fill), g(fill), b(fill) { }
+  explicit pixel(gray fill) : r(fill), g(fill), b(fill) { }
   pixel(gray r, gray g, gray b) : r(r), g(g), b(b) { }
 
   gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }

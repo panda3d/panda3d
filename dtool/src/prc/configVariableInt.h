@@ -23,7 +23,7 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableInt : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableInt(const std::string &name);
+  INLINE explicit ConfigVariableInt(const std::string &name);
   INLINE ConfigVariableInt(const std::string &name, int default_value,
                            const std::string &description = std::string(),
                            int flags = 0);

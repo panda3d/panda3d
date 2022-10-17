@@ -10455,9 +10455,9 @@ make_this_from_bam(const FactoryParams &params) {
         // If texture filename was given relative to the bam filename, expand
         // it now.
         Filename bam_dir = manager->get_filename().get_dirname();
-        vfs->resolve_filename(filename, bam_dir);
+        vfs->resolve_filename(filename, DSearchPath(bam_dir));
         if (!alpha_filename.empty()) {
-          vfs->resolve_filename(alpha_filename, bam_dir);
+          vfs->resolve_filename(alpha_filename, DSearchPath(bam_dir));
         }
       }
 
