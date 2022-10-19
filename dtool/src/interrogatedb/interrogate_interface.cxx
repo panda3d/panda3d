@@ -177,6 +177,72 @@ interrogate_element_setter(ElementIndex element) {
 }
 
 bool
+interrogate_element_has_has_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_has_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_has_function();
+}
+
+FunctionIndex
+interrogate_element_has_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_has_function();
+}
+
+bool
+interrogate_element_has_clear_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_clear_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_clear_function();
+}
+
+FunctionIndex
+interrogate_element_clear_function(ElementIndex element) {
+  // cerr << "interrogate_element_clear_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_clear_function();
+}
+
+bool
+interrogate_element_has_del_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_del_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_del_function();
+}
+
+FunctionIndex
+interrogate_element_del_function(ElementIndex element) {
+  // cerr << "interrogate_element_del_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_del_function();
+}
+
+bool
+interrogate_element_has_insert_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_insert_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_insert_function();
+}
+
+FunctionIndex
+interrogate_element_insert_function(ElementIndex element) {
+  // cerr << "interrogate_element_insert_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_insert_function();
+}
+
+bool
+interrogate_element_has_getkey_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_getkey_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_getkey_function();
+}
+
+FunctionIndex
+interrogate_element_getkey_function(ElementIndex element) {
+  // cerr << "interrogate_element_getkey_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_getkey_function();
+}
+
+FunctionIndex
+interrogate_element_length_function(ElementIndex element) {
+  // cerr << "interrogate_element_length_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_length_function();
+}
+
+bool
 interrogate_element_is_sequence(ElementIndex element) {
   // cerr << "interrogate_element_is_sequence(" << element << ")\n";
   return InterrogateDatabase::get_ptr()->get_element(element).is_sequence();

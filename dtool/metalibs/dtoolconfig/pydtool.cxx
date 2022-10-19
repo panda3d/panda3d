@@ -45,6 +45,17 @@ static PyObject *_inP07ytDId0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytHuAm(PyObject *self, PyObject *args);
 static PyObject *_inP07yt_xr0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytH5qp(PyObject *self, PyObject *args);
+static PyObject *_inP07ytLfJw(PyObject *self, PyObject *args);
+static PyObject *_inP07yt_Atg(PyObject *self, PyObject *args);
+static PyObject *_inP07ytlBqc(PyObject *self, PyObject *args);
+static PyObject *_inP07ytNdUp(PyObject *self, PyObject *args);
+static PyObject *_inP07ytlS0p(PyObject *self, PyObject *args);
+static PyObject *_inP07ytZZe7(PyObject *self, PyObject *args);
+static PyObject *_inP07ytV5S_(PyObject *self, PyObject *args);
+static PyObject *_inP07yto9vD(PyObject *self, PyObject *args);
+static PyObject *_inP07ytv7tF(PyObject *self, PyObject *args);
+static PyObject *_inP07ythOg6(PyObject *self, PyObject *args);
+static PyObject *_inP07ytoZUn(PyObject *self, PyObject *args);
 static PyObject *_inP07ytq45U(PyObject *self, PyObject *args);
 static PyObject *_inP07yt6IPa(PyObject *self, PyObject *args);
 static PyObject *_inP07ytU2_B(PyObject *self, PyObject *args);
@@ -577,6 +588,184 @@ _inP07ytH5qp(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
     FunctionIndex return_value = (::interrogate_element_setter)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_has_has_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytLfJw(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_element_has_has_function)((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_has_function(ElementIndex element)
+ */
+static PyObject *
+_inP07yt_Atg(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_has_function)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_has_clear_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytlBqc(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_element_has_clear_function)((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_clear_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytNdUp(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_clear_function)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_has_del_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytlS0p(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_element_has_del_function)((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_del_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytZZe7(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_del_function)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_has_insert_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytV5S_(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_element_has_insert_function)((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_insert_function(ElementIndex element)
+ */
+static PyObject *
+_inP07yto9vD(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_insert_function)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_has_getkey_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytv7tF(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_element_has_getkey_function)((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_getkey_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ythOg6(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_getkey_function)((ElementIndex)param0);
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(return_value);
+#else
+    return PyInt_FromLong(return_value);
+#endif
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * FunctionIndex interrogate_element_length_function(ElementIndex element)
+ */
+static PyObject *
+_inP07ytoZUn(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    FunctionIndex return_value = (::interrogate_element_length_function)((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
@@ -2701,6 +2890,17 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_element_getter", &_inP07ytHuAm, METH_VARARGS },
   { "interrogate_element_has_setter", &_inP07yt_xr0, METH_VARARGS },
   { "interrogate_element_setter", &_inP07ytH5qp, METH_VARARGS },
+  { "interrogate_element_has_has_function", &_inP07ytLfJw, METH_VARARGS },
+  { "interrogate_element_has_function", &_inP07yt_Atg, METH_VARARGS },
+  { "interrogate_element_has_clear_function", &_inP07ytlBqc, METH_VARARGS },
+  { "interrogate_element_clear_function", &_inP07ytNdUp, METH_VARARGS },
+  { "interrogate_element_has_del_function", &_inP07ytlS0p, METH_VARARGS },
+  { "interrogate_element_del_function", &_inP07ytZZe7, METH_VARARGS },
+  { "interrogate_element_has_insert_function", &_inP07ytV5S_, METH_VARARGS },
+  { "interrogate_element_insert_function", &_inP07yto9vD, METH_VARARGS },
+  { "interrogate_element_has_getkey_function", &_inP07ytv7tF, METH_VARARGS },
+  { "interrogate_element_getkey_function", &_inP07ythOg6, METH_VARARGS },
+  { "interrogate_element_length_function", &_inP07ytoZUn, METH_VARARGS },
   { "interrogate_element_is_sequence", &_inP07ytq45U, METH_VARARGS },
   { "interrogate_element_is_mapping", &_inP07yt6IPa, METH_VARARGS },
   { "interrogate_number_of_globals", &_inP07ytU2_B, METH_VARARGS },
