@@ -450,6 +450,12 @@ interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper) {
 }
 
 bool
+interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_extension(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_extension();
+}
+
+bool
 interrogate_wrapper_has_comment(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_has_comment(" << wrapper << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).has_comment();

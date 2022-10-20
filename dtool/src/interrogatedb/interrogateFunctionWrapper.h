@@ -36,6 +36,7 @@ public:
   INLINE bool is_callable_by_name() const;
   INLINE bool is_copy_constructor() const;
   INLINE bool is_coerce_constructor() const;
+  INLINE bool is_extension() const;
 
   INLINE bool has_return_value() const;
   INLINE TypeIndex get_return_type() const;
@@ -66,6 +67,7 @@ private:
     F_callable_by_name = 0x0004,
     F_copy_constructor = 0x0008,
     F_coerce_constructor = 0x0010,
+    F_extension        = 0x0020,
   };
 
   enum ParameterFlags {

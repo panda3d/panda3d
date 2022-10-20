@@ -80,6 +80,14 @@ is_coerce_constructor() const {
 }
 
 /**
+ * @since 1.10.13
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_extension() const {
+  return (_flags & F_extension) != 0;
+}
+
+/**
  *
  */
 INLINE bool InterrogateFunctionWrapper::

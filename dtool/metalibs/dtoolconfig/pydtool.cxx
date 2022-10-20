@@ -89,6 +89,7 @@ static PyObject *_inP07ytHQi6(PyObject *self, PyObject *args);
 static PyObject *_inP07ytrD_M(PyObject *self, PyObject *args);
 static PyObject *_inP07ytYaah(PyObject *self, PyObject *args);
 static PyObject *_inP07yt2otr(PyObject *self, PyObject *args);
+static PyObject *_inP07ytNP_b(PyObject *self, PyObject *args);
 static PyObject *_inP07ytjolz(PyObject *self, PyObject *args);
 static PyObject *_inP07ytt_JD(PyObject *self, PyObject *args);
 static PyObject *_inP07ytwEts(PyObject *self, PyObject *args);
@@ -1307,6 +1308,20 @@ _inP07yt2otr(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
     bool return_value = (::interrogate_wrapper_is_coerce_constructor)((FunctionWrapperIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper)
+ */
+static PyObject *
+_inP07ytNP_b(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_wrapper_is_extension)((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
   return nullptr;
@@ -2934,6 +2949,7 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_wrapper_is_callable_by_name", &_inP07ytrD_M, METH_VARARGS },
   { "interrogate_wrapper_is_copy_constructor", &_inP07ytYaah, METH_VARARGS },
   { "interrogate_wrapper_is_coerce_constructor", &_inP07yt2otr, METH_VARARGS },
+  { "interrogate_wrapper_is_extension", &_inP07ytNP_b, METH_VARARGS },
   { "interrogate_wrapper_has_comment", &_inP07ytjolz, METH_VARARGS },
   { "interrogate_wrapper_comment", &_inP07ytt_JD, METH_VARARGS },
   { "interrogate_wrapper_has_return_value", &_inP07ytwEts, METH_VARARGS },

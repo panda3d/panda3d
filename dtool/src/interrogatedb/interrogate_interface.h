@@ -285,6 +285,10 @@ EXPCL_INTERROGATEDB bool interrogate_wrapper_is_copy_constructor(FunctionWrapper
 // This returns true if this is a constructor that is not marked "explicit".
 EXPCL_INTERROGATEDB bool interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper);
 
+// This returns true if this is an extension function, rather than a real
+// function defined in the C++ code.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper);
+
 // This returns the C++ comment written for the function wrapper, usually from
 // the .cpp file.  There may be a different comment for each overload of a
 // given function.

@@ -320,6 +320,10 @@ make_wrapper_entry(FunctionIndex function_index) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_coerce_constructor;
   }
 
+  if (_extension) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_extension;
+  }
+
   Parameters::const_iterator pi;
   for (pi = _parameters.begin();
        pi != _parameters.end();
