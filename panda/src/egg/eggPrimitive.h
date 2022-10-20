@@ -134,10 +134,9 @@ PUBLISHED:
   virtual bool joint_has_primitives() const;
   virtual bool has_normals() const;
 
-
   // The EggPrimitive itself appears to be an STL container of pointers to
   // EggVertex objects.  The set of vertices is read-only, however, except
-  // through the limited add_vertexremove_vertex or inserterase interface.
+  // through the limited add_vertex/remove_vertex or insert/erase interface.
   // The following implements this.
 public:
 #ifdef _WIN32
@@ -203,8 +202,8 @@ protected:
   Vertices _vertices;
 
   // Don't try to use these private functions.  User code should add and
-  // remove vertices via add_vertex()remove_vertex(), or via the STL-like
-  // push_back()pop_back() or insert()erase(), above.
+  // remove vertices via add_vertex() / remove_vertex(), or via the STL-like
+  // push_back() / pop_back() or insert() / erase(), above.
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 

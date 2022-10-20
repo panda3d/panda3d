@@ -788,6 +788,200 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 /**
+ *
+ */
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
+  LVector3 from_radius_v =
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius_2 = from_radius_v.length_squared();
+  PN_stdfloat from_radius = csqrt(from_radius_2);
+
+  PN_stdfloat dist_a = get_plane().dist_to_plane(from_a);
+  PN_stdfloat dist_b = get_plane().dist_to_plane(from_b);
+
+  // Some early-outs (optional)
+  if (dist_a >= from_radius && dist_b >= from_radius) {
+    // Entirely in front of the plane means no intersection.
+    return nullptr;
+  }
+
+  if (dist_a <= -from_radius && dist_b <= -from_radius) {
+    // Entirely behind the plane also means no intersection.
+    return nullptr;
+  }
+
+  LMatrix4 to_3d_mat;
+  rederive_to_3d_mat(to_3d_mat);
+
+  // Find the intersection point between the capsule's axis and the plane.
+  LPoint3 intersect_3d;
+  if (!get_plane().intersects_line(intersect_3d, from_a, from_b)) {
+    // Completely parallel.  Take an arbitrary point along the capsule axis.
+    intersect_3d = (from_a + from_b) * 0.5f;
+  }
+
+  // Find the closest point on the polygon to this intersection point.
+  LPoint2 intersect_2d = to_2d(intersect_3d);
+  LPoint2 closest_p_2d = intersect_2d;
+  PN_stdfloat best_dist_2 = -1;
+
+  size_t num_points = _points.size();
+  for (size_t i = 0; i < num_points; ++i) {
+    const LPoint2 &p1 = _points[i]._p;
+    const LPoint2 &p2 = _points[(i + 1) % num_points]._p;
+
+    // Is the intersection outside the polygon?
+    LVector2 v = intersect_2d - p1;
+    LVector2 pv = p2 - p1;
+    if (is_right(v, pv)) {
+      PN_stdfloat t = v.dot(pv) / pv.length_squared();
+      t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+
+      LPoint2 p = p1 + pv * t;
+      PN_stdfloat d = (p - intersect_2d).length_squared();
+      if (best_dist_2 < 0 || d < best_dist_2) {
+        closest_p_2d = p;
+        best_dist_2 = d;
+      }
+    }
+  }
+
+  LPoint3 closest_p_3d = to_3d(closest_p_2d, to_3d_mat);
+
+  // Now find the closest point on the capsule axis to this point.
+  LVector3 from_v = from_b - from_a;
+
+  PN_stdfloat t = (closest_p_3d - from_a).dot(from_v) / from_v.length_squared();
+  LPoint3 ref_point_3d = from_a + from_v * max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+
+  // Okay, now we have a point to apply the sphere test on.
+
+  // The nearest point within the plane to our reference is the intersection of
+  // the line (reference, reference - normal) with the plane.
+  PN_stdfloat dist;
+  if (!get_plane().intersects_line(dist, ref_point_3d, -get_normal())) {
+    // No intersection with plane?  This means the plane's effective normal
+    // was within the plane itself.  A useless polygon.
+    return nullptr;
+  }
+
+  if (dist > from_radius || dist < -from_radius) {
+    // No intersection with the plane.
+    return nullptr;
+  }
+
+  LPoint2 ref_point_2d = to_2d(ref_point_3d);
+  LPoint2 surface_point_2d = ref_point_2d;
+  PN_stdfloat edge_dist_2 = -1;
+
+  for (size_t i = 0; i < num_points; ++i) {
+    const LPoint2 &p1 = _points[i]._p;
+    const LPoint2 &p2 = _points[(i + 1) % num_points]._p;
+
+    // Is the intersection outside the polygon?
+    LVector2 v = ref_point_2d - p1;
+    LVector2 pv = p2 - p1;
+    if (is_right(v, pv)) {
+      PN_stdfloat t = v.dot(pv) / pv.length_squared();
+      t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+
+      LPoint2 p = p1 + pv * t;
+      PN_stdfloat d = (p - ref_point_2d).length_squared();
+      if (edge_dist_2 < 0 || d < edge_dist_2) {
+        surface_point_2d = p;
+        edge_dist_2 = d;
+      }
+    }
+  }
+
+  // Now we have edge_dist_2, which is the square of the distance from the
+  // reference point to the nearest edge of the polygon, within the polygon's
+  // plane.
+
+  if (edge_dist_2 > from_radius_2) {
+    // No intersection; the circle is outside the polygon.
+    return nullptr;
+  }
+
+  // The sphere appears to intersect the polygon.  If the edge is less than
+  // from_radius away, the sphere may be resting on an edge of the polygon.
+  // Determine how far the center of the sphere must remain from the plane,
+  // based on its distance from the nearest edge.
+
+  PN_stdfloat max_dist = from_radius;
+  if (edge_dist_2 >= 0.0f) {
+    PN_stdfloat max_dist_2 = max(from_radius_2 - edge_dist_2, (PN_stdfloat)0.0);
+    max_dist = csqrt(max_dist_2);
+  }
+
+  if (dist > max_dist || -dist > max_dist) {
+    // There's no intersection: the sphere is hanging above or under the edge.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  new_entry->set_surface_normal(normal);
+
+  if ((dist_a < 0 || dist_b < 0) && !IS_NEARLY_EQUAL(dist_a, dist_b)) {
+    // We need to report the deepest point below the polygon as the interior
+    // point so that the pusher will completely push it out.
+    LPoint3 deepest_3d = (dist_a < dist_b) ? from_a : from_b;
+    LPoint2 deepest_2d = to_2d(deepest_3d);
+    surface_point_2d = deepest_2d;
+    PN_stdfloat best_dist_2 = -1;
+
+    for (size_t i = 0; i < num_points; ++i) {
+      const LPoint2 &p1 = _points[i]._p;
+      const LPoint2 &p2 = _points[(i + 1) % num_points]._p;
+
+      // Is the deepest point outside the polygon?
+      LVector2 v = deepest_2d - p1;
+      LVector2 pv = p2 - p1;
+      if (is_right(v, pv)) {
+        PN_stdfloat t = v.dot(pv) / pv.length_squared();
+        t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+
+        LPoint2 p = p1 + pv * t;
+        PN_stdfloat d = (p - deepest_2d).length_squared();
+        if (best_dist_2 < 0 || d < best_dist_2) {
+          surface_point_2d = p;
+          best_dist_2 = d;
+        }
+      }
+    }
+
+    if (best_dist_2 < 0) {
+      // Deepest point is completely within the polygon, easy case.
+      new_entry->set_surface_point(deepest_3d - normal * min(dist_a, dist_b));
+      new_entry->set_interior_point(deepest_3d - normal * from_radius);
+      return new_entry;
+    }
+  }
+
+  // Colliding with an edge, use the sphere test results.
+  LPoint3 surface_point = to_3d(surface_point_2d, to_3d_mat);
+  LPoint3 interior_point = ref_point_3d - normal * max_dist;
+  new_entry->set_surface_point(surface_point);
+  new_entry->set_interior_point((interior_point - surface_point).project(normal) + surface_point);
+  return new_entry;
+}
+
+/**
  * This is part of the double-dispatch implementation of test_intersection().
  * It is called when the "from" object is a parabola.
  */

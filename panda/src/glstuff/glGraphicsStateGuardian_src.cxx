@@ -14935,6 +14935,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_LUMINANCE:
 #ifndef OPENGLES
+  case GL_LUMINANCE8_EXT:
   case GL_LUMINANCE16:
   case GL_LUMINANCE16F_ARB:
 #endif
