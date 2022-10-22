@@ -880,6 +880,7 @@ public:
   INLINE std::string get_tag(const std::string &key) const;
   INLINE bool has_tag(const std::string &key) const;
 
+  INLINE CollideMask get_into_collide_mask() const;
   INLINE CollideMask get_net_collide_mask() const;
   INLINE const RenderAttrib *get_off_clip_planes() const;
   INLINE const BoundingVolume *get_bounds() const;
