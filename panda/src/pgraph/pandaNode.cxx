@@ -2898,11 +2898,21 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
   // First, walk through the list of NodePathComponents we already have on the
   // child, looking for one that already exists, referencing the indicated
   // parent component.
-  Paths::const_iterator pi;
-  for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
-    if ((*pi)->get_next(pipeline_stage, current_thread) == parent) {
+  for (NodePathComponent *child : child_node->_paths) {
+    if (child->get_next(pipeline_stage, current_thread) == parent) {
       // If we already have such a component, just return it.
-      return (*pi);
+      // But before we do, we have to make sure it's not in the middle of being
+      // destructed.
+#ifdef HAVE_THREADS
+      if (child->ref_if_nonzero()) {
+        PT(NodePathComponent) result;
+        result.cheat() = child;
+        return result;
+      }
+#else
+      // If we're not building with threading, increment as normal.
+      return child;
+#endif
     }
   }
 
@@ -2940,11 +2950,21 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
 
   // Walk through the list of NodePathComponents we already have on the child,
   // looking for one that already exists as a top node.
-  Paths::const_iterator pi;
-  for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
-    if ((*pi)->is_top_node(pipeline_stage, current_thread)) {
+  for (NodePathComponent *child : child_node->_paths) {
+    if (child->is_top_node(pipeline_stage, current_thread)) {
       // If we already have such a component, just return it.
-      return (*pi);
+      // But before we do, we have to make sure it's not in the middle of being
+      // destructed.
+#ifdef HAVE_THREADS
+      if (child->ref_if_nonzero()) {
+        PT(NodePathComponent) result;
+        result.cheat() = child;
+        return result;
+      }
+#else
+      // If we're not building with threading, increment as normal.
+      return child;
+#endif
     }
   }
 
