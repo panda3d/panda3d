@@ -847,7 +847,7 @@ unpack_object() {
     {
       unsigned int value = unpack_uint();
 #if PY_MAJOR_VERSION >= 3
-      object = PyLong_FromLong(value);
+      object = PyLong_FromUnsignedLong(value);
 #else
       if (value & 0x80000000) {
         object = PyLong_FromUnsignedLong(value);
