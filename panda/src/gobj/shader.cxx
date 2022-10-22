@@ -391,7 +391,7 @@ cp_dependency(ShaderMatInput inp) {
     dep |= SSD_colorscale;
   }
   if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
-    dep |= SSD_fog;
+    dep |= SSD_fog | SSD_frame;
   }
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
