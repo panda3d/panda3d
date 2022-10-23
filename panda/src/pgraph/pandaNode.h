@@ -290,7 +290,6 @@ PUBLISHED:
   MAKE_PROPERTY(bounds_type, get_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
-  void set_bound(const BoundingVolume *volume);
   INLINE void clear_bounds();
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(BoundingVolume) get_bounds(UpdateSeq &seq, Thread *current_thread = Thread::get_current_thread()) const;

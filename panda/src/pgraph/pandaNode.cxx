@@ -1861,16 +1861,6 @@ set_bounds(const BoundingVolume *volume) {
 }
 
 /**
- * @deprecated Use set_bounds() instead.
- */
-void PandaNode::
-set_bound(const BoundingVolume *volume) {
-  pgraph_cat.warning()
-    << "Deprecated PandaNode::set_bound() called.  Use set_bounds() instead.\n";
-  set_bounds(volume);
-}
-
-/**
  * Returns the external bounding volume of this node: a bounding volume that
  * contains the user bounding volume, the internal bounding volume, and all of
  * the children's bounding volumes.
