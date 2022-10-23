@@ -3054,7 +3054,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
         CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
 
         // Now make up an instance for the function.
-        CPPInstance *function = new CPPInstance(ftype, "operator [] =");
+        CPPInstance *function = new CPPInstance(ftype, "operator []=");
         function->_ident->_native_scope = scope;
 
         FunctionIndex index = get_function(function, "",
