@@ -1,4 +1,5 @@
 set(P3CPPPARSER_HEADERS
+  cppAttributeList.h
   cppArrayType.h cppBison.yxx cppBisonDefs.h
   cppClassTemplateParameter.h cppCommentBlock.h
   cppClosureType.h cppConstType.h
@@ -17,6 +18,7 @@ set(P3CPPPARSER_HEADERS
 )
 
 set(P3CPPPARSER_SOURCES
+  cppAttributeList.cxx
   cppArrayType.cxx ${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
   cppClassTemplateParameter.cxx
   cppCommentBlock.cxx cppClosureType.cxx cppConstType.cxx cppDeclaration.cxx

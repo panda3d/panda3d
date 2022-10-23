@@ -39,7 +39,7 @@ public:
   };
 
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
-                   const CPPFile &file);
+                   const CPPFile &file, CPPAttributeList attr = CPPAttributeList());
 
   virtual std::string get_simple_name() const;
   virtual std::string get_local_name(CPPScope *scope = nullptr) const;
