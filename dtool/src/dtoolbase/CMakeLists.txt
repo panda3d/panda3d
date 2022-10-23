@@ -21,7 +21,7 @@ set(P3DTOOLBASE_HEADERS
   atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I
   cmath.I cmath.h
   deletedBufferChain.h deletedBufferChain.I
-  deletedChain.h deletedChain.T
+  deletedChain.h deletedChain.I
   dtoolbase.h dtoolbase_cc.h dtoolsymbols.h
   dtool_platform.h
   fakestringstream.h

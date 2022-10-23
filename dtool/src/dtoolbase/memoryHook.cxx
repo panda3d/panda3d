@@ -202,33 +202,6 @@ ptr_to_alloc(void *ptr, size_t &size) {
  *
  */
 MemoryHook::
-MemoryHook() {
-#ifdef _WIN32
-
-  // Windows case.
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-
-  _page_size = (size_t)sysinfo.dwPageSize;
-
-#else
-
-  // Posix case.
-  _page_size = sysconf(_SC_PAGESIZE);
-
-#endif  // WIN32
-
-  _total_heap_single_size = 0;
-  _total_heap_array_size = 0;
-  _requested_heap_size = 0;
-  _total_mmap_size = 0;
-  _max_heap_size = ~(size_t)0;
-}
-
-/**
- *
- */
-MemoryHook::
 MemoryHook(const MemoryHook &copy) :
   _total_heap_single_size(copy._total_heap_single_size),
   _total_heap_array_size(copy._total_heap_array_size),
@@ -236,20 +209,8 @@ MemoryHook(const MemoryHook &copy) :
   _total_mmap_size(copy._total_mmap_size),
   _max_heap_size(copy._max_heap_size),
   _page_size(copy._page_size) {
-
-  copy._lock.lock();
-  _deleted_chains = copy._deleted_chains;
-  copy._lock.unlock();
 }
 
-/**
- *
- */
-MemoryHook::
-~MemoryHook() {
-  // Really, we only have this destructor to shut up gcc about the virtual
-  // functions warning.
-}
 
 /**
  * Allocates a block of memory from the heap, similar to malloc().  This will
@@ -522,6 +483,9 @@ heap_trim(size_t pad) {
  */
 void *MemoryHook::
 mmap_alloc(size_t size, bool allow_exec) {
+  if (_page_size == 0) {
+    determine_page_size();
+  }
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
@@ -576,6 +540,7 @@ mmap_alloc(size_t size, bool allow_exec) {
  */
 void MemoryHook::
 mmap_free(void *ptr, size_t size) {
+  assert(_page_size != 0);
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
@@ -599,29 +564,6 @@ mmap_free(void *ptr, size_t size) {
  */
 void MemoryHook::
 mark_pointer(void *, size_t, ReferenceCount *) {
-}
-
-/**
- * Returns a pointer to a global DeletedBufferChain object suitable for
- * allocating arrays of the indicated size.  There is one unique
- * DeletedBufferChain object for every different size.
- */
-DeletedBufferChain *MemoryHook::
-get_deleted_chain(size_t buffer_size) {
-  DeletedBufferChain *chain;
-
-  _lock.lock();
-  DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
-  if (dci != _deleted_chains.end()) {
-    chain = (*dci).second;
-  } else {
-    // Once allocated, this DeletedBufferChain object is never deleted.
-    chain = new DeletedBufferChain(buffer_size);
-    _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
-  }
-
-  _lock.unlock();
-  return chain;
 }
 
 /**
@@ -655,4 +597,25 @@ overflow_heap_size() {
 #ifdef DO_MEMORY_USAGE
   _max_heap_size = ~(size_t)0;
 #endif  // DO_MEMORY_USAGE
+}
+
+/**
+ * Asks the operating system for the page size.
+ */
+void MemoryHook::
+determine_page_size() const {
+#ifdef _WIN32
+  // Windows case.
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+
+  _page_size = (size_t)sysinfo.dwPageSize;
+
+#else
+  // Posix case.
+  _page_size = sysconf(_SC_PAGESIZE);
+
+#endif  // WIN32
+
+  assert(_page_size != 0);
 }
