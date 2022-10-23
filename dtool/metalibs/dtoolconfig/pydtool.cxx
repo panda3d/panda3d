@@ -90,6 +90,7 @@ static PyObject *_inP07ytrD_M(PyObject *self, PyObject *args);
 static PyObject *_inP07ytYaah(PyObject *self, PyObject *args);
 static PyObject *_inP07yt2otr(PyObject *self, PyObject *args);
 static PyObject *_inP07ytNP_b(PyObject *self, PyObject *args);
+static PyObject *_inP07ytrrrN(PyObject *self, PyObject *args);
 static PyObject *_inP07ytjolz(PyObject *self, PyObject *args);
 static PyObject *_inP07ytt_JD(PyObject *self, PyObject *args);
 static PyObject *_inP07ytwEts(PyObject *self, PyObject *args);
@@ -122,6 +123,7 @@ static PyObject *_inP07ytNHcs(PyObject *self, PyObject *args);
 static PyObject *_inP07ytqHrb(PyObject *self, PyObject *args);
 static PyObject *_inP07ytaOqq(PyObject *self, PyObject *args);
 static PyObject *_inP07ytpTBb(PyObject *self, PyObject *args);
+static PyObject *_inP07ytZUkn(PyObject *self, PyObject *args);
 static PyObject *_inP07ytqWOw(PyObject *self, PyObject *args);
 static PyObject *_inP07ytHu7x(PyObject *self, PyObject *args);
 static PyObject *_inP07ytwGnA(PyObject *self, PyObject *args);
@@ -1329,6 +1331,20 @@ _inP07ytNP_b(PyObject *, PyObject *args) {
 
 /*
  * Python simple wrapper for
+ * bool interrogate_wrapper_is_deprecated(FunctionWrapperIndex wrapper)
+ */
+static PyObject *
+_inP07ytrrrN(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_wrapper_is_deprecated)((FunctionWrapperIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
  * bool interrogate_wrapper_has_comment(FunctionWrapperIndex wrapper)
  */
 static PyObject *
@@ -1861,6 +1877,20 @@ _inP07ytpTBb(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
     bool return_value = (::interrogate_type_is_global)((TypeIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_type_is_deprecated(TypeIndex type)
+ */
+static PyObject *
+_inP07ytZUkn(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = (::interrogate_type_is_deprecated)((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
   return nullptr;
@@ -2950,6 +2980,7 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_wrapper_is_copy_constructor", &_inP07ytYaah, METH_VARARGS, nullptr },
   { "interrogate_wrapper_is_coerce_constructor", &_inP07yt2otr, METH_VARARGS, nullptr },
   { "interrogate_wrapper_is_extension", &_inP07ytNP_b, METH_VARARGS, nullptr },
+  { "interrogate_wrapper_is_deprecated", &_inP07ytrrrN, METH_VARARGS, nullptr },
   { "interrogate_wrapper_has_comment", &_inP07ytjolz, METH_VARARGS, nullptr },
   { "interrogate_wrapper_comment", &_inP07ytt_JD, METH_VARARGS, nullptr },
   { "interrogate_wrapper_has_return_value", &_inP07ytwEts, METH_VARARGS, nullptr },
@@ -2982,6 +3013,7 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_get_type_by_scoped_name", &_inP07ytqHrb, METH_VARARGS, nullptr },
   { "interrogate_get_type_by_true_name", &_inP07ytaOqq, METH_VARARGS, nullptr },
   { "interrogate_type_is_global", &_inP07ytpTBb, METH_VARARGS, nullptr },
+  { "interrogate_type_is_deprecated", &_inP07ytZUkn, METH_VARARGS, nullptr },
   { "interrogate_type_name", &_inP07ytqWOw, METH_VARARGS, nullptr },
   { "interrogate_type_scoped_name", &_inP07ytHu7x, METH_VARARGS, nullptr },
   { "interrogate_type_true_name", &_inP07ytwGnA, METH_VARARGS, nullptr },
@@ -3050,7 +3082,7 @@ static PyMethodDef python_simple_funcs[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef python_simple_module = {
   PyModuleDef_HEAD_INIT,
-  "interrogatedb",
+  "panda3d.interrogatedb",
   nullptr,
   -1,
   python_simple_funcs,

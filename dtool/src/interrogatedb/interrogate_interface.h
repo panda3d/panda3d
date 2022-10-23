@@ -289,6 +289,9 @@ EXPCL_INTERROGATEDB bool interrogate_wrapper_is_coerce_constructor(FunctionWrapp
 // function defined in the C++ code.
 EXPCL_INTERROGATEDB bool interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper);
 
+// This returns true if function is marked as deprecated.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_deprecated(FunctionWrapperIndex wrapper);
+
 // This returns the C++ comment written for the function wrapper, usually from
 // the .cpp file.  There may be a different comment for each overload of a
 // given function.
@@ -401,6 +404,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_name(const char *type_name
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_scoped_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_true_name(const char *type_name);
 EXPCL_INTERROGATEDB bool interrogate_type_is_global(TypeIndex type);
+EXPCL_INTERROGATEDB bool interrogate_type_is_deprecated(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_scoped_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_true_name(TypeIndex type);

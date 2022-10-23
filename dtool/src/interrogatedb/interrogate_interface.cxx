@@ -456,6 +456,12 @@ interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper) {
 }
 
 bool
+interrogate_wrapper_is_deprecated(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_deprecated(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_deprecated();
+}
+
+bool
 interrogate_wrapper_has_comment(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_has_comment(" << wrapper << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).has_comment();
@@ -659,6 +665,12 @@ bool
 interrogate_type_is_global(TypeIndex type) {
   // cerr << "interrogate_type_is_global(" << type << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).is_global();
+}
+
+bool
+interrogate_type_is_deprecated(TypeIndex type) {
+  // cerr << "interrogate_type_is_deprecated(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_deprecated();
 }
 
 const char *

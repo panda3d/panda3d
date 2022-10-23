@@ -2381,6 +2381,10 @@ get_type(CPPType *type, bool global) {
     }
   }
 
+  if (type->_attributes.has_attribute("deprecated")) {
+    itype._flags |= InterrogateType::F_deprecated;
+  }
+
   if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 

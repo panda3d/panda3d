@@ -88,6 +88,14 @@ is_extension() const {
 }
 
 /**
+ * @since 1.11.0
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_deprecated() const {
+  return (_flags & F_deprecated) != 0;
+}
+
+/**
  *
  */
 INLINE bool InterrogateFunctionWrapper::
