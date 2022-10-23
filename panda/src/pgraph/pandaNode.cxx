@@ -1920,7 +1920,7 @@ set_bounds(const BoundingVolume *volume) {
 }
 
 /**
- * Deprecated.  Use set_bounds() instead.
+ * @deprecated Use set_bounds() instead.
  */
 void PandaNode::
 set_bound(const BoundingVolume *volume) {
