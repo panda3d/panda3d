@@ -795,7 +795,8 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   const CollisionCapsule *capsule;
   DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   LPoint3 from_a = capsule->get_point_a() * wrt_mat;
   LPoint3 from_b = capsule->get_point_b() * wrt_mat;
@@ -814,8 +815,60 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   }
 
   if (dist_a <= -from_radius && dist_b <= -from_radius) {
-    // Entirely behind the plane also means no intersection.
-    return nullptr;
+    // Entirely behind the plane also means no intersection.  But perhaps the
+    // capsule travelled through the plane?
+    if (!entry.get_respect_prev_transform()) {
+      return nullptr;
+    }
+
+    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+    if (wrt_prev_space == wrt_space) {
+      return nullptr;
+    }
+
+    // Note that we only check for a sphere at the center, since we don't
+    // know whether the capsule has undergone any rotation.
+    LPoint3 from_center = LPoint3((from_a + from_b) * 0.5f) * _to_2d_mat;
+    LPoint3 prev_center =
+      (LPoint3((capsule->get_point_a() + capsule->get_point_b()) * 0.5f) *
+       wrt_prev_space->get_mat()) * _to_2d_mat;
+
+    if (prev_center[1] > 0) {
+      // The center didn't pass through the polygon.
+      return nullptr;
+    }
+
+    // Determine the intersection of the sphere with the polygon.
+    // This isn't actually the right point to test for correct edge behavior,
+    // since this may miss the sphere if it grazes the edge at a very shallow
+    // angle, but the prev-transform test isn't intended to be perfect anyway.
+    PN_stdfloat t = from_center[1] / (from_center[1] - prev_center[1]);
+    LPoint2 p(
+      prev_center[0] * t + from_center[0] * (1.0f - t),
+      prev_center[2] * t + from_center[2] * (1.0f - t));
+    LPoint2 edge_p(p);
+    PN_stdfloat edge_dist = dist_to_polygon(p, edge_p, _points);
+    if (edge_dist >= 0 && edge_dist * edge_dist > from_radius_2) {
+      return nullptr;
+    }
+
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "intersection detected from " << entry.get_from_node_path()
+        << " into " << entry.get_into_node_path() << "\n";
+    }
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+    LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+    new_entry->set_surface_normal(normal);
+
+    LMatrix4 to_3d_mat;
+    rederive_to_3d_mat(to_3d_mat);
+
+    LPoint3 deepest = (dist_a < dist_b ? from_a : from_b);
+    new_entry->set_surface_point(to_3d(edge_p, to_3d_mat));
+    new_entry->set_interior_point(deepest - get_normal() * from_radius);
+
+    return new_entry;
   }
 
   LMatrix4 to_3d_mat;
