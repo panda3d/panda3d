@@ -786,6 +786,13 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
       }
 
+      if (slot != RTP_depth_stencil && _rb[RTP_depth_stencil] != 0) {
+        // We have a depth-stencil renderbuffer bound, delete it first.
+        // This will automatically unbind it as well.
+        glgsg->_glDeleteRenderbuffers(1, &(_rb[RTP_depth_stencil]));
+        _rb[RTP_depth_stencil] = 0;
+      }
+
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
 #ifndef OPENGLES

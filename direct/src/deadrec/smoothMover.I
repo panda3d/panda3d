@@ -23,7 +23,7 @@
  */
 INLINE bool SmoothMover::
 set_pos(const LVecBase3 &pos) {
-  return set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]);
+  return set_pos(pos[0], pos[1], pos[2]);
 }
 
 /**
@@ -38,7 +38,10 @@ set_pos(const LVecBase3 &pos) {
  */
 INLINE bool SmoothMover::
 set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
-  return set_x(x) | set_y(y) | set_z(z);
+  bool x_changed = set_x(x);
+  bool y_changed = set_y(y);
+  bool z_changed = set_z(z);
+  return x_changed || y_changed || z_changed;
 }
 
 /**
@@ -98,7 +101,7 @@ set_z(PN_stdfloat z) {
  */
 INLINE bool SmoothMover::
 set_hpr(const LVecBase3 &hpr) {
-  return set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]);
+  return set_hpr(hpr[0], hpr[1], hpr[2]);
 }
 
 /**
@@ -113,7 +116,10 @@ set_hpr(const LVecBase3 &hpr) {
  */
 INLINE bool SmoothMover::
 set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
-  return set_h(h) | set_p(p) | set_r(r);
+  bool h_changed = set_h(h);
+  bool p_changed = set_p(p);
+  bool r_changed = set_r(r);
+  return h_changed || p_changed || r_changed;
 }
 
 /**
@@ -173,8 +179,9 @@ set_r(PN_stdfloat r) {
  */
 INLINE bool SmoothMover::
 set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
-  return (set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]) |
-          set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]));
+  bool pos_changed = set_pos(pos);
+  bool hpr_changed = set_hpr(hpr);
+  return pos_changed || hpr_changed;
 }
 
 /**
@@ -189,7 +196,9 @@ set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
  */
 INLINE bool SmoothMover::
 set_pos_hpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
-  return set_x(x) | set_y(y) | set_z(z) | set_h(h) | set_p(p) | set_r(r);
+  bool pos_changed = set_pos(x, y, z);
+  bool hpr_changed = set_hpr(h, p, r);
+  return pos_changed || hpr_changed;
 }
 
 /**
