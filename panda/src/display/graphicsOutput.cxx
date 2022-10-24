@@ -1649,6 +1649,7 @@ CData() {
 GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :
   _textures(copy._textures),
+  _textures_seq(copy._textures_seq),
   _active(copy._active),
   _one_shot_frame(copy._one_shot_frame),
   _active_display_regions(copy._active_display_regions),
