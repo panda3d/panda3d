@@ -265,6 +265,9 @@ set_clear_color(const LColor &color) {
   CDWriter cdata(_cycler, true);
   cdata->_clear_color = color;
   cdata->_has_clear_color = true;
+  if (cdata->_image_modified == UpdateSeq::initial()) {
+    cdata->inc_image_modified();
+  }
 }
 
 /**
