@@ -48,7 +48,7 @@ public:
   INLINE int get_max_collect_vertices() const;
   INLINE void set_max_collect_vertices(int max_collect_vertices);
 
-  void register_vertices(Geom *geom, bool might_have_unused);
+  void register_vertices(PT(Geom) geom, bool might_have_unused);
   void register_vertices(GeomNode *node, bool might_have_unused);
 
   bool transform_vertices(Geom *geom, const LMatrix4 &mat);
