@@ -55,6 +55,7 @@ extern ConfigVariableBool depth_offset_decals;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool premunge_data;
+extern ConfigVariableBool premunge_remove_unused_vertices;
 extern ConfigVariableBool preserve_geom_nodes;
 extern ConfigVariableBool flatten_geoms;
 extern EXPCL_PANDA_PGRAPH ConfigVariableInt max_lenses;
