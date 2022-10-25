@@ -466,6 +466,13 @@ class CommonFilters:
             return task.cont
 
     def setMSAA(self, samples):
+        """Enables multisample anti-aliasing on the render-to-texture buffer.
+        If you enable this, it is recommended to leave any multisample request
+        on the main framebuffer OFF (ie. don't set framebuffer-multisample true
+        in Config.prc), since it would be a waste of resources otherwise.
+
+        .. versionadded:: 1.10.13
+        """
         fullrebuild = "MSAA" not in self.configuration or self.configuration["MSAA"].samples != samples
         newconfig = FilterConfig()
         newconfig.samples = samples
