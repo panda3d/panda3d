@@ -2005,11 +2005,22 @@ resolve_multisamples() {
     }
   }
 
+#ifndef OPENGLES
+  if (_have_any_color) {
+    glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+    glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
+  } else {
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+  }
+#endif
+
   if (do_depth_blit) {
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
                               GL_NEAREST);
-  } else {
+  }
+  else if (_have_any_color) {
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT,
                               GL_NEAREST);

@@ -3261,8 +3261,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       off_clip_planes = ClipPlaneAttrib::make();
     }
 
-    int num_vertices = cdata->_internal_vertices;
-
     // Also get the list of the node's children.  When the cdataw destructs, it
     // will also release the lock, since we've got all the data we need from the
     // node.
@@ -3307,6 +3305,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     }
 
     // Now expand those contents to include all of our children.
+    int child_vertices = 0;
 
     for (int i = 0; i < num_children; ++i) {
       DownConnection &connection = (*down)[i];
@@ -3402,7 +3401,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
           }
-          num_vertices += child_cdataw->_nested_vertices;
+          child_vertices += child_cdataw->_nested_vertices;
 
           connection._external_bounds = child_cdataw->_external_bounds->as_geometric_bounding_volume();
         }
@@ -3461,7 +3460,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
           }
-          num_vertices += child_cdata->_nested_vertices;
+          child_vertices += child_cdata->_nested_vertices;
 
           connection._external_bounds = child_cdata->_external_bounds->as_geometric_bounding_volume();
         }
@@ -3516,7 +3515,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         cdataw->_off_clip_planes = off_clip_planes;
 
         if (update_bounds) {
-          cdataw->_nested_vertices = num_vertices;
+          cdataw->_nested_vertices = cdataw->_internal_vertices + child_vertices;
 
           BoundingVolume::BoundsType btype = cdataw->_bounds_type;
           if (btype == BoundingVolume::BT_default) {

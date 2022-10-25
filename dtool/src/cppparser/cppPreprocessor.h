@@ -72,10 +72,10 @@ public:
   typedef std::map<std::string, CPPManifest *> Manifests;
   Manifests _manifests;
 
-  typedef pvector<CPPManifest *> ManifestStack;
+  typedef std::vector<CPPManifest *> ManifestStack;
   std::map<std::string, ManifestStack> _manifest_stack;
 
-  pvector<CPPFile::Source> _quote_include_kind;
+  std::vector<CPPFile::Source> _quote_include_kind;
   DSearchPath _quote_include_path;
   DSearchPath _angle_include_path;
   bool _noangles;
