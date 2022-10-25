@@ -3262,8 +3262,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     // Also get the list of the node's children.
     Children children(cdata);
 
-    int num_vertices = cdata->_internal_vertices;
-
     // Now that we've got all the data we need from the node, we can release
     // the lock.
     _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
@@ -3303,6 +3301,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     }
 
     // Now expand those contents to include all of our children.
+    int child_vertices = 0;
 
     for (int i = 0; i < num_children; ++i) {
       PandaNode *child = children.get_child(i);
@@ -3398,7 +3397,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
               all_box = false;
             }
           }
-          num_vertices += child_cdataw->_nested_vertices;
+          child_vertices += child_cdataw->_nested_vertices;
         }
 
       } else {
@@ -3453,7 +3452,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
               all_box = false;
             }
           }
-          num_vertices += child_cdata->_nested_vertices;
+          child_vertices += child_cdata->_nested_vertices;
         }
       }
     }
@@ -3503,7 +3502,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         cdataw->_off_clip_planes = off_clip_planes;
 
         if (update_bounds) {
-          cdataw->_nested_vertices = num_vertices;
+          cdataw->_nested_vertices = cdataw->_internal_vertices + child_vertices;
 
           CPT(TransformState) transform = get_transform(current_thread);
           PT(GeometricBoundingVolume) gbv;
