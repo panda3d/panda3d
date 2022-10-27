@@ -56,6 +56,9 @@ public:
 
   std::string get_bar_tooltip(int row, int x) const;
 
+  virtual void write_datagram(Datagram &dg) const final;
+  virtual void read_datagram(DatagramIterator &scan) final;
+
 protected:
   void changed_size(int xsize, int ysize);
   void force_redraw();

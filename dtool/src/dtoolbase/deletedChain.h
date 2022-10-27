@@ -136,6 +136,6 @@ public:
 
 #endif  // USE_DELETED_CHAIN
 
-#include "deletedChain.T"
+#include "deletedChain.I"
 
 #endif

@@ -77,3 +77,19 @@ INLINE int PStatMonitor::
 get_client_pid() const {
   return _client_pid;
 }
+
+/**
+ * Returns true if the session data was loaded from a file.
+ */
+INLINE bool PStatMonitor::
+has_read_filename() const {
+  return !_read_filename.empty();
+}
+
+/**
+ * Returns the filename this session data was loaded from.
+ */
+INLINE const Filename &PStatMonitor::
+get_read_filename() const {
+  return _read_filename;
+}

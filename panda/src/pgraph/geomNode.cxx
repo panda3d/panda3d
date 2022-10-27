@@ -892,6 +892,9 @@ do_premunge(GraphicsStateGuardianBase *gsg,
       CPT(Geom) geom = entry._geom.get_read_pointer();
       PT(GeomMunger) munger = gsg->get_geom_munger(geom_state, current_thread);
       entry._geom = transformer.premunge_geom(geom, munger);
+      if (premunge_remove_unused_vertices) {
+        transformer.register_vertices(entry._geom.get_write_pointer(), true);
+      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);

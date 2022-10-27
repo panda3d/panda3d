@@ -57,9 +57,7 @@ setup(HWND parent_window) {
   create_window(parent_window);
 
   _ideal_width = 0;
-  Labels::iterator li;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    WinStatsLabel *label = (*li);
+  for (WinStatsLabel *label : _labels) {
     label->setup(_window);
     _ideal_width = std::max(_ideal_width, label->get_ideal_width());
   }
@@ -85,10 +83,8 @@ set_pos(int x, int y, int width, int height) {
   SetWindowPos(_window, 0, x, y, _width, _height,
                SWP_NOZORDER | SWP_SHOWWINDOW);
 
-  Labels::iterator li;
   int yp = height;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    WinStatsLabel *label = (*li);
+  for (WinStatsLabel *label : _labels) {
     label->set_pos(0, yp, _width);
     yp -= label->get_height();
   }
@@ -167,9 +163,8 @@ get_label_collector_index(int label_index) const {
  */
 void WinStatsLabelStack::
 clear_labels() {
-  Labels::iterator li;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    delete (*li);
+  for (WinStatsLabel *label : _labels) {
+    delete label;
   }
   _labels.clear();
   _ideal_width = 0;
@@ -301,10 +296,21 @@ void WinStatsLabelStack::
 highlight_label(int collector_index) {
   if (_highlight_label != collector_index) {
     _highlight_label = collector_index;
-    Labels::iterator li;
-    for (li = _labels.begin(); li != _labels.end(); ++li) {
-      WinStatsLabel *label = (*li);
+
+    for (WinStatsLabel *label : _labels) {
       label->set_highlight(label->get_collector_index() == _highlight_label);
+    }
+  }
+}
+
+/**
+ * Refreshes the color of the label with the given index.
+ */
+void WinStatsLabelStack::
+update_label_color(int collector_index) {
+  for (WinStatsLabel *label : _labels) {
+    if (label->get_collector_index() == collector_index) {
+      label->update_color();
     }
   }
 }

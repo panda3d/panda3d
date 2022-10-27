@@ -29,11 +29,12 @@ using std::min;
  *
  */
 PStatStripChart::
-PStatStripChart(PStatMonitor *monitor, PStatView &view,
-                int thread_index, int collector_index, int xsize, int ysize) :
+PStatStripChart(PStatMonitor *monitor,
+                int thread_index, int collector_index, bool show_level,
+                int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
   _thread_index(thread_index),
-  _view(view),
+  _view(show_level ? monitor->get_level_view(0, thread_index) : monitor->get_view(thread_index)),
   _collector_index(collector_index)
 {
   _scroll_mode = pstats_scroll_mode;
@@ -57,6 +58,8 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   }
 
   set_auto_vertical_scale();
+
+  monitor->_strip_charts.insert(this);
 }
 
 /**
@@ -64,6 +67,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
  */
 PStatStripChart::
 ~PStatStripChart() {
+  _monitor->_strip_charts.erase(this);
 }
 
 /**
@@ -368,6 +372,65 @@ get_label_tooltip(int collector_index) const {
 
   text << " (" << format_number(value, get_guide_bar_units(), get_guide_bar_unit_name()) << ")";
   return text.str();
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatStripChart::
+write_datagram(Datagram &dg) const {
+  dg.add_bool(_scroll_mode);
+  dg.add_bool(_average_mode);
+  dg.add_float64(_time_width);
+  dg.add_float64(_start_time);
+  dg.add_float64(_value_height);
+
+  // Not really necessary, we reconstructed this from the client data.
+  //for (const auto &item : _data) {
+  //  dg.add_int32(item.first);
+  //  dg.add_uint32(item.second.size());
+  //
+  //  for (const ColorData &cd : item.second) {
+  //    dg.add_uint16(cd._collector_index);
+  //    dg.add_uint16(cd._i);
+  //    dg.add_float64(cd._net_value);
+  //  }
+  //}
+  //dg.add_int32(-1);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatStripChart::
+read_datagram(DatagramIterator &scan) {
+  _next_frame = 0;
+  force_reset();
+
+  _scroll_mode = scan.get_bool();
+  _average_mode = scan.get_bool();
+  _time_width = scan.get_float64();
+  _start_time = scan.get_float64();
+  _value_height = scan.get_float64();
+
+  //int key;
+  //while ((key = scan.get_int32()) != -1) {
+  //  FrameData &fdata = _data[key];
+  //  fdata.resize(scan.get_uint32());
+  //
+  //  for (ColorData &cd : fdata) {
+  //    cd._collector_index = scan.get_uint16();
+  //    cd._i = scan.get_uint16();
+  //    cd._net_value = scan.get_float64();
+  //  }
+  //}
+
+  PStatGraph::read_datagram(scan);
+
+  normal_guide_bars();
+  update();
 }
 
 /**
@@ -783,7 +846,6 @@ end_draw(int, int) {
 void PStatStripChart::
 idle() {
 }
-
 
 // STL function object for sorting labels in order by the collector's sort
 // index, used in update_labels(), below.

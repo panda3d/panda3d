@@ -202,7 +202,7 @@ get_latest_frame() const {
 bool PStatThreadData::
 get_elapsed_frames(int &then_i, int &now_i) const {
   if (!_computed_elapsed_frames) {
-    ((PStatThreadData *)this)->compute_elapsed_frames();
+    compute_elapsed_frames();
   }
 
   now_i = _now_i;
@@ -308,17 +308,48 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
 }
 
 /**
- * Computes the frame numbers returned by get_elapsed_frames().  This is non-
- * const, but only updates cached values, so may safely be called from a const
- * method.
+ * Writes the thread data to a datagram.
  */
 void PStatThreadData::
-compute_elapsed_frames() {
+write_datagram(Datagram &dg) const {
+  int frame_number = _first_frame_number;
+
+  for (PStatFrameData *frame_data : _frames) {
+    if (frame_data != nullptr) {
+      dg.add_int32(frame_number);
+      frame_data->write_datagram(dg);
+    }
+    ++frame_number;
+  }
+  dg.add_int32(-1);
+}
+
+/**
+ * Restores the thread data from a datagram.
+ */
+void PStatThreadData::
+read_datagram(DatagramIterator &scan) {
+  int frame_number;
+  while ((frame_number = scan.get_int32()) != -1) {
+    PStatFrameData *frame_data = new PStatFrameData;
+    frame_data->read_datagram(scan);
+
+    record_new_frame(frame_number, frame_data);
+  }
+
+  compute_elapsed_frames();
+}
+
+/**
+ * Computes the frame numbers returned by get_elapsed_frames().
+ */
+void PStatThreadData::
+compute_elapsed_frames() const {
   if (_frames.empty()) {
     // No frames in the data at all.
     _got_elapsed_frames = false;
-
-  } else {
+  }
+  else {
     _now_i = _frames.size() - 1;
     while (_now_i > 0 && _frames[_now_i] == nullptr) {
       _now_i--;
@@ -326,8 +357,8 @@ compute_elapsed_frames() {
     if (_now_i < 0) {
       // No frames have any real data.
       _got_elapsed_frames = false;
-
-    } else {
+    }
+    else {
       nassertv(_frames[_now_i] != nullptr);
 
       double now = _frames[_now_i]->get_end();

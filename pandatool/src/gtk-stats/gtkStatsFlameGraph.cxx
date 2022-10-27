@@ -307,6 +307,25 @@ animate(double time, double dt) {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+bool GtkStatsFlameGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  GtkStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void GtkStatsFlameGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  GtkStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+}
+
+/**
  * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
@@ -411,6 +430,37 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        {
+          GtkWidget *menu_item = gtk_separator_menu_item_new();
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            -1, collector_index,
+            GtkStatsMonitor::CT_choose_color,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            -1, collector_index,
+            GtkStatsMonitor::CT_reset_color,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
           g_signal_connect(G_OBJECT(menu_item), "activate",
                            G_CALLBACK(GtkStatsMonitor::menu_activate),

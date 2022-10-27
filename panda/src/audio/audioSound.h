@@ -42,6 +42,10 @@ PUBLISHED:
   virtual void set_loop_count(unsigned long loop_count=1) = 0;
   virtual unsigned long get_loop_count() const = 0;
 
+  // loop_start: 0 = beginning.  expressed in seconds.  inits to 0.
+  virtual void set_loop_start(PN_stdfloat loop_start=0) = 0;
+  virtual PN_stdfloat get_loop_start() const = 0;
+
   /**
    * Control time position within the sound, in seconds.  This is similar (in
    * concept) to the seek position within a file.  The value starts at 0.0 (the

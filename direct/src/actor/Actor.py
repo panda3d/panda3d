@@ -424,7 +424,7 @@ class Actor(DirectObject, NodePath):
                             subpartDef.subset.isIncludeEmpty(), subpartDef.subset)
 
     def __doListJoints(self, indentLevel, part, isIncluded, subset):
-        name = part.getName()
+        name = part.name
         if subset.matchesInclude(name):
             isIncluded = True
         elif subset.matchesExclude(name):
@@ -437,9 +437,9 @@ class Actor(DirectObject, NodePath):
                 part.outputValue(lineStream)
                 value = lineStream.getLine()
 
-            print(' '.join((' ' * indentLevel, part.getName(), value)))
+            print(' '.join((' ' * indentLevel, name, value)))
 
-        for child in part.getChildren():
+        for child in part.children:
             self.__doListJoints(indentLevel + 2, child, isIncluded, subset)
 
 
@@ -1206,11 +1206,11 @@ class Actor(DirectObject, NodePath):
 
         return jointsA & jointsB
 
-    def __getPartJoints(self, joints, pattern, partNode, subset, isIncluded):
+    def __getPartJoints(self, joints, pattern, part, subset, isIncluded):
         """ Recursively walks the joint hierarchy to look for matching
         joint names, implementing getJoints(). """
 
-        name = partNode.getName()
+        name = part.name
         if subset:
             # Constrain the traversal just to the named subset.
             if subset.matchesInclude(name):
@@ -1218,10 +1218,10 @@ class Actor(DirectObject, NodePath):
             elif subset.matchesExclude(name):
                 isIncluded = False
 
-        if isIncluded and pattern.matches(name) and isinstance(partNode, MovingPartBase):
-            joints.append(partNode)
+        if isIncluded and pattern.matches(name) and isinstance(part, MovingPartBase):
+            joints.append(part)
 
-        for child in partNode.getChildren():
+        for child in part.children:
             self.__getPartJoints(joints, pattern, child, subset, isIncluded)
 
     def getJointTransform(self, partName, jointName, lodName='lodRoot'):

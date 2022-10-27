@@ -56,11 +56,19 @@ add_to_menu_bar(GtkWidget *menu_bar, int position) {
     thread_name = client_data->get_thread_name(_thread_index);
   }
 
-  GtkWidget *menu_item = gtk_menu_item_new_with_label(thread_name.c_str());
-  gtk_widget_show(menu_item);
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), _menu);
+  _menu_item = gtk_menu_item_new_with_label(thread_name.c_str());
+  gtk_widget_show(_menu_item);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(_menu_item), _menu);
 
-  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_bar), menu_item, position);
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_bar), _menu_item, position);
+}
+
+/**
+ * Removes the menu from the menu bar.
+ */
+void GtkStatsChartMenu::
+remove_from_menu_bar(GtkWidget *menu_bar) {
+  gtk_container_remove(GTK_CONTAINER(menu_bar), _menu_item);
 }
 
 /**
@@ -90,16 +98,32 @@ do_update() {
 
   if (_thread_index == 0) {
     // Timeline goes first.
-    GtkStatsMonitor::MenuDef smd(_thread_index, -1, GtkStatsMonitor::CT_timeline, false);
-    const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
+    {
+      GtkStatsMonitor::MenuDef smd(_thread_index, -1, GtkStatsMonitor::CT_timeline, false);
+      const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
-    GtkWidget *menu_item = gtk_menu_item_new_with_label("Timeline");
-    gtk_widget_show(menu_item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
+      GtkWidget *menu_item = gtk_menu_item_new_with_label("Timeline");
+      gtk_widget_show(menu_item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
 
-    g_signal_connect(G_OBJECT(menu_item), "activate",
-                     G_CALLBACK(GtkStatsMonitor::menu_activate),
-                     (void *)menu_def);
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(GtkStatsMonitor::menu_activate),
+                       (void *)menu_def);
+    }
+
+    // And the piano roll (even though it's not very useful nowadays)
+    {
+      GtkStatsMonitor::MenuDef smd(_thread_index, -1, GtkStatsMonitor::CT_piano_roll, false);
+      const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
+
+      GtkWidget *menu_item = gtk_menu_item_new_with_label("Piano Roll");
+      gtk_widget_show(menu_item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
+
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(GtkStatsMonitor::menu_activate),
+                       (void *)menu_def);
+    }
 
     GtkWidget *sep = gtk_separator_menu_item_new();
     gtk_widget_show(sep);
@@ -134,22 +158,41 @@ do_update() {
     }
   }
 
-  // Also menu item for piano roll (following a separator).
-  GtkWidget *sep = gtk_separator_menu_item_new();
-  gtk_widget_show(sep);
-  gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
+  // For the main thread menu, also some options relating to all graph windows.
+  if (_thread_index == 0) {
+    GtkWidget *sep = gtk_separator_menu_item_new();
+    gtk_widget_show(sep);
+    gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
 
-  {
-    GtkStatsMonitor::MenuDef smd(_thread_index, -1, GtkStatsMonitor::CT_piano_roll, false);
-    const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
+    {
+      GtkWidget *menu_item = gtk_menu_item_new_with_label("Close All Graphs");
+      gtk_widget_show(menu_item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
 
-    GtkWidget *menu_item = gtk_menu_item_new_with_label("Piano Roll");
-    gtk_widget_show(menu_item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(activate_close_all),
+                       (void *)_monitor);
+    }
 
-    g_signal_connect(G_OBJECT(menu_item), "activate",
-                     G_CALLBACK(GtkStatsMonitor::menu_activate),
-                     (void *)menu_def);
+    {
+      GtkWidget *menu_item = gtk_menu_item_new_with_label("Reopen Default Graphs");
+      gtk_widget_show(menu_item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
+
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(activate_reopen_default),
+                       (void *)_monitor);
+    }
+
+    {
+      GtkWidget *menu_item = gtk_menu_item_new_with_label("Save Current Layout as Default");
+      gtk_widget_show(menu_item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
+
+      g_signal_connect(G_OBJECT(menu_item), "activate",
+                       G_CALLBACK(activate_save_default),
+                       (void *)_monitor);
+    }
   }
 }
 
@@ -249,4 +292,32 @@ void GtkStatsChartMenu::
 remove_menu_child(GtkWidget *widget, gpointer data) {
   GtkWidget *menu = (GtkWidget *)data;
   gtk_container_remove(GTK_CONTAINER(menu), widget);
+}
+
+/**
+ * Callback for Close All Graphs.
+ */
+void GtkStatsChartMenu::
+activate_close_all(GtkWidget *widget, gpointer data) {
+  GtkStatsMonitor *monitor = (GtkStatsMonitor *)data;
+  monitor->remove_all_graphs();
+}
+
+/**
+ * Callback for Reopen Default Graphs.
+ */
+void GtkStatsChartMenu::
+activate_reopen_default(GtkWidget *widget, gpointer data) {
+  GtkStatsMonitor *monitor = (GtkStatsMonitor *)data;
+  monitor->remove_all_graphs();
+  monitor->open_default_graphs();
+}
+
+/**
+ * Callback for Save Current Layout as Default.
+ */
+void GtkStatsChartMenu::
+activate_save_default(GtkWidget *widget, gpointer data) {
+  GtkStatsMonitor *monitor = (GtkStatsMonitor *)data;
+  monitor->save_default_graphs();
 }

@@ -30,9 +30,10 @@ PStatServer() {
  */
 PStatServer::
 ~PStatServer() {
+  stop_listening();
+
   delete _listener;
 }
-
 
 /**
  * Establishes a port number that the manager will listen on for TCP
@@ -47,20 +48,22 @@ PStatServer::
  */
 bool PStatServer::
 listen(int port) {
+  stop_listening();
+
   if (port < 0) {
     port = pstats_port;
   }
 
   // Now try to listen to the port.
-  PT(Connection) rendezvous = open_TCP_server_rendezvous(port, 5);
+  _rendezvous = open_TCP_server_rendezvous(port, 5);
 
-  if (rendezvous.is_null()) {
+  if (_rendezvous.is_null()) {
     // Couldn't get it.
     return false;
   }
 
   // Tell the listener about the new port.
-  _listener->add_connection(rendezvous);
+  _listener->add_connection(_rendezvous);
 
   if (_next_udp_port == 0) {
     _next_udp_port = port + 1;
@@ -68,6 +71,16 @@ listen(int port) {
   return true;
 }
 
+/**
+ * Stops listening.
+ */
+void PStatServer::
+stop_listening() {
+  if (_rendezvous != nullptr) {
+    close_connection(_rendezvous);
+    _rendezvous.clear();
+  }
+}
 
 /**
  * Checks for any network activity and handles it, if appropriate, and then

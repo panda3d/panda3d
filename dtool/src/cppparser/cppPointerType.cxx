@@ -247,6 +247,12 @@ output_instance(std::ostream &out, int indent_level, CPPScope *scope,
     star = ftype->_class_owner->get_fully_scoped_name() + "::*";
   }
 
+  if (!_attributes.is_empty()) {
+    std::ostringstream strm;
+    strm << star << _attributes << " ";
+    star = strm.str();
+  }
+
   _pointing_at->output_instance(out, indent_level, scope, complete,
                                 star + prename, name);
 }

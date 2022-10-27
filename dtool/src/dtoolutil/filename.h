@@ -63,7 +63,7 @@ public:
 
 PUBLISHED:
   INLINE Filename();
-  Filename(const Filename &dirname, const Filename &basename);
+  explicit Filename(const Filename &dirname, const Filename &basename);
 
 #ifdef HAVE_PYTHON
   EXTENSION(Filename(PyObject *path));

@@ -177,6 +177,72 @@ interrogate_element_setter(ElementIndex element) {
 }
 
 bool
+interrogate_element_has_has_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_has_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_has_function();
+}
+
+FunctionIndex
+interrogate_element_has_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_has_function();
+}
+
+bool
+interrogate_element_has_clear_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_clear_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_clear_function();
+}
+
+FunctionIndex
+interrogate_element_clear_function(ElementIndex element) {
+  // cerr << "interrogate_element_clear_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_clear_function();
+}
+
+bool
+interrogate_element_has_del_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_del_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_del_function();
+}
+
+FunctionIndex
+interrogate_element_del_function(ElementIndex element) {
+  // cerr << "interrogate_element_del_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_del_function();
+}
+
+bool
+interrogate_element_has_insert_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_insert_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_insert_function();
+}
+
+FunctionIndex
+interrogate_element_insert_function(ElementIndex element) {
+  // cerr << "interrogate_element_insert_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_insert_function();
+}
+
+bool
+interrogate_element_has_getkey_function(ElementIndex element) {
+  // cerr << "interrogate_element_has_getkey_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).has_getkey_function();
+}
+
+FunctionIndex
+interrogate_element_getkey_function(ElementIndex element) {
+  // cerr << "interrogate_element_getkey_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_getkey_function();
+}
+
+FunctionIndex
+interrogate_element_length_function(ElementIndex element) {
+  // cerr << "interrogate_element_length_function(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).get_length_function();
+}
+
+bool
 interrogate_element_is_sequence(ElementIndex element) {
   // cerr << "interrogate_element_is_sequence(" << element << ")\n";
   return InterrogateDatabase::get_ptr()->get_element(element).is_sequence();
@@ -359,10 +425,40 @@ interrogate_wrapper_name(FunctionWrapperIndex wrapper) {
   return result.c_str();
 }
 
+FunctionIndex
+interrogate_wrapper_function(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_function(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).get_function();
+}
+
 bool
 interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_is_callable_by_name(" << wrapper << ")\n";
   return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_callable_by_name();
+}
+
+bool
+interrogate_wrapper_is_copy_constructor(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_copy_constructor(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_copy_constructor();
+}
+
+bool
+interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_coerce_constructor(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_coerce_constructor();
+}
+
+bool
+interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_extension(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_extension();
+}
+
+bool
+interrogate_wrapper_is_deprecated(FunctionWrapperIndex wrapper) {
+  // cerr << "interrogate_wrapper_is_deprecated(" << wrapper << ")\n";
+  return InterrogateDatabase::get_ptr()->get_wrapper(wrapper).is_deprecated();
 }
 
 bool
@@ -569,6 +665,12 @@ bool
 interrogate_type_is_global(TypeIndex type) {
   // cerr << "interrogate_type_is_global(" << type << ")\n";
   return InterrogateDatabase::get_ptr()->get_type(type).is_global();
+}
+
+bool
+interrogate_type_is_deprecated(TypeIndex type) {
+  // cerr << "interrogate_type_is_deprecated(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_deprecated();
 }
 
 const char *

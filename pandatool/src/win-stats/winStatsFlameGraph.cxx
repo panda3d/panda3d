@@ -47,7 +47,7 @@ WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
   _average_check_box = 0;
 
   create_window();
-  clear_region();
+  force_redraw();
 }
 
 /**
@@ -117,7 +117,7 @@ set_time_units(int unit_mask) {
 
     RECT rect;
     GetClientRect(_window, &rect);
-    rect.left = _right_margin;
+    rect.bottom = _top_margin;
     InvalidateRect(_window, &rect, TRUE);
   }
 }
@@ -160,6 +160,22 @@ on_leave_label(int collector_index) {
 }
 
 /**
+ * Changes the collector represented by this flame graph.  This may force a
+ * redraw.
+ */
+void WinStatsFlameGraph::
+set_collector_index(int collector_index) {
+  PStatFlameGraph::set_collector_index(collector_index);
+
+  if (is_title_unknown()) {
+    std::string window_title = get_title_text();
+    if (!is_title_unknown()) {
+      SetWindowText(_window, window_title.c_str());
+    }
+  }
+}
+
+/**
  * Calls update_guide_bars with parameters suitable to this kind of graph.
  */
 void WinStatsFlameGraph::
@@ -176,6 +192,11 @@ normal_guide_bars() {
   }
 
   _guide_bars_changed = true;
+
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
 }
 
 /**
@@ -277,6 +298,28 @@ animate(double time, double dt) {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+bool WinStatsFlameGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsFlameGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+
+  // Set the state of the checkbox.
+  SendMessage(_average_check_box, BM_SETCHECK, get_average_mode() ? BST_CHECKED : BST_UNCHECKED, 0);
+}
+
+/**
  *
  */
 LONG WinStatsFlameGraph::
@@ -315,6 +358,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case 103:
       WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
+      return 0;
+
+    case 104:
+      WinStatsGraph::_monitor->choose_collector_color(_popup_index);
+      return 0;
+
+    case 105:
+      WinStatsGraph::_monitor->reset_collector_color(_popup_index);
       return 0;
     }
     break;
@@ -433,6 +484,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
             AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
             AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+            AppendMenu(popup, MF_STRING | MF_SEPARATOR, 0, nullptr);
+            AppendMenu(popup, MF_STRING, 104, "Change Color...");
+            AppendMenu(popup, MF_STRING, 105, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
           }
         }

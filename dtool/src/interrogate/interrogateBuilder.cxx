@@ -2381,6 +2381,10 @@ get_type(CPPType *type, bool global) {
     }
   }
 
+  if (type->_attributes.has_attribute("deprecated")) {
+    itype._flags |= InterrogateType::F_deprecated;
+  }
+
   if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 
@@ -3050,7 +3054,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
         CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
 
         // Now make up an instance for the function.
-        CPPInstance *function = new CPPInstance(ftype, "operator [] =");
+        CPPInstance *function = new CPPInstance(ftype, "operator []=");
         function->_ident->_native_scope = scope;
 
         FunctionIndex index = get_function(function, "",

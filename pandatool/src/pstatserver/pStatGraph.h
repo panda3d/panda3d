@@ -91,6 +91,14 @@ public:
   static std::string format_number(double value, int guide_bar_units,
                               const std::string &unit_name = std::string());
 
+  virtual void write_datagram(Datagram &dg) const;
+  virtual void read_datagram(DatagramIterator &scan);
+
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
+
 protected:
   virtual void normal_guide_bars()=0;
   void update_guide_bars(int num_bars, double scale);

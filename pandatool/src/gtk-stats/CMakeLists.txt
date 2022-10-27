@@ -8,7 +8,6 @@ set(GTKSTATS_HEADERS
   gtkStatsGraph.h
   gtkStatsLabel.h
   gtkStatsLabelStack.h
-  gtkStatsMenuId.h
   gtkStatsMonitor.h gtkStatsMonitor.I
   gtkStatsPianoRoll.h
   gtkStatsServer.h

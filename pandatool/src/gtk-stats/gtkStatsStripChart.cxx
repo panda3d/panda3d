@@ -25,9 +25,7 @@ static const int default_strip_chart_height = 100;
 GtkStatsStripChart::
 GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
                    int collector_index, bool show_level) :
-  PStatStripChart(monitor,
-                  show_level ? monitor->get_level_view(0, thread_index) : monitor->get_view(thread_index),
-                  thread_index, collector_index, 0, 0),
+  PStatStripChart(monitor, thread_index, collector_index, show_level, 0, 0),
   GtkStatsGraph(monitor, true)
 {
   if (show_level) {
@@ -84,6 +82,8 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
   gtk_widget_set_size_request(_graph_window, 0, 0);
 
   clear_region();
+
+  update();
 }
 
 /**
@@ -261,6 +261,35 @@ on_popup_label(int collector_index) {
                      (void *)menu_def);
   }
 
+  {
+    GtkWidget *menu_item = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+  }
+
+  {
+    const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+      -1, collector_index, GtkStatsMonitor::CT_choose_color,
+    });
+
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    g_signal_connect(G_OBJECT(menu_item), "activate",
+                     G_CALLBACK(GtkStatsMonitor::menu_activate),
+                     (void *)menu_def);
+  }
+
+  {
+    const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+      -1, collector_index, GtkStatsMonitor::CT_reset_color,
+    });
+
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    g_signal_connect(G_OBJECT(menu_item), "activate",
+                     G_CALLBACK(GtkStatsMonitor::menu_activate),
+                     (void *)menu_def);
+  }
+
   gtk_widget_show_all(menu);
   gtk_menu_popup_at_pointer(GTK_MENU(menu), nullptr);
 }
@@ -414,6 +443,25 @@ end_draw(int from_x, int to_x) {
     (from_x * scale) / scale, 0, (to_x - from_x) / scale, get_ysize() / scale
   };
   gdk_window_invalidate_rect(window, &rect, FALSE);
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+bool GtkStatsStripChart::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  GtkStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void GtkStatsStripChart::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  GtkStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
 }
 
 /**

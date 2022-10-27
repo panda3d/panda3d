@@ -290,7 +290,6 @@ PUBLISHED:
   MAKE_PROPERTY(bounds_type, get_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
-  void set_bound(const BoundingVolume *volume);
   INLINE void clear_bounds();
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(BoundingVolume) get_bounds(UpdateSeq &seq, Thread *current_thread = Thread::get_current_thread()) const;
@@ -902,6 +901,7 @@ public:
   INLINE std::string get_tag(const std::string &key) const;
   INLINE bool has_tag(const std::string &key) const;
 
+  INLINE CollideMask get_into_collide_mask() const;
   INLINE CollideMask get_net_collide_mask() const;
   INLINE const RenderAttrib *get_off_clip_planes() const;
   INLINE const BoundingVolume *get_bounds() const;

@@ -51,34 +51,10 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
 
   gtk_widget_set_has_tooltip(_widget, TRUE);
 
-  // Set the fg and bg colors on the label.
-  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  _bg_color = LRGBColor(
-    encode_sRGB_float((float)rgb[0]),
-    encode_sRGB_float((float)rgb[1]),
-    encode_sRGB_float((float)rgb[2]));
-
-  _highlight_bg_color = LRGBColor(
-    encode_sRGB_float((float)rgb[0] * 0.75f),
-    encode_sRGB_float((float)rgb[1] * 0.75f),
-    encode_sRGB_float((float)rgb[2] * 0.75f));
-
-  // Should our foreground be black or white?
-  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
-  if (bright >= 0.5) {
-    _fg_color = LRGBColor(0);
-  } else {
-    _fg_color = LRGBColor(1);
-  }
-  if (bright * 0.75 >= 0.5) {
-    _highlight_fg_color = LRGBColor(0);
-  } else {
-    _highlight_fg_color = LRGBColor(1);
-  }
-
   _highlight = false;
   _mouse_within = false;
 
+  update_color();
   update_text(use_fullname);
   gtk_widget_show_all(_widget);
 }
@@ -143,6 +119,39 @@ set_highlight(bool highlight) {
 bool GtkStatsLabel::
 get_highlight() const {
   return _highlight;
+}
+
+/**
+ * Updates the colors.
+ */
+void GtkStatsLabel::
+update_color() {
+  // Set the fg and bg colors on the label.
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
+  _bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
+
+  _highlight_bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
+
+  // Should our foreground be black or white?
+  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
+  if (bright >= 0.5) {
+    _fg_color = LRGBColor(0);
+  } else {
+    _fg_color = LRGBColor(1);
+  }
+  if (bright * 0.75 >= 0.5) {
+    _highlight_fg_color = LRGBColor(0);
+  } else {
+    _highlight_fg_color = LRGBColor(1);
+  }
+
+  gtk_widget_queue_draw(_widget);
 }
 
 /**

@@ -26,8 +26,8 @@
  */
 CPPEnumType::
 CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
-            CPPScope *scope, const CPPFile &file) :
-  CPPExtensionType(type, ident, current_scope, file),
+            CPPScope *scope, const CPPFile &file, CPPAttributeList attr) :
+  CPPExtensionType(type, ident, current_scope, file, std::move(attr)),
   _scope(scope),
   _element_type(nullptr),
   _last_value(nullptr)
@@ -44,8 +44,9 @@ CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
  */
 CPPEnumType::
 CPPEnumType(Type type, CPPIdentifier *ident, CPPType *element_type,
-            CPPScope *current_scope, CPPScope *scope, const CPPFile &file) :
-  CPPExtensionType(type, ident, current_scope, file),
+            CPPScope *current_scope, CPPScope *scope, const CPPFile &file,
+            CPPAttributeList attr) :
+  CPPExtensionType(type, ident, current_scope, file, std::move(attr)),
   _scope(scope),
   _element_type(element_type),
   _last_value(nullptr)
@@ -89,7 +90,9 @@ get_underlying_type() {
  *
  */
 CPPInstance *CPPEnumType::
-add_element(const std::string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
+add_element(const std::string &name, CPPExpression *value,
+            CPPPreprocessor *preprocessor, const cppyyltype &pos,
+            CPPAttributeList attr) {
   CPPIdentifier *ident = new CPPIdentifier(name);
   ident->_native_scope = _parent_scope;
 
@@ -102,6 +105,7 @@ add_element(const std::string &name, CPPExpression *value, CPPPreprocessor *prep
     inst = new CPPInstance(this, ident);
   }
   inst->_storage_class |= CPPInstance::SC_constexpr;
+  inst->_attributes = std::move(attr);
   _elements.push_back(inst);
 
   if (value == nullptr) {
@@ -269,9 +273,12 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
       out << _type << " ";
     }
     out << _ident->get_local_name(scope);
-
-  } else {
+  }
+  else {
     out << _type;
+    if (!_attributes.is_empty()) {
+      out << " " << _attributes;
+    }
     if (_ident != nullptr) {
       out << " " << _ident->get_local_name(scope);
     }
@@ -280,11 +287,15 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
     }
 
     out << " {\n";
-    Elements::const_iterator ei;
-    for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-      indent(out, indent_level + 2) << (*ei)->get_local_name();
-      if ((*ei)->_initializer != nullptr) {
-        out << " = " << *(*ei)->_initializer;
+    for (CPPInstance *element : _elements) {
+      indent(out, indent_level + 2) << element->get_local_name();
+
+      if (!element->_attributes.is_empty()) {
+        out << " " << element->_attributes;
+      }
+
+      if (element->_initializer != nullptr) {
+        out << " = " << *element->_initializer;
       }
       out << ",\n";
     }

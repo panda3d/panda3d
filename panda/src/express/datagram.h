@@ -38,7 +38,7 @@
 class EXPCL_PANDA_EXPRESS Datagram : public TypedObject {
 PUBLISHED:
   INLINE Datagram() = default;
-  INLINE Datagram(const void *data, size_t size);
+  INLINE explicit Datagram(const void *data, size_t size);
   INLINE explicit Datagram(vector_uchar data);
   Datagram(const Datagram &copy) = default;
   Datagram(Datagram &&from) noexcept = default;

@@ -55,7 +55,7 @@ typedef double GLdouble;
 // mainly because they will not be included from glext.h if the system GL
 // version matches or exceeds the GL version in which these functions are
 // defined, and the system gl.h sometimes doesn't declare these typedefs.
-#if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
+#if !defined( __EDG__ ) || defined( __INTEL_COMPILER ) || defined( __MCST__ )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
 typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 typedef void (APIENTRY *GLDEBUGPROC_P)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC_P) (GLDEBUGPROC_P callback, const void *userParam);
