@@ -216,7 +216,7 @@ private:
  */
 static void
 log_message(spv_message_level_t level, const char *, const spv_position_t &, const char *msg) {
-  NotifySeverity severity;
+  NotifySeverity severity = NS_info;
   switch (level) {
   case SPV_MSG_FATAL:
   case SPV_MSG_INTERNAL_ERROR:
