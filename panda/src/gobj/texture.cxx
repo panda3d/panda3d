@@ -1069,10 +1069,16 @@ async_ensure_ram_image(bool allow_compression, int priority) {
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
+
     if (allow_compression) {
-      get_ram_image();
-    } else {
-      get_uncompressed_ram_image();
+      CDWriter cdata(_cycler, unlocked_ensure_ram_image(true));
+      cdata->_reload_task = nullptr;
+      do_get_ram_image(cdata);
+    }
+    else {
+      CDWriter cdata(_cycler, false);
+      cdata->_reload_task = nullptr;
+      do_get_uncompressed_ram_image(cdata);
     }
     return AsyncTask::DS_done;
   });
