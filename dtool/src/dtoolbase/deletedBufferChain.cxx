@@ -36,6 +36,7 @@ allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", "
   // ", TAU_USER);
+  // If this triggers, maybe you forgot ALLOC_DELETED_CHAIN in a subclass?
   assert(size <= _buffer_size);
 
   // Determine how much space to allocate.
