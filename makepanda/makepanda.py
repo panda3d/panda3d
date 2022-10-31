@@ -290,8 +290,8 @@ def parseopts(args):
         OSX_ARCHS.append("arm64")
     elif target_archs:
         OSX_ARCHS = target_archs
-    elif platform.machine() == 'arm64':
-        OSX_ARCHS = ('arm64',)
+    elif GetTarget() == 'darwin':
+        OSX_ARCHS = (GetTargetArch(),)
 
     try:
         SetOptimize(int(optimize))
