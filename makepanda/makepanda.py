@@ -338,6 +338,9 @@ def parseopts(args):
         if 'arm64' in target_archs and OSXTARGET and OSXTARGET < (10, 9):
             exit("Must have at least --osxtarget 10.9 when targeting arm64")
 
+    elif platform.machine() == 'arm64':
+        OSX_ARCHS = ('arm64',)
+
     try:
         SetOptimize(int(optimize))
         assert GetOptimize() in [1, 2, 3, 4]
