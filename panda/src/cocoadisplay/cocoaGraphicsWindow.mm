@@ -207,8 +207,13 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Update the context if necessary, to make it reallocate buffers etc.
   if (_context_needs_update) {
-    [cocoagsg->_context update];
-    _context_needs_update = false;
+    if ([NSThread isMainThread]) {
+      [cocoagsg->_context update];
+      _context_needs_update = false;
+    } else {
+      cocoagsg->unlock_context();
+      return false;
+    }
   }
 
   // Lock the view for drawing.
@@ -349,6 +354,18 @@ process_events() {
   }
 
   [pool release];
+
+  if (_context_needs_update && _gsg != nullptr) {
+    CocoaGraphicsStateGuardian *cocoagsg;
+    DCAST_INTO_V(cocoagsg, _gsg);
+
+    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
+      cocoagsg->lock_context();
+      _context_needs_update = false;
+      [cocoagsg->_context update];
+      cocoagsg->unlock_context();
+    }
+  }
 }
 
 /**
@@ -1114,6 +1131,18 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_mouse_mode(properties.get_mouse_mode());
       properties.clear_mouse_mode();
       break;
+    }
+  }
+
+  if (_context_needs_update && _gsg != nullptr) {
+    CocoaGraphicsStateGuardian *cocoagsg;
+    DCAST_INTO_V(cocoagsg, _gsg);
+
+    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
+      cocoagsg->lock_context();
+      _context_needs_update = false;
+      [cocoagsg->_context update];
+      cocoagsg->unlock_context();
     }
   }
 }
