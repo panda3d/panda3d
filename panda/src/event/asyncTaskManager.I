@@ -52,6 +52,8 @@ add(const std::string &name, Callable callable) {
   public:
     InlineTask(Callable callable) : _callable(std::move(callable)) {}
 
+    ALLOC_DELETED_CHAIN(InlineTask);
+
   private:
     virtual DoneStatus do_task() override final {
       return _callable(this);
