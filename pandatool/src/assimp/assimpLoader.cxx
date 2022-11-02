@@ -45,8 +45,37 @@
 
 #include <assimp/postprocess.h>
 
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR "$mat.gltf.pbrMetallicRoughness.baseColorFactor", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR "$mat.gltf.pbrMetallicRoughness.metallicFactor", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR "$mat.gltf.pbrMetallicRoughness.roughnessFactor", 0, 0
+#endif
+
 #ifndef AI_MATKEY_GLTF_ALPHAMODE
 #define AI_MATKEY_GLTF_ALPHAMODE "$mat.gltf.alphaMode", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_ALPHACUTOFF
+#define AI_MATKEY_GLTF_ALPHACUTOFF "$mat.gltf.alphaCutoff", 0, 0
+#endif
+
+// Older versions of Assimp used these glTF-specific keys instead.
+#ifndef AI_MATKEY_BASE_COLOR
+#define AI_MATKEY_BASE_COLOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR
+#endif
+
+#ifndef AI_MATKEY_METALLIC_FACTOR
+#define AI_MATKEY_METALLIC_FACTOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR
+#endif
+
+#ifndef AI_MATKEY_ROUGHNESS_FACTOR
+#define AI_MATKEY_ROUGHNESS_FACTOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR
 #endif
 
 using std::ostringstream;
@@ -294,7 +323,8 @@ load_texture(size_t index) {
  */
 void AssimpLoader::
 load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
-                   CPT(TextureAttrib) &tattr, CPT(TexMatrixAttrib) &tmattr) {
+                   TextureStage::Mode mode, CPT(TextureAttrib) &tattr,
+                   CPT(TexMatrixAttrib) &tmattr) {
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
@@ -312,13 +342,23 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
       uvindex = i;
     }
 
-    stringstream str;
-    str << uvindex;
-    PT(TextureStage) stage = new TextureStage(str.str());
-    if (uvindex > 0) {
-      stage->set_texcoord_name(InternalName::get_texcoord_name(str.str()));
+    if (ttype == aiTextureType_DIFFUSE && i == 1) {
+      // The glTF 2 importer duplicates this slot in older versions of Assimp.
+      // Since glTF doesn't support multiple diffuse textures anyway, we check
+      // for this old glTF-specific key, and if present, ignore this texture.
+      aiColor4D col;
+      if (AI_SUCCESS == mat.Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, col)) {
+        return;
+      }
     }
-    PT(Texture) ptex = nullptr;
+
+    std::string uvindex_str = format_string(uvindex);
+    PT(TextureStage) stage = new TextureStage(uvindex_str);
+    stage->set_mode(mode);
+    if (uvindex > 0) {
+      stage->set_texcoord_name(InternalName::get_texcoord_name(uvindex_str));
+    }
+    PT(Texture) ptex;
 
     // I'm not sure if this is the right way to handle it, as I couldn't find
     // much information on embedded textures.
@@ -448,7 +488,7 @@ load_material(size_t index) {
 
   CPT(RenderState) state = RenderState::make_empty();
 
-  aiColor3D col;
+  aiColor4D col;
   bool have;
   int ival;
   PN_stdfloat fval;
@@ -458,7 +498,11 @@ load_material(size_t index) {
   // First do the material attribute.
   PT(Material) pmat = new Material;
   have = false;
-  if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_DIFFUSE, col)) {
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_BASE_COLOR, col)) {
+    pmat->set_base_color(LColor(col.r, col.g, col.b, col.a));
+    have = true;
+  }
+  else if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_DIFFUSE, col)) {
     pmat->set_diffuse(LColor(col.r, col.g, col.b, 1));
     have = true;
   }
@@ -470,6 +514,13 @@ load_material(size_t index) {
     }
     have = true;
   }
+  //else {
+  //  if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS_STRENGTH, fval)) {
+  //    pmat->set_specular(LColor(fval, fval, fval, 1));
+  //  } else {
+  //    pmat->set_specular(LColor(1, 1, 1, 1));
+  //  }
+  //}
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_AMBIENT, col)) {
     pmat->set_specular(LColor(col.r, col.g, col.b, 1));
     have = true;
@@ -484,6 +535,22 @@ load_material(size_t index) {
   if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS, fval)) {
     pmat->set_shininess(fval);
     have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_METALLIC_FACTOR, fval)) {
+    pmat->set_metallic(fval);
+    have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_ROUGHNESS_FACTOR, fval)) {
+    pmat->set_roughness(fval);
+    have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_REFRACTI, fval)) {
+    pmat->set_refractive_index(fval);
+    have = true;
+  }
+  else if (pmat->has_metallic()) {
+    // Default refractive index to 1.5 for PBR models
+    pmat->set_refractive_index(1.5);
   }
   if (have) {
     state = state->add_attrib(MaterialAttrib::make(pmat));
@@ -524,8 +591,20 @@ load_material(size_t index) {
   // And let's not forget the textures!
   CPT(TextureAttrib) tattr = DCAST(TextureAttrib, TextureAttrib::make());
   CPT(TexMatrixAttrib) tmattr;
-  load_texture_stage(mat, aiTextureType_DIFFUSE, tattr, tmattr);
-  load_texture_stage(mat, aiTextureType_LIGHTMAP, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_DIFFUSE, TextureStage::M_modulate, tattr, tmattr);
+
+  // Check for an ORM map, from the glTF/OBJ importer.  glTF also puts it in the
+  // LIGHTMAP slot, despite only having the lightmap in the red channel, so we
+  // have to ignore it.
+  if (mat.GetTextureCount(aiTextureType_UNKNOWN) > 0) {
+    load_texture_stage(mat, aiTextureType_UNKNOWN, TextureStage::M_selector, tattr, tmattr);
+  } else {
+    load_texture_stage(mat, aiTextureType_LIGHTMAP, TextureStage::M_modulate, tattr, tmattr);
+  }
+
+  load_texture_stage(mat, aiTextureType_NORMALS, TextureStage::M_normal, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_EMISSIVE, TextureStage::M_emission, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_HEIGHT, TextureStage::M_height, tattr, tmattr);
   if (tattr->get_num_on_stages() > 0) {
     state = state->add_attrib(tattr);
   }
@@ -533,7 +612,7 @@ load_material(size_t index) {
     state = state->add_attrib(tmattr);
   }
 
-  _mat_states[index] = state;
+  _mat_states[index] = std::move(state);
 }
 
 /**
