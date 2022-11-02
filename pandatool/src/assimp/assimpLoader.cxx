@@ -39,6 +39,7 @@
 #include "pvector.h"
 #include "cmath.h"
 #include "deg_2_rad.h"
+#include "string_utils.h"
 
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
@@ -1038,6 +1039,44 @@ load_node(const aiNode &node, PandaNode *parent) {
     parent->add_child(character);
   } else {
     parent->add_child(pnode);
+  }
+
+  if (node.mMetaData != nullptr) {
+    for (unsigned i = 0; i < node.mMetaData->mNumProperties; ++i) {
+      const aiMetadataEntry &entry = node.mMetaData->mValues[i];
+      std::string value;
+      switch (entry.mType) {
+      //case AI_BOOL:
+      //  value = (*static_cast<bool *>(entry.mData)) ? "1" : "";
+      //  break;
+      case (aiMetadataType)1: // AI_INT32
+        value = format_string(*static_cast<int32_t *>(entry.mData));
+        break;
+      case AI_UINT64:
+        value = format_string(*static_cast<uint64_t *>(entry.mData));
+        break;
+      case AI_FLOAT:
+        value = format_string(*static_cast<float *>(entry.mData));
+        break;
+      case AI_AISTRING:
+        {
+          const aiString *str = static_cast<const aiString *>(entry.mData);
+          value = std::string(str->data, str->length);
+        }
+        break;
+      default:
+        // Special case because AI_DOUBLE was added in Assimp 4.0 with the same
+        // value as AI_AISTRING. Defined as if so that we don't get a duplicate
+        // case error with moder ncompilers.
+        if (entry.mType == (aiMetadataType)4) {
+          value = format_string(*static_cast<double *>(entry.mData));
+          break;
+        }
+        continue;
+      }
+      const aiString &key = node.mMetaData->mKeys[i];
+      pnode->set_tag(std::string(key.data, key.length), std::move(value));
+    }
   }
 
   // Load in the transformation matrix.
