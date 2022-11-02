@@ -291,10 +291,10 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   unsigned int uvindex;
   float blend;
   aiTextureOp op;
-  aiTextureMapMode mapmode;
+  aiTextureMapMode mapmode[3];
 
   for (size_t i = 0; i < mat.GetTextureCount(ttype); ++i) {
-    mat.GetTexture(ttype, i, &path, &mapping, nullptr, &blend, &op, &mapmode);
+    mat.GetTexture(ttype, i, &path, &mapping, nullptr, &blend, &op, mapmode);
 
     if (AI_SUCCESS != mat.Get(AI_MATKEY_UVWSRC(ttype, i), uvindex)) {
       // If there's no texture coordinate set for this texture, assume that
