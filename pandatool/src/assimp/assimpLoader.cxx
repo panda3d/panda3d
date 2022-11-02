@@ -21,9 +21,11 @@
 #include "geomTriangles.h"
 #include "pnmFileTypeRegistry.h"
 #include "pnmImage.h"
+#include "alphaTestAttrib.h"
 #include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
+#include "transparencyAttrib.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
@@ -42,6 +44,10 @@
 #include "pandaLogger.h"
 
 #include <assimp/postprocess.h>
+
+#ifndef AI_MATKEY_GLTF_ALPHAMODE
+#define AI_MATKEY_GLTF_ALPHAMODE "$mat.gltf.alphaMode", 0, 0
+#endif
 
 using std::ostringstream;
 using std::stringstream;
@@ -499,6 +505,19 @@ load_material(size_t index) {
       state = state->add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
     } else {
       state = state->add_attrib(CullFaceAttrib::make_default());
+    }
+  }
+
+  // Alpha mode.
+  aiString alpha_mode;
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_GLTF_ALPHAMODE, alpha_mode)) {
+    if (strcmp(alpha_mode.C_Str(), "MASK") == 0) {
+      PN_stdfloat cutoff = 0.5;
+      mat.Get(AI_MATKEY_GLTF_ALPHACUTOFF, cutoff);
+      state = state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, cutoff));
+    }
+    else if (strcmp(alpha_mode.C_Str(), "BLEND") == 0) {
+      state = state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
     }
   }
 
