@@ -52,7 +52,7 @@ ConfigVariableBool assimp_fix_infacing_normals
 
 ConfigVariableBool assimp_optimize_meshes
 ("assimp-optimize-meshes", true,
- PRC_DESC("Removes the number of draw calls by unifying geometry with the same "
+ PRC_DESC("Reduces the number of draw calls by unifying geometry with the same "
           "materials.  Especially effective in conjunction with "
           "assimp-optimize-graph and assimp-remove-redundant-materials."));
 
