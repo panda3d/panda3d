@@ -721,6 +721,10 @@ load_mesh(size_t index) {
       aformat->add_column(InternalName::get_texcoord_name(out.str()), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     }
   }
+  if (mesh.HasTangentsAndBitangents()) {
+    aformat->add_column(InternalName::get_tangent(), 3, Geom::NT_stdfloat, Geom::C_vector);
+    aformat->add_column(InternalName::get_binormal(), 3, Geom::NT_stdfloat, Geom::C_vector);
+  }
 
   PT(GeomVertexArrayFormat) tb_aformat = new GeomVertexArrayFormat;
   tb_aformat->add_column(InternalName::make("transform_blend"), 1, Geom::NT_uint16, Geom::C_index);
@@ -850,6 +854,18 @@ load_mesh(size_t index) {
         const aiVector3D &vec = mesh.mTextureCoords[u][i];
         texcoord.add_data3(vec.x, vec.y, vec.z);
       }
+    }
+  }
+
+  // Now the tangents and bitangents, if any.
+  if (mesh.HasTangentsAndBitangents()) {
+    GeomVertexWriter tangent (vdata, InternalName::get_tangent());
+    GeomVertexWriter binormal (vdata, InternalName::get_binormal());
+    for (size_t i = 0; i < mesh.mNumVertices; ++i) {
+      const aiVector3D &tvec = mesh.mTangents[i];
+      const aiVector3D &bvec = mesh.mBitangents[i];
+      tangent.add_data3(tvec.x, tvec.y, tvec.z);
+      binormal.add_data3(bvec.x, bvec.y, bvec.z);
     }
   }
 
