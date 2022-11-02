@@ -348,6 +348,59 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
     }
 
     if (ptex != nullptr) {
+      // Apply the mapping modes.
+      switch (mapmode[0]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_u(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_u(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_u(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_u(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+      switch (mapmode[1]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_v(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_v(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_v(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_v(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+      switch (mapmode[2]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_w(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_w(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_w(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_w(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+
       tattr = DCAST(TextureAttrib, tattr->add_on_stage(stage, ptex));
     }
   }
