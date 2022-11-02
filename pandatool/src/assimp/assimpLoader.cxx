@@ -817,7 +817,7 @@ load_mesh(size_t index) {
   GeomVertexWriter vertex (vdata, InternalName::get_vertex());
   for (size_t i = 0; i < mesh.mNumVertices; ++i) {
     const aiVector3D &vec = mesh.mVertices[i];
-    vertex.add_data3(vec.x, vec.y, vec.z);
+    vertex.set_data3(vec.x, vec.y, vec.z);
   }
 
   // Now the normals, if any.
@@ -825,7 +825,7 @@ load_mesh(size_t index) {
     GeomVertexWriter normal (vdata, InternalName::get_normal());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mNormals[i];
-      normal.add_data3(vec.x, vec.y, vec.z);
+      normal.set_data3(vec.x, vec.y, vec.z);
     }
   }
 
@@ -834,7 +834,7 @@ load_mesh(size_t index) {
     GeomVertexWriter color (vdata, InternalName::get_color());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiColor4D &col = mesh.mColors[0][i];
-      color.add_data4(col.r, col.g, col.b, col.a);
+      color.set_data4(col.r, col.g, col.b, col.a);
     }
   }
 
@@ -844,7 +844,7 @@ load_mesh(size_t index) {
     GeomVertexWriter texcoord0 (vdata, InternalName::get_texcoord());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mTextureCoords[0][i];
-      texcoord0.add_data3(vec.x, vec.y, vec.z);
+      texcoord0.set_data3(vec.x, vec.y, vec.z);
     }
     for (unsigned int u = 1; u < num_uvs; ++u) {
       ostringstream out;
@@ -852,7 +852,7 @@ load_mesh(size_t index) {
       GeomVertexWriter texcoord (vdata, InternalName::get_texcoord_name(out.str()));
       for (size_t i = 0; i < mesh.mNumVertices; ++i) {
         const aiVector3D &vec = mesh.mTextureCoords[u][i];
-        texcoord.add_data3(vec.x, vec.y, vec.z);
+        texcoord.set_data3(vec.x, vec.y, vec.z);
       }
     }
   }
@@ -864,8 +864,8 @@ load_mesh(size_t index) {
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &tvec = mesh.mTangents[i];
       const aiVector3D &bvec = mesh.mBitangents[i];
-      tangent.add_data3(tvec.x, tvec.y, tvec.z);
-      binormal.add_data3(bvec.x, bvec.y, bvec.z);
+      tangent.set_data3(tvec.x, tvec.y, tvec.z);
+      binormal.set_data3(bvec.x, bvec.y, bvec.z);
     }
   }
 
@@ -879,7 +879,7 @@ load_mesh(size_t index) {
       for (size_t j = 0; j < bone_weights[i].size(); ++j) {
         tblend.add_transform(bone_weights[i][j].joint_vertex_xform, bone_weights[i][j].weight);
       }
-      transform_blend.add_data1i(tbtable->add_blend(tblend));
+      transform_blend.set_data1i(tbtable->add_blend(tblend));
     }
 
     tbtable->set_rows(SparseArray::lower_on(vdata->get_num_rows()));
