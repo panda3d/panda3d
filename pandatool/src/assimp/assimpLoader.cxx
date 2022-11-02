@@ -35,6 +35,8 @@
 #include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
 #include "pvector.h"
+#include "cmath.h"
+#include "deg_2_rad.h"
 
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
@@ -285,7 +287,8 @@ load_texture(size_t index) {
  * Converts an aiMaterial into a RenderState.
  */
 void AssimpLoader::
-load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr) {
+load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
+                   CPT(TextureAttrib) &tattr, CPT(TexMatrixAttrib) &tmattr) {
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
@@ -402,6 +405,30 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
       }
 
       tattr = DCAST(TextureAttrib, tattr->add_on_stage(stage, ptex));
+
+      // Is there a texture transform?
+      aiUVTransform transform;
+      if (AI_SUCCESS == mat.Get(AI_MATKEY_UVTRANSFORM(ttype, i), transform)) {
+        // Reconstruct the original origin from the glTF file.
+        PN_stdfloat rcos, rsin;
+        csincos(-transform.mRotation, &rsin, &rcos);
+        transform.mTranslation.x -= (0.5 * transform.mScaling.x) * (-rcos + rsin + 1);
+        transform.mTranslation.y -= ((0.5 * transform.mScaling.y) * (rsin + rcos - 1)) + 1 - transform.mScaling.y;
+
+        LMatrix3 matrix =
+          LMatrix3::translate_mat(0, -1) *
+          LMatrix3::scale_mat(transform.mScaling.x, transform.mScaling.y) *
+          LMatrix3::rotate_mat(rad_2_deg(-transform.mRotation)) *
+          LMatrix3::translate_mat(transform.mTranslation.x, 1 + transform.mTranslation.y);
+
+        CPT(TransformState) cstate =
+          TransformState::make_mat3(matrix);
+
+        CPT(RenderAttrib) new_attr = (tmattr == nullptr)
+          ? TexMatrixAttrib::make(stage, std::move(cstate))
+          : tmattr->add_stage(stage, std::move(cstate));
+        tmattr = DCAST(TexMatrixAttrib, std::move(new_attr));
+      }
     }
   }
 }
@@ -477,10 +504,14 @@ load_material(size_t index) {
 
   // And let's not forget the textures!
   CPT(TextureAttrib) tattr = DCAST(TextureAttrib, TextureAttrib::make());
-  load_texture_stage(mat, aiTextureType_DIFFUSE, tattr);
-  load_texture_stage(mat, aiTextureType_LIGHTMAP, tattr);
+  CPT(TexMatrixAttrib) tmattr;
+  load_texture_stage(mat, aiTextureType_DIFFUSE, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_LIGHTMAP, tattr, tmattr);
   if (tattr->get_num_on_stages() > 0) {
     state = state->add_attrib(tattr);
+  }
+  if (tmattr != nullptr) {
+    state = state->add_attrib(tmattr);
   }
 
   _mat_states[index] = state;

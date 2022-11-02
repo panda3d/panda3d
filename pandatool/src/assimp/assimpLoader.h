@@ -72,7 +72,8 @@ private:
   const aiNode *find_node(const aiNode &root, const aiString &name);
 
   void load_texture(size_t index);
-  void load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr);
+  void load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
+                          CPT(TextureAttrib) &tattr, CPT(TexMatrixAttrib) &tmattr);
   void load_material(size_t index);
   void create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node);
   void create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *parent, const aiNode &node);
