@@ -5821,7 +5821,7 @@ if not PkgSkip("PANDATOOL") and not PkgSkip("EGG"):
     TargetAdd('libp3ptloader.dll', input='libp3lwo.lib')
     TargetAdd('libp3ptloader.dll', input='libp3dxfegg.lib')
     TargetAdd('libp3ptloader.dll', input='libp3dxf.lib')
-    TargetAdd('libp3ptloader.dll', input='libp3objegg.lib')
+    #TargetAdd('libp3ptloader.dll', input='libp3objegg.lib')
     TargetAdd('libp3ptloader.dll', input='libp3vrmlegg.lib')
     TargetAdd('libp3ptloader.dll', input='libp3vrml.lib')
     TargetAdd('libp3ptloader.dll', input='libp3xfileegg.lib')
