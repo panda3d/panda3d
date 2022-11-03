@@ -221,14 +221,6 @@ compare_to(const TextureStage &other) const {
  * Writes the details of this stage
  */
 void TextureStage::
-write(ostream &out) const {
-  write(out, 0);
-}
-
-/**
- * Writes the details of this stage
- */
-void TextureStage::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextureStage " << get_name() << ", sort = " << get_sort()
