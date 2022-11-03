@@ -87,7 +87,7 @@ ConfigVariableDouble assimp_smooth_normal_angle
           "changing this."));
 
 ConfigVariableBool assimp_collapse_dummy_root_node
-("assimp-collapse-dummy-root-node", false,
+("assimp-collapse-dummy-root-node", true,
  PRC_DESC("If set to true, collapses the root node that Assimp creates, if it "
           "appears to be a synthetic dummy root node and contains no meshes.  "
           "This variable is new as of Panda3D 1.10.13 and will become true by "
