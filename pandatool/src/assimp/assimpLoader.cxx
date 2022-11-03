@@ -1056,13 +1056,25 @@ load_node(const aiNode &node, PandaNode *parent) {
   if (node.mNumMeshes > 0) {
     pnode = new GeomNode(name);
   } else {
-    pnode = new PandaNode(name);
+    // Many importers create a dummy root node, but they all call it
+    // differently, and some (glTF) create it only conditionally.
+    // It usually has some funny name like <SomethingRoot> or $dummy_root,
+    // except the .obj loader, which assigns it the model base name like we do.
+    if (parent == _root && assimp_collapse_dummy_root_node &&
+        _charmap.find(node.mName.C_Str()) == _charmap.end() &&
+        (name.empty() || name[0] == '$' || name == "RootNode" || name == "ROOT" || name == "Root" || (name.size() > 2 && name[0] == '<' && name[name.size() - 1] == '>') || name == _root->get_name())) {
+      // Collapse root node.
+      pnode = _root;
+    } else {
+      pnode = new PandaNode(name);
+    }
   }
 
   if (_charmap.find(node.mName.C_Str()) != _charmap.end()) {
     character = _charmap[node.mName.C_Str()];
     parent->add_child(character);
-  } else {
+  }
+  else if (parent != pnode) {
     parent->add_child(pnode);
   }
 

@@ -86,6 +86,13 @@ ConfigVariableDouble assimp_smooth_normal_angle
           "normals. Note that you may need to clear the model-cache after "
           "changing this."));
 
+ConfigVariableBool assimp_collapse_dummy_root_node
+("assimp-collapse-dummy-root-node", false,
+ PRC_DESC("If set to true, collapses the root node that Assimp creates, if it "
+          "appears to be a synthetic dummy root node and contains no meshes.  "
+          "This variable is new as of Panda3D 1.10.13 and will become true by "
+          "default as of Panda3D 1.11.0."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
