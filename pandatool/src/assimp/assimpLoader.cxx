@@ -1151,7 +1151,7 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
       //case AI_BOOL:
       //  value = (*static_cast<bool *>(entry.mData)) ? "1" : "";
       //  break;
-      case (aiMetadataType)1: // AI_INT32
+      case AI_INT32:
         value = format_string(*static_cast<int32_t *>(entry.mData));
         break;
       case AI_UINT64:
@@ -1160,6 +1160,9 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
       case AI_FLOAT:
         value = format_string(*static_cast<float *>(entry.mData));
         break;
+      case AI_DOUBLE:
+        value = format_string(*static_cast<double *>(entry.mData));
+        break;
       case AI_AISTRING:
         {
           const aiString *str = static_cast<const aiString *>(entry.mData);
@@ -1167,13 +1170,6 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
         }
         break;
       default:
-        // Special case because AI_DOUBLE was added in Assimp 4.0 with the same
-        // value as AI_AISTRING. Defined as if so that we don't get a duplicate
-        // case error with moder ncompilers.
-        if (entry.mType == (aiMetadataType)4) {
-          value = format_string(*static_cast<double *>(entry.mData));
-          break;
-        }
         continue;
       }
       const aiString &key = node.mMetaData->mKeys[i];
@@ -1284,9 +1280,7 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat(pos, quat));
     break; }
 
-  // This is a somewhat recent addition to Assimp, so let's be kind to those
-  // that don't have an up-to-date version of Assimp.
-  case 0x4: //aiLightSource_AMBIENT:
+  case aiLightSource_AMBIENT:
     // This is handled below.
     break;
 
