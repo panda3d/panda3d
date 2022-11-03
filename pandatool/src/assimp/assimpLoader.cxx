@@ -269,8 +269,11 @@ load_texture(size_t index) {
 
   if (tex.mHeight == 0) {
     // Compressed texture.
-    assimp_cat.debug()
-      << "Reading embedded compressed texture with format " << tex.achFormatHint << " and size " << tex.mWidth << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Reading embedded compressed texture with format "
+        << tex.achFormatHint << " and size " << tex.mWidth << "\n";
+    }
     stringstream str;
     str.write((char*) tex.pcData, tex.mWidth);
 
@@ -296,8 +299,11 @@ load_texture(size_t index) {
       }
     }
   } else {
-    assimp_cat.debug()
-      << "Reading embedded raw texture with size " << tex.mWidth << "x" << tex.mHeight << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Reading embedded raw texture with size "
+        << tex.mWidth << "x" << tex.mHeight << "\n";
+    }
 
     ptex->setup_2d_texture(tex.mWidth, tex.mHeight, Texture::T_unsigned_byte, Texture::F_rgba);
     PTA_uchar data = ptex->modify_ram_image();
@@ -628,8 +634,10 @@ create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *pare
                 t.a4, t.b4, t.c4, t.d4);
   PT(CharacterJoint) joint = new CharacterJoint(character, bundle, parent, node.mName.C_Str(), mat);
 
-  assimp_cat.debug()
-    << "Creating joint for: " << node.mName.C_Str() << "\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug()
+      << "Creating joint for: " << node.mName.C_Str() << "\n";
+  }
 
   for (size_t i = 0; i < node.mNumChildren; ++i) {
     if (_bonemap.find(node.mChildren[i]->mName.C_Str()) != _bonemap.end()) {
@@ -654,8 +662,10 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   }
 
   if (node_anim) {
-    assimp_cat.debug()
-      << "Found channel for node: " << node.mName.C_Str() << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Found channel for node: " << node.mName.C_Str() << "\n";
+    }
     // assimp_cat.debug() << "Num Position Keys " <<
     // node_anim->mNumPositionKeys << "\n"; assimp_cat.debug() << "Num
     // Rotation Keys " << node_anim->mNumRotationKeys << "\n";
@@ -703,7 +713,7 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
     group->set_table('j', tablej);
     group->set_table('k', tablek);
   }
-  else {
+  else if (assimp_cat.is_debug()) {
     assimp_cat.debug()
       << "No channel found for node: " << node.mName.C_Str() << "\n";
   }
@@ -726,8 +736,10 @@ load_mesh(size_t index) {
   // Check if we need to make a Character
   PT(Character) character = nullptr;
   if (mesh.HasBones()) {
-    assimp_cat.debug()
-      << "Creating character for " << mesh.mName.C_Str() << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Creating character for " << mesh.mName.C_Str() << "\n";
+    }
 
     // Find and add all bone nodes to the bone map
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
@@ -767,8 +779,10 @@ load_mesh(size_t index) {
       const aiBone &bone = *mesh.mBones[i];
       CharacterJoint *joint = character->find_joint(bone.mName.C_Str());
       if (joint == nullptr) {
-        assimp_cat.debug()
-          << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
+        if (assimp_cat.is_debug()) {
+          assimp_cat.debug()
+            << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
+        }
         continue;
       }
 
@@ -814,11 +828,17 @@ load_mesh(size_t index) {
     aiAnimation &ai_anim = *_scene->mAnimations[i];
     bool convert_anim = false;
 
-    assimp_cat.debug()
-      << "Checking to see if anim (" << ai_anim.mName.C_Str() << ") matches character (" << mesh.mName.C_Str() << ")\n";
-    for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+    if (assimp_cat.is_debug()) {
       assimp_cat.debug()
-        << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str() << " in bone map" << "\n";
+        << "Checking to see if anim (" << ai_anim.mName.C_Str()
+        << ") matches character (" << mesh.mName.C_Str() << ")\n";
+    }
+    for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+      if (assimp_cat.is_debug()) {
+        assimp_cat.debug()
+          << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str()
+          << " in bone map" << "\n";
+      }
       if (_bonemap.find(ai_anim.mChannels[j]->mNodeName.C_Str()) != _bonemap.end()) {
         convert_anim = true;
         break;
@@ -826,8 +846,11 @@ load_mesh(size_t index) {
     }
 
     if (convert_anim) {
-      assimp_cat.debug()
-        << "Found animation (" << ai_anim.mName.C_Str() << ") for character (" << mesh.mName.C_Str() << ")\n";
+      if (assimp_cat.is_debug()) {
+        assimp_cat.debug()
+          << "Found animation (" << ai_anim.mName.C_Str() << ") for character ("
+          << mesh.mName.C_Str() << ")\n";
+      }
 
       // Now create the animation
       unsigned int frames = 0;
@@ -843,10 +866,12 @@ load_mesh(size_t index) {
         }
       }
       PN_stdfloat fps = frames / (ai_anim.mTicksPerSecond * ai_anim.mDuration);
-      assimp_cat.debug()
-        << "FPS " << fps << "\n";
-      assimp_cat.debug()
-        << "Frames " << frames << "\n";
+      if (assimp_cat.is_debug()) {
+        assimp_cat.debug()
+          << "FPS " << fps << "\n";
+        assimp_cat.debug()
+          << "Frames " << frames << "\n";
+      }
 
       PT(AnimBundle) bundle = new AnimBundle(mesh.mName.C_Str(), fps, frames);
       PT(AnimGroup) skeleton = new AnimGroup(bundle, "<skeleton>");
@@ -1112,7 +1137,9 @@ load_node(const aiNode &node, PandaNode *parent) {
     }
 
     if (character) {
+      if (assimp_cat.is_debug()) {
         assimp_cat.debug() << "Adding char to geom\n";
+      }
       character->add_child(gnode);
     }
   }
@@ -1124,7 +1151,9 @@ load_node(const aiNode &node, PandaNode *parent) {
 void AssimpLoader::
 load_light(const aiLight &light) {
   string name (light.mName.data, light.mName.length);
-  assimp_cat.debug() << "Found light '" << name << "'\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug() << "Found light '" << name << "'\n";
+  }
 
   aiColor3D col;
   aiVector3D vec;
