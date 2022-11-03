@@ -112,14 +112,12 @@ PUBLISHED:
     // image.  Sphere maps only make sense in eye coordinate space.
     M_eye_sphere_map,
 
-/*
- * Cube maps are a modern improvement on the sphere map; they don't suffer
- * from any polar singularities, but they require six texture images.  They
- * can also be generated dynamically for real-time reflections (see
- * GraphicsOutput::make_cube_map()). Typically, a statically-generated cube
- * map will be in eye space, while a dynamically-generated map will be in
- * world space.  Cube mapping is not supported on all hardware.
- */
+    // Cube maps are a modern improvement on the sphere map; they don't suffer
+    // from any polar singularities, but they require six texture images.  They
+    // can also be generated dynamically for real-time reflections (see
+    // GraphicsOutput::make_cube_map()). Typically, a statically-generated cube
+    // map will be in eye space, while a dynamically-generated map will be in
+    // world space.  Cube mapping is not supported on all hardware.
     M_world_cube_map,
     M_eye_cube_map,
 
@@ -135,17 +133,16 @@ PUBLISHED:
     M_unused,  // formerly M_object_position, now deprecated.
     M_eye_position,
 
-/*
- * With M_point_sprite, texture coordinates will be generated for large points
- * in the range (0,0) - (1,1) from upper-left to lower-right across the
- * point's face.  Without this, each point will have just a single uniform
- * texture coordinate value across its face.  Unfortunately, the generated
- * texture coordinates are inverted (upside-down) from Panda's usual
- * convention, but this is what the graphics card manufacturers decided to
- * use.  You could use a texture matrix to re-invert the texture, but that
- * will probably force the sprites' vertices to be computed in the CPU. You'll
- * have to paint your textures upside-down if you want true hardware sprites.
- */
+    // With M_point_sprite, texture coordinates will be generated for large
+    // points in the range (0,0) - (1,1) from upper-left to lower-right across
+    // the point's face.  Without this, each point will have just a single
+    // uniform texture coordinate value across its face.  Unfortunately, the
+    // generated texture coordinates are inverted (upside-down) from Panda's
+    // usual convention, but this is what the graphics card manufacturers
+    // decided to use.  You could use a texture matrix to re-invert the texture,
+    // but that will probably force the sprites' vertices to be computed in the
+    // CPU. You'll have to paint your textures upside-down if you want true
+    // hardware sprites.
     M_point_sprite,
 
     // M_light_vector generated special 3-d texture coordinates that
