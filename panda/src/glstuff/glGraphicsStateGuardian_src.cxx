@@ -14242,7 +14242,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
           size_t page_size = tex->get_ram_mipmap_page_size(n);
           for (int z = 0; z < 6; ++z) {
             GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
-            const unsigned char *page_ptr = image_ptr + page_size * z;
+            const unsigned char *page_ptr =
+              (image_ptr != nullptr) ? image_ptr + page_size * z : nullptr;
 
             if (image_compression == Texture::CM_off) {
               glTexImage2D(page_target, n - mipmap_bias, internal_format,
