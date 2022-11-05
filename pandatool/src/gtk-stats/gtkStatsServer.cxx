@@ -498,12 +498,11 @@ create_window() {
   gtk_widget_realize(_window);
 
   // Set up a timer to poll the pstats every so often.
-  g_timeout_add(200,
-    G_SOURCE_FUNC(+[](gpointer data) -> gboolean {
-      GtkStatsServer *self = (GtkStatsServer *)data;
-      self->poll();
-      return TRUE;
-    }), this);
+  g_timeout_add(200, +[](gpointer data) -> gboolean {
+    GtkStatsServer *self = (GtkStatsServer *)data;
+    self->poll();
+    return TRUE;
+  }, this);
 }
 
 /**
