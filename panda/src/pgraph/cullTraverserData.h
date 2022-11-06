@@ -82,7 +82,7 @@ PUBLISHED:
   void apply_transform(const TransformState *node_transform);
 
   MAKE_PROPERTY(node_path, get_node_path);
-  MAKE_PROPERTY(view_frustum, get_view_frustum);
+  MAKE_PROPERTY(view_frustum, get_view_frustum, set_view_frustum);
 
 public:
   bool is_instance_in_view(const TransformState *instance_transform, const DrawMask &camera_mask) const;
