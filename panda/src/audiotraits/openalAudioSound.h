@@ -152,7 +152,6 @@ private:
   PN_stdfloat _balance; // -1..1
   PN_stdfloat _play_rate; // 0..1.0
 
-  bool _positional;
   ALfloat _location[3];
   ALfloat _velocity[3];
 
