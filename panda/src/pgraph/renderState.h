@@ -71,6 +71,9 @@ PUBLISHED:
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
   INLINE static CPT(RenderState) make_empty();
+  EXTENSION(static explicit CPT(RenderState) make(PyObject *args, PyObject *kwargs));
+
+public:
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
   static CPT(RenderState) make(const RenderAttrib *attrib1,
                                const RenderAttrib *attrib2, int override = 0);
@@ -89,6 +92,7 @@ PUBLISHED:
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
 
+PUBLISHED:
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
 

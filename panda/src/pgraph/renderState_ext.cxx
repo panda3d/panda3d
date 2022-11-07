@@ -16,6 +16,64 @@
 #ifdef HAVE_PYTHON
 
 /**
+ * Returns a RenderState with a given number of attributes set.
+ */
+CPT(RenderState) Extension<RenderState>::
+make(PyObject *args, PyObject *kwds) {
+  extern struct Dtool_PyTypedObject Dtool_RenderAttrib;
+
+  Py_ssize_t num_attribs = PyTuple_GET_SIZE(args);
+
+  // Check for the override keyword argument.
+  PyObject *py_override = nullptr;
+  if (kwds != nullptr && PyDict_GET_SIZE(kwds) > 0) {
+    if (PyDict_GET_SIZE(kwds) > 1) {
+      Dtool_Raise_TypeError("RenderState.make() received an unexpected keyword argument");
+      return nullptr;
+    }
+
+    PyObject *key;
+    Py_ssize_t ppos = 0;
+    if (!PyDict_Next(kwds, &ppos, &key, &py_override)) {
+      return nullptr;
+    }
+
+    // We got the item, we just need to make sure that it had the right key.
+    if (!PyUnicode_CheckExact(key) || !_PyUnicode_EqualToASCIIString(key, "override")) {
+      Dtool_Raise_TypeError("RenderState.make() received an unexpected keyword argument");
+      return nullptr;
+    }
+
+    if (!PyLong_Check(py_override)) {
+      Dtool_Raise_TypeError("RenderState.make() override argument should be int");
+      return nullptr;
+    }
+  }
+  else if (num_attribs > 1 && PyLong_Check(PyTuple_GET_ITEM(args, num_attribs - 1))) {
+    // It was specified as last positional argument.
+    py_override = PyTuple_GET_ITEM(args, --num_attribs);
+  }
+
+  int override = 0;
+  if (py_override != nullptr) {
+    override = _PyLong_AsInt(py_override);
+    if (override == -1 && _PyErr_OCCURRED()) {
+      return nullptr;
+    }
+  }
+
+  const RenderAttrib **attribs = (const RenderAttrib **)alloca(sizeof(RenderAttrib *) * num_attribs);
+  for (Py_ssize_t i = 0; i < num_attribs; ++i) {
+    PyObject *arg = PyTuple_GET_ITEM(args, i);
+    if (!DtoolInstance_GetPointer(arg, attribs[i], Dtool_RenderAttrib)) {
+      Dtool_Raise_ArgTypeError(arg, i, "RenderState.make", "RenderAttrib");
+      return nullptr;
+    }
+  }
+  return RenderState::make(attribs, num_attribs, override);
+}
+
+/**
  * Returns a list of 2-tuples that represents the composition cache.  For each
  * tuple in the list, the first element is the source render, and the second
  * is the result render.  If both are None, there is no entry in the cache at
