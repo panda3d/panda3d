@@ -90,7 +90,7 @@ protected:
   GraphicsWindowInputDevice *_input;
 
   long _event_mask;
-  bool _awaiting_configure;
+  clock_t _awaiting_configure_since;
   bool _dga_mouse_enabled;
   Bool _override_redirect;
   Atom _wm_delete_window;
