@@ -4707,9 +4707,13 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     // The function handles the arguments by itself.
     expected_params += "*args";
     pexprs.push_back("args");
-    if (args_type == AT_keyword_args) {
-      expected_params += ", **kwargs";
-      pexprs.push_back("kwds");
+    if (remap->_args_type == AT_keyword_args) {
+      if (args_type == AT_keyword_args) {
+        expected_params += ", **kwargs";
+        pexprs.push_back("kwds");
+      } else {
+        pexprs.push_back("nullptr");
+      }
     }
     num_params = 0;
   }
