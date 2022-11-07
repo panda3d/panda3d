@@ -103,7 +103,7 @@ protected:
   PreeditState *_preedit_state = nullptr;
 
   long _event_mask;
-  bool _awaiting_configure;
+  clock_t _awaiting_configure_since;
   bool _dga_mouse_enabled;
   bool _raw_mouse_enabled;
   Bool _override_redirect;

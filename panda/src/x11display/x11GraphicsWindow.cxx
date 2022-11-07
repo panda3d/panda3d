@@ -115,7 +115,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
     _XRRSetScreenConfig = x11_pipe->_XRRSetScreenConfig;
   }
 
-  _awaiting_configure = false;
+  _awaiting_configure_since = -1;
   _dga_mouse_enabled = false;
   _raw_mouse_enabled = false;
   _override_redirect = False;
@@ -239,7 +239,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == nullptr) {
     return false;
   }
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     // Don't attempt to draw while we have just reconfigured the window and we
     // haven't got the notification back yet.
     return false;
@@ -530,7 +530,14 @@ process_events() {
 
   if (got_configure_event) {
     // Now handle the last configure event we found.
-    _awaiting_configure = false;
+    if (x11display_cat.is_debug() && _awaiting_configure_since != -1) {
+      unsigned long elapsed = (unsigned long)(clock() - _awaiting_configure_since) / (CLOCKS_PER_SEC / 10000);
+      x11display_cat.debug()
+        << "Received ConfigureNotify event after "
+        << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+    }
+
+    _awaiting_configure_since = -1;
 
     // Is this the inner corner or the outer corner?  The Xlib docs say it
     // should be the outer corner, but it appears to be the inner corner on my
@@ -571,6 +578,19 @@ process_events() {
     }
 
     changed_properties = true;
+  }
+  else if (_awaiting_configure_since != -1) {
+    unsigned long elapsed = (clock() - _awaiting_configure_since);
+    if (elapsed > CLOCKS_PER_SEC / 10) {
+      // Accept that we're never going to get that configure notify event.
+      if (x11display_cat.is_debug()) {
+        elapsed /= (CLOCKS_PER_SEC / 10000);
+        x11display_cat.debug()
+          << "Giving up on waiting for ConfigureNotify event after "
+          << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+      }
+      _awaiting_configure_since = -1;
+    }
   }
 
   if (properties.has_foreground() &&
@@ -1049,7 +1069,7 @@ set_properties_now(WindowProperties &properties) {
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
-    _awaiting_configure = true;
+    _awaiting_configure_since = clock();
   }
 }
 
