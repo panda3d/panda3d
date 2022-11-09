@@ -497,3 +497,31 @@ def test_glsl_includes(gsg):
     vert_path = core.Filename(SHADERS_DIR, 'glsl_include' + suffix + '.vert')
     frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path)
+
+
+def test_glsl_includes_angle_nodir(gsg):
+    """Test preprocessing includes with angle includes without model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    assert core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path) is None
+
+
+@pytest.fixture
+def with_current_dir_on_model_path():
+    model_path = core.get_model_path()
+    model_path.prepend_directory(core.Filename.from_os_specific(os.path.dirname(__file__)))
+    yield
+    model_path.clear_local_value()
+
+
+def test_glsl_includes_angle_withdir(gsg, with_current_dir_on_model_path):
+    """Test preprocessing includes with angle includes with model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
