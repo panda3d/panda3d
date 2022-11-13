@@ -966,6 +966,9 @@ if (COMPILER=="GCC"):
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
 
+        if not PkgSkip("HARFBUZZ"):
+            LibName("HARFBUZZ", "-Wl,--exclude-libs,libharfbuzz.a")
+
         if not PkgSkip("MIMALLOC"):
             LibName("MIMALLOC", "-Wl,--exclude-libs,libmimalloc.a")
 
