@@ -1119,6 +1119,9 @@ if (COMPILER=="GCC"):
                 LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
                 LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
 
+            if not PkgSkip("HARFBUZZ"):
+                LibName("HARFBUZZ", "-Wl,--exclude-libs,libharfbuzz.a")
+
         if PkgSkip("FFMPEG") or GetTarget() == "darwin":
             cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
             if cv_lib == "opencv_core":
