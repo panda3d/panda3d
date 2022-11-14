@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool has_mouse() const;
   INLINE bool is_mouse_open() const;
-  INLINE const LPoint2 &get_mouse() const;
+  INLINE LPoint2 get_mouse() const;
   INLINE PN_stdfloat get_mouse_x() const;
   INLINE PN_stdfloat get_mouse_y() const;
 

@@ -34,12 +34,9 @@ is_mouse_open() const {
  * It is only valid to call this if has_mouse() returns true.  If so, this
  * returns the current position of the mouse within the window.
  */
-INLINE const LPoint2 &MouseWatcher::
+INLINE LPoint2 MouseWatcher::
 get_mouse() const {
-#ifndef NDEBUG
-  static LPoint2 bogus_mouse(0.0f, 0.0f);
-  nassertr(_has_mouse, bogus_mouse);
-#endif
+  nassertr(_has_mouse, LPoint2(0, 0));
   return _mouse;
 }
 
