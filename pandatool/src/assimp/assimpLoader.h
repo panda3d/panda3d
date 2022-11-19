@@ -62,11 +62,17 @@ private:
   Assimp::Importer _importer;
   const aiScene *_scene;
 
+  struct Geoms {
+    PT(Geom) _points;
+    PT(Geom) _lines;
+    PT(Geom) _triangles;
+    unsigned int _mat_index = 0;
+  };
+
   // These arrays are temporarily used during the build_graph run.
   PT(Texture) *_textures;
   CPT(RenderState) *_mat_states;
-  PT(Geom) *_geoms;
-  unsigned int *_geom_matindices;
+  Geoms *_geoms;
   BoneMap _bonemap;
   CharacterMap _charmap;
 

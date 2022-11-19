@@ -215,8 +215,7 @@ build_graph() {
   }
 
   // And then the meshes.
-  _geoms = new PT(Geom)[_scene->mNumMeshes];
-  _geom_matindices = new unsigned int[_scene->mNumMeshes];
+  _geoms = new Geoms[_scene->mNumMeshes];
   for (size_t i = 0; i < _scene->mNumMeshes; ++i) {
     load_mesh(i);
   }
@@ -234,7 +233,6 @@ build_graph() {
   delete[] _textures;
   delete[] _mat_states;
   delete[] _geoms;
-  delete[] _geom_matindices;
 }
 
 /**
@@ -1019,19 +1017,21 @@ load_mesh(size_t index) {
   }
 
   // Create a geom and add the primitives to it.
-  PT(Geom) geom = new Geom(vdata);
+  Geoms &geoms = _geoms[index];
+  geoms._mat_index = mesh.mMaterialIndex;
+
   if (points->get_num_primitives() > 0) {
-    geom->add_primitive(points);
+    geoms._points = new Geom(vdata);
+    geoms._points->add_primitive(points);
   }
   if (lines->get_num_primitives() > 0) {
-    geom->add_primitive(lines);
+    geoms._lines = new Geom(vdata);
+    geoms._lines->add_primitive(lines);
   }
   if (triangles->get_num_primitives() > 0) {
-    geom->add_primitive(triangles);
+    geoms._triangles = new Geom(vdata);
+    geoms._triangles->add_primitive(triangles);
   }
-
-  _geoms[index] = geom;
-  _geom_matindices[index] = mesh.mMaterialIndex;
 
   if (character) {
     _charmap[mesh.mName.C_Str()] = character;
@@ -1138,13 +1138,31 @@ load_node(const aiNode &node, PandaNode *parent) {
     // If there's only mesh, don't bother using a per-geom state.
     if (node.mNumMeshes == 1) {
       meshIndex = node.mMeshes[0];
-      gnode->add_geom(_geoms[meshIndex]);
-      gnode->set_state(_mat_states[_geom_matindices[meshIndex]]);
+      const Geoms &geoms = _geoms[meshIndex];
+      if (geoms._points != nullptr) {
+        gnode->add_geom(geoms._points);
+      }
+      if (geoms._lines != nullptr) {
+        gnode->add_geom(geoms._lines);
+      }
+      if (geoms._triangles != nullptr) {
+        gnode->add_geom(geoms._triangles);
+      }
+      gnode->set_state(_mat_states[geoms._mat_index]);
     } else {
       for (size_t i = 0; i < node.mNumMeshes; ++i) {
         meshIndex = node.mMeshes[i];
-        gnode->add_geom(_geoms[node.mMeshes[i]],
-          _mat_states[_geom_matindices[meshIndex]]);
+        const Geoms &geoms = _geoms[meshIndex];
+        const RenderState *state = _mat_states[geoms._mat_index];
+        if (geoms._points != nullptr) {
+          gnode->add_geom(geoms._points, state);
+        }
+        if (geoms._lines != nullptr) {
+          gnode->add_geom(geoms._lines, state);
+        }
+        if (geoms._triangles != nullptr) {
+          gnode->add_geom(geoms._triangles, state);
+        }
       }
     }
 
