@@ -125,7 +125,7 @@ set_color_temperature(PN_stdfloat temperature) {
 
   CDWriter cdata(_cycler);
   cdata->_color = color;
-  mark_viz_stale();
+  cdata->_viz_geom_stale = true;
 }
 
 /**
