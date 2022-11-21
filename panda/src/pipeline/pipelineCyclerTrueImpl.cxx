@@ -56,24 +56,26 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   nassertv(_num_stages == copy._num_stages);
   _data = new CycleDataNode[_num_stages];
 
-  // It's no longer critically important that we preserve pointerwise
-  // equivalence between different stages in the copy, but it doesn't cost
-  // much and might be a little more efficient, so we do it anyway.
-  typedef pmap<CycleData *, PT(CycleData) > Pointers;
-  Pointers pointers;
+  if (_num_stages == 1) {
+    _data[0]._cdata = copy._data[0]._cdata->make_copy();
+  }
+  else {
+    // It's no longer critically important that we preserve pointerwise
+    // equivalence between different stages in the copy, but it doesn't cost
+    // much and might be a little more efficient, so we do it anyway.
+    typedef pmap<CycleData *, PT(CycleData) > Pointers;
+    Pointers pointers;
 
-  for (int i = 0; i < _num_stages; ++i) {
-    PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
-    if (new_pt == nullptr) {
-      new_pt = copy._data[i]._cdata->make_copy();
+    for (int i = 0; i < _num_stages; ++i) {
+      PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
+      if (new_pt == nullptr) {
+        new_pt = copy._data[i]._cdata->make_copy();
+      }
+      _data[i]._cdata = new_pt.p();
     }
-    _data[i]._cdata = new_pt.p();
   }
 
-  _pipeline->add_cycler(this);
-  if (copy._dirty) {
-    _pipeline->add_dirty_cycler(this);
-  }
+  _pipeline->add_cycler(this, copy._dirty != 0);
 }
 
 /**

@@ -359,6 +359,42 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 
 #ifdef THREADED_PIPELINE
 /**
+ * Adds the indicated cycler to the list of cyclers associated with the
+ * pipeline.  This method only exists when true pipelining is configured on.
+ *
+ * If the dirty flag is true, it will be marked as dirty in addition, as though
+ * add_dirty_cycler() were called immediately afterward.
+ */
+void Pipeline::
+add_cycler(PipelineCyclerTrueImpl *cycler, bool dirty) {
+  // It's safe to add it to the list while cycling, since the _clean list is
+  // not touched during the cycle loop.
+  MutexHolder holder(_lock);
+  nassertv(!cycler->_dirty);
+
+  if (!dirty) {
+    cycler->insert_before(&_clean);
+  }
+  else {
+    nassertv(_num_stages != 1);
+    cycler->insert_before(&_dirty);
+    cycler->_dirty = _next_cycle_seq;
+    ++_num_dirty_cyclers;
+
+#ifdef DEBUG_THREADS
+    inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), 1);
+#endif
+  }
+  ++_num_cyclers;
+
+#ifdef DEBUG_THREADS
+  inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
+#endif
+}
+#endif  // THREADED_PIPELINE
+
+#ifdef THREADED_PIPELINE
+/**
  * Marks the indicated cycler as "dirty", meaning it will need to be cycled
  * next frame.  This both adds it to the "dirty" set and also sets the "dirty"
  * flag within the cycler.  This method only exists when true pipelining is
