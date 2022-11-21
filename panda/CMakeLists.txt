@@ -148,6 +148,9 @@ from .interrogatedb import *
   set(entry_points_file "[distutils.commands]
 build_apps = direct.dist.commands:build_apps
 bdist_apps = direct.dist.commands:bdist_apps
+
+[setuptools.finalize_distribution_options]
+build_apps = direct.dist.commands:finalize_distribution_options
 ")
 
   configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"

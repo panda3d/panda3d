@@ -2885,6 +2885,9 @@ Author-email: etc-panda3d@lists.andrew.cmu.edu
 ENTRY_POINTS = """[distutils.commands]
 build_apps = direct.dist.commands:build_apps
 bdist_apps = direct.dist.commands:bdist_apps
+
+[setuptools.finalize_distribution_options]
+build_apps = direct.dist.commands:finalize_distribution_options
 """
 
 if not PkgSkip("DIRECT"):

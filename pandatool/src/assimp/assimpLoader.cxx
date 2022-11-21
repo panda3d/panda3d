@@ -215,9 +215,7 @@ build_graph() {
   }
 
   // And then the meshes.
-  _geoms = new PT(Geom)[_scene->mNumMeshes];
-  _geom_matindices = new unsigned int[_scene->mNumMeshes];
-  _characters = new PT(Character)[_scene->mNumMeshes];
+  _geoms = new Geoms[_scene->mNumMeshes];
   for (size_t i = 0; i < _scene->mNumMeshes; ++i) {
     load_mesh(i);
   }
@@ -235,8 +233,6 @@ build_graph() {
   delete[] _textures;
   delete[] _mat_states;
   delete[] _geoms;
-  delete[] _geom_matindices;
-  delete[] _characters;
 }
 
 /**
@@ -1022,25 +1018,35 @@ load_mesh(size_t index) {
   }
 
   // Create a geom and add the primitives to it.
-  PT(Geom) geom = new Geom(vdata);
+  Geoms &geoms = _geoms[index];
+  geoms._mat_index = mesh.mMaterialIndex;
+
   if (points->get_num_primitives() > 0) {
-    geom->add_primitive(points);
+    geoms._points = new Geom(vdata);
+    geoms._points->add_primitive(points);
   }
   if (lines->get_num_primitives() > 0) {
-    geom->add_primitive(lines);
+    geoms._lines = new Geom(vdata);
+    geoms._lines->add_primitive(lines);
   }
   if (triangles->get_num_primitives() > 0) {
-    geom->add_primitive(triangles);
+    geoms._triangles = new Geom(vdata);
+    geoms._triangles->add_primitive(triangles);
   }
 
-  _geoms[index] = geom;
-  _geom_matindices[index] = mesh.mMaterialIndex;
-
   if (character) {
-    _characters[index] = character;
+    geoms._character = character;
 
     PT(GeomNode) gnode = new GeomNode("");
-    gnode->add_geom(geom);
+    if (geoms._points != nullptr) {
+      gnode->add_geom(geoms._points);
+    }
+    if (geoms._lines != nullptr) {
+      gnode->add_geom(geoms._lines);
+    }
+    if (geoms._triangles != nullptr) {
+      gnode->add_geom(geoms._triangles);
+    }
     gnode->set_state(_mat_states[mesh.mMaterialIndex]);
     character->add_child(gnode);
   }
@@ -1081,21 +1087,32 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
   }
   else if (node.mNumMeshes == 1) {
     size_t meshIndex = node.mMeshes[0];
+    const Geoms &geoms = _geoms[meshIndex];
 
-    Character *character = _characters[meshIndex];
-    if (character != nullptr) {
+    if (geoms._character != nullptr) {
       pnode = new PandaNode(name);
-      pnode->add_child(character);
-    } else {
-      const RenderState *state = _mat_states[_geom_matindices[meshIndex]];
+      pnode->add_child(geoms._character);
+    }
+    else {
       PT(GeomNode) gnode = new GeomNode(name);
-      gnode->add_geom(_geoms[meshIndex]);
+      const RenderState *state = _mat_states[geoms._mat_index];
+      if (geoms._points != nullptr) {
+        gnode->add_geom(geoms._points);
+      }
+      if (geoms._lines != nullptr) {
+        gnode->add_geom(geoms._lines);
+      }
+      if (geoms._triangles != nullptr) {
+        gnode->add_geom(geoms._triangles);
+      }
       if (state != nullptr) {
         // Only set the state on the GeomNode if there are no child nodes.
         if (node.mNumChildren == 0) {
           gnode->set_state(state);
         } else {
-          gnode->set_geom_state(0, state);
+          for (int i = 0; i < gnode->get_num_geoms(); ++i) {
+            gnode->set_geom_state(i, state);
+          }
         }
       }
       pnode = gnode;
@@ -1109,7 +1126,7 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
     for (size_t i = 0; i < node.mNumMeshes; ++i) {
       size_t meshIndex = node.mMeshes[i];
 
-      if (_characters[meshIndex] == nullptr) {
+      if (_geoms[meshIndex]._character == nullptr) {
         character_only = false;
         break;
       }
@@ -1125,16 +1142,25 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
 
     for (size_t i = 0; i < node.mNumMeshes; ++i) {
       size_t meshIndex = node.mMeshes[i];
+      const Geoms &geoms = _geoms[meshIndex];
 
-      Character *character = _characters[meshIndex];
-      if (character != nullptr) {
+      if (geoms._character != nullptr) {
         // An animated mesh, which already is converted as Character with an
         // attached GeomNode.
-        pnode->add_child(character);
-      } else {
+        pnode->add_child(geoms._character);
+      }
+      else {
         // A non-animated mesh.
-        gnode->add_geom(_geoms[node.mMeshes[i]],
-          _mat_states[_geom_matindices[meshIndex]]);
+        const RenderState *state = _mat_states[geoms._mat_index];
+        if (geoms._points != nullptr) {
+          gnode->add_geom(geoms._points, state);
+        }
+        if (geoms._lines != nullptr) {
+          gnode->add_geom(geoms._lines, state);
+        }
+        if (geoms._triangles != nullptr) {
+          gnode->add_geom(geoms._triangles, state);
+        }
       }
     }
   }
