@@ -400,7 +400,8 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3 &light_vector) {
   }
 
   // Do the actual PSSM
-  compute_pssm_splits( transform, _pssm_distance / lens->get_far(), light_vector );
+  double far_recip = std::max(1.0 / (double)lens->get_far(), (double)lens_far_limit);
+  compute_pssm_splits( transform, _pssm_distance * far_recip, light_vector );
 
   _update_collector.stop();
 }
