@@ -15,13 +15,9 @@
 
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
-#include "vector_int.h"
-#include "plist.h"
-#include "pset.h"
 
 #include <algorithm>
-
-
+#include <vector>
 
 /**
  * This class is used within this module only--in fact, within
@@ -30,15 +26,7 @@
  */
 class FrameSample {
 public:
-  typedef plist<FrameSample *> Started;
-
-  FrameSample() {
-    _touched = false;
-    _is_started = false;
-    _pushed = false;
-    _net_time = 0.0;
-  }
-  void data_point(double time, bool is_start, Started &started) {
+  void data_point(double time, bool is_start, FrameSample *started) {
     _touched = true;
 
     // We only consider events that change the startstop state.  With two
@@ -58,20 +46,25 @@ public:
 
     if (_pushed) {
       nassertv(!_is_started);
-      Started::iterator si = find(started.begin(), started.end(), this);
-      nassertv(si != started.end());
-      started.erase(si);
-
+      nassertv(_next != nullptr && _prev != nullptr);
+      _prev->_next = _next;
+      _next->_prev = _prev;
+      _next = _prev = nullptr;
     } else {
       if (_is_started) {
         _net_time -= time;
         push_all(time, started);
-        started.push_back(this);
+        nassertv(_next == nullptr && _prev == nullptr);
+        _prev = started->_prev;
+        _next = started;
+        _prev->_next = this;
+        started->_prev = this;
       } else {
         _net_time += time;
-        Started::iterator si = find(started.begin(), started.end(), this);
-        nassertv(si != started.end());
-        started.erase(si);
+        nassertv(_next != nullptr && _prev != nullptr);
+        _prev->_next = _next;
+        _next->_prev = _prev;
+        _next = _prev = nullptr;
         pop_one(time, started);
       }
     }
@@ -93,30 +86,31 @@ public:
     }
   }
 
-  void push_all(double time, Started &started) {
-    Started::iterator si;
-    for (si = started.begin(); si != started.end(); ++si) {
-      (*si)->push(time);
+  void push_all(double time, FrameSample *started) {
+    for (FrameSample *sample = started->_next;
+         sample != started; sample = sample->_next) {
+      sample->push(time);
     }
   }
 
-  void pop_one(double time, Started &started) {
-    Started::reverse_iterator si;
-    for (si = started.rbegin(); si != started.rend(); ++si) {
-      if ((*si)->_pushed) {
-        (*si)->pop(time);
+  void pop_one(double time, FrameSample *started) {
+    for (FrameSample *sample = started->_prev;
+         sample != started; sample = sample->_prev) {
+      if (sample->_pushed) {
+        sample->pop(time);
         return;
       }
     }
   }
 
-  bool _touched;
-  bool _is_started;
-  bool _pushed;
-  double _net_time;
+  FrameSample *_next = nullptr;
+  FrameSample *_prev = nullptr;
+  bool _touched = false;
+  bool _is_started = false;
+  bool _pushed = false;
+  bool _is_new = false;
+  double _net_time = 0.0;
 };
-
-
 
 /**
  *
@@ -279,19 +273,19 @@ get_level(int collector) {
 void PStatView::
 update_time_data(const PStatFrameData &frame_data) {
   int num_events = frame_data.get_num_events();
+  int num_collectors = _client_data->get_num_collectors();
 
-  typedef pvector<FrameSample> Samples;
-  Samples samples(_client_data->get_num_collectors());
+  typedef std::vector<FrameSample> Samples;
+  Samples samples(num_collectors);
 
-  FrameSample::Started started;
+  // Keep a linked list of started samples.
+  FrameSample started;
+  started._next = &started;
+  started._prev = &started;
 
   _all_collectors_known = true;
 
-
-  // This tracks the set of samples we actually care about.
-  typedef pset<int> GotSamples;
-  GotSamples got_samples;
-
+  int new_collectors = 0;
   int i;
   for (i = 0; i < num_events; i++) {
     int collector_index = frame_data.get_time_collector(i);
@@ -301,7 +295,7 @@ update_time_data(const PStatFrameData &frame_data) {
       _all_collectors_known = false;
 
     } else {
-      nassertv(collector_index >= 0 && collector_index < (int)samples.size());
+      nassertv(collector_index >= 0 && collector_index < num_collectors);
 
       if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
         // Here's a data point we care about: anything at constraint level or
@@ -310,8 +304,8 @@ update_time_data(const PStatFrameData &frame_data) {
           if (!is_start) {
             // A "stop" in the middle of a frame implies a "start" since time
             // 0 (that is, since the first data point in the frame).
-            samples[collector_index].data_point(frame_data.get_time(0), true, started);
-            samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
+            samples[collector_index].data_point(frame_data.get_time(0), true, &started);
+            samples[collector_index].data_point(frame_data.get_time(i), is_start, &started);
           } else {
             // An extra "start" for a collector that's already started is an
             // error.
@@ -320,23 +314,25 @@ update_time_data(const PStatFrameData &frame_data) {
                  << "\n";
           }
         } else {
-          samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
-          got_samples.insert(collector_index);
+          samples[collector_index].data_point(frame_data.get_time(i), is_start, &started);
+          if (!samples[collector_index]._is_new) {
+            samples[collector_index]._is_new = true;
+            ++new_collectors;
+          }
         }
       }
     }
   }
 
   // Make sure everything is stopped.
-
   Samples::iterator si;
   for (i = 0, si = samples.begin(); si != samples.end(); ++i, ++si) {
     if ((*si)._is_started) {
-      (*si).data_point(frame_data.get_end(), false, started);
+      (*si).data_point(frame_data.get_end(), false, &started);
     }
   }
 
-  nassertv(started.empty());
+  nassertv(started._next == &started && started._prev == &started);
 
   bool any_new_levels = false;
 
@@ -356,11 +352,10 @@ update_time_data(const PStatFrameData &frame_data) {
     }
 
     int collector_index = level->_collector;
-    GotSamples::iterator gi;
-    gi = got_samples.find(collector_index);
-    if (gi != got_samples.end()) {
+    if (samples[collector_index]._is_new) {
       level->_value_alone = samples[collector_index]._net_time;
-      got_samples.erase(gi);
+      samples[collector_index]._is_new = false;
+      --new_collectors;
     }
 
     li = lnext;
@@ -368,14 +363,14 @@ update_time_data(const PStatFrameData &frame_data) {
 
   // Finally, any samples left over in the got_samples set are new collectors
   // that we need to add to the Levels list.
-  if (!got_samples.empty()) {
+  if (new_collectors > 0) {
     any_new_levels = true;
 
-    GotSamples::const_iterator gi;
-    for (gi = got_samples.begin(); gi != got_samples.end(); ++gi) {
-      int collector_index = (*gi);
-      PStatViewLevel *level = get_level(collector_index);
-      level->_value_alone = samples[*gi]._net_time;
+    for (int collector_index = 0; collector_index < num_collectors; ++collector_index) {
+      if (samples[collector_index]._is_new) {
+        PStatViewLevel *level = get_level(collector_index);
+        level->_value_alone = samples[collector_index]._net_time;
+      }
     }
   }
 
