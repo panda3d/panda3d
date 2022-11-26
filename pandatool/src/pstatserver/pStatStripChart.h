@@ -91,7 +91,7 @@ protected:
                                     const FrameData &additional, double weight);
   static void scale_frame_data(FrameData &fdata, double factor);
 
-  const FrameData &get_frame_data(int frame_number);
+  const FrameData &get_frame_data(int frame_number) const;
   void compute_average_pixel_data(PStatStripChart::FrameData &result,
                                   int &then_i, int &now_i, double now);
   double get_net_value(int frame_number) const;
@@ -132,7 +132,7 @@ private:
   bool _scroll_mode;
   bool _average_mode;
 
-  Data _data;
+  mutable Data _data;
 
   int _next_frame;
   bool _first_data;

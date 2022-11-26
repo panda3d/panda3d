@@ -333,20 +333,20 @@ get_label_tooltip(int collector_index) const {
     double now = _time_width + _start_time;
     double then = now - pstats_average_time;
 
-    double net_value = 0.0f;
-    double net_time = 0.0f;
+    double net_value = 0.0;
+    double net_time = 0.0;
 
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
     const PStatFrameData &frame_data = thread_data->get_frame(then_i);
     if (frame_data.get_end() > then) {
       double this_time = (frame_data.get_end() - then);
-      _view.set_to_frame(frame_data);
-
-      const PStatViewLevel *level = _view.get_level(collector_index);
-      if (level != nullptr) {
-        net_value += level->get_net_value() * this_time;
-        net_time += this_time;
+      for (const ColorData &cd : get_frame_data(then_i)) {
+        if (cd._collector_index == collector_index) {
+          net_value += cd._net_value * this_time;
+          net_time += this_time;
+          break;
+        }
       }
     }
     // Then we get all of each of the remaining frames.
@@ -354,13 +354,13 @@ get_label_tooltip(int collector_index) const {
          frame_number <= now_i;
          frame_number++) {
       const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
-      double this_time = frame_data.get_net_time();
-      _view.set_to_frame(frame_data);
-
-      const PStatViewLevel *level = _view.get_level(collector_index);
-      if (level != nullptr) {
-        net_value += level->get_net_value() * this_time;
-        net_time += this_time;
+      for (const ColorData &cd : get_frame_data(frame_number)) {
+        if (cd._collector_index == collector_index) {
+          double this_time = frame_data.get_net_time();
+          net_value += cd._net_value * this_time;
+          net_time += this_time;
+          break;
+        }
       }
     }
 
@@ -543,7 +543,7 @@ scale_frame_data(FrameData &fdata, double factor) {
  * the chart.
  */
 const PStatStripChart::FrameData &PStatStripChart::
-get_frame_data(int frame_number) {
+get_frame_data(int frame_number) const {
   Data::const_iterator di;
   di = _data.find(frame_number);
   if (di != _data.end()) {
@@ -578,7 +578,7 @@ get_frame_data(int frame_number) {
     fdata.push_back(cd);
   }
 
-  inc_label_usage(fdata);
+  ((PStatStripChart *)this)->inc_label_usage(fdata);
 
   return fdata;
 }
@@ -649,13 +649,10 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
  */
 double PStatStripChart::
 get_net_value(int frame_number) const {
-  const FrameData &frame =
-    ((PStatStripChart *)this)->get_frame_data(frame_number);
+  const FrameData &frame = get_frame_data(frame_number);
 
   double net_value = 0.0;
-  FrameData::const_iterator fi;
-  for (fi = frame.begin(); fi != frame.end(); ++fi) {
-    const ColorData &cd = (*fi);
+  for (const ColorData &cd : frame) {
     net_value += cd._net_value;
   }
 
@@ -671,7 +668,7 @@ get_average_net_value() const {
   const PStatThreadData *thread_data = _view.get_thread_data();
   int now_i, then_i;
   if (!thread_data->get_elapsed_frames(then_i, now_i)) {
-    return 0.0f;
+    return 0.0;
   }
   double now = _time_width + _start_time;
   double then = now - pstats_average_time;
@@ -698,13 +695,14 @@ get_average_net_value() const {
 
     const PStatThreadData *thread_data = _view.get_thread_data();
 
-    double net_value = 0.0f;
-    double net_time = 0.0f;
+    double net_value = 0.0;
+    double net_time = 0.0;
 
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
-    if (thread_data->get_frame(then_i).get_end() > then) {
-      double this_time = (thread_data->get_frame(then_i).get_end() - then);
+    const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    if (frame_data.get_end() > then) {
+      double this_time = (frame_data.get_end() - then);
       net_value += get_net_value(then_i) * this_time;
       net_time += this_time;
     }
