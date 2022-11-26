@@ -380,8 +380,7 @@ Texture(const string &name) :
   _reloading = false;
 
   CDWriter cdata(_cycler, true);
-  do_set_format(cdata, F_rgb);
-  do_set_component_type(cdata, T_unsigned_byte);
+  cdata->inc_properties_modified();
 }
 
 /**
@@ -10677,11 +10676,10 @@ CData() {
   _y_size = 1;
   _z_size = 1;
   _num_views = 1;
-
-  // We will override the format in a moment (in the Texture constructor), but
-  // set it to something else first to avoid the check in do_set_format
-  // depending on an uninitialized value.
-  _format = F_rgba;
+  _num_components = 3;
+  _component_width = 1;
+  _format = F_rgb;
+  _component_type = T_unsigned_byte;
 
   // Only used for buffer textures.
   _usage_hint = GeomEnums::UH_unspecified;
