@@ -166,7 +166,11 @@ get_bar_tooltip(int depth, int x) const {
     if (client_data != nullptr && client_data->has_collector(level->_collector_index)) {
       std::ostringstream text;
       text << client_data->get_collector_fullname(level->_collector_index);
-      text << " (" << format_number(level->get_net_value(_average_mode), GBU_show_units | GBU_ms) << ")";
+      text << " (" << format_number(level->get_net_value(_average_mode), GBU_show_units | GBU_ms);
+      if (level->_count > 1) {
+        text << " / " << level->_count << "x";
+      }
+      text << ")";
       return text.str();
     }
   }
@@ -399,6 +403,7 @@ void PStatFlameGraph::StackLevel::
 reset() {
   _start_time = 0.0;
   _net_value = 0.0;
+  _count = 0;
   _started = false;
 
   for (auto &item : _children) {
@@ -416,6 +421,7 @@ start(int collector_index, double time) {
   child._parent = this;
   child._collector_index = collector_index;
   child._start_time = std::max(_start_time, time);
+  child._count++;
   child._started = true;
   return &child;
 }
@@ -529,6 +535,7 @@ locate(int depth, double time, bool average) const {
 void PStatFlameGraph::StackLevel::
 clear() {
   _children.clear();
+  _count = 0;
   _net_value = 0.0;
 }
 

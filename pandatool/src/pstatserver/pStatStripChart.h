@@ -83,6 +83,7 @@ protected:
   public:
     unsigned short _collector_index;
     unsigned short _i;
+    int _count;
     double _net_value;
   };
   typedef pvector<ColorData> FrameData;

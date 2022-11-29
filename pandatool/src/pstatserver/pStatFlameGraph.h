@@ -107,6 +107,7 @@ private:
     double _values[_num_average_frames] = {0.0};
 
     double _start_time = 0.0;
+    int _count = 0;
     bool _started = false;
 
     int _collector_index = -1;
