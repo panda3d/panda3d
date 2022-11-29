@@ -27,9 +27,10 @@ using std::string;
 
 static const int current_pstat_major_version = 3;
 static const int current_pstat_minor_version = 0;
-// Initialized at 2.0 on 51801, when version numbers were first added.
-// Incremented to 2.1 on 52101 to add support for TCP frame data.  Incremented
-// to 3.0 on 42805 to bump TCP headers to 32 bits.
+// Initialized at 2.0 on 5/18/01, when version numbers were first added.
+// Incremented to 2.1 on 5/21/01 to add support for TCP frame data.
+// Incremented to 3.0 on 4/28/05 to bump TCP headers to 32 bits.
+// Incremented to 3.1 on 11/29/22 to support nested start/stop pairs.
 
 /**
  * Returns the current major version number of the PStats protocol.  This is

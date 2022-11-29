@@ -193,7 +193,8 @@ handle_client_control_message(const PStatClientControlMessage &message) {
 
       if (message._major_version != server_major_version ||
           (message._major_version == server_major_version &&
-           message._minor_version > server_minor_version)) {
+           message._minor_version > server_minor_version &&
+           (message._major_version != 3 || message._minor_version != 1))) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
                               message._major_version, message._minor_version,
                               server_major_version, server_minor_version);

@@ -26,61 +26,57 @@
  */
 class FrameSample {
 public:
-  void data_point(double time, bool is_start, FrameSample *started) {
-    _touched = true;
+  void start(double time, FrameSample *started) {
+    // Keep track of nested start/stop pairs.  We only consider the outer one.
+    if (_started++ > 0) {
+      return;
+    }
 
-    // We only consider events that change the startstop state.  With two
-    // consecutive 'start' events, for instance, we ignore the second one.
+    nassertv(!_pushed);
+    _net_time -= time;
+    push_all(time, started);
+    nassertv(_next == nullptr && _prev == nullptr);
+    _prev = started->_prev;
+    _next = started;
+    _prev->_next = this;
+    started->_prev = this;
+  }
 
-/*
- * *** That's not quite the right thing to do.  We should keep track of the
- * nesting level and bracket things correctly, so that we ignore the second
- * start and the *first* stop, but respect the outer startstop.  For the short
- * term, this works, because the client is already doing this logic and won't
- * send us nested startstop pairs, but we'd like to generalize this in the
- * future so we can deal with these nested pairs properly.
- */
-    nassertv(is_start != _is_started);
+  void stop(double time, FrameSample *started) {
+    nassertv(_started > 0);
+    if (--_started > 0) {
+      return;
+    }
 
-    _is_started = is_start;
+    nassertv(_next != nullptr && _prev != nullptr);
 
     if (_pushed) {
-      nassertv(!_is_started);
-      nassertv(_next != nullptr && _prev != nullptr);
       _prev->_next = _next;
       _next->_prev = _prev;
       _next = _prev = nullptr;
     } else {
-      if (_is_started) {
-        _net_time -= time;
-        push_all(time, started);
-        nassertv(_next == nullptr && _prev == nullptr);
-        _prev = started->_prev;
-        _next = started;
-        _prev->_next = this;
-        started->_prev = this;
-      } else {
-        _net_time += time;
-        nassertv(_next != nullptr && _prev != nullptr);
-        _prev->_next = _next;
-        _next->_prev = _prev;
-        _next = _prev = nullptr;
-        pop_one(time, started);
-      }
+      _net_time += time;
+      _prev->_next = _next;
+      _next->_prev = _prev;
+      _next = _prev = nullptr;
+      pop_one(time, started);
     }
   }
+
+private:
   void push(double time) {
     if (!_pushed) {
       _pushed = true;
-      if (_is_started) {
+      if (_started > 0) {
         _net_time += time;
       }
     }
   }
+
   void pop(double time) {
     if (_pushed) {
       _pushed = false;
-      if (_is_started) {
+      if (_started > 0) {
         _net_time -= time;
       }
     }
@@ -103,14 +99,14 @@ public:
     }
   }
 
+public:
   FrameSample *_next = nullptr;
   FrameSample *_prev = nullptr;
-  bool _touched = false;
-  bool _is_started = false;
+  double _net_time = 0.0;
+  int _started = 0;
+  int _count = 0;
   bool _pushed = false;
   bool _is_new = false;
-  int _count = 0;
-  double _net_time = 0.0;
 };
 
 /**
@@ -301,28 +297,21 @@ update_time_data(const PStatFrameData &frame_data) {
       if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
         // Here's a data point we care about: anything at constraint level or
         // below.
-        if (is_start == samples[collector_index]._is_started) {
-          if (!is_start) {
-            // A "stop" in the middle of a frame implies a "start" since time
-            // 0 (that is, since the first data point in the frame).
-            samples[collector_index].data_point(frame_data.get_time(0), true, &started);
-            samples[collector_index].data_point(frame_data.get_time(i), is_start, &started);
-          } else {
-            // An extra "start" for a collector that's already started is an
-            // error.
-            nout << "Unexpected data point for "
-                 << _client_data->get_collector_fullname(collector_index)
-                 << "\n";
-          }
+        if (is_start) {
+          samples[collector_index].start(frame_data.get_time(i), &started);
+          samples[collector_index]._count++;
         } else {
-          samples[collector_index].data_point(frame_data.get_time(i), is_start, &started);
-          if (is_start) {
-            samples[collector_index]._count++;
+          // A "stop" in the middle of a frame implies a "start" since time
+          // 0 (that is, since the first data point in the frame).
+          if (samples[collector_index]._started == 0) {
+            samples[collector_index].start(frame_data.get_time(0), &started);
           }
-          if (!samples[collector_index]._is_new) {
-            samples[collector_index]._is_new = true;
-            ++new_collectors;
-          }
+          samples[collector_index].stop(frame_data.get_time(i), &started);
+        }
+
+        if (!samples[collector_index]._is_new) {
+          samples[collector_index]._is_new = true;
+          ++new_collectors;
         }
       }
     }
@@ -331,8 +320,8 @@ update_time_data(const PStatFrameData &frame_data) {
   // Make sure everything is stopped.
   Samples::iterator si;
   for (i = 0, si = samples.begin(); si != samples.end(); ++i, ++si) {
-    if ((*si)._is_started) {
-      (*si).data_point(frame_data.get_end(), false, &started);
+    if ((*si)._started > 0) {
+      (*si).stop(frame_data.get_end(), &started);
     }
   }
 
