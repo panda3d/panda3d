@@ -41,7 +41,7 @@ class Interval(DirectObject):
         self.pstats = None
         if __debug__ and TaskManager.taskTimerVerbose:
             self.pname = name.split('-', 1)[0]
-            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
+            self.pstats = PStatCollector("App:Tasks:ivalLoop:%s" % (self.pname))
 
         # Set true if the interval should be invoked if it was
         # completely skipped over during initialize or finalize, false

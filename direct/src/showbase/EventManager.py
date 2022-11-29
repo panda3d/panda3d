@@ -137,11 +137,11 @@ class EventManager:
             hyphen = name.find('-')
             if hyphen >= 0:
                 name = name[0:hyphen]
-            pstatCollector = PStatCollector('App:Show code:eventManager:' + name)
+            pstatCollector = PStatCollector('App:Tasks:eventManager:' + name)
             pstatCollector.start()
             if self.eventHandler:
                 cppPstatCollector = PStatCollector(
-                    'App:Show code:eventManager:' + name + ':C++')
+                    'App:Tasks:eventManager:' + name + ':C++')
 
             messenger.send(eventName, paramList)
 
