@@ -92,10 +92,10 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz
-        tar -xf panda3d-1.10.10-tools-mac.tar.gz
-        mv panda3d-1.10.10/thirdparty thirdparty
-        rmdir panda3d-1.10.10
+        curl -O https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-mac.tar.gz
+        tar -xf panda3d-1.10.13-tools-mac.tar.gz
+        mv panda3d-1.10.13/thirdparty thirdparty
+        rmdir panda3d-1.10.13
 
         # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
         install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
@@ -124,16 +124,16 @@ jobs:
       uses: actions/cache@v1
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.10-r1
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.13-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.10/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.13/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)
