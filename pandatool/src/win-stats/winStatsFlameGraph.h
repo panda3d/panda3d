@@ -47,7 +47,8 @@ protected:
 
   void clear_region();
   virtual void begin_draw();
-  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
+  virtual void draw_bar(int depth, int from_x, int to_x,
+                        int collector_index, int parent_index);
   virtual void end_draw();
   virtual void idle();
 

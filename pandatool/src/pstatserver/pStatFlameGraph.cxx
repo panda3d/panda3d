@@ -347,7 +347,7 @@ begin_draw() {
  * indicated location.
  */
 void PStatFlameGraph::
-draw_bar(int depth, int from_x, int to_x, int collector_index) {
+draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index) {
 }
 
 /**
@@ -572,7 +572,7 @@ r_draw_level(const StackLevel &level, int depth, double offset) {
 
     // No need to recurse if the bars have become smaller than a pixel.
     if (to_x > from_x) {
-      draw_bar(depth, from_x, to_x, child._collector_index);
+      draw_bar(depth, from_x, to_x, child._collector_index, level._collector_index);
       r_draw_level(child, depth + 1, offset);
     }
 

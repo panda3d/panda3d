@@ -232,7 +232,7 @@ begin_draw() {
  * indicated location.
  */
 void WinStatsFlameGraph::
-draw_bar(int depth, int from_x, int to_x, int collector_index) {
+draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index) {
   int bottom = get_ysize() - 1 - depth * _pixel_scale * 5;
   int top = bottom - _pixel_scale * 5;
 
@@ -263,11 +263,34 @@ draw_bar(int depth, int from_x, int to_x, int collector_index) {
       SetTextColor(_bitmap_dc, get_collector_text_color(collector_index, is_highlighted));
 
       const PStatClientData *client_data = WinStatsGraph::_monitor->get_client_data();
-      const std::string &name = client_data->get_collector_name(collector_index);
+      const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
 
-      RECT rect = {left, top, right, bottom};
-      DrawText(_bitmap_dc, name.data(), name.size(),
-               &rect, DT_LEFT | DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER);
+      SIZE size;
+      GetTextExtentPoint32(_bitmap_dc, def._name.data(), def._name.size(), &size);
+
+      if (size.cx < right - left) {
+        // We have room for more.  Show the collector's actual parent, if it's
+        // different than the block it's shown above.
+        if (def._parent_index > 0 && def._parent_index != parent_index) {
+          const PStatCollectorDef &parent_def = client_data->get_collector_def(def._parent_index);
+          std::string long_name = parent_def._name + ":" + def._name;
+
+          SIZE long_size;
+          GetTextExtentPoint32(_bitmap_dc, long_name.data(), long_name.size(), &long_size);
+          if (long_size.cx < right - left) {
+            TextOut(_bitmap_dc, left, top + (bottom - top - long_size.cy) / 2,
+                    long_name.data(), long_name.length());
+            return;
+          }
+        }
+        TextOut(_bitmap_dc, left, top + (bottom - top - size.cy) / 2,
+                def._name.data(), def._name.length());
+      } else {
+        // Let Windows figure out how to fit it, with ellipsis if necessary.
+        RECT rect = {left, top, right, bottom};
+        DrawText(_bitmap_dc, def._name.data(), def._name.size(),
+                 &rect, DT_LEFT | DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER);
+      }
     }
   }
 }
