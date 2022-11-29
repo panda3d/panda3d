@@ -70,8 +70,9 @@ public:
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
 
-  bool is_title_unknown() const;
+  INLINE bool is_title_unknown() const;
   std::string get_title_text();
+  std::string get_total_text();
   std::string get_label_tooltip(int collector_index) const;
 
   virtual void write_datagram(Datagram &dg) const final;

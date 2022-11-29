@@ -307,6 +307,21 @@ get_title_text() {
 }
 
 /**
+ * Returns the text suitable for the total label above the graph.
+ */
+std::string PStatStripChart::
+get_total_text() {
+  std::string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+  if (get_collector_index() != 0 && !_view.get_show_level()) {
+    const PStatViewLevel *level = _view.get_level(get_collector_index());
+    if (level != nullptr && level->get_count() > 0) {
+      text += " / " + format_string(level->get_count()) + "x";
+    }
+  }
+  return text;
+}
+
+/**
  * Called when the mouse hovers over a label, and should return the text that
  * should appear on the tooltip.
  */

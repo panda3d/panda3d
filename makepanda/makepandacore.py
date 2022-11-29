@@ -433,7 +433,7 @@ def SetTarget(target, arch=None):
             ANDROID_ABI = 'x86_64'
             ANDROID_TRIPLE = 'x86_64-linux-android'
         else:
-            exit('Android architecture must be arm, armv7a, arm64, mips, mips64, x86 or x86_64')
+            exit('Android architecture must be arm, armv7a, arm64, mips, mips64, x86 or x86_64, use --arch to specify')
 
         ANDROID_TRIPLE += str(ANDROID_API)
         TOOLCHAIN_PREFIX = ANDROID_TRIPLE + '-'
