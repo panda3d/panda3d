@@ -38,6 +38,7 @@ public:
 
   void setup(HWND parent_window);
   void set_pos(int x, int y, int width);
+  void set_y_noupdate(int y);
 
   INLINE int get_x() const;
   INLINE int get_y() const;

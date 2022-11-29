@@ -35,6 +35,7 @@ WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index) :
   _right_margin = _pixel_scale * 2;
   _top_margin = _pixel_scale * 5;
   _bottom_margin = _pixel_scale * 2;
+  _top_label_stack_margin = _pixel_scale * 5;
 
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
