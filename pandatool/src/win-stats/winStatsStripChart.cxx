@@ -103,7 +103,7 @@ new_data(int thread_index, int frame_number) {
   if (!_pause) {
     update();
 
-    string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+    std::string text = get_total_text();
     if (_net_value_text != text) {
       _net_value_text = text;
       RECT rect;

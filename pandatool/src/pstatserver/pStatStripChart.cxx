@@ -284,12 +284,18 @@ get_title_text() {
 }
 
 /**
- * Returns true if get_title_text() has never yet returned an answer, false if
- * it has.
+ * Returns the text suitable for the total label above the graph.
  */
-bool PStatStripChart::
-is_title_unknown() const {
-  return _title_unknown;
+std::string PStatStripChart::
+get_total_text() {
+  std::string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+  if (get_collector_index() != 0 && !_view.get_show_level()) {
+    const PStatViewLevel *level = _view.get_level(get_collector_index());
+    if (level != nullptr && level->get_count() > 0) {
+      text += " / " + format_string(level->get_count()) + "x";
+    }
+  }
+  return text;
 }
 
 /**

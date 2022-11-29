@@ -27,3 +27,11 @@ INLINE double PStatViewLevel::
 get_value_alone() const {
   return _value_alone;
 }
+
+/**
+ * Returns the number of start/stop pairs for this collector.
+ */
+INLINE int PStatViewLevel::
+get_count() const {
+  return _count;
+}

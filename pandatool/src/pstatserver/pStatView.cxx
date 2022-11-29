@@ -109,6 +109,7 @@ public:
   bool _is_started = false;
   bool _pushed = false;
   bool _is_new = false;
+  int _count = 0;
   double _net_time = 0.0;
 };
 
@@ -315,6 +316,9 @@ update_time_data(const PStatFrameData &frame_data) {
           }
         } else {
           samples[collector_index].data_point(frame_data.get_time(i), is_start, &started);
+          if (is_start) {
+            samples[collector_index]._count++;
+          }
           if (!samples[collector_index]._is_new) {
             samples[collector_index]._is_new = true;
             ++new_collectors;
@@ -354,6 +358,7 @@ update_time_data(const PStatFrameData &frame_data) {
     int collector_index = level->_collector;
     if (samples[collector_index]._is_new) {
       level->_value_alone = samples[collector_index]._net_time;
+      level->_count = samples[collector_index]._count;
       samples[collector_index]._is_new = false;
       --new_collectors;
     }
@@ -370,6 +375,7 @@ update_time_data(const PStatFrameData &frame_data) {
       if (samples[collector_index]._is_new) {
         PStatViewLevel *level = get_level(collector_index);
         level->_value_alone = samples[collector_index]._net_time;
+        level->_count = samples[collector_index]._count;
       }
     }
   }
@@ -504,6 +510,7 @@ bool PStatView::
 reset_level(PStatViewLevel *level) {
   bool any_changed = false;
   level->_value_alone = 0.0;
+  level->_count = 0;
 
   if (level->_collector == _constraint) {
     return false;

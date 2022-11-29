@@ -68,8 +68,9 @@ public:
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
 
+  INLINE bool is_title_unknown() const;
   std::string get_title_text();
-  bool is_title_unknown() const;
+  std::string get_total_text();
 
 protected:
   class ColorData {
