@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 
-#ifdef HAVE_PYTHON
+#if defined(HAVE_PYTHON) && defined(DO_PSTATS)
 
 #include "extension.h"
 #include "pStatClient.h"
@@ -44,6 +44,6 @@ private:
 
 #include "pStatClient_ext.I"
 
-#endif  // HAVE_PYTHON
+#endif  // HAVE_PYTHON && DO_PSTATS
 
 #endif  // PSTATCLIENT_EXT_H

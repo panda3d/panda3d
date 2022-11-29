@@ -12,10 +12,15 @@
  */
 
 #include "pStatClient_ext.h"
+
+#if defined(HAVE_PYTHON) && defined(DO_PSTATS)
+
 #include "pStatCollector.h"
 #include "config_pstatclient.h"
 
+#ifndef CPPPARSER
 #include "frameobject.h"
+#endif
 
 #if PY_VERSION_HEX >= 0x03060000
 static bool _python_profiler_enabled = false;
@@ -314,8 +319,8 @@ trace_callback(PyObject *py_thread, PyFrameObject *frame, int what, PyObject *ar
   int thread_index = pthread.get_index();
 
 #ifdef _DEBUG
-  nassertr(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors), -1);
-  nassertr(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads), -1);
+  nassertr(collector_index >= 0 && collector_index < AtomicAdjust::get(client->_num_collectors), -1);
+  nassertr(thread_index >= 0 && thread_index < AtomicAdjust::get(client->_num_threads), -1);
 #endif
 
   PStatClient::Collector *collector = client->get_collector_ptr(collector_index);
@@ -337,3 +342,5 @@ trace_callback(PyObject *py_thread, PyFrameObject *frame, int what, PyObject *ar
   return 0;
 }
 #endif  // PY_VERSION_HEX
+
+#endif  // HAVE_PYTHON && DO_PSTATS
