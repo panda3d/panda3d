@@ -513,7 +513,7 @@ main(int argc, char **argv) {
   for (i = 1; i < argc; ++i) {
     Filename filename = Filename::from_os_specific(argv[i]);
     if (!parser.parse_file(filename)) {
-      cerr << "Error parsing file: '" << argv[i] << "'\n";
+      cerr << "interrogate failed to parse file: '" << argv[i] << "'\n";
       exit(1);
     }
     builder.add_source_file(filename.to_os_generic());
