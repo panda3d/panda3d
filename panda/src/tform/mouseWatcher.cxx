@@ -1427,8 +1427,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_raw_down:
+        _current_raw_buttons_down.set_bit(be._button.get_index());
+        new_button_events.add_event(be);
+        break;
+
       case ButtonEvent::T_raw_up:
-        // These are passed through.
+        _current_raw_buttons_down.clear_bit(be._button.get_index());
         new_button_events.add_event(be);
         break;
       }

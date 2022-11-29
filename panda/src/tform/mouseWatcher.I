@@ -145,6 +145,15 @@ is_button_down(ButtonHandle button) const {
 }
 
 /**
+ * Similar to is_button_down(), but uses the raw button handle as reported by
+ * the raw- prefixed events, and is not subject to the inactivity timer.
+ */
+INLINE bool MouseWatcher::
+is_raw_button_down(ButtonHandle button) const {
+  return _current_raw_buttons_down.get_bit(button.get_index());
+}
+
+/**
  * Sets the pattern string that indicates how the event names are generated
  * when a button is depressed.  This is a string that may contain any of the
  * following:
