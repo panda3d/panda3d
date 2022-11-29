@@ -399,6 +399,13 @@ send_hello() {
   message._major_version = get_current_pstat_major_version();
   message._minor_version = get_current_pstat_minor_version();
 
+  // The Python profiling feature may send nested start/stop pairs, so requires
+  // a server version capable of dealing with this.
+  if (pstats_python_profiler && message._major_version <= 3) {
+    message._major_version = 3;
+    message._minor_version = std::max(message._minor_version, 1);
+  }
+
   Datagram datagram;
   message.encode(datagram);
   _writer.send(datagram, _tcp_connection, true);

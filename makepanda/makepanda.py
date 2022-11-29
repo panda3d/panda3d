@@ -4228,6 +4228,7 @@ if (not RUNTIME):
   IGATEFILES.remove("config_pstats.h")
   TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
+  PyTargetAdd('p3pstatclient_pStatClient_ext.obj', opts=OPTS, input='pStatClient_ext.cxx')
 
 #
 # DIRECTORY: panda/src/gobj/
@@ -4707,6 +4708,7 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
   PyTargetAdd('core.pyd', input='p3event_asyncFuture_ext.obj')
   PyTargetAdd('core.pyd', input='p3event_pythonTask.obj')
+  PyTargetAdd('core.pyd', input='p3pstatclient_pStatClient_ext.obj')
   PyTargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')

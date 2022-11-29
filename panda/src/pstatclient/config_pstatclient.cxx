@@ -82,6 +82,16 @@ ConfigVariableBool pstats_gpu_timing
           "is not usually an accurate reflectino of how long the actual "
           "operation takes on the video card."));
 
+ConfigVariableBool pstats_python_profiler
+("pstats-python-profiler", false,
+ PRC_DESC("Set this true to integrate with the Python profiler to show "
+          "detailed information about individual Python functions in "
+          "PStats, similar to the information offered by Python's built-in "
+          "profiler.  This can be really useful to find bottlenecks in a "
+          "Python program, but enabling this will slow down the application "
+          "somewhat, and requires a recent version of the PStats server, so "
+          "it is not enabled by default."));
+
 // The rest are different in that they directly control the server, not the
 // client.
 ConfigVariableBool pstats_scroll_mode

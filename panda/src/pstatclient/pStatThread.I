@@ -82,3 +82,11 @@ INLINE int PStatThread::
 get_index() const {
   return _index;
 }
+
+/**
+ *
+ */
+INLINE PStatClient *PStatThread::
+get_client() const {
+  return _client;
+}

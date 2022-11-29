@@ -213,6 +213,12 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 }
 #endif
 
+/* Python 3.9 */
+
+#ifndef PyCFunction_CheckExact
+#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
+#endif
+
 #if PY_VERSION_HEX < 0x03090000
 INLINE EXPCL_PYPANDA PyObject *PyObject_CallNoArgs(PyObject *func) {
   return _PyObject_CallNoArg(func);
