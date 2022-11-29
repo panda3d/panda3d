@@ -81,12 +81,21 @@ make_monitor(const NetAddress &address) {
  */
 void WinStatsServer::
 lost_connection(PStatMonitor *monitor) {
-  // Store a backup now, in case PStats crashes or something.
-  _last_session.make_dir();
-  if (monitor->write(_last_session)) {
-    nout << "Wrote to " << _last_session << "\n";
+  if (_monitor != nullptr && !_monitor->_have_data) {
+    // We didn't have any data yet.  Just silently restart the session.
+    _monitor->close();
+    _monitor = nullptr;
+    if (new_session()) {
+      return;
+    }
   } else {
-    nout << "Failed to write to " << _last_session << "\n";
+    // Store a backup now, in case PStats crashes or something.
+    _last_session.make_dir();
+    if (monitor->write(_last_session)) {
+      nout << "Wrote to " << _last_session << "\n";
+    } else {
+      nout << "Failed to write to " << _last_session << "\n";
+    }
   }
 
   stop_listening();
