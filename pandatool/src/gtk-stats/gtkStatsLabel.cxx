@@ -16,10 +16,10 @@
 #include "gtkStatsGraph.h"
 #include "convert_srgb.h"
 
-int GtkStatsLabel::_left_margin = 2;
+int GtkStatsLabel::_left_margin = 6;
 int GtkStatsLabel::_right_margin = 2;
-int GtkStatsLabel::_top_margin = 2;
-int GtkStatsLabel::_bottom_margin = 2;
+int GtkStatsLabel::_top_margin = 1;
+int GtkStatsLabel::_bottom_margin = 1;
 
 /**
  *
@@ -176,9 +176,9 @@ update_text(bool use_fullname) {
   // our widget.
   int width, height;
   pango_layout_get_pixel_size(_layout, &width, &height);
-  gtk_widget_set_size_request(_widget, width + 8, height);
-  _ideal_width = width;
-  _height = height;
+  _ideal_width = width + _left_margin + _right_margin;
+  _height = height + _top_margin + _bottom_margin;
+  gtk_widget_set_size_request(_widget, _ideal_width, _height);
 }
 
 /**
@@ -221,9 +221,9 @@ draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
   cairo_set_source_rgb(cr, fg[0], fg[1], fg[2]);
   if (self->_align_right) {
-    cairo_move_to(cr, allocation.width - width, 0);
+    cairo_move_to(cr, allocation.width - width - _right_margin, _top_margin);
   } else {
-    cairo_move_to(cr, 0, 0);
+    cairo_move_to(cr, _left_margin, _top_margin);
   }
   pango_cairo_show_layout(cr, self->_layout);
 
