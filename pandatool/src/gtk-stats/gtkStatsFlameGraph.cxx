@@ -199,6 +199,9 @@ normal_guide_bars() {
   }
 
   _guide_bars_changed = true;
+
+  nassertv_always(_scale_area != nullptr);
+  gtk_widget_queue_draw(_scale_area);
 }
 
 /**

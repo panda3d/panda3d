@@ -33,11 +33,6 @@ GtkStatsGraph::
 GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   _monitor(monitor)
 {
-  _parent_window = nullptr;
-  _window = nullptr;
-  _graph_window = nullptr;
-  _scale_area = nullptr;
-
   GtkWidget *parent_window = monitor->get_window();
 
   GdkWindow *window = gtk_widget_get_window(parent_window);

@@ -47,7 +47,6 @@ PStatFlameGraph(PStatMonitor *monitor,
   }
 
   _guide_bar_units = GBU_ms | GBU_hz | GBU_show_units;
-  normal_guide_bars();
 
   monitor->_flame_graphs.insert(this);
 }
@@ -213,8 +212,16 @@ read_datagram(DatagramIterator &scan) {
   PStatGraph::read_datagram(scan);
 
   _current_frame = -1;
-  normal_guide_bars();
+  _stack.clear();
   update();
+  if (_average_mode) {
+    _time_width = _stack.get_net_value(false);
+    if (_time_width == 0.0) {
+      _time_width = 1.0 / pstats_target_frame_rate;
+    }
+    normal_guide_bars();
+    force_redraw();
+  }
 }
 
 /**
