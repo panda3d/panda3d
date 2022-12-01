@@ -36,6 +36,7 @@ public:
   bool close_session();
 
   GtkWidget *get_window() const;
+  GtkAccelGroup *get_accel_group() const;
   GtkWidget *get_menu_bar() const;
   GtkWidget *get_status_bar() const;
 
@@ -57,10 +58,11 @@ private:
   Filename _last_session;
   Filename _save_filename;
 
-  GtkWidget *_window;
-  GtkWidget *_menu_bar;
-  GtkWidget *_session_menu;
-  GtkWidget *_options_menu;
+  GtkWidget *_window = nullptr;
+  GtkAccelGroup *_accel_group = nullptr;
+  GtkWidget *_menu_bar = nullptr;
+  GtkWidget *_session_menu = nullptr;
+  GtkWidget *_options_menu = nullptr;
   GtkWidget *_status_bar;
   GtkWidget *_status_bar_label = nullptr;
   GtkWidget *_new_session_menu_item;

@@ -271,6 +271,14 @@ get_window() const {
 }
 
 /**
+ *
+ */
+GtkAccelGroup *GtkStatsMonitor::
+get_accel_group() const {
+  return ((GtkStatsServer *)_server)->get_accel_group();
+}
+
+/**
  * Returns the screen DPI.
  */
 double GtkStatsMonitor::

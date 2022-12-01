@@ -55,6 +55,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   //gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
   //gtk_window_set_position(GTK_WINDOW(_window), GTK_WIN_POS_CENTER_ON_PARENT);
 
+  gtk_window_add_accel_group(GTK_WINDOW(_window), monitor->get_accel_group());
+
   gtk_widget_add_events(_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
       GDK_POINTER_MOTION_MASK);
