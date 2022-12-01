@@ -41,7 +41,7 @@ def WriteApplicationsFile(fname, appinfo, mimeinfo, bindir):
         fhandle.write("\tcommand=%s\n" % (app))
         fhandle.write("\tname=%s\n" % (desc))
         fhandle.write("\tcan_open_multiple_files=%s\n" % ('true' if multiple else 'false'))
-        fhandle.write("\tstartup_notify=%s\n" % ('true' if app == 'pstats' else 'false'))
+        fhandle.write("\tstartup_notify=true\n")
         fhandle.write("\texpects_uris=false\n")
         fhandle.write("\trequires_terminal=false\n")
         fhandle.write("\tmime_types=")
