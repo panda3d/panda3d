@@ -1260,6 +1260,15 @@ open_window() {
     XDefineCursor(_display, _xwindow, cursor);
   }
 
+  // Set _NET_STARTUP_ID if we've got it, so that the window manager knows
+  // this window belongs to a particular launch request.
+  const std::string &startup_id = x11_pipe->get_startup_id();
+  if (!startup_id.empty() && _parent_window_handle == nullptr) {
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_startup_id,
+                    x11_pipe->_utf8_string, 8, PropModeReplace,
+                    (unsigned char *)startup_id.c_str(), startup_id.size());
+  }
+
   XMapWindow(_display, _xwindow);
 
   if (_properties.get_raw_mice()) {
@@ -1277,6 +1286,12 @@ open_window() {
   // And tell our parent window that we're now its child.
   if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
+  }
+
+  // Now that we've opened a window, tell the window manager that the
+  // application has finished starting up.
+  if (!startup_id.empty() && x_send_startup_notification) {
+    x11_pipe->send_startup_notification();
   }
 
   return true;

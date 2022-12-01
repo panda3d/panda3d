@@ -84,6 +84,13 @@ ConfigVariableString x_wm_class
  PRC_DESC("Specify the value to use for the res_class field of the window's "
           "WM_CLASS property."));
 
+ConfigVariableBool x_send_startup_notification
+("x-send-startup-notification", true,
+ PRC_DESC("Set this to true to send a startup notification to the window "
+          "manager automatically after the first window is opened.  This "
+          "lets the window manager know that an application has launched, so "
+          "that it no longer needs to display a spinning mouse cursor."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
