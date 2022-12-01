@@ -27,6 +27,8 @@ class PStatViewLevel;
  */
 class GtkStatsChartMenu {
 public:
+  typedef GtkStatsMonitor::ChartType ChartType;
+
   GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
   ~GtkStatsChartMenu();
 
@@ -38,8 +40,10 @@ public:
   void do_update();
 
 private:
-  void add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
-                bool show_level);
+  bool add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
+                bool show_level, int insert_at);
+  GtkWidget *make_menu_item(const char *label, int collector_index,
+                            ChartType chart_type, bool show_level = false);
 
   static void remove_menu_child(GtkWidget *widget, gpointer data);
   static void activate_close_all(GtkWidget *widget, gpointer data);
@@ -52,6 +56,11 @@ private:
   int _last_level_index;
   GtkWidget *_menu;
   GtkWidget *_menu_item = nullptr;
+
+  // Pair of menu item, submenu
+  std::vector<std::pair<GtkWidget *, GtkWidget *> > _collector_items;
+  int _time_items_end = 0;
+  int _level_items_end = 0;
 };
 
 #endif
