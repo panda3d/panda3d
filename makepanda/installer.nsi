@@ -342,6 +342,13 @@ Section "Tools and utilities" SecTools
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell" "" "open"
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract" "" "Extract here"
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract\command" "" '"$INSTDIR\bin\multify.exe" -xf "%1"'
+
+    IfFileExists "$INSTDIR\bin\pstats.exe" 0 SkipPStatsFileAssociation
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession" "" "PStats Session"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon" "" "%SystemRoot%\system32\imageres.dll,144"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\shell\open\command" "" '"$INSTDIR\bin\pstats.exe" "%1"'
+    SkipPStatsFileAssociation:
 SectionEnd
 
 SectionGroup "Python modules" SecGroupPython
@@ -639,6 +646,9 @@ Section "Sample programs" SecSamples
     WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}"
     WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}/python/more-resources/samples/index"
     SetOutPath $INSTDIR
+    IfFileExists "$INSTDIR\bin\pstats.exe" 0 SkipPStatsShortcut
+    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Stats Monitor.lnk" "$INSTDIR\bin\pstats.exe" "" "%SystemRoot%\system32\imageres.dll" 144 "" "" "Panda3D Stats Monitor"
+    SkipPStatsShortcut:
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Manual"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Website"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Sample Program Manual"
@@ -739,7 +749,7 @@ Section -post
     DetailPrint "Registering file type associations..."
     SetDetailsPrint listonly
 
-    ; Register various model files
+    ; Register various file extensions
     WriteRegStr HKCU "Software\Classes\.egg" "" "Panda3D.Model"
     WriteRegStr HKCU "Software\Classes\.egg" "Content Type" "application/x-egg"
     WriteRegStr HKCU "Software\Classes\.egg" "PerceivedType" "gamemedia"
@@ -753,6 +763,9 @@ Section -post
     WriteRegStr HKCU "Software\Classes\.prc" "" "inifile"
     WriteRegStr HKCU "Software\Classes\.prc" "Content Type" "text/plain"
     WriteRegStr HKCU "Software\Classes\.prc" "PerceivedType" "text"
+    WriteRegStr HKCU "Software\Classes\.pstats" "" "Panda3D.PStatsSession"
+    WriteRegStr HKCU "Software\Classes\.pstats" "Content Type" "application/vnd.panda3d.pstats"
+    WriteRegStr HKCU "Software\Classes\.pstats" "PerceivedType" "application"
 
     ; For convenience, if nobody registered .pyd, we will.
     ReadRegStr $0 HKCR "Software\Classes\.pyd" ""
@@ -812,6 +825,11 @@ Section Uninstall
     StrCmp $0 "$INSTDIR\bin\multify.exe" 0 +3
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon"
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\shell"
+
+    ReadRegStr $0 HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon" ""
+    StrCmp $0 "$INSTDIR\bin\pstats.exe" 0 +3
+    DeleteRegKey HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon"
+    DeleteRegKey HKCU "Software\Classes\Panda3D.PStatsSession\shell"
 
     !ifdef INCLUDE_PYVER
         ReadRegStr $0 HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
