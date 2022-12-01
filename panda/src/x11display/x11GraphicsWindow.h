@@ -108,6 +108,7 @@ protected:
   bool _raw_mouse_enabled;
   Bool _override_redirect;
   Atom _wm_delete_window;
+  Atom _net_wm_ping;
 
   x11GraphicsPipe::pfn_XRRGetScreenInfo _XRRGetScreenInfo;
   x11GraphicsPipe::pfn_XRRSetScreenConfig _XRRSetScreenConfig;
