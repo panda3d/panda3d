@@ -33,7 +33,7 @@ static const Filename layout_filename = Filename::binary_filename(
 #elif defined(__APPLE__)
   Filename::expand_from("$HOME/Library/Caches/Panda3D-" PANDA_ABI_VERSION_STR "/pstats-layout")
 #else
-  Filename::expand_from("$XDG_CACHE_HOME/panda3d/pstats-layout")
+  Filename::expand_from("$XDG_STATE_HOME/panda3d/pstats-layout")
 #endif
 );
 

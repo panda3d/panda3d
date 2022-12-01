@@ -26,7 +26,7 @@ GtkStatsServer() {
   _last_session = Filename::expand_from(
     "$HOME/Library/Caches/Panda3D-" PANDA_ABI_VERSION_STR "/last-session.pstats");
 #else
-  _last_session = Filename::expand_from("$XDG_CACHE_HOME/panda3d/last-session.pstats");
+  _last_session = Filename::expand_from("$XDG_STATE_HOME/panda3d/last-session.pstats");
 #endif
   _last_session.set_binary();
 
