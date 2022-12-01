@@ -320,7 +320,6 @@ Section "Tools and utilities" SecTools
 
     SetOutPath "$INSTDIR\bin"
     File /r /x deploy-stub.exe /x deploy-stubw.exe "${BUILT}\bin\*.exe"
-    File /nonfatal /r "${BUILT}\bin\*.p3d"
     SetOutPath "$INSTDIR\NSIS"
     File /r /x CVS "${NSISDIR}\*"
 
@@ -739,12 +738,6 @@ Section -post
     SetDetailsPrint both
     DetailPrint "Registering file type associations..."
     SetDetailsPrint listonly
-
-    ; Even though we need the runtime to run these, we might as well tell
-    ; Windows what this kind of file is.
-    WriteRegStr HKCU "Software\Classes\.p3d" "" "Panda3D applet"
-    WriteRegStr HKCU "Software\Classes\.p3d" "Content Type" "application/x-panda3d"
-    WriteRegStr HKCU "Software\Classes\.p3d" "PerceivedType" "application"
 
     ; Register various model files
     WriteRegStr HKCU "Software\Classes\.egg" "" "Panda3D.Model"
