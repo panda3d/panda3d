@@ -17,11 +17,36 @@
 #include "pStatGraph.h"
 #include "config_pstatclient.h"
 
+#include <unistd.h>
+
 /**
  *
  */
 GtkStatsServer::
-GtkStatsServer() {
+GtkStatsServer() : _port(pstats_port) {
+  set_program_brief("GTK+3-based PStats client");
+  set_program_description
+    ("This is a GUI-based PStats server that listens on a TCP port for a "
+     "connection from a PStatClient in a Panda3D application.  It offers "
+     "various graphs for showing the timing information sent by the client."
+     "\n\n"
+     "The full documentation is available online:\n  "
+#ifdef HAVE_PYTHON
+     "https://docs.panda3d.org/" PANDA_ABI_VERSION_STR "/python/optimization/pstats"
+#else
+     "https://docs.panda3d.org/" PANDA_ABI_VERSION_STR "/cpp/optimization/pstats"
+#endif
+     "");
+
+  add_option
+    ("p", "port", 0,
+     "Specify the TCP port to listen for connections on.  By default, this "
+     "is taken from the pstats-port Config variable.",
+     &ProgramBase::dispatch_int, nullptr, &_port);
+
+  add_runline("[-p 5185]");
+  add_runline("session.pstats");
+
 #ifdef __APPLE__
   _last_session = Filename::expand_from(
     "$HOME/Library/Caches/Panda3D-" PANDA_ABI_VERSION_STR "/last-session.pstats");
@@ -30,10 +55,54 @@ GtkStatsServer() {
 #endif
   _last_session.set_binary();
 
-
-  _time_units = 0;
-
   create_window();
+}
+
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
+bool GtkStatsServer::
+handle_args(ProgramBase::Args &args) {
+  if (args.empty()) {
+    new_session();
+    return true;
+  }
+  else if (args.size() == 1) {
+    Filename fn = Filename::from_os_specific(args[0]);
+    fn.set_binary();
+    GtkStatsMonitor *monitor = new GtkStatsMonitor(this);
+    if (!monitor->read(fn)) {
+      delete monitor;
+
+      // If we're not running from the terminal, show a GUI message box.
+      if (!isatty(STDERR_FILENO)) {
+        GtkWidget *dialog =
+          gtk_message_dialog_new(GTK_WINDOW(_window),
+             GTK_DIALOG_DESTROY_WITH_PARENT,
+             GTK_MESSAGE_ERROR,
+             GTK_BUTTONS_CLOSE,
+             "Failed to load session file: %s", fn.c_str());
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+      }
+      return false;
+    }
+    _save_filename = fn;
+
+    gtk_widget_set_sensitive(_new_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_save_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_close_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_export_session_menu_item, TRUE);
+
+    _monitor = monitor;
+    return true;
+  }
+  else {
+    nout << "At most one filename may be specified on the command-line.\n";
+    return false;
+  }
 }
 
 /**
@@ -97,16 +166,16 @@ new_session() {
     return false;
   }
 
-  if (listen()) {
+  if (listen(_port)) {
     {
       std::ostringstream strm;
-      strm << "PStats Server (listening on port " << pstats_port << ")";
+      strm << "PStats Server (listening on port " << _port << ")";
       std::string title = strm.str();
       gtk_window_set_title(GTK_WINDOW(_window), title.c_str());
     }
     {
       std::ostringstream strm;
-      strm << "Waiting for client to connect on port " << pstats_port << "...";
+      strm << "Waiting for client to connect on port " << _port << "...";
       std::string title = strm.str();
       _status_bar_label = gtk_label_new(title.c_str());
       gtk_container_add(GTK_CONTAINER(_status_bar), _status_bar_label);
@@ -129,7 +198,8 @@ new_session() {
        GTK_MESSAGE_ERROR,
        GTK_BUTTONS_CLOSE,
        "Unable to open port %d.  Try specifying a different port number "
-       "using pstats-port in your Config file.", pstats_port.get_value());
+       "using pstats-port in your Config file or the -p option on the "
+       "command-line.", _port);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 
@@ -404,7 +474,6 @@ close_session() {
   gtk_widget_set_sensitive(_export_session_menu_item, FALSE);
   return true;
 }
-
 
 /**
  * Returns the window handle to the server's window.
