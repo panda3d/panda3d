@@ -40,7 +40,7 @@ PStatFlameGraph(PStatMonitor *monitor,
 
   // NB. This won't call force_redraw() (which we can't do yet) because average
   // mode is true
-  update_data();
+  update();
   _time_width = _stack.get_net_value(false);
   if (_time_width == 0.0) {
     _time_width = 1.0 / pstats_target_frame_rate;
