@@ -39,6 +39,9 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
   if (client_data != nullptr) {
     size_t row_offset = 0;
 
+    // Ignore this nasty "inverted" collector, which messes up everything.
+    _app_collector_index = client_data->find_collector("App:Show code:General");
+
     for (int thread_index = 0; thread_index < client_data->get_num_threads(); ++thread_index) {
       _threads.emplace_back();
       ThreadRow &thread_row = _threads.back();
@@ -62,10 +65,12 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
           else {
             _lowest_start_time = std::min(_lowest_start_time, oldest_start_time);
           }
-          _highest_end_time = std::max(_highest_end_time, latest_end_time);
+          _highest_end_time = std::max(_highest_end_time, latest_end_time + _clock_skew);
 
           for (int frame = oldest_frame; frame <= latest_frame; ++frame) {
-            update_bars(thread_index, frame);
+            if (thread_data->has_frame(frame)) {
+              update_bars(thread_index, frame);
+            }
           }
         }
       }
@@ -102,10 +107,14 @@ new_data(int thread_index, int frame_number) {
     const PStatThreadData *thread_data =
       client_data->get_thread_data(thread_index);
 
-    if (thread_data != nullptr && !thread_data->is_empty()) {
+    if (thread_data != nullptr && thread_data->has_frame(frame_number)) {
       const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
-      double frame_start = frame_data.get_start();
-      double frame_end = frame_data.get_end();
+      double frame_start = frame_data.get_start() + _clock_skew;
+      double frame_end = frame_data.get_end() + _clock_skew;
+
+      if (thread_index == 0 && _app_collector_index == -1) {
+        _app_collector_index = client_data->find_collector("App:Show code:General");
+      }
 
       if (!_have_start_time) {
         _start_time = frame_start;
@@ -173,70 +182,185 @@ update_bars(int thread_index, int frame_number) {
   // pair<int collector_index, double start_time>
   pvector<std::pair<int, double> > stack;
 
-  size_t num_events = frame_data.get_num_events();
-  for (size_t i = 0; i < num_events; ++i) {
-    int collector_index = frame_data.get_time_collector(i);
-    double time = frame_data.get_time(i);
+  double frame_start = frame_data.get_start() + _clock_skew;
+  double prev = frame_start;
 
-    if (frame_data.is_start(i)) {
-      stack.push_back(std::make_pair(collector_index, std::max(time, _start_time)));
-      if (stack.size() > thread_row._rows.size()) {
-        thread_row._rows.resize(stack.size());
-        changed_num_rows = true;
-      }
-    }
-    else if (!stack.empty()) {
-      if (stack.back().first == collector_index) {
-        // Most likely case, ending the most recent collector that is still
-        // open.
-        double start_time = stack.back().second;
-        stack.pop_back();
-        thread_row._rows[stack.size()].push_back({
-          start_time, time, collector_index, thread_index, frame_number});
+  // There may still be open collectors from the previous frame.  Rebuild the
+  // stack based on that so we can close them properly.
+  for (size_t i = 0; i < thread_row._rows.size(); ++i) {
+    Row &row = thread_row._rows[i];
 
-        while (!stack.empty() && stack.back().first < 0) {
-          stack.pop_back();
-        }
-      }
-      else {
-        // Unlikely case: ending a collector before a "child" has ended.
-        // Go back and clear the row where this collector started.
-        // Don't decrement the row index.
-        for (size_t i = 0; i < stack.size(); ++i) {
-          auto &item = stack[stack.size() - 1 - i];
-
-          if (item.first == collector_index) {
-            thread_row._rows[stack.size() - 1 - i].push_back({
-              item.second, time, collector_index, thread_index, frame_number});
-            item.first = -1;
-            break;
+    // Keep iterating from the back until we get to the previous frame.
+    for (size_t j = 0; j < row.size(); ++j) {
+      ColorBar &bar = row[row.size() - j - 1];
+      if (bar._frame_number < frame_number) {
+        // Was this collector left unstopped at the end of the last frame?
+        if (bar._open_end && bar._frame_number == frame_number - 1) {
+          if (i >= stack.size()) {
+            stack.resize(i + 1, std::make_pair(-1, 0.0));
           }
+          stack[i] = std::make_pair(bar._collector_index, bar._start);
+
+          // Remove this bar for now, we'll recreate it when we close it.
+          row.erase(row.begin() + (row.size() - j - 1));
         }
+        break;
       }
-    }
-    else {
-      // Somehow, we got an end event for a collector we didn't start.
-      // This shouldn't really happen, so we just ignore it.
     }
   }
 
-  // Add all unclosed bars.
+  size_t num_events = frame_data.get_num_events();
+  for (size_t i = 0; i < num_events; ++i) {
+    int collector_index = frame_data.get_time_collector(i);
+    double time = frame_data.get_time(i) + _clock_skew;
+
+    if (time < prev) {
+      // Apparently, it is too hard to ask for monotonically increasing time
+      // values!  Don't be tempted to sort the values, or think this is a bug,
+      // the client can arbitrarily move back the clock if it feels like it!
+      // I had some fancy mechanism that handled clock skew properly for
+      // multiple out-of-order frames, but I gave up when I realised it's not
+      // possible to solve this problem for multiple threads, so we just assume
+      // this is done just once at startup before the other threads exist.
+      double delta = prev - time;
+      _clock_skew += delta;
+      _highest_end_time += delta;
+      time = prev;
+      nout << "Correcting for clock skew of "
+           << format_number(delta, GBU_show_units | GBU_ms)
+           << " in frame " << frame_number << " of thread "
+           << thread_index << "\n";
+    }
+    prev = time;
+
+    if (collector_index == _app_collector_index) {
+      continue;
+    }
+
+    if (frame_data.is_start(i)) {
+      if (collector_index == 0 && !stack.empty()) {
+        // Collector 0 always goes at the top, no matter what.
+        stack[0].first = 0;
+        stack[0].second = std::max(time, _start_time);
+      } else {
+        stack.push_back(std::make_pair(collector_index, std::max(time, _start_time)));
+        if (stack.size() > thread_row._rows.size()) {
+          thread_row._rows.resize(stack.size());
+          changed_num_rows = true;
+        }
+      }
+    }
+    else if (!stack.empty() && stack.back().first == collector_index) {
+      // Most likely case, ending the most recent collector that is still open.
+      double start_time = stack.back().second;
+      stack.pop_back();
+      thread_row._rows[stack.size()].push_back({
+        start_time, time, collector_index, thread_index, frame_number, false, false});
+
+      // Pop off stack levels for prematurely ended collectors (see below).
+      while (!stack.empty() && stack.back().first < 0) {
+        stack.pop_back();
+      }
+    }
+    else {
+      // Unlikely case: ending a collector before a "child" has ended.
+      // Go back and clear the row where this collector started.
+      // Don't decrement the row index.
+      size_t i;
+      for (i = 0; i < stack.size(); ++i) {
+        auto &item = stack[stack.size() - 1 - i];
+
+        if (item.first == collector_index) {
+          thread_row._rows[stack.size() - 1 - i].push_back({
+            item.second, time, collector_index, thread_index, frame_number, false, false});
+          item.first = -1;
+          break;
+        }
+      }
+      if (i == stack.size()) {
+        // We stopped a collector that wasn't started at all.  That means it
+        // must have already been running when this frame started, which we
+        // normally handle by pre-populating the stack with the open collectors
+        // from last frame, but maybe we didn't get the last frame (yet).
+        // Unfortunately we need to add it above any bars we've already started
+        // and stopped, which means we need to shift everything down belonging
+        // to this frame, except for the top-level Frame collector.  This is
+        // probably pretty inefficient, but it should be pretty rare for frames
+        // to arrive out-of-order in this manner.
+        nassertd(!stack.empty()) continue;
+        stack.insert(stack.begin() + 1, std::make_pair(-1, 0.0));
+
+        const size_t num_rows = thread_row._rows.size();
+        for (size_t j = num_rows - 1; j >= 1; --j) {
+          size_t row_size = thread_row._rows[j].size();
+          for (size_t k = row_size; k > 0; --k) {
+            Row &row = thread_row._rows[j];
+            ColorBar bar = row[k - 1];
+            if (bar._frame_number == frame_number) {
+              row.erase(row.begin() + (k - 1));
+              if (j + 1 >= thread_row._rows.size()) {
+                thread_row._rows.resize(j + 2);
+                changed_num_rows = true;
+              }
+
+              // Insert it into the row below while retaining sorting.
+              Row &row2 = thread_row._rows[j + 1];
+              row2.insert(std::upper_bound(row2.begin(), row2.end(), bar), bar);
+            }
+            else if (bar._frame_number < frame_number) {
+              break;
+            }
+          }
+        }
+
+        // Now insert the bar, just below Frame level.
+        if (thread_row._rows.size() < 2) {
+          thread_row._rows.resize(2);
+          changed_num_rows = true;
+        }
+        thread_row._rows[1].push_back({
+          frame_start, time, collector_index, thread_index,
+          frame_number, true, false});
+      }
+    }
+  }
+
+  // Add all unclosed bars, marking them as open-ended, for later gluing.
   while (!stack.empty()) {
     int collector_index = stack.back().first;
     if (collector_index >= 0) {
       double start_time = stack.back().second;
       thread_row._rows[stack.size() - 1].push_back({
-        start_time, frame_data.get_end(),
-        collector_index, thread_index, frame_number,
+        start_time, frame_data.get_end() + _clock_skew,
+        collector_index, thread_index, frame_number, false, true,
       });
     }
     stack.pop_back();
   }
 
   if (thread_row._last_frame >= 0 && frame_number < thread_row._last_frame) {
-    // Added a frame out of order.  Resort the rows.
+    // Added a frame out of order.
     for (Row &row : thread_row._rows) {
+      // Sort by end time.
       std::sort(row.begin(), row.end());
+
+      // Glue together open ends and beginnings that match up.
+      size_t end = row.size() - 1;
+      for (size_t i = 0; i < end;) {
+        ColorBar &left = row[i];
+        ColorBar &right = row[i + 1];
+        if (left._collector_index == right._collector_index &&
+            left._frame_number + 1 == right._frame_number &&
+            left._open_end && right._open_begin) {
+          // Erase the left one, to maintain the sorting by end time.
+          right._open_begin = false;
+          right._start = left._start;
+          row.erase(row.begin() + i);
+          --end;
+        } else {
+          ++i;
+        }
+      }
     }
   } else {
     thread_row._last_frame = frame_number;
@@ -413,6 +537,8 @@ normal_guide_bars() {
 
     while (it != row.end() && it->_start <= end_time) {
       double frame_start = it->_start;
+      double frame_end = it->_end;
+      int frame_number = it->_frame_number;
 
       if (frame_start > start_time) {
         if (!_guide_bars.empty() && height_to_pixel(frame_start - _guide_bars.back()._height) < 30) {
@@ -420,7 +546,7 @@ normal_guide_bars() {
           _guide_bars.back()._label.clear();
         }
         std::string label = "#";
-        label += format_string(it->_frame_number);
+        label += format_string(frame_number);
         _guide_bars.push_back(GuideBar(frame_start, label, GBS_frame));
 
         if (++num_frames > max_frames) {
@@ -439,7 +565,7 @@ normal_guide_bars() {
       if (it != row.end()) {
         // Only go up to the start of the next frame, limiting to however much
         // fits in the graph.
-        frame_width = std::min(it->_start - frame_start, end_time - frame_start);
+        frame_width = std::min(frame_end - frame_start, end_time - frame_start);
       } else {
         // Reached the end; just continue to the end of the graph.
         frame_width = end_time - frame_start;
@@ -455,6 +581,19 @@ normal_guide_bars() {
           label += format_number(offset, GBU_show_units | GBU_ms);
           _guide_bars.push_back(GuideBar(frame_start + offset, label, GBS_normal));
         }
+      }
+
+      // If there's a gap between frames, add another line.
+      if (it->_start > frame_end && it->_frame_number > frame_number + 1) {
+        std::string label;
+        if (it->_start - frame_end >= interval) {
+          label = "#" + format_string(frame_number + 1);
+          if (it->_frame_number > frame_number + 2) {
+            label += "-" + format_string(it->_frame_number - 1);
+          }
+          label += " (dropped)";
+        }
+        _guide_bars.push_back(GuideBar(frame_end, label, GBS_frame));
       }
     }
   }
