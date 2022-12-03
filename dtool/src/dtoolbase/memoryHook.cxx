@@ -203,10 +203,10 @@ ptr_to_alloc(void *ptr, size_t &size) {
  */
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
-  _total_heap_single_size(copy._total_heap_single_size),
-  _total_heap_array_size(copy._total_heap_array_size),
-  _requested_heap_size(copy._requested_heap_size),
-  _total_mmap_size(copy._total_mmap_size),
+  _total_heap_single_size(copy._total_heap_single_size.load(std::memory_order_relaxed)),
+  _total_heap_array_size(copy._total_heap_array_size.load(std::memory_order_relaxed)),
+  _requested_heap_size(copy._requested_heap_size.load(std::memory_order_relaxed)),
+  _total_mmap_size(copy._total_mmap_size.load(std::memory_order_relaxed)),
   _max_heap_size(copy._max_heap_size),
   _page_size(copy._page_size) {
 }
@@ -250,9 +250,9 @@ heap_alloc_single(size_t size) {
   size = get_ptr_size(alloc);
   inflated_size = size;
 #endif
-  AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
-      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+  _total_heap_single_size.fetch_add(size, std::memory_order_relaxed);
+  if (_total_heap_single_size.load(std::memory_order_relaxed) +
+      _total_heap_array_size.load(std::memory_order_relaxed) >
       _max_heap_size) {
     overflow_heap_size();
   }
@@ -275,8 +275,8 @@ heap_free_single(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_heap_single_size);
-  AtomicAdjust::add(_total_heap_single_size, -(AtomicAdjust::Integer)size);
+  assert((int)size <= _total_heap_single_size.load(std::memory_order_relaxed));
+  _total_heap_single_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -327,9 +327,9 @@ heap_alloc_array(size_t size) {
   size = get_ptr_size(alloc);
   inflated_size = size;
 #endif
-  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
-      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+  _total_heap_array_size.fetch_add(size, std::memory_order_relaxed);
+  if (_total_heap_single_size.load(std::memory_order_relaxed) +
+      _total_heap_array_size.load(std::memory_order_relaxed) >
       _max_heap_size) {
     overflow_heap_size();
   }
@@ -383,8 +383,8 @@ heap_realloc_array(void *ptr, size_t size) {
   size = get_ptr_size(alloc1);
   inflated_size = size;
 #endif
-  assert((AtomicAdjust::Integer)orig_size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
+  assert(orig_size <= _total_heap_array_size.load(std::memory_order_relaxed));
+  _total_heap_array_size.fetch_add(size - orig_size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
   // Align this to the requested boundary.
@@ -424,7 +424,7 @@ heap_free_array(void *ptr) {
 
 #ifdef DO_MEMORY_USAGE
   assert((int)size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, -(AtomicAdjust::Integer)size);
+  _total_heap_array_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -489,7 +489,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  _total_mmap_size += size;
+  _total_mmap_size.fetch_add(size, std::memory_order_relaxed);
 #endif
 
 #ifdef _WIN32
@@ -544,8 +544,8 @@ mmap_free(void *ptr, size_t size) {
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_mmap_size);
-  _total_mmap_size -= size;
+  assert((int)size <= _total_mmap_size.load(std::memory_order_relaxed));
+  _total_mmap_size.fetch_sub(size, std::memory_order_relaxed);
 #endif
 
 #ifdef _WIN32

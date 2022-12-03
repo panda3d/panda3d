@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 #include "numeric_types.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 #include "mutexImpl.h"
 #include <map>
 
@@ -66,10 +66,10 @@ public:
   INLINE static size_t get_ptr_size(void *ptr);
 
 protected:
-  TVOLATILE AtomicAdjust::Integer _total_heap_single_size = 0;
-  TVOLATILE AtomicAdjust::Integer _total_heap_array_size = 0;
-  TVOLATILE AtomicAdjust::Integer _requested_heap_size = 0;
-  TVOLATILE AtomicAdjust::Integer _total_mmap_size = 0;
+  patomic<size_t> _total_heap_single_size { 0u };
+  patomic<size_t> _total_heap_array_size { 0u };
+  patomic<size_t> _requested_heap_size { 0u };
+  patomic<size_t> _total_mmap_size { 0u };
 
   // If the allocated heap size crosses this threshold, we call
   // overflow_heap_size().

@@ -18,7 +18,7 @@
 INLINE void MemoryHook::
 inc_heap(size_t size) {
 #ifdef DO_MEMORY_USAGE
-  AtomicAdjust::add(_requested_heap_size, (AtomicAdjust::Integer)size);
+  _requested_heap_size.fetch_add(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 }
 
@@ -30,7 +30,7 @@ INLINE void MemoryHook::
 dec_heap(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // assert((int)size <= _requested_heap_size);
-  AtomicAdjust::add(_requested_heap_size, -(AtomicAdjust::Integer)size);
+  _requested_heap_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 }
 
