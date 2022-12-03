@@ -67,9 +67,12 @@ GtkStatsTimeline(GtkStatsMonitor *monitor) :
 
   int min_height = 0;
   if (!_threads.empty()) {
-    int num_rows = _threads.back()._row_offset + _threads.back()._rows.size();
-    double height = row_to_pixel(num_rows) + _pixel_scale * 2.5;
+    double height = row_to_pixel(get_num_rows()) + _pixel_scale * 2.5;
     min_height = height / _cr_scale;
+
+    // Never make the window taller than the screen.
+    GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(_window));
+    min_height = std::min(min_height, gdk_screen_get_height(screen));
   }
 
   gtk_widget_set_size_request(_graph_window,
@@ -86,7 +89,7 @@ GtkStatsTimeline(GtkStatsMonitor *monitor) :
   // Allow the window to be resized as small as the user likes.  We have to do
   // this after the window has been shown; otherwise, it will affect the
   // window's initial size.
-  gtk_widget_set_size_request(_graph_window, 0, min_height);
+  gtk_widget_set_size_request(_graph_window, 0, 0);
 
   clear_region();
 }
@@ -264,11 +267,6 @@ end_draw() {
   gtk_widget_queue_draw(_graph_window);
 
   if (_threads_changed) {
-    // Make sure the window is large enough to fit all of the threads.
-    int num_rows = _threads.back()._row_offset + _threads.back()._rows.size();
-    double height = row_to_pixel(num_rows) + _pixel_scale * 2.5;
-    gtk_widget_set_size_request(_graph_window, 0, height / _cr_scale);
-
     // Calculate the size of the thread area.
     PangoLayout *layout = gtk_widget_create_pango_layout(_thread_area, "");
 
@@ -585,10 +583,27 @@ gboolean GtkStatsTimeline::
 handle_scroll(int graph_x, int graph_y, double dx, double dy, bool ctrl_held) {
   gboolean handled = FALSE;
 
-  if (ctrl_held && dy != 0.0) {
+  if (dy != 0.0) {
     handled = TRUE;
-    zoom_by(dy, pixel_to_timestamp(graph_x));
-    start_animation();
+    if (ctrl_held) {
+      zoom_by(dy, pixel_to_timestamp(graph_x));
+      start_animation();
+    } else {
+      double delta = (int)(dy * _pixel_scale * 5 + 0.5);
+      int new_scroll = _scroll - delta;
+      if (_threads.empty()) {
+        new_scroll = 0;
+      } else {
+        new_scroll = (std::min)(new_scroll, get_num_rows() * _pixel_scale * 5 + _pixel_scale * 2 - get_ysize());
+        new_scroll = (std::max)(new_scroll, 0);
+      }
+      delta = new_scroll - _scroll;
+      if (delta != 0) {
+        _scroll = new_scroll;
+        gtk_widget_queue_draw(_thread_area);
+        force_redraw();
+      }
+    }
   }
 
   if (dx != 0.0) {
@@ -689,6 +704,7 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
     return;
   }
 
+  bool center = true;
   switch (bar._style) {
   case GBS_target:
     cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
@@ -704,6 +720,7 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
 
   case GBS_frame:
     cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
+    center = false;
     break;
   }
 
@@ -737,10 +754,15 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(_scale_area, &allocation);
 
-    int this_x = x - width / 2;
-    if (this_x >= 0 && this_x + width < allocation.width) {
-      cairo_move_to(cr, this_x, allocation.height - height);
-      pango_cairo_show_layout(cr, layout);
+    if (x >= 0) {
+      int this_x = x;
+      if (center) {
+        this_x -= width / 2;
+      }
+      if (this_x + width < allocation.width) {
+        cairo_move_to(cr, this_x, allocation.height - height);
+        pango_cairo_show_layout(cr, layout);
+      }
     }
   }
 
