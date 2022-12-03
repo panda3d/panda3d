@@ -4522,7 +4522,7 @@ end_frame_timing(const FrameTiming &frame) {
 
   // The end time of the last collector is implicitly the frame's end time.
   frame_data.add_stop(0, frame_data.get_end());
-  gpu_thread.add_frame(frame._frame_number, frame_data);
+  gpu_thread.add_frame(frame._frame_number, std::move(frame_data));
 
   _timer_queries_pcollector.add_level_now(frame._queries.size());
 #endif
