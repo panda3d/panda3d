@@ -228,14 +228,25 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
       double text_top = top + (bottom - top - text_height) / 2.0;
 
       if (text_width >= text_right - text_left) {
+        size_t c = collector_name.rfind(':');
         if (text_right - text_left < scale * 6) {
           // It's a really tiny space.  Draw a single letter.
+          const char *ch = collector_name.data() + (c != std::string::npos ? c + 1 : 0);
           pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-          pango_layout_set_text(layout, collector_name.c_str(), 1);
+          pango_layout_set_text(layout, ch, 1);
         } else {
-          // It's going to be tricky to fit it, let pango figure it out.
-          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+          // Maybe just use everything after the last colon.
+          if (c != std::string::npos) {
+            pango_layout_set_text(layout, collector_name.data() + c + 1,
+                                          collector_name.size() - c - 1);
+            pango_layout_get_pixel_size(layout, &text_width, &text_height);
+          }
         }
+      }
+
+      if (text_width >= text_right - text_left) {
+        // It's going to be tricky to fit it, let pango figure it out.
+        pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
         pango_layout_set_width(layout, (text_right - text_left) * PANGO_SCALE);
         cairo_move_to(_cr, text_left, text_top);
       }
