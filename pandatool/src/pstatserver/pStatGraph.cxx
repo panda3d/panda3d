@@ -206,7 +206,7 @@ format_number(double value, int guide_bar_units, const string &unit_name) {
 #ifdef _WIN32
         label += " \xb5s";
 #else
-        label += " us";
+        label += " \xc2\xb5s";
 #endif
       }
       else if ((guide_bar_units & GBU_show_units) == 0 || value < 1.0) {
