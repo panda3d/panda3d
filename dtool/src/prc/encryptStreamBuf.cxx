@@ -23,6 +23,32 @@
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 
+#if OPENSSL_VERSION_MAJOR >= 3
+#include <openssl/provider.h>
+
+/**
+ * Tries to load the legacy provider in OpenSSL.  Returns true if the provider
+ * was just loaded, false if it was already loaded or couldn't be loaded.
+ */
+static bool load_legacy_provider() {
+  static bool tried = false;
+  if (!tried) {
+    tried = true;
+    if (OSSL_PROVIDER_try_load(nullptr, "legacy", 1) != nullptr) {
+      if (prc_cat.is_debug()) {
+        prc_cat.debug()
+          << "Loaded legacy OpenSSL provider.\n";
+      }
+      return true;
+    } else {
+      prc_cat.warning()
+        << "Failed to load legacy OpenSSL provider.\n";
+    }
+  }
+  return false;
+}
+#endif  // OPENSSL_VERSION_MAJOR
+
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 
@@ -122,7 +148,31 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
   int key_length = sr.get_uint16();
   int count = sr.get_uint16();
 
+#if OPENSSL_VERSION_MAJOR >= 3
+  // First, convert the cipher's nid to its full name.
+  const char *cipher_name = OBJ_nid2ln(nid);
+
+  const EVP_CIPHER *cipher = nullptr;
+  if (cipher_name != nullptr) {
+    // Now, fetch the cipher known by this name.
+    cipher = EVP_CIPHER_fetch(nullptr, cipher_name, nullptr);
+
+    if (cipher == nullptr && EVP_get_cipherbynid(nid) != nullptr) {
+      if (load_legacy_provider()) {
+        cipher = EVP_CIPHER_fetch(nullptr, cipher_name, nullptr);
+      }
+
+      if (cipher == nullptr) {
+        prc_cat.error()
+          << "No implementation available for encryption algorithm in stream: "
+          << cipher_name << "\n";
+        return;
+      }
+    }
+  }
+#else
   const EVP_CIPHER *cipher = EVP_get_cipherbynid(nid);
+#endif
 
   if (cipher == nullptr) {
     prc_cat.error()
@@ -219,8 +269,29 @@ open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
   _dest = dest;
   _owns_dest = owns_dest;
 
+#if OPENSSL_VERSION_MAJOR >= 3
+  // This checks that there is actually an implementation available.
+  const EVP_CIPHER *cipher =
+    EVP_CIPHER_fetch(nullptr, _algorithm.c_str(), nullptr);
+
+  if (cipher == nullptr &&
+      EVP_get_cipherbyname(_algorithm.c_str()) != nullptr) {
+    // The cipher does exist, though, do we need to load the legacy provider?
+    if (load_legacy_provider()) {
+      cipher = EVP_CIPHER_fetch(nullptr, _algorithm.c_str(), nullptr);
+    }
+
+    if (cipher == nullptr) {
+      prc_cat.error()
+        << "No implementation available for encryption algorithm: "
+        << _algorithm << "\n";
+      return;
+    }
+  }
+#else
   const EVP_CIPHER *cipher =
     EVP_get_cipherbyname(_algorithm.c_str());
+#endif
 
   if (cipher == nullptr) {
     prc_cat.error()
