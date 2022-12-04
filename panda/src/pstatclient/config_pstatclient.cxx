@@ -43,7 +43,7 @@ ConfigVariableBool pstats_threaded_write
           "broken with the threaded network interfaces."));
 
 ConfigVariableInt pstats_max_queue_size
-("pstats-max-queue-size", 1,
+("pstats-max-queue-size", 4,
  PRC_DESC("If pstats-threaded-write is true, this specifies the maximum "
           "number of packets (generally, frames of data) that may be queued "
           "up for the thread to process.  If this is large, the writer "
