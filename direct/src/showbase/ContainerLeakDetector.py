@@ -1,5 +1,5 @@
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
-import direct.showbase.DConfig as config
 from direct.showbase.PythonUtil import makeFlywheelGen
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
@@ -805,7 +805,7 @@ class CheckContainers(Job):
                                         self.notify.warning(msg)
                                         yield None
                                         messenger.send(self._leakDetector.getLeakEvent(), [container, name])
-                                        if config.GetBool('pdb-on-leak-detect', 0):
+                                        if ConfigVariableBool('pdb-on-leak-detect', False).getValue():
                                             import pdb;pdb.set_trace()
                                             pass
         except Exception as e:
@@ -1008,8 +1008,8 @@ class ContainerLeakDetector(Job):
         # divide by two, since the first check just takes length measurements and
         # doesn't check for leaks
         self._nextCheckDelay = firstCheckDelay/2.
-        self._checkDelayScale = config.GetFloat('leak-detector-check-delay-scale', 1.5)
-        self._pruneTaskPeriod = config.GetFloat('leak-detector-prune-period', 60. * 30.)
+        self._checkDelayScale = ConfigVariableDouble('leak-detector-check-delay-scale', 1.5).getValue()
+        self._pruneTaskPeriod = ConfigVariableDouble('leak-detector-prune-period', 60. * 30.).getValue()
 
         # main dict of id(container)->containerRef
         self._id2ref = {}
@@ -1017,9 +1017,9 @@ class ContainerLeakDetector(Job):
         self._index2containerId2len = {}
         self._index2delay = {}
 
-        if config.GetBool('leak-container', 0):
+        if ConfigVariableBool('leak-container', False).getValue():
             _createContainerLeak()
-        if config.GetBool('leak-tasks', 0):
+        if ConfigVariableBool('leak-tasks', False).getValue():
             _createTaskLeak()
 
         # don't check our own tables for leaks

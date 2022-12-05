@@ -101,9 +101,9 @@ class DirectSession(DirectObject):
             from direct.directdevices import DirectDeviceManager
             self.deviceManager = DirectDeviceManager.DirectDeviceManager()
             # Automatically create any devices specified in config file
-            joybox = ConfigVariableString('vrpn-joybox-device', '').value
-            radamec = ConfigVariableString('vrpn-radamec-device', '').value
-            fastrak = ConfigVariableString('vrpn-fastrak-device', '').value
+            joybox = ConfigVariableString('vrpn-joybox-device', '').getValue()
+            radamec = ConfigVariableString('vrpn-radamec-device', '').getValue()
+            fastrak = ConfigVariableString('vrpn-fastrak-device', '').getValue()
             if joybox:
                 from direct.directdevices import DirectJoybox
                 self.joybox = DirectJoybox.DirectJoybox(joybox)
@@ -300,7 +300,7 @@ class DirectSession(DirectObject):
             self.clusterMode = clusterMode
         except NameError:
             # Has the clusterMode been set via a config variable?
-            self.clusterMode = ConfigVariableString("cluster-mode", '').value
+            self.clusterMode = ConfigVariableString("cluster-mode", '').getValue()
 
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()

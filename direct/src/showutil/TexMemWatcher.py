@@ -87,7 +87,7 @@ class TexMemWatcher(DirectObject):
         # This is the maximum number of bitmask rows (within
         # self.limit) to allocate for packing.  This controls the
         # value assigned to self.quantize in repack().
-        self.maxHeight = base.config.GetInt('tex-mem-max-height', 300)
+        self.maxHeight = ConfigVariableInt('tex-mem-max-height', 300).getValue()
 
         # The total number of texture bytes tracked, including overflow.
         self.totalSize = 0
@@ -128,7 +128,7 @@ class TexMemWatcher(DirectObject):
         # Set this to tinydisplay if you're running on a machine with
         # limited texture memory.  That way you won't compete for
         # texture memory with the main scene.
-        moduleName = base.config.GetString('tex-mem-pipe', '')
+        moduleName = ConfigVariableString('tex-mem-pipe', '').getValue()
         if moduleName:
             self.pipe = base.makeModulePipe(moduleName)
 
@@ -180,7 +180,7 @@ class TexMemWatcher(DirectObject):
 
         # How frequently should the texture memory window check for
         # state changes?
-        updateInterval = base.config.GetDouble("tex-mem-update-interval", 0.5)
+        updateInterval = ConfigVariableDouble("tex-mem-update-interval", 0.5).getValue()
         self.task = taskMgr.doMethodLater(updateInterval, self.updateTextures, 'TexMemWatcher')
 
         self.setLimit(limit)

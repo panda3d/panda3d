@@ -51,7 +51,7 @@ class AnimControlInterval(Interval.Interval):
 
         if isinstance(controls, AnimControlCollection):
             self.controls = controls
-            if ConfigVariableBool("strict-anim-ival", 0):
+            if ConfigVariableBool("strict-anim-ival", False).getValue():
                 checkSz = self.controls.getAnim(0).getNumFrames()
                 for i in range(1,self.controls.getNumAnims()):
                     if checkSz != self.controls.getAnim(i).getNumFrames():

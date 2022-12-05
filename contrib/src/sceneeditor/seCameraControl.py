@@ -281,10 +281,7 @@ class DirectCameraControl(DirectObject):
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
-        if base.config.GetBool('temp-hpr-fix',0):
-            self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
-        else:
-            self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
+        self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
         SEditor.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 

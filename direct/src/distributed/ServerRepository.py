@@ -88,7 +88,7 @@ class ServerRepository:
                  threadedNet = None):
         if threadedNet is None:
             # Default value.
-            threadedNet = ConfigVariableBool('threaded-net', False).value
+            threadedNet = ConfigVariableBool('threaded-net', False).getValue()
 
         # Set up networking interfaces.
         numThreads = 0

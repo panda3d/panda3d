@@ -64,7 +64,7 @@ class ObjectMgrBase:
         # [gjeon] to solve the problem of unproper $USERNAME
         userId = os.path.basename(os.path.expandvars('$USERNAME'))
         if userId == '':
-            userId = ConfigVariableString("le-user-id").value
+            userId = ConfigVariableString("le-user-id").getValue()
         if userId == '':
             userId = 'unknown'
         newUid = str(time.time()) + userId

@@ -3,6 +3,7 @@ import sys
 try: import _tkinter
 except: sys.exit("Please install python module 'Tkinter'")
 
+from panda3d.core import ConfigVariableBool
 from direct.showbase.ShowBase import ShowBase
 
 ShowBase()
@@ -105,7 +106,7 @@ class myLevelEditor(AppShell):
         base.setBackgroundColor(0,0,0)
         self.parent = parent
         ## Check TkTool is activated! ##
-        self.wantTK = config.GetBool('want-tk', 0)
+        self.wantTK = ConfigVariableBool('want-tk', False).getValue()
         if self.wantTK:
             pass
         else:

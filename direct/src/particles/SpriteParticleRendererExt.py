@@ -20,7 +20,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceTextureName(self):
         if self.sourceTextureName is None:
             SpriteParticleRendererExt.sourceTextureName = ConfigVariableString(
-                'particle-sprite-texture', 'maps/lightbulb.rgb').value
+                'particle-sprite-texture', 'maps/lightbulb.rgb').getValue()
         # Return instance copy of class variable
         return self.sourceTextureName
 
@@ -59,7 +59,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceFileName(self):
         if self.sourceFileName is None:
             SpriteParticleRendererExt.sourceFileName = ConfigVariableString(
-                'particle-sprite-model', 'models/misc/smiley').value
+                'particle-sprite-model', 'models/misc/smiley').getValue()
         # Return instance copy of class variable
         return self.sourceFileName
 
@@ -70,7 +70,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
     def getSourceNodeName(self):
         if self.sourceNodeName is None:
             SpriteParticleRendererExt.sourceNodeName = ConfigVariableString(
-                'particle-sprite-node', '**/*').value
+                'particle-sprite-node', '**/*').getValue()
         # Return instance copy of class variable
         return self.sourceNodeName
 
