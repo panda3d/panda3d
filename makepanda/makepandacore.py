@@ -2204,6 +2204,10 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
 
         if not os.path.exists(py_fwx):
+            # Newer macOS versions use this scheme.
+            py_fwx = "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/" + version
+
+        if not os.path.exists(py_fwx):
             exit("Could not locate Python installation at %s" % (py_fwx))
 
         SDK["PYTHON"] = py_fwx + "/Headers"
@@ -2439,7 +2443,7 @@ def SdkLocateMacOSX(archs = []):
         # Prefer pre-10.14 for now so that we can keep building FMOD.
         sdk_versions += ["10.13", "10.12", "10.11", "10.10", "10.9"]
 
-    sdk_versions += ["11.3", "11.1", "11.0"]
+    sdk_versions += ["13.0", "12.3", "11.3", "11.1", "11.0"]
 
     if 'arm64' not in archs:
         sdk_versions += ["10.15", "10.14"]

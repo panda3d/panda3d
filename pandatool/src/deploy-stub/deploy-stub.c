@@ -34,6 +34,7 @@
 enum Flags {
   F_log_append = 1,
   F_log_filename_strftime = 2,
+  F_keep_docstrings = 4,
 };
 
 /* Define an exposed symbol where we store the offset to the module data. */
@@ -55,6 +56,13 @@ volatile struct {
   // The reason we initialize it to -1 is because otherwise, smart linkers may
   // end up putting it in the .bss section for zero-initialized data.
 } blobinfo = {(uint64_t)-1};
+
+
+#ifdef _WIN32
+// These placeholders can have their names changed by deploy-stub.
+__declspec(dllexport) DWORD SymbolPlaceholder___________________ = 0x00000001;
+__declspec(dllexport) DWORD SymbolPlaceholder__ = 0x00000001;
+#endif
 
 #ifdef MS_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
@@ -389,7 +397,11 @@ int Py_FrozenMain(int argc, char **argv)
     Py_NoUserSiteDirectory = 1;
 
 #if PY_VERSION_HEX >= 0x03020000
-    Py_OptimizeFlag = 2;
+    if (blobinfo.flags & F_keep_docstrings) {
+      Py_OptimizeFlag = 1;
+    } else {
+      Py_OptimizeFlag = 2;
+    }
 #endif
 
 #ifndef NDEBUG

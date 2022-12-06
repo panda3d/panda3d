@@ -49,6 +49,39 @@ def _parse_dict(input):
     return d
 
 
+def _register_python_loaders():
+    # We need this method so that we don't depend on direct.showbase.Loader.
+    if getattr(_register_python_loaders, 'done', None):
+        return
+
+    _register_python_loaders.done = True
+
+    registry = p3d.LoaderFileTypeRegistry.getGlobalPtr()
+
+    for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+        registry.register_deferred_type(entry_point)
+
+
+def _model_to_bam(_build_cmd, srcpath, dstpath):
+    if dstpath.endswith('.gz') or dstpath.endswith('.pz'):
+        dstpath = dstpath[:-3]
+    dstpath = dstpath + '.bam'
+
+    src_fn = p3d.Filename.from_os_specific(srcpath)
+    dst_fn = p3d.Filename.from_os_specific(dstpath)
+
+    _register_python_loaders()
+
+    loader = p3d.Loader.get_global_ptr()
+    options = p3d.LoaderOptions(p3d.LoaderOptions.LF_report_errors |
+                                p3d.LoaderOptions.LF_no_ram_cache)
+    node = loader.load_sync(src_fn, options)
+    if not node:
+        raise IOError('Failed to load model: %s' % (srcpath))
+
+    if not p3d.NodePath(node).write_bam_file(dst_fn):
+        raise IOError('Failed to write .bam file: %s' % (dstpath))
+
 
 def egg2bam(_build_cmd, srcpath, dstpath):
     if dstpath.endswith('.gz') or dstpath.endswith('.pz'):
@@ -277,13 +310,16 @@ class build_apps(setuptools.Command):
         self.log_filename = None
         self.log_filename_strftime = True
         self.log_append = False
+        self.prefer_discrete_gpu = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
+        self.strip_docstrings = True
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
         self.pypi_extra_indexes = [
             'https://archive.panda3d.org/thirdparty',
         ]
         self.file_handlers = {}
+        self.bam_model_extensions = []
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -443,6 +479,15 @@ class build_apps(setuptools.Command):
         self.exclude_dependencies = [p3d.GlobPattern(i) for i in self.exclude_dependencies]
         for glob in self.exclude_dependencies:
             glob.case_sensitive = False
+
+        # bam_model_extensions registers a 2bam handler for each given extension.
+        # They can override a default handler, but not a custom handler.
+        if self.bam_model_extensions:
+            for ext in self.bam_model_extensions:
+                ext = '.' + ext.lstrip('.')
+                assert ext not in self.file_handlers, \
+                    'Extension {} occurs in both file_handlers and bam_model_extensions!'.format(ext)
+                self.file_handlers[ext] = _model_to_bam
 
         tmp = self.default_file_handlers.copy()
         tmp.update(self.file_handlers)
@@ -625,11 +670,16 @@ class build_apps(setuptools.Command):
             self.icon_objects.get('*', None),
         )
 
-        if icon is not None:
+        if icon is not None or self.prefer_discrete_gpu:
             pef = pefile.PEFile()
             pef.open(runtime, 'r+')
-            pef.add_icon(icon)
-            pef.add_resource_section()
+            if icon is not None:
+                pef.add_icon(icon)
+                pef.add_resource_section()
+            if self.prefer_discrete_gpu:
+                if not pef.rename_export("SymbolPlaceholder___________________", "AmdPowerXpressRequestHighPerformance") or \
+                   not pef.rename_export("SymbolPlaceholder__", "NvOptimusEnablement"):
+                    self.warn("Failed to apply prefer_discrete_gpu, newer target Panda3D version may be required")
             pef.write_changes()
             pef.close()
 
@@ -944,7 +994,8 @@ class build_apps(setuptools.Command):
             freezer = FreezeTool.Freezer(
                 platform=platform,
                 path=path,
-                hiddenImports=self.hidden_imports
+                hiddenImports=self.hidden_imports,
+                optimize=2 if self.strip_docstrings else 1
             )
             freezer.addModule('__main__', filename=mainscript)
             if platform.startswith('android'):
@@ -1617,6 +1668,10 @@ class bdist_apps(setuptools.Command):
         'manylinux_2_24_ppc64': ['gztar'],
         'manylinux_2_24_ppc64le': ['gztar'],
         'manylinux_2_24_s390x': ['gztar'],
+        'manylinux_2_28_x86_64': ['gztar'],
+        'manylinux_2_28_aarch64': ['gztar'],
+        'manylinux_2_28_ppc64le': ['gztar'],
+        'manylinux_2_28_s390x': ['gztar'],
         'android': ['aab'],
         # Everything else defaults to ['zip']
     }

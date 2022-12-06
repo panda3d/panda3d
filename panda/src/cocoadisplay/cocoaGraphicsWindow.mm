@@ -43,11 +43,34 @@
 #import <OpenGL/OpenGL.h>
 #import <Carbon/Carbon.h>
 
+#include <sys/sysctl.h>
+
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
 #ifndef MAC_OS_X_VERSION_10_15
 #define NSAppKitVersionNumber10_14 1671
 #endif
+
+/**
+ * Returns true if this is an arm64-based mac.
+ */
+static int is_arm64_mac() {
+#ifdef __aarch64__
+  return 1;
+#elif defined(__x86_64__)
+  // Running in Rosetta 2?
+  static int ret = -1;
+  if (ret < 0) {
+    size_t size = sizeof(ret);
+    if (sysctlbyname("sysctl.proc_translated", &ret, &size, nullptr, 0) == -1) {
+      ret = 0;
+    }
+  }
+  return ret;
+#else
+  return 0;
+#endif
+}
 
 /**
  *
@@ -187,8 +210,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Set the drawable.
   if (_properties.get_fullscreen()) {
-    // Fullscreen.
-    CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
+    // Fullscreen.  Note that this call doesn't work with the newer
+    // Metal-based OpenGL drivers.
+    if (!is_arm64_mac()) {
+      CGLError err = CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
+      if (err != kCGLNoError) {
+        cocoadisplay_cat.error()
+          << "Failed call to CGLSetFullScreenOnDisplay with display mask "
+          << CGDisplayIDToOpenGLDisplayMask(_display) << ": " << CGLErrorString(err) << "\n";
+        return false;
+      }
+    }
   } else {
     // Although not recommended, it is technically possible to use the same
     // context with multiple different-sized windows.  If that happens, the
@@ -626,7 +658,7 @@ open_window() {
     }
 
     if (_properties.get_fullscreen()) {
-      [_window setLevel: NSMainMenuWindowLevel + 1];
+      [_window setLevel: CGShieldingWindowLevel()];
     } else {
       switch (_properties.get_z_order()) {
       case WindowProperties::Z_bottom:
@@ -824,7 +856,7 @@ set_properties_now(WindowProperties &properties) {
                 [_window setStyleMask:NSBorderlessWindowMask];
               }
               [_window makeFirstResponder:_view];
-              [_window setLevel:NSMainMenuWindowLevel+1];
+              [_window setLevel:CGShieldingWindowLevel()];
               [_window makeKeyAndOrderFront:nil];
             }
 
