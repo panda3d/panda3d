@@ -11623,6 +11623,9 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
     PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+#ifdef OPENGLES_1
+    determine_target_texture();
+#else
     if (has_fixed_function_pipeline() ||
         _current_shader == nullptr ||
         _current_shader == _default_shader) {
@@ -11634,6 +11637,7 @@ set_state_and_transform(const RenderState *target,
       _target_tex_gen = (const TexGenAttrib *)
         _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
     }
+#endif
     do_issue_texture();
 
     // Since the TexGen and TexMatrix states depend partly on the particular
