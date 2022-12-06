@@ -83,24 +83,6 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
         raise IOError('Failed to write .bam file: %s' % (dstpath))
 
 
-def egg2bam(_build_cmd, srcpath, dstpath):
-    if dstpath.endswith('.gz') or dstpath.endswith('.pz'):
-        dstpath = dstpath[:-3]
-    dstpath = dstpath + '.bam'
-    try:
-        subprocess.check_call([
-            'egg2bam',
-            '-o', dstpath,
-            '-pd', os.path.dirname(os.path.abspath(srcpath)),
-            '-ps', 'rel',
-            srcpath
-        ])
-    except FileNotFoundError:
-        raise RuntimeError('egg2bam failed: egg2bam was not found in the PATH')
-    except (subprocess.CalledProcessError, OSError) as err:
-        raise RuntimeError('egg2bam failed: {}'.format(err))
-    return dstpath
-
 macosx_binary_magics = (
     b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
     b'\xFE\xED\xFA\xCF', b'\xCF\xFA\xED\xFE',
@@ -276,7 +258,6 @@ class build_apps(setuptools.Command):
         ('platforms=', 'p', 'a list of platforms to build for'),
     ]
     default_file_handlers = {
-        '.egg': egg2bam,
     }
 
     def initialize_options(self):
@@ -319,7 +300,7 @@ class build_apps(setuptools.Command):
             'https://archive.panda3d.org/thirdparty',
         ]
         self.file_handlers = {}
-        self.bam_model_extensions = []
+        self.bam_model_extensions = ['.egg', '.gltf', '.glb']
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
