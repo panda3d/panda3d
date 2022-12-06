@@ -560,6 +560,8 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2014")
                 elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so"):
                     platform = platform.replace("linux", "manylinux_2_24")
+                elif os.path.isfile("/lib64/libc-2.28.so") and os.path.isfile('/etc/almalinux-release'):
+                    platform = platform.replace("linux", "manylinux_2_28")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
