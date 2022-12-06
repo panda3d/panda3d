@@ -219,6 +219,17 @@ set_word(size_t n, const Filename &value) {
 }
 
 /**
+ * Allows a ConfigVariableFilename object to be passed to any Python function
+ * that accepts an os.PathLike object.
+ *
+ * @since 1.10.13
+ */
+INLINE std::wstring ConfigVariableFilename::
+__fspath__() const {
+  return get_ref_value().to_os_specific_w();
+}
+
+/**
  * Returns the variable's value, as a reference into the config variable
  * itself.  This is the internal method that implements get_value(), which
  * returns a concrete.

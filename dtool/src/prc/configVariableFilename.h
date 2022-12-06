@@ -60,6 +60,8 @@ PUBLISHED:
   INLINE Filename get_word(size_t n) const;
   INLINE void set_word(size_t n, const Filename &value);
 
+  INLINE std::wstring __fspath__() const;
+
 private:
   void reload_cache();
   INLINE const Filename &get_ref_value() const;
