@@ -2259,6 +2259,10 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
 
         if not os.path.exists(py_fwx):
+            # Newer macOS versions use this scheme.
+            py_fwx = "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/" + version
+
+        if not os.path.exists(py_fwx):
             exit("Could not locate Python installation at %s" % (py_fwx))
 
         SDK["PYTHON"] = py_fwx + "/Headers"
@@ -2503,6 +2507,10 @@ def SdkLocateMacOSX(osxtarget = None, archs = []):
                 SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"
             elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"):
                 SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"
+            elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"):
+                SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+            elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX13.0.sdk"):
+                SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX13.0.sdk"
             else:
                 exit("Couldn't find any MacOSX SDK for macOS version %s!" % sdkname)
         SDK["OSXTARGET"] = osxtarget
