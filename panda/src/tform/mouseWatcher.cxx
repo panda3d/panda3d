@@ -724,19 +724,14 @@ clear_current_regions() {
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      old_region->exit_region(param);
-      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
-      if (_preferred_region == old_region) {
-        _preferred_region = nullptr;
-      }
+      without_region(old_region, param);
       ++old_ri;
     }
 
     _current_regions.clear();
 
     if (_preferred_region != nullptr) {
-      _preferred_region->exit_region(param);
-      throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+      exit_region(_preferred_region, param);
       _preferred_region = nullptr;
     }
   }
