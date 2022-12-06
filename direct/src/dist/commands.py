@@ -233,7 +233,10 @@ class build_apps(setuptools.Command):
             'macosx_10_6_x86_64',
             'win_amd64',
         ]
-        if sys.version_info >= (3, 10):
+        if sys.version_info >= (3, 11):
+            # manylinux2010 is not offered for Python 3.11 anymore
+            self.platforms[0] = 'manylinux2014_x86_64'
+        elif sys.version_info >= (3, 10):
             # manylinux1 is not offered for Python 3.10 anymore
             self.platforms[0] = 'manylinux2010_x86_64'
         if sys.version_info >= (3, 8):
@@ -1440,6 +1443,10 @@ class bdist_apps(setuptools.Command):
         'manylinux_2_24_ppc64': ['gztar'],
         'manylinux_2_24_ppc64le': ['gztar'],
         'manylinux_2_24_s390x': ['gztar'],
+        'manylinux_2_28_x86_64': ['gztar'],
+        'manylinux_2_28_aarch64': ['gztar'],
+        'manylinux_2_28_ppc64le': ['gztar'],
+        'manylinux_2_28_s390x': ['gztar'],
         # Everything else defaults to ['zip']
     }
 
