@@ -488,7 +488,9 @@ class build_apps(setuptools.Command):
         if platform.startswith('linux_'):
             # Also accept manylinux.
             arch = platform[6:]
-            if sys.version_info >= (3, 10):
+            if sys.version_info >= (3, 11):
+                pip_args += ['--platform', 'manylinux2014_' + arch]
+            elif sys.version_info >= (3, 10):
                 pip_args += ['--platform', 'manylinux2010_' + arch]
             else:
                 pip_args += ['--platform', 'manylinux1_' + arch]
