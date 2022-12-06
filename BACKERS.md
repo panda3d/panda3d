@@ -26,6 +26,7 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 * Brian Lach
 * Maxwell Dreytser
 * SureBet
+* Gyedo Jeon
 
 ## Backers
 
