@@ -250,6 +250,7 @@ class build_apps(setuptools.Command):
         self.log_filename = None
         self.log_filename_strftime = False
         self.log_append = False
+        self.prefer_discrete_gpu = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
@@ -516,11 +517,16 @@ class build_apps(setuptools.Command):
             self.icon_objects.get('*', None),
         )
 
-        if icon is not None:
+        if icon is not None or self.prefer_discrete_gpu:
             pef = pefile.PEFile()
             pef.open(runtime, 'r+')
-            pef.add_icon(icon)
-            pef.add_resource_section()
+            if icon is not None:
+                pef.add_icon(icon)
+                pef.add_resource_section()
+            if self.prefer_discrete_gpu:
+                if not pef.rename_export("SymbolPlaceholder___________________", "AmdPowerXpressRequestHighPerformance") or \
+                   not pef.rename_export("SymbolPlaceholder__", "NvOptimusEnablement"):
+                    self.warn("Failed to apply prefer_discrete_gpu, newer target Panda3D version may be required")
             pef.write_changes()
             pef.close()
 

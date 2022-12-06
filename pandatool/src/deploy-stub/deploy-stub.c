@@ -62,6 +62,13 @@ volatile struct {
   // end up putting it in the .bss section for zero-initialized data.
 } blobinfo = {(uint64_t)-1};
 
+
+#ifdef _WIN32
+// These placeholders can have their names changed by deploy-stub.
+__declspec(dllexport) DWORD SymbolPlaceholder___________________ = 0x00000001;
+__declspec(dllexport) DWORD SymbolPlaceholder__ = 0x00000001;
+#endif
+
 #ifdef MS_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
