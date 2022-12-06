@@ -794,7 +794,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None):
+                 platform = None, path=None, optimize=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -858,6 +858,11 @@ class Freezer:
         self.modules['doctest'] = self.ModuleDef('doctest', exclude = True)
 
         self.mf = None
+
+        if optimize is None or optimize < 0:
+            self.optimize = sys.flags.optimize
+        else:
+            self.optimize = optimize
 
         # Actually, make sure we know how to find all of the
         # already-imported modules.  (Some of them might do their own
@@ -1174,7 +1179,7 @@ class Freezer:
             else:
                 includes.append(mdef)
 
-        self.mf = PandaModuleFinder(excludes=list(excludeDict.keys()), suffixes=self.moduleSuffixes, path=self.path)
+        self.mf = PandaModuleFinder(excludes=list(excludeDict.keys()), suffixes=self.moduleSuffixes, path=self.path, optimize=self.optimize)
 
         # Attempt to import the explicit modules into the modulefinder.
 
@@ -1445,7 +1450,10 @@ class Freezer:
                 else:
                     filename += '.pyo'
                 if multifile.findSubfile(filename) < 0:
-                    code = compile('', moduleName, 'exec')
+                    if sys.version_info >= (3, 2):
+                        code = compile('', moduleName, 'exec', optimize=self.optimize)
+                    else:
+                        code = compile('', moduleName, 'exec')
                     self.__addPyc(multifile, filename, code, compressionLevel)
 
             moduleDirs[str] = True
@@ -1525,7 +1533,10 @@ class Freezer:
                 source = open(sourceFilename.toOsSpecific(), 'r').read()
                 if source and source[-1] != '\n':
                     source = source + '\n'
-                code = compile(source, str(sourceFilename), 'exec')
+                if sys.version_info >= (3, 2):
+                    code = compile(source, str(sourceFilename), 'exec', optimize=self.optimize)
+                else:
+                    code = compile(source, str(sourceFilename), 'exec')
 
         self.__addPyc(multifile, filename, code, compressionLevel)
 
@@ -1604,7 +1615,10 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it as builtin.
             if '.' in moduleName and self.linkExtensionModules:
-                code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec')
+                if sys.version_info >= (3, 2):
+                    code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=self.optimize)
+                else:
+                    code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec')
                 code = marshal.dumps(code)
                 mangledName = self.mangleName(moduleName)
                 moduleDefs.append(self.makeModuleDef(mangledName, code))
@@ -1881,7 +1895,7 @@ class Freezer:
                 else:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 if sys.version_info >= (3, 2):
-                    code = compile(code, moduleName, 'exec', optimize=2)
+                    code = compile(code, moduleName, 'exec', optimize=self.optimize)
                 else:
                     code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
@@ -1969,6 +1983,8 @@ class Freezer:
                 flags |= 1
             if log_filename_strftime:
                 flags |= 2
+            if self.optimize < 2:
+                flags |= 4 # keep_docstrings
 
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
@@ -2341,6 +2357,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         """
 
         self.suffixes = kw.pop('suffixes', imp.get_suffixes())
+        self.optimize = kw.pop('optimize', -1)
 
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
@@ -2446,7 +2463,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         if type is _PKG_NAMESPACE_DIRECTORY:
             m = self.add_module(fqname)
-            m.__code__ = compile('', '', 'exec')
+            if sys.version_info >= (3, 2):
+                m.__code__ = compile('', '', 'exec', optimize=self.optimize)
+            else:
+                m.__code__ = compile('', '', 'exec')
             m.__path__ = pathname
             return m
 
@@ -2458,7 +2478,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 code = fp.read()
 
             code += b'\n' if isinstance(code, bytes) else '\n'
-            co = compile(code, pathname, 'exec')
+            if sys.version_info >= (3, 2):
+                co = compile(code, pathname, 'exec', optimize=self.optimize)
+            else:
+                co = compile(code, pathname, 'exec')
         elif type == imp.PY_COMPILED:
             if sys.version_info >= (3, 7):
                 try:

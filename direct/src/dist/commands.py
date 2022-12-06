@@ -252,6 +252,7 @@ class build_apps(setuptools.Command):
         self.log_append = False
         self.prefer_discrete_gpu = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
+        self.strip_docstrings = True
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
         self.pypi_extra_indexes = [
@@ -776,7 +777,9 @@ class build_apps(setuptools.Command):
                 # Legacy handling for Tcl data files
                 site_py += SITE_PY_TKINTER_ADDENDUM
 
-            freezer = FreezeTool.Freezer(platform=platform, path=path)
+            optimize = 2 if self.strip_docstrings else 1
+
+            freezer = FreezeTool.Freezer(platform=platform, path=path, optimize=optimize)
             freezer.addModule('__main__', filename=mainscript)
             freezer.addModule('site', filename='site.py', text=site_py)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
