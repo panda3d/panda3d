@@ -1671,7 +1671,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_lost_keypresses) {
       resend_lost_keypresses();
     }
-    ReleaseCapture();
+    if (wparam == 0) {
+      ReleaseCapture();
+    }
     _input->button_up(MouseButton::button(0), get_message_time());
     return 0;
 
@@ -1679,7 +1681,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_lost_keypresses) {
       resend_lost_keypresses();
     }
-    ReleaseCapture();
+    if (wparam == 0) {
+      ReleaseCapture();
+    }
     _input->button_up(MouseButton::button(1), get_message_time());
     return 0;
 
@@ -1687,7 +1691,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_lost_keypresses) {
       resend_lost_keypresses();
     }
-    ReleaseCapture();
+    if (wparam == 0) {
+      ReleaseCapture();
+    }
     _input->button_up(MouseButton::button(2), get_message_time());
     return 0;
 
@@ -1696,7 +1702,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       if (_lost_keypresses) {
         resend_lost_keypresses();
       }
-      ReleaseCapture();
+      if (wparam == 0) {
+        ReleaseCapture();
+      }
       int whichButton = GET_XBUTTON_WPARAM(wparam);
       if (whichButton == XBUTTON1) {
         _input->button_up(MouseButton::button(3), get_message_time());
