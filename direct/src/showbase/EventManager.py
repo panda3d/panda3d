@@ -179,3 +179,6 @@ class EventManager:
         # since the task removal itself might also fire off an event.
         if self.eventQueue is not None:
             self.eventQueue.clear()
+
+    do_events = doEvents
+    process_event = processEvent
