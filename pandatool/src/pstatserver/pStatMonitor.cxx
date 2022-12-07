@@ -199,7 +199,10 @@ open_default_graphs() {
   size_t num_colors = scan.get_uint32();
   for (size_t i = 0; i < num_colors; ++i) {
     int key = scan.get_int32();
-    _colors[key].read_datagram(scan);
+    LRGBColor &color = _colors[key];
+    color[0] = scan.get_float32();
+    color[1] = scan.get_float32();
+    color[2] = scan.get_float32();
   }
 
   PStatGraph *graph;
@@ -297,7 +300,9 @@ save_default_graphs() const {
   dg.add_uint32((uint32_t)_colors.size());
   for (const auto &item : _colors) {
     dg.add_int32(item.first);
-    item.second.write_datagram(dg);
+    dg.add_float32(item.second[0]);
+    dg.add_float32(item.second[1]);
+    dg.add_float32(item.second[2]);
   }
 
   dg.add_uint16(_timelines.size());
@@ -654,7 +659,9 @@ write_datagram(Datagram &dg) const {
   dg.add_uint32((uint32_t)_colors.size());
   for (const auto &item : _colors) {
     dg.add_int32(item.first);
-    item.second.write_datagram(dg);
+    dg.add_float32(item.second[0]);
+    dg.add_float32(item.second[1]);
+    dg.add_float32(item.second[2]);
   }
 
   dg.add_uint16(_timelines.size());
@@ -704,7 +711,10 @@ read_datagram(DatagramIterator &scan) {
   size_t num_colors = scan.get_uint32();
   for (size_t i = 0; i < num_colors; ++i) {
     int key = scan.get_int32();
-    _colors[key].read_datagram(scan);
+    LRGBColor &color = _colors[key];
+    color[0] = scan.get_float32();
+    color[1] = scan.get_float32();
+    color[2] = scan.get_float32();
   }
 
   int num_collectors = client_data->get_num_collectors();
