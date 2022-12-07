@@ -33,12 +33,26 @@
 - (BOOL)applicationShouldTerminate:(NSApplication *)app {
   if (cocoadisplay_cat.is_debug()) {
     cocoadisplay_cat.debug()
-      << "Received applicationShouldTerminate, closing all Cocoa windows\n";
+      << "Received applicationShouldTerminate, requesting to close all Cocoa windows\n";
   }
-  // Call performClose on all the windows.  This should make ShowBase shut down.
+  // Ask all the windows whether they are OK to be closed.
+  bool should_close = true;
   for (NSWindow *window in [app windows]) {
-    [window performClose:nil];
+    if (![[window delegate] windowShouldClose:window]) {
+      should_close = false;
+    }
   }
+  if (should_close) {
+    if (cocoadisplay_cat.is_debug()) {
+      cocoadisplay_cat.debug()
+        << "No window objected to close request, closing all windows\n";
+    }
+    // If so (none of them fired a close request event), close them now.
+    for (NSWindow *window in [app windows]) {
+      [window close];
+    }
+  }
+  // Give the application a chance to run its own cleanup functions.
   return FALSE;
 }
 
