@@ -24,6 +24,7 @@ class GraphicsEngine;
 
 - (id) initWithEngine:(GraphicsEngine *)engine;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
+- (BOOL)applicationShouldTerminate:(NSApplication *)app;
 - (void)applicationWillTerminate:(NSNotification *)notification;
 
 @end
