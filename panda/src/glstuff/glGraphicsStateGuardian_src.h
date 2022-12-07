@@ -1161,8 +1161,6 @@ public:
     pvector<std::pair<GLuint, int> > _queries;
     pvector<GLint64> _latency_refs;
   };
-  GLint64 _gpu_reference_time = 0;
-  double _cpu_reference_time;
   pdeque<FrameTiming> _frame_timings;
   FrameTiming *_current_frame_timing = nullptr;
 #endif
