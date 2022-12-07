@@ -799,7 +799,7 @@ close_window() {
 
   if (_window != nil) {
     [_window close];
-    
+
     // Process events once more so any pending NSEvents are cleared. Not doing
     // this causes the window to stick around after calling [_window close].
     process_events();
