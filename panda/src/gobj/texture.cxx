@@ -10710,6 +10710,7 @@ CData() {
 Texture::CData::
 CData(const Texture::CData &copy) {
   _num_mipmap_levels_read = 0;
+  _render_to_texture = copy._render_to_texture;
 
   do_assign(&copy);
 
