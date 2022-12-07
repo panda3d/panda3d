@@ -211,17 +211,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   cocoagsg->lock_context();
 
   // Set the drawable.
-  if (_properties.get_fullscreen()) {
+  if (_properties.get_fullscreen() && !is_arm64_mac()) {
     // Fullscreen.  Note that this call doesn't work with the newer
     // Metal-based OpenGL drivers.
-    if (!is_arm64_mac()) {
-      CGLError err = CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
-      if (err != kCGLNoError) {
-        cocoadisplay_cat.error()
-          << "Failed call to CGLSetFullScreenOnDisplay with display mask "
-          << CGDisplayIDToOpenGLDisplayMask(_display) << ": " << CGLErrorString(err) << "\n";
-        return false;
-      }
+    CGLError err = CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
+    if (err != kCGLNoError) {
+      cocoadisplay_cat.error()
+        << "Failed call to CGLSetFullScreenOnDisplay with display mask "
+        << CGDisplayIDToOpenGLDisplayMask(_display) << ": " << CGLErrorString(err) << "\n";
+      return false;
     }
   } else {
     // Although not recommended, it is technically possible to use the same
