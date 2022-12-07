@@ -725,12 +725,15 @@ register_window_class(HINSTANCE application) {
     return;
   }
 
+  HMODULE imageres = LoadLibraryExA("imageres.dll", 0, LOAD_LIBRARY_AS_DATAFILE);
+
   WNDCLASS wc;
 
   ZeroMemory(&wc, sizeof(WNDCLASS));
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
+  wc.hIcon = LoadIcon(imageres, MAKEINTRESOURCE(150));
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;
