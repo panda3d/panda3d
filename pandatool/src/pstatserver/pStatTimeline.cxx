@@ -230,6 +230,18 @@ update_bars(int thread_index, int frame_number) {
            << format_number(delta, GBU_show_units | GBU_ms)
            << " in frame " << frame_number << " of thread "
            << thread_index << "\n";
+
+      // Move all bars after this frame to the right by this amount.
+      for (ThreadRow &thread_row : _threads) {
+        for (Row &row : thread_row._rows) {
+          for (ColorBar &bar : row) {
+            if (bar._frame_number > frame_number) {
+              bar._start += delta;
+              bar._end += delta;
+            }
+          }
+        }
+      }
     }
     prev = time;
 
