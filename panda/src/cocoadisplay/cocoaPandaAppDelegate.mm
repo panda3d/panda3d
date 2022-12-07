@@ -13,6 +13,7 @@
 
 #import "cocoaPandaAppDelegate.h"
 #include "graphicsEngine.h"
+#include "config_cocoadisplay.h"
 
 @implementation CocoaPandaAppDelegate
 

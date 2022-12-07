@@ -12,6 +12,7 @@
  */
 
 #import "cocoaPandaWindowDelegate.h"
+#include "config_cocoadisplay.h"
 
 @implementation CocoaPandaWindowDelegate
 - (id) initWithGraphicsWindow:(CocoaGraphicsWindow*)window {
