@@ -2,6 +2,8 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.Job import Job
 from direct.showbase.PythonUtil import getBase
+from direct.showbase.MessengerGlobal import messenger
+
 
 class JobManager:
     """

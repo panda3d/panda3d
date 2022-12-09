@@ -3,11 +3,12 @@
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import fastRepr
-from direct.showbase.PythonUtil import AlphabetCounter
+from direct.showbase.PythonUtil import fastRepr, AlphabetCounter, itype
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+from panda3d.core import ConfigVariableBool
 import gc
-import types
 import sys
 
 GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
@@ -215,7 +216,7 @@ class GarbageReport(Job):
                     startIndex = 0
                     # + 1 to include a reference back to the first object
                     endIndex = numObjs + 1
-                    if type(objs[-1]) is types.InstanceType and type(objs[0]) is dict:
+                    if type(objs[0]) is dict and hasattr(objs[-1], '__dict__'):
                         startIndex -= 1
                         endIndex -= 1
 
@@ -224,7 +225,7 @@ class GarbageReport(Job):
                             numToSkip -= 1
                             continue
                         obj = objs[index]
-                        if type(obj) is types.InstanceType:
+                        if hasattr(obj, '__dict__'):
                             if not objAlreadyRepresented:
                                 cycleBySyntax += '%s' % obj.__class__.__name__
                             cycleBySyntax += '.'
@@ -309,7 +310,7 @@ class GarbageReport(Job):
             while n > 0:
                 yield None
                 digits += 1
-                n /= 10
+                n = n // 10
             digits = digits
             format = '%0' + '%s' % digits + 'i:%s \t%s'
 
@@ -564,7 +565,7 @@ class _CFGLGlobals:
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
-    if (numGarbage > 0 and config.GetBool('auto-garbage-logging', 0)):
+    if numGarbage > 0 and ConfigVariableBool('auto-garbage-logging', False):
         if (numGarbage != _CFGLGlobals.LastNumGarbage):
             print("")
             gr = GarbageReport('found garbage', threaded=False, collect=False)
@@ -574,7 +575,7 @@ def checkForGarbageLeaks():
             messenger.send(GarbageCycleCountAnnounceEvent, [gr.getDesc2numDict()])
             gr.destroy()
         notify = directNotify.newCategory("GarbageDetect")
-        if config.GetBool('allow-garbage-cycles', 1):
+        if ConfigVariableBool('allow-garbage-cycles', True):
             func = notify.warning
         else:
             func = notify.error
