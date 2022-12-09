@@ -35,7 +35,11 @@ PUBLISHED:
   Notify();
   ~Notify();
 
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
+  EXTEND void set_ostream_ptr(PyObject *ostream_ptr, bool delete_later);
+#else
   void set_ostream_ptr(std::ostream *ostream_ptr, bool delete_later);
+#endif
   std::ostream *get_ostream_ptr() const;
 
   typedef bool AssertHandler(const char *expression, int line,
