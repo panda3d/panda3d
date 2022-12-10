@@ -39,6 +39,7 @@ public:
     T_hello,
     T_define_collectors,
     T_define_threads,
+    T_expire_thread,
     T_invalid
   };
 

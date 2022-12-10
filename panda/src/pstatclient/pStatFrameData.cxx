@@ -106,11 +106,16 @@ write_datagram(Datagram &destination, PStatClient *client) const {
  * Extracts the FrameData definition from the datagram.
  */
 void PStatFrameData::
-read_datagram(DatagramIterator &source, PStatClientVersion *) {
+read_datagram(DatagramIterator &source, PStatClientVersion *version) {
   clear();
 
   {
-    size_t time_size = source.get_uint16();
+    size_t time_size;
+    if (version->is_at_least(3, 2)) {
+      time_size = source.get_uint32();
+    } else {
+      time_size = source.get_uint16();
+    }
     _time_data.resize(time_size);
     for (DataPoint &dp : _time_data) {
       nassertv(source.get_remaining_size() > 0);
@@ -120,7 +125,12 @@ read_datagram(DatagramIterator &source, PStatClientVersion *) {
   }
 
   {
-    size_t level_size = source.get_uint16();
+    size_t level_size;
+    if (version->is_at_least(3, 2)) {
+      level_size = source.get_uint32();
+    } else {
+      level_size = source.get_uint16();
+    }
     _level_data.resize(level_size);
     for (DataPoint &dp : _level_data) {
       nassertv(source.get_remaining_size() > 0);
