@@ -31,6 +31,7 @@ static const int current_pstat_minor_version = 0;
 // Incremented to 2.1 on 5/21/01 to add support for TCP frame data.
 // Incremented to 3.0 on 4/28/05 to bump TCP headers to 32 bits.
 // Incremented to 3.1 on 11/29/22 to support nested start/stop pairs.
+// Incremented to 3.2 on 12/10/22 to use 32-bit data counts, T_expire_thread.
 
 /**
  * Returns the current major version number of the PStats protocol.  This is

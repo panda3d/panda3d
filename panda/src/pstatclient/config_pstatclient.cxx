@@ -33,7 +33,8 @@ ConfigVariableDouble pstats_max_rate
 ("pstats-max-rate", 1000.0,
  PRC_DESC("The maximum number of packets per second, per thread, to send "
           "to the remote PStats server.  A packet is defined as a single "
-          "UDP packet, or each 1024 bytes of a TCP message."));
+          "UDP packet, or each 1024 bytes of a TCP message.  Set this to a "
+          "negative number to disable the limit."));
 
 ConfigVariableBool pstats_threaded_write
 ("pstats-threaded-write", true,

@@ -287,7 +287,7 @@ PUBLISHED:
   // bounding volumes.
   void set_bounds_type(BoundingVolume::BoundsType bounds_type);
   BoundingVolume::BoundsType get_bounds_type() const;
-  MAKE_PROPERTY(bounds_type, get_bounds_type);
+  MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
   INLINE void clear_bounds();
