@@ -17,11 +17,10 @@
  */
 INLINE CollisionBox::
 CollisionBox(const LPoint3 &center, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) :
-  _center(center), _x(x), _y(y), _z(z)
+  _center(center)
 {
-  _min = LPoint3(_center.get_x() - _x, _center.get_y() - _y, _center.get_z() - _z);
-  _max = LPoint3(_center.get_x() + _x, _center.get_y() + _y, _center.get_z() + _z);
-  _radius = sqrt(_x*_x + _y*_y + _z*_z);
+  _min = LPoint3(_center.get_x() - x, _center.get_y() - y, _center.get_z() - z);
+  _max = LPoint3(_center.get_x() + x, _center.get_y() + y, _center.get_z() + z);
   for(int v = 0; v < 8; v++)
     _vertex[v] = get_point_aabb(v);
   for(int p = 0; p < 6; p++)
@@ -37,10 +36,6 @@ CollisionBox(const LPoint3 &min, const LPoint3 &max) :
   _min(min), _max(max)
 {
   _center = (_min + _max) / 2;
-  _x = _center.get_x() - _min.get_x();
-  _y = _center.get_y() - _min.get_y();
-  _z = _center.get_z() - _min.get_z();
-  _radius = sqrt(_x*_x + _y*_y + _z*_z);
   for(int v = 0; v < 8; v++)
     _vertex[v] = get_point_aabb(v);
   for(int p = 0; p < 6; p++)
@@ -63,11 +58,7 @@ CollisionBox(const CollisionBox &copy) :
   CollisionSolid(copy),
   _center(copy._center),
   _min(copy._min),
-  _max(copy._max),
-  _x(copy._x ),
-  _y(copy._y ),
-  _z(copy._z ),
-  _radius(copy._radius )
+  _max(copy._max)
 {
   for(int v = 0; v < 8; v++)
     _vertex[v] = copy._vertex[v];
@@ -151,7 +142,6 @@ get_point(int n) const {
   nassertr(n >= 0 && n < 8, LPoint3::zero());
   return _vertex[n];
 }
-
 
 /**
  * Returns the nth vertex of the Axis Aligned Bounding Box.
@@ -244,20 +234,6 @@ calc_to_3d_mat(LMatrix4 &to_3d_mat,int plane) const {
 }
 
 /**
- * Fills the indicated matrix with the appropriate rotation transform to move
- * points from the 2-d plane into the 3-d (X, 0, Z) plane.
- *
- * This is essentially similar to calc_to_3d_mat, except that the matrix is
- * rederived from whatever is stored in _to_2d_mat, guaranteeing that it will
- * match whatever algorithm produced that one, even if it was produced on a
- * different machine with different numerical precision.
- */
-INLINE void CollisionBox::
-rederive_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const {
-  to_3d_mat.invert_from(_to_2d_mat[plane]);
-}
-
-/**
  * Extrude the indicated point in the polygon's 2-d definition space back into
  * 3-d coordinates.
  */
@@ -294,12 +270,4 @@ INLINE void CollisionBox::PointDef::
 operator = (const CollisionBox::PointDef &copy) {
   _p = copy._p;
   _v = copy._v;
-}
-
-/**
- * returns the points that form the nth plane
- */
-INLINE CollisionBox::Points CollisionBox::
-get_plane_points(int n) {
-  return _points[n];
 }

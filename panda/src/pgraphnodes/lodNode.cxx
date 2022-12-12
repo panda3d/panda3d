@@ -146,7 +146,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PN_stdfloat lod_scale = cdata->_lod_scale *
     trav->get_scene()->get_camera_node()->get_lod_scale();
 
-  int num_children = std::min(get_num_children(), (int)cdata->_switch_vector.size());
+  Children children = get_children();
+  int num_children = std::min(children.get_num_children(), cdata->_switch_vector.size());
 
   if (data._instances == nullptr || cdata->_got_force_switch) {
     LPoint3 center = cdata->_center * rel_transform->get_mat();
@@ -163,11 +164,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
       if (in_range) {
         // This switch level is in range.  Draw its children.
-        PandaNode *child = get_child(index);
-        if (child != nullptr) {
-          CullTraverserData next_data(data, child);
-          trav->traverse(next_data);
-        }
+        const PandaNode::DownConnection &child = children.get_child_connection(index);
+        trav->traverse_down(data, child);
       }
     }
   }
@@ -193,12 +191,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       CPT(InstanceList) instances = data._instances->without(in_range[index]);
       if (!instances->empty()) {
         // At least one instance is visible in this switch level.
-        PandaNode *child = get_child(index);
-        if (child != nullptr) {
-          CullTraverserData next_data(data, child);
-          next_data._instances = instances;
-          trav->traverse(next_data);
-        }
+        const PandaNode::DownConnection &child = children.get_child_connection(index);
+        trav->traverse_down(data, child);
       }
     }
   }
@@ -435,26 +429,23 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
       if (in_range) {
         // This switch level is in range.  Draw its children in the funny
         // wireframe mode.
-        if (index < get_num_children()) {
-          PandaNode *child = get_child(index);
-          if (child != nullptr) {
-            CullTraverserData next_data3(data, child);
-            next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
-            trav->traverse(next_data3);
-          }
+        Children children = get_children();
+        if ((size_t)index < children.get_num_children()) {
+          const PandaNode::DownConnection &child = children.get_child_connection(index);
+          trav->traverse_down(data, child, data._state->compose(sw.get_viz_model_state()));
         }
 
         // And draw the spindle in this color.
-        CullTraverserData next_data2(data, sw.get_spindle_viz());
-        next_data2.apply_transform(viz_transform);
-        trav->traverse(next_data2);
+        //CullTraverserData next_data2(data, sw.get_spindle_viz());
+        //next_data2.apply_transform(viz_transform);
+        //trav->traverse(next_data2);
       }
 
       // Draw the rings for this switch level.  We do this after we have drawn
       // the geometry and the spindle.
-      CullTraverserData next_data(data, sw.get_ring_viz());
-      next_data.apply_transform(viz_transform);
-      trav->traverse(next_data);
+      //CullTraverserData next_data(data, sw.get_ring_viz());
+      //next_data.apply_transform(viz_transform);
+      //trav->traverse(next_data);
     }
   }
 
@@ -854,7 +845,7 @@ compute_ring_viz() {
   // for the inner edge.
   static const PN_stdfloat edge_ratio = 0.1;  // ratio of edge height to diameter.
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_ring", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.
@@ -978,7 +969,7 @@ compute_spindle_viz() {
   static const int num_slices = 10;
   static const int num_rings = 10;
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_spindle", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.

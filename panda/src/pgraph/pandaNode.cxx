@@ -27,6 +27,8 @@
 #include "config_mathutil.h"
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
+#include "decalEffect.h"
+#include "showBoundsEffect.h"
 
 using std::ostream;
 using std::ostringstream;
@@ -40,10 +42,9 @@ TypeHandle PandaNode::BamReaderAuxDataDown::_type_handle;
 
 PandaNode::SceneRootFunc *PandaNode::_scene_root_func;
 
-PandaNodeChain PandaNode::_dirty_prev_transforms("_dirty_prev_transforms");
+UpdateSeq PandaNode::_reset_prev_transform_seq;
 DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 
-PStatCollector PandaNode::_reset_prev_pcollector("App:Collisions:Reset");
 PStatCollector PandaNode::_update_bounds_pcollector("*:Bounds");
 
 TypeHandle PandaNode::_type_handle;
@@ -76,7 +77,7 @@ PandaNode::
 PandaNode(const string &name) :
   Namable(name),
   _paths_lock("PandaNode::_paths_lock"),
-  _dirty_prev_transform(false)
+  _prev_transform_valid(_reset_prev_transform_seq)
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
@@ -96,12 +97,6 @@ PandaNode::
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
       << "Destructing " << (void *)this << ", " << get_name() << "\n";
-  }
-
-  if (_dirty_prev_transform) {
-    // Need to have this held before we grab any other locks.
-    LightMutexHolder holder(_dirty_prev_transforms._lock);
-    do_clear_dirty_prev_transform();
   }
 
   // We shouldn't have any parents left by the time we destruct, or there's a
@@ -131,7 +126,7 @@ PandaNode(const PandaNode &copy) :
   TypedWritableReferenceCount(copy),
   Namable(copy),
   _paths_lock("PandaNode::_paths_lock"),
-  _dirty_prev_transform(false),
+  _prev_transform_valid(_reset_prev_transform_seq),
   _python_tag_data(copy._python_tag_data),
   _unexpected_change_flags(0)
 {
@@ -143,18 +138,16 @@ PandaNode(const PandaNode &copy) :
   MemoryUsage::update_type(this, this);
 #endif
 
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
   // Copy the other node's state.
   {
     CDReader copy_cdata(copy._cycler);
     CDWriter cdata(_cycler, true);
     cdata->_state = copy_cdata->_state;
     cdata->_transform = copy_cdata->_transform;
-    cdata->_prev_transform = copy_cdata->_prev_transform;
-    if (cdata->_transform != cdata->_prev_transform) {
-      do_set_dirty_prev_transform();
+    if (copy._prev_transform_valid == _reset_prev_transform_seq) {
+      cdata->_prev_transform = copy_cdata->_prev_transform;
+    } else {
+      cdata->_prev_transform = copy_cdata->_transform;
     }
 
     cdata->_effects = copy_cdata->_effects;
@@ -389,46 +382,6 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 
 /**
  * Should be overridden by derived classes to return true if this kind of node
- * has some restrictions on the set of children that should be rendered.  Node
- * with this property include LODNodes, SwitchNodes, and SequenceNodes.
- *
- * If this function returns true, get_first_visible_child() and
- * get_next_visible_child() will be called to walk through the list of
- * children during cull, instead of iterating through the entire list.  This
- * method is called after cull_callback(), so cull_callback() may be
- * responsible for the decisions as to which children are visible at the
- * moment.
- */
-bool PandaNode::
-has_selective_visibility() const {
-  return false;
-}
-
-/**
- * Returns the index number of the first visible child of this node, or a
- * number >= get_num_children() if there are no visible children of this node.
- * This is called during the cull traversal, but only if
- * has_selective_visibility() has already returned true.  See
- * has_selective_visibility().
- */
-int PandaNode::
-get_first_visible_child() const {
-  return 0;
-}
-
-/**
- * Returns the index number of the next visible child of this node following
- * the indicated child, or a number >= get_num_children() if there are no more
- * visible children of this node.  See has_selective_visibility() and
- * get_first_visible_child().
- */
-int PandaNode::
-get_next_visible_child(int n) const {
-  return n + 1;
-}
-
-/**
- * Should be overridden by derived classes to return true if this kind of node
  * has the special property that just one of its children is visible at any
  * given time, and furthermore that the particular visible child can be
  * determined without reference to any external information (such as a
@@ -460,7 +413,8 @@ get_visible_child() const {
  */
 bool PandaNode::
 is_renderable() const {
-  return false;
+  CDReader cdata(_cycler);
+  return (cdata->_fancy_bits & FB_renderable) != 0;
 }
 
 /**
@@ -1003,7 +957,15 @@ set_effect(const RenderEffect *effect) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->add_effect(effect);
+
     cdata->set_fancy_bit(FB_effects, true);
+    if (effect->get_type() == DecalEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_decal, true);
+    }
+    else if (effect->get_type() == ShowBoundsEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_show_bounds, true);
+      cdata->set_fancy_bit(FB_show_tight_bounds, ((const ShowBoundsEffect *)effect)->get_tight());
+    }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1018,7 +980,14 @@ clear_effect(TypeHandle type) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = cdata->_effects->remove_effect(type);
+
     cdata->set_fancy_bit(FB_effects, !cdata->_effects->is_empty());
+    if (type == DecalEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_decal, false);
+    }
+    else if (type == ShowBoundsEffect::get_class_type()) {
+      cdata->set_fancy_bit(FB_show_bounds | FB_show_tight_bounds, false);
+    }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1067,6 +1036,9 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_effects = effects;
     cdata->set_fancy_bit(FB_effects, !effects->is_empty());
+    cdata->set_fancy_bit(FB_decal, effects->has_decal());
+    cdata->set_fancy_bit(FB_show_bounds, effects->has_show_bounds());
+    cdata->set_fancy_bit(FB_show_tight_bounds, effects->has_show_tight_bounds());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bam_modified();
@@ -1080,24 +1052,23 @@ void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
   nassertv(!transform->is_invalid());
 
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
   // Apply this operation to the current stage as well as to all upstream
   // stages.
   bool any_changed = false;
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     if (cdata->_transform != transform) {
+      if (pipeline_stage == 0) {
+        // Back up the previous transform.
+        if (_prev_transform_valid != _reset_prev_transform_seq) {
+          cdata->_prev_transform = std::move(cdata->_transform);
+          _prev_transform_valid = _reset_prev_transform_seq;
+        }
+      }
+
       cdata->_transform = transform;
       cdata->set_fancy_bit(FB_transform, !transform->is_identity());
       any_changed = true;
-
-      if (pipeline_stage == 0) {
-        if (cdata->_transform != cdata->_prev_transform) {
-          do_set_dirty_prev_transform();
-        }
-      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1118,20 +1089,13 @@ void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
   nassertv(!transform->is_invalid());
 
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
   // Apply this operation to the current stage as well as to all upstream
   // stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     cdata->_prev_transform = transform;
     if (pipeline_stage == 0) {
-      if (cdata->_transform != cdata->_prev_transform) {
-        do_set_dirty_prev_transform();
-      } else {
-        do_clear_dirty_prev_transform();
-      }
+      _prev_transform_valid = _reset_prev_transform_seq;
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1145,10 +1109,6 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
  */
 void PandaNode::
 reset_prev_transform(Thread *current_thread) {
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-  do_clear_dirty_prev_transform();
-
   // Apply this operation to the current stage as well as to all upstream
   // stages.
 
@@ -1157,41 +1117,22 @@ reset_prev_transform(Thread *current_thread) {
     cdata->_prev_transform = cdata->_transform;
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
-  mark_bam_modified();
 }
 
 /**
- * Visits all nodes in the world with the _dirty_prev_transform flag--that is,
- * all nodes whose _prev_transform is different from the _transform in
- * pipeline stage 0--and resets the _prev_transform to be the same as
- * _transform.
+ * Makes sure that all nodes reset their prev_transform value to be the same as
+ * their transform value.  This should be called at the start of each frame.
  */
 void PandaNode::
 reset_all_prev_transform(Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
 
-  PStatTimer timer(_reset_prev_pcollector, current_thread);
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
-  LinkedListNode *list_node = _dirty_prev_transforms._next;
-  while (list_node != &_dirty_prev_transforms) {
-    PandaNode *panda_node = (PandaNode *)list_node;
-    nassertv(panda_node->_dirty_prev_transform);
-    panda_node->_dirty_prev_transform = false;
-
-    CDStageWriter cdata(panda_node->_cycler, 0, current_thread);
-    cdata->_prev_transform = cdata->_transform;
-
-    list_node = panda_node->_next;
-#ifndef NDEBUG
-    panda_node->_prev = nullptr;
-    panda_node->_next = nullptr;
-#endif  // NDEBUG
-    panda_node->mark_bam_modified();
-  }
-
-  _dirty_prev_transforms._prev = &_dirty_prev_transforms;
-  _dirty_prev_transforms._next = &_dirty_prev_transforms;
+  // Rather than keeping a linked list of all nodes that have changed their
+  // transform, we simply increment this counter.  All the nodes compare this
+  // value to their own _prev_transform_valid value, and if it's different,
+  // they should disregard their _prev_transform field and assume it's the same
+  // as their _transform.
+  ++_reset_prev_transform_seq;
 }
 
 /**
@@ -1325,7 +1266,7 @@ compare_tags(const PandaNode *other) const {
       return cmp;
     }
 
-    cmp = strcmp(a_data.get_key(ai).c_str(), b_data.get_key(bi).c_str());
+    cmp = strcmp(a_data.get_data(ai).c_str(), b_data.get_data(bi).c_str());
     if (cmp != 0) {
       return cmp;
     }
@@ -1364,9 +1305,6 @@ copy_all_properties(PandaNode *other) {
     return;
   }
 
-  // Need to have this held before we grab any other locks.
-  LightMutexHolder holder(_dirty_prev_transforms._lock);
-
   bool any_transform_changed = false;
   bool any_state_changed = false;
   bool any_draw_mask_changed = false;
@@ -1387,7 +1325,11 @@ copy_all_properties(PandaNode *other) {
     }
 
     cdataw->_transform = cdatar->_transform;
-    cdataw->_prev_transform = cdatar->_prev_transform;
+    if (other->_prev_transform_valid == _reset_prev_transform_seq) {
+      cdataw->_prev_transform = cdatar->_prev_transform;
+    } else {
+      cdataw->_prev_transform = cdatar->_transform;
+    }
     cdataw->_state = cdatar->_state;
     cdataw->_effects = cdatar->_effects;
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
@@ -1402,15 +1344,14 @@ copy_all_properties(PandaNode *other) {
     }
 
     static const int change_bits = (FB_transform | FB_state | FB_effects |
-                                    FB_tag | FB_draw_mask);
+                                    FB_tag | FB_draw_mask | FB_decal |
+                                    FB_show_bounds | FB_show_tight_bounds);
     cdataw->_fancy_bits =
       (cdataw->_fancy_bits & ~change_bits) |
       (cdatar->_fancy_bits & change_bits);
 
     if (pipeline_stage == 0) {
-      if (cdataw->_transform != cdataw->_prev_transform) {
-        do_set_dirty_prev_transform();
-      }
+      _prev_transform_valid = _reset_prev_transform_seq;
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -1917,16 +1858,6 @@ set_bounds(const BoundingVolume *volume) {
     mark_bam_modified();
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
-}
-
-/**
- * Deprecated.  Use set_bounds() instead.
- */
-void PandaNode::
-set_bound(const BoundingVolume *volume) {
-  pgraph_cat.warning()
-    << "Deprecated PandaNode::set_bound() called.  Use set_bounds() instead.\n";
-  set_bounds(volume);
 }
 
 /**
@@ -2537,6 +2468,24 @@ disable_cull_callback() {
 }
 
 /**
+ * Called by a derived class to indicate that there is some value to visiting
+ * this particular node during the cull traversal for any camera.  This will be
+ * used to optimize the result of get_net_draw_show_mask(), so that any subtrees
+ * that contain only nodes for which is_renderable() is false need not be
+ * visited.  It also indicates that add_for_draw() should be called if the
+ * object is determined to be in view of the camera.
+ */
+void PandaNode::
+set_renderable() {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->set_fancy_bit(FB_renderable, true);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+/**
  * The private implementation of remove_child(), for a particular pipeline
  * stage.
  */
@@ -2951,11 +2900,21 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
   // First, walk through the list of NodePathComponents we already have on the
   // child, looking for one that already exists, referencing the indicated
   // parent component.
-  Paths::const_iterator pi;
-  for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
-    if ((*pi)->get_next(pipeline_stage, current_thread) == parent) {
+  for (NodePathComponent *child : child_node->_paths) {
+    if (child->get_next(pipeline_stage, current_thread) == parent) {
       // If we already have such a component, just return it.
-      return (*pi);
+      // But before we do, we have to make sure it's not in the middle of being
+      // destructed.
+#ifdef HAVE_THREADS
+      if (child->ref_if_nonzero()) {
+        PT(NodePathComponent) result;
+        result.cheat() = child;
+        return result;
+      }
+#else
+      // If we're not building with threading, increment as normal.
+      return child;
+#endif
     }
   }
 
@@ -2993,11 +2952,21 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
 
   // Walk through the list of NodePathComponents we already have on the child,
   // looking for one that already exists as a top node.
-  Paths::const_iterator pi;
-  for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
-    if ((*pi)->is_top_node(pipeline_stage, current_thread)) {
+  for (NodePathComponent *child : child_node->_paths) {
+    if (child->is_top_node(pipeline_stage, current_thread)) {
       // If we already have such a component, just return it.
-      return (*pi);
+      // But before we do, we have to make sure it's not in the middle of being
+      // destructed.
+#ifdef HAVE_THREADS
+      if (child->ref_if_nonzero()) {
+        PT(NodePathComponent) result;
+        result.cheat() = child;
+        return result;
+      }
+#else
+      // If we're not building with threading, increment as normal.
+      return child;
+#endif
     }
   }
 
@@ -3272,7 +3241,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     // Start with a clean slate.
     CollideMask net_collide_mask = cdata->_into_collide_mask;
     DrawMask net_draw_control_mask, net_draw_show_mask;
-    bool renderable = is_renderable();
+    bool renderable = (cdata->_fancy_bits & FB_renderable) != 0;
 
     if (renderable) {
       // If this node is itself renderable, it contributes to the net draw
@@ -3292,16 +3261,20 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       off_clip_planes = ClipPlaneAttrib::make();
     }
 
-    // Also get the list of the node's children.
-    Children children(cdata);
-
-    int num_vertices = cdata->_internal_vertices;
+    // Also get the list of the node's children.  When the cdataw destructs, it
+    // will also release the lock, since we've got all the data we need from the
+    // node.
+    PT(Down) down;
+    {
+      CDStageWriter cdataw(_cycler, pipeline_stage, cdata);
+      down = cdataw->modify_down();
+    }
 
     // Now that we've got all the data we need from the node, we can release
     // the lock.
-    _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
+    //_cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
-    int num_children = children.get_num_children();
+    int num_children = down->size();
 
     // We need to keep references to the bounding volumes, since in a threaded
     // environment the pointers might go away while we're working (since we're
@@ -3332,9 +3305,11 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     }
 
     // Now expand those contents to include all of our children.
+    int child_vertices = 0;
 
     for (int i = 0; i < num_children; ++i) {
-      PandaNode *child = children.get_child(i);
+      DownConnection &connection = (*down)[i];
+      PandaNode *child = connection.get_child();
 
       const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
 
@@ -3348,7 +3323,9 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         // Child needs update.
         CDStageWriter child_cdataw = child->update_cached(update_bounds, pipeline_stage, child_cdata);
 
-        net_collide_mask |= child_cdataw->_net_collide_mask;
+        CollideMask child_collide_mask = child_cdataw->_net_collide_mask;
+        net_collide_mask |= child_collide_mask;
+        connection._net_collide_mask = child_collide_mask;
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
@@ -3424,12 +3401,19 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
           }
-          num_vertices += child_cdataw->_nested_vertices;
+          child_vertices += child_cdataw->_nested_vertices;
+
+          connection._external_bounds = child_cdataw->_external_bounds->as_geometric_bounding_volume();
         }
+
+        connection._net_draw_control_mask = child_control_mask;
+        connection._net_draw_show_mask = child_show_mask;
 
       } else {
         // Child is good.
-        net_collide_mask |= child_cdata->_net_collide_mask;
+        CollideMask child_collide_mask = child_cdata->_net_collide_mask;
+        net_collide_mask |= child_collide_mask;
+        connection._net_collide_mask = child_collide_mask;
 
         // See comments in similar block above.
         if (drawmask_cat.is_debug()) {
@@ -3476,8 +3460,13 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
           }
-          num_vertices += child_cdata->_nested_vertices;
+          child_vertices += child_cdata->_nested_vertices;
+
+          connection._external_bounds = child_cdata->_external_bounds->as_geometric_bounding_volume();
         }
+
+        connection._net_draw_control_mask = child_control_mask;
+        connection._net_draw_show_mask = child_show_mask;
       }
     }
 
@@ -3526,7 +3515,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         cdataw->_off_clip_planes = off_clip_planes;
 
         if (update_bounds) {
-          cdataw->_nested_vertices = num_vertices;
+          cdataw->_nested_vertices = cdataw->_internal_vertices + child_vertices;
 
           BoundingVolume::BoundsType btype = cdataw->_bounds_type;
           if (btype == BoundingVolume::BT_default) {
@@ -3865,6 +3854,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   set_fancy_bit(FB_state, !_state->is_empty());
   set_fancy_bit(FB_effects, !_effects->is_empty());
   set_fancy_bit(FB_tag, !_tag_data.is_empty());
+  set_fancy_bit(FB_decal, _effects->has_decal());
+  set_fancy_bit(FB_show_bounds, _effects->has_show_bounds());
+  set_fancy_bit(FB_show_tight_bounds, _effects->has_show_tight_bounds());
 
   // Mark the bounds stale.
   ++_next_update;

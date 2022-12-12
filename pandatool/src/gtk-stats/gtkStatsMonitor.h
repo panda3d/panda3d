@@ -34,19 +34,33 @@ class GtkStatsChartMenu;
  */
 class GtkStatsMonitor : public PStatMonitor {
 public:
+  enum ChartType {
+    CT_timeline,
+    CT_strip_chart,
+    CT_flame_graph,
+    CT_piano_roll,
+
+    CT_choose_color,
+    CT_reset_color,
+  };
+
   class MenuDef {
   public:
-    INLINE MenuDef(int thread_index, int collector_index, bool show_level);
+    INLINE MenuDef(int thread_index, int collector_index,
+                   ChartType chart_type, bool show_level = false);
     INLINE bool operator < (const MenuDef &other) const;
 
     int _thread_index;
     int _collector_index;
+    ChartType _chart_type;
     bool _show_level;
     GtkStatsMonitor *_monitor;
   };
 
   GtkStatsMonitor(GtkStatsServer *server);
   virtual ~GtkStatsMonitor();
+
+  void close();
 
   virtual std::string get_monitor_name();
 
@@ -64,8 +78,16 @@ public:
   virtual void user_guide_bars_changed();
 
   GtkWidget *get_window() const;
-  void open_strip_chart(int thread_index, int collector_index, bool show_level);
-  void open_piano_roll(int thread_index);
+  GtkAccelGroup *get_accel_group() const;
+  double get_resolution() const;
+
+  PStatGraph *open_timeline();
+  PStatGraph *open_strip_chart(int thread_index, int collector_index, bool show_level);
+  PStatGraph *open_flame_graph(int thread_index, int collector_index = -1);
+  PStatGraph *open_piano_roll(int thread_index);
+
+  void choose_collector_color(int collector_index);
+  void reset_collector_color(int collector_index);
 
   const MenuDef *add_menu(const MenuDef &menu_def);
 
@@ -73,19 +95,24 @@ public:
   void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
 
-private:
   void add_graph(GtkStatsGraph *graph);
   void remove_graph(GtkStatsGraph *graph);
+  void remove_all_graphs();
 
-  void create_window();
-  void shutdown();
-  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
-              gpointer data);
-  static void window_destroy(GtkWidget *widget, gpointer data);
+private:
+  void setup_speed_menu();
   void setup_frame_rate_label();
+  void update_status_bar();
 
-  static void handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget);
+  static gboolean status_bar_button_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data);
+public:
+  static void menu_activate(GtkWidget *widget, gpointer data);
+  void handle_status_bar_click(int item);
+  void handle_status_bar_popup(int item);
 
+private:
   typedef pset<GtkStatsGraph *> Graphs;
   Graphs _graphs;
 
@@ -96,19 +123,22 @@ private:
   Menus _menus;
 
   GtkWidget *_window;
-  GtkItemFactory *_item_factory;
+  GtkWidget *_menu_bar;
+  GtkWidget *_speed_menu_item = nullptr;
   int _next_chart_index;
-  GtkWidget *_frame_rate_menu_item;
+  GtkWidget *_frame_rate_menu_item = nullptr;
   GtkWidget *_frame_rate_label;
+  GtkWidget *_status_bar;
+  pvector<int> _status_bar_collectors;
+  pvector<GtkWidget *> _status_bar_labels;
   std::string _window_title;
-  int _time_units;
   double _scroll_speed;
   bool _pause;
-
-  static GtkItemFactoryEntry menu_entries[];
-  static int num_menu_entries;
+  bool _have_data = false;
+  double _resolution;
 
   friend class GtkStatsGraph;
+  friend class GtkStatsServer;
 };
 
 #include "gtkStatsMonitor.I"

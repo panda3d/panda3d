@@ -75,10 +75,10 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                GraphicsOutput *host,
                bool default_stereo_flags) :
   _lock("GraphicsOutput"),
+  _size(0, 0),
   _cull_window_pcollector(_cull_pcollector, name),
   _draw_window_pcollector(_draw_pcollector, name),
-  _clear_window_pcollector(_draw_window_pcollector, "Clear"),
-  _size(0, 0)
+  _clear_window_pcollector(_draw_window_pcollector, "Clear")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -358,6 +358,12 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   if (mode == RTM_bind_or_copy || mode == RTM_bind_layered) {
     // If we're still planning on binding, indicate it in texture properly.
     tex->set_render_to_texture(true);
+  }
+  else if ((plane == RTP_depth || plane == RTP_depth_stencil) && _fb_properties.get_depth_bits() == 0) {
+    // If we're not providing the depth buffer, we need something to copy from.
+    display_cat.error()
+      << "add_render_texture: can't copy depth from framebuffer without depth bits!\n";
+    return;
   }
 
   CDWriter cdata(_cycler, true);
@@ -827,6 +833,9 @@ get_active_display_region(int n) const {
  * Creates and returns an offscreen buffer for rendering into, the result of
  * which will be a texture suitable for applying to geometry within the scene
  * rendered into this window.
+ *
+ * If you pass zero as the buffer size, the buffer will have the same size as
+ * the host window, and will automatically be resized when the host window is.
  *
  * If tex is not NULL, it is the texture that will be set up for rendering
  * into; otherwise, a new Texture object will be created.  In either case, the
@@ -1640,6 +1649,7 @@ CData() {
 GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :
   _textures(copy._textures),
+  _textures_seq(copy._textures_seq),
   _active(copy._active),
   _one_shot_frame(copy._one_shot_frame),
   _active_display_regions(copy._active_display_regions),

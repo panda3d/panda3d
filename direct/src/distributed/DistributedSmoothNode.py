@@ -187,7 +187,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         reflect the node's current position
         """
         if self.stopped:
-            currTime = globalClock.getFrameTime()
+            currTime = ClockObject.getGlobalClock().getFrameTime()
             now = currTime - self.smoother.getExpectedBroadcastPeriod()
             last = self.smoother.getMostRecentTimestamp()
             if now > last:
@@ -348,6 +348,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 self.smoother.setPhonyTimestamp()
             self.smoother.markPosition()
         else:
+            globalClock = ClockObject.getGlobalClock()
             now = globalClock.getFrameTime()
             local = globalClockDelta.networkToLocalTime(timestamp, now)
             realTime = globalClock.getRealTime()

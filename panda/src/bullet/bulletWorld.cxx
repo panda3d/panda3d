@@ -125,7 +125,7 @@ BulletWorld() {
   // Some prefered settings
   _world->getDispatchInfo().m_enableSPU = true;      // default: true
   _world->getDispatchInfo().m_useContinuous = true;  // default: true
-  _world->getSolverInfo().m_splitImpulse = false;    // default: false
+  _world->getSolverInfo().m_splitImpulse = bullet_split_impulse;
   _world->getSolverInfo().m_numIterations = bullet_solver_iterations;
 }
 
@@ -1064,14 +1064,14 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
 /**
  *
  */
-BulletPersistentManifold *BulletWorld::
+BulletPersistentManifold BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < _dispatcher->getNumManifolds(), nullptr);
+  nassertr(idx < _dispatcher->getNumManifolds(), BulletPersistentManifold(nullptr));
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
-  return (ptr) ? new BulletPersistentManifold(ptr) : nullptr;
+  return BulletPersistentManifold(ptr);
 }
 
 /**

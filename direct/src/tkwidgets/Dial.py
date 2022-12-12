@@ -8,6 +8,7 @@ __all__ = ['Dial', 'AngleDial', 'DialWidget']
 from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
+from panda3d.core import ClockObject
 import math
 import operator
 import Pmw
@@ -335,11 +336,11 @@ class DialWidget(Pmw.MegaWidget):
         self._onButtonPress()
         self.knobSF = 0.0
         self.updateTask = taskMgr.add(self.updateDialTask, 'updateDial')
-        self.updateTask.lastTime = globalClock.getFrameTime()
+        self.updateTask.lastTime = ClockObject.getGlobalClock().getFrameTime()
 
     def updateDialTask(self, state):
         # Update value
-        currT = globalClock.getFrameTime()
+        currT = ClockObject.getGlobalClock().getFrameTime()
         dt = currT - state.lastTime
         self.set(self.value + self.knobSF * dt)
         state.lastTime = currT

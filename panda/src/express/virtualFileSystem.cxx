@@ -156,7 +156,7 @@ mount(const Filename &physical_filename, const Filename &mount_point,
   // read-write on multifiles and .zip files.
   flags |= MF_read_only;
 
-  char ch = stream->get();
+  int ch = stream->get();
   if (ch == '#' || ch == 'p') {
     // It *might* be a multifile.
     while (ch == '#') {
@@ -647,6 +647,10 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
           bool status_only) const {
   if (!filename.is_local()) {
     return get_file(filename, status_only);
+  }
+
+  if (filename.empty()) {
+    return nullptr;
   }
 
   int num_directories = searchpath.get_num_directories();

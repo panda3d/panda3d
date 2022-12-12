@@ -20,6 +20,7 @@
 #include "register_type.h"
 #include "vector_string.h"
 #include "textEncoder.h"
+#include "patomic.h"
 
 #include <assert.h>
 
@@ -63,7 +64,7 @@ public:
 
 PUBLISHED:
   INLINE Filename();
-  Filename(const Filename &dirname, const Filename &basename);
+  explicit Filename(const Filename &dirname, const Filename &basename);
 
 #ifdef HAVE_PYTHON
   EXTENSION(Filename(PyObject *path));
@@ -265,10 +266,10 @@ protected:
   int _flags;
 
   static TextEncoder::Encoding _filesystem_encoding;
-  static TVOLATILE AtomicAdjust::Pointer _home_directory;
-  static TVOLATILE AtomicAdjust::Pointer _temp_directory;
-  static TVOLATILE AtomicAdjust::Pointer _user_appdata_directory;
-  static TVOLATILE AtomicAdjust::Pointer _common_appdata_directory;
+  static patomic<Filename *> _home_directory;
+  static patomic<Filename *> _temp_directory;
+  static patomic<Filename *> _user_appdata_directory;
+  static patomic<Filename *> _common_appdata_directory;
 
 #ifdef ANDROID
 public:

@@ -358,9 +358,8 @@ private:
 
   static PStatCollector _wait_pcollector;
   static PStatCollector _cycle_pcollector;
-  static PStatCollector _app_pcollector;
+  //static PStatCollector _app_pcollector;
   static PStatCollector _render_frame_pcollector;
-  static PStatCollector _do_frame_pcollector;
   static PStatCollector _yield_pcollector;
   static PStatCollector _cull_pcollector;
   static PStatCollector _cull_setup_pcollector;
@@ -368,15 +367,12 @@ private:
   static PStatCollector _draw_pcollector;
   static PStatCollector _sync_pcollector;
   static PStatCollector _flip_pcollector;
-  static PStatCollector _flip_begin_pcollector;
-  static PStatCollector _flip_end_pcollector;
   static PStatCollector _transform_states_pcollector;
   static PStatCollector _transform_states_unused_pcollector;
   static PStatCollector _render_states_pcollector;
   static PStatCollector _render_states_unused_pcollector;
   static PStatCollector _cyclers_pcollector;
   static PStatCollector _dirty_cyclers_pcollector;
-  static PStatCollector _delete_pcollector;
 
   static PStatCollector _sw_sprites_pcollector;
   static PStatCollector _vertex_data_small_pcollector;

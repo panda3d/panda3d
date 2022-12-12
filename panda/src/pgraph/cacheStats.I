@@ -90,6 +90,6 @@ add_total_size(int count) {
 INLINE void CacheStats::
 add_num_states(int count) {
 #ifndef NDEBUG
-  _num_states += count;
+  _num_states.fetch_add(count, std::memory_order_relaxed);
 #endif  // NDEBUG
 }

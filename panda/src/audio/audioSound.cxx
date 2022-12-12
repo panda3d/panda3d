@@ -29,7 +29,7 @@ AudioSound::
  *
  */
 AudioSound::
-AudioSound() {
+AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 

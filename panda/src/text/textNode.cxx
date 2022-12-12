@@ -61,6 +61,7 @@ PStatCollector TextNode::_text_generate_pcollector("*:Generate Text");
 TextNode::
 TextNode(const string &name) : PandaNode(name) {
   set_cull_callback();
+  set_renderable();
 
   if (text_small_caps) {
     TextProperties::set_small_caps(true);
@@ -487,22 +488,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PT(PandaNode) internal_geom = do_get_internal_geom();
   if (internal_geom != nullptr) {
     // Render the text with this node.
-    CullTraverserData next_data(data, internal_geom);
-    trav->traverse(next_data);
+    trav->traverse_down(data, internal_geom);
   }
 
   // Now continue to render everything else below this node.
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool TextNode::
-is_renderable() const {
   return true;
 }
 
@@ -1051,6 +1040,9 @@ CData() {
  */
 TextNode::CData::
 CData(const CData &copy) :
+  _text(copy._text),
+  _wtext(copy._wtext),
+  _internal_geom(copy._internal_geom),
   _card_texture(copy._card_texture),
   _frame_color(copy._frame_color),
   _card_color(copy._card_color),

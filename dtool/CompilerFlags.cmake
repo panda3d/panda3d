@@ -48,21 +48,9 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
 
 endif()
 
-# Panda3D is now a C++11 project. Newer versions of CMake support this out of
-# the box; for older versions we take a shot in the dark:
-if(CMAKE_VERSION VERSION_LESS "3.1")
-  check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
-  if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-  endif()
-
-else()
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-endif()
+# Panda3D is now a C++11 project.
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set certain CMake flags we expect
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
@@ -110,21 +98,6 @@ if(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
 endif()
 
-# We want the output structured like build/CONFIG/bin, not build/bin/CONFIG per
-# the default for multi-configuration generators. In CMake 3.4+, it switches
-# automatically if the *_OUTPUT_DIRECTORY property contains a generator
-# expresssion, but as of this writing we support as early as CMake 3.0.2.
-#
-# So, let's just do this:
-if(CMAKE_VERSION VERSION_LESS "3.4")
-  foreach(_type RUNTIME ARCHIVE LIBRARY)
-    foreach(_config ${CMAKE_CONFIGURATION_TYPES})
-      string(TOUPPER "${_config}" _config)
-      set(CMAKE_${_type}_OUTPUT_DIRECTORY_${_config} "${CMAKE_${_type}_OUTPUT_DIRECTORY}")
-    endforeach(_config)
-  endforeach(_type)
-endif()
-
 # Set warning levels
 if(MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W3")
@@ -138,7 +111,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(global_flags
-    "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing")
+    "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing -Werror=return-type")
   set(release_flags "-Wno-unused-variable")
 
   if(NOT MSVC)
@@ -154,7 +127,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   endif()
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${global_flags}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags} -Wno-reorder")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags}")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${release_flags}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${release_flags}")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${release_flags}")
@@ -243,5 +216,12 @@ if(NOT MSVC)
   check_cxx_compiler_flag("-fvisibility=hidden" COMPILER_SUPPORTS_FVISIBILITY_HIDDEN)
   if(COMPILER_SUPPORTS_FVISIBILITY_HIDDEN)
     add_compile_options("-fvisibility=hidden")
+  endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  check_cxx_compiler_flag("-fno-semantic-interposition" COMPILER_SUPPORTS_FNO_SEMANTIC_INTERPOSITION)
+  if(COMPILER_SUPPORTS_FNO_SEMANTIC_INTERPOSITION)
+    add_compile_options("-fno-semantic-interposition")
   endif()
 endif()

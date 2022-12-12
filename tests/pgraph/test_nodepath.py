@@ -176,6 +176,57 @@ def test_weak_nodepath_comparison():
     assert weak.node() == path.node()
 
 
+def test_nodepath_flatten_tags_identical():
+    from panda3d.core import NodePath, PandaNode
+
+    # Do flatten nodes with same tags
+    node1 = PandaNode("node1")
+    node1.set_tag("key", "value")
+    node2 = PandaNode("node2")
+    node2.set_tag("key", "value")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 1
+
+
+def test_nodepath_flatten_tags_same_key():
+    from panda3d.core import NodePath, PandaNode
+
+    # Don't flatten nodes with different tag keys
+    node1 = PandaNode("node1")
+    node1.set_tag("key1", "value")
+    node2 = PandaNode("node2")
+    node2.set_tag("key2", "value")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 2
+
+
+def test_nodepath_flatten_tags_same_value():
+    from panda3d.core import NodePath, PandaNode
+
+    # Don't flatten nodes with different tag values
+    node1 = PandaNode("node1")
+    node1.set_tag("key", "value1")
+    node2 = PandaNode("node2")
+    node2.set_tag("key", "value2")
+
+    path = NodePath("parent")
+    path.node().add_child(node1)
+    path.node().add_child(node2)
+
+    path.flatten_strong()
+    assert len(path.children) == 2
+
+
 def test_nodepath_python_tags():
     from panda3d.core import NodePath
 
@@ -240,3 +291,24 @@ def test_nodepath_replace_texture():
     path1.replace_texture(tex1, tex2)
     assert not path1.has_texture()
     assert path2.get_texture() == tex2
+
+
+def test_nodepath_replace_texture_none():
+    from panda3d.core import NodePath, Texture
+
+    tex1 = Texture("tex1")
+
+    path1 = NodePath("node1")
+    assert path1.get_texture() is None
+    path1.set_texture(tex1)
+    assert path1.get_texture() == tex1
+    path1.replace_texture(tex1, None)
+    assert path1.get_texture() is None
+
+    path1 = NodePath("node1")
+    path2 = path1.attach_new_node("node2")
+    assert path2.get_texture() is None
+    path2.set_texture(tex1)
+    assert path2.get_texture() == tex1
+    path1.replace_texture(tex1, None)
+    assert path2.get_texture() is None

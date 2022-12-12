@@ -35,8 +35,8 @@ OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data) :
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(const OdeTriMeshGeom &copy) :
-  OdeGeom(dCreateTriMesh(nullptr, copy.get_data_id(), nullptr, nullptr, nullptr)) {
-  OdeTriMeshData::link_data(_id, copy.get_data());
+  OdeGeom(dCreateTriMesh(nullptr, copy.get_tri_mesh_data_id(), nullptr, nullptr, nullptr)) {
+  OdeTriMeshData::link_data(_id, copy.get_tri_mesh_data());
 }
 
 OdeTriMeshGeom::

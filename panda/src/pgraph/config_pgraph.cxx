@@ -33,6 +33,7 @@
 #include "cullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
@@ -289,6 +290,11 @@ ConfigVariableBool premunge_data
           "encoding requirements, as appropriate.  When this is false, the "
           "data will be munged at render time instead."));
 
+ConfigVariableBool premunge_remove_unused_vertices
+("premunge-remove-unused-vertices", true,
+ PRC_DESC("Set this true to remove unused vertices as part of the premunge "
+          "which occurs when models are loaded from disk."));
+
 ConfigVariableBool preserve_geom_nodes
 ("preserve-geom-nodes", false,
  PRC_DESC("This specifies the default value for the \"preserved\" flag on "
@@ -375,6 +381,13 @@ ConfigVariableBool allow_live_flatten
           "only has an effect when Panda is not compiled for a release "
           "build."));
 
+ConfigVariableBool filled_wireframe_apply_shader
+("filled-wireframe-apply-shader", false,
+ PRC_DESC("Set this true to apply any shader configured on nodes onto the "
+          "filled wireframe overlay.  The wireframe color is multiplied with "
+          "the result of the fragment shader.  This is helpful when the shader "
+          "alters the position of the vertices and makes the overlay wrong."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
@@ -409,6 +422,7 @@ init_libpgraph() {
   CullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();
+  DepthBiasAttrib::init_type();
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
@@ -482,6 +496,7 @@ init_libpgraph() {
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
   DecalEffect::register_with_read_factory();
+  DepthBiasAttrib::register_with_read_factory();
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();

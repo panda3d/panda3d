@@ -59,6 +59,8 @@ GeomNode(const std::string &name) :
 
   // GeomNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
+
+  set_renderable();
 }
 
 /**
@@ -204,38 +206,56 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           // effect on the GeomNode; this may not be true if there is a
           // texture that has been applied at a node above that from which we
           // started the flatten operation, but caveat programmer.
-          NameCount name_count;
-
-          if (geom_attribs._texture != nullptr) {
-            const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
-            int num_on_stages = ta->get_num_on_stages();
-            for (int si = 0; si < num_on_stages; si++) {
-              TextureStage *stage = ta->get_on_stage(si);
-              const InternalName *name = stage->get_texcoord_name();
-              count_name(name_count, name);
-            }
-          }
+          pmap<InternalName *, pset<CPT(TransformState)> > name_transforms;
 
           const TexMatrixAttrib *tma =
             DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
-
-          CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-
           int num_stages = tma->get_num_stages();
           for (int i = 0; i < num_stages; i++) {
             TextureStage *stage = tma->get_stage(i);
             InternalName *name = stage->get_texcoord_name();
-            if (get_name_count(name_count, name) > 1) {
+            name_transforms[name].insert(tma->get_transform(stage)->get_unique());
+          }
+
+          if (geom_attribs._texture != nullptr) {
+            // There may be stages without a TexMatrixAttrib, which implicitly
+            // use the identity transform.
+            const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
+            int num_on_stages = ta->get_num_on_stages();
+            for (int si = 0; si < num_on_stages; si++) {
+              TextureStage *stage = ta->get_on_stage(si);
+              InternalName *name = stage->get_texcoord_name();
+              if (!tma->has_stage(stage)) {
+                name_transforms[name].insert(TransformState::make_identity());
+              }
+            }
+          }
+
+          CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
+
+          for (int i = 0; i < num_stages; i++) {
+            TextureStage *stage = tma->get_stage(i);
+            InternalName *name = stage->get_texcoord_name();
+            auto it = name_transforms.find(name);
+            if (it == name_transforms.end()) {
+              // Already processed this set.
+            }
+            else if (it->second.size() != 1) {
               // We can't transform these texcoords, since the name is used by
               // more than one active stage.
               new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
-
-            } else {
+            }
+            else {
               // It's safe to transform these texcoords; the name is used by
-              // no more than one active stage.
-              if (transformer.transform_texcoords(new_geom, name, name, tma->get_mat(stage))) {
+              // no more than one active stage, or all these stages have the
+              // same transform.
+              const TransformState *transform = *(it->second.begin());
+              if (!transform->is_identity() &&
+                  transformer.transform_texcoords(new_geom, name, name, transform->get_mat())) {
                 any_changed = true;
               }
+              // Now make sure we don't transform this set more than once.
+              name_transforms.erase(it);
             }
           }
 
@@ -392,9 +412,24 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
+    // As well as the shaders.
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
+      }
+      else if (sa->auto_shader()) {
+        gsg->ensure_generated_shader(geom_state);
+      }
+      else if (munger->is_of_type(StateMunger::get_class_type())) {
+        // Premunge the state for the fixed-function pipeline.
+        StateMunger *state_munger = (StateMunger *)munger.p();
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
+      }
+      // TODO: prepare the shader inputs.
     }
 
     // And now prepare each of the textures.
@@ -408,16 +443,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           prepared_objects->enqueue_texture(texture);
         }
       }
-    }
-
-    // As well as the shaders.
-    const ShaderAttrib *sa;
-    if (geom_state->get_attrib(sa)) {
-      Shader *shader = (Shader *)sa->get_shader();
-      if (shader != nullptr) {
-        prepared_objects->enqueue_shader(shader);
-      }
-      // TODO: prepare the shader inputs.
     }
   }
 
@@ -480,17 +505,6 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   }
 
   return next_transform;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool GeomNode::
-is_renderable() const {
-  return true;
 }
 
 /**
@@ -561,7 +575,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
         // Cull this Geom.
         continue;
       }
-      if (!data._cull_planes->is_empty()) {
+      if (data._cull_planes != nullptr) {
         // Also cull the Geom against the cull planes.
         CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
@@ -896,6 +910,9 @@ do_premunge(GraphicsStateGuardianBase *gsg,
       CPT(Geom) geom = entry._geom.get_read_pointer();
       PT(GeomMunger) munger = gsg->get_geom_munger(geom_state, current_thread);
       entry._geom = transformer.premunge_geom(geom, munger);
+      if (premunge_remove_unused_vertices) {
+        transformer.register_vertices(entry._geom.get_write_pointer(), true);
+      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);

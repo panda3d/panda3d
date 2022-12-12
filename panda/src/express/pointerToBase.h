@@ -17,7 +17,6 @@
 #include "pandabase.h"
 #include "pointerToVoid.h"
 #include "referenceCount.h"
-#include "typedef.h"
 #include "memoryUsage.h"
 #include "config_express.h"
 

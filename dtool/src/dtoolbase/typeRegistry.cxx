@@ -539,7 +539,6 @@ TypeRegistry() {
  */
 void TypeRegistry::
 init_global_pointer() {
-  init_memory_hook();
   _global_pointer = new TypeRegistry;
 }
 

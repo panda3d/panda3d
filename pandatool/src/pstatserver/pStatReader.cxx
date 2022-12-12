@@ -94,6 +94,7 @@ void PStatReader::
 lost_connection() {
   _client_data->_is_alive = false;
   _monitor->lost_connection();
+  _manager->lost_connection(_monitor);
   _client_data.clear();
 
   _manager->close_connection(_tcp_connection);
@@ -193,13 +194,16 @@ handle_client_control_message(const PStatClientControlMessage &message) {
 
       if (message._major_version != server_major_version ||
           (message._major_version == server_major_version &&
-           message._minor_version > server_minor_version)) {
+           message._minor_version > server_minor_version &&
+           (message._major_version != 3 || message._minor_version > 2))) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
+                              message._client_pid,
                               message._major_version, message._minor_version,
                               server_major_version, server_minor_version);
         _monitor->close();
       } else {
-        _monitor->hello_from(message._client_hostname, message._client_progname);
+        _monitor->hello_from(message._client_hostname, message._client_progname,
+                             message._client_pid);
       }
     }
     break;
@@ -222,6 +226,10 @@ handle_client_control_message(const PStatClientControlMessage &message) {
         _monitor->new_thread(thread_index);
       }
     }
+    break;
+
+  case PStatClientControlMessage::T_expire_thread:
+    // Ignore for now.
     break;
 
   default:

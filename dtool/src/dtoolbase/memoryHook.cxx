@@ -51,6 +51,18 @@ static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
 
 #if defined(CPPPARSER)
 
+#elif defined(USE_MEMORY_MIMALLOC)
+
+// mimalloc is a modern memory manager by Microsoft that is very fast as well
+// as thread-safe.
+
+#include "mimalloc.h"
+
+#define call_malloc mi_malloc
+#define call_realloc mi_realloc
+#define call_free mi_free
+#undef MEMORY_HOOK_MALLOC_LOCK
+
 #elif defined(USE_MEMORY_DLMALLOC)
 
 // Memory manager: DLMALLOC This is Doug Lea's memory manager.  It is very
@@ -190,54 +202,15 @@ ptr_to_alloc(void *ptr, size_t &size) {
  *
  */
 MemoryHook::
-MemoryHook() {
-#ifdef _WIN32
-
-  // Windows case.
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-
-  _page_size = (size_t)sysinfo.dwPageSize;
-
-#else
-
-  // Posix case.
-  _page_size = sysconf(_SC_PAGESIZE);
-
-#endif  // WIN32
-
-  _total_heap_single_size = 0;
-  _total_heap_array_size = 0;
-  _requested_heap_size = 0;
-  _total_mmap_size = 0;
-  _max_heap_size = ~(size_t)0;
-}
-
-/**
- *
- */
-MemoryHook::
 MemoryHook(const MemoryHook &copy) :
-  _total_heap_single_size(copy._total_heap_single_size),
-  _total_heap_array_size(copy._total_heap_array_size),
-  _requested_heap_size(copy._requested_heap_size),
-  _total_mmap_size(copy._total_mmap_size),
+  _total_heap_single_size(copy._total_heap_single_size.load(std::memory_order_relaxed)),
+  _total_heap_array_size(copy._total_heap_array_size.load(std::memory_order_relaxed)),
+  _requested_heap_size(copy._requested_heap_size.load(std::memory_order_relaxed)),
+  _total_mmap_size(copy._total_mmap_size.load(std::memory_order_relaxed)),
   _max_heap_size(copy._max_heap_size),
   _page_size(copy._page_size) {
-
-  copy._lock.lock();
-  _deleted_chains = copy._deleted_chains;
-  copy._lock.unlock();
 }
 
-/**
- *
- */
-MemoryHook::
-~MemoryHook() {
-  // Really, we only have this destructor to shut up gcc about the virtual
-  // functions warning.
-}
 
 /**
  * Allocates a block of memory from the heap, similar to malloc().  This will
@@ -277,9 +250,9 @@ heap_alloc_single(size_t size) {
   size = get_ptr_size(alloc);
   inflated_size = size;
 #endif
-  AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
-      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+  _total_heap_single_size.fetch_add(size, std::memory_order_relaxed);
+  if (_total_heap_single_size.load(std::memory_order_relaxed) +
+      _total_heap_array_size.load(std::memory_order_relaxed) >
       _max_heap_size) {
     overflow_heap_size();
   }
@@ -302,8 +275,8 @@ heap_free_single(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_heap_single_size);
-  AtomicAdjust::add(_total_heap_single_size, -(AtomicAdjust::Integer)size);
+  assert((int)size <= _total_heap_single_size.load(std::memory_order_relaxed));
+  _total_heap_single_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -354,9 +327,9 @@ heap_alloc_array(size_t size) {
   size = get_ptr_size(alloc);
   inflated_size = size;
 #endif
-  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
-      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+  _total_heap_array_size.fetch_add(size, std::memory_order_relaxed);
+  if (_total_heap_single_size.load(std::memory_order_relaxed) +
+      _total_heap_array_size.load(std::memory_order_relaxed) >
       _max_heap_size) {
     overflow_heap_size();
   }
@@ -410,8 +383,8 @@ heap_realloc_array(void *ptr, size_t size) {
   size = get_ptr_size(alloc1);
   inflated_size = size;
 #endif
-  assert((AtomicAdjust::Integer)orig_size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
+  assert(orig_size <= _total_heap_array_size.load(std::memory_order_relaxed));
+  _total_heap_array_size.fetch_add(size - orig_size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
   // Align this to the requested boundary.
@@ -451,7 +424,7 @@ heap_free_array(void *ptr) {
 
 #ifdef DO_MEMORY_USAGE
   assert((int)size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, -(AtomicAdjust::Integer)size);
+  _total_heap_array_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -510,10 +483,13 @@ heap_trim(size_t pad) {
  */
 void *MemoryHook::
 mmap_alloc(size_t size, bool allow_exec) {
+  if (_page_size == 0) {
+    determine_page_size();
+  }
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  _total_mmap_size += size;
+  _total_mmap_size.fetch_add(size, std::memory_order_relaxed);
 #endif
 
 #ifdef _WIN32
@@ -564,11 +540,12 @@ mmap_alloc(size_t size, bool allow_exec) {
  */
 void MemoryHook::
 mmap_free(void *ptr, size_t size) {
+  assert(_page_size != 0);
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_mmap_size);
-  _total_mmap_size -= size;
+  assert((int)size <= _total_mmap_size.load(std::memory_order_relaxed));
+  _total_mmap_size.fetch_sub(size, std::memory_order_relaxed);
 #endif
 
 #ifdef _WIN32
@@ -587,29 +564,6 @@ mmap_free(void *ptr, size_t size) {
  */
 void MemoryHook::
 mark_pointer(void *, size_t, ReferenceCount *) {
-}
-
-/**
- * Returns a pointer to a global DeletedBufferChain object suitable for
- * allocating arrays of the indicated size.  There is one unique
- * DeletedBufferChain object for every different size.
- */
-DeletedBufferChain *MemoryHook::
-get_deleted_chain(size_t buffer_size) {
-  DeletedBufferChain *chain;
-
-  _lock.lock();
-  DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
-  if (dci != _deleted_chains.end()) {
-    chain = (*dci).second;
-  } else {
-    // Once allocated, this DeletedBufferChain object is never deleted.
-    chain = new DeletedBufferChain(buffer_size);
-    _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
-  }
-
-  _lock.unlock();
-  return chain;
 }
 
 /**
@@ -643,4 +597,25 @@ overflow_heap_size() {
 #ifdef DO_MEMORY_USAGE
   _max_heap_size = ~(size_t)0;
 #endif  // DO_MEMORY_USAGE
+}
+
+/**
+ * Asks the operating system for the page size.
+ */
+void MemoryHook::
+determine_page_size() const {
+#ifdef _WIN32
+  // Windows case.
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+
+  _page_size = (size_t)sysinfo.dwPageSize;
+
+#else
+  // Posix case.
+  _page_size = sysconf(_SC_PAGESIZE);
+
+#endif  // WIN32
+
+  assert(_page_size != 0);
 }

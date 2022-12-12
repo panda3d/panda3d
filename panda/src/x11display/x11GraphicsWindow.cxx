@@ -115,11 +115,12 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
     _XRRSetScreenConfig = x11_pipe->_XRRSetScreenConfig;
   }
 
-  _awaiting_configure = false;
+  _awaiting_configure_since = -1;
   _dga_mouse_enabled = false;
   _raw_mouse_enabled = false;
   _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
+  _net_wm_ping = x11_pipe->_net_wm_ping;
 
   PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
@@ -239,7 +240,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == nullptr) {
     return false;
   }
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     // Don't attempt to draw while we have just reconfigured the window and we
     // haven't got the notification back yet.
     return false;
@@ -493,7 +494,8 @@ process_events() {
       break;
 
     case ClientMessage:
-      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
+      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window &&
+          event.xany.window == _xwindow) {
         // This is a message from the window manager indicating that the user
         // has requested to close the window.
         string close_request_event = get_close_request_event();
@@ -512,6 +514,12 @@ process_events() {
           system_changed_properties(properties);
         }
       }
+      else if ((Atom)(event.xclient.data.l[0]) == _net_wm_ping &&
+               event.xclient.window == _xwindow) {
+        DCAST_INTO_V(x11_pipe, _pipe);
+        event.xclient.window = x11_pipe->get_root();
+        XSendEvent(_display, x11_pipe->get_root(), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
+      }
       break;
 
     case DestroyNotify:
@@ -529,7 +537,14 @@ process_events() {
 
   if (got_configure_event) {
     // Now handle the last configure event we found.
-    _awaiting_configure = false;
+    if (x11display_cat.is_debug() && _awaiting_configure_since != -1) {
+      unsigned long elapsed = (unsigned long)(clock() - _awaiting_configure_since) / (CLOCKS_PER_SEC / 10000);
+      x11display_cat.debug()
+        << "Received ConfigureNotify event after "
+        << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+    }
+
+    _awaiting_configure_since = -1;
 
     // Is this the inner corner or the outer corner?  The Xlib docs say it
     // should be the outer corner, but it appears to be the inner corner on my
@@ -570,6 +585,19 @@ process_events() {
     }
 
     changed_properties = true;
+  }
+  else if (_awaiting_configure_since != -1) {
+    unsigned long elapsed = (clock() - _awaiting_configure_since);
+    if (elapsed > CLOCKS_PER_SEC / 10) {
+      // Accept that we're never going to get that configure notify event.
+      if (x11display_cat.is_debug()) {
+        elapsed /= (CLOCKS_PER_SEC / 10000);
+        x11display_cat.debug()
+          << "Giving up on waiting for ConfigureNotify event after "
+          << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+      }
+      _awaiting_configure_since = -1;
+    }
   }
 
   if (properties.has_foreground() &&
@@ -860,12 +888,15 @@ set_properties_now(WindowProperties &properties) {
   int value_mask = 0;
 
   if (_properties.get_fullscreen()) {
-    changes.x = 0;
-    changes.y = 0;
-    value_mask |= CWX | CWY;
-    properties.clear_origin();
-
-  } else if (properties.has_origin()) {
+    if (_properties.get_x_origin() != 0 ||
+        _properties.get_y_origin() != 0) {
+      changes.x = 0;
+      changes.y = 0;
+      value_mask |= CWX | CWY;
+      properties.clear_origin();
+    }
+  }
+  else if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;
@@ -1045,24 +1076,8 @@ set_properties_now(WindowProperties &properties) {
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
-    _awaiting_configure = true;
+    _awaiting_configure_since = clock();
   }
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_absolute() {
-  // unused: remove in 1.10!
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_relative() {
-  // unused: remove in 1.10!
 }
 
 /**
@@ -1195,15 +1210,41 @@ open_window() {
 
   set_wm_properties(_properties, false);
 
-  // We don't specify any fancy properties of the XIC.  It would be nicer if
-  // we could support fancy IM's that want preedit callbacks, etc., but that
-  // can wait until we have an X server that actually supports these to test
-  // it on.
+  // Initialize the input context, which (if enabled) will enable us to capture
+  // candidate strings and display them inside Panda3D rather than via an
+  // external popup window.
   XIM im = x11_pipe->get_im();
   _ic = nullptr;
   if (im) {
-    _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-                    XNClientWindow, _xwindow, nullptr);
+    if (ime_aware) {
+      XIMCallback start_callback;
+      start_callback.client_data = (XPointer)this;
+      start_callback.callback = (XIMProc)xim_preedit_start;
+      XIMCallback draw_callback;
+      draw_callback.client_data = (XPointer)this;
+      draw_callback.callback = (XIMProc)xim_preedit_draw;
+      XIMCallback caret_callback;
+      caret_callback.client_data = (XPointer)this;
+      caret_callback.callback = (XIMProc)xim_preedit_caret;
+      XIMCallback done_callback;
+      done_callback.client_data = (XPointer)this;
+      done_callback.callback = (XIMProc)xim_preedit_done;
+      XVaNestedList preedit_attributes = XVaCreateNestedList(
+          0,
+          XNPreeditStartCallback, &start_callback,
+          XNPreeditDrawCallback, &draw_callback,
+          XNPreeditCaretCallback, &caret_callback,
+          XNPreeditDoneCallback, &done_callback,
+          nullptr);
+      _ic = XCreateIC(im,
+                      XNInputStyle, XIMPreeditCallbacks | XIMStatusNothing,
+                      XNClientWindow, _xwindow,
+                      XNPreeditAttributes, preedit_attributes,
+                      nullptr);
+    } else {
+      _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                      XNClientWindow, _xwindow, nullptr);
+    }
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1217,6 +1258,15 @@ open_window() {
     // Note that if the cursor fails to load, cursor will be None
     X11_Cursor cursor = get_cursor(_properties.get_cursor_filename());
     XDefineCursor(_display, _xwindow, cursor);
+  }
+
+  // Set _NET_STARTUP_ID if we've got it, so that the window manager knows
+  // this window belongs to a particular launch request.
+  const std::string &startup_id = x11_pipe->get_startup_id();
+  if (!startup_id.empty() && _parent_window_handle == nullptr) {
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_startup_id,
+                    x11_pipe->_utf8_string, 8, PropModeReplace,
+                    (unsigned char *)startup_id.c_str(), startup_id.size());
   }
 
   XMapWindow(_display, _xwindow);
@@ -1236,6 +1286,12 @@ open_window() {
   // And tell our parent window that we're now its child.
   if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
+  }
+
+  // Now that we've opened a window, tell the window manager that the
+  // application has finished starting up.
+  if (!startup_id.empty() && x_send_startup_notification) {
+    x11_pipe->send_startup_notification();
   }
 
   return true;
@@ -1446,9 +1502,6 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     // mapped.  To do this, we need to send a client message to the root
     // window for each change.
 
-    x11GraphicsPipe *x11_pipe;
-    DCAST_INTO_V(x11_pipe, _pipe);
-
     for (int i = 0; i < next_set_data; ++i) {
       XClientMessageEvent event;
       memset(&event, 0, sizeof(event));
@@ -1485,6 +1538,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // X server if the user requests a window close.
   Atom protocols[] = {
     _wm_delete_window,
+    _net_wm_ping,
   };
 
   XSetWMProtocols(_display, _xwindow, protocols,
@@ -1560,6 +1614,123 @@ open_raw_mice() {
   x11display_cat.error() <<
     "Opening raw mice: panda not compiled with raw mouse support.\n";
 #endif
+}
+
+/**
+ *
+ */
+int x11GraphicsWindow::
+handle_preedit_start() {
+  _preedit_state = new PreeditState;
+
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit started\n";
+  }
+
+  return sizeof(_preedit_state->_buffer) / sizeof(wchar_t);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_draw(XIMPreeditDrawCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.text != nullptr) {
+    // Replace characters in the preedit buffer.
+    int added_chars = data.text->length - data.chg_length;
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length) + data.text->length);
+    state._length += added_chars;
+
+    if (added_chars != 0) {
+      if (state._highlight_start > data.chg_first) {
+        state._highlight_start = std::max(data.chg_first, state._highlight_start + added_chars);
+      }
+      if (state._highlight_end > data.chg_first) {
+        state._highlight_end = std::max(data.chg_first, state._highlight_end + added_chars);
+      }
+    }
+
+    if (data.text->encoding_is_wchar) {
+      memcpy(state._buffer + data.chg_first, data.text->string.wide_char, data.text->length * sizeof(wchar_t));
+    } else {
+      mbstowcs(state._buffer + data.chg_first, data.text->string.multi_byte, data.text->length);
+    }
+
+    if (data.text->feedback != nullptr) {
+      // Update the highlighted region.
+      for (int i = 0; i < data.text->length; ++i) {
+        if (data.text->feedback[i] & XIMReverse) {
+          if (state._highlight_end > state._highlight_start) {
+            state._highlight_start = std::min(state._highlight_start, data.chg_first + i);
+            state._highlight_end = std::max(state._highlight_end, data.chg_first + i + 1);
+          } else {
+            state._highlight_start = data.chg_first + i;
+            state._highlight_end = data.chg_first + i + 1;
+          }
+        }
+        else if (state._highlight_end > state._highlight_start) {
+          if (state._highlight_start == data.chg_first + i) {
+            ++state._highlight_start;
+          }
+          if (state._highlight_end == data.chg_first + i + 1) {
+            --state._highlight_end;
+          }
+          if (state._highlight_end <= state._highlight_start) {
+            state._highlight_start = 0;
+            state._highlight_end = 0;
+          }
+        }
+      }
+    }
+  } else {
+    // Delete characters from the preedit buffer.
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length));
+    state._length -= data.chg_length;
+
+    if (state._highlight_start > data.chg_first) {
+      state._highlight_start = std::max(data.chg_first, state._highlight_start - data.chg_length);
+    }
+    if (state._highlight_end > data.chg_first) {
+      state._highlight_end = std::max(data.chg_first, state._highlight_end - data.chg_length);
+    }
+  }
+  _input->candidate(std::wstring(state._buffer, state._length),
+                    state._highlight_start, state._highlight_end, data.caret);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_caret(XIMPreeditCaretCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.direction == XIMAbsolutePosition) {
+    _input->candidate(std::wstring(state._buffer, state._length),
+                      state._highlight_start, state._highlight_end, data.position);
+  }
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_done() {
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit done\n";
+  }
+  delete _preedit_state;
+  _preedit_state = nullptr;
 }
 
 /**
@@ -2099,6 +2270,8 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::wheel_left();
   } else if (index == x_wheel_right_button) {
     return MouseButton::wheel_right();
+  } else if (index >= 8) {
+    return MouseButton::button(index - 5);
   } else {
     return MouseButton::button(index - 1);
   }
@@ -2207,7 +2380,8 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
   // We accept any event that is sent to our window.  However, we have to let
   // raw mouse events through, since they're not associated with any window.
   return (event->xany.window == self->_xwindow ||
-    (event->type == GenericEvent && self->_raw_mouse_enabled));
+    (event->type == GenericEvent && self->_raw_mouse_enabled)) ||
+    (event->type == ClientMessage);
 }
 
 /**
@@ -2522,4 +2696,44 @@ cleanup:
   delete[] andBmp;
 
   return ret;
+}
+
+/**
+ *
+ */
+int x11GraphicsWindow::
+xim_preedit_start(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  return window->handle_preedit_start();
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_draw(XIC ic, XPointer client_data,
+                 XIMPreeditDrawCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_draw(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_caret(XIC ic, XPointer client_data,
+                  XIMPreeditCaretCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_caret(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  window->handle_preedit_done();
 }

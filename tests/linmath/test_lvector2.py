@@ -1,32 +1,9 @@
 from math import floor, ceil
+import sys
 
 from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
 from panda3d import core
 import pytest
-
-
-def test_round():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = round(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-
-
-def test_floor():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = floor(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-
-
-def test_ceil():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = ceil(original_vector)
-    assert rounded_vector.x == 3
-    assert rounded_vector.y == -2
 
 
 def test_vec2_creation():
@@ -120,8 +97,37 @@ def test_vec2_nan():
     assert not Vec2D(-inf, 0).is_nan()
 
 
+def test_vec2_round():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = round(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+def test_vec2_floor():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = floor(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+def test_vec2_ceil():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = ceil(original_vector)
+    assert rounded_vector.x == 3
+    assert rounded_vector.y == -2
+
+
+def test_vec2_rmul():
+    assert 2 * Vec2(3, -4) == Vec2(6, -8)
+
+
+@pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
 @pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
-def test_vec4_floordiv(type):
+def test_vec2_floordiv(type):
     with pytest.raises(ZeroDivisionError):
         type(1, 2) // 0
 
@@ -137,3 +143,11 @@ def test_vec4_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec2_buffer():
+    v = Vec2(1.5, -10.0)
+    m = memoryview(v)
+    assert len(m) == 2
+    assert m[0] == 1.5
+    assert m[1] == -10.0

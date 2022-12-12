@@ -142,6 +142,32 @@ public:
   }
 };
 
+// Adds a value to the pixel.
+class EXPCL_PANDA_PNMIMAGE PNMAddPixelBrush : public PNMPixelBrush {
+public:
+  PNMAddPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
+
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
+    if (x >= 0 && x < image.get_x_size() &&
+        y >= 0 && y < image.get_y_size()) {
+      image.set_xel_a(x, y,
+        image.get_xel_a(x, y) + (_color * pixel_scale));
+    }
+  }
+
+  virtual void fill(PNMImage &image, int xfrom, int xto, int y,
+                    int xo, int yo) {
+    if (y >= 0 && y < image.get_y_size()) {
+      xfrom = max(xfrom, 0);
+      xto = max(xto, image.get_x_size() - 1);
+      for (int x = xfrom; x <= xto; ++x) {
+        image.set_xel_a(x, y,
+          image.get_xel_a(x, y) + _color);
+      }
+    }
+  }
+};
+
 // A PNMImageBrush is a family of brushes that draw an image at a time.
 class EXPCL_PANDA_PNMIMAGE PNMImageBrush : public PNMBrush {
 protected:
@@ -244,6 +270,22 @@ public:
   }
 };
 
+// Adds a constant value to the pixels
+class EXPCL_PANDA_PNMIMAGE PNMAddImageBrush : public PNMImageBrush {
+public:
+  PNMAddImageBrush(const PNMImage &image, float xc, float yc) :
+    PNMImageBrush(image, xc, yc) { }
+
+  virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
+    image.add_sub_image(_image, x, y, 0, 0, -1, -1, pixel_scale);
+  }
+
+  virtual void do_scanline(PNMImage &image, int xto, int yto,
+                           int xfrom, int yfrom, int x_size, int y_size) {
+    image.add_sub_image(_image, xto, yto, xfrom, yfrom, x_size, y_size);
+  }
+};
+
 /**
  *
  */
@@ -278,6 +320,9 @@ make_pixel(const LColorf &color, PNMBrush::BrushEffect effect) {
 
   case BE_lighten:
     return new PNMLightenPixelBrush(color);
+
+  case BE_add:
+    return new PNMAddPixelBrush(color);
   }
 
   pnmimage_cat.error()
@@ -296,6 +341,8 @@ make_spot(const LColorf &color, float radius, bool fuzzy,
 
   switch (effect) {
   case BE_set:
+  case BE_lighten:
+  case BE_add:
     bg.set(0, 0, 0, 0);
     break;
 
@@ -305,10 +352,6 @@ make_spot(const LColorf &color, float radius, bool fuzzy,
 
   case BE_darken:
     bg.set(1, 1, 1, 1);
-    break;
-
-  case BE_lighten:
-    bg.set(0, 0, 0, 0);
     break;
 
   default:
@@ -351,6 +394,9 @@ make_image(const PNMImage &image, float xc, float yc,
 
   case BE_lighten:
     return new PNMLightenImageBrush(image, xc, yc);
+
+  case BE_add:
+    return new PNMAddImageBrush(image, xc, yc);
   }
 
   pnmimage_cat.error()

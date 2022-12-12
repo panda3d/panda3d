@@ -35,7 +35,8 @@ public:
   CPPStructType(Type type, CPPIdentifier *ident,
                 CPPScope *current_scope,
                 CPPScope *scope,
-                const CPPFile &file);
+                const CPPFile &file,
+                CPPAttributeList attr = CPPAttributeList());
   CPPStructType(const CPPStructType &copy);
   void operator = (const CPPStructType &copy);
 

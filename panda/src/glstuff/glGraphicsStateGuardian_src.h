@@ -55,7 +55,7 @@ typedef double GLdouble;
 // mainly because they will not be included from glext.h if the system GL
 // version matches or exceeds the GL version in which these functions are
 // defined, and the system gl.h sometimes doesn't declare these typedefs.
-#if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
+#if !defined( __EDG__ ) || defined( __INTEL_COMPILER ) || defined( __MCST__ )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
 typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 typedef void (APIENTRY *GLDEBUGPROC_P)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
 typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC_P) (GLDEBUGPROC_P callback, const void *userParam);
@@ -229,10 +229,10 @@ typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC) (GLuint program, GLenum binaryFo
 typedef void (APIENTRYP PFNGLGETINTERNALFORMATIVPROC) (GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params);
 typedef void (APIENTRYP PFNGLBUFFERSTORAGEPROC) (GLenum target, GLsizeiptr size, const void *data, GLbitfield flags);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
-#endif  // OPENGLES_1
-#ifndef OPENGLES
 typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
+#endif  // OPENGLES_1
+#ifndef OPENGLES
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLBINDSAMPLERSPROC) (GLuint first, GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
@@ -292,6 +292,10 @@ public:
   virtual bool begin_scene();
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
+
+  struct FrameTiming;
+  FrameTiming *begin_frame_timing(int frame_index);
+  void end_frame_timing(const FrameTiming &frame);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
@@ -384,7 +388,8 @@ public:
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 #endif
 
-  virtual PT(TimerQueryContext) issue_timer_query(int pstats_index);
+  virtual void issue_timer_query(int pstats_index) final;
+  virtual void issue_latency_query(int pstats_index) final;
 
 #ifndef OPENGLES_1
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
@@ -454,7 +459,7 @@ protected:
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_fog();
 #endif
-  void do_issue_depth_offset();
+  void do_issue_depth_bias();
   void do_issue_shade_model();
 #ifndef OPENGLES_1
   void do_issue_shader();
@@ -616,10 +621,9 @@ protected:
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,
-                            GLenum texture_target, GLenum page_target,
+                            GLenum texture_target,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
-                            bool one_page_only, int z,
                             Texture::CompressionMode image_compression);
   void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
@@ -676,6 +680,9 @@ protected:
   bool _scissor_enabled;
   bool _scissor_attrib_active;
   epvector<LVecBase4i> _scissor_array;
+  PN_stdfloat _depth_range_near;
+  PN_stdfloat _depth_range_far;
+  bool _has_attrib_depth_range;
 
 #ifndef OPENGLES_1
   BitMask32 _enabled_vertex_attrib_arrays;
@@ -720,7 +727,6 @@ protected:
   typedef pmap<NodePath, DirectionalLightFrameData> DirectionalLights;
   DirectionalLights _dlights;
 
-  int _pass_number;
   GLuint _geom_display_list;
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
@@ -765,10 +771,15 @@ protected:
 #endif
 
 public:
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   bool _use_depth_zero_to_one;
   bool _use_remapped_depth_range;
+#endif
+#ifndef OPENGLES
   PFNGLDEPTHRANGEDNVPROC _glDepthRangedNV;
+#endif
+#ifndef OPENGLES_1
+  PFNGLPOLYGONOFFSETCLAMPEXTPROC _glPolygonOffsetClamp;
 #endif
 
   bool _supports_point_parameters;
@@ -806,8 +817,9 @@ public:
 #endif
 
   bool _supports_clear_texture;
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
+  PFNGLCLEARTEXSUBIMAGEPROC _glClearTexSubImage;
 #endif
 
   bool _supports_clear_buffer;
@@ -1073,6 +1085,7 @@ public:
   PFNGLGETPROGRAMINTERFACEIVPROC _glGetProgramInterfaceiv;
   PFNGLGETPROGRAMRESOURCENAMEPROC _glGetProgramResourceName;
   PFNGLGETPROGRAMRESOURCEIVPROC _glGetProgramResourceiv;
+  PFNGLSHADERSTORAGEBLOCKBINDINGPROC _glShaderStorageBlockBinding;
 #endif  // !OPENGLES
 
   GLenum _edge_clamp;
@@ -1140,6 +1153,18 @@ public:
   UsageTextures _usage_textures;
 #endif  // NDEBUG
 
+#if defined(DO_PSTATS) && !defined(OPENGLES)
+  struct FrameTiming {
+    int _frame_number;
+    GLint64 _gpu_sync_time;
+    double _cpu_sync_time;
+    pvector<std::pair<GLuint, int> > _queries;
+    pvector<GLint64> _latency_refs;
+  };
+  pdeque<FrameTiming> _frame_timings;
+  FrameTiming *_current_frame_timing = nullptr;
+#endif
+
   BufferResidencyTracker _renderbuffer_residency;
 
   static PStatCollector _load_display_list_pcollector;
@@ -1180,7 +1205,6 @@ private:
   friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
-  friend class CLP(TimerQueryContext);
 };
 
 #include "glGraphicsStateGuardian_src.I"

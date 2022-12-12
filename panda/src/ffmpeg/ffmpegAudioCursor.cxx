@@ -50,10 +50,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _packet_data(nullptr),
   _format_ctx(nullptr),
   _audio_ctx(nullptr),
-  _resample_ctx(nullptr),
+  _frame(nullptr),
   _buffer(nullptr),
   _buffer_alloc(nullptr),
-  _frame(nullptr)
+  _resample_ctx(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -101,7 +101,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_rate = codecpar->sample_rate;
   _audio_channels = codecpar->channels;
 
-  AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
+  const AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == nullptr) {
     cleanup();
     return;

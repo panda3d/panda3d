@@ -89,10 +89,24 @@ PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
 {
   _time_width = 1.0 / pstats_target_frame_rate;
   _start_time = 0.0;
-
   _current_frame = -1;
+
+  // If we already have data, load it in now.
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data->get_num_collectors() != 0 &&
+      client_data->get_num_threads() != 0) {
+    const PStatThreadData *thread_data =
+      client_data->get_thread_data(thread_index);
+    if (!thread_data->is_empty()) {
+      int frame_number = thread_data->get_latest_frame_number();
+      compute_page(thread_data->get_frame(frame_number));
+    }
+  }
+
   _guide_bar_units = GBU_ms | GBU_hz | GBU_show_units;
   normal_guide_bars();
+
+  monitor->_piano_rolls.insert(this);
 }
 
 /**
@@ -100,6 +114,7 @@ PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
  */
 PStatPianoRoll::
 ~PStatPianoRoll() {
+  _monitor->_piano_rolls.erase(this);
 }
 
 /**
@@ -126,6 +141,46 @@ update() {
   }
 
   idle();
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string PStatPianoRoll::
+get_label_tooltip(int collector_index) const {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (!client_data->has_collector(collector_index)) {
+    return std::string();
+  }
+
+  return client_data->get_collector_fullname(collector_index);
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatPianoRoll::
+write_datagram(Datagram &dg) const {
+  dg.add_float64(_time_width);
+  dg.add_float64(_start_time);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatPianoRoll::
+read_datagram(DatagramIterator &scan) {
+  _time_width = scan.get_float64();
+  _start_time = scan.get_float64();
+
+  PStatGraph::read_datagram(scan);
+
+  _current_frame = -1;
+  normal_guide_bars();
+  update();
 }
 
 /**

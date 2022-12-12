@@ -29,8 +29,8 @@
 #if !defined(__clang__) && __GNUC__ == 4 && __GNUC_MINOR__ < 7
 // GCC 4.6 has a weird bug related to this type.
 #else
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToBase<ReferenceCountedVector<uchar> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToArrayBase<uchar>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToBase<ReferenceCountedVector<unsigned char> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToArrayBase<unsigned char>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToArray<unsigned char>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, ConstPointerToArray<unsigned char>)
 #endif

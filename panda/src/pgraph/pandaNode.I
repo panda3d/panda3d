@@ -326,7 +326,13 @@ clear_transform(Thread *current_thread) {
 INLINE CPT(TransformState) PandaNode::
 get_prev_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_prev_transform.p();
+  if (_prev_transform_valid == _reset_prev_transform_seq) {
+    return cdata->_prev_transform.p();
+  } else {
+    // If these values are different, someone called reset_prev_transform(),
+    // and we haven't changed our transform since then.
+    return cdata->_transform.p();
+  }
 }
 
 /**
@@ -334,10 +340,19 @@ get_prev_transform(Thread *current_thread) const {
  * indicates its _prev_transform is different from its _transform value (in
  * pipeline stage 0).  In this case, the node will be visited by
  * reset_prev_transform().
+ *
+ * @deprecated Simply check prev_transform != transform instead.
  */
 INLINE bool PandaNode::
 has_dirty_prev_transform() const {
-  return _dirty_prev_transform;
+  CDStageReader cdata(_cycler, 0);
+  if (_prev_transform_valid == _reset_prev_transform_seq) {
+    return cdata->_prev_transform != cdata->_transform;
+  } else {
+    // If these values are different, someone called reset_prev_transform(),
+    // and we haven't changed our transform since then.
+    return false;
+  }
 }
 
 /**
@@ -702,34 +717,6 @@ verify_child_no_cycles(PandaNode *child_node) {
 }
 
 /**
- * Sets the dirty_prev_transform flag, and adds the node to the
- * _dirty_prev_transforms chain.  Assumes _dirty_prev_transforms._lock is
- * already held.
- */
-INLINE void PandaNode::
-do_set_dirty_prev_transform() {
-  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
-  if (!_dirty_prev_transform) {
-    LinkedListNode::insert_before(&_dirty_prev_transforms);
-    _dirty_prev_transform = true;
-  }
-}
-
-/**
- * Clears the dirty_prev_transform flag, and removes the node from the
- * _dirty_prev_transforms chain.  Assumes _dirty_prev_transforms._lock is
- * already held.
- */
-INLINE void PandaNode::
-do_clear_dirty_prev_transform() {
-  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
-  if (_dirty_prev_transform) {
-    LinkedListNode::remove_from_list();
-    _dirty_prev_transform = false;
-  }
-}
-
-/**
  *
  */
 INLINE PandaNode::DownConnection::
@@ -771,6 +758,59 @@ set_child(PandaNode *child) {
 INLINE int PandaNode::DownConnection::
 get_sort() const {
   return _sort;
+}
+
+/**
+ * Returns the net collide mask of this child.  Requires that update_cached()
+ * has been called on the parent.
+ */
+INLINE CollideMask PandaNode::DownConnection::
+get_net_collide_mask() const {
+  return _net_collide_mask;
+}
+
+/**
+ * Returns the external bounding volume of this child.  Requires that
+ * update_cached() has been called on the parent.
+ */
+INLINE const GeometricBoundingVolume *PandaNode::DownConnection::
+get_bounds() const {
+  return _external_bounds;
+}
+
+/**
+ * Compares the running draw mask computed during a traversal with this child's
+ * net draw masks.  Returns true if the child should be traversed into, or
+ * false if there is nothing at this level or below that will be visible to
+ * the indicated camera_mask.
+ */
+INLINE bool PandaNode::DownConnection::
+compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
+  // As a special case, if net_draw_show_mask is all 0, it means either that
+  // all nodes under this node are hidden to all cameras, or that none of them
+  // are renderable nodes (or some combination). In either case, we might as
+  // well short-circuit.
+  if (_net_draw_show_mask.is_zero()) {
+    return false;
+  }
+
+  DrawMask net_draw_control_mask, net_draw_show_mask;
+  net_draw_control_mask = _net_draw_control_mask;
+  net_draw_show_mask = _net_draw_show_mask;
+
+  // Now the bits that are not in net_draw_control_mask--that is, those bits
+  // that are not changed by any of the nodes at this level and below--are
+  // taken from running_draw_mask, which is inherited from above.  On the
+  // other hand, the bits that *are* in net_draw_control_mask--those bits that
+  // are changed by any of the nodes at this level and below--are taken from
+  // net_draw_show_mask, which is propagated upwards from below.
+
+  // This way, we will traverse into this node if it has any children which
+  // want to be visited by the traversal, but we will avoid traversing into it
+  // if all of its children are hidden to this camera.
+  DrawMask compare_mask = (running_draw_mask & ~net_draw_control_mask) | (net_draw_show_mask & net_draw_control_mask);
+
+  return !((compare_mask & PandaNode::_overall_bit).is_zero()) && !((compare_mask & camera_mask).is_zero());
 }
 
 /**
@@ -1352,6 +1392,18 @@ get_child(int n) const {
 }
 
 /**
+ * Returns the nth child node of this node.  See get_num_children().  Also see
+ * get_children(), if your intention is to iterate through the complete list
+ * of children; get_children() is preferable in this case.
+ */
+INLINE const PandaNode::DownConnection &PandaNodePipelineReader::
+get_child_connection(int n) const {
+  CPT(PandaNode::Down) down = _cdata->get_down();
+  //nassertr(n >= 0 && n < (int)down->size(), nullptr);
+  return (*down)[n];
+}
+
+/**
  * Returns the sort index of the nth child node of this node (that is, the
  * number that was passed to add_child()).  See get_num_children().
  */
@@ -1448,7 +1500,11 @@ get_transform() const {
  */
 const TransformState *PandaNodePipelineReader::
 get_prev_transform() const {
-  return _cdata->_prev_transform;
+  if (_node->_prev_transform_valid == PandaNode::_reset_prev_transform_seq) {
+    return _cdata->_prev_transform;
+  } else {
+    return _cdata->_transform;
+  }
 }
 
 /**
@@ -1474,6 +1530,14 @@ get_tag(const std::string &key) const {
 INLINE bool PandaNodePipelineReader::
 has_tag(const std::string &key) const {
   return _cdata->_tag_data.find(key) >= 0;
+}
+
+/**
+ * Returns the "into" collide mask for this node.
+ */
+INLINE CollideMask PandaNodePipelineReader::
+get_into_collide_mask() const {
+  return _cdata->_into_collide_mask;
 }
 
 /**

@@ -66,6 +66,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LPoint3) __rmul__(FLOATTYPE scalar) const);
+
   // Some special named constructors for LPoint3.
 
   INLINE_LINMATH static const FLOATNAME(LPoint3) &origin(CoordinateSystem cs = CS_default);

@@ -71,6 +71,9 @@ PUBLISHED:
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
   INLINE static CPT(RenderState) make_empty();
+  EXTENSION(static explicit CPT(RenderState) make(PyObject *args, PyObject *kwargs));
+
+public:
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
   static CPT(RenderState) make(const RenderAttrib *attrib1,
                                const RenderAttrib *attrib2, int override = 0);
@@ -89,6 +92,7 @@ PUBLISHED:
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
 
+PUBLISHED:
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
 
@@ -112,7 +116,7 @@ PUBLISHED:
 
   INLINE CPT(RenderState) get_unique() const;
 
-  virtual bool unref() const;
+  virtual bool unref() const final;
 
   INLINE void cache_ref() const;
   INLINE bool cache_unref() const;
@@ -145,6 +149,7 @@ PUBLISHED:
   static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
+  EXTENSION(static PyObject *get_unused_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
@@ -252,9 +257,6 @@ private:
   // two involved RenderState objects.
   class Composition {
   public:
-    INLINE Composition();
-    INLINE Composition(const Composition &copy);
-
     // _result is reference counted if and only if it is not the same pointer
     // as this.
     const RenderState *_result;

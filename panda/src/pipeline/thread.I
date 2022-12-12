@@ -75,7 +75,7 @@ get_pipeline_stage() const {
  */
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  set_pipeline_stage(std::max(_pipeline_stage, min_pipeline_stage));
+  set_pipeline_stage((std::max)(_pipeline_stage, min_pipeline_stage));
 }
 
 /**
@@ -191,7 +191,11 @@ is_simple_threads() {
 INLINE void Thread::
 sleep(double seconds) {
   TAU_PROFILE("void Thread::sleep(double)", " ", TAU_USER);
+#ifdef DO_PSTATS
+  _sleep_func(seconds);
+#else
   ThreadImpl::sleep(seconds);
+#endif
 }
 
 /**
@@ -200,7 +204,11 @@ sleep(double seconds) {
 INLINE void Thread::
 force_yield() {
   TAU_PROFILE("void Thread::yield()", " ", TAU_USER);
+#ifdef DO_PSTATS
+  _yield_func();
+#else
   ThreadImpl::yield();
+#endif
 }
 
 /**
@@ -212,6 +220,32 @@ INLINE void Thread::
 consider_yield() {
   TAU_PROFILE("void Thread::consider_yield()", " ", TAU_USER);
   ThreadImpl::consider_yield();
+}
+
+/**
+ * Equivalent to the pause instruction on x86 or the yield instruction on ARM,
+ * to be called in spin loops.
+ */
+INLINE void Thread::
+relax() {
+#ifdef _MSC_VER
+  YieldProcessor();
+#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64))
+  __asm__ __volatile__("pause");
+#elif __ARM_ARCH >= 7
+  __asm__ __volatile__ ("yield" ::: "memory");
+#endif
+}
+
+/**
+ * Returns thread statistics.  The first number is the total number of context
+ * switches reported by the OS, and the second number is the number of
+ * involuntary context switches (ie. the thread was scheduled out by the OS),
+ * if known.
+ */
+INLINE bool Thread::
+get_context_switches(size_t &total, size_t &involuntary) {
+  return ThreadImpl::get_context_switches(total, involuntary);
 }
 
 /**

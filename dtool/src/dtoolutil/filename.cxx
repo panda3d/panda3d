@@ -16,7 +16,6 @@
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 #include "vector_string.h"
-#include "atomicAdjust.h"
 
 #include <stdio.h>  // For rename() and tempnam()
 #include <time.h>   // for clock() and time()
@@ -60,10 +59,10 @@ using std::wstring;
 
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
-TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_temp_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_user_appdata_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_common_appdata_directory;
+patomic<Filename *> Filename::_home_directory(nullptr);
+patomic<Filename *> Filename::_temp_directory(nullptr);
+patomic<Filename *> Filename::_user_appdata_directory(nullptr);
+patomic<Filename *> Filename::_common_appdata_directory(nullptr);
 TypeHandle Filename::_type_handle;
 
 #ifdef ANDROID
@@ -152,10 +151,22 @@ get_panda_root() {
 
   if (panda_root == nullptr) {
     panda_root = new string;
+
+#ifdef _MSC_VER
+    char *envvar = nullptr;
+    size_t size = 0;
+    while (getenv_s(&size, envvar, size, "PANDA_ROOT") == ERANGE) {
+      envvar = (char *)alloca(size);
+    }
+    if (size != 0) {
+      (*panda_root) = front_to_back_slash(envvar);
+    }
+#else
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
+#endif
 
     // Ensure the string ends in a backslash.  If PANDA_ROOT is empty or
     // undefined, this function must return a single backslash--not an empty
@@ -474,10 +485,12 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
  */
 const Filename &Filename::
 get_home_directory() {
-  if (AtomicAdjust::get_ptr(_home_directory) == nullptr) {
+  Filename *curdir = _home_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename home_directory;
 
-    // In all environments, check $HOME first.
+    // In all environments except Windows, check $HOME first.
+#ifndef _WIN32
     char *home = getenv("HOME");
     if (home != nullptr) {
       Filename dirname = from_os_specific(home);
@@ -487,6 +500,7 @@ get_home_directory() {
         }
       }
     }
+#endif
 
     if (home_directory.empty()) {
 #ifdef _WIN32
@@ -524,14 +538,16 @@ get_home_directory() {
     }
 
     Filename *newdir = new Filename(home_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_home_directory, nullptr, newdir) != nullptr) {
+    if (_home_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_home_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_home_directory);
+  return *curdir;
 }
 
 /**
@@ -539,7 +555,8 @@ get_home_directory() {
  */
 const Filename &Filename::
 get_temp_directory() {
-  if (AtomicAdjust::get_ptr(_temp_directory) == nullptr) {
+  Filename *curdir = _temp_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename temp_directory;
 
 #ifdef _WIN32
@@ -572,14 +589,16 @@ get_temp_directory() {
     }
 
     Filename *newdir = new Filename(temp_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_temp_directory, nullptr, newdir) != nullptr) {
+    if (_temp_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_temp_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_temp_directory);
+  return *curdir;
 }
 
 /**
@@ -589,7 +608,8 @@ get_temp_directory() {
  */
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_user_appdata_directory) == nullptr) {
+  Filename *curdir = _user_appdata_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename user_appdata_directory;
 
 #ifdef _WIN32
@@ -629,14 +649,16 @@ get_user_appdata_directory() {
     }
 
     Filename *newdir = new Filename(user_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_user_appdata_directory, nullptr, newdir) != nullptr) {
+    if (_user_appdata_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_user_appdata_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_user_appdata_directory);
+  return *curdir;
 }
 
 /**
@@ -645,7 +667,8 @@ get_user_appdata_directory() {
  */
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_common_appdata_directory) == nullptr) {
+  Filename *curdir = _common_appdata_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename common_appdata_directory;
 
 #ifdef _WIN32
@@ -679,14 +702,16 @@ get_common_appdata_directory() {
     }
 
     Filename *newdir = new Filename(common_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_common_appdata_directory, nullptr, newdir) != nullptr) {
+    if (_common_appdata_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_common_appdata_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_common_appdata_directory);
+  return *curdir;
 }
 
 /**
@@ -1876,13 +1901,13 @@ open_read(std::ifstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
   stream.open(os_specific.c_str(), open_mode);
-#endif  // _WIN32
+#endif  // _MSC_VER
 
   return (!stream.fail());
 }
@@ -1926,11 +1951,11 @@ open_write(std::ofstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -1958,11 +1983,11 @@ open_append(std::ofstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2000,11 +2025,11 @@ open_read_write(std::fstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2032,11 +2057,11 @@ open_read_append(std::fstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef _WIN32
+#ifdef _MSC_VER
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // _WIN32
+#endif  // _MSC_VER
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());

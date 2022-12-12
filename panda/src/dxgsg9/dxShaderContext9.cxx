@@ -693,7 +693,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
         continue;
       }
 
-      if (spec._suffix != 0) {
+      if (spec._suffix != nullptr) {
         // The suffix feature is inefficient.  It is a temporary hack.
         tex = tex->load_related(spec._suffix);
       }

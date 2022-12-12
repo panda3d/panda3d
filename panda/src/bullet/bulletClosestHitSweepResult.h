@@ -20,13 +20,14 @@
 #include "bullet_utils.h"
 
 #include "luse.h"
+#include "memoryBase.h"
 #include "pandaNode.h"
 #include "collideMask.h"
 
 /**
  *
  */
-struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::ClosestConvexResultCallback {
+struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::ClosestConvexResultCallback, public MemoryBase {
 
 PUBLISHED:
   INLINE static BulletClosestHitSweepResult empty();

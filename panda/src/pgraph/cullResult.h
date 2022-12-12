@@ -78,6 +78,7 @@ private:
   static const RenderState *get_dual_opaque_state();
   static const RenderState *get_wireframe_filled_state();
   static CPT(RenderState) get_wireframe_overlay_state(const RenderModeAttrib *rmode);
+  static CPT(RenderState) get_wireframe_overlay_state(const RenderModeAttrib *rmode, const ShaderAttrib *shader);
 
   GraphicsStateGuardianBase *_gsg;
   PStatCollector _draw_region_pcollector;

@@ -13,7 +13,7 @@
 
 #include "eglGraphicsWindow.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
@@ -80,7 +80,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == nullptr) {
     return false;
   }
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     // Don't attempt to draw while we have just reconfigured the window and we
     // haven't got the notification back yet.
     return false;
@@ -279,4 +279,4 @@ open_window() {
   return true;
 }
 
-#endif  // HAVE_X11
+#endif  // USE_X11

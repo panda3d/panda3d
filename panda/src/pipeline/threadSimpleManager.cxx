@@ -233,6 +233,8 @@ next_context() {
     unref_delete(finished_thread->_parent_obj);
   }
 
+  ++_current_thread->_context_switches;
+
   // Mark the current thread's resume point.
 
 #ifdef HAVE_PYTHON

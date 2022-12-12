@@ -44,10 +44,10 @@ private:
     std::string _data;
   };
 
-  AndroidLogStream(int priority);
-
 public:
+  AndroidLogStream(int priority);
   virtual ~AndroidLogStream();
+
   static std::ostream &out(NotifySeverity severity);
 };
 

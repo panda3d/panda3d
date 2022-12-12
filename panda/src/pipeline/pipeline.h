@@ -50,6 +50,7 @@ public:
 
 #ifdef THREADED_PIPELINE
   void add_cycler(PipelineCyclerTrueImpl *cycler);
+  void add_cycler(PipelineCyclerTrueImpl *cycler, bool dirty);
   void add_dirty_cycler(PipelineCyclerTrueImpl *cycler);
   void remove_cycler(PipelineCyclerTrueImpl *cycler);
 

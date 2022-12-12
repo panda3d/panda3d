@@ -14,75 +14,49 @@
 #include "gtkStatsLabel.h"
 #include "gtkStatsMonitor.h"
 #include "gtkStatsGraph.h"
+#include "convert_srgb.h"
 
-int GtkStatsLabel::_left_margin = 2;
+int GtkStatsLabel::_left_margin = 6;
 int GtkStatsLabel::_right_margin = 2;
-int GtkStatsLabel::_top_margin = 2;
-int GtkStatsLabel::_bottom_margin = 2;
+int GtkStatsLabel::_top_margin = 1;
+int GtkStatsLabel::_bottom_margin = 1;
 
 /**
  *
  */
 GtkStatsLabel::
 GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
-              int thread_index, int collector_index, bool use_fullname) :
+              int thread_index, int collector_index, bool use_fullname,
+              bool align_right) :
   _monitor(monitor),
   _graph(graph),
   _thread_index(thread_index),
-  _collector_index(collector_index)
+  _collector_index(collector_index),
+  _align_right(align_right)
 {
-  _widget = nullptr;
-  if (use_fullname) {
-    _text = _monitor->get_client_data()->get_collector_fullname(_collector_index);
-  } else {
-    _text = _monitor->get_client_data()->get_collector_name(_collector_index);
-  }
-
   _widget = gtk_drawing_area_new();
   gtk_widget_add_events(_widget,
       GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
       GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(_widget), "expose_event",
-       G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "draw",
+       G_CALLBACK(draw_callback), this);
   g_signal_connect(G_OBJECT(_widget), "enter_notify_event",
        G_CALLBACK(enter_notify_event_callback), this);
   g_signal_connect(G_OBJECT(_widget), "leave_notify_event",
        G_CALLBACK(leave_notify_event_callback), this);
   g_signal_connect(G_OBJECT(_widget), "button_press_event",
        G_CALLBACK(button_press_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "query-tooltip",
+       G_CALLBACK(query_tooltip_callback), this);
 
-  gtk_widget_show(_widget);
-
-  // Make up a PangoLayout to represent the text.
-  _layout = gtk_widget_create_pango_layout(_widget, _text.c_str());
-
-  // Set the fg and bg colors on the label.
-  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  _bg_color.red = (int)(rgb[0] * 65535.0f);
-  _bg_color.green = (int)(rgb[1] * 65535.0f);
-  _bg_color.blue = (int)(rgb[2] * 65535.0f);
-
-  // Should our foreground be black or white?
-  double bright =
-    rgb[0] * 0.299 +
-    rgb[1] * 0.587 +
-    rgb[2] * 0.114;
-
-  if (bright >= 0.5) {
-    _fg_color.red = _fg_color.green = _fg_color.blue = 0;
-  } else {
-    _fg_color.red = _fg_color.green = _fg_color.blue = 0xffff;
-  }
-
-  // What are the extents of the text?  This determines the minimum size of
-  // our widget.
-  int width, height;
-  pango_layout_get_pixel_size(_layout, &width, &height);
-  gtk_widget_set_size_request(_widget, width + 8, height);
+  gtk_widget_set_has_tooltip(_widget, TRUE);
 
   _highlight = false;
   _mouse_within = false;
-  _height = height;
+
+  update_color();
+  update_text(use_fullname);
+  gtk_widget_show_all(_widget);
 }
 
 /**
@@ -90,7 +64,10 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
  */
 GtkStatsLabel::
 ~GtkStatsLabel() {
-  // DeleteObject(_bg_brush);
+  if (_layout) {
+    g_object_unref(_layout);
+    _layout = nullptr;
+  }
 }
 
 /**
@@ -145,6 +122,66 @@ get_highlight() const {
 }
 
 /**
+ * Updates the colors.
+ */
+void GtkStatsLabel::
+update_color() {
+  // Set the fg and bg colors on the label.
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
+  _bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
+
+  _highlight_bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
+
+  // Should our foreground be black or white?
+  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
+  if (bright >= 0.5) {
+    _fg_color = LRGBColor(0);
+  } else {
+    _fg_color = LRGBColor(1);
+  }
+  if (bright * 0.75 >= 0.5) {
+    _highlight_fg_color = LRGBColor(0);
+  } else {
+    _highlight_fg_color = LRGBColor(1);
+  }
+
+  gtk_widget_queue_draw(_widget);
+}
+
+/**
+ * Set to true if the full name of the collector should be shown.
+ */
+void GtkStatsLabel::
+update_text(bool use_fullname) {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (use_fullname) {
+    _text = client_data->get_collector_fullname(_collector_index);
+  } else {
+    _text = client_data->get_collector_name(_collector_index);
+  }
+
+  // Make up a PangoLayout to represent the text.
+  if (_layout) {
+    g_object_unref(_layout);
+  }
+  _layout = gtk_widget_create_pango_layout(_widget, _text.c_str());
+
+  // What are the extents of the text?  This determines the minimum size of
+  // our widget.
+  int width, height;
+  pango_layout_get_pixel_size(_layout, &width, &height);
+  _ideal_width = width + _left_margin + _right_margin;
+  _height = height + _top_margin + _bottom_margin;
+  gtk_widget_set_size_request(_widget, _ideal_width, _height);
+}
+
+/**
  * Used internally to indicate whether the mouse is within the label's widget.
  */
 void GtkStatsLabel::
@@ -159,31 +196,37 @@ set_mouse_within(bool mouse_within) {
  * Draws the background color of the label.
  */
 gboolean GtkStatsLabel::
-expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
 
-  GdkGC *gc = gdk_gc_new(widget->window);
-  gdk_gc_set_rgb_fg_color(gc, &self->_bg_color);
+  LRGBColor bg, fg;
+  if (self->_highlight || self->_mouse_within) {
+    bg = self->_highlight_bg_color;
+    fg = self->_highlight_fg_color;
+  } else {
+    bg = self->_bg_color;
+    fg = self->_fg_color;
 
-  gdk_draw_rectangle(widget->window, gc, TRUE, 0, 0,
-         widget->allocation.width, widget->allocation.height);
+  }
+  cairo_set_source_rgb(cr, bg[0], bg[1], bg[2]);
 
-  // Center the text within the rectangle.
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+  cairo_fill(cr);
+
   int width, height;
   pango_layout_get_pixel_size(self->_layout, &width, &height);
 
-  gdk_gc_set_rgb_fg_color(gc, &self->_fg_color);
-  gdk_draw_layout(widget->window, gc,
-      (widget->allocation.width - width) / 2, 0,
-      self->_layout);
-
-  // Now draw the highlight rectangle, if any.
-  if (self->_highlight || self->_mouse_within) {
-    gdk_draw_rectangle(widget->window, gc, FALSE, 0, 0,
-           widget->allocation.width - 1, widget->allocation.height - 1);
+  cairo_set_source_rgb(cr, fg[0], fg[1], fg[2]);
+  if (self->_align_right) {
+    cairo_move_to(cr, allocation.width - width - _right_margin, _top_margin);
+  } else {
+    cairo_move_to(cr, _left_margin, _top_margin);
   }
+  pango_cairo_show_layout(cr, self->_layout);
 
-  g_object_unref(gc);
   return TRUE;
 }
 
@@ -203,7 +246,7 @@ enter_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
  */
 gboolean GtkStatsLabel::
 leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
-          gpointer data) {
+                            gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
   self->set_mouse_within(false);
   return TRUE;
@@ -214,11 +257,27 @@ leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
  */
 gboolean GtkStatsLabel::
 button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
-          gpointer data) {
+                            gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
-  bool double_click = (event->type == GDK_2BUTTON_PRESS);
-  if (double_click) {
-    self->_graph->clicked_label(self->_collector_index);
+  if (event->type == GDK_2BUTTON_PRESS && event->button == 1) {
+    self->_graph->on_click_label(self->_collector_index);
+  }
+  else if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
+    self->_graph->on_popup_label(self->_collector_index);
   }
   return TRUE;
+}
+
+/**
+ * Called when a tooltip should be displayed.
+ */
+gboolean GtkStatsLabel::
+query_tooltip_callback(GtkWidget *widget, gint x, gint y,
+                       gboolean keyboard_tip, GtkTooltip *tooltip,
+                       gpointer data) {
+  GtkStatsLabel *self = (GtkStatsLabel *)data;
+
+  std::string text = self->_graph->get_label_tooltip(self->_collector_index);
+  gtk_tooltip_set_text(tooltip, text.c_str());
+  return !text.empty();
 }

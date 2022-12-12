@@ -45,6 +45,10 @@ target_interrogate(p3text ALL)
 
 if(HAVE_HARFBUZZ)
   target_compile_definitions(p3text PRIVATE HAVE_HARFBUZZ)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_link_options(p3text PRIVATE "LINKER:--exclude-libs,libharfbuzz.a")
+  endif()
 endif()
 
 if(NOT BUILD_METALIBS)

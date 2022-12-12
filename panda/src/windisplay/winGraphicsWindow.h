@@ -77,8 +77,6 @@ public:
 
   virtual void close_ime();
 
-  virtual void begin_flip();
-
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
   void receive_windows_message(unsigned int msg, int wparam, int lparam);
@@ -172,7 +170,6 @@ private:
   bool _ime_open;
   bool _ime_active;
   bool _tracking_mouse_leaving;
-  bool _bCursor_in_WindowClientArea;
   HANDLE _input_device_handle[32];
   HCURSOR _cursor;
   DEVMODE _fullscreen_display_mode;

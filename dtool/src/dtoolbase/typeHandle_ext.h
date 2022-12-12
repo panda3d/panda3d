@@ -30,6 +30,9 @@ template<>
 class Extension<TypeHandle> : public ExtensionBase<TypeHandle> {
 public:
   static TypeHandle make(PyTypeObject *tp);
+
+  PyObject *__reduce__() const;
+  void __setstate__(PyObject *);
 };
 
 #endif  // HAVE_PYTHON

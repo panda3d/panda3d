@@ -228,7 +228,7 @@ class BufferViewer(DirectObject):
         be precise so that the frame exactly aligns to pixel
         boundaries, and so that it doesn't overlap the card at all."""
 
-        format = GeomVertexFormat.getV3cp()
+        format = GeomVertexFormat.getV3c()
         vdata = GeomVertexData('card-frame', format, Geom.UHDynamic)
 
         vwriter = GeomVertexWriter(vdata, 'vertex')
@@ -240,10 +240,10 @@ class BufferViewer(DirectObject):
             offsetx = (ringoffset[ring]*2.0) / float(sizex)
             offsety = (ringoffset[ring]*2.0) / float(sizey)
             bright = ringbright[ring]
-            vwriter.addData3f(-1-offsetx, 0, -1-offsety)
-            vwriter.addData3f(1+offsetx, 0, -1-offsety)
-            vwriter.addData3f(1+offsetx, 0,  1+offsety)
-            vwriter.addData3f(-1-offsetx, 0,  1+offsety)
+            vwriter.addData3f(Vec3F.rfu(-1 - offsetx, 0, -1 - offsety))
+            vwriter.addData3f(Vec3F.rfu( 1 + offsetx, 0, -1 - offsety))
+            vwriter.addData3f(Vec3F.rfu( 1 + offsetx, 0,  1 + offsety))
+            vwriter.addData3f(Vec3F.rfu(-1 - offsetx, 0,  1 + offsety))
             cwriter.addData3f(bright, bright, bright)
             cwriter.addData3f(bright, bright, bright)
             cwriter.addData3f(bright, bright, bright)

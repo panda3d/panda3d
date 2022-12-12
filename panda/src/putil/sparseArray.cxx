@@ -215,21 +215,28 @@ has_bits_in_common(const SparseArray &other) const {
  */
 void SparseArray::
 output(std::ostream &out) const {
+  if (_subranges.empty()) {
+    out << (_inverse ? "[ all ]" : "[ ]");
+    return;
+  }
   out << "[ ";
   if (_inverse) {
     out << "all except: ";
   }
   Subranges::const_iterator si;
   for (si = _subranges.begin(); si != _subranges.end(); ++si) {
+    if (si != _subranges.begin()) {
+      out << ", ";
+    }
     if ((*si)._end == (*si)._begin + 1) {
       // A single element.
-      out << (*si)._begin << ", ";
+      out << (*si)._begin;
     } else {
       // A range of elements.
-      out << (*si)._begin << "-" << ((*si)._end - 1) << ", ";
+      out << (*si)._begin << "-" << ((*si)._end - 1);
     }
   }
-  out << "]";
+  out << " ]";
 }
 
 /**

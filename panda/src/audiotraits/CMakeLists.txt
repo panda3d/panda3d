@@ -60,6 +60,11 @@ if(HAVE_OPENAL)
   set_target_properties(p3openal_audio PROPERTIES DEFINE_SYMBOL BUILDING_OPENAL_AUDIO)
   target_link_libraries(p3openal_audio panda PKG::OPENAL)
 
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # When statically linking OpenAL, keep its symbols private to this module.
+    target_link_options(p3openal_audio PRIVATE "LINKER:--exclude-libs,libopenal.a")
+  endif()
+
   install(TARGETS p3openal_audio
     EXPORT OpenAL COMPONENT OpenAL
     DESTINATION ${CMAKE_INSTALL_LIBDIR}

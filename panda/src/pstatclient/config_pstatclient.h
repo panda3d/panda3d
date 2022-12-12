@@ -38,6 +38,8 @@ extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_host;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableInt pstats_port;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_target_frame_rate;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_gpu_timing;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_thread_profiling;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_python_profiler;
 
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_scroll_mode;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_history;

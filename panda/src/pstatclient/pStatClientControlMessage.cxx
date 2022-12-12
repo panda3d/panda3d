@@ -39,6 +39,7 @@ encode(Datagram &datagram) const {
     datagram.add_string(_client_progname);
     datagram.add_uint16(_major_version);
     datagram.add_uint16(_minor_version);
+    datagram.add_uint32(_client_pid);
     break;
 
   case T_define_collectors:
@@ -58,6 +59,10 @@ encode(Datagram &datagram) const {
         datagram.add_string(_names[i]);
       }
     }
+    break;
+
+  case T_expire_thread:
+    datagram.add_uint16(_first_thread_index);
     break;
 
   default:
@@ -86,6 +91,11 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
       _major_version = source.get_uint16();
       _minor_version = source.get_uint16();
     }
+    if (source.get_remaining_size() >= 4) {
+      _client_pid = source.get_uint32();
+    } else {
+      _client_pid = -1;
+    }
     break;
 
   case T_define_collectors:
@@ -109,6 +119,10 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
         _names.push_back(source.get_string());
       }
     }
+    break;
+
+  case T_expire_thread:
+    _first_thread_index = source.get_uint16();
     break;
 
   case T_datagram:

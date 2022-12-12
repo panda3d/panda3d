@@ -48,7 +48,7 @@ init_libegldisplay() {
 
   eglGraphicsBuffer::init_type();
   eglGraphicsPipe::init_type();
-#ifdef HAVE_X11
+#ifdef USE_X11
   eglGraphicsPixmap::init_type();
   eglGraphicsWindow::init_type();
 #endif

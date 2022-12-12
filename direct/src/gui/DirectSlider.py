@@ -58,8 +58,7 @@ class DirectSlider(DirectFrame):
         self.thumb = self.createcomponent("thumb", (), None,
                                           DirectButton, (self,),
                                           borderWidth = self['borderWidth'])
-        if self.thumb['frameSize'] is None and \
-           self.thumb.bounds == [0.0, 0.0, 0.0, 0.0]:
+        if self.thumb['frameSize'] is None:
             # Compute a default frameSize for the thumb.
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:

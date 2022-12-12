@@ -607,6 +607,14 @@ get_modified() const {
 /**
  *
  */
+INLINE const GeomVertexArrayData *GeomPrimitivePipelineReader::
+get_vertices() const {
+  return _vertices.p();
+}
+
+/**
+ *
+ */
 INLINE int GeomPrimitivePipelineReader::
 get_index_stride() const {
   nassertr(is_indexed(), 0);

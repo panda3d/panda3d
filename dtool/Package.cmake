@@ -1,5 +1,5 @@
 set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
-if(NOT (APPLE OR WIN32) OR NOT IS_DIRECTORY "${_thirdparty_dir_default}")
+if(NOT IS_DIRECTORY "${_thirdparty_dir_default}")
   set(_thirdparty_dir_default "")
 endif()
 
@@ -46,6 +46,27 @@ if(THIRDPARTY_DIRECTORY)
 
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-arm64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-x64)
+    else()
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-a)
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-arm64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-x64)
+    else()
+      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-a)
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
 
   else()
     message(FATAL_ERROR
@@ -190,19 +211,6 @@ if(Python_FOUND)
   set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
   set(PYTHON_LIBRARY_DIRS ${Python_LIBRARY_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
-
-elseif(CMAKE_VERSION VERSION_LESS "3.12")
-  find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
-  find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
-
-  if(PYTHONLIBS_FOUND)
-    set(PYTHON_FOUND ON)
-
-    if(NOT PYTHON_VERSION_STRING)
-      set(PYTHON_VERSION_STRING ${PYTHONLIBS_VERSION_STRING})
-    endif()
-  endif()
-
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.15")
@@ -369,14 +377,22 @@ package_option(TIFF "Enable support for loading .tif images.")
 package_status(TIFF "libtiff")
 
 # OpenEXR
-find_package(OpenEXR QUIET MODULE)
+find_package(OpenEXR QUIET)
 
-package_option(OpenEXR "Enable support for loading .exr images.")
+if (TARGET OpenEXR::IlmImf AND NOT TARGET OpenEXR::OpenEXR)
+  package_option(OpenEXR
+    "Enable support for loading .exr images."
+    IMPORTED_AS OpenEXR::IlmImf)
+else()
+  package_option(OpenEXR
+    "Enable support for loading .exr images."
+    IMPORTED_AS OpenEXR::OpenEXR)
+endif()
 
 package_status(OpenEXR "OpenEXR")
 
 # libsquish
-find_package(LibSquish QUIET)
+find_package(LibSquish QUIET MODULE)
 
 package_option(SQUISH
   "Enables support for automatic compression of DXT textures."
@@ -556,16 +572,17 @@ package_option(HarfBuzz
 
 package_status(HarfBuzz "HarfBuzz")
 
-# GTK2
+# GTK3
 
-set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-find_package(GTK2 QUIET COMPONENTS gtk)
+if(NOT WIN32)
+  find_package(GTK3 QUIET)
+endif()
 
-package_option(GTK2)
+package_option(GTK3
+  "This is necessary to build the PStats performance analysis tool on platforms
+  other than Windows.")
 
-package_status(GTK2 "gtk+-2")
-
+package_status(GTK3 "gtk+-3")
 
 #
 # ------------ Physics engines ------------

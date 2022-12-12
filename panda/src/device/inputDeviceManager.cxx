@@ -40,7 +40,7 @@ make_global_ptr() {
   _global_ptr = new WinInputDeviceManager;
 #elif defined(__APPLE__)
   _global_ptr = new IOKitInputDeviceManager;
-#elif defined(PHAVE_LINUX_INPUT_H)
+#elif defined(PHAVE_LINUX_INPUT_H) && !defined(ANDROID)
   _global_ptr = new LinuxInputDeviceManager;
 #else
   _global_ptr = new InputDeviceManager;

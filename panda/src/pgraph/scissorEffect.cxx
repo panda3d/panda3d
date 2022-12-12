@@ -278,7 +278,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   PT(GeometricBoundingVolume) frustum = make_frustum(lens, frame);
   if (frustum != nullptr) {
     frustum->xform(modelview_transform->get_inverse()->get_mat());
-    data._view_frustum = frustum;
+    data.set_view_frustum(std::move(frustum));
   }
 }
 

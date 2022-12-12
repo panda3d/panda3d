@@ -351,7 +351,7 @@ clear_custom_film_mat() {
  * nearly perpendicular to the center of the frustum as possible.  Without
  * this bit, the orientation camera plane is defined by position of the four
  * points (which should all be coplanar).  With this bit, the camera plane is
- * arbitarary, and may be chosen so that the four points do not themselves lie
+ * arbitrary, and may be chosen so that the four points do not themselves lie
  * in the camera plane (but the points will still be within the frustum).
  *
  * FC_off_axis - This allows the resulting frustum to be off-axis to get the

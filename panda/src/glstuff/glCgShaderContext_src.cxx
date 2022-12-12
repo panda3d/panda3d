@@ -908,11 +908,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
-
-        } else {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+        else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {
@@ -1113,14 +1111,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    if (spec._suffix != 0) {
+    if (spec._suffix != nullptr) {
       // The suffix feature is inefficient.  It is a temporary hack.
-      if (tex == 0) {
+      if (tex == nullptr) {
         continue;
       }
       tex = tex->load_related(spec._suffix);
     }
-    if ((tex == 0) || (tex->get_texture_type() != spec._desired_type)) {
+    if (tex == nullptr || tex->get_texture_type() != spec._desired_type) {
       continue;
     }
 

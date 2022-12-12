@@ -82,10 +82,10 @@ get_uint8() {
 }
 
 /**
- * Extracts a signed 16-bit integer.
+ * Extracts a signed 16-bit integer without advancing the iterator.
  */
 INLINE int16_t DatagramIterator::
-get_int16() {
+peek_int16() {
   nassertr(_datagram != nullptr, 0);
   nassertr(_current_index < _datagram->get_length(), 0);
 
@@ -95,8 +95,35 @@ get_int16() {
   // Get the Data:
   LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
-  _current_index += sizeof(tempvar);
 
+  return tempvar;
+}
+
+/**
+ * Extracts an unsigned 16-bit integer without advancing the iterator.
+ */
+INLINE uint16_t DatagramIterator::
+peek_uint16() {
+  nassertr(_datagram != nullptr, 0);
+  nassertr(_current_index < _datagram->get_length(), 0);
+
+  uint16_t tempvar;
+  // Avoid reading junk data off the end of the datagram:
+  nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
+  // Get the Data:
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
+  s.store_value(&tempvar, sizeof(tempvar));
+
+  return tempvar;
+}
+
+/**
+ * Extracts a signed 16-bit integer.
+ */
+INLINE int16_t DatagramIterator::
+get_int16() {
+  int16_t tempvar = peek_int16();
+  _current_index += sizeof(tempvar);
   return tempvar;
 }
 
@@ -143,17 +170,8 @@ get_int64() {
  */
 INLINE uint16_t DatagramIterator::
 get_uint16() {
-  nassertr(_datagram != nullptr, 0);
-  nassertr(_current_index < _datagram->get_length(), 0);
-
-  uint16_t tempvar;
-  // Avoid reading junk data off the end of the datagram:
-  nassertr(_current_index + sizeof(tempvar) <= _datagram->get_length(), 0);
-  // Get the Data:
-  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
-  s.store_value(&tempvar, sizeof(tempvar));
+  uint16_t tempvar = peek_uint16();
   _current_index += sizeof(tempvar);
-
   return tempvar;
 }
 

@@ -85,6 +85,10 @@ static const struct DeviceMapping {
   {0x2563, 0x0523, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
+  // FrSky Simulator
+  {0x0483, 0x5720, InputDevice::DeviceClass::flight_stick, 0,
+    {0}
+  },
   {0},
 };
 
@@ -401,7 +405,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.Range.UsageMin << "..0x" << cap.Range.UsageMax
           << dec << ", LogicalMin=" << cap.LogicalMin
-          << ", LogicalMax=" << cap.LogicalMax << "\n";
+          << ", LogicalMax=" << cap.LogicalMax
+          << ", BitSize=" << cap.BitSize << "\n";
       }
     } else {
       if (device_cat.is_debug()) {
@@ -411,7 +416,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << ", LogicalMin=" << cap.LogicalMin
-          << ", LogicalMax=" << cap.LogicalMax << "\n";
+          << ", LogicalMax=" << cap.LogicalMax
+          << ", BitSize=" << cap.BitSize << "\n";
       }
     }
 
@@ -424,7 +430,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
       // My gamepads give this odd invalid range.
       if (cap.LogicalMin == 0 && cap.LogicalMax == -1) {
-        cap.LogicalMax = 65535;
+        cap.LogicalMax = (1 << cap.BitSize) - 1;
         is_signed = false;
       }
 
@@ -558,6 +564,17 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         }
       }
 
+      int sign_bit = 0;
+      if (cap.BitSize < 32) {
+        if (cap.LogicalMin < 0) {
+          sign_bit = 1 << (cap.BitSize - 1);
+        }
+        else if (is_signed) {
+          //XXX is this still necessary?
+          sign_bit = (1 << 15);
+        }
+      }
+
       int axis_index;
       if (!is_signed) {
         // All axes on the weird XInput-style mappings go from -1 to 1
@@ -565,7 +582,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       } else {
         axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax);
       }
-      _indices[data_index] = Index::axis(axis_index, is_signed);
+      _indices[data_index] = Index::axis(axis_index, sign_bit);
     }
   }
 
@@ -663,11 +680,31 @@ process_report(PCHAR ptr, size_t size) {
   if (status == HIDP_STATUS_SUCCESS) {
     for (ULONG di = 0; di < count; ++di) {
       if (data[di].DataIndex != _hat_data_index) {
-        nassertd(data[di].DataIndex < _indices.size()) continue;
+        if (device_cat.is_spam()) {
+          device_cat.spam()
+            << "Read RawValue " << data[di].RawValue
+            << " for DataIndex " << data[di].DataIndex
+            << " from raw device " << _path << "\n";
+        }
+
+        if (data[di].DataIndex >= _indices.size()) {
+          if (device_cat.is_debug()) {
+            device_cat.debug()
+              << "Ignoring out of range DataIndex " << data[di].DataIndex
+              << "from raw device " << _path << "\n";
+          }
+          continue;
+        }
+
         const Index &idx = _indices[data[di].DataIndex];
         if (idx._axis >= 0) {
-          if (idx._signed) {
-            axis_changed(idx._axis, (SHORT)data[di].RawValue);
+          if (idx._sign_bit != 0) {
+            // Sign extend.
+            int value = data[di].RawValue;
+            if (value & idx._sign_bit) {
+              value -= (idx._sign_bit << 1);
+            }
+            axis_changed(idx._axis, value);
           } else {
             axis_changed(idx._axis, data[di].RawValue);
           }

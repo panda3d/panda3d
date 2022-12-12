@@ -41,6 +41,8 @@ public:
   void add_name(const std::string &name);
   void add_name(const CPPNameComponent &name);
 
+  void prepend(CPPIdentifier *ident);
+
   bool operator == (const CPPIdentifier &other) const;
   bool operator != (const CPPIdentifier &other) const;
   bool operator < (const CPPIdentifier &other) const;

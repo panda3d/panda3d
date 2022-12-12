@@ -14,9 +14,17 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-// Cocoa is picky about where and when certain methods are called in the initialization process.
-@interface CocoaPandaAppDelegate : NSObject<NSApplicationDelegate>
+class GraphicsEngine;
 
+// Cocoa is picky about where and when certain methods are called in the initialization process.
+@interface CocoaPandaAppDelegate : NSObject<NSApplicationDelegate> {
+  @private
+    GraphicsEngine *_engine;
+}
+
+- (id) initWithEngine:(GraphicsEngine *)engine;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
+- (BOOL)applicationShouldTerminate:(NSApplication *)app;
+- (void)applicationWillTerminate:(NSNotification *)notification;
 
 @end

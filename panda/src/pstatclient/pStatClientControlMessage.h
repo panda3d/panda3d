@@ -39,6 +39,7 @@ public:
     T_hello,
     T_define_collectors,
     T_define_threads,
+    T_expire_thread,
     T_invalid
   };
 
@@ -47,6 +48,7 @@ public:
   // Used for T_hello
   std::string _client_hostname;
   std::string _client_progname;
+  int _client_pid;
   int _major_version;
   int _minor_version;
 

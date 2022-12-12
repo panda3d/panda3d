@@ -259,10 +259,14 @@ ns_has_environment_variable(const string &var) const {
     return true;
   }
 
-#ifndef PREREAD_ENVIRONMENT
-  return getenv(var.c_str()) != nullptr;
-#else
+#ifdef PREREAD_ENVIRONMENT
   return false;
+#elif defined(_MSC_VER)
+  size_t size = 0;
+  getenv_s(&size, nullptr, 0, var.c_str());
+  return size != 0;
+#else
+  return getenv(var.c_str()) != nullptr;
 #endif
 }
 
@@ -301,10 +305,23 @@ ns_get_environment_variable(const string &var) const {
   }
 
 #ifndef PREREAD_ENVIRONMENT
+#ifdef _MSC_VER
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    return value;
+  }
+#else
   const char *def = getenv(var.c_str());
   if (def != nullptr) {
     return def;
   }
+#endif
 #endif
 
 #ifdef _WIN32
@@ -401,6 +418,10 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "XDG_DATA_HOME") {
     Filename home_dir = Filename::get_home_directory();
     return home_dir.get_fullpath() + "/.local/share";
+
+  } else if (var == "XDG_STATE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/state";
   }
 #endif // _WIN32
 
@@ -414,14 +435,15 @@ ns_get_environment_variable(const string &var) const {
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
+
+#ifdef _MSC_VER
+  _putenv_s(var.c_str(), value.c_str());
+#else
   string putstr = var + "=" + value;
 
   // putenv() requires us to malloc a new C-style string.
   char *put = (char *)malloc(putstr.length() + 1);
   strcpy(put, putstr.c_str());
-#ifdef _MSC_VER
-  _putenv(put);
-#else
   putenv(put);
 #endif
 }
@@ -447,12 +469,27 @@ ns_clear_shadow(const string &var) {
 
 #ifdef PREREAD_ENVIRONMENT
   // Now we have to replace the value in the table.
+#ifdef _MSC_VER
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    (*vi).second = std::move(value);
+  } else {
+    _variables.erase(vi);
+  }
+#else
   const char *def = getenv(var.c_str());
   if (def != nullptr) {
     (*vi).second = def;
   } else {
     _variables.erase(vi);
   }
+#endif
 #endif  // PREREAD_ENVIRONMENT
 }
 

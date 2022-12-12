@@ -66,14 +66,11 @@ make_copy() {
  * Compute parameters for each of the box's sides
  */
 void CollisionBox::
-setup_box(){
-  for(int plane = 0; plane < 6; plane++) {
-    LPoint3 array[4];
-    array[0] = get_point(plane_def[plane][0]);
-    array[1] = get_point(plane_def[plane][1]);
-    array[2] = get_point(plane_def[plane][2]);
-    array[3] = get_point(plane_def[plane][3]);
-    setup_points(array, array+4, plane);
+setup_box() {
+  assert(sizeof(_points) / sizeof(_points[0]) == 6);
+  assert(sizeof(_points[0]) / sizeof(_points[0][0]) == 4);
+  for (int plane = 0; plane < 6; plane++) {
+    setup_points(plane);
   }
 }
 
@@ -81,11 +78,8 @@ setup_box(){
  * Computes the plane and 2d projection of points that make up this side.
  */
 void CollisionBox::
-setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
-  int num_points = end - begin;
-  nassertv(num_points >= 3);
-
-  _points[plane].clear();
+setup_points(int plane) {
+  PointDef *points = _points[plane];
 
   // Construct a matrix that rotates the points from the (X,0,Z) plane into
   // the 3-d plane.
@@ -96,32 +90,15 @@ setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
   _to_2d_mat[plane].invert_from(to_3d_mat);
 
   // Now project all of the points onto the 2-d plane.
-
-  const LPoint3 *pi;
-  for (pi = begin; pi != end; ++pi) {
-    LPoint3 point = (*pi) * _to_2d_mat[plane];
-    _points[plane].push_back(PointDef(point[0], point[2]));
+  for (size_t i = 0; i < 4; ++i) {
+    LPoint3 point = get_point(plane_def[plane][i]) * _to_2d_mat[plane];
+    points[i] = PointDef(point[0], point[2]);
   }
 
-  nassertv(_points[plane].size() >= 3);
-
-#ifndef NDEBUG
-  /*
-  // Now make sure the points define a convex polygon.
-  if (is_concave()) {
-  collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
-  const LPoint3 *pi;
-  for (pi = begin; pi != end; ++pi) {
-  collide_cat.error(false) << "  " << (*pi) << "\n";
+  for (size_t i = 0; i < 4; i++) {
+    points[i]._v = points[(i + 1) % 4]._p - points[i]._p;
+    points[i]._v.normalize();
   }
-  collide_cat.error(false)
-  << "  normal " << normal << " with length " << normal.length() << "\n";
-  _points.clear();
-  }
-  */
-#endif
-
-  compute_vectors(_points[plane]);
 }
 
 /**
@@ -146,10 +123,6 @@ xform(const LMatrix4 &mat) {
   for(int p = 0; p < 6 ; p++) {
     _planes[p] = set_plane(p);
   }
-  _x = _vertex[0].get_x() - _center.get_x();
-  _y = _vertex[0].get_y() - _center.get_y();
-  _z = _vertex[0].get_z() - _center.get_z();
-  _radius = sqrt(_x * _x + _y * _y + _z * _z);
   setup_box();
   mark_viz_stale();
   mark_internal_bounds_stale();
@@ -196,7 +169,11 @@ output(std::ostream &out) const {
  */
 PT(BoundingVolume) CollisionBox::
 compute_internal_bounds() const {
-  return new BoundingSphere(_center, _radius);
+  PN_stdfloat x = _vertex[0].get_x() - _center.get_x();
+  PN_stdfloat y = _vertex[0].get_y() - _center.get_y();
+  PN_stdfloat z = _vertex[0].get_z() - _center.get_z();
+  PN_stdfloat radius = sqrt(x * x + y * y + z * z);
+  return new BoundingSphere(_center, radius);
 }
 
 /**
@@ -231,12 +208,11 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   bool intersect;
   LPlane plane;
   LVector3 normal;
+  bool fully_inside = true;
 
   for(ip = 0, intersect = false; ip < 6 && !intersect; ip++) {
-    plane = get_plane( ip );
-    if (_points[ip].size() < 3) {
-      continue;
-    }
+    plane = get_plane(ip);
+
     if (wrt_prev_space != wrt_space) {
       // If we have a delta between the previous position and the current
       // position, we use that to determine some more properties of the
@@ -249,6 +225,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // moving in the same direction as the plane's normal.
       PN_stdfloat dot = delta.dot(plane.get_normal());
       if (dot > 0.1f) {
+        fully_inside = false;
         continue; // no intersection
       }
 
@@ -305,13 +282,19 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     if (!plane.intersects_line(dist, from_center, -(plane.get_normal()))) {
       // No intersection with plane?  This means the plane's effective normal
       // was within the plane itself.  A useless polygon.
+      fully_inside = false;
       continue;
     }
 
-    if (dist > from_radius || dist < -from_radius) {
-      // No intersection with the plane.
+    if (dist > from_radius) {
+      // Fully outside this plane, there can not be an intersection.
+      return nullptr;
+    }
+    if (dist < -from_radius) {
+      // Fully inside this plane.
       continue;
     }
+    fully_inside = false;
 
     LPoint2 p = to_2d(from_center - dist * plane.get_normal(), ip);
     PN_stdfloat edge_dist = 0.0f;
@@ -322,17 +305,17 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       Points new_points;
       if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform(),ip)) {
         // All points are behind the clip plane; just do the default test.
-        edge_dist = dist_to_polygon(p, _points[ip]);
+        edge_dist = dist_to_polygon(p, _points[ip], 4);
       } else if (new_points.empty()) {
         // The polygon is completely clipped.
         continue;
       } else {
         // Test against the clipped polygon.
-        edge_dist = dist_to_polygon(p, new_points);
+        edge_dist = dist_to_polygon(p, new_points.data(), new_points.size());
       }
     } else {
       // No clip plane is in effect.  Do the default test.
-      edge_dist = dist_to_polygon(p, _points[ip]);
+      edge_dist = dist_to_polygon(p, _points[ip], 4);
     }
 
     max_dist = from_radius;
@@ -367,8 +350,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     }
     intersect = true;
   }
-  if( !intersect )
+  if (!fully_inside && !intersect) {
     return nullptr;
+  }
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -506,7 +490,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   LParabola local_p(parabola->get_parabola());
   local_p.xform(wrt_mat);
 
-  PN_stdfloat t = INT_MAX;
+  PN_stdfloat t = FLT_MAX;
   PN_stdfloat t1, t2;
   int intersecting_face = -1;
   for (int i = 0; i < get_num_planes(); i++) {
@@ -1129,13 +1113,13 @@ apply_clip_plane(CollisionBox::Points &new_points,
       LPlane plane = plane_node->get_plane() * new_transform->get_mat();
       if (first_plane) {
         first_plane = false;
-        if (!clip_polygon(new_points, _points[plane_no], plane, plane_no)) {
+        if (!clip_polygon(new_points, _points[plane_no], 4, plane, plane_no)) {
           all_in = false;
         }
       } else {
         Points last_points;
         last_points.swap(new_points);
-        if (!clip_polygon(new_points, last_points, plane, plane_no)) {
+        if (!clip_polygon(new_points, last_points.data(), last_points.size(), plane, plane_no)) {
           all_in = false;
         }
       }
@@ -1158,10 +1142,10 @@ apply_clip_plane(CollisionBox::Points &new_points,
  */
 bool CollisionBox::
 clip_polygon(CollisionBox::Points &new_points,
-             const CollisionBox::Points &source_points,
+             const PointDef *source_points, size_t num_source_points,
              const LPlane &plane, int plane_no) const {
   new_points.clear();
-  if (source_points.empty()) {
+  if (num_source_points == 0) {
     return true;
   }
 
@@ -1173,7 +1157,7 @@ clip_polygon(CollisionBox::Points &new_points,
     if (plane.dist_to_plane(get_plane(plane_no).get_point()) < 0.0) {
       // A point within the polygon is behind the clipping plane: the polygon
       // is all in.
-      new_points = source_points;
+      new_points.insert(new_points.end(), source_points, source_points + num_source_points);
       return true;
     }
     return false;
@@ -1194,14 +1178,13 @@ clip_polygon(CollisionBox::Points &new_points,
   // We might increase the number of vertices by as many as 1, if the plane
   // clips off exactly one corner.  (We might also decrease the number of
   // vertices, or keep them the same number.)
-  new_points.reserve(source_points.size() + 1);
+  new_points.reserve(num_source_points + 1);
 
-  LPoint2 last_point = source_points.back()._p;
+  LPoint2 last_point = source_points[num_source_points - 1]._p;
   bool last_is_in = !is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  Points::const_iterator pi;
-  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    const LPoint2 &this_point = (*pi)._p;
+  for (size_t pi = 0; pi < num_source_points; ++pi) {
+    const LPoint2 &this_point = source_points[pi]._p;
     bool this_is_in = !is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to extract this
@@ -1234,15 +1217,13 @@ clip_polygon(CollisionBox::Points &new_points,
   return all_in;
 }
 
-
 /**
  * Returns the linear distance from the 2-d point to the nearest part of the
  * polygon defined by the points vector.  The result is negative if the point
  * is within the polygon.
  */
 PN_stdfloat CollisionBox::
-dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
-
+dist_to_polygon(const LPoint2 &p, const PointDef *points, size_t num_points) const {
   // We know that that the polygon is convex and is defined with the points in
   // counterclockwise order.  Therefore, we simply compare the signed distance
   // to each line segment; we ignore any negative values, and take the minimum
@@ -1254,10 +1235,9 @@ dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
   bool got_dist = false;
   PN_stdfloat best_dist = -1.0f;
 
-  size_t num_points = points.size();
   for (size_t i = 0; i < num_points - 1; ++i) {
     PN_stdfloat d = dist_to_line_segment(p, points[i]._p, points[i + 1]._p,
-                                   points[i]._v);
+                                         points[i]._v);
     if (d >= 0.0f) {
       if (!got_dist || d < best_dist) {
         best_dist = d;
@@ -1267,7 +1247,7 @@ dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
   }
 
   PN_stdfloat d = dist_to_line_segment(p, points[num_points - 1]._p, points[0]._p,
-                                 points[num_points - 1]._v);
+                                       points[num_points - 1]._v);
   if (d >= 0.0f) {
     if (!got_dist || d < best_dist) {
       best_dist = d;
@@ -1450,10 +1430,14 @@ write_datagram(BamWriter *manager, Datagram &me) {
   for(int i=0; i < 8; i++) {
     _vertex[i].write_datagram(me);
   }
-  me.add_stdfloat(_radius);
-  me.add_stdfloat(_x);
-  me.add_stdfloat(_y);
-  me.add_stdfloat(_z);
+  PN_stdfloat x = _vertex[0].get_x() - _center.get_x();
+  PN_stdfloat y = _vertex[0].get_y() - _center.get_y();
+  PN_stdfloat z = _vertex[0].get_z() - _center.get_z();
+  PN_stdfloat radius = sqrt(x * x + y * y + z * z);
+  me.add_stdfloat(radius);
+  me.add_stdfloat(x);
+  me.add_stdfloat(y);
+  me.add_stdfloat(z);
   for(int i=0; i < 6; i++) {
     _planes[i].write_datagram(me);
   }
@@ -1461,8 +1445,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
     _to_2d_mat[i].write_datagram(me);
   }
   for(int i=0; i < 6; i++) {
-    me.add_uint16(_points[i].size());
-    for (size_t j = 0; j < _points[i].size(); j++) {
+    me.add_uint16(4);
+    for (size_t j = 0; j < 4; j++) {
       _points[i][j]._p.write_datagram(me);
       _points[i][j]._v.write_datagram(me);
     }
@@ -1497,10 +1481,10 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   for(int i=0; i < 8; i++) {
     _vertex[i].read_datagram(scan);
   }
-  _radius = scan.get_stdfloat();
-  _x = scan.get_stdfloat();
-  _y = scan.get_stdfloat();
-  _z = scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
+  scan.get_stdfloat();
   for(int i=0; i < 6; i++) {
     _planes[i].read_datagram(scan);
   }
@@ -1509,12 +1493,10 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   }
   for(int i=0; i < 6; i++) {
     size_t size = scan.get_uint16();
+    nassertv(size == 4);
     for (size_t j = 0; j < size; j++) {
-      LPoint2 p;
-      LVector2 v;
-      p.read_datagram(scan);
-      v.read_datagram(scan);
-      _points[i].push_back(PointDef(p, v));
+      _points[i][j]._p.read_datagram(scan);
+      _points[i][j]._v.read_datagram(scan);
     }
   }
 }

@@ -26,7 +26,7 @@ Effect(const RenderEffect *effect) :
  * file.  At this point, the effect pointer is unknown.
  */
 INLINE RenderEffects::Effect::
-Effect() {
+Effect() : _type(TypeHandle::none()) {
 }
 
 /**

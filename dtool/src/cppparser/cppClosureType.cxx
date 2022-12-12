@@ -152,6 +152,10 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
     out << " noexcept";
   }
 
+  if (!_attributes.is_empty()) {
+    out << " " << _attributes;
+  }
+
   if (_return_type != nullptr) {
     out << " -> ";
     _return_type->output(out, indent_level, scope, false);

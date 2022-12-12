@@ -129,8 +129,8 @@ class DirectCameraControl(DirectObject):
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
-            self.startT= globalClock.getFrameTime()
-            self.startF = globalClock.getFrameCount()
+            self.startT = base.clock.getFrameTime()
+            self.startF = base.clock.getFrameCount()
             # If the cam is orthogonal, spawn differentTask
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
                base.direct.camera.getName() != 'persp':
@@ -169,8 +169,8 @@ class DirectCameraControl(DirectObject):
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
-            self.startT= globalClock.getFrameTime()
-            self.startF = globalClock.getFrameCount()
+            self.startT = base.clock.getFrameTime()
+            self.startF = base.clock.getFrameCount()
             # Start manipulation
             # If the cam is orthogonal, spawn differentTask
             if hasattr(base.direct, "manipulationControl") and base.direct.manipulationControl.fMultiView and\
@@ -186,8 +186,8 @@ class DirectCameraControl(DirectObject):
                 # Hide the marker for this kind of motion
                 self.coaMarker.hide()
                 # Record time of start of mouse interaction
-                self.startT= globalClock.getFrameTime()
-                self.startF = globalClock.getFrameCount()
+                self.startT = base.clock.getFrameTime()
+                self.startF = base.clock.getFrameCount()
                 # Start manipulation
                 self.spawnXZTranslateOrHPanYZoom()
                 # END MOUSE IN CENTRAL REGION
@@ -204,9 +204,9 @@ class DirectCameraControl(DirectObject):
 
     def mouseFlyStop(self):
         self.__stopManipulateCamera()
-        stopT = globalClock.getFrameTime()
+        stopT = base.clock.getFrameTime()
         deltaT = stopT - self.startT
-        stopF = globalClock.getFrameCount()
+        stopF = base.clock.getFrameCount()
         deltaF = stopF - self.startF
         ## No reason this shouldn't work with Maya cam on
         # if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):

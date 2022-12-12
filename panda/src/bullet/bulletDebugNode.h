@@ -55,7 +55,6 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:

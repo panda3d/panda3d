@@ -49,8 +49,8 @@ PUBLISHED:
     TF_no_filters        = 0x0400,  // disallow using texture pool filters
   };
 
-  LoaderOptions(int flags = LF_search | LF_report_errors);
-  constexpr LoaderOptions(int flags, int texture_flags);
+  explicit LoaderOptions(int flags = LF_search | LF_report_errors);
+  explicit constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;

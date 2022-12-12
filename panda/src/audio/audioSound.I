@@ -10,3 +10,11 @@
  * @author jyelon
  * @date 2007-08-01
  */
+
+/**
+ * Returns true if this was created as a positional sound.
+ */
+INLINE bool AudioSound::
+is_positional() const {
+  return _positional;
+}

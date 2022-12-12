@@ -157,7 +157,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         handle = self._getNextHandle()
-        # print 'base.cr.addInterest(',description,',',handle,'):',globalClock.getFrameCount()
+        # print 'base.cr.addInterest(',description,',',handle,'):',base.clock.getFrameCount()
         if self._noNewInterests:
             DoInterestManager.notify.warning(
                 "addInterest: addingInterests on delete: %s" % (handle))
@@ -229,7 +229,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Stop looking in a (set of) zone(s)
         """
-        # print 'base.cr.removeInterest(',handle,'):',globalClock.getFrameCount()
+        # print 'base.cr.removeInterest(',handle,'):',base.clock.getFrameCount()
 
         assert DoInterestManager.notify.debugCall()
         assert isinstance(handle, InterestHandle)
@@ -567,7 +567,7 @@ class DoInterestManager(DirectObject.DirectObject):
         def checkMoreInterests():
             # if there are new interests, cancel this delayed callback, another
             # will automatically be scheduled when all interests complete
-            # print 'checkMoreInterests(',self._completeEventCount.num,'):',globalClock.getFrameCount()
+            # print 'checkMoreInterests(',self._completeEventCount.num,'):',base.clock.getFrameCount()
             return self._completeEventCount.num > 0
         def sendEvent():
             messenger.send(self.getAllInterestsCompleteEvent())

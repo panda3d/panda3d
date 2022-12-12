@@ -25,14 +25,14 @@ void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_stop_clock_wait)() = ClockObject::dummy_clock_wait;
 
-AtomicAdjust::Pointer ClockObject::_global_clock = nullptr;
+patomic<ClockObject *> ClockObject::_global_clock(nullptr);
 TypeHandle ClockObject::_type_handle;
 
 /**
  *
  */
 ClockObject::
-ClockObject(Mode mode) : _ticks(get_class_type()), _mode(mode) {
+ClockObject(Mode mode) : _mode(mode), _ticks(get_class_type()) {
   _true_clock = TrueClock::get_global_ptr();
 
   _start_short_time = _true_clock->get_short_time();
@@ -162,7 +162,7 @@ set_real_time(double time) {
 #ifdef NOTIFY_DEBUG
   // This is only a debug message, since it happens during normal development,
   // particularly at startup, or whenever you break into the task loop.
-  if (util_cat.is_debug() && this == _global_clock) {
+  if (util_cat.is_debug() && this == _global_clock.load(std::memory_order_relaxed)) {
     util_cat.debug()
       << "Adjusting global clock's real time by " << time - get_real_time()
       << " seconds.\n";
@@ -181,7 +181,7 @@ void ClockObject::
 set_frame_time(double time, Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
-  if (this == _global_clock && _mode != M_slave) {
+  if (this == _global_clock.load(std::memory_order_relaxed) && _mode != M_slave) {
     util_cat.warning()
       << "Adjusting global clock's frame time by " << time - get_frame_time()
       << " seconds.\n";
@@ -204,7 +204,7 @@ void ClockObject::
 set_frame_count(int frame_count, Thread *current_thread) {
   nassertv(current_thread->get_pipeline_stage() == 0);
 #ifdef NOTIFY_DEBUG
-  if (this == _global_clock && _mode != M_slave) {
+  if (this == _global_clock.load(std::memory_order_relaxed) && _mode != M_slave) {
     util_cat.warning()
       << "Adjusting global clock's frame count by "
       << frame_count - get_frame_count() << " frames.\n";
@@ -522,8 +522,6 @@ wait_until(double want_time) {
  */
 void ClockObject::
 make_global_clock() {
-  nassertv(_global_clock == nullptr);
-
   ConfigVariableEnum<ClockObject::Mode> clock_mode
     ("clock-mode", ClockObject::M_normal,
      PRC_DESC("Specifies the mode of the global clock.  The default mode, normal, "
@@ -534,7 +532,8 @@ make_global_clock() {
   ClockObject *clock = new ClockObject(clock_mode);
   clock->local_object();
 
-  if (AtomicAdjust::compare_and_exchange_ptr(_global_clock, nullptr, clock) != nullptr) {
+  ClockObject *expected = nullptr;
+  if (!_global_clock.compare_exchange_strong(expected, clock, std::memory_order_release, std::memory_order_relaxed)) {
     // Another thread beat us to it.
     delete clock;
   }

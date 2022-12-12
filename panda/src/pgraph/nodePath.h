@@ -619,6 +619,9 @@ PUBLISHED:
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
   void replace_texture(Texture *tex, Texture *new_tex);
+#ifdef CPPPARSER  // Let interrogate know this also accepts None
+  void replace_texture(Texture *tex, std::nullptr_t new_tex);
+#endif
   const SamplerState &get_texture_sampler() const;
   const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
@@ -771,6 +774,9 @@ PUBLISHED:
   bool has_material() const;
   PT(Material) get_material() const;
   void replace_material(Material *mat, Material *new_mat);
+#ifdef CPPPARSER  // Let interrogate know this also accepts None
+  void replace_material(Material *mat, std::nullptr_t new_mat);
+#endif
 
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
@@ -810,6 +816,11 @@ PUBLISHED:
   void clear_depth_offset();
   bool has_depth_offset() const;
   int get_depth_offset() const;
+
+  void set_depth_bias(PN_stdfloat slope_factor, PN_stdfloat constant_factor,
+                      PN_stdfloat clamp = 0.0, int priority = 0);
+  void clear_depth_bias();
+  bool has_depth_bias() const;
 
   void do_billboard_axis(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
