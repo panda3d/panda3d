@@ -11,17 +11,16 @@ import weakref
 import random
 import builtins
 
-deadEndTypes = [
+deadEndTypes = frozenset((
     types.BuiltinFunctionType, types.BuiltinMethodType,
     types.CodeType, types.FunctionType,
     types.GeneratorType, types.CoroutineType,
+    types.AsyncGeneratorType,
     bool, complex, float, int, type,
     bytes, str, list, tuple,
     type(None), type(NotImplemented)
-]
+))
 
-if sys.version_info >= (3, 6):
-    deadEndTypes.append(types.AsyncGeneratorType)
 
 def _createContainerLeak():
     def leakContainer(task=None):
