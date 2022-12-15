@@ -21,7 +21,6 @@ def reconstruct(object):
 
 def test_nav_mesh_bam():
     navigation = pytest.importorskip("panda3d.navigation")
-    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -45,7 +44,7 @@ def test_nav_mesh_bam():
     scene = core.NodePath(node)
 
     # Defining navmesh as object of NavMehsBuilder class.
-    builder = navmeshgen.NavMeshBuilder()
+    builder = navigation.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
     builder.from_node_path(scene)
@@ -68,7 +67,6 @@ def test_nav_mesh_bam():
 
 def test_nav_mesh_node_bam():
     navigation = pytest.importorskip("panda3d.navigation")
-    navmeshgen = pytest.importorskip("panda3d.navmeshgen")
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -92,26 +90,20 @@ def test_nav_mesh_node_bam():
     scene = core.NodePath(node)
 
     # Defining navmesh as object of NavMehsBuilder class.
-    builder = navmeshgen.NavMeshBuilder()
+    builder = navigation.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
     builder.from_node_path(scene)
 
     navmesh = builder.build()
 
-    navmeshnode = navigation.NavMeshNode("navmeshnode",navmesh)
-    vertCount = navmeshnode.get_nav_mesh().get_vert_count()
-    polyCount = navmeshnode.get_nav_mesh().get_poly_count()
-    detailVertsCount = navmeshnode.get_nav_mesh().get_detail_vert_count()
-    detailTriCount = navmeshnode.get_nav_mesh().get_detail_tri_count()
+    navmeshnode = navigation.NavMeshNode("navmeshnode", navmesh)
+    params = navmesh.params
 
     navmeshNodeBam = reconstruct(navmeshnode)
 
     assert type(navmeshnode) == type(navmeshNodeBam)
-    assert vertCount == navmeshNodeBam.get_nav_mesh().get_vert_count()
-    assert polyCount == navmeshNodeBam.get_nav_mesh().get_poly_count()
-    assert detailVertsCount == navmeshNodeBam.get_nav_mesh().get_detail_vert_count()
-    assert detailTriCount == navmeshNodeBam.get_nav_mesh().get_detail_tri_count()
+    assert params == navmeshNodeBam.get_nav_mesh().get_params()
 
 
 def test_nav_query_bam():

@@ -48,6 +48,7 @@ PUBLISHED:
   INLINE NavMeshParams::PartitionType get_partition_type() const;
   INLINE int get_max_tiles() const;
   INLINE int get_max_polys_per_tile() const;
+  INLINE int get_max_layers_per_tile() const;
   INLINE float get_detail_sample_dist() const;
   INLINE float get_detail_sample_max_error() const;
   INLINE LPoint3 get_orig_bound_min() const;
@@ -69,6 +70,7 @@ PUBLISHED:
   INLINE void set_cell_height(float ch);
   INLINE void set_tile_size(float cs);
   INLINE void set_partition_type(NavMeshParams::PartitionType partition);
+  INLINE void set_max_layers_per_tile(int nlayers);
   INLINE void set_detail_sample_dist(float detail_sample_dist);
   INLINE void set_detail_sample_max_error(float detail_sample_max_error);
   INLINE void set_filter_low_hanging_obstacles(bool filter_low_hanging_obstacles);
@@ -88,6 +90,7 @@ PUBLISHED:
   MAKE_PROPERTY(cell_height, get_cell_height, set_cell_height);
   MAKE_PROPERTY(tile_size, get_tile_size, set_tile_size);
   MAKE_PROPERTY(partition_type, get_partition_type, set_partition_type);
+  MAKE_PROPERTY(max_layers_per_tile, get_max_layers_per_tile, set_max_layers_per_tile);
   MAKE_PROPERTY(max_tiles, get_max_tiles);
   MAKE_PROPERTY(max_polys_per_tile, get_max_polys_per_tile);
   MAKE_PROPERTY(detail_sample_dist, get_detail_sample_dist, set_detail_sample_dist);
@@ -116,6 +119,7 @@ protected:
   float cell_height;
   float tile_size;
   PartitionType partition_type;
+  int max_layers_per_tile;
   float detail_sample_dist;
   float detail_sample_max_error;
   float orig_bound_min[3];

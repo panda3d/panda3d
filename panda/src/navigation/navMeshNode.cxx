@@ -32,7 +32,7 @@ NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh) :
 NavMeshNode::NavMeshNode(const std::string &name) :
  PandaNode(name) {
   set_cull_callback();
-  // CollisionNodes are hidden by default.
+  // NavMeshNodes are hidden by default.
   set_overall_hidden(true);
   set_renderable();
 }
@@ -142,5 +142,3 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_pointer(scan);
 }
-
-

@@ -15,6 +15,7 @@
 #include "recastnavigation/Recast.h"
 #include "recastnavigation/DetourNavMesh.h"
 #include "recastnavigation/DetourNavMeshBuilder.h"
+#include "recastnavigation/DetourTileCacheBuilder.h"
 #include "pta_LVecBase3.h"
 #include "lvecBase3.h"
 #include "config_navigation.h"
@@ -30,6 +31,7 @@
 #include "collisionNode.h"
 
 #include "string_utils.h"
+#include "compress_string.h"
 
 
 /**
@@ -39,6 +41,9 @@ NavMeshBuilder::NavMeshBuilder(NodePath parent) :
   _parent(parent) {
   index_temp = 0;
   _ctx = new rcContext;
+  _tile_alloc = std::make_shared<LinearAllocator>(32000);
+  _tile_compressor = std::make_shared<ExpressCompressor>();
+  _tile_mesh_proc = std::make_shared<MeshProcess>();
 }
 
 NavMeshBuilder::NavMeshBuilder(PT(NavMesh) navMesh) :
@@ -46,6 +51,9 @@ NavMeshBuilder::NavMeshBuilder(PT(NavMesh) navMesh) :
   _params(navMesh->get_params()) {
   index_temp = 0;
   _ctx = new rcContext;
+  _tile_alloc = std::make_shared<LinearAllocator>(32000);
+  _tile_compressor = std::make_shared<ExpressCompressor>();
+  _tile_mesh_proc = std::make_shared<MeshProcess>();
 }
 
 NavMeshBuilder::~NavMeshBuilder() {
@@ -263,9 +271,308 @@ void NavMeshBuilder::cleanup()
   _dmesh = nullptr;
 }
 
-static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
-static const int NAVMESHSET_VERSION = 1;
+typedef unsigned int dtStatus;
 
+struct ExpressCompressor : public dtTileCacheCompressor
+{
+public:
+  virtual int maxCompressedSize(const int bufferSize)
+  {
+    return (int)(bufferSize* 1.05f);
+  }
+
+  virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
+                            unsigned char* compressed, const int maxCompressedSize, int* compressedSize)
+  {
+    auto result = compress_string(std::string(reinterpret_cast<const char *>(buffer), bufferSize), 6);
+
+    *compressedSize = std::min((int)result.size(), maxCompressedSize);
+    memcpy(compressed, result.data(), *compressedSize);
+
+    return DT_SUCCESS;
+  }
+
+  virtual dtStatus decompress(const unsigned char* compressed, const int compressedSize,
+                              unsigned char* buffer, const int maxBufferSize, int* bufferSize)
+  {
+    auto result = decompress_string(std::string(reinterpret_cast<const char *>(compressed), compressedSize));
+
+    *bufferSize = std::min((int)result.size(), maxBufferSize);
+    memcpy(buffer, result.data(), *bufferSize);
+
+    return *bufferSize < 0 ? DT_FAILURE : DT_SUCCESS;
+  }
+};
+
+struct LinearAllocator : public dtTileCacheAlloc
+{
+  unsigned char* buffer;
+  size_t capacity;
+  size_t top;
+  size_t high;
+
+  LinearAllocator(const size_t cap) : buffer(0), capacity(0), top(0), high(0)
+  {
+    resize(cap);
+  }
+
+  ~LinearAllocator()
+  {
+    dtFree(buffer);
+  }
+
+  void resize(const size_t cap)
+  {
+    if (buffer) dtFree(buffer);
+    buffer = (unsigned char*)dtAlloc(cap, DT_ALLOC_PERM);
+    capacity = cap;
+  }
+
+  virtual void reset()
+  {
+    high = dtMax(high, top);
+    top = 0;
+  }
+
+  virtual void* alloc(const size_t size)
+  {
+    if (!buffer)
+      return 0;
+    if (top+size > capacity)
+      return 0;
+    unsigned char* mem = &buffer[top];
+    top += size;
+    return mem;
+  }
+
+  virtual void free(void* /*ptr*/)
+  {
+    // Empty
+  }
+};
+
+struct MeshProcess : public dtTileCacheMeshProcess
+{
+
+  inline MeshProcess()
+  {
+  }
+
+  inline void init()
+  {
+  }
+
+  virtual void process(struct dtNavMeshCreateParams* params,
+                       unsigned char* polyAreas, unsigned short* polyFlags)
+  {
+    for (int i = 0; i < params->polyCount; ++i) {
+      // Initialize all polygons to 1, so they are enabled by default.
+      polyFlags[i] = 1;
+    }
+  }
+};
+
+struct TileCacheData
+{
+  unsigned char* data;
+  int dataSize;
+};
+
+int NavMeshBuilder::rasterizeTileLayers(
+    const int tx, const int ty,
+    const float* bmin, const float* bmax,
+    pvector<float> &verts, pvector<int> &tris,
+    TileCacheData* tiles,
+    const int maxTiles)
+{
+  ExpressCompressor comp;
+
+  rcConfig cfg = {};
+  memset(&cfg, 0, sizeof(cfg));
+  cfg.cs = _params.get_cell_size();
+  cfg.ch = _params.get_cell_height();
+  cfg.walkableSlopeAngle = _params.get_actor_max_slope();
+  cfg.walkableHeight = (int)ceilf(_params.get_actor_height() / cfg.ch);
+  cfg.walkableClimb = (int)floorf(_params.get_actor_max_climb() / cfg.ch);
+  cfg.walkableRadius = (int)ceilf(_params.get_actor_radius() / cfg.cs);
+  cfg.maxEdgeLen = (int)(_params.get_edge_max_len() / _params.get_cell_size());
+  cfg.maxSimplificationError = _params.get_edge_max_error();
+  cfg.minRegionArea = (int)rcSqr(_params.get_region_min_size());    // Note: area = size*size
+  cfg.mergeRegionArea = (int)rcSqr(_params.get_region_merge_size());  // Note: area = size*size
+  cfg.maxVertsPerPoly = (int)_params.get_verts_per_poly();
+  cfg.tileSize = (int)_params.get_tile_size();
+  cfg.borderSize = cfg.walkableRadius + 3; // Reserve enough padding.
+  cfg.width = cfg.tileSize + cfg.borderSize*2;
+  cfg.height = cfg.tileSize + cfg.borderSize*2;
+  cfg.detailSampleDist = _params.get_detail_sample_dist() < 0.9f ? 0 : _params.get_cell_size() * _params.get_detail_sample_dist();
+  cfg.detailSampleMaxError = _params.get_cell_height() * _params.get_detail_sample_max_error();
+
+  // Expand the heighfield bounding box by border size to find the extents of geometry we need to build this tile.
+  //
+  // This is done in order to make sure that the navmesh tiles connect correctly at the borders,
+  // and the obstacles close to the border work correctly with the dilation process.
+  // No polygons (or contours) will be created on the border area.
+  //
+  // IMPORTANT!
+  //
+  //   :''''''''':
+  //   : +-----+ :
+  //   : |     | :
+  //   : |     |<--- tile to build
+  //   : |     | :
+  //   : +-----+ :<-- geometry needed
+  //   :.........:
+  //
+  // You should use this bounding box to query your input geometry.
+  //
+  // For example if you build a navmesh for terrain, and want the navmesh tiles to match the terrain tile size
+  // you will need to pass in data from neighbour terrain tiles too! In a simple case, just pass in all the 8 neighbours,
+  // or use the bounding box below to only pass in a sliver of each of the 8 neighbours.
+  rcVcopy(cfg.bmin, bmin);
+  rcVcopy(cfg.bmax, bmax);
+  cfg.bmin[0] -= cfg.borderSize*cfg.cs;
+  cfg.bmin[2] -= cfg.borderSize*cfg.cs;
+  cfg.bmax[0] += cfg.borderSize*cfg.cs;
+  cfg.bmax[2] += cfg.borderSize*cfg.cs;
+
+  // Allocate voxel heightfield where we rasterize our input data to.
+  _solid = rcAllocHeightfield();
+  if (!_solid)
+  {
+    navigation_cat.error() << "buildNavigation: Out of memory 'solid'." << std::endl;
+    return 0;
+  }
+  if (!rcCreateHeightfield(_ctx, *_solid, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch))
+  {
+    navigation_cat.error() << "buildNavigation: Could not create solid heightfield." << std::endl;
+    return 0;
+  }
+
+  float tbmin[2], tbmax[2];
+  tbmin[0] = cfg.bmin[0];
+  tbmin[1] = cfg.bmin[2];
+  tbmax[0] = cfg.bmax[0];
+  tbmax[1] = cfg.bmax[2];
+
+  // Allocate array that can hold triangle area types.
+  // If you have multiple meshes you need to process, allocate
+  // an array which can hold the max number of triangles you need to process.
+  _triareas.clear();
+  _triareas.resize(static_cast<int>(tris.size() / 3), 0);
+
+  // Find triangles which are walkable based on their slope and rasterize them.
+  // If your input data is multiple meshes, you can transform them here, calculate
+  // the are type for each of the meshes and rasterize them.
+  rcMarkWalkableTriangles(_ctx, cfg.walkableSlopeAngle, verts.data(), static_cast<int>(verts.size() / 3), tris.data(), static_cast<int>(tris.size() / 3), _triareas.data());
+
+  if (!rcRasterizeTriangles(_ctx, verts.data(), static_cast<int>(verts.size() / 3), tris.data(), _triareas.data(), static_cast<int>(tris.size() / 3), *_solid, cfg.walkableClimb)) {
+    navigation_cat.error() << "build(): Could not rasterize triangles." << std::endl;
+    return 0;
+  }
+
+
+  //
+  // Step 3. Filter walkables surfaces.
+  //
+
+  // Once all geoemtry is rasterized, we do initial pass of filtering to
+  // remove unwanted overhangs caused by the conservative rasterization
+  // as well as filter spans where the character cannot possibly stand.
+  if (_params.get_filter_low_hanging_obstacles())
+    rcFilterLowHangingWalkableObstacles(_ctx, cfg.walkableClimb, *_solid);
+  if (_params.get_filter_ledge_spans())
+    rcFilterLedgeSpans(_ctx, cfg.walkableHeight, cfg.walkableClimb, *_solid);
+  if (_params.get_filter_walkable_low_height_spans())
+    rcFilterWalkableLowHeightSpans(_ctx, cfg.walkableHeight, *_solid);
+
+
+  //
+  // Step 4. Partition walkable surface to simple regions.
+  //
+
+  // Compact the heightfield so that it is faster to handle from now on.
+  // This will result more cache coherent data as well as the neighbours
+  // between walkable cells will be calculated.
+  _chf = rcAllocCompactHeightfield();
+  if (!_chf) {
+    navigation_cat.error() << "build(): Out of memory 'chf'." << std::endl;
+    return 0;
+  }
+  if (!rcBuildCompactHeightfield(_ctx, cfg.walkableHeight, cfg.walkableClimb, *_solid, *_chf)) {
+    navigation_cat.error() << "build(): Could not build compact data." << std::endl;
+    return 0;
+  }
+
+  rcFreeHeightField(_solid);
+  _solid = nullptr;
+
+  // Erode the walkable area by agent radius.
+  if (!rcErodeWalkableArea(_ctx, cfg.walkableRadius, *_chf)) {
+    navigation_cat.error() << "build(): Could not erode." << std::endl;
+    return 0;
+  }
+
+  auto lset = rcAllocHeightfieldLayerSet();
+  if (!lset)
+  {
+    navigation_cat.error() << "buildNavigation: Out of memory 'lset'." << std::endl;
+    return 0;
+  }
+  if (!rcBuildHeightfieldLayers(_ctx, *_chf, cfg.borderSize, cfg.walkableHeight, *lset))
+  {
+    navigation_cat.error() << "buildNavigation: Could not build heighfield layers." << std::endl;
+    return 0;
+  }
+
+  int ntiles = 0;
+  TileCacheData _tiles[_params.get_max_layers_per_tile()];
+
+  for (int i = 0; i < rcMin(lset->nlayers, _params.get_max_layers_per_tile()); ++i)
+  {
+    TileCacheData* tile = &_tiles[ntiles++];
+    const rcHeightfieldLayer* layer = &lset->layers[i];
+
+    // Store header
+    dtTileCacheLayerHeader header = {};
+    header.magic = DT_TILECACHE_MAGIC;
+    header.version = DT_TILECACHE_VERSION;
+
+    // Tile layer location in the navmesh.
+    header.tx = tx;
+    header.ty = ty;
+    header.tlayer = i;
+    dtVcopy(header.bmin, layer->bmin);
+    dtVcopy(header.bmax, layer->bmax);
+
+    // Tile info.
+    header.width = (unsigned char)layer->width;
+    header.height = (unsigned char)layer->height;
+    header.minx = (unsigned char)layer->minx;
+    header.maxx = (unsigned char)layer->maxx;
+    header.miny = (unsigned char)layer->miny;
+    header.maxy = (unsigned char)layer->maxy;
+    header.hmin = (unsigned short)layer->hmin;
+    header.hmax = (unsigned short)layer->hmax;
+
+    dtStatus status = dtBuildTileCacheLayer(&comp, &header, layer->heights, layer->areas, layer->cons,
+                                            &tile->data, &tile->dataSize);
+    if (dtStatusFailed(status))
+    {
+      return 0;
+    }
+  }
+
+  // Transfer ownership of tile data from build context to the caller.
+  int n = 0;
+  for (int i = 0; i < rcMin(ntiles, maxTiles); ++i)
+  {
+    tiles[n++] = _tiles[i];
+    _tiles[i].data = nullptr;
+    _tiles[i].dataSize = 0;
+  }
+
+  return n;
+}
 
 /**
  * Function to build the navigation mesh from the vertex array, triangles array
@@ -285,6 +592,39 @@ PT(NavMesh) NavMeshBuilder::build() {
   float tileBmin[3] = { 0, 0, 0 };
   float tileBmax[3] = { 0, 0, 0 };
 
+  // Tile cache params.
+  dtTileCacheParams tcparams;
+  memset(&tcparams, 0, sizeof(tcparams));
+  rcVcopy(tcparams.orig, _mesh_bMin);
+  tcparams.cs = _params.get_cell_size();
+  tcparams.ch = _params.get_cell_height();
+  tcparams.width = (int)_params.get_tile_size();
+  tcparams.height = (int)_params.get_tile_size();
+  tcparams.walkableHeight = _params.get_actor_height();
+  tcparams.walkableRadius = _params.get_actor_radius();
+  tcparams.walkableClimb = _params.get_actor_max_climb();
+  tcparams.maxSimplificationError = _params.get_edge_max_error();
+  tcparams.maxTiles = _params.get_max_tiles() * _params.get_max_layers_per_tile();
+  tcparams.maxObstacles = 256;
+
+  dtStatus status;
+
+  dtFreeTileCache(_tile_cache.get());
+
+  _tile_cache = std::shared_ptr<dtTileCache>(dtAllocTileCache());
+  if (!_tile_cache)
+  {
+    navigation_cat.error() << "buildTiledNavigation: Could not allocate tile cache." << std::endl;
+    return _nav_mesh_obj;
+  }
+
+  status = _tile_cache->init(&tcparams, _tile_alloc.get(), _tile_compressor.get(), _tile_mesh_proc.get());
+  if (dtStatusFailed(status))
+  {
+    navigation_cat.error() << "buildTiledNavigation: Could not init tile cache." << std::endl;
+    return _nav_mesh_obj;
+  }
+
   dtNavMesh *navMesh = dtAllocNavMesh();
   if (!navMesh)
   {
@@ -299,8 +639,6 @@ PT(NavMesh) NavMeshBuilder::build() {
   params.maxTiles = _params.get_max_tiles();
   params.maxPolys = _params.get_max_polys_per_tile();
 
-  dtStatus status;
-
   status = navMesh->init(&params);
   if (dtStatusFailed(status))
   {
@@ -314,6 +652,8 @@ PT(NavMesh) NavMeshBuilder::build() {
 
   for (int y = 0; y < th; ++y) {
     for (int x = 0; x < tw; ++x) {
+      TileCacheData tiles[_params.get_max_layers_per_tile()];
+      memset(tiles, 0, sizeof(tiles));
       tileBmin[0] = _mesh_bMin[0] + x*tcs;
       tileBmin[1] = _mesh_bMin[1];
       tileBmin[2] = _mesh_bMin[2] + y*tcs;
@@ -321,24 +661,28 @@ PT(NavMesh) NavMeshBuilder::build() {
       tileBmax[0] = _mesh_bMin[0] + (x+1)*tcs;
       tileBmax[1] = _mesh_bMax[1];
       tileBmax[2] = _mesh_bMin[2] + (y+1)*tcs;
+      int ntiles = rasterizeTileLayers(x, y, tileBmin, tileBmax,
+                                       verts, tris, tiles, _params.get_max_layers_per_tile());
 
-      int dataSize = 0;
-      unsigned char* data = buildTileMesh(x, y, tileBmin, tileBmax, dataSize, verts, tris);
-      if (data)
+      for (int i = 0; i < ntiles; ++i)
       {
-        // Remove any previous data (navmesh owns and deletes the data).
-        navMesh->removeTile(navMesh->getTileRefAt(x, y,0), 0, 0);
-        // Let the navmesh own the data.
-        dtStatus status = navMesh->addTile(data,dataSize,DT_TILE_FREE_DATA,0,0);
-        if (dtStatusFailed(status)) {
-          dtFree(data);
-          navigation_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
+        TileCacheData* tile = &tiles[i];
+        status = _tile_cache->addTile(tile->data, tile->dataSize, DT_COMPRESSEDTILE_FREE_DATA, 0);
+        if (dtStatusFailed(status))
+        {
+          dtFree(tile->data);
+          tile->data = 0;
+          continue;
         }
       }
     }
   }
 
-  _nav_mesh_obj = new NavMesh(navMesh, _params, _untracked_tris);
+  for (int y = 0; y < th; ++y)
+    for (int x = 0; x < tw; ++x)
+      _tile_cache->buildNavMeshTilesAt(x,y, navMesh);
+
+  _nav_mesh_obj = new NavMesh(navMesh, _params, _tile_cache, _untracked_tris);
   return _nav_mesh_obj;
 }
 
@@ -398,6 +742,48 @@ update_nav_mesh() {
     tiles_to_regen.emplace(tile_coods.first + 1, tile_coods.second + 1);
   }
 
+  std::set<ObstacleData> existing_obstacles;
+  std::map<ObstacleData, dtObstacleRef> refs;
+  for (int i = 0; i < _tile_cache->getObstacleCount(); ++i) {
+    const dtTileCacheObstacle *ob = _tile_cache->getObstacle(i);
+    if (ob->state == DT_OBSTACLE_EMPTY)
+      continue;
+
+    ObstacleData data;
+    switch (ob->type) {
+      case DT_OBSTACLE_CYLINDER:
+        data = {ob->type, LPoint3(ob->cylinder.pos[0], ob->cylinder.pos[1], ob->cylinder.pos[2]), LPoint3(),
+                                     ob->cylinder.height, ob->cylinder.radius};
+        break;
+      case DT_OBSTACLE_BOX:
+        data = {ob->type, LPoint3(ob->box.bmin[0], ob->box.bmin[1], ob->box.bmin[2]),
+                                     LPoint3(ob->box.bmax[0], ob->box.bmax[1], ob->box.bmax[2]),
+                                     0, 0};
+        break;
+      case DT_OBSTACLE_ORIENTED_BOX:
+        data = {ob->type, LPoint3(ob->orientedBox.center[0], ob->orientedBox.center[1], ob->orientedBox.center[2]),
+                                     LPoint3(ob->orientedBox.halfExtents[0], ob->orientedBox.halfExtents[1], ob->orientedBox.halfExtents[2]),
+                                     ob->orientedBox.rotAux[0], ob->orientedBox.rotAux[1]};
+        break;
+    }
+    existing_obstacles.emplace(data);
+    refs.emplace(data, _tile_cache->getObstacleRef(ob));
+  }
+
+  std::set<ObstacleData> new_obstacles;
+
+  for (auto &node : _nav_mesh_obj->get_obstacles()) {
+    CPT(TransformState) state = node.get_net_transform();
+    process_obstacle_node_path(existing_obstacles, new_obstacles, node, state);
+  }
+
+  // Remove all obstacles that are no longer there.
+  std::set<ObstacleData> removed_obstacles;
+  std::set_difference(existing_obstacles.begin(), existing_obstacles.end(), new_obstacles.begin(), new_obstacles.end(), std::inserter(removed_obstacles, removed_obstacles.begin()));
+  for (auto &obstacle : removed_obstacles) {
+    _tile_cache->removeObstacle(refs[obstacle]);
+  }
+
   pvector<float> verts;
   pvector<int> tris;
   get_vert_tris(tri_vert_set, verts, tris);
@@ -405,6 +791,8 @@ update_nav_mesh() {
   float tileBmin[3] = { 0, 0, 0 };
   float tileBmax[3] = { 0, 0, 0 };
   for (auto &tile_coods : tiles_to_regen) {
+    TileCacheData tiles[_params.get_max_layers_per_tile()];
+    memset(tiles, 0, sizeof(tiles));
     tileBmin[0] = orig_bound_min[0] + static_cast<float>(tile_coods.first) * _params.get_tile_cell_size();
     tileBmin[1] = _mesh_bMin[1];
     tileBmin[2] = orig_bound_min[2] + static_cast<float>(tile_coods.second) * _params.get_tile_cell_size();
@@ -413,23 +801,64 @@ update_nav_mesh() {
     tileBmax[1] = _mesh_bMax[1];
     tileBmax[2] = orig_bound_min[2] + static_cast<float>(tile_coods.second+1) * _params.get_tile_cell_size();
 
-    // Remove any previous data (navmesh owns and deletes the data).
-    _nav_mesh_obj->get_nav_mesh()->removeTile(_nav_mesh_obj->get_nav_mesh()->getTileRefAt(tile_coods.first, tile_coods.second,0), 0, 0);
+    int ntiles = rasterizeTileLayers(tile_coods.first, tile_coods.second, tileBmin, tileBmax,
+                                     verts, tris, tiles, _params.get_max_layers_per_tile());
 
-    int dataSize = 0;
-    unsigned char* data = buildTileMesh(tile_coods.first, tile_coods.second, tileBmin, tileBmax, dataSize, verts, tris);
-    if (data)
+    dtCompressedTileRef old_layers[_params.get_max_layers_per_tile()];
+    int old_nlayers = _tile_cache->getTilesAt(tile_coods.first, tile_coods.second,
+                                              reinterpret_cast<dtCompressedTileRef *>(&old_layers), _params.get_max_layers_per_tile());
+    for (int i = 0; i < old_nlayers; ++i) {
+      _tile_cache->removeTile(old_layers[i], nullptr, nullptr);
+    }
+
+    for (int i = 0; i < ntiles; ++i)
     {
-      // Let the navmesh own the data.
-      dtStatus status = _nav_mesh_obj->get_nav_mesh()->addTile(data,dataSize,DT_TILE_FREE_DATA, 0, 0);
-      if (dtStatusFailed(status)) {
-        dtFree(data);
-        navigation_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
+      TileCacheData* tile = &tiles[i];
+      auto status = _tile_cache->addTile(tile->data, tile->dataSize, DT_COMPRESSEDTILE_FREE_DATA, 0);
+      if (dtStatusFailed(status))
+      {
+        dtFree(tile->data);
+        tile->data = 0;
+        continue;
       }
     }
   }
 
+  bool obstacles_done = false;
+  while (!obstacles_done) {
+    _tile_cache->update(0, _nav_mesh_obj->get_nav_mesh(), &obstacles_done);
+  }
+  for (auto &tile_coods : tiles_to_regen) {
+    _tile_cache->buildNavMeshTilesAt(tile_coods.first, tile_coods.second, _nav_mesh_obj->get_nav_mesh());
+  }
+
   _last_tris = tri_vert_set;
+}
+
+void NavMeshBuilder::
+process_obstacle_node_path(std::set<ObstacleData> &existing_obstacles, std::set<ObstacleData> &new_obstacles, const NodePath &node, CPT(TransformState) &transform) {
+  // Do not process stashed nodes.
+  if (node.is_stashed()) {
+    return;
+  }
+
+  if (node.node()->is_of_type(NavObstacleNode::get_class_type())) {
+    PT(NavObstacleNode) g = DCAST(NavObstacleNode, node.node());
+    auto mat = transform->get_mat() * mat_to_y;
+    auto obs_data = g->get_obstacle_data(mat);
+    new_obstacles.emplace(obs_data);
+    if (existing_obstacles.find(obs_data) == existing_obstacles.end()) {
+      g->add_obstacle(_tile_cache, mat);
+    }
+  }
+
+  NodePathCollection children = node.get_children();
+  for (int i=0; i<children.get_num_paths(); i++) {
+    NodePath cnp = children.get_path(i);
+    CPT(TransformState) child_transform = cnp.get_transform();
+    CPT(TransformState) net_transform = transform->compose(child_transform);
+    process_obstacle_node_path(existing_obstacles, new_obstacles, cnp, net_transform);
+  }
 }
 
 /**
