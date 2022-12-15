@@ -18,6 +18,9 @@
 #include "virtualFileMountHTTP.h"
 #include "pandaSystem.h"
 
+#if defined(_WIN32) && defined(HAVE_OPENSSL)
+#include <winsock2.h>
+#endif
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DOWNLOADER)
   #error Buildsystem error: BUILDING_PANDA_DOWNLOADER not defined
@@ -170,5 +173,11 @@ init_libdownloader() {
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("OpenSSL");
+
+#ifdef _WIN32
+  // We need to call this before we can open sockets on Windows.
+  static struct WSAData mydata;
+  WSAStartup(0x0101, &mydata);
+#endif  // _WIN32
 #endif  // HAVE_OPENSSL
 }
