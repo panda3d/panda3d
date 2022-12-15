@@ -246,7 +246,8 @@ class MotionTrail(NodePath, DirectObject):
 
         return Task.cont
 
-    def add_vertex(self, vertex_id, vertex_function=None, context=None):
+    def add_vertex(self, vertex_id, vertex_function=None, context=None, *,
+                   start_color=(1.0, 1.0, 1.0, 1.0), end_color=(0.0, 0.0, 0.0, 1.0)):
         """This must be called repeatedly to define the polygon that forms the
         cross-section of the generated motion trail geometry.  The first
         argument is a user-defined vertex identifier, the second is a function
@@ -266,6 +267,8 @@ class MotionTrail(NodePath, DirectObject):
             motion_trail_vertex.vertex = Vec4(vertex_id)
         else:
             motion_trail_vertex = MotionTrailVertex(vertex_id, vertex_function, context)
+        motion_trail_vertex.start_color = Vec4(start_color)
+        motion_trail_vertex.end_color = Vec4(end_color)
         total_vertices = len(self.vertex_list)
 
         self.vertex_list[total_vertices : total_vertices] = [motion_trail_vertex]
