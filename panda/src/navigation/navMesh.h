@@ -31,6 +31,7 @@
 #include "navTriVertGroup.h"
 #include "navTrackedCollInfo.h"
 #include "navMeshParams.h"
+#include "navObstacleNode.h"
 
 
 class NavMeshBuilder;
@@ -45,6 +46,7 @@ class EXPCL_NAVIGATION NavMesh : public TypedWritableReferenceCount
 public:
   explicit NavMesh(dtNavMesh *nav_mesh,
                    NavMeshParams params,
+                   std::shared_ptr<dtTileCache> tile_cache,
                    std::set<NavTriVertGroup> &untracked_tris);
 
 PUBLISHED:
@@ -63,16 +65,19 @@ PUBLISHED:
   void add_node_path(NodePath node, bool tracked = true);
   void add_coll_node_path(NodePath node, BitMask32 mask = BitMask32::all_on(), bool tracked = true);
   void add_geom(PT(Geom) geom);
+  void add_obstacles(NodePath node);
 
   INLINE const NavMeshParams& get_params() const;
   INLINE const NodePaths& get_tracked_nodes() const;
   INLINE const TrackedCollInfos& get_tracked_coll_nodes() const;
   INLINE const NavTriVertGroups& get_untracked_tris() const;
+  INLINE const NodePaths& get_obstacles() const;
 
   MAKE_PROPERTY(params, get_params);
   MAKE_PROPERTY(tracked_nodes, get_tracked_nodes);
   MAKE_PROPERTY(tracked_coll_nodes, get_tracked_coll_nodes);
   MAKE_PROPERTY(untracked_tris, get_untracked_tris);
+  MAKE_PROPERTY(obstacles, get_obstacles);
 
   void update();
 
@@ -82,6 +87,7 @@ private:
   NavTriVertGroups _untracked_tris;
   NodePaths _tracked_nodes;
   TrackedCollInfos _tracked_coll_nodes;
+  NodePaths _obstacle_nodes;
   NavMeshParams _params;
   NavMeshBuilder _internal_rebuilder;
 

@@ -78,3 +78,11 @@ INLINE const NavTriVertGroups& NavMesh::
 get_untracked_tris() const {
   return _untracked_tris;
 }
+
+/**
+ * Returns the list of obstacle nodes that are tracked onto the NavMesh.
+ */
+INLINE const NodePaths& NavMesh::
+get_obstacles() const {
+  return _obstacle_nodes;
+}

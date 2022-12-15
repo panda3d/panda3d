@@ -16,6 +16,7 @@
 #define NAVMESHBUILDER_H
 
 #include "recastnavigation/Recast.h"
+#include "recastnavigation/DetourTileCache.h"
 #include <string>
 #include <unordered_map>
 #include <tuple>
@@ -31,6 +32,11 @@
 
 
 class NavMesh;
+struct ExpressCompressor;
+struct LinearAllocator;
+struct MeshProcess;
+struct TileCacheData;
+
 
 /**
  * NavMeshBuilder class contains all the vertices and triangles. It also 
@@ -62,6 +68,29 @@ PUBLISHED:
   void add_polygon(LPoint3 a, LPoint3 b, LPoint3 c);
   void add_polygon(PTA_LVecBase3f &vec);
 
+public:
+  struct ObstacleData {
+    int type;
+    LPoint3 a;
+    LPoint3 b;
+    float c;
+    float d;
+
+#ifndef CPPPARSER
+    // Interrogate doesn't like tuples so just hide them.
+    std::tuple<const int &, const LPoint3f &, const LPoint3f &, const float &, const float &> tie() const { return std::tie(type, a, b, c, d); }
+    inline bool operator==(const ObstacleData& other) const
+    {
+      return tie() == other.tie();
+    }
+
+    inline bool operator<(const ObstacleData& other) const
+    {
+      return tie() < other.tie();
+    }
+#endif
+  };
+
 private:
   NodePath _parent;
 
@@ -72,6 +101,8 @@ private:
   void process_geom_node(std::set<NavTriVertGroup> &tris, PT(GeomNode) &geomnode, CPT(TransformState) &transform);
   void process_geom(std::set<NavTriVertGroup> &tris, CPT(Geom) &geom, const CPT(TransformState) &transform);
   void process_primitive(std::set<NavTriVertGroup> &tris, const GeomPrimitive *orig_prim, const GeomVertexData *vdata, LMatrix4 &transform);
+
+  void process_obstacle_node_path(std::set<ObstacleData> &existing_obstacles, std::set<ObstacleData> &new_obstacles, const NodePath &node, CPT(TransformState) &transform);
 
   INLINE void update_bounds(LVector3 vert);
 
@@ -85,6 +116,10 @@ private:
 
 protected:
   PT(NavMesh) _nav_mesh_obj;
+  std::shared_ptr<dtTileCache> _tile_cache;
+  std::shared_ptr<struct MeshProcess> _tile_mesh_proc;
+  std::shared_ptr<struct ExpressCompressor> _tile_compressor;
+  std::shared_ptr<struct LinearAllocator> _tile_alloc;
 
   bool _bounds_set = false;
   float _mesh_bMin[3] = { 0, 0, 0 };
@@ -113,6 +148,11 @@ protected:
 
   void update_nav_mesh();
 
+  int rasterizeTileLayers(const int tx, const int ty,
+                          const float* bmin, const float* bmax,
+                          pvector<float> &verts, pvector<int> &tris,
+                          TileCacheData *tiles, const int maxTiles);
+
   friend class NavMesh;
 
 public:
@@ -121,7 +161,6 @@ public:
   void set_context(rcContext *ctx) { _ctx = ctx; }
 
   bool loaded_geom() const { return _loaded; }
-
 };
 
 #include "navMeshBuilder.I"
