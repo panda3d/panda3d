@@ -1221,22 +1221,33 @@ write_class_details(ostream &out, Object *obj) {
     out << "  return nullptr;\n";
     out << "}\n\n";
 
-    out << "static void *Dtool_DowncastInterface_" << ClassName << "(void *from_this, Dtool_PyTypedObject *from_type) {\n";
+    out << "static Dtool_PyInstDef *Dtool_Wrap_" << ClassName << "(void *from_this, Dtool_PyTypedObject *from_type) {\n";
     out << "  if (from_this == nullptr || from_type == nullptr) {\n";
     out << "    return nullptr;\n";
     out << "  }\n";
-    out << "  if (from_type == Dtool_Ptr_" << ClassName << ") {\n";
-    out << "    return from_this;\n";
+    out << "  " << cClassName << " *to_this;\n";
+    out << "  if (from_type == &Dtool_" << ClassName << ") {\n";
+    out << "    to_this = (" << cClassName << "*)from_this;\n";
     out << "  }\n";
     for (di = details.begin(); di != details.end(); di++) {
       if (di->second._can_downcast && di->second._is_legal_py_class) {
-        out << "  if (from_type == Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
+        out << "  else if (from_type == Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
         out << "    " << di->second._to_class_name << "* other_this = (" << di->second._to_class_name << "*)from_this;\n" ;
-        out << "    return (" << cClassName << "*)other_this;\n";
+        out << "    to_this = (" << cClassName << "*)other_this;\n";
         out << "  }\n";
       }
     }
-    out << "  return nullptr;\n";
+    out << "  else {\n";
+    out << "    return nullptr;\n";
+    out << "  }\n";
+    out << "  // Allocate a new Python instance\n";
+    out << "  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&Dtool_" << ClassName << "._PyType, 0);\n";
+    out << "  self->_signature = PY_PANDA_SIGNATURE;\n";
+    out << "  self->_My_Type = &Dtool_" << ClassName << ";\n";
+    out << "  self->_ptr_to_object = to_this;\n";
+    out << "  self->_memory_rules = false;\n";
+    out << "  self->_is_const = false;\n";
+    out << "  return self;\n";
     out << "}\n\n";
   }
 }
@@ -3251,7 +3262,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "  TypeHandle::none(),\n";
   out << "  Dtool_PyModuleClassInit_" << ClassName << ",\n";
   out << "  Dtool_UpcastInterface_" << ClassName << ",\n";
-  out << "  Dtool_DowncastInterface_" << ClassName << ",\n";
+  out << "  Dtool_Wrap_" << ClassName << ",\n";
 
   int has_coerce = has_coerce_constructor(obj->_itype._cpptype->as_struct_type());
   if (has_coerce > 0) {

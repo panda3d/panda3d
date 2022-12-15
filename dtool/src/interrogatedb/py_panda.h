@@ -35,12 +35,13 @@ using namespace std;
 #define IMPORT_THIS extern
 #endif
 
+struct Dtool_PyInstDef;
 struct Dtool_PyTypedObject;
 
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
-typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
+typedef Dtool_PyInstDef *(*WrapFunction)(void *, Dtool_PyTypedObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
 typedef void (*ModuleClassInitFunction)(PyObject *module);
 
@@ -78,7 +79,7 @@ struct Dtool_PyTypedObject {
   ModuleClassInitFunction _Dtool_ModuleClassInit;
 
   UpcastFunction _Dtool_UpcastInterface;    // The Upcast Function By Slot
-  DowncastFunction _Dtool_DowncastInterface; // The Downcast Function By Slot
+  WrapFunction _Dtool_WrapInterface; // The Downcast Function By Slot
 
   CoerceFunction _Dtool_ConstCoerce;
   CoerceFunction _Dtool_Coerce;
