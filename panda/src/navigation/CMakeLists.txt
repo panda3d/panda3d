@@ -23,7 +23,11 @@ set(P3NAVIGATION_HEADERS
         navMeshQueryFilter.h
         navMeshQueryFilter.I
         navMeshBuilder.h
-        navMeshBuilder.I)
+        navMeshBuilder.I
+        navObstacleNode.h
+        navObstacleNode.I
+        navObstacleCylinderNode.h
+        navObstacleCylinderNode.I)
 
 set(P3NAVIGATION_SOURCES
         config_navigation.cxx
@@ -33,7 +37,9 @@ set(P3NAVIGATION_SOURCES
         navMeshPoly.cxx
         navMeshQuery.cxx
         navMeshQueryFilter.cxx
-        navMeshBuilder.cxx)
+        navMeshBuilder.cxx
+        navObstacleNode.cxx
+        navObstacleCylinderNode.cxx)
 
 composite_sources(p3navigation P3NAVIGATION_SOURCES)
 add_library(p3navigation ${P3NAVIGATION_HEADERS} ${P3NAVIGATION_SOURCES})

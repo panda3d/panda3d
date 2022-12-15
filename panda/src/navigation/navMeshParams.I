@@ -38,6 +38,7 @@ NavMeshParams(const NavMeshParams &other) {
   detail_sample_dist = other.get_detail_sample_dist();
   detail_sample_max_error = other.get_detail_sample_max_error();
   partition_type = other.get_partition_type();
+  max_layers_per_tile = other.get_max_layers_per_tile();
   tile_size = other.get_tile_size();
   filter_low_hanging_obstacles = other.get_filter_low_hanging_obstacles();
   filter_ledge_spans = other.get_filter_ledge_spans();
@@ -290,6 +291,22 @@ get_partition_type() const {
 }
 
 /**
+ * Sets the sampling distance to use when generating the detail mesh.
+ */
+INLINE void NavMeshParams::
+set_max_layers_per_tile(int nlayers) {
+  max_layers_per_tile = nlayers;
+}
+
+/**
+ * Returns the sampling distance to use when generating the detail mesh.
+ */
+INLINE int NavMeshParams::
+get_max_layers_per_tile() const {
+  return max_layers_per_tile;
+}
+
+/**
  * Returns the maximum number of tiles that are possible.
  */
 INLINE int NavMeshParams::
@@ -429,6 +446,7 @@ reset() {
   detail_sample_dist = 6.0f;
   detail_sample_max_error = 1.0f;
   partition_type = NavMeshParams::SAMPLE_PARTITION_LAYERS;
+  max_layers_per_tile = 4;
   tile_size = 32;
   filter_low_hanging_obstacles = true;
   filter_ledge_spans = true;
@@ -452,6 +470,7 @@ operator==(const NavMeshParams &other) const {
       detail_sample_dist,
       detail_sample_max_error ,
       partition_type,
+      max_layers_per_tile,
       tile_size,
       filter_low_hanging_obstacles,
       filter_ledge_spans,
@@ -472,6 +491,7 @@ operator==(const NavMeshParams &other) const {
              other.get_detail_sample_dist(),
              other.get_detail_sample_max_error(),
              other.get_partition_type(),
+             other.get_max_layers_per_tile(),
              other.get_tile_size(),
              other.get_filter_low_hanging_obstacles(),
              other.get_filter_ledge_spans(),

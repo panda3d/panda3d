@@ -43,11 +43,13 @@ NavMesh::~NavMesh() {
  */
 NavMesh::NavMesh(dtNavMesh *nav_mesh,
                  NavMeshParams params,
+                 std::shared_ptr<dtTileCache> tile_cache,
                  std::set<NavTriVertGroup> &untracked_tris) :
                  _nav_mesh(nav_mesh),
                  _params(params),
                  _internal_rebuilder(this) {
   _internal_rebuilder._last_tris = untracked_tris;
+  _internal_rebuilder._tile_cache = tile_cache;
   std::copy(untracked_tris.begin(), untracked_tris.end(), std::inserter(_untracked_tris, _untracked_tris.begin()));
 }
 
@@ -324,6 +326,16 @@ add_geom(PT(Geom) geom) {
     std::copy(_untracked_tris.begin(), _untracked_tris.end(), std::inserter(new_tris, new_tris.begin()));
     _untracked_tris.clear();
     std::copy(new_tris.begin(), new_tris.end(), std::inserter(_untracked_tris, _untracked_tris.begin()));
+}
+
+/**
+ * Any NavObstacleNodes under this NodePath will be added to the nav mesh on next update().
+ */
+void NavMesh::
+add_obstacles(NodePath obstacle) {
+  if (std::find(_obstacle_nodes.begin(), _obstacle_nodes.end(), obstacle) == _obstacle_nodes.end()) {
+    _obstacle_nodes.emplace_back(obstacle);
+  }
 }
 
 /**

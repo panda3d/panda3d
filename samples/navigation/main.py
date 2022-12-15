@@ -4,7 +4,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import *
-from panda3d.navigation import NavMeshNode, NavMeshQuery, NavMeshBuilder
+from panda3d.navigation import NavMeshNode, NavMeshQuery, NavMeshBuilder, NavObstacleCylinderNode
 
 
 # Function to put instructions on the screen.
@@ -58,6 +58,10 @@ class NavigationDemo(ShowBase):
         self.movement_loop = LerpPosInterval(obstacle, 3, (20, 0, 0))
         self.movement_loop.loop()
 
+        # Create a navmesh obstacle cylinder and parent it to the moving panda so it moves with it.
+        obstacle_node = NavObstacleCylinderNode(7, 3, "pandaObstacle")
+        obstacle.attach_new_node(obstacle_node)
+
         # NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
         self.builder = NavMeshBuilder()
 
@@ -66,13 +70,14 @@ class NavigationDemo(ShowBase):
         self.builder.params.actor_max_climb = 2
         self.builder.params.tile_size = 64
         self.builder.params.cell_size = 1
+
         self.navmesh = self.builder.build()
 
         # Add an untracked collision mesh.
         self.navmesh.add_coll_node_path(self.scene, tracked=False)
 
         # Add a tracked obstacle.
-        self.navmesh.add_node_path(obstacle)
+        self.navmesh.add_obstacles(render)
 
         self.navmesh.update()
 
@@ -98,7 +103,7 @@ class NavigationDemo(ShowBase):
         self.pandaActor = Actor("models/panda-model",
                                 {"walk": "models/panda-walk4"})
         self.pandaActor.set_scale(0.01)
-        self.pandaActor.reparent_to(self.scene)
+        self.pandaActor.reparent_to(render)
         self.pandaActor.loop("walk")
 
         self.pandaSequence = Sequence()
