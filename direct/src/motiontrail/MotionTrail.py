@@ -244,7 +244,7 @@ class MotionTrail(NodePath, DirectObject):
 
         return Task.cont
 
-    def add_vertex(self, vertex_id, vertex_function, context):
+    def add_vertex(self, vertex_id, vertex_function=None, context=None):
         """This must be called repeatedly to define the polygon that forms the
         cross-section of the generated motion trail geometry.  The first
         argument is a user-defined vertex identifier, the second is a function
@@ -255,8 +255,15 @@ class MotionTrail(NodePath, DirectObject):
 
         After calling this, you must call `update_vertices()` before the
         changes will fully take effect.
+
+        As of Panda3D 1.10.13, you may alternatively simply pass in a single
+        argument containing the vertex position as a `.Vec4` or `.Point3`.
         """
-        motion_trail_vertex = MotionTrailVertex(vertex_id, vertex_function, context)
+        if vertex_function is None:
+            motion_trail_vertex = MotionTrailVertex(None, None, context)
+            motion_trail_vertex.vertex = Vec4(vertex_id)
+        else:
+            motion_trail_vertex = MotionTrailVertex(vertex_id, vertex_function, context)
         total_vertices = len(self.vertex_list)
 
         self.vertex_list[total_vertices : total_vertices] = [motion_trail_vertex]
@@ -308,7 +315,8 @@ class MotionTrail(NodePath, DirectObject):
             vertex_index = 0
             while vertex_index < total_vertices:
                 motion_trail_vertex = self.vertex_list[vertex_index]
-                motion_trail_vertex.vertex = motion_trail_vertex.vertex_function(motion_trail_vertex, motion_trail_vertex.vertex_id, motion_trail_vertex.context)
+                if motion_trail_vertex.vertex_function is not None:
+                    motion_trail_vertex.vertex = motion_trail_vertex.vertex_function(motion_trail_vertex, motion_trail_vertex.vertex_id, motion_trail_vertex.context)
                 vertex_index += 1
 
             # calculate v coordinate
