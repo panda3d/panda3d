@@ -90,6 +90,7 @@ PUBLISHED:
 public:
 
   void begin_geometry();
+  void begin_geometry(int num_quads);
   void add_geometry_quad(LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
   void add_geometry_quad(LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
   void end_geometry();
