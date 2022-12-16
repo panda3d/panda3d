@@ -154,7 +154,7 @@ begin_geometry(int num_quads) {
 
   Thread *current_thread = Thread::get_current_thread();
 
-  _vertex_data = new GeomVertexData("vertices", format, Geom::UH_static);
+  _vertex_data = new GeomVertexData("vertices", format, Geom::UH_stream);
   _vertex_data->unclean_set_num_rows(num_vertices);
   _vertex_writer = GeomVertexWriter(_vertex_data, "vertex", current_thread);
   _color_writer = GeomVertexWriter(_vertex_data, "color", current_thread);
@@ -163,7 +163,7 @@ begin_geometry(int num_quads) {
   }
 
   // We know how many triangles we'll be adding, so add them up front.
-  _triangles = new GeomTriangles(Geom::UH_static);
+  _triangles = new GeomTriangles(Geom::UH_stream);
   if (num_quads * 6 <= 65535) {
     _triangles->set_index_type(GeomEnums::NT_uint16);
   } else {
