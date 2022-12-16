@@ -379,6 +379,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
  */
 INLINE void Geom::
 mark_internal_bounds_stale(CData *cdata) {
+  cdata->_nested_vertices = 0;
   cdata->_internal_bounds_stale = true;
 }
 

@@ -83,6 +83,7 @@ Miscellaneous
 * Fix interrogate syntax error with C++11-style attributes in declarators
 * Fix regression with BufferViewer in double-precision build (#1365)
 * Fix `PandaNode.nested_vertices` not updating properly
+* Prevent Panda calculating bounding volume of Geom with custom bounding volume
 * Add `do_events()` and `process_event()` snake_case aliases in eventMgr
 * Support second arg of None in `replace_texture()` / `replace_material()`
 * Support `os.fspath()` for ConfigVariableFilename objects (#1406)

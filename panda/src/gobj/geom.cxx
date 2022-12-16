@@ -1119,9 +1119,28 @@ int Geom::
 get_nested_vertices(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
   if (cdata->_internal_bounds_stale) {
-    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-    compute_internal_bounds(cdataw, current_thread);
-    return cdataw->_nested_vertices;
+    if (cdata->_user_bounds != nullptr) {
+      // Don't do the expensive compute_internal_bounds call.
+      if (cdata->_nested_vertices == 0) {
+        CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+        int num_vertices = 0;
+
+        Primitives::const_iterator pi;
+        for (pi = cdataw->_primitives.begin();
+             pi != cdataw->_primitives.end();
+             ++pi) {
+          GeomPrimitivePipelineReader reader((*pi).get_read_pointer(current_thread), current_thread);
+          num_vertices += reader.get_num_vertices();
+        }
+
+        cdataw->_nested_vertices = num_vertices;
+        return num_vertices;
+      }
+    } else {
+      CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+      compute_internal_bounds(cdataw, current_thread);
+      return cdataw->_nested_vertices;
+    }
   }
   return cdata->_nested_vertices;
 }
