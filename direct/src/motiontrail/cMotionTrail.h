@@ -94,7 +94,7 @@ public:
     const LPoint3 &v0, const LPoint3 &v1, const LPoint3 &v2, const LPoint3 &v3,
     const LVector4 &c0, const LVector4 &c1, const LVector4 &c2, const LVector4 &c3,
     const LVector2 &t0, const LVector2 &t1, const LVector2 &t2, const LVector2 &t3);
-  void end_geometry();
+  void end_geometry(const LPoint3 &min_vertex, const LPoint3 &max_vertex);
 
   bool _active = true;
   bool _enable = true;
@@ -114,6 +114,7 @@ public:
   VertexList _vertex_list;
   typedef pdeque<CMotionTrailFrame> FrameList;
   FrameList _frame_list;
+  PN_stdfloat _vertex_bounds_radius = 0.0f;
 
   // parameters
   PN_stdfloat _color_scale = 1.0f;

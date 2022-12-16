@@ -141,6 +141,7 @@ class MotionTrail(NodePath, DirectObject):
         ## parented to the MotionTrail itself, but can be reparented elsewhere
         ## if necessary.
         self.geom_node = GeomNode("motion_trail")
+        self.geom_node.setBoundsType(BoundingVolume.BT_box)
         self.geom_node_path = self.attachNewNode(self.geom_node)
         node_path = self.geom_node_path
 

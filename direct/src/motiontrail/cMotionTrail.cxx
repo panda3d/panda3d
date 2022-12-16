@@ -14,6 +14,7 @@
 #include "directbase.h"
 #include "cMotionTrail.h"
 #include "renderState.h"
+#include "boundingBox.h"
 #include "colorAttrib.h"
 #include "cmath.h"
 
@@ -73,6 +74,10 @@ add_vertex(const LVector4 &vertex, const LVector4 &start_color,
   motion_trail_vertex._v = v;
   motion_trail_vertex._nurbs_curve_evaluator = new NurbsCurveEvaluator();
   _vertex_list.push_back(std::move(motion_trail_vertex));
+
+  // Store the maximum distance from the origin, so we can calculate the bounds
+  // of the trail efficiently.
+  _vertex_bounds_radius = std::max(_vertex_bounds_radius, vertex.length());
 }
 
 /**
@@ -230,7 +235,7 @@ add_geometry_quad(
  *
  */
 void CMotionTrail::
-end_geometry() {
+end_geometry(const LPoint3 &min_vertex, const LPoint3 &max_vertex) {
   static CPT(RenderState) state;
   if (state == nullptr) {
     state = RenderState::make(ColorAttrib::make_vertex());
@@ -240,7 +245,12 @@ end_geometry() {
   _color_writer.clear();
   _texture_writer.clear();
 
+  PT(BoundingBox) bounds = new BoundingBox(
+    min_vertex - LVector3(_vertex_bounds_radius * 2),
+    max_vertex + LVector3(_vertex_bounds_radius * 2));
+
   PT(Geom) geometry = new Geom(_vertex_data);
+  geometry->set_bounds(bounds);
   geometry->add_primitive(_triangles);
 
   if (_geom_node) {
@@ -319,6 +329,8 @@ update_motion_trail(PN_stdfloat current_time, const LMatrix4 &transform) {
     PN_stdfloat delta_time;
     CMotionTrailFrame last_motion_trail_frame;
 
+    LPoint3 min_vertex, max_vertex;
+
     VertexList::iterator vertex_iterator;
 
     // convert vertex list to vertex array
@@ -382,6 +394,18 @@ update_motion_trail(PN_stdfloat current_time, const LMatrix4 &transform) {
         NurbsCurveEvaluator *nurbs_curve_evaluator;
         nurbs_curve_evaluator = motion_trail_vertex_start->_nurbs_curve_evaluator;
         nurbs_curve_evaluator->set_vertex(segment_index, v0);
+
+        // For efficiency, calculate this only for the first vertex, we add the
+        // diameter of the cross-section to this later.
+        if (segment_index == 0) {
+          min_vertex = v0.get_xyz();
+          max_vertex = min_vertex;
+        } else {
+          min_vertex = min_vertex.fmin(v0.get_xyz());
+          max_vertex = max_vertex.fmax(v0.get_xyz());
+        }
+        min_vertex = min_vertex.fmin(v2.get_xyz());
+        max_vertex = max_vertex.fmax(v2.get_xyz());
 
         for (int vertex_segment_index = 0;
              vertex_segment_index < total_vertex_segments;
@@ -575,6 +599,18 @@ update_motion_trail(PN_stdfloat current_time, const LMatrix4 &transform) {
         t0.set(st, motion_trail_vertex_start->_v);
         t2.set(et, motion_trail_vertex_start->_v);
 
+        // For efficiency, calculate this only for the first vertex, we add the
+        // diameter of the cross-section to this later.
+        if (segment_index == 0) {
+          min_vertex = v0.get_xyz();
+          max_vertex = min_vertex;
+        } else {
+          min_vertex = min_vertex.fmin(v0.get_xyz());
+          max_vertex = max_vertex.fmax(v0.get_xyz());
+        }
+        min_vertex = min_vertex.fmin(v2.get_xyz());
+        max_vertex = max_vertex.fmax(v2.get_xyz());
+
         for (int vertex_segment_index = 0;
              vertex_segment_index < total_vertex_segments;
              ++vertex_segment_index) {
@@ -611,7 +647,7 @@ update_motion_trail(PN_stdfloat current_time, const LMatrix4 &transform) {
       }
     }
 
-    end_geometry();
+    end_geometry(min_vertex, max_vertex);
 
     delete[] vertex_array;
   }
