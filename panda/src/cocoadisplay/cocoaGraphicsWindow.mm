@@ -1015,10 +1015,19 @@ set_properties_now(WindowProperties &properties) {
     NSRect frame;
     NSRect container;
     if (_window != nil) {
-      frame = [_window contentRectForFrameRect:[_window frame]];
+      NSRect window_frame = [_window frame];
+      frame = [_window contentRectForFrameRect:window_frame];
       NSScreen *screen = [_window screen];
       nassertv(screen != nil);
       container = [screen frame];
+
+      // Prevent the centering from overlapping the Dock
+      if (y < 0) {
+        NSRect visible_frame = [screen visibleFrame];
+        if (window_frame.size.height == visible_frame.size.height) {
+          y = 0;
+        }
+      }
     } else {
       frame = [_view frame];
       container = [[_view superview] frame];
