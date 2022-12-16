@@ -47,9 +47,9 @@ class MotionTrailFrame:
 class MotionTrail(NodePath, DirectObject):
     """Generates smooth geometry-based motion trails behind a moving object.
 
-    To use this class, first define the shape of the cross-section of the trail
-    by repeatedly calling `add_vertex()` and `set_vertex_color()`.
-    When this is done, `update_vertices()` must be called.
+    To use this class, first define the shape of the cross-section polygon that
+    is to be extruded along the motion trail by calling `add_vertex()` and
+    `set_vertex_color()`.  When this is done, call `update_vertices()`.
 
     To generate the motion trail, either call `register_motion_trail()`
     to have Panda update it automatically, or periodically call the method
@@ -80,6 +80,10 @@ class MotionTrail(NodePath, DirectObject):
 
     @classmethod
     def setGlobalEnable(cls, enable):
+        """Set this to False to have the task stop updating all motion trails.
+        This does not prevent updating them manually using the
+        `update_motion_trail()` method.
+        """
         cls.global_enable = enable
 
     def __init__(self, name, parent_node_path):
@@ -117,14 +121,14 @@ class MotionTrail(NodePath, DirectObject):
         self.continuous_motion_trail = True
         self.color_scale = 1.0
 
-        ## How long the time window is for which the trail is computed.  Can be
-        ## increased to obtain a longer trail, decreased for a shorter trail.
+        #: How long the time window is for which the trail is computed.  Can be
+        #: increased to obtain a longer trail, decreased for a shorter trail.
         self.time_window = 1.0
 
-        ## How often the trail updates, in seconds.  The default is 0.0, which
-        ## has the trail updated every frame for the smoothest result.  Higher
-        ## values will generate a choppier trail.  The `use_nurbs` option can
-        ## compensate partially for this choppiness, however.
+        #: How often the trail updates, in seconds.  The default is 0.0, which
+        #: has the trail updated every frame for the smoothest result.  Higher
+        #: values will generate a choppier trail.  The `use_nurbs` option can
+        #: compensate partially for this choppiness, however.
         self.sampling_time = 0.0
 
         self.square_t = True
@@ -135,9 +139,9 @@ class MotionTrail(NodePath, DirectObject):
         # node path states
         self.reparentTo(parent_node_path)
 
-        ## A `.GeomNode` object containing the generated geometry.  By default
-        ## parented to the MotionTrail itself, but can be reparented elsewhere
-        ## if necessary.
+        #: A `.GeomNode` object containing the generated geometry.  By default
+        #: parented to the MotionTrail itself, but can be reparented elsewhere
+        #: if necessary.
         self.geom_node = GeomNode("motion_trail")
         self.geom_node_path = self.attachNewNode(self.geom_node)
         node_path = self.geom_node_path
@@ -167,9 +171,11 @@ class MotionTrail(NodePath, DirectObject):
 
         self.relative_to_render = False
 
-        ## Set this to True to use a NURBS curve to generate a smooth trail,
-        ## even if the underlying animation or movement is janky.
+        #: Set this to True to use a NURBS curve to generate a smooth trail,
+        #: even if the underlying animation or movement is janky.
         self.use_nurbs = False
+
+        #: This can be changed to fine-tune the resolution of the NURBS curve.
         self.resolution_distance = 0.5
 
         self.cmotion_trail = CMotionTrail()
@@ -245,7 +251,7 @@ class MotionTrail(NodePath, DirectObject):
         return Task.cont
 
     def add_vertex(self, vertex_id, vertex_function=None, context=None):
-        """This must be called repeatedly to define the polygon that forms the
+        """This must be called initially to define the polygon that forms the
         cross-section of the generated motion trail geometry.  The first
         argument is a user-defined vertex identifier, the second is a function
         that will be called with three parameters that should return the
