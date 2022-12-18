@@ -12,6 +12,7 @@
  */
 
 #include "navObstacleCylinderNode.h"
+#include "geomTriangles.h"
 
 TypeHandle NavObstacleCylinderNode::_type_handle;
 
@@ -42,8 +43,61 @@ add_obstacle(std::shared_ptr<dtTileCache> tileCache, const LMatrix4 &transform) 
  */
 PT(GeomNode) NavObstacleCylinderNode::
 get_debug_geom() {
-  // TODO
-  return nullptr;
+  PT(GeomVertexData) vdata = new GeomVertexData
+      ("obstacle", GeomVertexFormat::get_v3c4(),
+       Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+
+  PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+
+  static const int num_slices = 8;
+  vertex.reserve_num_rows(num_slices * 2 + 2);
+  for (int si = 0; si <= num_slices; si++) {
+    vertex.add_data3(LPoint3(_radius * ccos((si / num_slices) * 2.0 * MathNumbers::pi),
+                             _radius * csin((si / num_slices) * 2.0 * MathNumbers::pi),
+                             0));
+    color.add_data4(1, 0, 0, 1);
+    vertex.add_data3(LPoint3(_radius * ccos((si / num_slices) * 2.0 * MathNumbers::pi),
+                             _radius * csin((si / num_slices) * 2.0 * MathNumbers::pi),
+                             _height));
+    color.add_data4(1, 0, 0, 1);
+  }
+  vertex.add_data3(LPoint3(0, 0, 0));
+  color.add_data4(1, 0, 0, 1);
+  vertex.add_data3(LPoint3(0, 0, _height));
+  color.add_data4(1, 0, 0, 1);
+
+  for (int si = 0; si <= num_slices; si++) {
+    int top_left = si * 2 + 1;
+    int bottom_left = si * 2;
+    int bottom_right;
+    int top_right;
+    if (si == num_slices - 1) {
+      bottom_right = 0;
+      top_right = 1;
+    } else {
+      bottom_right = si * 2 + 2;
+      top_right = si * 2 + 3;
+    }
+    // Top left tri
+    tris->add_vertices(top_left, bottom_left, bottom_right);
+    // Bottom right tri
+    tris->add_vertices(bottom_right, top_right, top_left);
+
+    // Slice of bottom cap
+    tris->add_vertices(num_slices * 2, bottom_right, bottom_left);
+    // Slice of top cap
+    tris->add_vertices(top_left, top_right, num_slices * 2 + 1);
+  }
+
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(tris);
+
+  PT(GeomNode) geomNode = new GeomNode(get_name() + "-debug");
+  geomNode->add_geom(geom);
+
+  return geomNode;
 }
 
 /**
