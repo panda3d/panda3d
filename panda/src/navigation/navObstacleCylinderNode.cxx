@@ -26,16 +26,30 @@ NavObstacleCylinderNode::NavObstacleCylinderNode(float radius, float height, con
 NavMeshBuilder::ObstacleData NavObstacleCylinderNode::
 get_obstacle_data(const LMatrix4 &transform) {
   LPoint3 pos(0, 0, 0);
-  transform.xform_point_general_in_place(pos);
-  return {DT_OBSTACLE_CYLINDER, pos, LPoint3(), _radius, _height};
+  transform.xform_point_in_place(pos);
+  // Apply the transforms to the radius and height.
+  LPoint3 radius_height_transformed(_radius, _radius, _height);
+  transform.xform_point_in_place(radius_height_transformed);
+  // Counteract the translation
+  LVector3 radius_height = radius_height_transformed - transform.get_row3(3);
+  // Undo the yup conversion that is baked into the incoming mat.
+  LMatrix4::convert_mat(CS_yup_right, CS_zup_right).xform_point_in_place(radius_height);
+  return {DT_OBSTACLE_CYLINDER, pos, LPoint3(), std::min(radius_height[0], radius_height[1]), radius_height[2]};
 }
 
 void NavObstacleCylinderNode::
-add_obstacle(std::shared_ptr<dtTileCache> tileCache, const LMatrix4 &transform) {
+add_obstacle(dtTileCache *tileCache, const LMatrix4 &transform) {
   LPoint3 pos(0, 0, 0);
-  transform.xform_point_general_in_place(pos);
+  transform.xform_point_in_place(pos);
   float posArr[3] = {pos[0], pos[1], pos[2]};
-  tileCache->addObstacle(reinterpret_cast<const float *>(&posArr), _radius, _height, nullptr);
+  // Apply the transforms to the radius and height.
+  LPoint3 radius_height_transformed(_radius, _radius, _height);
+  transform.xform_point_in_place(radius_height_transformed);
+  // Counteract the translation
+  LVector3 radius_height = radius_height_transformed - transform.get_row3(3);
+  // Undo the yup conversion that is baked into the incoming mat.
+  LMatrix4::convert_mat(CS_yup_right, CS_zup_right).xform_point_in_place(radius_height);
+  tileCache->addObstacle(reinterpret_cast<const float *>(&posArr), std::min(radius_height[0], radius_height[1]), radius_height[2], nullptr);
 }
 
 /**
@@ -54,18 +68,18 @@ get_debug_geom() {
   static const int num_slices = 8;
   vertex.reserve_num_rows(num_slices * 2 + 2);
   for (int si = 0; si <= num_slices; si++) {
-    vertex.add_data3(LPoint3(_radius * ccos((si / num_slices) * 2.0 * MathNumbers::pi),
-                             _radius * csin((si / num_slices) * 2.0 * MathNumbers::pi),
+    vertex.add_data3(LPoint3::rfu(_radius * ccos(((PN_stdfloat)si / num_slices) * 2.0 * MathNumbers::pi),
+                             _radius * csin(((PN_stdfloat)si / num_slices) * 2.0 * MathNumbers::pi),
                              0));
     color.add_data4(1, 0, 0, 1);
-    vertex.add_data3(LPoint3(_radius * ccos((si / num_slices) * 2.0 * MathNumbers::pi),
-                             _radius * csin((si / num_slices) * 2.0 * MathNumbers::pi),
+    vertex.add_data3(LPoint3::rfu(_radius * ccos(((PN_stdfloat)si / num_slices) * 2.0 * MathNumbers::pi),
+                             _radius * csin(((PN_stdfloat)si / num_slices) * 2.0 * MathNumbers::pi),
                              _height));
     color.add_data4(1, 0, 0, 1);
   }
-  vertex.add_data3(LPoint3(0, 0, 0));
+  vertex.add_data3(LPoint3::rfu(0, 0, 0));
   color.add_data4(1, 0, 0, 1);
-  vertex.add_data3(LPoint3(0, 0, _height));
+  vertex.add_data3(LPoint3::rfu(0, 0, _height));
   color.add_data4(1, 0, 0, 1);
 
   for (int si = 0; si <= num_slices; si++) {

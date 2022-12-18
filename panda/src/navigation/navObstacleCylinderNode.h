@@ -58,7 +58,7 @@ public:
   virtual TypeHandle force_init_type() { init_type(); return get_class_type(); }
 
   NavMeshBuilder::ObstacleData get_obstacle_data(const LMatrix4 &transform) override;
-  void add_obstacle(std::shared_ptr<dtTileCache> tileCache, const LMatrix4 &transform) override;
+  void add_obstacle(dtTileCache *tileCache, const LMatrix4 &transform) override;
 
 private:
   static TypeHandle _type_handle;
