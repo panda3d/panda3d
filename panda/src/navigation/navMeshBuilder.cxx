@@ -64,13 +64,13 @@ NavMeshBuilder::~NavMeshBuilder() {
  * This function adds a custom polygon with three vertices to the input geometry.
  */
 void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
-  mat_to_y.xform_point_general_in_place(a);
+  mat_to_y.xform_point_in_place(a);
   update_bounds(a);
 
-  mat_to_y.xform_point_general_in_place(b);
+  mat_to_y.xform_point_in_place(b);
   update_bounds(b);
 
-  mat_to_y.xform_point_general_in_place(c);
+  mat_to_y.xform_point_in_place(c);
   update_bounds(c);
 
   _untracked_tris.insert((NavTriVertGroup){a, b, c});
@@ -138,19 +138,19 @@ void NavMeshBuilder::process_primitive(std::set<NavTriVertGroup> &tris, const Ge
       int a = prim->get_vertex(s);
       vertex.set_row(a);
       v1 = vertex.get_data3();
-      transform.xform_point_general_in_place(v1);
+      transform.xform_point_in_place(v1);
       update_bounds(v1);
 
       int b = prim->get_vertex(s + 1);
       vertex.set_row(b);
       v2 = vertex.get_data3();
-      transform.xform_point_general_in_place(v2);
+      transform.xform_point_in_place(v2);
       update_bounds(v2);
 
       int c = prim->get_vertex(s + 2);
       vertex.set_row(c);
       v3 = vertex.get_data3();
-      transform.xform_point_general_in_place(v3);
+      transform.xform_point_in_place(v3);
       update_bounds(v3);
 
       tris.insert((NavTriVertGroup){v1, v2, v3});
@@ -159,19 +159,19 @@ void NavMeshBuilder::process_primitive(std::set<NavTriVertGroup> &tris, const Ge
         int a = prim->get_vertex(s);
         vertex.set_row(a);
         v1 = vertex.get_data3();
-        transform.xform_point_general_in_place(v1);
+        transform.xform_point_in_place(v1);
         update_bounds(v1);
 
         int b = prim->get_vertex(i - 1);
         vertex.set_row(b);
         v2 = vertex.get_data3();
-        transform.xform_point_general_in_place(v2);
+        transform.xform_point_in_place(v2);
         update_bounds(v2);
 
         int c = prim->get_vertex(i);
         vertex.set_row(c);
         v3 = vertex.get_data3();
-        transform.xform_point_general_in_place(v3);
+        transform.xform_point_in_place(v3);
         update_bounds(v3);
 
         tris.insert((NavTriVertGroup){v1, v2, v3});
@@ -848,8 +848,9 @@ process_obstacle_node_path(std::set<ObstacleData> &existing_obstacles, std::set<
     auto obs_data = g->get_obstacle_data(mat);
     new_obstacles.emplace(obs_data);
     if (existing_obstacles.find(obs_data) == existing_obstacles.end()) {
-      g->add_obstacle(_tile_cache, mat);
+      g->add_obstacle(_tile_cache.get(), mat);
     }
+    existing_obstacles.emplace(obs_data);
   }
 
   NodePathCollection children = node.get_children();

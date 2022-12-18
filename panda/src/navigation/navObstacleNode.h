@@ -49,7 +49,7 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual NavMeshBuilder::ObstacleData get_obstacle_data(const LMatrix4 &transform) = 0;
-  virtual void add_obstacle(std::shared_ptr<dtTileCache> tileCache, const LMatrix4 &transform) = 0;
+  virtual void add_obstacle(dtTileCache *tileCache, const LMatrix4 &transform) = 0;
 
 private:
   static TypeHandle _type_handle;
