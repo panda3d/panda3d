@@ -59,8 +59,9 @@ class NavigationDemo(ShowBase):
         self.movement_loop.loop()
 
         # Create a navmesh obstacle cylinder and parent it to the moving panda so it moves with it.
-        obstacle_node = NavObstacleCylinderNode(7, 3, "pandaObstacle")
+        obstacle_node = NavObstacleCylinderNode(4, 5, "pandaObstacle")
         obstacle_np = obstacle.attach_new_node(obstacle_node)
+        obstacle_np.set_scale(1/0.01)
         obstacle_np.show()
 
         # NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
