@@ -390,21 +390,21 @@ class MotionTrail(NodePath, DirectObject):
 
     def add_geometry_quad(self, v0, v1, v2, v3, c0, c1, c2, c3, t0, t1, t2, t3):
 
-        self.vertex_writer.addData3f(v0 [0], v0 [1], v0 [2])
-        self.vertex_writer.addData3f(v1 [0], v1 [1], v1 [2])
-        self.vertex_writer.addData3f(v2 [0], v2 [1], v2 [2])
-        self.vertex_writer.addData3f(v3 [0], v3 [1], v3 [2])
+        self.vertex_writer.addData3(v0[0], v0[1], v0[2])
+        self.vertex_writer.addData3(v1[0], v1[1], v1[2])
+        self.vertex_writer.addData3(v2[0], v2[1], v2[2])
+        self.vertex_writer.addData3(v3[0], v3[1], v3[2])
 
-        self.color_writer.addData4f(c0)
-        self.color_writer.addData4f(c1)
-        self.color_writer.addData4f(c2)
-        self.color_writer.addData4f(c3)
+        self.color_writer.addData4(c0)
+        self.color_writer.addData4(c1)
+        self.color_writer.addData4(c2)
+        self.color_writer.addData4(c3)
 
         if self.texture is not None:
-            self.texture_writer.addData2f(t0)
-            self.texture_writer.addData2f(t1)
-            self.texture_writer.addData2f(t2)
-            self.texture_writer.addData2f(t3)
+            self.texture_writer.addData2(t0)
+            self.texture_writer.addData2(t1)
+            self.texture_writer.addData2(t2)
+            self.texture_writer.addData2(t3)
 
         vertex_index = self.vertex_index
 
