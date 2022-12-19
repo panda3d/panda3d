@@ -71,6 +71,8 @@ Miscellaneous
 * Fix texture transforms sometimes not being flattened (#1392)
 * Fix support for `#pragma include <file.glsl>` in GLSL shaders
 * Fix `ShaderBuffer.prepare()` not doing anything
+* Implement deepcopy for PointerToArray
+* Fix Texture deepcopy keeping a reference to the original RAM image
 * Fix bf-cbc encryption no longer working when building with OpenSSL 3.0
 * PandaNode bounds_type property was erroneously marked read-only
 * Fix warnings when copying OdeTriMeshGeom objects
@@ -81,8 +83,10 @@ Miscellaneous
 * Add various useful functions to interrogatedb module
 * Fix Python 3 issues unpacking uint types in Python 3 (#1380)
 * Fix interrogate syntax error with C++11-style attributes in declarators
+* Fix double-precision color values not being clamped by GeomVertexWriter
 * Fix regression with BufferViewer in double-precision build (#1365)
 * Fix `PandaNode.nested_vertices` not updating properly
+* Prevent Panda calculating bounding volume of Geom with custom bounding volume
 * Add `do_events()` and `process_event()` snake_case aliases in eventMgr
 * Support second arg of None in `replace_texture()` / `replace_material()`
 * Support `os.fspath()` for ConfigVariableFilename objects (#1406)

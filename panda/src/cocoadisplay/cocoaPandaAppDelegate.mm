@@ -39,7 +39,8 @@
   // Ask all the windows whether they are OK to be closed.
   bool should_close = true;
   for (NSWindow *window in [app windows]) {
-    if (![[window delegate] windowShouldClose:window]) {
+    id<NSWindowDelegate> delegate = [window delegate];
+    if (delegate != nil && ![delegate windowShouldClose:window]) {
       should_close = false;
     }
   }
