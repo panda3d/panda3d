@@ -46,6 +46,7 @@
 #include "pnmImage.h"
 #include "pfmFile.h"
 #include "asyncFuture.h"
+#include "extension.h"
 
 class TextureContext;
 class FactoryParams;
@@ -471,6 +472,8 @@ PUBLISHED:
   MAKE_PROPERTY(ram_image_compression, get_ram_image_compression);
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
+
+  EXTENSION(PT(Texture) __deepcopy__(PyObject *memo) const);
 
   BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                           QualityLevel quality_level = QL_default,
@@ -1110,6 +1113,7 @@ private:
 
   static TypeHandle _type_handle;
 
+  friend class Extension<Texture>;
   friend class TextureContext;
   friend class PreparedGraphicsObjects;
   friend class TexturePool;
