@@ -81,6 +81,7 @@ Miscellaneous
 * Add various useful functions to interrogatedb module
 * Fix Python 3 issues unpacking uint types in Python 3 (#1380)
 * Fix interrogate syntax error with C++11-style attributes in declarators
+* Fix double-precision color values not being clamped by GeomVertexWriter
 * Fix regression with BufferViewer in double-precision build (#1365)
 * Fix `PandaNode.nested_vertices` not updating properly
 * Prevent Panda calculating bounding volume of Geom with custom bounding volume
