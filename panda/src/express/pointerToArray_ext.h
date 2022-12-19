@@ -44,6 +44,8 @@ public:
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+
+  INLINE PointerToArray<Element> __deepcopy__(PyObject *memo) const;
 };
 
 template<>
@@ -81,6 +83,8 @@ public:
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+
+  INLINE ConstPointerToArray<Element> __deepcopy__(PyObject *memo) const;
 };
 
 template<>

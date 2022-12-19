@@ -71,6 +71,7 @@ Miscellaneous
 * Fix texture transforms sometimes not being flattened (#1392)
 * Fix support for `#pragma include <file.glsl>` in GLSL shaders
 * Fix `ShaderBuffer.prepare()` not doing anything
+* Implement deepcopy for PointerToArray
 * Fix bf-cbc encryption no longer working when building with OpenSSL 3.0
 * PandaNode bounds_type property was erroneously marked read-only
 * Fix warnings when copying OdeTriMeshGeom objects

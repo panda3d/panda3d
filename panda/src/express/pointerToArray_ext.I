@@ -511,6 +511,20 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 }
 
 /**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE PointerToArray<Element> Extension<PointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!_this->is_null()) {
+    copy.v() = _this->v();
+  }
+  return copy;
+}
+
+/**
  * This is used to implement the buffer protocol, in order to allow efficient
  * access to the array data through a Python multiview object.
  */
@@ -701,4 +715,18 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
     view->internal = nullptr;
   }
 #endif
+}
+
+/**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element> Extension<ConstPointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!_this->is_null()) {
+    copy.v() = _this->v();
+  }
+  return copy;
 }

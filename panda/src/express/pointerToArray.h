@@ -121,6 +121,8 @@ PUBLISHED:
 
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+
+  EXTENSION(PointerToArray<Element> __deepcopy__(PyObject *memo) const);
 #endif
 
 #else  // CPPPARSER
@@ -279,6 +281,8 @@ PUBLISHED:
 
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+
+  EXTENSION(ConstPointerToArray<Element> __deepcopy__(PyObject *memo) const);
 #endif
 
 #else  // CPPPARSER
