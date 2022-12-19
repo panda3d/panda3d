@@ -518,8 +518,8 @@ template<class Element>
 INLINE PointerToArray<Element> Extension<PointerToArray<Element> >::
 __deepcopy__(PyObject *memo) const {
   PointerToArray<Element> copy;
-  if (!_this->is_null()) {
-    copy.v() = _this->v();
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
   }
   return copy;
 }
@@ -725,8 +725,8 @@ template<class Element>
 INLINE ConstPointerToArray<Element> Extension<ConstPointerToArray<Element> >::
 __deepcopy__(PyObject *memo) const {
   PointerToArray<Element> copy;
-  if (!_this->is_null()) {
-    copy.v() = _this->v();
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
   }
   return copy;
 }
