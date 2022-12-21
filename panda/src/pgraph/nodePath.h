@@ -183,9 +183,11 @@ PUBLISHED:
   INLINE void clear();
 
   EXTENSION(NodePath __copy__() const);
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
   EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
+#endif // HAVE_PYTHON
 
   INLINE static NodePath not_found();
   INLINE static NodePath removed();
@@ -666,8 +668,10 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
+#ifdef HAVE_PYTHON
   EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
   EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
+#endif // HAVE_PYTHON
 
   void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
@@ -911,7 +915,9 @@ PUBLISHED:
                          const NodePath &other = NodePath(),
                          Thread *current_thread = Thread::get_current_thread()) const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
+#endif // HAVE_PYTHON
 
   // void analyze() const;
 
@@ -932,6 +938,7 @@ PUBLISHED:
 
   MAKE_MAP_PROPERTY(net_tags, has_net_tag, get_net_tag);
 
+#ifdef HAVE_PYTHON
   EXTENSION(INLINE PyObject *get_tags() const);
   EXTENSION(INLINE PyObject *get_tag_keys() const);
   MAKE_PROPERTY(tags, get_tags);
@@ -948,6 +955,7 @@ PUBLISHED:
   MAKE_PROPERTY(python_tags, get_python_tags);
 
   EXTENSION(int __traverse__(visitproc visit, void *arg));
+#endif // HAVE_PYTHON
 
   INLINE void list_tags() const;
 
@@ -1071,4 +1079,4 @@ INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path);
 
 #include "nodePath.I"
 
-#endif
+#endif // !NODEPATH_H

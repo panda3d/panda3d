@@ -132,8 +132,10 @@ PUBLISHED:
   INLINE size_t get_invert_composition_cache_size() const;
   INLINE const RenderState *get_invert_composition_cache_source(size_t n) const;
   INLINE const RenderState *get_invert_composition_cache_result(size_t n) const;
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
+#endif // HAVE_PYTHON
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level) const;
@@ -148,8 +150,10 @@ PUBLISHED:
   static void list_cycles(std::ostream &out);
   static void list_states(std::ostream &out);
   static bool validate_states();
+#ifdef HAVE_PYTHON
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
+#endif // HAVE_PYTHON
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
@@ -391,4 +395,4 @@ INLINE std::ostream &operator << (std::ostream &out, const RenderState &state) {
 
 #include "renderState.I"
 
-#endif
+#endif // !RENDERSTATE_H

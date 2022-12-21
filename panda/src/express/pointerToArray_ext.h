@@ -14,7 +14,7 @@
 #ifndef POINTERTOARRAY_EXT_H
 #define POINTERTOARRAY_EXT_H
 
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) && defined(HAVE_PYTHON)
 
 #include "extension.h"
 #include "py_panda.h"
@@ -166,6 +166,6 @@ define_format_code("4i", UnalignedLVecBase4i);
 
 #include "pointerToArray_ext.I"
 
-#endif  // CPPPARSER
+#endif  // !CPPPARSER && HAVE_PYTHON
 
-#endif  // HAVE_POINTERTOARRAY_EXT_H
+#endif  // !HAVE_POINTERTOARRAY_EXT_H

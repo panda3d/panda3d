@@ -456,15 +456,15 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const std::string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) || !defined(HAVE_PYTHON)
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
-#else
+#else // !CPPPARSER || !HAVE_PYTHON
   EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   EXTEND void set_ram_image_as(PyObject *image, const std::string &provided_format);
-#endif
+#endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -1144,4 +1144,4 @@ EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, Texture::QualityLe
 
 #include "texture.I"
 
-#endif
+#endif // !TEXTURE_H

@@ -106,8 +106,10 @@ PUBLISHED:
   virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PT(PandaNode) __copy__() const);
   EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
+#endif // HAVE_PYTHON
 
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
@@ -204,6 +206,7 @@ PUBLISHED:
   MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
   MAKE_MAP_KEYS_SEQ(tags, get_num_tags, get_tag_key);
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_tag_keys() const);
 
   EXTENSION(PyObject *get_python_tags());
@@ -215,6 +218,7 @@ PUBLISHED:
   MAKE_PROPERTY(python_tags, get_python_tags);
 
   EXTENSION(int __traverse__(visitproc visit, void *arg));
+#endif // HAVE_PYTHON
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
@@ -843,7 +847,7 @@ private:
 #ifndef DO_PIPELINING
   friend class PandaNode::Children;
   friend class PandaNode::Stashed;
-#endif
+#endif // !DO_PIPELINING
   friend class NodePath;
   friend class NodePathComponent;
   friend class WorkingNodePath;
@@ -943,4 +947,4 @@ INLINE std::ostream &operator << (std::ostream &out, const PandaNode &node) {
 
 #include "pandaNode.I"
 
-#endif
+#endif // !PANDANODE_H

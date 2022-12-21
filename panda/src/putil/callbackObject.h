@@ -34,7 +34,9 @@ public:
 PUBLISHED:
   virtual void output(std::ostream &out) const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(static PT(CallbackObject) make(PyObject *function));
+#endif // HAVE_PYTHON
 
 public:
   virtual void do_callback(CallbackData *cbdata);
@@ -64,4 +66,4 @@ inline std::ostream &operator << (std::ostream &out, const CallbackObject &cbo) 
 
 #include "callbackObject.I"
 
-#endif
+#endif // !CALLBACKOBJECT_H

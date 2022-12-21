@@ -28,7 +28,7 @@
  */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE ReMutex : public MutexDebug
-#else
+#else // DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE ReMutex : public ReMutexDirect
 #endif  // DEBUG_THREADS
 {
@@ -43,11 +43,13 @@ PUBLISHED:
 
   void operator = (const ReMutex &copy) = delete;
 
+#ifdef HAVE_PYTHON
   EXTENSION(bool acquire(bool blocking=true) const);
   EXTENSION(bool __enter__());
   EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
+#endif // HAVE_PYTHON
 };
 
 #include "reMutex.I"
 
-#endif
+#endif // !REMUTEX_H
