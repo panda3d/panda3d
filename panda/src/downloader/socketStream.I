@@ -131,15 +131,16 @@ get_tcp_header_size() const {
 INLINE bool SSWriter::
 consider_flush() {
   if (!_collect_tcp) {
-    return flush();
-
+    flush();
+    return !is_closed();
   } else {
     double elapsed =
       TrueClock::get_global_ptr()->get_short_time() - _queued_data_start;
     // If the elapsed time is negative, someone must have reset the clock
     // back, so just go ahead and flush.
     if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
-      return flush();
+      flush();
+      return !is_closed();
     }
   }
 
@@ -150,11 +151,10 @@ consider_flush() {
  * Sends the most recently queued data now.  This only has meaning if
  * set_collect_tcp() has been set to true.
  */
-INLINE bool SSWriter::
+INLINE void SSWriter::
 flush() {
   _ostream->flush();
   _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
-  return !is_closed();
 }
 
 /**
@@ -176,9 +176,9 @@ OSocketStream(std::streambuf *buf) : std::ostream(buf), SSWriter(this) {
  * Sends the most recently queued data now.  This only has meaning if
  * set_collect_tcp() has been set to true.
  */
-INLINE bool OSocketStream::
+INLINE void OSocketStream::
 flush() {
-  return SSWriter::flush();
+  SSWriter::flush();
 }
 
 /**
@@ -212,7 +212,7 @@ get_tcp_header_size() const {
  * Sends the most recently queued data now.  This only has meaning if
  * set_collect_tcp() has been set to true.
  */
-INLINE bool SocketStream::
+INLINE void SocketStream::
 flush() {
-  return SSWriter::flush();
+  SSWriter::flush();
 }

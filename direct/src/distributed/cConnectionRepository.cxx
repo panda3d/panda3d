@@ -580,7 +580,8 @@ flush() {
 
   #ifdef HAVE_OPENSSL
   if (_http_conn) {
-    return _http_conn->flush();
+    _http_conn->flush();
+    return !_http_conn->is_closed();
   }
   #endif  // HAVE_OPENSSL
 
