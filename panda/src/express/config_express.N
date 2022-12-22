@@ -6,3 +6,5 @@ forcetype PTA_double
 forcetype CPTA_double
 forcetype PTA_int
 forcetype CPTA_int
+forcetype HashGeneratorBase
+forcetype ChecksumHashGenerator

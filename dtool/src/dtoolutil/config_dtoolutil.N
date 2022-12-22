@@ -8,3 +8,5 @@ forcetype std::ios
 forcetype std::istream
 forcetype std::ostream
 forcetype std::iostream
+
+forcetype FILE

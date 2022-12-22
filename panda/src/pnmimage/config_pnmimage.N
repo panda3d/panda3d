@@ -1,0 +1,2 @@
+forcetype PNMReader
+forcetype PNMWriter
