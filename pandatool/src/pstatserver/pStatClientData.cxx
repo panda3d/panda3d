@@ -471,7 +471,7 @@ read_datagram(DatagramIterator &scan) {
     std::string name = scan.get_string();
     define_thread(thread_index, name);
 
-    _threads[thread_index]._data->read_datagram(scan);
+    _threads[thread_index]._data->read_datagram(scan, this);
   }
 
   update_toplevel_collectors();
