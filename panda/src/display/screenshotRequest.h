@@ -17,9 +17,11 @@
 #include "pandabase.h"
 
 #include "asyncFuture.h"
+#include "clockObject.h"
 #include "filename.h"
 #include "lightMutex.h"
 #include "pmap.h"
+#include "texture.h"
 
 /**
  * A class representing an asynchronous request to save a screenshot.
