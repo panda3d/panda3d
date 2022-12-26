@@ -109,6 +109,7 @@ protected:
   Bool _override_redirect;
   Atom _wm_delete_window;
   Atom _net_wm_ping;
+  Atom _net_wm_state;
 
   x11GraphicsPipe::pfn_XRRGetScreenInfo _XRRGetScreenInfo;
   x11GraphicsPipe::pfn_XRRSetScreenConfig _XRRSetScreenConfig;
