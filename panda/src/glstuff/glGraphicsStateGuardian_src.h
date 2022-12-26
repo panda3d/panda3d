@@ -142,6 +142,7 @@ typedef void (APIENTRYP PFNGLDELETEVERTEXARRAYSPROC) (GLsizei n, const GLuint *a
 typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 typedef void (APIENTRYP PFNGLBLENDEQUATIONSEPARATEPROC) (GLenum modeRGB, GLenum modeAlpha);
 typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -231,6 +232,13 @@ typedef void (APIENTRYP PFNGLBUFFERSTORAGEPROC) (GLenum target, GLsizeiptr size,
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
+typedef GLsync (APIENTRYP PFNGLFENCESYNCPROC) (GLenum condition, GLbitfield flags);
+typedef GLboolean (APIENTRYP PFNGLISSYNCPROC) (GLsync sync);
+typedef void (APIENTRYP PFNGLDELETESYNCPROC) (GLsync sync);
+typedef GLenum (APIENTRYP PFNGLCLIENTWAITSYNCPROC) (GLsync sync, GLbitfield flags, GLuint64 timeout);
+typedef void (APIENTRYP PFNGLWAITSYNCPROC) (GLsync sync, GLbitfield flags, GLuint64 timeout);
+typedef void (APIENTRYP PFNGLGETINTEGER64VPROC) (GLenum pname, GLint64 *data);
+typedef void (APIENTRYP PFNGLGETSYNCIVPROC) (GLsync sync, GLenum pname, GLsizei bufSize, GLsizei *length, GLint *values);
 #endif  // OPENGLES_1
 #ifndef OPENGLES
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
@@ -253,7 +261,6 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64PROC) (GLuint index, GLuint64EXT 
 typedef void (APIENTRYP PFNGLVERTEXATTRIBL1UI64VPROC) (GLuint index, const GLuint64EXT *v);
 typedef void (APIENTRYP PFNGLGETVERTEXATTRIBLUI64VPROC) (GLuint index, GLenum pname, GLuint64EXT *params);
 typedef void *(APIENTRYP PFNGLMAPBUFFERPROC) (GLenum target, GLenum access);
-typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 typedef void (APIENTRYP PFNGLGETBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, void *data);
 #endif  // OPENGLES
 #endif  // __EDG__
@@ -353,6 +360,11 @@ public:
   virtual ShaderContext *prepare_shader(Shader *shader);
   virtual void release_shader(ShaderContext *sc);
 
+#ifndef OPENGLES_1
+  void bind_new_client_buffer(GLuint &index, void *&mapped_ptr, GLenum target, size_t size);
+  void release_client_buffer(GLuint index, void *mapped_ptr, size_t size);
+#endif
+
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -403,7 +415,9 @@ public:
   virtual bool framebuffer_copy_to_texture
     (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-    (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+    (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+     ScreenshotRequest *request);
+  void finish_async_framebuffer_ram_copies(bool force = false);
 
 #ifdef SUPPORT_FIXED_FUNCTION
   void apply_fog(Fog *fog);
@@ -880,6 +894,7 @@ public:
 
 #ifdef OPENGLES
   PFNGLMAPBUFFERRANGEEXTPROC _glMapBufferRange;
+  PFNGLUNMAPBUFFEROESPROC _glUnmapBuffer;
 #else
   PFNGLMAPBUFFERRANGEPROC _glMapBufferRange;
 #endif
@@ -891,6 +906,8 @@ public:
 
   bool _supports_buffer_storage;
   PFNGLBUFFERSTORAGEPROC _glBufferStorage;
+#else
+  static const bool _supports_buffer_storage = false;
 #endif
 
   bool _supports_blend_equation_separate;
@@ -1088,6 +1105,13 @@ public:
   PFNGLSHADERSTORAGEBLOCKBINDINGPROC _glShaderStorageBlockBinding;
 #endif  // !OPENGLES
 
+#ifndef OPENGLES_1
+  PFNGLFENCESYNCPROC _glFenceSync;
+  PFNGLDELETESYNCPROC _glDeleteSync;
+  PFNGLCLIENTWAITSYNCPROC _glClientWaitSync;
+  PFNGLGETSYNCIVPROC _glGetSynciv;
+#endif
+
   GLenum _edge_clamp;
   GLenum _border_clamp;
   GLenum _mirror_repeat;
@@ -1108,6 +1132,17 @@ public:
   typedef pvector<GLuint> DeletedNames;
   DeletedNames _deleted_display_lists;
   DeletedNames _deleted_queries;
+
+#ifndef OPENGLES_1
+  struct DeletedBuffer {
+    GLuint _index;
+    int _age;
+    void *_mapped_pointer;
+    size_t _size;
+  };
+  typedef pvector<DeletedBuffer> DeletedBuffers;
+  DeletedBuffers _deleted_buffers;
+#endif
 
 #ifndef OPENGLES_1
   // Stores textures for which memory bariers should be issued.
@@ -1165,7 +1200,21 @@ public:
   FrameTiming *_current_frame_timing = nullptr;
 #endif
 
+  struct AsyncRamCopy {
+    PT(ScreenshotRequest) _request;
+    GLuint _pbo;
+    GLsync _fence;
+    GLuint _external_format;
+    int _view;
+    void *_mapped_pointer;
+    size_t _size;
+  };
+  pdeque<AsyncRamCopy> _async_ram_copies;
+
   BufferResidencyTracker _renderbuffer_residency;
+
+  PStatCollector _active_ppbuffer_memory_pcollector;
+  PStatCollector _inactive_ppbuffer_memory_pcollector;
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
@@ -1177,6 +1226,8 @@ public:
   static PStatCollector _fbo_bind_pcollector;
   static PStatCollector _check_error_pcollector;
   static PStatCollector _check_residency_pcollector;
+  static PStatCollector _wait_fence_pcollector;
+  static PStatCollector _copy_texture_finish_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

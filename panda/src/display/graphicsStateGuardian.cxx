@@ -3037,11 +3037,15 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
  * into system memory, not texture memory.  Returns true on success, false on
  * failure.
  *
+ * If a future is given, the operation may be scheduled to occur in the
+ * background, in which case the texture will be passed as the result of the
+ * future when the operation is complete.
+ *
  * This completely redefines the ram image of the indicated texture.
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
-                        const RenderBuffer &) {
+                        const RenderBuffer &, ScreenshotRequest *) {
   return false;
 }
 
