@@ -26,7 +26,7 @@
 /**
  * A class representing an asynchronous request to save a screenshot.
  */
-class EXPCL_PANDA_PGRAPH ScreenshotRequest : public AsyncFuture {
+class EXPCL_PANDA_DISPLAY ScreenshotRequest : public AsyncFuture {
 public:
   INLINE ScreenshotRequest(Texture *tex);
 
