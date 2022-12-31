@@ -34,12 +34,127 @@
 #include "compress_string.h"
 
 
+typedef unsigned int dtStatus;
+
 /**
- * NavMeshBuilder contructor which initiates the member variables
+ * Uses the (de)compress_string() functions in express to compress tiles,
+ * as required by Detour.
+ *
+ * (Internal use only)
+ */
+struct ExpressCompressor : public dtTileCacheCompressor
+{
+public:
+  virtual int maxCompressedSize(const int bufferSize)
+  {
+    return (int)(bufferSize* 1.05f);
+  }
+
+  virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
+                            unsigned char* compressed, const int maxCompressedSize, int* compressedSize)
+  {
+    auto result = compress_string(std::string(reinterpret_cast<const char *>(buffer), bufferSize), 6);
+
+    *compressedSize = std::min((int)result.size(), maxCompressedSize);
+    memcpy(compressed, result.data(), *compressedSize);
+
+    return DT_SUCCESS;
+  }
+
+  virtual dtStatus decompress(const unsigned char* compressed, const int compressedSize,
+                              unsigned char* buffer, const int maxBufferSize, int* bufferSize)
+  {
+    auto result = decompress_string(std::string(reinterpret_cast<const char *>(compressed), compressedSize));
+
+    *bufferSize = std::min((int)result.size(), maxBufferSize);
+    memcpy(buffer, result.data(), *bufferSize);
+
+    return *bufferSize < 0 ? DT_FAILURE : DT_SUCCESS;
+  }
+};
+
+/**
+ * Use a simple naive allocator for Detour tiles.
+ *
+ * (Internal use only)
+ */
+struct LinearAllocator : public dtTileCacheAlloc
+{
+  unsigned char* buffer;
+  size_t capacity;
+  size_t top;
+  size_t high;
+
+  LinearAllocator(const size_t cap) : buffer(0), capacity(0), top(0), high(0)
+  {
+    resize(cap);
+  }
+
+  ~LinearAllocator()
+  {
+    dtFree(buffer);
+  }
+
+  void resize(const size_t cap)
+  {
+    if (buffer) dtFree(buffer);
+    buffer = (unsigned char*)dtAlloc(cap, DT_ALLOC_PERM);
+    capacity = cap;
+  }
+
+  virtual void reset()
+  {
+    high = dtMax(high, top);
+    top = 0;
+  }
+
+  virtual void* alloc(const size_t size)
+  {
+    if (!buffer)
+      return 0;
+    if (top+size > capacity)
+      return 0;
+    unsigned char* mem = &buffer[top];
+    top += size;
+    return mem;
+  }
+
+  virtual void free(void* /*ptr*/)
+  {
+    // Empty
+  }
+};
+
+/**
+ * This is a basic naive mesh processor that we use for Detour.
+ *
+ * (Internal use only)
+ */
+struct MeshProcess : public dtTileCacheMeshProcess
+{
+
+  inline MeshProcess()
+  { }
+
+  inline void init()
+  { }
+
+  virtual void process(struct dtNavMeshCreateParams* params,
+                       unsigned char* polyAreas, unsigned short* polyFlags)
+  {
+    for (int i = 0; i < params->polyCount; ++i) {
+      // Initialize all polygons to 1, so they are enabled by default.
+      polyFlags[i] = 1;
+    }
+  }
+};
+
+
+/**
+ * NavMeshBuilder constructor which initiates the member variables
  */
 NavMeshBuilder::NavMeshBuilder(NodePath parent) :
   _parent(parent) {
-  index_temp = 0;
   _ctx = new rcContext;
   _tile_alloc = std::make_shared<LinearAllocator>(32000);
   _tile_compressor = std::make_shared<ExpressCompressor>();
@@ -49,7 +164,6 @@ NavMeshBuilder::NavMeshBuilder(NodePath parent) :
 NavMeshBuilder::NavMeshBuilder(PT(NavMesh) navMesh) :
   _nav_mesh_obj(navMesh),
   _params(navMesh->get_params()) {
-  index_temp = 0;
   _ctx = new rcContext;
   _tile_alloc = std::make_shared<LinearAllocator>(32000);
   _tile_compressor = std::make_shared<ExpressCompressor>();
@@ -57,7 +171,27 @@ NavMeshBuilder::NavMeshBuilder(PT(NavMesh) navMesh) :
 }
 
 NavMeshBuilder::~NavMeshBuilder() {
-  cleanup();
+  _triareas.clear();
+  if (_solid != nullptr) {
+    rcFreeHeightField(_solid);
+    _solid = nullptr;
+  }
+  if (_chf != nullptr) {
+    rcFreeCompactHeightfield(_chf);
+    _chf = nullptr;
+  }
+  if (_cset != nullptr) {
+    rcFreeContourSet(_cset);
+    _cset = nullptr;
+  }
+  if (_pmesh != nullptr) {
+    rcFreePolyMesh(_pmesh);
+    _pmesh = nullptr;
+  }
+  if (_dmesh != nullptr) {
+    rcFreePolyMeshDetail(_dmesh);
+    _dmesh = nullptr;
+  }
 }
 
 /**
@@ -80,7 +214,7 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
  * This function adds a custom polygon with equal to or more than three vertices to the input geometry.
  */
 void NavMeshBuilder::add_polygon(PTA_LVecBase3f &vec) {
-  for (int i = 2; i < vec.size(); ++i) {
+  for (size_t i = 2; i < vec.size(); ++i) {
     add_polygon(LPoint3(vec[i-2]), LPoint3(vec[i-1]), LPoint3(vec[i]));
   }
 }
@@ -88,7 +222,7 @@ void NavMeshBuilder::add_polygon(PTA_LVecBase3f &vec) {
 /**
  * Adds a custom Geom to the NavMesh.
  */
-bool NavMeshBuilder::from_geom(PT(Geom) geom) {
+bool NavMeshBuilder::add_geom(PT(Geom) geom) {
   CPT(Geom) const_geom = geom;
   process_geom(_untracked_tris, const_geom, TransformState::make_identity());
   _loaded = true;
@@ -98,7 +232,7 @@ bool NavMeshBuilder::from_geom(PT(Geom) geom) {
 /**
  * Adds all visible geometry under the given node to the NavMesh.
  */
-bool NavMeshBuilder::from_node_path(NodePath node) {
+bool NavMeshBuilder::add_node_path(NodePath node) {
   CPT(TransformState) transform = node.get_transform(_parent);
 
   process_node_path(_untracked_tris, node, transform);
@@ -110,7 +244,7 @@ bool NavMeshBuilder::from_node_path(NodePath node) {
 /**
  * Adds all collision geometry under the given node to the NavMesh.
  */
-bool NavMeshBuilder::from_coll_node_path(NodePath node, BitMask32 mask) {
+bool NavMeshBuilder::add_coll_node_path(NodePath node, BitMask32 mask) {
   CPT(TransformState) transform = node.get_transform(_parent);
 
   process_coll_node_path(_untracked_tris, node, transform, mask);
@@ -190,8 +324,6 @@ void NavMeshBuilder::process_geom(std::set<NavTriVertGroup> &tris, CPT(Geom) &ge
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
-  //process_vertex_data(vdata, transform);
-
   for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
     process_primitive(tris, prim, vdata, transform_mat);
@@ -237,7 +369,7 @@ void NavMeshBuilder::process_coll_node_path(std::set<NavTriVertGroup> &tris, con
   if (node.node()->is_of_type(CollisionNode::get_class_type())) {
     PT(CollisionNode) g = DCAST(CollisionNode, node.node());
     if ((g->get_into_collide_mask() & mask) != 0) {
-      for (int i = 0; i < g->get_num_solids(); i++) {
+      for (size_t i = 0; i < g->get_num_solids(); i++) {
         PT(GeomNode) gn = g->get_solid(i)->get_viz();
         process_geom_node(tris, gn, transform);
       }
@@ -245,132 +377,13 @@ void NavMeshBuilder::process_coll_node_path(std::set<NavTriVertGroup> &tris, con
   }
 
   NodePathCollection children = node.get_children();
-  for (int i=0; i<children.get_num_paths(); i++) {
+  for (int i = 0; i < children.get_num_paths(); i++) {
     NodePath cnp = children.get_path(i);
     CPT(TransformState) child_transform = cnp.get_transform();
     CPT(TransformState) net_transform = transform->compose(child_transform);
     process_coll_node_path(tris, cnp, net_transform, mask);
   }
 }
-
-/**
- *
- */
-void NavMeshBuilder::cleanup()
-{
-  _triareas.clear();
-  rcFreeHeightField(_solid);
-  _solid = nullptr;
-  rcFreeCompactHeightfield(_chf);
-  _chf = nullptr;
-  rcFreeContourSet(_cset);
-  _cset = nullptr;
-  rcFreePolyMesh(_pmesh);
-  _pmesh = nullptr;
-  rcFreePolyMeshDetail(_dmesh);
-  _dmesh = nullptr;
-}
-
-typedef unsigned int dtStatus;
-
-struct ExpressCompressor : public dtTileCacheCompressor
-{
-public:
-  virtual int maxCompressedSize(const int bufferSize)
-  {
-    return (int)(bufferSize* 1.05f);
-  }
-
-  virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
-                            unsigned char* compressed, const int maxCompressedSize, int* compressedSize)
-  {
-    auto result = compress_string(std::string(reinterpret_cast<const char *>(buffer), bufferSize), 6);
-
-    *compressedSize = std::min((int)result.size(), maxCompressedSize);
-    memcpy(compressed, result.data(), *compressedSize);
-
-    return DT_SUCCESS;
-  }
-
-  virtual dtStatus decompress(const unsigned char* compressed, const int compressedSize,
-                              unsigned char* buffer, const int maxBufferSize, int* bufferSize)
-  {
-    auto result = decompress_string(std::string(reinterpret_cast<const char *>(compressed), compressedSize));
-
-    *bufferSize = std::min((int)result.size(), maxBufferSize);
-    memcpy(buffer, result.data(), *bufferSize);
-
-    return *bufferSize < 0 ? DT_FAILURE : DT_SUCCESS;
-  }
-};
-
-struct LinearAllocator : public dtTileCacheAlloc
-{
-  unsigned char* buffer;
-  size_t capacity;
-  size_t top;
-  size_t high;
-
-  LinearAllocator(const size_t cap) : buffer(0), capacity(0), top(0), high(0)
-  {
-    resize(cap);
-  }
-
-  ~LinearAllocator()
-  {
-    dtFree(buffer);
-  }
-
-  void resize(const size_t cap)
-  {
-    if (buffer) dtFree(buffer);
-    buffer = (unsigned char*)dtAlloc(cap, DT_ALLOC_PERM);
-    capacity = cap;
-  }
-
-  virtual void reset()
-  {
-    high = dtMax(high, top);
-    top = 0;
-  }
-
-  virtual void* alloc(const size_t size)
-  {
-    if (!buffer)
-      return 0;
-    if (top+size > capacity)
-      return 0;
-    unsigned char* mem = &buffer[top];
-    top += size;
-    return mem;
-  }
-
-  virtual void free(void* /*ptr*/)
-  {
-    // Empty
-  }
-};
-
-struct MeshProcess : public dtTileCacheMeshProcess
-{
-
-  inline MeshProcess()
-  {
-  }
-
-  inline void init()
-  {
-  }
-
-  virtual void process(struct dtNavMeshCreateParams* params,
-                       unsigned char* polyAreas, unsigned short* polyFlags)
-  {
-    for (int i = 0; i < params->polyCount; ++i) {
-      // Initialize all polygons to 1, so they are enabled by default.
-      polyFlags[i] = 1;
-    }
-  }
-};
 
 struct TileCacheData
 {
@@ -447,12 +460,6 @@ int NavMeshBuilder::rasterizeTileLayers(
     navigation_cat.error() << "buildNavigation: Could not create solid heightfield." << std::endl;
     return 0;
   }
-
-  float tbmin[2], tbmax[2];
-  tbmin[0] = cfg.bmin[0];
-  tbmin[1] = cfg.bmin[2];
-  tbmax[0] = cfg.bmax[0];
-  tbmax[1] = cfg.bmax[2];
 
   // Allocate array that can hold triangle area types.
   // If you have multiple meshes you need to process, allocate
@@ -615,21 +622,21 @@ PT(NavMesh) NavMeshBuilder::build() {
   if (!_tile_cache)
   {
     navigation_cat.error() << "buildTiledNavigation: Could not allocate tile cache." << std::endl;
-    return _nav_mesh_obj;
+    return nullptr;
   }
 
   status = _tile_cache->init(&tcparams, _tile_alloc.get(), _tile_compressor.get(), _tile_mesh_proc.get());
   if (dtStatusFailed(status))
   {
     navigation_cat.error() << "buildTiledNavigation: Could not init tile cache." << std::endl;
-    return _nav_mesh_obj;
+    return nullptr;
   }
 
   dtNavMesh *navMesh = dtAllocNavMesh();
   if (!navMesh)
   {
     navigation_cat.error() << "buildTiledNavigation: Could not allocate navmesh." << std::endl;
-    return _nav_mesh_obj;
+    return nullptr;
   }
 
   dtNavMeshParams params = {};
@@ -643,7 +650,7 @@ PT(NavMesh) NavMeshBuilder::build() {
   if (dtStatusFailed(status))
   {
     navigation_cat.error() << "buildTiledNavigation: Could not init navmesh." << std::endl;
-    return _nav_mesh_obj;
+    return nullptr;
   }
 
   pvector<float> verts;
@@ -862,70 +869,6 @@ process_obstacle_node_path(std::set<ObstacleData> &existing_obstacles, std::set<
   }
 }
 
-/**
- * Function to return geomnode for the navigation mesh.
- */
-PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
-
-  PT(GeomVertexData) vdata;
-  vdata = new GeomVertexData("vertexInfo", GeomVertexFormat::get_v3c4(), Geom::UH_static);
-  vdata->set_num_rows(_pmesh->nverts);
-
-  GeomVertexWriter vertex(vdata, "vertex");
-  GeomVertexWriter colour(vdata, "color");
-
-  const int nvp = _pmesh->nvp;
-  const float cs = _pmesh->cs;
-  const float ch = _pmesh->ch;
-  const float* orig = _pmesh->bmin;
-  
-  for (int i = 0;i  < _pmesh->nverts * 3; i += 3) {
-
-    const unsigned short* v = &_pmesh->verts[i];
-
-    //convert to world space
-    const float x = orig[0] + v[0] * cs;
-    const float y = orig[1] + v[1] * ch;
-    const float z = orig[2] + v[2] * cs;
-    
-    LVecBase3 vec = mat_from_y.xform_point({x, y, z});
-    vertex.add_data3(vec);
-
-    //vertex.add_data3(x, -z, y); //if origingally model is z-up
-    //vertex.add_data3(x, y, z); //if originally model is y-up
-    colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
-    
-  }
-
-  PT(GeomNode) node;
-  node = new GeomNode("gnode");
-
-  PT(GeomTrifans) prim;
-  prim = new GeomTrifans(Geom::UH_static);
-
-  for (int i = 0; i < _pmesh->npolys; ++i) {
-    const unsigned short* p = &_pmesh->polys[i*nvp * 2];
-
-    // Iterate the vertices.
-    //unsigned short vi[3];  // The vertex indices.
-    for (int j = 0; j < nvp; ++j) {
-      if (p[j] == RC_MESH_NULL_IDX) {
-        break;// End of vertices.
-      }
-      prim->add_vertex(p[j]);// The edge beginning with this vertex is a solid border.
-    }
-    prim->close_primitive();
-
-  }
-  PT(Geom) polymeshgeom;
-  polymeshgeom = new Geom(vdata);
-  polymeshgeom->add_primitive(prim);
-
-  node->add_geom(polymeshgeom);
-  navigation_cat.info() << "Number of Polygons: " << _pmesh->npolys << std::endl;
-  return node;
-}
-
 unsigned char* NavMeshBuilder::buildTileMesh(const int tx, const int ty,
                                              const float* bmin, const float* bmax, int& dataSize,
                                              pvector<float> &verts, pvector<int> &tris)
@@ -989,12 +932,6 @@ unsigned char* NavMeshBuilder::buildTileMesh(const int tx, const int ty,
     navigation_cat.error() << "buildNavigation: Could not create solid heightfield." << std::endl;
     return nullptr;
   }
-
-  float tbmin[2], tbmax[2];
-  tbmin[0] = _cfg.bmin[0];
-  tbmin[1] = _cfg.bmin[2];
-  tbmax[0] = _cfg.bmax[0];
-  tbmax[1] = _cfg.bmax[2];
 
   // Allocate array that can hold triangle area types.
   // If you have multiple meshes you need to process, allocate

@@ -17,6 +17,8 @@
 
 #include "recastnavigation/DetourNavMesh.h"
 #include "recastnavigation/DetourNavMeshBuilder.h"
+#include "recastnavigation/DetourTileCache.h"
+#include "recastnavigation/DetourTileCacheBuilder.h"
 #include "typedWritableReferenceCount.h"
 #include "pandaSystem.h"
 #include "lmatrix.h"
