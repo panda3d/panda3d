@@ -48,8 +48,11 @@ class EXPCL_NAVIGATION NavMesh : public TypedWritableReferenceCount
 public:
   explicit NavMesh(dtNavMesh *nav_mesh,
                    NavMeshParams params,
-                   std::shared_ptr<dtTileCache> tile_cache,
-                   std::set<NavTriVertGroup> &untracked_tris);
+                   std::set<NavTriVertGroup> &untracked_tris,
+                   dtTileCache *tile_cache,
+                   dtTileCacheAlloc *tile_alloc,
+                   dtTileCacheCompressor *tile_compressor,
+                   dtTileCacheMeshProcess *tile_mesh_proc);
 
 PUBLISHED:
   explicit NavMesh(NavMeshParams mesh_params);
@@ -100,6 +103,11 @@ private:
 
   LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
+
+	dtTileCache *_tile_cache;
+	dtTileCacheAlloc *_tile_alloc;
+	dtTileCacheCompressor *_tile_compressor;
+	dtTileCacheMeshProcess *_tile_mesh_proc;
   
 public:
   dtNavMesh *get_nav_mesh() { return _nav_mesh; }
