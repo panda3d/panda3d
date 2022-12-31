@@ -52,7 +52,8 @@ struct TileCacheData;
 class EXPCL_NAVIGATION NavMeshBuilder {
 PUBLISHED:
 
-  explicit NavMeshBuilder(NodePath parent = NodePath());
+	explicit NavMeshBuilder(NodePath parent = NodePath());
+	explicit NavMeshBuilder(NavMeshParams &params, NodePath parent = NodePath());
   PT(NavMesh) build();
 
   bool add_node_path(NodePath node);
@@ -100,48 +101,24 @@ private:
   void process_geom(std::set<NavTriVertGroup> &tris, CPT(Geom) &geom, const CPT(TransformState) &transform);
   void process_primitive(std::set<NavTriVertGroup> &tris, const GeomPrimitive *orig_prim, const GeomVertexData *vdata, LMatrix4 &transform);
 
-  void process_obstacle_node_path(std::set<ObstacleData> &existing_obstacles, std::set<ObstacleData> &new_obstacles, const NodePath &node, CPT(TransformState) &transform);
+  void process_obstacle_node_path(dtTileCache *tile_cache, std::set<ObstacleData> &existing_obstacles, std::set<ObstacleData> &new_obstacles, const NodePath &node, CPT(TransformState) &transform);
 
   INLINE void update_bounds(LVector3 vert);
 
   INLINE static void get_vert_tris(const std::set<NavTriVertGroup> &tri_vert_groups, pvector<float> &verts, pvector<int> &tris);
 
-  bool _loaded = false;
-
   LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
 
 protected:
-  PT(NavMesh) _nav_mesh_obj;
-  std::shared_ptr<dtTileCache> _tile_cache;
-  std::shared_ptr<struct MeshProcess> _tile_mesh_proc;
-  std::shared_ptr<struct ExpressCompressor> _tile_compressor;
-  std::shared_ptr<struct LinearAllocator> _tile_alloc;
-
   bool _bounds_set = false;
   float _mesh_bMin[3] = { 0, 0, 0 };
   float _mesh_bMax[3] = { 0, 0, 0 };
 
-  rcContext *_ctx = nullptr;
-
-  float _total_build_time_ms = -1;
-
-  std::vector<unsigned char> _triareas;
-  rcHeightfield *_solid = nullptr;
-  rcCompactHeightfield *_chf = nullptr;
-  rcContourSet *_cset = nullptr;
-  rcPolyMesh *_pmesh = nullptr;
-  rcConfig _cfg = {};
-  rcPolyMeshDetail *_dmesh = nullptr;
-
   std::set<NavTriVertGroup> _untracked_tris;
   std::set<NavTriVertGroup> _last_tris;
 
-  unsigned char* buildTileMesh(int tx, int ty, const float* bmin, const float* bmax, int& dataSize, pvector<float> &verts, pvector<int> &tris);
-
-  explicit NavMeshBuilder(PT(NavMesh) navMesh);
-
-  void update_nav_mesh();
+  void update_nav_mesh(NavMesh *nav_mesh_obj, dtTileCache *tile_cache);
 
   int rasterizeTileLayers(const int tx, const int ty,
                           const float* bmin, const float* bmax,
@@ -152,10 +129,6 @@ protected:
 
 public:
   ~NavMeshBuilder();
-
-  void set_context(rcContext *ctx) { _ctx = ctx; }
-
-  bool loaded_geom() const { return _loaded; }
 };
 
 #include "navMeshBuilder.I"
