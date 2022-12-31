@@ -31,6 +31,11 @@
 #include "navTriVertGroup.h"
 
 
+class dtTileCache;
+struct dtTileCacheAlloc;
+struct dtTileCacheCompressor;
+struct dtTileCacheMeshProcess;
+
 class NavMesh;
 struct ExpressCompressor;
 struct LinearAllocator;
@@ -50,19 +55,12 @@ PUBLISHED:
   explicit NavMeshBuilder(NodePath parent = NodePath());
   PT(NavMesh) build();
 
-  bool from_node_path(NodePath node);
-  bool from_coll_node_path(NodePath node, BitMask32 mask = BitMask32::all_on());
-  bool from_geom(PT(Geom) geom);
-  PT(GeomNode) draw_poly_mesh_geom();
-
-  INLINE int get_pmesh_vert_count() const;
-  INLINE int get_pmesh_poly_count() const;
-  INLINE float get_build_time_ms() const;
+  bool add_node_path(NodePath node);
+  bool add_coll_node_path(NodePath node, BitMask32 mask = BitMask32::all_on());
+  bool add_geom(PT(Geom) geom);
 
   INLINE NavMeshParams& get_params();
   INLINE void set_params(NavMeshParams &params);
-
-  MAKE_PROPERTY(build_time_ms, get_build_time_ms);
   MAKE_PROPERTY(params, get_params, set_params);
 
   void add_polygon(LPoint3 a, LPoint3 b, LPoint3 c);
@@ -108,8 +106,7 @@ private:
 
   INLINE static void get_vert_tris(const std::set<NavTriVertGroup> &tri_vert_groups, pvector<float> &verts, pvector<int> &tris);
 
-  bool _loaded{};
-  int index_temp;
+  bool _loaded = false;
 
   LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
@@ -139,8 +136,6 @@ protected:
 
   std::set<NavTriVertGroup> _untracked_tris;
   std::set<NavTriVertGroup> _last_tris;
-
-  void cleanup();
 
   unsigned char* buildTileMesh(int tx, int ty, const float* bmin, const float* bmax, int& dataSize, pvector<float> &verts, pvector<int> &tris);
 
