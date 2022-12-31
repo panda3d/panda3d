@@ -27,30 +27,6 @@ get_params() {
   return _params;
 }
 
-/**
- * Returns the number of vertices that made it into the NavMesh.
- */
-INLINE int NavMeshBuilder::
-get_pmesh_vert_count() const {
-  return _pmesh->nverts;
-}
-
-/**
- * Returns the number of polygons that comprise the generated NavMesh.
- */
-INLINE int NavMeshBuilder::
-get_pmesh_poly_count() const {
-  return _pmesh->npolys;
-}
-
-/**
- * Returns the number of polygons that comprise the generated NavMesh.
- */
-INLINE float NavMeshBuilder::
-get_build_time_ms() const {
-  return _total_build_time_ms;
-}
-
 INLINE void NavMeshBuilder::
 update_bounds(LVector3 vert) {
   if (!_bounds_set) {

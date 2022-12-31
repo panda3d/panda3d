@@ -315,7 +315,6 @@ get_max_tiles() const {
   // There are 22 bits available for identifying a tile and a polygon.
   // We will default to the max recommended number of tile bits.
   int tileBits = 14;
-  int polyBits = 22 - tileBits;
   return 1 << tileBits;
 }
 

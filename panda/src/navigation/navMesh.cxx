@@ -480,7 +480,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   uint64_t num_tris = scan.get_uint64();
 
-  for (int i = 0; i < num_tris; ++i) {
+  for (uint64_t i = 0; i < num_tris; ++i) {
     _untracked_tris.push_back(
         {
             {

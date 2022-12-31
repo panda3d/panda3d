@@ -518,7 +518,7 @@ NavMeshPath NavMeshQuery::find_smooth_path(LPoint3 &start, LPoint3 &end, LVector
     }
   }
 
-  for (int i=0; i < smooth_path.size(); i += 3) {
+  for (size_t i = 0; i < smooth_path.size(); i += 3) {
     LPoint3 point = mat_from_y.xform_point({ smooth_path[i], smooth_path[i + 1], smooth_path[i + 2] }); // convert back from y-up system
     path_array.push_back(point);
   }
