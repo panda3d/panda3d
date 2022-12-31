@@ -34,8 +34,19 @@ NavMesh::NavMesh():
   _nav_mesh(nullptr) {}
 
 NavMesh::~NavMesh() {
-  dtFreeNavMesh(_nav_mesh);
+	if (_nav_mesh != nullptr) {
+		dtFreeNavMesh(_nav_mesh);
+	}
   _nav_mesh = nullptr;
+
+	if (_tile_cache != nullptr) {
+		dtFreeTileCache(_tile_cache);
+	}
+	_tile_cache = nullptr;
+
+	delete _tile_alloc;
+	delete _tile_compressor;
+	delete _tile_mesh_proc;
 }
 
 /**
@@ -43,13 +54,19 @@ NavMesh::~NavMesh() {
  */
 NavMesh::NavMesh(dtNavMesh *nav_mesh,
                  NavMeshParams params,
-                 std::shared_ptr<dtTileCache> tile_cache,
-                 std::set<NavTriVertGroup> &untracked_tris) :
+                 std::set<NavTriVertGroup> &untracked_tris,
+								 dtTileCache *tile_cache,
+								 dtTileCacheAlloc *tile_alloc,
+								 dtTileCacheCompressor *tile_compressor,
+								 dtTileCacheMeshProcess *tile_mesh_proc) :
                  _nav_mesh(nav_mesh),
                  _params(params),
-                 _internal_rebuilder(this) {
+								 _tile_cache(tile_cache),
+								 _tile_alloc(tile_alloc),
+								 _tile_compressor(tile_compressor),
+								 _tile_mesh_proc(tile_mesh_proc),
+                 _internal_rebuilder(params) {
   _internal_rebuilder._last_tris = untracked_tris;
-  _internal_rebuilder._tile_cache = tile_cache;
   std::copy(untracked_tris.begin(), untracked_tris.end(), std::inserter(_untracked_tris, _untracked_tris.begin()));
 }
 
@@ -58,7 +75,7 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh,
  */
 NavMesh::NavMesh(NavMeshParams params) :
                  _params(params),
-                 _internal_rebuilder(this) {
+                 _internal_rebuilder(params) {
   _nav_mesh = dtAllocNavMesh();
   if (!_nav_mesh)
   {
@@ -253,7 +270,7 @@ get_polys_around(LPoint3 point, LVector3 extents) {
  */
 void NavMesh::
 update() {
-  _internal_rebuilder.update_nav_mesh();
+  _internal_rebuilder.update_nav_mesh(this, _tile_cache);
 
   // Clear debug mesh cache.
   _cache_poly_outlines = nullptr;
