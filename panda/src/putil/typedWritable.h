@@ -60,10 +60,8 @@ PUBLISHED:
   INLINE void mark_bam_modified();
   INLINE UpdateSeq get_bam_modified() const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
   INLINE vector_uchar encode_to_bam_stream() const;
   bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = nullptr) const;

@@ -56,9 +56,7 @@ PUBLISHED:
   void clear_rejected_properties();
   WindowProperties get_rejected_properties() const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
 
   INLINE bool is_closed() const;
   virtual bool is_active() const;

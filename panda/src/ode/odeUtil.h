@@ -43,7 +43,7 @@ PUBLISHED:
   static PT(OdeCollisionEntry) collide(const OdeGeom &geom1, const OdeGeom &geom2,
                                       const short int max_contacts = 150);
 
-  EXTENSION(static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
+  PY_EXTENSION(static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
                                 PyObject* arg, PyObject* callback));
 
   static OdeGeom space_to_geom(const OdeSpace &space);

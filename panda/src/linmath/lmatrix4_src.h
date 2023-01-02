@@ -72,9 +72,7 @@ PUBLISHED:
                                      const FLOATNAME(LVecBase4) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
-#ifdef HAVE_PYTHON
-  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
 
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.

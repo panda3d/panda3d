@@ -49,11 +49,9 @@ PUBLISHED:
 
   void operator = (const Mutex &copy) = delete;
 
-#ifdef HAVE_PYTHON
   EXTENSION(bool acquire(bool blocking=true) const);
-  EXTENSION(bool __enter__());
-  EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(bool __enter__());
+  PY_EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 public:
   // This is a global mutex set aside for the purpose of protecting Notify
   // messages from being interleaved between threads.

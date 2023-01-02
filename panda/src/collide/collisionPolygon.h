@@ -59,8 +59,8 @@ PUBLISHED:
   bool is_valid() const;
   bool is_concave() const;
 
-  EXTENSION(static bool verify_points(PyObject *points));
-  EXTENSION(void setup_points(PyObject *points));
+  PY_EXTENSION(static bool verify_points(PyObject *points));
+  PY_EXTENSION(void setup_points(PyObject *points));
 
 PUBLISHED:
   MAKE_SEQ_PROPERTY(points, get_num_points, get_point);

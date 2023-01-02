@@ -96,9 +96,7 @@ PUBLISHED:
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PointerToArray(PyObject *self, PyObject *source));
-#endif // HAVE_PYTHON */
+  PY_EXTENSION(PointerToArray(PyObject *self, PyObject *source));
 
   INLINE void clear();
 
@@ -109,25 +107,21 @@ PUBLISHED:
   INLINE void set_element(size_type n, const Element &value);
   EXTENSION(const Element &__getitem__(size_type n) const);
   EXTENSION(void __setitem__(size_type n, const Element &value));
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_data() const);
-  EXTENSION(void set_data(PyObject *data));
-  EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_data() const);
+  PY_EXTENSION(void set_data(PyObject *data));
+  PY_EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
   INLINE void set_subdata(size_type n, size_type count, const std::string &data);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
 
   INLINE size_t count(const Element &) const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
-  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
-  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+  PY_EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
+  PY_EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 
-  EXTENSION(PointerToArray<Element> __deepcopy__(PyObject *memo) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PointerToArray<Element> __deepcopy__(PyObject *memo) const);
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
@@ -273,23 +267,19 @@ PUBLISHED:
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
   EXTENSION(const Element &__getitem__(size_type n) const);
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_data() const);
-  EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_data() const);
+  PY_EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
 
   INLINE size_t count(const Element &) const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
-  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
-  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+  PY_EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+  PY_EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 
-  EXTENSION(ConstPointerToArray<Element> __deepcopy__(PyObject *memo) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(ConstPointerToArray<Element> __deepcopy__(PyObject *memo) const);
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
