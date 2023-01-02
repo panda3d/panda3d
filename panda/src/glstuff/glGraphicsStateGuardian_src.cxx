@@ -185,16 +185,16 @@ static const string default_vshader =
 #endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
-  "in vec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
+  "in vec4 p3d_MultiTexCoord0;\n"
+  "out vec3 texcoord;\n"
   "out vec4 color;\n"
 #else
   "#version 100\n"
   "precision mediump float;\n"
   "attribute vec4 p3d_Vertex;\n"
   "attribute vec4 p3d_Color;\n"
-  "attribute vec2 p3d_MultiTexCoord0;\n"
-  "varying vec2 texcoord;\n"
+  "attribute vec4 p3d_MultiTexCoord0;\n"
+  "varying vec3 texcoord;\n"
   "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
@@ -202,7 +202,7 @@ static const string default_vshader =
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  texcoord = (p3d_TextureMatrix * p3d_MultiTexCoord0).xyw;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -218,8 +218,8 @@ static const string default_vshader_fp64 =
   "#extension GL_ARB_gpu_shader_fp64 : require\n"
   "in dvec3 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
-  "in dvec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
+  "in dvec4 p3d_MultiTexCoord0;\n"
+  "out vec3 texcoord;\n"
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
@@ -227,7 +227,7 @@ static const string default_vshader_fp64 =
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0)).xyw;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -236,8 +236,8 @@ static const string default_vshader_fp64_gl41 =
   "#version 410\n"
   "in dvec3 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
-  "in dvec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
+  "in dvec4 p3d_MultiTexCoord0;\n"
+  "out vec3 texcoord;\n"
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
@@ -245,7 +245,7 @@ static const string default_vshader_fp64_gl41 =
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0)).xyw;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
@@ -257,7 +257,7 @@ static const string default_fshader =
 #else
   "#version 130\n"
 #endif
-  "in vec2 texcoord;\n"
+  "in vec3 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
@@ -265,18 +265,18 @@ static const string default_fshader =
 #else
   "#version 100\n"
   "precision mediump float;\n"
-  "varying vec2 texcoord;\n"
+  "varying vec3 texcoord;\n"
   "varying lowp vec4 color;\n"
   "uniform lowp sampler2D p3d_Texture0;\n"
   "uniform lowp vec4 p3d_TexAlphaOnly;\n"
 #endif
   "void main(void) {\n"
 #ifndef OPENGLES
-  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor = textureProj(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  p3d_FragColor *= color;\n"
 #else
-  "  gl_FragColor = texture2D(p3d_Texture0, texcoord);\n"
+  "  gl_FragColor = texture2DProj(p3d_Texture0, texcoord);\n"
   "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  gl_FragColor *= color;\n"
 #endif

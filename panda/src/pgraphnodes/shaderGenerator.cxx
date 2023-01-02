@@ -1218,6 +1218,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t texcoord" << i << ".xyz -= parallax_offset;\n";
       }
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex._type);
+      if (tex._type == Texture::TT_2d_texture) {
+        text << "proj";
+      }
       text << "(tex_" << i << ", texcoord" << i << ".";
       switch (tex._type) {
       case Texture::TT_cube_map:
@@ -1226,7 +1229,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "xyz";
         break;
       case Texture::TT_2d_texture:
-        text << "xy";
+        text << "xyw";
         break;
       case Texture::TT_1d_texture:
         text << "x";
