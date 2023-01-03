@@ -279,6 +279,9 @@ def parseopts(args):
 
     if (optimize==""): optimize = "3"
 
+    if GetHost() == 'emscripten':
+        target = 'emscripten'
+
     if target is not None or target_archs:
         SetTarget(target, target_archs[-1] if target_archs else None)
 
@@ -1954,10 +1957,10 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            cmd += " -sWARN_ON_UNDEFINED_SYMBOLS"
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
-                cmd += " -s EXIT_RUNTIME=1"
+                cmd += " -sEXIT_RUNTIME -sNODERAWFS -sASSERTIONS -sTOTAL_STACK=4MB -sALLOW_MEMORY_GROWTH"
 
         else:
             cmd += " -pthread"
@@ -1991,9 +1994,12 @@ def CompileLink(dll, obj, opts):
 
         if GetTarget() == 'emscripten':
             optlevel = GetOptimizeOption(opts)
-            if optlevel == 2: cmd += " -O1"
-            if optlevel == 3: cmd += " -O2"
-            if optlevel == 4: cmd += " -O3"
+            if GetOrigExt(dll) == ".exe":
+                cmd += " -O0 -g3"
+            elif optlevel>3:
+                cmd += f" -Os -g0"
+            elif optlevel>1:
+                cmd += f" -O{optlevel-1}"
 
         oscmd(cmd)
 

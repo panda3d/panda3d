@@ -15,6 +15,8 @@
 
 #ifdef __EMSCRIPTEN__
 
+#define SIDE_MODULE 1
+
 #include "string_utils.h"
 
 #include <emscripten/em_asm.h>
@@ -54,7 +56,7 @@ HTTPChannel(HTTPClient *client) :
       << _NOTIFY_HTTP_CHANNEL_ID
     << "created.\n";
   }
-
+#if !defined(SIDE_MODULE)
   EM_ASM({
     if (!window._httpChannels) {
       window._httpChannels = {};
@@ -62,7 +64,7 @@ HTTPChannel(HTTPClient *client) :
     var xhr = new XMLHttpRequest();
     window._httpChannels[$0] = xhr;
   }, this);
-
+#endif
   // _nonblocking is true if the XHR is actually in non-blocking mode.
   _nonblocking = false;
 
@@ -95,6 +97,7 @@ HTTPChannel(HTTPClient *client) :
  */
 HTTPChannel::
 ~HTTPChannel() {
+#if !defined(SIDE_MODULE)
   EM_ASM({
     var xhr = window._httpChannels[$0];
     if (xhr) {
@@ -103,7 +106,7 @@ HTTPChannel::
       delete window._httpChannels[$0];
     }
   }, this);
-
+#endif // SIDE_MODULE
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << _NOTIFY_HTTP_CHANNEL_ID
@@ -226,7 +229,12 @@ run() {
  */
 HTTPChannel::State HTTPChannel::
 get_state() const {
+#if !defined(SIDE_MODULE)
   return (State)EM_ASM_INT(return window._httpChannels[$0].readyState, this);
+#else
+    return (State)0;
+#endif
+
 }
 
 /**
@@ -235,25 +243,31 @@ get_state() const {
 bool HTTPChannel::
 run_send() {
   for (const ExtraHeader &header : _send_extra_headers) {
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       xhr.setRequestHeader(UTF8ToString($1), UTF8ToString($2));
     }, this, header.first.c_str(), header.second.c_str());
+#endif
   }
 
   if (_method == HTTPEnum::M_get || _method == HTTPEnum::M_head) {
     // No body is sent with GET / HEAD requests.
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       xhr.send(null);
     }, this);
+#endif
   }
   else {
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       xhr.setRequestHeader("Content-Type", UTF8ToString($2));
       xhr.send(UTF8ToString($1));
     }, this, _body.c_str(), _content_type.c_str());
+#endif
   }
 
   return true;
@@ -269,6 +283,7 @@ run_headers_received() {
   status_string[0] = 0;
 
   // Fetch the status code, text and response headers from JavaScript.
+#if !defined(SIDE_MODULE)
   int status_code = EM_ASM_INT({
     var xhr = window._httpChannels[$0];
     stringToUTF8(xhr.statusText, $1, 512);
@@ -281,6 +296,9 @@ run_headers_received() {
 
     return xhr.status;
   }, this, status_string, &header_str);
+#else
+    int status_code = 0;
+#endif
   _status_entry._status_code = status_code;
 
   // Parse the response header string.
@@ -369,6 +387,7 @@ run_headers_received() {
 
   if (_download_dest == DD_ram) {
     std::string *dest = &_download_to_ramfile->_data;
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       var loaded = 0;
@@ -379,10 +398,12 @@ run_headers_received() {
         loaded = ev.loaded;
       };
     }, this, dest);
+#endif
   }
   else if (_download_dest == DD_stream) {
     std::ostream *dest = _download_to_stream;
     char buffer[4096];
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       var loaded = 0;
@@ -395,6 +416,7 @@ run_headers_received() {
         }
       };
     }, this, dest, buffer);
+#endif
   }
 
   _got_expected_file_size = false;
@@ -444,7 +466,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 
   _first_byte_requested = first_byte;
   _last_byte_requested = last_byte;
-
+#if !defined(SIDE_MODULE)
   bool result = (bool)EM_ASM_INT(({
     var methods = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"];
     var xhr = window._httpChannels[$0];
@@ -464,13 +486,16 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
       return 0;
     }
   }), this, method, _request.get_url().c_str(), (int)_nonblocking, (int)first_byte, (int)last_byte);
-
+#else
+    bool result = (bool)0;
+#endif
   if (!result) {
     return false;
   }
 
   if (_wanted_nonblocking) {
     // Call run() automatically when the state changes.
+#if !defined(SIDE_MODULE)
     EM_ASM({
       var xhr = window._httpChannels[$0];
       xhr.onreadystatechange = function () {
@@ -480,6 +505,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
         }
       };
     }, this);
+#endif
   }
   else {
     return run_send() && run_headers_received();
@@ -499,7 +525,7 @@ reset_for_new_request() {
       << _NOTIFY_HTTP_CHANNEL_ID
       << "reset_for_new_request.\n";
   }
-
+#if !defined(SIDE_MODULE)
   EM_ASM({
     var xhr = window._httpChannels[$0];
     xhr.onprogress = null;
@@ -512,7 +538,7 @@ reset_for_new_request() {
       }
     }
   }, this);
-
+#endif
   reset_download_to();
 
   _status_entry = StatusEntry();
@@ -695,6 +721,7 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   }
 
   // Copy the entire response text.
+#if !defined(SIDE_MODULE)
   int bytes_read = EM_ASM_INT({
     var xhr = window._httpChannels[$0];
     var state = xhr.readyState;
@@ -703,6 +730,9 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
     writeAsciiToMemory(body, ptr, true);
     return state;
   }, this, &ramfile->_data);
+#else
+    int bytes_read = 0;
+#endif
 
   _bytes_downloaded = bytes_read;
 
@@ -764,6 +794,7 @@ download_to_stream(std::ostream *strm, bool subdocument_resumes) {
 
   // Copy the entire response text.
   char buffer[4096];
+#if !defined(SIDE_MODULE)
   int bytes_read = EM_ASM_INT({
     var xhr = window._httpChannels[$0];
     var state = xhr.readyState;
@@ -778,6 +809,9 @@ download_to_stream(std::ostream *strm, bool subdocument_resumes) {
     }
     return read;
   }, this, strm, buffer);
+#else
+    int bytes_read = 0;
+#endif
 
   strm->flush();
   _bytes_downloaded = bytes_read;
