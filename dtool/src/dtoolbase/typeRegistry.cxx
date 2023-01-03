@@ -695,21 +695,3 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
 
   return _handle_registry[handle._index];
 }
-
-/**
-
- */
-extern "C" int
-get_best_parent_from_Set(int id, const std::set<int> &this_set) {
-  // most common case..
-  if (this_set.find(id) != this_set.end()) {
-    return id;
-  }
-
-  TypeHandle th = TypeRegistry::ptr()->find_type_by_id(id);
-  if (th == TypeHandle::none()) {
-    return -1;
-  }
-
-  return th.get_best_parent_from_Set(this_set);
-}

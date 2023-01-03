@@ -123,8 +123,6 @@ PUBLISHED:
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = nullptr) const;
 
-  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
-
   size_t get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, size_t size);
   void dec_memory_usage(MemoryClass memory_class, size_t size);
