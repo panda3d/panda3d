@@ -1957,6 +1957,8 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
+            if cmd.find('bin/deploy-stub.js '):
+                return
             cmd += " -sWARN_ON_UNDEFINED_SYMBOLS"
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
