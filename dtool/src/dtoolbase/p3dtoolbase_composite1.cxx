@@ -1,5 +1,4 @@
 #include "addHash.cxx"
-#include "lookup3.c"
 #include "atomicAdjustDummyImpl.cxx"
 #include "atomicAdjustI386Impl.cxx"
 #include "atomicAdjustPosixImpl.cxx"
