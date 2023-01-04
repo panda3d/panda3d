@@ -105,7 +105,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // The clear flags have changed.  Recreate the render pass.  Note that the
     // clear flags don't factor into render pass compatibility, so we don't
     // need to recreate the framebuffer.
-    vkQueueWaitIdle(vkgsg->_queue);
     setup_render_pass();
   }
 
@@ -639,6 +638,8 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsWindow " << this << "\n";
   }
 
+  nassertr(vkgsg->_frame_data == nullptr, false);
+
   {
     // Do we intend to copy the framebuffer to a texture?
     _final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -768,8 +769,11 @@ setup_render_pass() {
 
   // Destroy the previous render pass object.
   if (_render_pass != VK_NULL_HANDLE) {
-    vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
-    _render_pass = VK_NULL_HANDLE;
+    if (vkgsg->_last_frame_data != nullptr) {
+      vkgsg->_last_frame_data->_pending_destroy_render_passes.push_back(_render_pass);
+    } else {
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+    }
   }
 
   _render_pass = pass;

@@ -301,6 +301,7 @@ private:
   size_t _frame_data_head = _frame_data_capacity;
   size_t _frame_data_tail = 0;
   FrameData *_frame_data = nullptr;
+  FrameData *_last_frame_data = nullptr;
 
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;

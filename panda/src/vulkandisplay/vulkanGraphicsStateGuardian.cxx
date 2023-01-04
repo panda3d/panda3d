@@ -2543,6 +2543,7 @@ end_frame(Thread *current_thread) {
     nassertv(!err);
   }
 
+  _last_frame_data = _frame_data;
   _frame_data = nullptr;
 
   //TODO: delete command buffer, schedule for deletion, or recycle.
@@ -2568,6 +2569,11 @@ finish_frame(FrameData &frame_data) {
   }
   frame_data._pending_destroy_buffers.clear();
 
+  for (VkFramebuffer framebuffer : frame_data._pending_destroy_framebuffers) {
+    vkDestroyFramebuffer(_device, framebuffer, nullptr);
+  }
+  frame_data._pending_destroy_framebuffers.clear();
+
   for (VkImageView image_view : frame_data._pending_destroy_image_views) {
     vkDestroyImageView(_device, image_view, nullptr);
   }
@@ -2577,6 +2583,11 @@ finish_frame(FrameData &frame_data) {
     vkDestroyImage(_device, image, nullptr);
   }
   frame_data._pending_destroy_images.clear();
+
+  for (VkRenderPass render_pass : frame_data._pending_destroy_render_passes) {
+    vkDestroyRenderPass(_device, render_pass, nullptr);
+  }
+  frame_data._pending_destroy_render_passes.clear();
 
   for (VkSampler sampler : frame_data._pending_destroy_samplers) {
     vkDestroySampler(_device, sampler, nullptr);
@@ -2833,8 +2844,17 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     }
   }
 
+  PreparedGraphicsObjects *pgo = get_prepared_objects();
+
   VulkanTextureContext *tc;
-  DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
+  DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
+
+  // Temporary, prepare_now should really deal with the resizing
+  if (tc->_extent.width != tex->get_x_size() ||
+      tc->_extent.height != tex->get_y_size()) {
+    pgo->release_texture(tc);
+    DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
+  }
 
   nassertr(fbtc->_extent.width <= tc->_extent.width &&
            fbtc->_extent.height <= tc->_extent.height &&

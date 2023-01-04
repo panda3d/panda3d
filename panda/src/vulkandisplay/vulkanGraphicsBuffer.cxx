@@ -92,7 +92,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // The clear flags have changed.  Recreate the render pass.  Note that the
     // clear flags don't factor into render pass compatibility, so we don't
     // need to recreate the framebuffer.
-    vkQueueWaitIdle(vkgsg->_queue);
     setup_render_pass();
   }
 
@@ -106,7 +105,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // Uh-oh, the window must have resized.  Recreate the framebuffer.
     // Before destroying the old, make sure the queue is no longer rendering
     // anything to it.
-    vkQueueWaitIdle(vkgsg->_queue);
     destroy_framebuffer();
     if (!create_framebuffer()) {
       return false;
@@ -233,15 +231,16 @@ close_buffer() {
     VulkanGraphicsStateGuardian *vkgsg;
     DCAST_INTO_V(vkgsg, _gsg);
 
-    // Wait until the queue is done with any commands that might use the swap
-    // chain, then destroy it.
-    vkQueueWaitIdle(vkgsg->_queue);
     destroy_framebuffer();
 
     if (_render_pass != VK_NULL_HANDLE) {
-      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
-      _render_pass = VK_NULL_HANDLE;
+      if (vkgsg->_last_frame_data != nullptr) {
+        vkgsg->_last_frame_data->_pending_destroy_render_passes.push_back(_render_pass);
+      } else {
+        vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+      }
     }
+    _render_pass = VK_NULL_HANDLE;
 
     _gsg.clear();
   }
@@ -397,6 +396,8 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsBuffer " << this << "\n";
   }
 
+  nassertr(vkgsg->_frame_data == nullptr, false);
+
   // Check if we are planning on doing anything with the depth/color output.
   BitMask32 transfer_planes = 0;
   {
@@ -513,8 +514,11 @@ setup_render_pass() {
 
   // Destroy the previous render pass object.
   if (_render_pass != VK_NULL_HANDLE) {
-    vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
-    _render_pass = VK_NULL_HANDLE;
+    if (vkgsg->_last_frame_data != nullptr) {
+      vkgsg->_last_frame_data->_pending_destroy_render_passes.push_back(_render_pass);
+    } else {
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+    }
   }
 
   _render_pass = pass;
@@ -532,6 +536,8 @@ destroy_framebuffer() {
   DCAST_INTO_V(vkgsg, _gsg);
   VkDevice device = vkgsg->_device;
 
+  nassertv(vkgsg->_frame_data == nullptr);
+
   // Make sure that the GSG's command buffer releases its resources.
   //if (vkgsg->_cmd != VK_NULL_HANDLE) {
   //  vkResetCommandBuffer(vkgsg->_cmd, 0);
@@ -545,12 +551,20 @@ destroy_framebuffer() {
   // Destroy the resources held for each attachment.
   for (Attachment &attach : _attachments) {
     if (attach._tc->_image_view != VK_NULL_HANDLE) {
-      vkDestroyImageView(device, attach._tc->_image_view, nullptr);
+      if (vkgsg->_last_frame_data != nullptr) {
+        vkgsg->_last_frame_data->_pending_destroy_image_views.push_back(attach._tc->_image_view);
+      } else {
+        vkDestroyImageView(vkgsg->_device, attach._tc->_image_view, nullptr);
+      }
       attach._tc->_image_view = VK_NULL_HANDLE;
     }
 
     if (attach._tc->_image != VK_NULL_HANDLE) {
-      vkDestroyImage(device, attach._tc->_image, nullptr);
+      if (vkgsg->_last_frame_data != nullptr) {
+        vkgsg->_last_frame_data->_pending_destroy_images.push_back(attach._tc->_image);
+      } else {
+        vkDestroyImage(vkgsg->_device, attach._tc->_image, nullptr);
+      }
       attach._tc->_image = VK_NULL_HANDLE;
     }
 
@@ -560,7 +574,11 @@ destroy_framebuffer() {
   _attachments.clear();
 
   if (_framebuffer != VK_NULL_HANDLE) {
-    vkDestroyFramebuffer(device, _framebuffer, nullptr);
+    if (vkgsg->_last_frame_data != nullptr) {
+      vkgsg->_last_frame_data->_pending_destroy_framebuffers.push_back(_framebuffer);
+    } else {
+      vkDestroyFramebuffer(vkgsg->_device, _framebuffer, nullptr);
+    }
     _framebuffer = VK_NULL_HANDLE;
   }
 
