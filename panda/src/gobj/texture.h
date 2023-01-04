@@ -462,7 +462,7 @@ PUBLISHED:
   void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
 #else // !CPPPARSER || !HAVE_PYTHON
   PY_EXTEND(void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
-                            size_t page_size = 0));
+                               size_t page_size = 0));
   PY_EXTEND(void set_ram_image_as(PyObject *image, const std::string &provided_format));
 #endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();

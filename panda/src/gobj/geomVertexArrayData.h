@@ -310,10 +310,10 @@ PUBLISHED:
 
   PY_EXTENSION(void copy_data_from(PyObject *buffer));
   PY_EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
-                                   PyObject *buffer));
+                                      PyObject *buffer));
   PY_EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
-                                   PyObject *buffer,
-                                   size_t from_start, size_t from_size));
+                                      PyObject *buffer,
+                                      size_t from_start, size_t from_size));
 
   INLINE vector_uchar get_data() const;
   void set_data(const vector_uchar &data);
