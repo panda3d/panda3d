@@ -103,7 +103,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   tinygsg->reset_if_new();
 
   _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame(current_thread);
+  if (_gsg->begin_frame(current_thread)) {
+    copy_async_screenshot();
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /**

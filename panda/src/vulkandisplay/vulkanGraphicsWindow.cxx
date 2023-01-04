@@ -127,6 +127,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
+  copy_async_screenshot();
+
   if (mode != FM_render) {
     return true;
   }

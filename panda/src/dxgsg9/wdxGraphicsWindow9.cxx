@@ -117,6 +117,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   _gsg->set_current_properties(&get_fb_properties());
   bool return_val = _gsg->begin_frame(current_thread);
   _dxgsg->set_render_target();
+  if (return_val) {
+    copy_async_screenshot();
+  }
   return return_val;
 }
 
