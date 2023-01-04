@@ -254,9 +254,7 @@ PUBLISHED:
   MAKE_PROPERTY(texture_quality_override, get_texture_quality_override,
                                           set_texture_quality_override);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_prepared_textures() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_prepared_textures() const);
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 

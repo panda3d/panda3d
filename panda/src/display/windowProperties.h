@@ -44,9 +44,7 @@ PUBLISHED:
     M_confined,
   };
 
-#ifdef HAVE_PYTHON
-  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
 
 PUBLISHED:
   void operator = (const WindowProperties &copy);
@@ -207,10 +205,8 @@ PUBLISHED:
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__getstate__(PyObject *self) const);
-  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  PY_EXTENSION(void __setstate__(PyObject *self, PyObject *state));
 
   void add_properties(const WindowProperties &other);
 

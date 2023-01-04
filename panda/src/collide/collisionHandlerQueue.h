@@ -46,7 +46,7 @@ PUBLISHED:
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 private:
   typedef pvector< PT(CollisionEntry) > Entries;

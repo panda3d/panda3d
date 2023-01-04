@@ -34,9 +34,7 @@ public:
 PUBLISHED:
   virtual void output(std::ostream &out) const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(static PT(CallbackObject) make(PyObject *function));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(static PT(CallbackObject) make(PyObject *function));
 
 public:
   virtual void do_callback(CallbackData *cbdata);

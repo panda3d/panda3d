@@ -30,9 +30,7 @@ public:
   INLINE StringStream(vector_uchar source);
 
 PUBLISHED:
-#ifdef HAVE_PYTHON
-  EXTENSION(StringStream(PyObject *source));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(StringStream(PyObject *source));
   INLINE StringStream();
 
 #if _MSC_VER >= 1800
@@ -42,12 +40,10 @@ PUBLISHED:
   INLINE void clear_data();
   INLINE size_t get_data_size();
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_data());
-  EXTENSION(void set_data(PyObject *data));
+  PY_EXTENSION(PyObject *get_data());
+  PY_EXTENSION(void set_data(PyObject *data));
 
-  MAKE_PROPERTY(data, get_data, set_data);
-#endif // HAVE_PYTHON
+  PY_MAKE_PROPERTY(data, get_data, set_data);
 
 public:
 #ifndef CPPPARSER

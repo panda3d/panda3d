@@ -95,11 +95,9 @@ public:
   INLINE const void *get_data() const;
 
 PUBLISHED:
-#ifdef HAVE_PYTHON
-  EXTENSION(INLINE PyObject *get_message() const);
-  EXTENSION(INLINE PyObject *__bytes__() const);
-  EXTENSION(PyObject *__reduce__() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(INLINE PyObject *get_message() const);
+  PY_EXTENSION(INLINE PyObject *__bytes__() const);
+  PY_EXTENSION(PyObject *__reduce__() const);
 
   INLINE size_t get_length() const;
 

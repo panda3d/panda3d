@@ -68,12 +68,10 @@ PUBLISHED:
 
   BLOCKING void skip_bytes(size_t size);
   BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *extract_bytes(size_t size));
+  PY_EXTENSION(PyObject *extract_bytes(size_t size));
 
-  EXTENSION(PyObject *readline());
-  EXTENSION(PyObject *readlines());
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *readline());
+  PY_EXTENSION(PyObject *readlines());
 public:
   BLOCKING vector_uchar extract_bytes(size_t size);
   BLOCKING std::string readline();
