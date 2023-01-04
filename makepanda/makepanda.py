@@ -1957,7 +1957,7 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            if cmd.find('bin/deploy-stub.js '):
+            if cmd.find('bin/deploy-stub.js ')>0:
                 return
             cmd += " -sWARN_ON_UNDEFINED_SYMBOLS"
             if GetOrigExt(dll) == ".exe":
@@ -2001,7 +2001,7 @@ def CompileLink(dll, obj, opts):
             elif optlevel>3:
                 cmd += f" -Os -g0"
             elif optlevel>1:
-                cmd += f" -O{optlevel-1}"
+                cmd += f" -O{optlevel-1} -g3"
 
         oscmd(cmd)
 
