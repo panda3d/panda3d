@@ -166,25 +166,6 @@ get_python_type() const {
 }
 #endif
 
-/**
- * Return the Index of the BEst fit Classs from a set
- */
-int TypeHandle::
-get_best_parent_from_Set(const std::set< int > &legal_vals) const {
-  if (legal_vals.find(_index) != legal_vals.end()) {
-    return _index;
-  }
-
-  for (int pi = 0; pi < get_num_parent_classes(); ++pi) {
-    TypeHandle ph = get_parent_class(pi);
-    int val = ph.get_best_parent_from_Set(legal_vals);
-    if (val > 0) {
-      return val;
-    }
-  }
-  return -1;
-}
-
 std::ostream &
 operator << (std::ostream &out, TypeHandle::MemoryClass mem_class) {
   switch (mem_class) {

@@ -33,11 +33,6 @@ GtkStatsGraph::
 GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   _monitor(monitor)
 {
-  _parent_window = nullptr;
-  _window = nullptr;
-  _graph_window = nullptr;
-  _scale_area = nullptr;
-
   GtkWidget *parent_window = monitor->get_window();
 
   GdkWindow *window = gtk_widget_get_window(parent_window);
@@ -59,6 +54,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   gtk_window_set_type_hint(GTK_WINDOW(_window), GDK_WINDOW_TYPE_HINT_UTILITY);
   //gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
   //gtk_window_set_position(GTK_WINDOW(_window), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_window_add_accel_group(GTK_WINDOW(_window), monitor->get_accel_group());
 
   gtk_widget_add_events(_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
@@ -310,6 +307,36 @@ animate(double time, double dt) {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+void GtkStatsGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  GtkWindow *window = GTK_WINDOW(_window);
+  gtk_window_get_position(window, &x, &y);
+  gtk_window_get_size(window, &width, &height);
+  maximized = gtk_window_is_maximized(window);
+  minimized = false;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void GtkStatsGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  GtkWindow *window = GTK_WINDOW(_window);
+  gtk_window_move(window, x, y);
+  gtk_window_resize(window, width, height);
+  if (maximized) {
+    gtk_window_maximize(window);
+  }
+  if (minimized) {
+    gtk_window_iconify(window);
+  }
+}
+
+/**
  * Returns a pattern suitable for drawing in the indicated collector's color.
  */
 cairo_pattern_t *GtkStatsGraph::
@@ -356,6 +383,17 @@ get_collector_text_color(int collector_index, bool highlight) {
 
   _text_colors[collector_index] = std::make_pair(color, hcolor);
   return highlight ? hcolor : color;
+}
+
+/**
+ * Called when the given collector has changed colors.
+ */
+void GtkStatsGraph::
+reset_collector_color(int collector_index) {
+  _brushes.erase(collector_index);
+  _text_colors.erase(collector_index);
+  force_redraw();
+  _label_stack.update_label_color(collector_index);
 }
 
 /**

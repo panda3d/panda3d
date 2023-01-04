@@ -2879,8 +2879,8 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
  * @return true on success, false on failure
  */
 bool VulkanGraphicsStateGuardian::
-framebuffer_copy_to_ram(Texture *tex, int view, int z,
-                        const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_ram(Texture *tex, int view, int z, const DisplayRegion *dr,
+                        const RenderBuffer &rb, ScreenshotRequest *request) {
 
   // Please note that this doesn't complete immediately, but instead queues it
   // until the next end_frame().  This seems to be okay given existing usage,

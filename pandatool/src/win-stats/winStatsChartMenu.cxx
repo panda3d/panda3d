@@ -12,6 +12,7 @@
  */
 
 #include "winStatsChartMenu.h"
+#include "winStatsMenuId.h"
 #include "winStatsMonitor.h"
 
 /**
@@ -31,6 +32,7 @@ WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index) :
  */
 WinStatsChartMenu::
 ~WinStatsChartMenu() {
+  DestroyMenu(_menu);
 }
 
 /**
@@ -99,14 +101,28 @@ do_update() {
 
   if (_thread_index == 0) {
     // Timeline goes first.
-    WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_timeline, false);
-    int menu_id = _monitor->get_menu_id(menu_def);
+    {
+      WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_timeline, false);
+      int menu_id = _monitor->get_menu_id(menu_def);
 
-    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-    mii.fType = MFT_STRING;
-    mii.wID = menu_id;
-    mii.dwTypeData = "Timeline";
-    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+      mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+      mii.fType = MFT_STRING;
+      mii.wID = menu_id;
+      mii.dwTypeData = "Timeline";
+      InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    }
+
+    // And the piano roll (even though it's not very useful nowadays)
+    {
+      WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_piano_roll, false);
+      int menu_id = _monitor->get_menu_id(menu_def);
+
+      mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+      mii.fType = MFT_STRING;
+      mii.wID = menu_id;
+      mii.dwTypeData = "Piano Roll";
+      InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    }
 
     mii.fMask = MIIM_FTYPE;
     mii.fType = MFT_SEPARATOR;
@@ -141,19 +157,28 @@ do_update() {
     }
   }
 
-  // Also menu item for piano roll (following a separator).
-  mii.fMask = MIIM_FTYPE;
-  mii.fType = MFT_SEPARATOR;
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
-
-  {
-    WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_piano_roll, false);
-    int menu_id = _monitor->get_menu_id(menu_def);
+  // For the main thread menu, also some options relating to all graph windows.
+  if (_thread_index == 0) {
+    mii.fMask = MIIM_FTYPE;
+    mii.fType = MFT_SEPARATOR;
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
     mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
     mii.fType = MFT_STRING;
-    mii.wID = menu_id;
-    mii.dwTypeData = "Piano Roll";
+    mii.wID = MI_graphs_close_all;
+    mii.dwTypeData = "Close All Graphs";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = MI_graphs_reopen_default;
+    mii.dwTypeData = "Reopen Default Graphs";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = MI_graphs_save_default;
+    mii.dwTypeData = "Save Current Layout as Default";
     InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
   }
 }

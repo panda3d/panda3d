@@ -189,6 +189,11 @@ output_instance(std::ostream &out, int indent_level, CPPScope *scope,
     brackets << *_bounds;
   }
   brackets << "]";
+
+  if (!_attributes.is_empty()) {
+    brackets << " " << _attributes;
+  }
+
   std::string bracketsstr = brackets.str();
 
   _element_type->output_instance(out, indent_level, scope, complete,

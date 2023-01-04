@@ -90,3 +90,14 @@ client_resume_after_pause() {
   double delta = _clock->get_short_time() - _last_frame;
   _delta -= delta;
 }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+/**
+ *
+ */
+INLINE PStatClientImpl::QueuedFrame::
+QueuedFrame(int thread_index, int frame_number) :
+  _thread_index(thread_index),
+  _frame_number(frame_number) {
+}
+#endif

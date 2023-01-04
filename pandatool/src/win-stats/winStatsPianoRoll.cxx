@@ -35,12 +35,14 @@ WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index) :
   _right_margin = _pixel_scale * 2;
   _top_margin = _pixel_scale * 5;
   _bottom_margin = _pixel_scale * 2;
+  _top_label_stack_margin = _pixel_scale * 5;
 
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
 
   create_window();
-  clear_region();
+  force_redraw();
+  idle();
 }
 
 /**
@@ -126,6 +128,9 @@ on_popup_label(int collector_index) {
     }
     AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
     AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+    AppendMenu(popup, MF_STRING | MF_SEPARATOR, 0, nullptr);
+    AppendMenu(popup, MF_STRING, 104, "Change Color...");
+    AppendMenu(popup, MF_STRING, 105, "Reset Color");
     TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
   }
 }
@@ -233,6 +238,25 @@ idle() {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+bool WinStatsPianoRoll::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsPianoRoll::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+}
+
+/**
  *
  */
 LONG WinStatsPianoRoll::
@@ -254,6 +278,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case 103:
       WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
+      return 0;
+
+    case 104:
+      WinStatsGraph::_monitor->choose_collector_color(_popup_index);
+      return 0;
+
+    case 105:
+      WinStatsGraph::_monitor->reset_collector_color(_popup_index);
       return 0;
     }
     break;

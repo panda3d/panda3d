@@ -23,33 +23,17 @@
 bool __tau_shutdown = false;
 #endif
 
-MemoryHook *memory_hook;
+MemoryHook default_memory_hook;
+MemoryHook *memory_hook = &default_memory_hook;
 
 /**
- * Any code that might need to use PANDA_MALLOC or PANDA_FREE, or any methods
- * of the global memory_hook object, at static init time, should ensure that
- * it calls init_memory_hook() first to ensure that the pointer has been
- * properly initialized.  There is no harm in calling this function more than
- * once.
- *
- * There is no need to call this function other than at static init time.
+ * It used to be necessary to call this before using operator new at static
+ * init time.  There is no need to call this function anymore.
  */
 void
 init_memory_hook() {
-  if (memory_hook == nullptr) {
-    memory_hook = new MemoryHook;
-  }
+  assert(memory_hook != nullptr);
 }
-
-// Here's a quick way to ensure the above function is called at least once at
-// static init time.
-class InitMemoryHook {
-public:
-  InitMemoryHook() {
-    init_memory_hook();
-  }
-};
-static InitMemoryHook _imh_object;
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
 

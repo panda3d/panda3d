@@ -47,7 +47,7 @@ WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
   _average_check_box = 0;
 
   create_window();
-  clear_region();
+  force_redraw();
 }
 
 /**
@@ -117,7 +117,7 @@ set_time_units(int unit_mask) {
 
     RECT rect;
     GetClientRect(_window, &rect);
-    rect.left = _right_margin;
+    rect.bottom = _top_margin;
     InvalidateRect(_window, &rect, TRUE);
   }
 }
@@ -160,6 +160,22 @@ on_leave_label(int collector_index) {
 }
 
 /**
+ * Changes the collector represented by this flame graph.  This may force a
+ * redraw.
+ */
+void WinStatsFlameGraph::
+set_collector_index(int collector_index) {
+  PStatFlameGraph::set_collector_index(collector_index);
+
+  if (is_title_unknown()) {
+    std::string window_title = get_title_text();
+    if (!is_title_unknown()) {
+      SetWindowText(_window, window_title.c_str());
+    }
+  }
+}
+
+/**
  * Calls update_guide_bars with parameters suitable to this kind of graph.
  */
 void WinStatsFlameGraph::
@@ -176,6 +192,11 @@ normal_guide_bars() {
   }
 
   _guide_bars_changed = true;
+
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
 }
 
 /**
@@ -211,7 +232,7 @@ begin_draw() {
  * indicated location.
  */
 void WinStatsFlameGraph::
-draw_bar(int depth, int from_x, int to_x, int collector_index) {
+draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index) {
   int bottom = get_ysize() - 1 - depth * _pixel_scale * 5;
   int top = bottom - _pixel_scale * 5;
 
@@ -242,11 +263,34 @@ draw_bar(int depth, int from_x, int to_x, int collector_index) {
       SetTextColor(_bitmap_dc, get_collector_text_color(collector_index, is_highlighted));
 
       const PStatClientData *client_data = WinStatsGraph::_monitor->get_client_data();
-      const std::string &name = client_data->get_collector_name(collector_index);
+      const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
 
-      RECT rect = {left, top, right, bottom};
-      DrawText(_bitmap_dc, name.data(), name.size(),
-               &rect, DT_LEFT | DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER);
+      SIZE size;
+      GetTextExtentPoint32(_bitmap_dc, def._name.data(), def._name.size(), &size);
+
+      if (size.cx < right - left) {
+        // We have room for more.  Show the collector's actual parent, if it's
+        // different than the block it's shown above.
+        if (def._parent_index > 0 && def._parent_index != parent_index) {
+          const PStatCollectorDef &parent_def = client_data->get_collector_def(def._parent_index);
+          std::string long_name = parent_def._name + ":" + def._name;
+
+          SIZE long_size;
+          GetTextExtentPoint32(_bitmap_dc, long_name.data(), long_name.size(), &long_size);
+          if (long_size.cx < right - left) {
+            TextOut(_bitmap_dc, left, top + (bottom - top - long_size.cy) / 2,
+                    long_name.data(), long_name.length());
+            return;
+          }
+        }
+        TextOut(_bitmap_dc, left, top + (bottom - top - size.cy) / 2,
+                def._name.data(), def._name.length());
+      } else {
+        // Let Windows figure out how to fit it, with ellipsis if necessary.
+        RECT rect = {left, top, right, bottom};
+        DrawText(_bitmap_dc, def._name.data(), def._name.size(),
+                 &rect, DT_LEFT | DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER);
+      }
     }
   }
 }
@@ -274,6 +318,28 @@ idle() {
 bool WinStatsFlameGraph::
 animate(double time, double dt) {
   return PStatFlameGraph::animate(time, dt);
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+bool WinStatsFlameGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsFlameGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+
+  // Set the state of the checkbox.
+  SendMessage(_average_check_box, BM_SETCHECK, get_average_mode() ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 /**
@@ -315,6 +381,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case 103:
       WinStatsGraph::_monitor->open_flame_graph(get_thread_index(), _popup_index);
+      return 0;
+
+    case 104:
+      WinStatsGraph::_monitor->choose_collector_color(_popup_index);
+      return 0;
+
+    case 105:
+      WinStatsGraph::_monitor->reset_collector_color(_popup_index);
       return 0;
     }
     break;
@@ -433,6 +507,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
             AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
             AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
+            AppendMenu(popup, MF_STRING | MF_SEPARATOR, 0, nullptr);
+            AppendMenu(popup, MF_STRING, 104, "Change Color...");
+            AppendMenu(popup, MF_STRING, 105, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
           }
         }

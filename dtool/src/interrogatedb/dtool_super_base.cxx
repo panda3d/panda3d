@@ -39,11 +39,11 @@ static void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   }
 }
 
-static void *Dtool_DowncastInterface_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
+static void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyTypedObject *requested_type) {
   return nullptr;
 }
 
-static void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyTypedObject *requested_type) {
+static Dtool_PyInstDef *Dtool_Wrap_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
   return nullptr;
 }
 
@@ -140,7 +140,7 @@ Dtool_PyTypedObject *Dtool_GetSuperBase() {
     TypeHandle::none(),
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE,
     Dtool_UpcastInterface_DTOOL_SUPER_BASE,
-    Dtool_DowncastInterface_DTOOL_SUPER_BASE,
+    Dtool_Wrap_DTOOL_SUPER_BASE,
     nullptr,
     nullptr,
   };

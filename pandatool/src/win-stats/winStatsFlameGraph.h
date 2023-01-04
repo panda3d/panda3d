@@ -40,16 +40,24 @@ public:
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
 
+  void set_collector_index(int collector_index);
+
 protected:
   virtual void normal_guide_bars();
 
   void clear_region();
   virtual void begin_draw();
-  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
+  virtual void draw_bar(int depth, int from_x, int to_x,
+                        int collector_index, int parent_index);
   virtual void end_draw();
   virtual void idle();
 
   virtual bool animate(double time, double dt);
+
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

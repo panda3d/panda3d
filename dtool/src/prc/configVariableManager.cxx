@@ -28,7 +28,6 @@ ConfigVariableManager *ConfigVariableManager::_global_ptr = nullptr;
  */
 ConfigVariableManager::
 ConfigVariableManager() {
-  init_memory_hook();
 }
 
 /**

@@ -43,7 +43,8 @@ CPPTypedefType(CPPType *type, const string &name, CPPScope *current_scope) :
  *
  */
 CPPTypedefType::
-CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope) :
+CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope,
+               CPPAttributeList attr) :
   CPPType(CPPFile()),
   _type(type),
   _ident(ident),
@@ -53,6 +54,8 @@ CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope) :
     _ident->_native_scope = current_scope;
   }
   _subst_decl_recursive_protect = false;
+
+  _attributes = std::move(attr);
 }
 
 /**
@@ -69,6 +72,7 @@ CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
   assert(ii != nullptr);
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
+  _attributes = std::move(ii->_attributes);
   ii->_ident = nullptr;
   delete ii;
 
@@ -388,9 +392,16 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
         get_template_scope()->_parameters.write_formal(out, scope);
         indent(out, indent_level);
       }
-      out << "using " << name << " = ";
+      out << "using " << name;
+      if (!_attributes.is_empty()) {
+        out << " " << _attributes;
+      }
+      out << " = ";
       _type->output(out, 0, scope, false);
     } else {
+      if (!_attributes.is_empty()) {
+        out << _attributes << " ";
+      }
       out << "typedef ";
       _type->output_instance(out, indent_level, scope, false, "", name);
     }

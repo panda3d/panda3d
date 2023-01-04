@@ -28,9 +28,10 @@ class CollisionEntry;
  * dispatch detected collisions.
  */
 class EXPCL_PANDA_COLLIDE CollisionHandler : public TypedReferenceCount {
-public:
-  CollisionHandler();
+PUBLISHED:
+  CollisionHandler() = default;
 
+public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
   virtual bool end_group();
@@ -38,12 +39,10 @@ public:
   INLINE bool wants_all_potential_collidees() const;
   INLINE void set_root(const NodePath &root);
 
-PUBLISHED:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-
-public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "CollisionHandler",
@@ -55,7 +54,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 protected:
-  bool _wants_all_potential_collidees;
+  bool _wants_all_potential_collidees = false;
   const NodePath *_root;
 
 private:

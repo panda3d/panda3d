@@ -1920,7 +1920,7 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
 
     it = _instructions.insert(it, spv::OpTypeImage, args, nargs);
   }
-  else if (const ShaderType::Sampler *sampler_type = type->as_sampler()) {
+  else if (type->as_sampler() != nullptr) {
     it = _instructions.insert(it, spv::OpTypeSampler, {id});
   }
   else if (const ShaderType::SampledImage *sampled_image_type = type->as_sampled_image()) {

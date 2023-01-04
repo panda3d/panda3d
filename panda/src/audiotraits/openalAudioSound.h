@@ -50,6 +50,10 @@ public:
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
 
+  // loop_start: 0 = beginning.  expressed in seconds.  inits to 0.
+  void set_loop_start(PN_stdfloat loop_start=0);
+  PN_stdfloat get_loop_start() const;
+
   // 0 = beginning; length() = end.  inits to 0.0.
   void set_time(PN_stdfloat time=0.0);
   PN_stdfloat get_time() const;
@@ -148,7 +152,6 @@ private:
   PN_stdfloat _balance; // -1..1
   PN_stdfloat _play_rate; // 0..1.0
 
-  bool _positional;
   ALfloat _location[3];
   ALfloat _velocity[3];
 
@@ -156,10 +159,11 @@ private:
   PN_stdfloat _max_dist;
   PN_stdfloat _drop_off_factor;
 
-  double _length;
-  int    _loop_count;
+  double      _length;
+  int         _loop_count;
+  PN_stdfloat _loop_start;
 
-  int    _desired_mode;
+  int         _desired_mode;
 
   // The calibrated clock is initialized when the sound starts playing, and is
   // periodically corrected thereafter.

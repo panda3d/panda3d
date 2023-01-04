@@ -81,6 +81,12 @@ defaultHiddenImports = {
     'pandas.compat': ['lzma', 'cmath'],
     'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
     'plyer': ['plyer.platforms'],
+    'scipy.linalg': ['scipy.linalg.cython_blas', 'scipy.linalg.cython_lapack'],
+    'scipy.sparse.csgraph': ['scipy.sparse.csgraph._validation'],
+    'scipy.spatial._qhull': ['scipy._lib.messagestream'],
+    'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
+    'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
+    'scipy.stats._stats': ['scipy.special.cython_special'],
 }
 
 
@@ -781,7 +787,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None, hiddenImports=None):
+                 platform = None, path=None, hiddenImports=None, optimize=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -911,7 +917,13 @@ class Freezer:
                     ('.so', 'rb', 3),
                 ]
 
-        self.mf = PandaModuleFinder(excludes=['doctest'], suffixes=suffixes, path=path)
+        if optimize is None or optimize < 0:
+            self.optimize = sys.flags.optimize
+        else:
+            self.optimize = optimize
+
+        self.mf = PandaModuleFinder(excludes=['doctest'], suffixes=suffixes,
+                                    path=path, optimize=self.optimize)
 
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by
@@ -1189,22 +1201,31 @@ class Freezer:
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
-        if 'sysconfig' in self.mf.modules:
+        missing = []
+        if 'sysconfig' in self.mf.modules and \
+           ('linux' in self.platform or 'mac' in self.platform):
+            modname = '_sysconfigdata'
             if sys.version_info >= (3, 6):
+                modname += '_'
+                if sys.version_info < (3, 8):
+                    modname += 'm'
+
                 if 'linux' in self.platform:
                     arch = self.platform.split('_', 1)[1]
-                    self.__loadModule(self.ModuleDef('_sysconfigdata__linux_' + arch + '-linux-gnu', implicit=True))
+                    modname += '_linux_' + arch + '-linux-gnu'
                 elif 'mac' in self.platform:
-                    self.__loadModule(self.ModuleDef('_sysconfigdata__darwin_darwin', implicit=True))
-            elif 'linux' in self.platform or 'mac' in self.platform:
-                self.__loadModule(self.ModuleDef('_sysconfigdata', implicit=True))
+                    modname += '_darwin_darwin'
+
+            try:
+                self.__loadModule(self.ModuleDef(modname, implicit=True))
+            except:
+                missing.append(modname)
 
         # Now, any new modules we found get added to the export list.
         for origName in list(self.mf.modules.keys()):
             if origName not in origToNewName:
                 self.modules[origName] = self.ModuleDef(origName, implicit = True)
 
-        missing = []
         for origName in self.mf.any_missing_maybe()[0]:
             if origName in startupModules:
                 continue
@@ -1398,7 +1419,7 @@ class Freezer:
                 else:
                     filename += '.pyo'
                 if multifile.findSubfile(filename) < 0:
-                    code = compile('', moduleName, 'exec', optimize=2)
+                    code = compile('', moduleName, 'exec', optimize=self.optimize)
                     self.__addPyc(multifile, filename, code, compressionLevel)
 
             moduleDirs[str] = True
@@ -1478,7 +1499,7 @@ class Freezer:
                 source = open(sourceFilename.toOsSpecific(), 'r').read()
                 if source and source[-1] != '\n':
                     source = source + '\n'
-                code = compile(source, str(sourceFilename), 'exec', optimize=2)
+                code = compile(source, str(sourceFilename), 'exec', optimize=self.optimize)
 
         self.__addPyc(multifile, filename, code, compressionLevel)
 
@@ -1557,7 +1578,7 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it as builtin.
             if '.' in moduleName and self.linkExtensionModules:
-                code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=2)
+                code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=self.optimize)
                 code = marshal.dumps(code)
                 mangledName = self.mangleName(moduleName)
                 moduleDefs.append(self.makeModuleDef(mangledName, code))
@@ -1830,7 +1851,7 @@ class Freezer:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 else:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
-                code = compile(code, moduleName, 'exec', optimize=2)
+                code = compile(code, moduleName, 'exec', optimize=self.optimize)
                 code = marshal.dumps(code)
                 moduleList.append((moduleName, len(pool), len(code)))
                 pool += code
@@ -1931,6 +1952,8 @@ class Freezer:
                 flags |= 1
             if log_filename_strftime:
                 flags |= 2
+            if self.optimize < 2:
+                flags |= 4 # keep_docstrings
 
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
@@ -2362,6 +2385,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         """
 
         self.suffixes = kw.pop('suffixes', imp.get_suffixes())
+        self.optimize = kw.pop('optimize', -1)
 
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
 
@@ -2515,7 +2539,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         if type is _PKG_NAMESPACE_DIRECTORY:
             m = self.add_module(fqname)
-            m.__code__ = compile('', '', 'exec', optimize=2)
+            m.__code__ = compile('', '', 'exec', optimize=self.optimize)
             m.__path__ = pathname
             return m
 
@@ -2527,7 +2551,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 code = fp.read()
 
             code += b'\n' if isinstance(code, bytes) else '\n'
-            co = compile(code, pathname, 'exec', optimize=2)
+            co = compile(code, pathname, 'exec', optimize=self.optimize)
         elif type == imp.PY_COMPILED:
             if sys.version_info >= (3, 7):
                 try:

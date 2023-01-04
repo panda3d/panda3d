@@ -32,7 +32,7 @@ get_node1() const {
 /**
  *
  */
-INLINE BulletManifoldPoint &BulletContact::
+INLINE BulletManifoldPoint BulletContact::
 get_manifold_point() {
 
   return _mp;

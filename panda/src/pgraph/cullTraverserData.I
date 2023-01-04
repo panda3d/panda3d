@@ -115,6 +115,26 @@ get_node_path() const {
 }
 
 /**
+ * Returns the transformed view frustum being used for culling at this level.
+ */
+INLINE GeometricBoundingVolume *CullTraverserData::
+get_view_frustum() const {
+  return _view_frustum.p();
+}
+
+/**
+ * Changes the transformed view frustum being used for culling at this level.
+ */
+INLINE void CullTraverserData::
+set_view_frustum(PT(GeometricBoundingVolume) view_frustum) {
+  if (_view_frustum == nullptr && view_frustum != nullptr && _cull_planes == nullptr) {
+    // In this case we will need up-to-date bounds but we may not have them.
+    _node_reader.check_cached(true);
+  }
+  _view_frustum = std::move(view_frustum);
+}
+
+/**
  * Returns the modelview transform: the relative transform from the camera to
  * the model.
  */

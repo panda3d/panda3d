@@ -34,6 +34,7 @@ public:
   void operator = (const InterrogateType &copy);
 
   INLINE bool is_global() const;
+  INLINE bool is_deprecated() const;
 
   INLINE bool has_scoped_name() const;
   INLINE const std::string &get_scoped_name() const;
@@ -141,6 +142,7 @@ private:
     F_array                = 0x400000,
     F_scoped_enum          = 0x800000,
     F_final                =0x1000000,
+    F_deprecated           =0x2000000,
   };
 
 public:

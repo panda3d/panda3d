@@ -89,6 +89,8 @@ PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Upda
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 PStatCollector CLP(GraphicsStateGuardian)::_check_residency_pcollector("*:PStats:Check residency");
+PStatCollector CLP(GraphicsStateGuardian)::_wait_fence_pcollector("Wait:Fence");
+PStatCollector CLP(GraphicsStateGuardian)::_copy_texture_finish_pcollector("Draw:Copy texture:Finish");
 
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
@@ -155,6 +157,10 @@ null_glPolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp) {
 }
 #endif
 
+static void APIENTRY
+null_glMemoryBarrier(GLbitfield barriers) {
+}
+
 #ifndef OPENGLES_1
 // We have a default shader that will be applied when there isn't any shader
 // applied (e.g.  if it failed to compile).  We need this because OpenGL ES
@@ -165,15 +171,15 @@ static const string default_vshader =
   "#version 330\n"
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
-  "in vec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
+  "in vec4 p3d_MultiTexCoord0;\n"
+  "out vec3 texcoord;\n"
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
   "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  texcoord = (p3d_TextureMatrix * p3d_MultiTexCoord0).xyw;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -183,8 +189,8 @@ static const string default_vshader_fp64 =
   "#version 410\n"
   "in dvec3 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
-  "in dvec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
+  "in dvec4 p3d_MultiTexCoord0;\n"
+  "out vec3 texcoord;\n"
   "out vec4 color;\n"
 #ifdef STDFLOAT_DOUBLE
   "uniform dmat3x4 p3d_ModelViewMatrixTranspose;\n"
@@ -200,7 +206,7 @@ static const string default_vshader_fp64 =
 #else
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * dvec4(dvec4(p3d_Vertex, 1) * dmat3x4(p3d_ModelViewMatrixTranspose), 1));\n"
 #endif
-  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0)).xyw;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
@@ -449,7 +455,9 @@ int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _glsl
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   GraphicsStateGuardian(gl_coordinate_system, engine, pipe),
-  _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer")
+  _renderbuffer_residency(get_prepared_objects()->get_name(), "renderbuffer"),
+  _active_ppbuffer_memory_pcollector("Graphics memory:" + get_prepared_objects()->get_name() + ":Active:ppbuffer"),
+  _inactive_ppbuffer_memory_pcollector("Graphics memory:" + get_prepared_objects()->get_name() + ":Inactive:ppbuffer")
 {
   _error_count = 0;
   _last_error_check = -1.0;
@@ -1620,13 +1628,18 @@ reset() {
   if (is_at_least_gles_version(3, 0)) {
     _glMapBufferRange = (PFNGLMAPBUFFERRANGEEXTPROC)
       get_extension_func("glMapBufferRange");
-
-  } else if (has_extension("GL_EXT_map_buffer_range")) {
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBuffer");
+  }
+  else if (has_extension("GL_EXT_map_buffer_range")) {
     _glMapBufferRange = (PFNGLMAPBUFFERRANGEEXTPROC)
       get_extension_func("glMapBufferRangeEXT");
-
-  } else {
+    _glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)
+      get_extension_func("glUnmapBufferOES");
+  }
+  else {
     _glMapBufferRange = nullptr;
+    _glUnmapBuffer = nullptr;
   }
 #else
   // Check for various advanced buffer management features.
@@ -2972,6 +2985,28 @@ reset() {
     is_at_least_gl_version(3, 3) || has_extension("GL_ARB_blend_func_extended");
 #endif
 
+#ifndef OPENGLES
+  if (is_at_least_gl_version(3, 2) || has_extension("GL_ARB_sync")) {
+    _glFenceSync = (PFNGLFENCESYNCPROC)get_extension_func("glFenceSync");
+    _glDeleteSync = (PFNGLDELETESYNCPROC)get_extension_func("glDeleteSync");
+    _glClientWaitSync = (PFNGLCLIENTWAITSYNCPROC)get_extension_func("glClientWaitSync");
+    _glGetSynciv = (PFNGLGETSYNCIVPROC)get_extension_func("glGetSynciv");
+  }
+#elif !defined(OPENGLES_1)
+  if (is_at_least_gles_version(3, 0)) {
+    _glFenceSync = (PFNGLFENCESYNCPROC)get_extension_func("glFenceSync");
+    _glDeleteSync = (PFNGLDELETESYNCPROC)get_extension_func("glDeleteSync");
+    _glClientWaitSync = (PFNGLCLIENTWAITSYNCPROC)get_extension_func("glClientWaitSync");
+    _glGetSynciv = (PFNGLGETSYNCIVPROC)get_extension_func("glGetSynciv");
+  }
+  else if (has_extension("GL_APPLE_sync")) {
+    _glFenceSync = (PFNGLFENCESYNCPROC)get_extension_func("glFenceSyncAPPLE");
+    _glDeleteSync = (PFNGLDELETESYNCPROC)get_extension_func("glDeleteSyncAPPLE");
+    _glClientWaitSync = (PFNGLCLIENTWAITSYNCPROC)get_extension_func("glClientWaitSyncAPPLE");
+    _glGetSynciv = (PFNGLGETSYNCIVPROC)get_extension_func("glGetSyncivAPPLE");
+  }
+#endif
+
 #ifdef OPENGLES
   _edge_clamp = GL_CLAMP_TO_EDGE;
 #else
@@ -3218,7 +3253,7 @@ reset() {
 
   } else {
     _glBindImageTexture = nullptr;
-    _glMemoryBarrier = nullptr;
+    _glMemoryBarrier = null_glMemoryBarrier;
   }
 #endif  // !OPENGLES_1
 
@@ -4259,6 +4294,10 @@ begin_frame(Thread *current_thread) {
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
+  if (!_async_ram_copies.empty()) {
+    finish_async_framebuffer_ram_copies();
+  }
+
 #if defined(DO_PSTATS) && !defined(OPENGLES)
   int frame_number = ClockObject::get_global_clock()->get_frame_count(current_thread);
   if (_current_frame_timing == nullptr ||
@@ -4447,6 +4486,38 @@ end_frame(Thread *current_thread) {
   }
 #endif  // OPENGLES
 
+#ifndef OPENGLES_1
+  if (!_deleted_buffers.empty()) {
+    GLuint *indices = (GLuint *)alloca(sizeof(GLuint *) * _deleted_buffers.size());
+    size_t num_indices = 0;
+    DeletedBuffers::iterator it = _deleted_buffers.begin();
+    while (it != _deleted_buffers.end()) {
+      DeletedBuffer &buffer = *it;
+      if (!_supports_buffer_storage && buffer._mapped_pointer != nullptr) {
+        _glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer._index);
+        _glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        buffer._mapped_pointer = nullptr;
+      }
+      if (++buffer._age > 2) {
+        indices[num_indices++] = buffer._index;
+        it = _deleted_buffers.erase(it);
+        _inactive_ppbuffer_memory_pcollector.sub_level(buffer._size);
+      } else {
+        ++it;
+      }
+    }
+    if (!_supports_buffer_storage) {
+      _glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    }
+    if (num_indices > 0) {
+      _glDeleteBuffers(num_indices, indices);
+    }
+  }
+
+  _active_ppbuffer_memory_pcollector.flush_level();
+  _inactive_ppbuffer_memory_pcollector.flush_level();
+#endif
+
 #ifndef NDEBUG
   if (_check_errors || (_supports_debug && gl_debug)) {
     report_my_gl_errors();
@@ -4619,7 +4690,7 @@ end_frame_timing(const FrameTiming &frame) {
 
   // The end time of the last collector is implicitly the frame's end time.
   frame_data.add_stop(0, frame_data.get_end());
-  gpu_thread.add_frame(frame._frame_number, frame_data);
+  gpu_thread.add_frame(frame._frame_number, std::move(frame_data));
 
   _timer_queries_pcollector.add_level_now(frame._queries.size());
 #endif
@@ -6619,6 +6690,72 @@ record_deleted_display_list(GLuint index) {
   _deleted_display_lists.push_back(index);
 }
 
+#ifndef OPENGLES_1
+/**
+ * Creates a new buffer for client access.  It is bound when this returns.
+ * If persistent mapping is possible, mapped_ptr will be filled in with a
+ * pointer to the mapped data.
+ */
+void CLP(GraphicsStateGuardian)::
+bind_new_client_buffer(GLuint &index, void *&mapped_ptr, GLenum target, size_t size) {
+  _active_ppbuffer_memory_pcollector.add_level(size);
+
+  {
+    // Start at the end, because removing near the end is cheaper.
+    LightMutexHolder holder(_lock);
+    size_t i = _deleted_buffers.size();
+    while (i > 1) {
+      --i;
+      DeletedBuffer &buffer = _deleted_buffers[i];
+      if (buffer._size == size) {
+        index = buffer._index;
+        mapped_ptr = buffer._mapped_pointer;
+        _glBindBuffer(target, buffer._index);
+        if (!_supports_buffer_storage && mapped_ptr != nullptr) {
+          // Need to unmap it before we can use it.
+          _glUnmapBuffer(target);
+          mapped_ptr = nullptr;
+        }
+        _deleted_buffers.erase(_deleted_buffers.begin() + i);
+        _inactive_ppbuffer_memory_pcollector.sub_level(size);
+        return;
+      }
+    }
+  }
+
+  _glGenBuffers(1, &index);
+  _glBindBuffer(target, index);
+#ifndef OPENGLES
+  if (_supports_buffer_storage) {
+    // Map persistently, we already use fences to synchronize access anyway.
+    _glBufferStorage(target, size, nullptr, GL_MAP_READ_BIT |
+                     GL_CLIENT_STORAGE_BIT | GL_MAP_PERSISTENT_BIT);
+    mapped_ptr = _glMapBufferRange(target, 0, size,
+                                   GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT);
+  } else
+#endif
+  {
+    //XXX does it matter what usage hint we pass here?  None seem to fit well.
+    _glBufferData(target, size, nullptr, GL_DYNAMIC_DRAW);
+    mapped_ptr = nullptr;
+  }
+}
+
+/**
+ * Called when the given buffer, as returned by bind_new_client_buffer, is no
+ * longer needed.
+ */
+void CLP(GraphicsStateGuardian)::
+release_client_buffer(GLuint index, void *mapped_ptr, size_t size) {
+  // This may be called from any thread, so we can't make OpenGL calls here
+  // (like unmapping the buffer).
+  LightMutexHolder holder(_lock);
+  _deleted_buffers.push_back({index, 0, mapped_ptr, size});
+  _active_ppbuffer_memory_pcollector.sub_level(size);
+  _inactive_ppbuffer_memory_pcollector.add_level(size);
+}
+#endif  // !OPENGLES_1
+
 /**
  * Creates a new retained-mode representation of the given data, and returns a
  * newly-allocated VertexBufferContext pointer to reference it.  It is the
@@ -7613,7 +7750,6 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   return true;
 }
 
-
 /**
  * Copy the pixels within the indicated display region from the framebuffer
  * into system memory, not texture memory.  Returns true on success, false on
@@ -7623,7 +7759,8 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
  */
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
-                        const DisplayRegion *dr, const RenderBuffer &rb) {
+                        const DisplayRegion *dr, const RenderBuffer &rb,
+                        ScreenshotRequest *request) {
   nassertr(tex != nullptr && dr != nullptr, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -7914,12 +8051,23 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   }
 #endif  // NDEBUG
 
-  unsigned char *image_ptr = tex->modify_ram_image();
-  size_t image_size = tex->get_ram_image_size();
-  if (z >= 0 || view > 0) {
-    image_size = tex->get_expected_ram_page_size();
+  size_t image_size = tex->get_expected_ram_page_size();
+  unsigned char *image_ptr = nullptr;
+#ifndef OPENGLES_1
+  GLuint pbo = 0;
+  void *mapped_ptr = nullptr;
+  if (request != nullptr) {
+    nassertr(z <= 0, false);
+    image_size *= tex->get_z_size();
+    bind_new_client_buffer(pbo, mapped_ptr, GL_PIXEL_PACK_BUFFER, image_size);
+  } else
+#endif
+  {
+    image_ptr = tex->modify_ram_image();
     if (z >= 0) {
       image_ptr += z * image_size;
+    } else {
+      image_size = tex->get_ram_image_size();
     }
     if (view > 0) {
       image_ptr += (view * tex->get_z_size()) * image_size;
@@ -7930,9 +8078,22 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   glReadPixels(xo, yo, w, h, external_format,
                get_component_type(component_type), image_ptr);
 
-  // We may have to reverse the byte ordering of the image if GL didn't do it
-  // for us.
+#ifndef OPENGLES_1
+  if (request != nullptr) {
+    _glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+#ifndef OPENGLES
+    if (_supports_buffer_storage) {
+      _glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+    }
+#endif
+    GLsync fence = _glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    _async_ram_copies.push_back({request, pbo, fence, external_format,
+                                 view, mapped_ptr, image_size});
+  } else
+#endif
   if (external_format == GL_RGBA || external_format == GL_RGB) {
+    // We may have to reverse the byte ordering of the image if GL didn't do it
+    // for us.
     PTA_uchar new_image;
     const unsigned char *result =
       fix_component_ordering(new_image, image_ptr, image_size,
@@ -7942,8 +8103,112 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
   }
 
+#ifdef OPENGLES_1
+  if (request != nullptr) {
+    request->finish();
+  }
+#endif
+
   report_my_gl_errors();
   return true;
+}
+
+/**
+ * Finishes all asynchronous framebuffer-copy-to-ram operations.
+ */
+void CLP(GraphicsStateGuardian)::
+finish_async_framebuffer_ram_copies(bool force) {
+#ifndef OPENGLES_1
+  if (_async_ram_copies.empty()) {
+    return;
+  }
+
+  //XXX having a fixed number of threads is not a great idea.  We ought to have
+  // a common thread pool that is sized based on the available number of CPUs.
+#ifdef HAVE_THREADS
+  AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+  static AsyncTaskChain *chain = task_mgr->make_task_chain("texture_download", 2, TP_low);
+#endif
+
+  PStatTimer timer(_copy_texture_finish_pcollector);
+
+  if (force) {
+    // Just wait for the last fence, the rest must be complete too then.
+    PStatTimer timer(_wait_fence_pcollector);
+    GLsync fence = _async_ram_copies.back()._fence;
+    _glClientWaitSync(fence, 0, (GLuint64)-1);
+  }
+
+  while (!_async_ram_copies.empty()) {
+    AsyncRamCopy &copy = _async_ram_copies.front();
+    if (!force) {
+      GLenum result = _glClientWaitSync(copy._fence, 0, 0);
+      if (result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED) {
+        // Not yet done.  The rest must not yet be done then, either.
+        break;
+      }
+    }
+    _glDeleteSync(copy._fence);
+
+    GLuint pbo = copy._pbo;
+    int view = copy._view;
+    PT(ScreenshotRequest) request = std::move(copy._request);
+    GLuint external_format = copy._external_format;
+    void *mapped_ptr = copy._mapped_pointer;
+    size_t size = copy._size;
+
+    if (mapped_ptr == nullptr) {
+      _glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+#ifdef OPENGLES
+      // There is neither glMapBuffer nor persistent mapping in OpenGL ES
+      mapped_ptr = _glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT);
+#else
+      // If we get here in desktop GL, we must not have persistent mapping
+      nassertv(!_supports_buffer_storage);
+      mapped_ptr = _glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+#endif
+    }
+
+    // Do the memcpy in the background, since it can be slow.
+    auto func = [=](AsyncTask *task) {
+      const unsigned char *result = (unsigned char *)mapped_ptr;
+      PTA_uchar new_image;
+      if (external_format == GL_RGBA || external_format == GL_RGB) {
+        // We may have to reverse the byte ordering of the image if GL didn't do
+        // it for us.
+        result = fix_component_ordering(new_image, result, size,
+                                        external_format, request->get_result());
+      }
+      request->set_view_data(view, result);
+
+      // Finishing can take a long time, release the client buffer first so it
+      // can be reused for the next screenshot.
+      this->release_client_buffer(pbo, mapped_ptr, size);
+      request->finish();
+      return AsyncTask::DS_done;
+    };
+#ifdef HAVE_THREADS
+    // We assign a sort value based on the originating frame number, so that
+    // earlier frames will be processed before subsequent frames, but we don't
+    // make it unique for every frame, which would kill concurrency.
+    int frame_number = request->get_frame_number();
+    chain->add(std::move(func), "screenshot", frame_number >> 3, -(frame_number & ((1 << 3) - 1)));
+#else
+    func(nullptr);
+#endif
+
+    _async_ram_copies.pop_front();
+
+    // If there is 1 remaining, save it for next frame.  This helps prevent an
+    // inconsistent frame rate when the number of fetched frames alternates
+    // between 0 and 2, which can settle into a stable feedback loop.
+    if (!force && _async_ram_copies.size() == 1) {
+      break;
+    }
+  }
+
+  _glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+#endif
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -12134,7 +12399,21 @@ set_state_and_transform(const RenderState *target,
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+#ifdef OPENGLES_1
     determine_target_texture();
+#else
+    if (has_fixed_function_pipeline() ||
+        _current_shader == nullptr ||
+        _current_shader == _default_shader) {
+      determine_target_texture();
+    } else {
+      // If we have a custom shader, don't filter down the list of textures.
+      _target_texture = (const TextureAttrib *)
+        _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
+      _target_tex_gen = (const TexGenAttrib *)
+        _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
+    }
+#endif
     do_issue_texture();
 
     // Since the TexGen and TexMatrix states depend partly on the particular
@@ -14250,7 +14529,8 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
           size_t page_size = tex->get_ram_mipmap_page_size(n);
           for (int z = 0; z < 6; ++z) {
             GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
-            const unsigned char *page_ptr = image_ptr + page_size * z;
+            const unsigned char *page_ptr =
+              (image_ptr != nullptr) ? image_ptr + page_size * z : nullptr;
 
             if (image_compression == Texture::CM_off) {
               glTexImage2D(page_target, n - mipmap_bias, internal_format,
@@ -14943,6 +15223,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_LUMINANCE:
 #ifndef OPENGLES
+  case GL_LUMINANCE8_EXT:
   case GL_LUMINANCE16:
   case GL_LUMINANCE16F_ARB:
 #endif

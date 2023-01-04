@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file deletedChain.T
+ * @file deletedChain.I
  * @author drose
  * @date 2006-04-01
  */
@@ -82,7 +82,7 @@ validate(const Type *ptr) {
 template<class Type>
 INLINE ReferenceCount *DeletedChain<Type>::
 make_ref_ptr(void *) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -106,9 +106,8 @@ make_ref_ptr(ReferenceCount *ptr) {
 template<class Type>
 void DeletedChain<Type>::
 init_deleted_chain() {
-  if (_chain == (DeletedBufferChain *)NULL) {
-    init_memory_hook();
-    _chain = memory_hook->get_deleted_chain(sizeof(Type));
+  if (_chain == nullptr) {
+    _chain = DeletedBufferChain::get_deleted_chain(sizeof(Type));
   }
 }
 

@@ -25,20 +25,22 @@
  *
  */
 CPPInstanceIdentifier::Modifier::
-Modifier(CPPInstanceIdentifierType type) :
+Modifier(CPPInstanceIdentifierType type, CPPAttributeList attr) :
   _type(type),
   _func_params(nullptr),
   _func_flags(0),
   _scoping(nullptr),
-  _expr(nullptr) {
+  _expr(nullptr),
+  _attributes(std::move(attr)) {
 }
 
 /**
  *
  */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
-func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
-  Modifier mod(IIT_func);
+func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type,
+          CPPAttributeList attr) {
+  Modifier mod(IIT_func, std::move(attr));
   mod._func_params = params;
   mod._func_flags = flags;
   mod._trailing_return_type = trailing_return_type;
@@ -49,8 +51,8 @@ func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
  *
  */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
-array_type(CPPExpression *expr) {
-  Modifier mod(IIT_array);
+array_type(CPPExpression *expr, CPPAttributeList attr) {
+  Modifier mod(IIT_array, std::move(attr));
   mod._expr = expr;
   return mod;
 }
@@ -59,8 +61,8 @@ array_type(CPPExpression *expr) {
  *
  */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
-scoped_pointer_type(CPPIdentifier *scoping) {
-  Modifier mod(IIT_scoped_pointer);
+scoped_pointer_type(CPPIdentifier *scoping, CPPAttributeList attr) {
+  Modifier mod(IIT_scoped_pointer, std::move(attr));
   mod._scoping = scoping;
   return mod;
 }
@@ -87,6 +89,17 @@ CPPInstanceIdentifier(CPPIdentifier *ident) :
 }
 
 /**
+ *
+ */
+CPPInstanceIdentifier::
+CPPInstanceIdentifier(CPPIdentifier *ident, CPPAttributeList attributes) :
+  _ident(ident),
+  _attributes(std::move(attributes)),
+  _bit_width(nullptr),
+  _packed(false) {
+}
+
+/**
  * Unrolls the list of type punctuation on either side of the identifier to
  * determine the actual type represented by the identifier, given the
  * indicated starting type (that is, the type name written to the left of the
@@ -103,15 +116,16 @@ unroll_type(CPPType *start_type) {
  *
  */
 void CPPInstanceIdentifier::
-add_modifier(CPPInstanceIdentifierType type) {
-  _modifiers.push_back(Modifier(type));
+add_modifier(CPPInstanceIdentifierType type, CPPAttributeList attr) {
+  _modifiers.push_back(Modifier(type, std::move(attr)));
 }
 
 /**
  *
  */
 void CPPInstanceIdentifier::
-add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
+add_func_modifier(CPPParameterList *params, int flags,
+                  CPPType *trailing_return_type, CPPAttributeList attr) {
   // As a special hack, if we added a parameter list to an operator function,
   // check if the parameter list is empty.  If it is, this is really a unary
   // operator, so set the unary_op flag.  Operators () and [] are never
@@ -134,22 +148,22 @@ add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_
     flags |= CPPFunctionType::F_trailing_return_type;
   }
 
-  _modifiers.push_back(Modifier::func_type(params, flags, trailing_return_type));
+  _modifiers.push_back(Modifier::func_type(params, flags, trailing_return_type, std::move(attr)));
 }
 
 /**
  *
  */
 void CPPInstanceIdentifier::
-add_scoped_pointer_modifier(CPPIdentifier *scoping) {
-  _modifiers.push_back(Modifier::scoped_pointer_type(scoping));
+add_scoped_pointer_modifier(CPPIdentifier *scoping, CPPAttributeList attr) {
+  _modifiers.push_back(Modifier::scoped_pointer_type(scoping, std::move(attr)));
 }
 
 /**
  *
  */
 void CPPInstanceIdentifier::
-add_array_modifier(CPPExpression *expr) {
+add_array_modifier(CPPExpression *expr, CPPAttributeList attr) {
   // Special case for operator new[] and delete[].  We're not really adding an
   // array modifier to them, but appending [] to the identifier.  This is to
   // work around a parser ambiguity.
@@ -158,7 +172,7 @@ add_array_modifier(CPPExpression *expr) {
 
     _ident->_names.back().append_name("[]");
   } else {
-    _modifiers.push_back(Modifier::array_type(expr));
+    _modifiers.push_back(Modifier::array_type(expr, std::move(attr)));
   }
 }
 
@@ -185,6 +199,14 @@ add_trailing_return_type(CPPType *type) {
     }
   }
   std::cerr << "trailing return type can only be added to a function\n";
+}
+
+/**
+ * Add attributes to the instance (not the type).
+ */
+void CPPInstanceIdentifier::
+add_attributes(const CPPAttributeList &attributes) {
+  _attributes.add_attributes_from(attributes);
 }
 
 /**
@@ -315,6 +337,8 @@ r_unroll_type(CPPType *start_type,
     std::cerr << "Internal error--invalid CPPInstanceIdentifier\n";
     abort();
   }
+
+  result->_attributes = mod._attributes;
 
   return CPPType::new_type(result);
 }

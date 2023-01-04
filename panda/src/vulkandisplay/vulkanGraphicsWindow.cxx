@@ -83,7 +83,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
 #ifdef HAVE_X11
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     return false;
   }
 #endif
@@ -614,7 +614,7 @@ open_window() {
   // notify event, since we don't know the final size yet.
 #ifdef HAVE_X11
   _swapchain_size.set(-1, -1);
-  return setup_render_pass() && (_awaiting_configure || create_swapchain());
+  return setup_render_pass() && (_awaiting_configure_since != -1 || create_swapchain());
 #else
   return setup_render_pass() && create_swapchain();
 #endif

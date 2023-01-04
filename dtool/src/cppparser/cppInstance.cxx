@@ -37,7 +37,6 @@ CPPInstance(CPPType *type, const string &name, int storage_class) :
   _type(type),
   _ident(new CPPIdentifier(name)),
   _storage_class(storage_class),
-  _alignment(nullptr),
   _bit_width(-1)
 {
   _initializer = nullptr;
@@ -52,7 +51,6 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
   _type(type),
   _ident(ident),
   _storage_class(storage_class),
-  _alignment(nullptr),
   _bit_width(-1)
 {
   _initializer = nullptr;
@@ -66,11 +64,11 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
 CPPInstance::
 CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
             const CPPFile &file) :
-  CPPDeclaration(file),
-  _alignment(nullptr)
+  CPPDeclaration(file)
 {
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
+  _attributes = ii->_attributes;
   ii->_ident = nullptr;
   _storage_class = storage_class;
   _initializer = nullptr;
@@ -111,7 +109,6 @@ CPPInstance(const CPPInstance &copy) :
   _ident(copy._ident),
   _initializer(copy._initializer),
   _storage_class(copy._storage_class),
-  _alignment(copy._alignment),
   _bit_width(copy._bit_width)
 {
   assert(_type != nullptr);
@@ -156,7 +153,7 @@ operator == (const CPPInstance &other) const {
   if (_storage_class != other._storage_class) {
     return false;
   }
-  if (_alignment != other._alignment) {
+  if (_attributes != other._attributes) {
     return false;
   }
 
@@ -200,8 +197,8 @@ operator < (const CPPInstance &other) const {
   if (_storage_class != other._storage_class) {
     return _storage_class < other._storage_class;
   }
-  if (_alignment != other._alignment) {
-    return _alignment < other._alignment;
+  if (_attributes != other._attributes) {
+    return _attributes < other._attributes;
   }
 
   // We *do* care about the identifier.  We need to differentiate types of
@@ -264,7 +261,7 @@ set_initializer(CPPExpression *initializer) {
  */
 void CPPInstance::
 set_alignment(int align) {
-  _alignment = new CPPExpression(align);
+  _attributes.add_alignas(align);
 }
 
 /**
@@ -274,7 +271,7 @@ set_alignment(int align) {
  */
 void CPPInstance::
 set_alignment(CPPExpression *const_expr) {
-  _alignment = const_expr;
+  _attributes.add_alignas(const_expr);
 }
 
 /**
@@ -544,8 +541,8 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
     indent(out, indent_level);
   }
 
-  if (_alignment != nullptr) {
-    out << "alignas(" << *_alignment << ") ";
+  if (!_attributes.is_empty()) {
+    out << _attributes << " ";
   }
 
   if (_storage_class & SC_static) {
@@ -600,8 +597,8 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
     _type->as_function_type()->
       output_instance(out, indent_level, scope, complete, "", name,
                       num_default_parameters);
-
-  } else {
+  }
+  else {
     _type->output_instance(out, indent_level, scope, complete, "", name);
   }
 
@@ -622,7 +619,6 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
     out << " = " << *_initializer;
   }
 }
-
 
 /**
  *

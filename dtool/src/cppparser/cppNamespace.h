@@ -27,7 +27,7 @@ class CPPScope;
 class CPPNamespace : public CPPDeclaration {
 public:
   CPPNamespace(CPPIdentifier *ident, CPPScope *scope,
-               const CPPFile &file);
+               const CPPFile &file, CPPAttributeList attr = CPPAttributeList());
 
   std::string get_simple_name() const;
   std::string get_local_name(CPPScope *scope = nullptr) const;

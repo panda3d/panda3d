@@ -195,7 +195,7 @@ unpack_object() {
   case PT_uint:
     {
       unsigned int value = _this->unpack_uint();
-      object = PyLong_FromLong(value);
+      object = PyLong_FromUnsignedLong(value);
     }
     break;
 

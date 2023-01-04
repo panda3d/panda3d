@@ -30,7 +30,7 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   EXTENSION(NodePathCollection(PyObject *self, PyObject *sequence));
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
-#endif
+#endif // HAVE_PYTHON
 
   void add_path(const NodePath &node_path);
   bool remove_path(const NodePath &node_path);
@@ -74,7 +74,9 @@ PUBLISHED:
 
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_tight_bounds() const);
+#endif // HAVE_PYTHON
 
   void set_texture(Texture *tex, int priority = 0);
   void set_texture(TextureStage *stage, Texture *tex, int priority = 0);
@@ -113,4 +115,4 @@ INLINE std::ostream &operator << (std::ostream &out, const NodePathCollection &c
 
 #include "nodePathCollection.I"
 
-#endif
+#endif // !NODEPATHCOLLECTION_H

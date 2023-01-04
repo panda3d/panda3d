@@ -149,14 +149,18 @@ PUBLISHED:
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_file_version() const);
+#endif // HAVE_PYTHON
 
 PUBLISHED:
   MAKE_PROPERTY(source, get_source, set_source);
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(loader_options, get_loader_options, set_loader_options);
 
+#ifdef HAVE_PYTHON
   MAKE_PROPERTY(file_version, get_file_version);
+#endif // HAVE_PYTHON
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
 
@@ -202,8 +206,10 @@ public:
                                       void *user_data = nullptr);
   INLINE static WritableFactory *get_factory();
 
+#ifdef HAVE_PYTHON
 PUBLISHED:
   EXTENSION(static void register_factory(TypeHandle handle, PyObject *func));
+#endif // HAVE_PYTHON
 
 private:
   INLINE static void create_factory();
@@ -351,4 +357,4 @@ parse_params(const FactoryParams &params,
 
 #include "bamReader.I"
 
-#endif
+#endif // !__BAM_READER_

@@ -23,6 +23,7 @@
 #endif
 #include <windows.h>
 
+class PStatGraph;
 class WinStatsMonitor;
 
 /**
@@ -67,6 +68,8 @@ public:
 
   HWND get_window();
 
+  void reset_collector_color(int collector_index);
+
 protected:
   void close();
 
@@ -75,6 +78,11 @@ protected:
 
   void start_animation();
   virtual bool animate(double time, double dt);
+
+  void get_window_state(int &x, int &y, int &width, int &height,
+                        bool &maximized, bool &minimized) const;
+  void set_window_state(int x, int y, int width, int height,
+                        bool maximized, bool minimized);
 
   HBRUSH get_collector_brush(int collector_index, bool highlight = false);
   COLORREF get_collector_text_color(int collector_index, bool highlight = false);
@@ -117,6 +125,7 @@ protected:
   int _bitmap_xsize, _bitmap_ysize;
   int _left_margin, _right_margin;
   int _top_margin, _bottom_margin;
+  int _top_label_stack_margin;
   int _pixel_scale;
 
   COLORREF _dark_color;

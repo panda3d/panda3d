@@ -18,29 +18,36 @@ from distutils.sysconfig import get_python_lib
 
 
 MIME_INFO = (
-    ("egg", "model/x-egg", "EGG model file", "pview"),
-    ("bam", "model/x-bam", "Panda3D binary model file", "pview"),
-    ("egg.pz", "model/x-compressed-egg", "Compressed EGG model file", "pview"),
-    ("bam.pz", "model/x-compressed-bam", "Compressed Panda3D binary model file", "pview"),
+    # ext, mime, desc, app, magic
+    ("egg", "model/x-egg", "EGG model file", "pview", None),
+    ("bam", "model/x-bam", "Panda3D binary model file", "pview", None),
+    ("egg.pz", "model/x-compressed-egg", "Compressed EGG model file", "pview", None),
+    ("bam.pz", "model/x-compressed-bam", "Compressed Panda3D binary model file", "pview", None),
+    ("pstats", "application/vnd.panda3d.pstats", "PStats session file", "pstats", b"pstat\0\n\r"),
 )
 
 APP_INFO = (
-  ("pview", "Panda3D Model Viewer", ("egg", "bam", "egg.pz", "bam.pz")),
+  ("pview", "Panda3D Model Viewer", ("egg", "bam", "egg.pz", "bam.pz"), True),
+  ("pstats", "Panda3D Profiling Tool", ("pstats",), False),
 )
 
-def WriteApplicationsFile(fname, appinfo, mimeinfo):
+def WriteApplicationsFile(fname, appinfo, mimeinfo, bindir):
     fhandle = open(fname, "w")
-    for app, desc, exts in appinfo:
+    for app, desc, exts, multiple in appinfo:
+        if not os.path.isfile(os.path.join(bindir, app)):
+            continue
+
         fhandle.write("%s\n" % (app))
         fhandle.write("\tcommand=%s\n" % (app))
         fhandle.write("\tname=%s\n" % (desc))
-        fhandle.write("\tcan_open_multiple_files=true\n")
+        fhandle.write("\tcan_open_multiple_files=%s\n" % ('true' if multiple else 'false'))
+        fhandle.write("\tstartup_notify=true\n")
         fhandle.write("\texpects_uris=false\n")
         fhandle.write("\trequires_terminal=false\n")
         fhandle.write("\tmime_types=")
         first = True
-        for ext, mime, desc2, app2 in mimeinfo:
-            if ext in exts:
+        for ext, mime, desc2, app2, magic in mimeinfo:
+            if app == app2 and ext in exts:
                 if first:
                     fhandle.write(mime)
                     first = False
@@ -50,37 +57,53 @@ def WriteApplicationsFile(fname, appinfo, mimeinfo):
     fhandle.close()
 
 
-def WriteMimeXMLFile(fname, info):
+def WriteMimeXMLFile(fname, info, bindir):
     fhandle = open(fname, "w")
     fhandle.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
     fhandle.write("<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n")
-    for ext, mime, desc, app in info:
+    for ext, mime, desc, app, magic in info:
+        if not os.path.isfile(os.path.join(bindir, app)):
+            continue
+
         fhandle.write("\t<mime-type type=\"%s\">\n" % (mime))
         fhandle.write("\t\t<comment xml:lang=\"en\">%s</comment>\n" % (desc))
+        if app == "pstats":
+            fhandle.write("\t\t<generic-icon name=\"x-office-spreadsheet\"/>\n")
+        if magic:
+            magic = magic.decode('latin-1').encode('unicode-escape').decode('latin-1')
+            fhandle.write("\t\t<magic>\n\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n\t\t</magic>\n" % (magic))
         fhandle.write("\t\t<glob pattern=\"*.%s\"/>\n" % (ext))
         fhandle.write("\t</mime-type>\n")
     fhandle.write("</mime-info>\n")
     fhandle.close()
 
 
-def WriteMimeFile(fname, info):
+def WriteMimeFile(fname, info, bindir):
     fhandle = open(fname, "w")
-    for ext, mime, desc, app in info:
-        fhandle.write("%s:\n" % (mime))
+    for ext, mime, desc, app, magic in info:
+        if not os.path.isfile(os.path.join(bindir, app)):
+            continue
+
+        fhandle.write("%s\n" % (mime))
         if "." in ext:
-            fhandle.write("\tregex,2: %s$\n" % (ext.replace(".", "\\.")))
+            fhandle.write("\tregex,2: \\.%s$\n" % (ext.replace(".", "\\.")))
         fhandle.write("\text: %s\n" % (ext))
         fhandle.write("\n")
     fhandle.close()
 
 
-def WriteKeysFile(fname, info):
+def WriteKeysFile(fname, info, bindir):
     fhandle = open(fname, "w")
-    for ext, mime, desc, app in info:
-        fhandle.write("%s:\n" % (mime))
+    for ext, mime, desc, app, magic in info:
+        if not os.path.isfile(os.path.join(bindir, app)):
+            continue
+
+        fhandle.write("%s\n" % (mime))
         fhandle.write("\tdescription=%s\n" % (desc))
         fhandle.write("\tdefault_action_type=application\n")
         fhandle.write("\tshort_list_application_ids_for_novice_user_level=%s\n" % (app))
+        fhandle.write("\tshort_list_application_ids_for_intermediate_user_level=%s\n" % (app))
+        fhandle.write("\tshort_list_application_ids_for_advanced_user_level=%s\n" % (app))
         fhandle.write("\topen=%s %%f\n" % (app))
         fhandle.write("\tview=%s %%f\n" % (app))
         fhandle.write("\n")
@@ -215,12 +238,15 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
             if base.endswith(".py") or (base.endswith(suffix) and '.' not in base[:-len(suffix)]):
                 oscmd(f"cp {outputdir}/panda3d/{base} {destdir}{platlib}/panda3d/{base}")
 
-    WriteMimeFile(dest_prefix + "/share/mime-info/panda3d.mime", MIME_INFO)
-    WriteKeysFile(dest_prefix + "/share/mime-info/panda3d.keys", MIME_INFO)
-    WriteMimeXMLFile(dest_prefix + "/share/mime/packages/panda3d.xml", MIME_INFO)
-    WriteApplicationsFile(dest_prefix + "/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO)
+    bindir = outputdir + "/bin"
+    WriteMimeFile(dest_prefix + "/share/mime-info/panda3d.mime", MIME_INFO, bindir)
+    WriteKeysFile(dest_prefix + "/share/mime-info/panda3d.keys", MIME_INFO, bindir)
+    WriteMimeXMLFile(dest_prefix + "/share/mime/packages/panda3d.xml", MIME_INFO, bindir)
+    WriteApplicationsFile(dest_prefix + "/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO, bindir)
     if os.path.isfile(outputdir + "/bin/pview"):
         oscmd(f"cp makepanda/pview.desktop {dest_prefix}/share/applications/pview.desktop")
+    if os.path.isfile(outputdir + "/bin/pstats"):
+        oscmd(f"cp makepanda/pstats.desktop {dest_prefix}/share/applications/pstats.desktop")
 
     oscmd(f"cp doc/ReleaseNotes {dest_prefix}/share/panda3d/ReleaseNotes")
 
@@ -326,5 +352,7 @@ if __name__ == "__main__":
 
     if not destdir:
         warn_prefix = "%sNote:%s " % (GetColor("red"), GetColor())
-        print(warn_prefix + "You may need to call this command to update the library cache:")
+        print(warn_prefix + "You may need to call these commands to update system caches:")
         print("  sudo ldconfig")
+        print("  sudo update-desktop-database")
+        print("  sudo update-mime-database -n %s/share/mime" % (options.prefix))

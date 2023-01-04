@@ -3041,6 +3041,10 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
  * for the rendered results to become available.  The graphics implementation
  * may choose to defer writing the ram image until the next end_frame() call.
  *
+ * If a future is given, the operation may be scheduled to occur in the
+ * background, in which case the texture will be passed as the result of the
+ * future when the operation is complete.
+ *
  * This completely redefines the ram image of the indicated texture.
  *
  * This should be called between begin_frame() and end_frame(), but not be
@@ -3050,7 +3054,7 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
-                        const RenderBuffer &) {
+                        const RenderBuffer &, ScreenshotRequest *) {
   return false;
 }
 
