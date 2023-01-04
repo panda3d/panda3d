@@ -44,7 +44,9 @@ PUBLISHED:
 
   INLINE size_t get_num_words() const;
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
+#endif // HAVE_PYTHON
 
 protected:
   INLINE const ConfigDeclaration *get_default_value() const;
@@ -74,4 +76,4 @@ protected:
 
 #include "configVariable.I"
 
-#endif
+#endif // !CONFIGVARIABLE_H

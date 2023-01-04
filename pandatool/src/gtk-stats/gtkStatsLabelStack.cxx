@@ -48,16 +48,12 @@ int GtkStatsLabelStack::
 get_label_y(int label_index, GtkWidget *target_widget) const {
   nassertr(label_index >= 0 && label_index < (int)_labels.size(), 0);
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(_widget, &allocation);
-
-  // Assume all labels have the same height.
-  int height = _labels[0]->get_height();
-  int start_y = allocation.height - height * label_index;
+  GtkStatsLabel *label = _labels[label_index];
 
   int x, y;
-  gtk_widget_translate_coordinates(_widget, target_widget,
-           0, start_y, &x, &y);
+  gtk_widget_translate_coordinates(label->get_widget(), target_widget,
+                                   0, 0, &x, &y);
+  y += label->get_height();
   return y;
 }
 

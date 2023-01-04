@@ -181,7 +181,7 @@ PUBLISHED:
 
   int compare_to(const TextureStage &other) const;
 
-  void write(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
   void output(std::ostream &out) const;
 
   INLINE static TextureStage *get_default();

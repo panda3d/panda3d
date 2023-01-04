@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.12/panda3d-1.10.12-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.12/panda3d-1.10.12-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -80,10 +80,10 @@ makepanda\makepanda.bat --everything --installer --msvc-version=14.3 --windows-s
 When the build succeeds, it will produce an .exe file that you can use to
 install Panda3D on your system.
 
-Note: you may choose to remove --no-eigen and build with Eigen support in
+**Note:** you may choose to remove `--no-eigen` and build with Eigen support in
 order to improve runtime performance.  However, this will cause the build to
 take hours to complete, as Eigen is a heavily template-based library, and the
-the MSVC compiler does not perform well under these circumstances.
+MSVC compiler does not perform well under those circumstances.
 
 Linux
 -----
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.12/panda3d-1.10.12-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:

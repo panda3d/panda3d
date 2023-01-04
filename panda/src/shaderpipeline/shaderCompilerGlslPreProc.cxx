@@ -218,7 +218,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^>]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.

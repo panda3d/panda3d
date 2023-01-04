@@ -125,6 +125,7 @@ protected:
   int _bitmap_xsize, _bitmap_ysize;
   int _left_margin, _right_margin;
   int _top_margin, _bottom_margin;
+  int _top_label_stack_margin;
   int _pixel_scale;
 
   COLORREF _dark_color;

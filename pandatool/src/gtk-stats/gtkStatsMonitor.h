@@ -78,6 +78,7 @@ public:
   virtual void user_guide_bars_changed();
 
   GtkWidget *get_window() const;
+  GtkAccelGroup *get_accel_group() const;
   double get_resolution() const;
 
   PStatGraph *open_timeline();

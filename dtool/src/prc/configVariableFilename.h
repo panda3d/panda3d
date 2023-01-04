@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE void set_word(size_t n, const Filename &value);
 
   INLINE bool __bool__() const;
+  INLINE std::wstring __fspath__() const;
 
 private:
   void reload_cache();

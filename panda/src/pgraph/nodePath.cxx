@@ -3208,13 +3208,14 @@ get_texture(TextureStage *stage) const {
  * Recursively searches the scene graph for references to the given texture,
  * and replaces them with the new texture.
  *
+ * As of Panda3D 1.10.13, new_tex may be null to remove the texture.
+ *
  * @since 1.10.4
  */
 void NodePath::
 replace_texture(Texture *tex, Texture *new_tex) {
   nassertv_always(!is_empty());
   nassertv(tex != nullptr);
-  nassertv(new_tex != nullptr);
 
   r_replace_texture(node(), tex, new_tex);
 }
@@ -4250,15 +4251,19 @@ get_material() const {
  * Recursively searches the scene graph for references to the given material,
  * and replaces them with the new material.
  *
+ * As of Panda3D 1.10.13, new_mat may be null to remove the material.
+ *
  * @since 1.10.0
  */
 void NodePath::
 replace_material(Material *mat, Material *new_mat) {
   nassertv_always(!is_empty());
   nassertv(mat != nullptr);
-  nassertv(new_mat != nullptr);
 
-  CPT(RenderAttrib) new_attrib = MaterialAttrib::make(new_mat);
+  CPT(RenderAttrib) new_attrib;
+  if (new_mat != nullptr) {
+    new_attrib = MaterialAttrib::make(new_mat);
+  }
   r_replace_material(node(), mat, (const MaterialAttrib *)new_attrib.p());
 }
 
@@ -6878,7 +6883,11 @@ r_replace_material(PandaNode *node, Material *mat,
     const MaterialAttrib *ma;
     if (node_state->get_attrib(ma)) {
       if (mat == ma->get_material()) {
-        node->set_state(node_state->set_attrib(new_attrib));
+        if (new_attrib != nullptr) {
+          node->set_state(node_state->set_attrib(new_attrib));
+        } else {
+          node->set_state(node_state->remove_attrib(MaterialAttrib::get_class_slot()));
+        }
       }
     }
   }
@@ -6897,7 +6906,11 @@ r_replace_material(PandaNode *node, Material *mat,
       if (geom_state->get_attrib(ma)) {
         if (mat == ma->get_material()) {
           // Replace it
-          gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+          if (new_attrib != nullptr) {
+            gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+          } else {
+            gnode->set_geom_state(i, geom_state->remove_attrib(MaterialAttrib::get_class_slot()));
+          }
         }
       }
     }

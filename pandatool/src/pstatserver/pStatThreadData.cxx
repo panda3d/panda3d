@@ -328,11 +328,11 @@ write_datagram(Datagram &dg) const {
  * Restores the thread data from a datagram.
  */
 void PStatThreadData::
-read_datagram(DatagramIterator &scan) {
+read_datagram(DatagramIterator &scan, PStatClientVersion *version) {
   int frame_number;
   while ((frame_number = scan.get_int32()) != -1) {
     PStatFrameData *frame_data = new PStatFrameData;
-    frame_data->read_datagram(scan);
+    frame_data->read_datagram(scan, version);
 
     record_new_frame(frame_number, frame_data);
   }

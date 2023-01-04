@@ -47,6 +47,14 @@ WinStatsGraph(WinStatsMonitor *monitor) :
 
   _pixel_scale = monitor->get_pixel_scale();
 
+  // Default margins.
+  int margin = _pixel_scale * 2;
+  _left_margin = margin;
+  _right_margin = margin;
+  _top_margin = margin;
+  _bottom_margin = margin;
+  _top_label_stack_margin = margin;
+
   _dark_color = RGB(51, 51, 51);
   _light_color = RGB(154, 154, 154);
   _user_guide_bar_color = RGB(130, 150, 255);
@@ -253,10 +261,10 @@ move_label_stack() {
 
     rect.left += _pixel_scale * 2;
     rect.right = _left_margin - _pixel_scale * 2;
-    rect.bottom -= _bottom_margin;
 
     _label_stack.set_pos(rect.left, rect.top,
-                         rect.right - rect.left, rect.bottom - rect.top);
+                         rect.right - rect.left, rect.bottom - rect.top,
+                         _top_label_stack_margin, _bottom_margin);
   }
 }
 
@@ -410,12 +418,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       WINDOWINFO winfo;
       GetWindowInfo(hwnd, &winfo);
       MINMAXINFO &minmax = *(MINMAXINFO *)lparam;
+      int vminheight = _bottom_margin + _top_margin;
+      if (_label_stack.get_num_labels() > 0) {
+        // If we have a label, make sure at least one can be shown.
+        vminheight = (std::max)(vminheight, _top_label_stack_margin + _label_stack.get_label_height(0) + _bottom_margin);
+      }
       minmax.ptMinTrackSize.x = (winfo.rcClient.left - winfo.rcWindow.left)
                               + (winfo.rcWindow.right - winfo.rcClient.right)
                               + (_right_margin + _left_margin);
       minmax.ptMinTrackSize.y = (winfo.rcClient.top - winfo.rcWindow.top)
                               + (winfo.rcWindow.bottom - winfo.rcClient.bottom)
-                              + (_bottom_margin + _top_margin);
+                              + vminheight;
       return 0;
     }
 

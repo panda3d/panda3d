@@ -27,17 +27,20 @@ PUBLISHED:
 
   INLINE void seek(size_t pos);
   INLINE size_t tell() const;
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *read(size_t length));
   EXTENSION(PyObject *readline());
   EXTENSION(PyObject *readlines());
 
   EXTENSION(PyObject *get_data() const);
+#endif // HAVE_PYTHON
   INLINE size_t get_data_size() const;
   INLINE void clear();
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *__getstate__() const);
   EXTENSION(void __setstate__(PyObject *state));
-
+#endif // HAVE_PYTHON
 public:
   std::string read(size_t length);
   std::string readline();
@@ -51,4 +54,4 @@ public:
 
 #include "ramfile.I"
 
-#endif
+#endif // !RAMFILE_H

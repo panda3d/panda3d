@@ -24,8 +24,8 @@ using std::string;
 
 #ifdef WITHIN_PANDA
 #ifndef CPPPARSER
-PStatCollector DCClass::_update_pcollector("App:Show code:readerPollTask:Update");
-PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Generate");
+PStatCollector DCClass::_update_pcollector("App:Tasks:readerPollTask:Update");
+PStatCollector DCClass::_generate_pcollector("App:Tasks:readerPollTask:Generate");
 #endif  // CPPPARSER
 
 ConfigVariableBool dc_multiple_inheritance

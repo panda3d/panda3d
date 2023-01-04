@@ -70,8 +70,9 @@ public:
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
 
-  bool is_title_unknown() const;
+  INLINE bool is_title_unknown() const;
   std::string get_title_text();
+  std::string get_total_text();
   std::string get_label_tooltip(int collector_index) const;
 
   virtual void write_datagram(Datagram &dg) const final;
@@ -82,6 +83,7 @@ protected:
   public:
     unsigned short _collector_index;
     unsigned short _i;
+    int _count;
     double _net_value;
   };
   typedef pvector<ColorData> FrameData;
@@ -91,7 +93,7 @@ protected:
                                     const FrameData &additional, double weight);
   static void scale_frame_data(FrameData &fdata, double factor);
 
-  const FrameData &get_frame_data(int frame_number);
+  const FrameData &get_frame_data(int frame_number) const;
   void compute_average_pixel_data(PStatStripChart::FrameData &result,
                                   int &then_i, int &now_i, double now);
   double get_net_value(int frame_number) const;
@@ -132,7 +134,7 @@ private:
   bool _scroll_mode;
   bool _average_mode;
 
-  Data _data;
+  mutable Data _data;
 
   int _next_frame;
   bool _first_data;

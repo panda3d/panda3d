@@ -194,7 +194,8 @@ handle_client_control_message(const PStatClientControlMessage &message) {
 
       if (message._major_version != server_major_version ||
           (message._major_version == server_major_version &&
-           message._minor_version > server_minor_version)) {
+           message._minor_version > server_minor_version &&
+           (message._major_version != 3 || message._minor_version > 2))) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
                               message._client_pid,
                               message._major_version, message._minor_version,
@@ -225,6 +226,10 @@ handle_client_control_message(const PStatClientControlMessage &message) {
         _monitor->new_thread(thread_index);
       }
     }
+    break;
+
+  case PStatClientControlMessage::T_expire_thread:
+    // Ignore for now.
     break;
 
   default:

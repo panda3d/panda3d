@@ -71,8 +71,8 @@ INLINE void Light::
 set_color(const LColor &color) {
   CDWriter cdata(_cycler);
   cdata->_color = color;
+  cdata->_viz_geom_stale = true;
   _has_color_temperature = false;
-  mark_viz_stale();
 }
 
 /**

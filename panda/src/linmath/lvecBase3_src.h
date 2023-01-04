@@ -25,9 +25,9 @@ PUBLISHED:
 
 #ifdef FLOATTYPE_IS_INT
     is_int = 1
-#else
+#else // FLOATTYPE_IS_INT
     is_int = 0
-#endif
+#endif // FLOATTYPE_IS_INT
   };
 
   INLINE_LINMATH FLOATNAME(LVecBase3)() = default;
@@ -39,16 +39,18 @@ PUBLISHED:
 #ifdef CPPPARSER
   FLOATNAME(LVecBase3) &operator = (const FLOATNAME(LVecBase3) &copy) = default;
   FLOATNAME(LVecBase3) &operator = (FLOATTYPE fill_value) = default;
-#endif
+#endif // CPPPARSER
 
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &zero();
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_x();
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_y();
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_z();
 
+#ifdef HAVE_PYTHON
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
+#endif // HAVE_PYTHON
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
@@ -108,7 +110,7 @@ PUBLISHED:
   INLINE_LINMATH bool normalize();
   INLINE_LINMATH FLOATNAME(LVecBase3) normalized() const;
   INLINE_LINMATH FLOATNAME(LVecBase3) project(const FLOATNAME(LVecBase3) &onto) const;
-#endif
+#endif // !FLOATTYPE_IS_INT
 
   INLINE_LINMATH FLOATNAME(LVecBase3) cross(const FLOATNAME(LVecBase3) &other) const;
 
@@ -118,7 +120,7 @@ PUBLISHED:
 
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVecBase3) get_standardized_hpr() const;
-#endif
+#endif // !FLOATTYPE_IS_INT
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH size_t get_hash() const;
@@ -132,7 +134,7 @@ PUBLISHED:
   INLINE_LINMATH size_t add_hash(size_t hash, FLOATTYPE threshold) const;
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen,
                                     FLOATTYPE threshold) const;
-#endif
+#endif // !FLOATTYPE_IS_INT
 
   INLINE_LINMATH FLOATNAME(LVecBase3) operator - () const;
 
@@ -152,6 +154,7 @@ PUBLISHED:
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LVecBase3) &other);
 
+#ifdef HAVE_PYTHON
   EXTENSION(INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const);
 
   EXTENSION(INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const);
@@ -163,6 +166,7 @@ PUBLISHED:
   EXTENSION(INLINE_LINMATH PyObject *__round__(PyObject *self));
   EXTENSION(INLINE_LINMATH PyObject *__floor__(PyObject *self));
   EXTENSION(INLINE_LINMATH PyObject *__ceil__(PyObject *self));
+#endif // HAVE_PYTHON
 
   INLINE_LINMATH FLOATNAME(LVecBase3) fmax(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH FLOATNAME(LVecBase3) fmin(const FLOATNAME(LVecBase3) &other) const;
@@ -181,7 +185,9 @@ PUBLISHED:
   INLINE_LINMATH void write_datagram(Datagram &destination) const;
   INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
+#ifdef HAVE_PYTHON
   EXTENSION(INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+#endif // HAVE_PYTHON
 
 public:
   // The underlying implementation is via the Eigen library, if available.

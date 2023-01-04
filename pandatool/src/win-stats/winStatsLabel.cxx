@@ -110,6 +110,14 @@ set_pos(int x, int y, int width) {
 }
 
 /**
+ * Changes the Y attribute without updating the window.
+ */
+void WinStatsLabel::
+set_y_noupdate(int y) {
+  _y = y;
+}
+
+/**
  * Enables or disables the visual highlight for this label.
  */
 void WinStatsLabel::

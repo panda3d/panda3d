@@ -96,14 +96,14 @@ protected:
   TextColors _text_colors;
 
   GtkStatsMonitor *_monitor;
-  GtkWidget *_parent_window;
-  GtkWidget *_window;
+  GtkWidget *_parent_window = nullptr;
+  GtkWidget *_window = nullptr;
   GtkWidget *_graph_frame;
-  GtkWidget *_graph_window;
+  GtkWidget *_graph_window = nullptr;
   GtkWidget *_graph_hbox;
   GtkWidget *_graph_vbox;
   GtkWidget *_hpaned;
-  GtkWidget *_scale_area;
+  GtkWidget *_scale_area = nullptr;
   GtkStatsLabelStack _label_stack;
 
   GdkCursor *_hand_cursor;

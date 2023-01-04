@@ -163,7 +163,7 @@ new_collector(int collector_index) {
 
   // We might need to update our menus.
   for (GtkStatsChartMenu *chart_menu : _chart_menus) {
-    chart_menu->do_update();
+    chart_menu->check_update();
   }
 }
 
@@ -268,6 +268,14 @@ user_guide_bars_changed() {
 GtkWidget *GtkStatsMonitor::
 get_window() const {
   return _window;
+}
+
+/**
+ *
+ */
+GtkAccelGroup *GtkStatsMonitor::
+get_accel_group() const {
+  return ((GtkStatsServer *)_server)->get_accel_group();
 }
 
 /**

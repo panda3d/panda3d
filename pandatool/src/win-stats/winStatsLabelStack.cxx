@@ -75,19 +75,17 @@ is_setup() const {
  * Sets the position and size of the label stack on its parent.
  */
 void WinStatsLabelStack::
-set_pos(int x, int y, int width, int height) {
+set_pos(int x, int y, int width, int height, int top_margin, int bottom_margin) {
   _x = x;
   _y = y;
   _width = width;
   _height = height;
+  _top_margin = top_margin;
+  _bottom_margin = bottom_margin;
   SetWindowPos(_window, 0, x, y, _width, _height,
                SWP_NOZORDER | SWP_SHOWWINDOW);
 
-  int yp = height;
-  for (WinStatsLabel *label : _labels) {
-    label->set_pos(0, yp, _width);
-    yp -= label->get_height();
-  }
+  recalculate_label_positions();
 }
 
 /**
@@ -168,6 +166,7 @@ clear_labels() {
   }
   _labels.clear();
   _ideal_width = 0;
+  _scroll = 0;
 }
 
 /**
@@ -185,12 +184,14 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
     new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
   if (_window) {
     label->setup(_window);
-    label->set_pos(0, yp, _width);
+    label->set_pos(0, yp - _scroll, _width);
   }
   _ideal_width = std::max(_ideal_width, label->get_ideal_width());
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);
+
+  recalculate_label_positions();
 
   return label_index;
 }
@@ -265,7 +266,7 @@ replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
       label_map.erase(it);
     }
     if (_window) {
-      label->set_pos(0, yp, _width);
+      label->set_pos(0, yp - _scroll, _width);
     }
     _ideal_width = std::max(_ideal_width, label->get_ideal_width());
     yp -= label->get_height();
@@ -277,6 +278,8 @@ replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
   for (auto it = label_map.begin(); it != label_map.end(); ++it) {
     delete it->second;
   }
+
+  recalculate_label_positions();
 }
 
 /**
@@ -312,6 +315,33 @@ update_label_color(int collector_index) {
     if (label->get_collector_index() == collector_index) {
       label->update_color();
     }
+  }
+}
+
+/**
+ * Called to recalculate the positions of all labels in the stack.
+ */
+void WinStatsLabelStack::
+recalculate_label_positions() {
+  int total_height = 0;
+  for (WinStatsLabel *label : _labels) {
+    total_height += label->get_height();
+  }
+  total_height += _bottom_margin + _top_margin;
+  int yp;
+  if (total_height <= _height) {
+    // Fits.  Align to bottom and reset scroll.
+    yp = _height - _bottom_margin;
+    _scroll = 0;
+  } else {
+    // Doesn't fit.  Align to top.
+    yp = total_height - _bottom_margin;
+    _scroll = (std::min)(_scroll, total_height - _height);
+    _scroll = (std::max)(_scroll, 0);
+  }
+  for (WinStatsLabel *label : _labels) {
+    label->set_pos(0, yp - _scroll, _width);
+    yp -= label->get_height();
   }
 }
 
@@ -397,6 +427,33 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       RECT rect = { 0, 0, _width, _height };
       FillRect(hdc, &rect, (HBRUSH)COLOR_WINDOW);
       EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  case WM_MOUSEWHEEL:
+    {
+      int total_height = 0;
+      for (WinStatsLabel *label : _labels) {
+        total_height += label->get_height();
+      }
+      total_height += _bottom_margin + _top_margin;
+      if ((total_height > _height || _scroll != 0) && !_labels.empty()) {
+        int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+        delta = (delta * _labels[0]->get_height()) / 120;
+        int new_scroll = _scroll - delta;
+        new_scroll = (std::min)(new_scroll, total_height - _height);
+        new_scroll = (std::max)(new_scroll, 0);
+        delta = new_scroll - _scroll;
+        if (delta != 0) {
+          _scroll = new_scroll;
+          ScrollWindowEx(_window, 0, -delta, NULL, NULL, NULL, NULL, SW_INVALIDATE | SW_SCROLLCHILDREN);
+          int yp = yp = total_height - _bottom_margin;
+          for (WinStatsLabel *label : _labels) {
+            label->set_y_noupdate(yp - _scroll);
+            yp -= label->get_height();
+          }
+        }
+      }
       return 0;
     }
 

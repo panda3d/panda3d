@@ -256,7 +256,9 @@ PUBLISHED:
   MAKE_PROPERTY(texture_quality_override, get_texture_quality_override,
                                           set_texture_quality_override);
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *get_prepared_textures() const);
+#endif // HAVE_PYTHON
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
@@ -265,7 +267,7 @@ PUBLISHED:
   void clear_flash_texture();
   Texture *get_flash_texture() const;
   MAKE_PROPERTY(flash_texture, get_flash_texture, set_flash_texture);
-#endif
+#endif // !NDEBUG || !CPPPARSER
 
 PUBLISHED:
   virtual bool has_extension(const std::string &extension) const;
@@ -426,7 +428,8 @@ public:
   virtual bool framebuffer_copy_to_texture
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+   ScreenshotRequest *request = nullptr);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
@@ -446,7 +449,7 @@ public:
 #ifdef DO_PSTATS
   static void init_frame_pstats();
   PStatThread get_pstats_thread();
-#endif
+#endif // DO_PSTATS
 
 protected:
   virtual void reissue_transforms();
@@ -603,7 +606,7 @@ protected:
 #ifdef DO_PSTATS
   int _pstats_gpu_thread;
   bool _timer_queries_active;
-#endif
+#endif // DO_PSTATS
 
   bool _copy_texture_inverted;
   bool _supports_multisample;
@@ -648,9 +651,9 @@ protected:
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
-#else
+#else // !NDEBUG
   PT(Texture) _flash_texture_unused;
-#endif
+#endif // !NDEBUG
 
 public:
   // Statistics
@@ -761,4 +764,4 @@ EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsStateG
 
 #include "graphicsStateGuardian.I"
 
-#endif
+#endif // !GRAPHICSSTATEGUARDIAN_H

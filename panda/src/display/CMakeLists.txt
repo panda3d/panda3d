@@ -27,6 +27,7 @@ set(P3DISPLAY_HEADERS
   windowHandle.I windowHandle.h
   windowProperties.I windowProperties.h
   renderBuffer.h
+  screenshotRequest.I screenshotRequest.h
   stereoDisplayRegion.I stereoDisplayRegion.h
   displaySearchParameters.h
   displayInformation.h
@@ -61,6 +62,7 @@ set(P3DISPLAY_SOURCES
   parasiteBuffer.cxx
   windowHandle.cxx
   windowProperties.cxx
+  screenshotRequest.cxx
   stereoDisplayRegion.cxx
   subprocessWindow.cxx
   touchInfo.cxx

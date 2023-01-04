@@ -33,11 +33,6 @@ GtkStatsGraph::
 GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   _monitor(monitor)
 {
-  _parent_window = nullptr;
-  _window = nullptr;
-  _graph_window = nullptr;
-  _scale_area = nullptr;
-
   GtkWidget *parent_window = monitor->get_window();
 
   GdkWindow *window = gtk_widget_get_window(parent_window);
@@ -59,6 +54,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor, bool has_label_stack) :
   gtk_window_set_type_hint(GTK_WINDOW(_window), GDK_WINDOW_TYPE_HINT_UTILITY);
   //gtk_window_set_transient_for(GTK_WINDOW(_window), GTK_WINDOW(parent_window));
   //gtk_window_set_position(GTK_WINDOW(_window), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_window_add_accel_group(GTK_WINDOW(_window), monitor->get_accel_group());
 
   gtk_widget_add_events(_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |

@@ -15,18 +15,21 @@
 #define WINSTATSSERVER_H
 
 #include "pandatoolbase.h"
+#include "programBase.h"
 #include "pStatServer.h"
 #include "winStatsMonitor.h"
 
 /**
  * The class that owns the main loop, waiting for client connections.
  */
-class WinStatsServer : public PStatServer {
+class WinStatsServer : public PStatServer, public ProgramBase {
 public:
   WinStatsServer();
 
-  virtual PStatMonitor *make_monitor(const NetAddress &address);
-  virtual void lost_connection(PStatMonitor *monitor);
+  virtual bool handle_args(Args &args) override;
+
+  virtual PStatMonitor *make_monitor(const NetAddress &address) override;
+  virtual void lost_connection(PStatMonitor *monitor) override;
 
   bool new_session();
   bool open_session();
@@ -60,13 +63,14 @@ private:
 
   Filename _last_session;
 
+  int _port = -1;
   HWND _window = 0;
   HMENU _menu_bar = 0;
   HMENU _session_menu = 0;
   HMENU _options_menu = 0;
   HWND _status_bar;
   POINT _client_origin;
-  int _time_units;
+  int _time_units = 0;
   int _pixel_scale;
 
   HFONT _font;

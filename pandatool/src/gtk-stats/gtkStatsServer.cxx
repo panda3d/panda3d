@@ -17,26 +17,92 @@
 #include "pStatGraph.h"
 #include "config_pstatclient.h"
 
+#include <unistd.h>
+
 /**
  *
  */
 GtkStatsServer::
-GtkStatsServer() {
+GtkStatsServer() : _port(pstats_port) {
+  set_program_brief("GTK+3-based PStats client");
+  set_program_description
+    ("This is a GUI-based PStats server that listens on a TCP port for a "
+     "connection from a PStatClient in a Panda3D application.  It offers "
+     "various graphs for showing the timing information sent by the client."
+     "\n\n"
+     "The full documentation is available online:\n  "
+#ifdef HAVE_PYTHON
+     "https://docs.panda3d.org/" PANDA_ABI_VERSION_STR "/python/optimization/pstats"
+#else
+     "https://docs.panda3d.org/" PANDA_ABI_VERSION_STR "/cpp/optimization/pstats"
+#endif
+     "");
+
+  add_option
+    ("p", "port", 0,
+     "Specify the TCP port to listen for connections on.  By default, this "
+     "is taken from the pstats-port Config variable.",
+     &ProgramBase::dispatch_int, nullptr, &_port);
+
+  add_runline("[-p 5185]");
+  add_runline("session.pstats");
+
 #ifdef __APPLE__
   _last_session = Filename::expand_from(
     "$HOME/Library/Caches/Panda3D-" PANDA_ABI_VERSION_STR "/last-session.pstats");
 #else
-  _last_session = Filename::expand_from("$XDG_CACHE_HOME/panda3d/last-session.pstats");
+  _last_session = Filename::expand_from("$XDG_STATE_HOME/panda3d/last-session.pstats");
 #endif
   _last_session.set_binary();
 
-  _window = nullptr;
-  _menu_bar = nullptr;
-  _options_menu = nullptr;
-
-  _time_units = 0;
-
   create_window();
+}
+
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
+bool GtkStatsServer::
+handle_args(ProgramBase::Args &args) {
+  if (args.empty()) {
+    new_session();
+    return true;
+  }
+  else if (args.size() == 1) {
+    Filename fn = Filename::from_os_specific(args[0]);
+    fn.set_binary();
+    GtkStatsMonitor *monitor = new GtkStatsMonitor(this);
+    if (!monitor->read(fn)) {
+      delete monitor;
+
+      // If we're not running from the terminal, show a GUI message box.
+      if (!isatty(STDERR_FILENO)) {
+        GtkWidget *dialog =
+          gtk_message_dialog_new(GTK_WINDOW(_window),
+             GTK_DIALOG_DESTROY_WITH_PARENT,
+             GTK_MESSAGE_ERROR,
+             GTK_BUTTONS_CLOSE,
+             "Failed to load session file: %s", fn.c_str());
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+      }
+      return false;
+    }
+    _save_filename = fn;
+
+    gtk_widget_set_sensitive(_new_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_save_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_close_session_menu_item, TRUE);
+    gtk_widget_set_sensitive(_export_session_menu_item, TRUE);
+
+    _monitor = monitor;
+    return true;
+  }
+  else {
+    nout << "At most one filename may be specified on the command-line.\n";
+    return false;
+  }
 }
 
 /**
@@ -69,12 +135,21 @@ make_monitor(const NetAddress &address) {
  */
 void GtkStatsServer::
 lost_connection(PStatMonitor *monitor) {
-  // Store a backup now, in case PStats crashes or something.
-  _last_session.make_dir();
-  if (monitor->write(_last_session)) {
-    nout << "Wrote to " << _last_session << "\n";
+  if (_monitor != nullptr && !_monitor->_have_data) {
+    // We didn't have any data yet.  Just silently restart the session.
+    _monitor->close();
+    _monitor = nullptr;
+    if (new_session()) {
+      return;
+    }
   } else {
-    nout << "Failed to write to " << _last_session << "\n";
+    // Store a backup now, in case PStats crashes or something.
+    _last_session.make_dir();
+    if (monitor->write(_last_session)) {
+      nout << "Wrote to " << _last_session << "\n";
+    } else {
+      nout << "Failed to write to " << _last_session << "\n";
+    }
   }
 
   stop_listening();
@@ -91,16 +166,16 @@ new_session() {
     return false;
   }
 
-  if (listen()) {
+  if (listen(_port)) {
     {
       std::ostringstream strm;
-      strm << "PStats Server (listening on port " << pstats_port << ")";
+      strm << "PStats Server (listening on port " << _port << ")";
       std::string title = strm.str();
       gtk_window_set_title(GTK_WINDOW(_window), title.c_str());
     }
     {
       std::ostringstream strm;
-      strm << "Waiting for client to connect on port " << pstats_port << "...";
+      strm << "Waiting for client to connect on port " << _port << "...";
       std::string title = strm.str();
       _status_bar_label = gtk_label_new(title.c_str());
       gtk_container_add(GTK_CONTAINER(_status_bar), _status_bar_label);
@@ -123,7 +198,8 @@ new_session() {
        GTK_MESSAGE_ERROR,
        GTK_BUTTONS_CLOSE,
        "Unable to open port %d.  Try specifying a different port number "
-       "using pstats-port in your Config file.", pstats_port.get_value());
+       "using pstats-port in your Config file or the -p option on the "
+       "command-line.", _port);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 
@@ -399,13 +475,20 @@ close_session() {
   return true;
 }
 
-
 /**
  * Returns the window handle to the server's window.
  */
 GtkWidget *GtkStatsServer::
 get_window() const {
   return _window;
+}
+
+/**
+ * Returns the server window's accelerator group.
+ */
+GtkAccelGroup *GtkStatsServer::
+get_accel_group() const {
+  return _accel_group;
 }
 
 /**
@@ -470,8 +553,8 @@ create_window() {
     }), this);
 
   // Set up the menu.
-  GtkAccelGroup *accel_group = gtk_accel_group_new();
-  gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
+  _accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(_window), _accel_group);
   _menu_bar = gtk_menu_bar_new();
 
   setup_session_menu();
@@ -498,12 +581,11 @@ create_window() {
   gtk_widget_realize(_window);
 
   // Set up a timer to poll the pstats every so often.
-  g_timeout_add(200,
-    G_SOURCE_FUNC(+[](gpointer data) -> gboolean {
-      GtkStatsServer *self = (GtkStatsServer *)data;
-      self->poll();
-      return TRUE;
-    }), this);
+  g_timeout_add(200, +[](gpointer data) -> gboolean {
+    GtkStatsServer *self = (GtkStatsServer *)data;
+    self->poll();
+    return TRUE;
+  }, this);
 }
 
 /**
@@ -525,6 +607,8 @@ setup_session_menu() {
       GtkStatsServer *self = (GtkStatsServer *)data;
       self->new_session();
     }), this);
+  gtk_widget_add_accelerator(item, "activate", _accel_group,
+                             GDK_KEY_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   item = gtk_menu_item_new_with_mnemonic("_Open Session...");
   gtk_menu_shell_append(GTK_MENU_SHELL(_session_menu), item);
@@ -533,6 +617,8 @@ setup_session_menu() {
       GtkStatsServer *self = (GtkStatsServer *)data;
       self->open_session();
     }), this);
+  gtk_widget_add_accelerator(item, "activate", _accel_group,
+                             GDK_KEY_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   item = gtk_menu_item_new_with_mnemonic("Open _Last Session");
   _open_last_session_menu_item = item;
@@ -556,6 +642,8 @@ setup_session_menu() {
       GtkStatsServer *self = (GtkStatsServer *)data;
       self->save_session();
     }), this);
+  gtk_widget_add_accelerator(item, "activate", _accel_group,
+                             GDK_KEY_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   item = gtk_menu_item_new_with_mnemonic("_Close Session");
   _close_session_menu_item = item;
@@ -566,6 +654,8 @@ setup_session_menu() {
       GtkStatsServer *self = (GtkStatsServer *)data;
       self->close_session();
     }), this);
+  gtk_widget_add_accelerator(item, "activate", _accel_group,
+                             GDK_KEY_w, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(_session_menu), sep);
@@ -592,40 +682,10 @@ setup_session_menu() {
         gtk_main_quit();
       }
     }), this);
+  gtk_widget_add_accelerator(item, "activate", _accel_group,
+                             GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
   gtk_widget_show_all(_session_menu);
-
-  /*
-  _session_menu = CreatePopupMenu();
-
-  MENUITEMINFO mii;
-  memset(&mii, 0, sizeof(mii));
-  mii.cbSize = sizeof(mii);
-
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
-  mii.fType = MFT_STRING;
-  mii.hSubMenu = _session_menu;
-
-  mii.dwTypeData = "&Session";
-  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
-
-  AppendMenu(_session_menu, MF_STRING, MI_session_new, "&New Session\tCtrl+N");
-  AppendMenu(_session_menu, MF_STRING, MI_session_open, "&Open Session...\tCtrl+O");
-
-  if (_last_session.exists()) {
-    AppendMenu(_session_menu, MF_STRING, MI_session_open_last, "Open &Last Session");
-  } else {
-    AppendMenu(_session_menu, MF_STRING | MF_DISABLED, MI_session_open_last, "Open &Last Session");
-  }
-
-  AppendMenu(_session_menu, MF_STRING | MF_DISABLED, MI_session_save, "&Save Session...\tCtrl+S");
-  AppendMenu(_session_menu, MF_STRING | MF_DISABLED, MI_session_close, "&Close Session\tCtrl+W");
-
-  AppendMenu(_session_menu, MF_SEPARATOR, 0, nullptr);
-  AppendMenu(_session_menu, MF_STRING | MF_DISABLED, MI_session_export_json, "&Export as JSON...");
-
-  AppendMenu(_session_menu, MF_SEPARATOR, 0, nullptr);
-  AppendMenu(_session_menu, MF_STRING, MI_exit, "E&xit");*/
 }
 
 /**

@@ -490,6 +490,22 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           zoom_by(delta / 120.0, pixel_to_timestamp(point.x));
           start_animation();
         }
+      } else {
+        int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+        delta = (delta * _pixel_scale * 5) / 120;
+        int new_scroll = _scroll - delta;
+        if (_threads.empty()) {
+          new_scroll = 0;
+        } else {
+          new_scroll = (std::min)(new_scroll, get_num_rows() * _pixel_scale * 5 + _pixel_scale * 2 - get_ysize());
+          new_scroll = (std::max)(new_scroll, 0);
+        }
+        delta = new_scroll - _scroll;
+        if (delta != 0) {
+          _scroll = new_scroll;
+          _threads_changed = true;
+          PStatTimeline::force_redraw();
+        }
       }
       return 0;
     }
@@ -650,6 +666,7 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
     return;
   }
 
+  bool center = true;
   switch (bar._style) {
   case GBS_target:
     SetTextColor(hdc, _light_color);
@@ -665,6 +682,7 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
 
   case GBS_frame:
     SetTextColor(hdc, _dark_color);
+    center = false;
     break;
   }
 
@@ -672,7 +690,10 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
   SIZE size;
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
-  int this_x = _graph_left + x - size.cx / 2;
+  int this_x = _graph_left + x;
+  if (center) {
+    this_x -= size.cx / 2;
+  }
   if (x >= 0 && x < get_xsize()) {
     TextOut(hdc, this_x, y,
             label.data(), label.length());
