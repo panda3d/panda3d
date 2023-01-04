@@ -131,7 +131,8 @@ public:
                                        ScreenshotRequest *request = nullptr);
 
 private:
-  bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1);
+  bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1,
+                        ScreenshotRequest *request = nullptr);
 
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                          VkPrimitiveTopology topology);
@@ -262,6 +263,16 @@ private:
   pdeque<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated;
 
+  // Queued buffer-to-RAM transfer.
+  struct QueuedDownload {
+    VkBuffer _buffer;
+    VulkanMemoryBlock _block;
+    PT(Texture) _texture;
+    int _view;
+    PT(ScreenshotRequest) _request;
+  };
+  typedef pvector<QueuedDownload> DownloadQueue;
+
   struct FrameData {
     uint64_t _frame_index = 0;
     VkFence _fence = VK_NULL_HANDLE;
@@ -272,13 +283,18 @@ private:
     pvector<VulkanMemoryBlock> _pending_free;
     pvector<VkBuffer> _pending_destroy_buffers;
     pvector<VkBufferView> _pending_destroy_buffer_views;
+    pvector<VkFramebuffer> _pending_destroy_framebuffers;
     pvector<VkImage> _pending_destroy_images;
     pvector<VkImageView> _pending_destroy_image_views;
+    pvector<VkRenderPass> _pending_destroy_render_passes;
     pvector<VkSampler> _pending_destroy_samplers;
     pvector<VkDescriptorSet> _pending_free_descriptor_sets;
 
     VkDeviceSize _uniform_buffer_head = 0;
     VkDeviceSize _staging_buffer_head = 0;
+
+    DownloadQueue _download_queue;
+    bool _wait_for_finish = false;
   };
   static const size_t _frame_data_capacity = 5;
   FrameData _frame_data_pool[_frame_data_capacity];
@@ -288,16 +304,6 @@ private:
 
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;
-
-  // Queued buffer-to-RAM transfer.
-  struct QueuedDownload {
-    VkBuffer _buffer;
-    VulkanMemoryBlock _block;
-    PT(Texture) _texture;
-    int _view;
-  };
-  typedef pvector<QueuedDownload> DownloadQueue;
-  DownloadQueue _download_queue;
 
   friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;

@@ -2444,8 +2444,8 @@ end_frame(Thread *current_thread) {
 
   // Issue commands to transition the staging buffers of the texture downloads
   // to make sure that the previous copy operations are visible to host reads.
-  if (!_download_queue.empty()) {
-    size_t num_downloads = _download_queue.size();
+  if (!_frame_data->_download_queue.empty()) {
+    size_t num_downloads = _frame_data->_download_queue.size();
     VkBufferMemoryBarrier *barriers = (VkBufferMemoryBarrier *)
       alloca(sizeof(VkBufferMemoryBarrier) * num_downloads);
 
@@ -2456,7 +2456,7 @@ end_frame(Thread *current_thread) {
       barriers[i].dstAccessMask = VK_ACCESS_HOST_READ_BIT;
       barriers[i].srcQueueFamilyIndex = _graphics_queue_family_index;
       barriers[i].dstQueueFamilyIndex = _graphics_queue_family_index;
-      barriers[i].buffer = _download_queue[i]._buffer;
+      barriers[i].buffer = _frame_data->_download_queue[i]._buffer;
       barriers[i].offset = 0;
       barriers[i].size = VK_WHOLE_SIZE;
     }
@@ -2502,41 +2502,48 @@ end_frame(Thread *current_thread) {
     vulkan_error(err, "Error submitting queue");
     return;
   }
-  _frame_data = nullptr;
 
   // We're done with these for now.
   _wait_semaphore = VK_NULL_HANDLE;
   _signal_semaphore = VK_NULL_HANDLE;
 
-  // If we queued up texture downloads, wait for the queue to finish (slow!)
-  // and then copy the data from Vulkan host memory to Panda memory.
-  if (!_download_queue.empty()) {
+  // If we queued up synchronous texture downloads, wait for the queue to finish
+  // (slow!) and then copy the data from Vulkan host memory to Panda memory.
+  if (_frame_data->_wait_for_finish) {
     {
       PStatTimer timer(_flush_pcollector);
       err = vkWaitForFences(_device, 1, &_frame_data->_fence, VK_TRUE, ~0ULL);
     }
     if (err) {
       vulkan_error(err, "Failed to wait for command buffer execution");
+      vkQueueWaitIdle(_queue);
     }
 
-    for (QueuedDownload &down : _download_queue) {
-      PTA_uchar target = down._texture->modify_ram_image();
-      size_t view_size = down._texture->get_ram_view_size();
+    VkFence reset_fences[_frame_data_capacity];
+    size_t num_reset_fences = 0;
 
-      if (auto data = down._block.map()) {
-        memcpy(target.p() + view_size * down._view, data, view_size);
-      } else {
-        vulkandisplay_cat.error()
-          << "Failed to map memory for RAM transfer.\n";
-        vkDestroyBuffer(_device, down._buffer, nullptr);
-        continue;
-      }
+    nassertv(_frame_data_head != _frame_data_capacity);
 
-      // We won't need this buffer any more.
-      vkDestroyBuffer(_device, down._buffer, nullptr);
+    do {
+      FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+
+      // This frame has completed execution.
+      reset_fences[num_reset_fences++] = frame_data._fence;
+      finish_frame(frame_data);
+
+      _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
     }
-    _download_queue.clear();
+    while (_frame_data_tail != _frame_data_head);
+
+    _frame_data_head = _frame_data_capacity;
+    _frame_data_tail = 0;
+
+    // Reset the used fences to unsignaled status.
+    VkResult err = vkResetFences(_device, num_reset_fences, reset_fences);
+    nassertv(!err);
   }
+
+  _frame_data = nullptr;
 
   //TODO: delete command buffer, schedule for deletion, or recycle.
 }
@@ -2593,6 +2600,43 @@ finish_frame(FrameData &frame_data) {
   // Make the used uniform / staging buffer space available.
   _uniform_buffer_allocator.set_tail(frame_data._uniform_buffer_head);
   _staging_buffer_allocator.set_tail(frame_data._staging_buffer_head);
+
+  // Process texture-to-RAM downloads.
+  for (QueuedDownload &down : frame_data._download_queue) {
+    PTA_uchar target = down._texture->modify_ram_image();
+    size_t view_size = down._texture->get_ram_view_size();
+
+    if (auto data = down._block.map()) {
+      // The texture is upside down, so invert it.
+      size_t row_size = down._texture->get_x_size()
+                      * down._texture->get_num_components()
+                      * down._texture->get_component_width();
+      unsigned char *dst = target.p() + view_size * (down._view + 1) - row_size;
+      unsigned char *src = (unsigned char *)data;
+      unsigned char *src_end = src + view_size;
+      while (src < src_end) {
+        memcpy(dst, src, row_size);
+        src += row_size;
+        dst -= row_size;
+      }
+    } else {
+      vulkandisplay_cat.error()
+        << "Failed to map memory for RAM transfer.\n";
+    }
+
+    // We won't need this buffer any more.
+    vkDestroyBuffer(_device, down._buffer, nullptr);
+
+    if (down._request != nullptr) {
+      down._request->finish();
+    }
+  }
+  frame_data._download_queue.clear();
+  frame_data._wait_for_finish = false;
+
+  if (_last_frame_data == &frame_data) {
+    _last_frame_data = nullptr;
+  }
 }
 
 /**
@@ -2909,7 +2953,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z, const DisplayRegion *dr,
 
   tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, type, format);
 
-  return do_extract_image(fbtc, tex, view);
+  return do_extract_image(fbtc, tex, view, z, request);
 }
 
 /**
@@ -2917,7 +2961,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z, const DisplayRegion *dr,
  * Queues up a texture-to-RAM download.
  */
 bool VulkanGraphicsStateGuardian::
-do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
+do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, ScreenshotRequest *request) {
   VkDeviceSize buffer_size = tex->get_expected_ram_image_size();
 
   // Create a temporary buffer for transferring into.
@@ -2972,7 +3016,14 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
 
   down._texture = tex;
   down._view = view;
-  _download_queue.push_back(std::move(down));
+  down._request = request;
+  _frame_data->_download_queue.push_back(std::move(down));
+
+  if (request == nullptr) {
+    // If we download synchronously, we need to wait for the frame to finish in
+    // the end_frame() method, so we can process the results right away.
+    _frame_data->_wait_for_finish = true;
+  }
   return true;
 }
 
