@@ -53,8 +53,12 @@ public:
   INLINE double pixel_to_timestamp(int x) const;
   INLINE int height_to_pixel(double value) const;
   INLINE double pixel_to_height(int y) const;
+  INLINE int get_num_rows() const;
 
   std::string get_bar_tooltip(int row, int x) const;
+
+  virtual void write_datagram(Datagram &dg) const final;
+  virtual void read_datagram(DatagramIterator &scan) final;
 
 protected:
   void changed_size(int xsize, int ysize);
@@ -81,6 +85,7 @@ protected:
     int _collector_index;
     int _thread_index;
     int _frame_number;
+    bool _open_begin : 8, _open_end : 8;
 
     bool operator < (const ColorBar &other) const {
       return _end < other._end;
@@ -101,6 +106,8 @@ protected:
   typedef pvector<ThreadRow> ThreadRows;
   ThreadRows _threads;
   bool _threads_changed = true;
+  double _clock_skew = 0.0;
+  int _app_collector_index = -1;
 
   enum KeyFlag {
     F_left = 1,

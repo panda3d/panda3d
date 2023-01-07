@@ -17,7 +17,8 @@ elseif(IS_LINUX OR IS_FREEBSD)
   set_target_properties(deploy-stub PROPERTIES
     INSTALL_RPATH "$ORIGIN"
     BUILD_WITH_INSTALL_RPATH ON)
-  target_link_options(deploy-stub PRIVATE -Wl,-z,origin -rdynamic)
+  target_link_options(deploy-stub PRIVATE -Wl,--disable-new-dtags -Wl,-z,origin -rdynamic)
+  target_link_libraries(deploy-stub m)
 endif()
 
 target_link_libraries(deploy-stub Python::Python)

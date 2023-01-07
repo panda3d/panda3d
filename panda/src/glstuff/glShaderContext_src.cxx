@@ -2515,9 +2515,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
 
           ++p;
           client_pointer += element_stride;

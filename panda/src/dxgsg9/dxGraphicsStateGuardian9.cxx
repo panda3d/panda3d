@@ -1988,8 +1988,17 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
  */
 bool DXGraphicsStateGuardian9::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
-                        const DisplayRegion *dr, const RenderBuffer &rb) {
-  return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
+                        const DisplayRegion *dr, const RenderBuffer &rb,
+                        ScreenshotRequest *request) {
+  bool success = do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
+  if (request != nullptr) {
+    if (success) {
+      request->finish();
+    } else {
+      request->cancel();
+    }
+  }
+  return success;
 }
 
 /**

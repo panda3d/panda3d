@@ -152,6 +152,17 @@ EXPCL_INTERROGATEDB bool interrogate_element_has_getter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_getter(ElementIndex element);
 EXPCL_INTERROGATEDB bool interrogate_element_has_setter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_setter(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_has_has_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_has_function(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_has_clear_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_clear_function(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_has_del_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_del_function(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_has_insert_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_insert_function(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_has_getkey_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_getkey_function(ElementIndex element);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_element_length_function(ElementIndex element);
 
 EXPCL_INTERROGATEDB bool interrogate_element_is_sequence(ElementIndex element);
 EXPCL_INTERROGATEDB bool interrogate_element_is_mapping(ElementIndex element);
@@ -210,6 +221,8 @@ EXPCL_INTERROGATEDB const char *interrogate_function_prototype(FunctionIndex fun
 // if the function is a class method.
 EXPCL_INTERROGATEDB bool interrogate_function_is_method(FunctionIndex function);
 EXPCL_INTERROGATEDB TypeIndex interrogate_function_class(FunctionIndex function);
+EXPCL_INTERROGATEDB bool interrogate_function_is_unary_op(FunctionIndex function);
+EXPCL_INTERROGATEDB bool interrogate_function_is_operator_typecast(FunctionIndex function);
 EXPCL_INTERROGATEDB bool interrogate_function_is_constructor(FunctionIndex function);
 EXPCL_INTERROGATEDB bool interrogate_function_is_destructor(FunctionIndex function);
 
@@ -259,9 +272,25 @@ EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_function_python_wrapper(Fun
 // not identical.
 EXPCL_INTERROGATEDB const char *interrogate_wrapper_name(FunctionWrapperIndex wrapper);
 
+// Returns the function that this wrapper belongs to.
+EXPCL_INTERROGATEDB FunctionIndex interrogate_wrapper_function(FunctionWrapperIndex wrapper);
+
 // This returns true if -fnames was given to interrogate, making the wrapper
 // function callable directly by its name.
 EXPCL_INTERROGATEDB bool interrogate_wrapper_is_callable_by_name(FunctionWrapperIndex wrapper);
+
+// This returns true if this is a copy constructor.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_copy_constructor(FunctionWrapperIndex wrapper);
+
+// This returns true if this is a constructor that is not marked "explicit".
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_coerce_constructor(FunctionWrapperIndex wrapper);
+
+// This returns true if this is an extension function, rather than a real
+// function defined in the C++ code.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_extension(FunctionWrapperIndex wrapper);
+
+// This returns true if function is marked as deprecated.
+EXPCL_INTERROGATEDB bool interrogate_wrapper_is_deprecated(FunctionWrapperIndex wrapper);
 
 // This returns the C++ comment written for the function wrapper, usually from
 // the .cpp file.  There may be a different comment for each overload of a
@@ -348,7 +377,8 @@ EXPCL_INTERROGATEDB const char *interrogate_make_seq_comment(ElementIndex elemen
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_num_name(MakeSeqIndex make_seq);
 // The name of the real method that returns the nth element, e.g.  "get_thing"
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_element_name(MakeSeqIndex make_seq);
-
+EXPCL_INTERROGATEDB FunctionIndex interrogate_make_seq_num_getter(MakeSeqIndex make_seq);
+EXPCL_INTERROGATEDB FunctionIndex interrogate_make_seq_element_getter(MakeSeqIndex make_seq);
 
 // Types
 
@@ -374,6 +404,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_name(const char *type_name
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_scoped_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_true_name(const char *type_name);
 EXPCL_INTERROGATEDB bool interrogate_type_is_global(TypeIndex type);
+EXPCL_INTERROGATEDB bool interrogate_type_is_deprecated(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_scoped_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_true_name(TypeIndex type);
@@ -422,6 +453,10 @@ EXPCL_INTERROGATEDB bool interrogate_type_is_pointer(TypeIndex type);
 EXPCL_INTERROGATEDB bool interrogate_type_is_const(TypeIndex type);
 EXPCL_INTERROGATEDB bool interrogate_type_is_typedef(TypeIndex type);
 EXPCL_INTERROGATEDB TypeIndex interrogate_type_wrapped_type(TypeIndex type);
+
+// If interrogate_type_is_array() returns true, this is an array type.
+EXPCL_INTERROGATEDB bool interrogate_type_is_array(TypeIndex type);
+EXPCL_INTERROGATEDB int interrogate_type_array_size(TypeIndex type);
 
 // If interrogate_type_is_enum() returns true, this is an enumerated type,
 // which means it may take any one of a number of named integer values.

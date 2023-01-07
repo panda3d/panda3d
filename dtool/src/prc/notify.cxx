@@ -309,7 +309,6 @@ write_string(const string &str) {
 Notify *Notify::
 ptr() {
   if (_global_ptr == nullptr) {
-    init_memory_hook();
     _global_ptr = new Notify;
   }
   return _global_ptr;

@@ -26,8 +26,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
   INLINE_LINMATH FLOATNAME(LPoint3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
+  PY_EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  PY_EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LPoint3) &zero();
   INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_x();
@@ -61,7 +61,7 @@ PUBLISHED:
 #ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LPoint3) normalized() const;
   INLINE_LINMATH FLOATNAME(LPoint3) project(const FLOATNAME(LVecBase3) &onto) const;
-#endif
+#endif // !FLOATTYPE_IS_INT
 
   INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;

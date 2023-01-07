@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-11/).
+[this page](https://www.panda3d.org/download/sdk-1-10-12/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -58,14 +58,14 @@ You will also need to install the [Windows SDK](https://developer.microsoft.com/
 and if you intend to target Windows Vista, you will also need the
 [Windows 8.1 SDK](https://go.microsoft.com/fwlink/p/?LinkId=323507).
 
-You will also need to have the third-party dependency libraries available for
+You will also need the thirdparty dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
 depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -80,10 +80,10 @@ makepanda\makepanda.bat --everything --installer --msvc-version=14.3 --windows-s
 When the build succeeds, it will produce an .exe file that you can use to
 install Panda3D on your system.
 
-Note: you may choose to remove --no-eigen and build with Eigen support in
+**Note:** you may choose to remove `--no-eigen` and build with Eigen support in
 order to improve runtime performance.  However, this will cause the build to
 take hours to complete, as Eigen is a heavily template-based library, and the
-the MSVC compiler does not perform well under these circumstances.
+MSVC compiler does not perform well under those circumstances.
 
 Linux
 -----
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -177,7 +177,7 @@ directory which you can install using `pkg install`.
 Android
 -------
 
-Although it's possible to build Panda3D on an Android device itself using the
+Although it's possible to build Panda3D on an Android device using the
 [termux](https://termux.com/) shell, the recommended route is to cross-compile
 .whl files using the SDK and NDK, which can then be used by the `build_apps`
 command to build a Python application into an .apk or .aab bundle.  You will

@@ -33,7 +33,7 @@ set(WINSTATS_SOURCES
 
 composite_sources(win-stats WINSTATS_SOURCES)
 add_executable(win-stats ${WINSTATS_HEADERS} ${WINSTATS_SOURCES})
-target_link_libraries(win-stats p3progbase p3pstatserver comctl32.lib)
+target_link_libraries(win-stats p3progbase p3pstatserver comctl32.lib uxtheme.lib)
 
 # This program is NOT actually called win-stats. It's just pstats.exe
 set_target_properties(win-stats PROPERTIES OUTPUT_NAME "pstats")

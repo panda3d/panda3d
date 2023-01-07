@@ -93,7 +93,7 @@ PUBLISHED:
   void test_under_integrity() const { }
 #endif  // _DEBUG
 
-  EXTENSION(PyObject *__reduce__() const);
+  PY_EXTENSION(PyObject *__reduce__() const);
 
 protected:
   enum UnderFlags {

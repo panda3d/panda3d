@@ -11,6 +11,7 @@ def test_window_basic(window):
     default_props.set_origin(current_props.get_origin())
     default_props.set_minimized(False)
     default_props.foreground = current_props.foreground
+    default_props.z_order = current_props.z_order
 
     # The rest should be the same
     assert current_props == default_props

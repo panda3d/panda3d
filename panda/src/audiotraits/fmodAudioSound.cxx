@@ -37,9 +37,8 @@ TypeHandle FmodAudioSound::_type_handle;
  * Constructor All sound will DEFAULT load as a 2D sound unless otherwise
  * specified.
  */
-
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
+FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) : AudioSound(positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
   audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
               << file->get_original_filename());
@@ -337,6 +336,49 @@ get_loop_count() const {
   } else {
     return (unsigned long)loop_count;
   }
+}
+
+/**
+ * Sets the time at which subsequent loops will begin.
+ * A value of 0 indicates the beginning of the audio.
+ */
+void FmodAudioSound::
+set_loop_start(PN_stdfloat loop_start) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
+  audio_debug("FmodAudioSound::set_loop_start()   Setting the sound's loop start to: " << loop_start);
+
+  FMOD_RESULT result;
+  unsigned int length;
+
+  result = _sound->getLength(&length, FMOD_TIMEUNIT_MS);
+  fmod_audio_errcheck("_sound->getLength()", result);
+
+  unsigned int loop_start_int = (unsigned int) (loop_start * 1000.0);
+
+  if (loop_start_int >= length) {
+    audio_debug("FmodAudioSound::set_loop_start()   Would loop after end of track, setting start to 0");
+    loop_start_int = 0;
+  }
+
+  result = _sound->setLoopPoints(loop_start_int, FMOD_TIMEUNIT_MS, length, FMOD_TIMEUNIT_MS);
+  fmod_audio_errcheck("_sound->setLoopPoints()", result);
+  audio_debug("FmodAudioSound::set_loop_start()   Sound's loop start should be set to: " << loop_start);
+}
+
+/**
+ * Return the time at which subsequent loops will begin.
+ * A value of 0 indicates the beginning of the audio.
+ */
+PN_stdfloat FmodAudioSound::
+get_loop_start() const {
+  ReMutexHolder holder(FmodAudioManager::_lock);
+  FMOD_RESULT result;
+  unsigned int loop_start;
+
+  result = _sound->getLoopPoints(&loop_start, FMOD_TIMEUNIT_MS, nullptr, FMOD_TIMEUNIT_MS);
+  fmod_audio_errcheck("_sound->getLoopPoints()", result);
+
+  return ((double)loop_start) / 1000.0;
 }
 
 /**

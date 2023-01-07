@@ -15,6 +15,7 @@
 #define CPPINSTANCEIDENTIFIER_H
 
 #include "dtoolbase.h"
+#include "cppAttributeList.h"
 
 #include <vector>
 #include <string>
@@ -48,17 +49,24 @@ enum CPPInstanceIdentifierType {
 class CPPInstanceIdentifier {
 public:
   CPPInstanceIdentifier(CPPIdentifier *ident);
+  CPPInstanceIdentifier(CPPIdentifier *ident, CPPAttributeList attributes);
 
   CPPType *unroll_type(CPPType *start_type);
 
-  void add_modifier(CPPInstanceIdentifierType type);
+  void add_modifier(CPPInstanceIdentifierType type,
+                    CPPAttributeList attr = CPPAttributeList());
   void add_func_modifier(CPPParameterList *params, int flags,
-                         CPPType *trailing_return_type = nullptr);
-  void add_scoped_pointer_modifier(CPPIdentifier *scoping);
-  void add_array_modifier(CPPExpression *expr);
+                         CPPType *trailing_return_type = nullptr,
+                         CPPAttributeList attr = CPPAttributeList());
+  void add_scoped_pointer_modifier(CPPIdentifier *scoping,
+                                   CPPAttributeList attr = CPPAttributeList());
+  void add_array_modifier(CPPExpression *expr,
+                          CPPAttributeList attr = CPPAttributeList());
   void add_initializer_modifier(CPPParameterList *params);
 
   void add_trailing_return_type(CPPType *type);
+
+  void add_attributes(const CPPAttributeList &attributes);
 
   CPPParameterList *get_initializer() const;
 
@@ -69,11 +77,14 @@ public:
 
   class Modifier {
   public:
-    Modifier(CPPInstanceIdentifierType type);
+    Modifier(CPPInstanceIdentifierType type,
+             CPPAttributeList attr = CPPAttributeList());
     static Modifier func_type(CPPParameterList *params, int flags,
-                              CPPType *trailing_return_type);
-    static Modifier array_type(CPPExpression *expr);
-    static Modifier scoped_pointer_type(CPPIdentifier *scoping);
+                              CPPType *trailing_return_type,
+                              CPPAttributeList attr);
+    static Modifier array_type(CPPExpression *expr, CPPAttributeList attr);
+    static Modifier scoped_pointer_type(CPPIdentifier *scoping,
+                                        CPPAttributeList attr);
     static Modifier initializer_type(CPPParameterList *params);
 
     CPPInstanceIdentifierType _type;
@@ -82,9 +93,12 @@ public:
     CPPIdentifier *_scoping;
     CPPExpression *_expr;
     CPPType *_trailing_return_type;
+    CPPAttributeList _attributes;
   };
   typedef std::vector<Modifier> Modifiers;
   Modifiers _modifiers;
+
+  CPPAttributeList _attributes;
 
   // If not null, indicates a bitfield
   CPPExpression *_bit_width;

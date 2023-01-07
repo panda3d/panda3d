@@ -414,8 +414,9 @@ client_main_tick() {
       for (vector_int::const_iterator vi = indices.begin();
            vi != indices.end();
            ++vi) {
-        int frame_number = clock->get_frame_count(get_thread_object(*vi));
-        _impl->new_frame(*vi, frame_number);
+        InternalThread *thread = get_thread_ptr(*vi);
+        _impl->new_frame(*vi, thread->_frame_number);
+        thread->_frame_number = clock->get_frame_count(get_thread_object(*vi));
       }
     }
   }
@@ -678,12 +679,17 @@ do_make_thread(Thread *thread) {
       int index = (*vi);
       nassertr(index >= 0 && index < get_num_threads(), PStatThread());
       ThreadPointer *threads = _threads.load(std::memory_order_relaxed);
-      if (threads[index]->_thread.was_deleted() &&
-          threads[index]->_sync_name == thread->get_sync_name()) {
+      InternalThread *pthread = threads[index];
+      if (pthread->_thread.was_deleted() &&
+          pthread->_sync_name == thread->get_sync_name()) {
         // Yes, re-use this one.
-        threads[index]->_thread = thread;
+        pthread->_thread = thread;
         thread->set_pstats_index(index);
         thread->set_pstats_callback(this);
+        if (pthread->_sync_name == "Main") {
+          ClockObject *clock = ClockObject::get_global_clock();
+          pthread->_frame_number = clock->get_frame_count(thread);
+        }
         return PStatThread(this, index);
       }
     }
@@ -695,6 +701,10 @@ do_make_thread(Thread *thread) {
   thread->set_pstats_callback(this);
 
   InternalThread *pthread = new InternalThread(thread);
+  if (pthread->_sync_name == "Main") {
+    ClockObject *clock = ClockObject::get_global_clock();
+    pthread->_frame_number = clock->get_frame_count(thread);
+  }
   add_thread(pthread);
 
   return PStatThread(this, new_index);

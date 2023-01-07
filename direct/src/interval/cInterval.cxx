@@ -22,7 +22,7 @@
 using std::ostream;
 using std::string;
 
-PStatCollector CInterval::_root_pcollector("App:Show code:ivalLoop");
+PStatCollector CInterval::_root_pcollector("App:Tasks:ivalLoop");
 TypeHandle CInterval::_type_handle;
 
 static inline string

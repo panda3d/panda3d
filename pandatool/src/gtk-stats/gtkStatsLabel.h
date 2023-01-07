@@ -43,6 +43,7 @@ public:
   void set_highlight(bool highlight);
   bool get_highlight() const;
 
+  void update_color();
   void update_text(bool use_fullname);
 
 private:

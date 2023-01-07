@@ -418,6 +418,10 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "XDG_DATA_HOME") {
     Filename home_dir = Filename::get_home_directory();
     return home_dir.get_fullpath() + "/.local/share";
+
+  } else if (var == "XDG_STATE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/state";
   }
 #endif // _WIN32
 

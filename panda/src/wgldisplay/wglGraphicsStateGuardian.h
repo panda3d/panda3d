@@ -38,7 +38,7 @@ public:
 
   INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
-  void get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum);
+  static void get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum);
   bool get_properties_advanced(FrameBufferProperties &properties, HDC hdc, int pfnum);
   void choose_pixel_format(const FrameBufferProperties &properties, bool need_pbuffer);
   virtual void reset();

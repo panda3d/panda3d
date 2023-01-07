@@ -3037,11 +3037,15 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
  * into system memory, not texture memory.  Returns true on success, false on
  * failure.
  *
+ * If a future is given, the operation may be scheduled to occur in the
+ * background, in which case the texture will be passed as the result of the
+ * future when the operation is complete.
+ *
  * This completely redefines the ram image of the indicated texture.
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
-                        const RenderBuffer &) {
+                        const RenderBuffer &, ScreenshotRequest *) {
   return false;
 }
 
@@ -3549,8 +3553,15 @@ get_dummy_shadow_map(Texture::TextureType texture_type) const {
       dummy_cube->setup_cube_map(1, Texture::T_unsigned_byte, Texture::F_depth_component);
       dummy_cube->set_clear_color(1);
       // Note: cube map shadow filtering doesn't seem to work in Cg.
-      dummy_cube->set_minfilter(SamplerState::FT_linear);
-      dummy_cube->set_magfilter(SamplerState::FT_linear);
+      // That is why it is currently disabled by default, but it can be
+      // overridden in Config.prc for apps that have custom GLSL shaders.
+      if (shadow_cube_map_filter && get_supports_shadow_filter()) {
+        dummy_cube->set_minfilter(SamplerState::FT_shadow);
+        dummy_cube->set_magfilter(SamplerState::FT_shadow);
+      } else {
+        dummy_cube->set_minfilter(SamplerState::FT_linear);
+        dummy_cube->set_magfilter(SamplerState::FT_linear);
+      }
     }
     return dummy_cube;
   }

@@ -391,7 +391,7 @@ cp_dependency(ShaderMatInput inp) {
     dep |= SSD_colorscale;
   }
   if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
-    dep |= SSD_fog;
+    dep |= SSD_fog | SSD_frame;
   }
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
@@ -2943,7 +2943,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^>]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.

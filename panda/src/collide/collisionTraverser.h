@@ -80,8 +80,8 @@ PUBLISHED:
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level) const;
 
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *state));
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *state));
 
 private:
   typedef pvector<CollisionLevelStateSingle> LevelStatesSingle;

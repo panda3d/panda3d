@@ -16,10 +16,10 @@
 #include "gtkStatsGraph.h"
 #include "convert_srgb.h"
 
-int GtkStatsLabel::_left_margin = 2;
+int GtkStatsLabel::_left_margin = 6;
 int GtkStatsLabel::_right_margin = 2;
-int GtkStatsLabel::_top_margin = 2;
-int GtkStatsLabel::_bottom_margin = 2;
+int GtkStatsLabel::_top_margin = 1;
+int GtkStatsLabel::_bottom_margin = 1;
 
 /**
  *
@@ -51,34 +51,10 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
 
   gtk_widget_set_has_tooltip(_widget, TRUE);
 
-  // Set the fg and bg colors on the label.
-  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  _bg_color = LRGBColor(
-    encode_sRGB_float((float)rgb[0]),
-    encode_sRGB_float((float)rgb[1]),
-    encode_sRGB_float((float)rgb[2]));
-
-  _highlight_bg_color = LRGBColor(
-    encode_sRGB_float((float)rgb[0] * 0.75f),
-    encode_sRGB_float((float)rgb[1] * 0.75f),
-    encode_sRGB_float((float)rgb[2] * 0.75f));
-
-  // Should our foreground be black or white?
-  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
-  if (bright >= 0.5) {
-    _fg_color = LRGBColor(0);
-  } else {
-    _fg_color = LRGBColor(1);
-  }
-  if (bright * 0.75 >= 0.5) {
-    _highlight_fg_color = LRGBColor(0);
-  } else {
-    _highlight_fg_color = LRGBColor(1);
-  }
-
   _highlight = false;
   _mouse_within = false;
 
+  update_color();
   update_text(use_fullname);
   gtk_widget_show_all(_widget);
 }
@@ -146,6 +122,39 @@ get_highlight() const {
 }
 
 /**
+ * Updates the colors.
+ */
+void GtkStatsLabel::
+update_color() {
+  // Set the fg and bg colors on the label.
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
+  _bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
+
+  _highlight_bg_color = LRGBColor(
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
+
+  // Should our foreground be black or white?
+  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
+  if (bright >= 0.5) {
+    _fg_color = LRGBColor(0);
+  } else {
+    _fg_color = LRGBColor(1);
+  }
+  if (bright * 0.75 >= 0.5) {
+    _highlight_fg_color = LRGBColor(0);
+  } else {
+    _highlight_fg_color = LRGBColor(1);
+  }
+
+  gtk_widget_queue_draw(_widget);
+}
+
+/**
  * Set to true if the full name of the collector should be shown.
  */
 void GtkStatsLabel::
@@ -167,9 +176,9 @@ update_text(bool use_fullname) {
   // our widget.
   int width, height;
   pango_layout_get_pixel_size(_layout, &width, &height);
-  gtk_widget_set_size_request(_widget, width + 8, height);
-  _ideal_width = width;
-  _height = height;
+  _ideal_width = width + _left_margin + _right_margin;
+  _height = height + _top_margin + _bottom_margin;
+  gtk_widget_set_size_request(_widget, _ideal_width, _height);
 }
 
 /**
@@ -212,9 +221,9 @@ draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
   cairo_set_source_rgb(cr, fg[0], fg[1], fg[2]);
   if (self->_align_right) {
-    cairo_move_to(cr, allocation.width - width, 0);
+    cairo_move_to(cr, allocation.width - width - _right_margin, _top_margin);
   } else {
-    cairo_move_to(cr, 0, 0);
+    cairo_move_to(cr, _left_margin, _top_margin);
   }
   pango_cairo_show_layout(cr, self->_layout);
 

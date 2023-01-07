@@ -60,11 +60,18 @@ public:
   virtual void on_leave_label(int collector_index);
   virtual std::string get_label_tooltip(int collector_index) const;
 
+  void reset_collector_color(int collector_index);
+
 protected:
   void close();
 
   void start_animation();
   virtual bool animate(double time, double dt);
+
+  void get_window_state(int &x, int &y, int &width, int &height,
+                        bool &maximized, bool &minimized) const;
+  void set_window_state(int x, int y, int width, int height,
+                        bool maximized, bool minimized);
 
   cairo_pattern_t *get_collector_pattern(int collector_index, bool highlight = false);
   LRGBColor get_collector_text_color(int collector_index, bool highlight = false);
@@ -89,14 +96,14 @@ protected:
   TextColors _text_colors;
 
   GtkStatsMonitor *_monitor;
-  GtkWidget *_parent_window;
-  GtkWidget *_window;
+  GtkWidget *_parent_window = nullptr;
+  GtkWidget *_window = nullptr;
   GtkWidget *_graph_frame;
-  GtkWidget *_graph_window;
+  GtkWidget *_graph_window = nullptr;
   GtkWidget *_graph_hbox;
   GtkWidget *_graph_vbox;
   GtkWidget *_hpaned;
-  GtkWidget *_scale_area;
+  GtkWidget *_scale_area = nullptr;
   GtkStatsLabelStack _label_stack;
 
   GdkCursor *_hand_cursor;

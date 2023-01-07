@@ -98,9 +98,9 @@ PUBLISHED:
   TexturePoolFilter *get_filter(size_t i) const;
   MAKE_SEQ_PROPERTY(filters, get_num_filters, get_filter);
 
-  EXTENSION(bool register_filter(PyObject *tex_filter));
-  EXTENSION(bool unregister_filter(PyObject *tex_filter));
-  EXTENSION(bool is_filter_registered(PyObject *tex_filter));
+  PY_EXTENSION(bool register_filter(PyObject *tex_filter));
+  PY_EXTENSION(bool unregister_filter(PyObject *tex_filter));
+  PY_EXTENSION(bool is_filter_registered(PyObject *tex_filter));
 
   static TexturePool *get_global_ptr();
 
@@ -216,4 +216,4 @@ private:
 
 #include "texturePool.I"
 
-#endif
+#endif // !TEXTUREPOOL_H

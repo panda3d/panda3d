@@ -14,18 +14,34 @@
 #include "deletedBufferChain.h"
 #include "memoryHook.h"
 
-/**
- * Use the global MemoryHook to get a new DeletedBufferChain of the
- * appropriate size.
- */
-DeletedBufferChain::
-DeletedBufferChain(size_t buffer_size) {
-  _deleted_chain = nullptr;
-  _buffer_size = buffer_size;
+#include <set>
 
-  // We must allocate at least this much space for bookkeeping reasons.
-  _buffer_size = std::max(_buffer_size, sizeof(ObjectNode));
-}
+DeletedBufferChain DeletedBufferChain::_small_deleted_chains[DeletedBufferChain::num_small_deleted_chains] = {
+  DeletedBufferChain(sizeof(void *)),
+  DeletedBufferChain(sizeof(void *) * 2),
+  DeletedBufferChain(sizeof(void *) * 3),
+  DeletedBufferChain(sizeof(void *) * 4),
+  DeletedBufferChain(sizeof(void *) * 5),
+  DeletedBufferChain(sizeof(void *) * 6),
+  DeletedBufferChain(sizeof(void *) * 7),
+  DeletedBufferChain(sizeof(void *) * 8),
+  DeletedBufferChain(sizeof(void *) * 9),
+  DeletedBufferChain(sizeof(void *) * 10),
+  DeletedBufferChain(sizeof(void *) * 11),
+  DeletedBufferChain(sizeof(void *) * 12),
+  DeletedBufferChain(sizeof(void *) * 13),
+  DeletedBufferChain(sizeof(void *) * 14),
+  DeletedBufferChain(sizeof(void *) * 15),
+  DeletedBufferChain(sizeof(void *) * 16),
+  DeletedBufferChain(sizeof(void *) * 17),
+  DeletedBufferChain(sizeof(void *) * 18),
+  DeletedBufferChain(sizeof(void *) * 19),
+  DeletedBufferChain(sizeof(void *) * 20),
+  DeletedBufferChain(sizeof(void *) * 21),
+  DeletedBufferChain(sizeof(void *) * 22),
+  DeletedBufferChain(sizeof(void *) * 23),
+  DeletedBufferChain(sizeof(void *) * 24),
+};
 
 /**
  * Allocates the memory for a new buffer of the indicated size (which must be
@@ -36,6 +52,7 @@ allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", "
   // ", TAU_USER);
+  // If this triggers, maybe you forgot ALLOC_DELETED_CHAIN in a subclass?
   assert(size <= _buffer_size);
 
   // Determine how much space to allocate.
@@ -138,4 +155,17 @@ deallocate(void *ptr, TypeHandle type_handle) {
 #else  // USE_DELETED_CHAIN
   PANDA_FREE_SINGLE(ptr);
 #endif  // USE_DELETED_CHAIN
+}
+
+/**
+ * Returns a new DeletedBufferChain.
+ */
+DeletedBufferChain *DeletedBufferChain::
+get_large_deleted_chain(size_t buffer_size) {
+  static MutexImpl lock;
+  lock.lock();
+  static std::set<DeletedBufferChain> deleted_chains;
+  DeletedBufferChain *result = (DeletedBufferChain *)&*deleted_chains.insert(DeletedBufferChain(buffer_size)).first;
+  lock.unlock();
+  return result;
 }

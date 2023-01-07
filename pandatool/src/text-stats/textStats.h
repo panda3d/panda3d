@@ -30,7 +30,7 @@ class TextStats : public ProgramBase, public PStatServer {
 public:
   TextStats();
 
-  virtual PStatMonitor *make_monitor();
+  virtual PStatMonitor *make_monitor(const NetAddress &address);
 
   void run();
 

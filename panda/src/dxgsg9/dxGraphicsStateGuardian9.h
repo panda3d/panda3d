@@ -127,7 +127,8 @@ public:
                                            const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram(Texture *tex, int view, int z,
                                        const DisplayRegion *dr,
-                                       const RenderBuffer &rb);
+                                       const RenderBuffer &rb,
+                                       ScreenshotRequest *request);
   bool do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
                                   const DisplayRegion *dr,
                                   const RenderBuffer &rb,

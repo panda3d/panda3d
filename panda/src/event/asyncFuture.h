@@ -62,12 +62,12 @@ PUBLISHED:
   INLINE AsyncFuture();
   virtual ~AsyncFuture();
 
-  EXTENSION(static PyObject *__await__(PyObject *self));
-  EXTENSION(static PyObject *__iter__(PyObject *self));
+  PY_EXTENSION(static PyObject *__await__(PyObject *self));
+  PY_EXTENSION(static PyObject *__iter__(PyObject *self));
 
   INLINE bool done() const;
   INLINE bool cancelled() const;
-  EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
+  PY_EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
 
   virtual bool cancel();
 
@@ -75,9 +75,9 @@ PUBLISHED:
   INLINE const std::string &get_done_event() const;
   MAKE_PROPERTY(done_event, get_done_event, set_done_event);
 
-  EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
+  PY_EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
-  EXTENSION(static PyObject *gather(PyObject *args));
+  PY_EXTENSION(static PyObject *gather(PyObject *args));
   INLINE static PT(AsyncFuture) shield(PT(AsyncFuture) future);
 
   virtual void output(std::ostream &out) const;
@@ -85,8 +85,7 @@ PUBLISHED:
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
-  EXTENSION(void set_result(PyObject *));
-
+  PY_EXTENSION(void set_result(PyObject *));
 public:
   INLINE void set_result(std::nullptr_t);
   INLINE void set_result(TypedReferenceCount *result);
@@ -201,4 +200,4 @@ private:
 
 #include "asyncFuture.I"
 
-#endif
+#endif // !ASYNCFUTURE_H

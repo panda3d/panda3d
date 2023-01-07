@@ -312,6 +312,22 @@ make_wrapper_entry(FunctionIndex function_index) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
   }
 
+  if (_flags & F_copy_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_copy_constructor;
+  }
+
+  if (_flags & F_coerce_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_coerce_constructor;
+  }
+
+  if (_extension) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_extension;
+  }
+
+  if (_cppfunc->_attributes.has_attribute("deprecated")) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_deprecated;
+  }
+
   Parameters::const_iterator pi;
   for (pi = _parameters.begin();
        pi != _parameters.end();
@@ -856,8 +872,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     } else if (fname == "make") {
       if (!_has_this && _parameters.size() >= 1 &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
-        // We can use this for coercion.
-        _flags |= F_coerce_constructor;
+        // We can use this for coercion, except if this is a kwargs param that
+        // does not have a default value.
+        if ((_flags & F_explicit_args) == 0 ||
+            _parameters.size() != first_param + 2 ||
+            _parameters[first_param + 1]._remap->has_default_value()) {
+          _flags |= F_coerce_constructor;
+        }
       }
 
       if (_args_type == InterfaceMaker::AT_varargs) {

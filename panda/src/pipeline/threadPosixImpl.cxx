@@ -169,7 +169,12 @@ join() {
   if (!_detached) {
     _mutex.unlock();
     void *return_val;
-    pthread_join(_thread, &return_val);
+    int result = pthread_join(_thread, &return_val);
+    if (result != 0) {
+      thread_cat.error()
+        << "Failed to join thread " << _parent_obj->get_name()
+        << ": " << strerror(result) << "\n";
+    }
     _detached = true;
     return;
   }
