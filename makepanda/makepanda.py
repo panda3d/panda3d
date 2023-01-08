@@ -4331,8 +4331,6 @@ PyTargetAdd('core.pyd', input='libp3tform_igate.obj')
 PyTargetAdd('core.pyd', input='libp3putil_igate.obj')
 PyTargetAdd('core.pyd', input='libp3audio_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgui_igate.obj')
-PyTargetAdd('core.pyd', input='libp3net_igate.obj')
-PyTargetAdd('core.pyd', input='libp3nativenet_igate.obj')
 
 if GetTarget() != "emscripten":
   PyTargetAdd('core.pyd', input='libp3net_igate.obj')
