@@ -693,11 +693,7 @@ handle_update_field() {
       PyObject_GetAttrString(_python_repository, "doId2do");
     nassertr(doId2do != nullptr, false);
 
-    #ifdef USE_PYTHON_2_2_OR_EARLIER
-    PyObject *doId = PyInt_FromLong(do_id);
-    #else
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
-    #endif
     PyObject *distobj = PyDict_GetItem(doId2do, doId);
     Py_DECREF(doId);
     Py_DECREF(doId2do);
@@ -784,11 +780,7 @@ handle_update_field_owner() {
       PyObject_GetAttrString(_python_repository, "doId2ownerView");
     nassertr(doId2ownerView != nullptr, false);
 
-    #ifdef USE_PYTHON_2_2_OR_EARLIER
-    PyObject *doId = PyInt_FromLong(do_id);
-    #else
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
-    #endif
 
     // pass the update to the owner view first
     PyObject *distobjOV = PyDict_GetItem(doId2ownerView, doId);
@@ -893,7 +885,7 @@ describe_message(std::ostream &out, const string &prefix,
 
   packer.set_unpack_data((const char *)dg.get_data(), dg.get_length(), false);
   CHANNEL_TYPE do_id;
-  int msg_type;
+  unsigned int msg_type;
   bool is_update = false;
   string full_prefix = "CR::" + prefix;
 
@@ -919,7 +911,12 @@ describe_message(std::ostream &out, const string &prefix,
 
     #ifdef HAVE_PYTHON
     if (_python_repository != nullptr) {
-      PyObject *msgId = PyLong_FromLong(msg_type);
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+#endif
+
+      PyObject *msgId = PyLong_FromUnsignedLong(msg_type);
       nassertv(msgId != nullptr);
 #if PY_MAJOR_VERSION >= 3
       PyObject *methodName = PyUnicode_FromString("_getMsgName");
@@ -941,6 +938,10 @@ describe_message(std::ostream &out, const string &prefix,
       Py_DECREF(methodName);
       Py_DECREF(msgId);
       Py_DECREF(result);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
     }
     #endif
     if (msgName.length() == 0) {
@@ -959,15 +960,16 @@ describe_message(std::ostream &out, const string &prefix,
 
     #ifdef HAVE_PYTHON
     if (_python_repository != nullptr) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+#endif
+
       PyObject *doId2do =
         PyObject_GetAttrString(_python_repository, "doId2do");
       nassertv(doId2do != nullptr);
 
-      #ifdef USE_PYTHON_2_2_OR_EARLIER
-      PyObject *doId = PyInt_FromLong(do_id);
-      #else
       PyObject *doId = PyLong_FromUnsignedLong(do_id);
-      #endif
       PyObject *distobj = PyDict_GetItem(doId2do, doId);
       Py_DECREF(doId);
       Py_DECREF(doId2do);
@@ -983,6 +985,10 @@ describe_message(std::ostream &out, const string &prefix,
         dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
         Py_DECREF(dclass_this);
       }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
     }
     #endif  // HAVE_PYTHON
 
