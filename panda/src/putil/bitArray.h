@@ -87,7 +87,7 @@ PUBLISHED:
   int get_next_higher_different_bit(int low_bit) const;
 
   INLINE size_t get_num_words() const;
-  INLINE MaskType get_word(size_t n) const;
+  INLINE WordType get_word(size_t n) const;
   INLINE void set_word(size_t n, WordType value);
 
   void invert_in_place();
@@ -136,6 +136,7 @@ public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
+  INLINE MaskType get_word_internal(size_t n) const;
   INLINE void copy_on_write();
   void ensure_has_word(int n);
   void normalize();
