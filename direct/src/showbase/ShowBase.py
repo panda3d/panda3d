@@ -487,11 +487,15 @@ class ShowBase(DirectObject.DirectObject):
             DGG.setDefaultClickSound(self.loader.loadSfx("audio/sfx/GUI_click.wav"))
             DGG.setDefaultRolloverSound(self.loader.loadSfx("audio/sfx/GUI_rollover.wav"))
 
+        # Create a private DirectObject - allowing base.accept for window-event
+        # as well as allowing ShowBase's default handling of this.
+        self.__directObject = DirectObject.DirectObject()
+
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
         self.__prevWindowProperties = None
-        self.accept('window-event', self.windowEvent)
+        self.__directObject.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
         from . import Transitions
@@ -2579,9 +2583,9 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeVis.setLightOff(1)
             self.oobeCullFrustum = None
 
-            self.accept('oobe-down', self.__oobeButton, extraArgs = [''])
-            self.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
-            self.accept('oobe-up', self.__oobeButton, extraArgs = ['-up'])
+            self.__directObject.accept('oobe-down', self.__oobeButton, extraArgs = [''])
+            self.__directObject.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
+            self.__directObject.accept('oobe-up', self.__oobeButton, extraArgs = ['-up'])
 
         if self.oobeMode:
             # Disable OOBE mode.
