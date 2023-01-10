@@ -208,6 +208,23 @@ new_data(int thread_index, int frame_number) {
 }
 
 /**
+ * Called when a thread should be removed from the list of threads.
+ */
+void GtkStatsMonitor::
+remove_thread(int thread_index) {
+  for (ChartMenus::iterator it = _chart_menus.begin(); it != _chart_menus.end(); ++it) {
+    GtkStatsChartMenu *chart_menu = *it;
+    if (chart_menu->get_thread_index() == thread_index) {
+      chart_menu->remove_from_menu_bar(_menu_bar);
+      delete chart_menu;
+      _chart_menus.erase(it);
+      --_next_chart_index;
+      return;
+    }
+  }
+}
+
+/**
  * Called whenever the connection to the client has been lost.  This is a
  * permanent state change.  The monitor should update its display to represent
  * this, and may choose to close down automatically.

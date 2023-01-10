@@ -27,6 +27,8 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
+#include <algorithm>
+
 using std::string;
 
 PStatCollector PStatClient::_heap_total_size_pcollector("System memory:Heap");
@@ -415,6 +417,7 @@ client_main_tick() {
            vi != indices.end();
            ++vi) {
         InternalThread *thread = get_thread_ptr(*vi);
+        nassertd(thread != nullptr) continue;
         _impl->new_frame(*vi, thread->_frame_number);
         thread->_frame_number = clock->get_frame_count(get_thread_object(*vi));
       }
@@ -483,10 +486,12 @@ client_disconnect() {
   ThreadPointer *threads = _threads.load(std::memory_order_relaxed);
   for (int ti = 0; ti < get_num_threads(); ++ti) {
     InternalThread *thread = threads[ti];
-    thread->_frame_number = 0;
-    thread->_is_active = false;
-    thread->_next_packet = 0.0;
-    thread->_frame_data.clear();
+    if (thread != nullptr) {
+      thread->_frame_number = 0;
+      thread->_is_active = false;
+      thread->_next_packet = 0.0;
+      thread->_frame_data.clear();
+    }
   }
 
   CollectorPointer *collectors = _collectors.load(std::memory_order_relaxed);
@@ -1231,6 +1236,54 @@ activate_hook(Thread *thread) {
     ithread->_frame_data.add_stop(_thread_block_pcollector.get_index(), now);
     ithread->_thread_active = true;
   }
+}
+
+/**
+ * Called when the thread is deleted.  This provides a callback hook for PStats
+ * to remove a thread's data when the thread is removed.
+ */
+void PStatClient::
+delete_hook(Thread *thread) {
+  int thread_index = thread->get_pstats_index();
+  if (thread_index < 0) {
+    return;
+  }
+
+  PStatClientImpl *impl;
+  InternalThread *ithread;
+  {
+    ReMutexHolder holder(_lock);
+    impl = _impl;
+    if (impl == nullptr) {
+      return;
+    }
+
+    if (!impl->client_is_connected()) {
+      return;
+    }
+
+    MultiThingsByName::iterator ni;
+
+    ni = _threads_by_name.find(thread->get_name());
+    if (ni != _threads_by_name.end()) {
+      ni->second.erase(std::remove(ni->second.begin(), ni->second.end(), thread_index));
+    }
+
+    ni = _threads_by_sync_name.find(thread->get_sync_name());
+    if (ni != _threads_by_sync_name.end()) {
+      ni->second.erase(std::remove(ni->second.begin(), ni->second.end(), thread_index));
+    }
+
+    // This load can be relaxed because we hold the lock.
+    ThreadPointer *threads = _threads.load(std::memory_order_relaxed);
+    ithread = threads[thread_index];
+    ithread->_is_active = false;
+    ithread->_thread_active = false;
+    threads[thread_index] = nullptr;
+  }
+
+  impl->remove_thread(thread_index);
+  delete ithread;
 }
 
 /**

@@ -61,11 +61,20 @@ add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU | MIIM_ID;
   mii.fType = MFT_STRING;
+  mii.wID = 1000 | _thread_index;
   mii.hSubMenu = _menu;
   mii.dwTypeData = (char *)thread_name.c_str();
   InsertMenuItem(menu_bar, before_menu_id, FALSE, &mii);
+}
+
+/**
+ *
+ */
+void WinStatsChartMenu::
+remove_from_menu_bar(HMENU menu_bar) {
+  RemoveMenu(menu_bar, 1000 | _thread_index, MF_BYCOMMAND);
 }
 
 /**
