@@ -9,6 +9,10 @@ import time
 import sys
 
 
+class NotifierException(Exception):
+    pass
+
+
 class Notifier:
     serverDelta = 0
 
@@ -116,7 +120,7 @@ class Notifier:
             return NSError
 
     # error funcs
-    def error(self, errorString, exception=Exception):
+    def error(self, errorString, exception=NotifierException):
         """
         Raise an exception with given string and optional type:
         Exception: error
