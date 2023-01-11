@@ -14,7 +14,7 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(__wasi__)
 
 using std::cerr;
 using std::endl;

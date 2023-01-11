@@ -319,6 +319,8 @@ def GetHost():
     host = sysconfig.get_config_var('HOST_GNU_TYPE') or ''
     if host and host.endswith('-emscripten'):
         return 'emscripten'
+    if host and host.endswith('-wasi'):
+        return 'wasi'
     if sys.platform == 'win32' or sys.platform == 'cygwin':
         # sys.platform is win32 on 64-bits Windows as well.
         return 'windows'
@@ -463,6 +465,14 @@ def SetTarget(target, arch=None):
         DEFAULT_CXX = "em++"
         DEFAULT_AR = "emar"
         DEFAULT_RANLIB = "emranlib"
+
+        arch = "wasm32"
+
+    elif target == 'wasi':
+        DEFAULT_CC = "clang"
+        DEFAULT_CXX = "clang++"
+        DEFAULT_AR = "llvm-ar"
+        DEFAULT_RANLIB = "llvm-ranlib"
 
         arch = "wasm32"
 
@@ -1414,6 +1424,9 @@ def GetThirdpartyDir():
 
     elif (target == 'emscripten'):
         THIRDPARTYDIR = base + "/emscripten-libs/"
+
+    elif (target == 'wasi'):
+        THIRDPARTYDIR = base
 
     else:
         Warn("Unsupported platform:", target)

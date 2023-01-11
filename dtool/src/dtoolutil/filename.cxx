@@ -445,13 +445,21 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
   if (fdirname.empty()) {
     // If we are not given a dirname, use the system tempnam() function to
     // create a system-defined temporary filename.
+#if defined(__wasi__)
+#warning "FIXME tempnam()"
+    const char *name="tmp0001";
+#else
 #ifdef _MSC_VER
     char *name = _tempnam(nullptr, prefix.c_str());
 #else
     char *name = tempnam(nullptr, prefix.c_str());
 #endif
+#endif
     Filename result = Filename::from_os_specific(name);
+#if !defined(__wasi__)
+#warning "FIXME tempnam()"
     free(name);
+#endif
     result.set_type(type);
     return result;
   }
@@ -1036,6 +1044,7 @@ make_canonical() {
   }
 
 #ifndef _WIN32
+#if !defined(__wasi__)
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != nullptr) {
@@ -1044,6 +1053,7 @@ make_canonical() {
     (*this) = newpath_fn;
   }
 #endif
+#endif // _WIN32
 
   Filename cwd = ExecutionEnvironment::get_cwd();
   if (!r_make_canonical(cwd)) {
@@ -2736,11 +2746,15 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   char buf[buf_size];
 
   orig_contents = string();
-
+#if !defined(__wasi__)
 #ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {
+#endif
+#else
+  #warning "FIXME lockf/flock"
+  if (0) {
 #endif
     perror(os_specific.c_str());
     close(fd);
@@ -2852,12 +2866,17 @@ atomic_read_contents(string &contents) const {
   char buf[buf_size];
 
   contents = string();
-
+#if !defined(__wasi__)
 #ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {
 #endif
+#else
+  #warning "FIXME lockf/flock"
+  if (0) {
+#endif
+
     perror(os_specific.c_str());
     close(fd);
     return false;

@@ -62,7 +62,7 @@ extern char **environ;
 #include <sys/sysctl.h>
 #endif
 
-#if defined(IS_LINUX) || defined(IS_FREEBSD)
+#if ( defined(IS_LINUX) || defined(IS_FREEBSD) ) && !defined(__wasi__)
 // For link_map and dlinfo.
 #include <link.h>
 #include <dlfcn.h>
@@ -923,6 +923,7 @@ read_args() {
 #endif
 
 #ifndef _WIN32
+#if !defined(__wasi__)
   // Try to use realpath to get cleaner paths.
 
   if (!_binary_name.empty()) {
@@ -938,6 +939,7 @@ read_args() {
       _dtool_name = newpath;
     }
   }
+#endif
 #endif  // _WIN32
 
   if (_dtool_name.empty()) {
