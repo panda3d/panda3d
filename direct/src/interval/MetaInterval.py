@@ -374,6 +374,8 @@ class MetaInterval(CMetaInterval):
         return self.getT()
 
     def resume(self, startT = None):
+        if self.getState() == CInterval.SFinal and startT is None:
+            return
         self.__updateIvals()
         if startT is not None:
             self.setT(startT)
