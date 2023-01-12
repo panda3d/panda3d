@@ -68,6 +68,7 @@ import time
 import atexit
 import importlib
 from direct.showbase import ExceptionVarDump
+from direct.stdpy import threading
 from . import DirectObject
 from . import SfxPlayer
 if __debug__:
@@ -584,6 +585,11 @@ class ShowBase(DirectObject.DirectObject):
         automatically.
 
         This function is designed to be safe to call multiple times."""
+
+        if threading.current_thread() is not threading.main_thread():
+            self.notify.warning("destory() was called on a thread other than the main thread.")
+            taskMgr.doMethodLater(0.1, self.destroy, "ShowBaseDestroyTask", extraArgs=[])
+            return
 
         for cb in self.finalExitCallbacks[:]:
             cb()
