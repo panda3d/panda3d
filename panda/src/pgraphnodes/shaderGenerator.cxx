@@ -781,22 +781,33 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
+  bool need_eye_reflection = false;
+  bool need_fragment_view_to_world = false;
+
   text << "void vshader(\n";
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
 
     switch (tex._gen_mode) {
-    case TexGenAttrib::M_world_position:
-      need_world_position = true;
+    case TexGenAttrib::M_world_cube_map:
+      need_fragment_view_to_world = true;
+    case TexGenAttrib::M_eye_sphere_map:
+    case TexGenAttrib::M_eye_cube_map:
+      need_eye_position = true;
+      need_eye_normal = true;
+      need_eye_reflection = true;
       break;
     case TexGenAttrib::M_world_normal:
       need_world_normal = true;
       break;
-    case TexGenAttrib::M_eye_position:
-      need_eye_position = true;
-      break;
     case TexGenAttrib::M_eye_normal:
       need_eye_normal = true;
+      break;
+    case TexGenAttrib::M_world_position:
+      need_world_position = true;
+      break;
+    case TexGenAttrib::M_eye_position:
+      need_eye_position = true;
       break;
     default:
       break;
@@ -1049,6 +1060,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (tex._flags & ShaderKey::TF_uses_color) {
       text << "\t uniform float4 texcolor_" << i << ",\n";
     }
+
+    if (tex._gen_mode == TexGenAttrib::M_constant) {
+      text << "\t uniform float4 texconst_" << i << ",\n";
+    }
+  }
+  if (need_fragment_view_to_world) {
+    text << "\t uniform float3x3 trans_view_to_world,\n";
   }
   if (need_tangents) {
     text << "\t in float4 l_tangent : " << tangent_freg << ",\n";
@@ -1119,6 +1137,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_normal && pack_eye_normal) {
     text << "\t float3 l_eye_normal = float3(l_tangent.w, l_binormal.w, l_eye_position.w);\n";
   }
+  if (need_eye_normal) {
+    text << "\t // Correct the surface normal for interpolation effects\n";
+    text << "\t l_eye_normal = normalize(l_eye_normal);\n";
+  }
+  if (need_eye_reflection ||
+      (need_eye_position && have_specular && (key._material_flags & Material::F_local) != 0 && !key._lights.empty())) {
+    text << "\t float3 norm_eye_position = normalize(l_eye_position.xyz);\n";
+  }
+  if (need_eye_reflection) {
+    text << "\t float3 eye_reflection = norm_eye_position - l_eye_normal * 2 * dot(l_eye_normal, norm_eye_position);\n";
+  }
 
   text << "\t float4 result;\n";
   if (key._outputs & (AuxBitplaneAttrib::ABO_aux_normal | AuxBitplaneAttrib::ABO_aux_glow)) {
@@ -1137,17 +1166,29 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       // Cg seems to be able to optimize this temporary away when appropriate.
       text << "\t float4 texcoord" << i << " = l_" << tex._texcoord_name->join("_") << ";\n";
       break;
-    case TexGenAttrib::M_world_position:
-      text << "\t float4 texcoord" << i << " = l_world_position;\n";
+    case TexGenAttrib::M_eye_sphere_map:
+      text << "\t float4 texcoord" << i << " = float4(eye_reflection.xz * (1.0f / (2.0f * length(eye_reflection + float3(0, -1, 0)))) + float2(0.5f, 0.5f), 0.0f, 1.0f);\n";
+      break;
+    case TexGenAttrib::M_world_cube_map:
+      text << "\t float4 texcoord" << i << " = float4(mul(trans_view_to_world, eye_reflection), 1.0f);\n";
+      break;
+    case TexGenAttrib::M_eye_cube_map:
+      text << "\t float4 texcoord" << i << " = float4(eye_reflection, 1.0f);\n";
       break;
     case TexGenAttrib::M_world_normal:
       text << "\t float4 texcoord" << i << " = l_world_normal;\n";
       break;
+    case TexGenAttrib::M_eye_normal:
+      text << "\t float4 texcoord" << i << " = float4(l_eye_normal, 1.0f);\n";
+      break;
+    case TexGenAttrib::M_world_position:
+      text << "\t float4 texcoord" << i << " = l_world_position;\n";
+      break;
     case TexGenAttrib::M_eye_position:
       text << "\t float4 texcoord" << i << " = float4(l_eye_position.xyz, 1.0f);\n";
       break;
-    case TexGenAttrib::M_eye_normal:
-      text << "\t float4 texcoord" << i << " = float4(l_eye_normal, 1.0f);\n";
+    case TexGenAttrib::M_constant:
+      text << "\t float4 texcoord" << i << " = texconst_" << i << ";\n";
       break;
     default:
       text << "\t float4 texcoord" << i << " = float4(0, 0, 0, 0);\n";
@@ -1236,10 +1277,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << ");\n";
     }
-  }
-  if (need_eye_normal) {
-    text << "\t // Correct the surface normal for interpolation effects\n";
-    text << "\t l_eye_normal = normalize(l_eye_normal);\n";
   }
   if (need_tangents) {
     text << "\t // Translate tangent-space normal in map to view-space.\n";
@@ -1335,7 +1372,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
         }
@@ -1370,7 +1407,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
         }
@@ -1410,7 +1447,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0,1,0));\n";
         }
