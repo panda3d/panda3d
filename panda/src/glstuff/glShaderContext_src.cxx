@@ -25,6 +25,7 @@
 #include "fogAttrib.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "renderModeAttrib.h"
 #include "bamCache.h"
 
 using std::dec;
@@ -2077,6 +2078,14 @@ set_state_and_transform(const RenderState *target_rs,
     if (state_rs->get_attrib(TextureAttrib::get_class_slot()) !=
         target_rs->get_attrib(TextureAttrib::get_class_slot())) {
       altered |= Shader::SSD_texture;
+    }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
+    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+      altered |= Shader::SSD_render_mode;
     }
     _state_rs = target_rs;
   }

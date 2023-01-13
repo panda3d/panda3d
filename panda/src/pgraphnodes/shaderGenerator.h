@@ -150,6 +150,7 @@ protected:
     bool _lighting;
     bool _have_separate_ambient;
 
+    // Also contains bit 0x10000 indicating perspective point mode
     int _fog_mode;
 
     int _outputs;

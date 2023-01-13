@@ -216,6 +216,12 @@ public:
     // Color of an M_blend texture stage.
     SMO_texcolor_i,
 
+    // Constant value of the TexGenAttrib of stage i.
+    SMO_texconst_i,
+
+    // Point parameters
+    SMO_attr_pointparams,
+
     SMO_INVALID
   };
 
@@ -323,6 +329,8 @@ public:
     SSD_projection    = 0x800,
     SSD_texture      = 0x1000,
     SSD_view_transform= 0x2000,
+    SSD_tex_gen      = 0x4000,
+    SSD_render_mode  = 0x8000,
   };
 
   enum ShaderBug {

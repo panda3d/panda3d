@@ -500,6 +500,12 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
   }
+  if (inp == SMO_texconst_i) {
+    dep |= SSD_tex_gen;
+  }
+  if (inp == SMO_attr_pointparams) {
+    dep |= SSD_render_mode | SSD_transform | SSD_frame;
+  }
 
   return dep;
 }
@@ -1116,6 +1122,17 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
+    } else if (pieces[1] == "pointparams") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_pointparams;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
@@ -1273,6 +1290,27 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texcolor_i;
+    bind._arg[0] = nullptr;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = nullptr;
+    bind._index = atoi(pieces[1].c_str());
+
+    cp_add_mat_spec(bind);
+    return true;
+  }
+
+  if (pieces[0] == "texconst") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texconst_i;
     bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
