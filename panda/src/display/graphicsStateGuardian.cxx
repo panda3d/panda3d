@@ -57,6 +57,7 @@
 #include "colorScaleAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "fogAttrib.h"
+#include "renderModeAttrib.h"
 #include "config_pstatclient.h"
 
 #include <limits.h>
@@ -1506,6 +1507,33 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       // Special exception for light 0, which defaults to white.
       t.set_row(0, LVecBase4(1, 1, 1, 1));
     }
+    return &t;
+  }
+  case Shader::SMO_attr_pointparams: {
+    const RenderModeAttrib *target_render_mode;
+    _target_rs->get_attrib_def(target_render_mode);
+
+    PN_stdfloat thickness = target_render_mode->get_thickness();
+    PN_stdfloat catten = thickness;
+    PN_stdfloat patten = 0.0f;
+    if (target_render_mode->get_perspective()) {
+      LVecBase2i pixel_size = _current_display_region->get_pixel_size();
+
+      LVector3 height(0.0f, thickness, 1.0f);
+      height = height * _projection_mat->get_mat();
+      height = height * _internal_transform->get_scale()[1];
+      PN_stdfloat s = height[1] * pixel_size[1];
+
+      if (_current_lens->is_orthographic()) {
+        catten = s;
+        patten = 0.0f;
+      } else {
+        catten = 0.0f;
+        patten = s;
+      }
+    }
+
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, thickness, catten, patten, 0.0f);
     return &t;
   }
   default:

@@ -38,6 +38,7 @@
 #include "texture.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
+#include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
 #include "pointLight.h"
 #include "sphereLight.h"
@@ -567,6 +568,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   if (rs->get_attrib(fog) && !fog->is_off()) {
     key._fog_mode = (int)fog->get_fog()->get_mode() + 1;
   }
+
+  // Hijack this field for the perspective render-mode flag.
+  const RenderModeAttrib *render_mode;
+  if (rs->get_attrib(render_mode) && render_mode->get_perspective()) {
+    key._fog_mode |= 0x10000;
+  }
 }
 
 /**
@@ -754,6 +761,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   bool need_eye_position = key._lighting;
   bool need_eye_normal = !key._lights.empty() || ((key._outputs & AuxBitplaneAttrib::ABO_aux_normal) != 0);
   bool need_tangents = ((key._texture_flags & ShaderKey::TF_map_normal) != 0);
+  bool need_point_size = (key._fog_mode & 0x10000) != 0;
 
   // If we have binormal/tangent and eye position, we can pack eye normal in
   // the w channels of the others.
@@ -877,7 +885,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
-  } else if (need_tangents) {
+  }
+  else if (need_tangents || need_point_size) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
   }
   if (need_eye_normal) {
@@ -894,7 +903,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
   }
@@ -934,6 +943,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t in uint4 vtx_transform_index : " << transform_index_vreg << ",\n";
     }
   }
+  if (need_point_size) {
+    text << "\t uniform float3 attr_pointparams,\n";
+    text << "\t out float l_point_size : PSIZE,\n";
+  }
   text << "\t in float4 vtx_position : " << position_vreg << ",\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
@@ -965,7 +978,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     text << "\t l_hpos = l_position;\n";
   }
   if (need_world_position) {
@@ -977,6 +990,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_position) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
+  else if (need_point_size) {
+    text << "\t float4 l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+  }
+  if (need_point_size) {
+    text << "\t l_point_size = attr_pointparams.y + attr_pointparams.z / length(l_eye_position.xyz);\n";
+  }
+
   pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
     // Pass through all texcoord inputs as-is.
@@ -1022,7 +1042,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // Fragment shader
 
   text << "void fshader(\n";
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     text << "\t in float4 l_hpos : " << hpos_freg << ",\n";
     text << "\t in uniform float4 attr_fog,\n";
     text << "\t in uniform float4 attr_fogcolor,\n";
@@ -1717,8 +1737,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   // Apply fog.
-  if (key._fog_mode != 0) {
-    Fog::Mode fog_mode = (Fog::Mode)(key._fog_mode - 1);
+  if ((key._fog_mode & 0xffff) != 0) {
+    Fog::Mode fog_mode = (Fog::Mode)((key._fog_mode & 0xffff) - 1);
     switch (fog_mode) {
     case Fog::M_linear:
       text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate((attr_fog.z - l_hpos.z) * attr_fog.w));\n";
@@ -1758,6 +1778,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   if (key._disable_alpha_write) {
     shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+  }
+  if (need_point_size) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_shader_point_size, true);
   }
 
   reset_register_allocator();
