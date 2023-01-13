@@ -19,10 +19,15 @@
 #include "config_pnmimage.h"
 #include "perlinNoise2.h"
 #include "stackedPerlinNoise2.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 #include <algorithm>
 
 using std::max;
 using std::min;
+
+static PStatCollector _image_read_pcollector("*:PNMImage:read");
+static PStatCollector _image_write_pcollector("*:PNMImage:write");
 
 /**
  *
@@ -319,6 +324,8 @@ read(std::istream &data, const std::string &filename, PNMFileType *type,
  */
 bool PNMImage::
 read(PNMReader *reader) {
+  PStatTimer timer(_image_read_pcollector);
+
   bool has_read_size = _has_read_size;
   int read_x_size = _read_x_size;
   int read_y_size = _read_y_size;
@@ -436,6 +443,8 @@ write(PNMWriter *writer) const {
     delete writer;
     return false;
   }
+
+  PStatTimer timer(_image_write_pcollector);
 
   writer->copy_header_from(*this);
 

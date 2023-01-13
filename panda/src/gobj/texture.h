@@ -1088,6 +1088,7 @@ private:
 
   static AutoTextureScale _textures_power_2;
   static PStatCollector _texture_read_pcollector;
+  static PStatCollector _texture_write_pcollector;
 
   // Datagram stuff
 public:

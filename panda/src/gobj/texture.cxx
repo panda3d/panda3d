@@ -70,6 +70,7 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
           "renderers.  See Texture::set_quality_level()."));
 
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
+PStatCollector Texture::_texture_write_pcollector("*:Texture:Write");
 TypeHandle Texture::_type_handle;
 TypeHandle Texture::CData::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_unspecified;
@@ -5198,6 +5199,8 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
 bool Texture::
 do_write(CData *cdata,
          const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) {
+  PStatTimer timer(_texture_write_pcollector);
+
   if (is_txo_filename(fullpath)) {
     if (!do_has_bam_rawdata(cdata)) {
       do_get_bam_rawdata(cdata);
