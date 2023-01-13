@@ -11620,6 +11620,8 @@ set_state_and_transform(const RenderState *target,
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
+  int tex_gen_slot = TexGenAttrib::get_class_slot();
+  int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
     PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
@@ -11635,7 +11637,7 @@ set_state_and_transform(const RenderState *target,
       _target_texture = (const TextureAttrib *)
         _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
       _target_tex_gen = (const TexGenAttrib *)
-        _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
+        _target_rs->get_attrib_def(tex_gen_slot);
     }
 #endif
     do_issue_texture();
@@ -11643,28 +11645,36 @@ set_state_and_transform(const RenderState *target,
     // Since the TexGen and TexMatrix states depend partly on the particular
     // set of textures in use, we should force both of those to be reissued
     // every time we change the texture state.
-    _state_mask.clear_bit(TexGenAttrib::get_class_slot());
-    _state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
+    _state_mask.clear_bit(tex_gen_slot);
+    _state_mask.clear_bit(tex_matrix_slot);
 
     _state_texture = _target_texture;
     _state_mask.set_bit(texture_slot);
   }
+  else if (_target_rs->get_attrib(tex_gen_slot) != _state_rs->get_attrib(tex_gen_slot) ||
+           !_state_mask.get_bit(tex_gen_slot)) {
+    _target_tex_gen = (const TexGenAttrib *)_target_rs->get_attrib_def(tex_gen_slot);
 
-  // If one of the previously-loaded TexGen modes modified the texture matrix,
-  // then if either state changed, we have to change both of them now.
-  if (_tex_gen_modifies_mat) {
-    int tex_gen_slot = TexGenAttrib::get_class_slot();
-    int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
-    if (_target_rs->get_attrib(tex_gen_slot) != _state_rs->get_attrib(tex_gen_slot) ||
-        _target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
-        !_state_mask.get_bit(tex_gen_slot) ||
-        !_state_mask.get_bit(tex_matrix_slot)) {
+#ifdef SUPPORT_FIXED_FUNCTION
+#ifdef OPENGLES_1
+    if (_has_texture_alpha_scale) {
+#else
+    if (_has_texture_alpha_scale && _current_shader == nullptr) {
+#endif
+      PT(TextureStage) stage = get_alpha_scale_texture_stage();
+      _target_tex_gen = DCAST(TexGenAttrib, _target_tex_gen->add_stage
+                              (stage, TexGenAttrib::M_constant, LTexCoord3(_current_color_scale[3], 0.0f, 0.0f)));
+    }
+#endif  // SUPPORT_FIXED_FUNCTION
+
+    // If one of the previously-loaded TexGen modes modified the texture matrix,
+    // then if either state changed, we have to change both of them now.
+    if (_tex_gen_modifies_mat) {
       _state_mask.clear_bit(tex_gen_slot);
       _state_mask.clear_bit(tex_matrix_slot);
     }
   }
 
-  int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
   if (_target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
       !_state_mask.get_bit(tex_matrix_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_tex_matrix_pcollector);
@@ -11679,11 +11689,15 @@ set_state_and_transform(const RenderState *target,
       _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
     }
 #endif
+
+    // See previous occurrence of this check.
+    if (_tex_gen_modifies_mat) {
+      _state_mask.clear_bit(tex_gen_slot);
+    }
   }
 
 #ifdef SUPPORT_FIXED_FUNCTION
   if (has_fixed_function_pipeline()) {
-    int tex_gen_slot = TexGenAttrib::get_class_slot();
     if (_target_tex_gen != _state_tex_gen ||
         !_state_mask.get_bit(tex_gen_slot)) {
       // PStatGPUTimer timer(this, _draw_set_state_tex_gen_pcollector);
