@@ -245,6 +245,7 @@ issue_parameters(GSG *gsg, int altered) {
           HRESULT hr;
           PN_stdfloat v [4];
           LMatrix4f temp_matrix = LCAST(float, *val);
+          LMatrix3f temp_matrix3;
 
           hr = D3D_OK;
 
@@ -305,6 +306,33 @@ issue_parameters(GSG *gsg, int altered) {
             v[0] = data[3]; v[1] = data[7]; v[2] = data[11]; v[3] = data[15];
             hr = cgD3D9SetUniform(p, v);
             break;
+
+          case Shader::SMP_upper3x3:
+            // TRANSPOSE REQUIRED
+            temp_matrix3 = temp_matrix.get_upper_3();
+            temp_matrix3.transpose_in_place();
+            data = temp_matrix3.get_data();
+
+            hr = cgD3D9SetUniform(p, data);
+            break;
+
+          case Shader::SMP_transpose3x3:
+            // NO TRANSPOSE REQUIRED
+            temp_matrix3 = temp_matrix.get_upper_3();
+            data = temp_matrix3.get_data();
+
+            hr = cgD3D9SetUniform(p, data);
+            break;
+
+          case Shader::SMP_cell15:
+            hr = cgD3D9SetUniform(p, data + 15);
+            continue;
+          case Shader::SMP_cell14:
+            hr = cgD3D9SetUniform(p, data + 14);
+            continue;
+          case Shader::SMP_cell13:
+            hr = cgD3D9SetUniform(p, data + 13);
+            continue;
 
           default:
             dxgsg9_cat.error()

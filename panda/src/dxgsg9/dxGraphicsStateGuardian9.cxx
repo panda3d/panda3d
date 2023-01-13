@@ -3139,6 +3139,7 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
+  int shader_deps = 0;
   determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
@@ -3168,10 +3169,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_color);
-      _current_shader_context->issue_parameters(this, Shader::SSD_colorscale);
-    }
+    shader_deps |= Shader::SSD_color | Shader::SSD_colorscale;
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -3212,6 +3210,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
     _state_mask.set_bit(render_mode_slot);
+    shader_deps |= Shader::SSD_render_mode;
   }
 
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
@@ -3272,6 +3271,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(texture_slot);
     _state_mask.set_bit(tex_matrix_slot);
     _state_mask.set_bit(tex_gen_slot);
+    shader_deps |= Shader::SSD_tex_matrix | Shader::SSD_tex_gen;
   }
 
   int material_slot = MaterialAttrib::get_class_slot();
@@ -3280,9 +3280,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state_mask.set_bit(material_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_material);
-    }
+    shader_deps |= Shader::SSD_material;
   }
 
   int light_slot = LightAttrib::get_class_slot();
@@ -3307,9 +3305,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_fog_pcollector);
     do_issue_fog();
     _state_mask.set_bit(fog_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_fog);
-    }
+    shader_deps |= Shader::SSD_fog;
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
@@ -3318,6 +3314,10 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_scissor_pcollector);
     do_issue_scissor();
     _state_mask.set_bit(scissor_slot);
+  }
+
+  if (_current_shader_context != nullptr && shader_deps != 0) {
+    _current_shader_context->issue_parameters(this, shader_deps);
   }
 
   _state_rs = _target_rs;
