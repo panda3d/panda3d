@@ -1028,6 +1028,7 @@ close_window() {
   for (auto item : _cursor_filenames) {
     XFreeCursor(_display, item.second);
   }
+  _cursor_filenames.clear();
 
   GraphicsWindow::close_window();
 }
