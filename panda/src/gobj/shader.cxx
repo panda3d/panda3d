@@ -494,6 +494,9 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
   }
+  if (inp == SMO_texconst_i) {
+    dep |= SSD_tex_gen;
+  }
 
   return dep;
 }
@@ -1207,6 +1210,29 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texcolor_i;
+    bind._arg[0] = nullptr;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = nullptr;
+    bind._index = atoi(pieces[1].c_str());
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    _mat_deps |= bind._dep[0] | bind._dep[1];
+    return true;
+  }
+
+  if (pieces[0] == "texconst") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texconst_i;
     bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;

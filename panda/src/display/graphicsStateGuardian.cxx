@@ -1175,6 +1175,18 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::zeros_mat();
     }
   }
+  case Shader::SMO_texconst_i: {
+    const TexGenAttrib *tga;
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tga) &&
+        index < ta->get_num_on_stages()) {
+      LVecBase3 value = tga->get_constant_value(ta->get_on_stage(index));
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, value[0], value[1], value[2], 1);
+      return &t;
+    } else {
+      return &LMatrix4::ident_mat();
+    }
+  }
   case Shader::SMO_tex_is_alpha_i: {
     // This is a hack so we can support both F_alpha and other formats in the
     // default shader, to fix font rendering in GLES2

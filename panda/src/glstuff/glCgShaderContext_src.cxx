@@ -483,6 +483,10 @@ set_state_and_transform(const RenderState *target_rs,
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
     }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
     _state_rs = target_rs;
   }
 
