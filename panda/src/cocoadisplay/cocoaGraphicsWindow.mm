@@ -851,7 +851,12 @@ set_properties_now(WindowProperties &properties) {
           if (switched) {
             if (_window != nil) {
               // For some reason, setting the style mask makes it give up its
-              // first-responder status.
+              // first-responder status.  And for some reason, we need to first
+              // restore the window to normal level before we switch fullscreen,
+              // otherwise we may get a black bar if we're currently on Z_top.
+              if (_properties.get_z_order() != WindowProperties::Z_normal) {
+                [_window setLevel: NSNormalWindowLevel];
+              }
               if ([_window respondsToSelector:@selector(setStyleMask:)]) {
                 [_window setStyleMask:NSBorderlessWindowMask];
               }
