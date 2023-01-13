@@ -918,8 +918,12 @@ set_properties_now(WindowProperties &properties) {
         _properties.set_fullscreen(false);
 
         // Force properties to be reset to their actual values
-        properties.set_undecorated(_properties.get_undecorated());
-        properties.set_z_order(_properties.get_z_order());
+        if (!properties.has_undecorated()) {
+          properties.set_undecorated(_properties.get_undecorated());
+        }
+        if (!properties.has_z_order()) {
+          properties.set_z_order(_properties.get_z_order());
+        }
         properties.clear_fullscreen();
       }
     }
