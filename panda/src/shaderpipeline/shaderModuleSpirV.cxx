@@ -149,6 +149,15 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
       if (def._storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
+
+        if (stage == Stage::fragment) {
+          // Integer varyings are implicitly flat-interpolated.
+          if (def._type->contains_scalar_type(ShaderType::ST_uint) ||
+              def._type->contains_scalar_type(ShaderType::ST_int) ||
+              def._type->contains_scalar_type(ShaderType::ST_bool)) {
+            _used_caps |= C_flat_interpolation;
+          }
+        }
       }
       else if (def._storage_class == spv::StorageClassOutput) {
         _outputs.push_back(std::move(var));
@@ -245,8 +254,16 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     Instruction op = *it;
     switch (op.opcode) {
     case spv::OpDecorate:
-      if ((spv::Decoration)op.args[1] == spv::DecorationInvariant) {
+      switch ((spv::Decoration)op.args[1]) {
+      case spv::DecorationNoPerspective:
+        _used_caps |= C_noperspective_interpolation;
+        break;
+      case spv::DecorationFlat:
+        _used_caps |= C_flat_interpolation;
+        break;
+      case spv::DecorationInvariant:
         _used_caps |= C_invariant;
+        break;
       }
       break;
 
