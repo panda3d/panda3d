@@ -114,14 +114,13 @@ protected:
       F_out_alpha_glow        = 0x080000,
       F_out_aux_normal        = 0x100000,
       F_out_aux_glow          = 0x200000,
-      F_hardware_animation    = 0x400000,
+      F_perspective_points    = 0x400000,
       F_indexed_transforms    = 0x800000,
 
       F_ALPHA_TEST_SHIFT      = 24,
       F_ALPHA_TEST_MASK       = 0x07000000,
 
       F_use_shadow_filter     = 0x08000000,
-      F_perspective_points    = 0x10000000,
     };
 
     enum TextureFlags {

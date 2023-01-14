@@ -1165,12 +1165,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       lightcoord_fregs.push_back(nullptr);
     }
   }
-  if (key._flags & ShaderKey::F_hardware_animation) {
+  if (key._num_anim_transforms != 0) {
     int num_transforms = key._num_anim_transforms;
     text << "\t uniform float3x4 tbl_transforms[" << num_transforms << "],\n";
     text << "\t in float4 vtx_transform_weight : BLENDWEIGHT,\n";
     if (key._flags & ShaderKey::F_indexed_transforms) {
-      text << "\t in uint4 vtx_transform_index : BLENDINDICES,\n";
+      text << "\t in int4 vtx_transform_index : BLENDINDICES,\n";
     }
   }
   if (need_point_size) {
@@ -1182,9 +1182,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
 
-  if (key._flags & ShaderKey::F_hardware_animation) {
+  if (key._num_anim_transforms != 0) {
     if ((key._flags & ShaderKey::F_indexed_transforms) == 0) {
-      text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
+      text << "\t const int4 vtx_transform_index = int4(0, 1, 2, 3);\n";
     }
 
     text << "\t float3x4 vtxmat = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
