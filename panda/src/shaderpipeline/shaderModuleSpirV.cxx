@@ -269,6 +269,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
     case spv::OpImageRead:
     case spv::OpImageWrite:
+    case spv::OpImageSparseRead:
       _used_caps |= C_image_load_store;
       break;
 
@@ -993,6 +994,7 @@ remove_unused_variables() {
     case spv::OpPtrAccessChain:
     case spv::OpCopyObject:
     case spv::OpBitcast:
+    case spv::OpCopyLogical:
       // Delete these uses of unused variable
       if (delete_ids.count(op.args[2])) {
         delete_ids.insert(op.args[1]);
@@ -1018,10 +1020,11 @@ flatten_struct(uint32_t type_id) {
   const ShaderType::Struct *struct_type;
   DCAST_INTO_V(struct_type, _defs[type_id]._type);
 
+  // Contains the ID of the struct type, variable, and any dependencies.
   pset<uint32_t> deleted_ids;
 
-  // Maps access chains accessing struct members to the created variable IDs for
-  // that struct member.
+  // Maps access chains accessing struct members to the created variable IDs
+  // for that struct member.
   pmap<uint32_t, uint32_t> deleted_access_chains;
 
   // Collect type pointers that we have to create.
@@ -1191,6 +1194,9 @@ flatten_struct(uint32_t type_id) {
     case spv::OpAtomicOr:
     case spv::OpAtomicXor:
     case spv::OpAtomicFlagTestAndSet:
+    case spv::OpAtomicFMinEXT:
+    case spv::OpAtomicFMaxEXT:
+    case spv::OpAtomicFAddEXT:
       // If this triggers, the struct is being loaded into another variable,
       // which means we can't unwrap this (for now).
       nassertv(!deleted_ids.count(op.args[2]));
@@ -1268,11 +1274,6 @@ flatten_struct(uint32_t type_id) {
       }
       break;
 
-    case spv::OpSelect:
-      mark_used(op.args[3]);
-      mark_used(op.args[4]);
-      break;
-
     case spv::OpBitcast:
       nassertv(!deleted_ids.count(op.args[2]));
 
@@ -1285,6 +1286,28 @@ flatten_struct(uint32_t type_id) {
       if (_defs[op.args[0]]._dtype != DT_type_pointer) {
         mark_used(op.args[1]);
       }
+      break;
+
+    case spv::OpSelect:
+      mark_used(op.args[3]);
+      mark_used(op.args[4]);
+      break;
+
+    case spv::OpReturnValue:
+      mark_used(op.args[0]);
+      break;
+
+    case spv::OpCopyLogical:
+      // Can't copy pointers using this instruction.
+      nassertv(!deleted_ids.count(op.args[2]));
+      nassertv(!deleted_access_chains.count(op.args[2]));
+      break;
+
+    case spv::OpPtrEqual:
+    case spv::OpPtrNotEqual:
+    case spv::OpPtrDiff:
+      mark_used(op.args[2]);
+      mark_used(op.args[3]);
       break;
 
     default:
@@ -1653,6 +1676,8 @@ set_variable_type(uint32_t variable_id, const ShaderType *type) {
     case spv::OpAtomicAnd:
     case spv::OpAtomicOr:
     case spv::OpAtomicXor:
+    case spv::OpAtomicFMinEXT:
+    case spv::OpAtomicFMaxEXT:
     case spv::OpAtomicFAddEXT:
       nassertd(inserted) break;
 
@@ -1676,6 +1701,27 @@ set_variable_type(uint32_t variable_id, const ShaderType *type) {
         pointer_ids.insert(op.args[1]);
       }
       if (object_ids.count(op.args[2])) {
+        op.args[0] = type_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_id;
+        object_ids.insert(op.args[1]);
+      }
+      break;
+
+    case spv::OpSelect:
+      nassertd(inserted) break;
+
+      // The result type for this op must be the same for both operands.
+      nassertd(pointer_ids.count(op.args[3]) == pointer_ids.count(op.args[4]));
+      nassertd(object_ids.count(op.args[3]) == object_ids.count(op.args[4]));
+
+      if (pointer_ids.count(op.args[3])) {
+        op.args[0] = type_pointer_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_pointer_id;
+        pointer_ids.insert(op.args[1]);
+      }
+      if (object_ids.count(op.args[3])) {
         op.args[0] = type_id;
         _defs[op.args[1]]._type = type;
         _defs[op.args[1]]._type_id = type_id;
@@ -2388,6 +2434,15 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     record_constant(op.args[1], op.args[0], op.args + 2, op.nargs - 2);
     break;
 
+  case spv::OpConstantNull:
+    if (current_function_id != 0) {
+      shader_cat.error()
+        << "OpConstantNull" << " may not occur within a function!\n";
+      return;
+    }
+    record_constant(op.args[1], op.args[0], nullptr, 0);
+    break;
+
   case spv::OpSpecConstantTrue:
   case spv::OpSpecConstantFalse:
   case spv::OpSpecConstant:
@@ -2488,6 +2543,9 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpAtomicOr:
   case spv::OpAtomicXor:
   case spv::OpAtomicFlagTestAndSet:
+  case spv::OpAtomicFMinEXT:
+  case spv::OpAtomicFMaxEXT:
+  case spv::OpAtomicFAddEXT:
     record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
 
     // A load from the pointer is enough for us to consider it "used", for now.
@@ -2623,6 +2681,20 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     }
     break;
 
+  case spv::OpReturnValue:
+    // A pointer can be returned when certain caps are present, so track it.
+    mark_used(op.args[0]);
+    break;
+
+  case spv::OpPtrEqual:
+  case spv::OpPtrNotEqual:
+  case spv::OpPtrDiff:
+    // Consider a variable "used" if its pointer value is being compared, to be
+    // on the safe side.
+    mark_used(op.args[2]);
+    mark_used(op.args[3]);
+    break;
+
   default:
     break;
   }
@@ -2752,16 +2824,11 @@ record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t n
   Definition &def = modify_definition(id);
 
   const Definition &type_def = get_definition(type_id);
-  nassertv(type_def._dtype == DT_type);
 
   def._dtype = DT_constant;
   def._type_id = type_id;
-  def._type = type_def._type;
-  if (nwords > 0) {
-    def._constant = words[0];
-  } else {
-    def._constant = 0;
-  }
+  def._type = (type_def._dtype == DT_type) ? type_def._type : nullptr;
+  def._constant = (nwords > 0) ? words[0] : 0;
 }
 
 /**
