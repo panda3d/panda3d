@@ -3568,6 +3568,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
       options.es = false;
 #endif
       options.vertex.support_nonzero_base_instance = false;
+      options.enable_420pack_extension = false;
       compiler.set_common_options(options);
 
       // At this time, SPIRV-Cross doesn't add this extension automatically.
