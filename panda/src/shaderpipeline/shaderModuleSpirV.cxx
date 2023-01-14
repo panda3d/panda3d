@@ -99,6 +99,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   // front-end of glslang.  If so, unwrap it back down to individual uniforms.
   uint32_t type_id = writer.find_definition("$Global");
   if (type_id) {
+    if (shader_cat.is_spam()) {
+      shader_cat.spam()
+        << "Flattening $Global uniform block with type " << type_id << "\n";
+    }
     writer.flatten_struct(type_id);
   }
 
@@ -2662,22 +2666,28 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
   def._origin_id = id;
   def._function_id = function_id;
 
-  if (shader_cat.is_debug() && storage_class == spv::StorageClassUniformConstant) {
-    shader_cat.debug()
-      << "Defined uniform " << id << ": " << def._name;
+#ifndef NDEBUG
+  if (storage_class == spv::StorageClassUniformConstant && shader_cat.is_debug()) {
+    std::ostream &out = shader_cat.debug()
+      << "Defined uniform " << id;
+
+    if (!def._name.empty()) {
+      out << ": " << def._name;
+    }
 
     if (def.has_location()) {
-      shader_cat.debug(false) << " (location " << def._location << ")";
+      out << " (location " << def._location << ")";
     }
 
-    shader_cat.debug(false) << " with ";
+    out << " with ";
 
     if (def._type != nullptr) {
-      shader_cat.debug(false) << "type " << *def._type << "\n";
+      out << "type " << *def._type << "\n";
     } else {
-      shader_cat.debug(false) << "unknown type\n";
+      out << "unknown type\n";
     }
   }
+#endif
 }
 
 /**
