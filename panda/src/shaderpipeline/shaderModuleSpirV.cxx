@@ -726,7 +726,8 @@ get_definition(uint32_t id) const {
 }
 
 /**
- * Returns a mutable definition by its identifier.
+ * Returns a mutable definition by its identifier.  May invalidate existing
+ * definition references.
  */
 ShaderModuleSpirV::Definition &ShaderModuleSpirV::InstructionWriter::
 modify_definition(uint32_t id) {
@@ -1164,8 +1165,8 @@ flatten_struct(uint32_t type_id) {
       }
       else if (deleted_ids.count(_defs[op.args[1]]._origin_id)) {
         // Origin points to deleted variable, change to proper variable.
-        Definition &def = modify_definition(op.args[1]);
         const Definition &from = get_definition(op.args[2]);
+        Definition &def = modify_definition(op.args[1]);
         def._origin_id = from._origin_id;
       }
       mark_used(op.args[1]);
@@ -1220,12 +1221,12 @@ flatten_struct(uint32_t type_id) {
       else if (deleted_access_chains.count(op.args[2])) {
         op.args[2] = deleted_access_chains[op.args[2]];
 
-        // Copy the type since the storage class may have changed.
-        op.args[0] = get_definition(op.args[2])._type_id;
-
         Definition &def = modify_definition(op.args[1]);
         def._origin_id = op.args[2];
-        def._type_id = op.args[0];
+        def._type_id = get_definition(op.args[2])._type_id;
+
+        // Copy the type since the storage class may have changed.
+        op.args[0] = def._type_id;
       }
       break;
 
@@ -1789,7 +1790,7 @@ r_define_type_pointer(InstructionIterator &it, const ShaderType *type, spv::Stor
   type_pointer_id = _instructions.allocate_id();
   record_type_pointer(type_pointer_id, storage_class, type_id);
 
-  _instructions.insert(it, spv::OpTypePointer,
+  it = _instructions.insert(it, spv::OpTypePointer,
     {type_pointer_id, (uint32_t)storage_class, type_id});
   ++it;
 
@@ -2619,10 +2620,12 @@ record_type(uint32_t id, const ShaderType *type) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type || type_def._dtype == DT_type_pointer);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_type_pointer;
   def._type = type_def._type;
   def._storage_class = storage_class;
@@ -2634,6 +2637,9 @@ record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_pointer_def = get_definition(type_pointer_id);
   if (type_pointer_def._dtype != DT_type_pointer && type_pointer_def._type_id != 0) {
     shader_cat.error()
@@ -2649,7 +2655,6 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
     return;
   }
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_variable;
   def._type = type_def._type;
   def._type_id = type_pointer_id;
@@ -2680,10 +2685,12 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type || type_def._dtype == DT_type_pointer);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_function_parameter;
   def._type = type_def._type;
   def._origin_id = id;
@@ -2697,10 +2704,12 @@ record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_constant;
   def._type_id = type_id;
   def._type = type_def._type;
@@ -2726,9 +2735,11 @@ record_ext_inst_import(uint32_t id, const char *import) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_function(uint32_t id, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_function;
   def._type = type_def._type;
   def._type_id = type_id;
@@ -2744,10 +2755,12 @@ record_function(uint32_t id, uint32_t type_id) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   const Definition &from_def = get_definition(from_id);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_temporary;
   def._type = type_def._type;
   def._type_id = type_id;
@@ -2762,10 +2775,12 @@ record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t funct
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_spec_constant(uint32_t id, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_spec_constant;
   def._type_id = type_id;
   def._type = type_def._type;
