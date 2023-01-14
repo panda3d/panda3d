@@ -1719,10 +1719,12 @@ reset() {
   if (is_at_least_gles_version(3, 0)) {
     _supported_shader_caps |=
       ShaderModule::C_sampler_shadow |
-      ShaderModule::C_matrix_non_square |
-      ShaderModule::C_integer |
+      ShaderModule::C_non_square_matrices |
+      ShaderModule::C_unsigned_int |
+      ShaderModule::C_flat_interpolation |
       ShaderModule::C_texture_lod |
       ShaderModule::C_texture_fetch |
+      ShaderModule::C_int_samplers |
       ShaderModule::C_sampler_cube_shadow |
       ShaderModule::C_vertex_id |
       ShaderModule::C_round_even |
@@ -1795,15 +1797,18 @@ reset() {
     if (_glsl_version >= 120) {
       _supported_shader_caps |=
         ShaderModule::C_invariant |
-        ShaderModule::C_matrix_non_square;
+        ShaderModule::C_non_square_matrices;
     }
 
     // OpenGL 3.0
     if (_glsl_version >= 130) {
       _supported_shader_caps |=
-        ShaderModule::C_integer |
+        ShaderModule::C_unsigned_int |
+        ShaderModule::C_flat_interpolation |
+        ShaderModule::C_noperspective_interpolation |
         ShaderModule::C_texture_lod |
         ShaderModule::C_texture_fetch |
+        ShaderModule::C_int_samplers |
         ShaderModule::C_sampler_cube_shadow |
         ShaderModule::C_vertex_id |
         ShaderModule::C_round_even;
@@ -1817,7 +1822,7 @@ reset() {
         // changed to be able to leverage these.  Most cards that have this
         // extension also support GLSL 1.30, so it might not be worth adding.
         _supported_shader_caps |=
-          //ShaderModule::C_integer |
+          //ShaderModule::C_unsigned_int |
           ShaderModule::C_texture_fetch |
           //ShaderModule::C_sampler_cube_shadow |
           ShaderModule::C_round_even;
@@ -2039,11 +2044,25 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
 
-    if (is_at_least_gl_version(2, 1)) {
+    // NVIDIA drivers will (for pview.exe specifically) report only OpenGL 1.2
+    // but also GLSL 120.  But it's not possible to fully support GLSL 120
+    // without the ability to pass non-square matrices, so we assume that these
+    // function pointers do exist, and issue a warning otherwise.
+    if (_glsl_version >= 120 || is_at_least_gl_version(2, 1)) {
       _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
          get_extension_func("glUniformMatrix3x4fv");
       _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
          get_extension_func("glUniformMatrix4x3fv");
+
+      if (_glUniformMatrix3x4fv == nullptr || _glUniformMatrix4x3fv == nullptr) {
+        _supported_shader_caps &= ~ShaderModule::C_non_square_matrices;
+        GLCAT.warning()
+          << "GLSL 1.20 advertised as supported by OpenGL runtime, but could "
+             "not get pointers to functions to set non-square matrices.\n";
+      }
+    } else {
+      _glUniformMatrix3x4fv = nullptr;
+      _glUniformMatrix4x3fv = nullptr;
     }
 
     if (is_at_least_gl_version(3, 0)) {

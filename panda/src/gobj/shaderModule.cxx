@@ -137,17 +137,26 @@ output_capabilities(std::ostream &out, int caps) {
   if (caps & C_invariant) {
     out << "invariant ";
   }
-  if (caps & C_matrix_non_square) {
-    out << "matrix_non_square ";
+  if (caps & C_non_square_matrices) {
+    out << "non_square_matrices ";
   }
-  if (caps & C_integer) {
-    out << "integer ";
+  if (caps & C_unsigned_int) {
+    out << "unsigned_int ";
+  }
+  if (caps & C_flat_interpolation) {
+    out << "flat_interpolation ";
+  }
+  if (caps & C_noperspective_interpolation) {
+    out << "noperspective_interpolation ";
   }
   if (caps & C_texture_lod) {
     out << "texture_lod ";
   }
   if (caps & C_texture_fetch) {
     out << "texture_fetch ";
+  }
+  if (caps & C_int_samplers) {
+    out << "int_samplers ";
   }
   if (caps & C_sampler_cube_shadow) {
     out << "sampler_cube_shadow ";

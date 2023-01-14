@@ -2805,14 +2805,18 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else if (bind._scalar_type == ShaderType::ST_float ||
-                     numeric_type == GeomEnums::NT_float32) {
+          }
+          else if (_emulate_float_attribs ||
+                   bind._scalar_type == ShaderType::ST_float ||
+                   numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
-          } else if (bind._scalar_type == ShaderType::ST_double) {
+          }
+          else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
-          } else {
+          }
+          else {
             _glgsg->_glVertexAttribIPointer(p, num_values, type,
                                             stride, client_pointer);
           }
@@ -3570,6 +3574,10 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
       options.vertex.support_nonzero_base_instance = false;
       options.enable_420pack_extension = false;
       compiler.set_common_options(options);
+
+      if (options.version < 130) {
+        _emulate_float_attribs = true;
+      }
 
       // At this time, SPIRV-Cross doesn't add this extension automatically.
       if (!options.es && options.version < 140 &&

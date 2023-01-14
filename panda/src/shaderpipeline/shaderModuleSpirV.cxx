@@ -90,6 +90,20 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       }
       break;
 
+    case spv::OpConvertFToU:
+    case spv::OpConvertUToF:
+    case spv::OpUConvert:
+    case spv::OpUDiv:
+    case spv::OpUMod:
+    case spv::OpUMulExtended:
+    case spv::OpUGreaterThan:
+    case spv::OpUGreaterThanEqual:
+    case spv::OpULessThan:
+    case spv::OpULessThanEqual:
+    case spv::OpShiftRightLogical:
+      _used_caps |= C_unsigned_int;
+      break;
+
     default:
       break;
     }
@@ -140,14 +154,14 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
         _outputs.push_back(std::move(var));
       }
       else if (def._storage_class == spv::StorageClassUniformConstant) {
-        if (def._flags & DF_dref_sampled) {
+        const ShaderType::SampledImage *sampled_image_type =
+          def._type->as_sampled_image();
+        if (sampled_image_type != nullptr) {
           // Image variable sampled with depth ref.  Make sure this is actually
           // a shadow sampler; this isn't always done by the compiler, and the
           // spec isn't clear that this is necessary, but it helps spirv-cross
           // properly generate shadow samplers.
-          const ShaderType::SampledImage *sampled_image_type =
-            def._type->as_sampled_image();
-          if (sampled_image_type != nullptr && !sampled_image_type->is_shadow()) {
+          if ((def._flags & DF_dref_sampled) != 0 && !sampled_image_type->is_shadow()) {
             // No, change the type of this variable.
             var.type = ShaderType::register_type(ShaderType::SampledImage(
               sampled_image_type->get_texture_type(),
@@ -156,13 +170,16 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
             writer.set_variable_type(id, var.type);
           }
+          if (sampled_image_type->get_sampled_type() == ShaderType::ST_uint ||
+              sampled_image_type->get_sampled_type() == ShaderType::ST_int) {
+            _used_caps |= C_int_samplers;
+          }
         }
         _parameters.push_back(std::move(var));
       }
 
-      if (def._type->contains_scalar_type(ShaderType::ST_int) ||
-          def._type->contains_scalar_type(ShaderType::ST_uint)) {
-        _used_caps |= C_integer;
+      if (def._type->contains_scalar_type(ShaderType::ST_uint)) {
+        _used_caps |= C_unsigned_int;
       }
     }
     else if (def._dtype == DT_variable && def.is_used() &&
@@ -194,7 +211,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     else if (def._dtype == DT_type && def._type != nullptr) {
       if (const ShaderType::Matrix *matrix_type = def._type->as_matrix()) {
         if (matrix_type->get_num_rows() != matrix_type->get_num_columns()) {
-          _used_caps |= C_matrix_non_square;
+          _used_caps |= C_non_square_matrices;
         }
       }
     }

@@ -112,55 +112,59 @@ public:
    * transformation steps may need to be applied.
    */
   enum Capabilities : uint64_t {
-    C_basic_shader = 1 << 0,
-    C_vertex_texture = 1 << 1,
-    C_sampler_shadow = 1 << 2, // 1D and 2D only
+    C_basic_shader = 1ull << 0,
+    C_vertex_texture = 1ull << 1,
+    C_sampler_shadow = 1ull << 2, // 1D and 2D only
+    C_point_sprites = 1ull << 3,
 
     // GLSL 1.20
-    C_invariant = 1 << 3,
-    C_matrix_non_square = 1 << 4,
+    C_invariant = 1ull << 4,
+    C_non_square_matrices = 1ull << 5,
 
     // GLSL 1.30
-    C_integer = 1 << 5,
-    C_texture_lod = 1 << 6, // textureLod in vshader doesn't count, textureGrad does
-    C_texture_fetch = 1 << 7, // texelFetch, textureSize, etc.
-    C_sampler_cube_shadow = 1 << 8,
-    C_vertex_id = 1 << 9,
-    C_round_even = 1 << 10, // roundEven function, also in SM 4.0
+    C_unsigned_int = 1ull << 6,
+    C_flat_interpolation = 1ull << 7, // also necessary for int varyings
+    C_noperspective_interpolation = 1ull << 8, // not supported in GLES
+    C_texture_lod = 1ull << 9, // textureLod in vshader doesn't count, textureGrad does
+    C_texture_fetch = 1ull << 10, // texelFetch, textureSize, etc.
+    C_int_samplers = 1ull << 11, // usampler2D, isampler2D, etc.
+    C_sampler_cube_shadow = 1ull << 12,
+    C_vertex_id = 1ull << 13,
+    C_round_even = 1ull << 14, // roundEven function, also in SM 4.0
 
     // GLSL 1.40 / SM 4.0
-    C_instance_id = 1 << 11,
-    C_buffer_texture = 1 << 12, // ES 3.20
+    C_instance_id = 1ull << 15,
+    C_buffer_texture = 1ull << 16, // ES 3.20
 
     // GLSL 1.50 / SM 4.0
-    C_geometry_shader = 1 << 13,
-    C_primitive_id = 1 << 14,
+    C_geometry_shader = 1ull << 17,
+    C_primitive_id = 1ull << 18,
 
     // GLSL 3.30 / ES 3.00 / SM 4.0
-    C_bit_encoding = 1 << 15,
+    C_bit_encoding = 1ull << 19,
 
     // GLSL 4.00 / ES 3.20 / SM 5.0
-    C_texture_gather = 1 << 16,
-    C_double = 1 << 17,
-    C_cube_map_array = 1 << 18,
-    C_tessellation_shader = 1 << 19,
-    C_sample_variables = 1 << 20,
-    C_extended_arithmetic = 1 << 21,
-    C_texture_query_lod = 1 << 22, // not in ES
+    C_texture_gather = 1ull << 20,
+    C_double = 1ull << 21,
+    C_cube_map_array = 1ull << 22,
+    C_tessellation_shader = 1ull << 23,
+    C_sample_variables = 1ull << 24,
+    C_extended_arithmetic = 1ull << 25,
+    C_texture_query_lod = 1ull << 26, // not in ES
 
     // GLSL 4.20 / ES 3.10 / SM 5.0
-    C_image_load_store = 1 << 23,
+    C_image_load_store = 1ull << 27,
 
     // GLSL 4.30 / ES 3.10 / SM 5.0
-    C_compute_shader = 1 << 24,
-    C_texture_query_levels = 1 << 25, // not in ES
+    C_compute_shader = 1ull << 28,
+    C_texture_query_levels = 1ull << 29, // not in ES
 
     // GLSL 4.40 / ARB_enhanced_layouts
-    C_enhanced_layouts = 1 << 26,
+    C_enhanced_layouts = 1ull << 30,
 
     // GLSL 4.50
-    C_derivative_control = 1 << 27,
-    C_texture_query_samples = 1 << 28,
+    C_derivative_control = 1ull << 31,
+    C_texture_query_samples = 1ull << 32,
   };
 
   static std::string format_stage(Stage stage);

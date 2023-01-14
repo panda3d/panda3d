@@ -792,6 +792,14 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Image::
+contains_scalar_type(ScalarType type) const {
+  return _sampled_type == type;
+}
+
+/**
  * Writes the contents of this object to the datagram for shipping out to a
  * Bam file.
  */
@@ -882,6 +890,14 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_shadow > other_sampled_image._shadow)
        - (_shadow < other_sampled_image._shadow);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::SampledImage::
+contains_scalar_type(ScalarType type) const {
+  return _sampled_type == type;
 }
 
 /**

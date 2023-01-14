@@ -386,6 +386,8 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual bool contains_scalar_type(ScalarType type) const override;
+
   const Image *as_image() const override { return this; }
 
 PUBLISHED:
@@ -461,6 +463,8 @@ public:
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual bool contains_scalar_type(ScalarType type) const override;
 
   const SampledImage *as_sampled_image() const override { return this; }
 
