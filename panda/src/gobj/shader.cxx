@@ -2153,12 +2153,17 @@ bind_parameter(const Parameter &param) {
         if (!expect_float_vector(name, type, 3, 4)) {
           return false;
         }
-        bind._piece = SMP_row3;
         bind._func = SMF_first;
         bind._part[0] = SMO_attr_pointparams;
         bind._arg[0] = nullptr;
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
+
+        if (type->as_vector()->get_num_components() == 3) {
+          bind._piece = Shader::SMP_row3x3;
+        } else {
+          bind._piece = Shader::SMP_row3;
+        }
       }
       else {
         return report_parameter_error(name, type, "unrecognized parameter name");
@@ -2176,12 +2181,17 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_alight_x;
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2273,13 +2283,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texscale_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2292,13 +2307,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texcolor_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2311,13 +2331,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texconst_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2456,12 +2481,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texpad_x;
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
+
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2479,6 +2510,21 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      switch (type->as_vector()->get_num_components()) {
+      case 2:
+        bind._piece = Shader::SMP_row3x2;
+        break;
+
+      case 3:
+        bind._piece = Shader::SMP_row3x3;
+        break;
+
+      case 4:
+        bind._piece = Shader::SMP_row3;
+        break;
+      }
+
       cp_add_mat_spec(bind);
       return true;
     }

@@ -1212,7 +1212,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_eye_position = float4(mul(trans_model_to_view, vtx_position), 1);\n";
   }
   else if (need_point_size) {
-    text << "\t float4 l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+    text << "\t float3 l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
   if (need_point_size) {
     text << "\t l_point_size = attr_pointparams.y + attr_pointparams.z / length(l_eye_position.xyz);\n";
