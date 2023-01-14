@@ -918,6 +918,7 @@ remove_unused_variables() {
             && (op.args[i] & 0xff000000) != 0) {
           ++i;
         }
+        ++i;
         // Remove the deleted IDs from the entry point interface.
         while (i < (*it).nargs) {
           if (delete_ids.count((*it).args[i])) {
