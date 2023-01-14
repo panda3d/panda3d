@@ -9,7 +9,6 @@ if(IS_OSX)
   set_target_properties(deploy-stub PROPERTIES
     INSTALL_RPATH "@executable_path"
     BUILD_WITH_INSTALL_RPATH ON)
-
 elseif(WIN32)
   target_sources(deploy-stub PRIVATE frozen_dllmain.c)
 
@@ -39,4 +38,15 @@ if(WIN32 OR IS_OSX)
 
   target_link_libraries(deploy-stubw Python::Python)
   install(TARGETS deploy-stubw)
+endif()
+
+if(IS_OSX)
+  add_executable(deploy-stube WIN32 deploy-stube.c)
+  set_target_properties(deploy-stube PROPERTIES
+    INSTALL_RPATH "@executable_path/../Frameworks"
+    BUILD_WITH_INSTALL_RPATH ON)
+  target_compile_definitions(deploy-stube PRIVATE MACOS_APP_BUNDLE=1)
+
+  target_link_libraries(deploy-stube Python::Python)
+  install(TARGETS deploy-stube)
 endif()
