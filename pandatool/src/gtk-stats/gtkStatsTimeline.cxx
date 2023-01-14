@@ -283,6 +283,9 @@ end_draw() {
 
     int max_width = 0;
     for (const ThreadRow &thread_row : _threads) {
+      if (!thread_row._visible) {
+        continue;
+      }
       pango_layout_set_text(layout, thread_row._label.c_str(), thread_row._label.size());
 
       int width, height;
@@ -786,7 +789,9 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
 void GtkStatsTimeline::
 draw_thread_labels(cairo_t *cr) {
   for (const ThreadRow &thread_row : _threads) {
-    draw_thread_label(cr, thread_row);
+    if (thread_row._visible) {
+      draw_thread_label(cr, thread_row);
+    }
   }
 }
 

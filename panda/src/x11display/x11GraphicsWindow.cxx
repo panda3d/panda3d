@@ -133,12 +133,6 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
-  if (!_cursor_filenames.empty()) {
-    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
-    for (auto item : _cursor_filenames) {
-      XFreeCursor(_display, item.second);
-    }
-  }
 }
 
 /**
@@ -1121,6 +1115,11 @@ close_window() {
     _XRRSetScreenConfig(_display, conf, root, _orig_size_id, _orig_rotation, CurrentTime);
     _orig_size_id = -1;
   }
+
+  for (auto item : _cursor_filenames) {
+    XFreeCursor(_display, item.second);
+  }
+  _cursor_filenames.clear();
 
   GraphicsWindow::close_window();
 }

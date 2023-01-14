@@ -355,7 +355,7 @@ main(int argc, char **argv) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "acls:DVhiLP:";
+  static const char *optflags = "acls:DVhiLP:S";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
@@ -398,6 +398,14 @@ main(int argc, char **argv) {
       }
       break;
     }
+
+    case 'S':
+      if (!PStatClient::connect()) {
+        cerr << "Failed to connect to PStats server." << endl;
+        return 1;
+      }
+      PStatClient::main_tick();
+      break;
 
     case 'V':
       report_version();

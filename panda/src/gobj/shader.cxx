@@ -384,6 +384,12 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
   }
+  if (inp == SMO_texconst_i) {
+    dep |= SSD_tex_gen;
+  }
+  if (inp == SMO_attr_pointparams) {
+    dep |= SSD_render_mode | SSD_transform | SSD_frame;
+  }
 
   return dep;
 }
@@ -2143,6 +2149,17 @@ bind_parameter(const Parameter &param) {
         bind._arg[1] = nullptr;
         bind._index = atoi(pieces[1].c_str() + 5);
       }
+      else if (pieces[1] == "pointparams") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_pointparams;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
       else {
         return report_parameter_error(name, type, "unrecognized parameter name");
       }
@@ -2278,6 +2295,25 @@ bind_parameter(const Parameter &param) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texcolor_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._index = atoi(pieces[1].c_str());
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texconst") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texconst_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;

@@ -43,11 +43,9 @@ PUBLISHED:
 
   void operator = (const ReMutex &copy) = delete;
 
-#ifdef HAVE_PYTHON
   EXTENSION(bool acquire(bool blocking=true) const);
-  EXTENSION(bool __enter__());
-  EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(bool __enter__());
+  PY_EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 };
 
 #include "reMutex.I"

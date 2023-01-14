@@ -97,9 +97,7 @@ PUBLISHED:
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
 
-#ifdef HAVE_PYTHON
-  EXTENSION(static TypeHandle make(PyTypeObject *classobj));
-#endif
+  PY_EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;
@@ -137,10 +135,8 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__() const);
-  EXTENSION(void __setstate__(PyObject *));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__reduce__() const);
+  PY_EXTENSION(void __setstate__(PyObject *));
 
 public:
 #ifdef HAVE_PYTHON

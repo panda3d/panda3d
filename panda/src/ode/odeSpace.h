@@ -52,7 +52,7 @@ PUBLISHED:
   int query(const OdeSpace& space) const;
   INLINE int get_num_geoms() const;
   INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
-  EXTENSION(INLINE PyObject *get_AA_bounds() const);
+  PY_EXTENSION(INLINE PyObject *get_AA_bounds() const);
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);
@@ -82,12 +82,12 @@ PUBLISHED:
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
 
-  EXTENSION(PyObject *convert() const);
-  EXTENSION(INLINE PyObject *get_converted_geom(int i) const);
-  EXTENSION(INLINE PyObject *get_converted_space() const);
+  PY_EXTENSION(PyObject *convert() const);
+  PY_EXTENSION(INLINE PyObject *get_converted_geom(int i) const);
+  PY_EXTENSION(INLINE PyObject *get_converted_space() const);
 
   void auto_collide();
-  EXTENSION(int collide(PyObject* arg, PyObject* near_callback));
+  PY_EXTENSION(int collide(PyObject* arg, PyObject* near_callback));
   int set_collide_id(int collide_id, dGeomID id);
   int set_collide_id(OdeGeom& geom, int collide_id);
   void set_surface_type( int surface_type, dGeomID id);

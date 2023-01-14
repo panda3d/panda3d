@@ -66,6 +66,10 @@ Thread::
   nassertv(_blocked_on_mutex == nullptr &&
            _waiting_on_cvar == nullptr);
 #endif
+
+  if (_pstats_callback != nullptr) {
+    _pstats_callback->delete_hook(this);
+  }
 }
 
 /**
@@ -250,4 +254,12 @@ deactivate_hook(Thread *) {
  */
 void Thread::PStatsCallback::
 activate_hook(Thread *) {
+}
+
+/**
+ * Called when the thread is deleted.  This provides a callback hook for PStats
+ * to remove a thread's data when the thread is removed.
+ */
+void Thread::PStatsCallback::
+delete_hook(Thread *) {
 }

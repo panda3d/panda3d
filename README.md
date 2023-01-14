@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-12/).
+[this page](https://www.panda3d.org/download/sdk-1-10-13/).
 If you are familiar with installing Python packages, you can use
 the following command:
 

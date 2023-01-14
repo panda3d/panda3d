@@ -71,7 +71,7 @@ PUBLISHED:
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
   INLINE static CPT(RenderState) make_empty();
-  EXTENSION(static explicit CPT(RenderState) make(PyObject *args, PyObject *kwargs));
+  PY_EXTENSION(static explicit CPT(RenderState) make(PyObject *args, PyObject *kwargs));
 
 public:
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
@@ -132,10 +132,8 @@ PUBLISHED:
   INLINE size_t get_invert_composition_cache_size() const;
   INLINE const RenderState *get_invert_composition_cache_source(size_t n) const;
   INLINE const RenderState *get_invert_composition_cache_result(size_t n) const;
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_composition_cache() const);
-  EXTENSION(PyObject *get_invert_composition_cache() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_composition_cache() const);
+  PY_EXTENSION(PyObject *get_invert_composition_cache() const);
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level) const;
@@ -150,10 +148,8 @@ PUBLISHED:
   static void list_cycles(std::ostream &out);
   static void list_states(std::ostream &out);
   static bool validate_states();
-#ifdef HAVE_PYTHON
-  EXTENSION(static PyObject *get_states());
-  EXTENSION(static PyObject *get_unused_states());
-#endif // HAVE_PYTHON
+  PY_EXTENSION(static PyObject *get_states());
+  PY_EXTENSION(static PyObject *get_unused_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also

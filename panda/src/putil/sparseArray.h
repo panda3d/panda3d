@@ -118,10 +118,8 @@ PUBLISHED:
   INLINE int get_subrange_end(size_t n) const;
 
   EXTENSION(bool __bool__() const);
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *state));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *state));
 
 private:
   void do_add_range(int begin, int end);

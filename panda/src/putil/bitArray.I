@@ -177,15 +177,15 @@ extract(int low_bit, int size) const {
 
   if (b + size < num_bits_per_word) {
     // The whole thing fits within one word of the array.
-    return get_word(w).extract(b, size);
+    return get_word_internal(w).extract(b, size);
 
   } else {
     // We have to split it across two words.
     int num_lower_bits = num_bits_per_word - b;
     int num_higher_bits = size - num_lower_bits;
 
-    return get_word(w).extract(b, num_lower_bits) |
-      (get_word(w + 1).extract(0, num_higher_bits) << num_lower_bits);
+    return get_word_internal(w).extract(b, num_lower_bits) |
+      (get_word_internal(w + 1).extract(0, num_higher_bits) << num_lower_bits);
   }
 }
 
@@ -241,17 +241,24 @@ get_num_words() const {
  * get_num_words(), but the return value beyond get_num_words() will always be
  * the same.
  */
-INLINE BitArray::MaskType BitArray::
+INLINE BitArray::WordType BitArray::
 get_word(size_t n) const {
+  return get_word_internal(n).get_word();
+}
+
+/**
+ * Internal implementation of get_word that returns MaskType.
+ */
+INLINE BitArray::MaskType BitArray::
+get_word_internal(size_t n) const {
   nassertr(n >= 0, MaskType::all_off());
   if (n < get_num_words()) {
     return _array[n];
   }
   if (_highest_bits) {
     return MaskType::all_on();
-  } else {
-    return MaskType::all_off();
   }
+  return MaskType::all_off();
 }
 
 /**

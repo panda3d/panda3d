@@ -52,9 +52,7 @@ PUBLISHED:
 
   INLINE static GraphicsPipeSelection *get_global_ptr();
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__reduce__() const);
 
 public:
   typedef PT(GraphicsPipe) PipeConstructorFunc();

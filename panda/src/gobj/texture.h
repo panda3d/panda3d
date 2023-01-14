@@ -461,9 +461,9 @@ PUBLISHED:
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
 #else // !CPPPARSER || !HAVE_PYTHON
-  EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
-                            size_t page_size = 0);
-  EXTEND void set_ram_image_as(PyObject *image, const std::string &provided_format);
+  PY_EXTEND(void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
+                               size_t page_size = 0));
+  PY_EXTEND(void set_ram_image_as(PyObject *image, const std::string &provided_format));
 #endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
@@ -474,7 +474,7 @@ PUBLISHED:
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
 
-  EXTENSION(PT(Texture) __deepcopy__(PyObject *memo) const);
+  PY_EXTENSION(PT(Texture) __deepcopy__(PyObject *memo) const);
 
   BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                           QualityLevel quality_level = QL_default,
@@ -1088,6 +1088,7 @@ private:
 
   static AutoTextureScale _textures_power_2;
   static PStatCollector _texture_read_pcollector;
+  static PStatCollector _texture_write_pcollector;
 
   // Datagram stuff
 public:
