@@ -1720,9 +1720,10 @@ class bdist_apps(setuptools.Command):
             optval = getattr(self, opt)
             if optval is not None:
                 setattr(build_cmd, opt, optval)
-        build_cmd.finalize_options()
         if not self.skip_build:
             self.run_command('build_apps')
+        else:
+            build_cmd.finalize_options()
 
         platforms = build_cmd.platforms
         build_base = os.path.abspath(build_cmd.build_base)
