@@ -1897,7 +1897,7 @@ class Freezer:
 
         # TODO: Support creating custom sections in universal binaries.
         """
-            ARM6 MacOS has strict codesigning requirements, that makes it tricky to motify the binary
+            ARM64 MacOS has strict codesigning requirements, that makes it tricky to motify the binary
             external_blob allows us to use the binary blob as an external file
         """
         append_blob = True
