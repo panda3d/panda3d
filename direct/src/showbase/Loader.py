@@ -949,7 +949,7 @@ class Loader(DirectObject):
             return None
 
     def loadSound(self, manager, soundPath, positional = False,
-                  callback = None, extraArgs = []):
+                  callback = None, okMissing=None, extraArgs = []):
 
         """Loads one or more sound files, specifying the particular
         AudioManager that should be used to load them.  The soundPath
@@ -975,6 +975,10 @@ class Loader(DirectObject):
                 # should return a valid sound obj even if musicMgr is invalid
                 sound = manager.getSound(soundPath, positional)
                 result.append(sound)
+
+                if str(sound).startswith('NullAudioSound') and not okMissing:
+                    message = 'Could not load audio file: %s' % (soundPath)
+                    raise IOError(message)
 
             if gotList:
                 return result
