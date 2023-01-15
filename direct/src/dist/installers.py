@@ -1,4 +1,4 @@
-import distutils.log
+import logging
 import os
 import subprocess
 import sys
@@ -81,7 +81,7 @@ def create_nsis(command, basename, build_dir):
     if not platform.startswith('win'):
         command.announce(
             '\tNSIS installer not supported for platform: {}'.format(platform),
-            distutils.log.ERROR
+            logging.ERROR
         )
         return
     try:
@@ -89,7 +89,7 @@ def create_nsis(command, basename, build_dir):
     except OSError:
         command.announce(
             '\tCould not find makensis tool that is required to build NSIS installers',
-            distutils.log.ERROR
+            logging.ERROR
         )
         return
 
@@ -224,7 +224,7 @@ def create_aab(command, basename, build_dir):
     bundle = p3d.ZipArchive()
     if not bundle.open_read_write(bundle_fn):
         command.announce(
-            f'\tUnable to open {bundle_fn} for writing', distutils.log.ERROR)
+            f'\tUnable to open {bundle_fn} for writing', logging.ERROR)
         return
 
     config = BundleConfig()
@@ -309,6 +309,6 @@ def create_aab(command, basename, build_dir):
                 p3d.Filename.from_os_specific(command.signing_private_key),
                 password):
             command.announce(
-                f'\tFailed to sign {bundle_fn}.', distutils.log.ERROR)
+                f'\tFailed to sign {bundle_fn}.', logging.ERROR)
 
     bundle.close()
