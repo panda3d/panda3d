@@ -127,7 +127,7 @@ get_event_type() const {
 INLINE int CMetaInterval::
 double_to_int_time(double t) const {
   // Use floor() just in case there are negative values involved.
-  return (int)floor(t * _precision + 0.5);
+  return (long long)floor(t * _precision + 0.5);
 }
 
 /**
@@ -135,7 +135,7 @@ double_to_int_time(double t) const {
  * double time value or offset in seconds.
  */
 INLINE double CMetaInterval::
-int_to_double_time(int time) const {
+int_to_double_time(long long time) const {
   return (double)time / _precision;
 }
 
@@ -143,7 +143,7 @@ int_to_double_time(int time) const {
  *
  */
 INLINE CMetaInterval::PlaybackEvent::
-PlaybackEvent(int time, int n,
+PlaybackEvent(long long time, int n,
               CMetaInterval::PlaybackEventType type) :
   _time(time),
   _n(n),
@@ -164,7 +164,7 @@ operator < (const CMetaInterval::PlaybackEvent &other) const {
  *
  */
 INLINE CMetaInterval::EventQueueEntry::
-EventQueueEntry(int n, CInterval::EventType event_type, int time) :
+EventQueueEntry(int n, CInterval::EventType event_type, long long time) :
   _n(n),
   _event_type(event_type),
   _time(time)

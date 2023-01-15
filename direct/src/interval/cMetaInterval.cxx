@@ -331,8 +331,8 @@ priv_initialize(double t) {
   recompute();
   _next_event_index = 0;
   _active.clear();
-
-  int now = double_to_int_time(t);
+  
+  long long now = double_to_int_time(t);
 
   /*
   // One special case: if we step to t == 0.0, it really means to the very
@@ -414,7 +414,7 @@ priv_step(double t) {
   }
 
   check_started(get_class_type(), "priv_step");
-  int now = double_to_int_time(t);
+  long long now = double_to_int_time(t);
 
   /*
   // One special case: if we step to t == 0.0, it really means to the very
@@ -524,7 +524,7 @@ priv_reverse_initialize(double t) {
   _next_event_index = _events.size();
   _active.clear();
 
-  int now = double_to_int_time(t);
+  long long now = double_to_int_time(t);
 
   /*
   // One special case: if we step to t == 0.0, it really means to the very
@@ -836,7 +836,7 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
  * copying the events from new_active to active.
  */
 void CMetaInterval::
-finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
+finish_events_forward(long long now, CMetaInterval::ActiveEvents &new_active) {
   // Do whatever's still active.
   ActiveEvents::iterator ai;
   for (ai = _active.begin(); ai != _active.end(); ++ai) {
@@ -913,7 +913,7 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
  * then copying the events from new_active to active.
  */
 void CMetaInterval::
-finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
+finish_events_reverse(long long now, CMetaInterval::ActiveEvents &new_active) {
   // Do whatever's still active.
   ActiveEvents::iterator ai;
   for (ai = _active.begin(); ai != _active.end(); ++ai) {
@@ -942,7 +942,7 @@ finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
  * ET_step.
  */
 void CMetaInterval::
-enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time) {
+enqueue_event(int n, CInterval::EventType event_type, bool is_initial, long long time) {
   nassertv(n >= 0 && n < (int)_defs.size());
   const IntervalDef &def = _defs[n];
   switch (def._type) {
@@ -1151,7 +1151,7 @@ recompute_level(int n, int level_begin, int &level_end) {
  */
 int CMetaInterval::
 get_begin_time(const CMetaInterval::IntervalDef &def, int level_begin,
-               int previous_begin, int previous_end) {
+               long long previous_begin, long long previous_end) {
   switch (def._rel_to) {
   case RS_previous_end:
     return previous_end + double_to_int_time(def._rel_time);
