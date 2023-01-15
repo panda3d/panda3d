@@ -18,6 +18,8 @@ class Actor(DirectObject, NodePath):
     Actor class: Contains methods for creating, manipulating
     and playing animations on characters
     """
+    activeActors = []
+
     notify = DirectNotifyGlobal.directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
 
@@ -31,6 +33,7 @@ class Actor(DirectObject, NodePath):
     validateSubparts = ConfigVariableBool('validate-subparts', True)
     mergeLODBundles = ConfigVariableBool('merge-lod-bundles', True)
     allowAsyncBind = ConfigVariableBool('allow-async-bind', True)
+    storeReference = ConfigVariableBool('store-actor-reference', True)
 
     class PartDef:
 
@@ -170,6 +173,10 @@ class Actor(DirectObject, NodePath):
 
         # initialize our NodePath essence
         NodePath.__init__(self)
+
+        # Add this Actor to our activeActors - this prevents GC from picking it up
+        if Actor.storeReference:
+            Actor.activeActors.append(self)
 
         self.loader = PandaLoader.getGlobalPtr()
 
@@ -506,6 +513,8 @@ class Actor(DirectObject, NodePath):
         Note that `removeNode()` itself is not sufficient to destroy actors,
         which is why this method exists.
         """
+        if Actor.storeReference and self in Actor.activeActors:
+            Actor.activeActors.remove(self)
         self.stop(None)
         self.clearPythonData()
         self.flush()
@@ -2647,3 +2656,4 @@ class Actor(DirectObject, NodePath):
     get_base_frame_rate = getBaseFrameRate
     remove_anim_control_dict = removeAnimControlDict
     load_anims_on_all_lods = loadAnimsOnAllLODs
+
