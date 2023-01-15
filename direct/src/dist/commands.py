@@ -21,7 +21,7 @@ import time
 import tempfile
 
 import setuptools
-import distutils.log
+import logging
 
 from . import FreezeTool
 from . import pefile
@@ -254,6 +254,7 @@ class build_apps(setuptools.Command):
     default_file_handlers = {
         '.egg': egg2bam,
     }
+    log = logging.getLogger("build_apps")
 
     def initialize_options(self):
         self.build_base = os.path.join(os.getcwd(), 'build')
@@ -483,10 +484,17 @@ class build_apps(setuptools.Command):
             self.icon_objects[app] = iconobj
 
     def run(self):
-        self.announce('Building platforms: {0}'.format(','.join(self.platforms)), distutils.log.INFO)
+        build_apps.log.setLevel(logging.WARNING)
+        self.announce('Building platforms: {0}'.format(','.join(self.platforms)), logging.INFO)
 
         for platform in self.platforms:
             self.build_runtimes(platform, True)
+
+    def announce(self, msg, level=logging.INFO):
+        """ Override the command's built-in announce function as older versions of setuptools does not
+        use logging style levels.
+        """
+        build_apps.log.log(level, msg)
 
     def download_wheels(self, platform):
         """ Downloads wheels for the given platform using pip. This includes panda3d
@@ -496,7 +504,7 @@ class build_apps(setuptools.Command):
 
         import pip
 
-        self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
+        self.announce('Gathering wheels for platform: {}'.format(platform), logging.INFO)
 
         whlcache = os.path.join(self.build_base, '__whl_cache__')
 
@@ -604,7 +612,7 @@ class build_apps(setuptools.Command):
         fwdir = os.path.join(contentsdir, 'Frameworks')
         resdir = os.path.join(contentsdir, 'Resources')
 
-        self.announce('Bundling macOS app into {}'.format(appdir), distutils.log.INFO)
+        self.announce('Bundling macOS app into {}'.format(appdir), logging.INFO)
 
         # Create initial directory structure
         os.makedirs(macosdir)
@@ -684,7 +692,7 @@ class build_apps(setuptools.Command):
                 if not localtag.endswith('opt'):
                     self.announce(
                         'Could not find an optimized wheel (using index {}) for platform: {}'.format(self.optimized_wheel_index, platform),
-                        distutils.log.WARN
+                        logging.WARN
                     )
 
             for whl in wheelpaths:
@@ -702,7 +710,7 @@ class build_apps(setuptools.Command):
             path.insert(0, os.path.join(p3dwhlfn, 'deploy_libs'))
 
 
-        self.announce('Building runtime for platform: {}'.format(platform), distutils.log.INFO)
+        self.announce('Building runtime for platform: {}'.format(platform), logging.INFO)
 
         # Gather PRC data
         prcstring = ''
@@ -1035,7 +1043,7 @@ class build_apps(setuptools.Command):
             if module not in freezer_modules:
                 continue
 
-            self.announce('Copying data files for module: {}'.format(module), distutils.log.INFO)
+            self.announce('Copying data files for module: {}'.format(module), logging.INFO)
 
             # OK, find out in which .whl this occurs.
             for whl in wheelpaths:
@@ -1072,7 +1080,7 @@ class build_apps(setuptools.Command):
                                 self.copy(source_path, target_path)
 
         # Copy Game Files
-        self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
+        self.announce('Copying game files for platform: {}'.format(platform), logging.INFO)
         ignore_copy_list = [
             '**/__pycache__/**',
             '**/*.pyc',
@@ -1154,7 +1162,7 @@ class build_apps(setuptools.Command):
                 try:
                     dst = self.file_handlers[ext](self, src, dst)
                 except Exception as err:
-                    self.announce('{}'.format(err), distutils.log.ERROR)
+                    self.announce('{}'.format(err), logging.ERROR)
             else:
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
@@ -1528,6 +1536,8 @@ class bdist_apps(setuptools.Command):
         ('skip-build', None, 'skip rebuilding everything (for testing/debugging)'),
     ]
 
+    log = logging.getLogger("bdist_apps")
+
     def _build_apps_options(self):
         return [opt[0].replace('-', '_').replace('=', '') for opt in build_apps.user_options]
 
@@ -1713,6 +1723,7 @@ class bdist_apps(setuptools.Command):
         subprocess.check_call(cmd)
 
     def run(self):
+        bdist_apps.log.setLevel(logging.WARNING)
         build_cmd = self.distribution.get_command_obj('build_apps')
         for opt in self._build_apps_options():
             optval = getattr(self, opt)
@@ -1734,7 +1745,7 @@ class bdist_apps(setuptools.Command):
             installers = self.installers.get(platform, self.DEFAULT_INSTALLERS.get(platform, ['zip']))
 
             for installer in installers:
-                self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
+                self.announce('\nBuilding {} for platform: {}'.format(installer, platform), logging.INFO)
 
                 if installer == 'zip':
                     self.create_zip(basename, build_dir)
@@ -1765,6 +1776,11 @@ class bdist_apps(setuptools.Command):
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
 
+    def announce(self, msg, level=logging.INFO):
+        """ Override the command's built-in announce function as older versions of setuptools does not
+        use logging style levels.
+        """
+        build_apps.log.log(level, msg)
 
 def finalize_distribution_options(dist):
     """Entry point for compatibility with setuptools>=61, see #1394."""

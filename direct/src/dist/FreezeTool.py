@@ -9,14 +9,11 @@ import imp
 import platform
 import struct
 import io
-try:
-    import distutils.sysconfig as sysconf
-except ImportError:
-    import sysconfig as sysconf
 import zipfile
 import importlib
 
 from . import pefile
+from . import locations
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -227,11 +224,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        if hasattr(sysconf, 'get_python_inc'):
-            self.PythonIPath = sysconf.get_python_inc()
-        else:
-            self.PythonIPath = sysconf.get_path('include')
-        self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
+        self.PythonIPath = locations.get_python_inc()
+        self.PythonVersion = locations.get_config_var("LDVERSION") or locations.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -255,7 +249,7 @@ class CompilationEnvironment:
 
     def determineStandardSetup(self):
         if self.platform.startswith('win'):
-            self.Python = sysconf.PREFIX
+            self.Python = locations.PREFIX
 
             if ('VCINSTALLDIR' in os.environ):
                 self.MSVC = os.environ['VCINSTALLDIR']
@@ -322,7 +316,7 @@ class CompilationEnvironment:
 
         else:
             # Unix
-            lib_dir = sysconf.get_python_lib(plat_specific=1, standard_lib=1)
+            lib_dir = locations.get_python_lib(plat_specific=1, standard_lib=1)
             #python_a = os.path.join(lib_dir, "config", "libpython%(pythonVersion)s.a")
             self.compileObjExe = "%(CC)s %(CFLAGS)s -c -o %(basename)s.o -pthread -O2 %(filename)s -I%(pythonIPath)s"
             self.compileObjDll = "%(CC)s %(CFLAGS)s %(CCSHARED)s -c -o %(basename)s.o -O2 %(filename)s -I%(pythonIPath)s"
@@ -345,7 +339,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **sysconf.get_config_vars())
+            }, **locations.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
@@ -360,7 +354,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **sysconf.get_config_vars())
+            }, **locations.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
@@ -378,7 +372,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **sysconf.get_config_vars())
+            }, **locations.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
@@ -394,7 +388,7 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             'dllext' : self.dllext,
-            }, **sysconf.get_config_vars())
+            }, **locations.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
