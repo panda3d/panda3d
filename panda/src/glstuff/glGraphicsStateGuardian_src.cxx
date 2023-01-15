@@ -213,13 +213,13 @@ static const string default_vshader_fp64 =
 
 static const string default_fshader =
   "#version 330\n"
-  "in vec2 texcoord;\n"
+  "in vec3 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
   "void main(void) {\n"
-  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor = textureProj(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  p3d_FragColor *= color;\n"
   "}\n";
