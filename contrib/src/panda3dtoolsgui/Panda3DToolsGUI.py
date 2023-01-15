@@ -2650,11 +2650,11 @@ class main(wx.Frame):
                                             for inputFile in inputs:
                                                 if (inputFile != ''):
                                                     inputFilename = inputFile.split('\\')[-1]
-                                                    print "Compare: ", inFile, filename, inputFile, inputFilename
+                                                    print("Compare: ", inFile, filename, inputFile, inputFilename)
                                                     if inputFilename == filename:
                                                         inputTime = os.path.getmtime(inputFile)
                                                         outputTime = os.path.getmtime(inFile)
-                                                        print "Matched: ", (inputTime > outputTime)
+                                                        print("Matched: ", (inputTime > outputTime))
                                                         inputChanged = (inputTime > outputTime)
                                                         break
                                             '''
@@ -2848,7 +2848,7 @@ class main(wx.Frame):
 
         except ValueError:
             return
-        #print self.batchList
+        #print(self.batchList)
 
     def OnBatchItemEdit(self, event):
         selectedItemId = self.batchTree.GetSelections()
