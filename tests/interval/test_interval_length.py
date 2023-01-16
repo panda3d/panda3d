@@ -16,6 +16,8 @@ def test_invalid_sound_interval():
     seq.start()
     ivalMgr.step()
 
+    amgr.shutdown()
+
     assert seq is not None
 
 
