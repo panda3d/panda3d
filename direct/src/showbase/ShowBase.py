@@ -583,7 +583,17 @@ class ShowBase(DirectObject.DirectObject):
         exitfunc and will be called at application exit time
         automatically.
 
-        This function is designed to be safe to call multiple times."""
+        This function is designed to be safe to call multiple times.
+
+        When called from a thread other than the main thread, this will create
+        a task to schedule the destroy on the main thread, and wait for this to
+        complete.
+        """
+
+        if Thread.getCurrentThread() != Thread.getMainThread():
+            task = taskMgr.add(self.destroy, extraArgs=[])
+            task.wait()
+            return
 
         for cb in self.finalExitCallbacks[:]:
             cb()
@@ -3336,7 +3346,13 @@ class ShowBase(DirectObject.DirectObject):
         not running from within a p3d file.  When we *are* within a p3d
         file, the Panda3D runtime has to be responsible for running the
         main loop, so we can't allow the application to do it.
+
+        This method must be called from the main thread, otherwise an error is
+        thrown.
         """
+        if Thread.getCurrentThread() != Thread.getMainThread():
+            self.notify.error("run() must be called from the main thread.")
+            return
 
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
