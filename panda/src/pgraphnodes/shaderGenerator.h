@@ -64,6 +64,9 @@ class GeomVertexAnimationSpec;
  *
  */
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
+public:
+  ShaderGenerator(const Shader::ShaderCaps &caps, bool use_shadow_filter);
+
 PUBLISHED:
   ShaderGenerator(const GraphicsStateGuardianBase *gsg);
   virtual ~ShaderGenerator();
@@ -76,7 +79,8 @@ PUBLISHED:
 protected:
   // Shader register allocation:
 
-  bool _use_generic_attr;
+  bool _use_generic_attr : 1;
+  bool _use_pointcoord : 1;
   int _vcregs_used;
   int _fcregs_used;
   int _vtregs_used;
