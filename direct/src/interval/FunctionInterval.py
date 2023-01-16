@@ -86,11 +86,18 @@ class FunctionInterval(Interval.Interval):
         return name
 
     def privInstant(self):
+        """
+        In versions previous to 1.11, this function did not set the state of the Interval
+        In 1.11 this has been changed to be consistent with MetaInterval
+        """
+        self.state = CInterval.SStarted
         # Evaluate the function
         self.function(*self.extraArgs, **self.kw)
         # Print debug information
         self.notify.debug(
             'updateFunc() - %s: executing Function' % self.name)
+        self.state = CInterval.SFinal
+        self.intervalDone()
 
 
 ### FunctionInterval subclass for throwing events ###
