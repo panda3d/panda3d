@@ -1,4 +1,4 @@
-from panda3d.core import Filename, NodePath
+from panda3d.core import Filename, NodePath, AudioManager
 from direct.showbase.Loader import Loader
 import pytest
 
@@ -19,6 +19,16 @@ def temp_model():
     yield root.fullpath
     ModelPool.release_model(root.fullpath)
 
+
+@pytest.fixture
+def music_manager(scope="module"):
+    musicManager = AudioManager.createAudioManager()
+    musicManagerIsValid = musicManager is not None and musicManager.isValid()
+    if musicManagerIsValid:
+        # ensure only 1 midi song is playing at a time:
+        musicManager.setConcurrentSoundLimit(1)
+        musicManager.setActive(True)
+    return musicManager
 
 def test_load_model_filename(loader, temp_model):
     model = loader.load_model(Filename(temp_model))
@@ -68,3 +78,12 @@ def test_load_model_missing(loader):
 def test_load_model_okmissing(loader):
     model = loader.load_model('/nonexistent.bam', okMissing=True)
     assert model is None
+
+
+def test_load_sound_missing(loader, music_manager):
+    with pytest.raises(IOError):
+        loader.loadSound(music_manager, '/nonexistent.mp3')
+
+def test_load_model_okmissing(loader, music_manager):
+    sound = loader.loadSound(music_manager, '/nonexistent.mp3', okMissing=True)
+    assert sound is not music_manager.getNullSound()
