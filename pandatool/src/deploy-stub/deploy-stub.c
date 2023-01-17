@@ -645,9 +645,8 @@ static void unmap_blob(void *blob) {
  * Gets the file path to the games .bin file which stores the blob made by FreezeTool
  */
 static char * get_blob_path(const char * path){
-    char buffer[PATH_MAX];
     #ifdef MACOS_APP_BUNDLE
-        // Add the Frameworks directory to sys.path.
+        char buffer[PATH_MAX];
         
         uint32_t bufsize = sizeof(buffer);
         
@@ -662,7 +661,20 @@ static char * get_blob_path(const char * path){
         const char *dir = dirname(resolved);
         sprintf(buffer, "%s/../Resources/%s.bin", dir, basename(resolved));
         return buffer;
+    #elif defined(MS_WINDOWS)
+        char buffer[MAX_PATH];
+        DWORD length = GetModuleFileName(NULL, buffer, MAX_PATH);
+        if (length == 0)
+        {
+            exit(1);
+        }
+        char *result = (char *)malloc(MAX_PATH);
+        char fname[_MAX_FNAME];
+        _splitpath(buffer, NULL, NULL, fname, NULL);
+        sprintf(result, "%s.bin", fname);
+        return result;
     #else
+        char buffer[PATH_MAX];
         sprintf(buffer, "%s.bin", basename(path));
         return buffer;
     #endif
@@ -700,12 +712,13 @@ int main(int argc, char *argv[]) {
   ModuleDef *moddef;
   const char *log_filename;
   void *blob = NULL;
+  char *blob_path = get_blob_path(argv[0]);
   log_filename = NULL;
   // FreezeTool will overrite blobinfo on non-MacOS to set the blob_offset to non -1. If it is -1, then we can assume we need to load it from FileSystem
   int load_external = 0;
   if(blobinfo.blob_offset == -1){
       load_external = 1;
-      map_header(get_blob_path(argv[0]));
+      map_header(blob_path);
   }
 
 #ifdef __APPLE__
@@ -729,7 +742,7 @@ int main(int argc, char *argv[]) {
 
   // If we have a blob offset, we have to map the blob to memory.
   if (blobinfo.version == 0 || blobinfo.blob_offset != 0) {
-    void *blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size, get_blob_path(argv[0]), load_external);
+    void *blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size, blob_path, load_external);
     assert(blob != NULL);
 
     // Offset the pointers in the header using the base mmap address.
@@ -750,6 +763,9 @@ int main(int argc, char *argv[]) {
     } else {
       blobinfo.pointers[0] = blob;
     }
+#ifdef MS_WINDOWS
+    free(blob_path);
+#endif
 
     // Offset the pointers in the module table using the base mmap address.
     moddef = blobinfo.pointers[0];
