@@ -6135,10 +6135,6 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
         PyTargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
         PyTargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
-
-        PyTargetAdd('deploy-stube.obj', opts=OPTS, input='deploy-stube.c')
-        PyTargetAdd('deploy-stube.exe', input='deploy-stube.obj')
-        PyTargetAdd('deploy-stube.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
     elif GetTarget() == 'android':
         TargetAdd('org/jnius/NativeInvocationHandler.class', opts=OPTS, input='NativeInvocationHandler.java')
         TargetAdd('classes.dex', input='org/jnius/NativeInvocationHandler.class')

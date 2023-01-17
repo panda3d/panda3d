@@ -1000,8 +1000,6 @@ class build_apps(setuptools.Command):
             if platform.startswith('win') or 'macosx' in platform:
                 if not use_console:
                     stub_name = 'deploy-stubw'
-                if 'macosx' in platform and self.external_blob:
-                    stub_name = 'deploy-stube'
             elif platform.startswith('android'):
                 if not use_console:
                     stub_name = 'libdeploy-stubw.so'
