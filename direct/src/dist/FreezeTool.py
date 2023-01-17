@@ -168,8 +168,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = locations.PythonIPath
-        self.PythonVersion = locations.PythonVersion
+        self.PythonIPath = locations.pythonIncludePath
+        self.PythonVersion = locations.pythonVersion
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -193,7 +193,7 @@ class CompilationEnvironment:
 
     def determineStandardSetup(self):
         if self.platform.startswith('win'):
-            self.Python = locations.Python
+            self.Python = locations.pythonPrefix
 
             if 'VCINSTALLDIR' in os.environ:
                 self.MSVC = os.environ['VCINSTALLDIR']
@@ -260,7 +260,7 @@ class CompilationEnvironment:
 
         else:
             # Unix
-            lib_dir = locations.lib_dir
+            lib_dir = locations.pythonLibDir
             #python_a = os.path.join(lib_dir, "config", "libpython%(pythonVersion)s.a")
             self.compileObjExe = "%(CC)s %(CFLAGS)s -c -o %(basename)s.o -pthread -O2 %(filename)s -I%(pythonIPath)s"
             self.compileObjDll = "%(CC)s %(CFLAGS)s %(CCSHARED)s -c -o %(basename)s.o -O2 %(filename)s -I%(pythonIPath)s"
@@ -283,7 +283,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **locations.config_vars)
+            }, **locations.pythonConfigVars)
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
@@ -298,7 +298,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **locations.config_vars)
+            }, **locations.pythonConfigVars)
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
@@ -316,7 +316,7 @@ class CompilationEnvironment:
             'arch' : self.arch,
             'filename' : filename,
             'basename' : basename,
-            }, **locations.config_vars)
+            }, **locations.pythonConfigVars)
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
@@ -332,7 +332,7 @@ class CompilationEnvironment:
             'filename' : filename,
             'basename' : basename,
             'dllext' : self.dllext,
-            }, **locations.config_vars)
+            }, **locations.pythonConfigVars)
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
