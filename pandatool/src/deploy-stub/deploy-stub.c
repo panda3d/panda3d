@@ -553,10 +553,10 @@ error:
  * Maps the binary blob at the given memory address to memory, and returns the
  * pointer to the beginning of it.
  */
-static void *map_blob(off_t offset, size_t size, const char *path, bool load_external) {
+static void *map_blob(off_t offset, size_t size, const char *path, int load_external) {
   void *blob;
   FILE *runtime;
-    if(!load_external){
+    if(load_external == 0){
 #ifdef _WIN32
         wchar_t buffer[2048];
         GetModuleFileNameW(NULL, buffer, 2048);
@@ -702,9 +702,9 @@ int main(int argc, char *argv[]) {
   void *blob = NULL;
   log_filename = NULL;
   // FreezeTool will overrite blobinfo on non-MacOS to set the blob_offset to non -1. If it is -1, then we can assume we need to load it from FileSystem
-  bool load_external = false;
+  int load_external = 0;
   if(blobinfo.blob_offset == -1){
-      load_external = true;
+      load_external = 1;
       map_header(get_blob_path(argv[0]));
   }
 
