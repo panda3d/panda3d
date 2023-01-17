@@ -668,6 +668,11 @@ static char * get_blob_path(const char * path){
     #endif
 }
 
+/*
+ * When we are dealing with an external file, we have to load
+ * the blobinto manually. This is to resolve an codesigning issues
+ * on ARM64 MacOS
+ */
 static void *map_header(const char *path) {
     FILE *runtime;
     char *buffer;
@@ -678,6 +683,7 @@ static void *map_header(const char *path) {
         exit(1);
     }
     fread(&blobinfo, sizeof(blobinfo), 1, runtime);
+
     fclose(runtime);
     return NULL;
 }
