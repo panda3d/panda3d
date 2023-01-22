@@ -10693,10 +10693,15 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
       return;
     }
 
-    PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    scan.extract_bytes(image.p(), u_size);
+    if (!textures_header_only) {
+      PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
+      scan.extract_bytes(image.p(), u_size);
+      cdata->_ram_images[n]._image = image;
 
-    cdata->_ram_images[n]._image = image;
+    } else {
+      // Skip over actual image data if we're only reading in dummy textures.
+      scan.skip_bytes(u_size);
+    }
   }
   cdata->_loaded_from_image = true;
   cdata->inc_image_modified();
