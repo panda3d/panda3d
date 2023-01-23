@@ -45,7 +45,7 @@ class ShaderCompiler;
 /**
 
  */
-class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount, public ShaderEnums {
 PUBLISHED:
   using Stage = ShaderModule::Stage;
   using ScalarType = ShaderType::ScalarType;
@@ -85,10 +85,9 @@ PUBLISHED:
     bit_AutoShaderShadow = 4, // bit for AS_shadow
   };
 
-private:
+PUBLISHED:
   Shader(ShaderLanguage lang);
 
-PUBLISHED:
   static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
   static PT(Shader) make(std::string body, ShaderLanguage lang = SL_none);
   static PT(Shader) load(ShaderLanguage lang,

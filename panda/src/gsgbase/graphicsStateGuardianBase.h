@@ -121,7 +121,7 @@ PUBLISHED:
   virtual bool get_supports_compressed_texture_format(int compression_mode) const=0;
 
   virtual bool get_supports_multisample() const=0;
-  virtual int get_supported_shader_capabilities() const=0;
+  virtual uint64_t get_supported_shader_capabilities() const=0;
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_shadow_filter() const=0;
 

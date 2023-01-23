@@ -46,18 +46,6 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   for (InstructionIterator it = _instructions.begin(); it != _instructions.begin_annotations(); ++it) {
     Instruction op = *it;
     switch (op.opcode) {
-    case spv::OpExtInst:
-      {
-        const Definition &def = writer.get_definition(op.args[2]);
-        nassertv(def._dtype == DT_ext_inst);
-        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
-          // We mark the use of the GLSL roundEven() function, which requires
-          // GLSL 1.30 or HLSL SM 4.0.
-          _used_caps |= C_round_even;
-        }
-      }
-      break;
-
     case spv::OpMemoryModel:
       if (op.args[0] != spv::AddressingModelLogical) {
         shader_cat.error()
@@ -71,37 +59,49 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       }
       break;
 
+    case spv::OpExecutionMode:
+      if (op.nargs >= 3 && op.args[1] == spv::ExecutionModeInvocations) {
+        if (op.args[2] != 1) {
+          _used_caps |= C_geometry_shader_instancing;
+        }
+      }
+      break;
+
     case spv::OpCapability:
       switch ((spv::Capability)op.args[0]) {
       case spv::CapabilityFloat64:
         _used_caps |= C_double;
         break;
 
-      case spv::CapabilityImageGatherExtended:
-        _used_caps |= C_texture_gather;
+      case spv::CapabilityAtomicStorage:
+        _used_caps |= C_atomic_counters;
+        break;
+
+      case spv::CapabilityClipDistance:
+        _used_caps |= C_clip_distance;
+        break;
+
+      case spv::CapabilityCullDistance:
+        _used_caps |= C_cull_distance;
         break;
 
       case spv::CapabilityImageCubeArray:
+      case spv::CapabilitySampledCubeArray:
         _used_caps |= C_cube_map_array;
+        break;
+
+      case spv::CapabilitySampledBuffer:
+      case spv::CapabilityImageBuffer:
+        _used_caps |= C_texture_buffer;
+        break;
+
+      case spv::CapabilityDerivativeControl:
+        _used_caps |= C_derivative_control;
         break;
 
       default:
         break;
       }
-      break;
-
-    case spv::OpConvertFToU:
-    case spv::OpConvertUToF:
-    case spv::OpUConvert:
-    case spv::OpUDiv:
-    case spv::OpUMod:
-    case spv::OpUMulExtended:
-    case spv::OpUGreaterThan:
-    case spv::OpUGreaterThanEqual:
-    case spv::OpULessThan:
-    case spv::OpULessThanEqual:
-    case spv::OpShiftRightLogical:
-      _used_caps |= C_unsigned_int;
       break;
 
     default:
@@ -130,14 +130,24 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   for (uint32_t id = 0; id < _instructions.get_id_bound(); ++id) {
     const Definition &def = writer.get_definition(id);
 
-    if (def.is_used() && def._type != nullptr &&
-        def._type->contains_scalar_type(ShaderType::ST_double)) {
-      _used_caps |= C_double;
+    if (def.is_used() && def._type != nullptr) {
+      if (def._type->contains_scalar_type(ShaderType::ST_double)) {
+        _used_caps |= C_double;
+      }
+      if (const ShaderType::Matrix *matrix_type = def._type->as_matrix()) {
+        if (matrix_type->get_num_rows() != matrix_type->get_num_columns()) {
+          _used_caps |= C_non_square_matrices;
+        }
+      }
+      if (def._type->contains_scalar_type(ShaderType::ST_uint)) {
+        _used_caps |= C_unified_model;
+      }
     }
 
     if (def._dtype == DT_variable && !def.is_builtin()) {
       // Ignore empty structs/arrays.
-      if (def._type->get_num_interface_locations() == 0) {
+      int num_locations = def._type->get_num_interface_locations();
+      if (num_locations == 0) {
         continue;
       }
 
@@ -151,15 +161,20 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
         _inputs.push_back(std::move(var));
 
         if (stage == Stage::fragment) {
-          // Integer varyings are implicitly flat-interpolated.
+          // Integer varyings require shader model 4.
           if (def._type->contains_scalar_type(ShaderType::ST_uint) ||
               def._type->contains_scalar_type(ShaderType::ST_int) ||
               def._type->contains_scalar_type(ShaderType::ST_bool)) {
-            _used_caps |= C_flat_interpolation;
+            _used_caps |= C_unified_model;
           }
         }
       }
       else if (def._storage_class == spv::StorageClassOutput) {
+        if (!_outputs.empty() || num_locations > 1) {
+          // This shader requires MRT.
+          _used_caps |= C_draw_buffers;
+        }
+
         _outputs.push_back(std::move(var));
       }
       else if (def._storage_class == spv::StorageClassUniformConstant) {
@@ -181,20 +196,61 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
           }
           if (sampled_image_type->get_sampled_type() == ShaderType::ST_uint ||
               sampled_image_type->get_sampled_type() == ShaderType::ST_int) {
-            _used_caps |= C_int_samplers;
+            _used_caps |= C_texture_integer;
+          }
+          switch (sampled_image_type->get_texture_type()) {
+          case Texture::TT_buffer_texture:
+            _used_caps |= C_texture_buffer;
+            break;
+          case Texture::TT_cube_map_array:
+            _used_caps |= C_cube_map_array;
+            // fall through
+          case Texture::TT_1d_texture_array:
+          case Texture::TT_2d_texture_array:
+            _used_caps |= C_texture_array;
+            break;
           }
         }
         _parameters.push_back(std::move(var));
       }
-
-      if (def._type->contains_scalar_type(ShaderType::ST_uint)) {
-        _used_caps |= C_unsigned_int;
+      else if (def._storage_class == spv::StorageClassStorageBuffer) {
+        _used_caps |= C_storage_buffer;
+      }
+      else if (def._storage_class == spv::StorageClassUniform) {
+        // Older versions of SPIR-V defined SSBOs differently.
+        const Definition &type_pointer_def = writer.get_definition(def._type_id);
+        nassertd(type_pointer_def._dtype == DT_type_pointer) continue;
+        const Definition &type_def = writer.get_definition(type_pointer_def._type_id);
+        nassertd(type_def._dtype == DT_type) continue;
+        if (type_def._flags & DF_buffer_block) {
+          _used_caps |= C_storage_buffer;
+        }
       }
     }
     else if (def._dtype == DT_variable && def.is_used() &&
              def._storage_class == spv::StorageClassInput) {
       // Built-in input variable.
       switch (def._builtin) {
+      case spv::BuiltInClipDistance:
+        if ((_used_caps & C_clip_distance) == 0) {
+          shaderpipeline_cat.warning()
+            << "Shader uses " << "ClipDistance"
+            << ", but does not declare capability!\n";
+
+          _used_caps |= C_clip_distance;
+        }
+        break;
+
+      case spv::BuiltInCullDistance:
+        if ((_used_caps & C_cull_distance) == 0) {
+          shaderpipeline_cat.warning()
+            << "Shader uses " << "CullDistance"
+            << ", but does not declare capability!\n";
+
+          _used_caps |= C_cull_distance;
+        }
+        break;
+
       case spv::BuiltInVertexId:
         _used_caps |= C_vertex_id;
         break;
@@ -205,6 +261,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
       case spv::BuiltInPrimitiveId:
         _used_caps |= C_primitive_id;
+        break;
+
+      case spv::BuiltInPointCoord:
+        _used_caps |= C_point_coord;
         break;
 
       case spv::BuiltInSampleId:
@@ -249,22 +309,51 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   // from the module.
   strip();
 
-  // Check for more caps.
-  for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
+  // Check for more caps, now that we've optimized the module.
+  for (InstructionIterator it = _instructions.begin_annotations(); it != _instructions.end_annotations(); ++it) {
     Instruction op = *it;
-    switch (op.opcode) {
-    case spv::OpDecorate:
+    if (op.opcode == spv::OpDecorate) {
+      if (writer.get_definition(op.args[0]).is_builtin()) {
+        continue;
+      }
       switch ((spv::Decoration)op.args[1]) {
       case spv::DecorationNoPerspective:
         _used_caps |= C_noperspective_interpolation;
         break;
       case spv::DecorationFlat:
-        _used_caps |= C_flat_interpolation;
+        _used_caps |= C_unified_model;
+        break;
+      case spv::DecorationSample:
+        _used_caps |= C_multisample_interpolation;
         break;
       case spv::DecorationInvariant:
-        _used_caps |= C_invariant;
+        //_used_caps |= C_invariant;
+        break;
+      case spv::DecorationComponent:
+        _used_caps |= C_enhanced_layouts;
         break;
       }
+    }
+  }
+
+  for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
+    Instruction op = *it;
+    switch (op.opcode) {
+    case spv::OpExtInst:
+      {
+        const Definition &def = writer.get_definition(op.args[2]);
+        nassertv(def._dtype == DT_ext_inst);
+        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
+          // We mark the use of the GLSL roundEven() function, which requires
+          // GLSL 1.30 or HLSL SM 4.0.
+          _used_caps |= C_unified_model;
+        }
+      }
+      break;
+
+    case spv::OpImageTexelPointer:
+      // These can only be used for atomic ops.
+      _used_caps |= C_image_load_store | C_image_atomic;
       break;
 
     case spv::OpImageRead:
@@ -276,7 +365,6 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     case spv::OpImageSampleExplicitLod:
     case spv::OpImageSampleProjExplicitLod:
       if (stage != Stage::vertex) {
-        // TODO: check grad
         _used_caps |= C_texture_lod;
       }
       // fall through
@@ -285,18 +373,20 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       if (stage == Stage::vertex) {
         _used_caps |= C_vertex_texture;
       }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
       break;
 
     case spv::OpImageSampleDrefExplicitLod:
     case spv::OpImageSampleProjDrefExplicitLod:
       if (stage != Stage::vertex) {
-        // TODO: check grad
         _used_caps |= C_texture_lod;
       }
       // fall through
     case spv::OpImageSampleDrefImplicitLod:
     case spv::OpImageSampleProjDrefImplicitLod:
-      _used_caps |= C_sampler_shadow;
+      _used_caps |= C_shadow_samplers;
 
       {
         const Definition &sampler_def = writer.get_definition(op.args[2]);
@@ -311,16 +401,42 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       if (stage == Stage::vertex) {
         _used_caps |= C_vertex_texture;
       }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
       break;
 
     case spv::OpImageFetch:
+      _used_caps |= C_unified_model;
+      break;
+
     case spv::OpImageQuerySizeLod:
     case spv::OpImageQuerySize:
-      _used_caps |= C_texture_fetch;
+      {
+        const Definition &image_def = writer.get_definition(op.args[2]);
+        if (image_def._type != nullptr && image_def._type->as_image() != nullptr) {
+          _used_caps |= C_image_query_size;
+        } else {
+          _used_caps |= C_texture_query_size;
+        }
+      }
       break;
 
     case spv::OpImageGather:
-      _used_caps |= C_texture_gather;
+    case spv::OpImageSparseGather:
+      {
+        const Definition &component = writer.get_definition(op.args[4]);
+        if (component._dtype == DT_constant && component._constant == 0) {
+          _used_caps |= C_texture_gather_red;
+        } else {
+          _used_caps |= C_texture_gather_any;
+        }
+      }
+      break;
+
+    case spv::OpImageDrefGather:
+    case spv::OpImageSparseDrefGather:
+      _used_caps |= C_texture_gather_any;
       break;
 
     case spv::OpImageQueryLod:
@@ -339,9 +455,25 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       _used_caps |= C_bit_encoding;
       break;
 
+    case spv::OpConvertFToU:
+    case spv::OpConvertUToF:
+    case spv::OpUConvert:
+    case spv::OpUDiv:
+    case spv::OpUMod:
+    case spv::OpUMulExtended:
+    case spv::OpUGreaterThan:
+    case spv::OpUGreaterThanEqual:
+    case spv::OpULessThan:
+    case spv::OpULessThanEqual:
+    case spv::OpShiftRightLogical:
+      _used_caps |= C_unified_model;
+      if (op.opcode != spv::OpUMulExtended) {
+        break;
+      }
+      // fall through
+
     case spv::OpIAddCarry:
     case spv::OpISubBorrow:
-    case spv::OpUMulExtended:
     case spv::OpSMulExtended:
       _used_caps |= C_extended_arithmetic;
       break;
@@ -353,6 +485,12 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     case spv::OpDPdyCoarse:
     case spv::OpFwidthCoarse:
       _used_caps |= C_derivative_control;
+      // fall through
+
+    case spv::OpDPdx:
+    case spv::OpDPdy:
+    case spv::OpFwidth:
+      _used_caps |= C_standard_derivatives;
       break;
 
     default:
@@ -380,10 +518,12 @@ get_ir() const {
 
 /**
  * Links the stage with the given previous stage, by matching up its inputs with
- * the outputs of the previous stage and assigning locations.
+ * the outputs of the previous stage.  Rather than reassigning the locations
+ * directly, this method just returns the location remappings that need to be
+ * made, or returns false if the stages cannot be linked.
  */
 bool ShaderModuleSpirV::
-link_inputs(const ShaderModule *previous) {
+link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const {
   if (!previous->is_of_type(ShaderModuleSpirV::get_class_type())) {
     return false;
   }
@@ -391,11 +531,9 @@ link_inputs(const ShaderModule *previous) {
     return false;
   }
 
-  pmap<int, int> location_remap;
-
   ShaderModuleSpirV *spv_prev = (ShaderModuleSpirV *)previous;
 
-  for (Variable &input : _inputs) {
+  for (const Variable &input : _inputs) {
     int i = spv_prev->find_output(input.name);
     if (i < 0) {
       shader_cat.error()
@@ -413,14 +551,10 @@ link_inputs(const ShaderModule *previous) {
     }
 
     if (!input.has_location() || output.get_location() != input.get_location()) {
-      location_remap[input.get_location()] = output.get_location();
-      input._location = output.get_location();
+      remap[input.get_location()] = output.get_location();
     }
   }
 
-  if (!location_remap.empty()) {
-    remap_locations(spv::StorageClassInput, location_remap);
-  }
   return true;
 }
 
@@ -429,7 +563,25 @@ link_inputs(const ShaderModule *previous) {
  * not included in the map remain untouched.
  */
 void ShaderModuleSpirV::
-remap_parameter_locations(pmap<int, int> &locations) {
+remap_input_locations(const pmap<int, int> &locations) {
+  remap_locations(spv::StorageClassInput, locations);
+
+  for (Variable &input : _inputs) {
+    if (input.has_location()) {
+      pmap<int, int>::const_iterator it = locations.find(input.get_location());
+      if (it != locations.end()) {
+        input._location = it->second;
+      }
+    }
+  }
+}
+
+/**
+ * Remaps parameters with a given location to a given other location.  Locations
+ * not included in the map remain untouched.
+ */
+void ShaderModuleSpirV::
+remap_parameter_locations(const pmap<int, int> &locations) {
   remap_locations(spv::StorageClassUniformConstant, locations);
 
   // If we extracted out the parameters, replace the locations there as well.
@@ -2576,6 +2728,10 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
 
   case spv::OpDecorate:
     switch ((spv::Decoration)op.args[1]) {
+    case spv::DecorationBufferBlock:
+      _defs[op.args[0]]._flags |= DF_buffer_block;
+      break;
+
     case spv::DecorationBuiltIn:
       _defs[op.args[0]]._builtin = (spv::BuiltIn)op.args[2];
       break;

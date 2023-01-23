@@ -34,17 +34,22 @@ public:
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
-  bool r_preprocess_include(ShaderModuleGlsl *module,
-                            std::ostream &out, const std::string &filename,
-                            const Filename &source_dir,
-                            std::set<Filename> &open_files,
-                            BamCacheRecord *record, int depth) const;
-  bool r_preprocess_source(ShaderModuleGlsl *module,
-                           std::ostream &out, std::istream &in,
+  struct State {
+    std::ostringstream code;
+    std::set<Filename> once_files;
+    pvector<Filename> included_files;
+    uint64_t required_caps = 0;
+    int cond_nesting = 0;
+    int version = 0;
+    bool has_code = false;
+  };
+  bool r_preprocess_include(State &state, const std::string &filename,
+                            const Filename &source_dir, BamCacheRecord *record,
+                            int depth) const;
+  bool r_preprocess_source(State &state, std::istream &in,
                            const std::string &fn, const Filename &full_fn,
-                           std::set<Filename> &open_files,
-                           BamCacheRecord *record,
-                           int fileno = 0, int depth = 0) const;
+                           BamCacheRecord *record = nullptr, int fileno = 0,
+                           int depth = 0) const;
 
 public:
   static TypeHandle get_class_type() {

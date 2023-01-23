@@ -797,9 +797,74 @@ compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- * Factory method to generate a Shader object
+ * Tells the BamReader how to create objects of type ShaderAttrib.
  */
 void ShaderAttrib::
 register_with_read_factory() {
-  // IMPLEMENT ME
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void ShaderAttrib::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  RenderAttrib::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _shader);
+
+  dg.add_int32(_shader_priority);
+  dg.add_bool(_auto_shader);
+  dg.add_bool(_has_shader);
+  dg.add_int32(_flags);
+  dg.add_int32(_has_flags);
+  dg.add_int32(_instance_count);
+  dg.add_uint32(0);
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int ShaderAttrib::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = RenderAttrib::complete_pointers(p_list, manager);
+  _shader = DCAST(Shader, p_list[pi++]);
+  return pi;
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ShaderAttrib is encountered in the Bam file.  It should create the
+ * ShaderAttrib and extract its information from the file.
+ */
+TypedWritable *ShaderAttrib::
+make_from_bam(const FactoryParams &params) {
+  ShaderAttrib *attrib = new ShaderAttrib;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  attrib->fillin(scan, manager);
+
+  return attrib;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ShaderAttrib.
+ */
+void ShaderAttrib::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  RenderAttrib::fillin(scan, manager);
+
+  manager->read_pointer(scan);
+  _shader_priority = scan.get_int32();
+  _auto_shader = scan.get_bool();
+  _has_shader = scan.get_bool();
+  _flags = scan.get_int32();
+  _has_flags = scan.get_int32();
+  _instance_count = scan.get_int32();
+  scan.get_uint32();
 }

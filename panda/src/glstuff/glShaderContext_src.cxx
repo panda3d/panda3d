@@ -3569,7 +3569,10 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
 #ifdef OPENGLES
       options.es = true;
 #else
-      options.es = false;
+      options.es = _glgsg->_glsl_version == 100
+                || _glgsg->_glsl_version == 300
+                || _glgsg->_glsl_version == 310
+                || _glgsg->_glsl_version == 320;
 #endif
       options.vertex.support_nonzero_base_instance = false;
       options.enable_420pack_extension = false;
@@ -3579,13 +3582,26 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
         _emulate_float_attribs = true;
       }
 
-      // At this time, SPIRV-Cross doesn't add this extension automatically.
-      if (!options.es && options.version < 140 &&
-          (module->get_used_capabilities() & ShaderModule::C_instance_id) != 0) {
-        if (_glgsg->has_extension("GL_ARB_draw_instanced")) {
-          compiler.require_extension("GL_ARB_draw_instanced");
-        } else {
+      // At this time, SPIRV-Cross doesn't always add these automatically.
+      uint64_t used_caps = module->get_used_capabilities();
+#ifndef OPENGLES
+      if (!options.es) {
+        if (options.version < 140 && (used_caps & Shader::C_instance_id) != 0) {
+          if (_glgsg->has_extension("GL_ARB_draw_instanced")) {
+            compiler.require_extension("GL_ARB_draw_instanced");
+          } else {
+            compiler.require_extension("GL_EXT_gpu_shader4");
+          }
+        }
+        if (options.version < 130 && (used_caps & Shader::C_unified_model) != 0) {
           compiler.require_extension("GL_EXT_gpu_shader4");
+        }
+      }
+      else
+#endif
+      {
+        if (options.version < 300 && (used_caps & Shader::C_non_square_matrices) != 0) {
+          compiler.require_extension("GL_NV_non_square_matrices");
         }
       }
 

@@ -3117,18 +3117,26 @@ add_module(PT(ShaderModule) module) {
 
   int used_caps = module->get_used_capabilities();
 
-  // Make sure we have a unique copy.
+  // Make sure that any modifications made to the module will not affect other
+  // Shader objects, by storing it as copy-on-write.
   COWPT(ShaderModule) cow_module = std::move(module);
 
-  // Link its inputs up with the previous stage.
   if (!_modules.empty()) {
-    //TODO: Check whether it's already linked properly to possibly avoid cloning
-    // the module.
-    PT(ShaderModule) module = cow_module.get_write_pointer();
-    if (!module->link_inputs(_modules.back()._module.get_read_pointer())) {
-      shader_cat.error()
-        << "Unable to match shader module interfaces.\n";
-      return false;
+    // Link its inputs up with the previous stage.
+    pmap<int, int> location_remap;
+    {
+      CPT(ShaderModule) module = cow_module.get_read_pointer();
+      if (!module->link_inputs(_modules.back()._module.get_read_pointer(), location_remap)) {
+        shader_cat.error()
+          << "Unable to match shader module interfaces.\n";
+        return false;
+      }
+    }
+
+    if (!location_remap.empty()) {
+      // Make sure we have a unique copy so that we can do the remappings.
+      PT(ShaderModule) module = cow_module.get_write_pointer();
+      module->remap_input_locations(location_remap);
     }
   }
   else if (stage == Stage::vertex) {

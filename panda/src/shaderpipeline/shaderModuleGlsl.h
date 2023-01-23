@@ -20,10 +20,11 @@
  * ShaderModule that contains raw, preprocessed GLSL code
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModuleGlsl final : public ShaderModule {
-public:
-  ShaderModuleGlsl(Stage stage);
+PUBLISHED:
+  ShaderModuleGlsl(Stage stage, std::string code, int version = 0);
   virtual ~ShaderModuleGlsl();
 
+public:
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
 
   virtual std::string get_ir() const override;
@@ -32,12 +33,22 @@ public:
   Filename get_filename_from_index(int index) const;
 
 protected:
-  std::string _raw_source;
+  std::string _code;
+  int _version = 0;
 
+  static const int _fileno_offset = 2048;
   typedef pvector<Filename> Filenames;
   Filenames _included_files;
 
   friend class ShaderCompilerGlslPreProc;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 public:
   static TypeHandle get_class_type() {

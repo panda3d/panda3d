@@ -2360,13 +2360,17 @@ reset() {
 
   _supported_shader_caps = 0;
   if (_supports_hlsl) {
-    _supported_shader_caps = ShaderModule::C_basic_shader
-                           | ShaderModule::C_vertex_texture
-                           | ShaderModule::C_sampler_shadow
-                           | ShaderModule::C_non_square_matrices
-                           | ShaderModule::C_texture_lod;
+    _supported_shader_caps = Shader::C_basic_shader
+                           | Shader::C_standard_derivatives
+                           | Shader::C_shadow_samplers
+                           | Shader::C_non_square_matrices
+                           | Shader::C_texture_lod;
 
     _supports_geometry_instancing = true;
+  }
+
+  if (d3d_caps.VertexTextureFilterCaps != 0) {
+    _supported_shader_caps |= Shader::C_vertex_texture;
   }
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);

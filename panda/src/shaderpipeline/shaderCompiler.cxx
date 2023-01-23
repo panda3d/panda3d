@@ -49,7 +49,7 @@ ShaderCompiler::
  * ShaderModule on success.
  */
 PT(ShaderModule) ShaderCompiler::
-compile_now(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record) const {
+compile_now(Stage stage, const Filename &fn, BamCacheRecord *record) const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
   if (vf == nullptr) {

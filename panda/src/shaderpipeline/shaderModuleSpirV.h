@@ -37,8 +37,9 @@ public:
   INLINE const uint32_t *get_data() const;
   INLINE size_t get_data_size() const;
 
-  virtual bool link_inputs(const ShaderModule *previous) override;
-  virtual void remap_parameter_locations(pmap<int, int> &remap) override;
+  virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const override;
+  virtual void remap_input_locations(const pmap<int, int> &remap) override;
+  virtual void remap_parameter_locations(const pmap<int, int> &remap) override;
 
   virtual std::string get_ir() const override;
 
@@ -140,6 +141,9 @@ public:
     // respectively one with and without depth comparison
     DF_dref_sampled = 4,
     DF_non_dref_sampled = 8,
+
+    // Has the "buffer block" decoration (older versions of SPIR-V).
+    DF_buffer_block = 16,
   };
 
   /**

@@ -124,8 +124,6 @@ PUBLISHED:
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
   ShaderBuffer *get_shader_input_buffer(const InternalName *id) const;
 
-  static void register_with_read_factory();
-
 PUBLISHED:
   MAKE_PROPERTY(shader, get_shader);
   MAKE_PROPERTY(instance_count, get_instance_count);
@@ -170,6 +168,15 @@ PUBLISHED:
     return get_class_slot();
   }
   MAKE_PROPERTY(class_slot, get_class_slot);
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
