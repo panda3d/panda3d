@@ -3596,12 +3596,22 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
         if (options.version < 130 && (used_caps & Shader::C_unified_model) != 0) {
           compiler.require_extension("GL_EXT_gpu_shader4");
         }
+        if (options.version < 400 && (used_caps & Shader::C_dynamic_indexing) != 0) {
+          compiler.require_extension("GL_ARB_gpu_shader5");
+        }
       }
       else
 #endif
       {
         if (options.version < 300 && (used_caps & Shader::C_non_square_matrices) != 0) {
           compiler.require_extension("GL_NV_non_square_matrices");
+        }
+        if (options.version < 320 && (used_caps & Shader::C_dynamic_indexing) != 0) {
+          if (_glgsg->has_extension("GL_OES_gpu_shader5")) {
+            compiler.require_extension("GL_OES_gpu_shader5");
+          } else {
+            compiler.require_extension("GL_EXT_gpu_shader5");
+          }
         }
       }
 

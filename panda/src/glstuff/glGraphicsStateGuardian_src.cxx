@@ -1792,6 +1792,9 @@ reset() {
     if (_supports_cube_map_array) {
       _supported_shader_caps |= Shader::C_cube_map_array;
     }
+    if (has_extension("GL_OES_gpu_shader5") || has_extension("GL_EXT_gpu_shader5")) {
+      _supported_shader_caps |= Shader::C_dynamic_indexing;
+    }
   }
 
   if (is_at_least_gles_version(3, 2)) {
@@ -1804,6 +1807,7 @@ reset() {
       Shader::C_tessellation_shader |
       Shader::C_sample_variables |
       Shader::C_multisample_interpolation |
+      Shader::C_dynamic_indexing |
       Shader::C_image_atomic;
   }
 
@@ -1919,7 +1923,8 @@ reset() {
         Shader::C_tessellation_shader |
         Shader::C_sample_variables |
         Shader::C_extended_arithmetic |
-        Shader::C_multisample_interpolation;
+        Shader::C_multisample_interpolation |
+        Shader::C_dynamic_indexing;
     }
     else {
       if (has_extension("GL_ARB_texture_query_lod")) {
@@ -1935,7 +1940,8 @@ reset() {
         _supported_shader_caps |=
           Shader::C_texture_gather_red |
           Shader::C_texture_gather_any |
-          Shader::C_geometry_shader_instancing;
+          Shader::C_geometry_shader_instancing |
+          Shader::C_dynamic_indexing;
       }
       if (has_extension("GL_ARB_tessellation_shader")) {
         _supported_shader_caps |= Shader::C_tessellation_shader;

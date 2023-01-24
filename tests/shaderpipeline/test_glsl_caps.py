@@ -503,6 +503,35 @@ def test_glsl_caps_multisample_interpolation():
     """) == Shader.C_multisample_interpolation
 
 
+def test_glsl_caps_dynamic_indexing():
+    assert compile_and_get_caps(Stage.fragment, """
+    #version 400
+
+    uniform int a;
+    uniform sampler2D b[3];
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        p3d_FragColor = texture(b[a], vec2(0.0));
+    }
+    """) == Shader.C_dynamic_indexing
+
+    # NOT dynamic indexing
+    assert compile_and_get_caps(Stage.fragment, """
+    #version 330
+
+    const int a = 2;
+    uniform sampler2D b[3];
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        p3d_FragColor = texture(b[a], vec2(0.0));
+    }
+    """) == 0
+
+
 def test_glsl_caps_atomic_counters():
     assert compile_and_get_caps(Stage.vertex, """
     #version 420

@@ -142,8 +142,14 @@ public:
     DF_dref_sampled = 4,
     DF_non_dref_sampled = 8,
 
+    // Set if we know for sure that this can be const-evaluated.
+    DF_constant_expression = 16,
+
+    // Set for arrays that are indexed with a non-const index.
+    DF_dynamically_indexed = 32,
+
     // Has the "buffer block" decoration (older versions of SPIR-V).
-    DF_buffer_block = 16,
+    DF_buffer_block = 64,
   };
 
   /**

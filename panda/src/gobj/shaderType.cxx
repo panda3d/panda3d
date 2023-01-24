@@ -455,6 +455,19 @@ add_member(const ShaderType *type, std::string name, uint32_t offset) {
 }
 
 /**
+ * Returns true if this type is or contains any opaque type.
+ */
+bool ShaderType::Struct::
+contains_opaque_type() const {
+  for (const Member &member : _members) {
+    if (member.type != nullptr && member.type->contains_opaque_type()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Struct::
@@ -625,6 +638,15 @@ unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
   element_type = _element_type;
   num_elements = _num_elements;
   return true;
+}
+
+/**
+ * Returns true if this type is or contains any opaque type.
+ */
+bool ShaderType::Array::
+contains_opaque_type() const {
+  nassertr_always(_element_type != nullptr, false);
+  return _element_type->contains_opaque_type();
 }
 
 /**

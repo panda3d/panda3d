@@ -131,6 +131,9 @@ output_capabilities(std::ostream &out, int caps) {
   if (caps & C_multisample_interpolation) {
     out << "multisample_interpolation ";
   }
+  if (caps & C_dynamic_indexing) {
+    out << "dynamic_indexing ";
+  }
   if (caps & C_atomic_counters) {
     out << "atomic_counters ";
   }

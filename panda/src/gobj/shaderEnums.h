@@ -107,25 +107,26 @@ PUBLISHED:
     C_tessellation_shader = 1ull << 28,
     C_sample_variables = 1ull << 29,
     C_multisample_interpolation = 1ull << 30,
+    C_dynamic_indexing = 1ull << 31, // SM 5.1
 
     // GLSL 4.20 / ES 3.10 / SM 5.0
-    C_atomic_counters = 1ull << 31,
-    C_image_load_store = 1ull << 32,
-    C_image_atomic = 1ull << 33, // ES 3.20 or OES_shader_image_atomic
+    C_atomic_counters = 1ull << 32,
+    C_image_load_store = 1ull << 33,
+    C_image_atomic = 1ull << 34, // ES 3.20 or OES_shader_image_atomic
 
     // GLSL 4.30 / ES 3.10 / SM 5.0
-    C_image_query_size = 1ull << 34,
-    C_texture_query_levels = 1ull << 35, // not in ES
-    C_storage_buffer = 1ull << 36,
-    C_compute_shader = 1ull << 37,
+    C_image_query_size = 1ull << 35,
+    C_texture_query_levels = 1ull << 36, // not in ES
+    C_storage_buffer = 1ull << 37,
+    C_compute_shader = 1ull << 38,
 
     // GLSL 4.40 / ARB_enhanced_layouts
-    C_enhanced_layouts = 1ull << 38,
+    C_enhanced_layouts = 1ull << 39,
 
     // GLSL 4.50
-    C_cull_distance = 1ull << 39,
-    C_derivative_control = 1ull << 40,
-    C_texture_query_samples = 1ull << 41,
+    C_cull_distance = 1ull << 40,
+    C_derivative_control = 1ull << 41,
+    C_texture_query_samples = 1ull << 42,
   };
 
   static std::string format_stage(Stage stage);
