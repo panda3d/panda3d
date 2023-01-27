@@ -60,3 +60,16 @@ __pycache__/
 .tox/
 .cache/
 .pytest_cache/
+/.vs/p3d_jb/v17
+/.vs
+/makepanda/.vs/makepanda
+/makepanda/Backup
+/makepanda/Backup1
+/makepanda/UpgradeLog2.htm
+/makepanda/makepanda.sln
+/makepanda/makepanda.vcxproj
+/makepanda/makepanda.vcxproj.filters
+/makepanda/UpgradeLog.htm
+/makepanda/makepanda.vcxproj.user
+/debug/tmp
+/debug
