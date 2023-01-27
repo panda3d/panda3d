@@ -83,8 +83,8 @@ public:
   // Controls the position, velocity and direction of this sound's emitter.  pos is a pointer to an
   // xyz triplet of the emitter's position. vel is a pointer to an xyz
   // triplet of the emitter's velocity. dir is a pointer to an xyz triplet of the emitter's direction.
-  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat dx = LVector3::forward().get_x(), PN_stdfloat dy = LVector3::forward().get_y(), PN_stdfloat dz = LVector3::forward().get_z());
-  void get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz, PN_stdfloat* dx, PN_stdfloat* dy, PN_stdfloat* dz);
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, LVector3 d = LVector3::forward());
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d = nullptr);
 
   void set_3d_min_distance(PN_stdfloat dist);
   PN_stdfloat get_3d_min_distance() const;

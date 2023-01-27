@@ -35,12 +35,12 @@ AudioSound() {
 
 
 void AudioSound::
-set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, LVector3 d) {
   // Intentionally blank.
 }
 
 void AudioSound::
-get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz, PN_stdfloat* dx, PN_stdfloat* dy, PN_stdfloat* dz) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d) {
   // Intentionally blank.
 }
 

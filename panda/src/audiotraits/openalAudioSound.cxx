@@ -33,7 +33,7 @@ TypeHandle OpenALAudioSound::_type_handle;
  */
 
 OpenALAudioSound::
-OpenALAudioSound(OpenALAudioManager* manager,
+OpenALAudioSound(OpenALAudioManager *manager,
                  MovieAudio *movie,
                  bool positional,
                  int mode) :
@@ -127,7 +127,8 @@ play() {
 
   if (!is_valid()) return;
 
-  PN_stdfloat px, py, pz, vx, vy, vz, dx, dy, dz;
+  PN_stdfloat px, py, pz, vx, vy, vz;
+  LVector3 d;
 
   if (!_active) {
     _paused = true;
@@ -162,8 +163,8 @@ play() {
   set_3d_min_distance(_min_dist);
   set_3d_max_distance(_max_dist);
   set_3d_drop_off_factor(_drop_off_factor);
-  get_3d_attributes(&px, &py, &pz, &vx, &vy, &vz, &dx, &dy, &dz);
-  set_3d_attributes(px, py, pz, vx, vy, vz, dx, dy, dz);
+  get_3d_attributes(&px, &py, &pz, &vx, &vy, &vz, &d);
+  set_3d_attributes(px, py, pz, vx, vy, vz, d);
 
   _playing_loops = _loop_count;
   if (_playing_loops == 0) {
@@ -685,7 +686,7 @@ length() const {
  * we move coordinates from Panda to OpenAL and back.
  */
 void OpenALAudioSound::
-set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, LVector3 d) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _location[0] = px;
   _location[1] = pz;
@@ -695,9 +696,9 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   _velocity[1] = vz;
   _velocity[2] = -vy;
 
-  _direction[0] = dx;
-  _direction[1] = dz;
-  _direction[2] = -dy;
+  _direction[0] = d.get_x();
+  _direction[1] = d.get_z();
+  _direction[2] = -d.get_y();
 
   if (is_playing()) {
     _manager->make_current();
@@ -717,7 +718,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
  * attributes of the attached object.
  */
 void OpenALAudioSound::
-get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz, PN_stdfloat* dx, PN_stdfloat* dy, PN_stdfloat* dz) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   *px = _location[0];
   *py = -_location[2];
@@ -727,9 +728,9 @@ get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat
   *vy = -_velocity[2];
   *vz = _velocity[1];
 
-  *dx = _direction[0];
-  *dy = -_direction[2];
-  *dz = _direction[1];
+  if (d != nullptr) {
+      *d = { _direction[0], -_direction[2], _direction[1] };
+  }
 
 }
 
@@ -814,16 +815,16 @@ get_3d_drop_off_factor() const {
  */
 void OpenALAudioSound::
 set_3d_cone_inner_angle(PN_stdfloat angle) {
-    ReMutexHolder holder(OpenALAudioManager::_lock);
-    _cone_inner_angle = angle;
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+  _cone_inner_angle = angle;
 
-    if (is_playing()) {
-        _manager->make_current();
+  if (is_playing()) {
+    _manager->make_current();
 
-        alGetError(); // clear errors
-        alSourcef(_source, AL_CONE_INNER_ANGLE, _cone_inner_angle);
-        al_audio_errcheck("alSourcefv(_source,AL_CONE_INNER_ANGLE)");
-    }
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_INNER_ANGLE, _cone_inner_angle);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_INNER_ANGLE)");
+  }
 }
 
 /**
@@ -831,7 +832,7 @@ set_3d_cone_inner_angle(PN_stdfloat angle) {
  */
 PN_stdfloat OpenALAudioSound::
 get_3d_cone_inner_angle() const {
-    return _cone_inner_angle;
+  return _cone_inner_angle;
 }
 
 /**
@@ -839,16 +840,16 @@ get_3d_cone_inner_angle() const {
  */
 void OpenALAudioSound::
 set_3d_cone_outer_angle(PN_stdfloat angle) {
-    ReMutexHolder holder(OpenALAudioManager::_lock);
-    _cone_outer_angle = angle;
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+  _cone_outer_angle = angle;
 
-    if (is_playing()) {
-        _manager->make_current();
+  if (is_playing()) {
+    _manager->make_current();
 
-        alGetError(); // clear errors
-        alSourcef(_source, AL_CONE_OUTER_ANGLE, _cone_outer_angle);
-        al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_ANGLE)");
-    }
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_OUTER_ANGLE, _cone_outer_angle);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_ANGLE)");
+  }
 }
 
 /**
@@ -856,7 +857,7 @@ set_3d_cone_outer_angle(PN_stdfloat angle) {
  */
 PN_stdfloat OpenALAudioSound::
 get_3d_cone_outer_angle() const {
-    return _cone_outer_angle;
+  return _cone_outer_angle;
 }
 
 /**
@@ -864,16 +865,16 @@ get_3d_cone_outer_angle() const {
  */
 void OpenALAudioSound::
 set_3d_cone_outer_gain(PN_stdfloat gain) {
-    ReMutexHolder holder(OpenALAudioManager::_lock);
-    _cone_outer_gain = gain;
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+  _cone_outer_gain = gain;
 
-    if (is_playing()) {
-        _manager->make_current();
+  if (is_playing()) {
+    _manager->make_current();
 
-        alGetError(); // clear errors
-        alSourcef(_source, AL_CONE_OUTER_GAIN, _cone_outer_gain);
-        al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_GAIN)");
-    }
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_OUTER_GAIN, _cone_outer_gain);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_GAIN)");
+  }
 }
 
 /**
@@ -881,7 +882,7 @@ set_3d_cone_outer_gain(PN_stdfloat gain) {
  */
 PN_stdfloat OpenALAudioSound::
 get_3d_cone_outer_gain() const {
-    return _cone_outer_gain;
+  return _cone_outer_gain;
 }
 
 /**
