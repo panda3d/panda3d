@@ -3659,7 +3659,7 @@ ensure_generated_shader(const RenderState *state) {
       if (!_supports_basic_shaders) {
         return;
       }
-      _shader_generator = new ShaderGenerator(this);
+      _shader_generator = new ShaderGenerator(_shader_caps, _supports_shadow_filter);
     }
     if (state->_generated_shader == nullptr ||
         state->_generated_shader_seq != _generated_shader_seq) {

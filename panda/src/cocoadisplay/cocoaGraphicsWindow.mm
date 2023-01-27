@@ -1270,7 +1270,11 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     // Switch back to the mode we were in when we were still windowed.
     CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
     CGDisplayModeRelease(_windowed_mode);
-    CGDisplayRelease(_display);
+    if (CGDisplayIsMain(_display)) {
+      CGReleaseAllDisplays();
+    } else {
+      CGDisplayRelease(_display);
+    }
     _windowed_mode = NULL;
     _context_needs_update = true;
 
@@ -1285,14 +1289,31 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     _fullscreen_mode = mode;
     _context_needs_update = true;
 
+    // Display must be captured by the application before switching mode.
+    // If not, the change of mode and resolution will be applied on all the other applications,
+    // although they are no longer visible.
+    // This also leads to weird bugs when switching back to the desktop mode.
     CGError err;
-    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
-
+    if (CGDisplayIsMain(_display)) {
+      // In multidisplay setup, all the displays must be captured or the switch will be notified anyway.
+      err = CGCaptureAllDisplays();
+    } else {
+      err = CGDisplayCapture(_display);
+    }
     if (err != kCGErrorSuccess) {
       return false;
     }
 
-    CGDisplayCapture(_display);
+    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
+
+    if (err != kCGErrorSuccess) {
+      if (CGDisplayIsMain(_display)) {
+        CGReleaseAllDisplays();
+      } else {
+        CGDisplayRelease(_display);
+      }
+      return false;
+    }
 
     NSRect frame = [[[_view window] screen] frame];
     if (cocoadisplay_cat.is_debug()) {
