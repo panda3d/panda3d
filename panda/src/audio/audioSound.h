@@ -19,6 +19,7 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "filterProperties.h"
+#include "nodePath.h"
 
 class AudioManager;
 
@@ -89,13 +90,15 @@ PUBLISHED:
   // return: playing time in seconds.
   virtual PN_stdfloat length() const = 0;
 
-  // Controls the position of this sound's emitter.  px, py and pz are the
+  // Controls the position, velocity and direction of this sound's emitter.  px, py and pz are the
   // emitter's position.  vx, vy and vz are the emitter's velocity in UNITS
-  // PER SECOND (default: meters).
+  // PER SECOND (default: meters). dx, dy and dz are the emitter's direction
   virtual void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
-                                 PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
-  virtual void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
-                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
+      PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz,
+      PN_stdfloat dx = LVector3::forward().get_x(), PN_stdfloat dy = LVector3::forward().get_y(), PN_stdfloat dz = LVector3::forward().get_z());
+  virtual void get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz,
+      PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz,
+      PN_stdfloat* dx, PN_stdfloat* dy, PN_stdfloat* dz);
 
 
   // Controls the distance (in units) that this sound begins to fall off.
@@ -109,6 +112,19 @@ PUBLISHED:
   // quieter.  You should rarely need to adjust this.  Default is 1000000000.0
   virtual void set_3d_max_distance(PN_stdfloat dist);
   virtual PN_stdfloat get_3d_max_distance() const;
+
+  // Sets the angle of the inner cone of a directional sound source. In the zone inside of the inner cone
+  // sound is emitted with the (normal) volume set by set_volume().
+  virtual void set_3d_cone_inner_angle(PN_stdfloat angle);
+  virtual PN_stdfloat get_3d_cone_inner_angle() const;
+  // Sets the angle of the outer cone of a directional sound source. In the zone between
+  // the inner and the outer cone the volume is attenuated.
+  virtual void set_3d_cone_outer_angle(PN_stdfloat angle);
+  virtual PN_stdfloat get_3d_cone_outer_angle() const;
+  // Sets a factor applied to the volume set by set_volume() for the zone outside the outer cone.
+  // By default this is 0 (so no sound is heard inside the outer zone).
+  virtual void set_3d_cone_outer_gain(PN_stdfloat gain);
+  virtual PN_stdfloat get_3d_cone_outer_gain() const;
 
   // speaker_mix and speaker_level(s) serve the same purpose.
   // speaker_mix is for use with FMOD. speaker_level(s) is for use with
