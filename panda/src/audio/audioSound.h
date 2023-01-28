@@ -90,15 +90,15 @@ PUBLISHED:
   // return: playing time in seconds.
   virtual PN_stdfloat length() const = 0;
   
-  // Controls the position, velocity and direction of this sound's emitter.  px, py and pz are the
+  // Controls the position of this sound's emitter.  px, py and pz are the
   // emitter's position.  vx, vy and vz are the emitter's velocity in UNITS
-  // PER SECOND (default: meters). d is the direction of the emitter
-  virtual void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
-      PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz,
-      LVector3 d = LVector3::forward());
-  virtual void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
-      PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d = nullptr);
+  // PER SECOND (default: meters).
+  virtual void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  virtual void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
 
+  // Controls the direction of this sound emitter. Currently implemented only for OpenAL.
+  virtual void set_3d_direction(LVector3 d);
+  virtual void get_3d_direction(LVector3 *d);
 
   // Controls the distance (in units) that this sound begins to fall off.
   // Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0

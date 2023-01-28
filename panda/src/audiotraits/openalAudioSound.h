@@ -80,11 +80,15 @@ public:
   // return: playing time in seconds.
   PN_stdfloat length() const;
 
-  // Controls the position, velocity and direction of this sound's emitter.  pos is a pointer to an
-  // xyz triplet of the emitter's position. vel is a pointer to an xyz
-  // triplet of the emitter's velocity. dir is a pointer to an xyz triplet of the emitter's direction.
-  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, LVector3 d = LVector3::forward());
-  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d = nullptr);
+  // Controls the position of this sound's emitter.  pos is a pointer to an
+  // xyz triplet of the emitter's position.  vel is a pointer to an xyz
+  // triplet of the emitter's velocity.
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
+
+  // Controls the direction of this sound emitter.
+  void set_3d_direction(LVector3 d);
+  void get_3d_direction(LVector3 *d);
 
   void set_3d_min_distance(PN_stdfloat dist);
   PN_stdfloat get_3d_min_distance() const;

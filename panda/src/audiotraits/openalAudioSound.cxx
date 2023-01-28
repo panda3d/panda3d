@@ -163,8 +163,10 @@ play() {
   set_3d_min_distance(_min_dist);
   set_3d_max_distance(_max_dist);
   set_3d_drop_off_factor(_drop_off_factor);
-  get_3d_attributes(&px, &py, &pz, &vx, &vy, &vz, &d);
-  set_3d_attributes(px, py, pz, vx, vy, vz, d);
+  get_3d_attributes(&px, &py, &pz, &vx, &vy, &vz);
+  set_3d_attributes(px, py, pz, vx, vy, vz);
+  get_3d_direction(&d);
+  set_3d_direction(d);
 
   _playing_loops = _loop_count;
   if (_playing_loops == 0) {
@@ -676,7 +678,7 @@ length() const {
 }
 
 /**
- * Set position, velocity and direction of this sound
+ * Set position and velocity of this sound
  *
  * Both Panda3D and OpenAL use a right handed coordinate system.  However, in
  * Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
@@ -686,7 +688,7 @@ length() const {
  * we move coordinates from Panda to OpenAL and back.
  */
 void OpenALAudioSound::
-set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, LVector3 d) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _location[0] = px;
   _location[1] = pz;
@@ -696,10 +698,6 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   _velocity[1] = vz;
   _velocity[2] = -vy;
 
-  _direction[0] = d.get_x();
-  _direction[1] = d.get_z();
-  _direction[2] = -d.get_y();
-
   if (is_playing()) {
     _manager->make_current();
 
@@ -708,17 +706,15 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
     al_audio_errcheck("alSourcefv(_source,AL_POSITION)");
     alSourcefv(_source,AL_VELOCITY,_velocity);
     al_audio_errcheck("alSourcefv(_source,AL_VELOCITY)");
-    alSourcefv(_source, AL_DIRECTION, _direction);
-    al_audio_errcheck("alSourcefv(_source,AL_DIRECTION)");
   }
 }
 
 /**
- * Get position, velocity and direction of this sound.  Get the
+ * Get position and velocity of this sound Currently unimplemented.  Get the
  * attributes of the attached object.
  */
 void OpenALAudioSound::
-get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, LVector3 *d) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   *px = _location[0];
   *py = -_location[2];
@@ -727,11 +723,41 @@ get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat
   *vx = _velocity[0];
   *vy = -_velocity[2];
   *vz = _velocity[1];
+}
 
-  if (d != nullptr) {
-      *d = { _direction[0], -_direction[2], _direction[1] };
+/**
+* Set the direction of this sound
+* 
+* Both Panda3D and OpenAL use a right handed coordinate system.  However, in
+* Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
+* OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
+*
+* The solution is simple, we just flip the Y and Z axis and negate the Z, as
+* we move coordinates from Panda to OpenAL and back.
+*/
+void OpenALAudioSound::
+set_3d_direction(LVector3 d) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+  _direction[0] = d.get_x();
+  _direction[1] = d.get_z();
+  _direction[2] = -d.get_y();
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcefv(_source, AL_DIRECTION, _direction);
+    al_audio_errcheck("alSourcefv(_source,AL_DIRECTION)");
   }
+}
 
+/**
+ * Get the direction of this sound.
+ */
+void OpenALAudioSound::
+get_3d_direction(LVector3 *d) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+  *d = { _direction[0], -_direction[2], _direction[1] };
 }
 
 /**
