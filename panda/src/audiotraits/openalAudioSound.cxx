@@ -529,7 +529,7 @@ pull_used_buffers() {
           }
         }
         if (!found_culprit) {
-          audio_error("corruption in stream queue");
+          audio_error(get_name() << ": corruption in stream queue");
           cleanup();
           return;
         }
