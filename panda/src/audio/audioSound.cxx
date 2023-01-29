@@ -49,9 +49,10 @@ set_3d_direction(LVector3 d) {
   // Intentionally blank.
 }
 
-void AudioSound::
-get_3d_direction(LVector3 *d) {
+LVector3 AudioSound::
+get_3d_direction() const {
   // Intentionally blank.
+  return ( 0.0f, 0.0f, 0.0f );
 }
 
 void AudioSound::
@@ -78,35 +79,35 @@ get_3d_max_distance() const {
 
 void AudioSound::
 set_3d_cone_inner_angle(PN_stdfloat angle) {
-    // Intentionally blank.
+  // Intentionally blank.
 }
 
 PN_stdfloat AudioSound::
 get_3d_cone_inner_angle() const {
-    // Intentionally blank.
-    return 0.0f;
+  // Intentionally blank.
+  return 0.0f;
 }
 
 void AudioSound::
 set_3d_cone_outer_angle(PN_stdfloat angle) {
-    // Intentionally blank.
+  // Intentionally blank.
 }
 
 PN_stdfloat AudioSound::
 get_3d_cone_outer_angle() const {
-    // Intentionally blank.
-    return 0.0f;
+  // Intentionally blank.
+  return 0.0f;
 }
 
 void AudioSound::
 set_3d_cone_outer_gain(PN_stdfloat gain) {
-    // Intentionally blank.
+  // Intentionally blank.
 }
 
 PN_stdfloat AudioSound::
 get_3d_cone_outer_gain() const {
-    // Intentionally blank.
-    return 0.0f;
+  // Intentionally blank.
+  return 0.0f;
 }
 
 /**

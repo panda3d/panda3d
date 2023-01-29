@@ -88,7 +88,7 @@ public:
 
   // Controls the direction of this sound emitter.
   void set_3d_direction(LVector3 d);
-  void get_3d_direction(LVector3 *d);
+  LVector3 get_3d_direction() const;
 
   void set_3d_min_distance(PN_stdfloat dist);
   PN_stdfloat get_3d_min_distance() const;

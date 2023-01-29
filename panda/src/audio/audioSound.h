@@ -98,7 +98,7 @@ PUBLISHED:
 
   // Controls the direction of this sound emitter. Currently implemented only for OpenAL.
   virtual void set_3d_direction(LVector3 d);
-  virtual void get_3d_direction(LVector3 *d);
+  virtual LVector3 get_3d_direction() const;
 
   // Controls the distance (in units) that this sound begins to fall off.
   // Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0

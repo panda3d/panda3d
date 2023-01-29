@@ -128,7 +128,6 @@ play() {
   if (!is_valid()) return;
 
   PN_stdfloat px, py, pz, vx, vy, vz;
-  LVector3 d;
 
   if (!_active) {
     _paused = true;
@@ -165,8 +164,7 @@ play() {
   set_3d_drop_off_factor(_drop_off_factor);
   get_3d_attributes(&px, &py, &pz, &vx, &vy, &vz);
   set_3d_attributes(px, py, pz, vx, vy, vz);
-  get_3d_direction(&d);
-  set_3d_direction(d);
+  set_3d_direction(get_3d_direction());
 
   _playing_loops = _loop_count;
   if (_playing_loops == 0) {
@@ -754,10 +752,10 @@ set_3d_direction(LVector3 d) {
 /**
  * Get the direction of this sound.
  */
-void OpenALAudioSound::
-get_3d_direction(LVector3 *d) {
+LVector3 OpenALAudioSound::
+get_3d_direction() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  *d = { _direction[0], -_direction[2], _direction[1] };
+  return LVector3(_direction[0], -_direction[2], _direction[1]);
 }
 
 /**
