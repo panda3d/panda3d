@@ -1820,9 +1820,9 @@ reset() {
         _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GP5VP;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GP5FP;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GP5GP;
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
