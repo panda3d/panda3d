@@ -91,10 +91,11 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
   case SAT_sampler1d: tstr = "sampler1D "; break;
   case SAT_sampler2d: tstr = "sampler2D "; break;
   case SAT_sampler3d: tstr = "sampler3D "; break;
-  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
+  case SAT_sampler2d_array:   tstr = "sampler2DARRAY "; break;
   case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
   case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
   case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
+  case SAT_sampler1d_array:   tstr = "sampler1DARRAY "; break;
   default:                    tstr = "unknown "; break;
   }
 
@@ -227,15 +228,15 @@ cp_errchk_parameter_ptr(ShaderArgInfo &p) {
  * message and return false.
  */
 bool Shader::
-cp_errchk_parameter_sampler(ShaderArgInfo &p)
-{
-  if ((p._type!=SAT_sampler1d)&&
-      (p._type!=SAT_sampler2d)&&
-      (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2d_array)&&
-      (p._type!=SAT_sampler_cube)&&
-      (p._type!=SAT_sampler_buffer)&&
-      (p._type!=SAT_sampler_cube_array)) {
+cp_errchk_parameter_sampler(ShaderArgInfo &p) {
+  if (p._type != SAT_sampler1d &&
+      p._type != SAT_sampler2d &&
+      p._type != SAT_sampler3d &&
+      p._type != SAT_sampler2d_array &&
+      p._type != SAT_sampler_cube &&
+      p._type != SAT_sampler_buffer &&
+      p._type != SAT_sampler_cube_array &&
+      p._type != SAT_sampler1d_array) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -1372,6 +1373,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
     case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
     case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
+    case SAT_sampler1d_array:bind._desired_type = Texture::TT_1d_texture_array; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1577,6 +1579,15 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
+    case SAT_sampler1d_array: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._part = STO_named_input;
+      bind._desired_type = Texture::TT_1d_texture_array;
+      _tex_spec.push_back(bind);
+      return true;
+    }
     default:
       cp_report_error(p, "invalid type for non-prefix parameter");
       return false;
@@ -1698,6 +1709,7 @@ cg_parameter_type(CGparameter p) {
     case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
     case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
     case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
+    case CG_SAMPLER1DARRAY: return Shader::SAT_sampler1d_array;
     // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
     case 1313:              return Shader::SAT_sampler1d;
     case 1314:              return Shader::SAT_sampler2d;
