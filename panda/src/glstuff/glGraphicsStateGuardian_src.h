@@ -428,6 +428,8 @@ public:
   INLINE int get_gl_version_minor() const;
   INLINE bool has_fixed_function_pipeline() const;
 
+  INLINE int get_max_vertex_attrib_stride() const;
+
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
@@ -727,6 +729,7 @@ protected:
   bool _use_vertex_attrib_binding;
   CPT(GeomVertexFormat) _current_vertex_format;
   const GeomVertexColumn *_vertex_attrib_columns[32];
+  int _max_vertex_attrib_stride = INT_MAX;
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;
