@@ -290,8 +290,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     extern const char cg_preamble[];
     shader.setPreamble(cg_preamble);
 
-    // We map shadow samplers to DX10 syntax, but those use separate samplers/
-    // images, so we need to ask glslang to kindly combine these back.
+    // We map some sampler types to DX10 syntax, but those use separate
+    // samplers/images, so we need to ask glslang to combine these back.
     shader.setTextureSamplerTransformMode(EShTexSampTransUpgradeTextureRemoveSampler);
 
     shader.setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
@@ -737,18 +737,32 @@ postprocess_cg(ShaderModuleSpirV::InstructionStream &stream) {
   pset<uint32_t> glsl_imports;
 
   for (ShaderModuleSpirV::Instruction op : stream) {
-    if (op.opcode == spv::OpExtInstImport) {
+    switch (op.opcode) {
+    case spv::OpExtInstImport:
       if (strcmp((const char*)&op.args[1], "GLSL.std.450") == 0) {
         glsl_imports.insert(op.args[0]);
       }
-    }
-    else if (op.opcode == spv::OpExtInst) {
+      break;
+
+    case spv::OpExtInst:
       // glslang maps round() to roundEven(), which is correct for SM 4.0+ but
       // not supported on pre-DX10 hardware, and Cg made no guarantee of
       // round-to-even behavior to begin with, so we switch it back to round().
       if (glsl_imports.count(op.args[2]) && op.args[3] == 2) {
         op.args[3] = 1;
       }
+      break;
+
+    case spv::OpTypeImage:
+      // glslang marks buffer textures as having a specific format, but we want
+      // to allow the use of any format, so wipe this field.
+      if (op.args[6] == 1) {
+        op.args[7] = spv::ImageFormatUnknown;
+      }
+      break;
+
+    default:
+      break;
     }
   }
 
