@@ -49,6 +49,13 @@ public:
     ST_bool,
   };
 
+  enum class Access {
+    none = 0,
+    read_only = 1,
+    write_only = 2,
+    read_write = 3,
+  };
+
 private:
   typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
   static Registry *_registered_types;
@@ -110,6 +117,14 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+constexpr ShaderType::Access operator & (ShaderType::Access a, ShaderType::Access b) {
+  return (ShaderType::Access)((unsigned int)a & (unsigned int)b);
+}
+
+constexpr ShaderType::Access operator | (ShaderType::Access a, ShaderType::Access b) {
+  return (ShaderType::Access)((unsigned int)a | (unsigned int)b);
+}
 
 std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type);
 
@@ -370,14 +385,6 @@ private:
  * Image type.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType {
-PUBLISHED:
-  enum class Access {
-    unknown = 0,
-    read_only = 1,
-    write_only = 2,
-    read_write = 3,
-  };
-
 public:
   INLINE Image(Texture::TextureType texture_type, ScalarType sampled_type, Access access);
 

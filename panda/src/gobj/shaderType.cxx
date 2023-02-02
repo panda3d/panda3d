@@ -786,6 +786,12 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::Image::
 output(std::ostream &out) const {
+  if ((_access & Access::write_only) == Access::none) {
+    out << "readonly ";
+  }
+  if ((_access & Access::read_only) == Access::none) {
+    out << "writeonly ";
+  }
   if (_sampled_type == ST_int) {
     out << 'i';
   } else if (_sampled_type == ST_uint) {
