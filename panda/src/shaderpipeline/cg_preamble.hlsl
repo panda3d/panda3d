@@ -531,53 +531,53 @@ float4 f4texCUBE(samplerCUBE samp, float4 s, float3 dx, float3 dy) {
 #define h1tex1D(x, y) (half(f1tex1D((x), (y))))
 #define h2tex1D(x, y) (half2(f2tex1D((x), (y))))
 #define h3tex1D(x, y) (half3(f3tex1D((x), (y))))
-#define h4tex1D(x, y) (half3(f4tex1D((x), (y))))
+#define h4tex1D(x, y) (half4(f4tex1D((x), (y))))
 #define h1tex1Dproj(x, y) (half(f1tex1Dproj((x), (y))))
 #define h2tex1Dproj(x, y) (half2(f2tex1Dproj((x), (y))))
 #define h3tex1Dproj(x, y) (half3(f3tex1Dproj((x), (y))))
-#define h4tex1Dproj(x, y) (half3(f4tex1Dproj((x), (y))))
+#define h4tex1Dproj(x, y) (half4(f4tex1Dproj((x), (y))))
 #define h1tex2D(x, y) (half(f1tex2D((x), (y))))
 #define h2tex2D(x, y) (half2(f2tex2D((x), (y))))
 #define h3tex2D(x, y) (half3(f3tex2D((x), (y))))
-#define h4tex2D(x, y) (half3(f4tex2D((x), (y))))
+#define h4tex2D(x, y) (half4(f4tex2D((x), (y))))
 #define h1tex2Dproj(x, y) (half(f1tex2Dproj((x), (y))))
 #define h2tex2Dproj(x, y) (half2(f2tex2Dproj((x), (y))))
 #define h3tex2Dproj(x, y) (half3(f3tex2Dproj((x), (y))))
-#define h4tex2Dproj(x, y) (half3(f4tex2Dproj((x), (y))))
+#define h4tex2Dproj(x, y) (half4(f4tex2Dproj((x), (y))))
 #define h1tex3D(x, y) (half(f1tex3D((x), (y))))
 #define h2tex3D(x, y) (half2(f2tex3D((x), (y))))
 #define h3tex3D(x, y) (half3(f3tex3D((x), (y))))
-#define h4tex3D(x, y) (half3(f4tex3D((x), (y))))
+#define h4tex3D(x, y) (half4(f4tex3D((x), (y))))
 #define h1texCUBE(x, y) (half(f1texCUBE((x), (y))))
 #define h2texCUBE(x, y) (half2(f2texCUBE((x), (y))))
 #define h3texCUBE(x, y) (half3(f3texCUBE((x), (y))))
-#define h4texCUBE(x, y) (half3(f4texCUBE((x), (y))))
+#define h4texCUBE(x, y) (half4(f4texCUBE((x), (y))))
 
 // Legacy fixed-precision overloads
 #define x1tex1D(x, y) (fixed(f1tex1D((x), (y))))
 #define x2tex1D(x, y) (fixed2(f2tex1D((x), (y))))
 #define x3tex1D(x, y) (fixed3(f3tex1D((x), (y))))
-#define x4tex1D(x, y) (fixed3(f4tex1D((x), (y))))
+#define x4tex1D(x, y) (fixed4(f4tex1D((x), (y))))
 #define x1tex1Dproj(x, y) (fixed(f1tex1Dproj((x), (y))))
 #define x2tex1Dproj(x, y) (fixed2(f2tex1Dproj((x), (y))))
 #define x3tex1Dproj(x, y) (fixed3(f3tex1Dproj((x), (y))))
-#define x4tex1Dproj(x, y) (fixed3(f4tex1Dproj((x), (y))))
+#define x4tex1Dproj(x, y) (fixed4(f4tex1Dproj((x), (y))))
 #define x1tex2D(x, y) (fixed(f1tex2D((x), (y))))
 #define x2tex2D(x, y) (fixed2(f2tex2D((x), (y))))
 #define x3tex2D(x, y) (fixed3(f3tex2D((x), (y))))
-#define x4tex2D(x, y) (fixed3(f4tex2D((x), (y))))
+#define x4tex2D(x, y) (fixed4(f4tex2D((x), (y))))
 #define x1tex2Dproj(x, y) (fixed(f1tex2Dproj((x), (y))))
 #define x2tex2Dproj(x, y) (fixed2(f2tex2Dproj((x), (y))))
 #define x3tex2Dproj(x, y) (fixed3(f3tex2Dproj((x), (y))))
-#define x4tex2Dproj(x, y) (fixed3(f4tex2Dproj((x), (y))))
+#define x4tex2Dproj(x, y) (fixed4(f4tex2Dproj((x), (y))))
 #define x1tex3D(x, y) (fixed(f1tex3D((x), (y))))
 #define x2tex3D(x, y) (fixed2(f2tex3D((x), (y))))
 #define x3tex3D(x, y) (fixed3(f3tex3D((x), (y))))
-#define x4tex3D(x, y) (fixed3(f4tex3D((x), (y))))
+#define x4tex3D(x, y) (fixed4(f4tex3D((x), (y))))
 #define x1texCUBE(x, y) (fixed(f1texCUBE((x), (y))))
 #define x2texCUBE(x, y) (fixed2(f2texCUBE((x), (y))))
 #define x3texCUBE(x, y) (fixed3(f3texCUBE((x), (y))))
-#define x4texCUBE(x, y) (fixed3(f4texCUBE((x), (y))))
+#define x4texCUBE(x, y) (fixed4(f4texCUBE((x), (y))))
 
 // Bit manipulation functions
 uint bitfieldExtract(uint val, int off, int size) {
@@ -595,47 +595,45 @@ uint bitfieldExtract(uint val, int off, int size) {
 
 // Matrix inverse functions
 float2x2 inverse(float2x2 m) {
-  return float2x2(m[1][1], -m[0][1], -m[1][0], m[0][0]) * (1.0f / determinant(m));
+  return float2x2(m._22, -m._12, -m._21, m._11) * (1.0f / determinant(m));
 }
 
 float3x3 inverse(float3x3 m) {
-  float3 t = float3(m[1][1] * m[2][2] - m[1][2] * m[2][1], m[1][2] * m[2][0] - m[1][0] * m[2][2], m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-  return float3x3(t[0],
-                  m[0][2] * m[2][1] - m[0][1] * m[2][2],
-                  m[0][1] * m[1][2] - m[0][2] * m[1][1],
-                  t[1],
-                  m[0][0] * m[2][2] - m[0][2] * m[2][0],
-                  m[0][2] * m[1][0] - m[0][0] * m[1][2],
-                  t[2],
-                  m[0][1] * m[2][0] - m[0][0] * m[2][1],
-                  m[0][0] * m[1][1] - m[0][1] * m[1][0]) * (1.0f / dot(m[0], t));
+  float3 t = float3(m._22 * m._33 - m._23 * m._32,
+                    m._23 * m._31 - m._21 * m._33,
+                    m._21 * m._32 - m._22 * m._31);
+  return float3x3(
+    t[0], m._13 * m._32 - m._12 * m._33, m._12 * m._23 - m._13 * m._22,
+    t[1], m._11 * m._33 - m._13 * m._31, m._13 * m._21 - m._11 * m._23,
+    t[2], m._12 * m._31 - m._11 * m._32, m._11 * m._22 - m._12 * m._21
+  ) * (1.0f / dot(m[0], t));
 }
 
 float4x4 inverse(float4x4 m) {
   float4 t = float4(
-    m[2][1] * m[3][2] * m[1][3] - m[3][1] * m[2][2] * m[1][3] + m[3][1] * m[1][2] * m[2][3] - m[1][1] * m[3][2] * m[2][3] - m[2][1] * m[1][2] * m[3][3] + m[1][1] * m[2][2] * m[3][3],
-    m[3][0] * m[2][2] * m[1][3] - m[2][0] * m[3][2] * m[1][3] - m[3][0] * m[1][2] * m[2][3] + m[1][0] * m[3][2] * m[2][3] + m[2][0] * m[1][2] * m[3][3] - m[1][0] * m[2][2] * m[3][3],
-    m[2][0] * m[3][1] * m[1][3] - m[3][0] * m[2][1] * m[1][3] + m[3][0] * m[1][1] * m[2][3] - m[1][0] * m[3][1] * m[2][3] - m[2][0] * m[1][1] * m[3][3] + m[1][0] * m[2][1] * m[3][3],
-    m[3][0] * m[2][1] * m[1][2] - m[2][0] * m[3][1] * m[1][2] - m[3][0] * m[1][1] * m[2][2] + m[1][0] * m[3][1] * m[2][2] + m[2][0] * m[1][1] * m[3][2] - m[1][0] * m[2][1] * m[3][2]);
+    m._32 * m._43 * m._24 - m._42 * m._33 * m._24 + m._42 * m._23 * m._34 - m._22 * m._43 * m._34 - m._32 * m._23 * m._44 + m._22 * m._33 * m._44,
+    m._41 * m._33 * m._24 - m._31 * m._43 * m._24 - m._41 * m._23 * m._34 + m._21 * m._43 * m._34 + m._31 * m._23 * m._44 - m._21 * m._33 * m._44,
+    m._31 * m._42 * m._24 - m._41 * m._32 * m._24 + m._41 * m._22 * m._34 - m._21 * m._42 * m._34 - m._31 * m._22 * m._44 + m._21 * m._32 * m._44,
+    m._41 * m._32 * m._23 - m._31 * m._42 * m._23 - m._41 * m._22 * m._33 + m._21 * m._42 * m._33 + m._31 * m._22 * m._43 - m._21 * m._32 * m._43);
   return float4x4(
       t[0],
-      (m[3][1] * m[2][2] * m[0][3] - m[2][1] * m[3][2] * m[0][3] - m[3][1] * m[0][2] * m[2][3] + m[0][1] * m[3][2] * m[2][3] + m[2][1] * m[0][2] * m[3][3] - m[0][1] * m[2][2] * m[3][3]),
-      (m[1][1] * m[3][2] * m[0][3] - m[3][1] * m[1][2] * m[0][3] + m[3][1] * m[0][2] * m[1][3] - m[0][1] * m[3][2] * m[1][3] - m[1][1] * m[0][2] * m[3][3] + m[0][1] * m[1][2] * m[3][3]),
-      (m[2][1] * m[1][2] * m[0][3] - m[1][1] * m[2][2] * m[0][3] - m[2][1] * m[0][2] * m[1][3] + m[0][1] * m[2][2] * m[1][3] + m[1][1] * m[0][2] * m[2][3] - m[0][1] * m[1][2] * m[2][3]),
+      (m._42 * m._33 * m._14 - m._32 * m._43 * m._14 - m._42 * m._13 * m._34 + m._12 * m._43 * m._34 + m._32 * m._13 * m._44 - m._12 * m._33 * m._44),
+      (m._22 * m._43 * m._14 - m._42 * m._23 * m._14 + m._42 * m._13 * m._24 - m._12 * m._43 * m._24 - m._22 * m._13 * m._44 + m._12 * m._23 * m._44),
+      (m._32 * m._23 * m._14 - m._22 * m._33 * m._14 - m._32 * m._13 * m._24 + m._12 * m._33 * m._24 + m._22 * m._13 * m._34 - m._12 * m._23 * m._34),
 
       t[1],
-      (m[2][0] * m[3][2] * m[0][3] - m[3][0] * m[2][2] * m[0][3] + m[3][0] * m[0][2] * m[2][3] - m[0][0] * m[3][2] * m[2][3] - m[2][0] * m[0][2] * m[3][3] + m[0][0] * m[2][2] * m[3][3]),
-      (m[3][0] * m[1][2] * m[0][3] - m[1][0] * m[3][2] * m[0][3] - m[3][0] * m[0][2] * m[1][3] + m[0][0] * m[3][2] * m[1][3] + m[1][0] * m[0][2] * m[3][3] - m[0][0] * m[1][2] * m[3][3]),
-      (m[1][0] * m[2][2] * m[0][3] - m[2][0] * m[1][2] * m[0][3] + m[2][0] * m[0][2] * m[1][3] - m[0][0] * m[2][2] * m[1][3] - m[1][0] * m[0][2] * m[2][3] + m[0][0] * m[1][2] * m[2][3]),
+      (m._31 * m._43 * m._14 - m._41 * m._33 * m._14 + m._41 * m._13 * m._34 - m._11 * m._43 * m._34 - m._31 * m._13 * m._44 + m._11 * m._33 * m._44),
+      (m._41 * m._23 * m._14 - m._21 * m._43 * m._14 - m._41 * m._13 * m._24 + m._11 * m._43 * m._24 + m._21 * m._13 * m._44 - m._11 * m._23 * m._44),
+      (m._21 * m._33 * m._14 - m._31 * m._23 * m._14 + m._31 * m._13 * m._24 - m._11 * m._33 * m._24 - m._21 * m._13 * m._34 + m._11 * m._23 * m._34),
 
       t[2],
-      (m[3][0] * m[2][1] * m[0][3] - m[2][0] * m[3][1] * m[0][3] - m[3][0] * m[0][1] * m[2][3] + m[0][0] * m[3][1] * m[2][3] + m[2][0] * m[0][1] * m[3][3] - m[0][0] * m[2][1] * m[3][3]),
-      (m[1][0] * m[3][1] * m[0][3] - m[3][0] * m[1][1] * m[0][3] + m[3][0] * m[0][1] * m[1][3] - m[0][0] * m[3][1] * m[1][3] - m[1][0] * m[0][1] * m[3][3] + m[0][0] * m[1][1] * m[3][3]),
-      (m[2][0] * m[1][1] * m[0][3] - m[1][0] * m[2][1] * m[0][3] - m[2][0] * m[0][1] * m[1][3] + m[0][0] * m[2][1] * m[1][3] + m[1][0] * m[0][1] * m[2][3] - m[0][0] * m[1][1] * m[2][3]),
+      (m._41 * m._32 * m._14 - m._31 * m._42 * m._14 - m._41 * m._12 * m._34 + m._11 * m._42 * m._34 + m._31 * m._12 * m._44 - m._11 * m._32 * m._44),
+      (m._21 * m._42 * m._14 - m._41 * m._22 * m._14 + m._41 * m._12 * m._24 - m._11 * m._42 * m._24 - m._21 * m._12 * m._44 + m._11 * m._22 * m._44),
+      (m._31 * m._22 * m._14 - m._21 * m._32 * m._14 - m._31 * m._12 * m._24 + m._11 * m._32 * m._24 + m._21 * m._12 * m._34 - m._11 * m._22 * m._34),
 
       t[3],
-      (m[2][0] * m[3][1] * m[0][2] - m[3][0] * m[2][1] * m[0][2] + m[3][0] * m[0][1] * m[2][2] - m[0][0] * m[3][1] * m[2][2] - m[2][0] * m[0][1] * m[3][2] + m[0][0] * m[2][1] * m[3][2]),
-      (m[3][0] * m[1][1] * m[0][2] - m[1][0] * m[3][1] * m[0][2] - m[3][0] * m[0][1] * m[1][2] + m[0][0] * m[3][1] * m[1][2] + m[1][0] * m[0][1] * m[3][2] - m[0][0] * m[1][1] * m[3][2]),
-      (m[1][0] * m[2][1] * m[0][2] - m[2][0] * m[1][1] * m[0][2] + m[2][0] * m[0][1] * m[1][2] - m[0][0] * m[2][1] * m[1][2] - m[1][0] * m[0][1] * m[2][2] + m[0][0] * m[1][1] * m[2][2])
+      (m._31 * m._42 * m._13 - m._41 * m._32 * m._13 + m._41 * m._12 * m._33 - m._11 * m._42 * m._33 - m._31 * m._12 * m._43 + m._11 * m._32 * m._43),
+      (m._41 * m._22 * m._13 - m._21 * m._42 * m._13 - m._41 * m._12 * m._23 + m._11 * m._42 * m._23 + m._21 * m._12 * m._43 - m._11 * m._22 * m._43),
+      (m._21 * m._32 * m._13 - m._31 * m._22 * m._13 + m._31 * m._12 * m._23 - m._11 * m._32 * m._23 - m._21 * m._12 * m._33 + m._11 * m._22 * m._33)
     ) * (1.0f / dot(m[0], t));
 }
