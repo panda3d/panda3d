@@ -968,23 +968,22 @@ update() {
   SoundsPlaying sounds_finished;
 
   double rtc = TrueClock::get_global_ptr()->get_short_time();
-  SoundsPlaying::iterator i=_sounds_playing.begin();
-  for (; i!=_sounds_playing.end(); ++i) {
-    OpenALAudioSound *sound = (*i);
+  SoundsPlaying::iterator it = _sounds_playing.begin();
+  while (it != _sounds_playing.end()) {
+    PT(OpenALAudioSound) sound = *(it++);
     sound->pull_used_buffers();
     sound->push_fresh_buffers();
     sound->restart_stalled_audio();
     sound->cache_time(rtc);
-    if ((sound->_source == 0)||
-        ((sound->_stream_queued.size() == 0)&&
+    if (sound->_source == 0 ||
+        (sound->_stream_queued.empty() &&
          (sound->_loops_completed >= sound->_playing_loops))) {
-      sounds_finished.insert(*i);
+      sounds_finished.insert(std::move(sound));
     }
   }
 
-  i=sounds_finished.begin();
-  for (; i!=sounds_finished.end(); ++i) {
-    (**i).finished();
+  for (OpenALAudioSound *sound : sounds_finished) {
+    sound->finished();
   }
 }
 
