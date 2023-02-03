@@ -3523,27 +3523,39 @@ reset() {
 #endif
 
 #ifndef OPENGLES_1
+  _max_vertex_attrib_stride = -1;
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 1))
 #else
   if (is_at_least_gl_version(4, 4))
 #endif
   {
-    _max_vertex_attrib_stride = -1;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIB_STRIDE, &_max_vertex_attrib_stride);
 
     if (_max_vertex_attrib_stride < 0) {
       GLCAT.warning()
         << "Failed to query GL_MAX_VERTEX_ATTRIB_STRIDE.\n";
-      _max_vertex_attrib_stride = INT_MAX;
     }
     else if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "max vertex attrib stride = " << _max_vertex_attrib_stride << "\n";
     }
   }
-  else {
-    _max_vertex_attrib_stride = INT_MAX;
+  if (_max_vertex_attrib_stride < 0) {
+    // OpenGL doesn't specify a maximum before version 4.4 / ES 3.1, but
+    // drivers really do have one.  Make an educated guess.
+#ifdef OPENGLES
+    _max_vertex_attrib_stride = (_gl_vendor == "Qualcomm") ? INT_MAX : 2048;
+#elif defined(_WIN32)
+    _max_vertex_attrib_stride = (_gl_vendor == "Intel") ? 4095 : 2048;
+#else
+    _max_vertex_attrib_stride = 2048;
+#endif
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex attrib stride = " << _max_vertex_attrib_stride
+        << " (guessed)\n";
+    }
   }
 #endif  // !OPENGLES_1
 
