@@ -3522,7 +3522,7 @@ reset() {
   }
 #endif
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   _max_vertex_attrib_stride = -1;
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 1))

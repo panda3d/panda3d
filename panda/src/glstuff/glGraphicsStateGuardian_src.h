@@ -753,7 +753,11 @@ protected:
   bool _use_vertex_attrib_binding;
   CPT(GeomVertexFormat) _current_vertex_format;
   const GeomVertexColumn *_vertex_attrib_columns[32];
+#ifdef __EMSCRIPTEN__
+  static const int _max_vertex_attrib_stride = 255;
+#else
   int _max_vertex_attrib_stride = INT_MAX;
+#endif
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;

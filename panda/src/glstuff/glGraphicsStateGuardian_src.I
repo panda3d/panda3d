@@ -186,7 +186,10 @@ has_fixed_function_pipeline() const {
  */
 INLINE int CLP(GraphicsStateGuardian)::
 get_max_vertex_attrib_stride() const {
-#ifdef OPENGLES_1
+#ifdef __EMSCRIPTEN__
+  // WebGL has a static limit of 255 (yeah, that low).
+  return 255;
+#elif defined(OPENGLES_1)
   // Best guess.
   return 2048;
 #else
