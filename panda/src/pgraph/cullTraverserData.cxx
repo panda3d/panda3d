@@ -65,11 +65,15 @@ apply_transform_and_state(CullTraverser *trav) {
       node_state->get_attrib(ClipPlaneAttrib::get_class_slot());
     const OccluderEffect *occluders = (const OccluderEffect *)
       node_effects->get_effect(OccluderEffect::get_class_type());
+    const ClipPlaneAttrib *off_cpa = nullptr;
+
+    if (cpa != nullptr) {
+      _node_reader.check_cached(false);
+      off_cpa = (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes();
+    }
 
     if (cpa != nullptr || occluders != nullptr) {
-      CullPlanes::apply_state(_cull_planes, trav, this, cpa,
-        (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes(),
-        occluders);
+      CullPlanes::apply_state(_cull_planes, trav, this, cpa, off_cpa, occluders);
     }
   }
 
