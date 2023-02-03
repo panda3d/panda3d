@@ -282,6 +282,7 @@ public:
     SAT_sampler_cube,
     SAT_sampler_buffer,
     SAT_sampler_cube_array,
+    SAT_sampler1d_array,
     SAT_unknown
 };
 

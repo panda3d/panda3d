@@ -1861,9 +1861,9 @@ reset() {
         _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GP5VP;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GP5FP;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GP5GP;
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -3521,6 +3521,31 @@ reset() {
     }
   }
 #endif
+
+#ifndef OPENGLES_1
+#ifdef OPENGLES
+  if (is_at_least_gles_version(3, 1))
+#else
+  if (is_at_least_gl_version(4, 4))
+#endif
+  {
+    _max_vertex_attrib_stride = -1;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIB_STRIDE, &_max_vertex_attrib_stride);
+
+    if (_max_vertex_attrib_stride < 0) {
+      GLCAT.warning()
+        << "Failed to query GL_MAX_VERTEX_ATTRIB_STRIDE.\n";
+      _max_vertex_attrib_stride = INT_MAX;
+    }
+    else if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex attrib stride = " << _max_vertex_attrib_stride << "\n";
+    }
+  }
+  else {
+    _max_vertex_attrib_stride = INT_MAX;
+  }
+#endif  // !OPENGLES_1
 
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
@@ -6919,6 +6944,16 @@ setup_array_data(const unsigned char *&client_pointer,
     client_pointer = array_reader->get_read_pointer(force);
     return (client_pointer != nullptr);
   }
+
+#ifndef OPENGLES_1
+  int stride = array_reader->get_array_format()->get_stride();
+  if (stride > _max_vertex_attrib_stride) {
+    GLCAT.error()
+      << "Vertex array stride " << stride << " exceeds supported maximum "
+      << _max_vertex_attrib_stride << "!\n";
+    return false;
+  }
+#endif
 
   // Prepare the buffer object and bind it.
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),

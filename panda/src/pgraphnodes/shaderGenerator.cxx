@@ -1293,15 +1293,20 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex._type);
     text << "(tex_" << i << ", texcoord" << i << ".";
     switch (tex._type) {
+    case Texture::TT_cube_map_array:
+      text << "xyzw";
+      break;
     case Texture::TT_cube_map:
     case Texture::TT_3d_texture:
     case Texture::TT_2d_texture_array:
       text << "xyz";
       break;
     case Texture::TT_2d_texture:
+    case Texture::TT_1d_texture_array:
       text << "xy";
       break;
     case Texture::TT_1d_texture:
+    case Texture::TT_buffer_texture:
       text << "x";
       break;
     default:
@@ -1345,6 +1350,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << "(tex_" << i << ", texcoord" << i << ".";
       switch (tex._type) {
+      case Texture::TT_cube_map_array:
+        text << "xyzw";
+        break;
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
@@ -1353,7 +1361,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       case Texture::TT_2d_texture:
         text << "xyw";
         break;
+      case Texture::TT_1d_texture_array:
+        text << "xy";
+        break;
       case Texture::TT_1d_texture:
+      case Texture::TT_buffer_texture:
         text << "x";
         break;
       default:
@@ -1977,24 +1989,33 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
 const char *ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {
-    case Texture::TT_1d_texture:
-      return "1D";
-      break;
-    case Texture::TT_2d_texture:
-      return "2D";
-      break;
-    case Texture::TT_3d_texture:
-      return "3D";
-      break;
-    case Texture::TT_cube_map:
-      return "CUBE";
-      break;
-    case Texture::TT_2d_texture_array:
-      return "2DARRAY";
-      break;
-    default:
-      pgraphnodes_cat.error() << "Unsupported texture type!\n";
-      return "2D";
+  case Texture::TT_1d_texture:
+    return "1D";
+
+  case Texture::TT_2d_texture:
+    return "2D";
+
+  case Texture::TT_3d_texture:
+    return "3D";
+
+  case Texture::TT_2d_texture_array:
+    return "2DARRAY";
+
+  case Texture::TT_cube_map:
+    return "CUBE";
+
+  case Texture::TT_buffer_texture:
+    return "BUF";
+
+  case Texture::TT_cube_map_array:
+    return "CUBEARRAY";
+
+  case Texture::TT_1d_texture_array:
+    return "1DARRAY";
+
+  default:
+    pgraphnodes_cat.error() << "Unsupported texture type!\n";
+    return "2D";
   }
 }
 
