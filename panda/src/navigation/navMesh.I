@@ -46,7 +46,7 @@ reset_debug_colors() {
 /**
  * Returns the parameters of this nav mesh. They cannot be changed after the mesh is built.
  */
-INLINE const NavMeshParams& NavMesh::
+INLINE const NavMeshParams NavMesh::
 get_params() const {
   return _params;
 }
@@ -54,7 +54,7 @@ get_params() const {
 /**
  * Returns the list of NodePaths that this NavMesh will track.
  */
-INLINE const NodePaths& NavMesh::
+INLINE NodePaths NavMesh::
 get_tracked_nodes() const {
   return _tracked_nodes;
 }
@@ -63,7 +63,7 @@ get_tracked_nodes() const {
  * Returns the list of NodePaths the collisions from which will
  * be tracked.
  */
-INLINE const TrackedCollInfos& NavMesh::
+INLINE TrackedCollInfos NavMesh::
 get_tracked_coll_nodes() const {
   return _tracked_coll_nodes;
 }
@@ -74,7 +74,7 @@ get_tracked_coll_nodes() const {
  *
  * Note: All vertices will be in the y-up system.
  */
-INLINE const NavTriVertGroups& NavMesh::
+INLINE NavTriVertGroups NavMesh::
 get_untracked_tris() const {
   return _untracked_tris;
 }
@@ -82,7 +82,7 @@ get_untracked_tris() const {
 /**
  * Returns the list of obstacle nodes that are tracked onto the NavMesh.
  */
-INLINE const NodePaths& NavMesh::
+INLINE NodePaths NavMesh::
 get_obstacles() const {
   return _obstacle_nodes;
 }

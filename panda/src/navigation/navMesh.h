@@ -72,11 +72,11 @@ PUBLISHED:
   void add_geom(PT(Geom) geom);
   void add_obstacles(NodePath node);
 
-  INLINE const NavMeshParams& get_params() const;
-  INLINE const NodePaths& get_tracked_nodes() const;
-  INLINE const TrackedCollInfos& get_tracked_coll_nodes() const;
-  INLINE const NavTriVertGroups& get_untracked_tris() const;
-  INLINE const NodePaths& get_obstacles() const;
+  INLINE const NavMeshParams get_params() const;
+  INLINE NodePaths get_tracked_nodes() const;
+  INLINE TrackedCollInfos get_tracked_coll_nodes() const;
+  INLINE NavTriVertGroups get_untracked_tris() const;
+  INLINE NodePaths get_obstacles() const;
 
   MAKE_PROPERTY(params, get_params);
   MAKE_PROPERTY(tracked_nodes, get_tracked_nodes);

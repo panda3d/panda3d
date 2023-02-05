@@ -33,7 +33,7 @@ PUBLISHED:
   explicit NavMeshQuery(PT(NavMesh) nav_mesh, int max_nodes = 2048);
   explicit NavMeshQuery(NodePath nav_mesh_node_path, int max_nodes = 2048);
 
-  bool nearest_point(LPoint3 &p, LVector3 extents = LVector3( 10 , 10 , 10 ));
+  LPoint3 nearest_point(LPoint3 p, LVector3 extents = LVector3( 10 , 10 , 10 ));
   NavMeshPath find_path(LPoint3 &start, LPoint3 &end, LVector3 extents = LVector3( 10 , 10 , 10 ));
   NavMeshPath find_smooth_path(LPoint3 &start, LPoint3 &end, LVector3 extents = LVector3( 10 , 10 , 10 ));
   NavMeshPath find_straight_path(LPoint3 &start, LPoint3 &end, LVector3 extents = LVector3( 10 , 10 , 10 ), int opt = 0);
