@@ -47,17 +47,17 @@ NavMeshQuery::~NavMeshQuery() {
  * Given an input point, this function finds the nearest point
  * to it lying over the navigation mesh surface.
  */
-bool NavMeshQuery::nearest_point(LPoint3 &p, LVector3 extents) {
+LPoint3 NavMeshQuery::nearest_point(LPoint3 p, LVector3 extents) {
   if (!_nav_query) {
     navigation_cat.error() << "NavMeshQuery not created!" << std::endl;
-    return false;
+    return LPoint3();
   }
 
   LPoint3 center_pt = mat_to_y.xform_point(p);
   const float center[3] = { center_pt[0], center_pt[1], center_pt[2] };  // convert to y-up system
   float nearest_p[3] = { 0, 0, 0 };
   LVector3 transformed_extents = mat_to_y.xform_point(extents);
-  const float extent_array[3] = { fabs(transformed_extents[0]), fabs(transformed_extents[1]), fabs(transformed_extents[2]) };
+  const float extent_array[3] = { std::abs(transformed_extents[0]), std::abs(transformed_extents[1]), std::abs(transformed_extents[2]) };
 
   dtQueryFilter filter;
 
@@ -67,11 +67,9 @@ bool NavMeshQuery::nearest_point(LPoint3 &p, LVector3 extents) {
 
   if (dtStatusFailed(status)) {
     navigation_cat.error() << "Cannot find nearest point on polymesh." << std::endl;
-    return false;
+    return LPoint3();
   }
-  p = mat_from_y.xform_point({ nearest_p[0], nearest_p[1], nearest_p[2] }); // convert back from y-up system
-
-  return true;
+  return mat_from_y.xform_point({ nearest_p[0], nearest_p[1], nearest_p[2] }); // convert back from y-up system
 }
 
 /**
