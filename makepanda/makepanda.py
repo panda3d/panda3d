@@ -802,6 +802,7 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
     if (PkgSkip("NAVIGATION")==0):
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Detour.lib")
+        LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/DetourTileCache.lib")
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Recast.lib")
         IncDirectory("NAVIGATION", GetThirdpartyDir() + "recast/include")
 
@@ -881,7 +882,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
-    SmartPkgEnable("NAVIGATION",  "",        ("Detour", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
+    SmartPkgEnable("NAVIGATION",  "",        ("Detour", "DetourTileCache", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -4329,6 +4330,7 @@ if not PkgSkip("NAVIGATION"):
     PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
     PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('navigation.pyd', opts=['NAVIGATION'])
 
 #
 # DIRECTORY: panda/src/p3skel
