@@ -13,6 +13,7 @@
 
 #include "navMeshBuilder.h"
 #include "recastnavigation/Recast.h"
+#include "recastnavigation/DetourCommon.h"
 #include "recastnavigation/DetourNavMesh.h"
 #include "recastnavigation/DetourNavMeshBuilder.h"
 #include "recastnavigation/DetourTileCacheBuilder.h"
