@@ -34,7 +34,7 @@ get_obstacle_data(const LMatrix4 &transform) {
   LVector3 radius_height = radius_height_transformed - transform.get_row3(3);
   // Undo the yup conversion that is baked into the incoming mat.
   LMatrix4::convert_mat(CS_yup_right, CS_zup_right).xform_point_in_place(radius_height);
-  return {DT_OBSTACLE_CYLINDER, pos, LPoint3(), std::min(radius_height[0], radius_height[1]), radius_height[2]};
+  return {DT_OBSTACLE_CYLINDER, pos, LPoint3(), std::min(std::abs(radius_height[0]), std::abs(radius_height[1])), std::abs(radius_height[2])};
 }
 
 void NavObstacleCylinderNode::
@@ -49,7 +49,7 @@ add_obstacle(dtTileCache *tileCache, const LMatrix4 &transform) {
   LVector3 radius_height = radius_height_transformed - transform.get_row3(3);
   // Undo the yup conversion that is baked into the incoming mat.
   LMatrix4::convert_mat(CS_yup_right, CS_zup_right).xform_point_in_place(radius_height);
-  tileCache->addObstacle(reinterpret_cast<const float *>(&posArr), std::min(radius_height[0], radius_height[1]), radius_height[2], nullptr);
+	tileCache->addObstacle(reinterpret_cast<const float *>(&posArr), std::min(std::abs(radius_height[0]), std::abs(radius_height[1])), std::abs(radius_height[2]), nullptr);
 }
 
 /**
