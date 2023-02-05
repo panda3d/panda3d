@@ -817,6 +817,7 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
     if (PkgSkip("NAVIGATION")==0):
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Detour.lib")
+        LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/DetourTileCache.lib")
         LibName("NAVIGATION", GetThirdpartyDir() + "recast/lib/Recast.lib")
         IncDirectory("NAVIGATION", GetThirdpartyDir() + "recast/include")
 
@@ -884,7 +885,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
-    SmartPkgEnable("NAVIGATION",  "",        ("Detour", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
+    SmartPkgEnable("NAVIGATION",  "",        ("Detour", "DetourTileCache", "Recast"), ("recastnavigation/DetourCommon.h", "recastnavigation/Recast.h"), thirdparty_dir="recast")
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
@@ -4466,11 +4467,12 @@ if not PkgSkip("NAVIGATION"):
     PyTargetAdd('navigation_module.obj', opts=OPTS)
     PyTargetAdd('navigation_module.obj', opts=['IMOD:panda3d.navigation', 'ILIB:navigation', 'IMPORT:panda3d.core'])
 
-  PyTargetAdd('navigation.pyd', input='navigation_module.obj')
-  PyTargetAdd('navigation.pyd', input='libp3navigation_igate.obj')
-  PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
-  PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('navigation.pyd', input='navigation_module.obj')
+    PyTargetAdd('navigation.pyd', input='libp3navigation_igate.obj')
+    PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
+    PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
+    PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('navigation.pyd', opts=['NAVIGATION'])
 
 #
 # DIRECTORY: panda/src/p3skel
