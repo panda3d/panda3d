@@ -1,4 +1,4 @@
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 
 class PhasedObject:

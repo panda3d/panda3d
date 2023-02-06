@@ -1,8 +1,5 @@
 print('TestStart: Starting up test environment.')
 
-from panda3d.core import *
-
-from direct.showbase.PythonUtil import *
 from direct.showbase import ShowBase
 base = ShowBase.ShowBase()
 

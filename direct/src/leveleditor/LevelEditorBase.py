@@ -5,15 +5,25 @@ You should write your own LevelEditor class inheriting this.
 Refer LevelEditor.py for example.
 """
 
-from direct.showbase.DirectObject import *
-from direct.directtools.DirectUtil import *
-from direct.gui.DirectGui import *
-from panda3d.core import ClockObject
+import os
+import wx
 
-from .CurveEditor import *
-from .FileMgr import *
-from .ActionMgr import *
-from .MayaConverter import *
+from direct.showbase.DirectObject import DirectObject
+from direct.directtools.DirectUtil import useDirectRenderStyle
+from direct.gui.OnscreenText import OnscreenText
+from panda3d.core import BitMask32, ClockObject, Mat4, NodePath, Point3, TextNode, Vec4
+
+from . import ObjectGlobals as OG
+from .CurveEditor import CurveEditor
+from .FileMgr import FileMgr
+from .ActionMgr import (
+    ActionDeleteObj,
+    ActionDeselectAll,
+    ActionMgr,
+    ActionSelectObj,
+    ActionTransformObj,
+)
+from .MayaConverter import FROM_BAM_TO_MAYA, MayaConverter
 
 
 class LevelEditorBase(DirectObject):

@@ -2,8 +2,8 @@
 
 __all__ = ['WidgetPropertiesDialog']
 
-from direct.showbase.TkGlobal import *
 import Pmw
+from tkinter import E, END, LEFT, W, Button, Frame, Label, Toplevel
 
 
 class WidgetPropertiesDialog(Toplevel):

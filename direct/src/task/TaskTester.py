@@ -2,7 +2,7 @@
 
 __all__ = []
 
-from direct.task.TaskManagerGlobal import *
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
 import random
 

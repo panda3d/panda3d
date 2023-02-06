@@ -1,5 +1,22 @@
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import (
+    BoundingVolume,
+    ColorBlendAttrib,
+    ColorWriteAttrib,
+    ConfigVariableBool,
+    Geom,
+    GeomNode,
+    GeomTriangles,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    Mat4,
+    NodePath,
+    NurbsCurveEvaluator,
+    Vec2,
+    Vec3,
+    Vec4,
+)
+from panda3d.direct import CMotionTrail
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.DirectObject import DirectObject

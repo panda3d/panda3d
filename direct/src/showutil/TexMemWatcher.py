@@ -1,4 +1,26 @@
-from panda3d.core import *
+from panda3d.core import (
+    BitArray,
+    ButtonThrower,
+    Camera,
+    CardMaker,
+    ConfigVariableInt,
+    FrameBufferProperties,
+    GraphicsOutput,
+    GraphicsPipe,
+    LineSegs,
+    Mat4,
+    MouseAndKeyboard,
+    MouseWatcher,
+    MouseWatcherRegion,
+    NodePath,
+    OrthographicLens,
+    PNMImage,
+    TextNode,
+    Texture,
+    TextureStage,
+    TransparencyAttrib,
+    WindowProperties,
+)
 from direct.showbase.DirectObject import DirectObject
 from direct.task.TaskManagerGlobal import taskMgr
 import math

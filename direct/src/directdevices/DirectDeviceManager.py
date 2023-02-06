@@ -1,8 +1,15 @@
 """Class used to create and control VRPN devices."""
 
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import *
-from panda3d.vrpn import *
+from panda3d.core import (
+    AnalogNode,
+    ButtonNode,
+    ConfigVariableDouble,
+    ConfigVariableString,
+    DialNode,
+    TrackerNode,
+)
+from panda3d.vrpn import VrpnClient
 
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95

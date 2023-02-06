@@ -2,7 +2,7 @@
 ContainerLeakDetector.
 """
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool, MemoryUsage
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PythonUtil import safeTypeName, typeName, uniqueName, serialNum
 from direct.showbase.Job import Job

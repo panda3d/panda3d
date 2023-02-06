@@ -6,10 +6,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectSlider']
 
-from panda3d.core import *
+from panda3d.core import PGSliderBar, Vec3
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 from math import isnan
 
 

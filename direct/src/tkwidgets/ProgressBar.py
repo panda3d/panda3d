@@ -4,7 +4,7 @@ A  basic widget for showing the progress being made in a task.
 
 __all__ = ['ProgressBar']
 
-from direct.showbase.TkGlobal import *
+from tkinter import Canvas, Frame
 
 
 class ProgressBar:

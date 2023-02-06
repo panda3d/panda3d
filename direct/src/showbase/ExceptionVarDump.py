@@ -1,6 +1,6 @@
 __all__ = ["install"]
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr, Stack
 import sys

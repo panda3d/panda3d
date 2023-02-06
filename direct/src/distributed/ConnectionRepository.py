@@ -1,5 +1,5 @@
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import DocumentSpec, Filename, HTTPClient, VirtualFileSystem, getModelPath
+from panda3d.direct import CConnectionRepository, DCPacker
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import directNotify

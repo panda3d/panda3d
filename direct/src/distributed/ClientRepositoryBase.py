@@ -1,5 +1,10 @@
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import (
+    ClockObject,
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    Datagram,
+    DatagramIterator,
+)
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify import DirectNotifyGlobal
@@ -7,11 +12,10 @@ from direct.distributed.CRDataCache import CRDataCache
 from direct.distributed.ConnectionRepository import ConnectionRepository
 from direct.showbase.PythonUtil import safeRepr, itype, makeList
 from direct.showbase.MessengerGlobal import messenger
-from .MsgTypes import *
+from .MsgTypes import CLIENT_ENTER_OBJECT_REQUIRED_OTHER, MsgId2Names
 from . import CRCache
 from . import ParentMgr
 from . import RelatedObjectMgr
-from .ClockDelta import *
 import time
 
 

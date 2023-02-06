@@ -2,7 +2,13 @@
 
 __all__ = ['OnScreenDebug']
 
-from panda3d.core import *
+from panda3d.core import (
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    ConfigVariableString,
+    TextNode,
+    Vec4,
+)
 
 from direct.gui import OnscreenText
 from direct.directtools import DirectUtil

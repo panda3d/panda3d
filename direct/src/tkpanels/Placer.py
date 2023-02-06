@@ -3,13 +3,13 @@
 __all__ = ['Placer', 'place']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from panda3d.core import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
+from panda3d.core import NodePath, Vec3
+from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.directtools.DirectGlobals import ZERO_VEC, UNIT_VEC
 import Pmw
+from tkinter import FLAT, RIDGE, W, Button, Menu, Menubutton, StringVar
 
 """
 TODO:

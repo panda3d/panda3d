@@ -1,7 +1,21 @@
-
-from panda3d.core import *
-from .DirectGlobals import *
-from .DirectUtil import *
+from panda3d.core import (
+    CSDefault,
+    GeomNode,
+    LineSegs,
+    Mat4,
+    NodePath,
+    Point3,
+    Quat,
+    VBase3,
+    VBase4,
+    Vec3,
+    composeMatrix,
+    decomposeMatrix,
+    deg2Rad,
+    rad2Deg,
+)
+from .DirectGlobals import Q_EPSILON, UNIT_VEC, ZERO_VEC
+from .DirectUtil import CLAMP
 import math
 
 class LineNodePath(NodePath):

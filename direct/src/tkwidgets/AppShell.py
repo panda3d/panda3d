@@ -8,15 +8,38 @@ created by Doug Hellmann (doughellmann@mindspring.com).
 __all__ = ['AppShell']
 
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
 from . import Dial
 from . import Floater
 from . import Slider
 from . import EntryScale
 from . import VectorWidgets
 from . import ProgressBar
-from tkinter.filedialog import *
 import Pmw
+from tkinter import (
+    BOTH,
+    BOTTOM,
+    DISABLED,
+    FLAT,
+    GROOVE,
+    LEFT,
+    NO,
+    NONE,
+    SUNKEN,
+    TOP,
+    W,
+    X,
+    YES,
+    BooleanVar,
+    Button,
+    Checkbutton,
+    Entry,
+    Frame,
+    IntVar,
+    Label,
+    Radiobutton,
+    StringVar,
+    Toplevel,
+)
 
 
 # Create toplevel widget dictionary

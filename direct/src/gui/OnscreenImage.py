@@ -6,7 +6,7 @@ this class.
 
 __all__ = ['OnscreenImage']
 
-from panda3d.core import *
+from panda3d.core import CardMaker, NodePath, Texture, TexturePool, VBase3
 from direct.showbase.DirectObject import DirectObject
 
 

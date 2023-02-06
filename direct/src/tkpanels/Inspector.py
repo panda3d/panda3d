@@ -14,8 +14,8 @@ See :ref:`inspection-utilities` for more information.
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
-from direct.showbase.TkGlobal import *
 import Pmw
+from tkinter import BOTH, END, HORIZONTAL, INSERT, LEFT, VERTICAL, Frame, Label, Menu, Toplevel
 
 ### public API
 

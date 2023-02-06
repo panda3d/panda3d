@@ -3,23 +3,60 @@
 __all__ = ['MopathRecorder']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from panda3d.core import *
+from panda3d.core import (
+    Camera,
+    ClockObject,
+    CurveFitter,
+    Filename,
+    NodePath,
+    ParametricCurveCollection,
+    PerspectiveLens,
+    Point3,
+    Quat,
+    VBase3,
+    VBase4,
+    Vec3,
+    Vec4,
+    getModelPath,
+)
 from direct.showbase import ShowBaseGlobal
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
-from direct.directtools.DirectGlobals import *
-from direct.directtools.DirectUtil import *
-from direct.directtools.DirectGeometry import *
-from direct.directtools.DirectSelection import *
+from direct.tkwidgets.AppShell import AppShell
+from direct.directtools.DirectUtil import CLAMP, useDirectRenderStyle
+from direct.directtools.DirectGeometry import LineNodePath, qSlerp
+from direct.directtools.DirectSelection import SelectionRay
+from direct.task import Task
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import EntryScale
 from direct.tkwidgets import VectorWidgets
-from tkinter.filedialog import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 import Pmw
+import math
 import os
+from tkinter import (
+    BOTH,
+    CENTER,
+    FLAT,
+    LEFT,
+    NONE,
+    RAISED,
+    RIDGE,
+    SUNKEN,
+    TOP,
+    W,
+    X,
+    BooleanVar,
+    Button,
+    Checkbutton,
+    Entry,
+    Frame,
+    Label,
+    Radiobutton,
+    Scale,
+    StringVar,
+)
 
 
 PRF_UTILITIES = [

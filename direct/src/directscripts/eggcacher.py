@@ -11,7 +11,15 @@
 import os
 import sys
 import gc
-from panda3d.core import *
+from panda3d.core import (
+    BamCache,
+    ExecutionEnvironment,
+    Filename,
+    Loader,
+    LoaderOptions,
+    ModelPool,
+    TexturePool,
+)
 
 class EggCacher:
     def __init__(self, args):

@@ -3,10 +3,24 @@
 __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
 from panda3d.core import Vec4
-from direct.showbase.DirectObject import *
-from direct.showbase.TkGlobal import *
 from direct.directtools.DirectUtil import getTkColorString
 from . import WidgetPropertiesDialog
+from tkinter import (
+    BOTH,
+    CENTER,
+    DISABLED,
+    GROOVE,
+    NORMAL,
+    RIGHT,
+    TOP,
+    X,
+    Button,
+    Entry,
+    IntVar,
+    Label,
+    Menu,
+    StringVar,
+)
 from tkinter.colorchooser import askcolor
 import Pmw
 

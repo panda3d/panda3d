@@ -4,9 +4,25 @@ sound, music, shaders and fonts from disk.
 
 __all__ = ['Loader']
 
-from panda3d.core import *
+from panda3d.core import (
+    AudioLoadRequest,
+    ConfigVariableBool,
+    Filename,
+    FontPool,
+    LoaderFileTypeRegistry,
+    LoaderOptions,
+    ModelFlattenRequest,
+    ModelNode,
+    ModelPool,
+    NodePath,
+    PandaNode,
+    ShaderPool,
+    StaticTextFont,
+    TexturePool,
+    VBase4,
+)
 from panda3d.core import Loader as PandaLoader
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 import warnings
 

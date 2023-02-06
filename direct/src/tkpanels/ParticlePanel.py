@@ -3,11 +3,41 @@
 __all__ = ['ParticlePanel']
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from panda3d.core import *
-from panda3d.physics import *
+from panda3d.core import ColorBlendAttrib, Filename, Point2, Point3, Vec3, Vec4, getModelPath
+from panda3d.physics import (
+    BaseParticleEmitter,
+    BaseParticleRenderer,
+    BoxEmitter,
+    ColorInterpolationFunctionConstant,
+    ColorInterpolationFunctionLinear,
+    ColorInterpolationFunctionSinusoid,
+    ColorInterpolationFunctionStepwave,
+    DiscEmitter,
+    GeomParticleRenderer,
+    LinearCylinderVortexForce,
+    LinearDistanceForce,
+    LinearFrictionForce,
+    LinearJitterForce,
+    LinearNoiseForce,
+    LinearSinkForce,
+    LinearSourceForce,
+    LinearUserDefinedForce,
+    LinearVectorForce,
+    LineEmitter,
+    LineParticleRenderer,
+    PointEmitter,
+    PointParticleRenderer,
+    RectangleEmitter,
+    RingEmitter,
+    SparkleParticleRenderer,
+    SphereSurfaceEmitter,
+    SphereVolumeEmitter,
+    SpriteAnim,
+    SpriteParticleRenderer,
+    TangentRingEmitter,
+)
 from panda3d.direct import getParticlePath
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
@@ -16,10 +46,31 @@ from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-from tkinter.filedialog import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.simpledialog import askstring
 import Pmw
 import os
+from tkinter import (
+    BOTH,
+    FLAT,
+    LEFT,
+    RAISED,
+    RIGHT,
+    TOP,
+    W,
+    X,
+    BooleanVar,
+    Button,
+    Checkbutton,
+    Entry,
+    Frame,
+    IntVar,
+    Label,
+    Menu,
+    Menubutton,
+    Radiobutton,
+    StringVar,
+)
 
 
 class ParticlePanel(AppShell):

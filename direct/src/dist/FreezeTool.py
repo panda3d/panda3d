@@ -22,7 +22,7 @@ try:
 except ImportError:
     p3extend_frozen = None
 
-from panda3d.core import *
+from panda3d.core import Filename, Multifile, PandaSystem, StringStream
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.

@@ -1,5 +1,14 @@
-from panda3d.core import *
-from math import *
+from panda3d.core import (
+    Geom,
+    GeomNode,
+    GeomTrifans,
+    GeomTristrips,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    Vec4,
+)
+from math import pi, cos, sin
 
 
 GEO_ID = 0

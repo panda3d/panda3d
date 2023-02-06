@@ -104,12 +104,12 @@ avoid the problem for me::
 
 __all__ = ['FSMInspector', 'StateInspector']
 
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from tkinter.simpledialog import askstring
 import Pmw
 import math
 import operator
+from tkinter import BOTH, CENTER, IntVar, Menu
 
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi

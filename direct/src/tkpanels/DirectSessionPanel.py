@@ -3,9 +3,16 @@
 __all__ = ['DirectSessionPanel']
 
 # Import Tkinter, Pmw, and the dial code
-from panda3d.core import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
+from panda3d.core import (
+    AmbientLight,
+    DirectionalLight,
+    LightAttrib,
+    NodePath,
+    PointLight,
+    Spotlight,
+    Vec4,
+)
+from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
@@ -14,6 +21,21 @@ from direct.tkwidgets import SceneGraphExplorer
 from direct.tkwidgets import MemoryExplorer
 from .TaskManagerPanel import TaskManagerWidget
 import Pmw
+from tkinter import (
+    BOTH,
+    HORIZONTAL,
+    LEFT,
+    RIDGE,
+    W,
+    X,
+    BooleanVar,
+    Button,
+    Checkbutton,
+    Frame,
+    Label,
+    Menu,
+    Menubutton,
+)
 
 
 class DirectSessionPanel(AppShell):

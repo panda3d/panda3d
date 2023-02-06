@@ -2,9 +2,9 @@
 
 __all__ = ['VectorEntry', 'Vector2Entry', 'Vector3Entry', 'Vector4Entry', 'ColorEntry']
 
-from direct.showbase.TkGlobal import *
 from . import Valuator
 import Pmw
+from tkinter import GROOVE, LEFT, RIGHT, X, Menu, Menubutton, StringVar, Toplevel
 from tkinter.colorchooser import askcolor
 
 

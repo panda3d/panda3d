@@ -1,10 +1,9 @@
 __all__ = ['DirectEntryScroll']
 
-from panda3d.core import *
+from panda3d.core import NodePath, OmniBoundingVolume, PGVirtualFrame
 from . import DirectGuiGlobals as DGG
-from .DirectScrolledFrame import *
-from .DirectFrame import *
-from .DirectEntry import *
+from .DirectFrame import DirectFrame
+from .DirectEntry import DirectEntry
 
 class DirectEntryScroll(DirectFrame):
     def __init__(self, entry, parent = None, **kw):

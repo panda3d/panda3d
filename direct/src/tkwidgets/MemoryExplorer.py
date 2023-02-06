@@ -1,7 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
-from .Tree import *
 import Pmw
+from tkinter import BOTH, HORIZONTAL, LEFT, NW, TOP, W, Button, Label, Scale
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------

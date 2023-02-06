@@ -4,7 +4,7 @@ See the :ref:`particle-effects` section in the manual for an explanation
 of the particle system.
 """
 
-from panda3d.core import *
+from panda3d.core import ColorBlendAttrib, NodePath
 
 from panda3d.physics import PhysicalNode
 from panda3d.physics import ParticleSystem

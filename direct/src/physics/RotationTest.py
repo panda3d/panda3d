@@ -1,5 +1,13 @@
 from panda3d.core import NodePath
-from panda3d.physics import *
+from panda3d.physics import (
+    ActorNode,
+    AngularEulerIntegrator,
+    AngularVectorForce,
+    ForceNode,
+    LinearEulerIntegrator,
+    LinearFrictionForce,
+    LinearVectorForce,
+)
 
 
 class RotationTest(NodePath):

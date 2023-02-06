@@ -6,14 +6,31 @@ __all__ = ['AnimPanel', 'ActorControl']
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from panda3d.core import Filename, getModelPath, ClockObject
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from tkinter.simpledialog import askfloat
 from tkinter.filedialog import askopenfilename
 import Pmw
 import os
+from tkinter import (
+    BOTH,
+    HORIZONTAL,
+    LEFT,
+    RAISED,
+    RIGHT,
+    SUNKEN,
+    W,
+    X,
+    Button,
+    Checkbutton,
+    Frame,
+    IntVar,
+    Label,
+    Menu,
+    Menubutton,
+    Scale,
+)
 
 
 FRAMES = 0

@@ -1,7 +1,17 @@
+import math
+from panda3d.core import BitMask32, Mat4, NodePath, Point3, VBase3, Vec3, Vec4, rad2Deg
 from direct.showbase.DirectObject import DirectObject
-from .DirectUtil import *
-from .DirectGeometry import *
-from .DirectGlobals import *
+from .DirectUtil import CLAMP, useDirectRenderStyle
+from .DirectGeometry import getCrankAngle, getScreenXY
+from .DirectGlobals import (
+    SKIP_BACKFACE,
+    SKIP_CAMERA,
+    SKIP_HIDDEN,
+    X_AXIS,
+    Z_AXIS,
+    ZERO_POINT,
+    ZERO_VEC,
+)
 from .DirectSelection import SelectionRay
 from direct.interval.IntervalGlobal import Sequence, Func
 from direct.directnotify import DirectNotifyGlobal

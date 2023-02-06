@@ -9,11 +9,11 @@ __all__ = [
     'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
 ]
 
-from panda3d.core import *
+from panda3d.core import NodePath, Point3, TextNode, VBase3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 
 
 def findDialog(uniqueName):

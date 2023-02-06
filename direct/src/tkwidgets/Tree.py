@@ -20,8 +20,8 @@ __all__ = ['TreeNode', 'TreeItem']
 # - optimize tree redraw after expand of subnode
 
 import os, sys
-from direct.showbase.TkGlobal import *
-from panda3d.core import *
+from panda3d.core import Filename, getModelPath
+from tkinter import ALL, END, Entry, IntVar, Label, Menu, PhotoImage
 
 
 class TreeNode:

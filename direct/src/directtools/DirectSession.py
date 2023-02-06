@@ -1,13 +1,35 @@
 import math
 
-from panda3d.core import *
-from .DirectUtil import *
+from panda3d.core import (
+    CollisionNode,
+    ConfigVariableBool,
+    ConfigVariableString,
+    CSDefault,
+    NodePath,
+    Point3,
+    TextNode,
+    VBase3,
+    VBase4,
+    Vec3,
+    Vec4,
+    decomposeMatrix,
+    deg2Rad,
+)
+from .DirectUtil import useDirectRenderStyle
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.BulletinBoardGlobal import bulletinBoard as bboard
 from direct.task import Task
 
-from .DirectGlobals import DIRECT_NO_MOD
+from .DirectGlobals import (
+    DIRECT_ALT_MOD,
+    DIRECT_CONTROL_MOD,
+    DIRECT_FLASH_DURATION,
+    DIRECT_NO_MOD,
+    DIRECT_SHIFT_MOD,
+    EDIT_TYPE_UNEDITABLE,
+    LE_showInOneCam,
+)
 from .DirectCameraControl import DirectCameraControl
 from .DirectManipulation import DirectManipulationControl
 from .DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
@@ -20,7 +42,8 @@ from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkwidgets import Slider
 ## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
-from direct.interval.IntervalGlobal import *
+from direct.interval.IntervalGlobal import Func, Sequence
+from direct.task.TaskManagerGlobal import taskMgr
 
 class DirectSession(DirectObject):
 

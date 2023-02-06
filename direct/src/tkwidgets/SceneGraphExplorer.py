@@ -6,9 +6,9 @@ Requires Pmw."""
 __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
-from .Tree import *
+from .Tree import TreeItem, TreeNode
 import Pmw
+from tkinter import BOTH, GROOVE, LEFT, W, X, Frame, Label, Toplevel
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!
 DEFAULT_MENU_ITEMS = [

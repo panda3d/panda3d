@@ -5,9 +5,23 @@ Slider Class: Velocity style controller for floating point values with
 
 __all__ = ['Slider', 'SliderWidget', 'rgbPanel']
 
-from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
 import Pmw
+from tkinter import (
+    BOTH,
+    EW,
+    FLAT,
+    LEFT,
+    RAISED,
+    SUNKEN,
+    W,
+    X,
+    Canvas,
+    DoubleVar,
+    Label,
+    Scale,
+    Toplevel,
+)
 
 class Slider(Valuator):
     """

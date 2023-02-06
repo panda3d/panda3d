@@ -2,10 +2,10 @@
 
 __all__ = ['TaskManagerPanel', 'TaskManagerWidget']
 
-from direct.tkwidgets.AppShell import *
+from direct.tkwidgets.AppShell import AppShell
 from direct.showbase.DirectObject import DirectObject
 import Pmw
-from tkinter import *
+from tkinter import BOTH, EW, NW, X, Button, Checkbutton, Frame, IntVar, Menu
 from tkinter.messagebox import askokcancel
 
 
