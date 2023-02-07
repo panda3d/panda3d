@@ -718,22 +718,23 @@ class Loader(DirectObject):
                 flags &= ~LoaderOptions.TFMultiview
             loaderOptions.setTextureFlags(flags)
 
+        sampler = SamplerState()
+        if minfilter is not None:
+            sampler.setMinfilter(minfilter)
+        if magfilter is not None:
+            sampler.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            sampler.setAnisotropicDegree(anisotropicDegree)
+
         if alphaPath is None:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
-            texture = TexturePool.loadTexture(texturePath, 0, readMipmaps, loaderOptions)
+            texture = TexturePool.loadTexture(texturePath, 0, readMipmaps, loaderOptions, sampler)
         else:
             assert Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath))
-            texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps, loaderOptions)
+            texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps, loaderOptions, sampler)
         if not texture and not okMissing:
             message = 'Could not load texture: %s' % (texturePath)
             raise IOError(message)
-
-        if minfilter is not None:
-            texture.setMinfilter(minfilter)
-        if magfilter is not None:
-            texture.setMagfilter(magfilter)
-        if anisotropicDegree is not None:
-            texture.setAnisotropicDegree(anisotropicDegree)
 
         return texture
 
@@ -780,17 +781,18 @@ class Loader(DirectObject):
             loaderOptions.setTextureFlags(flags)
             loaderOptions.setTextureNumViews(numViews)
 
-        texture = TexturePool.load3dTexture(texturePattern, readMipmaps, loaderOptions)
+        sampler = SamplerState()
+        if minfilter is not None:
+            sampler.setMinfilter(minfilter)
+        if magfilter is not None:
+            sampler.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            sampler.setAnisotropicDegree(anisotropicDegree)
+
+        texture = TexturePool.load3dTexture(texturePattern, readMipmaps, loaderOptions, sampler)
         if not texture and not okMissing:
             message = 'Could not load 3-D texture: %s' % (texturePattern)
             raise IOError(message)
-
-        if minfilter is not None:
-            texture.setMinfilter(minfilter)
-        if magfilter is not None:
-            texture.setMagfilter(magfilter)
-        if anisotropicDegree is not None:
-            texture.setAnisotropicDegree(anisotropicDegree)
 
         return texture
 
@@ -837,17 +839,18 @@ class Loader(DirectObject):
             loaderOptions.setTextureFlags(flags)
             loaderOptions.setTextureNumViews(numViews)
 
-        texture = TexturePool.load2dTextureArray(texturePattern, readMipmaps, loaderOptions)
+        sampler = SamplerState()
+        if minfilter is not None:
+            sampler.setMinfilter(minfilter)
+        if magfilter is not None:
+            sampler.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            sampler.setAnisotropicDegree(anisotropicDegree)
+
+        texture = TexturePool.load2dTextureArray(texturePattern, readMipmaps, loaderOptions, sampler)
         if not texture and not okMissing:
             message = 'Could not load 2-D texture array: %s' % (texturePattern)
             raise IOError(message)
-
-        if minfilter is not None:
-            texture.setMinfilter(minfilter)
-        if magfilter is not None:
-            texture.setMagfilter(magfilter)
-        if anisotropicDegree is not None:
-            texture.setAnisotropicDegree(anisotropicDegree)
 
         return texture
 
@@ -890,17 +893,18 @@ class Loader(DirectObject):
                 flags &= ~LoaderOptions.TFMultiview
             loaderOptions.setTextureFlags(flags)
 
-        texture = TexturePool.loadCubeMap(texturePattern, readMipmaps, loaderOptions)
+        sampler = SamplerState()
+        if minfilter is not None:
+            sampler.setMinfilter(minfilter)
+        if magfilter is not None:
+            sampler.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            sampler.setAnisotropicDegree(anisotropicDegree)
+
+        texture = TexturePool.loadCubeMap(texturePattern, readMipmaps, loaderOptions, sampler)
         if not texture and not okMissing:
             message = 'Could not load cube map: %s' % (texturePattern)
             raise IOError(message)
-
-        if minfilter is not None:
-            texture.setMinfilter(minfilter)
-        if magfilter is not None:
-            texture.setMagfilter(magfilter)
-        if anisotropicDegree is not None:
-            texture.setAnisotropicDegree(anisotropicDegree)
 
         return texture
 
