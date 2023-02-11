@@ -533,8 +533,10 @@ get_quality(const FrameBufferProperties &reqs) const {
   }
 
   // Deduct for having more multisamples than requested.  Cost: 2 per sample
+  // In case the special value of 1 multisample is requested, nothing gets deducted.
 
   if (_property[FBP_multisamples] != 0 &&
+      reqs._property[FBP_multisamples] != 1 &&
       reqs._property[FBP_multisamples] < _property[FBP_multisamples]) {
     quality -= 2 * _property[FBP_multisamples];
   }
@@ -571,6 +573,13 @@ get_quality(const FrameBufferProperties &reqs) const {
   // is linear and therefore causes the gamma to be off in non-sRGB pipelines.
   if (reqs._property[FBP_color_bits] <= 3 && _property[FBP_color_bits] > 24) {
     quality -= 100;
+  }
+
+  // Bonus for each multisample in case the special value of 1 multisample
+  // is requested.  Extra: 2 per sample.
+  if (_property[FBP_multisamples] != 0 &&
+      reqs._property[FBP_multisamples] == 1) {
+    quality += 2 * _property[FBP_multisamples];
   }
 
   // Bonus for each depth bit.  Extra: 8 per bit.
