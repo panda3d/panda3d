@@ -525,11 +525,18 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // deduct for insufficient multisamples.  Cost: 1,000
+  // Deduct for insufficient multisamples.  Cost: 1,000
 
   if (_property[FBP_multisamples] != 0 &&
       reqs._property[FBP_multisamples] > _property[FBP_multisamples]) {
     quality -= 1000;
+  }
+
+  // Deduct for having more multisamples than requested.  Cost: 2 per sample
+
+  if (_property[FBP_multisamples] != 0 &&
+      reqs._property[FBP_multisamples] < _property[FBP_multisamples]) {
+    quality -= 2 * _property[FBP_multisamples];
   }
 
   // Deduct for unrequested bitplanes.  Cost: 50
@@ -573,11 +580,6 @@ get_quality(const FrameBufferProperties &reqs) const {
   // will end up only getting 16-bit depth.
   if (reqs._property[FBP_depth_bits] != 0) {
     quality += 8 * _property[FBP_depth_bits];
-  }
-
-  // Bonus for each multisample.  Extra: 2 per sample.
-  if (reqs._property[FBP_multisamples] != 0) {
-    quality += 2 * _property[FBP_multisamples];
   }
 
   // Bonus for each coverage sample.  Extra: 2 per sample.
