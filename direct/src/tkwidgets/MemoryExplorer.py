@@ -1,6 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
 import Pmw
-from tkinter import BOTH, HORIZONTAL, LEFT, NW, TOP, W, Button, Label, Scale
+import tkinter as tk
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
@@ -45,23 +45,23 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
                                        hull_width = 200,
                                        hull_height = 220,)
 
-        self.frame.pack(padx = 3, pady = 3, fill = BOTH, expand = 1)
+        self.frame.pack(padx = 3, pady = 3, fill = tk.BOTH, expand = 1)
 
     def createScale(self):
-        self.scaleCtrl = Scale(self.interior(),
-                               label = "Graph Scale",
-                               from_= 0.0,
-                               to = 20.0,
-                               resolution = 0.1,
-                               orient = HORIZONTAL,
-                               command = self.onScaleUpdate)
+        self.scaleCtrl = tk.Scale(self.interior(),
+                                  label = "Graph Scale",
+                                  from_= 0.0,
+                                  to = 20.0,
+                                  resolution = 0.1,
+                                  orient = tk.HORIZONTAL,
+                                  command = self.onScaleUpdate)
 
-        self.scaleCtrl.pack(side = LEFT, fill = BOTH, expand = 1)
+        self.scaleCtrl.pack(side = tk.LEFT, fill = tk.BOTH, expand = 1)
         self.scaleCtrl.set(0.0)
 
     def createRefreshBT(self):
-        self.refreshBT = Button(self.interior(), text = 'Refresh', command = self.refresh)
-        self.refreshBT.pack(side = LEFT, fill = BOTH, expand = 1)
+        self.refreshBT = tk.Button(self.interior(), text = 'Refresh', command = self.refresh)
+        self.refreshBT.pack(side = tk.LEFT, fill = tk.BOTH, expand = 1)
 
     #--------------------------------------------------------------------------
     # Item Ctrls
@@ -91,9 +91,9 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
         self.labels = []
 
     def getNewButton(self, width, ratio):
-        newBT =  Button(self.frame.interior(),
-                        anchor = W,
-                        width = width)
+        newBT =  tk.Button(self.frame.interior(),
+                           anchor = tk.W,
+                           width = width)
 
         if ratio == 0.0:
             newBT['bg'] = "grey"
@@ -143,7 +143,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
         bt.bind("<Button-1>", callbackL)
         bt.bind("<Button-3>", callbackR)
 
-        bt.pack(side = TOP, anchor = NW)
+        bt.pack(side = tk.TOP, anchor = tk.NW)
         self.buttons.append(bt)
 
         self.balloon.bind(bt, item.getPathName())
@@ -151,8 +151,8 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
         return bt
 
     def addLabel(self, label):
-        label = Label(self.frame.interior(), text = label)
-        label.pack(side = TOP, anchor = NW,  expand = 0)
+        label = tk.Label(self.frame.interior(), text = label)
+        label.pack(side = tk.TOP, anchor = tk.NW,  expand = 0)
         self.labels.append(label)
 
     def getBTWidth(self, vertexBytes, totalBytes):

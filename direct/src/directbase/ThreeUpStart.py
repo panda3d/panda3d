@@ -1,6 +1,8 @@
 
 print('ThreeUpStart: Starting up environment.')
 
+import direct.showbase.PythonUtil  # pylint: disable=unused-import
+
 from direct.showbase import ThreeUpShow
 
 base = ThreeUpShow.ThreeUpShow()

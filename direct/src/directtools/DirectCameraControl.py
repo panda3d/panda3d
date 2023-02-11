@@ -3,15 +3,7 @@ from panda3d.core import BitMask32, Mat4, NodePath, Point3, VBase3, Vec3, Vec4, 
 from direct.showbase.DirectObject import DirectObject
 from .DirectUtil import CLAMP, useDirectRenderStyle
 from .DirectGeometry import getCrankAngle, getScreenXY
-from .DirectGlobals import (
-    SKIP_BACKFACE,
-    SKIP_CAMERA,
-    SKIP_HIDDEN,
-    X_AXIS,
-    Z_AXIS,
-    ZERO_POINT,
-    ZERO_VEC,
-)
+from . import DirectGlobals as DG
 from .DirectSelection import SelectionRay
 from direct.interval.IntervalGlobal import Sequence, Func
 from direct.directnotify import DirectNotifyGlobal
@@ -228,9 +220,9 @@ class DirectCameraControl(DirectObject):
             # Allow intersection with unpickable objects
             # And then spawn task to determine mouse mode
             # Don't intersect with hidden or backfacing objects
-            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
+            skipFlags = DG.SKIP_HIDDEN | DG.SKIP_BACKFACE
             # Skip camera (and its children), unless control key is pressed
-            skipFlags |= SKIP_CAMERA * (1 - base.getControl())
+            skipFlags |= DG.SKIP_CAMERA * (1 - base.getControl())
             self.computeCOA(base.direct.iRay.pickGeom(skipFlags = skipFlags))
             # Record reference point
             self.coaMarkerRef.setPosHprScale(base.cam, 0, 0, 0, 0, 0, 0, 1, 1, 1)
@@ -432,7 +424,7 @@ class DirectCameraControl(DirectObject):
 
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
-        self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+        self.camManipRef.setHpr(base.direct.camera, DG.ZERO_POINT)
         t = Task.Task(self.mouseRotateTask)
         if abs(base.direct.dr.mouseX) > 0.9:
             t.constrainedDir = 'y'
@@ -464,7 +456,7 @@ class DirectCameraControl(DirectObject):
                 # flatten roll
                 base.direct.camera.setR(0)
             self.camManipRef.setPos(self.coaMarkerPos)
-            self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+            self.camManipRef.setHpr(base.direct.camera, DG.ZERO_POINT)
         else:
             if base.direct.camera.getPos().getZ() >=0 or not self.switchDirBelowZero:
                 dirX = -1
@@ -488,7 +480,7 @@ class DirectCameraControl(DirectObject):
         self.__stopManipulateCamera()
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
-        self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+        self.camManipRef.setHpr(base.direct.camera, DG.ZERO_POINT)
         t = Task.Task(self.mouseRollTask)
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
@@ -575,7 +567,7 @@ class DirectCameraControl(DirectObject):
             base.direct.message('COA Distance: ' + repr(dist))
             coa.set(0, dist, 0)
         # Compute COA Dist
-        coaDist = Vec3(coa - ZERO_POINT).length()
+        coaDist = Vec3(coa - DG.ZERO_POINT).length()
         if coaDist < (1.1 * dr.near):
             coa.set(0, 100, 0)
             coaDist = 100
@@ -585,7 +577,7 @@ class DirectCameraControl(DirectObject):
     def updateCoa(self, ref2point, coaDist = None, ref = None):
         self.coa.set(ref2point[0], ref2point[1], ref2point[2])
         if not coaDist:
-            coaDist = Vec3(self.coa - ZERO_POINT).length()
+            coaDist = Vec3(self.coa - DG.ZERO_POINT).length()
         # Place the marker in render space
         if ref is None:
             # KEH: use the current display region
@@ -652,19 +644,19 @@ class DirectCameraControl(DirectObject):
         # Transform camera z axis to render space
         mCam2Render = Mat4(Mat4.identMat()) # [gjeon] fixed to give required argument
         mCam2Render.assign(base.direct.camera.getMat(render))
-        zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
+        zAxis = Vec3(mCam2Render.xformVec(DG.Z_AXIS))
         zAxis.normalize()
         # Compute rotation angle needed to upright cam
-        orbitAngle = rad2Deg(math.acos(CLAMP(zAxis.dot(Z_AXIS), -1, 1)))
+        orbitAngle = rad2Deg(math.acos(CLAMP(zAxis.dot(DG.Z_AXIS), -1, 1)))
         # Check angle
         if orbitAngle < 0.1:
             # Already upright
             return
         # Compute orthogonal axis of rotation
-        rotAxis = Vec3(zAxis.cross(Z_AXIS))
+        rotAxis = Vec3(zAxis.cross(DG.Z_AXIS))
         rotAxis.normalize()
         # Find angle between rot Axis and render X_AXIS
-        rotAngle = rad2Deg(math.acos(CLAMP(rotAxis.dot(X_AXIS), -1, 1)))
+        rotAngle = rad2Deg(math.acos(CLAMP(rotAxis.dot(DG.X_AXIS), -1, 1)))
         # Determine sign or rotation angle
         if rotAxis[1] < 0:
             rotAngle *= -1
@@ -695,7 +687,7 @@ class DirectCameraControl(DirectObject):
         base.direct.pushUndo([base.direct.camera])
         # Determine marker location
         markerToCam = self.coaMarker.getPos(base.direct.camera)
-        dist = Vec3(markerToCam - ZERO_POINT).length()
+        dist = Vec3(markerToCam - DG.ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * dist
         delta = markerToCam - scaledCenterVec
         self.camManipRef.setPosHpr(base.direct.camera, Point3(0), Point3(0))
@@ -719,7 +711,7 @@ class DirectCameraControl(DirectObject):
         self.camManipRef.setPos(base.direct.camera, zoomPtToCam)
         # Move to that point
         ival = base.direct.camera.posInterval(CAM_MOVE_DURATION,
-                                              ZERO_POINT,
+                                              DG.ZERO_POINT,
                                               other = self.camManipRef,
                                               blendType = 'easeInOut')
         ival = Sequence(ival, Func(self.updateCoaMarkerSizeOnDeath),
@@ -756,20 +748,20 @@ class DirectCameraControl(DirectObject):
         elif view == 7:
             hprOffset.set(135., -35.264, 0.)
         # Position target
-        self.camManipRef.setPosHpr(self.coaMarker, ZERO_VEC,
+        self.camManipRef.setPosHpr(self.coaMarker, DG.ZERO_VEC,
                                    hprOffset)
         # Scale center vec by current distance to target
         offsetDistance = Vec3(base.direct.camera.getPos(self.camManipRef) -
-                              ZERO_POINT).length()
+                              DG.ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * (-1.0 * offsetDistance)
         # Now put the camManipRef at that point
         self.camManipRef.setPosHpr(self.camManipRef,
                                    scaledCenterVec,
-                                   ZERO_VEC)
+                                   DG.ZERO_VEC)
         # Record view for next time around
         self.lastView = view
         ival = base.direct.camera.posHprInterval(CAM_MOVE_DURATION,
-                                                 pos = ZERO_POINT,
+                                                 pos = DG.ZERO_POINT,
                                                  hpr = VBase3(0, 0, self.orthoViewRoll),
                                                  other = self.camManipRef,
                                                  blendType = 'easeInOut')
@@ -786,9 +778,9 @@ class DirectCameraControl(DirectObject):
         base.direct.pushUndo([base.direct.camera])
 
         # Coincident with widget
-        self.camManipRef.setPos(self.coaMarker, ZERO_POINT)
+        self.camManipRef.setPos(self.coaMarker, DG.ZERO_POINT)
         # But aligned with render space
-        self.camManipRef.setHpr(ZERO_POINT)
+        self.camManipRef.setHpr(DG.ZERO_POINT)
 
         parent = base.direct.camera.getParent()
         base.direct.camera.wrtReparentTo(self.camManipRef)

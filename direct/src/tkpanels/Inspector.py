@@ -15,7 +15,7 @@ See :ref:`inspection-utilities` for more information.
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
 import Pmw
-from tkinter import BOTH, END, HORIZONTAL, INSERT, LEFT, VERTICAL, Frame, Label, Menu, Toplevel
+import tkinter as tk
 
 ### public API
 
@@ -246,7 +246,7 @@ class InspectorWindow:
         return self.topInspector().object
 
     def open(self):
-        self.top= Toplevel()
+        self.top= tk.Toplevel()
         self.top.geometry('650x315')
         self.createViews()
         self.update()
@@ -255,10 +255,10 @@ class InspectorWindow:
     def createViews(self):
         self.createMenus()
         # Paned widget for dividing two halves
-        self.framePane = Pmw.PanedWidget(self.top, orient = HORIZONTAL)
+        self.framePane = Pmw.PanedWidget(self.top, orient = tk.HORIZONTAL)
         self.createListWidget()
         self.createTextWidgets()
-        self.framePane.pack(expand = 1, fill = BOTH)
+        self.framePane.pack(expand = 1, fill = tk.BOTH)
 
     def setTitle(self):
         self.top.title('Inspecting: ' + self.topInspector().title())
@@ -267,7 +267,7 @@ class InspectorWindow:
         listFrame = self.framePane.add('list')
         listWidget = self.listWidget = Pmw.ScrolledListBox(
             listFrame, vscrollmode = 'static')
-        listWidget.pack(side=LEFT, fill=BOTH, expand=1)
+        listWidget.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
         # If you click in the list box, take focus so you can navigate
         # with the cursor keys
         listbox = listWidget.component('listbox')
@@ -284,36 +284,36 @@ class InspectorWindow:
 
     def createTextWidgets(self):
         textWidgetsFrame = self.framePane.add('textWidgets')
-        self.textPane = Pmw.PanedWidget(textWidgetsFrame, orient = VERTICAL)
+        self.textPane = Pmw.PanedWidget(textWidgetsFrame, orient = tk.VERTICAL)
         textFrame = self.textPane.add('text', size = 200)
         self.textWidget = Pmw.ScrolledText(
             textFrame, vscrollmode = 'static', text_state = 'disabled')
-        self.textWidget.pack(fill=BOTH, expand=1)
+        self.textWidget.pack(fill=tk.BOTH, expand=1)
         commandFrame = self.textPane.add('command')
         self.commandWidget = Pmw.ScrolledText(
             commandFrame, vscrollmode = 'static')
         self.commandWidget.insert(1.0, '>>> ')
-        self.commandWidget.pack(fill = BOTH, expand = 1)
+        self.commandWidget.pack(fill = tk.BOTH, expand = 1)
         self.commandWidget.component('text').bind(
             '<KeyRelease-Return>', self.evalCommand)
-        self.textPane.pack(expand = 1, fill = BOTH)
+        self.textPane.pack(expand = 1, fill = tk.BOTH)
 
     def createMenus(self):
-        self.menuBar = Menu(self.top)
+        self.menuBar = tk.Menu(self.top)
         self.top.config(menu=self.menuBar)
-        inspectMenu = Menu(self.menuBar)
+        inspectMenu = tk.Menu(self.menuBar)
         self.menuBar.add_cascade(label='Inspect', menu=inspectMenu)
         inspectMenu.add_command(label='Pop', command=self.pop)
         inspectMenu.add_command(label='Dive', command=self.dive)
         inspectMenu.add_command(label='Inspect', command=self.inspect)
-        helpMenu = Menu(self.menuBar)
+        helpMenu = tk.Menu(self.menuBar)
         self.menuBar.add_cascade(label='Help', menu=helpMenu)
         helpMenu.add_command(label='Instructions', command=self.showHelp)
 
     def fillList(self):
-        self.listWidget.delete(0, END)
+        self.listWidget.delete(0, tk.END)
         for each in self.topInspector().partNames():
-            self.listWidget.insert(END, each)
+            self.listWidget.insert(tk.END, each)
         self.listWidget.select_clear(0)
 
     # Event Handling
@@ -323,8 +323,8 @@ class InspectorWindow:
             partNumber = 0
         string = self.topInspector().stringForPartNumber(partNumber)
         self.textWidget.component('text').configure(state = 'normal')
-        self.textWidget.delete('1.0', END)
-        self.textWidget.insert(END, string)
+        self.textWidget.delete('1.0', tk.END)
+        self.textWidget.insert(tk.END, string)
         self.textWidget.component('text').configure(state = 'disabled')
 
     def popOrDive(self, event):
@@ -337,9 +337,9 @@ class InspectorWindow:
 
     def evalCommand(self, event):
         """Eval text in commandWidget"""
-        insertPt = self.commandWidget.index(INSERT)
+        insertPt = self.commandWidget.index(tk.INSERT)
         commandLineStart = self.commandWidget.search(
-            '>>> ', INSERT, backwards = 1)
+            '>>> ', tk.INSERT, backwards = 1)
         if commandLineStart:
             commandStart = self.commandWidget.index(
                 commandLineStart + ' + 4 chars')
@@ -349,8 +349,8 @@ class InspectorWindow:
                 partDict = { 'this': self.selectedPart(),
                              'object': self.topInspector().object }
                 result = eval(command, partDict)
-                self.commandWidget.insert(INSERT, repr(result) + '\n>>> ')
-                self.commandWidget.see(INSERT)
+                self.commandWidget.insert(tk.INSERT, repr(result) + '\n>>> ')
+                self.commandWidget.see(tk.INSERT)
 
     # Menu Events
     def inspect(self):
@@ -388,12 +388,12 @@ class InspectorWindow:
         self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
-        help = Toplevel(base.tkRoot)
+        help = tk.Toplevel(base.tkRoot)
         help.title("Inspector Help")
-        frame = Frame(help)
+        frame = tk.Frame(help)
         frame.pack()
-        text = Label(
-            frame, justify = LEFT,
+        text = tk.Label(
+            frame, justify = tk.LEFT,
             text = "ListBox shows selected object's attributes\nDouble click or use right arrow on an instance variable to dive down.\nDouble click self or use left arrow to pop back up.\nUse up and down arrow keys to move from item to item in the current level.\n\nValue box (upper right) shows current value of selected item\n\nCommand box (lower right) is used to evaluate python commands\nLocal variables 'object' and 'this' are defined as the current object being inspected\nand the current attribute selected."
             )
         text.pack()
@@ -441,7 +441,7 @@ class InspectorWindow:
                            event.widget.winfo_pointery())
 
     def createPopupMenu(self, part, menuList):
-        popupMenu = Menu(self.top, tearoff = 0)
+        popupMenu = tk.Menu(self.top, tearoff = 0)
         for item, func in menuList:
             popupMenu.add_command(
                 label = item,

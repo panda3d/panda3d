@@ -1,5 +1,7 @@
 print('TestStart: Starting up test environment.')
 
+import direct.showbase.PythonUtil  # pylint: disable=unused-import
+
 from direct.showbase import ShowBase
 base = ShowBase.ShowBase()
 
