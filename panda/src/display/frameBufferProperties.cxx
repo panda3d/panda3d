@@ -541,6 +541,22 @@ get_quality(const FrameBufferProperties &reqs) const {
     quality -= 2 * _property[FBP_multisamples];
   }
 
+  // Deduct for insufficient coverage samples.  Cost: 1,000
+
+  if (_property[FBP_coverage_samples] != 0 &&
+    reqs._property[FBP_coverage_samples] > _property[FBP_coverage_samples]) {
+    quality -= 1000;
+  }
+
+  // Deduct for having more coverage samples than requested.  Cost: 2 per sample
+  // In case the special value of 1 sample is requested, nothing gets deducted.
+
+  if (_property[FBP_coverage_samples] != 0 &&
+    reqs._property[FBP_coverage_samples] != 1 &&
+    reqs._property[FBP_coverage_samples] < _property[FBP_coverage_samples]) {
+    quality -= 2 * _property[FBP_coverage_samples];
+  }
+
   // Deduct for unrequested bitplanes.  Cost: 50
 
   for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
@@ -591,8 +607,10 @@ get_quality(const FrameBufferProperties &reqs) const {
     quality += 8 * _property[FBP_depth_bits];
   }
 
-  // Bonus for each coverage sample.  Extra: 2 per sample.
-  if (reqs._property[FBP_coverage_samples] != 0) {
+  // Bonus for each coverage sample in case the special value of 1 sample
+  // is requested.  Extra: 2 per sample.
+  if (_property[FBP_coverage_samples] != 0 &&
+    reqs._property[FBP_coverage_samples] == 1) {
     quality += 2 * _property[FBP_coverage_samples];
   }
 
