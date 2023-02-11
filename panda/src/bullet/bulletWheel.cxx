@@ -24,6 +24,19 @@ BulletWheel(btWheelInfo &info) : _info(info) {
 }
 
 /**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
+BulletWheel BulletWheel::
+empty() {
+
+  static btWheelInfoConstructionInfo ci {};
+  static btWheelInfo info(ci);
+
+  return BulletWheel(info);
+}
+
+/**
  *
  */
 BulletWheelRaycastInfo::

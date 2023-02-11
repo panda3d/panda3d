@@ -423,7 +423,7 @@ analyze(Texture *tex, bool do_flip_texture) {
 
   if (arDetectMarker(data, _threshold * 256, &marker_info, &marker_num) < 0) {
     vision_cat.error() << "ARToolKit detection error.\n";
-    delete data;
+    delete[] data;
     return;
   }
 
@@ -475,7 +475,7 @@ analyze(Texture *tex, bool do_flip_texture) {
     }
   }
 
-  delete data;
+  delete[] data;
 }
 
 #endif // HAVE_ARTOOLKIT

@@ -4475,6 +4475,20 @@ get_data4f(const unsigned char *pointer) {
 /**
  *
  */
+const LVecBase4d &GeomVertexColumn::Packer_argb_packed::
+get_data4d(const unsigned char *pointer) {
+  uint32_t dword = *(const uint32_t *)pointer;
+  _v4d.set(GeomVertexData::unpack_abcd_b(dword),
+           GeomVertexData::unpack_abcd_c(dword),
+           GeomVertexData::unpack_abcd_d(dword),
+           GeomVertexData::unpack_abcd_a(dword));
+  _v4d /= 255.0;
+  return _v4d;
+}
+
+/**
+ *
+ */
 void GeomVertexColumn::Packer_argb_packed::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   // when packing an argb, we want to make sure we cap the input values at 1
@@ -4484,6 +4498,20 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
      (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f),
      (unsigned int)(min(max(data[2], 0.0f), 1.0f) * 255.0f));
+}
+
+/**
+ *
+ */
+void GeomVertexColumn::Packer_argb_packed::
+set_data4d(unsigned char *pointer, const LVecBase4d &data) {
+  // when packing an argb, we want to make sure we cap the input values at 1
+  // since going above one will cause the value to be truncated.
+  *(uint32_t *)pointer = GeomVertexData::pack_abcd
+    ((unsigned int)(min(max(data[3], 0.0), 1.0) * 255.0),
+     (unsigned int)(min(max(data[0], 0.0), 1.0) * 255.0),
+     (unsigned int)(min(max(data[1], 0.0), 1.0) * 255.0),
+     (unsigned int)(min(max(data[2], 0.0), 1.0) * 255.0));
 }
 
 /**
@@ -4500,12 +4528,34 @@ get_data4f(const unsigned char *pointer) {
 /**
  *
  */
+const LVecBase4d &GeomVertexColumn::Packer_rgba_uint8_4::
+get_data4d(const unsigned char *pointer) {
+  _v4d.set((double)pointer[0], (double)pointer[1],
+           (double)pointer[2], (double)pointer[3]);
+  _v4d /= 255.0;
+  return _v4d;
+}
+
+/**
+ *
+ */
 void GeomVertexColumn::Packer_rgba_uint8_4::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   pointer[0] = (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f);
   pointer[1] = (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f);
   pointer[2] = (unsigned int)(min(max(data[2], 0.0f), 1.0f) * 255.0f);
   pointer[3] = (unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f);
+}
+
+/**
+ *
+ */
+void GeomVertexColumn::Packer_rgba_uint8_4::
+set_data4d(unsigned char *pointer, const LVecBase4d &data) {
+  pointer[0] = (unsigned int)(min(max(data[0], 0.0), 1.0) * 255.0);
+  pointer[1] = (unsigned int)(min(max(data[1], 0.0), 1.0) * 255.0);
+  pointer[2] = (unsigned int)(min(max(data[2], 0.0), 1.0) * 255.0);
+  pointer[3] = (unsigned int)(min(max(data[3], 0.0), 1.0) * 255.0);
 }
 
 /**

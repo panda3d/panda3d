@@ -486,6 +486,14 @@ set_state_and_transform(const RenderState *target_rs,
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
     }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
+    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+      altered |= Shader::SSD_render_mode;
+    }
     _state_rs = target_rs;
   }
 
@@ -908,11 +916,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
-
-        } else {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+        else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {

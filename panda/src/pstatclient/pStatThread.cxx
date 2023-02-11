@@ -35,9 +35,9 @@ new_frame(int frame_number) {
  * data to send for this frame.
  */
 void PStatThread::
-add_frame(int frame_number, const PStatFrameData &frame_data) {
+add_frame(int frame_number, PStatFrameData &&frame_data) {
 #ifdef DO_PSTATS
-  _client->get_impl()->add_frame(_index, frame_number, frame_data);
+  _client->get_impl()->add_frame(_index, frame_number, std::move(frame_data));
 #endif
 }
 

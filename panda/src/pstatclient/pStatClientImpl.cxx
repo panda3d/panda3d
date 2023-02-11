@@ -26,6 +26,8 @@
 #include "cmath.h"
 #include "conditionVarWin32Impl.h"
 #include "conditionVarPosixImpl.h"
+#include "genericThread.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
@@ -53,9 +55,17 @@ PStatClientImpl(PStatClient *client) :
   _last_frame(0.0),
   _client(client),
   _reader(this, 0),
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  _writer(this, 0),
+  _thread_lock("PStatsClientImpl::_thread_lock"),
+  _thread_cvar(_thread_lock)
+#else
   _writer(this, pstats_threaded_write ? 1 : 0)
+#endif
 {
+#if !defined(HAVE_THREADS) || defined(SIMPLE_THREADS)
   _writer.set_max_queue_size(pstats_max_queue_size);
+#endif
   _reader.set_tcp_header_size(4);
   _writer.set_tcp_header_size(4);
   _is_connected = false;
@@ -240,6 +250,17 @@ client_connect(std::string hostname, int port) {
     transmit_control_data();
   }
 
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  if (_is_connected && pstats_threaded_write) {
+    _thread = new GenericThread("PStats", "PStats", [this]() {
+      this->thread_main();
+    });
+    if (!_thread->start(TP_low, false)) {
+      _thread.clear();
+    }
+  }
+#endif
+
   return _is_connected;
 }
 
@@ -248,6 +269,17 @@ client_connect(std::string hostname, int port) {
  */
 void PStatClientImpl::
 client_disconnect() {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  // Tell the thread to shut itself down.  Note that this may be called from
+  // the thread itself, so we shouldn't try to call join().
+  _thread_lock.lock();
+  if (_thread != nullptr) {
+    _thread_should_shutdown = true;
+    _thread_cvar.notify();
+  }
+  _thread_lock.unlock();
+#endif
+
   if (_thread_profiling) {
     // Switch the functions back to what they were.
     Thread::_sleep_func = &ThreadImpl::sleep;
@@ -296,10 +328,15 @@ new_frame(int thread_index, int frame_number) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
+  nassertv(pthread != nullptr);
 
   // If we're the main thread, we should exchange control packets with the
   // server.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  if (thread_index == 0 && _thread == nullptr) {
+#else
   if (thread_index == 0) {
+#endif
     transmit_control_data();
   }
 
@@ -378,7 +415,7 @@ new_frame(int thread_index, int frame_number) {
   _client->start(pstats_index, current_thread_index, frame_start);
 
   if (!frame_data.is_empty()) {
-    transmit_frame_data(thread_index, frame_number, frame_data);
+    enqueue_frame_data(thread_index, frame_number, std::move(frame_data));
   }
   _client->stop(pstats_index, current_thread_index, get_real_time());
 }
@@ -388,14 +425,19 @@ new_frame(int thread_index, int frame_number) {
  * data.
  */
 void PStatClientImpl::
-add_frame(int thread_index, int frame_number, const PStatFrameData &frame_data) {
+add_frame(int thread_index, int frame_number, PStatFrameData &&frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
+  nassertv(pthread != nullptr);
 
   // If we're the main thread, we should exchange control packets with the
   // server.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  if (thread_index == 0 && _thread == nullptr) {
+#else
   if (thread_index == 0) {
+#endif
     transmit_control_data();
   }
 
@@ -414,9 +456,99 @@ add_frame(int thread_index, int frame_number, const PStatFrameData &frame_data) 
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
   _client->start(pstats_index, current_thread_index);
 
-  transmit_frame_data(thread_index, frame_number, frame_data);
+  enqueue_frame_data(thread_index, frame_number, std::move(frame_data));
   _client->stop(pstats_index, current_thread_index);
 }
+
+/**
+ * Removes a thread from PStats.
+ */
+void PStatClientImpl::
+remove_thread(int thread_index) {
+  nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
+
+  PStatClientControlMessage message;
+  message._type = PStatClientControlMessage::T_expire_thread;
+  message._first_thread_index = thread_index;
+
+  Datagram datagram;
+  message.encode(datagram);
+  _writer.send(datagram, _tcp_connection, true);
+}
+
+/**
+ * Passes off the frame data to the writer thread.  If threading is disabled,
+ * transmits it right away.
+ */
+void PStatClientImpl::
+enqueue_frame_data(int thread_index, int frame_number,
+                   PStatFrameData &&frame_data) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  if (_thread != nullptr) {
+    int max_size = pstats_max_queue_size;
+    _thread_lock.lock();
+    if (max_size < 0 || _frame_queue.size() < (size_t)max_size) {
+      _frame_queue.emplace_back(thread_index, frame_number);
+      frame_data.swap(_frame_queue.back()._frame_data);
+    }
+    _thread_cvar.notify();
+    _thread_lock.unlock();
+    return;
+  }
+#endif
+
+  // We don't have a thread, so transmit it directly.
+  if (_is_connected) {
+    transmit_frame_data(thread_index, frame_number, frame_data);
+  }
+}
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+/**
+ *
+ */
+void PStatClientImpl::
+thread_main() {
+  MutexHolder holder(_thread_lock);
+  transmit_control_data();
+
+  while (!_thread_should_shutdown) {
+    while (_frame_queue.empty() && !_thread_should_shutdown) {
+      _thread_cvar.wait();
+    }
+
+    while (!_frame_queue.empty()) {
+      // Dequeue up to 8 at a time, to decrease the amount of times we need to
+      // hold the lock.
+      QueuedFrame frames[8];
+      int num_frames = 0;
+
+      while (!_frame_queue.empty() && num_frames < 8) {
+        QueuedFrame &qf = _frame_queue.front();
+        frames[num_frames]._thread_index = qf._thread_index;
+        frames[num_frames]._frame_number = qf._frame_number;
+        frames[num_frames]._frame_data.swap(qf._frame_data);
+        ++num_frames;
+        _frame_queue.pop_front();
+      }
+      _thread_lock.unlock();
+
+      transmit_control_data();
+
+      if (num_frames > 0) {
+        for (int i = 0; i < num_frames; ++i) {
+          QueuedFrame &qf = frames[i];
+          transmit_frame_data(qf._thread_index, qf._frame_number, qf._frame_data);
+        }
+      }
+
+      _thread_lock.lock();
+    }
+  }
+
+  _thread = nullptr;
+}
+#endif
 
 /**
  * Should be called once per frame per thread to transmit the latest data to
@@ -427,6 +559,8 @@ transmit_frame_data(int thread_index, int frame_number,
                     const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
   PStatClient::InternalThread *thread = _client->get_thread_ptr(thread_index);
+  nassertv(thread != nullptr);
+
   if (_is_connected && thread->_is_active) {
 
     // We don't want to send too many packets in a hurry and flood the server.
@@ -566,6 +700,7 @@ send_hello() {
   message._major_version = get_current_pstat_major_version();
   message._minor_version = get_current_pstat_minor_version();
 
+
   Datagram datagram;
   message.encode(datagram);
   _writer.send(datagram, _tcp_connection, true);
@@ -612,7 +747,11 @@ report_new_threads() {
     PStatClient::ThreadPointer *threads =
       (PStatClient::ThreadPointer *)_client->_threads;
     while (_threads_reported < _client->_num_threads) {
-      message._names.push_back(threads[_threads_reported]->_name);
+      if (threads[_threads_reported] != nullptr) {
+        message._names.push_back(threads[_threads_reported]->_name);
+      } else {
+        message._names.push_back(std::string());
+      }
       _threads_reported++;
     }
 

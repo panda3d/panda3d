@@ -38,6 +38,7 @@ public:
 
   void setup(HWND parent_window);
   void set_pos(int x, int y, int width);
+  void set_y_noupdate(int y);
 
   INLINE int get_x() const;
   INLINE int get_y() const;
@@ -50,6 +51,7 @@ public:
   void set_highlight(bool highlight);
   INLINE bool get_highlight() const;
 
+  void update_color();
   void update_text(bool use_fullname);
 
 private:
@@ -71,8 +73,8 @@ private:
   HWND _tooltip_window;
   COLORREF _fg_color;
   COLORREF _highlight_fg_color;
-  HBRUSH _bg_brush;
-  HBRUSH _highlight_bg_brush;
+  HBRUSH _bg_brush = 0;
+  HBRUSH _highlight_bg_brush = 0;
 
   int _x;
   int _y;

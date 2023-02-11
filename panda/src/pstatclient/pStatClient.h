@@ -29,6 +29,7 @@
 #include "patomic.h"
 #include "numeric_types.h"
 #include "bitArray.h"
+#include "extension.h"
 
 class PStatClientImpl;
 class PStatCollector;
@@ -88,8 +89,8 @@ PUBLISHED:
   MAKE_PROPERTY(current_thread, get_current_thread);
   MAKE_PROPERTY(real_time, get_real_time);
 
-  INLINE static bool connect(const std::string &hostname = std::string(), int port = -1);
-  INLINE static void disconnect();
+  EXTEND INLINE static bool connect(const std::string &hostname = std::string(), int port = -1);
+  EXTEND INLINE static void disconnect();
   INLINE static bool is_connected();
 
   INLINE static void resume_after_pause();
@@ -101,8 +102,8 @@ PUBLISHED:
   void client_main_tick();
   void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
-  bool client_connect(std::string hostname, int port);
-  void client_disconnect();
+  EXTEND bool client_connect(std::string hostname, int port);
+  EXTEND void client_disconnect();
   bool client_is_connected() const;
 
   void client_resume_after_pause();
@@ -150,6 +151,7 @@ private:
 
   virtual void deactivate_hook(Thread *thread);
   virtual void activate_hook(Thread *thread);
+  virtual void delete_hook(Thread *thread);
 
 private:
   // This mutex protects everything in this class.
@@ -258,6 +260,8 @@ private:
   friend class PStatThread;
   friend class PStatClientImpl;
   friend class GraphicsStateGuardian;
+
+  friend class Extension<PStatClient>;
 };
 
 #include "pStatClient.I"

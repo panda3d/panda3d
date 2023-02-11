@@ -338,9 +338,9 @@ ns_get_texture(const Filename &orig_filename,
  */
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-                bool read_mipmaps, const LoaderOptions &options) {
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
+
+  LookupKey key(Texture::TT_2d_texture, primary_file_num_channels, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -488,7 +488,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   if (use_filters) {
     tex = post_load(tex);
   }
-
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -500,15 +500,13 @@ ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
-                bool read_mipmaps, const LoaderOptions &options) {
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
-                           read_mipmaps, options);
+                           read_mipmaps, options, sampler);
   }
 
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
-  key._alpha_file_channel = alpha_file_channel;
+  LookupKey key(Texture::TT_2d_texture, primary_file_num_channels, alpha_file_channel, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -623,7 +621,7 @@ ns_load_texture(const Filename &orig_filename,
   if (use_filters) {
     tex = post_load(tex);
   }
-
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -632,12 +630,11 @@ ns_load_texture(const Filename &orig_filename,
  */
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
-                   bool read_mipmaps, const LoaderOptions &options) {
+                   bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_3d_texture;
+  LookupKey key(Texture::TT_3d_texture, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -726,6 +723,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -734,12 +732,11 @@ ns_load_3d_texture(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_2d_texture_array(const Filename &filename_pattern,
-                         bool read_mipmaps, const LoaderOptions &options) {
+                         bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_2d_texture_array;
+  LookupKey key(Texture::TT_2d_texture_array, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -828,6 +825,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -836,12 +834,11 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
-                 const LoaderOptions &options) {
+                 const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_cube_map;
+  LookupKey key(Texture::TT_cube_map, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -930,6 +927,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -949,6 +947,49 @@ ns_get_normalization_cube_map(int size) {
   }
 
   return _normalization_cube_map;
+}
+
+/**
+ * The texture is loaded, apply any atributes that were sent in with the texture through LoaderOptions
+ * and Sampler State
+ */
+void TexturePool::
+apply_texture_attributes(Texture *tex, const LoaderOptions &options, const SamplerState &sampler) {
+  int format = options.get_texture_format();
+  if (format != 0) {
+    tex->set_format((Texture::Format)format);
+  }
+  else if (options.get_texture_flags() & LoaderOptions::TF_force_srgb) {
+    int num_components = tex->get_num_components();
+    if (num_components == 1) {
+      if (!Texture::has_alpha(tex->get_format())) {
+        tex->set_format(Texture::F_sluminance);
+      }
+    }
+    else if (num_components == 2 && Texture::has_alpha(tex->get_format())) {
+      tex->set_format(Texture::F_sluminance_alpha);
+    }
+    else if (num_components == 3) {
+      tex->set_format(Texture::F_srgb);
+    }
+    else if (num_components == 4) {
+      tex->set_format(Texture::F_srgb_alpha);
+    }
+    else {
+      gobj_cat.warning()
+        << "Unable to enable sRGB format on texture " << tex->get_name()
+        << " with specified format " << tex->get_format() << "\n";
+    }
+  }
+  int compression = options.get_texture_compression();
+  if (compression != 0) {
+    tex->set_compression((Texture::CompressionMode)compression);
+  }
+  int quality = options.get_texture_quality();
+  if (quality != 0) {
+    tex->set_quality_level((Texture::QualityLevel)quality);
+  }
+  tex->set_default_sampler(sampler);
 }
 
 /**

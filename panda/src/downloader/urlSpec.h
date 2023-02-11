@@ -29,7 +29,7 @@ class EXPCL_PANDA_DOWNLOADER URLSpec {
 PUBLISHED:
   URLSpec();
   INLINE URLSpec(const std::string &url, bool server_name_expected = false);
-  URLSpec(const URLSpec &url, const Filename &path);
+  explicit URLSpec(const URLSpec &url, const Filename &path);
   INLINE void operator = (const std::string &url);
 
   INLINE bool operator == (const URLSpec &other) const;

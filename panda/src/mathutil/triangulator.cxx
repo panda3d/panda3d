@@ -125,9 +125,7 @@ triangulate() {
     permute.push_back(i + 1);
   }
 
-  // Actually, I'm not sure why we should shuffle the index.  That makes the
-  // result non-deterministic, and isn't one order--for instance, the initial
-  // order--as good as any other?
+  // Shuffling the index ensures n*logn time complexity
   /*
   Randomizer randomizer;
   for (i = 0; i < num_segments; ++i) {

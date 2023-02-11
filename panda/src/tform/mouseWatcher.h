@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool has_mouse() const;
   INLINE bool is_mouse_open() const;
-  INLINE const LPoint2 &get_mouse() const;
+  INLINE LPoint2 get_mouse() const;
   INLINE PN_stdfloat get_mouse_x() const;
   INLINE PN_stdfloat get_mouse_y() const;
 
@@ -84,6 +84,7 @@ PUBLISHED:
   MouseWatcherRegion *get_over_region(const LPoint2 &pos) const;
 
   INLINE bool is_button_down(ButtonHandle button) const;
+  INLINE bool is_raw_button_down(ButtonHandle button) const;
 
   INLINE void set_button_down_pattern(const std::string &pattern);
   INLINE const std::string &get_button_down_pattern() const;
@@ -214,6 +215,7 @@ private:
   LPoint2 _mouse;
   LPoint2 _mouse_pixel;
   BitArray _current_buttons_down;
+  BitArray _current_raw_buttons_down;
 
   LVecBase4 _frame;
 

@@ -9,7 +9,6 @@ from direct.showbase import GarbageReport
 from direct.showbase.MessengerGlobal import messenger
 from .PyDatagramIterator import PyDatagramIterator
 
-import inspect
 import gc
 
 __all__ = ["ConnectionRepository", "GCTrigger"]
@@ -121,7 +120,7 @@ class ConnectionRepository(
 
         self._serverAddress = ''
 
-        if self.config.GetBool('gc-save-all', 1):
+        if self.config.GetBool('gc-save-all', 0):
             # set gc to preserve every object involved in a cycle, even ones that
             # would normally be freed automatically during garbage collect
             # allows us to find and fix these cycles, reducing or eliminating the
@@ -311,6 +310,8 @@ class ConnectionRepository(
 
         # Now get the class definition for the classes named in the DC
         # file.
+        import inspect
+
         for i in range(dcFile.getNumClasses()):
             dclass = dcFile.getClass(i)
             number = dclass.getNumber()

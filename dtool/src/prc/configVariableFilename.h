@@ -26,7 +26,7 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableFilename(const std::string &name);
+  INLINE explicit ConfigVariableFilename(const std::string &name);
   INLINE ConfigVariableFilename(const std::string &name, const Filename &default_value,
                                 const std::string &description = std::string(), int flags = 0);
 
@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE void set_word(size_t n, const Filename &value);
 
   INLINE bool __bool__() const;
+  INLINE std::wstring __fspath__() const;
 
 private:
   void reload_cache();

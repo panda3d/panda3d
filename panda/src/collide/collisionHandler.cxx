@@ -16,14 +16,6 @@
 TypeHandle CollisionHandler::_type_handle;
 
 /**
- *
- */
-CollisionHandler::
-CollisionHandler() {
-  _wants_all_potential_collidees = false;
-}
-
-/**
  * Will be called by the CollisionTraverser before a new traversal is begun.
  * It instructs the handler to reset itself in preparation for a number of
  * CollisionEntries to be sent.

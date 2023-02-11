@@ -21,7 +21,7 @@ set(P3DTOOLBASE_HEADERS
   atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I
   cmath.I cmath.h
   deletedBufferChain.h deletedBufferChain.I
-  deletedChain.h deletedChain.T
+  deletedChain.h deletedChain.I
   dtoolbase.h dtoolbase_cc.h dtoolsymbols.h
   dtool_platform.h
   fakestringstream.h
@@ -94,12 +94,16 @@ add_component_library(p3dtoolbase NOINIT SYMBOL BUILDING_DTOOL_DTOOLBASE
 target_include_directories(p3dtoolbase PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${PANDA_OUTPUT_DIR}/include>)
-target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS PKG::MIMALLOC)
+target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
-if(HAVE_MIMALLOC AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
-  # Do not re-export symbols from these libraries.
-  target_link_options(p3dtoolbase PRIVATE "LINKER:--exclude-libs,libmimalloc.a")
+if(HAVE_MIMALLOC AND USE_MEMORY_MIMALLOC)
+  target_link_libraries(p3dtoolbase PKG::MIMALLOC)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # Do not re-export symbols from these libraries.
+    target_link_options(p3dtoolbase PRIVATE "LINKER:--exclude-libs,libmimalloc.a")
+  endif()
 endif()
 
 if(NOT BUILD_METALIBS)

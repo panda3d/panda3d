@@ -38,7 +38,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    MovieAudio::init_type();
     register_type(_type_handle, "FfmpegAudio",
                   MovieAudio::get_class_type());
   }

@@ -320,7 +320,6 @@ Section "Tools and utilities" SecTools
 
     SetOutPath "$INSTDIR\bin"
     File /r /x deploy-stub.exe /x deploy-stubw.exe "${BUILT}\bin\*.exe"
-    File /nonfatal /r "${BUILT}\bin\*.p3d"
     SetOutPath "$INSTDIR\NSIS"
     File /r /x CVS "${NSISDIR}\*"
 
@@ -343,6 +342,13 @@ Section "Tools and utilities" SecTools
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell" "" "open"
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract" "" "Extract here"
     WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract\command" "" '"$INSTDIR\bin\multify.exe" -xf "%1"'
+
+    IfFileExists "$INSTDIR\bin\pstats.exe" 0 SkipPStatsFileAssociation
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession" "" "PStats Session"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon" "" "%SystemRoot%\system32\imageres.dll,144"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.PStatsSession\shell\open\command" "" '"$INSTDIR\bin\pstats.exe" "%1"'
+    SkipPStatsFileAssociation:
 SectionEnd
 
 SectionGroup "Python modules" SecGroupPython
@@ -375,6 +381,7 @@ SectionGroup "Python modules" SecGroupPython
         !insertmacro PyBindingSection 3.9-32 .cp39-win32.pyd
         !insertmacro PyBindingSection 3.10-32 .cp310-win32.pyd
         !insertmacro PyBindingSection 3.11-32 .cp311-win32.pyd
+        !insertmacro PyBindingSection 3.12-32 .cp312-win32.pyd
     !else
         !insertmacro PyBindingSection 3.5 .cp35-win_amd64.pyd
         !insertmacro PyBindingSection 3.6 .cp36-win_amd64.pyd
@@ -383,6 +390,7 @@ SectionGroup "Python modules" SecGroupPython
         !insertmacro PyBindingSection 3.9 .cp39-win_amd64.pyd
         !insertmacro PyBindingSection 3.10 .cp310-win_amd64.pyd
         !insertmacro PyBindingSection 3.11 .cp311-win_amd64.pyd
+        !insertmacro PyBindingSection 3.12 .cp312-win_amd64.pyd
     !endif
 SectionGroupEnd
 
@@ -492,6 +500,7 @@ Function .onInit
         !insertmacro MaybeEnablePyBindingSection 3.9-32
         !insertmacro MaybeEnablePyBindingSection 3.10-32
         !insertmacro MaybeEnablePyBindingSection 3.11-32
+        !insertmacro MaybeEnablePyBindingSection 3.12-32
         ${EndIf}
     !else
         !insertmacro MaybeEnablePyBindingSection 3.5
@@ -502,6 +511,7 @@ Function .onInit
         !insertmacro MaybeEnablePyBindingSection 3.9
         !insertmacro MaybeEnablePyBindingSection 3.10
         !insertmacro MaybeEnablePyBindingSection 3.11
+        !insertmacro MaybeEnablePyBindingSection 3.12
         ${EndIf}
     !endif
 
@@ -518,6 +528,10 @@ Function .onInit
     !ifdef SecPyBindings3.11
         SectionSetFlags ${SecPyBindings3.11} ${SF_RO}
         SectionSetInstTypes ${SecPyBindings3.11} 0
+    !endif
+    !ifdef SecPyBindings3.12
+        SectionSetFlags ${SecPyBindings3.12} ${SF_RO}
+        SectionSetInstTypes ${SecPyBindings3.12} 0
     !endif
     ${EndUnless}
 FunctionEnd
@@ -632,6 +646,9 @@ Section "Sample programs" SecSamples
     WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}"
     WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}/python/more-resources/samples/index"
     SetOutPath $INSTDIR
+    IfFileExists "$INSTDIR\bin\pstats.exe" 0 SkipPStatsShortcut
+    CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Stats Monitor.lnk" "$INSTDIR\bin\pstats.exe" "" "%SystemRoot%\system32\imageres.dll" 144 "" "" "Panda3D Stats Monitor"
+    SkipPStatsShortcut:
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Manual"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Website"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Sample Program Manual"
@@ -732,13 +749,7 @@ Section -post
     DetailPrint "Registering file type associations..."
     SetDetailsPrint listonly
 
-    ; Even though we need the runtime to run these, we might as well tell
-    ; Windows what this kind of file is.
-    WriteRegStr HKCU "Software\Classes\.p3d" "" "Panda3D applet"
-    WriteRegStr HKCU "Software\Classes\.p3d" "Content Type" "application/x-panda3d"
-    WriteRegStr HKCU "Software\Classes\.p3d" "PerceivedType" "application"
-
-    ; Register various model files
+    ; Register various file extensions
     WriteRegStr HKCU "Software\Classes\.egg" "" "Panda3D.Model"
     WriteRegStr HKCU "Software\Classes\.egg" "Content Type" "application/x-egg"
     WriteRegStr HKCU "Software\Classes\.egg" "PerceivedType" "gamemedia"
@@ -752,6 +763,9 @@ Section -post
     WriteRegStr HKCU "Software\Classes\.prc" "" "inifile"
     WriteRegStr HKCU "Software\Classes\.prc" "Content Type" "text/plain"
     WriteRegStr HKCU "Software\Classes\.prc" "PerceivedType" "text"
+    WriteRegStr HKCU "Software\Classes\.pstats" "" "Panda3D.PStatsSession"
+    WriteRegStr HKCU "Software\Classes\.pstats" "Content Type" "application/vnd.panda3d.pstats"
+    WriteRegStr HKCU "Software\Classes\.pstats" "PerceivedType" "application"
 
     ; For convenience, if nobody registered .pyd, we will.
     ReadRegStr $0 HKCR "Software\Classes\.pyd" ""
@@ -812,6 +826,11 @@ Section Uninstall
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon"
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\shell"
 
+    ReadRegStr $0 HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon" ""
+    StrCmp $0 "$INSTDIR\bin\pstats.exe" 0 +3
+    DeleteRegKey HKCU "Software\Classes\Panda3D.PStatsSession\DefaultIcon"
+    DeleteRegKey HKCU "Software\Classes\Panda3D.PStatsSession\shell"
+
     !ifdef INCLUDE_PYVER
         ReadRegStr $0 HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" 0 +2
@@ -831,6 +850,7 @@ Section Uninstall
         !insertmacro RemovePythonPath 3.9-32
         !insertmacro RemovePythonPath 3.10-32
         !insertmacro RemovePythonPath 3.11-32
+        !insertmacro RemovePythonPath 3.12-32
     !else
         !insertmacro RemovePythonPath 3.5
         !insertmacro RemovePythonPath 3.6
@@ -839,6 +859,7 @@ Section Uninstall
         !insertmacro RemovePythonPath 3.9
         !insertmacro RemovePythonPath 3.10
         !insertmacro RemovePythonPath 3.11
+        !insertmacro RemovePythonPath 3.12
     !endif
 
     SetDetailsPrint both
@@ -908,6 +929,7 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9-32} $(DESC_SecPyBindings3.9-32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.10-32} $(DESC_SecPyBindings3.10-32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.11-32} $(DESC_SecPyBindings3.11-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.12-32} $(DESC_SecPyBindings3.12-32)
   !else
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.5} $(DESC_SecPyBindings3.5)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.6} $(DESC_SecPyBindings3.6)
@@ -916,6 +938,7 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9} $(DESC_SecPyBindings3.9)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.10} $(DESC_SecPyBindings3.10)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.11} $(DESC_SecPyBindings3.11)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.12} $(DESC_SecPyBindings3.12)
   !endif
   !ifdef INCLUDE_PYVER
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)

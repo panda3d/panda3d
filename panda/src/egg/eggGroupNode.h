@@ -108,8 +108,8 @@ PUBLISHED:
   EggNode *get_first_child();
   EggNode *get_next_child();
 
-  EXTENSION(PyObject *get_children() const);
-  MAKE_PROPERTY(children, get_children);
+  PY_EXTENSION(PyObject *get_children() const);
+  PY_MAKE_PROPERTY(children, get_children);
 
   EggNode *add_child(EggNode *node);
   PT(EggNode) remove_child(EggNode *node);

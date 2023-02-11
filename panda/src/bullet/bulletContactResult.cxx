@@ -21,9 +21,13 @@ BulletContact BulletContactResult::_empty;
  */
 BulletContact::
 BulletContact() : _mp(_empty) {
+}
 
-  _node0 = nullptr;
-  _node1 = nullptr;
+/**
+ *
+ */
+BulletContact::
+BulletContact(btManifoldPoint &mp) : _mp(mp) {
 }
 
 /**
@@ -93,9 +97,7 @@ addSingleResult(btManifoldPoint &mp,
   const btCollisionObject *obj0 = wrap0->getCollisionObject();
   const btCollisionObject *obj1 = wrap1->getCollisionObject();
 
-  BulletContact contact;
-
-  contact._mp = BulletManifoldPoint(mp);
+  BulletContact contact(mp);
   contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : nullptr;
   contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : nullptr;
   contact._part_id0 = part_id0;
@@ -116,9 +118,7 @@ addSingleResult(btManifoldPoint &mp,
                 const btCollisionObject *obj0, int part_id0, int idx0,
                 const btCollisionObject *obj1, int part_id1, int idx1) {
 
-  BulletContact contact;
-
-  contact._mp = BulletManifoldPoint(mp);
+  BulletContact contact(mp);
   contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : nullptr;
   contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : nullptr;
   contact._part_id0 = part_id0;

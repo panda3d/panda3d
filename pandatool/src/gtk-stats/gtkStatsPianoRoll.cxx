@@ -64,7 +64,8 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   // window's initial size.
   gtk_widget_set_size_request(_window, 0, 0);
 
-  clear_region();
+  force_redraw();
+  idle();
 }
 
 /**
@@ -170,6 +171,35 @@ on_popup_label(int collector_index) {
                      (void *)menu_def);
   }
 
+  {
+    GtkWidget *menu_item = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+  }
+
+  {
+    const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+      -1, collector_index, GtkStatsMonitor::CT_choose_color,
+    });
+
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    g_signal_connect(G_OBJECT(menu_item), "activate",
+                     G_CALLBACK(GtkStatsMonitor::menu_activate),
+                     (void *)menu_def);
+  }
+
+  {
+    const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+      -1, collector_index, GtkStatsMonitor::CT_reset_color,
+    });
+
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    g_signal_connect(G_OBJECT(menu_item), "activate",
+                     G_CALLBACK(GtkStatsMonitor::menu_activate),
+                     (void *)menu_def);
+  }
+
   gtk_widget_show_all(menu);
   gtk_menu_popup_at_pointer(GTK_MENU(menu), nullptr);
 }
@@ -261,6 +291,25 @@ idle() {
   if (_labels_changed) {
     update_labels();
   }
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+bool GtkStatsPianoRoll::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  GtkStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void GtkStatsPianoRoll::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  GtkStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
 }
 
 /**

@@ -175,7 +175,7 @@ inline void PSSMCameraRig::reset_film_size_cache() {
  * @param index Index of the camera.
  * @return [description]
  */
-inline NodePath PSSMCameraRig::get_camera(size_t index) {
+inline NodePath PSSMCameraRig::get_camera(size_t index) const {
   nassertr(index >= 0 && index < _cam_nodes.size(), NodePath());
   return _cam_nodes[index];
 }
@@ -193,7 +193,7 @@ inline NodePath PSSMCameraRig::get_camera(size_t index) {
  * @param split_index The index of the split
  * @return Distance of the split, ranging from 0 .. 1
  */
-inline float PSSMCameraRig::get_split_start(size_t split_index) {
+inline float PSSMCameraRig::get_split_start(size_t split_index) const {
   float x = (float)split_index / (float)_cam_nodes.size();
   return (exp(_logarithmic_factor*x)-1) / (exp(_logarithmic_factor)-1);
 }
@@ -209,7 +209,7 @@ inline float PSSMCameraRig::get_split_start(size_t split_index) {
  *
  * @return interpolated point in world space
  */
-inline LPoint3 PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float depth) {
+inline LPoint3 PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, float depth) const {
   nassertr(depth >= 0.0 && depth <= 1.0, LPoint3());
   return _curr_near_points[origin] * (1.0 - depth) + _curr_far_points[origin] * depth;
 }
@@ -222,7 +222,7 @@ inline LPoint3 PSSMCameraRig::get_interpolated_point(CoordinateOrigin origin, fl
  *
  * @return view-projection matrix array
  */
-inline const PTA_LMatrix4 &PSSMCameraRig::get_mvp_array() {
+inline const PTA_LMatrix4 &PSSMCameraRig::get_mvp_array() const {
   return _camera_mvps;
 }
 
@@ -238,6 +238,6 @@ inline const PTA_LMatrix4 &PSSMCameraRig::get_mvp_array() {
  *
  * @return Array of near and far planes
  */
-inline const PTA_LVecBase2 &PSSMCameraRig::get_nearfar_array() {
+inline const PTA_LVecBase2 &PSSMCameraRig::get_nearfar_array() const {
   return _camera_nearfar;
 }

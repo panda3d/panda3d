@@ -121,9 +121,7 @@
   NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
   BOOL inside = [self mouse:loc inRect:[self bounds]];
 
-  // the correlation between mouse deltas and location are "debounced"
-  // apparently, so send deltas for both relative and confined modes
-  if (_graphicsWindow->get_properties().get_mouse_mode() != WindowProperties::M_absolute) {
+  if (_graphicsWindow->get_properties().get_mouse_mode() == WindowProperties::M_relative) {
     _graphicsWindow->handle_mouse_moved_event(inside, [event deltaX], [event deltaY], false);
   } else {
     _graphicsWindow->handle_mouse_moved_event(inside, loc.x, loc.y, true);

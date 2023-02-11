@@ -25,6 +25,7 @@
 #include "fogAttrib.h"
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "renderModeAttrib.h"
 #include "bamCache.h"
 
 using std::dec;
@@ -2078,6 +2079,14 @@ set_state_and_transform(const RenderState *target_rs,
         target_rs->get_attrib(TextureAttrib::get_class_slot())) {
       altered |= Shader::SSD_texture;
     }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
+    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+      altered |= Shader::SSD_render_mode;
+    }
     _state_rs = target_rs;
   }
 
@@ -2515,9 +2524,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
 
           ++p;
           client_pointer += element_stride;

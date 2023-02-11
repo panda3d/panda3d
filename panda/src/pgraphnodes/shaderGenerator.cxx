@@ -38,6 +38,7 @@
 #include "texture.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
+#include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
 #include "pointLight.h"
 #include "sphereLight.h"
@@ -74,11 +75,31 @@ static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
 
 /**
  * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The given parameters contain information about the
+ * capabilities of the target for which the shader will be compiled.
+ */
+ShaderGenerator::
+ShaderGenerator(const Shader::ShaderCaps &caps, bool use_shadow_filter) :
+  _use_shadow_filter(use_shadow_filter) {
+
+#ifdef _WIN32
+  // Check matches all OpenGL profiles
+  _use_generic_attr = (caps._active_vprofile <= 6151 || caps._active_vprofile >= 7000);
+#else
+  _use_generic_attr = true;
+#endif
+
+  // Matches gp5fp and glslf profiles
+  _use_pointcoord = (caps._active_fprofile == 7017 || caps._active_fprofile == 7008);
+}
+
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
  * certain results.  The parameter that must be passed is the GSG to which the
  * shader generator belongs.
  */
 ShaderGenerator::
-ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
+ShaderGenerator(const GraphicsStateGuardianBase *gsg) : _use_pointcoord(false) {
   // The ATTR# input semantics seem to map to generic vertex attributes in
   // both arbvp1 and glslv, which behave more consistently.  However, they
   // don't exist in Direct3D 9.  Use this silly little check for now.
@@ -567,6 +588,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   if (rs->get_attrib(fog) && !fog->is_off()) {
     key._fog_mode = (int)fog->get_fog()->get_mode() + 1;
   }
+
+  // Hijack this field for the perspective render-mode flag.
+  const RenderModeAttrib *render_mode;
+  if (rs->get_attrib(render_mode) && render_mode->get_perspective()) {
+    key._fog_mode |= 0x10000;
+  }
 }
 
 /**
@@ -710,6 +737,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   const char *eye_position_freg = nullptr;
   const char *eye_normal_freg = nullptr;
   const char *hpos_freg = nullptr;
+  const char *pointcoord_freg = nullptr;
 
   const char *position_vreg;
   const char *transform_weight_vreg = nullptr;
@@ -754,6 +782,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   bool need_eye_position = key._lighting;
   bool need_eye_normal = !key._lights.empty() || ((key._outputs & AuxBitplaneAttrib::ABO_aux_normal) != 0);
   bool need_tangents = ((key._texture_flags & ShaderKey::TF_map_normal) != 0);
+  bool need_point_size = (key._fog_mode & 0x10000) != 0;
+  bool need_point_coord = false;
 
   // If we have binormal/tangent and eye position, we can pack eye normal in
   // the w channels of the others.
@@ -781,22 +811,36 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
+  bool need_eye_reflection = false;
+  bool need_fragment_view_to_world = false;
+
   text << "void vshader(\n";
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
 
     switch (tex._gen_mode) {
-    case TexGenAttrib::M_world_position:
-      need_world_position = true;
+    case TexGenAttrib::M_world_cube_map:
+      need_fragment_view_to_world = true;
+    case TexGenAttrib::M_eye_sphere_map:
+    case TexGenAttrib::M_eye_cube_map:
+      need_eye_position = true;
+      need_eye_normal = true;
+      need_eye_reflection = true;
       break;
     case TexGenAttrib::M_world_normal:
       need_world_normal = true;
       break;
+    case TexGenAttrib::M_eye_normal:
+      need_eye_normal = true;
+      break;
+    case TexGenAttrib::M_world_position:
+      need_world_position = true;
+      break;
     case TexGenAttrib::M_eye_position:
       need_eye_position = true;
       break;
-    case TexGenAttrib::M_eye_normal:
-      need_eye_normal = true;
+    case TexGenAttrib::M_point_sprite:
+      need_point_coord = true;
       break;
     default:
       break;
@@ -866,7 +910,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
-  } else if (need_tangents) {
+  }
+  else if (need_tangents || need_point_size) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
   }
   if (need_eye_normal) {
@@ -883,7 +928,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
   }
@@ -923,6 +968,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t in uint4 vtx_transform_index : " << transform_index_vreg << ",\n";
     }
   }
+  if (need_point_size) {
+    text << "\t uniform float3 attr_pointparams,\n";
+    text << "\t out float l_point_size : PSIZE,\n";
+  }
+  if (need_point_coord && !_use_pointcoord) {
+    if (!need_point_size) {
+      text << "\t uniform float3 attr_pointparams,\n";
+    }
+    pointcoord_freg = alloc_freg();
+    text << "\t out float3 l_pointcoord : " << pointcoord_freg << ",\n";
+  }
   text << "\t in float4 vtx_position : " << position_vreg << ",\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
@@ -954,7 +1010,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     text << "\t l_hpos = l_position;\n";
   }
   if (need_world_position) {
@@ -966,6 +1022,21 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_position) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
+  else if (need_point_size) {
+    text << "\t float4 l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+  }
+  if (need_point_size) {
+    text << "\t l_point_size = attr_pointparams.y + attr_pointparams.z / length(l_eye_position.xyz);\n";
+  }
+  if (need_point_coord && !_use_pointcoord) {
+    if (need_point_size) {
+      text << "\t l_pointcoord = float3(l_position.xy / (2.0f * l_position.w) + float2(0.5f, 0.5f), 1.0f / l_point_size);\n";
+    } else {
+      // Static point size (non-perspective points)
+      text << "\t l_pointcoord = float3(l_position.xy / (2.0f * l_position.w) + float2(0.5f, 0.5f), 1.0f / attr_pointparams.x);\n";
+    }
+  }
+
   pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
     // Pass through all texcoord inputs as-is.
@@ -1011,10 +1082,21 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // Fragment shader
 
   text << "void fshader(\n";
-  if (key._fog_mode != 0) {
+  if ((key._fog_mode & 0xffff) != 0) {
     text << "\t in float4 l_hpos : " << hpos_freg << ",\n";
     text << "\t in uniform float4 attr_fog,\n";
     text << "\t in uniform float4 attr_fogcolor,\n";
+  }
+  if (need_point_coord) {
+    if (_use_pointcoord) {
+      // In OpenGL, we have point coordinates available in glslf and gp5fp.
+      text << "\t in float2 l_pointcoord : POINTCOORD,\n";
+    } else {
+      // In DirectX 9, we need to calculate them from the fragment coordinates.
+      text << "\t in float3 l_pointcoord : " << pointcoord_freg << ",\n";
+      text << "\t in float2 l_fragcoord : WPOS,\n";
+      text << "\t in uniform float2 sys_windowsize,\n";
+    }
   }
   if (need_world_position) {
     text << "\t in float4 l_world_position : " << world_position_freg << ",\n";
@@ -1049,6 +1131,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (tex._flags & ShaderKey::TF_uses_color) {
       text << "\t uniform float4 texcolor_" << i << ",\n";
     }
+
+    if (tex._gen_mode == TexGenAttrib::M_constant) {
+      text << "\t uniform float4 texconst_" << i << ",\n";
+    }
+  }
+  if (need_fragment_view_to_world) {
+    text << "\t uniform float3x3 trans_view_to_world,\n";
   }
   if (need_tangents) {
     text << "\t in float4 l_tangent : " << tangent_freg << ",\n";
@@ -1119,6 +1208,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_normal && pack_eye_normal) {
     text << "\t float3 l_eye_normal = float3(l_tangent.w, l_binormal.w, l_eye_position.w);\n";
   }
+  if (need_eye_normal) {
+    text << "\t // Correct the surface normal for interpolation effects\n";
+    text << "\t l_eye_normal = normalize(l_eye_normal);\n";
+  }
+  if (need_eye_reflection ||
+      (need_eye_position && have_specular && (key._material_flags & Material::F_local) != 0 && !key._lights.empty())) {
+    text << "\t float3 norm_eye_position = normalize(l_eye_position.xyz);\n";
+  }
+  if (need_eye_reflection) {
+    text << "\t float3 eye_reflection = norm_eye_position - l_eye_normal * 2 * dot(l_eye_normal, norm_eye_position);\n";
+  }
 
   text << "\t float4 result;\n";
   if (key._outputs & (AuxBitplaneAttrib::ABO_aux_normal | AuxBitplaneAttrib::ABO_aux_glow)) {
@@ -1137,17 +1237,39 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       // Cg seems to be able to optimize this temporary away when appropriate.
       text << "\t float4 texcoord" << i << " = l_" << tex._texcoord_name->join("_") << ";\n";
       break;
-    case TexGenAttrib::M_world_position:
-      text << "\t float4 texcoord" << i << " = l_world_position;\n";
+    case TexGenAttrib::M_eye_sphere_map:
+      text << "\t float4 texcoord" << i << " = float4(eye_reflection.xz * (1.0f / (2.0f * length(eye_reflection + float3(0, -1, 0)))) + float2(0.5f, 0.5f), 0.0f, 1.0f);\n";
+      break;
+    case TexGenAttrib::M_world_cube_map:
+      text << "\t float4 texcoord" << i << " = float4(mul(trans_view_to_world, eye_reflection), 1.0f);\n";
+      break;
+    case TexGenAttrib::M_eye_cube_map:
+      text << "\t float4 texcoord" << i << " = float4(eye_reflection, 1.0f);\n";
       break;
     case TexGenAttrib::M_world_normal:
       text << "\t float4 texcoord" << i << " = l_world_normal;\n";
       break;
+    case TexGenAttrib::M_eye_normal:
+      text << "\t float4 texcoord" << i << " = float4(l_eye_normal, 1.0f);\n";
+      break;
+    case TexGenAttrib::M_world_position:
+      text << "\t float4 texcoord" << i << " = l_world_position;\n";
+      break;
     case TexGenAttrib::M_eye_position:
       text << "\t float4 texcoord" << i << " = float4(l_eye_position.xyz, 1.0f);\n";
       break;
-    case TexGenAttrib::M_eye_normal:
-      text << "\t float4 texcoord" << i << " = float4(l_eye_normal, 1.0f);\n";
+    case TexGenAttrib::M_point_sprite:
+      if (_use_pointcoord) {
+        text << "\t float4 texcoord" << i << " = float4(l_pointcoord, 0.0f, 1.0f);\n";
+      } else {
+        if (!_use_generic_attr) {
+          text << "\t l_fragcoord.y = sys_windowsize.y - l_fragcoord.y;\n";
+        }
+        text << "\t float4 texcoord" << i << " = float4((l_fragcoord - l_pointcoord.xy * sys_windowsize) * l_pointcoord.z * float2(1.0f, -1.0f) - float2(0.5f, 0.5f), 0.0f, 1.0f);\n";
+      }
+      break;
+    case TexGenAttrib::M_constant:
+      text << "\t float4 texcoord" << i << " = texconst_" << i << ";\n";
       break;
     default:
       text << "\t float4 texcoord" << i << " = float4(0, 0, 0, 0);\n";
@@ -1171,15 +1293,20 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex._type);
     text << "(tex_" << i << ", texcoord" << i << ".";
     switch (tex._type) {
+    case Texture::TT_cube_map_array:
+      text << "xyzw";
+      break;
     case Texture::TT_cube_map:
     case Texture::TT_3d_texture:
     case Texture::TT_2d_texture_array:
       text << "xyz";
       break;
     case Texture::TT_2d_texture:
+    case Texture::TT_1d_texture_array:
       text << "xy";
       break;
     case Texture::TT_1d_texture:
+    case Texture::TT_buffer_texture:
       text << "x";
       break;
     default:
@@ -1218,17 +1345,27 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t texcoord" << i << ".xyz -= parallax_offset;\n";
       }
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex._type);
+      if (tex._type == Texture::TT_2d_texture) {
+        text << "proj";
+      }
       text << "(tex_" << i << ", texcoord" << i << ".";
       switch (tex._type) {
+      case Texture::TT_cube_map_array:
+        text << "xyzw";
+        break;
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
         text << "xyz";
         break;
       case Texture::TT_2d_texture:
+        text << "xyw";
+        break;
+      case Texture::TT_1d_texture_array:
         text << "xy";
         break;
       case Texture::TT_1d_texture:
+      case Texture::TT_buffer_texture:
         text << "x";
         break;
       default:
@@ -1236,10 +1373,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << ");\n";
     }
-  }
-  if (need_eye_normal) {
-    text << "\t // Correct the surface normal for interpolation effects\n";
-    text << "\t l_eye_normal = normalize(l_eye_normal);\n";
   }
   if (need_tangents) {
     text << "\t // Translate tangent-space normal in map to view-space.\n";
@@ -1335,7 +1468,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
         }
@@ -1370,7 +1503,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
         }
@@ -1410,7 +1543,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
         if (key._material_flags & Material::F_local) {
-          text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
+          text << "\t lhalf = normalize(lvec - norm_eye_position);\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0,1,0));\n";
         }
@@ -1680,8 +1813,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   // Apply fog.
-  if (key._fog_mode != 0) {
-    Fog::Mode fog_mode = (Fog::Mode)(key._fog_mode - 1);
+  if ((key._fog_mode & 0xffff) != 0) {
+    Fog::Mode fog_mode = (Fog::Mode)((key._fog_mode & 0xffff) - 1);
     switch (fog_mode) {
     case Fog::M_linear:
       text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate((attr_fog.z - l_hpos.z) * attr_fog.w));\n";
@@ -1725,6 +1858,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   if (flags != 0) {
     shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
+  }
+  if (need_point_size) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_shader_point_size, true);
   }
 
   reset_register_allocator();
@@ -1853,24 +1989,33 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
 const char *ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {
-    case Texture::TT_1d_texture:
-      return "1D";
-      break;
-    case Texture::TT_2d_texture:
-      return "2D";
-      break;
-    case Texture::TT_3d_texture:
-      return "3D";
-      break;
-    case Texture::TT_cube_map:
-      return "CUBE";
-      break;
-    case Texture::TT_2d_texture_array:
-      return "2DARRAY";
-      break;
-    default:
-      pgraphnodes_cat.error() << "Unsupported texture type!\n";
-      return "2D";
+  case Texture::TT_1d_texture:
+    return "1D";
+
+  case Texture::TT_2d_texture:
+    return "2D";
+
+  case Texture::TT_3d_texture:
+    return "3D";
+
+  case Texture::TT_2d_texture_array:
+    return "2DARRAY";
+
+  case Texture::TT_cube_map:
+    return "CUBE";
+
+  case Texture::TT_buffer_texture:
+    return "BUF";
+
+  case Texture::TT_cube_map_array:
+    return "CUBEARRAY";
+
+  case Texture::TT_1d_texture_array:
+    return "1DARRAY";
+
+  default:
+    pgraphnodes_cat.error() << "Unsupported texture type!\n";
+    return "2D";
   }
 }
 

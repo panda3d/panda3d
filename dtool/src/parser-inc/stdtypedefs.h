@@ -47,8 +47,4 @@ namespace std {
   typedef decltype(nullptr) nullptr_t;
 }
 
-// One day, we might extend interrogate to be able to parse this,
-// but we currently don't need it.
-#define alignas(x)
-
 #endif

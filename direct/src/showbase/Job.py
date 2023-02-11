@@ -35,7 +35,7 @@ class Job(DirectObject):
         self._priority = Job.Priorities.Normal
         self._finished = False
         if __debug__:
-            self._pstats = PStatCollector("App:Show code:jobManager:%s" % self._name)
+            self._pstats = PStatCollector("App:Tasks:jobManager:%s" % self._name)
 
     def destroy(self):
         del self._name

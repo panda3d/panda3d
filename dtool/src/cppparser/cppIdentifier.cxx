@@ -87,6 +87,14 @@ add_name(const CPPNameComponent &name) {
 /**
  *
  */
+void CPPIdentifier::
+prepend(CPPIdentifier *ident) {
+  _names.insert(_names.begin(), ident->_names.begin(), ident->_names.end());
+}
+
+/**
+ *
+ */
 bool CPPIdentifier::
 operator == (const CPPIdentifier &other) const {
   if (_names.size() != other._names.size()) {

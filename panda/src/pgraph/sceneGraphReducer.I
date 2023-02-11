@@ -176,5 +176,6 @@ premunge(PandaNode *root, const RenderState *initial_state) {
   if (_gsg != nullptr) {
     PStatTimer timer(_premunge_collector);
     r_premunge(root, initial_state);
+    _transformer.finish_apply();
   }
 }

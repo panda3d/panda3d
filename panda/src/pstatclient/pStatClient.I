@@ -95,6 +95,8 @@ is_connected() {
  * Resumes the PStatClient after the simulation has been paused for a while.
  * This allows the stats to continue exactly where it left off, instead of
  * leaving a big gap that would represent a chug.
+ *
+ * @deprecated Do not use this, it creates inaccurate timing information.
  */
 INLINE void PStatClient::
 resume_after_pause() {

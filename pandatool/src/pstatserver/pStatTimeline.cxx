@@ -39,10 +39,18 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
   if (client_data != nullptr) {
     size_t row_offset = 0;
 
+    // Ignore this nasty "inverted" collector, which messes up everything.
+    _app_collector_index = client_data->find_collector("App:Show code:General");
+
     for (int thread_index = 0; thread_index < client_data->get_num_threads(); ++thread_index) {
       _threads.emplace_back();
       ThreadRow &thread_row = _threads.back();
       thread_row._row_offset = row_offset;
+
+      if (!client_data->has_thread(thread_index)) {
+        continue;
+      }
+      thread_row._visible = true;
 
       const PStatThreadData *thread_data = client_data->get_thread_data(thread_index);
       if (thread_data != nullptr) {
@@ -62,10 +70,12 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
           else {
             _lowest_start_time = std::min(_lowest_start_time, oldest_start_time);
           }
-          _highest_end_time = std::max(_highest_end_time, latest_end_time);
+          _highest_end_time = std::max(_highest_end_time, latest_end_time + _clock_skew);
 
           for (int frame = oldest_frame; frame <= latest_frame; ++frame) {
-            update_bars(thread_index, frame);
+            if (thread_data->has_frame(frame)) {
+              update_bars(thread_index, frame);
+            }
           }
         }
       }
@@ -76,6 +86,8 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
 
   _start_time = _lowest_start_time;
   _target_start_time = _start_time;
+
+  monitor->_timelines.insert(this);
 }
 
 /**
@@ -83,6 +95,7 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
  */
 PStatTimeline::
 ~PStatTimeline() {
+  _monitor->_timelines.erase(this);
 }
 
 /**
@@ -99,10 +112,14 @@ new_data(int thread_index, int frame_number) {
     const PStatThreadData *thread_data =
       client_data->get_thread_data(thread_index);
 
-    if (thread_data != nullptr && !thread_data->is_empty()) {
+    if (thread_data != nullptr && thread_data->has_frame(frame_number)) {
       const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
-      double frame_start = frame_data.get_start();
-      double frame_end = frame_data.get_end();
+      double frame_start = frame_data.get_start() + _clock_skew;
+      double frame_end = frame_data.get_end() + _clock_skew;
+
+      if (thread_index == 0 && _app_collector_index == -1) {
+        _app_collector_index = client_data->find_collector("App:Show code:General");
+      }
 
       if (!_have_start_time) {
         _start_time = frame_start;
@@ -116,15 +133,18 @@ new_data(int thread_index, int frame_number) {
         _highest_end_time = frame_end;
       }
 
-      while (thread_index >= _threads.size()) {
+      while (thread_index >= (int)_threads.size()) {
         _threads_changed = true;
         if (_threads.size() == 0) {
           _threads.resize(1);
         } else {
           _threads.resize(_threads.size() + 1);
           _threads[_threads.size() - 1]._row_offset =
-            _threads[_threads.size() - 2]._row_offset +
-            _threads[_threads.size() - 2]._rows.size() + 1;
+            _threads[_threads.size() - 2]._row_offset;
+          if (_threads[_threads.size() - 2]._visible) {
+            _threads[_threads.size() - 1]._row_offset +=
+              _threads[_threads.size() - 2]._rows.size() + 1;
+          }
         }
       }
 
@@ -135,7 +155,9 @@ new_data(int thread_index, int frame_number) {
         size_t offset = thread_row._row_offset + thread_row._rows.size() + 1;
         for (size_t ti = (size_t)(thread_index + 1); ti < _threads.size(); ++ti) {
           _threads[ti]._row_offset = offset;
-          offset += _threads[ti]._rows.size() + 1;
+          if (_threads[ti]._visible) {
+            offset += _threads[ti]._rows.size() + 1;
+          }
         }
         _threads_changed = true;
         normal_guide_bars();
@@ -167,73 +189,205 @@ update_bars(int thread_index, int frame_number) {
   thread_row._label = client_data->get_thread_name(thread_index);
   bool changed_num_rows = false;
 
+  if (!thread_row._visible) {
+    thread_row._visible = true;
+    changed_num_rows = true;
+  }
+
   // pair<int collector_index, double start_time>
   pvector<std::pair<int, double> > stack;
+
+  double frame_start = frame_data.get_start() + _clock_skew;
+  double prev = frame_start;
+
+  // There may still be open collectors from the previous frame.  Rebuild the
+  // stack based on that so we can close them properly.
+  for (size_t i = 0; i < thread_row._rows.size(); ++i) {
+    Row &row = thread_row._rows[i];
+
+    // Keep iterating from the back until we get to the previous frame.
+    for (size_t j = 0; j < row.size(); ++j) {
+      ColorBar &bar = row[row.size() - j - 1];
+      if (bar._frame_number < frame_number) {
+        // Was this collector left unstopped at the end of the last frame?
+        if (bar._open_end && bar._frame_number == frame_number - 1) {
+          if (i >= stack.size()) {
+            stack.resize(i + 1, std::make_pair(-1, 0.0));
+          }
+          stack[i] = std::make_pair(bar._collector_index, bar._start);
+
+          // Remove this bar for now, we'll recreate it when we close it.
+          row.erase(row.begin() + (row.size() - j - 1));
+        }
+        break;
+      }
+    }
+  }
 
   size_t num_events = frame_data.get_num_events();
   for (size_t i = 0; i < num_events; ++i) {
     int collector_index = frame_data.get_time_collector(i);
-    double time = frame_data.get_time(i);
+    double time = frame_data.get_time(i) + _clock_skew;
 
-    if (frame_data.is_start(i)) {
-      stack.push_back(std::make_pair(collector_index, std::max(time, _start_time)));
-      if (stack.size() > thread_row._rows.size()) {
-        thread_row._rows.resize(stack.size());
-        changed_num_rows = true;
-      }
-    }
-    else if (!stack.empty()) {
-      if (stack.back().first == collector_index) {
-        // Most likely case, ending the most recent collector that is still
-        // open.
-        double start_time = stack.back().second;
-        stack.pop_back();
-        thread_row._rows[stack.size()].push_back({
-          start_time, time, collector_index, thread_index, frame_number});
+    if (time < prev) {
+      // Apparently, it is too hard to ask for monotonically increasing time
+      // values!  Don't be tempted to sort the values, or think this is a bug,
+      // the client can arbitrarily move back the clock if it feels like it!
+      // I had some fancy mechanism that handled clock skew properly for
+      // multiple out-of-order frames, but I gave up when I realised it's not
+      // possible to solve this problem for multiple threads, so we just assume
+      // this is done just once at startup before the other threads exist.
+      double delta = prev - time;
+      _clock_skew += delta;
+      _highest_end_time += delta;
+      time = prev;
+      nout << "Correcting for clock skew of "
+           << format_number(delta, GBU_show_units | GBU_ms)
+           << " in frame " << frame_number << " of thread "
+           << thread_index << "\n";
 
-        while (!stack.empty() && stack.back().first < 0) {
-          stack.pop_back();
-        }
-      }
-      else {
-        // Unlikely case: ending a collector before a "child" has ended.
-        // Go back and clear the row where this collector started.
-        // Don't decrement the row index.
-        for (size_t i = 0; i < stack.size(); ++i) {
-          auto &item = stack[stack.size() - 1 - i];
-
-          if (item.first == collector_index) {
-            thread_row._rows[stack.size() - 1 - i].push_back({
-              item.second, time, collector_index, thread_index, frame_number});
-            item.first = -1;
-            break;
+      // Move all bars after this frame to the right by this amount.
+      for (ThreadRow &thread_row : _threads) {
+        for (Row &row : thread_row._rows) {
+          for (ColorBar &bar : row) {
+            if (bar._frame_number > frame_number) {
+              bar._start += delta;
+              bar._end += delta;
+            }
           }
         }
       }
     }
+    prev = time;
+
+    if (collector_index == _app_collector_index) {
+      continue;
+    }
+
+    if (frame_data.is_start(i)) {
+      if (collector_index == 0 && !stack.empty()) {
+        // Collector 0 always goes at the top, no matter what.
+        stack[0].first = 0;
+        stack[0].second = std::max(time, _start_time);
+      } else {
+        stack.push_back(std::make_pair(collector_index, std::max(time, _start_time)));
+        if (stack.size() > thread_row._rows.size()) {
+          thread_row._rows.resize(stack.size());
+          changed_num_rows = true;
+        }
+      }
+    }
+    else if (!stack.empty() && stack.back().first == collector_index) {
+      // Most likely case, ending the most recent collector that is still open.
+      double start_time = stack.back().second;
+      stack.pop_back();
+      thread_row._rows[stack.size()].push_back({
+        start_time, time, collector_index, thread_index, frame_number, false, false});
+
+      // Pop off stack levels for prematurely ended collectors (see below).
+      while (!stack.empty() && stack.back().first < 0) {
+        stack.pop_back();
+      }
+    }
     else {
-      // Somehow, we got an end event for a collector we didn't start.
-      // This shouldn't really happen, so we just ignore it.
+      // Unlikely case: ending a collector before a "child" has ended.
+      // Go back and clear the row where this collector started.
+      // Don't decrement the row index.
+      size_t i;
+      for (i = 0; i < stack.size(); ++i) {
+        auto &item = stack[stack.size() - 1 - i];
+
+        if (item.first == collector_index) {
+          thread_row._rows[stack.size() - 1 - i].push_back({
+            item.second, time, collector_index, thread_index, frame_number, false, false});
+          item.first = -1;
+          break;
+        }
+      }
+      if (i == stack.size()) {
+        // We stopped a collector that wasn't started at all.  That means it
+        // must have already been running when this frame started, which we
+        // normally handle by pre-populating the stack with the open collectors
+        // from last frame, but maybe we didn't get the last frame (yet).
+        // Unfortunately we need to add it above any bars we've already started
+        // and stopped, which means we need to shift everything down belonging
+        // to this frame, except for the top-level Frame collector.  This is
+        // probably pretty inefficient, but it should be pretty rare for frames
+        // to arrive out-of-order in this manner.
+        nassertd(!stack.empty()) continue;
+        stack.insert(stack.begin() + 1, std::make_pair(-1, 0.0));
+
+        const size_t num_rows = thread_row._rows.size();
+        for (size_t j = num_rows - 1; j >= 1; --j) {
+          size_t row_size = thread_row._rows[j].size();
+          for (size_t k = row_size; k > 0; --k) {
+            Row &row = thread_row._rows[j];
+            ColorBar bar = row[k - 1];
+            if (bar._frame_number == frame_number) {
+              row.erase(row.begin() + (k - 1));
+              if (j + 1 >= thread_row._rows.size()) {
+                thread_row._rows.resize(j + 2);
+                changed_num_rows = true;
+              }
+
+              // Insert it into the row below while retaining sorting.
+              Row &row2 = thread_row._rows[j + 1];
+              row2.insert(std::upper_bound(row2.begin(), row2.end(), bar), bar);
+            }
+            else if (bar._frame_number < frame_number) {
+              break;
+            }
+          }
+        }
+
+        // Now insert the bar, just below Frame level.
+        if (thread_row._rows.size() < 2) {
+          thread_row._rows.resize(2);
+          changed_num_rows = true;
+        }
+        thread_row._rows[1].push_back({
+          frame_start, time, collector_index, thread_index,
+          frame_number, true, false});
+      }
     }
   }
 
-  // Add all unclosed bars.
+  // Add all unclosed bars, marking them as open-ended, for later gluing.
   while (!stack.empty()) {
     int collector_index = stack.back().first;
     if (collector_index >= 0) {
       double start_time = stack.back().second;
       thread_row._rows[stack.size() - 1].push_back({
-        start_time, frame_data.get_end(),
-        collector_index, thread_index, frame_number,
+        start_time, frame_data.get_end() + _clock_skew,
+        collector_index, thread_index, frame_number, false, true,
       });
     }
     stack.pop_back();
   }
 
   if (thread_row._last_frame >= 0 && frame_number < thread_row._last_frame) {
-    // Added a frame out of order.  Resort the rows.
+    // Added a frame out of order.
     for (Row &row : thread_row._rows) {
+      // Sort by end time.
       std::sort(row.begin(), row.end());
+
+      // Glue together open ends and beginnings that match up.
+      size_t end = row.size() - 1;
+      for (size_t i = 0; i < end;) {
+        ColorBar &left = row[i];
+        ColorBar &right = row[i + 1];
+        if (left._collector_index == right._collector_index &&
+            left._frame_number + 1 == right._frame_number &&
+            left._open_end && right._open_begin) {
+          // Erase the left one, to maintain the sorting by end time.
+          right._open_begin = false;
+          right._start = left._start;
+          row.erase(row.begin() + i);
+          --end;
+        } else {
+          ++i;
+        }
+      }
     }
   } else {
     thread_row._last_frame = frame_number;
@@ -254,11 +408,51 @@ get_bar_tooltip(int row, int x) const {
     if (client_data != nullptr && client_data->has_collector(bar._collector_index)) {
       std::ostringstream text;
       text << client_data->get_collector_fullname(bar._collector_index);
-      text << " (" << format_number(bar._end - bar._start, GBU_show_units | GBU_ms) << ")";
+      text << " (";
+      if (bar._open_begin || bar._open_end) {
+        text << "at least ";
+      }
+      text << format_number(bar._end - bar._start, GBU_show_units | GBU_ms) << ")";
       return text.str();
     }
   }
   return std::string();
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatTimeline::
+write_datagram(Datagram &dg) const {
+  dg.add_float64(_time_scale);
+  dg.add_float64(_start_time);
+  dg.add_float64(_lowest_start_time);
+  dg.add_float64(_highest_end_time);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatTimeline::
+read_datagram(DatagramIterator &scan) {
+  _time_scale = scan.get_float64();
+  _start_time = scan.get_float64();
+  _lowest_start_time = scan.get_float64();
+  _highest_end_time = scan.get_float64();
+
+  _scroll_speed = 0.0;
+  _zoom_speed = 0.0;
+
+  _have_start_time = true;
+  _target_start_time = _start_time;
+  _target_time_scale = _time_scale;
+
+  PStatGraph::read_datagram(scan);
+
+  normal_guide_bars();
+  force_redraw();
 }
 
 /**
@@ -301,11 +495,13 @@ force_redraw() {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     ThreadRow &thread_row = _threads[ti];
-    for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
-      draw_row((int)ti, (int)ri, start_time, end_time);
-      ++num_rows;
+    if (thread_row._visible) {
+      for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
+        draw_row((int)ti, (int)ri, start_time, end_time);
+        ++num_rows;
+      }
+      draw_separator(num_rows++);
     }
-    draw_separator(num_rows++);
   }
 
   end_draw();
@@ -324,12 +520,12 @@ force_redraw(int row, int from_x, int to_x) {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     ThreadRow &thread_row = _threads[ti];
-    if (thread_row._row_offset > row) {
+    if (!thread_row._visible || (int)thread_row._row_offset > row) {
       break;
     }
 
     int row_index = row - (int)thread_row._row_offset;
-    if (row_index < thread_row._rows.size()) {
+    if (row_index < (int)thread_row._rows.size()) {
       draw_row((int)ti, row_index, start_time, end_time);
     }
   }
@@ -374,6 +570,8 @@ normal_guide_bars() {
 
     while (it != row.end() && it->_start <= end_time) {
       double frame_start = it->_start;
+      double frame_end = it->_end;
+      int frame_number = it->_frame_number;
 
       if (frame_start > start_time) {
         if (!_guide_bars.empty() && height_to_pixel(frame_start - _guide_bars.back()._height) < 30) {
@@ -381,7 +579,7 @@ normal_guide_bars() {
           _guide_bars.back()._label.clear();
         }
         std::string label = "#";
-        label += format_string(it->_frame_number);
+        label += format_string(frame_number);
         _guide_bars.push_back(GuideBar(frame_start, label, GBS_frame));
 
         if (++num_frames > max_frames) {
@@ -400,7 +598,7 @@ normal_guide_bars() {
       if (it != row.end()) {
         // Only go up to the start of the next frame, limiting to however much
         // fits in the graph.
-        frame_width = std::min(it->_start - frame_start, end_time - frame_start);
+        frame_width = std::min(frame_end - frame_start, end_time - frame_start);
       } else {
         // Reached the end; just continue to the end of the graph.
         frame_width = end_time - frame_start;
@@ -416,6 +614,19 @@ normal_guide_bars() {
           label += format_number(offset, GBU_show_units | GBU_ms);
           _guide_bars.push_back(GuideBar(frame_start + offset, label, GBS_normal));
         }
+      }
+
+      // If there's a gap between frames, add another line.
+      if (it->_start > frame_end && it->_frame_number > frame_number + 1) {
+        std::string label;
+        if (it->_start - frame_end >= interval) {
+          label = "#" + format_string(frame_number + 1);
+          if (it->_frame_number > frame_number + 2) {
+            label += "-" + format_string(it->_frame_number - 1);
+          }
+          label += " (dropped)";
+        }
+        _guide_bars.push_back(GuideBar(frame_end, label, GBS_frame));
       }
     }
   }
@@ -460,8 +671,10 @@ draw_thread(int thread_index, double start_time, double end_time) {
   }
 
   ThreadRow &thread_row = _threads[(size_t)thread_index];
-  for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
-    draw_row(thread_index, (int)ri, start_time, end_time);
+  if (thread_row._visible) {
+    for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
+      draw_row(thread_index, (int)ri, start_time, end_time);
+    }
   }
 }
 
@@ -491,9 +704,17 @@ draw_row(int thread_index, int row_index, double start_time, double end_time) {
 
     if (to_x >= 0 && to_x > from_x && from_x < get_xsize()) {
       if (bar._collector_index != 0) {
-        draw_bar(thread_row._row_offset + row_index, from_x, to_x,
-                 bar._collector_index,
-                 client_data->get_collector_name(bar._collector_index));
+        const PStatCollectorDef &def = client_data->get_collector_def(bar._collector_index);
+        if (to_x - from_x >= 32 && def._parent_index > 0) {
+          // Try including the parent name.
+          const PStatCollectorDef &parent_def = client_data->get_collector_def(def._parent_index);
+          std::string long_name = parent_def._name + ":" + def._name;
+          draw_bar(thread_row._row_offset + row_index, from_x, to_x,
+                   bar._collector_index, long_name);
+        } else {
+          draw_bar(thread_row._row_offset + row_index, from_x, to_x,
+                   bar._collector_index, def._name);
+        }
       } else {
         draw_bar(thread_row._row_offset + row_index, from_x, to_x,
                  bar._collector_index,
@@ -644,12 +865,12 @@ find_bar(int row, int x, ColorBar &bar) const {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     const ThreadRow &thread_row = _threads[ti];
-    if (thread_row._row_offset > row) {
+    if ((int)thread_row._row_offset > row) {
       break;
     }
 
     int row_index = row - (int)thread_row._row_offset;
-    if (row_index < thread_row._rows.size()) {
+    if (row_index < (int)thread_row._rows.size()) {
       // Find the first element whose end time is larger than the given time.
       const Row &bars = thread_row._rows[row_index];
       Row::const_iterator it = std::lower_bound(bars.begin(), bars.end(), ColorBar {time, time});

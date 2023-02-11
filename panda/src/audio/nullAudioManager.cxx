@@ -16,11 +16,6 @@
 
 TypeHandle NullAudioManager::_type_handle;
 
-// namespace { static const string blank=""; static PN_stdfloat
-// no_listener_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f,
-// 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f}; }
-
-
 /**
  *
  */
@@ -179,7 +174,7 @@ stop_all_sounds() {
  */
 void NullAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
-    // intentionally blank.
+  // intentionally blank.
 }
 
 /**
@@ -187,7 +182,7 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
  */
 void NullAudioManager::
 audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
-    // intentionally blank.
+  // intentionally blank.
 }
 
 /**
@@ -195,7 +190,7 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
  */
 void NullAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
-    // intentionally blank.
+  // intentionally blank.
 }
 
 /**
@@ -203,8 +198,8 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
  */
 PN_stdfloat NullAudioManager::
 audio_3d_get_distance_factor() const {
-    // intentionally blank.
-    return 0.0f;
+  // intentionally blank.
+  return 0.0f;
 }
 
 /**
@@ -212,7 +207,7 @@ audio_3d_get_distance_factor() const {
  */
 void NullAudioManager::
 audio_3d_set_doppler_factor(PN_stdfloat factor) {
-    // intentionally blank.
+  // intentionally blank.
 }
 
 /**
@@ -220,8 +215,8 @@ audio_3d_set_doppler_factor(PN_stdfloat factor) {
  */
 PN_stdfloat NullAudioManager::
 audio_3d_get_doppler_factor() const {
-    // intentionally blank.
-    return 0.0f;
+  // intentionally blank.
+  return 0.0f;
 }
 
 /**
@@ -229,7 +224,7 @@ audio_3d_get_doppler_factor() const {
  */
 void NullAudioManager::
 audio_3d_set_drop_off_factor(PN_stdfloat factor) {
-    // intentionally blank.
+  // intentionally blank.
 }
 
 /**
@@ -237,6 +232,6 @@ audio_3d_set_drop_off_factor(PN_stdfloat factor) {
  */
 PN_stdfloat NullAudioManager::
 audio_3d_get_drop_off_factor() const {
-    // intentionally blank.
-    return 0.0f;
+  // intentionally blank.
+  return 0.0f;
 }

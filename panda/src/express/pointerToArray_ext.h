@@ -14,7 +14,7 @@
 #ifndef POINTERTOARRAY_EXT_H
 #define POINTERTOARRAY_EXT_H
 
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) && defined(HAVE_PYTHON)
 
 #include "extension.h"
 #include "py_panda.h"
@@ -44,6 +44,8 @@ public:
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+
+  INLINE PointerToArray<Element> __deepcopy__(PyObject *memo) const;
 };
 
 template<>
@@ -81,6 +83,8 @@ public:
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+
+  INLINE ConstPointerToArray<Element> __deepcopy__(PyObject *memo) const;
 };
 
 template<>
@@ -162,6 +166,6 @@ define_format_code("4i", UnalignedLVecBase4i);
 
 #include "pointerToArray_ext.I"
 
-#endif  // CPPPARSER
+#endif  // !CPPPARSER && HAVE_PYTHON
 
-#endif  // HAVE_POINTERTOARRAY_EXT_H
+#endif  // !HAVE_POINTERTOARRAY_EXT_H

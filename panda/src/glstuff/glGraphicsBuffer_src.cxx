@@ -786,6 +786,13 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
       }
 
+      if (slot != RTP_depth_stencil && _rb[RTP_depth_stencil] != 0) {
+        // We have a depth-stencil renderbuffer bound, delete it first.
+        // This will automatically unbind it as well.
+        glgsg->_glDeleteRenderbuffers(1, &(_rb[RTP_depth_stencil]));
+        _rb[RTP_depth_stencil] = 0;
+      }
+
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
 #ifndef OPENGLES
@@ -1998,16 +2005,7 @@ resolve_multisamples() {
     }
   }
 
-  if (do_depth_blit) {
-    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
-                              GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
-                              GL_NEAREST);
-  } else {
-    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
-                              GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
-  }
-  // Now handle the other color buffers.
+  // First handle the auxiliary buffers.
 #ifndef OPENGLES
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
@@ -2039,11 +2037,9 @@ resolve_multisamples() {
     next += 1;
   }
 #endif
-  report_my_gl_errors();
 
-  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
-  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
-
+  // Now blit the normal color target, plus any depth/stencil.
+  // We do this last because we want to leave attachment 0 bound at the end.
 #ifndef OPENGLES
   if (_have_any_color) {
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
@@ -2053,5 +2049,20 @@ resolve_multisamples() {
     glReadBuffer(GL_NONE);
   }
 #endif
+
+  if (do_depth_blit) {
+    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                              GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
+                              GL_NEAREST);
+  }
+  else if (_have_any_color) {
+    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                              GL_COLOR_BUFFER_BIT,
+                              GL_NEAREST);
+  }
+
+  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
+  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
+
   report_my_gl_errors();
 }
