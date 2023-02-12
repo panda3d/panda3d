@@ -39,11 +39,11 @@ pm_message(const char *format, ...) {
 #else
   vsnprintf(buffer, buffer_size, format, ap);
 #endif
+  va_end(ap);
+
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.info() << buffer << "\n";
-
-  va_end(ap);
 }
 
 /**
@@ -63,11 +63,11 @@ pm_error(const char *format, ...) {
 #else
   vsnprintf(buffer, buffer_size, format, ap);
 #endif
+  va_end(ap);
+
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.error() << buffer << "\n";
-
-  va_end(ap);
 
   // Now we're supposed to exit.  Inconvenient if we were running Panda
   // interactively, but that's the way it is.

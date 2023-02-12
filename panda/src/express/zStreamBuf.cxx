@@ -263,9 +263,9 @@ sync() {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n, Z_SYNC_FLUSH);
     pbump(-(int)n);
+    _dest->flush();
   }
 
-  _dest->flush();
   return 0;
 }
 
