@@ -5,7 +5,9 @@ Defines AnimMgrBase
 import os
 import math
 
-from direct.interval.IntervalGlobal import *
+from direct.interval.ActorInterval import ActorInterval
+from direct.interval.LerpInterval import LerpFunc, LerpPosHprInterval
+from direct.interval.MetaInterval import Parallel, Sequence
 from panda3d.core import VBase3
 from . import ObjectGlobals as OG
 from . import AnimGlobals as AG

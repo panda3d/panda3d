@@ -14,10 +14,29 @@ Or, you can enable the following variable in your Config.prc::
 
 __all__ = ['BufferViewer']
 
-from panda3d.core import *
+from panda3d.core import (
+    CardMaker,
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    ConfigVariableString,
+    Geom,
+    GeomNode,
+    GeomTriangles,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    GraphicsEngine,
+    GraphicsOutput,
+    NodePath,
+    Point3,
+    SamplerState,
+    Texture,
+    Vec3,
+    Vec3F,
+)
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 import math
 

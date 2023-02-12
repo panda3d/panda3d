@@ -6,11 +6,12 @@ import os
 import time
 import copy
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableString, Filename, Mat4, NodePath
 from direct.actor.Actor import Actor
+from direct.showbase.PythonUtil import Functor
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from .ActionMgr import *
+from .ActionMgr import ActionTransformObj, ActionUpdateObjectProp
 from . import ObjectGlobals as OG
 
 

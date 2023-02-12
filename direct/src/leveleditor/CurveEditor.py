@@ -2,12 +2,10 @@
 This is the module for curve edit
 """
 
-from panda3d.core import *
-from direct.wxwidgets.WxPandaShell import *
-from direct.showbase.DirectObject import *
+from panda3d.core import BitMask32, Mat4, NodePath
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectSelection import SelectionRay
 from direct.showutil.Rope import Rope
-from .ActionMgr import *
 from direct.task import Task
 
 

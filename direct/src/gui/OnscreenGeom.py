@@ -2,7 +2,7 @@
 
 __all__ = ['OnscreenGeom']
 
-from panda3d.core import *
+from panda3d.core import NodePath, VBase3
 from direct.showbase.DirectObject import DirectObject
 
 

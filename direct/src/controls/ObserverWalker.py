@@ -16,7 +16,13 @@ although it does send messages that allow a listener to play sounds or
 animations based on walker events.
 """
 
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionSphere,
+    CollisionTraverser,
+)
 from direct.directnotify import DirectNotifyGlobal
 from . import NonPhysicsWalker
 

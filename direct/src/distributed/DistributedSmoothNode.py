@@ -1,8 +1,9 @@
 """DistributedSmoothNode module: contains the DistributedSmoothNode class"""
 
-from panda3d.core import *
-from panda3d.direct import *
-from .ClockDelta import *
+import math
+from panda3d.core import ClockObject, ConfigVariableBool, ConfigVariableDouble, NodePath
+from panda3d.direct import SmoothMover
+from .ClockDelta import globalClockDelta
 from . import DistributedNode
 from . import DistributedSmoothNodeBase
 from direct.task.Task import cont

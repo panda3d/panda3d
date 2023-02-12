@@ -1,8 +1,20 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.MessengerGlobal import messenger
-from direct.directtools.DirectGeometry import *
+from direct.directtools.DirectUtil import CLAMP
+from direct.task.TaskManagerGlobal import taskMgr
 
-from panda3d.core import NodePath, LineSegs, ClockObject
+from panda3d.core import (
+    PCTHPR,
+    PCTNONE,
+    PCTT,
+    PCTXYZ,
+    ClockObject,
+    LineSegs,
+    NodePath,
+    ParametricCurve,
+    Point3,
+    Vec3,
+)
 
 
 class Mopath(DirectObject):

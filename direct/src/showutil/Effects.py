@@ -1,7 +1,12 @@
 """ Showutil Effects module: contains code for useful showcode effects. """
 
-from panda3d.core import *
-from direct.interval.IntervalGlobal import *
+from panda3d.core import Vec3
+from direct.interval.IntervalGlobal import (
+    LerpHprInterval,
+    LerpPosInterval,
+    LerpScaleInterval,
+    Sequence,
+)
 
 # bounce types
 SX_BOUNCE = 0

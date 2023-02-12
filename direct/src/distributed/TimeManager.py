@@ -1,5 +1,4 @@
-from panda3d.core import *
-from direct.showbase.DirectObject import *
+from panda3d.core import ClockObject, ConfigVariableDouble, ConfigVariableInt
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.distributed import DistributedObject

@@ -6,7 +6,7 @@ this class.
 
 __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
-from panda3d.core import *
+from panda3d.core import LColor, Mat4, NodePath, Point3, TextNode, TextProperties, Vec3
 from . import DirectGuiGlobals as DGG
 import warnings
 

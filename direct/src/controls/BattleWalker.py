@@ -2,7 +2,7 @@
 from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
-from panda3d.core import *
+from panda3d.core import ClockObject, Mat3, Point3, Vec3
 from . import GravityWalker
 
 BattleStrafe = 0

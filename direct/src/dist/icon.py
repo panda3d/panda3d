@@ -1,4 +1,4 @@
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from panda3d.core import PNMImage, Filename, PNMFileTypeRegistry, StringStream
 import struct
 

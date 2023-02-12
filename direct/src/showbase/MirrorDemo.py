@@ -21,7 +21,19 @@ reflections, you will need to use a sphere map or a cube map."""
 
 __all__ = ['setupMirror', 'showFrustum']
 
-from panda3d.core import *
+from panda3d.core import (
+    Camera,
+    CardMaker,
+    CullFaceAttrib,
+    GeomNode,
+    Lens,
+    NodePath,
+    PerspectiveLens,
+    Plane,
+    PlaneNode,
+    Point3,
+    Vec3,
+)
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 

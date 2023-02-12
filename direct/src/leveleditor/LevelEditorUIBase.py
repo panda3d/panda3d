@@ -1,22 +1,24 @@
-## import wx
-## import os
+import wx
+import os
 ## from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.wxwidgets.WxPandaShell import *
+from panda3d.core import BitMask32, Mat4, NodePath, Vec3
+from direct.wxwidgets.WxPandaShell import WxPandaShell
+from direct.wxwidgets.WxSlider import WxSlider
 from direct.directtools.DirectSelection import SelectionRay
 
 #from ViewPort import *
-from .ObjectPaletteUI import *
-from .ObjectPropertyUI import *
-from .SceneGraphUI import *
-from .LayerEditorUI import *
-from .HotKeyUI import *
-from .ProtoPaletteUI import *
-from .ActionMgr import *
-from .AnimControlUI import *
-from .CurveAnimUI import *
-from .GraphEditorUI import *
+from . import ObjectGlobals as OG
+from .ObjectPaletteUI import ObjectPaletteUI
+from .ObjectPropertyUI import ObjectPropertyUI
+from .SceneGraphUI import SceneGraphUI
+from .LayerEditorUI import LayerEditorUI
+from .HotKeyUI import HotKeyUI
+from .ProtoPaletteUI import ProtoPaletteUI
+from .ActionMgr import ActionAddNewObj, ActionTransformObj
+from .AnimControlUI import AnimControlUI
+from .CurveAnimUI import CurveAnimUI
+from .GraphEditorUI import GraphEditorUI
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor, view):

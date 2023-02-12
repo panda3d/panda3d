@@ -7,16 +7,22 @@ zone, remove interest in that zone.
 p.s. A great deal of this code is just code moved from ClientRepository.py.
 """
 
-from panda3d.core import *
-from panda3d.direct import *
-from .MsgTypes import *
-from direct.showbase.PythonUtil import *
+from panda3d.core import ConfigVariableBool
+from .MsgTypes import CLIENT_ADD_INTEREST, CLIENT_ADD_INTEREST_MULTIPLE, CLIENT_REMOVE_INTEREST
 from direct.showbase import DirectObject
 from direct.showbase.MessengerGlobal import messenger
 from .PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import types
-from direct.showbase.PythonUtil import report
+from direct.showbase.PythonUtil import (
+    FrameDelayedCall,
+    ScratchPad,
+    SerialNumGen,
+    report,
+    serialNum,
+    uniqueElements,
+    uniqueName,
+)
 
 class InterestState:
     StateActive = 'Active'

@@ -87,14 +87,21 @@ Code overview:
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
-from panda3d.core import *
+from panda3d.core import (
+    ConfigVariableBool,
+    KeyboardButton,
+    MouseWatcherRegion,
+    NodePath,
+    PGFrameStyle,
+    PGItem,
+    Point3,
+    Texture,
+    Vec3,
+)
 from direct.showbase import ShowBaseGlobal
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
-from .OnscreenText import *
-from .OnscreenGeom import *
-from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task

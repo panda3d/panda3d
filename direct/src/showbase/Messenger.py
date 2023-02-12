@@ -6,7 +6,7 @@ __all__ = ['Messenger']
 
 from direct.stdpy.threading import Lock
 from direct.directnotify import DirectNotifyGlobal
-from .PythonUtil import *
+from .PythonUtil import safeRepr
 import types
 
 
