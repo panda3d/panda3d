@@ -112,7 +112,7 @@ protected:
 
   bool do_has_task(AsyncTask *task) const;
 
-  virtual void do_output(std::ostream &out) const;
+  void do_output(std::ostream &out) const;
 
 private:
   static void make_global_ptr();

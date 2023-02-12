@@ -495,7 +495,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
 
-    size_t pn = _first_true_parameter;
+    size_t pn;
     size_t num_parameters = pexprs.size();
 
     for (pn = _first_true_parameter;

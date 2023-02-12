@@ -16,6 +16,7 @@ from panda3d.core import (
     ModelPool,
     NodePath,
     PandaNode,
+    SamplerState,
     ShaderPool,
     StaticTextFont,
     TexturePool,

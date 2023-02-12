@@ -52,7 +52,7 @@ set_3d_direction(LVector3 d) {
 LVector3 AudioSound::
 get_3d_direction() const {
   // Intentionally blank.
-  return ( 0.0f, 0.0f, 0.0f );
+  return { 0.0f, 0.0f, 0.0f };
 }
 
 void AudioSound::

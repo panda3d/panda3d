@@ -21,7 +21,7 @@ OdeWorld::
 OdeWorld() :
   _id(dWorldCreate()) {
   if (odeworld_cat.is_debug()) {
-    odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
+    odeworld_cat.debug() << "OdeWorld(" << _id << ")" << "\n";
   }
   _num_surfaces = 0;
 
@@ -37,7 +37,7 @@ OdeWorld(const OdeWorld &copy) :
 OdeWorld::
 ~OdeWorld() {
   if (odeworld_cat.is_debug()) {
-    odeworld_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
+    odeworld_cat.debug() << "~OdeWorld(" << _id << ")" << "\n";
   }
 }
 

@@ -115,7 +115,7 @@ PUBLISHED:
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
-  virtual void set_active(bool active);
+  virtual void set_active(bool active) final;
   virtual void set_focus(bool focus);
 
   INLINE static std::string get_accept_prefix();

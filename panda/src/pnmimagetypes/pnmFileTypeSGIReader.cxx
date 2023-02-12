@@ -386,10 +386,10 @@ rle_decompress(ScanElem *src,
         --srcleft;
         count = (int)(el & 0x7f);
 
-        if( count == 0 )
-            return;
         if( destleft < count )
             pm_error("RLE error: too much input data (space left %d, need %d)", destleft, count);
+        if( count == 0 )
+            return;
         destleft -= count;
         if( el & 0x80 ) {
             if( srcleft < count )

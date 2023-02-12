@@ -497,7 +497,7 @@ correct_calibrated_clock(double rtc, double t) {
     }
     set_calibrated_clock(rtc, cc, scale);
   }
-  cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
+  //cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
 }
 
 /**
