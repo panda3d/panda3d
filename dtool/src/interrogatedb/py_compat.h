@@ -127,8 +127,10 @@ typedef long Py_hash_t;
 
 #if PY_MAJOR_VERSION >= 3
 // Python 3 versions before 3.3.3 defined this incorrectly.
-#  undef _PyErr_OCCURRED
-#  define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
+#  if PY_VERSION_HEX < 0x03030300
+#    undef _PyErr_OCCURRED
+#    define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
+#  endif
 
 // Python versions before 3.3 did not define this.
 #  if PY_VERSION_HEX < 0x03030000
