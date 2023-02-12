@@ -41,7 +41,7 @@
 
 #endif // WIN_PIPE_CALLS
 
-class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf : public std::streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf final : public std::streambuf {
 public:
   enum Direction { Input, Output };
 

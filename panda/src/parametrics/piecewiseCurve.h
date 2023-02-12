@@ -81,7 +81,7 @@ protected:
     Curveseg(ParametricCurve *c, PN_stdfloat t) : _curve(c), _tend(t) {}
 
     PT(ParametricCurve) _curve;
-    PN_stdfloat _tend;
+    PN_stdfloat _tend = 0.0f;
   };
 
   pvector<Curveseg> _segs;

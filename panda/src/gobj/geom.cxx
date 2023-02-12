@@ -1350,8 +1350,6 @@ get_next_modified() {
  */
 void Geom::
 compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
-  int num_vertices = 0;
-
   // Get the vertex data, after animation.
   CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
@@ -1451,16 +1449,8 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
     case BoundingVolume::BT_box:
       cdata->_internal_bounds = new BoundingBox(pmin, pmax);
     }
-
-    Primitives::const_iterator pi;
-    for (pi = cdata->_primitives.begin();
-         pi != cdata->_primitives.end();
-         ++pi) {
-      CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
-      num_vertices += prim->get_num_vertices();
-    }
-
-  } else {
+  }
+  else {
     // No points; empty bounding volume.
     if (btype == BoundingVolume::BT_sphere) {
       cdata->_internal_bounds = new BoundingSphere;

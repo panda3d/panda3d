@@ -203,8 +203,6 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
     // Scan along the row at 'y'.
     x = 0;
     while (x + x_size <= _size[0]) {
-      int next_x = x;
-
       // Consider the spot at x, y.
       DynamicTextGlyph *overlap = find_overlap(x, y, x_size, y_size);
 
@@ -213,7 +211,7 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
         return true;
       }
 
-      next_x = overlap->_x + overlap->_x_size;
+      int next_x = overlap->_x + overlap->_x_size;
       next_y = std::min(next_y, overlap->_y + overlap->_y_size);
       nassertr(next_x > x, false);
       x = next_x;

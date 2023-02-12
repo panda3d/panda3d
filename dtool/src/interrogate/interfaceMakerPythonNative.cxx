@@ -1664,11 +1664,6 @@ write_module_class(ostream &out, Object *obj) {
   std::string cClassName =  obj->_itype.get_true_name();
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
 
-  bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
-  if (!is_runtime_typed && has_get_class_type_function(obj->_itype._cpptype)) {
-    is_runtime_typed = true;
-  }
-
   out << "/**\n";
   out << " * Python method tables for " << ClassName << " (" << export_class_name << ")\n" ;
   out << " */\n";
@@ -5109,9 +5104,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       }
 
       CPPEnumType *enum_type = (CPPEnumType *)TypeManager::unwrap(type);
-      CPPType *underlying_type = enum_type->get_underlying_type();
-      underlying_type = TypeManager::unwrap_const(underlying_type);
-
+      //CPPType *underlying_type = enum_type->get_underlying_type();
+      //underlying_type = TypeManager::unwrap_const(underlying_type);
       //indent(out, indent_level);
       //underlying_type->output_instance(out, param_name + "_val", &parser);
       //out << default_expr << ";\n";
