@@ -1,6 +1,13 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    CollisionHandlerEvent,
+    CollisionNode,
+    CollisionSphere,
+    CollisionTraverser,
+    NodePath,
+)
 from .PhasedObject import PhasedObject
 
 

@@ -41,6 +41,31 @@ get_hash() const {
 }
 
 /**
+ * Constructs an identity transform.
+ */
+INLINE CPT(TransformState) TransformState::
+make_identity() {
+  if (UNLIKELY(_states_lock == nullptr)) {
+    init_states();
+  }
+
+  return _identity_state;
+}
+
+/**
+ * Constructs an invalid transform; for instance, the result of inverting a
+ * singular matrix.
+ */
+INLINE CPT(TransformState) TransformState::
+make_invalid() {
+  if (UNLIKELY(_states_lock == nullptr)) {
+    init_states();
+  }
+
+  return _invalid_state;
+}
+
+/**
  * Makes a new TransformState with the specified components.
  */
 INLINE CPT(TransformState) TransformState::
@@ -77,6 +102,15 @@ INLINE CPT(TransformState) TransformState::
 make_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
   return make_pos_hpr_scale(pos, hpr,
                             LVecBase3(1.0, 1.0f, 1.0f));
+}
+
+/**
+ * Makes a new TransformState with the specified components.
+ */
+INLINE CPT(TransformState) TransformState::
+make_pos_quat(const LVecBase3 &pos, const LQuaternion &quat) {
+  return make_pos_quat_scale(pos, quat,
+                             LVecBase3(1.0, 1.0f, 1.0f));
 }
 
 /**
@@ -195,7 +229,7 @@ make_pos_rotate_scale2d(const LVecBase2 &pos, PN_stdfloat rotate,
  */
 INLINE bool TransformState::
 is_identity() const {
-  return ((_flags & F_is_identity) != 0);
+  return this == _identity_state;
 }
 
 /**
@@ -205,7 +239,7 @@ is_identity() const {
  */
 INLINE bool TransformState::
 is_invalid() const {
-  return ((_flags & F_is_invalid) != 0);
+  return this == _invalid_state;
 }
 
 /**
@@ -461,6 +495,20 @@ get_mat() const {
   nassertr(has_mat(), LMatrix4::ident_mat());
   check_mat();
   return _mat;
+}
+
+/**
+ * Returns the inverse of the matrix, or nullptr if it's singular.
+ */
+INLINE const LMatrix4 *TransformState::
+get_inverse_mat() const {
+  if (!is_singular()) {
+    nassertr(_inv_mat != nullptr, nullptr);
+    return _inv_mat;
+  }
+  else {
+    return nullptr;
+  }
 }
 
 /**
@@ -808,8 +856,8 @@ INLINE void TransformState::
 check_hash() const {
   // This pretends to be a const function, even though it's not, because it
   // only updates a transparent cache value.
-  if ((_flags & F_hash_known) == 0) {
-    ((TransformState *)this)->calc_hash();
+  if (_hash == H_unknown) {
+    calc_hash();
   }
 }
 
@@ -887,15 +935,6 @@ check_mat() const {
   if ((_flags & F_mat_known) == 0) {
     ((TransformState *)this)->calc_mat();
   }
-}
-
-/**
- * Computes the hash value.
- */
-INLINE void TransformState::
-calc_hash() {
-  LightMutexHolder holder(_lock);
-  do_calc_hash();
 }
 
 /**
@@ -1009,22 +1048,6 @@ consider_update_pstats(int old_referenced_bits) const {
     update_pstats(old_referenced_bits, new_referenced_bits);
   }
 #endif  // DO_PSTATS
-}
-
-/**
- *
- */
-INLINE TransformState::Composition::
-Composition() {
-}
-
-/**
- *
- */
-INLINE TransformState::Composition::
-Composition(const TransformState::Composition &copy) :
-  _result(copy._result)
-{
 }
 
 /**

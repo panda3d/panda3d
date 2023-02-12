@@ -78,9 +78,10 @@ PUBLISHED:
   GeomVertexData(const GeomVertexData &copy);
   explicit GeomVertexData(const GeomVertexData &copy,
                           const GeomVertexFormat *format);
-  void operator = (const GeomVertexData &copy);
   virtual ~GeomVertexData();
   ALLOC_DELETED_CHAIN(GeomVertexData);
+
+  void operator = (const GeomVertexData &copy) = delete;
 
   int compare_to(const GeomVertexData &other) const;
 
@@ -112,7 +113,9 @@ PUBLISHED:
   INLINE PT(GeomVertexArrayData) modify_array(size_t i);
   INLINE PT(GeomVertexArrayDataHandle) modify_array_handle(size_t i);
   INLINE void set_array(size_t i, const GeomVertexArrayData *array);
-  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array);
+  INLINE void remove_array(size_t i);
+  INLINE void insert_array(size_t i, const GeomVertexArrayData *array);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array, insert_array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
@@ -520,6 +523,8 @@ public:
 
   PT(GeomVertexArrayData) modify_array(size_t i);
   void set_array(size_t i, const GeomVertexArrayData *array);
+  void remove_array(size_t i);
+  void insert_array(size_t i, const GeomVertexArrayData *array);
 
   int get_num_rows() const;
   bool set_num_rows(int n);

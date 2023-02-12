@@ -10,6 +10,9 @@
 
 #ifdef HAVE_PYTHON
 
+#define _STRINGIFY_VERSION(a, b) (#a "." #b)
+#define STRINGIFY_VERSION(a, b) _STRINGIFY_VERSION(a, b)
+
 using std::string;
 
 /**
@@ -131,11 +134,10 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
  *
  * Returns true if there is an active exception, false otherwise.
  *
- * In the NDEBUG case, this is simply a #define to _PyErr_OCCURRED() (which is
- * an undocumented inline version of PyErr_Occurred()).
+ * In the NDEBUG case, this is simply a #define to PyErr_Occurred().
  */
 bool _Dtool_CheckErrorOccurred() {
-  if (_PyErr_OCCURRED()) {
+  if (PyErr_Occurred()) {
     return true;
   }
   if (Notify::ptr()->has_assert_failed()) {
@@ -228,7 +230,7 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  * NULL, otherwise Py_None.
  */
 PyObject *_Dtool_Return_None() {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -245,7 +247,7 @@ PyObject *_Dtool_Return_None() {
  * NULL, otherwise the given boolean value as a PyObject *.
  */
 PyObject *Dtool_Return_Bool(bool value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -264,7 +266,7 @@ PyObject *Dtool_Return_Bool(bool value) {
  * increased.
  */
 PyObject *_Dtool_Return(PyObject *value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -455,31 +457,24 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
     Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
     if (target_class != nullptr) {
       // cast to the type...
-      void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
-      if (new_local_this != nullptr) {
-        // ask class to allocate an instance..
-        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, nullptr, nullptr);
-        if (self != nullptr) {
-          self->_ptr_to_object = new_local_this;
-          self->_memory_rules = memory_rules;
-          self->_is_const = is_const;
-          // self->_signature = PY_PANDA_SIGNATURE;
-          self->_My_Type = target_class;
-          return (PyObject *)self;
-        }
+      Dtool_PyInstDef *self = target_class->_Dtool_WrapInterface(local_this_in, &known_class_type);
+      if (self != nullptr) {
+        self->_memory_rules = memory_rules;
+        self->_is_const = is_const;
+        return (PyObject *)self;
       }
     }
   }
 
   // if we get this far .. just wrap the thing in the known type ?? better
   // than aborting...I guess....
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, nullptr, nullptr);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&known_class_type._PyType, 0);
   if (self != nullptr) {
+    self->_signature = PY_PANDA_SIGNATURE;
+    self->_My_Type = &known_class_type;
     self->_ptr_to_object = local_this_in;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
-    // self->_signature = PY_PANDA_SIGNATURE;
-    self->_My_Type = &known_class_type;
   }
   return (PyObject *)self;
 }
@@ -494,13 +489,14 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
     return Py_None;
   }
 
-  Dtool_PyTypedObject *classdef = &in_classdef;
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->_PyType.tp_new(&classdef->_PyType, nullptr, nullptr);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&in_classdef._PyType, 0);
   if (self != nullptr) {
+    self->_signature = PY_PANDA_SIGNATURE;
+    self->_My_Type = &in_classdef;
     self->_ptr_to_object = local_this;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
-    self->_My_Type = classdef;
+    self->_My_Type = &in_classdef;
   }
   return (PyObject *)self;
 }
@@ -521,6 +517,8 @@ Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
   }
 }
 
+#define PY_MAJOR_VERSION_STR #PY_MAJOR_VERSION "." #PY_MINOR_VERSION
+
 #if PY_MAJOR_VERSION >= 3
 PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def) {
 #else
@@ -528,15 +526,18 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
 #endif
   // Check the version so we can print a helpful error if it doesn't match.
   string version = Py_GetVersion();
+  size_t version_len = version.find('.', 2);
+  if (version_len != string::npos) {
+    version.resize(version_len);
+  }
 
-  if (version[0] != '0' + PY_MAJOR_VERSION ||
-      version[2] != '0' + PY_MINOR_VERSION) {
+  if (version != STRINGIFY_VERSION(PY_MAJOR_VERSION, PY_MINOR_VERSION)) {
     // Raise a helpful error message.  We can safely do this because the
     // signature and behavior for PyErr_SetString has remained consistent.
     std::ostringstream errs;
     errs << "this module was compiled for Python "
          << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is "
-         << "incompatible with Python " << version.substr(0, 3);
+         << "incompatible with Python " << version;
     string error = errs.str();
     PyErr_SetString(PyExc_ImportError, error.c_str());
     return nullptr;
@@ -736,7 +737,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }
@@ -747,7 +748,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *callable = (PyObject *)Py_TYPE(self);
-  return _PyObject_FastCall(callable, &self, 1);
+  return PyObject_CallOneArg(callable, self);
 }
 
 /**
@@ -760,7 +761,7 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   if (callable == nullptr) {
     return nullptr;
   }
-  PyObject *result = _PyObject_CallNoArg(callable);
+  PyObject *result = PyObject_CallNoArgs(callable);
   Py_DECREF(callable);
   return result;
 }
@@ -777,7 +778,11 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return false;
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
@@ -823,7 +828,11 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0);
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;

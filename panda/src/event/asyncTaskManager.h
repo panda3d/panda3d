@@ -60,10 +60,17 @@ PUBLISHED:
   AsyncTaskChain *get_task_chain(int n) const;
   MAKE_SEQ(get_task_chains, get_num_task_chains, get_task_chain);
   AsyncTaskChain *make_task_chain(const std::string &name);
+  AsyncTaskChain *make_task_chain(const std::string &name, int num_threads,
+                                  ThreadPriority thread_priority);
   AsyncTaskChain *find_task_chain(const std::string &name);
   BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
+#ifndef CPPPARSER
+  template<class Callable>
+  INLINE AsyncTask *add(Callable callable, const std::string &name,
+                        int sort = 0, int priority = 0);
+#endif
   bool has_task(AsyncTask *task) const;
 
   AsyncTask *find_task(const std::string &name) const;
@@ -96,7 +103,8 @@ PUBLISHED:
   INLINE static AsyncTaskManager *get_global_ptr();
 
 protected:
-  AsyncTaskChain *do_make_task_chain(const std::string &name);
+  AsyncTaskChain *do_make_task_chain(const std::string &name, int num_threads=0,
+                                     ThreadPriority thread_priority=TP_normal);
   AsyncTaskChain *do_find_task_chain(const std::string &name);
 
   INLINE void add_task_by_name(AsyncTask *task);
@@ -104,7 +112,7 @@ protected:
 
   bool do_has_task(AsyncTask *task) const;
 
-  virtual void do_output(std::ostream &out) const;
+  void do_output(std::ostream &out) const;
 
 private:
   static void make_global_ptr();

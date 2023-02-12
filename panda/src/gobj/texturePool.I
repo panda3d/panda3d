@@ -34,6 +34,29 @@ verify_texture(const Filename &filename) {
 }
 
 /**
+ * Returns the texture that has already been previously loaded, or NULL
+ * otherwise.
+ */
+INLINE Texture *TexturePool::
+get_texture(const Filename &filename, int primary_file_num_channels,
+            bool read_mipmaps) {
+  return get_global_ptr()->ns_get_texture(filename, primary_file_num_channels,
+                                          read_mipmaps);
+}
+
+/**
+ * Returns the texture that has already been previously loaded, or NULL
+ * otherwise.
+ */
+INLINE Texture *TexturePool::
+get_texture(const Filename &filename, const Filename &alpha_filename,
+            int primary_file_num_channels, int alpha_file_channel,
+            bool read_mipmaps) {
+  return get_global_ptr()->ns_get_texture(filename, primary_file_num_channels,
+                                          read_mipmaps);
+}
+
+/**
  * Loads the given filename up into a texture, if it has not already been
  * loaded, and returns the new texture.  If a texture with the same filename
  * was previously loaded, returns that one instead.  If the texture file
@@ -45,9 +68,9 @@ verify_texture(const Filename &filename) {
  */
 INLINE Texture *TexturePool::
 load_texture(const Filename &filename, int primary_file_num_channels,
-             bool read_mipmaps, const LoaderOptions &options) {
+             bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
-                                           read_mipmaps, options);
+                                           read_mipmaps, options, sampler);
 }
 
 /**
@@ -63,11 +86,11 @@ load_texture(const Filename &filename, int primary_file_num_channels,
 INLINE Texture *TexturePool::
 load_texture(const Filename &filename, const Filename &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel,
-             bool read_mipmaps, const LoaderOptions &options) {
+             bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename,
                                            primary_file_num_channels,
                                            alpha_file_channel,
-                                           read_mipmaps, options);
+                                           read_mipmaps, options, sampler);
 }
 
 /**
@@ -82,9 +105,9 @@ load_texture(const Filename &filename, const Filename &alpha_filename,
  */
 INLINE Texture *TexturePool::
 load_3d_texture(const Filename &filename_pattern, bool read_mipmaps,
-                const LoaderOptions &options) {
+                const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps,
-                                              options);
+                                              options, sampler);
 }
 
 /**
@@ -99,9 +122,9 @@ load_3d_texture(const Filename &filename_pattern, bool read_mipmaps,
  */
 INLINE Texture *TexturePool::
 load_2d_texture_array(const Filename &filename_pattern, bool read_mipmaps,
-                const LoaderOptions &options) {
+                const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_2d_texture_array(filename_pattern, read_mipmaps,
-                                                    options);
+                                                    options, sampler);
 }
 
 /**
@@ -116,9 +139,9 @@ load_2d_texture_array(const Filename &filename_pattern, bool read_mipmaps,
  */
 INLINE Texture *TexturePool::
 load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
-              const LoaderOptions &options) {
+              const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps,
-                                            options);
+                                            options, sampler);
 }
 
 /**
@@ -311,10 +334,30 @@ unregister_filter(TexturePoolFilter *tex_filter) {
 }
 
 /**
+ *
+ */
+INLINE TexturePool::LookupKey::
+LookupKey(Texture::TextureType texture_type,
+          int primary_file_num_channels, int alpha_file_channel,
+          const LoaderOptions &options, const SamplerState &sampler) :
+  _primary_file_num_channels(primary_file_num_channels),
+  _alpha_file_channel(alpha_file_channel),
+  _texture_type(texture_type),
+  _texture_format((Texture::Format)options.get_texture_format()),
+  _texture_compress((Texture::CompressionMode)options.get_texture_compression()),
+  _texture_quality((Texture::QualityLevel)options.get_texture_quality()),
+  _texture_sampler(sampler),
+  _force_srgb(options.get_texture_flags() & LoaderOptions::TF_force_srgb) {
+}
+
+/**
  * Defines relative ordering between LookupKey instances.
  */
 INLINE bool TexturePool::LookupKey::
 operator < (const LookupKey &other) const {
+  if (_texture_type != other._texture_type) {
+    return _texture_type < other._texture_type;
+  }
   if (_fullpath != other._fullpath) {
     return _fullpath < other._fullpath;
   }
@@ -327,5 +370,17 @@ operator < (const LookupKey &other) const {
   if (_alpha_file_channel != other._alpha_file_channel) {
     return _alpha_file_channel < other._alpha_file_channel;
   }
-  return _texture_type < other._texture_type;
+  if (_texture_format != other._texture_format) {
+    return _texture_format < other._texture_format;
+  }
+  if (_texture_compress != other._texture_compress) {
+    return _texture_compress < other._texture_compress;
+  }
+  if (_texture_quality != other._texture_quality) {
+    return _texture_quality < other._texture_quality;
+  }
+  if (_texture_sampler != other._texture_sampler) {
+    return _texture_sampler < other._texture_sampler;
+  }
+  return _force_srgb < other._force_srgb;
 }

@@ -1,0 +1,81 @@
+<CoordinateSystem> { Z-Up }
+
+<Comment> {
+  "flt2egg -ps keep iris.flt -o iris.egg"
+}
+<Texture> 0 {
+  "../maps/soft_iris.rgb"
+  <Scalar> wrap { repeat }
+  <Scalar> minfilter { linear }
+  <Scalar> magfilter { linear }
+  <Scalar> envtype { modulate }
+}
+<VertexPool> vpool {
+  <Vertex> 0 {
+    10 0 -10
+    <UV> { 0 1 }
+  }
+  <Vertex> 1 {
+    10 0 10
+    <UV> { 0 0 }
+  }
+  <Vertex> 2 {
+    -10 0 10
+    <UV> { 1 0 }
+  }
+  <Vertex> 3 {
+    -10 0 -10
+    <UV> { 1 1 }
+  }
+  <Vertex> 4 {
+    -2200 0 -2200
+  }
+  <Vertex> 5 {
+    2200 0 -2200
+  }
+  <Vertex> 6 {
+    10 0 -10
+  }
+  <Vertex> 7 {
+    -10 0 -10
+  }
+  <Vertex> 8 {
+    -10 0 10
+  }
+  <Vertex> 9 {
+    -2200 0 2200
+  }
+  <Vertex> 10 {
+    2200 0 2200
+  }
+  <Vertex> 11 {
+    10 0 10
+  }
+}
+<Group> iris {
+  <Group> o8 {
+    <Polygon> {
+      <RGBA> { 0.996078431606293 0.996078431606293 0.996078431606293 1 }
+      <TRef> { 0 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> o9 {
+    <Polygon> {
+      <RGBA> { 0 0 0 1 }
+      <VertexRef> { 4 5 6 7 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 0 0 1 }
+      <VertexRef> { 7 8 9 4 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 0 0 1 }
+      <VertexRef> { 10 9 8 11 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 0 0 1 }
+      <VertexRef> { 11 6 5 10 <Ref> { vpool } }
+    }
+  }
+}

@@ -1,10 +1,34 @@
+import math
+from panda3d.core import (
+    BitMask32,
+    BoundingHexahedron,
+    CSDefault,
+    Mat4,
+    NodePath,
+    Point3,
+    VBase3,
+    VBase4,
+    Vec3,
+    decomposeMatrix,
+    deg2Rad,
+)
 from direct.showbase.DirectObject import DirectObject
-from .DirectGlobals import *
-from .DirectUtil import *
-from .DirectGeometry import *
+from direct.showbase.MessengerGlobal import messenger
+from . import DirectGlobals as DG
+from .DirectUtil import useDirectRenderStyle
+from .DirectGeometry import (
+    LineNodePath,
+    getCrankAngle,
+    getNearProjectionPoint,
+    getScreenXY,
+    planeIntersect,
+    relHpr,
+)
 from .DirectSelection import SelectionRay
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from copy import deepcopy
+
 
 class DirectManipulationControl(DirectObject):
     def __init__(self):
@@ -49,7 +73,7 @@ class DirectManipulationControl(DirectObject):
             ['shift-f', self.objectHandles.growToFit],
             ['i', self.plantSelectedNodePath],
             ]
-        self.defaultSkipFlags = SKIP_HIDDEN | SKIP_BACKFACE
+        self.defaultSkipFlags = DG.SKIP_HIDDEN | DG.SKIP_BACKFACE
         self.optionalSkipFlags = 0
         self.unmovableTagList = []
 
@@ -113,7 +137,7 @@ class DirectManipulationControl(DirectObject):
            self.fScaling3D == 0:
 
             # Check for a widget hit point
-            entry = base.direct.iRay.pickWidget(skipFlags = SKIP_WIDGET)
+            entry = base.direct.iRay.pickWidget(skipFlags = DG.SKIP_WIDGET)
             # Did we hit a widget?
             if entry:
                 # Yes!
@@ -135,7 +159,7 @@ class DirectManipulationControl(DirectObject):
             if entry:
                 # Check to see if we are moving the object
                 # We are moving the object if we either wait long enough
-                taskMgr.doMethodLater(MANIPULATION_MOVE_DELAY,
+                taskMgr.doMethodLater(DG.MANIPULATION_MOVE_DELAY,
                                       self.switchToMoveMode,
                                       'manip-move-wait')
                 # Or we move far enough
@@ -201,7 +225,7 @@ class DirectManipulationControl(DirectObject):
             ((abs (endY - startY)) < 0.01)):
             return
 
-        self.marquee = LineNodePath(render2d, 'marquee', 0.5, VBase4(.8, .6, .6, 1))
+        self.marquee = LineNodePath(base.render2d, 'marquee', 0.5, VBase4(.8, .6, .6, 1))
         self.marqueeInfo = (startX, startY, endX, endY)
         self.marquee.drawLines([
             [(startX, 0, startY), (startX, 0, endY)],
@@ -211,7 +235,7 @@ class DirectManipulationControl(DirectObject):
         self.marquee.create()
 
         if self.fMultiView:
-            LE_showInOneCam(self.marquee, base.direct.camera.getName())
+            DG.LE_showInOneCam(self.marquee, base.direct.camera.getName())
 
     def manipulationStop(self):
         taskMgr.remove('manipulateObject')
@@ -225,7 +249,7 @@ class DirectManipulationControl(DirectObject):
             # optionally specified things
             skipFlags = self.defaultSkipFlags | self.optionalSkipFlags
             # Skip camera (and its children), unless control key is pressed
-            skipFlags |= SKIP_CAMERA * (1 - base.getControl())
+            skipFlags |= DG.SKIP_CAMERA * (1 - base.getControl())
 
             if self.marquee:
                 self.marquee.removeNode()
@@ -252,7 +276,7 @@ class DirectManipulationControl(DirectObject):
                 lens.extrude((endX, endY), nlr, flr)
                 lens.extrude((startX, endY), nll, fll)
 
-                marqueeFrustum = BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);
+                marqueeFrustum = BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul)
                 marqueeFrustum.xform(base.direct.cam.getNetTransform().getMat())
 
                 base.marqueeFrustum = marqueeFrustum
@@ -267,19 +291,19 @@ class DirectManipulationControl(DirectObject):
 
                 selectionList = []
                 for geom in render.findAllMatches("**/+GeomNode"):
-                    if (skipFlags & SKIP_HIDDEN) and geom.isHidden():
+                    if (skipFlags & DG.SKIP_HIDDEN) and geom.isHidden():
                         # Skip if hidden node
                         continue
-##                     elif (skipFlags & SKIP_BACKFACE) and base.direct.iRay.isEntryBackfacing():
+##                     elif (skipFlags & DG.SKIP_BACKFACE) and base.direct.iRay.isEntryBackfacing():
 ##                         # Skip, if backfacing poly
 ##                         pass
-                    elif ((skipFlags & SKIP_CAMERA) and
-                          (camera in geom.getAncestors())):
+                    elif (skipFlags & DG.SKIP_CAMERA) and \
+                         (base.camera in geom.getAncestors()):
                         # Skip if parented to a camera.
                         continue
                     # Can pick unpickable, use the first visible node
-                    elif ((skipFlags & SKIP_UNPICKABLE) and
-                          (geom.getName() in base.direct.iRay.unpickable)):
+                    elif (skipFlags & DG.SKIP_UNPICKABLE) and \
+                         (geom.getName() in base.direct.iRay.unpickable):
                         # Skip if in unpickable list
                         continue
 
@@ -486,7 +510,7 @@ class DirectManipulationControl(DirectObject):
         for tag in self.unmovableTagList:
             for selected in objects:
                 unmovableTag = selected.getTag(tag)
-                if (unmovableTag):
+                if unmovableTag:
                     # check value of unmovableTag to see if it is
                     # completely uneditable or if it allows only certain
                     # types of editing
@@ -498,7 +522,7 @@ class DirectManipulationControl(DirectObject):
         selectedList = base.direct.selected.getSelectedAsList()
         # See if any of the selected are completely uneditable
         editTypes = self.getEditTypes(selectedList)
-        if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+        if (editTypes & DG.EDIT_TYPE_UNEDITABLE) == DG.EDIT_TYPE_UNEDITABLE:
             return
         self.currEditTypes = editTypes
         if selectedList:
@@ -566,13 +590,13 @@ class DirectManipulationControl(DirectObject):
             if self.constraint:
                 type = self.constraint[2:]
                 if self.useSeparateScaleHandles:
-                    if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                    if type == 'post' and not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                         self.xlate1D(state)
-                    elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                    elif type == 'disc' and not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                         self.xlate2D(state)
-                    elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
+                    elif type == 'ring' and not self.currEditTypes & DG.EDIT_TYPE_UNROTATABLE:
                         self.rotate1D(state)
-                    elif type == 'scale' and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                    elif type == 'scale' and not self.currEditTypes & DG.EDIT_TYPE_UNSCALABLE:
                         if base.direct.fShift:
                             self.fScaling3D = 1
                             self.scale3D(state)
@@ -580,7 +604,7 @@ class DirectManipulationControl(DirectObject):
                             self.fScaling1D = 1
                             self.scale1D(state)
                 else:
-                    if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                    if base.direct.fControl and not self.currEditTypes & DG.EDIT_TYPE_UNSCALABLE:
                         if type == 'post':
                             # [gjeon] non-uniform scaling
                             self.fScaling1D = 1
@@ -590,11 +614,11 @@ class DirectManipulationControl(DirectObject):
                             self.fScaling3D = 1
                             self.scale3D(state)
                     else:
-                        if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                        if type == 'post' and not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                             self.xlate1D(state)
-                        elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                        elif type == 'disc' and not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                             self.xlate2D(state)
-                        elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
+                        elif type == 'ring' and not self.currEditTypes & DG.EDIT_TYPE_UNROTATABLE:
                             self.rotate1D(state)
             # No widget interaction, determine free manip mode
             elif self.fFreeManip and not self.useSeparateScaleHandles:
@@ -608,17 +632,17 @@ class DirectManipulationControl(DirectObject):
                     self.fScaling1D = 0
                     self.fScaling3D = 0
                 # Alt key switches to a scaling mode
-                if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                if base.direct.fControl and not self.currEditTypes & DG.EDIT_TYPE_UNSCALABLE:
                     self.fScaling3D = 1
                     self.scale3D(state)
                 # Otherwise, manip mode depends on where you started
-                elif state.fMouseX and state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
+                elif state.fMouseX and state.fMouseY and not self.currEditTypes & DG.EDIT_TYPE_UNROTATABLE:
                     # In the corner, spin around camera's axis
                     self.rotateAboutViewVector(state)
-                elif state.fMouseX or state.fMouseY and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                elif state.fMouseX or state.fMouseY and not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                     # Mouse started elsewhere in the outer frame, rotate
                     self.rotate2D(state)
-                elif not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
+                elif not self.currEditTypes & DG.EDIT_TYPE_UNMOVABLE:
                     # Mouse started in central region, xlate
                     # Mode depends on shift key
                     if base.direct.fShift or base.direct.fControl:
@@ -633,7 +657,7 @@ class DirectManipulationControl(DirectObject):
                 base.direct.widget.getMat(base.direct.selected.last))
         else:
             # Move the objects with the widget
-                base.direct.selected.moveWrtWidgetAll()
+            base.direct.selected.moveWrtWidgetAll()
         # Continue
         return Task.cont
 
@@ -803,19 +827,19 @@ class DirectManipulationControl(DirectObject):
         widgetDir.normalize()
         # Convert specified widget axis to view space
         if axis == 'x':
-            widgetAxis = Vec3(mWidget2Cam.xformVec(X_AXIS))
+            widgetAxis = Vec3(mWidget2Cam.xformVec(DG.X_AXIS))
         elif axis == 'y':
-            widgetAxis = Vec3(mWidget2Cam.xformVec(Y_AXIS))
+            widgetAxis = Vec3(mWidget2Cam.xformVec(DG.Y_AXIS))
         elif axis == 'z':
-            widgetAxis = Vec3(mWidget2Cam.xformVec(Z_AXIS))
+            widgetAxis = Vec3(mWidget2Cam.xformVec(DG.Z_AXIS))
         widgetAxis.normalize()
         if type == 'top?':
             # Check sign of angle between two vectors
-            return (widgetDir.dot(widgetAxis) < 0.)
+            return widgetDir.dot(widgetAxis) < 0.
         elif type == 'edge?':
             # Checking to see if we are viewing edge-on
             # Check angle between two vectors
-            return(abs(widgetDir.dot(widgetAxis)) < .2)
+            return abs(widgetDir.dot(widgetAxis)) < .2
 
     ### FREE MANIPULATION METHODS ###
     def xlateCamXZ(self, state):
@@ -866,7 +890,7 @@ class DirectManipulationControl(DirectObject):
                 moveDir.assign(moveDir * -1)
             moveDir.normalize()
         else:
-            moveDir = Vec3(Y_AXIS)
+            moveDir = Vec3(DG.Y_AXIS)
         # Move selected objects
         dr = base.direct.dr
         # Scale move dir
@@ -1041,9 +1065,9 @@ class DirectManipulationControl(DirectObject):
         """ Move selected object to intersection point of cursor on scene """
         # Check for intersection
         entry = base.direct.iRay.pickGeom(
-            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
+            skipFlags = DG.SKIP_HIDDEN | DG.SKIP_BACKFACE | DG.SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (entry != None) and (base.direct.selected.last != None):
+        if entry is not None and base.direct.selected.last is not None:
             # Record undo point
             base.direct.pushUndo(base.direct.selected)
             # Record wrt matrix
@@ -1064,7 +1088,7 @@ class ObjectHandles(NodePath, DirectObject):
         NodePath.__init__(self)
 
         # Load up object handles model and assign it to self
-        self.assign(loader.loadModel('models/misc/objectHandles'))
+        self.assign(base.loader.loadModel('models/misc/objectHandles'))
         self.setName(name)
         self.scalingNode = NodePath(self)
         self.scalingNode.setName('ohScalingNode')
@@ -1206,7 +1230,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.reparentTo(hidden)
 
     def enableHandles(self, handles):
-        if type(handles) == list:
+        if isinstance(handles, list):
             for handle in handles:
                 self.enableHandle(handle)
         elif handles == 'x':
@@ -1255,7 +1279,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.zScaleGroup.reparentTo(self.zHandles)
 
     def disableHandles(self, handles):
-        if type(handles) == list:
+        if isinstance(handles, list):
             for handle in handles:
                 self.disableHandle(handle)
         elif handles == 'x':
@@ -1368,7 +1392,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.setScalingFactor(1)
 
     def setScalingFactor(self, scaleFactor):
-        self.ohScalingFactor = self.ohScalingFactor * scaleFactor
+        self.ohScalingFactor = scaleFactor
         self.scalingNode.setScale(self.ohScalingFactor * self.directScalingFactor)
 
     def getScalingFactor(self):
@@ -1640,32 +1664,32 @@ class ObjectHandles(NodePath, DirectObject):
         # by comparing lineDir with plane normals.  The plane with the
         # largest dotProduct is most "normal"
         if axis == 'x':
-            if (abs(lineDir.dot(Y_AXIS)) > abs(lineDir.dot(Z_AXIS))):
+            if abs(lineDir.dot(DG.Y_AXIS)) > abs(lineDir.dot(DG.Z_AXIS)):
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, Y_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.Y_AXIS))
             else:
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, Z_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.Z_AXIS))
             # We really only care about the nearest point on the axis
             self.hitPt.setY(0)
             self.hitPt.setZ(0)
         elif axis == 'y':
-            if (abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Z_AXIS))):
+            if abs(lineDir.dot(DG.X_AXIS)) > abs(lineDir.dot(DG.Z_AXIS)):
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, X_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.X_AXIS))
             else:
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, Z_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.Z_AXIS))
             # We really only care about the nearest point on the axis
             self.hitPt.setX(0)
             self.hitPt.setZ(0)
         elif axis == 'z':
-            if (abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Y_AXIS))):
+            if abs(lineDir.dot(DG.X_AXIS)) > abs(lineDir.dot(DG.Y_AXIS)):
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, X_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.X_AXIS))
             else:
                 self.hitPt.assign(
-                    planeIntersect(lineOrigin, lineDir, ORIGIN, Y_AXIS))
+                    planeIntersect(lineOrigin, lineDir, DG.ORIGIN, DG.Y_AXIS))
             # We really only care about the nearest point on the axis
             self.hitPt.setX(0)
             self.hitPt.setY(0)
@@ -1720,51 +1744,50 @@ class ObjectHandles(NodePath, DirectObject):
         # Find the hit point
         if plane == 'x':
             self.hitPt.assign(planeIntersect(
-                lineOrigin, lineDir, ORIGIN, X_AXIS))
+                lineOrigin, lineDir, DG.ORIGIN, DG.X_AXIS))
         elif plane == 'y':
             self.hitPt.assign(planeIntersect(
-                lineOrigin, lineDir, ORIGIN, Y_AXIS))
+                lineOrigin, lineDir, DG.ORIGIN, DG.Y_AXIS))
         elif plane == 'z':
             self.hitPt.assign(planeIntersect(
-                lineOrigin, lineDir, ORIGIN, Z_AXIS))
+                lineOrigin, lineDir, DG.ORIGIN, DG.Z_AXIS))
 
         return self.hitPt
 
 def drawBox(lines, center, sideLength):
+    l = sideLength * 0.5
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        l = sideLength * 0.5
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
-
-        lines.moveTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)

@@ -100,6 +100,11 @@ PRC_DESC("Specifies if events should be send when new contacts are "
          "contact events might create more load on the event queue "
          "then you might want! Default value is FALSE."));
 
+ConfigVariableBool bullet_split_impulse
+("bullet-split-impulse", false,
+PRC_DESC("Penetrating recovery won't add momentum. "
+         "btContactSolverInfo::m_splitImpulse. Default value is false."));
+
 ConfigVariableInt bullet_solver_iterations
 ("bullet-solver-iterations", 10,
 PRC_DESC("Specifies the number of iterations for the Bullet contact "
@@ -189,6 +194,7 @@ init_libbullet() {
   BulletDebugNode::register_with_read_factory();
   BulletPlaneShape::register_with_read_factory();
   BulletRigidBodyNode::register_with_read_factory();
+  BulletGhostNode::register_with_read_factory();
   BulletSphereShape::register_with_read_factory();
   BulletTriangleMesh::register_with_read_factory();
   BulletTriangleMeshShape::register_with_read_factory();

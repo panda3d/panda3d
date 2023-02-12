@@ -74,6 +74,10 @@ if(HAVE_OPENSSL)
 endif()
 
 set(P3PRC_IGATEEXT
+  configVariable_ext.cxx
+  configVariable_ext.h
+  notify_ext.cxx
+  notify_ext.h
   streamReader_ext.cxx
   streamReader_ext.h
   streamWriter_ext.cxx
@@ -90,6 +94,12 @@ target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
 if(ANDROID)
   target_link_libraries(p3prc log)
+endif()
+
+if(HAVE_OPENSSL AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+  # Do not re-export symbols from these libraries.
+  target_link_options(p3prc PRIVATE "LINKER:--exclude-libs,libssl.a")
+  target_link_options(p3prc PRIVATE "LINKER:--exclude-libs,libcrypto.a")
 endif()
 
 install(TARGETS p3prc

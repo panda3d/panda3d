@@ -6,14 +6,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectWaitBar']
 
-from panda3d.core import *
+from panda3d.core import PGFrameStyle, PGWaitBar
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 
-"""
-import DirectWaitBar
-d = DirectWaitBar(borderWidth=(0, 0))
-"""
 
 class DirectWaitBar(DirectFrame):
     """ DirectWaitBar - A DirectWidget that shows progress completed
@@ -29,7 +25,7 @@ class DirectWaitBar(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',         PGWaitBar,          None),
             ('frameSize',      (-1, 1, -0.08, 0.08),  None),
-            ('borderWidth',    (0, 0),              None),
+            ('borderWidth',    (0, 0),             None),
             ('range',          100,                self.setRange),
             ('value',          0,                  self.setValue),
             ('barBorderWidth', (0, 0),             self.setBarBorderWidth),
@@ -97,7 +93,7 @@ class DirectWaitBar(DirectFrame):
         # this must be a single texture (or a string).
         texture = self['barTexture']
         if isinstance(texture, str):
-            texture = loader.loadTexture(texture)
+            texture = base.loader.loadTexture(texture)
         if texture:
             self.barStyle.setTexture(texture)
         else:
@@ -124,4 +120,3 @@ class DirectWaitBar(DirectFrame):
                 if count > self['range']:
                     count = self['range']
                 self.update(count)
-

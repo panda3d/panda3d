@@ -14,7 +14,7 @@
 #ifndef GEOMVERTEXFORMAT_H
 #define GEOMVERTEXFORMAT_H
 
-#include "pandabase.h"
+#include "config_gobj.h"
 #include "typedWritableReferenceCount.h"
 #include "geomVertexAnimationSpec.h"
 #include "geomVertexArrayFormat.h"
@@ -72,6 +72,7 @@ PUBLISHED:
   MAKE_PROPERTY(animation, get_animation, set_animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
+  CPT(GeomVertexFormat) get_post_instanced_format() const;
   CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;
 
   INLINE size_t get_num_arrays() const;
@@ -163,6 +164,13 @@ PUBLISHED:
   INLINE static const GeomVertexFormat *get_v3n3c4();
   INLINE static const GeomVertexFormat *get_v3n3c4t2();
 
+  // These are like the above, but automatically select the appropriate format
+  // based on the setting of vertex-colors-prefer-packed.
+  INLINE static const GeomVertexFormat *get_v3c();
+  INLINE static const GeomVertexFormat *get_v3ct2();
+  INLINE static const GeomVertexFormat *get_v3n3c();
+  INLINE static const GeomVertexFormat *get_v3n3ct2();
+
 public:
   bool get_array_info(const InternalName *name,
                       int &array_index,
@@ -222,7 +230,8 @@ private:
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
 
-  const GeomVertexFormat *_post_animated_format;
+  const GeomVertexFormat *_post_animated_format = nullptr;
+  const GeomVertexFormat *_post_instanced_format = nullptr;
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<GeomVertexFormat *, IndirectCompareTo<GeomVertexFormat> > Formats;

@@ -608,7 +608,7 @@ compare_to(const Filename &other) const {
  * instead.
  */
 INLINE bool Filename::
-__nonzero__() const {
+__bool__() const {
   return !_filename.empty();
 }
 

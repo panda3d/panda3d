@@ -16,12 +16,12 @@
  */
 INLINE void PhysicalNode::
 clear() {
-  PhysicalsVector::iterator it;
-  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
-    nassertd((*it)->_physical_node == this) continue;
-    (*it)->_physical_node = nullptr;
+  LightMutexHolder holder(_lock);
+  for (Physical *physical : _physicals) {
+    nassertd(physical->_physical_node == this) continue;
+    physical->_physical_node = nullptr;
   }
-  _physicals.erase(_physicals.begin(), _physicals.end());
+  _physicals.clear();
 }
 
 /**
@@ -29,6 +29,7 @@ clear() {
  */
 INLINE Physical *PhysicalNode::
 get_physical(size_t index) const {
+  LightMutexHolder holder(_lock);
   nassertr(index < _physicals.size(), nullptr);
   return _physicals[index];
 }
@@ -38,14 +39,20 @@ get_physical(size_t index) const {
  */
 INLINE size_t PhysicalNode::
 get_num_physicals() const {
+  LightMutexHolder holder(_lock);
   return _physicals.size();
 }
 
 /**
-
+ * Adds a Physical to this PhysicalNode.  If it is already added to this node,
+ * does nothing.  It is an error to add a Physical to multiple PhysicalNodes.
  */
 INLINE void PhysicalNode::
 add_physical(Physical *physical) {
-  _physicals.push_back(physical);
-  physical->_physical_node = this;
+  LightMutexHolder holder(_lock);
+  if (physical->_physical_node != this) {
+    nassertv(physical->_physical_node == nullptr);
+    _physicals.push_back(physical);
+    physical->_physical_node = this;
+  }
 }

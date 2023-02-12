@@ -59,8 +59,10 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
  * file.
  */
 GeomVertexArrayData::
-GeomVertexArrayData() : SimpleLruPage(0) {
-  _contexts = nullptr;
+GeomVertexArrayData() :
+  SimpleLruPage(0),
+  _array_format(nullptr),
+  _contexts(nullptr) {
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -81,8 +83,8 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
   SimpleLruPage(0),
   _array_format(array_format),
-  _cycler(CData(usage_hint)),
-  _contexts(nullptr)
+  _contexts(nullptr),
+  _cycler(CData(usage_hint))
 {
   set_lru_size(0);
   nassertv(_array_format->is_registered());
@@ -96,36 +98,12 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   CopyOnWriteObject(copy),
   SimpleLruPage(copy),
   _array_format(copy._array_format),
-  _cycler(copy._cycler),
-  _contexts(nullptr)
+  _contexts(nullptr),
+  _cycler(copy._cycler)
 {
   copy.mark_used_lru();
 
   set_lru_size(get_data_size_bytes());
-  nassertv(_array_format->is_registered());
-}
-
-/**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a
- * GeomVertexArrayData that is actively being used for rendering.
- */
-void GeomVertexArrayData::
-operator = (const GeomVertexArrayData &copy) {
-  CopyOnWriteObject::operator = (copy);
-  SimpleLruPage::operator = (copy);
-
-  copy.mark_used_lru();
-
-  _array_format = copy._array_format;
-  _cycler = copy._cycler;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_modified = Geom::get_next_modified();
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-
   nassertv(_array_format->is_registered());
 }
 
@@ -180,7 +158,8 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  */
 void GeomVertexArrayData::
 output(std::ostream &out) const {
-  out << get_num_rows() << " rows: " << *get_array_format();
+  nassertv(_array_format != nullptr);
+  out << get_num_rows() << " rows: " << *_array_format;
 }
 
 /**
@@ -188,6 +167,7 @@ output(std::ostream &out) const {
  */
 void GeomVertexArrayData::
 write(std::ostream &out, int indent_level) const {
+  nassertv(_array_format != nullptr);
   _array_format->write_with_data(out, indent_level, this);
 }
 

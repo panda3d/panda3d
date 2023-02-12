@@ -5,6 +5,8 @@ __all__ = ['BulletinBoardWatcher']
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.PythonUtil import Functor, makeList
 from direct.showbase import DirectObject
+from direct.showbase.BulletinBoardGlobal import bulletinBoard as bboard
+
 
 class BulletinBoardWatcher(DirectObject.DirectObject):
     """ This class allows you to wait for a set of posts to be made to (or

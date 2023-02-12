@@ -20,8 +20,53 @@
 #include "pointerTo.h"
 #include "config_pipeline.h"
 
-DWORD ThreadWin32Impl::_pt_ptr_index = 0;
-bool ThreadWin32Impl::_got_pt_ptr_index = false;
+#include <windows.h>
+
+static thread_local Thread *_current_thread = nullptr;
+static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
+
+#if _WIN32_WINNT < 0x0601
+// Requires Windows 7.
+static DWORD (__stdcall *EnableThreadProfiling)(HANDLE, DWORD, DWORD64, HANDLE *) = nullptr;
+static DWORD (__stdcall *DisableThreadProfiling)(HANDLE) = nullptr;
+static DWORD (__stdcall *ReadThreadProfilingData)(HANDLE, DWORD, PPERFORMANCE_DATA data) = nullptr;
+
+static bool init_thread_profiling() {
+  static bool inited = false;
+  if (!inited) {
+    HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+    EnableThreadProfiling = (decltype(EnableThreadProfiling))GetProcAddress(kernel32, "EnableThreadProfiling");
+    DisableThreadProfiling = (decltype(DisableThreadProfiling))GetProcAddress(kernel32, "DisableThreadProfiling");
+    ReadThreadProfilingData = (decltype(ReadThreadProfilingData))GetProcAddress(kernel32, "ReadThreadProfilingData");
+    inited = true;
+  }
+  return (EnableThreadProfiling && DisableThreadProfiling && ReadThreadProfilingData);
+}
+#else
+static bool init_thread_profiling() {
+  return true;
+}
+#endif
+
+/**
+ * Called by get_current_thread() if the current thread pointer is null; checks
+ * whether it might be the main thread.
+ * Note that adding noinline speeds up this call *significantly*, don't remove!
+ */
+static __declspec(noinline) Thread *
+init_current_thread() {
+  Thread *thread = _current_thread;
+  if (!_main_thread_known.test_and_set(std::memory_order_relaxed)) {
+    // Assume that we must be in the main thread, since this method must be
+    // called before the first thread is spawned.
+    thread = Thread::get_main_thread();
+    _current_thread = thread;
+  }
+  // If this assertion triggers, you are making Panda calls from a thread
+  // that has not first been registered using Thread::bind_thread().
+  nassertr(thread != nullptr, nullptr);
+  return thread;
+}
 
 /**
  *
@@ -61,10 +106,6 @@ start(ThreadPriority priority, bool joinable) {
 
   _joinable = joinable;
   _status = S_start_called;
-
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
 
   // Increment the parent object's reference count first.  The thread will
   // eventually decrement it when it terminates.
@@ -134,6 +175,56 @@ get_unique_id() const {
 }
 
 /**
+ *
+ */
+Thread *ThreadWin32Impl::
+get_current_thread() {
+  Thread *thread = _current_thread;
+  return (thread != nullptr) ? thread : init_current_thread();
+}
+
+/**
+ * Associates the indicated Thread object with the currently-executing thread.
+ * You should not call this directly; use Thread::bind_thread() instead.
+ */
+void ThreadWin32Impl::
+bind_thread(Thread *thread) {
+  if (_current_thread == nullptr && thread == Thread::get_main_thread()) {
+    _main_thread_known.test_and_set(std::memory_order_relaxed);
+  }
+  _current_thread = thread;
+}
+
+/**
+ * Returns the number of context switches that occurred on the current thread.
+ * The first number is the total number of context switches reported by the OS,
+ * and the second number is the number of involuntary context switches (ie. the
+ * thread was scheduled out by the OS), if known, otherwise zero.
+ * Returns true if context switch information was available, false otherwise.
+ */
+bool ThreadWin32Impl::
+get_context_switches(size_t &total, size_t &involuntary) {
+  Thread *thread = get_current_thread();
+  ThreadWin32Impl *self = &thread->_impl;
+
+  if (!self->_profiling && init_thread_profiling()) {
+    DWORD result = EnableThreadProfiling(GetCurrentThread(), THREAD_PROFILING_FLAG_DISPATCH, 0, &self->_profiling);
+    if (result != ERROR_SUCCESS) {
+      self->_profiling = 0;
+      return false;
+    }
+  }
+
+  PERFORMANCE_DATA data = {sizeof(PERFORMANCE_DATA), PERFORMANCE_DATA_VERSION};
+  if (ReadThreadProfilingData(self->_profiling, READ_THREAD_PROFILING_FLAG_DISPATCHING, &data) == ERROR_SUCCESS) {
+    total = data.ContextSwitchCount;
+    involuntary = 0;
+    return true;
+  }
+  return false;
+}
+
+/**
  * The entry point of each thread.
  */
 DWORD ThreadWin32Impl::
@@ -143,8 +234,7 @@ root_func(LPVOID data) {
     // TAU_PROFILE("void ThreadWin32Impl::root_func()", " ", TAU_USER);
 
     ThreadWin32Impl *self = (ThreadWin32Impl *)data;
-    BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);
-    nassertr(result, 1);
+    _current_thread = self->_parent_obj;
 
     {
       self->_mutex.lock();
@@ -176,6 +266,11 @@ root_func(LPVOID data) {
       self->_mutex.unlock();
     }
 
+    if (self->_profiling != 0) {
+      DisableThreadProfiling(self->_profiling);
+      self->_profiling = 0;
+    }
+
     // Now drop the parent object reference that we grabbed in start(). This
     // might delete the parent object, and in turn, delete the ThreadWin32Impl
     // object.
@@ -183,30 +278,6 @@ root_func(LPVOID data) {
   }
 
   return 0;
-}
-
-/**
- * Allocate a new index to store the Thread parent pointer as a piece of per-
- * thread private data.
- */
-void ThreadWin32Impl::
-init_pt_ptr_index() {
-  nassertv(!_got_pt_ptr_index);
-
-  _pt_ptr_index = TlsAlloc();
-  if (_pt_ptr_index == TLS_OUT_OF_INDEXES) {
-    thread_cat->error()
-      << "Unable to associate Thread pointers with threads.\n";
-    return;
-  }
-
-  _got_pt_ptr_index = true;
-
-  // Assume that we must be in the main thread, since this method must be
-  // called before the first thread is spawned.
-  Thread *main_thread_obj = Thread::get_main_thread();
-  BOOL result = TlsSetValue(_pt_ptr_index, main_thread_obj);
-  nassertv(result);
 }
 
 #endif  // THREAD_WIN32_IMPL

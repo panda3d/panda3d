@@ -195,7 +195,7 @@ unpack_object() {
   case PT_uint:
     {
       unsigned int value = _this->unpack_uint();
-      object = PyLong_FromLong(value);
+      object = PyLong_FromUnsignedLong(value);
     }
     break;
 
@@ -226,6 +226,10 @@ unpack_object() {
       std::string str;
       _this->unpack_string(str);
       object = PyUnicode_FromStringAndSize(str.data(), str.size());
+      if (object == nullptr) {
+        nassert_raise("Unable to decode UTF-8 string; use blob type for binary data");
+        return nullptr;
+      }
     }
     break;
 
@@ -309,7 +313,7 @@ unpack_class_object(const DCClass *dclass) {
   if (!dclass->has_constructor()) {
     // If the class uses a default constructor, go ahead and create the Python
     // object for it now.
-    object = PyObject_CallObject(class_def, nullptr);
+    object = PyObject_CallNoArgs(class_def);
     if (object == nullptr) {
       return nullptr;
     }

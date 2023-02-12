@@ -244,6 +244,7 @@ fully_define() {
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:
     case EggTexture::F_rgba5:
+    case EggTexture::F_srgb_alpha:
       _num_channels = 4;
       break;
 
@@ -253,6 +254,7 @@ fully_define() {
     case EggTexture::F_rgb8:
     case EggTexture::F_rgb5:
     case EggTexture::F_rgb332:
+    case EggTexture::F_srgb:
       _num_channels = 3;
       break;
 
@@ -290,6 +292,8 @@ fully_define() {
     case EggTexture::F_luminance:
     case EggTexture::F_luminance_alpha:
     case EggTexture::F_luminance_alphamask:
+    case EggTexture::F_srgb:
+    case EggTexture::F_srgb_alpha:
       break;
 
     case EggTexture::F_rgba12:
@@ -596,6 +600,12 @@ get_format_string(EggTexture::Format format) {
 
   case EggTexture::F_luminance:
     return "l";
+
+  case EggTexture::F_srgb:
+    return "sc";
+
+  case EggTexture::F_srgb_alpha:
+    return "sa";
   }
 
   return "x";

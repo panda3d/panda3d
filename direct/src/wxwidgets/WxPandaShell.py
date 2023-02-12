@@ -1,13 +1,12 @@
 import wx
 from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.showbase.ShowBase import *
+from direct.showbase.ShowBase import ShowBase
 from direct.showbase import ShowBaseGlobal
-from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectGlobals import SKIP_UNPICKABLE
 
-from .WxAppShell import *
-from .ViewPort import *
+from .WxAppShell import WxAppShell
+from .ViewPort import Viewport, ViewportManager
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402
@@ -104,7 +103,8 @@ class WxPandaShell(WxAppShell):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.mainFrame, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.SetSizer(sizer)
+        self.Layout()
 
     def initialize(self):
         """Initializes the viewports and editor."""
@@ -113,9 +113,9 @@ class WxPandaShell(WxAppShell):
         self.wxStep()
         ViewportManager.initializeAll()
         # Position the camera
-        if base.trackball != None:
-          base.trackball.node().setPos(0, 30, 0)
-          base.trackball.node().setHpr(0, 15, 0)
+        if base.trackball is not None:
+            base.trackball.node().setPos(0, 30, 0)
+            base.trackball.node().setHpr(0, 15, 0)
 
         # to make persp view as default
         self.perspViewMenuItem.Toggle()
@@ -202,9 +202,10 @@ class WxPandaShell(WxAppShell):
     def wxStep(self, task = None):
         """A step in the WX event loop. You can either call this yourself or use as task."""
         while self.evtLoop.Pending():
-          self.evtLoop.Dispatch()
+            self.evtLoop.Dispatch()
         self.evtLoop.ProcessIdle()
-        if task != None: return task.cont
+        if task is not None:
+            return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""

@@ -25,6 +25,13 @@
 #include <windows.h>
 #endif
 
+#ifdef ANDROID
+#include "config_express.h"
+#include <jni.h>
+
+static JavaVM *java_vm = nullptr;
+#endif
+
 /**
  *
  */
@@ -47,5 +54,37 @@ Thread *ThreadDummyImpl::
 get_current_thread() {
   return Thread::get_main_thread();
 }
+
+#ifdef ANDROID
+/**
+ * Attaches the thread to the Java virtual machine.  If this returns true, a
+ * JNIEnv pointer can be acquired using get_jni_env().
+ */
+bool ThreadDummyImpl::
+attach_java_vm() {
+  assert(java_vm != nullptr);
+  JNIEnv *env;
+  JavaVMAttachArgs args;
+  args.version = JNI_VERSION_1_2;
+  args.name = "Main";
+  args.group = nullptr;
+  if (java_vm->AttachCurrentThread(&env, &args) != 0) {
+    thread_cat.error()
+      << "Failed to attach Java VM to thread ";
+      _jni_env = nullptr;
+    return false;
+  }
+  _jni_env = env;
+  return true;
+}
+
+/**
+ * Binds the Panda thread to the current thread, assuming that the current
+ * thread is already a valid attached Java thread.  Called by JNI_OnLoad.
+ */
+void ThreadDummyImpl::
+bind_java_thread() {
+}
+#endif  // ANDROID
 
 #endif  // THREAD_DUMMY_IMPL

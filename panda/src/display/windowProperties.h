@@ -44,7 +44,7 @@ PUBLISHED:
     M_confined,
   };
 
-  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
+  PY_EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
 
 PUBLISHED:
   void operator = (const WindowProperties &copy);
@@ -68,7 +68,11 @@ PUBLISHED:
 
   INLINE void set_origin(const LPoint2i &origin);
   INLINE void set_origin(int x_origin, int y_origin);
+#ifdef CPPPARSER
+  INLINE LPoint2i get_origin() const;
+#else // CPPPARSER
   INLINE const LPoint2i &get_origin() const;
+#endif // CPPPARSER
   INLINE int get_x_origin() const;
   INLINE int get_y_origin() const;
   INLINE bool has_origin() const;
@@ -77,7 +81,11 @@ PUBLISHED:
 
   INLINE void set_size(const LVector2i &size);
   INLINE void set_size(int x_size, int y_size);
+#ifdef CPPPARSER
+  INLINE LVector2i get_size() const;
+#else // CPPPARSER
   INLINE const LVector2i &get_size() const;
+#endif // CPPPARSER
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -92,7 +100,11 @@ PUBLISHED:
                              set_mouse_mode, clear_mouse_mode);
 
   INLINE void set_title(const std::string &title);
+#ifdef CPPPARSER
+  INLINE std::string get_title() const;
+#else // CPPPARSER
   INLINE const std::string &get_title() const;
+#endif // CPPPARSER
   INLINE bool has_title() const;
   INLINE void clear_title();
   MAKE_PROPERTY2(title, has_title, get_title, set_title, clear_title);
@@ -158,14 +170,22 @@ PUBLISHED:
                                 set_cursor_hidden, clear_cursor_hidden);
 
   INLINE void set_icon_filename(const Filename &icon_filename);
+#ifdef CPPPARSER
+  INLINE Filename get_icon_filename() const;
+#else // CPPPARSER
   INLINE const Filename &get_icon_filename() const;
+#endif // CPPPARSER
   INLINE bool has_icon_filename() const;
   INLINE void clear_icon_filename();
   MAKE_PROPERTY2(icon_filename, has_icon_filename, get_icon_filename,
                                 set_icon_filename, clear_icon_filename);
 
   INLINE void set_cursor_filename(const Filename &cursor_filename);
+#ifdef CPPPARSER
+  INLINE Filename get_cursor_filename() const;
+#else // CPPPARSER
   INLINE const Filename &get_cursor_filename() const;
+#endif // CPPPARSER
   INLINE bool has_cursor_filename() const;
   INLINE void clear_cursor_filename();
   MAKE_PROPERTY2(cursor_filename, has_cursor_filename, get_cursor_filename,
@@ -184,6 +204,9 @@ PUBLISHED:
   INLINE void clear_parent_window();
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
+
+  PY_EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  PY_EXTENSION(void __setstate__(PyObject *self, PyObject *state));
 
   void add_properties(const WindowProperties &other);
 
@@ -212,7 +235,7 @@ private:
     S_maximized            = 0x10000,
   };
 
-  // This bitmask represents the truefalse settings for various boolean flags
+  // This bitmask represents the true/false settings for various boolean flags
   // (assuming the corresponding S_* bit has been set, above).
   enum Flags {
     F_undecorated    = S_undecorated,
@@ -255,4 +278,4 @@ INLINE std::ostream &operator << (std::ostream &out, const WindowProperties &pro
 
 #include "windowProperties.I"
 
-#endif
+#endif // !WINDOWPROPERTIES_H

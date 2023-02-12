@@ -213,10 +213,29 @@ set_data(PyObject *data) {
 template<class Element>
 INLINE PyObject *Extension<PointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+}
+
+/**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<PointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (this->_this->is_null()) {
+    return Py_BuildValue("O()", Py_TYPE(self));
+  }
+  else if (this->_this->empty()) {
+    return Py_BuildValue("O(())", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**
@@ -250,10 +269,26 @@ get_data() const {
 template<class Element>
 INLINE PyObject *Extension<ConstPointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+}
+
+/**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<ConstPointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (!this->_this->is_null() && this->_this->empty()) {
+    return Py_BuildValue("O([])", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**
@@ -403,6 +438,20 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = nullptr;
   }
+}
+
+/**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE PointerToArray<Element> Extension<PointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
+  }
+  return copy;
 }
 
 /**
@@ -574,4 +623,18 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = nullptr;
   }
+}
+
+/**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element> Extension<ConstPointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
+  }
+  return copy;
 }

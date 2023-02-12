@@ -30,12 +30,12 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
   GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
-  _bind_texture_pcollector(_draw_window_pcollector, "Bind textures"),
-  _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
-  _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples"),
   _requested_multisamples(0),
   _requested_coverage_samples(0),
-  _rb_context(nullptr)
+  _rb_context(nullptr),
+  _bind_texture_pcollector(_draw_window_pcollector, "Bind textures"),
+  _generate_mipmap_pcollector(_draw_window_pcollector, "Generate mipmaps"),
+  _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples")
 {
   // A FBO doesn't have a back buffer.
   _draw_buffer_type       = RenderBuffer::T_front;
@@ -283,6 +283,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   } else if (mode == FM_refresh) {
     // Just bind the FBO.
     rebuild_bitplanes();
+
+    // Bind the non-multisample FBO, since we won't be rendering anything and
+    // the caller probably wanted to grab a screenshot.
+    if (_fbo_multisample != 0 && !_fbo.empty()) {
+      glgsg->bind_fbo(_fbo[0]);
+    }
   }
 
   // The host window may not have had sRGB enabled, so we need to do this.
@@ -354,7 +360,7 @@ check_fbo() {
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
   check_host_valid();
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     return;
   }
 
@@ -780,6 +786,13 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
       }
 
+      if (slot != RTP_depth_stencil && _rb[RTP_depth_stencil] != 0) {
+        // We have a depth-stencil renderbuffer bound, delete it first.
+        // This will automatically unbind it as well.
+        glgsg->_glDeleteRenderbuffers(1, &(_rb[RTP_depth_stencil]));
+        _rb[RTP_depth_stencil] = 0;
+      }
+
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
 #ifndef OPENGLES
@@ -849,10 +862,74 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         gl_format = GL_DEPTH_COMPONENT16;
       }
       break;
+#ifndef OPENGLES_1
+    case RTP_aux_hrgba_0:
+    case RTP_aux_hrgba_1:
+    case RTP_aux_hrgba_2:
+    case RTP_aux_hrgba_3:
+    case RTP_aux_float_0:
+    case RTP_aux_float_1:
+    case RTP_aux_float_2:
+    case RTP_aux_float_3:
+      if (glgsg->has_extension("GL_EXT_color_buffer_float")) {
+        if (slot >= RTP_aux_float_0 && slot <= RTP_aux_float_3) {
+          gl_format = GL_RGBA32F;
+        } else {
+          gl_format = GL_RGBA16F;
+        }
+      }
+      else if (glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+        gl_format = GL_RGBA16F_EXT;
+      }
+#endif
     // NB: we currently use RTP_stencil to store the right eye for stereo.
     // case RTP_stencil: gl_format = GL_STENCIL_INDEX8; break
     default:
       if (_fb_properties.get_alpha_bits() == 0) {
+#ifndef OPENGLES_1
+        if (_fb_properties.get_float_color() &&
+            glgsg->has_extension("GL_EXT_color_buffer_float")) {
+          // This extension supports the full range of floating-point formats.
+          if (_fb_properties.get_color_bits() > 16 * 3 ||
+              _fb_properties.get_red_bits() > 16 ||
+              _fb_properties.get_green_bits() > 16 ||
+              _fb_properties.get_blue_bits() > 16) {
+            // 32-bit, which is always floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32 * 2) {
+              gl_format = GL_RGB32F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RG32F;
+            } else {
+              gl_format = GL_R32F;
+            }
+          } else {
+            // 16-bit floating-point.
+            if (_fb_properties.get_blue_bits() > 10 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16F;
+            } else {
+              gl_format = GL_R16F;
+            }
+          }
+        } else if (_fb_properties.get_float_color() &&
+                   glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+          gl_format = GL_RGB16F_EXT;
+        } else
+#endif
         if (_fb_properties.get_color_bits() <= 16) {
           gl_format = GL_RGB565_OES;
         } else if (_fb_properties.get_color_bits() <= 24) {
@@ -860,6 +937,18 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         } else {
           gl_format = GL_RGB10_EXT;
         }
+#ifndef OPENGLES_1
+      } else if (_fb_properties.get_float_color() &&
+                 glgsg->has_extension("GL_EXT_color_buffer_float")) {
+        if (_fb_properties.get_color_bits() > 16 * 3) {
+          gl_format = GL_RGBA32F;
+        } else {
+          gl_format = GL_RGBA16F;
+        }
+      } else if (_fb_properties.get_float_color() &&
+                 glgsg->has_extension("GL_EXT_color_buffer_half_float")) {
+        gl_format = GL_RGBA16F_EXT;
+#endif
       } else if (_fb_properties.get_color_bits() == 0) {
         gl_format = GL_ALPHA8_EXT;
       } else if (_fb_properties.get_color_bits() <= 12
@@ -946,18 +1035,43 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else if (_fb_properties.get_float_color()) {
             // 16-bit floating-point.
-            if (_fb_properties.get_blue_bits() > 0 ||
+            if (_fb_properties.get_blue_bits() > 10 ||
                 _fb_properties.get_color_bits() == 1 ||
-                _fb_properties.get_color_bits() > 16 * 2) {
+                _fb_properties.get_color_bits() > 32) {
               gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
             } else if (_fb_properties.get_green_bits() > 0 ||
                        _fb_properties.get_color_bits() > 16) {
               gl_format = GL_RG16F;
             } else {
               gl_format = GL_R16F;
             }
-          } else if (_fb_properties.get_color_bits() > 8 * 3) {
-            gl_format = GL_RGB16_EXT;
+          } else if (_fb_properties.get_color_bits() > 10 * 3 ||
+                     _fb_properties.get_red_bits() > 10 ||
+                     _fb_properties.get_green_bits() > 10 ||
+                     _fb_properties.get_blue_bits() > 10) {
+            // 16-bit normalized.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGBA16;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16;
+            } else {
+              gl_format = GL_R16;
+            }
+          } else if (_fb_properties.get_color_bits() > 8 * 3 ||
+                     _fb_properties.get_red_bits() > 8 ||
+                     _fb_properties.get_green_bits() > 8 ||
+                     _fb_properties.get_blue_bits() > 8) {
+            gl_format = GL_RGB10_A2;
           } else {
             gl_format = GL_RGB;
           }
@@ -974,7 +1088,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             if (_fb_properties.get_color_bits() > 16 * 3) {
               gl_format = GL_RGBA32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGBA16_EXT;
+              gl_format = GL_RGBA16;
             } else {
               gl_format = GL_RGBA;
             }
@@ -1328,11 +1442,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
-  if (_requested_multisamples && _fbo_multisample) {
+  if (_requested_multisamples && _fbo_multisample && mode != FM_refresh) {
     resolve_multisamples();
   }
 
   if (mode == FM_render) {
+    // Should happen *after* resolving multisamples, with the non-MS FBO bound.
     copy_to_textures();
   }
 
@@ -1629,7 +1744,7 @@ close_buffer() {
 
   check_host_valid();
 
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     return;
   }
 
@@ -1661,6 +1776,11 @@ close_buffer() {
   if (!_fbo.empty()) {
     glgsg->_glDeleteFramebuffers(_fbo.size(), _fbo.data());
     _fbo.clear();
+  }
+
+  if (_fbo_multisample != 0) {
+    glgsg->_glDeleteFramebuffers(1, &_fbo_multisample);
+    _fbo_multisample = 0;
   }
 
   report_my_gl_errors();
@@ -1787,7 +1907,7 @@ unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
  */
 void CLP(GraphicsBuffer)::
 report_my_errors(int line, const char *file) {
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       GLCAT.error() << file << ", line " << line << ": GL error " << (int)error_code << "\n";
@@ -1885,16 +2005,7 @@ resolve_multisamples() {
     }
   }
 
-  if (do_depth_blit) {
-    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
-                              GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
-                              GL_NEAREST);
-  } else {
-    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
-                              GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
-  }
-  // Now handle the other color buffers.
+  // First handle the auxiliary buffers.
 #ifndef OPENGLES
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
@@ -1926,8 +2037,9 @@ resolve_multisamples() {
     next += 1;
   }
 #endif
-  report_my_gl_errors();
 
+  // Now blit the normal color target, plus any depth/stencil.
+  // We do this last because we want to leave attachment 0 bound at the end.
 #ifndef OPENGLES
   if (_have_any_color) {
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
@@ -1937,5 +2049,20 @@ resolve_multisamples() {
     glReadBuffer(GL_NONE);
   }
 #endif
+
+  if (do_depth_blit) {
+    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                              GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
+                              GL_NEAREST);
+  }
+  else if (_have_any_color) {
+    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                              GL_COLOR_BUFFER_BIT,
+                              GL_NEAREST);
+  }
+
+  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
+  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
+
   report_my_gl_errors();
 }

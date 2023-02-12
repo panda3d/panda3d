@@ -258,7 +258,8 @@ PUBLISHED:
   void make_histogram(Histogram &hist);
   void quantize(size_t max_colors);
   BLOCKING void perlin_noise_fill(float sx, float sy, int table_size = 256,
-                                  unsigned long seed = 0);
+                                  unsigned long seed = 0,
+                                  float ox = 0, float oy = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
   void remix_channels(const LMatrix4 &conv);

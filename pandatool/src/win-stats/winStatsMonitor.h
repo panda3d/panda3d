@@ -37,18 +37,29 @@ class WinStatsChartMenu;
  */
 class WinStatsMonitor : public PStatMonitor {
 public:
+  enum ChartType {
+    CT_timeline,
+    CT_strip_chart,
+    CT_flame_graph,
+    CT_piano_roll,
+  };
+
   class MenuDef {
   public:
-    INLINE MenuDef(int thread_index, int collector_index, bool show_level);
+    INLINE MenuDef(int thread_index, int collector_index,
+                   ChartType chart_type, bool show_level = false);
     INLINE bool operator < (const MenuDef &other) const;
 
     int _thread_index;
     int _collector_index;
+    ChartType _chart_type;
     bool _show_level;
   };
 
   WinStatsMonitor(WinStatsServer *server);
   virtual ~WinStatsMonitor();
+
+  void close();
 
   virtual std::string get_monitor_name();
 
@@ -59,6 +70,7 @@ public:
   virtual void new_collector(int collector_index);
   virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);
+  virtual void remove_thread(int thread_index);
   virtual void lost_connection();
   virtual void idle();
   virtual bool has_idle();
@@ -66,8 +78,17 @@ public:
   virtual void user_guide_bars_changed();
 
   HWND get_window() const;
-  void open_strip_chart(int thread_index, int collector_index, bool show_level);
-  void open_piano_roll(int thread_index);
+  HFONT get_font() const;
+  int get_pixel_scale() const;
+  POINT get_new_window_pos();
+
+  PStatGraph *open_timeline();
+  PStatGraph *open_strip_chart(int thread_index, int collector_index, bool show_level);
+  PStatGraph *open_flame_graph(int thread_index, int collector_index = -1);
+  PStatGraph *open_piano_roll(int thread_index);
+
+  void choose_collector_color(int collector_index);
+  void reset_collector_color(int collector_index);
 
   const MenuDef &lookup_menu(int menu_id) const;
   int get_menu_id(const MenuDef &menu_def);
@@ -76,19 +97,21 @@ public:
   void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
 
-private:
   void add_graph(WinStatsGraph *graph);
   void remove_graph(WinStatsGraph *graph);
+  void remove_all_graphs();
 
-  void create_window();
-  void setup_options_menu();
+private:
   void setup_speed_menu();
   void setup_frame_rate_label();
-  static void register_window_class(HINSTANCE application);
+  void update_status_bar();
+  void show_popup_menu(int collector);
 
-  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  void calc_iconic_graph_window_pos(WinStatsGraph *graph, int &x, int &y);
+  void handle_window_moved(const RECT &client_rect, int delta_x, int delta_y);
   void handle_menu_command(int menu_id);
+  void handle_status_bar_click(int item);
+  void handle_status_bar_popup(int item);
 
   typedef pset<WinStatsGraph *> Graphs;
   Graphs _graphs;
@@ -103,17 +126,16 @@ private:
 
   HWND _window;
   HMENU _menu_bar;
-  HMENU _options_menu;
   HMENU _speed_menu;
+  HWND _status_bar;
+  pvector<int> _status_bar_collectors;
   std::string _window_title;
-  int _time_units;
   double _scroll_speed;
   bool _pause;
-
-  static bool _window_class_registered;
-  static const char * const _window_class_name;
+  bool _have_data = false;
 
   friend class WinStatsGraph;
+  friend class WinStatsServer;
 };
 
 #include "winStatsMonitor.I"

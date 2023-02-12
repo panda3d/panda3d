@@ -1,4 +1,5 @@
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+
 
 class PhasedObject:
     """
@@ -190,4 +191,3 @@ if __debug__:
 
         def unloadPhaseAt(self):
             print('unloading At')
-

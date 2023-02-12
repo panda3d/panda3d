@@ -103,7 +103,7 @@ has_any_of(int low_bit, int size) const {
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
-    return get_word(w).has_any_of(b, size);
+    return get_word_internal(w).has_any_of(b, size);
   }
 
   int num_high_bits = num_bits_per_word - b;
@@ -156,7 +156,7 @@ has_all_of(int low_bit, int size) const {
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
-    return get_word(w).has_all_of(b, size);
+    return get_word_internal(w).has_all_of(b, size);
   }
 
   int num_high_bits = num_bits_per_word - b;
@@ -588,7 +588,7 @@ compare_to(const BitArray &other) const {
 
   // Compare from highest-order to lowest-order word.
   for (int i = num_words - 1; i >= 0; --i) {
-    int compare = get_word(i).compare_to(other.get_word(i));
+    int compare = get_word_internal(i).compare_to(other.get_word_internal(i));
     if (compare != 0) {
       return compare;
     }
@@ -909,10 +909,14 @@ normalize() {
  */
 void BitArray::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  dg.add_uint32(_array.size());
-  Array::const_iterator ai;
-  for (ai = _array.begin(); ai != _array.end(); ++ai) {
-    dg.add_uint32((*ai).get_word());
+  dg.add_uint32(_array.size() * (num_bits_per_word >> 5));
+
+  for (MaskType &item : _array) {
+    WordType word = item.get_word();
+    for (size_t i = 0; i < num_bits_per_word; i += 32) {
+      dg.add_uint32(word);
+      word >>= 32;
+    }
   }
   dg.add_uint8(_highest_bits);
 }
@@ -922,10 +926,16 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
  */
 void BitArray::
 read_datagram(DatagramIterator &scan, BamReader *manager) {
-  size_t num_words = scan.get_uint32();
-  _array = Array::empty_array(num_words);
-  for (size_t i = 0; i < num_words; ++i) {
-    _array[i] = WordType(scan.get_uint32());
+  size_t num_words32 = scan.get_uint32();
+  size_t num_bits = num_words32 << 5;
+
+  _array = Array::empty_array((num_bits + num_bits_per_word - 1) / num_bits_per_word);
+
+  for (size_t i = 0; i < num_bits; i += 32) {
+    int w = i / num_bits_per_word;
+    int b = i % num_bits_per_word;
+
+    _array[w].store(scan.get_uint32(), b, 32);
   }
   _highest_bits = scan.get_uint8();
 }

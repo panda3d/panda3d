@@ -45,7 +45,8 @@
 #include "bamCacheRecord.h"
 #include "pnmImage.h"
 #include "pfmFile.h"
-#include "asyncFuture.h"
+#include "asyncTask.h"
+#include "extension.h"
 
 class TextureContext;
 class FactoryParams;
@@ -161,7 +162,15 @@ PUBLISHED:
     F_rgb10_a2,
 
     F_rg,
-    F_r16i
+
+    F_r16i,
+    F_rg16i,
+    F_rgb16i, // not recommended
+    F_rgba16i,
+
+    F_rg32i,
+    F_rgb32i,
+    F_rgba32i,
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -440,21 +449,22 @@ PUBLISHED:
   MAKE_PROPERTY(expected_ram_image_size, get_expected_ram_image_size);
   MAKE_PROPERTY(expected_ram_page_size, get_expected_ram_page_size);
 
+  PT(AsyncFuture) async_ensure_ram_image(bool allow_compression = true, int priority = 0);
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
   CPTA_uchar get_ram_image_as(const std::string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) || !defined(HAVE_PYTHON)
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
-#else
-  EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
-                            size_t page_size = 0);
-  EXTEND void set_ram_image_as(PyObject *image, const std::string &provided_format);
-#endif
+#else // !CPPPARSER || !HAVE_PYTHON
+  PY_EXTEND(void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
+                               size_t page_size = 0));
+  PY_EXTEND(void set_ram_image_as(PyObject *image, const std::string &provided_format));
+#endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -463,6 +473,8 @@ PUBLISHED:
   MAKE_PROPERTY(ram_image_compression, get_ram_image_compression);
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
+
+  PY_EXTENSION(PT(Texture) __deepcopy__(PyObject *memo) const);
 
   BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                           QualityLevel quality_level = QL_default,
@@ -512,10 +524,10 @@ PUBLISHED:
 
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
-  INLINE UpdateSeq get_simple_image_modified() const;
   MAKE_PROPERTY(properties_modified, get_properties_modified);
   MAKE_PROPERTY(image_modified, get_image_modified);
-  MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
+
+  SparseArray get_image_modified_pages(UpdateSeq since, int n = 0) const;
 
   INLINE bool has_auto_texture_scale() const;
   INLINE AutoTextureScale get_auto_texture_scale() const;
@@ -625,6 +637,7 @@ public:
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
   static bool is_srgb(Format format);
+  static bool is_integer(Format format);
 
   static bool adjust_size(int &x_size, int &y_size, const std::string &name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
@@ -773,6 +786,7 @@ protected:
   void do_set_pad_size(CData *cdata, int x, int y, int z);
   virtual bool do_can_reload(const CData *cdata) const;
   bool do_reload(CData *cdata);
+  AsyncFuture *do_async_ensure_ram_image(const CData *cdata, bool allow_compression, int priority);
 
   INLINE AutoTextureScale do_get_auto_texture_scale(const CData *cdata) const;
 
@@ -923,6 +937,13 @@ private:
 protected:
   typedef pvector<RamImage> RamImages;
 
+  struct ModifiedPageRange {
+    size_t _z_begin = 0;
+    size_t _z_end;
+    UpdateSeq _modified;
+  };
+  typedef pvector<ModifiedPageRange> ModifiedPageRanges;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
@@ -940,7 +961,7 @@ protected:
     void do_assign(const CData *copy);
     INLINE void inc_properties_modified();
     INLINE void inc_image_modified();
-    INLINE void inc_simple_image_modified();
+    void inc_image_page_modified(int z);
 
     Filename _filename;
     Filename _alpha_filename;
@@ -1009,7 +1030,10 @@ protected:
 
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;
-    UpdateSeq _simple_image_modified;
+
+    ModifiedPageRanges _modified_pages;
+
+    PT(AsyncTask) _reload_task;
 
   public:
     static TypeHandle get_class_type() {
@@ -1064,6 +1088,7 @@ private:
 
   static AutoTextureScale _textures_power_2;
   static PStatCollector _texture_read_pcollector;
+  static PStatCollector _texture_write_pcollector;
 
   // Datagram stuff
 public:
@@ -1101,6 +1126,7 @@ private:
 
   static TypeHandle _type_handle;
 
+  friend class Extension<Texture>;
   friend class TextureContext;
   friend class PreparedGraphicsObjects;
   friend class TexturePool;
@@ -1119,4 +1145,4 @@ EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, Texture::QualityLe
 
 #include "texture.I"
 
-#endif
+#endif // !TEXTURE_H

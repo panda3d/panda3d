@@ -158,8 +158,12 @@ init(PyObject *loader) {
     }
     Py_DECREF(supports_compressed);
   }
+  else {
+    PyErr_Clear();
+  }
 
   _load_func = PyObject_GetAttrString(loader, "load_file");
+  PyErr_Clear();
   _save_func = PyObject_GetAttrString(loader, "save_file");
   PyErr_Clear();
 
@@ -327,7 +331,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   Py_DECREF(args);
 
   if (node == nullptr) {
-    PyObject *exc_type = _PyErr_OCCURRED();
+    PyObject *exc_type = PyErr_Occurred();
     if (!exc_type) {
       loader_cat.error()
         << "load_file must return valid PandaNode or raise exception\n";

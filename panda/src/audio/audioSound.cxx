@@ -29,7 +29,7 @@ AudioSound::
  *
  */
 AudioSound::
-AudioSound() {
+AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 
@@ -42,6 +42,17 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
 void AudioSound::
 get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   // Intentionally blank.
+}
+
+void AudioSound::
+set_3d_direction(LVector3 d) {
+  // Intentionally blank.
+}
+
+LVector3 AudioSound::
+get_3d_direction() const {
+  // Intentionally blank.
+  return { 0.0f, 0.0f, 0.0f };
 }
 
 void AudioSound::
@@ -66,13 +77,46 @@ get_3d_max_distance() const {
   return 0.0f;
 }
 
+void AudioSound::
+set_3d_cone_inner_angle(PN_stdfloat angle) {
+  // Intentionally blank.
+}
+
+PN_stdfloat AudioSound::
+get_3d_cone_inner_angle() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
+void AudioSound::
+set_3d_cone_outer_angle(PN_stdfloat angle) {
+  // Intentionally blank.
+}
+
+PN_stdfloat AudioSound::
+get_3d_cone_outer_angle() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
+void AudioSound::
+set_3d_cone_outer_gain(PN_stdfloat gain) {
+  // Intentionally blank.
+}
+
+PN_stdfloat AudioSound::
+get_3d_cone_outer_gain() const {
+  // Intentionally blank.
+  return 0.0f;
+}
+
 /**
  * For use only with FMOD.
  */
 PN_stdfloat AudioSound::
 get_speaker_mix(int speaker) {
-    // intentionally blank
-    return 0.0;
+  // intentionally blank
+  return 0.0;
 }
 
 /**
@@ -80,7 +124,7 @@ get_speaker_mix(int speaker) {
  */
 void AudioSound::
 set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
-    // intentionally blank
+  // intentionally blank
 }
 
 /**

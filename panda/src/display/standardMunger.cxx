@@ -37,11 +37,11 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
-  _munge_color(false),
-  _munge_color_scale(false),
   _auto_shader(false),
   _shader_skinning(false),
-  _remove_material(false)
+  _remove_material(false),
+  _munge_color(false),
+  _munge_color_scale(false)
 {
   const ShaderAttrib *shader_attrib;
   state->get_attrib_def(shader_attrib);
@@ -123,8 +123,9 @@ munge_data_impl(const GeomVertexData *data) {
   }
 
   GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
-  if (_shader_skinning || (_auto_shader && hardware_animated_vertices &&
-      !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
+  if ((_shader_skinning && animation.get_animation_type() != AT_none) ||
+      (_auto_shader && hardware_animated_vertices &&
+       !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
     animation.set_hardware(4, true);
 
   } else if (hardware_animated_vertices &&

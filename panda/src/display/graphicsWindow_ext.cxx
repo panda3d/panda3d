@@ -12,8 +12,25 @@
  */
 
 #include "graphicsWindow_ext.h"
+#include "windowProperties_ext.h"
 
 #ifdef HAVE_PYTHON
+
+/**
+ * Convenient shorthand for requesting properties.
+ */
+void Extension<GraphicsWindow>::
+request_properties(PyObject *args, PyObject *kwds) {
+  extern struct Dtool_PyTypedObject Dtool_WindowProperties;
+
+  WindowProperties props;
+  PyObject *py_props = DTool_CreatePyInstance((void *)&props, Dtool_WindowProperties, false, false);
+
+  invoke_extension(&props).__init__(py_props, args, kwds);
+
+  _this->request_properties(props);
+  Py_DECREF(py_props);
+}
 
 /**
  * Adds a python event handler to be called when a window event occurs.

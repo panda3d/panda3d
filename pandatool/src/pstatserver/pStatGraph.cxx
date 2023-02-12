@@ -178,39 +178,125 @@ format_number(double value, int guide_bar_units, const string &unit_name) {
 
   if ((guide_bar_units & GBU_named) != 0) {
     // Units are whatever is specified by unit_name, not a time unit at all.
-    label = format_number(value);
+    int int_value = (int)value;
+    if ((double)int_value == value) {
+      // Probably a counter or something, don't display .0 suffix.
+      label = format_string(int_value);
+    } else {
+      label = format_number(value);
+    }
     if ((guide_bar_units & GBU_show_units) != 0 && !unit_name.empty()) {
       label += " ";
       label += unit_name;
     }
-
-  } else {
+  }
+  else {
     // Units are either milliseconds or hz, or both.
     if ((guide_bar_units & GBU_ms) != 0) {
-      double ms = value * 1000.0;
-      label += format_number(ms);
-      if ((guide_bar_units & GBU_show_units) != 0) {
-        label += " ms";
+      if ((guide_bar_units & GBU_show_units) != 0 &&
+          value > 0 && value < 0.000001) {
+        double ns = value * 1000000000.0;
+        label += format_number(ns);
+        label += " ns";
+      }
+      else if ((guide_bar_units & GBU_show_units) != 0 &&
+          value > 0 && value < 0.001) {
+        double us = value * 1000000.0;
+        label += format_number(us);
+#ifdef _WIN32
+        label += " \xb5s";
+#else
+        label += " \xc2\xb5s";
+#endif
+      }
+      else if ((guide_bar_units & GBU_show_units) == 0 || value < 1.0) {
+        double ms = value * 1000.0;
+        label += format_number(ms);
+        if ((guide_bar_units & GBU_show_units) != 0) {
+          label += " ms";
+        }
+      }
+      else {
+        label += format_number(value);
+        label += " s";
       }
     }
 
     if ((guide_bar_units & GBU_hz) != 0) {
       double hz = 1.0 / value;
 
-      if ((guide_bar_units & GBU_ms) != 0) {
-        label += " (";
+      if ((guide_bar_units & GBU_show_units) != 0 &&
+          (guide_bar_units & GBU_ms) == 0) {
+        if (hz >= 1000000000) {
+          label += format_number(hz / 1000000000);
+          label += " GHz";
+        }
+        else if (hz >= 1000000) {
+          label += format_number(hz / 1000000);
+          label += " MHz";
+        }
+        else if (hz >= 1000) {
+          label += format_number(hz / 1000);
+          label += " kHz";
+        }
+        else {
+          label += format_number(hz);
+          label += " Hz";
+        }
       }
-      label += format_number(hz);
-      if ((guide_bar_units & GBU_show_units) != 0) {
-        label += " Hz";
-      }
-      if ((guide_bar_units & GBU_ms) != 0) {
-        label += ")";
+      else {
+        if ((guide_bar_units & GBU_ms) != 0) {
+          label += " (";
+        }
+        label += format_number(hz);
+        if ((guide_bar_units & GBU_show_units) != 0) {
+          label += " Hz";
+        }
+        if ((guide_bar_units & GBU_ms) != 0) {
+          label += ")";
+        }
       }
     }
   }
 
   return label;
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatGraph::
+write_datagram(Datagram &dg) const {
+  int x, y, width, height;
+  bool minimized, maximized;
+  if (get_window_state(x, y, width, height, minimized, maximized)) {
+    dg.add_bool(true);
+    dg.add_int32(x);
+    dg.add_int32(y);
+    dg.add_int32(width);
+    dg.add_int32(height);
+    dg.add_bool(minimized);
+    dg.add_bool(maximized);
+  }
+  else {
+    dg.add_bool(false);
+  }
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatGraph::
+read_datagram(DatagramIterator &scan) {
+  if (scan.get_bool()) {
+    int x = scan.get_int32();
+    int y = scan.get_int32();
+    int width = scan.get_int32();
+    int height = scan.get_int32();
+    bool minimized = scan.get_bool();
+    bool maximized = scan.get_bool();
+    set_window_state(x, y, width, height, minimized, maximized);
+  }
 }
 
 /**
@@ -265,4 +351,21 @@ make_guide_bar(double value, PStatGraph::GuideBarStyle style) const {
   }
 
   return GuideBar(value, label, style);
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+bool PStatGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  return false;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void PStatGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
 }

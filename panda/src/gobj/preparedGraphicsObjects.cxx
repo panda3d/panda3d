@@ -1582,6 +1582,12 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   }
 
   _enqueued_index_buffers.clear();
+
+  for (ShaderBuffer *buffer : _enqueued_shader_buffers) {
+    buffer->prepare_now(this, gsg);
+  }
+
+  _enqueued_shader_buffers.clear();
 }
 
 /**

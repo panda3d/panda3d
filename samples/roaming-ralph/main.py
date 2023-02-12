@@ -199,7 +199,7 @@ class RoamingRalphDemo(ShowBase):
         # Get the time that elapsed since last frame.  We multiply this with
         # the desired speed in order to find out with which distance to move
         # in order to achieve that desired speed.
-        dt = globalClock.getDt()
+        dt = base.clock.dt
 
         # If the camera-left key is pressed, move camera left.
         # If the camera-right key is pressed, move camera right.
@@ -268,7 +268,7 @@ class RoamingRalphDemo(ShowBase):
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
 
         for entry in entries:
-            if entry.getIntoNode().getName() == "terrain":
+            if entry.getIntoNode().name == "terrain":
                 self.ralph.setZ(entry.getSurfacePoint(render).getZ())
 
         # Keep the camera at one unit above the terrain,
@@ -278,7 +278,7 @@ class RoamingRalphDemo(ShowBase):
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
 
         for entry in entries:
-            if entry.getIntoNode().getName() == "terrain":
+            if entry.getIntoNode().name == "terrain":
                 self.camera.setZ(entry.getSurfacePoint(render).getZ() + 1.5)
         if self.camera.getZ() < self.ralph.getZ() + 2.0:
             self.camera.setZ(self.ralph.getZ() + 2.0)

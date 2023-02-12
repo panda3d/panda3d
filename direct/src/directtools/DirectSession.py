@@ -1,12 +1,27 @@
 import math
 
-from panda3d.core import *
-from .DirectUtil import *
+from panda3d.core import (
+    CollisionNode,
+    ConfigVariableBool,
+    ConfigVariableString,
+    CSDefault,
+    NodePath,
+    Point3,
+    TextNode,
+    VBase3,
+    VBase4,
+    Vec3,
+    Vec4,
+    decomposeMatrix,
+    deg2Rad,
+)
+from .DirectUtil import useDirectRenderStyle
 
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.BulletinBoardGlobal import bulletinBoard as bboard
 from direct.task import Task
 
-from .DirectGlobals import DIRECT_NO_MOD
+from . import DirectGlobals as DG
 from .DirectCameraControl import DirectCameraControl
 from .DirectManipulation import DirectManipulationControl
 from .DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
@@ -19,7 +34,8 @@ from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkwidgets import Slider
 ## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
-from direct.interval.IntervalGlobal import *
+from direct.interval.IntervalGlobal import Func, Sequence
+from direct.task.TaskManagerGlobal import taskMgr
 
 class DirectSession(DirectObject):
 
@@ -68,24 +84,24 @@ class DirectSession(DirectObject):
         self.activeParent = None
 
         self.selectedNPReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.9), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, 0.1), bg=Vec4(0, 0, 0, .2), style=3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
         self.selectedNPReadout.reparentTo(hidden)
 
         self.activeParentReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.975), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, 0.16), bg=Vec4(0, 0, 0, .2), style = 3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
         self.activeParentReadout.reparentTo(hidden)
 
         self.directMessageReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, 0.9), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, -0.1), bg=Vec4(0, 0, 0, .2), style = 3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.directMessageReadout)
@@ -96,13 +112,13 @@ class DirectSession(DirectObject):
         self.joybox = None
         self.radamec = None
         self.fastrak = []
-        if base.config.GetBool('want-vrpn', 0):
+        if ConfigVariableBool('want-vrpn', False):
             from direct.directdevices import DirectDeviceManager
             self.deviceManager = DirectDeviceManager.DirectDeviceManager()
             # Automatically create any devices specified in config file
-            joybox = base.config.GetString('vrpn-joybox-device', '')
-            radamec = base.config.GetString('vrpn-radamec-device', '')
-            fastrak = base.config.GetString('vrpn-fastrak-device', '')
+            joybox = ConfigVariableString('vrpn-joybox-device', '').value
+            radamec = ConfigVariableString('vrpn-radamec-device', '').value
+            fastrak = ConfigVariableString('vrpn-fastrak-device', '').value
             if joybox:
                 from direct.directdevices import DirectJoybox
                 self.joybox = DirectJoybox.DirectJoybox(joybox)
@@ -291,16 +307,15 @@ class DirectSession(DirectObject):
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w']
 
         if base.wantTk:
-            from direct.showbase import TkGlobal
             from direct.tkpanels import DirectSessionPanel
-            self.panel = DirectSessionPanel.DirectSessionPanel(parent = tkroot)
+            self.panel = DirectSessionPanel.DirectSessionPanel(parent = base.tkRoot)
         try:
             # Has the clusterMode been set externally (i.e. via the
             # bootstrap application?
             self.clusterMode = clusterMode
         except NameError:
             # Has the clusterMode been set via a config variable?
-            self.clusterMode = base.config.GetString("cluster-mode", '')
+            self.clusterMode = ConfigVariableString("cluster-mode", '').value
 
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
@@ -385,14 +400,12 @@ class DirectSession(DirectObject):
     def oobe(self):
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
-        try:
-            self.oobeMode
-        except:
+        if not hasattr(self, 'oobeMode'):
             self.oobeMode = 0
 
             self.oobeCamera = hidden.attachNewNode('oobeCamera')
 
-            self.oobeVis = loader.loadModel('models/misc/camera')
+            self.oobeVis = base.loader.loadModel('models/misc/camera')
             if self.oobeVis:
                 self.oobeVis.node().setFinal(1)
 
@@ -543,7 +556,7 @@ class DirectSession(DirectObject):
                     base.mouseWatcher = winCtrl.mouseWatcher
                     base.mouseWatcherNode = winCtrl.mouseWatcher.node()
                     base.direct.dr.mouseUpdate()
-                    LE_showInOneCam(self.selectedNPReadout, self.camera.getName())
+                    DG.LE_showInOneCam(self.selectedNPReadout, self.camera.getName())
                     base.direct.widget = base.direct.manipulationControl.widgetList[base.camList.index(NodePath(winCtrl.camNode))]
 
                 input = input[8:] # get rid of camera prefix
@@ -592,8 +605,8 @@ class DirectSession(DirectObject):
             self.fControl = 1
             # [gjeon] to update control key information while mouse1 is pressed
             if self.fMouse1:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_CONTROL_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_CONTROL_MOD
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'control-up':
             self.fControl = 0
@@ -603,16 +616,16 @@ class DirectSession(DirectObject):
             self.fAlt = 1
             # [gjeon] to update alt key information while mouse1 is pressed
             if self.fMouse1:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
             elif self.fMouse2:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
             elif self.fMouse3:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse3', sentArgs = [modifiers])
         elif input == 'alt-up':
             self.fAlt = 0
@@ -639,24 +652,24 @@ class DirectSession(DirectObject):
             self.select(self.selected.last)
 
     def getModifiers(self, input, base):
-        modifiers = DIRECT_NO_MOD
+        modifiers = DG.DIRECT_NO_MOD
         modifierString = input[: input.find(base)]
         if modifierString.find('shift') != -1:
-            modifiers |= DIRECT_SHIFT_MOD
+            modifiers |= DG.DIRECT_SHIFT_MOD
         if modifierString.find('control') != -1:
-            modifiers |= DIRECT_CONTROL_MOD
+            modifiers |= DG.DIRECT_CONTROL_MOD
         if modifierString.find('alt') != -1:
-            modifiers |= DIRECT_ALT_MOD
+            modifiers |= DG.DIRECT_ALT_MOD
         return modifiers
 
     def gotShift(self, modifiers):
-        return modifiers & DIRECT_SHIFT_MOD
+        return modifiers & DG.DIRECT_SHIFT_MOD
 
     def gotControl(self, modifiers):
-        return modifiers & DIRECT_CONTROL_MOD
+        return modifiers & DG.DIRECT_CONTROL_MOD
 
     def gotAlt(self, modifiers):
-        return modifiers & DIRECT_ALT_MOD
+        return modifiers & DG.DIRECT_ALT_MOD
 
     def setFScaleWidgetByCam(self, flag):
         self.fScaleWidgetByCam = flag
@@ -669,6 +682,8 @@ class DirectSession(DirectObject):
         if not taskMgr.hasTaskNamed('resizeObjectHandles'):
             dnp = self.selected.last
             if dnp:
+                direct = base.direct
+
                 if self.manipulationControl.fMultiView:
                     for i in range(3):
                         sf = 30.0 * direct.drList[i].orthoFactor
@@ -698,7 +713,7 @@ class DirectSession(DirectObject):
                 self.ancestry = dnp.getAncestors()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
-            self.selectedNPReadout.reparentTo(aspect2d)
+            self.selectedNPReadout.reparentTo(base.a2dBottomLeft)
             self.selectedNPReadout.setText(
                 'Selected:' + dnp.getName())
             # Show the manipulation widget
@@ -708,7 +723,7 @@ class DirectSession(DirectObject):
             else:
                 self.widget.showWidget()
             editTypes = self.manipulationControl.getEditTypes([dnp])
-            if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+            if (editTypes & DG.EDIT_TYPE_UNEDITABLE) == DG.EDIT_TYPE_UNEDITABLE:
                 self.manipulationControl.disableWidgetMove()
             else:
                 self.manipulationControl.enableWidgetMove()
@@ -782,7 +797,7 @@ class DirectSession(DirectObject):
         # Record new parent
         self.activeParent = nodePath
         # Update the activeParentReadout
-        self.activeParentReadout.reparentTo(aspect2d)
+        self.activeParentReadout.reparentTo(base.a2dBottomLeft)
         self.activeParentReadout.setText(
             'Active Reparent Target:' + nodePath.getName())
         # Alert everyone else
@@ -831,7 +846,7 @@ class DirectSession(DirectObject):
             # Temporarily set node path color
             nodePath.setColor(flashColor)
             # Clean up color in a few seconds
-            t = taskMgr.doMethodLater(DIRECT_FLASH_DURATION,
+            t = taskMgr.doMethodLater(DG.DIRECT_FLASH_DURATION,
                                       # This is just a dummy task
                                       self.flashDummy,
                                       'flashNodePath',)
@@ -1031,7 +1046,7 @@ class DirectSession(DirectObject):
     def message(self, text):
         taskMgr.remove('hideDirectMessage')
         taskMgr.remove('hideDirectMessageLater')
-        self.directMessageReadout.reparentTo(aspect2d)
+        self.directMessageReadout.reparentTo(base.a2dTopLeft)
         self.directMessageReadout.setText(text)
         self.hideDirectMessageLater()
 
@@ -1069,8 +1084,10 @@ class DirectSession(DirectObject):
         for iRay in self.iRayList:
             iRay.removeUnpickable(item)
 
+
 class DisplayRegionContext(DirectObject):
     regionCount = 0
+
     def __init__(self, cam):
         self.cam = cam
         self.camNode = self.cam.node()
@@ -1091,10 +1108,7 @@ class DisplayRegionContext(DirectObject):
         # one display region per camera, since we are defining a
         # display region on a per-camera basis.  See note in
         # DisplayRegionList.__init__()
-        try:
-            self.dr = self.camNode.getDr(0)
-        except:
-            self.dr = self.camNode.getDisplayRegion(0)
+        self.dr = self.camNode.getDisplayRegion(0)
         left = self.dr.getLeft()
         right = self.dr.getRight()
         bottom = self.dr.getBottom()
@@ -1273,7 +1287,7 @@ class DisplayRegionList(DirectObject):
         for dr in self.displayRegionList:
             dr.setVfov(fov)
 
-    def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
+    def mouseUpdate(self, modifiers = DG.DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
         #base.direct.dr = self.getCurrentDr()

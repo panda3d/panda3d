@@ -1,16 +1,25 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
+import direct.showbase.DConfig as config
 from direct.showbase.PythonUtil import makeFlywheelGen
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
-import types, weakref, random, sys
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+import types
+import weakref
+import random
 import builtins
 
-deadEndTypes = (bool, types.BuiltinFunctionType,
-                types.BuiltinMethodType, complex,
-                float, int,
-                type(None), type(NotImplemented),
-                type, types.CodeType, types.FunctionType,
-                bytes, str, tuple)
+deadEndTypes = frozenset((
+    types.BuiltinFunctionType, types.BuiltinMethodType,
+    types.CodeType, types.FunctionType,
+    types.GeneratorType, types.CoroutineType,
+    types.AsyncGeneratorType,
+    bool, complex, float, int, type,
+    bytes, str, list, tuple,
+    type(None), type(NotImplemented)
+))
 
 
 def _createContainerLeak():
@@ -445,13 +454,11 @@ class FindContainers(Job):
         if objId in self._id2discoveredStartRef:
             existingRef = self._id2discoveredStartRef[objId]
             if type(existingRef) is not int:
-                if (existingRef.getNumIndirections() >=
-                    ref.getNumIndirections()):
+                if existingRef.getNumIndirections() >= ref.getNumIndirections():
                     # the ref that we already have is more concise than the new ref
                     return
         if objId in self._id2ref:
-            if (self._id2ref[objId].getNumIndirections() >=
-                ref.getNumIndirections()):
+            if self._id2ref[objId].getNumIndirections() >= ref.getNumIndirections():
                 # the ref that we already have is more concise than the new ref
                 return
         storedItem = ref
@@ -542,6 +549,23 @@ class FindContainers(Job):
                 parentObjRef = curObjRef
                 # if we hit a dead end, start over from another container
                 curObjRef = None
+
+                # types.CellType was added in Python 3.8
+                if sys.version_info >= (3, 8) and type(curObj) is types.CellType:
+                    child = curObj.cell_contents
+                    hasLength = self._hasLength(child)
+                    notDeadEnd = not self._isDeadEnd(child)
+                    if hasLength or notDeadEnd:
+                        objRef = ObjectRef(Indirection(evalStr='.cell_contents'),
+                                           id(child), parentObjRef)
+                        yield None
+                        if hasLength:
+                            for i in self._addContainerGen(child, objRef):
+                                yield None
+                        if notDeadEnd:
+                            self._addDiscoveredStartRef(child, objRef)
+                            curObjRef = objRef
+                    continue
 
                 if hasattr(curObj, '__dict__'):
                     child = curObj.__dict__
@@ -851,7 +875,7 @@ class FPTObjsOfType(Job):
                         cName = container.__class__.__name__
                     else:
                         cName = container.__name__
-                    if (self._otn.lower() in cName.lower()):
+                    if self._otn.lower() in cName.lower():
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(
                                 id, getInstance=getInstance):

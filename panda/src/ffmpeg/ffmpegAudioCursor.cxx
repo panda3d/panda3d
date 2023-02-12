@@ -50,10 +50,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _packet_data(nullptr),
   _format_ctx(nullptr),
   _audio_ctx(nullptr),
-  _resample_ctx(nullptr),
+  _frame(nullptr),
   _buffer(nullptr),
   _buffer_alloc(nullptr),
-  _frame(nullptr)
+  _resample_ctx(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -101,7 +101,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_rate = codecpar->sample_rate;
   _audio_channels = codecpar->channels;
 
-  AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
+  const AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == nullptr) {
     cleanup();
     return;
@@ -224,7 +224,7 @@ cleanup() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_audio_ctx);
 #else
-    delete _audio_ctx;
+    av_free(_audio_ctx);
 #endif
   }
   _audio_ctx = nullptr;

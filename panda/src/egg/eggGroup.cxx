@@ -1094,8 +1094,8 @@ write_vertex_ref(ostream &out, int indent_level) const {
  * return false.
  */
 bool EggGroup::
-egg_start_parse_body() {
-  egg_start_group_body();
+egg_start_parse_body(EggLexerState &state) {
+  egg_start_group_body(state);
   return true;
 }
 
@@ -1403,7 +1403,7 @@ ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   }
   if (bits & EggGroup::CF_level) {
     out << space << "level";
-    space = " ";
+    //space = " ";
   }
   return out;
 }

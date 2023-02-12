@@ -25,8 +25,6 @@ extern ConfigVariableBool responsive_minimized_fullscreen_window;
 extern ConfigVariableBool hold_keys_across_windows;
 extern ConfigVariableBool do_vidmemsize_check;
 extern ConfigVariableBool auto_cpu_data;
-extern ConfigVariableBool ime_composition_w;
-extern ConfigVariableBool ime_aware;
 extern ConfigVariableBool ime_hide;
 extern ConfigVariableBool request_dxdisplay_information;
 extern ConfigVariableBool dpi_aware;

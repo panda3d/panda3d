@@ -2,9 +2,9 @@
 
 __all__ = ['VectorEntry', 'Vector2Entry', 'Vector3Entry', 'Vector4Entry', 'ColorEntry']
 
-from direct.showbase.TkGlobal import *
 from . import Valuator
 import Pmw
+import tkinter as tk
 from tkinter.colorchooser import askcolor
 
 
@@ -27,7 +27,7 @@ class VectorEntry(Pmw.MegaWidget):
             ('labelIpadx',          2,              None),
             ('command',             None,           None),
             ('entryWidth',          8,              self._updateEntryWidth),
-            ('relief',              GROOVE,         self._updateRelief),
+            ('relief',              tk.GROOVE,      self._updateRelief),
             ('bd',                  2,              self._updateBorderWidth),
             ('text',                'Vector:',      self._updateText),
             ('min',                 None,           self._updateValidate),
@@ -53,18 +53,18 @@ class VectorEntry(Pmw.MegaWidget):
 
         # This does double duty as a menu button
         self._label = self.createcomponent('label', (), None,
-                                           Menubutton, (interior,),
+                                           tk.Menubutton, (interior,),
                                            text = self['text'],
                                            activebackground = '#909090')
-        self.menu = self._label['menu'] = Menu(self._label)
+        self.menu = self._label['menu'] = tk.Menu(self._label)
         self.menu.add_command(label = 'Reset', command = self.reset)
         self.menu.add_command(label = 'Popup sliders', command = self.popupSliders)
-        self._label.pack(side = LEFT, fill = X, ipadx = self['labelIpadx'])
+        self._label.pack(side = tk.LEFT, fill = tk.X, ipadx = self['labelIpadx'])
 
         self.variableList = []
         self.entryList = []
         for index in range(self['dim']):
-            var = StringVar()
+            var = tk.StringVar()
             self.variableList.append(var)
             # To set the configuration of all entrys in a vector use:
             # ve.configure(Entry_XXX = YYY)
@@ -76,10 +76,10 @@ class VectorEntry(Pmw.MegaWidget):
                   'entryField%d_entry' % index),),
                 'Entry',
                 Pmw.EntryField, (interior,),
-                entry_justify = RIGHT,
+                entry_justify = tk.RIGHT,
                 entry_textvariable = var,
                 command = lambda s = self, i = index: s._entryUpdateAt(i))
-            entry.pack(side = LEFT, expand = 1, fill = X)
+            entry.pack(side = tk.LEFT, expand = 1, fill = tk.X)
             self.entryList.append(entry)
 
         # To configure the floaterGroup use:
@@ -219,7 +219,7 @@ class VectorEntry(Pmw.MegaWidget):
 
     def action(self, fCommand = 1):
         self._refreshFloaters()
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](self._value)
 
     def reset(self):
@@ -334,7 +334,7 @@ class ColorEntry(VectorEntry):
             self.set((color[0], color[1], color[2], self.getAt(3)))
 
 if __name__ == '__main__':
-    root = Toplevel()
+    root = tk.Toplevel()
     root.title('Vector Widget demo')
 
     ve = VectorEntry(root); ve.pack()

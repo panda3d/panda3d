@@ -1,6 +1,4 @@
-
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import NodePath
 
 #
 # GridParent.py
@@ -96,7 +94,5 @@ class GridParent:
         else:
             self.av.reparentTo(self.cellOrigin)
 
-        #print "gridParent: reparent to %s" % self.av
-        #print "gridParent: pos = %s, %s" % (self.av.getPos(), self.av.getParent().getPos())
-
-
+        #print("gridParent: reparent to %s" % self.av)
+        #print("gridParent: pos = %s, %s" % (self.av.getPos(), self.av.getParent().getPos()))

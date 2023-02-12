@@ -106,8 +106,6 @@ PUBLISHED:
   INLINE bool is_exact_type(TypeHandle handle) const;
 
 public:
-  INLINE int get_best_parent_from_Set(const std::set<int> &) const;
-
   // Derived classes should override this function to call init_type().  It
   // will only be called in error situations when the type was for some reason
   // not properly initialized.

@@ -21,8 +21,22 @@ reflections, you will need to use a sphere map or a cube map."""
 
 __all__ = ['setupMirror', 'showFrustum']
 
-from panda3d.core import *
+from panda3d.core import (
+    Camera,
+    CardMaker,
+    CullFaceAttrib,
+    GeomNode,
+    Lens,
+    NodePath,
+    PerspectiveLens,
+    Plane,
+    PlaneNode,
+    Point3,
+    Vec3,
+)
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
+
 
 def setupMirror(name, width, height, rootCamera = None,
                 bufferSize = 256, clearColor = None):
@@ -77,7 +91,7 @@ def setupMirror(name, width, height, rootCamera = None,
     camera.setInitialState(dummy.getState())
 
     # Create a visible representation of the camera so we can see it.
-    #cameraVis = loader.loadModel('camera.egg')
+    #cameraVis = base.loader.loadModel('camera.egg')
     #if not cameraVis.isEmpty():
     #    cameraVis.reparentTo(cameraNP)
 
@@ -127,6 +141,7 @@ def setupMirror(name, width, height, rootCamera = None,
 
     return root
 
+
 def showFrustum(np):
     # Utility function to reveal the frustum for a particular camera.
     cameraNP = np.find('**/+Camera')
@@ -136,15 +151,16 @@ def showFrustum(np):
     geomNode.addGeom(lens.makeGeometry())
     cameraNP.attachNewNode(geomNode)
 
+
 if __name__ == "__main__":
     from direct.showbase.ShowBase import ShowBase
     base = ShowBase()
 
-    panda = loader.loadModel("panda")
+    panda = base.loader.loadModel("panda")
     panda.setH(180)
     panda.setPos(0, 10, -2.5)
     panda.setScale(0.5)
-    panda.reparentTo(render)
+    panda.reparentTo(base.render)
 
     myMirror = setupMirror("mirror", 10, 10, bufferSize=1024, clearColor=(0, 0, 1, 1))
     myMirror.setPos(0, 15, 2.5)

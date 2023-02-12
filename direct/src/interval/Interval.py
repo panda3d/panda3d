@@ -2,15 +2,17 @@
 
 __all__ = ['Interval']
 
+from panda3d.core import ClockObject, PStatCollector
+from panda3d.direct import CInterval
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task, TaskManager
 from direct.task.TaskManagerGlobal import taskMgr
-from panda3d.core import *
-from panda3d.direct import *
 from direct.extensions_native import CInterval_extensions
 from direct.extensions_native import NodePath_extensions
 import math
+
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -39,7 +41,7 @@ class Interval(DirectObject):
         self.pstats = None
         if __debug__ and TaskManager.taskTimerVerbose:
             self.pname = name.split('-', 1)[0]
-            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
+            self.pstats = PStatCollector("App:Tasks:ivalLoop:%s" % (self.pname))
 
         # Set true if the interval should be invoked if it was
         # completely skipped over during initialize or finalize, false
@@ -71,8 +73,8 @@ class Interval(DirectObject):
         # Returns true if the interval has not been started, has already
         # played to its completion, or has been explicitly stopped via
         # finish().
-        return (self.getState() == CInterval.SInitial or \
-                self.getState() == CInterval.SFinal)
+        return self.getState() == CInterval.SInitial or \
+               self.getState() == CInterval.SFinal
 
     def setT(self, t):
         # There doesn't seem to be any reason to clamp this, and it
@@ -132,7 +134,7 @@ class Interval(DirectObject):
         return self.getT()
 
     def resume(self, startT = None):
-        if startT != None:
+        if startT is not None:
             self.setT(startT)
         self.setupResume()
         if not self.isPlaying():
@@ -398,7 +400,7 @@ class Interval(DirectObject):
         space = ''
         for l in range(indent):
             space = space + ' '
-        return (space + self.name + ' dur: %.2f' % self.duration)
+        return space + self.name + ' dur: %.2f' % self.duration
 
     open_ended = property(getOpenEnded)
     stopped = property(isStopped)
@@ -458,7 +460,7 @@ class Interval(DirectObject):
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
         tkinter = importlib.import_module('tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = tkinter.Frame(tl)

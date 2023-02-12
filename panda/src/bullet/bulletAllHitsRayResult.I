@@ -18,10 +18,7 @@
 INLINE BulletAllHitsRayResult BulletAllHitsRayResult::
 empty() {
 
-  btVector3 from;
-  btVector3 to;
-
-  return BulletAllHitsRayResult(from, to, CollideMask::all_on());
+  return BulletAllHitsRayResult(btVector3(0, 0, 0), btVector3(0, 0, 0), CollideMask::all_on());
 }
 
 /**

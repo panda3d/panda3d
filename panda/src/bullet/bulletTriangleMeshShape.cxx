@@ -29,9 +29,9 @@ TypeHandle BulletTriangleMeshShape::_type_handle;
  */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape() :
-  _mesh(nullptr),
-  _gimpact_shape(nullptr),
   _bvh_shape(nullptr),
+  _gimpact_shape(nullptr),
+  _mesh(nullptr),
   _dynamic(false),
   _compress(false),
   _bvh(false) {

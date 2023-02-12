@@ -6,15 +6,11 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrolledFrame']
 
-from panda3d.core import *
+from panda3d.core import NodePath, PGScrollFrame
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectScrollBar import *
+from .DirectFrame import DirectFrame
+from .DirectScrollBar import DirectScrollBar
 
-"""
-import DirectScrolledFrame
-d = DirectScrolledFrame(borderWidth=(0, 0))
-"""
 
 class DirectScrolledFrame(DirectFrame):
     """
@@ -77,7 +73,8 @@ class DirectScrolledFrame(DirectFrame):
         self.initialiseoptions(DirectScrolledFrame)
 
     def setScrollBarWidth(self):
-        if self.fInit: return
+        if self.fInit:
+            return
 
         w = self['scrollBarWidth']
         self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, self.verticalScroll["frameSize"][2], self.verticalScroll["frameSize"][3])

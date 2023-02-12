@@ -43,7 +43,6 @@ public:
   virtual bool safe_to_combine_children() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual int get_first_visible_child() const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
 

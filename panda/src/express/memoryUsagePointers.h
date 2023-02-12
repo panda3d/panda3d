@@ -50,9 +50,9 @@ PUBLISHED:
   std::string get_type_name(size_t n) const;
   double get_age(size_t n) const;
 
-#ifdef DO_MEMORY_USAGE
-  EXTENSION(PyObject *get_python_pointer(size_t n) const);
-#endif
+#if defined(DO_MEMORY_USAGE)
+  PY_EXTENSION(PyObject *get_python_pointer(size_t n) const);
+#endif // DO_MEMORY_USAGE
 
   void clear();
 
@@ -93,4 +93,4 @@ INLINE std::ostream &operator << (std::ostream &out, const MemoryUsagePointers &
 
 #include "memoryUsagePointers.I"
 
-#endif
+#endif // !MEMORYUSAGEPOINTERS_H

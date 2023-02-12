@@ -29,6 +29,7 @@
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
+#include "screenshotRequest.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
 #include "windowHandle.h"
@@ -383,6 +384,11 @@ ConfigVariableFilename subprocess_window
           "and is not used or needed in other environments.  See "
           "WindowProperties::set_subprocess_window()."));
 
+ConfigVariableBool ime_aware
+("ime-aware", false,
+ PRC_DESC("Set this true to show candidate strings in Panda3D rather than via "
+          "an OS-provided external popup window."));
+
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
  PRC_DESC("No longer has any effect.  Do not use."));
@@ -470,6 +476,12 @@ ConfigVariableInt shadow_depth_bits
  PRC_DESC("The minimum number of depth buffer bits requested when rendering "
           "shadow maps.  Set this to 32 for more depth resolution in shadow "
           "maps."));
+ConfigVariableBool shadow_cube_map_filter
+("shadow-cube-map-filter", false,
+ PRC_DESC("If true, Panda enables hardware depth map comparison mode for "
+          "point lights, if supported.  If false, does not.  Keep this set to "
+          "false if you want the shader generator to work correctly for point "
+          "light shadows."));
 
 ConfigVariableColor background_color
 ("background-color", "0.41 0.41 0.41 0.0",
@@ -484,6 +496,14 @@ ConfigVariableBool sync_video
           "but it may be useful to set it false during development for a "
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
+
+ConfigVariableDouble display_zoom
+("display-zoom", 0.0,
+ PRC_DESC("If this is set to a value other than 0.0, it overrides the detected "
+          "system DPI scaling.  GraphicsPipe::get_display_zoom() will instead "
+          "return whatever was passed in here.  You should generally only "
+          "change this based on a user preference change or to test how the UI "
+          "will look on monitors with different pixel densities."));
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -515,6 +535,7 @@ init_libdisplay() {
   MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
+  ScreenshotRequest::init_type();
   StandardMunger::init_type();
   StereoDisplayRegion::init_type();
 #ifdef SUPPORT_SUBPROCESS_WINDOW

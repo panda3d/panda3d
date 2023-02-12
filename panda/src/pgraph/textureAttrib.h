@@ -90,6 +90,9 @@ PUBLISHED:
   CPT(RenderAttrib) remove_off_stage(TextureStage *stage) const;
   CPT(RenderAttrib) unify_texture_stages(TextureStage *stage) const;
   CPT(RenderAttrib) replace_texture(Texture *tex, Texture *new_tex) const;
+#ifdef CPPPARSER  // Let interrogate know this also accepts None
+  CPT(RenderAttrib) replace_texture(Texture *tex, std::nullptr_t new_tex) const;
+#endif
 
 public:
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;

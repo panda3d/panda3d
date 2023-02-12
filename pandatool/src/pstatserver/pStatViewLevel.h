@@ -31,6 +31,7 @@ public:
   INLINE int get_collector() const;
   INLINE double get_value_alone() const;
   double get_net_value() const;
+  INLINE int get_count() const;
 
   void sort_children(const PStatClientData *client_data);
 
@@ -39,6 +40,7 @@ public:
 
 private:
   int _collector;
+  int _count = 0;
   double _value_alone;
   PStatViewLevel *_parent;
 

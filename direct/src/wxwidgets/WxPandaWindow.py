@@ -13,7 +13,14 @@ try:
 except ImportError:
     wxgl = None
 
-from panda3d.core import *
+from panda3d.core import (
+    CallbackGraphicsWindow,
+    ConfigVariableBool,
+    FrameBufferProperties,
+    KeyboardButton,
+    MouseButton,
+    WindowProperties,
+)
 
 __all__ = ['WxPandaWindow']
 
@@ -124,7 +131,7 @@ else:
                 del kw['gsg']
 
             fbprops = kw.get('fbprops', None)
-            if fbprops == None:
+            if fbprops is None:
                 fbprops = FrameBufferProperties.getDefault()
 
             attribList = kw.get('attribList', None)

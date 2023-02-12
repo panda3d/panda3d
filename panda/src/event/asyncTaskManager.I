@@ -32,6 +32,28 @@ get_clock() {
   return _clock;
 }
 
+#ifndef CPPPARSER
+/**
+ * Adds a new task to the task manager which calls the indicated callable.
+ * This method is defined as a more convenient alternative to subclassing
+ * AsyncTask.
+ *
+ * This given callable allowed to be any object defining a call operator that
+ * accepts an AsyncTask pointer and returns a DoneStatus.
+ *
+ * Returns the newly created AsyncTask object.
+ *
+ * @since 1.11.0
+ */
+template<class Callable>
+INLINE AsyncTask *AsyncTaskManager::
+add(Callable callable, const std::string &name, int sort, int priority) {
+  AsyncTaskChain *chain = make_task_chain("default");
+  nassertr(chain != nullptr, nullptr);
+  return chain->add(std::move(callable), name, sort, priority);
+}
+#endif
+
 /**
  * Returns the number of tasks that are currently active or sleeping within
  * the task manager.

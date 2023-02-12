@@ -509,6 +509,7 @@ has_alpha_channel(int num_components) const {
   case F_rgb8:
   case F_rgb5:
   case F_rgb332:
+  case F_srgb:
     // These formats never use alpha, regardless of the number of components
     // we have.
     return false;
@@ -525,6 +526,7 @@ has_alpha_channel(int num_components) const {
   case F_rgba8:
   case F_rgba4:
   case F_rgba5:
+  case F_srgb_alpha:
   case F_unspecified:
     // These formats use alpha if the image had alpha.
     return (num_components == 2 || num_components == 4);
@@ -556,6 +558,7 @@ affects_polygon_alpha() const {
   case ET_gloss:
   case ET_height:
   case ET_normal_gloss:
+  case ET_emission:
     return false;
 
   case ET_selector:
@@ -690,6 +693,8 @@ EggTexture::Format EggTexture::
 string_format(const string &string) {
   if (cmp_nocase_uh(string, "rgba") == 0) {
     return F_rgba;
+  } else if (cmp_nocase_uh(string, "srgb_alpha") == 0) {
+    return F_srgb_alpha;
   } else if (cmp_nocase_uh(string, "rgbm") == 0) {
     return F_rgbm;
   } else if (cmp_nocase_uh(string, "rgba12") == 0) {
@@ -701,6 +706,8 @@ string_format(const string &string) {
 
   } else if (cmp_nocase_uh(string, "rgb") == 0) {
     return F_rgb;
+  } else if (cmp_nocase_uh(string, "srgb") == 0) {
+    return F_srgb;
   } else if (cmp_nocase_uh(string, "rgb12") == 0) {
     return F_rgb12;
   } else if (cmp_nocase_uh(string, "rgb8") == 0) {
@@ -875,6 +882,9 @@ string_env_type(const string &string) {
 
   } else if (cmp_nocase_uh(string, "normal_gloss") == 0) {
     return ET_normal_gloss;
+
+  } else if (cmp_nocase_uh(string, "emission") == 0) {
+    return ET_emission;
 
   } else {
     return ET_unspecified;
@@ -1053,8 +1063,8 @@ as_transform() {
  * return false.
  */
 bool EggTexture::
-egg_start_parse_body() {
-  egg_start_texture_body();
+egg_start_parse_body(EggLexerState &state) {
+  egg_start_texture_body(state);
   return true;
 }
 
@@ -1137,6 +1147,8 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "rgba8";
   case EggTexture::F_rgba4:
     return out << "rgba4";
+  case EggTexture::F_srgb_alpha:
+    return out << "srgb_alpha";
 
   case EggTexture::F_rgb:
     return out << "rgb";
@@ -1150,6 +1162,8 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "rgba5";
   case EggTexture::F_rgb332:
     return out << "rgb332";
+  case EggTexture::F_srgb:
+    return out << "srgb";
 
   case EggTexture::F_red:
     return out << "red";
@@ -1302,6 +1316,9 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
 
   case EggTexture::ET_normal_gloss:
     return out << "normal_gloss";
+
+  case EggTexture::ET_emission:
+    return out << "emission";
   }
 
   nassertr(false, out);

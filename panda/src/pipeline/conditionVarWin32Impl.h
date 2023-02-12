@@ -40,6 +40,9 @@ public:
 private:
   MutexWin32Impl &_mutex;
   CONDITION_VARIABLE _cvar = CONDITION_VARIABLE_INIT;
+
+  static BOOL (__stdcall *_wait_func)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
+  friend class PStatClientImpl;
 };
 
 #include "conditionVarWin32Impl.I"

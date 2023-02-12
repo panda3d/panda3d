@@ -2,7 +2,11 @@
 
 __all__ = ['Timer']
 
+from panda3d.core import ClockObject
+
 from . import Task
+from .TaskManagerGlobal import taskMgr
+
 
 class Timer:
     id = 0
@@ -10,7 +14,7 @@ class Timer:
     def __init__(self, name=None):
         self.finalT = 0.0
         self.currT = 0.0
-        if (name == None):
+        if name is None:
             name = 'default-timer-%d' % Timer.id
             Timer.id += 1
         self.name = name
@@ -18,28 +22,28 @@ class Timer:
         self.callback = None
 
     def start(self, t, name):
-        if (self.started):
+        if self.started:
             self.stop()
         self.callback = None
         self.finalT = t
         self.name = name
-        self.startT = globalClock.getFrameTime()
+        self.startT = ClockObject.getGlobalClock().getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
 
     def startCallback(self, t, callback):
-        if (self.started):
+        if self.started:
             self.stop()
         self.callback = callback
         self.finalT = t
-        self.startT = globalClock.getFrameTime()
+        self.startT = ClockObject.getGlobalClock().getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
 
     def stop(self):
-        if (not self.started):
+        if not self.started:
             return 0.0
         taskMgr.remove(self.name + '-run')
         self.started = 0
@@ -51,7 +55,7 @@ class Timer:
         self.start(self.finalT - self.currT, self.name)
 
     def restart(self):
-        if (self.callback != None):
+        if self.callback is not None:
             self.startCallback(self.finalT, self.callback)
         else:
             self.start(self.finalT, self.name)
@@ -66,16 +70,17 @@ class Timer:
         self.finalT = t
 
     def getT(self):
-        return (self.finalT - self.currT)
+        return self.finalT - self.currT
 
     def __timerTask(self, task):
-        t = globalClock.getFrameTime()
+        t = ClockObject.getGlobalClock().getFrameTime()
         te = t - self.startT
         self.currT = te
-        if (te >= self.finalT):
-            if (self.callback != None):
+        if te >= self.finalT:
+            if self.callback is not None:
                 self.callback()
             else:
+                from direct.showbase.MessengerGlobal import messenger
                 messenger.send(self.name)
             return Task.done
         return Task.cont

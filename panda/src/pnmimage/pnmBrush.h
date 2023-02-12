@@ -45,6 +45,7 @@ PUBLISHED:
     BE_blend,
     BE_darken,
     BE_lighten,
+    BE_add,
   };
 
   static PT(PNMBrush) make_transparent();

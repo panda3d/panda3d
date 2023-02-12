@@ -99,7 +99,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeBMP::
 make_reader(std::istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -110,7 +109,6 @@ make_reader(std::istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeBMP::
 make_writer(std::ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 

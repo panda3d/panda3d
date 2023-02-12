@@ -30,11 +30,11 @@ GeomVertexColumn(CPT_InternalName name, int num_components,
                  int element_stride) :
   _name(std::move(name)),
   _num_components(num_components),
+  _num_elements(num_elements),
   _numeric_type(numeric_type),
   _contents(contents),
   _start(start),
   _column_alignment(column_alignment),
-  _num_elements(num_elements),
   _element_stride(element_stride),
   _packer(nullptr)
 {
@@ -48,11 +48,11 @@ INLINE GeomVertexColumn::
 GeomVertexColumn(const GeomVertexColumn &copy) :
   _name(copy._name),
   _num_components(copy._num_components),
+  _num_elements(copy._num_elements),
   _numeric_type(copy._numeric_type),
   _contents(copy._contents),
   _start(copy._start),
   _column_alignment(copy._column_alignment),
-  _num_elements(copy._num_elements),
   _element_stride(copy._element_stride),
   _packer(nullptr)
 {

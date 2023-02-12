@@ -126,10 +126,6 @@ typedef long Py_hash_t;
 /* Python 3.3 */
 
 #if PY_MAJOR_VERSION >= 3
-// Python 3 versions before 3.3.3 defined this incorrectly.
-#  undef _PyErr_OCCURRED
-#  define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
-
 // Python versions before 3.3 did not define this.
 #  if PY_VERSION_HEX < 0x03030000
 #    define PyUnicode_AsUTF8 _PyUnicode_AsString
@@ -137,14 +133,15 @@ typedef long Py_hash_t;
 #  endif
 #endif
 
+/* Python 3.4 */
+#if PY_VERSION_HEX < 0x03040000
+#define PyGILState_Check() (PyGILState_GetThisThreadState() == _PyThreadState_Current)
+#endif
+
 /* Python 3.6 */
 
 #if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)
-INLINE PyObject *_PyObject_CallNoArg(PyObject *func) {
-  static PyObject *empty_tuple = PyTuple_New(0);
-  return PyObject_Call(func, empty_tuple, nullptr);
-}
-#  define _PyObject_CallNoArg _PyObject_CallNoArg
+#  define _PyObject_CallNoArg PyObject_CallNoArgs
 #endif
 
 #if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_FastCall)
@@ -208,14 +205,43 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 }
 #endif
 
-/* Other Python implementations */
+/* Python 3.9 */
 
-// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
-// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
-// it, so in these cases we just silently fall back to PyErr_Occurred.
-#ifndef _PyErr_OCCURRED
-#  define _PyErr_OCCURRED() PyErr_Occurred()
+#ifndef PyCFunction_CheckExact
+#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
 #endif
+
+#if PY_VERSION_HEX < 0x03090000
+INLINE PyObject *PyObject_CallNoArgs(PyObject *func) {
+#if PY_VERSION_HEX >= 0x03080000
+  return _PyObject_Vectorcall(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03070000
+  return _PyObject_FastCallDict(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(func, nullptr, 0);
+#else
+  return PyObject_CallObject(func, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallOneArg(PyObject *callable, PyObject *arg) {
+#if PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(callable, &arg, 1);
+#else
+  return PyObject_CallFunctionObjArgs(callable, arg, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallMethodNoArgs(PyObject *obj, PyObject *name) {
+  return PyObject_CallMethodObjArgs(obj, name, nullptr);
+}
+
+INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObject *arg) {
+  return PyObject_CallMethodObjArgs(obj, name, arg, nullptr);
+}
+#endif
+
+/* Other Python implementations */
 
 #endif  // HAVE_PYTHON
 

@@ -48,6 +48,9 @@ get_stride() const {
  * Changes the total number of bytes reserved in the array for each vertex.
  * You may not reduce this below get_total_bytes(), but you may increase it
  * arbitrarily.
+ *
+ * You should avoid arrays with stride higher than 2048, which is the typical
+ * limit supported by graphics hardware.
  */
 INLINE void GeomVertexArrayFormat::
 set_stride(int stride) {

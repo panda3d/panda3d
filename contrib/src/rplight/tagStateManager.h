@@ -57,7 +57,7 @@ PUBLISHED:
 
   inline void register_camera(const std::string& state, Camera* source);
   inline void unregister_camera(const std::string& state, Camera* source);
-  inline BitMask32 get_mask(const std::string &container_name);
+  inline BitMask32 get_mask(const std::string &container_name) const;
 
 private:
   typedef std::vector<Camera*> CameraList;

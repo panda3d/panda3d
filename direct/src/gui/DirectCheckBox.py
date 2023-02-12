@@ -1,5 +1,5 @@
-from direct.gui.DirectGui import *
-from panda3d.core import *
+from direct.gui.DirectGui import DGG, DirectButton
+from panda3d.core import PGButton
 
 
 class DirectCheckBox(DirectButton):
@@ -56,4 +56,3 @@ class DirectCheckBox(DirectButton):
         if self['command']:
             # Pass any extra args to command
             self['command'](*[self['isChecked']] + self['extraArgs'])
-

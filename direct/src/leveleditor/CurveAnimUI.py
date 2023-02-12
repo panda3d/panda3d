@@ -3,8 +3,6 @@
 """
 import wx
 
-from direct.interval.IntervalGlobal import *
-from direct.actor.Actor import *
 from . import ObjectGlobals as OG
 
 
@@ -78,7 +76,7 @@ class CurveAnimUI(wx.Dialog):
         self.Layout()
 
     def OnChooseNode(self, evt):
-        if base.direct.selected.last == None or base.direct.selected.last.hasTag('Controller') or not base.direct.selected.last.hasTag('OBJRoot'):
+        if base.direct.selected.last is None or base.direct.selected.last.hasTag('Controller') or not base.direct.selected.last.hasTag('OBJRoot'):
             dlg = wx.MessageDialog(None, 'Please select an object.', 'NOTICE', wx.OK )
             dlg.ShowModal()
             dlg.Destroy()
@@ -93,7 +91,7 @@ class CurveAnimUI(wx.Dialog):
                 self.chooseNodeTxt.SetValue(str(self.nodePath[OG.OBJ_UID]))
 
     def OnChooseCurve(self, evt):
-        if base.direct.selected.last == None or base.direct.selected.last.hasTag('Controller') or not base.direct.selected.last.hasTag('OBJRoot'):
+        if base.direct.selected.last is None or base.direct.selected.last.hasTag('Controller') or not base.direct.selected.last.hasTag('OBJRoot'):
             dlg = wx.MessageDialog(None, 'Please select a curve.', 'NOTICE', wx.OK )
             dlg.ShowModal()
             dlg.Destroy()
@@ -109,7 +107,7 @@ class CurveAnimUI(wx.Dialog):
 
     def OnCreateAnim(self, evt):
         self.time = self.duritionTimeSpin.GetValue()
-        if self.nodePath == None or self.curve == None:
+        if self.nodePath is None or self.curve is None:
             dlg = wx.MessageDialog(None, 'Please select an object and a curve first.', 'NOTICE', wx.OK )
             dlg.ShowModal()
             dlg.Destroy()
@@ -143,17 +141,10 @@ class CurveAnimUI(wx.Dialog):
                     hasKey = True
                     return
 
-            if hasKey == False and self.editor.animMgr.curveAnimation != {}:
+            if not hasKey and self.editor.animMgr.curveAnimation != {}:
                 self.editor.animMgr.curveAnimation[(self.nodePath[OG.OBJ_UID],self.curve[OG.OBJ_UID])] = (self.nodePath[OG.OBJ_UID],self.curve[OG.OBJ_UID],self.time)
                 self.editor.updateStatusReadout('Sucessfully saved to global animation list')
 
     def OnExit(self,evt):
         self.Destroy()
         self.editor.ui.curveAnimMenuItem.Check(False)
-
-
-
-
-
-
-

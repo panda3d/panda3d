@@ -149,3 +149,35 @@ update_mods(ModifierButtons &mods) const {
     return false;
   }
 }
+
+/**
+ *
+ */
+INLINE ButtonHandle ButtonEvent::
+get_button() const {
+  return _button;
+}
+
+/**
+ *
+ */
+INLINE int ButtonEvent::
+get_keycode() const {
+  return _keycode;
+}
+
+/**
+ *
+ */
+INLINE ButtonEvent::Type ButtonEvent::
+get_type() const {
+  return _type;
+}
+
+/**
+ *
+ */
+INLINE double ButtonEvent::
+get_time() const {
+  return _time;
+}

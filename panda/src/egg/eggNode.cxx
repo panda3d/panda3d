@@ -229,19 +229,13 @@ parse_egg(const std::string &egg_syntax) {
 
   std::istringstream in(egg_syntax);
 
-  LightMutexHolder holder(egg_lock);
-
-  egg_init_parser(in, "", this, group);
-
-  if (!egg_start_parse_body()) {
-    egg_cleanup_parser();
+  EggLexerState lexer_state;
+  egg_init_lexer_state(lexer_state, in, "");
+  if (!egg_start_parse_body(lexer_state)) {
     return false;
   }
 
-  eggyyparse();
-  egg_cleanup_parser();
-
-  return (egg_error_count() == 0);
+  return egg_parse(lexer_state, this, group);
 }
 
 #ifdef _DEBUG
@@ -287,7 +281,7 @@ test_under_integrity() const {
  * return false.
  */
 bool EggNode::
-egg_start_parse_body() {
+egg_start_parse_body(EggLexerState &state) {
   return false;
 }
 

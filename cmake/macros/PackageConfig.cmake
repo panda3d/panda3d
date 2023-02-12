@@ -145,6 +145,8 @@ function(package_option name)
     endif()
   endif()
 
+  option("HAVE_${name}" "${cache_string}" "${default}")
+
   # If it was set by the user but not found, display an error.
   string(TOUPPER "${found_as}" FOUND_AS)
   if(HAVE_${name} AND NOT ${found_as}_FOUND AND NOT ${FOUND_AS}_FOUND)
@@ -165,24 +167,16 @@ function(package_option name)
 
   set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
 
+  if(${found_as}_FOUND OR ${FOUND_AS}_FOUND)
+    set(PANDA_PACKAGE_FOUND_${name} ON PARENT_SCOPE)
+  else()
+    set(PANDA_PACKAGE_FOUND_${name} OFF PARENT_SCOPE)
+  endif()
+
   # Create the INTERFACE library used to depend on this package.
   add_library(PKG::${name} INTERFACE IMPORTED GLOBAL)
 
-  # Explicitly record the package's include directories as system include
-  # directories.  CMake does do this automatically for INTERFACE libraries, but
-  # it does it by discovering all transitive links first, then reading
-  # INTERFACE_INCLUDE_DIRECTORIES for those which are INTERFACE libraries.  So,
-  # this would be broken for the metalib system (pre CMake 3.12) which doesn't
-  # "link" the object libraries.
-  if(CMAKE_VERSION VERSION_LESS "3.12")
-    set_target_properties(PKG::${name} PROPERTIES
-      INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-      "$<TARGET_PROPERTY:PKG::${name},INTERFACE_INCLUDE_DIRECTORIES>")
-  endif()
-
-  # Create the option, and if it actually is enabled, populate the INTERFACE
-  # library created above
-  option("HAVE_${name}" "${cache_string}" "${default}")
+  # If the option actually is enabled, populate the INTERFACE library created above
   if(HAVE_${name})
     set(use_variables ON)
 
@@ -279,15 +273,19 @@ function(show_packages)
   foreach(package ${_ALL_CONFIG_PACKAGES})
     set(desc "${PANDA_PACKAGE_DESC_${package}}")
     set(note "${PANDA_PACKAGE_NOTE_${package}}")
-    if(HAVE_${package})
+
+    if(HAVE_${package} AND PANDA_PACKAGE_FOUND_${package})
       if(NOT note STREQUAL "")
         message("+ ${desc} (${note})")
       else()
         message("+ ${desc}")
       endif()
 
+    elseif(HAVE_${package})
+      message("! ${desc} (enabled but not found)")
+
     else()
-      if(NOT ${package}_FOUND)
+      if(NOT PANDA_PACKAGE_FOUND_${package})
         set(reason "not found")
       elseif(NOT PANDA_PACKAGE_DEFAULT_${package})
         set(reason "not requested")
@@ -402,9 +400,8 @@ function(export_packages filename)
             endforeach(config)
           endif()
 
-        elseif(CMAKE_VERSION VERSION_GREATER "3.8")
-          # This is an INTERFACE_LIBRARY, and CMake is new enough to support
-          # IMPORTED_IMPLIB
+        else()
+          # This is an INTERFACE_LIBRARY.
           get_target_property(imported_libname "${head}" IMPORTED_LIBNAME)
           if(imported_libname)
             list(APPEND libraries ${imported_libname})

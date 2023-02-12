@@ -44,12 +44,12 @@ noise(const LVecBase2d &value) const {
   double v = fade(y);
 
   // Hash coordinates of the 4 square corners (A, B, A + 1, and B + 1)
-  nassertr(X >= 0 && X + 1 < _index.size(), make_nan(0.0));
+  nassertr(X >= 0 && (size_t)X + 1 < _index.size(), make_nan(0.0));
   int A = _index[X] + Y;
   int B = _index[X + 1] + Y;
 
-  nassertr(A >= 0 && A + 1 < _index.size(), make_nan(0.0));
-  nassertr(B >= 0 && B + 1 < _index.size(), make_nan(0.0));
+  nassertr(A >= 0 && (size_t)A + 1 < _index.size(), make_nan(0.0));
+  nassertr(B >= 0 && (size_t)B + 1 < _index.size(), make_nan(0.0));
 
   // and add blended results from 4 corners of square.
   double result =

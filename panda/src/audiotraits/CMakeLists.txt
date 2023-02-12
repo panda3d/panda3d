@@ -5,7 +5,7 @@ elseif(NOT HAVE_FMODEX AND NOT HAVE_OPENAL)
     "You must have an audio backend for audio support! Turn off HAVE_AUDIO to ignore this.")
 endif()
 
-if(HAVE_FMODEX)
+if(HAVE_FMODEX AND NOT (APPLE AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64"))
   set(P3FMOD_HEADERS
     config_fmodAudio.h
     fmodAudioManager.h
@@ -20,6 +20,17 @@ if(HAVE_FMODEX)
   add_library(p3fmod_audio ${MODULE_TYPE} ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
   set_target_properties(p3fmod_audio PROPERTIES DEFINE_SYMBOL BUILDING_FMOD_AUDIO)
   target_link_libraries(p3fmod_audio panda PKG::FMODEX)
+
+  if(APPLE)
+    # The FMOD EX thirdparty library is not available for arm64, so we have to
+    # exclude it from the target architectures.
+    get_target_property(_archs p3fmod_audio OSX_ARCHITECTURES)
+
+    if(_archs AND _archs MATCHES "arm64")
+      list(REMOVE_ITEM _archs "arm64")
+      set_target_properties(p3fmod_audio PROPERTIES OSX_ARCHITECTURES "${_archs}")
+    endif()
+  endif()
 
   install(TARGETS p3fmod_audio
     EXPORT FMOD COMPONENT FMOD
@@ -48,6 +59,11 @@ if(HAVE_OPENAL)
   add_library(p3openal_audio ${MODULE_TYPE} ${P3OPENAL_HEADERS} ${P3OPENAL_SOURCES})
   set_target_properties(p3openal_audio PROPERTIES DEFINE_SYMBOL BUILDING_OPENAL_AUDIO)
   target_link_libraries(p3openal_audio panda PKG::OPENAL)
+
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    # When statically linking OpenAL, keep its symbols private to this module.
+    target_link_options(p3openal_audio PRIVATE "LINKER:--exclude-libs,libopenal.a")
+  endif()
 
   install(TARGETS p3openal_audio
     EXPORT OpenAL COMPONENT OpenAL

@@ -12,6 +12,7 @@
  */
 
 #include "winStatsChartMenu.h"
+#include "winStatsMenuId.h"
 #include "winStatsMonitor.h"
 
 /**
@@ -31,6 +32,7 @@ WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index) :
  */
 WinStatsChartMenu::
 ~WinStatsChartMenu() {
+  DestroyMenu(_menu);
 }
 
 /**
@@ -59,11 +61,20 @@ add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU | MIIM_ID;
   mii.fType = MFT_STRING;
+  mii.wID = 1000 | _thread_index;
   mii.hSubMenu = _menu;
   mii.dwTypeData = (char *)thread_name.c_str();
   InsertMenuItem(menu_bar, before_menu_id, FALSE, &mii);
+}
+
+/**
+ *
+ */
+void WinStatsChartMenu::
+remove_from_menu_bar(HMENU menu_bar) {
+  RemoveMenu(menu_bar, 1000 | _thread_index, MF_BYCOMMAND);
 }
 
 /**
@@ -93,14 +104,44 @@ do_update() {
   }
 
   // Now rebuild the menu with the new set of entries.
-
-  // The menu item(s) for the thread's frame time goes first.
-  add_view(_menu, view.get_top_level(), false);
-
-  bool needs_separator = true;
   MENUITEMINFO mii;
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
+
+  if (_thread_index == 0) {
+    // Timeline goes first.
+    {
+      WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_timeline, false);
+      int menu_id = _monitor->get_menu_id(menu_def);
+
+      mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+      mii.fType = MFT_STRING;
+      mii.wID = menu_id;
+      mii.dwTypeData = "Timeline";
+      InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    }
+
+    // And the piano roll (even though it's not very useful nowadays)
+    {
+      WinStatsMonitor::MenuDef menu_def(_thread_index, -1, WinStatsMonitor::CT_piano_roll, false);
+      int menu_id = _monitor->get_menu_id(menu_def);
+
+      mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+      mii.fType = MFT_STRING;
+      mii.wID = menu_id;
+      mii.dwTypeData = "Piano Roll";
+      InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    }
+
+    mii.fMask = MIIM_FTYPE;
+    mii.fType = MFT_SEPARATOR;
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  }
+
+  // The menu item(s) for the thread's frame time goes second.
+  add_view(_menu, view.get_top_level(), false);
+
+  bool needs_separator = true;
 
   // And then the menu item(s) for each of the level values.
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -125,19 +166,30 @@ do_update() {
     }
   }
 
-  // Also a menu item for a piano roll (following a separator).
-  mii.fMask = MIIM_FTYPE;
-  mii.fType = MFT_SEPARATOR;
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  // For the main thread menu, also some options relating to all graph windows.
+  if (_thread_index == 0) {
+    mii.fMask = MIIM_FTYPE;
+    mii.fType = MFT_SEPARATOR;
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
-  WinStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
-  int menu_id = _monitor->get_menu_id(menu_def);
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = MI_graphs_close_all;
+    mii.dwTypeData = "Close All Graphs";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-  mii.fType = MFT_STRING;
-  mii.wID = menu_id;
-  mii.dwTypeData = "Piano Roll";
-  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = MI_graphs_reopen_default;
+    mii.dwTypeData = "Reopen Default Graphs";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = MI_graphs_save_default;
+    mii.dwTypeData = "Save Current Layout as Default";
+    InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+  }
 }
 
 /**
@@ -151,37 +203,77 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
   const PStatClientData *client_data = _monitor->get_client_data();
   std::string collector_name = client_data->get_collector_name(collector);
 
-  WinStatsMonitor::MenuDef menu_def(_thread_index, collector, show_level);
-  int menu_id = _monitor->get_menu_id(menu_def);
-
   MENUITEMINFO mii;
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-  mii.fType = MFT_STRING;
-  mii.wID = menu_id;
-  mii.dwTypeData = (char *)collector_name.c_str();
-  InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
-
   int num_children = view_level->get_num_children();
-  if (num_children > 1) {
-    // If the collector has more than one child, add a menu entry to go
-    // directly to each of its children.
-    HMENU submenu = CreatePopupMenu();
-    std::string submenu_name = collector_name + " components";
+  if (show_level && num_children == 0) {
+    // For a level collector without children, no point in making a submenu.
+    WinStatsMonitor::MenuDef menu_def(_thread_index, collector, WinStatsMonitor::CT_strip_chart, show_level);
+    int menu_id = _monitor->get_menu_id(menu_def);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = menu_id;
+    mii.dwTypeData = (char *)collector_name.c_str();
+    InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
+    return;
+  }
+
+  HMENU menu;
+  if (!show_level && collector == 0 && num_children == 0) {
+    // Root collector without children, just add the options directly to the
+    // parent menu.
+    menu = parent_menu;
+  }
+  else {
+    // Create a submenu.
+    menu = CreatePopupMenu();
 
     mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
     mii.fType = MFT_STRING;
-    mii.hSubMenu = submenu;
-    mii.dwTypeData = (char *)submenu_name.c_str();
+    mii.hSubMenu = menu;
+    mii.dwTypeData = (char *)collector_name.c_str();
     InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
+  }
+
+  {
+    WinStatsMonitor::MenuDef menu_def(_thread_index, collector, WinStatsMonitor::CT_strip_chart, show_level);
+    int menu_id = _monitor->get_menu_id(menu_def);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = menu_id;
+    mii.dwTypeData = "Open Strip Chart";
+    InsertMenuItem(menu, GetMenuItemCount(menu), TRUE, &mii);
+  }
+
+  if (!show_level) {
+    if (collector == 0 && num_children == 0) {
+      collector = -1;
+    }
+
+    WinStatsMonitor::MenuDef menu_def(_thread_index, collector, WinStatsMonitor::CT_flame_graph);
+    int menu_id = _monitor->get_menu_id(menu_def);
+
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+    mii.fType = MFT_STRING;
+    mii.wID = menu_id;
+    mii.dwTypeData = "Open Flame Graph";
+    InsertMenuItem(menu, GetMenuItemCount(menu), TRUE, &mii);
+  }
+
+  if (num_children > 0) {
+    mii.fMask = MIIM_FTYPE;
+    mii.fType = MFT_SEPARATOR;
+    InsertMenuItem(menu, GetMenuItemCount(menu), TRUE, &mii);
 
     // Reverse the order since the menus are listed from the top down; we want
     // to be visually consistent with the graphs, which list these labels from
     // the bottom up.
     for (int c = num_children - 1; c >= 0; c--) {
-      add_view(submenu, view_level->get_child(c), show_level);
+      add_view(menu, view_level->get_child(c), show_level);
     }
   }
 }

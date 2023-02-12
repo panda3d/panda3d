@@ -27,12 +27,9 @@
 class EggGroupNode;
 class LightMutex;
 
-extern LightMutex egg_lock;
+struct EggLexerState;
 
-void egg_init_parser(std::istream &in, const std::string &filename,
-                     EggObject *tos, EggGroupNode *egg_top_node);
-
-void egg_cleanup_parser();
+bool egg_parse(EggLexerState &lexer, EggObject *tos, EggGroupNode *egg_top_node);
 
 // This structure holds the return value for each token.  Traditionally, this
 // is a union, and is declared with the %union declaration in the parser.y
@@ -40,8 +37,7 @@ void egg_cleanup_parser();
 // that has member functions in a union), so we'll use a class instead.  That
 // means we need to declare it externally, here.
 
-class EXPCL_PANDA_EGG EggTokenType {
-public:
+struct EggTokenType {
   double _number;
   unsigned long _ulong;
   std::string _string;
@@ -52,5 +48,15 @@ public:
 // The yacc-generated code expects to use the symbol 'YYSTYPE' to refer to the
 // above class.
 #define YYSTYPE EggTokenType
+
+struct EggLocType {
+  // Bison expects these members to be part of this struct.
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+
+#define YYLTYPE EggLocType
 
 #endif

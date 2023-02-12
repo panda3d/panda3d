@@ -32,6 +32,7 @@ ComputeNode(const std::string &name) :
   _dispatcher(new ComputeNode::Dispatcher)
 {
   set_internal_bounds(new OmniBoundingVolume);
+  set_renderable();
 }
 
 /**
@@ -63,17 +64,6 @@ make_copy() const {
 bool ComputeNode::
 safe_to_combine() const {
   return false;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool ComputeNode::
-is_renderable() const {
-  return true;
 }
 
 /**

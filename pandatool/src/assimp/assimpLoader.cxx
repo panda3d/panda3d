@@ -21,9 +21,11 @@
 #include "geomTriangles.h"
 #include "pnmFileTypeRegistry.h"
 #include "pnmImage.h"
+#include "alphaTestAttrib.h"
 #include "materialAttrib.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
+#include "transparencyAttrib.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
@@ -35,11 +37,47 @@
 #include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
 #include "pvector.h"
+#include "cmath.h"
+#include "deg_2_rad.h"
+#include "string_utils.h"
 
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
 #include <assimp/postprocess.h>
+
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR "$mat.gltf.pbrMetallicRoughness.baseColorFactor", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR "$mat.gltf.pbrMetallicRoughness.metallicFactor", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR "$mat.gltf.pbrMetallicRoughness.roughnessFactor", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_ALPHAMODE
+#define AI_MATKEY_GLTF_ALPHAMODE "$mat.gltf.alphaMode", 0, 0
+#endif
+
+#ifndef AI_MATKEY_GLTF_ALPHACUTOFF
+#define AI_MATKEY_GLTF_ALPHACUTOFF "$mat.gltf.alphaCutoff", 0, 0
+#endif
+
+// Older versions of Assimp used these glTF-specific keys instead.
+#ifndef AI_MATKEY_BASE_COLOR
+#define AI_MATKEY_BASE_COLOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR
+#endif
+
+#ifndef AI_MATKEY_METALLIC_FACTOR
+#define AI_MATKEY_METALLIC_FACTOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR
+#endif
+
+#ifndef AI_MATKEY_ROUGHNESS_FACTOR
+#define AI_MATKEY_ROUGHNESS_FACTOR AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR
+#endif
 
 using std::ostringstream;
 using std::stringstream;
@@ -177,9 +215,7 @@ build_graph() {
   }
 
   // And then the meshes.
-  _geoms = new PT(Geom)[_scene->mNumMeshes];
-  _geom_matindices = new unsigned int[_scene->mNumMeshes];
-  _characters = new PT(Character)[_scene->mNumMeshes];
+  _geoms = new Geoms[_scene->mNumMeshes];
   for (size_t i = 0; i < _scene->mNumMeshes; ++i) {
     load_mesh(i);
   }
@@ -197,8 +233,6 @@ build_graph() {
   delete[] _textures;
   delete[] _mat_states;
   delete[] _geoms;
-  delete[] _geom_matindices;
-  delete[] _characters;
 }
 
 /**
@@ -265,7 +299,8 @@ load_texture(size_t index) {
   } else {
     if (assimp_cat.is_debug()) {
       assimp_cat.debug()
-        << "Reading embedded raw texture with size " << tex.mWidth << "x" << tex.mHeight << "\n";
+        << "Reading embedded raw texture with size "
+        << tex.mWidth << "x" << tex.mHeight << "\n";
     }
 
     ptex->setup_2d_texture(tex.mWidth, tex.mHeight, Texture::T_unsigned_byte, Texture::F_rgba);
@@ -292,16 +327,18 @@ load_texture(size_t index) {
  * Converts an aiMaterial into a RenderState.
  */
 void AssimpLoader::
-load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr) {
+load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
+                   TextureStage::Mode mode, CPT(TextureAttrib) &tattr,
+                   CPT(TexMatrixAttrib) &tmattr) {
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
   float blend;
   aiTextureOp op;
-  aiTextureMapMode mapmode;
+  aiTextureMapMode mapmode[3];
 
   for (size_t i = 0; i < mat.GetTextureCount(ttype); ++i) {
-    mat.GetTexture(ttype, i, &path, &mapping, nullptr, &blend, &op, &mapmode);
+    mat.GetTexture(ttype, i, &path, &mapping, nullptr, &blend, &op, mapmode);
 
     if (AI_SUCCESS != mat.Get(AI_MATKEY_UVWSRC(ttype, i), uvindex)) {
       // If there's no texture coordinate set for this texture, assume that
@@ -310,13 +347,23 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
       uvindex = i;
     }
 
-    stringstream str;
-    str << uvindex;
-    PT(TextureStage) stage = new TextureStage(str.str());
-    if (uvindex > 0) {
-      stage->set_texcoord_name(InternalName::get_texcoord_name(str.str()));
+    if (ttype == aiTextureType_DIFFUSE && i == 1) {
+      // The glTF 2 importer duplicates this slot in older versions of Assimp.
+      // Since glTF doesn't support multiple diffuse textures anyway, we check
+      // for this old glTF-specific key, and if present, ignore this texture.
+      aiColor4D col;
+      if (AI_SUCCESS == mat.Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, col)) {
+        return;
+      }
     }
-    PT(Texture) ptex = nullptr;
+
+    std::string uvindex_str = format_string(uvindex);
+    PT(TextureStage) stage = new TextureStage(uvindex_str);
+    stage->set_mode(mode);
+    if (uvindex > 0) {
+      stage->set_texcoord_name(InternalName::get_texcoord_name(uvindex_str));
+    }
+    PT(Texture) ptex;
 
     // I'm not sure if this is the right way to handle it, as I couldn't find
     // much information on embedded textures.
@@ -355,7 +402,84 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
     }
 
     if (ptex != nullptr) {
+      // Apply the mapping modes.
+      switch (mapmode[0]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_u(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_u(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_u(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_u(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+      switch (mapmode[1]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_v(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_v(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_v(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_v(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+      switch (mapmode[2]) {
+      case aiTextureMapMode_Wrap:
+        ptex->set_wrap_w(SamplerState::WM_repeat);
+        break;
+      case aiTextureMapMode_Clamp:
+        ptex->set_wrap_w(SamplerState::WM_clamp);
+        break;
+      case aiTextureMapMode_Decal:
+        ptex->set_wrap_w(SamplerState::WM_border_color);
+        ptex->set_border_color(LColor(0, 0, 0, 0));
+        break;
+      case aiTextureMapMode_Mirror:
+        ptex->set_wrap_w(SamplerState::WM_mirror);
+        break;
+      default:
+        break;
+      }
+
       tattr = DCAST(TextureAttrib, tattr->add_on_stage(stage, ptex));
+
+      // Is there a texture transform?
+      aiUVTransform transform;
+      if (AI_SUCCESS == mat.Get(AI_MATKEY_UVTRANSFORM(ttype, i), transform)) {
+        // Reconstruct the original origin from the glTF file.
+        PN_stdfloat rcos, rsin;
+        csincos(-transform.mRotation, &rsin, &rcos);
+        transform.mTranslation.x -= (0.5 * transform.mScaling.x) * (-rcos + rsin + 1);
+        transform.mTranslation.y -= ((0.5 * transform.mScaling.y) * (rsin + rcos - 1)) + 1 - transform.mScaling.y;
+
+        LMatrix3 matrix =
+          LMatrix3::translate_mat(0, -1) *
+          LMatrix3::scale_mat(transform.mScaling.x, transform.mScaling.y) *
+          LMatrix3::rotate_mat(rad_2_deg(-transform.mRotation)) *
+          LMatrix3::translate_mat(transform.mTranslation.x, 1 + transform.mTranslation.y);
+
+        CPT(TransformState) cstate =
+          TransformState::make_mat3(matrix);
+
+        CPT(RenderAttrib) new_attr = (tmattr == nullptr)
+          ? TexMatrixAttrib::make(stage, std::move(cstate))
+          : tmattr->add_stage(stage, std::move(cstate));
+        tmattr = DCAST(TexMatrixAttrib, std::move(new_attr));
+      }
     }
   }
 }
@@ -369,7 +493,7 @@ load_material(size_t index) {
 
   CPT(RenderState) state = RenderState::make_empty();
 
-  aiColor3D col;
+  aiColor4D col;
   bool have;
   int ival;
   PN_stdfloat fval;
@@ -379,7 +503,11 @@ load_material(size_t index) {
   // First do the material attribute.
   PT(Material) pmat = new Material;
   have = false;
-  if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_DIFFUSE, col)) {
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_BASE_COLOR, col)) {
+    pmat->set_base_color(LColor(col.r, col.g, col.b, col.a));
+    have = true;
+  }
+  else if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_DIFFUSE, col)) {
     pmat->set_diffuse(LColor(col.r, col.g, col.b, 1));
     have = true;
   }
@@ -391,6 +519,13 @@ load_material(size_t index) {
     }
     have = true;
   }
+  //else {
+  //  if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS_STRENGTH, fval)) {
+  //    pmat->set_specular(LColor(fval, fval, fval, 1));
+  //  } else {
+  //    pmat->set_specular(LColor(1, 1, 1, 1));
+  //  }
+  //}
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_AMBIENT, col)) {
     pmat->set_specular(LColor(col.r, col.g, col.b, 1));
     have = true;
@@ -405,6 +540,22 @@ load_material(size_t index) {
   if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS, fval)) {
     pmat->set_shininess(fval);
     have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_METALLIC_FACTOR, fval)) {
+    pmat->set_metallic(fval);
+    have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_ROUGHNESS_FACTOR, fval)) {
+    pmat->set_roughness(fval);
+    have = true;
+  }
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_REFRACTI, fval)) {
+    pmat->set_refractive_index(fval);
+    have = true;
+  }
+  else if (pmat->has_metallic()) {
+    // Default refractive index to 1.5 for PBR models
+    pmat->set_refractive_index(1.5);
   }
   if (have) {
     state = state->add_attrib(MaterialAttrib::make(pmat));
@@ -429,15 +580,44 @@ load_material(size_t index) {
     }
   }
 
+  // Alpha mode.
+  aiString alpha_mode;
+  if (AI_SUCCESS == mat.Get(AI_MATKEY_GLTF_ALPHAMODE, alpha_mode)) {
+    if (strcmp(alpha_mode.C_Str(), "MASK") == 0) {
+      PN_stdfloat cutoff = 0.5;
+      mat.Get(AI_MATKEY_GLTF_ALPHACUTOFF, cutoff);
+      state = state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, cutoff));
+    }
+    else if (strcmp(alpha_mode.C_Str(), "BLEND") == 0) {
+      state = state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    }
+  }
+
   // And let's not forget the textures!
   CPT(TextureAttrib) tattr = DCAST(TextureAttrib, TextureAttrib::make());
-  load_texture_stage(mat, aiTextureType_DIFFUSE, tattr);
-  load_texture_stage(mat, aiTextureType_LIGHTMAP, tattr);
+  CPT(TexMatrixAttrib) tmattr;
+  load_texture_stage(mat, aiTextureType_DIFFUSE, TextureStage::M_modulate, tattr, tmattr);
+
+  // Check for an ORM map, from the glTF/OBJ importer.  glTF also puts it in the
+  // LIGHTMAP slot, despite only having the lightmap in the red channel, so we
+  // have to ignore it.
+  if (mat.GetTextureCount(aiTextureType_UNKNOWN) > 0) {
+    load_texture_stage(mat, aiTextureType_UNKNOWN, TextureStage::M_selector, tattr, tmattr);
+  } else {
+    load_texture_stage(mat, aiTextureType_LIGHTMAP, TextureStage::M_modulate, tattr, tmattr);
+  }
+
+  load_texture_stage(mat, aiTextureType_NORMALS, TextureStage::M_normal, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_EMISSIVE, TextureStage::M_emission, tattr, tmattr);
+  load_texture_stage(mat, aiTextureType_HEIGHT, TextureStage::M_height, tattr, tmattr);
   if (tattr->get_num_on_stages() > 0) {
     state = state->add_attrib(tattr);
   }
+  if (tmattr != nullptr) {
+    state = state->add_attrib(tmattr);
+  }
 
-  _mat_states[index] = state;
+  _mat_states[index] = std::move(state);
 }
 
 /**
@@ -619,7 +799,7 @@ load_mesh(size_t index) {
   PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
   aformat->add_column(InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point);
   if (mesh.HasNormals()) {
-    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector);
+    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_normal);
   }
   if (mesh.HasVertexColors(0)) {
     aformat->add_column(InternalName::get_color(), 4, Geom::NT_stdfloat, Geom::C_color);
@@ -633,6 +813,10 @@ load_mesh(size_t index) {
       out << u;
       aformat->add_column(InternalName::get_texcoord_name(out.str()), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     }
+  }
+  if (mesh.HasTangentsAndBitangents()) {
+    aformat->add_column(InternalName::get_tangent(), 3, Geom::NT_stdfloat, Geom::C_vector);
+    aformat->add_column(InternalName::get_binormal(), 3, Geom::NT_stdfloat, Geom::C_vector);
   }
 
   PT(GeomVertexArrayFormat) tb_aformat = new GeomVertexArrayFormat;
@@ -737,7 +921,7 @@ load_mesh(size_t index) {
   GeomVertexWriter vertex (vdata, InternalName::get_vertex());
   for (size_t i = 0; i < mesh.mNumVertices; ++i) {
     const aiVector3D &vec = mesh.mVertices[i];
-    vertex.add_data3(vec.x, vec.y, vec.z);
+    vertex.set_data3(vec.x, vec.y, vec.z);
   }
 
   // Now the normals, if any.
@@ -745,7 +929,7 @@ load_mesh(size_t index) {
     GeomVertexWriter normal (vdata, InternalName::get_normal());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mNormals[i];
-      normal.add_data3(vec.x, vec.y, vec.z);
+      normal.set_data3(vec.x, vec.y, vec.z);
     }
   }
 
@@ -754,7 +938,7 @@ load_mesh(size_t index) {
     GeomVertexWriter color (vdata, InternalName::get_color());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiColor4D &col = mesh.mColors[0][i];
-      color.add_data4(col.r, col.g, col.b, col.a);
+      color.set_data4(col.r, col.g, col.b, col.a);
     }
   }
 
@@ -764,7 +948,7 @@ load_mesh(size_t index) {
     GeomVertexWriter texcoord0 (vdata, InternalName::get_texcoord());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mTextureCoords[0][i];
-      texcoord0.add_data3(vec.x, vec.y, vec.z);
+      texcoord0.set_data3(vec.x, vec.y, vec.z);
     }
     for (unsigned int u = 1; u < num_uvs; ++u) {
       ostringstream out;
@@ -772,8 +956,20 @@ load_mesh(size_t index) {
       GeomVertexWriter texcoord (vdata, InternalName::get_texcoord_name(out.str()));
       for (size_t i = 0; i < mesh.mNumVertices; ++i) {
         const aiVector3D &vec = mesh.mTextureCoords[u][i];
-        texcoord.add_data3(vec.x, vec.y, vec.z);
+        texcoord.set_data3(vec.x, vec.y, vec.z);
       }
+    }
+  }
+
+  // Now the tangents and bitangents, if any.
+  if (mesh.HasTangentsAndBitangents()) {
+    GeomVertexWriter tangent (vdata, InternalName::get_tangent());
+    GeomVertexWriter binormal (vdata, InternalName::get_binormal());
+    for (size_t i = 0; i < mesh.mNumVertices; ++i) {
+      const aiVector3D &tvec = mesh.mTangents[i];
+      const aiVector3D &bvec = mesh.mBitangents[i];
+      tangent.set_data3(tvec.x, tvec.y, tvec.z);
+      binormal.set_data3(bvec.x, bvec.y, bvec.z);
     }
   }
 
@@ -787,7 +983,7 @@ load_mesh(size_t index) {
       for (size_t j = 0; j < bone_weights[i].size(); ++j) {
         tblend.add_transform(bone_weights[i][j].joint_vertex_xform, bone_weights[i][j].weight);
       }
-      transform_blend.add_data1i(tbtable->add_blend(tblend));
+      transform_blend.set_data1i(tbtable->add_blend(tblend));
     }
 
     tbtable->set_rows(SparseArray::lower_on(vdata->get_num_rows()));
@@ -822,25 +1018,35 @@ load_mesh(size_t index) {
   }
 
   // Create a geom and add the primitives to it.
-  PT(Geom) geom = new Geom(vdata);
+  Geoms &geoms = _geoms[index];
+  geoms._mat_index = mesh.mMaterialIndex;
+
   if (points->get_num_primitives() > 0) {
-    geom->add_primitive(points);
+    geoms._points = new Geom(vdata);
+    geoms._points->add_primitive(points);
   }
   if (lines->get_num_primitives() > 0) {
-    geom->add_primitive(lines);
+    geoms._lines = new Geom(vdata);
+    geoms._lines->add_primitive(lines);
   }
   if (triangles->get_num_primitives() > 0) {
-    geom->add_primitive(triangles);
+    geoms._triangles = new Geom(vdata);
+    geoms._triangles->add_primitive(triangles);
   }
 
-  _geoms[index] = geom;
-  _geom_matindices[index] = mesh.mMaterialIndex;
-
   if (character) {
-    _characters[index] = character;
+    geoms._character = character;
 
     PT(GeomNode) gnode = new GeomNode("");
-    gnode->add_geom(geom);
+    if (geoms._points != nullptr) {
+      gnode->add_geom(geoms._points);
+    }
+    if (geoms._lines != nullptr) {
+      gnode->add_geom(geoms._lines);
+    }
+    if (geoms._triangles != nullptr) {
+      gnode->add_geom(geoms._triangles);
+    }
     gnode->set_state(_mat_states[mesh.mMaterialIndex]);
     character->add_child(gnode);
   }
@@ -868,28 +1074,45 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
   bool prune = false;
 
   if (node.mNumMeshes == 0) {
-    pnode = new PandaNode(name);
+    if (parent == _root && assimp_collapse_dummy_root_node && !under_joint &&
+        (name.empty() || name[0] == '$' || name == "RootNode" || name == "ROOT" || name == "Root" || (name.size() > 2 && name[0] == '<' && name[name.size() - 1] == '>') || name == _root->get_name())) {
+      // Collapse root node.
+      pnode = _root;
+    } else {
+      pnode = new PandaNode(name);
 
-    // Possibly prune this if this is a joint or under a joint.
-    prune = under_joint;
+      // Possibly prune this if this is a joint or under a joint.
+      prune = under_joint;
+    }
   }
   else if (node.mNumMeshes == 1) {
     size_t meshIndex = node.mMeshes[0];
+    const Geoms &geoms = _geoms[meshIndex];
 
-    Character *character = _characters[meshIndex];
-    if (character != nullptr) {
+    if (geoms._character != nullptr) {
       pnode = new PandaNode(name);
-      pnode->add_child(character);
-    } else {
-      const RenderState *state = _mat_states[_geom_matindices[meshIndex]];
+      pnode->add_child(geoms._character);
+    }
+    else {
       PT(GeomNode) gnode = new GeomNode(name);
-      gnode->add_geom(_geoms[meshIndex]);
+      const RenderState *state = _mat_states[geoms._mat_index];
+      if (geoms._points != nullptr) {
+        gnode->add_geom(geoms._points);
+      }
+      if (geoms._lines != nullptr) {
+        gnode->add_geom(geoms._lines);
+      }
+      if (geoms._triangles != nullptr) {
+        gnode->add_geom(geoms._triangles);
+      }
       if (state != nullptr) {
         // Only set the state on the GeomNode if there are no child nodes.
         if (node.mNumChildren == 0) {
           gnode->set_state(state);
         } else {
-          gnode->set_geom_state(0, state);
+          for (int i = 0; i < gnode->get_num_geoms(); ++i) {
+            gnode->set_geom_state(i, state);
+          }
         }
       }
       pnode = gnode;
@@ -903,7 +1126,7 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
     for (size_t i = 0; i < node.mNumMeshes; ++i) {
       size_t meshIndex = node.mMeshes[i];
 
-      if (_characters[meshIndex] == nullptr) {
+      if (_geoms[meshIndex]._character == nullptr) {
         character_only = false;
         break;
       }
@@ -919,21 +1142,66 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
 
     for (size_t i = 0; i < node.mNumMeshes; ++i) {
       size_t meshIndex = node.mMeshes[i];
+      const Geoms &geoms = _geoms[meshIndex];
 
-      Character *character = _characters[meshIndex];
-      if (character != nullptr) {
+      if (geoms._character != nullptr) {
         // An animated mesh, which already is converted as Character with an
         // attached GeomNode.
-        pnode->add_child(character);
-      } else {
+        pnode->add_child(geoms._character);
+      }
+      else {
         // A non-animated mesh.
-        gnode->add_geom(_geoms[node.mMeshes[i]],
-          _mat_states[_geom_matindices[meshIndex]]);
+        const RenderState *state = _mat_states[geoms._mat_index];
+        if (geoms._points != nullptr) {
+          gnode->add_geom(geoms._points, state);
+        }
+        if (geoms._lines != nullptr) {
+          gnode->add_geom(geoms._lines, state);
+        }
+        if (geoms._triangles != nullptr) {
+          gnode->add_geom(geoms._triangles, state);
+        }
       }
     }
   }
 
-  parent->add_child(pnode);
+  if (parent != pnode) {
+    parent->add_child(pnode);
+  }
+
+  if (node.mMetaData != nullptr) {
+    for (unsigned i = 0; i < node.mMetaData->mNumProperties; ++i) {
+      const aiMetadataEntry &entry = node.mMetaData->mValues[i];
+      std::string value;
+      switch (entry.mType) {
+      //case AI_BOOL:
+      //  value = (*static_cast<bool *>(entry.mData)) ? "1" : "";
+      //  break;
+      case AI_INT32:
+        value = format_string(*static_cast<int32_t *>(entry.mData));
+        break;
+      case AI_UINT64:
+        value = format_string(*static_cast<uint64_t *>(entry.mData));
+        break;
+      case AI_FLOAT:
+        value = format_string(*static_cast<float *>(entry.mData));
+        break;
+      case AI_DOUBLE:
+        value = format_string(*static_cast<double *>(entry.mData));
+        break;
+      case AI_AISTRING:
+        {
+          const aiString *str = static_cast<const aiString *>(entry.mData);
+          value = std::string(str->data, str->length);
+        }
+        break;
+      default:
+        continue;
+      }
+      const aiString &key = node.mMetaData->mKeys[i];
+      pnode->set_tag(std::string(key.data, key.length), std::move(value));
+    }
+  }
 
   // Load in the transformation matrix.
   const aiMatrix4x4 &t = node.mTransformation;
@@ -1035,12 +1303,10 @@ load_light(const aiLight &light) {
     LPoint3 pos (light.mPosition.x, light.mPosition.y, light.mPosition.z);
     LQuaternion quat;
     ::look_at(quat, LPoint3(vec.x, vec.y, vec.z), LVector3::up());
-    plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
+    plight->set_transform(TransformState::make_pos_quat(pos, quat));
     break; }
 
-  // This is a somewhat recent addition to Assimp, so let's be kind to those
-  // that don't have an up-to-date version of Assimp.
-  case 0x4: //aiLightSource_AMBIENT:
+  case aiLightSource_AMBIENT:
     // This is handled below.
     break;
 

@@ -29,7 +29,7 @@
 #ifdef HAVE_OPENSSL
 typedef struct x509_st X509;
 typedef struct evp_pkey_st EVP_PKEY;
-#endif
+#endif // HAVE_OPENSSL
 
 /**
  * A file that contains a set of files.
@@ -59,6 +59,7 @@ PUBLISHED:
   INLINE bool needs_repack() const;
 
   INLINE time_t get_timestamp() const;
+  INLINE void set_timestamp(time_t timestamp);
 
   INLINE void set_record_timestamp(bool record_timestamp);
   INLINE bool get_record_timestamp() const;
@@ -68,8 +69,6 @@ PUBLISHED:
 
   INLINE void set_encryption_flag(bool flag);
   INLINE bool get_encryption_flag() const;
-  INLINE void set_encryption_password(const std::string &encryption_password);
-  INLINE const std::string &get_encryption_password() const;
 
   INLINE void set_encryption_algorithm(const std::string &encryption_algorithm);
   INLINE const std::string &get_encryption_algorithm() const;
@@ -84,6 +83,9 @@ PUBLISHED:
                      int compression_level);
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                         int compression_level);
+
+  PY_EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
+  PY_EXTENSION(INLINE PyObject *get_encryption_password() const);
 
 #ifdef HAVE_OPENSSL
   bool add_signature(const Filename &certificate,
@@ -142,6 +144,9 @@ PUBLISHED:
   INLINE const std::string &get_header_prefix() const;
 
 public:
+  INLINE void set_encryption_password(const std::string &encryption_password);
+  INLINE const std::string &get_encryption_password() const;
+
 #ifdef HAVE_OPENSSL
   class CertRecord {
   public:
@@ -203,7 +208,7 @@ private:
     int _compression_level;  // Not preserved on disk.
 #ifdef HAVE_OPENSSL
     EVP_PKEY *_pkey;         // Not preserved on disk.
-#endif
+#endif // HAVE_OPENSSL
   };
 
   INLINE std::streampos word_to_streampos(size_t word) const;
@@ -233,7 +238,7 @@ private:
 #ifdef HAVE_OPENSSL
   typedef pvector<CertChain> Certificates;
   Certificates _signatures;
-#endif
+#endif // HAVE_OPENSSL
 
   std::streampos _offset;
   IStreamWrapper *_read;
@@ -280,4 +285,4 @@ private:
 
 #include "multifile.I"
 
-#endif
+#endif // !MULTIFILE_H

@@ -104,9 +104,9 @@ get_properties(FrameBufferProperties &properties,
   properties.set_depth_bits(depth_size);
   properties.set_multisamples(samples);
 
-  // Set both hardware and software bits, indicating not-yet-known.
-  properties.set_force_software(1);
-  properties.set_force_hardware(1);
+  // "slow" likely indicates no hardware acceleration.
+  properties.set_force_software(slow);
+  properties.set_force_hardware(!slow);
 }
 
 /**
@@ -187,7 +187,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       best_props = fbprops;
     }
   }
-#ifdef HAVE_X11
+#ifdef USE_X11
   X11_Display *display = egl_pipe->get_display();
   if (display) {
     int screen = egl_pipe->get_screen();
@@ -233,10 +233,24 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
-#ifdef HAVE_X11
+#ifdef USE_X11
       if (!display || _visual)
 #endif
       {
+        // This is set during window creation, but for now we have to pretend
+        // that we can honor the request, if we support the extension.
+        if (properties.get_srgb_color()) {
+          const char *extensions = eglQueryString(_egl_display, EGL_EXTENSIONS);
+          if (extensions != nullptr) {
+            vector_string tokens;
+            extract_words(extensions, tokens);
+
+            if (std::find(tokens.begin(), tokens.end(), "EGL_KHR_gl_colorspace") != tokens.end()) {
+              best_props.set_srgb_color(true);
+            }
+          }
+        }
+
         _fbprops = best_props;
         delete[] configs;
         return;
@@ -248,7 +262,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       << get_egl_error_string(err) << "\n";
     _fbconfig = 0;
     _context = 0;
-#ifdef HAVE_X11
+#ifdef USE_X11
     _visual = 0;
 #endif
   }
@@ -269,9 +283,6 @@ reset() {
   if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
-  } else {
-    _fbprops.set_force_hardware(1);
-    _fbprops.set_force_software(0);
   }
 }
 
@@ -295,7 +306,7 @@ egl_is_at_least_version(int major_version, int minor_version) const {
  */
 void eglGraphicsStateGuardian::
 gl_flush() const {
-#ifdef HAVE_X11
+#ifdef USE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif
@@ -307,7 +318,7 @@ gl_flush() const {
  */
 GLenum eglGraphicsStateGuardian::
 gl_get_error() const {
-#ifdef HAVE_X11
+#ifdef USE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif

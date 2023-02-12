@@ -72,9 +72,9 @@ GeomTransformer::
  * purpose of later removing unused vertices.
  */
 void GeomTransformer::
-register_vertices(Geom *geom, bool might_have_unused) {
+register_vertices(PT(Geom) geom, bool might_have_unused) {
   VertexDataAssoc &assoc = _vdata_assoc[geom->get_vertex_data()];
-  assoc._geoms.push_back(geom);
+  assoc._geoms.push_back(std::move(geom));
   if (might_have_unused) {
     assoc._might_have_unused = true;
   }
@@ -89,12 +89,8 @@ register_vertices(GeomNode *node, bool might_have_unused) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
-    GeomNode::GeomList::iterator gi;
-    PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
-    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
-      GeomNode::GeomEntry &entry = (*gi);
-      PT(Geom) geom = entry._geom.get_write_pointer();
-      register_vertices(geom, might_have_unused);
+    for (GeomNode::GeomEntry &entry : *cdata->modify_geoms()) {
+      register_vertices(entry._geom.get_write_pointer(), might_have_unused);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
@@ -271,9 +267,14 @@ set_color(Geom *geom, const LColor &color) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
       new_data._vdata = sc._vertex_data->set_color(color);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       new_data._vdata = sc._vertex_data->set_color
         (color, 1, Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      new_data._vdata = sc._vertex_data->set_color
+        (color, 4, Geom::NT_uint8, Geom::C_color);
     }
   }
 
@@ -330,9 +331,14 @@ transform_colors(Geom *geom, const LVecBase4 &scale) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
       new_data._vdata = sc._vertex_data->scale_color(scale);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       new_data._vdata = sc._vertex_data->set_color
         (scale, 1, Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      new_data._vdata = sc._vertex_data->set_color
+        (scale, 4, Geom::NT_uint8, Geom::C_color);
     }
   }
 
@@ -468,10 +474,16 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     // Make sure the vdata has a color column.
     if (stc._vertex_data->has_column(InternalName::get_color())) {
       vdata = new GeomVertexData(*stc._vertex_data);
-    } else {
+    }
+    else if (vertex_colors_prefer_packed) {
       // Create a color column where there wasn't one before.
       vdata = new GeomVertexData(*stc._vertex_data->set_color
                                  (LColor(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
+      keep_vertex_color = false;
+    }
+    else {
+      vdata = new GeomVertexData(*stc._vertex_data->set_color
+                                 (LColor(1.0f, 1.0f, 1.0f, 1.0f), 4, Geom::NT_uint8, Geom::C_color));
       keep_vertex_color = false;
     }
 
@@ -1448,6 +1460,10 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   }
 
   int num_vertices = vdata->get_num_rows();
+  if (num_vertices <= 0) {
+    return;
+  }
+
   int new_num_vertices = referenced_vertices.get_num_on_bits();
   if (num_vertices <= new_num_vertices) {
     // All vertices are used.

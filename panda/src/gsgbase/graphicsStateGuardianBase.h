@@ -28,6 +28,7 @@ class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
 class GraphicsOutputBase;
+class ScreenshotRequest;
 
 class VertexBufferContext;
 class IndexBufferContext;
@@ -203,7 +204,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force)=0;
+                                     size_t num_instances, bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
@@ -220,7 +221,8 @@ public:
   virtual bool framebuffer_copy_to_texture
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+   ScreenshotRequest *request = nullptr)=0;
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 

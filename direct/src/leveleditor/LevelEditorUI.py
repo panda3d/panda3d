@@ -1,4 +1,4 @@
-from .LevelEditorUIBase import *
+from .LevelEditorUIBase import LevelEditorUIBase
 
 class LevelEditorUI(LevelEditorUIBase):
     """ Class for Panda3D LevelEditor """

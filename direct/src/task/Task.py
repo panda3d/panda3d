@@ -10,20 +10,36 @@ __all__ = ['Task', 'TaskManager',
            'cont', 'done', 'again', 'pickup', 'exit',
            'sequence', 'loop', 'pause']
 
-from direct.directnotify.DirectNotifyGlobal import *
-from direct.showbase import ExceptionVarDump
-from direct.showbase.PythonUtil import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.PythonUtil import Functor, ScratchPad
 from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
+import sys
 
-try:
-    import _signal as signal
-except ImportError:
+# On Android, there's no use handling SIGINT, and in fact we can't, since we
+# run the application in a separate thread from the main thread.
+if hasattr(sys, 'getandroidapilevel'):
     signal = None
+else:
+    try:
+        import _signal as signal
+    except ImportError:
+        signal = None
 
-from panda3d.core import *
+from panda3d.core import (
+    AsyncTask,
+    AsyncTaskPause,
+    AsyncTaskManager,
+    AsyncTaskSequence,
+    ClockObject,
+    ConfigVariableBool,
+    GlobPattern,
+    PandaSystem,
+    PythonTask,
+    Thread,
+)
 from direct.extensions_native import HTTPChannel_extensions
 
 
@@ -32,7 +48,6 @@ def print_exc_plus():
     Print the usual traceback information, followed by a listing of all the
     local variables in each frame.
     """
-    import sys
     import traceback
 
     tb = sys.exc_info()[2]
@@ -92,6 +107,7 @@ pause = AsyncTaskPause
 Task.DtoolClassDict['pause'] = staticmethod(pause)
 
 gather = Task.gather
+shield = Task.shield
 
 def sequence(*taskList):
     seq = AsyncTaskSequence('sequence')
@@ -127,6 +143,8 @@ class TaskManager:
         self.destroyed = False
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
+        if signal:
+            self.__prevHandler = signal.default_int_handler
 
         self._frameProfileQueue = []
 
@@ -168,7 +186,7 @@ class TaskManager:
         print('*** allowing mid-frame keyboard interrupt.')
         # Restore default interrupt handler
         if signal:
-            signal.signal(signal.SIGINT, signal.default_int_handler)
+            signal.signal(signal.SIGINT, self.__prevHandler)
         # and invoke it
         raise KeyboardInterrupt
 
@@ -197,7 +215,7 @@ class TaskManager:
         so in most cases there is no need to check this method
         first. """
 
-        return (self.mgr.findTaskChain(chainName) != None)
+        return self.mgr.findTaskChain(chainName) is not None
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
@@ -274,33 +292,27 @@ class TaskManager:
     def getTasksNamed(self, taskName):
         """Returns a list of all tasks, active or sleeping, with the
         indicated name. """
-        return self.__makeTaskList(self.mgr.findTasks(taskName))
+        return list(self.mgr.findTasks(taskName))
 
     def getTasksMatching(self, taskPattern):
         """Returns a list of all tasks, active or sleeping, with a
         name that matches the pattern, which can include standard
         shell globbing characters like \\*, ?, and []. """
 
-        return self.__makeTaskList(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
+        return list(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
 
     def getAllTasks(self):
         """Returns list of all tasks, active and sleeping, in
         arbitrary order. """
-        return self.__makeTaskList(self.mgr.getTasks())
+        return list(self.mgr.getTasks())
 
     def getTasks(self):
         """Returns list of all active tasks in arbitrary order. """
-        return self.__makeTaskList(self.mgr.getActiveTasks())
+        return list(self.mgr.getActiveTasks())
 
     def getDoLaters(self):
         """Returns list of all sleeping tasks in arbitrary order. """
-        return self.__makeTaskList(self.mgr.getSleepingTasks())
-
-    def __makeTaskList(self, taskCollection):
-        l = []
-        for i in range(taskCollection.getNumTasks()):
-            l.append(taskCollection.getTask(i))
-        return l
+        return list(self.mgr.getSleepingTasks())
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs = None,
                       sort = None, priority = None, taskChain = None,
@@ -330,7 +342,7 @@ class TaskManager:
 
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
-            taskChain = None, owner = None):
+            taskChain = None, owner = None, delay = None):
         """
         Add a new task to the taskMgr.  The task will begin executing
         immediately, or next frame if its sort value has already
@@ -383,12 +395,17 @@ class TaskManager:
                 is called when the task terminates.  This is all the
                 ownermeans.
 
+            delay: an optional amount of seconds to wait before starting
+                the task (equivalent to doMethodLater).
+
         Returns:
             The new Task object that has been added, or the original
             Task object that was passed in.
         """
 
         task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath)
+        if delay is not None:
+            task.setDelay(delay)
         self.mgr.add(task)
         return task
 
@@ -396,8 +413,8 @@ class TaskManager:
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
         elif hasattr(funcOrTask, '__call__') or \
-                hasattr(funcOrTask, 'cr_await') or \
-                type(funcOrTask) == types.GeneratorType:
+             hasattr(funcOrTask, 'cr_await') or \
+             isinstance(funcOrTask, types.GeneratorType):
             # It's a function, coroutine, or something emulating a coroutine.
             task = PythonTask(funcOrTask)
             if name is None:
@@ -476,25 +493,30 @@ class TaskManager:
         chains that are in sub-threads or that have frame budgets
         might execute their tasks differently. """
 
+        startFrameTime = self.globalClock.getRealTime()
+
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
+
         if signal:
-            signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
+            self.__prevHandler = signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
-        startFrameTime = self.globalClock.getRealTime()
+        try:
+            self.mgr.poll()
 
-        self.mgr.poll()
+            # This is the spot for an internal yield function
+            nextTaskTime = self.mgr.getNextWakeTime()
+            self.doYield(startFrameTime, nextTaskTime)
 
-        # This is the spot for an internal yield function
-        nextTaskTime = self.mgr.getNextWakeTime()
-        self.doYield(startFrameTime, nextTaskTime)
+        finally:
+            # Restore previous interrupt handler
+            if signal:
+                signal.signal(signal.SIGINT, self.__prevHandler)
+                self.__prevHandler = signal.default_int_handler
 
-        # Restore default interrupt handler
-        if signal:
-            signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
 
@@ -512,7 +534,7 @@ class TaskManager:
         self.globalClock.setRealTime(t)
         messenger.send("resetClock", [timeDelta])
 
-        if self.resumeFunc != None:
+        if self.resumeFunc is not None:
             self.resumeFunc()
 
         if self.stepping:
@@ -521,7 +543,7 @@ class TaskManager:
             self.running = True
             while self.running:
                 try:
-                    if len(self._frameProfileQueue):
+                    if len(self._frameProfileQueue) > 0:
                         numFrames, session, callback = self._frameProfileQueue.pop(0)
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
@@ -555,8 +577,9 @@ class TaskManager:
                         self.stop()
                         print_exc_plus()
                     else:
-                        if (ExceptionVarDump.wantStackDumpLog and
-                            ExceptionVarDump.dumpOnExceptionInit):
+                        from direct.showbase import ExceptionVarDump
+                        if ExceptionVarDump.wantStackDumpLog and \
+                           ExceptionVarDump.dumpOnExceptionInit:
                             ExceptionVarDump._varDump__print(e)
                         raise
                 except:
@@ -588,14 +611,12 @@ class TaskManager:
             return 0
 
         method = task.getFunction()
-        if (type(method) == types.MethodType):
+        if isinstance(method, types.MethodType):
             function = method.__func__
         else:
             function = method
-        if (function == oldMethod):
-            newMethod = types.MethodType(newFunction,
-                                         method.__self__,
-                                         method.__self__.__class__)
+        if function == oldMethod:
+            newMethod = types.MethodType(newFunction, method.__self__)
             task.setFunction(newMethod)
             # Found a match
             return 1
@@ -634,8 +655,7 @@ class TaskManager:
 
     def _doProfiledFrames(self, numFrames):
         for i in range(numFrames):
-            result = self.step()
-        return result
+            self.step()
 
     def getProfileFrames(self):
         return self._profileFrames.get()
@@ -755,18 +775,16 @@ class TaskManager:
     def doYield(self, frameStartTime, nextScheduledTaskTime):
         pass
 
-    """
-    def doYieldExample(self, frameStartTime, nextScheduledTaskTime):
-        minFinTime = frameStartTime + self.MaxEpochSpeed
-        if nextScheduledTaskTime > 0 and nextScheduledTaskTime < minFinTime:
-            print ' Adjusting Time'
-            minFinTime = nextScheduledTaskTime
-        delta = minFinTime - self.globalClock.getRealTime()
-        while(delta > 0.002):
-            print ' sleep %s'% (delta)
-            time.sleep(delta)
-            delta = minFinTime - self.globalClock.getRealTime()
-    """
+    #def doYieldExample(self, frameStartTime, nextScheduledTaskTime):
+    #    minFinTime = frameStartTime + self.MaxEpochSpeed
+    #    if nextScheduledTaskTime > 0 and nextScheduledTaskTime < minFinTime:
+    #        print(' Adjusting Time')
+    #        minFinTime = nextScheduledTaskTime
+    #    delta = minFinTime - self.globalClock.getRealTime()
+    #    while delta > 0.002:
+    #        print ' sleep %s'% (delta)
+    #        time.sleep(delta)
+    #        delta = minFinTime - self.globalClock.getRealTime()
 
     if __debug__:
         # to catch memory leaks during the tests at the bottom of the file
@@ -1230,50 +1248,49 @@ class TaskManager:
             _testTaskObjRemove = None
             tm._checkMemLeaks()
 
-            """
             # this test fails, and it's not clear what the correct behavior should be.
             # sort passed to Task.__init__ is always overridden by taskMgr.add()
             # even if no sort is specified, and calling Task.setSort() has no
             # effect on the taskMgr's behavior.
             # set/get Task sort
-            l = []
-            def _testTaskObjSort(arg, task, l=l):
-                l.append(arg)
-                return task.cont
-            t1 = Task(_testTaskObjSort, sort=1)
-            t2 = Task(_testTaskObjSort, sort=2)
-            tm.add(t1, 'testTaskObjSort1', extraArgs=['a',], appendTask=True)
-            tm.add(t2, 'testTaskObjSort2', extraArgs=['b',], appendTask=True)
-            tm.step()
-            assert len(l) == 2
-            assert l == ['a', 'b']
-            assert t1.getSort() == 1
-            assert t2.getSort() == 2
-            t1.setSort(3)
-            assert t1.getSort() == 3
-            tm.step()
-            assert len(l) == 4
-            assert l == ['a', 'b', 'b', 'a',]
-            t1.remove()
-            t2.remove()
-            tm.step()
-            assert len(l) == 4
-            del t1
-            del t2
-            _testTaskObjSort = None
-            tm._checkMemLeaks()
-            """
+            #l = []
+            #def _testTaskObjSort(arg, task, l=l):
+            #    l.append(arg)
+            #    return task.cont
+            #t1 = Task(_testTaskObjSort, sort=1)
+            #t2 = Task(_testTaskObjSort, sort=2)
+            #tm.add(t1, 'testTaskObjSort1', extraArgs=['a',], appendTask=True)
+            #tm.add(t2, 'testTaskObjSort2', extraArgs=['b',], appendTask=True)
+            #tm.step()
+            #assert len(l) == 2
+            #assert l == ['a', 'b']
+            #assert t1.getSort() == 1
+            #assert t2.getSort() == 2
+            #t1.setSort(3)
+            #assert t1.getSort() == 3
+            #tm.step()
+            #assert len(l) == 4
+            #assert l == ['a', 'b', 'b', 'a',]
+            #t1.remove()
+            #t2.remove()
+            #tm.step()
+            #assert len(l) == 4
+            #del t1
+            #del t2
+            #_testTaskObjSort = None
+            #tm._checkMemLeaks()
 
             del l
             tm.destroy()
             del tm
 
+
 if __debug__:
     def checkLeak():
-        import sys
         import gc
         gc.enable()
         from direct.showbase.DirectObject import DirectObject
+        from direct.task.TaskManagerGlobal import taskMgr
         class TestClass(DirectObject):
             def doTask(self, task):
                 return task.done

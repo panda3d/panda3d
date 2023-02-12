@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
+#include "extension.h"
 
 class Texture;
 
@@ -143,6 +144,9 @@ PUBLISHED:
   MAKE_PROPERTY(float_color, get_float_color, set_float_color);
   MAKE_PROPERTY(float_depth, get_float_depth, set_float_depth);
 
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *self, PyObject *state));
+
   // Other.
 
   constexpr FrameBufferProperties() = default;
@@ -169,10 +173,12 @@ PUBLISHED:
 
   bool setup_color_texture(Texture *tex) const;
   bool setup_depth_texture(Texture *tex) const;
+
+  friend class Extension<FrameBufferProperties>;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const FrameBufferProperties &properties);
 
 #include "frameBufferProperties.I"
 
-#endif
+#endif // !FRAMEBUFFERPROPERTIES_H

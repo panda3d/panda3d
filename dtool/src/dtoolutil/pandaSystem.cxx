@@ -53,6 +53,8 @@ PandaSystem() :
   set_system_tag("system", "malloc", "dlmalloc");
 #elif defined(USE_MEMORY_PTMALLOC2)
   set_system_tag("system", "malloc", "ptmalloc2");
+#elif defined(USE_MEMORY_MIMALLOC)
+  set_system_tag("system", "malloc", "mimalloc");
 #else
   set_system_tag("system", "malloc", "malloc");
 #endif
@@ -192,10 +194,16 @@ get_compiler() {
 /**
  * Returns a string representing the date and time at which this version of
  * Panda (or at least dtool) was compiled, if available.
+ *
+ * @deprecated
  */
 string PandaSystem::
 get_build_date() {
+#ifdef PANDA_BUILD_DATE_STR
+  return PANDA_BUILD_DATE_STR;
+#else
   return __DATE__ " " __TIME__;
+#endif
 }
 
 /**

@@ -104,6 +104,20 @@ dispatch_event(const Event *event) {
     }
   }
 
+  // now for lambda hooks
+  LambdaHooks::const_iterator lhi;
+  lhi = _lambdahooks.find(event->get_name());
+
+  if (lhi != _lambdahooks.end()) {
+    // found one
+    const LambdaFunctions &functions = (*lhi).second;
+
+    size_t num_functions = functions.size();
+    for (size_t i = 0; i < num_functions; ++i) {
+      functions[i](event);
+    }
+  }
+
   // Finally, check for futures that need to be triggered.
   Futures::iterator fi;
   fi = _futures.find(event->get_name());
@@ -190,6 +204,19 @@ add_hook(const string &event_name, EventCallbackFunction *function,
 }
 
 /**
+ * Adds the indicated function to the list of those that will be called when
+ * the named event is thrown.  Returns true if the function was successfully
+ * added, false if it was already defined on the indicated event name.  This
+ * version stores an arbitrary C++ lambda.
+ */
+void EventHandler::
+add_hook(const string &event_name, EventLambda function) {
+  assert(!event_name.empty());
+  assert(function);
+  _lambdahooks[event_name].push_back(function);
+}
+
+/**
  * Returns true if there is any hook added on the indicated event name, false
  * otherwise.
  */
@@ -208,6 +235,14 @@ has_hook(const string &event_name) const {
   chi = _cbhooks.find(event_name);
   if (chi != _cbhooks.end()) {
     if (!(*chi).second.empty()) {
+      return true;
+    }
+  }
+
+  LambdaHooks::const_iterator lhi;
+  lhi = _lambdahooks.find(event_name);
+  if (lhi != _lambdahooks.end()) {
+    if (!(*lhi).second.empty()) {
       return true;
     }
   }
@@ -306,6 +341,14 @@ remove_hooks(const string &event_name) {
     _cbhooks.erase(chi);
   }
 
+  LambdaHooks::iterator lhi = _lambdahooks.find(event_name);
+  if (lhi != _lambdahooks.end()) {
+    if (!(*lhi).second.empty()) {
+      any_removed = true;
+    }
+    _lambdahooks.erase(lhi);
+  }
+
   return any_removed;
 }
 
@@ -344,6 +387,7 @@ void EventHandler::
 remove_all_hooks() {
   _hooks.clear();
   _cbhooks.clear();
+  _lambdahooks.clear();
 }
 
 /**
@@ -351,7 +395,6 @@ remove_all_hooks() {
  */
 void EventHandler::
 make_global_event_handler() {
-  init_memory_hook();
   _global_event_handler = new EventHandler(EventQueue::get_global_event_queue());
 }
 

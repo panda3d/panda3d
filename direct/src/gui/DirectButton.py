@@ -6,9 +6,9 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectButton']
 
-from panda3d.core import *
+from panda3d.core import Mat4, MouseButton, PGButton
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 
 class DirectButton(DirectFrame):
     """
@@ -126,5 +126,3 @@ class DirectButton(DirectFrame):
             self.guiItem.setSound(DGG.ENTER + self.guiId, rolloverSound)
         else:
             self.guiItem.clearSound(DGG.ENTER + self.guiId)
-
-

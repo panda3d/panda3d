@@ -41,6 +41,7 @@
 #include "pipelineCycler.h"
 #include "updateSeq.h"
 #include "asyncFuture.h"
+#include "screenshotRequest.h"
 
 class PNMImage;
 class GraphicsEngine;
@@ -239,6 +240,9 @@ PUBLISHED:
       const Filename &filename, const std::string &image_comment = "");
   INLINE bool get_screenshot(PNMImage &image);
   INLINE PT(Texture) get_screenshot();
+  PT(ScreenshotRequest) save_async_screenshot(const Filename &filename,
+                                              const std::string &image_comment = "");
+  PT(ScreenshotRequest) get_async_screenshot();
 
   NodePath get_texture_card();
 
@@ -254,6 +258,8 @@ PUBLISHED:
   // debugging.
   virtual bool flip_ready() const;
   virtual GraphicsOutput *get_host();
+
+  MAKE_PROPERTY(host, get_host);
 
 public:
   INLINE bool operator < (const GraphicsOutput &other) const;
@@ -296,6 +302,7 @@ protected:
   void prepare_for_deletion();
   void promote_to_copy_texture();
   bool copy_to_textures();
+  void copy_async_screenshot();
 
   INLINE void begin_frame_spam(FrameMode mode);
   INLINE void end_frame_spam(FrameMode mode);
@@ -390,6 +397,8 @@ protected:
     int _one_shot_frame;
     ActiveDisplayRegions _active_display_regions;
     bool _active_display_regions_stale;
+
+    PT(ScreenshotRequest) _screenshot_request;
   };
   PipelineCycler<CData> _cycler;
   typedef CycleDataLockedReader<CData> CDLockedReader;

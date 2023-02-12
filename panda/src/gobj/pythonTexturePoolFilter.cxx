@@ -67,6 +67,7 @@ init(PyObject *tex_filter) {
   nassertr(_post_load_func == nullptr, false);
 
   _pre_load_func = PyObject_GetAttrString(tex_filter, "pre_load");
+  PyErr_Clear();
   _post_load_func = PyObject_GetAttrString(tex_filter, "post_load");
   PyErr_Clear();
 
@@ -130,7 +131,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
 
     Py_DECREF(result);
   } else {
-    PyObject *exc_type = _PyErr_OCCURRED();
+    PyObject *exc_type = PyErr_Occurred();
     nassertr(exc_type != nullptr, nullptr);
 
     gobj_cat.error()
@@ -185,7 +186,7 @@ post_load(Texture *tex) {
       }
     }
   } else {
-    PyObject *exc_type = _PyErr_OCCURRED();
+    PyObject *exc_type = PyErr_Occurred();
     nassertr(exc_type != nullptr, result_tex);
 
     gobj_cat.error()

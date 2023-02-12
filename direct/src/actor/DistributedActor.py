@@ -8,9 +8,7 @@ from . import Actor
 
 class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
     def __init__(self, cr):
-        try:
-            self.DistributedActor_initialized
-        except:
+        if not hasattr(self, 'DistributedActor_initialized'):
             self.DistributedActor_initialized = 1
             Actor.Actor.__init__(self)
             DistributedNode.DistributedNode.__init__(self, cr)
@@ -20,14 +18,12 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
 
     def disable(self):
         # remove all anims, on all parts and all lods
-        if (not self.isEmpty()):
+        if not self.isEmpty():
             Actor.Actor.unloadAnims(self, None, None, None)
         DistributedNode.DistributedNode.disable(self)
 
     def delete(self):
-        try:
-            self.DistributedActor_deleted
-        except:
+        if not hasattr(self, 'DistributedActor_deleted'):
             self.DistributedActor_deleted = 1
             DistributedNode.DistributedNode.delete(self)
             Actor.Actor.delete(self)

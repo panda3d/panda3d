@@ -2,7 +2,7 @@
 Defines Palette tree control
 """
 import wx
-from .ObjectPaletteBase import *
+from .ObjectPaletteBase import ObjectBase, ObjectGen
 
 
 class PaletteTreeCtrl(wx.TreeCtrl):
@@ -161,4 +161,3 @@ class PaletteTreeCtrl(wx.TreeCtrl):
             tds = wx.DropSource(self)
             tds.SetData(tdo)
             tds.DoDragDrop(True)
-

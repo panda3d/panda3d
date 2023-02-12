@@ -1,22 +1,24 @@
-## import wx
-## import os
+import wx
+import os
 ## from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.wxwidgets.WxPandaShell import *
+from panda3d.core import BitMask32, Mat4, NodePath, Vec3
+from direct.wxwidgets.WxPandaShell import WxPandaShell
+from direct.wxwidgets.WxSlider import WxSlider
 from direct.directtools.DirectSelection import SelectionRay
 
 #from ViewPort import *
-from .ObjectPaletteUI import *
-from .ObjectPropertyUI import *
-from .SceneGraphUI import *
-from .LayerEditorUI import *
-from .HotKeyUI import *
-from .ProtoPaletteUI import *
-from .ActionMgr import *
-from .AnimControlUI import *
-from .CurveAnimUI import *
-from .GraphEditorUI import *
+from . import ObjectGlobals as OG
+from .ObjectPaletteUI import ObjectPaletteUI
+from .ObjectPropertyUI import ObjectPropertyUI
+from .SceneGraphUI import SceneGraphUI
+from .LayerEditorUI import LayerEditorUI
+from .HotKeyUI import HotKeyUI
+from .ProtoPaletteUI import ProtoPaletteUI
+from .ActionMgr import ActionAddNewObj, ActionTransformObj
+from .AnimControlUI import AnimControlUI
+from .CurveAnimUI import CurveAnimUI
+from .GraphEditorUI import GraphEditorUI
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor, view):
@@ -243,7 +245,7 @@ class LevelEditorUIBase(WxPandaShell):
         WxPandaShell.createMenu(self)
 
     def onGraphEditor(self,e):
-        if base.direct.selected.last == None:
+        if base.direct.selected.last is None:
             dlg = wx.MessageDialog(None, 'Please select a object first.', 'NOTICE', wx.OK )
             dlg.ShowModal()
             dlg.Destroy()
@@ -280,7 +282,7 @@ class LevelEditorUIBase(WxPandaShell):
                 self.onCreateCurve(None)
             else:
                 self.currentView = self.getCurrentView()
-                if self.currentView == None:
+                if self.currentView is None:
                     dlg = wx.MessageDialog(None, 'Please select a viewport first.Do not support curve creation under four viewports.', 'NOTICE', wx.OK )
                     dlg.ShowModal()
                     dlg.Destroy()
@@ -306,12 +308,12 @@ class LevelEditorUIBase(WxPandaShell):
                 self.createCurveMenuItem.Check(False)
                 self.onEditCurve(None)
             else:
-                if base.direct.selected.last == None:
+                if base.direct.selected.last is None:
                     dlg = wx.MessageDialog(None, 'Please select a curve first.', 'NOTICE', wx.OK )
                     dlg.ShowModal()
                     dlg.Destroy()
                     self.editCurveMenuItem.Check(False)
-                if base.direct.selected.last != None :
+                if base.direct.selected.last is not None :
                     base.direct.manipulationControl.enableManipulation()
                     self.createCurveMenuItem.Check(False)
                     self.curveObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
@@ -388,7 +390,7 @@ class LevelEditorUIBase(WxPandaShell):
 
     def onRightDown(self, evt=None):
         """Invoked when the viewport is right-clicked."""
-        if evt == None:
+        if evt is None:
             mpos = wx.GetMouseState()
             mpos = self.ScreenToClient((mpos.x, mpos.y))
         else:
@@ -643,17 +645,17 @@ class ViewportMenu(wx.Menu):
         wx.Menu.__init__(self)
 
     def addItem(self, name, parent = None, call = None, id = None):
-        if id == None: id = wx.NewId()
-        if parent == None: parent = self
+        if id is None: id = wx.NewId()
+        if parent is None: parent = self
         item = wx.MenuItem(parent, id, name)
         parent.AppendItem(item)
-        if call != None:
+        if call is not None:
             self.Bind(wx.EVT_MENU, call, item)
 
     def addMenu(self, name, parent = None, id = None):
-        if id == None: id = wx.NewId()
+        if id is None: id = wx.NewId()
         subMenu = wx.Menu()
-        if parent == None: parent = self
+        if parent is None: parent = self
         parent.AppendMenu(id, name, subMenu)
         return subMenu
 
@@ -679,11 +681,10 @@ class CurveDegreeUI(wx.Dialog):
         self.SetSizer(degreeBox)
 
     def onApply(self, evt):
-        if(str(self.degree.GetSelection())=='0'):
+        if str(self.degree.GetSelection()) == '0':
             self.parent.editor.curveEditor.degree = 2
-        if(str(self.degree.GetSelection())=='1'):
+        if str(self.degree.GetSelection()) == '1':
             self.parent.editor.curveEditor.degree = 3
-        if(str(self.degree.GetSelection())=='2'):
+        if str(self.degree.GetSelection()) == '2':
             self.parent.editor.curveEditor.degree = 4
         self.Destroy()
-

@@ -227,8 +227,89 @@ WinGraphicsPipe() {
           windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
         }
         pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
+
+        HDC dc = GetDC(nullptr);
+        if (dc) {
+          int dpi = GetDeviceCaps(dc, LOGPIXELSX);
+          if (dpi > 0) {
+            PN_stdfloat zoom = (double)dpi / 96.0;
+            set_detected_display_zoom(zoom);
+
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug()
+                << "Determined display zoom to be " << zoom
+                << " based on LOGPIXELSX " << dpi << "\n";
+            }
+          }
+          ReleaseDC(nullptr, dc);
+        }
       }
     }
+  }
+
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "Detected display devices:\n";
+
+    DISPLAY_DEVICEA device;
+    device.cb = sizeof(device);
+    for (DWORD devnum = 0; EnumDisplayDevicesA(nullptr, devnum, &device, 0); ++devnum) {
+      std::ostream &out = windisplay_cat.debug();
+      out << "  " << device.DeviceName << " [" << device.DeviceString << "]";
+      if (device.StateFlags & DISPLAY_DEVICE_ACTIVE) {
+        out << " (active)";
+      }
+      if (device.StateFlags & DISPLAY_DEVICE_MULTI_DRIVER) {
+        out << " (multi-driver)";
+      }
+      if (device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+        out << " (primary)";
+      }
+      if (device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
+        out << " (mirroring)";
+      }
+      if (device.StateFlags & DISPLAY_DEVICE_REMOVABLE) {
+        out << " (removable)";
+      }
+      out << "\n";
+    }
+
+    int nmonitor = GetSystemMetrics(SM_CMONITORS);
+    windisplay_cat.debug()
+      << "Detected " << nmonitor << " monitors, "
+      << (GetSystemMetrics(SM_SAMEDISPLAYFORMAT) != 0 ? "" : "NOT ")
+      << "sharing same display format:\n";
+
+    EnumDisplayMonitors(
+      nullptr,
+      nullptr,
+      [](HMONITOR monitor, HDC dc, LPRECT rect, LPARAM param) -> BOOL {
+        MONITORINFOEXA info;
+        info.cbSize = sizeof(info);
+        if (GetMonitorInfoA(monitor, &info)) {
+          std::ostream &out = windisplay_cat.debug() << "  ";
+
+          DISPLAY_DEVICEA device;
+          device.cb = sizeof(device);
+          device.StateFlags = 0;
+          if (EnumDisplayDevicesA(info.szDevice, 0, &device, 0)) {
+            out << device.DeviceName << " [" << device.DeviceString << "]";
+          }
+          else {
+            out << info.szDevice << " (device enum failed)";
+          }
+
+          if (info.dwFlags & MONITORINFOF_PRIMARY) {
+            out << " (primary)";
+          }
+          if (info.rcWork.left != 0 || info.rcWork.top != 0) {
+            out << " (at " << info.rcWork.left << "x" << info.rcWork.top << ")";
+          }
+          out << "\n";
+        }
+        return TRUE;
+      },
+      0);
   }
 
 #ifdef HAVE_DX9

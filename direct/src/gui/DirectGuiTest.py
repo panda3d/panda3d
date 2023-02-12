@@ -4,17 +4,19 @@ __all__ = []
 
 
 if __name__ == "__main__":
+    from panda3d.core import Point3
     from direct.showbase.ShowBase import ShowBase
+    from direct.task.TaskManagerGlobal import taskMgr
     from . import DirectGuiGlobals
-    from .DirectGui import *
+    from .DirectGui import DirectButton, DirectDialog, DirectEntry, DirectFrame, YesNoDialog
     #from whrandom import *
-    from random import *
+    from random import random
 
     base = ShowBase()
 
     # EXAMPLE CODE
     # Load a model
-    smiley = loader.loadModel('models/misc/smiley')
+    smiley = base.loader.loadModel('models/misc/smiley')
 
     # Here we specify the button's command
     def dummyCmd(index):

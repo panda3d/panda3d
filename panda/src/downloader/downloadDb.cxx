@@ -23,7 +23,6 @@
 using std::endl;
 using std::istream;
 using std::istringstream;
-using std::move;
 using std::ostream;
 using std::string;
 
@@ -728,7 +727,7 @@ read(StreamReader &sr, bool want_server_info) {
   }
 
   // Parse the header
-  int num_multifiles = parse_header(Datagram(move(header)));
+  int num_multifiles = parse_header(Datagram(std::move(header)));
   if (num_multifiles < 0) {
     downloader_cat.error() << "invalid db header" << endl;
     return false;
@@ -748,7 +747,7 @@ read(StreamReader &sr, bool want_server_info) {
     }
 
     // Parse the header
-    int mfr_length = parse_record_header(Datagram(move(mfr_header)));
+    int mfr_length = parse_record_header(Datagram(std::move(mfr_header)));
 
     // Ok, now that we know the size of the mfr, read it in Make a buffer to
     // read the multifile record into do not count the header length twice
@@ -760,7 +759,7 @@ read(StreamReader &sr, bool want_server_info) {
     }
 
     // Parse the mfr
-    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(Datagram(move(mfr_record)));
+    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(Datagram(std::move(mfr_record)));
 
     // Only read in the individual file info if you are the server
     if (want_server_info) {
@@ -779,7 +778,7 @@ read(StreamReader &sr, bool want_server_info) {
         }
 
         // Parse the header
-        int fr_length = parse_record_header(Datagram(move(fr_header)));
+        int fr_length = parse_record_header(Datagram(std::move(fr_header)));
 
         // Ok, now that we know the size of the mfr, read it in do not count
         // the header length twice
@@ -792,7 +791,7 @@ read(StreamReader &sr, bool want_server_info) {
         }
 
         // Parse the file record
-        PT(DownloadDb::FileRecord) fr = parse_fr(Datagram(move(fr_record)));
+        PT(DownloadDb::FileRecord) fr = parse_fr(Datagram(std::move(fr_record)));
 
         // Add this file record to the current multifilerecord
         mfr->add_file_record(fr);

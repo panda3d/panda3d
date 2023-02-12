@@ -20,6 +20,8 @@
 #if defined(__i386__) || defined(__x86_64) || defined(_M_IX86) || defined(_M_X64)
 #include <emmintrin.h>
 #define PAUSE() _mm_pause()
+#elif defined(_WIN32)
+#define PAUSE() YieldProcessor()
 #else
 #define PAUSE()
 #endif

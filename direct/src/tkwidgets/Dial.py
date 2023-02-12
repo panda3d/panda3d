@@ -5,10 +5,13 @@ Dial Class: Velocity style controller for floating point values with
 
 __all__ = ['Dial', 'AngleDial', 'DialWidget']
 
-from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
-import math, operator, Pmw
+from panda3d.core import ClockObject
+import math
+import operator
+import Pmw
+import tkinter as tk
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi
@@ -53,13 +56,13 @@ class Dial(Valuator):
             self._valuator.grid(rowspan = 2, columnspan = 2,
                                 padx = 2, pady = 2)
             if self._label:
-                self._label.grid(row = 0, column = 2, sticky = EW)
-            self._entry.grid(row = 1, column = 2, sticky = EW)
+                self._label.grid(row = 0, column = 2, sticky = tk.EW)
+            self._entry.grid(row = 1, column = 2, sticky = tk.EW)
             self.interior().columnconfigure(2, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0, column=0, sticky = EW)
-            self._entry.grid(row=0, column=1, sticky = EW)
+                self._label.grid(row=0, column=0, sticky = tk.EW)
+            self._entry.grid(row=0, column=1, sticky = tk.EW)
             self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
@@ -82,12 +85,12 @@ class Dial(Valuator):
 
     def addValuatorMenuEntries(self):
         # The popup menu
-        self._fSnap = IntVar()
+        self._fSnap = tk.IntVar()
         self._fSnap.set(self['fSnap'])
         self._popupMenu.add_checkbutton(label = 'Snap',
                                         variable = self._fSnap,
                                         command = self._setSnap)
-        self._fRollover = IntVar()
+        self._fRollover = tk.IntVar()
         self._fRollover.set(self['fRollover'])
         if self['fAdjustable']:
             self._popupMenu.add_checkbutton(label = 'Rollover',
@@ -150,7 +153,7 @@ class DialWidget(Pmw.MegaWidget):
             # Appearance
             ('style',           VALUATOR_FULL,      INITOPT),
             ('size',            None,           INITOPT),
-            ('relief',          SUNKEN,         self.setRelief),
+            ('relief',          tk.SUNKEN,      self.setRelief),
             ('borderwidth',     2,              self.setBorderwidth),
             ('background',      'white',        self.setBackground),
             # Number of segments the dial is divided into
@@ -207,13 +210,13 @@ class DialWidget(Pmw.MegaWidget):
 
         # The canvas
         self._widget = self.createcomponent('canvas', (), None,
-                                            Canvas, (interior,),
+                                            tk.Canvas, (interior,),
                                             width = size, height = size,
                                             background = self['background'],
                                             highlightthickness = 0,
                                             scrollregion = (-radius, -radius,
                                                             radius, radius))
-        self._widget.pack(expand = 1, fill = BOTH)
+        self._widget.pack(expand = 1, fill = tk.BOTH)
 
         # The dial face (no outline/fill, primarily for binding mouse events)
         self._widget.create_oval(-radius, -radius, radius, radius,
@@ -256,7 +259,7 @@ class DialWidget(Pmw.MegaWidget):
                 self.rollCount = 0
             value = self['base'] + ((value - self['base']) % self['delta'])
         # Send command if any
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value
@@ -333,11 +336,11 @@ class DialWidget(Pmw.MegaWidget):
         self._onButtonPress()
         self.knobSF = 0.0
         self.updateTask = taskMgr.add(self.updateDialTask, 'updateDial')
-        self.updateTask.lastTime = globalClock.getFrameTime()
+        self.updateTask.lastTime = ClockObject.getGlobalClock().getFrameTime()
 
     def updateDialTask(self, state):
         # Update value
-        currT = globalClock.getFrameTime()
+        currT = ClockObject.getGlobalClock().getFrameTime()
         dt = currT - state.lastTime
         self.set(self.value + self.knobSF * dt)
         state.lastTime = currT
@@ -419,7 +422,7 @@ class DialWidget(Pmw.MegaWidget):
 
 
 if __name__ == '__main__':
-    tl = Toplevel()
+    tl = tk.Toplevel()
     d = Dial(tl)
     d2 = Dial(tl, dial_numSegments = 12, max = 360,
               dial_fRollover = 0, value = 180)
@@ -427,7 +430,7 @@ if __name__ == '__main__':
               dial_fRollover = 0)
     d4 = Dial(tl, dial_numSegments = 16, max = 256,
               dial_fRollover = 0)
-    d.pack(expand = 1, fill = X)
-    d2.pack(expand = 1, fill = X)
-    d3.pack(expand = 1, fill = X)
-    d4.pack(expand = 1, fill = X)
+    d.pack(expand = 1, fill = tk.X)
+    d2.pack(expand = 1, fill = tk.X)
+    d3.pack(expand = 1, fill = tk.X)
+    d4.pack(expand = 1, fill = tk.X)

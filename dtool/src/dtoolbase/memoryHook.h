@@ -16,11 +16,9 @@
 
 #include "dtoolbase.h"
 #include "numeric_types.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 #include "mutexImpl.h"
 #include <map>
-
-class DeletedBufferChain;
 
 /**
  * This class provides a wrapper around the various possible malloc schemes
@@ -36,9 +34,9 @@ class DeletedBufferChain;
  */
 class EXPCL_DTOOL_DTOOLBASE MemoryHook {
 public:
-  MemoryHook();
+  constexpr MemoryHook() = default;
   MemoryHook(const MemoryHook &copy);
-  virtual ~MemoryHook();
+  virtual ~MemoryHook() = default;
 
   virtual void *heap_alloc_single(size_t size);
   virtual void heap_free_single(void *ptr);
@@ -63,29 +61,26 @@ public:
 
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
-  DeletedBufferChain *get_deleted_chain(size_t buffer_size);
-
   virtual void alloc_fail(size_t attempted_size);
 
   INLINE static size_t get_ptr_size(void *ptr);
 
 protected:
-  TVOLATILE AtomicAdjust::Integer _total_heap_single_size;
-  TVOLATILE AtomicAdjust::Integer _total_heap_array_size;
-  TVOLATILE AtomicAdjust::Integer _requested_heap_size;
-  TVOLATILE AtomicAdjust::Integer _total_mmap_size;
+  patomic<size_t> _total_heap_single_size { 0u };
+  patomic<size_t> _total_heap_array_size { 0u };
+  patomic<size_t> _requested_heap_size { 0u };
+  patomic<size_t> _total_mmap_size { 0u };
 
   // If the allocated heap size crosses this threshold, we call
   // overflow_heap_size().
-  size_t _max_heap_size;
+  size_t _max_heap_size = ~(size_t)0;
 
   virtual void overflow_heap_size();
 
-private:
-  size_t _page_size;
+  void determine_page_size() const;
 
-  typedef std::map<size_t, DeletedBufferChain *> DeletedChains;
-  DeletedChains _deleted_chains;
+private:
+  mutable size_t _page_size = 0;
 
   mutable MutexImpl _lock;
 };

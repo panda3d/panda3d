@@ -1,7 +1,21 @@
-
-from panda3d.core import *
-from .DirectGlobals import *
-from .DirectUtil import *
+from panda3d.core import (
+    CSDefault,
+    GeomNode,
+    LineSegs,
+    Mat4,
+    NodePath,
+    Point3,
+    Quat,
+    VBase3,
+    VBase4,
+    Vec3,
+    composeMatrix,
+    decomposeMatrix,
+    deg2Rad,
+    rad2Deg,
+)
+from .DirectGlobals import Q_EPSILON, UNIT_VEC, ZERO_VEC
+from .DirectUtil import CLAMP
 import math
 
 class LineNodePath(NodePath):
@@ -163,7 +177,7 @@ def getCrankAngle(center):
     # origin) in screen space
     x = base.direct.dr.mouseX - center[0]
     y = base.direct.dr.mouseY - center[2]
-    return (180 + rad2Deg(math.atan2(y, x)))
+    return 180 + rad2Deg(math.atan2(y, x))
 
 def relHpr(nodePath, base, h, p, r):
     # Compute nodePath2newNodePath relative to base coordinate system
@@ -205,9 +219,9 @@ def qSlerp(startQuat, endQuat, t):
         startQ.setJ(-1 * startQ.getJ())
         startQ.setK(-1 * startQ.getK())
         startQ.setR(-1 * startQ.getR())
-    if ((1.0 + cosOmega) > Q_EPSILON):
+    if (1.0 + cosOmega) > Q_EPSILON:
         # usual case
-        if ((1.0 - cosOmega) > Q_EPSILON):
+        if (1.0 - cosOmega) > Q_EPSILON:
             # usual case
             omega = math.acos(cosOmega)
             sinOmega = math.sin(omega)
@@ -240,4 +254,3 @@ def qSlerp(startQuat, endQuat, t):
         destQuat.setK(startScale * startQ.getK() +
                       endScale * endQuat.getK())
     return destQuat
-

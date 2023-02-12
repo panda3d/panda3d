@@ -97,6 +97,7 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
+#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -121,13 +122,13 @@ reload_implicit_pages() {
     const char *log_filename;
   };
 #ifdef _WIN32
-  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(nullptr), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
 #ifndef _WIN32
@@ -459,6 +460,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();
@@ -498,7 +500,6 @@ reload_implicit_pages() {
     SetErrorMode(SEM_FAILCRITICALERRORS);
   }
 #endif
-
 }
 
 /**

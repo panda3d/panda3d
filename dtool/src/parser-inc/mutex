@@ -22,6 +22,7 @@ namespace std {
   inline constexpr adopt_lock_t adopt_lock {};
 
   template<class Mutex> class lock_guard;
+  template<class... MutexTypes> class scoped_lock;
   template<class Mutex> class unique_lock;
 
   struct once_flag;

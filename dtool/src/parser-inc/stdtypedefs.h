@@ -22,11 +22,6 @@
 typedef long time_t;
 typedef long clock_t;
 
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef unsigned short ushort;
-typedef unsigned char uchar;
-
 #ifdef _WIN64
 #define __SIZE_TYPE__ unsigned long long
 #define __PTRDIFF_TYPE__ long long
@@ -51,9 +46,5 @@ struct timeval;
 namespace std {
   typedef decltype(nullptr) nullptr_t;
 }
-
-// One day, we might extend interrogate to be able to parse this,
-// but we currently don't need it.
-#define alignas(x)
 
 #endif

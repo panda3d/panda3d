@@ -23,6 +23,7 @@
 #include "pvector.h"
 #include "clockObject.h"
 #include "textAssembler.h"
+#include "pipeline.h"
 
 /**
  * This is a particular kind of PGItem that handles simple one-line or short
@@ -114,7 +115,7 @@ PUBLISHED:
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
-  virtual void set_active(bool active);
+  virtual void set_active(bool active) final;
   virtual void set_focus(bool focus);
 
   INLINE static std::string get_accept_prefix();
@@ -148,6 +149,7 @@ private:
 
   TextAssembler _text;
   TextAssembler _obscure_text;
+  TextAssembler _candidate_text;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;

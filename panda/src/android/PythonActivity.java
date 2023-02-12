@@ -16,8 +16,14 @@ package org.panda3d.android;
 import org.panda3d.android.PandaActivity;
 
 /**
- * This is only declared as a separate class from PandaActivity so that we
- * can have two separate activity definitions in ApplicationManifest.xml.
+ * Extends PandaActivity with some things that are useful in a Python
+ * application.
  */
 public class PythonActivity extends PandaActivity {
+    // This is required by plyer.
+    public static PythonActivity mActivity;
+
+    public PythonActivity() {
+        mActivity = this;
+    }
 }

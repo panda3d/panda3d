@@ -2,18 +2,18 @@
 
 __all__ = ['AnimPanel', 'ActorControl']
 
-
-
 ### SEE END OF FILE FOR EXAMPLE USEAGE ###
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
-import Pmw, os
+from panda3d.core import Filename, getModelPath, ClockObject
+from direct.tkwidgets.AppShell import AppShell
 from direct.task import Task
-from panda3d.core import Filename, getModelPath
+from direct.task.TaskManagerGlobal import taskMgr
 from tkinter.simpledialog import askfloat
 from tkinter.filedialog import askopenfilename
+import Pmw
+import os
+import tkinter as tk
 
 
 FRAMES = 0
@@ -101,89 +101,89 @@ class AnimPanel(AppShell):
         self.fToggleAll = 1
         b = self.createcomponent(
             'toggleEnableButton', (), None,
-            Button, (self.menuFrame,),
+            tk.Button, (self.menuFrame,),
             text = 'Toggle Enable',
             command = self.toggleAllControls)
-        b.pack(side = RIGHT, expand = 0)
+        b.pack(side = tk.RIGHT, expand = 0)
 
         b = self.createcomponent(
             'showSecondsButton', (), None,
-            Button, (self.menuFrame,),
+            tk.Button, (self.menuFrame,),
             text = 'Show Seconds',
             command = self.displaySeconds)
-        b.pack(side = RIGHT, expand = 0)
+        b.pack(side = tk.RIGHT, expand = 0)
 
         b = self.createcomponent(
             'showFramesButton', (), None,
-            Button, (self.menuFrame,),
+            tk.Button, (self.menuFrame,),
             text = 'Show Frames',
             command = self.displayFrameCounts)
-        b.pack(side = RIGHT, expand = 0)
+        b.pack(side = tk.RIGHT, expand = 0)
 
         self.actorFrame = None
         self.createActorControls()
 
         # Create a frame to hold the playback controls
-        controlFrame = Frame(interior)
+        controlFrame = tk.Frame(interior)
         self.toStartButton = self.createcomponent(
             'toStart', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = '<<',
             width = 4,
             command = self.resetAllToZero)
-        self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
+        self.toStartButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         self.toPreviousFrameButton = self.createcomponent(
             'toPreviousFrame', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = '<',
             width = 4,
             command = self.previousFrame)
-        self.toPreviousFrameButton.pack(side = LEFT, expand = 1, fill = X)
+        self.toPreviousFrameButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         self.playButton = self.createcomponent(
             'playButton', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = 'Play', width = 8,
             command = self.playActorControls)
-        self.playButton.pack(side = LEFT, expand = 1, fill = X)
+        self.playButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         self.stopButton = self.createcomponent(
             'stopButton', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = 'Stop', width = 8,
             command = self.stopActorControls)
-        self.stopButton.pack(side = LEFT, expand = 1, fill = X)
+        self.stopButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         self.toNextFrameButton = self.createcomponent(
             'toNextFrame', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = '>',
             width = 4,
             command = self.nextFrame)
-        self.toNextFrameButton.pack(side = LEFT, expand = 1, fill = X)
+        self.toNextFrameButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         self.toEndButton = self.createcomponent(
             'toEnd', (), None,
-            Button, (controlFrame,),
+            tk.Button, (controlFrame,),
             text = '>>',
             width = 4,
             command = self.resetAllToEnd)
-        self.toEndButton.pack(side = LEFT, expand = 1, fill = X)
+        self.toEndButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
-        self.loopVar = IntVar()
+        self.loopVar = tk.IntVar()
         self.loopVar.set(0)
         self.loopButton = self.createcomponent(
             'loopButton', (), None,
-            Checkbutton, (controlFrame,),
+            tk.Checkbutton, (controlFrame,),
             text = 'Loop', width = 8,
             variable = self.loopVar)
-        self.loopButton.pack(side = LEFT, expand = 1, fill = X)
+        self.loopButton.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         # add actors and animations, only allowed if a direct
         # session has been specified since these currently require
         # interaction with selected objects
-        if (self.session):
+        if self.session:
             menuBar.addmenuitem('File', 'command',
                                 'Set currently selected group of objects as actors to animate.',
                                 label = 'Set Actors',
@@ -193,11 +193,11 @@ class AnimPanel(AppShell):
                                 label = 'Load Anim',
                                 command = self.loadAnim)
 
-        controlFrame.pack(fill = X)
+        controlFrame.pack(fill = tk.X)
 
     def createActorControls(self):
         # Create a frame to hold all the actor controls
-        self.actorFrame = Frame(self.interior())
+        self.actorFrame = tk.Frame(self.interior())
         # Create a control for each actor
         self.actorControlList = []
         for actor in self['actorList']:
@@ -206,27 +206,27 @@ class AnimPanel(AppShell):
             topAnims = []
             if 'neutral' in anims:
                 i = anims.index('neutral')
-                del(anims[i])
+                del anims[i]
                 topAnims.append('neutral')
             if 'walk' in anims:
                 i = anims.index('walk')
-                del(anims[i])
+                del anims[i]
                 topAnims.append('walk')
             if 'run' in anims:
                 i = anims.index('run')
-                del(anims[i])
+                del anims[i]
                 topAnims.append('run')
             anims.sort()
             anims = topAnims + anims
-            if (len(anims)== 0):
+            if len(anims) == 0:
                 # no animations set for this actor, don't
                 # display the control panel
                 continue
 #            currComponents = self.components()
-#            if ('actorControl%d' % index in currComponents):
+#            if 'actorControl%d' % index in currComponents:
 #                self.destroycomponent('actorControl%d' % index)
 #            ac = self.component('actorControl%d' % index)
-#            if (ac == None):
+#            if ac is None:
             ac = self.createcomponent(
                 'actorControl%d' % self.actorControlIndex, (), 'Actor',
                 ActorControl, (self.actorFrame,),
@@ -234,15 +234,15 @@ class AnimPanel(AppShell):
                 text = actor.getName(),
                 animList = anims,
                 actor = actor)
-            ac.pack(expand = 1, fill = X)
+            ac.pack(expand = 1, fill = tk.X)
             self.actorControlList.append(ac)
             self.actorControlIndex = self.actorControlIndex + 1
 
         # Now pack the actor frame
-        self.actorFrame.pack(expand = 1, fill = BOTH)
+        self.actorFrame.pack(expand = 1, fill = tk.BOTH)
 
     def clearActorControls(self):
-        if (self.actorFrame):
+        if self.actorFrame:
             self.actorFrame.forget()
             self.actorFrame.destroy()
             self.actorFrame = None
@@ -294,7 +294,7 @@ class AnimPanel(AppShell):
 
     def playActorControls(self):
         self.stopActorControls()
-        self.lastT = globalClock.getFrameTime()
+        self.lastT = ClockObject.getGlobalClock().getFrameTime()
         self.playList = self.actorControlList[:]
         taskMgr.add(self.play, self.id + '_UpdateTask')
 
@@ -302,7 +302,7 @@ class AnimPanel(AppShell):
         if not self.playList:
             return Task.done
         fLoop = self.loopVar.get()
-        currT = globalClock.getFrameTime()
+        currT = ClockObject.getGlobalClock().getFrameTime()
         deltaT = currT - self.lastT
         self.lastT = currT
         for actorControl in self.playList:
@@ -399,7 +399,7 @@ class ActorControl(Pmw.MegaWidget):
 
         # Handle to the toplevels hull
         interior = self.interior()
-        interior.configure(relief = RAISED, bd = 2)
+        interior.configure(relief = tk.RAISED, bd = 2)
 
         # Instance variables
         self.fps = 24
@@ -412,18 +412,18 @@ class ActorControl(Pmw.MegaWidget):
         # Create component widgets
         self._label = self.createcomponent(
             'label', (), None,
-            Menubutton, (interior,),
+            tk.Menubutton, (interior,),
             font=('MSSansSerif', 14, 'bold'),
-            relief = RAISED, bd = 1,
+            relief = tk.RAISED, bd = 1,
             activebackground = '#909090',
             text = self['text'])
         # Top level menu
-        labelMenu = Menu(self._label, tearoff = 0)
+        labelMenu = tk.Menu(self._label, tearoff = 0)
 
         # Menu to select display mode
-        self.unitsVar = IntVar()
+        self.unitsVar = tk.IntVar()
         self.unitsVar.set(FRAMES)
-        displayMenu = Menu(labelMenu, tearoff = 0)
+        displayMenu = tk.Menu(labelMenu, tearoff = 0)
         displayMenu.add_radiobutton(label = 'Frame count',
                                     value = FRAMES,
                                     variable = self.unitsVar,
@@ -442,13 +442,13 @@ class ActorControl(Pmw.MegaWidget):
 
         # Now associate menu with menubutton
         self._label['menu'] = labelMenu
-        self._label.pack(side = LEFT, fill = X)
+        self._label.pack(side = tk.LEFT, fill = tk.X)
 
         # Combo box to select current animation
         self.animMenu = self.createcomponent(
             'animMenu', (), None,
             Pmw.ComboBox, (interior,),
-            labelpos = W, label_text = 'Anim:',
+            labelpos = tk.W, label_text = 'Anim:',
             entry_width = 12, selectioncommand = self.selectAnimNamed,
             scrolledlist_items = self['animList'])
         self.animMenu.selectitem(self['active'])
@@ -465,45 +465,45 @@ class ActorControl(Pmw.MegaWidget):
         playRateMenu = self.createcomponent(
             'playRateMenu', (), None,
             Pmw.ComboBox, (interior,),
-            labelpos = W, label_text = 'Play Rate:',
+            labelpos = tk.W, label_text = 'Play Rate:',
             entry_width = 4, selectioncommand = self.setPlayRate,
             scrolledlist_items = playRateList)
         playRateMenu.selectitem(playRate)
-        playRateMenu.pack(side = LEFT, padx = 5, expand = 0)
+        playRateMenu.pack(side = tk.LEFT, padx = 5, expand = 0)
 
         # Scale to control animation
-        frameFrame = Frame(interior, relief = SUNKEN, bd = 1)
+        frameFrame = tk.Frame(interior, relief = tk.SUNKEN, bd = 1)
         self.minLabel = self.createcomponent(
             'minLabel', (), 'sLabel',
-            Label, (frameFrame,),
+            tk.Label, (frameFrame,),
             text = 0)
-        self.minLabel.pack(side = LEFT)
+        self.minLabel.pack(side = tk.LEFT)
 
         self.frameControl = self.createcomponent(
             'scale', (), None,
-            Scale, (frameFrame,),
+            tk.Scale, (frameFrame,),
             from_ = 0, to = 24, resolution = 1.0,
             command = self.goTo,
-            orient = HORIZONTAL, showvalue = 1)
-        self.frameControl.pack(side = LEFT, expand = 1)
+            orient = tk.HORIZONTAL, showvalue = 1)
+        self.frameControl.pack(side = tk.LEFT, expand = 1)
         self.frameControl.bind('<Button-1>', self.__onPress)
         self.frameControl.bind('<ButtonRelease-1>', self.__onRelease)
 
         self.maxLabel = self.createcomponent(
             'maxLabel', (), 'sLabel',
-            Label, (frameFrame,),
+            tk.Label, (frameFrame,),
             text = 24)
-        self.maxLabel.pack(side = LEFT)
-        frameFrame.pack(side = LEFT, expand = 1, fill = X)
+        self.maxLabel.pack(side = tk.LEFT)
+        frameFrame.pack(side = tk.LEFT, expand = 1, fill = tk.X)
 
         # Checkbutton to enable/disable control
-        self.frameActiveVar = IntVar()
+        self.frameActiveVar = tk.IntVar()
         self.frameActiveVar.set(1)
         frameActive = self.createcomponent(
             'checkbutton', (), None,
-            Checkbutton, (interior,),
+            tk.Checkbutton, (interior,),
             variable = self.frameActiveVar)
-        frameActive.pack(side = LEFT, expand = 1)
+        frameActive.pack(side = tk.LEFT, expand = 1)
 
         # Execute option callbacks
         self.initialiseoptions(ActorControl)
@@ -517,7 +517,7 @@ class ActorControl(Pmw.MegaWidget):
         actor = self['actor']
         active = self['active']
         self.fps = actor.getFrameRate(active)
-        if (self.fps == None):
+        if self.fps is None:
             # there was probably a problem loading the
             # active animation, set default anim properties
             print("unable to get animation fps, zeroing out animation info")
@@ -576,7 +576,7 @@ class ActorControl(Pmw.MegaWidget):
         newOffset = askfloat(parent = self.interior(),
                              title = self['text'],
                              prompt = 'Start offset (seconds):')
-        if newOffset != None:
+        if newOffset is not None:
             self.offset = newOffset
             self.updateDisplay()
 
@@ -603,7 +603,7 @@ class ActorControl(Pmw.MegaWidget):
                 loopT = self.currT % self.duration
                 self.goToT(loopT)
             else:
-                if (self.currT > self.maxSeconds):
+                if self.currT > self.maxSeconds:
                     # Clear this actor control from play list
                     self['animPanel'].playList.remove(self)
                 else:
@@ -616,7 +616,7 @@ class ActorControl(Pmw.MegaWidget):
         if self.unitsVar.get() == FRAMES:
             self.frameControl.set(f)
         else:
-            self.frameControl.set(f/self.fps)
+            self.frameControl.set(f / self.fps)
 
     def goToT(self, t):
         if self.unitsVar.get() == FRAMES:

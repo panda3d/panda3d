@@ -49,18 +49,9 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   nassertv(s->get_language() == Shader::SL_Cg);
 
   // Get a Cg context for this GSG.
-  CGcontext context = glgsg->_cg_context;
-  if (context == 0) {
-    // The GSG doesn't have a Cg context yet.  Create one.
-    glgsg->_cg_context = context = cgCreateContext();
-
-#if CG_VERSION_NUM >= 3100
-    // This just sounds like a good thing to do.
-    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
-    if (glgsg->_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
-      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
-    }
-#endif
+  CGcontext context = glgsg->get_cg_context();
+  if (context == nullptr) {
+    return;
   }
 
   // Ask the shader to compile itself for us and to give us the resulting Cg
@@ -166,7 +157,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
             if (cgGetParameterSemantic(p)) {
               GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
             }
-            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+            GLCAT.error(false) << " should be declared as float3, not float4!\n";
           }
           break;
         case 3:  // gl_Color
@@ -494,6 +485,14 @@ set_state_and_transform(const RenderState *target_rs,
     if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
+    }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
+    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+      altered |= Shader::SSD_render_mode;
     }
     _state_rs = target_rs;
   }
@@ -917,11 +916,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
-
-        } else {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+        else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {
@@ -1122,14 +1119,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    if (spec._suffix != 0) {
+    if (spec._suffix != nullptr) {
       // The suffix feature is inefficient.  It is a temporary hack.
-      if (tex == 0) {
+      if (tex == nullptr) {
         continue;
       }
       tex = tex->load_related(spec._suffix);
     }
-    if ((tex == 0) || (tex->get_texture_type() != spec._desired_type)) {
+    if (tex == nullptr || tex->get_texture_type() != spec._desired_type) {
       continue;
     }
 

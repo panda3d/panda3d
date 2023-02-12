@@ -59,4 +59,3 @@ def LE_showInOneCam(nodePath, thisCamName):
     for camName in LE_CAM_MASKS:
         if camName != thisCamName:
             nodePath.hide(LE_CAM_MASKS[camName])
-

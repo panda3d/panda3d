@@ -39,6 +39,7 @@
 class EXPCL_PANDA_PGRAPH WorkingNodePath {
 public:
   INLINE WorkingNodePath(const NodePath &start);
+  INLINE WorkingNodePath(NodePath &&start);
   INLINE WorkingNodePath(const WorkingNodePath &copy);
   INLINE WorkingNodePath(const WorkingNodePath &parent, PandaNode *child);
   INLINE ~WorkingNodePath();

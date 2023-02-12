@@ -41,8 +41,8 @@ output(std::ostream &out) const {
 CPPStructType::
 CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
               CPPScope *current_scope, CPPScope *scope,
-              const CPPFile &file) :
-  CPPExtensionType(type, ident, current_scope, file),
+              const CPPFile &file, CPPAttributeList attr) :
+  CPPExtensionType(type, ident, current_scope, file, std::move(attr)),
   _scope(scope),
   _final(false)
 {
@@ -58,8 +58,8 @@ CPPStructType(const CPPStructType &copy) :
   CPPExtensionType(copy),
   _scope(copy._scope),
   _incomplete(copy._incomplete),
-  _derivation(copy._derivation),
-  _final(copy._final)
+  _final(copy._final),
+  _derivation(copy._derivation)
 {
   _subst_decl_recursive_protect = false;
 }
@@ -1261,10 +1261,14 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
       get_template_scope()->_parameters.write_formal(out, scope);
       indent(out, indent_level);
     }
+    out << _type;
+
+    if (!_attributes.is_empty()) {
+      out << " " << _attributes;
+    }
+
     if (_ident != nullptr) {
-      out << _type << " " << _ident->get_local_name(scope);
-    } else {
-      out << _type;
+      out << " " << _ident->get_local_name(scope);
     }
 
     if (_final) {

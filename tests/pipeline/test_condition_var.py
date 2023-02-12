@@ -1,4 +1,4 @@
-from panda3d.core import Mutex, ConditionVarFull
+from panda3d.core import Mutex, ConditionVar
 from panda3d import core
 from direct.stdpy import thread
 import pytest
@@ -14,7 +14,7 @@ def yield_thread():
 def test_cvar_notify():
     # Just tests that notifying without waiting does no harm.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     cv.notify()
     cv.notify_all()
@@ -24,7 +24,7 @@ def test_cvar_notify():
 def test_cvar_notify_locked():
     # Tests the same thing, but with the lock held.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     with m:
         cv.notify()
@@ -41,7 +41,7 @@ def test_cvar_notify_locked():
 def test_cvar_notify_thread(num_threads):
     # Tests notify() with some number of threads waiting.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     # We prematurely notify, so that we can test that it's not doing anything.
     m.acquire()
@@ -98,7 +98,7 @@ def test_cvar_notify_thread(num_threads):
 def test_cvar_notify_all_threads(num_threads):
     # Tests notify_all() with some number of threads waiting.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     # We prematurely notify, so that we can test that it's not doing anything.
     m.acquire()

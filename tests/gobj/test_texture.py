@@ -134,3 +134,26 @@ def test_texture_clear_half():
     assert col.y == -inf
     assert col.z == -inf
     assert math.isnan(col.w)
+
+
+def test_texture_deepcopy():
+    from copy import deepcopy
+
+    empty_tex = Texture("empty-texture")
+    empty_tex.setup_2d_texture(16, 16, Texture.T_unsigned_byte, Texture.F_rgba)
+    assert not empty_tex.has_ram_image()
+    empty_tex2 = deepcopy(empty_tex)
+    assert empty_tex2.name == empty_tex.name
+    assert not empty_tex2.has_ram_image()
+
+    tex = Texture("texture")
+    tex.setup_2d_texture(16, 16, Texture.T_unsigned_byte, Texture.F_rgba)
+    img = tex.make_ram_image()
+    assert tex.has_ram_image()
+    assert img.get_ref_count() == 2
+
+    tex2 = deepcopy(tex)
+    assert tex2.name == tex.name
+    assert tex2.has_ram_image()
+    img2 = tex2.get_ram_image()
+    assert img2.get_ref_count() == 2

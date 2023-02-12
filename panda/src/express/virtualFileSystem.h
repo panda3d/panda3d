@@ -25,6 +25,7 @@
 #include "config_express.h"
 #include "mutexImpl.h"
 #include "pvector.h"
+#include "zipArchive.h"
 
 class Multifile;
 class VirtualFileComposite;
@@ -47,12 +48,14 @@ PUBLISHED:
   };
 
   BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
+  BLOCKING bool mount(ZipArchive *archive, const Filename &mount_point, int flags);
   BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point,
                       int flags, const std::string &password = "");
   BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point,
                       int flags, const std::string &password = "");
   bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
+  BLOCKING int unmount(ZipArchive *archive);
   BLOCKING int unmount(const Filename &physical_filename);
   int unmount(VirtualFileMount *mount);
   BLOCKING int unmount_point(const Filename &mount_point);
@@ -95,11 +98,11 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
+  PY_EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
   BLOCKING std::istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(std::istream *stream);
 
-  EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
+  PY_EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
   BLOCKING std::ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
   BLOCKING std::ostream *open_append_file(const Filename &filename);
   BLOCKING static void close_write_file(std::ostream *stream);
@@ -169,4 +172,4 @@ private:
 
 #include "virtualFileSystem.I"
 
-#endif
+#endif // !VIRTUALFILESYSTEM_H

@@ -29,10 +29,10 @@ public:
   ZStreamBuf();
   virtual ~ZStreamBuf();
 
-  void open_read(std::istream *source, bool owns_source);
+  void open_read(std::istream *source, bool owns_source, std::streamsize source_length=-1, bool header=true);
   void close_read();
 
-  void open_write(std::ostream *dest, bool owns_dest, int compression_level);
+  void open_write(std::ostream *dest, bool owns_dest, int compression_level, bool header=true);
   void close_write();
 
   virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
@@ -50,6 +50,7 @@ private:
 
 private:
   std::istream *_source;
+  std::streamsize _source_bytes_left = -1;
   bool _owns_source;
 
   std::ostream *_dest;

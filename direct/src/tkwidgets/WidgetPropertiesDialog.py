@@ -2,18 +2,11 @@
 
 __all__ = ['WidgetPropertiesDialog']
 
-from direct.showbase.TkGlobal import *
 import Pmw
+import tkinter as tk
 
-"""
-TODO:
-  Checkboxes for None?
-  Floaters to adjust float values
-  OK and Cancel to allow changes to be delayed
-  Something other than Return to accept a new value
-"""
 
-class WidgetPropertiesDialog(Toplevel):
+class WidgetPropertiesDialog(tk.Toplevel):
     """Class to open dialogs to adjust widget properties."""
     def __init__(self, propertyDict, propertyList = None, parent = None,
                  title = 'Widget Properties'):
@@ -34,7 +27,7 @@ class WidgetPropertiesDialog(Toplevel):
             import tkinter
             parent = tkinter._default_root
         # Create toplevel window
-        Toplevel.__init__(self, parent)
+        tk.Toplevel.__init__(self, parent)
         self.transient(parent)
         # Set title
         if title:
@@ -44,7 +37,7 @@ class WidgetPropertiesDialog(Toplevel):
         # Initialize modifications
         self.modifiedDict = {}
         # Create body
-        body = Frame(self)
+        body = tk.Frame(self)
         self.initial_focus = self.body(body)
         body.pack(padx=5, pady=5)
         # Create OK Cancel button
@@ -64,7 +57,7 @@ class WidgetPropertiesDialog(Toplevel):
         # Clean up balloons!
         for balloon in self.balloonList:
             balloon.withdraw()
-        Toplevel.destroy(self)
+        tk.Toplevel.destroy(self)
 
     #
     # construction hooks
@@ -90,12 +83,12 @@ class WidgetPropertiesDialog(Toplevel):
             # Help string specified?
             helpString = propertySet.get('help', None)
             # Create label
-            label = Label(master, text=property, justify=LEFT)
-            label.grid(row=count, column = 0, padx=5, sticky=W)
+            label = tk.Label(master, text=property, justify=tk.LEFT)
+            label.grid(row=count, column = 0, padx=5, sticky=tk.W)
 
             # Create entry
             entry = Pmw.EntryField(master, entry_justify = 'right')
-            entry.grid(row=count, column = 1, padx=5, sticky=W+E)
+            entry.grid(row=count, column = 1, padx=5, sticky=tk.W+tk.E)
             if initialvalue is None:
                 entry.insert(0, 'None')
             else:
@@ -144,7 +137,7 @@ class WidgetPropertiesDialog(Toplevel):
         # Set initial focus
         if len(entryList) > 0:
             entry = entryList[0]
-            entry.select_range(0, END)
+            entry.select_range(0, tk.END)
             # Set initial focus to first entry in the list
             return entryList[0]
         else:
@@ -157,13 +150,13 @@ class WidgetPropertiesDialog(Toplevel):
     def buttonbox(self):
         """add standard button box buttons.
         """
-        box = Frame(self)
+        box = tk.Frame(self)
         # Create buttons
-        w = Button(box, text="OK", width=10, command=self.ok)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w = tk.Button(box, text="OK", width=10, command=self.ok)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
         # Create buttons
-        w = Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w = tk.Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
         # Bind commands
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
@@ -227,5 +220,3 @@ class WidgetPropertiesDialog(Toplevel):
         This method is called automatically to process the data, *after*
         the dialog is destroyed. By default, it does nothing.
         """
-        pass # override
-

@@ -18,9 +18,9 @@ explanation and an example of how to use this class.
 
 __all__ = ['DirectFrame']
 
-from panda3d.core import *
+from panda3d.core import Filename, NodePath, PGItem, Texture
 from . import DirectGuiGlobals as DGG
-from .DirectGuiBase import *
+from .DirectGuiBase import DirectGuiWidget
 from .OnscreenImage import OnscreenImage
 from .OnscreenGeom import OnscreenGeom
 from .OnscreenText import OnscreenText

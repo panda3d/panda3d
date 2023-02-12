@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "clockObject.h"
+#include "patomic.h"
 #include "pnotify.h"
 
 /**
@@ -24,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPH CacheStats {
 public:
-  CacheStats() = default;
+  constexpr CacheStats() = default;
   void init();
   void reset(double now);
   void write(std::ostream &out, const char *name) const;
@@ -45,7 +46,7 @@ private:
   int _cache_new_adds = 0;
   int _cache_dels = 0;
   int _total_cache_size = 0;
-  int _num_states = 0;
+  patomic<int> _num_states {0};
   double _last_reset = 0.0;
 
   bool _cache_report = false;

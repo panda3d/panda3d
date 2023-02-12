@@ -35,6 +35,12 @@ if(HAVE_GLES1)
   target_link_libraries(p3egldisplay_gles1 p3glesgsg p3x11display
     PKG::EGL PKG::GLES1)
 
+  if(HAVE_X11)
+    target_compile_definitions(p3egldisplay_gles1 PUBLIC USE_X11)
+  else()
+    target_compile_definitions(p3egldisplay_gles1 PRIVATE EGL_NO_X11)
+  endif()
+
   if(NOT BUILD_METALIBS)
     install(TARGETS p3egldisplay_gles1
       EXPORT OpenGLES1 COMPONENT OpenGLES1
@@ -54,6 +60,12 @@ if(HAVE_GLES2)
   target_compile_definitions(p3egldisplay_gles2 PUBLIC OPENGLES_2)
   target_link_libraries(p3egldisplay_gles2 p3gles2gsg p3x11display
     PKG::EGL PKG::GLES2)
+
+  if(HAVE_X11)
+    target_compile_definitions(p3egldisplay_gles2 PUBLIC USE_X11)
+  else()
+    target_compile_definitions(p3egldisplay_gles2 PRIVATE EGL_NO_X11)
+  endif()
 
   if(NOT BUILD_METALIBS)
     install(TARGETS p3egldisplay_gles2
