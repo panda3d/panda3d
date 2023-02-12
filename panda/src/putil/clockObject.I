@@ -110,7 +110,7 @@ INLINE double ClockObject::
 get_dt(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   if (_max_dt > 0.0) {
-    return std::min(_max_dt, cdata->_dt);
+    return (std::min)(_max_dt, cdata->_dt);
   }
   return cdata->_dt;
 }
@@ -213,10 +213,10 @@ check_errors(Thread *current_thread) {
  */
 INLINE ClockObject *ClockObject::
 get_global_clock() {
-  ClockObject *clock = (ClockObject *)AtomicAdjust::get_ptr(_global_clock);
+  ClockObject *clock = _global_clock.load(std::memory_order_consume);
   if (UNLIKELY(clock == nullptr)) {
     make_global_clock();
-    clock = (ClockObject *)_global_clock;
+    clock = _global_clock.load(std::memory_order_consume);
   }
   return clock;
 }

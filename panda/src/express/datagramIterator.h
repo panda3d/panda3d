@@ -39,6 +39,9 @@ PUBLISHED:
   INLINE int8_t get_int8();
   INLINE uint8_t get_uint8();
 
+  INLINE int16_t peek_int16();
+  INLINE uint16_t peek_uint16();
+
   INLINE int16_t get_int16();
   INLINE int32_t get_int32();
   INLINE int64_t get_int64();

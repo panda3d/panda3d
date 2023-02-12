@@ -72,11 +72,11 @@ PUBLISHED:
   void update(NodePath cam_node, const LVecBase3 &light_vector);
   inline void reset_film_size_cache();
 
-  inline NodePath get_camera(size_t index);
+  inline NodePath get_camera(size_t index) const;
 
   void reparent_to(NodePath parent);
-  inline const PTA_LMatrix4 &get_mvp_array();
-  inline const PTA_LVecBase2 &get_nearfar_array();
+  inline const PTA_LMatrix4 &get_mvp_array() const;
+  inline const PTA_LVecBase2 &get_nearfar_array() const;
 
 public:
   // Used to access the near and far points in the array
@@ -91,9 +91,9 @@ protected:
   void init_cam_nodes();
   void compute_pssm_splits(const LMatrix4& transform, float max_distance,
                const LVecBase3 &light_vector);
-  inline float get_split_start(size_t split_index);
+  inline float get_split_start(size_t split_index) const;
   LMatrix4 compute_mvp(size_t cam_index);
-  inline LPoint3 get_interpolated_point(CoordinateOrigin origin, float depth);
+  inline LPoint3 get_interpolated_point(CoordinateOrigin origin, float depth) const;
   LVecBase3 get_snap_offset(const LMatrix4& mat, size_t resolution);
 
   std::vector<NodePath> _cam_nodes;

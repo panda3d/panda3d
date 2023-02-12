@@ -108,30 +108,6 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a
- * GeomVertexArrayData that is actively being used for rendering.
- */
-void GeomVertexArrayData::
-operator = (const GeomVertexArrayData &copy) {
-  CopyOnWriteObject::operator = (copy);
-  SimpleLruPage::operator = (copy);
-
-  copy.mark_used_lru();
-
-  _array_format = copy._array_format;
-  _cycler = copy._cycler;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    cdata->_modified = Geom::get_next_modified();
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-
-  nassertv(_array_format->is_registered());
-}
-
-/**
  *
  */
 GeomVertexArrayData::

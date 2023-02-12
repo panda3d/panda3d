@@ -46,6 +46,7 @@
 #include "pnmImage.h"
 #include "pfmFile.h"
 #include "asyncTask.h"
+#include "extension.h"
 
 class TextureContext;
 class FactoryParams;
@@ -455,15 +456,15 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const std::string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
-#ifndef CPPPARSER
+#if !defined(CPPPARSER) || !defined(HAVE_PYTHON)
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
   void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
-#else
-  EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
-                            size_t page_size = 0);
-  EXTEND void set_ram_image_as(PyObject *image, const std::string &provided_format);
-#endif
+#else // !CPPPARSER || !HAVE_PYTHON
+  PY_EXTEND(void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
+                               size_t page_size = 0));
+  PY_EXTEND(void set_ram_image_as(PyObject *image, const std::string &provided_format));
+#endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
@@ -472,6 +473,8 @@ PUBLISHED:
   MAKE_PROPERTY(ram_image_compression, get_ram_image_compression);
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
+
+  PY_EXTENSION(PT(Texture) __deepcopy__(PyObject *memo) const);
 
   BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                           QualityLevel quality_level = QL_default,
@@ -1085,6 +1088,7 @@ private:
 
   static AutoTextureScale _textures_power_2;
   static PStatCollector _texture_read_pcollector;
+  static PStatCollector _texture_write_pcollector;
 
   // Datagram stuff
 public:
@@ -1122,6 +1126,7 @@ private:
 
   static TypeHandle _type_handle;
 
+  friend class Extension<Texture>;
   friend class TextureContext;
   friend class PreparedGraphicsObjects;
   friend class TexturePool;
@@ -1140,4 +1145,4 @@ EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, Texture::QualityLe
 
 #include "texture.I"
 
-#endif
+#endif // !TEXTURE_H

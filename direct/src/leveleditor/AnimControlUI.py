@@ -1,8 +1,6 @@
 """
    This is the GUI for the Animation Control Panel
 """
-from direct.interval.IntervalGlobal import *
-from direct.actor.Actor import *
 from . import ObjectGlobals as OG
 
 import os

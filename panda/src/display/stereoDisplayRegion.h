@@ -29,7 +29,7 @@
  * eyes together.  To access the left or right eyes independently, use
  * get_left_eye() and get_right_eye().
  */
-class EXPCL_PANDA_DISPLAY StereoDisplayRegion : public DisplayRegion {
+class EXPCL_PANDA_DISPLAY StereoDisplayRegion final : public DisplayRegion {
 protected:
   StereoDisplayRegion(GraphicsOutput *window,
                       const LVecBase4 &dimensions,

@@ -9,14 +9,12 @@ import pytest
 
 
 def test_imports_panda3d():
-    import imp, importlib, os
+    import importlib, os
     import panda3d
     dir = os.path.dirname(panda3d.__file__)
 
     # Iterate over the things in the panda3d package that look like modules.
-    extensions = set()
-    for suffix in imp.get_suffixes():
-        extensions.add(suffix[0])
+    extensions = set(importlib.machinery.all_suffixes())
 
     for basename in os.listdir(dir):
         if basename.startswith('lib'):

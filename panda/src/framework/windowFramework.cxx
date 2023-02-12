@@ -1437,10 +1437,10 @@ create_anim_controls() {
   setup_shuttle_button(":", 3, st_forward_button);
 
   AsyncTaskManager &task_mgr = _panda_framework->get_task_mgr();
-  _update_anim_controls_task = task_mgr.add("controls", [this](AsyncTask *task) {
+  _update_anim_controls_task = task_mgr.add([this](AsyncTask *task) {
     update_anim_controls();
     return AsyncTask::DS_cont;
-  });
+  }, "controls");
 }
 
 /**

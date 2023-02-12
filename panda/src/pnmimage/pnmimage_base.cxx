@@ -35,11 +35,11 @@ pm_message(const char *format, ...) {
   char buffer[buffer_size];
 
   vsnprintf(buffer, buffer_size, format, ap);
+  va_end(ap);
+
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.info() << buffer << "\n";
-
-  va_end(ap);
 }
 
 /**
@@ -52,14 +52,13 @@ pm_error(const char *format, ...) {
   va_start(ap, format);
 
   static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
+  char buffer[buffer_size + 1];
 
   vsnprintf(buffer, buffer_size, format, ap);
-  nassertv(strlen(buffer) < buffer_size);
+  buffer[buffer_size] = 0;
+  va_end(ap);
 
   pnmimage_cat.error() << buffer << "\n";
-
-  va_end(ap);
 
   // Now we're supposed to exit.  Inconvenient if we were running Panda
   // interactively, but that's the way it is.

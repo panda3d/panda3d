@@ -26,6 +26,7 @@ INLINE PT(Texture) Texture::
 make_copy() const {
   PT(Texture) tex = make_copy_impl();
   CDWriter cdata_tex(tex->_cycler, true);
+  cdata_tex->_render_to_texture = false;
   cdata_tex->inc_properties_modified();
   cdata_tex->inc_image_modified();
   return tex;
@@ -265,6 +266,9 @@ set_clear_color(const LColor &color) {
   CDWriter cdata(_cycler, true);
   cdata->_clear_color = color;
   cdata->_has_clear_color = true;
+  if (cdata->_image_modified == UpdateSeq::initial()) {
+    cdata->inc_image_modified();
+  }
 }
 
 /**

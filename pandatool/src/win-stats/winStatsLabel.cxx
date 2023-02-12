@@ -42,35 +42,7 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
   _tooltip_window(0)
 {
   update_text(use_fullname);
-
-  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  int r = (int)encode_sRGB_uchar((float)rgb[0]);
-  int g = (int)encode_sRGB_uchar((float)rgb[1]);
-  int b = (int)encode_sRGB_uchar((float)rgb[2]);
-  _bg_brush = CreateSolidBrush(RGB(r, g, b));
-
-  // Calculate the color when it is highlighted.
-  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
-  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
-  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
-  _highlight_bg_brush = CreateSolidBrush(RGB(hr, hg, hb));
-
-  // Should our foreground be black or white?
-  double bright =
-    rgb[0] * 0.2126 +
-    rgb[1] * 0.7152 +
-    rgb[2] * 0.0722;
-
-  if (bright >= 0.5) {
-    _fg_color = RGB(0, 0, 0);
-  } else {
-    _fg_color = RGB(255, 255, 255);
-  }
-  if (bright * 0.75 >= 0.5) {
-    _highlight_fg_color = RGB(0, 0, 0);
-  } else {
-    _highlight_fg_color = RGB(255, 255, 255);
-  }
+  update_color();
 
   _x = 0;
   _y = 0;
@@ -95,6 +67,7 @@ WinStatsLabel::
     _window = 0;
   }
   DeleteObject(_bg_brush);
+  DeleteObject(_highlight_bg_brush);
 }
 
 /**
@@ -137,12 +110,66 @@ set_pos(int x, int y, int width) {
 }
 
 /**
+ * Changes the Y attribute without updating the window.
+ */
+void WinStatsLabel::
+set_y_noupdate(int y) {
+  _y = y;
+}
+
+/**
  * Enables or disables the visual highlight for this label.
  */
 void WinStatsLabel::
 set_highlight(bool highlight) {
   if (_highlight != highlight) {
     _highlight = highlight;
+    InvalidateRect(_window, nullptr, TRUE);
+  }
+}
+
+/**
+ * Updates the colors.
+ */
+void WinStatsLabel::
+update_color() {
+  if (_bg_brush != 0) {
+    DeleteObject(_bg_brush);
+  }
+  if (_highlight_bg_brush != 0) {
+    DeleteObject(_highlight_bg_brush);
+  }
+
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
+  int r = (int)encode_sRGB_uchar((float)rgb[0]);
+  int g = (int)encode_sRGB_uchar((float)rgb[1]);
+  int b = (int)encode_sRGB_uchar((float)rgb[2]);
+  _bg_brush = CreateSolidBrush(RGB(r, g, b));
+
+  // Calculate the color when it is highlighted.
+  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
+  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
+  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
+  _highlight_bg_brush = CreateSolidBrush(RGB(hr, hg, hb));
+
+  // Should our foreground be black or white?
+  double bright =
+    rgb[0] * 0.2126 +
+    rgb[1] * 0.7152 +
+    rgb[2] * 0.0722;
+
+  if (bright >= 0.5) {
+    _fg_color = RGB(0, 0, 0);
+  } else {
+    _fg_color = RGB(255, 255, 255);
+  }
+  if (bright * 0.75 >= 0.5) {
+    _highlight_fg_color = RGB(0, 0, 0);
+  } else {
+    _highlight_fg_color = RGB(255, 255, 255);
+  }
+
+  if (_window) {
     InvalidateRect(_window, nullptr, TRUE);
   }
 }

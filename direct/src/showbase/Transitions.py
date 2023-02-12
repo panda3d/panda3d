@@ -4,7 +4,7 @@ a particular color."""
 
 __all__ = ['Transitions']
 
-from panda3d.core import *
+from panda3d.core import AsyncFuture, ConfigVariableBool, NodePath, TransparencyAttrib, Vec3, Vec4
 from direct.showbase import ShowBaseGlobal
 from direct.showbase.MessengerGlobal import messenger
 from direct.gui.DirectGui import DirectFrame

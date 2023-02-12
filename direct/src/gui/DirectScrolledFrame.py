@@ -6,10 +6,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrolledFrame']
 
-from panda3d.core import *
+from panda3d.core import NodePath, PGScrollFrame
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectScrollBar import *
+from .DirectFrame import DirectFrame
+from .DirectScrollBar import DirectScrollBar
 
 
 class DirectScrolledFrame(DirectFrame):

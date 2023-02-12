@@ -3,10 +3,9 @@
 __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
 from panda3d.core import Vec4
-from direct.showbase.DirectObject import *
-from direct.showbase.TkGlobal import *
 from direct.directtools.DirectUtil import getTkColorString
 from . import WidgetPropertiesDialog
+import tkinter as tk
 from tkinter.colorchooser import askcolor
 import Pmw
 
@@ -22,9 +21,9 @@ class Valuator(Pmw.MegaWidget):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('state',             NORMAL,         self.setState),
+            ('state',             tk.NORMAL,      self.setState),
             # Widget appearance
-            ('relief',            GROOVE,         None),
+            ('relief',            tk.GROOVE,      None),
             ('borderwidth',       2,              None),
             ('text',              'Valuator',     self.setLabel),
             # Initial and reset values
@@ -68,18 +67,18 @@ class Valuator(Pmw.MegaWidget):
         # The Label
         if self['text'] is not None:
             self._label = self.createcomponent('label', (), None,
-                                               Label, (interior,),
+                                               tk.Label, (interior,),
                                                text = self['text'],
                                                font = ('MS Sans Serif', 12),
-                                               anchor = CENTER)
+                                               anchor = tk.CENTER)
         else:
             self._label = None
 
         # The entry
-        self._entryVal = StringVar()
+        self._entryVal = tk.StringVar()
         self._entry = self.createcomponent('entry', (), None,
-                                           Entry, (interior,),
-                                           justify = RIGHT,
+                                           tk.Entry, (interior,),
+                                           justify = tk.RIGHT,
                                            width = 12,
                                            textvariable = self._entryVal)
         self._entry.bind('<Return>', self.validateEntryInput)
@@ -94,7 +93,7 @@ class Valuator(Pmw.MegaWidget):
 
         if self['fAdjustable']:
             # The popup menu
-            self._popupMenu = Menu(interior, tearoff = 0)
+            self._popupMenu = tk.Menu(interior, tearoff = 0)
             self.addValuatorMenuEntries()
             self._popupMenu.add_command(label = 'Reset',
                                         command = self.reset)
@@ -268,14 +267,14 @@ class Valuator(Pmw.MegaWidget):
 
     def setState(self):
         """ Enable/disable widget """
-        if self['state'] == NORMAL:
-            self._entry['state'] = NORMAL
+        if self['state'] == tk.NORMAL:
+            self._entry['state'] = tk.NORMAL
             self._entry['background'] = self._entryBackground
-            self._valuator._widget['state'] = NORMAL
-        elif self['state'] == DISABLED:
+            self._valuator._widget['state'] = tk.NORMAL
+        elif self['state'] == tk.DISABLED:
             self._entry['background'] = 'grey75'
-            self._entry['state'] = DISABLED
-            self._valuator._widget['state'] = DISABLED
+            self._entry['state'] = tk.DISABLED
+            self._valuator._widget['state'] = tk.DISABLED
 
     def setLabel(self):
         """ Update label's text """
@@ -354,7 +353,7 @@ class ValuatorGroup(Pmw.MegaWidget):
         optiondefs = (
             ('type',            FLOATER,                INITOPT),
             ('dim',             DEFAULT_DIM,            INITOPT),
-            ('side',            TOP,                    INITOPT),
+            ('side',            tk.TOP,                 INITOPT),
             # A list of initial values, one for each valuator
             ('value',           DEFAULT_VALUE,          INITOPT),
             ('min',             None,                   INITOPT),
@@ -409,7 +408,7 @@ class ValuatorGroup(Pmw.MegaWidget):
                 postCallback = self._postCallback,
                 callbackData = [self],
                 )
-            f.pack(side = self['side'], expand = 1, fill = X)
+            f.pack(side = self['side'], expand = 1, fill = tk.X)
             self._valuatorList.append(f)
 
         # Make sure valuators are initialized
@@ -488,7 +487,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
         optiondefs = (
             ('type',            FLOATER,                INITOPT),
             ('dim',             DEFAULT_DIM,            INITOPT),
-            ('side',            TOP,                    INITOPT),
+            ('side',            tk.TOP,                 INITOPT),
             ('title',           'Valuator Group',       None),
             # A list of initial values, one for each floater
             ('value',           DEFAULT_VALUE,          INITOPT),
@@ -521,7 +520,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
         menubar = self.createcomponent('menubar', (), None,
                                        Pmw.MenuBar, (interior,),
                                        balloon = self.balloon)
-        menubar.pack(fill=X)
+        menubar.pack(fill=tk.X)
 
         # ValuatorGroup Menu
         menubar.addmenu('Valuator Group', 'Valuator Group Operations')
@@ -540,7 +539,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             label = 'Dismiss', command = dismissCommand)
 
         menubar.addmenu('Help', 'Valuator Group Help Operations')
-        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar = tk.IntVar()
         self.toggleBalloonVar.set(0)
         menubar.addmenuitem('Help', 'checkbutton',
                             'Toggle balloon help',
@@ -562,7 +561,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             resolution = self['resolution'],
             labels = self['labels'],
             command = self['command'])
-        self.valuatorGroup.pack(expand = 1, fill = X)
+        self.valuatorGroup.pack(expand = 1, fill = tk.X)
 
         # Make sure input variables processed
         self.initialiseoptions(ValuatorGroupPanel)
@@ -642,10 +641,10 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
     vgp['postCallback'] = onRelease
 
     # Add a print button which will also serve as a color tile
-    pButton = Button(vgp.interior(), text = 'Print to Log',
-                     bg = getTkColorString(initColor),
-                     command = printToLog)
-    pButton.pack(expand = 1, fill = BOTH)
+    pButton = tk.Button(vgp.interior(), text = 'Print to Log',
+                        bg = getTkColorString(initColor),
+                        command = printToLog)
+    pButton.pack(expand = 1, fill = tk.BOTH)
 
     # Update menu
     menubar = vgp.component('menubar')
@@ -728,10 +727,10 @@ def lightRGBPanel(light, style = 'mini'):
         'Light Control Panel')
 
     # Add a print button which will also serve as a color tile
-    pButton = Button(vgp.interior(), text = 'Print to Log',
-                     bg = getTkColorString(initColor),
-                     command = printToLog)
-    pButton.pack(expand = 1, fill = BOTH)
+    pButton = tk.Button(vgp.interior(), text = 'Print to Log',
+                        bg = getTkColorString(initColor),
+                        command = printToLog)
+    pButton.pack(expand = 1, fill = tk.BOTH)
 
     # Update menu
     menubar = vgp.component('menubar')

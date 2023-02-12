@@ -7,9 +7,9 @@ import math
 
 from wx.lib.embeddedimage import PyEmbeddedImage
 from wx.lib.scrolledpanel import ScrolledPanel
-from wx.lib.agw.cubecolourdialog import *
-from direct.wxwidgets.WxSlider import *
-from panda3d.core import *
+from wx.lib.agw.cubecolourdialog import CCD_SHOW_ALPHA, CubeColourDialog
+from direct.wxwidgets.WxSlider import WxSlider
+from panda3d.core import BitMask32, Filename
 from . import ObjectGlobals as OG
 from . import AnimGlobals as AG
 

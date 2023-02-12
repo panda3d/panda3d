@@ -16,7 +16,6 @@
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 #include "vector_string.h"
-#include "atomicAdjust.h"
 
 #include <stdio.h>  // For rename() and tempnam()
 #include <time.h>   // for clock() and time()
@@ -25,10 +24,13 @@
 
 #ifdef PHAVE_UTIME_H
 #include <utime.h>
+#endif
 
 // We assume we have these too.
+#ifndef _WIN32
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #ifdef PHAVE_GLOB_H
@@ -60,10 +62,10 @@ using std::wstring;
 
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
-TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_temp_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_user_appdata_directory;
-TVOLATILE AtomicAdjust::Pointer Filename::_common_appdata_directory;
+patomic<Filename *> Filename::_home_directory(nullptr);
+patomic<Filename *> Filename::_temp_directory(nullptr);
+patomic<Filename *> Filename::_user_appdata_directory(nullptr);
+patomic<Filename *> Filename::_common_appdata_directory(nullptr);
 TypeHandle Filename::_type_handle;
 
 #ifdef ANDROID
@@ -486,7 +488,8 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
  */
 const Filename &Filename::
 get_home_directory() {
-  if (AtomicAdjust::get_ptr(_home_directory) == nullptr) {
+  Filename *curdir = _home_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename home_directory;
 
     // In all environments except Windows, check $HOME first.
@@ -538,14 +541,16 @@ get_home_directory() {
     }
 
     Filename *newdir = new Filename(home_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_home_directory, nullptr, newdir) != nullptr) {
+    if (_home_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_home_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_home_directory);
+  return *curdir;
 }
 
 /**
@@ -553,7 +558,8 @@ get_home_directory() {
  */
 const Filename &Filename::
 get_temp_directory() {
-  if (AtomicAdjust::get_ptr(_temp_directory) == nullptr) {
+  Filename *curdir = _temp_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename temp_directory;
 
 #ifdef _WIN32
@@ -586,14 +592,16 @@ get_temp_directory() {
     }
 
     Filename *newdir = new Filename(temp_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_temp_directory, nullptr, newdir) != nullptr) {
+    if (_temp_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_temp_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_temp_directory);
+  return *curdir;
 }
 
 /**
@@ -603,7 +611,8 @@ get_temp_directory() {
  */
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_user_appdata_directory) == nullptr) {
+  Filename *curdir = _user_appdata_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename user_appdata_directory;
 
 #ifdef _WIN32
@@ -643,14 +652,16 @@ get_user_appdata_directory() {
     }
 
     Filename *newdir = new Filename(user_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_user_appdata_directory, nullptr, newdir) != nullptr) {
+    if (_user_appdata_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_user_appdata_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_user_appdata_directory);
+  return *curdir;
 }
 
 /**
@@ -659,7 +670,8 @@ get_user_appdata_directory() {
  */
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_common_appdata_directory) == nullptr) {
+  Filename *curdir = _common_appdata_directory.load(std::memory_order_consume);
+  if (curdir == nullptr) {
     Filename common_appdata_directory;
 
 #ifdef _WIN32
@@ -693,14 +705,16 @@ get_common_appdata_directory() {
     }
 
     Filename *newdir = new Filename(common_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_common_appdata_directory, nullptr, newdir) != nullptr) {
+    if (_common_appdata_directory.compare_exchange_strong(curdir, newdir, std::memory_order_release, std::memory_order_consume)) {
+      return *newdir;
+    } else {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_common_appdata_directory != nullptr);
+      assert(curdir != nullptr);
       delete newdir;
     }
   }
 
-  return (*(Filename *)_common_appdata_directory);
+  return *curdir;
 }
 
 /**
@@ -2306,7 +2320,7 @@ touch() const {
   // time.  For these systems, we'll just temporarily open the file in append
   // mode, then close it again (it gets closed when the pfstream goes out of
   // scope).
-  pfstream file;
+  pofstream file;
   return open_append(file);
 #endif  // _WIN32, PHAVE_UTIME_H
 }

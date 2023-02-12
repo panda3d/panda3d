@@ -75,7 +75,7 @@ get_pipeline_stage() const {
  */
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  set_pipeline_stage(std::max(_pipeline_stage, min_pipeline_stage));
+  set_pipeline_stage((std::max)(_pipeline_stage, min_pipeline_stage));
 }
 
 /**
@@ -232,7 +232,7 @@ relax() {
   YieldProcessor();
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64))
   __asm__ __volatile__("pause");
-#elif defined(__arm__) || defined(__aarch64__)
+#elif __ARM_ARCH >= 7
   __asm__ __volatile__ ("yield" ::: "memory");
 #endif
 }

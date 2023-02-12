@@ -199,6 +199,9 @@ normal_guide_bars() {
   }
 
   _guide_bars_changed = true;
+
+  nassertv_always(_scale_area != nullptr);
+  gtk_widget_queue_draw(_scale_area);
 }
 
 /**
@@ -229,7 +232,7 @@ begin_draw() {
  * indicated location.
  */
 void GtkStatsFlameGraph::
-draw_bar(int depth, int from_x, int to_x, int collector_index) {
+draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index) {
   double bottom = get_ysize() - depth * _pixel_scale * 5;
   double top = bottom - _pixel_scale * 5;
 
@@ -257,17 +260,31 @@ draw_bar(int depth, int from_x, int to_x, int collector_index) {
       int right = std::min(to_x, get_xsize()) - _pixel_scale / 2;
 
       const PStatClientData *client_data = GtkStatsGraph::_monitor->get_client_data();
-      const std::string &name = client_data->get_collector_name(collector_index);
+      const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
 
       // Choose a suitable foreground color.
       LRGBColor fg = get_collector_text_color(collector_index, is_highlighted);
       cairo_set_source_rgb(_cr, fg[0], fg[1], fg[2]);
 
-      PangoLayout *layout = gtk_widget_create_pango_layout(_graph_window, name.c_str());
+      PangoLayout *layout = gtk_widget_create_pango_layout(_graph_window, def._name.c_str());
       pango_layout_set_attributes(layout, _pango_attrs);
       pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
       pango_layout_set_width(layout, (right - left) * PANGO_SCALE);
       pango_layout_set_height(layout, -1);
+
+      if (!pango_layout_is_ellipsized(layout)) {
+        // We have room for more.  Show the collector's actual parent, if it's
+        // different than the block it's shown above.
+        if (def._parent_index > 0 && def._parent_index != parent_index) {
+          const PStatCollectorDef &parent_def = client_data->get_collector_def(def._parent_index);
+          std::string long_name = parent_def._name + ":" + def._name;
+          pango_layout_set_text(layout, long_name.c_str(), long_name.size());
+          if (pango_layout_is_ellipsized(layout)) {
+            // Nope, it's too long, go back.
+            pango_layout_set_text(layout, def._name.c_str(), def._name.size());
+          }
+        }
+      }
 
       int width, height;
       pango_layout_get_pixel_size(layout, &width, &height);
@@ -304,6 +321,25 @@ idle() {
 bool GtkStatsFlameGraph::
 animate(double time, double dt) {
   return PStatFlameGraph::animate(time, dt);
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+bool GtkStatsFlameGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  GtkStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void GtkStatsFlameGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  GtkStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
 }
 
 /**
@@ -411,6 +447,37 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        {
+          GtkWidget *menu_item = gtk_separator_menu_item_new();
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            -1, collector_index,
+            GtkStatsMonitor::CT_choose_color,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+          g_signal_connect(G_OBJECT(menu_item), "activate",
+                           G_CALLBACK(GtkStatsMonitor::menu_activate),
+                           (void *)menu_def);
+        }
+
+        {
+          const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            -1, collector_index,
+            GtkStatsMonitor::CT_reset_color,
+          });
+
+          GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
           g_signal_connect(G_OBJECT(menu_item), "activate",
                            G_CALLBACK(GtkStatsMonitor::menu_activate),

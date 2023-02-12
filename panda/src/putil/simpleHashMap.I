@@ -46,7 +46,7 @@ SimpleHashMap(const SimpleHashMap &copy) :
     size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
     init_type();
-    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+    _deleted_chain = DeletedBufferChain::get_deleted_chain(alloc_size);
     _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
 
     for (size_t i = 0; i < _num_entries; ++i) {
@@ -106,7 +106,7 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
       size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
       init_type();
-      _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+      _deleted_chain = DeletedBufferChain::get_deleted_chain(alloc_size);
       _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
       for (size_t i = 0; i < _num_entries; ++i) {
         new(&_table[i]) TableEntry(copy._table[i]);
@@ -537,11 +537,10 @@ validate() const {
       size_t index = (size_t)index_array[slot];
       ++count;
       if (index >= _num_entries) {
-        util_cat.error()
+        write(util_cat->error()
           << "SimpleHashMap " << this << " is invalid: slot " << slot
           << " contains index " << index << " which is past the end of the"
-             " table\n";
-        write(util_cat.error(false));
+             " table\n");
         return false;
       }
       nassertd(index < _num_entries) continue;
@@ -551,21 +550,19 @@ validate() const {
         wants_slot = next_hash(wants_slot);
       }
       if (wants_slot != slot) {
-        util_cat.error()
+        write(util_cat->error()
           << "SimpleHashMap " << this << " is invalid: key "
           << _table[index]._key << " should be in slot " << wants_slot
-          << " instead of " << slot << " (ideal is " << ideal_slot << ")\n";
-        write(util_cat.error(false));
+          << " instead of " << slot << " (ideal is " << ideal_slot << ")\n");
         return false;
       }
     }
   }
 
   if (count != _num_entries) {
-    util_cat.error()
+    write(util_cat->error()
       << "SimpleHashMap " << this << " is invalid: reports " << _num_entries
-      << " entries, actually has " << count << "\n";
-    write(util_cat.error(false));
+      << " entries, actually has " << count << "\n");
     return false;
   }
 
@@ -691,7 +688,7 @@ new_table() {
   size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
   init_type();
-  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+  _deleted_chain = DeletedBufferChain::get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
   memset(get_index_array(), -1, _table_size * sizeof(int) * sparsity);
 }
@@ -749,7 +746,7 @@ resize_table(size_t new_size) {
   // We allocate enough bytes for _table_size elements of TableEntry, plus
   // _table_size * sparsity more ints at the end (for the sparse index array).
   size_t alloc_size = _table_size * sizeof(TableEntry) + _table_size * sparsity * sizeof(int);
-  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+  _deleted_chain = DeletedBufferChain::get_deleted_chain(alloc_size);
   _table = (TableEntry *)_deleted_chain->allocate(alloc_size, _type_handle);
   int *index_array = get_index_array();
   memset(index_array, -1, _table_size * sizeof(int) * sparsity);

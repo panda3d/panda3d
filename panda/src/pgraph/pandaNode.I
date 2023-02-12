@@ -1533,6 +1533,14 @@ has_tag(const std::string &key) const {
 }
 
 /**
+ * Returns the "into" collide mask for this node.
+ */
+INLINE CollideMask PandaNodePipelineReader::
+get_into_collide_mask() const {
+  return _cdata->_into_collide_mask;
+}
+
+/**
  * Returns the union of all into_collide_mask() values set at CollisionNodes
  * at this level and below.
  */

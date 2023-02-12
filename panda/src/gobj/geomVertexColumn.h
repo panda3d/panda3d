@@ -381,7 +381,9 @@ private:
   class Packer_argb_packed final : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &value);
 
     virtual const char *get_name() const {
       return "Packer_argb_packed";
@@ -391,7 +393,9 @@ private:
   class Packer_rgba_uint8_4 final : public Packer_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+    virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
+    virtual void set_data4d(unsigned char *pointer, const LVecBase4d &value);
 
     virtual const char *get_name() const {
       return "Packer_rgba_uint8_4";

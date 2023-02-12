@@ -28,7 +28,6 @@
 #endif
 
 using std::istream;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -92,10 +91,11 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
   case SAT_sampler1d: tstr = "sampler1D "; break;
   case SAT_sampler2d: tstr = "sampler2D "; break;
   case SAT_sampler3d: tstr = "sampler3D "; break;
-  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
+  case SAT_sampler2d_array:   tstr = "sampler2DARRAY "; break;
   case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
   case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
   case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
+  case SAT_sampler1d_array:   tstr = "sampler1DARRAY "; break;
   default:                    tstr = "unknown "; break;
   }
 
@@ -228,15 +228,15 @@ cp_errchk_parameter_ptr(ShaderArgInfo &p) {
  * message and return false.
  */
 bool Shader::
-cp_errchk_parameter_sampler(ShaderArgInfo &p)
-{
-  if ((p._type!=SAT_sampler1d)&&
-      (p._type!=SAT_sampler2d)&&
-      (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2d_array)&&
-      (p._type!=SAT_sampler_cube)&&
-      (p._type!=SAT_sampler_buffer)&&
-      (p._type!=SAT_sampler_cube_array)) {
+cp_errchk_parameter_sampler(ShaderArgInfo &p) {
+  if (p._type != SAT_sampler1d &&
+      p._type != SAT_sampler2d &&
+      p._type != SAT_sampler3d &&
+      p._type != SAT_sampler2d_array &&
+      p._type != SAT_sampler_cube &&
+      p._type != SAT_sampler_buffer &&
+      p._type != SAT_sampler_cube_array &&
+      p._type != SAT_sampler1d_array) {
     cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
@@ -391,7 +391,7 @@ cp_dependency(ShaderMatInput inp) {
     dep |= SSD_colorscale;
   }
   if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
-    dep |= SSD_fog;
+    dep |= SSD_fog | SSD_frame;
   }
   if ((inp == SMO_model_to_view) ||
       (inp == SMO_view_to_model) ||
@@ -499,6 +499,12 @@ cp_dependency(ShaderMatInput inp) {
   }
   if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
+  }
+  if (inp == SMO_texconst_i) {
+    dep |= SSD_tex_gen;
+  }
+  if (inp == SMO_attr_pointparams) {
+    dep |= SSD_render_mode | SSD_transform | SSD_frame;
   }
 
   return dep;
@@ -1116,6 +1122,17 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
+    } else if (pieces[1] == "pointparams") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = p._id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_pointparams;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
@@ -1282,6 +1299,27 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     return true;
   }
 
+  if (pieces[0] == "texconst") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texconst_i;
+    bind._arg[0] = nullptr;
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = nullptr;
+    bind._index = atoi(pieces[1].c_str());
+
+    cp_add_mat_spec(bind);
+    return true;
+  }
+
   if (pieces[0] == "plane") {
     if ((!cp_errchk_parameter_words(p,2))||
         (!cp_errchk_parameter_in(p)) ||
@@ -1391,6 +1429,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
     case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
     case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
+    case SAT_sampler1d_array:bind._desired_type = Texture::TT_1d_texture_array; break;
     default:
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
@@ -1592,6 +1631,15 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       _tex_spec.push_back(bind);
       return true;
     }
+    case SAT_sampler1d_array: {
+      ShaderTexSpec bind;
+      bind._id = p._id;
+      bind._name = kinputname;
+      bind._part = STO_named_input;
+      bind._desired_type = Texture::TT_1d_texture_array;
+      _tex_spec.push_back(bind);
+      return true;
+    }
     default:
       cp_report_error(p, "invalid type for non-prefix parameter");
       return false;
@@ -1713,6 +1761,7 @@ cg_parameter_type(CGparameter p) {
     case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
     case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
     case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
+    case CG_SAMPLER1DARRAY: return Shader::SAT_sampler1d_array;
     // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
     case 1313:              return Shader::SAT_sampler1d;
     case 1314:              return Shader::SAT_sampler2d;
@@ -2943,7 +2992,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^>]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.
@@ -3502,7 +3551,7 @@ make(string body, ShaderLanguage lang) {
   }
 #endif
 
-  ShaderFile sbody(move(body));
+  ShaderFile sbody(std::move(body));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3562,8 +3611,8 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
     return nullptr;
   }
 
-  ShaderFile sbody(move(vertex), move(fragment), move(geometry),
-                   move(tess_control), move(tess_evaluation));
+  ShaderFile sbody(std::move(vertex), std::move(fragment), std::move(geometry),
+                   std::move(tess_control), std::move(tess_evaluation));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3607,7 +3656,7 @@ make_compute(ShaderLanguage lang, string body) {
 
   ShaderFile sbody;
   sbody._separate = true;
-  sbody._compute = move(body);
+  sbody._compute = std::move(body);
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);

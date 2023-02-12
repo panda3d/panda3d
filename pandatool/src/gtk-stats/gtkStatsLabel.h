@@ -15,6 +15,7 @@
 #define GTKSTATSLABEL_H
 
 #include "pandatoolbase.h"
+#include "luse.h"
 
 #include <gtk/gtk.h>
 #include <cairo.h>
@@ -43,6 +44,7 @@ public:
   void set_highlight(bool highlight);
   bool get_highlight() const;
 
+  void update_color();
   void update_text(bool use_fullname);
 
 private:

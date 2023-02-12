@@ -6,9 +6,9 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectButton']
 
-from panda3d.core import *
+from panda3d.core import Mat4, MouseButton, PGButton
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 
 class DirectButton(DirectFrame):
     """

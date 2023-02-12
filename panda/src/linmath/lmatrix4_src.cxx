@@ -12,7 +12,6 @@
  */
 
 TypeHandle FLOATNAME(LMatrix4)::_type_handle;
-TypeHandle FLOATNAME(UnalignedLMatrix4)::_type_handle;
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ident_mat =
   FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
@@ -555,16 +554,5 @@ init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
     register_type(_type_handle, FLOATNAME_STR(LMatrix4));
-  }
-}
-
-/**
- *
- */
-void FLOATNAME(UnalignedLMatrix4)::
-init_type() {
-  if (_type_handle == TypeHandle::none()) {
-    // Format a string to describe the type.
-    register_type(_type_handle, FLOATNAME_STR(UnalignedLMatrix4));
   }
 }

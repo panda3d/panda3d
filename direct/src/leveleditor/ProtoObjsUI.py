@@ -4,8 +4,7 @@ Defines ProtoObjs List UI
 import wx
 import os
 
-from panda3d.core import *
-from .ProtoObjs import *
+from panda3d.core import Filename
 
 
 class ProtoDropTarget(wx.PyDropTarget):

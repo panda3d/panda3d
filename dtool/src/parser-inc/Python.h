@@ -25,6 +25,9 @@ typedef _object PyObject;
 struct _typeobject;
 typedef _typeobject PyTypeObject;
 
+struct _frame;
+typedef _frame PyFrameObject;
+
 typedef struct {} PyStringObject;
 typedef struct {} PyUnicodeObject;
 

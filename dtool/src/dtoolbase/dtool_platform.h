@@ -79,6 +79,9 @@
 
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "linux_ppc"
+
+#elif defined(__e2k__)
+#define DTOOL_PLATFORM "linux_e2k"
 #endif
 
 #if !defined(DTOOL_PLATFORM) && !defined(CPPPARSER)

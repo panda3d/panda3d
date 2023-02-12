@@ -70,6 +70,7 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
           "renderers.  See Texture::set_quality_level()."));
 
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
+PStatCollector Texture::_texture_write_pcollector("*:Texture:Write");
 TypeHandle Texture::_type_handle;
 TypeHandle Texture::CData::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_unspecified;
@@ -381,8 +382,7 @@ Texture(const string &name) :
   _reloading = false;
 
   CDWriter cdata(_cycler, true);
-  do_set_format(cdata, F_rgb);
-  do_set_component_type(cdata, T_unsigned_byte);
+  cdata->inc_properties_modified();
 }
 
 /**
@@ -1065,19 +1065,24 @@ async_ensure_ram_image(bool allow_compression, int priority) {
   double delay = async_load_delay;
 
   // This texture has not yet been queued to be reloaded.  Queue it up now.
-  task = task_mgr->add(task_name, [=](AsyncTask *task) {
+  task = chain->add([=](AsyncTask *task) {
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
+
     if (allow_compression) {
-      get_ram_image();
-    } else {
-      get_uncompressed_ram_image();
+      CDWriter cdata(_cycler, unlocked_ensure_ram_image(true));
+      cdata->_reload_task = nullptr;
+      do_get_ram_image(cdata);
+    }
+    else {
+      CDWriter cdata(_cycler, false);
+      cdata->_reload_task = nullptr;
+      do_get_uncompressed_ram_image(cdata);
     }
     return AsyncTask::DS_done;
-  });
-  task->set_priority(priority);
-  task->set_task_chain("texture_reload");
+  }, task_name, 0, priority);
+
   cdataw->_reload_task = task;
   return (AsyncFuture *)task;
 }
@@ -5194,6 +5199,8 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
 bool Texture::
 do_write(CData *cdata,
          const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) {
+  PStatTimer timer(_texture_write_pcollector);
+
   if (is_txo_filename(fullpath)) {
     if (!do_has_bam_rawdata(cdata)) {
       do_get_bam_rawdata(cdata);
@@ -6098,14 +6105,6 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     }
   }
 
-  // Choose an appropriate quality level.
-  if (quality_level == Texture::QL_default) {
-    quality_level = cdata->_quality_level;
-  }
-  if (quality_level == Texture::QL_default) {
-    quality_level = texture_quality_level;
-  }
-
   if (compression == CM_rgtc) {
     // We should compress RGTC ourselves, as squish does not support it.
     if (cdata->_component_type != T_unsigned_byte) {
@@ -6178,6 +6177,14 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
   }
 
 #ifdef HAVE_SQUISH
+  // Choose an appropriate quality level.
+  if (quality_level == Texture::QL_default) {
+    quality_level = cdata->_quality_level;
+  }
+  if (quality_level == Texture::QL_default) {
+    quality_level = texture_quality_level;
+  }
+
   if (cdata->_texture_type != TT_3d_texture &&
       cdata->_texture_type != TT_2d_texture_array &&
       cdata->_component_type == T_unsigned_byte) {
@@ -10455,9 +10462,9 @@ make_this_from_bam(const FactoryParams &params) {
         // If texture filename was given relative to the bam filename, expand
         // it now.
         Filename bam_dir = manager->get_filename().get_dirname();
-        vfs->resolve_filename(filename, bam_dir);
+        vfs->resolve_filename(filename, DSearchPath(bam_dir));
         if (!alpha_filename.empty()) {
-          vfs->resolve_filename(alpha_filename, bam_dir);
+          vfs->resolve_filename(alpha_filename, DSearchPath(bam_dir));
         }
       }
 
@@ -10776,11 +10783,10 @@ CData() {
   _y_size = 1;
   _z_size = 1;
   _num_views = 1;
-
-  // We will override the format in a moment (in the Texture constructor), but
-  // set it to something else first to avoid the check in do_set_format
-  // depending on an uninitialized value.
-  _format = F_rgba;
+  _num_components = 3;
+  _component_width = 1;
+  _format = F_rgb;
+  _component_type = T_unsigned_byte;
 
   // Only used for buffer textures.
   _usage_hint = GeomEnums::UH_unspecified;
@@ -10815,6 +10821,7 @@ CData() {
 Texture::CData::
 CData(const Texture::CData &copy) {
   _num_mipmap_levels_read = 0;
+  _render_to_texture = copy._render_to_texture;
 
   do_assign(&copy);
 

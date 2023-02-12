@@ -11,7 +11,7 @@ way to do shadows.
 
 __all__ = ['ShadowCaster', 'avatarShadow', 'piratesAvatarShadow', 'arbitraryShadow']
 
-from panda3d.core import *
+from panda3d.core import Camera, NodePath, OrthographicLens, Texture, TextureStage, VBase4
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 

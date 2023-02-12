@@ -1,7 +1,4 @@
-
-from panda3d.core import *
-from panda3d.direct import *
-from direct.interval.IntervalGlobal import *
+from panda3d.core import ConfigVariableBool, TextNode, VBase4, Vec3
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 from direct.distributed.DistributedNode import DistributedNode
@@ -13,7 +10,7 @@ from direct.distributed.GridParent import GridParent
 
 if __debug__:
     # For grid drawing
-    from direct.directtools.DirectGeometry import *
+    from direct.directtools.DirectGeometry import LineNodePath
     from direct.showbase.PythonUtil import randFloat
 
 from .CartesianGridBase import CartesianGridBase

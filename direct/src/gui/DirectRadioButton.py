@@ -9,10 +9,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectRadioButton']
 
-from panda3d.core import *
+from panda3d.core import PGFrameStyle, VBase4
 from . import DirectGuiGlobals as DGG
-from .DirectButton import *
-from .DirectLabel import *
+from .DirectButton import DirectButton
+from .DirectLabel import DirectLabel
 
 class DirectRadioButton(DirectButton):
     """

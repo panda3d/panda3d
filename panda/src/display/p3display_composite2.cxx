@@ -9,6 +9,7 @@
 #include "parasiteBuffer.cxx"
 #include "standardMunger.cxx"
 #include "touchInfo.cxx"
+#include "screenshotRequest.cxx"
 #include "stereoDisplayRegion.cxx"
 #include "subprocessWindow.cxx"
 #ifdef IS_OSX

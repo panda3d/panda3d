@@ -656,6 +656,8 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2014")
                 elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so"):
                     platform = platform.replace("linux", "manylinux_2_24")
+                elif os.path.isfile("/lib64/libc-2.28.so") and os.path.isfile('/etc/almalinux-release'):
+                    platform = platform.replace("linux", "manylinux_2_28")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
@@ -800,6 +802,21 @@ if __debug__:
 
             whl.write_file(target_path, source_path)
 
+    # Include the special sysconfigdata module.
+    if os.name == 'posix':
+        import sysconfig
+
+        if hasattr(sysconfig, '_get_sysconfigdata_name'):
+            modname = sysconfig._get_sysconfigdata_name() + '.py'
+        else:
+            modname = '_sysconfigdata.py'
+
+        for entry in sys.path:
+            source_path = os.path.join(entry, modname)
+            if os.path.isfile(source_path):
+                whl.write_file('deploy_libs/' + modname, source_path)
+                break
+
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
         plugin_name = 'lib' + lib
@@ -872,6 +889,8 @@ if __debug__:
     entry_points += '[distutils.commands]\n'
     entry_points += 'build_apps = direct.dist.commands:build_apps\n'
     entry_points += 'bdist_apps = direct.dist.commands:bdist_apps\n'
+    entry_points += '[setuptools.finalize_distribution_options]\n'
+    entry_points += 'build_apps = direct.dist.commands:finalize_distribution_options\n'
 
     whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
 

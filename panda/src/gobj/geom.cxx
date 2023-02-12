@@ -63,26 +63,6 @@ Geom(const Geom &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a Geom that is
- * actively being used for rendering.
- */
-void Geom::
-operator = (const Geom &copy) {
-  CopyOnWriteObject::operator = (copy);
-
-  clear_cache();
-
-  _cycler = copy._cycler;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    mark_internal_bounds_stale(cdata);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-/**
  *
  */
 Geom::
@@ -1118,9 +1098,9 @@ get_bounds(Thread *current_thread) const {
 int Geom::
 get_nested_vertices(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_internal_bounds_stale) {
+  if (cdata->_nested_vertices_stale) {
     CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-    compute_internal_bounds(cdataw, current_thread);
+    compute_nested_vertices(cdataw, current_thread);
     return cdataw->_nested_vertices;
   }
   return cdata->_nested_vertices;
@@ -1370,8 +1350,6 @@ get_next_modified() {
  */
 void Geom::
 compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
-  int num_vertices = 0;
-
   // Get the vertex data, after animation.
   CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
@@ -1471,16 +1449,8 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
     case BoundingVolume::BT_box:
       cdata->_internal_bounds = new BoundingBox(pmin, pmax);
     }
-
-    Primitives::const_iterator pi;
-    for (pi = cdata->_primitives.begin();
-         pi != cdata->_primitives.end();
-         ++pi) {
-      CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
-      num_vertices += prim->get_num_vertices();
-    }
-
-  } else {
+  }
+  else {
     // No points; empty bounding volume.
     if (btype == BoundingVolume::BT_sphere) {
       cdata->_internal_bounds = new BoundingSphere;
@@ -1488,9 +1458,26 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
       cdata->_internal_bounds = new BoundingBox;
     }
   }
+  cdata->_internal_bounds_stale = false;
+}
+
+/**
+ * Recomputes the number of nested vertices in this Geom.
+ */
+void Geom::
+compute_nested_vertices(Geom::CData *cdata, Thread *current_thread) const {
+  int num_vertices = 0;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin();
+       pi != cdata->_primitives.end();
+       ++pi) {
+    GeomPrimitivePipelineReader reader((*pi).get_read_pointer(current_thread), current_thread);
+    num_vertices += reader.get_num_vertices();
+  }
 
   cdata->_nested_vertices = num_vertices;
-  cdata->_internal_bounds_stale = false;
+  cdata->_nested_vertices_stale = false;
 }
 
 /**

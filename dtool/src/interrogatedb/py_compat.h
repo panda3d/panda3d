@@ -126,10 +126,6 @@ typedef long Py_hash_t;
 /* Python 3.3 */
 
 #if PY_MAJOR_VERSION >= 3
-// Python 3 versions before 3.3.3 defined this incorrectly.
-#  undef _PyErr_OCCURRED
-#  define _PyErr_OCCURRED() (PyThreadState_GET()->curexc_type)
-
 // Python versions before 3.3 did not define this.
 #  if PY_VERSION_HEX < 0x03030000
 #    define PyUnicode_AsUTF8 _PyUnicode_AsString
@@ -211,6 +207,10 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 
 /* Python 3.9 */
 
+#ifndef PyCFunction_CheckExact
+#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
+#endif
+
 #if PY_VERSION_HEX < 0x03090000
 INLINE PyObject *PyObject_CallNoArgs(PyObject *func) {
 #if PY_VERSION_HEX >= 0x03080000
@@ -242,13 +242,6 @@ INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObje
 #endif
 
 /* Other Python implementations */
-
-// _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
-// Some implementations of the CPython API (e.g. PyPy's cpyext) do not define
-// it, so in these cases we just silently fall back to PyErr_Occurred.
-#ifndef _PyErr_OCCURRED
-#  define _PyErr_OCCURRED() PyErr_Occurred()
-#endif
 
 #endif  // HAVE_PYTHON
 

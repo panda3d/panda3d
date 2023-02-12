@@ -21,7 +21,7 @@
 using std::string;
 
 AtomicAdjust::Integer AsyncTask::_next_task_id;
-PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
+PStatCollector AsyncTask::_tasks_pcollector("App:Tasks");
 TypeHandle AsyncTask::_type_handle;
 
 /**
@@ -209,11 +209,11 @@ set_name(const string &name) {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }
-  PStatCollector parent(_show_code_pcollector, name.substr(0, trimmed));
+  PStatCollector parent(_tasks_pcollector, name.substr(0, trimmed));
   // prevent memory leak _task_pcollector = PStatCollector(parent,
   // name.substr(0, end));
   _task_pcollector = parent;
@@ -237,7 +237,7 @@ get_name_prefix() const {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }

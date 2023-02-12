@@ -26,8 +26,31 @@ from direct.task.TaskManagerGlobal import taskMgr
 from direct.extensions_native import Mat3_extensions
 from direct.extensions_native import VBase3_extensions
 from direct.extensions_native import VBase4_extensions
-from panda3d.core import *
-from panda3d.physics import *
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerFloor,
+    CollisionHandlerQueue,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    LRotationf,
+    Mat3,
+    NodePath,
+    Point3,
+    Vec3,
+)
+from panda3d.physics import (
+    ActorNode,
+    ForceNode,
+    LinearEulerIntegrator,
+    LinearFrictionForce,
+    LinearVectorForce,
+    PhysicsCollisionHandler,
+    PhysicsManager,
+)
 import math
 
 #import LineStream

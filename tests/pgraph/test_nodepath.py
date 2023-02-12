@@ -291,3 +291,24 @@ def test_nodepath_replace_texture():
     path1.replace_texture(tex1, tex2)
     assert not path1.has_texture()
     assert path2.get_texture() == tex2
+
+
+def test_nodepath_replace_texture_none():
+    from panda3d.core import NodePath, Texture
+
+    tex1 = Texture("tex1")
+
+    path1 = NodePath("node1")
+    assert path1.get_texture() is None
+    path1.set_texture(tex1)
+    assert path1.get_texture() == tex1
+    path1.replace_texture(tex1, None)
+    assert path1.get_texture() is None
+
+    path1 = NodePath("node1")
+    path2 = path1.attach_new_node("node2")
+    assert path2.get_texture() is None
+    path2.set_texture(tex1)
+    assert path2.get_texture() == tex1
+    path1.replace_texture(tex1, None)
+    assert path2.get_texture() is None

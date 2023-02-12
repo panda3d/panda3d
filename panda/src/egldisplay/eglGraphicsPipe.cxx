@@ -21,6 +21,12 @@
 
 #include <EGL/eglext.h>
 
+static ConfigVariableInt egl_device_index
+("egl-device-index", -1,
+ PRC_DESC("Selects which EGL device index is used to create the EGL display in "
+          "a headless configuration.  The special value -1 selects the default "
+          "device."));
+
 TypeHandle eglGraphicsPipe::_type_handle;
 
 /**
@@ -30,6 +36,8 @@ eglGraphicsPipe::
 eglGraphicsPipe() {
   // Check for client extensions.
   vector_string extensions;
+  bool supports_platform_device = false;
+  bool supports_device_enumeration = false;
   const char *ext_ptr = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   if (ext_ptr != nullptr) {
     extract_words(ext_ptr, extensions);
@@ -42,6 +50,13 @@ eglGraphicsPipe() {
         out << "  " << extension << "\n";
       }
     }
+
+    if (std::find(extensions.begin(), extensions.end(), "EGL_EXT_platform_device") != extensions.end()) {
+      supports_platform_device = true;
+    }
+    if (std::find(extensions.begin(), extensions.end(), "EGL_EXT_device_enumeration") != extensions.end()) {
+      supports_device_enumeration = true;
+    }
   }
   else if (egldisplay_cat.is_debug()) {
     eglGetError();
@@ -51,23 +66,10 @@ eglGraphicsPipe() {
 
   EGLint major, minor;
 
-  //NB. if the X11 display failed to open, _display will be 0, which is a valid
-  // input to eglGetDisplay - it means to open the default display.
-#ifdef USE_X11
-  _egl_display = eglGetDisplay((NativeDisplayType) _display);
-#else
-  _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-#endif
-  if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
-    egldisplay_cat.warning()
-      << "Couldn't initialize the default EGL display: "
-      << get_egl_error_string(eglGetError()) << "\n";
-    _egl_display = EGL_NO_DISPLAY;
-  }
-
-  if (!_egl_display &&
-      std::find(extensions.begin(), extensions.end(), "EGL_EXT_platform_device") != extensions.end() &&
-      std::find(extensions.begin(), extensions.end(), "EGL_EXT_device_enumeration") != extensions.end()) {
+  int index = egl_device_index.get_value();
+  if (index >= 0 && supports_platform_device && supports_device_enumeration) {
+    PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+      (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
 
     PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
       (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
@@ -79,23 +81,74 @@ eglGraphicsPipe() {
       EGLDeviceEXT *devices = (EGLDeviceEXT *)alloca(sizeof(EGLDeviceEXT) * num_devices);
       eglQueryDevicesEXT(num_devices, devices, &num_devices);
 
-      if (egldisplay_cat.is_debug()) {
-        egldisplay_cat.debug()
-          << "Found " << num_devices << " EGL devices.\n";
+      if (index >= num_devices) {
+        egldisplay_cat.error()
+          << "Requested EGL device index " << index << " does not exist ("
+          << "there are only " << num_devices << " devices)\n";
+        _is_valid = false;
+        return;
       }
 
-      PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
-        (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+      if (egldisplay_cat.is_debug()) {
+        egldisplay_cat.debug()
+          << "Found " << num_devices << " EGL devices, using device index "
+          << index << ".\n";
+      }
 
-      if (eglGetPlatformDisplayEXT != nullptr) {
-        for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
-          _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+      _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[index], nullptr);
 
-          if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
-            egldisplay_cat.warning()
-              << "Couldn't initialize EGL platform display " << i << ": "
-              << get_egl_error_string(eglGetError()) << "\n";
-            _egl_display = EGL_NO_DISPLAY;
+      if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+        egldisplay_cat.error()
+          << "Couldn't initialize EGL platform display " << index << ": "
+          << get_egl_error_string(eglGetError()) << "\n";
+        _egl_display = EGL_NO_DISPLAY;
+      }
+    }
+  }
+  else {
+    //NB. if the X11 display failed to open, _display will be 0, which is a valid
+    // input to eglGetDisplay - it means to open the default display.
+  #ifdef USE_X11
+    _egl_display = eglGetDisplay((NativeDisplayType) _display);
+  #else
+    _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  #endif
+    if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+      egldisplay_cat.warning()
+        << "Couldn't initialize the default EGL display: "
+        << get_egl_error_string(eglGetError()) << "\n";
+      _egl_display = EGL_NO_DISPLAY;
+    }
+
+    if (!_egl_display && supports_platform_device && supports_device_enumeration) {
+      PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
+        (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
+
+      EGLint num_devices = 0;
+      if (eglQueryDevicesEXT != nullptr &&
+          eglQueryDevicesEXT(0, nullptr, &num_devices) &&
+          num_devices > 0) {
+        EGLDeviceEXT *devices = (EGLDeviceEXT *)alloca(sizeof(EGLDeviceEXT) * num_devices);
+        eglQueryDevicesEXT(num_devices, devices, &num_devices);
+
+        if (egldisplay_cat.is_debug()) {
+          egldisplay_cat.debug()
+            << "Found " << num_devices << " EGL devices.\n";
+        }
+
+        PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+          (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+        if (eglGetPlatformDisplayEXT != nullptr) {
+          for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
+            _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+
+            if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+              egldisplay_cat.warning()
+                << "Couldn't initialize EGL platform display " << i << ": "
+                << get_egl_error_string(eglGetError()) << "\n";
+              _egl_display = EGL_NO_DISPLAY;
+            }
           }
         }
       }
@@ -188,8 +241,8 @@ make_output(const std::string &name,
     return nullptr;
   }
 
-  eglGraphicsStateGuardian *eglgsg = 0;
-  if (gsg != 0) {
+  eglGraphicsStateGuardian *eglgsg = nullptr;
+  if (gsg != nullptr) {
     DCAST_INTO_R(eglgsg, gsg, nullptr);
   }
 
@@ -229,7 +282,7 @@ make_output(const std::string &name,
 
   // Second thing to try: a GL(ES(2))GraphicsBuffer
   if (retry == 1) {
-    if ((host==0)||
+    if (host == nullptr ||
   // (!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
@@ -237,7 +290,7 @@ make_output(const std::string &name,
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
-    if ((flags & BF_fb_props_optional)==0) {
+    if ((flags & BF_fb_props_optional) == 0) {
       if (fb_prop.get_indexed_color() > 0 ||
           fb_prop.get_back_buffers() > 0 ||
           fb_prop.get_accum_bits() > 0) {
@@ -246,12 +299,12 @@ make_output(const std::string &name,
     }
     // Early success - if we are sure that this buffer WILL meet specs, we can
     // precertify it.
-    if ((eglgsg != 0) &&
-        (eglgsg->is_valid()) &&
-        (!eglgsg->needs_reset()) &&
-        (eglgsg->_supports_framebuffer_object) &&
-        (eglgsg->_glDrawBuffers != 0)&&
-        (fb_prop.is_basic())) {
+    if (eglgsg != nullptr &&
+        eglgsg->is_valid() &&
+        !eglgsg->needs_reset() &&
+        eglgsg->_supports_framebuffer_object &&
+        eglgsg->_glDrawBuffers != nullptr &&
+        fb_prop.is_basic()) {
       precertify = true;
     }
 #ifdef OPENGLES_2

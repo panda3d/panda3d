@@ -18,7 +18,7 @@
 INLINE void PStatTimeline::
 set_horizontal_scale(double time_width) {
   double max_time_width = (_highest_end_time - _lowest_start_time) * 2.0;
-  time_width = std::min(time_width, max_time_width);
+  time_width = (std::min)(time_width, max_time_width);
 
   double scale = time_width / get_xsize();
   if (_time_scale != scale) {
@@ -44,7 +44,7 @@ get_horizontal_scale() const {
  */
 INLINE void PStatTimeline::
 set_horizontal_scroll(double start_time) {
-  start_time = std::max(std::min(start_time, _highest_end_time), _lowest_start_time);
+  start_time = (std::max)((std::min)(start_time, _highest_end_time), _lowest_start_time);
   if (_start_time != start_time) {
     _start_time = start_time;
     _target_start_time = start_time;
@@ -71,7 +71,7 @@ zoom_to(double time_width, double center) {
   // Don't allow zooming out to beyond 2x the size of the entire timeline.
   // There's a limit of zooming beyond 1 ns per bar, there's just no point...
   double max_time_width = (_highest_end_time - _lowest_start_time) * 2.0;
-  time_width = std::min(std::max(1e-7, time_width), max_time_width);
+  time_width = (std::min)((std::max)(1e-7, time_width), max_time_width);
   _target_time_scale = time_width / get_xsize();
   _zoom_center = center;
 
@@ -93,7 +93,7 @@ zoom_by(double amount, double center) {
  */
 INLINE void PStatTimeline::
 scroll_to(double start_time) {
-  _target_start_time = std::max(std::min(start_time, _highest_end_time), _lowest_start_time);
+  _target_start_time = (std::max)((std::min)(start_time, _highest_end_time), _lowest_start_time);
 }
 
 /**
@@ -136,4 +136,16 @@ height_to_pixel(double value) const {
 INLINE double PStatTimeline::
 pixel_to_height(int x) const {
   return _time_scale * (double)x;
+}
+
+/**
+ * Returns the total number of rows.
+ */
+INLINE int PStatTimeline::
+get_num_rows() const {
+  if (_threads.empty()) {
+    return 0;
+  } else {
+    return _threads.back()._row_offset + _threads.back()._rows.size();
+  }
 }

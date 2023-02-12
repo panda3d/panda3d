@@ -7,10 +7,10 @@ explanation and an example of how to use this class.
 
 __all__ = ['DirectEntry']
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool, PGEntry, Point3, TextNode, Vec3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 from .OnscreenText import OnscreenText
 # import this to make sure it gets pulled into the publish
 import encodings.utf_8

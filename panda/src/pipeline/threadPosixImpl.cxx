@@ -169,7 +169,12 @@ join() {
   if (!_detached) {
     _mutex.unlock();
     void *return_val;
-    pthread_join(_thread, &return_val);
+    int result = pthread_join(_thread, &return_val);
+    if (result != 0) {
+      thread_cat.error()
+        << "Failed to join thread " << _parent_obj->get_name()
+        << ": " << strerror(result) << "\n";
+    }
     _detached = true;
     return;
   }
@@ -337,7 +342,7 @@ root_func(void *data) {
 }
 
 /**
- * Called by get_current_thread() if the current therad pointer is null; checks
+ * Called by get_current_thread() if the current thread pointer is null; checks
  * whether it might be the main thread.
  */
 Thread *ThreadPosixImpl::
@@ -347,7 +352,6 @@ init_current_thread() {
     thread = Thread::get_main_thread();
     _current_thread = thread;
   }
-  nassertr(thread != nullptr, nullptr);
   return thread;
 }
 

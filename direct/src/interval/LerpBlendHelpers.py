@@ -2,7 +2,7 @@
 
 __all__ = ['getBlend']
 
-from panda3d.direct import *
+from panda3d.direct import EaseInBlendType, EaseInOutBlendType, EaseOutBlendType, NoBlendType
 
 
 easeIn = EaseInBlendType()

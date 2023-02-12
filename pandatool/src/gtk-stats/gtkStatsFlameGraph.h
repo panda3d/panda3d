@@ -25,7 +25,7 @@ class GtkStatsLabel;
  * A window that draws a flame chart, which shows the collectors explicitly
  * stopping and starting, one frame at a time.
  */
-class GtkStatsFlameGraph : public PStatFlameGraph, public GtkStatsGraph {
+class GtkStatsFlameGraph final : public PStatFlameGraph, public GtkStatsGraph {
 public:
   GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
                      int collector_index=-1);
@@ -46,11 +46,17 @@ protected:
 
   void clear_region();
   virtual void begin_draw();
-  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
+  virtual void draw_bar(int depth, int from_x, int to_x,
+                        int collector_index, int parent_index);
   virtual void end_draw();
   virtual void idle();
 
   virtual bool animate(double time, double dt);
+
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
 
   virtual void additional_graph_window_paint(cairo_t *cr);
   virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;

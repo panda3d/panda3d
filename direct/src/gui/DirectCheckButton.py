@@ -8,9 +8,9 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectCheckButton']
 
-from panda3d.core import *
-from .DirectButton import *
-from .DirectLabel import *
+from panda3d.core import PGFrameStyle, VBase4
+from .DirectButton import DirectButton
+from .DirectLabel import DirectLabel
 
 class DirectCheckButton(DirectButton):
     """

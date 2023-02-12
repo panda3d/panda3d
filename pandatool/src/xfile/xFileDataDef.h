@@ -49,7 +49,7 @@ public:
                       Type type, XFileTemplate *xtemplate = nullptr);
   virtual ~XFileDataDef();
 
-  virtual void clear();
+  virtual void clear() final;
   void add_array_def(const XFileArrayDef &array_def);
 
   INLINE Type get_data_type() const;

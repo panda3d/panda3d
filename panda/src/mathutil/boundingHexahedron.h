@@ -49,7 +49,7 @@ public:
   virtual LPoint3 get_max() const;
 
   virtual LPoint3 get_approx_center() const;
-  virtual void xform(const LMatrix4 &mat);
+  virtual void xform(const LMatrix4 &mat) final;
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent_level = 0) const;

@@ -47,10 +47,11 @@ PUBLISHED:
     TF_float             = 0x0100,  // Load as a floating-point (depth) texture
     TF_allow_compression = 0x0200,  // Consider compressing RAM image
     TF_no_filters        = 0x0400,  // disallow using texture pool filters
+    TF_force_srgb        = 0x0800,  // Force the texture to have an sRGB format
   };
 
-  LoaderOptions(int flags = LF_search | LF_report_errors);
-  constexpr LoaderOptions(int flags, int texture_flags);
+  explicit LoaderOptions(int flags = LF_search | LF_report_errors);
+  explicit constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
@@ -58,6 +59,13 @@ PUBLISHED:
 
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
+  INLINE void set_texture_format(int format);
+  INLINE int get_texture_format() const;
+  INLINE void set_texture_compression(int compress);
+  INLINE int get_texture_compression() const;
+  INLINE void set_texture_quality(int quality);
+  INLINE int get_texture_quality() const;
+
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
   MAKE_PROPERTY(texture_flags, get_texture_flags, set_texture_flags);
@@ -78,6 +86,9 @@ private:
                           const std::string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
+  int _texture_format;
+  int _texture_compress;
+  int _texture_quality;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

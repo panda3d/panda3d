@@ -36,5 +36,6 @@ extern ConfigVariableInt x_wheel_right_button;
 extern ConfigVariableInt x_cursor_size;
 extern ConfigVariableString x_wm_class_name;
 extern ConfigVariableString x_wm_class;
+extern ConfigVariableBool x_send_startup_notification;
 
 #endif

@@ -29,11 +29,12 @@ using std::min;
  *
  */
 PStatStripChart::
-PStatStripChart(PStatMonitor *monitor, PStatView &view,
-                int thread_index, int collector_index, int xsize, int ysize) :
+PStatStripChart(PStatMonitor *monitor,
+                int thread_index, int collector_index, bool show_level,
+                int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
   _thread_index(thread_index),
-  _view(view),
+  _view(show_level ? monitor->get_level_view(0, thread_index) : monitor->get_view(thread_index)),
   _collector_index(collector_index)
 {
   _scroll_mode = pstats_scroll_mode;
@@ -57,6 +58,8 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   }
 
   set_auto_vertical_scale();
+
+  monitor->_strip_charts.insert(this);
 }
 
 /**
@@ -64,6 +67,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
  */
 PStatStripChart::
 ~PStatStripChart() {
+  _monitor->_strip_charts.erase(this);
 }
 
 /**
@@ -303,6 +307,21 @@ get_title_text() {
 }
 
 /**
+ * Returns the text suitable for the total label above the graph.
+ */
+std::string PStatStripChart::
+get_total_text() {
+  std::string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+  if (get_collector_index() != 0 && !_view.get_show_level()) {
+    const PStatViewLevel *level = _view.get_level(get_collector_index());
+    if (level != nullptr && level->get_count() > 0) {
+      text += " / " + format_string(level->get_count()) + "x";
+    }
+  }
+  return text;
+}
+
+/**
  * Called when the mouse hovers over a label, and should return the text that
  * should appear on the tooltip.
  */
@@ -313,6 +332,8 @@ get_label_tooltip(int collector_index) const {
     return std::string();
   }
 
+  const PStatThreadData *thread_data = _view.get_thread_data();
+
   std::ostringstream text;
   text << client_data->get_collector_fullname(collector_index);
 
@@ -321,7 +342,6 @@ get_label_tooltip(int collector_index) const {
     value = get_average_net_value();
   }
   else {
-    const PStatThreadData *thread_data = _view.get_thread_data();
     int now_i, then_i;
     if (!thread_data->get_elapsed_frames(then_i, now_i)) {
       return text.str();
@@ -329,20 +349,20 @@ get_label_tooltip(int collector_index) const {
     double now = _time_width + _start_time;
     double then = now - pstats_average_time;
 
-    double net_value = 0.0f;
-    double net_time = 0.0f;
+    double net_value = 0.0;
+    double net_time = 0.0;
 
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
     const PStatFrameData &frame_data = thread_data->get_frame(then_i);
     if (frame_data.get_end() > then) {
       double this_time = (frame_data.get_end() - then);
-      _view.set_to_frame(frame_data);
-
-      const PStatViewLevel *level = _view.get_level(collector_index);
-      if (level != nullptr) {
-        net_value += level->get_net_value() * this_time;
-        net_time += this_time;
+      for (const ColorData &cd : get_frame_data(then_i)) {
+        if (cd._collector_index == collector_index) {
+          net_value += cd._net_value * this_time;
+          net_time += this_time;
+          break;
+        }
       }
     }
     // Then we get all of each of the remaining frames.
@@ -350,13 +370,13 @@ get_label_tooltip(int collector_index) const {
          frame_number <= now_i;
          frame_number++) {
       const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
-      double this_time = frame_data.get_net_time();
-      _view.set_to_frame(frame_data);
-
-      const PStatViewLevel *level = _view.get_level(collector_index);
-      if (level != nullptr) {
-        net_value += level->get_net_value() * this_time;
-        net_time += this_time;
+      for (const ColorData &cd : get_frame_data(frame_number)) {
+        if (cd._collector_index == collector_index) {
+          double this_time = frame_data.get_net_time();
+          net_value += cd._net_value * this_time;
+          net_time += this_time;
+          break;
+        }
       }
     }
 
@@ -366,8 +386,82 @@ get_label_tooltip(int collector_index) const {
     value = net_value / net_time;
   }
 
-  text << " (" << format_number(value, get_guide_bar_units(), get_guide_bar_unit_name()) << ")";
+  text << " (" << format_number(value, get_guide_bar_units(), get_guide_bar_unit_name());
+
+  if (collector_index != 0) {
+    const FrameData &frame = get_frame_data(thread_data->get_latest_frame_number());
+
+    for (const ColorData &cd : frame) {
+      if (cd._collector_index == collector_index) {
+        if (cd._count > 0) {
+          text << " / " << cd._count << "x";
+        }
+        break;
+      }
+    }
+  }
+
+  text << ")";
   return text.str();
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatStripChart::
+write_datagram(Datagram &dg) const {
+  dg.add_bool(_scroll_mode);
+  dg.add_bool(_average_mode);
+  dg.add_float64(_time_width);
+  dg.add_float64(_start_time);
+  dg.add_float64(_value_height);
+
+  // Not really necessary, we reconstructed this from the client data.
+  //for (const auto &item : _data) {
+  //  dg.add_int32(item.first);
+  //  dg.add_uint32(item.second.size());
+  //
+  //  for (const ColorData &cd : item.second) {
+  //    dg.add_uint16(cd._collector_index);
+  //    dg.add_uint16(cd._i);
+  //    dg.add_float64(cd._net_value);
+  //  }
+  //}
+  //dg.add_int32(-1);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatStripChart::
+read_datagram(DatagramIterator &scan) {
+  _next_frame = 0;
+  force_reset();
+
+  _scroll_mode = scan.get_bool();
+  _average_mode = scan.get_bool();
+  _time_width = scan.get_float64();
+  _start_time = scan.get_float64();
+  _value_height = scan.get_float64();
+
+  //int key;
+  //while ((key = scan.get_int32()) != -1) {
+  //  FrameData &fdata = _data[key];
+  //  fdata.resize(scan.get_uint32());
+  //
+  //  for (ColorData &cd : fdata) {
+  //    cd._collector_index = scan.get_uint16();
+  //    cd._i = scan.get_uint16();
+  //    cd._net_value = scan.get_float64();
+  //  }
+  //}
+
+  PStatGraph::read_datagram(scan);
+
+  normal_guide_bars();
+  update();
 }
 
 /**
@@ -427,6 +521,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
       ColorData scaled;
       scaled._collector_index = (*bi)._collector_index;
       scaled._i = (*bi)._i;
+      scaled._count = 0;
       scaled._net_value = (*bi)._net_value * weight;
       result.push_back(scaled);
       ++bi;
@@ -436,6 +531,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
       ColorData combined;
       combined._collector_index = (*ai)._collector_index;
       combined._i = (*bi)._i;
+      combined._count = 0;
       combined._net_value = (*ai)._net_value + (*bi)._net_value * weight;
       result.push_back(combined);
       ++ai;
@@ -454,6 +550,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
     ColorData scaled;
     scaled._collector_index = (*bi)._collector_index;
     scaled._i = (*bi)._i;
+    scaled._count = 0;
     scaled._net_value = (*bi)._net_value * weight;
     result.push_back(scaled);
     ++bi;
@@ -480,7 +577,7 @@ scale_frame_data(FrameData &fdata, double factor) {
  * the chart.
  */
 const PStatStripChart::FrameData &PStatStripChart::
-get_frame_data(int frame_number) {
+get_frame_data(int frame_number) const {
   Data::const_iterator di;
   di = _data.find(frame_number);
   if (di != _data.end()) {
@@ -499,6 +596,7 @@ get_frame_data(int frame_number) {
     ColorData cd;
     cd._collector_index = (unsigned short)child->get_collector();
     cd._i = (unsigned short)i;
+    cd._count = child->get_count();
     cd._net_value = child->get_net_value();
     if (cd._net_value != 0.0) {
       fdata.push_back(cd);
@@ -510,12 +608,13 @@ get_frame_data(int frame_number) {
   ColorData cd;
   cd._collector_index = (unsigned short)level->get_collector();
   cd._i = (unsigned short)num_children;
+  cd._count = level->get_count();
   cd._net_value = level->get_value_alone();
   if (cd._net_value > 0.0) {
     fdata.push_back(cd);
   }
 
-  inc_label_usage(fdata);
+  ((PStatStripChart *)this)->inc_label_usage(fdata);
 
   return fdata;
 }
@@ -586,13 +685,10 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
  */
 double PStatStripChart::
 get_net_value(int frame_number) const {
-  const FrameData &frame =
-    ((PStatStripChart *)this)->get_frame_data(frame_number);
+  const FrameData &frame = get_frame_data(frame_number);
 
   double net_value = 0.0;
-  FrameData::const_iterator fi;
-  for (fi = frame.begin(); fi != frame.end(); ++fi) {
-    const ColorData &cd = (*fi);
+  for (const ColorData &cd : frame) {
     net_value += cd._net_value;
   }
 
@@ -608,7 +704,7 @@ get_average_net_value() const {
   const PStatThreadData *thread_data = _view.get_thread_data();
   int now_i, then_i;
   if (!thread_data->get_elapsed_frames(then_i, now_i)) {
-    return 0.0f;
+    return 0.0;
   }
   double now = _time_width + _start_time;
   double then = now - pstats_average_time;
@@ -635,13 +731,14 @@ get_average_net_value() const {
 
     const PStatThreadData *thread_data = _view.get_thread_data();
 
-    double net_value = 0.0f;
-    double net_time = 0.0f;
+    double net_value = 0.0;
+    double net_time = 0.0;
 
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
-    if (thread_data->get_frame(then_i).get_end() > then) {
-      double this_time = (thread_data->get_frame(then_i).get_end() - then);
+    const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    if (frame_data.get_end() > then) {
+      double this_time = (frame_data.get_end() - then);
       net_value += get_net_value(then_i) * this_time;
       net_time += this_time;
     }
@@ -783,7 +880,6 @@ end_draw(int, int) {
 void PStatStripChart::
 idle() {
 }
-
 
 // STL function object for sorting labels in order by the collector's sort
 // index, used in update_labels(), below.

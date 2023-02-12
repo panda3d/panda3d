@@ -2,9 +2,8 @@
 
 __all__ = ['doTest']
 
-from panda3d.core import *
-from panda3d.direct import *
-from .IntervalGlobal import *
+from panda3d.core import Point3
+from .ProjectileInterval import ProjectileInterval
 
 
 def doTest():

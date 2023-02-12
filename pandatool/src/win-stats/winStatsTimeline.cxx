@@ -248,6 +248,25 @@ animate(double time, double dt) {
 }
 
 /**
+ * Returns the current window dimensions.
+ */
+bool WinStatsTimeline::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsGraph::get_window_state(x, y, width, height, maximized, minimized);
+  return true;
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsTimeline::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsGraph::set_window_state(x, y, width, height, maximized, minimized);
+}
+
+/**
  *
  */
 LONG WinStatsTimeline::
@@ -417,6 +436,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             AppendMenu(popup, MF_STRING, 102, "Open Strip Chart");
             AppendMenu(popup, MF_STRING, 103, "Open Flame Graph");
             AppendMenu(popup, MF_STRING, 104, "Open Piano Roll");
+            AppendMenu(popup, MF_STRING | MF_SEPARATOR, 0, nullptr);
+            AppendMenu(popup, MF_STRING, 105, "Change Color...");
+            AppendMenu(popup, MF_STRING, 106, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _graph_window, nullptr);
           }
         }
@@ -447,6 +469,14 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case 104:
       WinStatsGraph::_monitor->open_piano_roll(_popup_bar._thread_index);
       return 0;
+
+    case 105:
+      WinStatsGraph::_monitor->choose_collector_color(_popup_bar._collector_index);
+      return 0;
+
+    case 106:
+      WinStatsGraph::_monitor->reset_collector_color(_popup_bar._collector_index);
+      return 0;
     }
     break;
 
@@ -459,6 +489,22 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           int delta = GET_WHEEL_DELTA_WPARAM(wparam);
           zoom_by(delta / 120.0, pixel_to_timestamp(point.x));
           start_animation();
+        }
+      } else {
+        int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+        delta = (delta * _pixel_scale * 5) / 120;
+        int new_scroll = _scroll - delta;
+        if (_threads.empty()) {
+          new_scroll = 0;
+        } else {
+          new_scroll = (std::min)(new_scroll, get_num_rows() * _pixel_scale * 5 + _pixel_scale * 2 - get_ysize());
+          new_scroll = (std::max)(new_scroll, 0);
+        }
+        delta = new_scroll - _scroll;
+        if (delta != 0) {
+          _scroll = new_scroll;
+          _threads_changed = true;
+          PStatTimeline::force_redraw();
         }
       }
       return 0;
@@ -574,7 +620,9 @@ additional_window_paint(HDC hdc) {
   SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
   for (const ThreadRow &thread_row : _threads) {
-    draw_thread_label(hdc, thread_row);
+    if (thread_row._visible) {
+      draw_thread_label(hdc, thread_row);
+    }
   }
 }
 
@@ -620,6 +668,7 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
     return;
   }
 
+  bool center = true;
   switch (bar._style) {
   case GBS_target:
     SetTextColor(hdc, _light_color);
@@ -635,6 +684,7 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
 
   case GBS_frame:
     SetTextColor(hdc, _dark_color);
+    center = false;
     break;
   }
 
@@ -642,7 +692,10 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
   SIZE size;
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
-  int this_x = _graph_left + x - size.cx / 2;
+  int this_x = _graph_left + x;
+  if (center) {
+    this_x -= size.cx / 2;
+  }
   if (x >= 0 && x < get_xsize()) {
     TextOut(hdc, this_x, y,
             label.data(), label.length());

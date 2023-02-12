@@ -46,7 +46,7 @@ public:
 
   virtual bool update_internals(PartBundle *root, PartGroup *parent,
                                 bool self_changed, bool parent_changed,
-                                Thread *current_thread);
+                                Thread *current_thread) final;
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
 
 PUBLISHED:

@@ -121,8 +121,8 @@ new_data(int thread_index, int frame_number) {
       }
 
       const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
-      int num_events = frame_data.get_num_events();
-      for (int i = 0; i < num_events; ++i) {
+      size_t num_events = frame_data.get_num_events();
+      for (size_t i = 0; i < num_events; ++i) {
         int collector_index = frame_data.get_time_collector(i);
         (*_outStream)
           << "{\"name\":\"" << client_data->get_collector_fullname(collector_index)
@@ -141,8 +141,8 @@ new_data(int thread_index, int frame_number) {
       if (_show_raw_data) {
         const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
         (*_outStream) << "raw data:\n";
-        int num_events = frame_data.get_num_events();
-        for (int i = 0; i < num_events; ++i) {
+        size_t num_events = frame_data.get_num_events();
+        for (size_t i = 0; i < num_events; ++i) {
           // The iomanipulators are much too clumsy.
           char formatted[32];
           sprintf(formatted, "%15.06lf", frame_data.get_time(i));

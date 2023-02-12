@@ -25,7 +25,7 @@ from panda3d.core import Camera
 from panda3d.core import OrthographicLens
 from panda3d.core import AuxBitplaneAttrib
 from panda3d.core import LightRampAttrib
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 
 __all__ = ["FilterManager"]
@@ -323,7 +323,7 @@ class FilterManager(DirectObject):
             props.setAuxRgba(1)
         if auxtex1 is not None:
             props.setAuxRgba(2)
-        buffer=base.graphicsEngine.makeOutput(
+        buffer=self.engine.makeOutput(
             self.win.getPipe(), name, -1,
             props, winprops, GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self.win.getGsg(), self.win)

@@ -5,13 +5,15 @@ LevelEditor, ObjectHandler, ObjectPalette should be rewritten
 to be game specific.
 """
 
-from .LevelEditorUI import *
-from .LevelEditorBase import *
-from .ObjectMgr import *
-from .AnimMgr import *
-from .ObjectHandler import *
-from .ObjectPalette import *
-from .ProtoPalette import *
+import os
+import wx
+from .LevelEditorUI import LevelEditorUI
+from .LevelEditorBase import LevelEditorBase
+from .ObjectMgr import ObjectMgr
+from .AnimMgr import AnimMgr
+from .ObjectHandler import ObjectHandler
+from .ObjectPalette import ObjectPalette
+from .ProtoPalette import ProtoPalette
 
 class LevelEditor(LevelEditorBase):
     """ Class for Panda3D LevelEditor """

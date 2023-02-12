@@ -21,7 +21,20 @@ WorkingNodePath(const NodePath &start) {
   nassertv(!start.is_empty());
   _next = nullptr;
   _start = start._head;
-  _node = start.node();
+  _node = _start->get_node();
+}
+
+/**
+ * Creates a WorkingNodePath that is the same as the indicated NodePath.  This
+ * is generally used to begin the traversal of a scene graph with the root
+ * NodePath.
+ */
+INLINE WorkingNodePath::
+WorkingNodePath(NodePath &&start) {
+  nassertv(!start.is_empty());
+  _next = nullptr;
+  _start = std::move(start._head);
+  _node = _start->get_node();
 }
 
 /**

@@ -26,17 +26,3 @@ INLINE BulletWheelRaycastInfo::
 ~BulletWheelRaycastInfo() {
 
 }
-
-/**
- * Named constructor intended to be used for asserts with have to return a
- * concrete value.
- */
-INLINE BulletWheel BulletWheel::
-empty() {
-
-  btWheelInfoConstructionInfo ci {};
-  btWheelInfo info(ci);
-
-  return BulletWheel(info);
-}
-

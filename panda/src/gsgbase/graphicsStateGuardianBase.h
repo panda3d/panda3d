@@ -28,6 +28,7 @@ class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
 class GraphicsOutputBase;
+class ScreenshotRequest;
 
 class VertexBufferContext;
 class IndexBufferContext;
@@ -220,7 +221,8 @@ public:
   virtual bool framebuffer_copy_to_texture
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+   ScreenshotRequest *request = nullptr)=0;
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 

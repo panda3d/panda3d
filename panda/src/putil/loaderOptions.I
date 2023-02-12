@@ -18,6 +18,9 @@ constexpr LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
+  _texture_format(0),
+  _texture_compress(0),
+  _texture_quality(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -53,6 +56,55 @@ set_texture_flags(int texture_flags) {
 INLINE int LoaderOptions::
 get_texture_flags() const {
   return _texture_flags;
+}
+
+/**
+ * Set the texture format
+*/
+
+INLINE void LoaderOptions::
+set_texture_format(int format) {
+  _texture_format = format;
+}
+
+/**
+ *  Get the texture format
+ */
+INLINE int LoaderOptions::
+get_texture_format() const {
+  return _texture_format;
+}
+
+/**
+ *  Set the texture compression
+ */
+INLINE void LoaderOptions::
+set_texture_compression(int compress) {
+  _texture_compress = compress;
+}
+
+/**
+ *  Get the texture compression
+ */
+INLINE int LoaderOptions::
+get_texture_compression() const {
+  return _texture_compress;
+}
+
+/**
+ *  Set the texture quality
+ */
+INLINE void LoaderOptions::
+set_texture_quality(int quality) {
+  _texture_quality = quality;
+}
+
+/**
+ *  Get the texture quality
+ */
+INLINE int LoaderOptions::
+get_texture_quality() const {
+  return _texture_quality;
 }
 
 /**

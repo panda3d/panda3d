@@ -42,7 +42,7 @@ PUBLISHED:
   GPUCommandList();
 
   void add_command(const GPUCommand& cmd);
-  size_t get_num_commands();
+  size_t get_num_commands() const;
   size_t write_commands_to(const PTA_uchar &dest, size_t limit = 32);
 
   MAKE_PROPERTY(num_commands, get_num_commands);

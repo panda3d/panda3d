@@ -28,7 +28,8 @@ class CPPInstanceIdentifier;
 class CPPTypedefType : public CPPType {
 public:
   CPPTypedefType(CPPType *type, const std::string &name, CPPScope *current_scope);
-  CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope);
+  CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope,
+                 CPPAttributeList attr = CPPAttributeList());
   CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
                  CPPScope *current_scope, const CPPFile &file);
 

@@ -107,7 +107,7 @@ PUBLISHED:
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
   EXTENSION(PT(PandaNode) __copy__() const);
-  EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
+  PY_EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
 
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
@@ -204,17 +204,17 @@ PUBLISHED:
   MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
   MAKE_MAP_KEYS_SEQ(tags, get_num_tags, get_tag_key);
 
-  EXTENSION(PyObject *get_tag_keys() const);
+  PY_EXTENSION(PyObject *get_tag_keys() const);
 
-  EXTENSION(PyObject *get_python_tags());
-  EXTENSION(void set_python_tag(PyObject *key, PyObject *value));
-  EXTENSION(PyObject *get_python_tag(PyObject *key) const);
-  EXTENSION(bool has_python_tag(PyObject *key) const);
-  EXTENSION(void clear_python_tag(PyObject *key));
-  EXTENSION(PyObject *get_python_tag_keys() const);
-  MAKE_PROPERTY(python_tags, get_python_tags);
+  PY_EXTENSION(PyObject *get_python_tags());
+  PY_EXTENSION(void set_python_tag(PyObject *key, PyObject *value));
+  PY_EXTENSION(PyObject *get_python_tag(PyObject *key) const);
+  PY_EXTENSION(bool has_python_tag(PyObject *key) const);
+  PY_EXTENSION(void clear_python_tag(PyObject *key));
+  PY_EXTENSION(PyObject *get_python_tag_keys() const);
+  PY_MAKE_PROPERTY(python_tags, get_python_tags);
 
-  EXTENSION(int __traverse__(visitproc visit, void *arg));
+  PY_EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
@@ -287,10 +287,9 @@ PUBLISHED:
   // bounding volumes.
   void set_bounds_type(BoundingVolume::BoundsType bounds_type);
   BoundingVolume::BoundsType get_bounds_type() const;
-  MAKE_PROPERTY(bounds_type, get_bounds_type);
+  MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
   void set_bounds(const BoundingVolume *volume);
-  void set_bound(const BoundingVolume *volume);
   INLINE void clear_bounds();
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(BoundingVolume) get_bounds(UpdateSeq &seq, Thread *current_thread = Thread::get_current_thread()) const;
@@ -844,7 +843,7 @@ private:
 #ifndef DO_PIPELINING
   friend class PandaNode::Children;
   friend class PandaNode::Stashed;
-#endif
+#endif // !DO_PIPELINING
   friend class NodePath;
   friend class NodePathComponent;
   friend class WorkingNodePath;
@@ -902,6 +901,7 @@ public:
   INLINE std::string get_tag(const std::string &key) const;
   INLINE bool has_tag(const std::string &key) const;
 
+  INLINE CollideMask get_into_collide_mask() const;
   INLINE CollideMask get_net_collide_mask() const;
   INLINE const RenderAttrib *get_off_clip_planes() const;
   INLINE const BoundingVolume *get_bounds() const;
@@ -943,4 +943,4 @@ INLINE std::ostream &operator << (std::ostream &out, const PandaNode &node) {
 
 #include "pandaNode.I"
 
-#endif
+#endif // !PANDANODE_H

@@ -183,9 +183,9 @@ PUBLISHED:
   INLINE void clear();
 
   EXTENSION(NodePath __copy__() const);
-  EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
+  PY_EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
   INLINE static NodePath not_found();
   INLINE static NodePath removed();
@@ -619,6 +619,9 @@ PUBLISHED:
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
   void replace_texture(Texture *tex, Texture *new_tex);
+#ifdef CPPPARSER  // Let interrogate know this also accepts None
+  void replace_texture(Texture *tex, std::nullptr_t new_tex);
+#endif
   const SamplerState &get_texture_sampler() const;
   const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
@@ -663,8 +666,8 @@ PUBLISHED:
   INLINE void set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2,
                                PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-  EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
-  EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
+  PY_EXTENSION(void set_shader_input(CPT_InternalName, PyObject *, int priority=0));
+  PY_EXTENSION(void set_shader_inputs(PyObject *args, PyObject *kwargs));
 
   void clear_shader_input(CPT_InternalName id);
   void set_instance_count(int instance_count);
@@ -771,6 +774,9 @@ PUBLISHED:
   bool has_material() const;
   PT(Material) get_material() const;
   void replace_material(Material *mat, Material *new_mat);
+#ifdef CPPPARSER  // Let interrogate know this also accepts None
+  void replace_material(Material *mat, std::nullptr_t new_mat);
+#endif
 
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
@@ -905,7 +911,7 @@ PUBLISHED:
                          const NodePath &other = NodePath(),
                          Thread *current_thread = Thread::get_current_thread()) const;
 
-  EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
+  PY_EXTENSION(PyObject *get_tight_bounds(const NodePath &other = NodePath()) const);
 
   // void analyze() const;
 
@@ -926,22 +932,22 @@ PUBLISHED:
 
   MAKE_MAP_PROPERTY(net_tags, has_net_tag, get_net_tag);
 
-  EXTENSION(INLINE PyObject *get_tags() const);
-  EXTENSION(INLINE PyObject *get_tag_keys() const);
-  MAKE_PROPERTY(tags, get_tags);
+  PY_EXTENSION(INLINE PyObject *get_tags() const);
+  PY_EXTENSION(INLINE PyObject *get_tag_keys() const);
+  PY_MAKE_PROPERTY(tags, get_tags);
 
-  EXTENSION(PyObject *get_python_tags());
-  EXTENSION(INLINE void set_python_tag(PyObject *keys, PyObject *value));
-  EXTENSION(INLINE PyObject *get_python_tag(PyObject *keys) const);
-  EXTENSION(INLINE PyObject *get_python_tag_keys() const);
-  EXTENSION(INLINE bool has_python_tag(PyObject *keys) const);
-  EXTENSION(INLINE void clear_python_tag(PyObject *keys));
-  EXTENSION(INLINE PyObject *get_net_python_tag(PyObject *keys) const);
-  EXTENSION(INLINE bool has_net_python_tag(PyObject *keys) const);
-  EXTENSION(NodePath find_net_python_tag(PyObject *keys) const);
-  MAKE_PROPERTY(python_tags, get_python_tags);
+  PY_EXTENSION(PyObject *get_python_tags());
+  PY_EXTENSION(INLINE void set_python_tag(PyObject *keys, PyObject *value));
+  PY_EXTENSION(INLINE PyObject *get_python_tag(PyObject *keys) const);
+  PY_EXTENSION(INLINE PyObject *get_python_tag_keys() const);
+  PY_EXTENSION(INLINE bool has_python_tag(PyObject *keys) const);
+  PY_EXTENSION(INLINE void clear_python_tag(PyObject *keys));
+  PY_EXTENSION(INLINE PyObject *get_net_python_tag(PyObject *keys) const);
+  PY_EXTENSION(INLINE bool has_net_python_tag(PyObject *keys) const);
+  PY_EXTENSION(NodePath find_net_python_tag(PyObject *keys) const);
+  PY_MAKE_PROPERTY(python_tags, get_python_tags);
 
-  EXTENSION(int __traverse__(visitproc visit, void *arg));
+  PY_EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE void list_tags() const;
 
@@ -1065,4 +1071,4 @@ INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path);
 
 #include "nodePath.I"
 
-#endif
+#endif // !NODEPATH_H

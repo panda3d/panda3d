@@ -43,6 +43,7 @@ public:
   int get_num_labels() const;
 
   void highlight_label(int collector_index);
+  void update_label_color(int collector_index);
 
 private:
   GtkWidget *_widget;

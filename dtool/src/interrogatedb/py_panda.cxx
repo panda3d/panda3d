@@ -134,11 +134,10 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
  *
  * Returns true if there is an active exception, false otherwise.
  *
- * In the NDEBUG case, this is simply a #define to _PyErr_OCCURRED() (which is
- * an undocumented inline version of PyErr_Occurred()).
+ * In the NDEBUG case, this is simply a #define to PyErr_Occurred().
  */
 bool _Dtool_CheckErrorOccurred() {
-  if (_PyErr_OCCURRED()) {
+  if (PyErr_Occurred()) {
     return true;
   }
   if (Notify::ptr()->has_assert_failed()) {
@@ -231,7 +230,7 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  * NULL, otherwise Py_None.
  */
 PyObject *_Dtool_Return_None() {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -248,7 +247,7 @@ PyObject *_Dtool_Return_None() {
  * NULL, otherwise the given boolean value as a PyObject *.
  */
 PyObject *Dtool_Return_Bool(bool value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -267,7 +266,7 @@ PyObject *Dtool_Return_Bool(bool value) {
  * increased.
  */
 PyObject *_Dtool_Return(PyObject *value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -458,31 +457,24 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
     Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
     if (target_class != nullptr) {
       // cast to the type...
-      void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
-      if (new_local_this != nullptr) {
-        // ask class to allocate an instance..
-        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, nullptr, nullptr);
-        if (self != nullptr) {
-          self->_ptr_to_object = new_local_this;
-          self->_memory_rules = memory_rules;
-          self->_is_const = is_const;
-          // self->_signature = PY_PANDA_SIGNATURE;
-          self->_My_Type = target_class;
-          return (PyObject *)self;
-        }
+      Dtool_PyInstDef *self = target_class->_Dtool_WrapInterface(local_this_in, &known_class_type);
+      if (self != nullptr) {
+        self->_memory_rules = memory_rules;
+        self->_is_const = is_const;
+        return (PyObject *)self;
       }
     }
   }
 
   // if we get this far .. just wrap the thing in the known type ?? better
   // than aborting...I guess....
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, nullptr, nullptr);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&known_class_type._PyType, 0);
   if (self != nullptr) {
+    self->_signature = PY_PANDA_SIGNATURE;
+    self->_My_Type = &known_class_type;
     self->_ptr_to_object = local_this_in;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
-    // self->_signature = PY_PANDA_SIGNATURE;
-    self->_My_Type = &known_class_type;
   }
   return (PyObject *)self;
 }
@@ -497,13 +489,14 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
     return Py_None;
   }
 
-  Dtool_PyTypedObject *classdef = &in_classdef;
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->_PyType.tp_new(&classdef->_PyType, nullptr, nullptr);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&in_classdef._PyType, 0);
   if (self != nullptr) {
+    self->_signature = PY_PANDA_SIGNATURE;
+    self->_My_Type = &in_classdef;
     self->_ptr_to_object = local_this;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
-    self->_My_Type = classdef;
+    self->_My_Type = &in_classdef;
   }
   return (PyObject *)self;
 }

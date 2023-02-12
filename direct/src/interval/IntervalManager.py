@@ -3,9 +3,8 @@ this class, ivalMgr."""
 
 __all__ = ['IntervalManager', 'ivalMgr']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import EventQueue
+from panda3d.direct import CIntervalManager, Dtool_BorrowThisReference
 from direct.showbase import EventManager
 import fnmatch
 

@@ -2280,8 +2280,6 @@ read_index() {
       read_cert_special = true;
     } else {
       _subfiles.push_back(subfile);
-    }
-    if (!subfile->is_cert_special()) {
       if (bytes_skipped != 0) {
         // If the index entries don't follow exactly sequentially (except for
         // the cert special files), the file ought to be repacked.

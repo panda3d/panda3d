@@ -1,0 +1,6 @@
+---
+Checks: 'clang-diagnostic-*,clang-analyzer-*,performance-*,portability-*,modernize-use-nullptr'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none
+...

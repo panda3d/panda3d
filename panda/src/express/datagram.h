@@ -38,7 +38,7 @@
 class EXPCL_PANDA_EXPRESS Datagram : public TypedObject {
 PUBLISHED:
   INLINE Datagram() = default;
-  INLINE Datagram(const void *data, size_t size);
+  INLINE explicit Datagram(const void *data, size_t size);
   INLINE explicit Datagram(vector_uchar data);
   Datagram(const Datagram &copy) = default;
   Datagram(Datagram &&from) noexcept = default;
@@ -95,9 +95,9 @@ public:
   INLINE const void *get_data() const;
 
 PUBLISHED:
-  EXTENSION(INLINE PyObject *get_message() const);
-  EXTENSION(INLINE PyObject *__bytes__() const);
-  EXTENSION(PyObject *__reduce__() const);
+  PY_EXTENSION(INLINE PyObject *get_message() const);
+  PY_EXTENSION(INLINE PyObject *__bytes__() const);
+  PY_EXTENSION(PyObject *__reduce__() const);
 
   INLINE size_t get_length() const;
 
@@ -121,9 +121,9 @@ private:
 
 #ifdef STDFLOAT_DOUBLE
   bool _stdfloat_double = true;
-#else
+#else // STDFLOAT_DOUBLE
   bool _stdfloat_double = false;
-#endif
+#endif // STDFLOAT_DOUBLE
 
 public:
 
@@ -168,4 +168,4 @@ generic_write_datagram(Datagram &dest, const vector_uchar &value);
 
 #include "datagram.I"
 
-#endif
+#endif // !DATAGRAM_H

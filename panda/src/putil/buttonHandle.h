@@ -30,7 +30,7 @@ PUBLISHED:
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
   INLINE ButtonHandle() = default;
-  constexpr ButtonHandle(int index);
+  explicit constexpr ButtonHandle(int index);
   ButtonHandle(const std::string &name);
 
 PUBLISHED:

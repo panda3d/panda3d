@@ -54,8 +54,8 @@ PUBLISHED:
 PUBLISHED:
   MAKE_PROPERTY2(center, has_center, get_center, set_center, clear_center);
 
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(void __setstate__(PyObject *self, vector_uchar data, PyObject *nodepaths));
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(void __setstate__(PyObject *self, vector_uchar data, PyObject *nodepaths));
 
 protected:
   bool _has_contact; // Are we in contact with anything?

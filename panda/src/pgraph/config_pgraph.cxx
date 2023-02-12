@@ -290,6 +290,11 @@ ConfigVariableBool premunge_data
           "encoding requirements, as appropriate.  When this is false, the "
           "data will be munged at render time instead."));
 
+ConfigVariableBool premunge_remove_unused_vertices
+("premunge-remove-unused-vertices", true,
+ PRC_DESC("Set this true to remove unused vertices as part of the premunge "
+          "which occurs when models are loaded from disk."));
+
 ConfigVariableBool preserve_geom_nodes
 ("preserve-geom-nodes", false,
  PRC_DESC("This specifies the default value for the \"preserved\" flag on "

@@ -3,8 +3,9 @@ Defines ProtoPalette tree UI
 """
 import wx
 import os
-from panda3d.core import *
-from .PaletteTreeCtrl import *
+from panda3d.core import Filename
+from .ObjectPaletteBase import ObjectBase
+from .PaletteTreeCtrl import PaletteTreeCtrl
 
 
 class UniversalDropTarget(wx.DropTarget):

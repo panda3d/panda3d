@@ -64,7 +64,6 @@ private:
   const PipelineCycler<CycleDataType> *_cycler;
   Thread *_current_thread;
   const CycleDataType *_pointer;
-  CycleDataType *_write_pointer;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   const CycleDataType *_pointer;
