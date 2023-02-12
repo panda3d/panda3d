@@ -106,6 +106,10 @@ def test_fbquality_rgba64():
 def test_fbquality_multi_samples():
     # Make sure that we get appropriate quality levels for different sample requests
     
+    fb_0_samples = FrameBufferProperties()
+    fb_0_samples.set_rgb_color(1)
+    fb_0_samples.set_multisamples(0)
+    
     fb_2_samples = FrameBufferProperties()
     fb_2_samples.set_rgb_color(1)
     fb_2_samples.set_multisamples(2)
@@ -175,6 +179,17 @@ def test_fbquality_multi_samples():
     assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
     assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
     assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+
+    # if samples are requested we prefer the ones with samples instead of having none
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_4_samples)
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_8_samples)
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_16_samples)
+    
+    # we prefer buffers without samples if we don't request some
+    assert fb_0_samples.get_quality(req_0_samples) > fb_2_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_4_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_8_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_16_samples.get_quality(req_0_samples)
 
 
 def test_fbquality_coverage_samples():
@@ -249,6 +264,3 @@ def test_fbquality_coverage_samples():
     assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
     assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
     assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
-
-
-
