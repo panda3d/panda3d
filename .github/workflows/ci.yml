@@ -92,10 +92,10 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-mac.tar.gz
-        tar -xf panda3d-1.10.13-tools-mac.tar.gz
-        mv panda3d-1.10.13/thirdparty thirdparty
-        rmdir panda3d-1.10.13
+        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
+        tar -xf panda3d-1.10.14-tools-mac.tar.gz
+        mv panda3d-1.10.14/thirdparty thirdparty
+        rmdir panda3d-1.10.14
 
         # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
         install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
@@ -381,10 +381,10 @@ jobs:
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-mac.tar.gz
-        tar -xf panda3d-1.10.13-tools-mac.tar.gz
-        mv panda3d-1.10.13/thirdparty thirdparty
-        rmdir panda3d-1.10.13
+        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
+        tar -xf panda3d-1.10.14-tools-mac.tar.gz
+        mv panda3d-1.10.14/thirdparty thirdparty
+        rmdir panda3d-1.10.14
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
     - name: Set up Python 3.11
