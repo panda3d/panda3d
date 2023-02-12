@@ -1,13 +1,12 @@
 import wx
 from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.showbase.ShowBase import *
+from direct.showbase.ShowBase import ShowBase
 from direct.showbase import ShowBaseGlobal
-from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectGlobals import SKIP_UNPICKABLE
 
-from .WxAppShell import *
-from .ViewPort import *
+from .WxAppShell import WxAppShell
+from .ViewPort import Viewport, ViewportManager
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402

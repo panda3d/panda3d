@@ -1,5 +1,3 @@
-
-from .DirectGlobals import *
 from panda3d.core import VBase4
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr

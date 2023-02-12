@@ -23,7 +23,20 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerFloor,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    Mat3,
+    Point3,
+    Vec3,
+)
 
 class NonPhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("NonPhysicsWalker")

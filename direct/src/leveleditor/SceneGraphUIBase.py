@@ -2,8 +2,8 @@
 Defines Scene Graph tree UI Base
 """
 import wx
-from panda3d.core import *
-from .ActionMgr import *
+from panda3d.core import NodePath
+from .ActionMgr import ActionChangeHierarchy, ActionDeleteObjById
 
 from . import ObjectGlobals as OG
 

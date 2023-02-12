@@ -2,9 +2,9 @@
 
 __all__ = ['AnimControlInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import AnimControl, AnimControlCollection, ConfigVariableBool
+from panda3d.direct import CInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 import math
 

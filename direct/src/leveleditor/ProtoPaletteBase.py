@@ -3,7 +3,7 @@ Palette for Prototyping
 """
 import imp
 
-from .ObjectPaletteBase import *
+from .ObjectPaletteBase import ObjectBase, ObjectPaletteBase
 
 class ProtoPaletteBase(ObjectPaletteBase):
     def __init__(self):

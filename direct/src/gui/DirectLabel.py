@@ -6,8 +6,8 @@ explanation and an example of how to use this class.
 
 __all__ = ['DirectLabel']
 
-from panda3d.core import *
-from .DirectFrame import *
+from panda3d.core import PGItem
+from .DirectFrame import DirectFrame
 
 class DirectLabel(DirectFrame):
     """

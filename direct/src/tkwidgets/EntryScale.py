@@ -4,10 +4,10 @@ EntryScale Class: Scale with a label, and a linked and validated entry
 
 __all__ = ['EntryScale', 'EntryScaleGroup']
 
-from direct.showbase.TkGlobal import *
 from panda3d.core import Vec4
 import Pmw
-from tkinter.simpledialog import *
+import tkinter as tk
+from tkinter.simpledialog import askfloat, askstring
 from tkinter.colorchooser import askcolor
 
 
@@ -44,13 +44,13 @@ class EntryScale(Pmw.MegaWidget):
 
         # Setup up container
         interior = self.interior()
-        interior.configure(relief = GROOVE, borderwidth = 2)
+        interior.configure(relief = tk.GROOVE, borderwidth = 2)
 
         # Create a label and an entry
         self.labelFrame = self.createcomponent('frame', (), None,
-                                               Frame, interior)
+                                               tk.Frame, interior)
         # Create an entry field to display and validate the entryScale's value
-        self.entryValue = StringVar()
+        self.entryValue = tk.StringVar()
         self.entryValue.set(self['value'])
         self.entry = self.createcomponent('entryField',
                                           # Access widget's entry using "entry"
@@ -70,7 +70,7 @@ class EntryScale(Pmw.MegaWidget):
 
         # Create the EntryScale's label
         self.label = self.createcomponent('label', (), None,
-                                          Label, self.labelFrame,
+                                          tk.Label, self.labelFrame,
                                           text = self['text'],
                                           width = 12,
                                           anchor = 'center',
@@ -83,21 +83,21 @@ class EntryScale(Pmw.MegaWidget):
 
         # Create a label and an entry
         self.minMaxFrame = self.createcomponent('mmFrame', (), None,
-                                                Frame, interior)
+                                                tk.Frame, interior)
         # Create the EntryScale's min max labels
         self.minLabel = self.createcomponent('minLabel', (), None,
-                                             Label, self.minMaxFrame,
+                                             tk.Label, self.minMaxFrame,
                                              text = repr(self['min']),
-                                             relief = FLAT,
+                                             relief = tk.FLAT,
                                              width = 5,
-                                             anchor = W,
+                                             anchor = tk.W,
                                              font = "Arial 8")
         self.minLabel.pack(side='left', fill = 'x')
         self.minLabel.bind('<Button-3>', self.askForMin)
 
         # Create the scale component.
         self.scale = self.createcomponent('scale', (), None,
-                                          Scale, self.minMaxFrame,
+                                          tk.Scale, self.minMaxFrame,
                                           command = self._scaleCommand,
                                           orient = 'horizontal',
                                           length = 150,
@@ -113,11 +113,11 @@ class EntryScale(Pmw.MegaWidget):
         self.scale.bind('<Button-3>', self.askForResolution)
 
         self.maxLabel = self.createcomponent('maxLabel', (), None,
-                                             Label, self.minMaxFrame,
+                                             tk.Label, self.minMaxFrame,
                                              text = repr(self['max']),
-                                             relief = FLAT,
+                                             relief = tk.FLAT,
                                              width = 5,
-                                             anchor = E,
+                                             anchor = tk.E,
                                              font = "Arial 8")
         self.maxLabel.bind('<Button-3>', self.askForMax)
         self.maxLabel.pack(side='left', fill = 'x')
@@ -291,7 +291,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('dim',             DEFAULT_DIM,            INITOPT),
-            ('side',            TOP,                    INITOPT),
+            ('side',            tk.TOP,                 INITOPT),
             ('title',           'Group',                None),
             # A tuple of initial values, one for each entryScale
             ('value',    DEFAULT_VALUE,          INITOPT),
@@ -319,7 +319,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
         menubar = self.createcomponent('menubar', (), None,
                                        Pmw.MenuBar, (interior,),
                                        balloon = self.balloon)
-        menubar.pack(fill=X)
+        menubar.pack(fill=tk.X)
 
         # EntryScaleGroup Menu
         menubar.addmenu('EntryScale Group', 'EntryScale Group Operations')
@@ -336,7 +336,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             label = 'Dismiss', command = dismissCommand)
 
         menubar.addmenu('Help', 'EntryScale Group Help Operations')
-        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar = tk.IntVar()
         self.toggleBalloonVar.set(0)
         menubar.addmenuitem('Help', 'checkbutton',
                             'Toggle balloon help',
@@ -360,7 +360,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             f.onReturnRelease = self.__onReturnRelease
             f['preCallback'] = self.__onPress
             f['postCallback'] = self.__onRelease
-            f.pack(side = self['side'], expand = 1, fill = X)
+            f.pack(side = self['side'], expand = 1, fill = tk.X)
             self.entryScaleList.append(f)
 
         # Make sure entryScales are initialized
@@ -528,7 +528,7 @@ def rgbPanel(nodePath, callback = None):
 ## SAMPLE CODE
 if __name__ == '__main__':
     # Initialise Tkinter and Pmw.
-    root = Toplevel()
+    root = tk.Toplevel()
     root.title('Pmw EntryScale demonstration')
 
     # Dummy command

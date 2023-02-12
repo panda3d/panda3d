@@ -5,9 +5,9 @@ intervals either in parallel or in a specified sequential order.
 
 __all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import PStatCollector, ostream
+from panda3d.direct import CInterval, CMetaInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from .IntervalManager import ivalMgr
 from . import Interval
 from direct.task.Task import TaskManager

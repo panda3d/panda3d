@@ -24,7 +24,22 @@ from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.extensions_native import VBase3_extensions
 from direct.extensions_native import VBase4_extensions
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerEvent,
+    CollisionHandlerFluidPusher,
+    CollisionHandlerGravity,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    Mat3,
+    Point3,
+    Vec3,
+)
 import math
 
 

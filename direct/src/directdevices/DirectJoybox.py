@@ -1,11 +1,11 @@
 """ Class used to create and control joybox device """
 from direct.showbase.DirectObject import DirectObject
-from .DirectDeviceManager import *
-from direct.directtools.DirectUtil import *
+from .DirectDeviceManager import ANALOG_DEADBAND, ANALOG_MAX, ANALOG_MIN, DirectDeviceManager
+from direct.directtools.DirectUtil import CLAMP
 from direct.gui import OnscreenText
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from panda3d.core import ClockObject
+from panda3d.core import ButtonRegistry, ButtonThrower, ClockObject, NodePath, VBase3, Vec3
 
 import math
 

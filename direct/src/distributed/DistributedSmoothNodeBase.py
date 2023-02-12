@@ -1,6 +1,6 @@
 """DistributedSmoothNodeBase module: contains the DistributedSmoothNodeBase class"""
 
-from .ClockDelta import *
+from .ClockDelta import globalClockDelta
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.PythonUtil import randFloat

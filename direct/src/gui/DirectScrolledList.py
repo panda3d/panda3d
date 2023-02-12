@@ -6,14 +6,14 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
-from panda3d.core import *
+from panda3d.core import TextNode
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 
 
 class DirectScrolledListItem(DirectButton):

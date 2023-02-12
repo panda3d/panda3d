@@ -1,5 +1,5 @@
 
-from .ClusterClient import *
+from panda3d.core import Vec3
 
 #: A dictionary of information for various cluster configurations.
 #: Dictionary is keyed on cluster-config string

@@ -6,12 +6,11 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectOptionMenu']
 
-from panda3d.core import *
+from panda3d.core import OmniBoundingVolume, TextNode, VBase3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectButton import *
-from .DirectLabel import *
-from .DirectFrame import *
+from .DirectButton import DirectButton
+from .DirectFrame import DirectFrame
 
 
 class DirectOptionMenu(DirectButton):

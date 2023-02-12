@@ -2,7 +2,7 @@
 Defines Palette tree control
 """
 import wx
-from .ObjectPaletteBase import *
+from .ObjectPaletteBase import ObjectBase, ObjectGen
 
 
 class PaletteTreeCtrl(wx.TreeCtrl):

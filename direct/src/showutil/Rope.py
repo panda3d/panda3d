@@ -1,4 +1,12 @@
-from panda3d.core import *
+from panda3d.core import (
+    ConfigVariableBool,
+    NodePath,
+    NurbsCurveEvaluator,
+    Point3,
+    RopeNode,
+    VBase3,
+    VBase4,
+)
 
 
 class Rope(NodePath):
