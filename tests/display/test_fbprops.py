@@ -122,6 +122,9 @@ def test_fbquality_multi_samples():
     fb_16_samples.set_rgb_color(1)
     fb_16_samples.set_multisamples(16)
     
+    req_0_samples = FrameBufferProperties()
+    req_0_samples.set_multisamples(0)
+    
     req_1_samples = FrameBufferProperties()
     req_1_samples.set_multisamples(1)
     
@@ -165,6 +168,13 @@ def test_fbquality_multi_samples():
     assert fb_16_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
     assert fb_8_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
     assert fb_8_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    
+    # if 0 samples are requested, the fb with the highest samples should get a reduced quality level
+    assert fb_16_samples.get_quality(req_0_samples) < fb_8_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
 
 
 def test_fbquality_coverage_samples():
@@ -185,6 +195,9 @@ def test_fbquality_coverage_samples():
     fb_16_samples = FrameBufferProperties()
     fb_16_samples.set_rgb_color(1)
     fb_16_samples.set_coverage_samples(16)
+    
+    req_0_samples = FrameBufferProperties()
+    req_0_samples.set_coverage_samples(0)
     
     req_1_samples = FrameBufferProperties()
     req_1_samples.set_coverage_samples(1)
@@ -229,5 +242,13 @@ def test_fbquality_coverage_samples():
     assert fb_16_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
     assert fb_8_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
     assert fb_8_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    
+    # if 0 samples are requested, the fb with the highest samples should get a reduced quality level
+    assert fb_16_samples.get_quality(req_0_samples) < fb_8_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+
 
 
