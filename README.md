@@ -106,7 +106,7 @@ python3 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-
 You will probably see some warnings saying that it's unable to find several
 dependency packages.  You should determine which ones you want to include in
 your build and install the respective development packages.  You may visit
-[this manual page](https://www.panda3d.org/manual/?title=Third-party_dependencies_and_license_info)
+[this manual page](https://docs.panda3d.org/1.11/python/distribution/thirdparty-licenses)
 for an overview of the various dependencies.
 
 If you are on Ubuntu, this command should cover the most frequently
