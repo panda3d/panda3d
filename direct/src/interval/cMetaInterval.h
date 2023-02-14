@@ -114,7 +114,7 @@ private:
 
   class PlaybackEvent {
   public:
-    INLINE PlaybackEvent(int time, int n, PlaybackEventType type);
+    INLINE PlaybackEvent(long long time, int n, PlaybackEventType type);
     INLINE bool operator < (const PlaybackEvent &other) const;
     int _time;
     int _n;
@@ -124,7 +124,7 @@ private:
 
   class EventQueueEntry {
   public:
-    INLINE EventQueueEntry(int n, EventType event_type, int time);
+    INLINE EventQueueEntry(int n, EventType event_type, long long time);
     int _n;
     EventType _event_type;
     int _time;
@@ -139,25 +139,25 @@ private:
   typedef pdeque<EventQueueEntry> EventQueue;
 
   INLINE int double_to_int_time(double t) const;
-  INLINE double int_to_double_time(int time) const;
+  INLINE double int_to_double_time(long long time) const;
 
   void clear_events();
   void do_event_forward(PlaybackEvent *event, ActiveEvents &new_active,
                         bool is_initial);
-  void finish_events_forward(int now, ActiveEvents &new_active);
+  void finish_events_forward(long long now, ActiveEvents &new_active);
   void do_event_reverse(PlaybackEvent *event, ActiveEvents &new_active,
                         bool is_initial);
-  void finish_events_reverse(int now, ActiveEvents &new_active);
+  void finish_events_reverse(long long now, ActiveEvents &new_active);
 
   void enqueue_event(int n, CInterval::EventType event_type, bool is_initial,
-                     int time = 0);
+                     long long time = 0);
   void enqueue_self_event(CInterval::EventType event_type, double t = 0.0);
   void enqueue_done_event();
   bool service_event_queue();
 
   int recompute_level(int n, int level_begin, int &level_end);
   int get_begin_time(const IntervalDef &def, int level_begin,
-                     int previous_begin, int previous_end);
+                     long long previous_begin, long long previous_end);
 
   void write_event_desc(std::ostream &out, const IntervalDef &def,
                         int &extra_indent_level) const;

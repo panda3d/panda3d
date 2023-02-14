@@ -25,7 +25,7 @@ MovieAudioCursor(MovieAudio *src) :
   _source(src),
   _audio_rate(8000),
   _audio_channels(1),
-  _length(1.0E10),
+  _length(0),
   _can_seek(true),
   _can_seek_fast(true),
   _aborted(false),
