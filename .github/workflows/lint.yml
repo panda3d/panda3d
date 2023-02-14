@@ -27,10 +27,13 @@ jobs:
     - name: Analyze
       run: |
         git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes clang-tidy-result/fixes.yml
-    - name: Post review
-      uses: platisd/clang-tidy-pr-comments@master
+    - name: Save PR metadata
+      run: |
+        echo ${{ github.event.number }} > clang-tidy-result/pr-id.txt
+        echo ${{ github.event.pull_request.head.repo.full_name }} > clang-tidy-result/pr-head-repo.txt
+        echo ${{ github.event.pull_request.head.ref }} > clang-tidy-result/pr-head-ref.txt
+    - name: Upload results
+      uses: actions/upload-artifact@v2
       with:
-        github_token: ${{ github.token }}
-        clang_tidy_fixes: clang-tidy-result/fixes.yml
-        request_changes: true
-        suggestions_per_comment: 10
+        name: clang-tidy-result
+        path: clang-tidy-result/
