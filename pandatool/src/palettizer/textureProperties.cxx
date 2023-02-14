@@ -471,11 +471,16 @@ fully_define() {
   }
 
   // Respect the _srgb flag.  If this is set, it means the texture is in sRGB
-  // space and the format should be changed to reflect that.
+  // color space and the format should be changed to reflect that.
   if (_srgb) {
     switch (_num_channels) {
     case 1:
-      _format = EggTexture::F_sluminance;
+      // Don't respect sRGB for textures using the F_alpha format, which
+      // indicates that the image represents an alpha channel, not a color
+      // channel.
+      if (_format != EggTexture::F_alpha) {
+        _format = EggTexture::F_sluminance;
+      }
       break;
     case 2:
       _format = EggTexture::F_sluminance_alpha;
