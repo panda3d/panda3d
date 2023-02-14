@@ -73,3 +73,5 @@ jobs:
         github_token: ${{ github.token }}
         clang_tidy_fixes: clang-tidy-result/fixes.yml
         pull_request_id: ${{ env.pr_id }}
+        request_changes: true
+        suggestions_per_comment: 10
