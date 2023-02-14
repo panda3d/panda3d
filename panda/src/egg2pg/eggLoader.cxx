@@ -887,12 +887,14 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_blue:
   case EggTexture::F_alpha:
   case EggTexture::F_luminance:
+  case EggTexture::F_sluminance:
     wanted_channels = 1;
     wanted_alpha = false;
     break;
 
   case EggTexture::F_luminance_alpha:
   case EggTexture::F_luminance_alphamask:
+  case EggTexture::F_sluminance_alpha:
     wanted_channels = 2;
     wanted_alpha = true;
     break;
@@ -1225,6 +1227,7 @@ check_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *e
     case EggTexture::F_blue:
     case EggTexture::F_alpha:
     case EggTexture::F_luminance:
+    case EggTexture::F_sluminance:
       break;
     default:
       egg2pg_cat.warning()
@@ -1238,6 +1241,7 @@ check_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *e
     case EggTexture::F_unspecified:
     case EggTexture::F_luminance_alpha:
     case EggTexture::F_luminance_alphamask:
+    case EggTexture::F_sluminance:
       break;
     default:
       egg2pg_cat.error()
@@ -1389,6 +1393,12 @@ convert_format(EggTexture::Format format, EggTexture::EnvType env) {
 
   case EggTexture::F_srgb_alpha:
     return Texture::F_srgb_alpha;
+
+  case EggTexture::F_sluminance:
+    return Texture::F_sluminance;
+
+  case EggTexture::F_sluminance_alpha:
+    return Texture::F_sluminance_alpha;
   }
 
   egg2pg_cat.warning()
