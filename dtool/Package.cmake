@@ -131,9 +131,7 @@ if(THIRDPARTY_DIRECTORY)
       set(_package "spirv-tools")
     elseif(_package STREQUAL "spirvcross")
       set(_package "spirv-cross")
-
-
-      endif()
+    endif()
 
     # Set search path
     set(${_Package}_ROOT "${_package_dir}/${_package}")
