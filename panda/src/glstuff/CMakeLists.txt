@@ -35,7 +35,8 @@ set(P3GLSTUFF_SOURCES
 
 composite_sources(p3glstuff P3GLSTUFF_SOURCES)
 add_component_library(p3glstuff NOINIT ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
-target_link_libraries(p3glstuff panda)
+target_link_libraries(p3glstuff panda
+ PKG::GLSLANG PKG::SPIRV-TOOLS)
 
 if(APPLE)
   # We acknowledge Apple's hostility to open standards so that the SDK won't

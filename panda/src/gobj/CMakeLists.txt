@@ -32,6 +32,7 @@ set(P3GOBJ_HEADERS
   geomVertexReader.h geomVertexReader.I
   geomVertexRewriter.h geomVertexRewriter.I
   geomVertexWriter.h geomVertexWriter.I
+  GLSL.std.450.h
   indexBufferContext.I indexBufferContext.h
   internalName.I internalName.h
   lens.h lens.I
@@ -49,11 +50,19 @@ set(P3GOBJ_HEADERS
   shader.I shader.h
   shaderBuffer.h shaderBuffer.I
   shaderContext.h shaderContext.I
+  shaderCompiler.h
+  shaderCompilerGlslang.h
+  shaderCompilerGlslPreProc.h
+  shaderCompilerRegistry.h
+  shaderEnums.h
   shaderModule.h shaderModule.I
+  shaderModuleGlsl.h
+  shaderModuleSpirV.h shaderModuleSpirV.I
   shaderType.h shaderType.I
   simpleAllocator.h simpleAllocator.I
   simpleLru.h simpleLru.I
   sliderTable.I sliderTable.h
+  spirv.hpp
   texture.I texture.h
   textureCollection.I textureCollection.h
   textureContext.I textureContext.h
@@ -130,7 +139,14 @@ set(P3GOBJ_SOURCES
   shader.cxx
   shaderBuffer.cxx
   shaderContext.cxx
+  shaderCompiler.cxx
+  shaderCompilerGlslang.cxx
+  shaderCompilerGlslPreProc.cxx
+  shaderCompilerRegistry.cxx
+  shaderEnums.cxx
   shaderModule.cxx
+  shaderModuleGlsl.cxx
+  shaderModuleSpirV.cxx
   shaderType.cxx
   simpleAllocator.cxx
   simpleLru.cxx
@@ -175,11 +191,34 @@ set(P3GOBJ_IGATEEXT
   pythonTexturePoolFilter.h
 )
 
+set(CG_PREAMBLE_FILE
+  cg_preamble.hlsl
+)
+
+ # Concatenate cg_preamble.hlsl into CXX Object
+ set(CG_PREAMBLE "${CMAKE_CURRENT_BINARY_DIR}/cg_preamble.cxx")
+ set(_preamble_files)
+ get_filename_component(_file "${CG_PREAMBLE_FILE}" REALPATH)
+ string(SHA1 _hash "${_file}")
+ set(_line_file "${CMAKE_CURRENT_BINARY_DIR}/.${_hash}.h")
+ file(WRITE "${_line_file}" "#line 1 \"${_file}\"\n")
+ list(APPEND _preamble_files "${_line_file}")
+ list(APPEND _preamble_files "${CG_PREAMBLE_FILE}")
+ add_custom_command(
+   OUTPUT ${CG_PREAMBLE}
+   COMMAND ${CMAKE_COMMAND}
+     -D OUTPUT_FILE=${CG_PREAMBLE}
+     -D INPUT_FILES="${_preamble_files}"
+     -D SYMBOL_NAME="cg_preamble"
+     -P ${PROJECT_SOURCE_DIR}/cmake/scripts/ConcatenateToCXX.cmake
+   DEPENDS ${CG_PREAMBLE_FILE}
+   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_component_library(p3gobj NOINIT SYMBOL BUILDING_PANDA_GOBJ
-  ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
+  ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES} ${CG_PREAMBLE})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage
-  PKG::ZLIB PKG::SQUISH)
+  PKG::ZLIB PKG::SQUISH PKG::GLSLANG PKG::SPIRV-TOOLS)
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 if(HAVE_SQUISH)

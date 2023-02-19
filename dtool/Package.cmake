@@ -89,6 +89,7 @@ if(THIRDPARTY_DIRECTORY)
     FFMPEG
     FMODEx
     Freetype
+    Glslang
     HarfBuzz
     JPEG
     LibSquish
@@ -99,6 +100,8 @@ if(THIRDPARTY_DIRECTORY)
     OpenSSL
     OpusFile
     PNG
+    SpirvTools
+    SpirvCross
     SWResample
     SWScale
     TIFF
@@ -124,7 +127,13 @@ if(THIRDPARTY_DIRECTORY)
       set(_package "ffmpeg") # These are also part of FFmpeg
     elseif(_package STREQUAL "vorbisfile")
       set(_package "vorbis")
-    endif()
+    elseif(_package STREQUAL "spirvtools")
+      set(_package "spirv-tools")
+    elseif(_package STREQUAL "spirvcross")
+      set(_package "spirv-cross")
+
+
+      endif()
 
     # Set search path
     set(${_Package}_ROOT "${_package_dir}/${_package}")
@@ -662,6 +671,39 @@ package_option(DX9
   FOUND_AS Direct3D9)
 
 package_status(DX9 "Direct3D 9.x")
+
+# Glslang
+find_package(Glslang QUIET)
+
+package_option(Glslang
+  DEFAULT ON
+  "Enable support for glslang."
+  FOUND_AS Glslang
+  IMPORTED_AS Glslang)
+
+package_status(Glslang "Glslang")
+
+# SpirvTools
+find_package(SpirvTools QUIET)
+
+package_option(Spirv-Tools
+  DEFAULT ON
+  "Enable support for Spirv-Tools."
+  FOUND_AS SpirvTools
+  IMPORTED_AS Spirv-Tools)
+
+package_status(Spirv-Tools "Spirv-Tools")
+
+# SpirvCross
+find_package(SpirvCross QUIET)
+
+package_option(Spirv-Cross
+  DEFAULT ON
+  "Enable support for Spirv-Cross."
+  FOUND_AS SpirvCross
+  IMPORTED_AS Spirv-Cross)
+
+package_status(Spirv-Cross "Spirv-Cross")
 
 #
 # ------------ Display APIs ------------

@@ -15,7 +15,7 @@ composite_sources(p3glgsg P3GLGSG_SOURCES)
 add_component_library(p3glgsg SYMBOL BUILDING_PANDA_GLGSG
   ${P3GLGSG_HEADERS} ${P3GLGSG_SOURCES})
 target_link_libraries(p3glgsg p3glstuff panda
-  PKG::GL)
+  PKG::GL PKG::SPIRV-CROSS)
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3glgsg

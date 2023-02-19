@@ -68,6 +68,12 @@
 #include "indexBufferContext.h"
 #include "internalName.h"
 
+#include "shaderCompilerRegistry.h"
+#include "shaderCompilerGlslang.h"
+#include "shaderCompilerGlslPreProc.h"
+#include "shaderModuleGlsl.h"
+#include "shaderModuleSpirV.h"
+
 #include "dconfig.h"
 #include "string_utils.h"
 
@@ -604,8 +610,11 @@ ConfigureFn(config_gobj) {
   SamplerContext::init_type();
   SamplerState::init_type();
   Shader::init_type();
+  ShaderCompilerGlslang::init_type();
   ShaderContext::init_type();
   ShaderModule::init_type();
+  ShaderModuleGlsl::init_type();
+  ShaderModuleSpirV::init_type();
   ShaderType::init_type();
   SliderTable::init_type();
   Texture::init_type();
@@ -652,6 +661,8 @@ ConfigureFn(config_gobj) {
   PerspectiveLens::register_with_read_factory();
   Shader::register_with_read_factory();
   ShaderType::register_with_read_factory();
+  ShaderModuleGlsl::register_with_read_factory();
+  ShaderModuleSpirV::register_with_read_factory();
   SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
@@ -659,4 +670,8 @@ ConfigureFn(config_gobj) {
   TransformTable::register_with_read_factory();
   UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
+
+  ShaderCompilerRegistry *reg = ShaderCompilerRegistry::get_global_ptr();
+  reg->register_compiler(new ShaderCompilerGlslang());
+  reg->register_compiler(new ShaderCompilerGlslPreProc());
 }

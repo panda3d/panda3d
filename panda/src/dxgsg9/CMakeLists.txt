@@ -42,7 +42,7 @@ composite_sources(p3dxgsg9 P3DXGSG9_SOURCES)
 add_component_library(p3dxgsg9 SYMBOL BUILDING_PANDADX
   ${P3DXGSG9_HEADERS} ${P3DXGSG9_SOURCES})
 target_link_libraries(p3dxgsg9 p3windisplay panda
-  PKG::DX9)
+  PKG::DX9 PKG::SPIRV-CROSS)
 target_compile_definitions(p3dxgsg9 PUBLIC USE_GENERIC_DXERR_LIBRARY) # FIXME
 
 if(NOT BUILD_METALIBS)
