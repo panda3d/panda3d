@@ -823,6 +823,7 @@ if (COMPILER == "MSVC"):
 
     IncDirectory("GLSLANG", GetThirdpartyDir() + "glslang/include")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang-default-resource-limits.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OSDependent.lib")
@@ -3269,7 +3270,6 @@ CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
-CopyAllHeaders('panda/src/shaderpipeline')
 CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/chan')
 CopyAllHeaders('panda/src/char')
@@ -3861,9 +3861,14 @@ PyTargetAdd('p3pstatclient_pStatClient_ext.obj', opts=OPTS, input='pStatClient_e
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA', 'ZLIB', 'SQUISH']
+OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA', 'ZLIB', 'SQUISH', 'GLSLANG', 'SPIRV-TOOLS']
 TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
 TargetAdd('p3gobj_composite2.obj', opts=OPTS+['BIGOBJ'], input='p3gobj_composite2.cxx')
+
+cg_preamble = WriteEmbeddedStringFile('cg_preamble', inputs=[
+    'panda/src/gobj/cg_preamble.hlsl',
+])
+TargetAdd('p3gobj_cg_preamble.obj', opts=OPTS, input=cg_preamble)
 
 OPTS=['DIR:panda/src/gobj', 'ZLIB', 'SQUISH']
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
@@ -3955,23 +3960,6 @@ IGATEFILES.remove("renderBuffer.h")
 TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
 PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_composite.cxx')
-
-#
-# DIRECTORY: panda/src/shaderpipeline/
-#
-
-OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA', 'GLSLANG', 'SPIRV-TOOLS']
-TargetAdd('p3shaderpipeline_composite1.obj', opts=OPTS, input='p3shaderpipeline_composite1.cxx')
-
-cg_preamble = WriteEmbeddedStringFile('cg_preamble', inputs=[
-    'panda/src/shaderpipeline/cg_preamble.hlsl',
-])
-TargetAdd('p3shaderpipeline_cg_preamble.obj', opts=OPTS, input=cg_preamble)
-
-OPTS=['DIR:panda/src/shaderpipeline']
-IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
-TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libp3shaderpipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3shaderpipeline', 'SRCDIR:panda/src/shaderpipeline'])
 
 #
 # DIRECTORY: panda/src/chan/
@@ -4153,8 +4141,7 @@ TargetAdd('libpanda.dll', input='p3pgraph_composite3.obj')
 TargetAdd('libpanda.dll', input='p3pgraph_composite4.obj')
 TargetAdd('libpanda.dll', input='p3cull_composite1.obj')
 TargetAdd('libpanda.dll', input='p3cull_composite2.obj')
-TargetAdd('libpanda.dll', input='p3shaderpipeline_composite1.obj')
-TargetAdd('libpanda.dll', input='p3shaderpipeline_cg_preamble.obj')
+TargetAdd('libpanda.dll', input='p3gobj_cg_preamble.obj')
 TargetAdd('libpanda.dll', input='p3movies_composite1.obj')
 TargetAdd('libpanda.dll', input='p3grutil_multitexReducer.obj')
 TargetAdd('libpanda.dll', input='p3grutil_composite1.obj')
@@ -4227,7 +4214,6 @@ PyTargetAdd('core_module.obj', input='libp3recorder.in')
 PyTargetAdd('core_module.obj', input='libp3pgraphnodes.in')
 PyTargetAdd('core_module.obj', input='libp3pgraph.in')
 PyTargetAdd('core_module.obj', input='libp3cull.in')
-PyTargetAdd('core_module.obj', input='libp3shaderpipeline.in')
 PyTargetAdd('core_module.obj', input='libp3grutil.in')
 PyTargetAdd('core_module.obj', input='libp3chan.in')
 PyTargetAdd('core_module.obj', input='libp3pstatclient.in')
@@ -4273,7 +4259,6 @@ PyTargetAdd('core.pyd', input='libp3recorder_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraphnodes_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraph_igate.obj')
 PyTargetAdd('core.pyd', input='libp3movies_igate.obj')
-PyTargetAdd('core.pyd', input='libp3shaderpipeline_igate.obj')
 PyTargetAdd('core.pyd', input='libp3grutil_igate.obj')
 PyTargetAdd('core.pyd', input='libp3chan_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pstatclient_igate.obj')
