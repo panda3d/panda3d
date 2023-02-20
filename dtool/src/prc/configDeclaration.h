@@ -107,10 +107,10 @@ private:
   class Word {
   public:
     std::string _str;
-    bool _bool;
-    int _int;
     int64_t _int_64;
     double _double;
+    int _int;
+    bool _bool;
     short _flags;
   };
 
