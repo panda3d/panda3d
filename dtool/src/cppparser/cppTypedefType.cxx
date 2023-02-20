@@ -188,6 +188,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPTypedefType::
+is_trivially_copyable() const {
+  return _type->is_trivially_copyable();
+}
+
+/**
  * Returns true if the type can be constructed using the given argument.
  */
 bool CPPTypedefType::

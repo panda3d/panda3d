@@ -54,6 +54,7 @@ public:
   virtual bool is_incomplete() const;
   virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_trivially_copyable() const;
   virtual bool is_constructible(const CPPType *arg_type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;

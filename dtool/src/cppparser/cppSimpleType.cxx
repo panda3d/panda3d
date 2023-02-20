@@ -63,7 +63,15 @@ is_standard_layout() const {
  */
 bool CPPSimpleType::
 is_trivial() const {
-  return true;
+  return (_type != T_unknown && _type != T_parameter && _type != T_auto);
+}
+
+/**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPSimpleType::
+is_trivially_copyable() const {
+  return (_type != T_unknown && _type != T_parameter && _type != T_auto);
 }
 
 /**
