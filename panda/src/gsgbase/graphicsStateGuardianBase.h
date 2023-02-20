@@ -20,6 +20,7 @@
 #include "nodeCachedReferenceCount.h"
 #include "luse.h"
 #include "lightMutex.h"
+#include "patomic.h"
 
 // A handful of forward references.
 
@@ -264,9 +265,9 @@ private:
 
     typedef pvector<GraphicsStateGuardianBase *> GSGs;
     GSGs _gsgs;
-    GraphicsStateGuardianBase *_default_gsg;
+    GraphicsStateGuardianBase *_default_gsg = nullptr;
   };
-  static AtomicAdjust::Pointer _gsg_list;
+  static patomic<GSGList *> _gsg_list;
 
 protected:
   static UpdateSeq _generated_shader_seq;
