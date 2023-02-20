@@ -176,7 +176,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
 
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:
-            return self.normalize(self[chan], minVal, maxVal, sfx)
+            return self.normalize(self[chan], minVal, maxVal, sf)
         except IndexError:
             return 0.0
 
