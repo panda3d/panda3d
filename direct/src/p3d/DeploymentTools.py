@@ -414,9 +414,6 @@ class Icon:
                 for x in xrange(size):
                     pixel = image2.get_pixel(x, size - y - 1)
                     index = colors.index(pixel)
-                    if index >= 256:
-                        # Find closest pixel instead.
-                        index = closest_indices[index - 256]
                     fp.write(struct.pack('<B', index))
                 fp.write(rowalign)
         else:
