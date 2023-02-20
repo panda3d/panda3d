@@ -196,9 +196,9 @@ class ProtoPaletteUI(wx.Panel):
         data1 = self.tree.GetItemText(item1)
         data2 = self.tree.GetItemText(item2)
         if self.opSort == self.opSortAlpha:
-           return cmp(data1, data2)
+            return (data1 > data2) - (data1 < data2)
         else:
-           items = list(self.palette.data.keys())
-           index1 = items.index(data1)
-           index2 = items.index(data2)
-        return cmp(index1, index2)
+            items = list(self.palette.data.keys())
+            index1 = items.index(data1)
+            index2 = items.index(data2)
+            return (index1 > index2) - (index1 < index2)
