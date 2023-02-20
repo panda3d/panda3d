@@ -210,11 +210,11 @@ private:
     Filename _alpha_fullpath;
     int _primary_file_num_channels = 0;
     int _alpha_file_channel = 0;
-    Texture::Format _texture_format = (Texture::Format)0;
-    Texture::QualityLevel _texture_quality = Texture::QL_default;
-    Texture::CompressionMode _texture_compress = Texture::CM_default;
-    SamplerState _texture_sampler;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
+    Texture::Format _texture_format = (Texture::Format)0;
+    Texture::CompressionMode _texture_compress = Texture::CM_default;
+    Texture::QualityLevel _texture_quality = Texture::QL_default;
+    SamplerState _texture_sampler;
     bool _force_srgb = false;
 
     INLINE bool operator < (const LookupKey &other) const;
