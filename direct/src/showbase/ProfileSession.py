@@ -33,7 +33,7 @@ class PercentStats(pstats.Stats):
         if self.files: print()
         indent = ' ' * 8
         for func in self.top_level:
-            print(indent, func_get_function_name(func))
+            print(indent, pstats.func_get_function_name(func))
 
         print(indent, self.total_calls, "function calls", end=' ')
         if self.total_calls != self.prim_calls:
