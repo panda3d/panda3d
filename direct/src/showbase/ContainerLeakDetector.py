@@ -634,57 +634,6 @@ class FindContainers(Job):
                                         curObjRef = objRef
                     del key
                     del attr
-                    continue
-
-                    try:
-                        childNames = dir(curObj)
-                    except:
-                        pass
-                    else:
-                        try:
-                            index = -1
-                            attrs = []
-                            while 1:
-                                yield None
-                                try:
-                                    attr = next(itr)
-                                except:
-                                    # some custom classes don't do well when iterated
-                                    attr = None
-                                    break
-                                attrs.append(attr)
-                            # we will continue traversing the object graph via one attr,
-                            # choose it at random without taking a big chunk of CPU time
-                            numAttrsLeft = len(attrs) + 1
-                            for attr in attrs:
-                                yield None
-                                index += 1
-                                numAttrsLeft -= 1
-                                hasLength = self._hasLength(attr)
-                                notDeadEnd = False
-                                if curObjRef is None:
-                                    notDeadEnd = not self._isDeadEnd(attr)
-                                if hasLength or notDeadEnd:
-                                    # prevent cycles in the references (i.e. base.loader.base)
-                                    for goesThrough in parentObjRef.goesThrough(curObj[index]):
-                                        # don't yield, container might lose this element
-                                        pass
-                                    if not goesThrough:
-                                        objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
-                                                           id(curObj[index]), parentObjRef)
-                                        yield None
-                                        if hasLength:
-                                            for i in self._addContainerGen(attr, objRef):
-                                                yield None
-                                        if notDeadEnd:
-                                            self._addDiscoveredStartRef(attr, objRef)
-                                            if curObjRef is None and random.randrange(numAttrsLeft) == 0:
-                                                curObjRef = objRef
-                            del attr
-                        except StopIteration as e:
-                            pass
-                        del itr
-                        continue
 
         except Exception as e:
             print('FindContainers job caught exception: %s' % e)
