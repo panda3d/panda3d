@@ -1,5 +1,5 @@
 
-from panda3d.core import NodePath
+from panda3d.core import NodePath, Vec3
 from panda3d.physics import LinearVectorForce
 from direct.particles import ParticleEffect
 from direct.particles import Particles
