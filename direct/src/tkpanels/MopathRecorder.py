@@ -26,6 +26,7 @@ from direct.directtools.DirectUtil import CLAMP, useDirectRenderStyle
 from direct.directtools.DirectGeometry import LineNodePath, qSlerp
 from direct.directtools.DirectSelection import SelectionRay
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider

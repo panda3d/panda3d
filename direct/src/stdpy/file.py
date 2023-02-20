@@ -13,7 +13,6 @@ __all__ = [
 from panda3d import core
 import os
 import io
-import encodings
 from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()

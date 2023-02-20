@@ -365,19 +365,19 @@ class GraphEditorWindow(wx.Window):
 
     def DrawCurve(self, dc):
         if self.property == self._mainDialog.namestr:
-           self.drawX(dc)
-           self.drawY(dc)
-           self.drawZ(dc)
-           return
+            self.drawX(dc)
+            self.drawY(dc)
+            self.drawZ(dc)
+            return
         if self.property == property[AG.X]:
-           self.drawX(dc)
-           return
+            self.drawX(dc)
+            return
         if self.property == property[AG.Y]:
-           self.drawY(dc)
-           return
+            self.drawY(dc)
+            return
         if self.property == property[AG.Z]:
-           self.drawZ(dc)
-           return
+            self.drawZ(dc)
+            return
 
     def drawSingleCurve(self, list, dc):
         if len(list) == 1:
@@ -459,7 +459,7 @@ class GraphEditorWindow(wx.Window):
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
                 X1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]
                 Y1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
-                if self._OneTangent == True:
+                if self._OneTangent is True:
                     for j in range(3,5):
                         X = list[i][j][AG.LOCAL_VALUE][0]
                         Y = list[i][j][AG.LOCAL_VALUE][1]
@@ -479,7 +479,7 @@ class GraphEditorWindow(wx.Window):
                             dc.SetPen(wx.Pen("brown",1))
                             dc.DrawLine(X1, Y1, X, Y)
 
-                if self._OneTangent == False:
+                if self._OneTangent is False:
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1]
@@ -521,7 +521,7 @@ class GraphEditorWindow(wx.Window):
                         dc.DrawLine(X1, Y1, X, Y)
 
     def DrawSelectRec(self, dc):
-        if self._selectRec == True:
+        if self._selectRec is True:
             dc.SetPen(wx.Pen("navy", 1))
             dc.SetBrush(wx.Brush("navy"))
             ## dc.SetLogicalFunction(wx.AND)
@@ -607,19 +607,19 @@ class GraphEditorWindow(wx.Window):
         for i in range(len(list)):
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
                 inside = self.inside(self.pos, self.newPos, (list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]))
-                if inside == True:
+                if inside is True:
                     list[i][AG.KEYFRAME][AG.SELECT] = 0
-                if inside == False:
+                if inside is False:
                     find = False
                     for j in range(3,5):
                         inside = self.inside(self.pos, self.newPos, (list[i][j][AG.LOCAL_VALUE][0], list[i][j][AG.LOCAL_VALUE][1]))
-                        if inside == False:
+                        if inside is False:
                             list[i][j][AG.SELECT] = 0
-                        if inside == True:
+                        if inside is True:
                             list[i][j][AG.SELECT] = 1
                             find = True
                             flag = True
-                    if find == False:
+                    if find is False:
                         list[i][AG.KEYFRAME][AG.SELECT] == 0
 
         return flag
@@ -627,30 +627,30 @@ class GraphEditorWindow(wx.Window):
     def setNewKey(self, list):
         for i in range(len(list)):
             inside = self.inside(self.pos, self.newPos, (list[i][2][0][0], list[i][2][0][1]))
-            if inside == True:
+            if inside is True:
                 list[i][AG.KEYFRAME][AG.SELECT] = 1
-            if inside == False:
+            if inside is False:
                 list[i][AG.KEYFRAME][AG.SELECT] = 0
 
     def setSelection(self):
         if self.property == self._mainDialog.namestr:
-           self.setSelectionBase(self.X)
-           self.setSelectionBase(self.Y)
-           self.setSelectionBase(self.Z)
-           return
+            self.setSelectionBase(self.X)
+            self.setSelectionBase(self.Y)
+            self.setSelectionBase(self.Z)
+            return
         if self.property == property[AG.X]:
-           self.setSelectionBase(self.X)
-           return
+            self.setSelectionBase(self.X)
+            return
         if self.property == property[AG.Y]:
-           self.setSelectionBase(self.Y)
-           return
+            self.setSelectionBase(self.Y)
+            return
         if self.property == property[AG.Z]:
-           self.setSelectionBase(self.Z)
-           return
+            self.setSelectionBase(self.Z)
+            return
 
     def setSelectionBase(self, list):
         self.setExistKey(list)
-        if self.setExistKey(list) == True:
+        if self.setExistKey(list) is True:
             return
         else:
             self.setNewKey(list)
@@ -681,19 +681,19 @@ class GraphEditorWindow(wx.Window):
 
     def recalculateSlope(self):
         if self.property == self._mainDialog.namestr:
-           self.recalculateSlopeBase(self.X)
-           self.recalculateSlopeBase(self.Y)
-           self.recalculateSlopeBase(self.Z)
-           return
+            self.recalculateSlopeBase(self.X)
+            self.recalculateSlopeBase(self.Y)
+            self.recalculateSlopeBase(self.Z)
+            return
         if self.property == property[AG.X]:
-           self.recalculateSlopeBase(self.X)
-           return
+            self.recalculateSlopeBase(self.X)
+            return
         if self.property == property[AG.Y]:
-           self.recalculateSlopeBase(self.Y)
-           return
+            self.recalculateSlopeBase(self.Y)
+            return
         if self.property == property[AG.Z]:
-           self.recalculateSlopeBase(self.Z)
-           return
+            self.recalculateSlopeBase(self.Z)
+            return
 
     def recalculateSlopeBase(self, list):
         #recalculate the tangent slope
@@ -718,12 +718,12 @@ class GraphEditorWindow(wx.Window):
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = temp1
                         return
                     if handler[1][0][0] < list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
-                        if self._OneTangent == False:
+                        if self._OneTangent is False:
                             list[i][AG.IN_TANGENT][0] = handler[1][0]
                             list[i][AG.IN_SLOPE][0] = handler[3][0]
                             list[i][AG.IN_SLOPE][1] = handler[3][1]
 
-                        if self._OneTangent == True:
+                        if self._OneTangent is True:
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][0] = newSlope[0]/self.unitWidth
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1] = newSlope[1]/self.unitHeight
                             handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
@@ -753,12 +753,12 @@ class GraphEditorWindow(wx.Window):
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1] = temp1
                         return
                     if handler[2][0][0] > list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
-                        if self._OneTangent == False:
+                        if self._OneTangent is False:
                             list[i][AG.OUT_TANGENT][0] = handler[2][0]
                             list[i][AG.OUT_SLOPE][0] = handler[4][0]
                             list[i][AG.OUT_SLOPE][1] = handler[4][1]
 
-                        if self._OneTangent == True:
+                        if self._OneTangent is True:
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = newSlope[0]/self.unitWidth
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = newSlope[1]/self.unitHeight
                             handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
@@ -862,7 +862,7 @@ class GraphEditorUI(wx.Dialog):
 
     def AddTreeNodes(self, parentItem, items):
         for item in items:
-            if type(item) == str:
+            if isinstance(item, str):
                 self.tree.AppendItem(parentItem, item)
 
     def OnSelChanged(self, evt):

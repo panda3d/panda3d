@@ -232,10 +232,10 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
     # List & Analyze
     #--------------------------------------------------------------------------
     def makeList(self):
-        self.renderItem = MemoryExplorerItem(None, render)
+        self.renderItem = MemoryExplorerItem(None, base.render)
         self.buildList(self.renderItem)
 
-        self.render2dItem = MemoryExplorerItem(None, render2d)
+        self.render2dItem = MemoryExplorerItem(None, base.render2d)
         self.buildList(self.render2dItem)
 
     def buildList(self, parentItem):

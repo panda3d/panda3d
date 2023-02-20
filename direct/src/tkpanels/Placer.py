@@ -8,13 +8,12 @@ from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.directtools.DirectGlobals import ZERO_VEC, UNIT_VEC
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
 import Pmw
 import tkinter as tk
 
-"""
-TODO:
-Task to monitor pose
-"""
+#TODO: Task to monitor pose
 
 class Placer(AppShell):
     # Override class variables here

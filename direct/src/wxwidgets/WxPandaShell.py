@@ -4,6 +4,7 @@ from wx.lib.agw import fourwaysplitter as FWS
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase import ShowBaseGlobal
 from direct.directtools.DirectGlobals import SKIP_UNPICKABLE
+from direct.task.TaskManagerGlobal import taskMgr
 
 from .WxAppShell import WxAppShell
 from .ViewPort import Viewport, ViewportManager

@@ -348,10 +348,10 @@ class FilterManager(DirectObject):
 
     def resizeBuffers(self):
         """ Resize all buffers to match the size of the window. """
-        for i in range(len(self.buffers)):
+        for i, buffer in enumerate(self.buffers):
             (mul, div, align) = self.sizes[i]
             (xsize, ysize) = self.getScaledSize(mul, div, align)
-            self.buffers[i].setSize(xsize, ysize)
+            buffer.setSize(xsize, ysize)
 
     def cleanup(self):
         """ Restore everything to its original state, deleting any

@@ -8,6 +8,7 @@ __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
 from panda3d.core import TextNode
 from direct.showbase import ShowBaseGlobal
+from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task

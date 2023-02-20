@@ -4,6 +4,7 @@ from direct.task.TaskManagerGlobal import taskMgr
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
+from direct.showbase.MessengerGlobal import messenger
 
 
 class TimeManager(DistributedObject.DistributedObject):

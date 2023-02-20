@@ -19,7 +19,6 @@ __all__ = ['TreeNode', 'TreeItem']
 # - keep track of object ids to allow more careful cleaning
 # - optimize tree redraw after expand of subnode
 
-import os, sys
 from panda3d.core import Filename, getModelPath
 import tkinter as tk
 
@@ -119,8 +118,7 @@ class TreeNode:
     def createPopupMenu(self):
         if self.menuList:
             self._popupMenu = tk.Menu(self.canvas, tearoff = 0)
-            for i in range(len(self.menuList)):
-                item = self.menuList[i]
+            for i, item in enumerate(self.menuList):
                 if item == 'Separator':
                     self._popupMenu.add_separator()
                 else:
@@ -493,8 +491,7 @@ class TreeItem:
         """Do not override!  Called by TreeNode."""
         if not self.IsExpandable():
             return []
-        sublist = self.GetSubList()
-        return sublist
+        return self.GetSubList()
 
     def IsEditable(self):
         """Return whether the item's text may be edited."""
@@ -516,6 +513,3 @@ class TreeItem:
 
     def OnSelect(self):
         """Called when item selected."""
-
-
-

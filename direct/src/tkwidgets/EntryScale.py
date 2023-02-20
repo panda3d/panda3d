@@ -126,13 +126,6 @@ class EntryScale(Pmw.MegaWidget):
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(EntryScale)
 
-    def label(self):
-        return self.label
-    def scale(self):
-        return self.scale
-    def entry(self):
-        return self.entry
-
     def askForLabel(self, event = None):
         newLabel = askstring(title = self['text'],
                              prompt = 'New label:',
@@ -202,13 +195,12 @@ class EntryScale(Pmw.MegaWidget):
             return
         # convert scale val to float
         self.set(float(strVal))
-        """
+
         # Update entry to reflect formatted value
-        self.entryValue.set(self.entryFormat % self.value)
-        self.entry.checkentry()
-        if self['command']:
-            self['command'](self.value)
-        """
+        #self.entryValue.set(self.entryFormat % self.value)
+        #self.entry.checkentry()
+        #if self['command']:
+        #    self['command'](self.value)
 
     def _entryCommand(self, event = None):
         try:
@@ -414,7 +406,6 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def onReturn(self, *args):
         """ User redefinable callback executed on button press """
-        pass
 
     def __onReturnRelease(self, esg):
         # Execute onReturnRelease callback
@@ -441,6 +432,8 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
 
 def rgbPanel(nodePath, callback = None):
+    from direct.showbase.MessengerGlobal import messenger
+
     def setNodePathColor(color, np = nodePath, cb = callback):
         np.setColor(color[0]/255.0, color[1]/255.0,
                     color[2]/255.0, color[3]/255.0)

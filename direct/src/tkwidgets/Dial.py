@@ -7,6 +7,7 @@ __all__ = ['Dial', 'AngleDial', 'DialWidget']
 
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import ClockObject
 import math
 import operator

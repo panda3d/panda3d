@@ -6,6 +6,7 @@ Requires Pmw."""
 __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from .Tree import TreeItem, TreeNode
 import Pmw
 import tkinter as tk

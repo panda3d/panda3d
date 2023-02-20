@@ -19,6 +19,7 @@ from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import SceneGraphExplorer
 from direct.tkwidgets import MemoryExplorer
+from direct.task.TaskManagerGlobal import taskMgr
 from .TaskManagerPanel import TaskManagerWidget
 import Pmw
 import tkinter as tk

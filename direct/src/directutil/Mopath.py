@@ -61,7 +61,7 @@ class Mopath(DirectObject):
             self.reset()
 
         self.__extractCurves(nodePath)
-        if self.tNurbsCurve != []:
+        if self.tNurbsCurve:
             self.maxT = self.tNurbsCurve[-1].getMaxT()
         elif self.xyzNurbsCurve is not None:
             self.maxT = self.xyzNurbsCurve.getMaxT()

@@ -267,4 +267,4 @@ def cleanupAsyncRequests():
     """
     for asyncRequest in AsyncRequest._asyncRequests:
         asyncRequest.delete()
-    assert AsyncRequest._asyncRequests == {}
+    assert not AsyncRequest._asyncRequests

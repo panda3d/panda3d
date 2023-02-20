@@ -308,7 +308,7 @@ class DirectCameraControl(DirectObject):
 
     def XZTranslateTask(self, state):
         coaDist = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
-        xlateSF = (coaDist / base.direct.dr.near)
+        xlateSF = coaDist / base.direct.dr.near
         base.direct.camera.setPos(base.direct.camera,
                              (-0.5 * base.direct.dr.mouseDeltaX *
                               base.direct.dr.nearWidth *
@@ -822,7 +822,8 @@ class DirectCameraControl(DirectObject):
         try:
             self.camManipRef.setPos(base.direct.camera, deltaMove)
         except Exception:
-            self.notify.debug
+            #self.notify.debug
+            pass
 
         parent = base.direct.camera.getParent()
         base.direct.camera.wrtReparentTo(self.camManipRef)

@@ -6,6 +6,7 @@ from panda3d.core import BitMask32, Mat4, NodePath, Vec3
 from direct.wxwidgets.WxPandaShell import WxPandaShell
 from direct.wxwidgets.WxSlider import WxSlider
 from direct.directtools.DirectSelection import SelectionRay
+from direct.showbase.MessengerGlobal import messenger
 
 #from ViewPort import *
 from . import ObjectGlobals as OG

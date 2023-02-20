@@ -2363,7 +2363,6 @@ class ParticlePanel(AppShell):
 
     def createSpriteAnimationFrame(self, parent, anim, animName):
         ren = self.particles.getRenderer()
-        pass
         frame = tk.Frame(parent, relief = tk.RAISED, borderwidth = 2)
         frame.pack(pady = 1, fill = tk.X, expand = 0)
 

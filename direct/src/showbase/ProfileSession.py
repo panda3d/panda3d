@@ -207,9 +207,9 @@ class ProfileSession:
             _removeProfileCustomFuncs(filename)
 
             # clean up the globals
-            result = globalProfileSessionResult[0]
-            del builtins.__dict__['globalProfileSessionFunc']
-            del builtins.__dict__['globalProfileSessionResult']
+            result = builtins.globalProfileSessionResult[0]
+            del builtins.globalProfileSessionFunc
+            del builtins.globalProfileSessionResult
 
             self._successfulProfiles += 1
 

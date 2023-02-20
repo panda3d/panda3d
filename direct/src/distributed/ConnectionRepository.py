@@ -382,7 +382,7 @@ class ConnectionRepository(
             # in the DC file.
             for i in range(dcFile.getNumClasses()):
                 dclass = dcFile.getClass(i)
-                if (dclass.getName()+ownerDcSuffix) in ownerImportSymbols:
+                if dclass.getName() + ownerDcSuffix in ownerImportSymbols:
                     number = dclass.getNumber()
                     className = dclass.getName() + ownerDcSuffix
 
@@ -466,7 +466,7 @@ class ConnectionRepository(
         hasProxy = 0
         if self.checkHttp():
             proxies = self.http.getProxiesForUrl(serverList[0])
-            hasProxy = (proxies != 'DIRECT')
+            hasProxy = proxies != 'DIRECT'
 
         if hasProxy:
             self.notify.info("Connecting to gameserver via proxy list: %s" % (proxies))

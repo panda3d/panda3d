@@ -40,7 +40,7 @@ from panda3d.core import (
     PythonTask,
     Thread,
 )
-from direct.extensions_native import HTTPChannel_extensions
+from direct.extensions_native import HTTPChannel_extensions # pylint: disable=unused-import
 
 
 def print_exc_plus():

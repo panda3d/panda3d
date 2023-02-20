@@ -43,7 +43,8 @@ import functools
 
 __report_indent = 3
 
-from panda3d.core import ConfigVariableBool, ClockObject
+from panda3d.core import ConfigVariableBool, ConfigVariableString, ConfigFlags
+from panda3d.core import ClockObject
 
 
 ## with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
@@ -578,7 +579,6 @@ if __debug__:
         # if you called profile with 'log' not set to True,
         # you can call this function to get the results as
         # a string
-        global _ProfileResultStr
         return _ProfileResultStr
 
     def profileFunc(callback, name, terse, log=True):
@@ -603,9 +603,9 @@ if __debug__:
             print(suffix)
         else:
             _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
-        result = globalProfileResult[0]
-        del builtins.__dict__['globalProfileFunc']
-        del builtins.__dict__['globalProfileResult']
+        result = builtins.globalProfileResult[0]
+        del builtins.globalProfileFunc
+        del builtins.globalProfileResult
         return result
 
     def profiled(category=None, terse=False):
@@ -1216,12 +1216,12 @@ class SerialMaskedGen(SerialNumGen):
     __next__ = next
 
 _serialGen = SerialNumGen()
+
 def serialNum():
-    global _serialGen
     return _serialGen.next()
+
 def uniqueName(name):
-    global _serialGen
-    return '%s-%s' % (name, _serialGen.next())
+    return f'{name}-{serialNum()}'
 
 
 ############################################################
@@ -1664,7 +1664,7 @@ class DelayedCall:
         self._removeDoLater()
     def finish(self):
         if not self._finished:
-            self._doCallback()
+            self._doCallback(None)
         self.destroy()
     def _addDoLater(self):
         taskMgr.doMethodLater(self._delay, self._doCallback, self._taskName)
@@ -1916,7 +1916,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             prefixes = set()
 
         for param in dConfigParamList:
-            prefix = config.GetString('prefix-%s-report' % (param,), '')
+            prefix = ConfigVariableString(f"prefix-{param}-report", "", "DConfig", ConfigFlags.F_dconfig).value
             if prefix:
                 prefixes.add(prefix)
 
@@ -2166,7 +2166,7 @@ if __debug__:
                     s = clock.getRealTime() - st
                     print("Function %s.%s took %s seconds"%(f.__module__, f.__name__,s))
                 else:
-                    import profile as prof, pstats
+                    import profile as prof
 
                     #detailed profile, stored in base.stats under (
                     if not hasattr(base, "stats"):
@@ -2441,7 +2441,7 @@ def configIsToday(configName):
     # TODO: replace usage of strptime with something else
     # returns true if config string is a valid representation of today's date
     today = time.localtime()
-    confStr = config.GetString(configName, '')
+    confStr = ConfigVariableString(configName, "", "DConfig", ConfigFlags.F_dconfig).value
     for format in ('%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y'):
         try:
             confDate = time.strptime(confStr, format)

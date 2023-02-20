@@ -1,7 +1,8 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import direct.showbase.DConfig as config
-from direct.showbase.PythonUtil import makeFlywheelGen
+from direct.showbase.PythonUtil import makeFlywheelGen, flywheel
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
+from direct.showbase.PythonUtil import getBase, uniqueName, ScratchPad, nullGen
 from direct.showbase.Job import Job
 from direct.showbase.JobManagerGlobal import jobMgr
 from direct.showbase.MessengerGlobal import messenger

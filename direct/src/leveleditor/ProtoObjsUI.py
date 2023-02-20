@@ -124,7 +124,7 @@ class ProtoObjsUI(wx.Panel):
                 break
 
     def addNewItem(self, result):
-       ProtoObjsUI.AquireFile(self, result[1])
+        ProtoObjsUI.AquireFile(self, result[1])
 
     def AquireFile(self, filename):
         label = self.findLabel(filename)

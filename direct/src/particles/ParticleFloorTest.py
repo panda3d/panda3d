@@ -50,7 +50,7 @@ class ParticleFloorTest(NodePath):
 
 
 if __name__ == "__main__":
-    from direct.directbase.TestStart import *
+    from direct.directbase.TestStart import base
     pt = ParticleFloorTest()
     pt.reparentTo(base.render)
     pt.start()

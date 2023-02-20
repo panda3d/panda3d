@@ -9,6 +9,7 @@ if __name__ == "__main__":
     from direct.showbase.ShowBase import ShowBase
     from direct.actor.Actor import Actor
     from direct.directutil import Mopath
+    from direct.showbase.MessengerGlobal import messenger
     from .ActorInterval import ActorInterval
     from .FunctionInterval import (
         AcceptInterval,

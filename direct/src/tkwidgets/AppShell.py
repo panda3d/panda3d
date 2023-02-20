@@ -16,23 +16,23 @@ from . import VectorWidgets
 from . import ProgressBar
 import Pmw
 import tkinter as tk
+import builtins
 
 
 # Create toplevel widget dictionary
-try:
-    __builtins__["widgetDict"]
-except KeyError:
-    __builtins__["widgetDict"] = {}
+if not hasattr(builtins, "widgetDict"):
+    builtins.widgetDict = {}
+
 # Create toplevel variable dictionary
-try:
-    __builtins__["variableDict"]
-except KeyError:
-    __builtins__["variableDict"] = {}
+if not hasattr(builtins, "variableDict"):
+    builtins.variableDict = {}
 
 def resetWidgetDict():
-    __builtins__["widgetDict"] = {}
+    builtins.widgetDict = {}
+
 def resetVariableDict():
-    __builtins__["variableDict"] = {}
+    builtins.variableDict = {}
+
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
 # to use as a container if you wish.  If no toplevel passed in, create one
@@ -79,9 +79,9 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         AppShell.panelCount += 1
         self.id = self.appname + '-' + repr(AppShell.panelCount)
         # Create a dictionary in the widgetDict to hold this panel's widgets
-        self.widgetDict = widgetDict[self.id] = {}
+        self.widgetDict = builtins.widgetDict[self.id] = {}
         # And one to hold this panel's variables
-        self.variableDict = variableDict[self.id] = {}
+        self.variableDict = builtins.variableDict[self.id] = {}
         # Get handle to the toplevels hull
         self._hull = self.component('hull')
         # Initialize the application

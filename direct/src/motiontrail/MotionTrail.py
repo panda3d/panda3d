@@ -673,8 +673,8 @@ class MotionTrail(NodePath, DirectObject):
                             end_nurbs_start_t = end_nurbs_curve_result.getStartT()
                             end_nurbs_end_t = end_nurbs_curve_result.getEndT()
 
-                            start_delta_t = (start_nurbs_end_t - start_nurbs_start_t)
-                            end_delta_t = (end_nurbs_end_t - end_nurbs_start_t)
+                            start_delta_t = start_nurbs_end_t - start_nurbs_start_t
+                            end_delta_t = end_nurbs_end_t - end_nurbs_start_t
 
                             start_nurbs_curve_result.evalPoint(start_nurbs_start_t + (start_delta_t * st), v0)
                             end_nurbs_curve_result.evalPoint(end_nurbs_start_t + (end_delta_t * st), v1)

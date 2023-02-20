@@ -145,6 +145,9 @@ class FourStateAI:
         assert self.__debugPrint("getState() returning %s"%(self.stateIndex,))
         return [self.stateIndex]
 
+    def sendUpdate(self, fieldName, args = [], sendToId = None):
+        raise NotImplementedError
+
     def sendState(self):
         assert self.__debugPrint("sendState()")
         self.sendUpdate('setState', self.getState())

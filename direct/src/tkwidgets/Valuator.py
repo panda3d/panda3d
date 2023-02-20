@@ -597,6 +597,8 @@ Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
 
 
 def rgbPanel(nodePath, callback = None, style = 'mini'):
+    from direct.showbase.MessengerGlobal import messenger
+
     def onRelease(r, g, b, a, nodePath = nodePath):
         messenger.send('RGBPanel_setColor', [nodePath, r, g, b, a])
 

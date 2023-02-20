@@ -53,8 +53,6 @@ class TaskManagerWidget(DirectObject):
         TaskManagerWidget class pops up a control panel to view/delete
         tasks managed by the taskManager.
         """
-        # Make sure TK mainloop is running
-        from direct.showbase import TkGlobal
         # Record parent (used by ok cancel dialog boxes)
         self.parent = parent
         # Record taskManager

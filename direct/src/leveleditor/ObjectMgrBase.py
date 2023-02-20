@@ -931,5 +931,3 @@ class ObjectMgrBase:
                     self.Nodes.append(obj)
 
                 self.findActors(child)
-
-

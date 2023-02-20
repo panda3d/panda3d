@@ -302,7 +302,7 @@ class VersionInfoResource(object):
             # It contains a value.
             if type:
                 # It's a wchar array value.
-                value = u""
+                value = ""
                 c, = unpack('<H', data[offset:offset+2])
                 offset += 2
                 while c:

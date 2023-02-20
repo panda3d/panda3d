@@ -3,9 +3,11 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 
 from direct.distributed.DistributedNode import DistributedNode
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.gui import DirectGuiGlobals
 from direct.showbase.EventGroup import EventGroup
 from direct.showbase.PythonUtil import report
+from direct.showbase.MessengerGlobal import messenger
 from direct.distributed.GridParent import GridParent
 
 if __debug__:

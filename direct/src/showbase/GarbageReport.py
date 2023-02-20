@@ -307,7 +307,6 @@ class GarbageReport(Job):
                 yield None
                 digits += 1
                 n = n // 10
-            digits = digits
             format = '%0' + '%s' % digits + 'i:%s \t%s'
 
             for i in range(numGarbage):

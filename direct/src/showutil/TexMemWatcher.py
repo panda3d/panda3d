@@ -1002,8 +1002,8 @@ class TexMemWatcher(DirectObject):
                 while t < self.h and (self.bitmasks[t] & mask).isZero():
                     t += 1
 
-                tpw = (r - l)
-                tph = (t - b)
+                tpw = r - l
+                tph = t - b
                 tarea = tpw * tph
                 assert tarea > 0
                 if tarea >= area:
@@ -1231,10 +1231,9 @@ class TexRecord:
         self.root = root
 
         # Also, make one or more clickable MouseWatcherRegions.
-        assert self.regions == []
-        for pi in range(len(self.placements)):
-            p = self.placements[pi]
-            r = MouseWatcherRegion('%s:%s' % (self.key, pi), *p.p)
+        assert not self.regions
+        for pi, p in enumerate(self.placements):
+            r = MouseWatcherRegion(f'{self.key}:{pi}', *p.p)
             tmw.mw.addRegion(r)
             self.regions.append(r)
 

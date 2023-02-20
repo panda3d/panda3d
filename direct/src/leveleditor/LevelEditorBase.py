@@ -105,7 +105,7 @@ class LevelEditorBase(DirectObject):
         useDirectRenderStyle(self.statusReadout)
         self.statusReadout.reparentTo(hidden)
         self.statusLines = []
-        taskMgr.doMethodLater(5, self.updateStatusReadoutTimeouts, 'updateStatus')
+        base.taskMgr.doMethodLater(5, self.updateStatusReadoutTimeouts, 'updateStatus')
 
         self.loadSettings()
         self.reset()
@@ -236,7 +236,7 @@ class LevelEditorBase(DirectObject):
         self.ui.buildContextMenu(nodePath)
 
         if self.mode == self.EDIT_CURVE_MODE:
-            taskMgr.add(self.curveEditor.editCurve, "modify")
+            base.taskMgr.add(self.curveEditor.editCurve, "modify")
             self.curveEditor.accept("DIRECT-enter", self.curveEditor.onBaseMode)
 
     def deselectAll(self, np=None):
@@ -400,7 +400,7 @@ class LevelEditorBase(DirectObject):
                 self.statusLines.append([time,status,color])
 
         # update display of new status lines
-        self.statusReadout.reparentTo(aspect2d)
+        self.statusReadout.reparentTo(base.aspect2d)
         statusText = ""
         lastColor = None
         for currLine in self.statusLines:

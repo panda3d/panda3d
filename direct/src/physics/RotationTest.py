@@ -98,8 +98,8 @@ class RotationTest(NodePath):
         #self.actorNode.updateTransform()
 
 if __name__ == "__main__":
-    from direct.directbase.ThreeUpStart import *
-    test=RotationTest()
+    from direct.directbase.ThreeUpStart import base
+    test = RotationTest()
     test.reparentTo(base.render)
     test.setup()
     base.camera.setY(-10.0)

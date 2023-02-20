@@ -36,6 +36,8 @@ from direct.cluster.ClusterServer import ClusterServer
 from direct.gui import OnscreenText
 from direct.interval.IntervalGlobal import Func, Sequence
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.MessengerGlobal import messenger
+
 
 class DirectSession(DirectObject):
 
@@ -1218,12 +1220,13 @@ class DisplayRegionContext(DirectObject):
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
 
+
 class DisplayRegionList(DirectObject):
     def __init__(self):
         self.displayRegionList = []
         i = 0
         # Things are funky if we are oobe
-        if (hasattr(base, 'oobeMode') and base.oobeMode):
+        if getattr(base, 'oobeMode', False):
             # assume we only have one cam at this point
             drc = DisplayRegionContext(base.cam)
             self.displayRegionList.append(drc)
@@ -1239,10 +1242,9 @@ class DisplayRegionList(DirectObject):
             # a display region for each real display region, and then
             # keep track of which are currently active (e.g. use a flag)
             # processing only them.
-            for camIndex in range(len(base.camList)):
-                cam = base.camList[camIndex]
-                if cam.getName()=='<noname>':
-                    cam.setName('Camera%d' % camIndex)
+            for camIndex, cam in enumerate(base.camList):
+                if cam.name == '<noname>':
+                    cam.name = f'Camera{camIndex}'
                 drc = DisplayRegionContext(cam)
                 self.displayRegionList.append(drc)
 

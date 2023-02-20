@@ -18,7 +18,7 @@ def spawnNewTask():
 
 def taskCallback(task):
     randNum = int(round(random.random() * 1000))
-    n = ("taskTester-%s" % randNum)
+    n = f"taskTester-{randNum}"
     taskMgr.remove(n)
     spawnNewTask()
     spawnNewTask()

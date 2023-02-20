@@ -13,7 +13,7 @@ from . import DirectGuiGlobals as DGG
 from .DirectFrame import DirectFrame
 from .OnscreenText import OnscreenText
 # import this to make sure it gets pulled into the publish
-import encodings.utf_8
+import encodings.utf_8 # pylint: disable=unused-import
 from direct.showbase.DirectObject import DirectObject
 
 # DirectEntry States:
@@ -221,9 +221,9 @@ class DirectEntry(DirectFrame):
     def _autoCapitalize(self):
         name = self.guiItem.getWtext()
         # capitalize each word, allowing for things like McMutton
-        capName = u''
+        capName = ''
         # track each individual word to detect prefixes like Mc
-        wordSoFar = u''
+        wordSoFar = ''
         # track whether the previous character was part of a word or not
         wasNonWordChar = True
         for i, character in enumerate(name):
@@ -232,9 +232,9 @@ class DirectEntry(DirectFrame):
             #   This assumes that string.lower and string.upper will return different
             #   values for all unicode letters.
             # - Don't count apostrophes as a break between words
-            if character.lower() == character.upper() and character != u"'":
+            if character.lower() == character.upper() and character != "'":
                 # we are between words
-                wordSoFar = u''
+                wordSoFar = ''
                 wasNonWordChar = True
             else:
                 capitalize = False

@@ -23,9 +23,9 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from direct.extensions_native import Mat3_extensions
-from direct.extensions_native import VBase3_extensions
-from direct.extensions_native import VBase4_extensions
+from direct.extensions_native import Mat3_extensions # pylint: disable=unused-import
+from direct.extensions_native import VBase3_extensions # pylint: disable=unused-import
+from direct.extensions_native import VBase4_extensions # pylint: disable=unused-import
 from panda3d.core import (
     BitMask32,
     ClockObject,

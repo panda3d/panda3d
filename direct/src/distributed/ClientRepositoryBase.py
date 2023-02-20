@@ -110,7 +110,7 @@ class ClientRepositoryBase(ConnectionRepository):
         ## self.flush()
 
     def specialName(self, label):
-        name = ("SpecialName %s %s" % (self.specialNameNumber, label))
+        name = f"SpecialName {self.specialNameNumber} {label}"
         self.specialNameNumber += 1
         return name
 

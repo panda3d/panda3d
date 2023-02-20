@@ -146,11 +146,9 @@ def setDefaultFontFunc(newFontFunc):
     defaultFontFunc = newFontFunc
 
 def getDefaultDialogGeom():
-    global defaultDialogGeom
     return defaultDialogGeom
 
 def getDefaultDialogRelief():
-    global defaultDialogRelief
     return defaultDialogRelief
 
 def setDefaultDialogGeom(newDialogGeom, relief=None):
