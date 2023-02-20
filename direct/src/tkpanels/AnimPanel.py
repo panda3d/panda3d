@@ -463,10 +463,8 @@ class ActorControl(Pmw.MegaWidget):
         playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0', '10.0']
         playRate = '%0.1f' % self['actor'].getPlayRate(self['active'])
         if playRate not in playRateList:
-            def strCmp(a, b):
-                return cmp(eval(a), eval(b))
             playRateList.append(playRate)
-            playRateList.sort(strCmp)
+            playRateList.sort(key=lambda s:eval(s))
         playRateMenu = self.createcomponent(
             'playRateMenu', (), None,
             Pmw.ComboBox, (interior,),
