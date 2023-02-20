@@ -1408,7 +1408,7 @@ def CompileCxx(obj,src,opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
-        elif 'clang' not in GetCXX().split('/')[-1]:
+        elif 'clang' not in GetCXX().split('/')[-1] and GetCXX() != 'em++':
             # Enable interprocedural optimizations in GCC.
             cmd += " -fno-semantic-interposition"
 
