@@ -10,6 +10,8 @@ import types
 import weakref
 import random
 import builtins
+import sys
+
 
 deadEndTypes = frozenset((
     types.BuiltinFunctionType, types.BuiltinMethodType,
