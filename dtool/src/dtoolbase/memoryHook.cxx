@@ -207,8 +207,12 @@ MemoryHook(const MemoryHook &copy) :
   _total_heap_array_size(copy._total_heap_array_size.load(std::memory_order_relaxed)),
   _requested_heap_size(copy._requested_heap_size.load(std::memory_order_relaxed)),
   _total_mmap_size(copy._total_mmap_size.load(std::memory_order_relaxed)),
-  _max_heap_size(copy._max_heap_size),
-  _page_size(copy._page_size) {
+  _max_heap_size(copy._max_heap_size)
+#ifndef __EMSCRIPTEN__
+  ,
+  _page_size(copy._page_size)
+#endif
+{
 }
 
 
@@ -483,9 +487,11 @@ heap_trim(size_t pad) {
  */
 void *MemoryHook::
 mmap_alloc(size_t size, bool allow_exec) {
+#ifndef __EMSCRIPTEN__
   if (_page_size == 0) {
     determine_page_size();
   }
+#endif
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
@@ -602,6 +608,7 @@ overflow_heap_size() {
 /**
  * Asks the operating system for the page size.
  */
+#ifndef __EMSCRIPTEN__
 void MemoryHook::
 determine_page_size() const {
 #ifdef _WIN32
@@ -619,3 +626,4 @@ determine_page_size() const {
 
   assert(_page_size != 0);
 }
+#endif  // !__EMSCRIPTEN__
