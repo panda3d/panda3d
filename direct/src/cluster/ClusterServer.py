@@ -133,7 +133,7 @@ class ClusterServer(DirectObject.DirectObject):
             self.controlPriorities[objectName] = priority
             self.redoSortedPriorities()
         else:
-            self.notify.debug('attempt to add duplicate controlled object: '+name)
+            self.notify.debug('attempt to add duplicate controlled object: ' + objectName)
 
     def setControlMappingOffset(self,objectName,offset):
         if (objectName in self.controlMappings):
