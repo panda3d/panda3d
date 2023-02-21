@@ -465,6 +465,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                     "Warning: couldn't find the avatar %d" % (avId))
             elif hasattr(other, "d_returnResync") and \
                  hasattr(self.cr, 'localAvatarDoId'):
+                globalClock = ClockObject.getGlobalClock()
                 realTime = globalClock.getRealTime()
                 serverTime = realTime - globalClockDelta.getDelta()
                 assert self.notify.info(

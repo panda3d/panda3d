@@ -88,7 +88,7 @@ class Functor:
         for arg in self._args:
             try:
                 argStr = repr(arg)
-            except:
+            except Exception:
                 argStr = 'bad repr: %s' % arg.__class__
             s += ', %s' % argStr
         for karg, value in list(self._kargs.items()):
@@ -307,8 +307,10 @@ def difference(a, b):
     """
     difference(list, list):
     """
-    if not a: return b
-    if not b: return a
+    if not a:
+        return b
+    if not b:
+        return a
     d = []
     for i in a:
         if (i not in b) and (i not in d):
@@ -626,7 +628,7 @@ if __debug__:
         # allow profiling in published versions
         #try:
         #    null = not __dev__
-        #except:
+        #except Exception:
         #    null = not __debug__
         #if null:
         #    # if we're not in __dev__, just return the function itself. This
@@ -1006,7 +1008,7 @@ if __debug__:
             finally:
                 del stack
                 del frame
-        except:
+        except Exception:
             result = (None, None, None)
 
         return result
@@ -1322,7 +1324,7 @@ def safeRepr(obj):
 
     try:
         return repr(obj)
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
 
 def safeReprTypeOnFail(obj):
@@ -1339,7 +1341,7 @@ def safeReprTypeOnFail(obj):
 
     try:
         return repr(obj)
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
 
 
@@ -1401,7 +1403,7 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
             if len(r) > maxLen:
                 r = r[:maxLen]
             return r
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
 def convertTree(objTree, idList):
@@ -1819,7 +1821,7 @@ def pstatcollect(scope, level = None):
                 scope.stop(pop = True)
                 return val
             return wrap
-    except:
+    except Exception:
         pass
 
     return decorator
@@ -2007,13 +2009,13 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 def getBase():
     try:
         return base
-    except:
+    except Exception:
         return simbase
 
 def getRepository():
     try:
         return base.cr
-    except:
+    except Exception:
         return simbase.air
 
 exceptionLoggedNotify = None
@@ -2029,7 +2031,7 @@ if __debug__:
         """
         try:
             null = not __dev__
-        except:
+        except Exception:
             null = not __debug__
         if null:
             # if we're not in __dev__, just return the function itself. This
@@ -2061,7 +2063,7 @@ if __debug__:
                             appendStr(e, '\n%s' % s)
                         else:
                             exceptionLoggedNotify.info(s)
-                    except:
+                    except Exception:
                         exceptionLoggedNotify.info(
                             '%s: ERROR IN PRINTING' % f.__name__)
                     raise
@@ -2426,11 +2428,11 @@ def typeName(o):
 def safeTypeName(o):
     try:
         return typeName(o)
-    except:
+    except Exception:
         pass
     try:
         return type(o)
-    except:
+    except Exception:
         pass
     return '<failed safeTypeName()>'
 

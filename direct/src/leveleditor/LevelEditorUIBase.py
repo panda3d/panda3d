@@ -646,17 +646,21 @@ class ViewportMenu(wx.Menu):
         wx.Menu.__init__(self)
 
     def addItem(self, name, parent = None, call = None, id = None):
-        if id is None: id = wx.NewId()
-        if parent is None: parent = self
+        if id is None:
+            id = wx.NewId()
+        if parent is None:
+            parent = self
         item = wx.MenuItem(parent, id, name)
         parent.AppendItem(item)
         if call is not None:
             self.Bind(wx.EVT_MENU, call, item)
 
     def addMenu(self, name, parent = None, id = None):
-        if id is None: id = wx.NewId()
+        if id is None:
+            id = wx.NewId()
         subMenu = wx.Menu()
-        if parent is None: parent = self
+        if parent is None:
+            parent = self
         parent.AppendMenu(id, name, subMenu)
         return subMenu
 

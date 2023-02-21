@@ -343,7 +343,7 @@ class MemoryExplorerItem:
             self.numFaces += child.numFaces
 
     def ls(self, indent = ""):
-        print(indent + self.nodePath.getName() + " " + str(self.vertexBytes) + " " + str(self.numFaces) + " " + str(self.textureBytes))
+        print(indent + self.nodePath.getName() + " " + str(self.getVertexBytes()) + " " + str(self.numFaces) + " " + str(self.textureBytes))
         indent = indent +  " "
 
         for child in self.children:

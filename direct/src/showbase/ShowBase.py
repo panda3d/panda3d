@@ -704,7 +704,7 @@ class ShowBase(DirectObject.DirectObject):
 
         try:
             self.direct.panel.destroy()
-        except:
+        except Exception:
             pass
 
         if hasattr(self, 'win'):
@@ -2697,7 +2697,7 @@ class ShowBase(DirectObject.DirectObject):
             self.bboard.post('oobeEnabled', True)
             try:
                 cameraParent = localAvatar
-            except:
+            except NameError:
                 # Make oobeCamera be a sibling of wherever camera is now.
                 cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)

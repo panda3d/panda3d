@@ -16,11 +16,11 @@ from panda3d.interrogatedb import *
 
 
 if 'interrogate_element_is_sequence' not in globals():
-    def interrogate_element_is_sequence(element):
+    def interrogate_element_is_sequence(element): # pylint: disable=function-redefined
         return False
 
 if 'interrogate_element_is_mapping' not in globals():
-    def interrogate_element_is_mapping(element):
+    def interrogate_element_is_mapping(element): # pylint: disable=function-redefined
         return False
 
 

@@ -29,6 +29,7 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
+import builtins
 
 # NOTE: This assumes the following variables are set via bootstrap command line
 # arguments on server startup:
@@ -334,10 +335,9 @@ class ClusterServer(DirectObject.DirectObject):
 
 
     def handleMessageQueue(self):
-
-        #print self.messageQueue
+        #print(self.messageQueue)
         for data in self.messageQueue:
-            #print "in queue",dgi
+            #print("in queue", dgi)
             self.handleNamedMovement(data)
 
         self.messageQueue = []
@@ -352,8 +352,8 @@ class ClusterServer(DirectObject.DirectObject):
         """ Update cameraJig position to reflect latest position """
         (x, y, z, h, p, r, sx, sy, sz) = self.msgHandler.parseSelectedMovementDatagram(
             dgi)
-        if last:
-            last.setPosHprScale(x, y, z, h, p, r, sx, sy, sz)
+        if getattr(builtins, 'last', None):
+            builtins.last.setPosHprScale(x, y, z, h, p, r, sx, sy, sz)
 
     def handleTimeData(self, dgi):
         """ Update cameraJig position to reflect latest position """

@@ -117,9 +117,9 @@ class ProtoObjsUI(wx.Panel):
             if name.upper().endswith(ext.upper()):
                 try:
                     index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
-                    self.protoObjs.data[name]= filename
+                    self.protoObjs.data[name] = filename
                     self.addObj(filename)
-                except:
+                except Exception:
                     pass
                 break
 

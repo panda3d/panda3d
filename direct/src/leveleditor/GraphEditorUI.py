@@ -213,7 +213,7 @@ class GraphEditorWindow(wx.Window):
 
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
         dc.DrawLine(self.zeroPos[0], 0.0, self.zeroPos[0], self.h)
         st = str(self.zero)
@@ -283,7 +283,7 @@ class GraphEditorWindow(wx.Window):
     def DrawYCoord(self,dc):
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
         dc.DrawLine(0.0, self.zeroPos[1], self.w, self.zeroPos[1])
         st = str(self.zero)
@@ -530,21 +530,21 @@ class GraphEditorWindow(wx.Window):
             dc.DrawLine(self.newPos[0], self.newPos[1], self.pos[0], self.newPos[1])
             dc.DrawLine(self.newPos[0], self.newPos[1], self.newPos[0], self.pos[1])
 
-    def OnSize(self,evt):
+    def OnSize(self, evt):
         self.InitBuffer()
 
-    def OnLeftDown(self,evt):
+    def OnLeftDown(self, evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= 0.0 and point[1]<= float(self.h):
-            if point[0]>= 0.0 and point[0]<= float(self.w):
+        if point[1] >= 0.0 and point[1] <= float(self.h):
+            if point[0] >= 0.0 and point[0] <= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
             self.CaptureMouse()
             self.pos = point
 
-    def OnLeftUp(self,evt):
+    def OnLeftUp(self, evt):
         if self.GetCapture():
             self.ReleaseMouse()
             self._mouseIn = False
@@ -552,11 +552,11 @@ class GraphEditorWindow(wx.Window):
             self.setSelection()
             self.SetGraphEditorData(self.property, self.curFrame)
 
-    def OnMiddleDown(self,evt):
+    def OnMiddleDown(self, evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= 0.0 and point[1]<= float(self.h):
-            if point[0]>= 0.0 and point[0]<= float(self.w):
+        if point[1] >= 0.0 and point[1] <= float(self.h):
+            if point[0] >= 0.0 and point[0] <= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
@@ -567,12 +567,12 @@ class GraphEditorWindow(wx.Window):
         if self.GetCapture():
             self.ReleaseMouse()
 
-    def OnMotion(self,evt):
+    def OnMotion(self, evt):
         self._mouseIn = False
         if evt.Dragging() and evt.LeftIsDown():
             self.newPos = (evt.GetX(), evt.GetY())
-            if self.newPos[1]>= 0.0 and self.newPos[1]<= float(self.h):
-                if self.newPos[0]>= 0.0 and self.newPos[0]<= float(self.w):
+            if self.newPos[1] >= 0.0 and self.newPos[1] <= float(self.h):
+                if self.newPos[0] >= 0.0 and self.newPos[0] <= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -585,8 +585,8 @@ class GraphEditorWindow(wx.Window):
 
         if evt.Dragging() and evt.MiddleIsDown():
             self.newMidPos = (evt.GetX(), evt.GetY())
-            if self.newMidPos[1]>= 0.0 and self.newMidPos[1]<= float(self.h):
-                if self.newMidPos[0]>= 0.0 and self.newMidPos[0]<= float(self.w):
+            if self.newMidPos[1] >= 0.0 and self.newMidPos[1] <= float(self.h):
+                if self.newMidPos[0] >= 0.0 and self.newMidPos[0] <= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -656,23 +656,23 @@ class GraphEditorWindow(wx.Window):
             self.setNewKey(list)
 
     def inside(self, point0, point1, point):
-        if point0[0]<=point1[0] and point0[1]<=point1[1]:
-            if point0[0]<point[0] and point[0]<point1[0] and point0[1]<point[1] and point[1]<point1[1]:
+        if point0[0] <= point1[0] and point0[1] <= point1[1]:
+            if point0[0] < point[0] and point[0] < point1[0] and point0[1] < point[1] and point[1] < point1[1]:
                 return True
             else:
                 return False
-        elif point1[0]<=point0[0] and point0[1]<=point1[1]:
-            if point1[0]<point[0] and point[0]<point0[0] and point0[1]<point[1] and point[1]<point1[1]:
+        elif point1[0] <= point0[0] and point0[1] <= point1[1]:
+            if point1[0] < point[0] and point[0] < point0[0] and point0[1] < point[1] and point[1] < point1[1]:
                 return True
             else:
                 return False
-        elif point0[0]<=point1[0] and point1[1]<=point0[1]:
-            if point0[0]<point[0] and point[0]<point1[0] and point1[1]<point[1] and point[1]<point0[1]:
+        elif point0[0] <= point1[0] and point1[1] <= point0[1]:
+            if point0[0] < point[0] and point[0] < point1[0] and point1[1] < point[1] and point[1] < point0[1]:
                 return True
             else:
                 return False
-        elif point1[0]<=point0[0] and point1[1]<=point0[1]:
-            if point1[0]<point[0] and point[0]<point0[0] and point1[1]<point[1] and point[1]<point0[1]:
+        elif point1[0] <= point0[0] and point1[1] <= point0[1]:
+            if point1[0] < point[0] and point[0] < point0[0] and point1[1] < point[1] and point[1] < point0[1]:
                 return True
             else:
                 return False
@@ -713,7 +713,7 @@ class GraphEditorWindow(wx.Window):
                     self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = newSlope[0]/self.unitWidth
                     self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = newSlope[1]/self.unitHeight
                     handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
-                    if handler[1][0][0]>= list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
+                    if handler[1][0][0] >= list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = temp0
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = temp1
                         return
@@ -872,25 +872,25 @@ class GraphEditorUI(wx.Dialog):
             self.graphEditorWindow.refresh()
             self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnZoomIn(self,evt):
+    def OnZoomIn(self, evt):
         self.graphEditorWindow.zoom = self.graphEditorWindow.zoom/float(1.2)
         self.graphEditorWindow.unitWidth = self.graphEditorWindow.unitWidth*float(1.2)
         self.graphEditorWindow.unitHeight = self.graphEditorWindow.unitHeight*float(1.2)
         self.graphEditorWindow.generateInfo()
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnZoomOut(self,evt):
+    def OnZoomOut(self, evt):
         self.graphEditorWindow.zoom = self.graphEditorWindow.zoom*float(1.2)
         self.graphEditorWindow.unitWidth = self.graphEditorWindow.unitWidth/float(1.2)
         self.graphEditorWindow.unitHeight = self.graphEditorWindow.unitHeight/float(1.2)
         self.graphEditorWindow.generateInfo()
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnOneTangent(self,evt):
+    def OnOneTangent(self, evt):
         self.graphEditorWindow._OneTangent = True
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnTwoTangents(self,evt):
+    def OnTwoTangents(self, evt):
         self.graphEditorWindow._OneTangent = False
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
@@ -901,7 +901,7 @@ class GraphEditorUI(wx.Dialog):
         else:
             pass
 
-    def OnExit(self,evt):
+    def OnExit(self, evt):
         self.Destroy()
         self.editor.ui.graphEditorMenuItem.Check(False)
         self.object = None

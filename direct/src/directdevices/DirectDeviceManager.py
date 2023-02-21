@@ -59,7 +59,7 @@ class DirectButtons(ButtonNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -108,7 +108,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -206,7 +206,7 @@ class DirectTracker(TrackerNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -238,7 +238,7 @@ class DirectDials(DialNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -289,7 +289,7 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 

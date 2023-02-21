@@ -115,17 +115,11 @@ class VectorEntry(Pmw.MegaWidget):
         # Make sure input variables processed
         self.initialiseoptions(VectorEntry)
 
-    def menu(self):
-        return self.menu
-
     def label(self):
         return self._label
 
     def entry(self, index):
         return self.entryList[index]
-
-    def entryList(self):
-        return self.entryList
 
     def floaters(self):
         return self._floaters

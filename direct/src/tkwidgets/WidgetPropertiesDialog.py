@@ -24,8 +24,7 @@ class WidgetPropertiesDialog(tk.Toplevel):
             self.propertyList.sort()
         # Use default parent if none specified
         if not parent:
-            import tkinter
-            parent = tkinter._default_root
+            parent = tk._default_root
         # Create toplevel window
         tk.Toplevel.__init__(self, parent)
         self.transient(parent)

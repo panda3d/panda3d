@@ -15,7 +15,7 @@ class NotifyPanel:
         # Make sure TK mainloop is running
         from direct.showbase.TkGlobal import Pmw
         from tkinter import Toplevel, Frame, Label, Radiobutton, IntVar
-        from direct.showbase.TkGlobal import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT
+        from tkinter import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT
         # To get severity levels
         from panda3d.core import NSFatal, NSError, NSWarning, NSInfo, NSDebug, NSSpam
 

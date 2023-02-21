@@ -48,7 +48,7 @@ class ObjectMgrBase:
         for id in list(self.objects.keys()):
             try:
                 self.objects[id][OG.OBJ_NP].removeNode()
-            except:
+            except Exception:
                 pass
             del self.objects[id]
 
@@ -209,7 +209,7 @@ class ObjectMgrBase:
                         model = objDef.model
                     try:
                         newobj = Actor(model)
-                    except:
+                    except Exception:
                         newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
                     if hasattr(objDef, 'animDict') and objDef.animDict != {}:
                         objDef.anims = objDef.animDict.get(model)
@@ -220,7 +220,7 @@ class ObjectMgrBase:
                         model = objDef.model
                     try:
                         newobjModel = base.loader.loadModel(model)
-                    except:
+                    except Exception:
                         newobjModel = base.loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
                     if newobjModel:
                         self.flatten(newobjModel, model, objDef, uid)
@@ -511,7 +511,7 @@ class ObjectMgrBase:
             if objDef.actor:
                 try:
                     newobj = Actor(model)
-                except:
+                except Exception:
                     newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
             else:
                 newobjModel = base.loader.loadModel(model, okMissing=True)

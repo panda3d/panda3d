@@ -21,11 +21,11 @@ class LeakDetector:
             builtins.leakDetectors = {}
         self._leakDetectorsKey = self.getLeakDetectorKey()
         if __dev__:
-            assert self._leakDetectorsKey not in leakDetectors
-        leakDetectors[self._leakDetectorsKey] = self
+            assert self._leakDetectorsKey not in builtins.leakDetectors
+        builtins.leakDetectors[self._leakDetectorsKey] = self
 
     def destroy(self):
-        del leakDetectors[self._leakDetectorsKey]
+        del builtins.leakDetectors[self._leakDetectorsKey]
 
     def getLeakDetectorKey(self):
         # this string will be shown to the end user and should ideally contain enough information to

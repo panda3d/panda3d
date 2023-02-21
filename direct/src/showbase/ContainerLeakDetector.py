@@ -376,8 +376,8 @@ class FindContainers(Job):
         # framerate, etc. See LeakDetectors.py
         if not hasattr(builtins, "leakDetectors"):
             builtins.leakDetectors = {}
-        ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(leakDetectors))
-        self._id2baseStartRef[id(leakDetectors)] = ref
+        ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(builtins.leakDetectors))
+        self._id2baseStartRef[id(builtins.leakDetectors)] = ref
         for i in self._addContainerGen(builtins.__dict__, ref):
             pass
         try:

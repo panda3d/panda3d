@@ -49,7 +49,7 @@ class CurveEditor(DirectObject):
                             self.currentCurve = self.currentRope.ropeNode.getCurve()
                             self.currentCurve.setVertex(item[0], self.selected.getPos())
                             self.accept("DIRECT-delete", self.onControlerDelete)
-                            return task.cont
+                            return Task.cont
 
     def onControlerDelete(self):
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:

@@ -437,9 +437,9 @@ class Loader(DirectObject):
         assert len(modelList) == len(nodeList)
 
         # Make sure we have PandaNodes, not NodePaths.
-        for i in range(len(nodeList)):
-            if isinstance(nodeList[i], NodePath):
-                nodeList[i] = nodeList[i].node()
+        for i, node in enumerate(nodeList):
+            if isinstance(node, NodePath):
+                nodeList[i] = node.node()
 
         # From here on, we deal with a list of (filename, node) pairs.
         modelList = list(zip(modelList, nodeList))
@@ -1091,10 +1091,10 @@ class Loader(DirectObject):
         drop in the new models. """
         self.notify.debug("asyncFlattenDone: %s" % (models,))
         assert len(models) == len(origModelList)
-        for i in range(len(models)):
+        for i, model in enumerate(models):
             origModelList[i].getChildren().detach()
             orig = origModelList[i].node()
-            flat = models[i].node()
+            flat = model.node()
             orig.copyAllProperties(flat)
             flat.replaceNode(orig)
 
