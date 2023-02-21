@@ -20,7 +20,7 @@ jobs:
 
         include:
         - profile: ubuntu-bionic-standard-unity-makefile
-          os: ubuntu-18.04
+          os: ubuntu-20.04
           config: Standard
           unity: YES
           generator: Unix Makefiles
@@ -30,7 +30,7 @@ jobs:
           eigen: NO
 
         - profile: ubuntu-bionic-coverage-ninja
-          os: ubuntu-18.04
+          os: ubuntu-20.04
           config: Coverage
           unity: NO
           generator: Ninja
@@ -114,10 +114,6 @@ jobs:
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
         python3-setuptools
-
-        # Workaround for CMake 3.12 finding this first:
-
-        sudo rm /usr/bin/x86_64-linux-gnu-python2.7-config
 
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
@@ -365,12 +361,12 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2019, macOS-11]
+        os: [ubuntu-20.04, windows-2019, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-18.04'
+      if: matrix.os == 'ubuntu-20.04'
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
