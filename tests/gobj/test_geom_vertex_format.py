@@ -104,11 +104,11 @@ def test_format_arrays():
     expect_arrays()
 
     # Add to end but with very high index
-    format.insert_array(0xffffffff, array1)
+    format.insert_array(0x7fffffff, array1)
     expect_arrays(array1,)
-    format.insert_array(0xffffffff, array2)
+    format.insert_array(0x7fffffff, array2)
     expect_arrays(array1, array2)
-    format.insert_array(0xffffffff, array3)
+    format.insert_array(0x7fffffff, array3)
     expect_arrays(array1, array2, array3)
-    format.insert_array(0xffffffff, array4)
+    format.insert_array(0x7fffffff, array4)
     expect_arrays(array1, array2, array3, array4)
