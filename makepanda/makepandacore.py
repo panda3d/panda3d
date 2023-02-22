@@ -46,8 +46,12 @@ ANDROID_API = None
 SYS_LIB_DIRS = []
 SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
-DEFAULT_CC = "gcc"
-DEFAULT_CXX = "g++"
+if sys.platform == "darwin" or sys.platform.startswith("freebsd"):
+    DEFAULT_CC = "clang"
+    DEFAULT_CXX = "clang++"
+else:
+    DEFAULT_CC = "gcc"
+    DEFAULT_CXX = "g++"
 DEFAULT_AR = "ar"
 DEFAULT_RANLIB = "ranlib"
 
