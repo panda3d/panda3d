@@ -119,7 +119,7 @@ class WxPandaShell(WxAppShell):
             base.trackball.node().setHpr(0, 15, 0)
 
         # to make persp view as default
-        self.perspViewMenuItem.Toggle()
+        self.perspViewMenuItem.Check()
         self.onViewChange(None, 3)
 
         # initializing direct

@@ -41,7 +41,7 @@ class LevelEditorBase(DirectObject):
 
         self.fMoveCamera = False
 
-        self.NPParent = render
+        self.NPParent = base.render
 
         # define your own config file in inherited class
         self.settingsFile = None
