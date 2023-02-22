@@ -2337,17 +2337,8 @@ class Freezer:
         return blob_offset
 
     def makeModuleDef(self, mangledName, code):
-        result = ''
-        result += 'static unsigned char %s[] = {' % (mangledName)
-        for i in range(0, len(code), 16):
-            result += '\n  '
-            for c in code[i:i+16]:
-                if isinstance(c, int): # Python 3
-                    result += ('%d,' % c)
-                else: # Python 2
-                    result += ('%d,' % ord(c))
-        result += '\n};\n'
-        return result
+        lines = ',\n  '.join(','.join(map(str, code[i:i+16])) for i in range(0, len(code), 16))
+        return f'static unsigned char {mangledName}[] = {{\n  {lines}\n}};\n'
 
     def makeModuleListEntry(self, mangledName, code, moduleName, module):
         size = len(code)
