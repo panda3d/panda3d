@@ -31,10 +31,6 @@ def test_imports_panda3d():
 def test_imports_direct():
     import direct.actor.Actor
     import direct.actor.DistributedActor
-    import direct.cluster.ClusterClient
-    import direct.cluster.ClusterConfig
-    import direct.cluster.ClusterMsgs
-    import direct.cluster.ClusterServer
     import direct.controls.BattleWalker
     import direct.controls.ControlManager
     import direct.controls.DevWalker
@@ -43,7 +39,6 @@ def test_imports_direct():
     import direct.controls.InputState
     import direct.controls.NonPhysicsWalker
     import direct.controls.ObserverWalker
-    import direct.controls.PhysicsWalker
     import direct.controls.SwimWalker
     import direct.controls.TwoDWalker
     import direct.directnotify.DirectNotify
@@ -70,51 +65,6 @@ def test_imports_direct():
     import direct.dist.FreezeTool
     import direct.dist.icon
     import direct.dist.commands
-    import direct.distributed.AsyncRequest
-    import direct.distributed.CRCache
-    import direct.distributed.CRDataCache
-    import direct.distributed.CachedDOData
-    import direct.distributed.CartesianGridBase
-    import direct.distributed.ClientRepository
-    import direct.distributed.ClientRepositoryBase
-    import direct.distributed.ClockDelta
-    import direct.distributed.ConnectionRepository
-    import direct.distributed.DistributedCamera
-    import direct.distributed.DistributedCameraAI
-    import direct.distributed.DistributedCameraOV
-    import direct.distributed.DistributedCartesianGrid
-    import direct.distributed.DistributedCartesianGridAI
-    import direct.distributed.DistributedNode
-    import direct.distributed.DistributedNodeAI
-    import direct.distributed.DistributedNodeUD
-    import direct.distributed.DistributedObject
-    import direct.distributed.DistributedObjectAI
-    import direct.distributed.DistributedObjectBase
-    import direct.distributed.DistributedObjectGlobal
-    import direct.distributed.DistributedObjectGlobalAI
-    import direct.distributed.DistributedObjectGlobalUD
-    import direct.distributed.DistributedObjectOV
-    import direct.distributed.DistributedObjectUD
-    import direct.distributed.DistributedSmoothNodeAI
-    import direct.distributed.DistributedSmoothNodeBase
-    import direct.distributed.DoCollectionManager
-    import direct.distributed.DoHierarchy
-    import direct.distributed.DoInterestManager
-    import direct.distributed.GridChild
-    import direct.distributed.GridParent
-    import direct.distributed.InterestWatcher
-    import direct.distributed.MsgTypes
-    import direct.distributed.MsgTypesCMU
-    import direct.distributed.NetMessenger
-    import direct.distributed.ParentMgr
-    import direct.distributed.PyDatagram
-    import direct.distributed.PyDatagramIterator
-    import direct.distributed.RelatedObjectMgr
-    import direct.distributed.SampleObject
-    import direct.distributed.ServerRepository
-    import direct.distributed.StagedObject
-    import direct.distributed.TimeManager
-    import direct.distributed.TimeManagerAI
     import direct.extensions_native.extension_native_helpers
     import direct.filter.CommonFilters
     import direct.filter.FilterManager
@@ -166,16 +116,6 @@ def test_imports_direct():
     import direct.interval.SoundInterval
     import direct.interval.TestInterval
     import direct.motiontrail.MotionTrail
-    import direct.particles.ForceGroup
-    import direct.particles.GlobalForceGroup
-    import direct.particles.ParticleEffect
-    import direct.particles.ParticleFloorTest
-    import direct.particles.ParticleManagerGlobal
-    import direct.particles.ParticleTest
-    import direct.particles.Particles
-    import direct.particles.SpriteParticleRendererExt
-    import direct.physics.FallTest
-    import direct.physics.RotationTest
     import direct.showbase.Audio3DManager
     import direct.showbase.BufferViewer
     import direct.showbase.BulletinBoard
@@ -208,7 +148,6 @@ def test_imports_direct():
     import direct.showbase.ObjectReport
     import direct.showbase.OnScreenDebug
     import direct.showbase.PhasedObject
-    import direct.showbase.PhysicsManagerGlobal
     import direct.showbase.Pool
     import direct.showbase.ProfileSession
     import direct.showbase.PythonUtil
@@ -241,6 +180,79 @@ def test_imports_direct():
     import direct.task.TaskProfiler
     import direct.task.TaskTester
     import direct.task.Timer
+
+
+def test_imports_direct_physics():
+    pytest.importorskip("panda3d.physics")
+
+    import direct.controls.PhysicsWalker
+    import direct.particles.ForceGroup
+    import direct.particles.GlobalForceGroup
+    import direct.particles.ParticleEffect
+    import direct.particles.ParticleFloorTest
+    import direct.particles.ParticleManagerGlobal
+    import direct.particles.ParticleTest
+    import direct.particles.Particles
+    import direct.particles.SpriteParticleRendererExt
+    import direct.physics.FallTest
+    import direct.physics.RotationTest
+    import direct.showbase.PhysicsManagerGlobal
+
+
+def test_imports_direct_net():
+    from panda3d import core
+    if not hasattr(core, 'ConnectionWriter'):
+        pytest.skip("Build without HAVE_NET")
+
+    import direct.cluster.ClusterClient
+    import direct.cluster.ClusterConfig
+    import direct.cluster.ClusterMsgs
+    import direct.cluster.ClusterServer
+    import direct.distributed.AsyncRequest
+    import direct.distributed.CRCache
+    import direct.distributed.CRDataCache
+    import direct.distributed.CachedDOData
+    import direct.distributed.CartesianGridBase
+    import direct.distributed.ClientRepository
+    import direct.distributed.ClientRepositoryBase
+    import direct.distributed.ClockDelta
+    import direct.distributed.ConnectionRepository
+    import direct.distributed.DistributedCamera
+    import direct.distributed.DistributedCameraAI
+    import direct.distributed.DistributedCameraOV
+    import direct.distributed.DistributedCartesianGrid
+    import direct.distributed.DistributedCartesianGridAI
+    import direct.distributed.DistributedNode
+    import direct.distributed.DistributedNodeAI
+    import direct.distributed.DistributedNodeUD
+    import direct.distributed.DistributedObject
+    import direct.distributed.DistributedObjectAI
+    import direct.distributed.DistributedObjectBase
+    import direct.distributed.DistributedObjectGlobal
+    import direct.distributed.DistributedObjectGlobalAI
+    import direct.distributed.DistributedObjectGlobalUD
+    import direct.distributed.DistributedObjectOV
+    import direct.distributed.DistributedObjectUD
+    import direct.distributed.DistributedSmoothNodeAI
+    import direct.distributed.DistributedSmoothNodeBase
+    import direct.distributed.DoCollectionManager
+    import direct.distributed.DoHierarchy
+    import direct.distributed.DoInterestManager
+    import direct.distributed.GridChild
+    import direct.distributed.GridParent
+    import direct.distributed.InterestWatcher
+    import direct.distributed.MsgTypes
+    import direct.distributed.MsgTypesCMU
+    import direct.distributed.NetMessenger
+    import direct.distributed.ParentMgr
+    import direct.distributed.PyDatagram
+    import direct.distributed.PyDatagramIterator
+    import direct.distributed.RelatedObjectMgr
+    import direct.distributed.SampleObject
+    import direct.distributed.ServerRepository
+    import direct.distributed.StagedObject
+    import direct.distributed.TimeManager
+    import direct.distributed.TimeManagerAI
 
 
 def test_imports_tk():
