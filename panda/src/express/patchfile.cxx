@@ -13,8 +13,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "config_express.h"
 #include "error_utils.h"
 #include "patchfile.h"
@@ -1350,5 +1348,3 @@ patch_subfile(ostream &write_stream,
 
   return true;
 }
-
-#endif // HAVE_OPENSSL
