@@ -28,8 +28,6 @@ from .DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
 from .DirectGrid import DirectGrid
 #from DirectGeometry import *
 from .DirectLights import DirectLights
-from direct.cluster.ClusterClient import createClusterClient, DummyClusterClient
-from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkpanels import Placer
 ## from direct.tkwidgets import Slider
 ## from direct.tkwidgets import SceneGraphExplorer
@@ -319,10 +317,13 @@ class DirectSession(DirectObject):
             self.clusterMode = ConfigVariableString("cluster-mode", '').value
 
         if self.clusterMode == 'client':
+            from direct.cluster.ClusterClient import createClusterClient
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
+            from direct.cluster.ClusterServer import ClusterServer
             self.cluster = ClusterServer(base.camera, base.cam)
         else:
+            from direct.cluster.ClusterClient import DummyClusterClient
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
 
