@@ -19,6 +19,7 @@
 #include "typedWritableReferenceCount.h"
 #include "eventParameter.h"
 #include "patomic.h"
+#include "small_vector.h"
 
 class AsyncTaskManager;
 class AsyncTask;
@@ -131,7 +132,7 @@ protected:
   std::string _done_event;
 
   // Tasks and gathering futures waiting for this one to complete.
-  Futures _waiting;
+  small_vector<PT(AsyncFuture)> _waiting;
 
   friend class AsyncGatheringFuture;
   friend class AsyncTaskChain;

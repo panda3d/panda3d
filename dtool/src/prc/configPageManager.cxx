@@ -122,7 +122,7 @@ reload_implicit_pages() {
     const char *log_filename;
   };
 #ifdef _WIN32
-  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(nullptr), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
@@ -130,7 +130,7 @@ reload_implicit_pages() {
 #elif defined(__EMSCRIPTEN__)
   const BlobInfo *blobinfo = nullptr;
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__)

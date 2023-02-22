@@ -21,6 +21,7 @@
 #include "pandaNode.h"
 #include "nodePathCollection.h"
 #include "ordered_vector.h"
+#include "small_vector.h"
 
 class JointVertexTransform;
 class Character;
@@ -46,7 +47,7 @@ public:
 
   virtual bool update_internals(PartBundle *root, PartGroup *parent,
                                 bool self_changed, bool parent_changed,
-                                Thread *current_thread);
+                                Thread *current_thread) final;
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
 
 PUBLISHED:
@@ -77,11 +78,11 @@ private:
   // Not a reference-counted pointer.
   Character *_character;
 
-  typedef ov_set< PT(PandaNode) > NodeList;
+  typedef ov_set<PT(PandaNode), std::less<PT(PandaNode)>, small_vector<PT(PandaNode)> > NodeList;
   NodeList _net_transform_nodes;
   NodeList _local_transform_nodes;
 
-  typedef ov_set<JointVertexTransform *> VertexTransforms;
+  typedef ov_set<JointVertexTransform *, std::less<JointVertexTransform *>, small_vector<JointVertexTransform *> > VertexTransforms;
   VertexTransforms _vertex_transforms;
 
 public:

@@ -2,7 +2,7 @@
 
 __all__ = []
 
-from direct.task.TaskManagerGlobal import *
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
 import random
 
@@ -18,7 +18,7 @@ def spawnNewTask():
 
 def taskCallback(task):
     randNum = int(round(random.random() * 1000))
-    n = ("taskTester-%s" % randNum)
+    n = f"taskTester-{randNum}"
     taskMgr.remove(n)
     spawnNewTask()
     spawnNewTask()

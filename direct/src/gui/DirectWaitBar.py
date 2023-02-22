@@ -6,9 +6,9 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectWaitBar']
 
-from panda3d.core import *
+from panda3d.core import PGFrameStyle, PGWaitBar
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 
 
 class DirectWaitBar(DirectFrame):
@@ -33,12 +33,12 @@ class DirectWaitBar(DirectFrame):
             ('barTexture',     None,               self.setBarTexture),
             ('barRelief',      DGG.FLAT,           self.setBarRelief),
             ('sortOrder',      DGG.NO_FADE_SORT_INDEX, None),
-            )
+        )
         if 'text' in kw:
             textoptiondefs = (
                 ('text_pos',    (0, -0.025),          None),
                 ('text_scale',  0.1,                 None)
-                )
+            )
         else:
             textoptiondefs = ()
         # Merge keyword options with default options

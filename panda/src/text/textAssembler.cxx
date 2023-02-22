@@ -538,6 +538,7 @@ assemble_text() {
   PlacedGlyphs::const_iterator pgi;
   for (pgi = placed_glyphs.begin(); pgi != placed_glyphs.end(); ++pgi) {
     const GlyphPlacement &placement = (*pgi);
+    nassertd(placement._properties != nullptr) continue;
 
     if (placement._properties != properties) {
       // Get a new set of properties for future glyphs.

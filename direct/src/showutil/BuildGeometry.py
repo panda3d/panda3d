@@ -1,5 +1,14 @@
-from panda3d.core import *
-from math import *
+from panda3d.core import (
+    Geom,
+    GeomNode,
+    GeomTrifans,
+    GeomTristrips,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    Vec4,
+)
+from math import pi, cos, sin
 
 
 GEO_ID = 0
@@ -42,7 +51,7 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
     targetCircleColorWriter.addData4f(centerColor[0], centerColor[1], centerColor[2], centerColor[3])
 
     for vertex in targetCircleShape:
-        targetCircleVertexWriter.addData3f(0.0 + vertex[0] , 0.0 + vertex[1] , zFloat)
+        targetCircleVertexWriter.addData3f(0.0 + vertex[0], 0.0 + vertex[1], zFloat)
         targetCircleColorWriter.addData4f(color[0], color[1], color[2], color[3])
         #targetCircleColorWriter.addData4f(1.0, 1.0, 1.0, 1.0)
 
@@ -87,7 +96,6 @@ def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer 
     boxColorWriter = GeomVertexWriter(boxVertexData, "color")
     boxTextureWriter = GeomVertexWriter(boxVertexData, "texcoord")
 
-
     boxVertexWriter.addData3f(-sX, sY, 0.0)
     boxNormalWriter.addData3f(0, 0, 1)
     boxColorWriter.addData4f(color[0], color[1], color[2], color[3])
@@ -118,7 +126,6 @@ def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer 
 
     boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
-
 
     attachNode.addGeom(boxGeom)
     return boxGeom
@@ -153,7 +160,6 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxVertexWriter = GeomVertexWriter(boxVertexData, "vertex")
     boxNormalWriter = GeomVertexWriter(boxVertexData, "normal")
     boxColorWriter = GeomVertexWriter(boxVertexData, "color")
-
 
     #Front
 
@@ -245,7 +251,6 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxNormalWriter.addData3f(0, 0, 1)
     boxColorWriter.addData4f(color1[0], color1[1], color1[2], color1[3])
 
-
     #Left
 
     boxVertexWriter.addData3f(-sX, sY, -sZ)
@@ -263,7 +268,6 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxVertexWriter.addData3f(-sX, sY, sZ)
     boxNormalWriter.addData3f(0, 0, 1)
     boxColorWriter.addData4f(color2[0], color2[1], color2[2], color2[3])
-
 
     boxTris = GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
     boxTris.addVertex(0)#(1)
@@ -305,7 +309,6 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
 
-
     attachNode.addGeom(boxGeom)
     return boxGeom
 
@@ -334,7 +337,6 @@ def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer =
     boxVertexWriter = GeomVertexWriter(boxVertexData, "vertex")
     boxNormalWriter = GeomVertexWriter(boxVertexData, "normal")
     boxColorWriter = GeomVertexWriter(boxVertexData, "color")
-
 
     boxVertexWriter.addData3f(-sX, sY, 0.0)
     boxNormalWriter.addData3f(0, 0, 1)
@@ -377,10 +379,8 @@ def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer =
     boxTris.addVertex(6)
     boxTris.closePrimitive()
 
-
     boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
-
 
     attachNode.addGeom(boxGeom)
     return boxGeom

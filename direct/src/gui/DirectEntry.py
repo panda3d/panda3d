@@ -7,19 +7,20 @@ explanation and an example of how to use this class.
 
 __all__ = ['DirectEntry']
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool, PGEntry, Point3, TextNode, Vec3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 from .OnscreenText import OnscreenText
 # import this to make sure it gets pulled into the publish
-import encodings.utf_8
+import encodings.utf_8 # pylint: disable=unused-import
 from direct.showbase.DirectObject import DirectObject
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
 ENTRY_NO_FOCUS_STATE = PGEntry.SNoFocus    # 1
 ENTRY_INACTIVE_STATE = PGEntry.SInactive   # 2
+
 
 class DirectEntry(DirectFrame):
     """
@@ -82,7 +83,7 @@ class DirectEntry(DirectFrame):
             ('autoCapitalize',  0,                self.autoCapitalizeFunc),
             ('autoCapitalizeAllowPrefixes', DirectEntry.AllowCapNamePrefixes, None),
             ('autoCapitalizeForcePrefixes', DirectEntry.ForceCapNamePrefixes, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -215,15 +216,16 @@ class DirectEntry(DirectFrame):
 
     def _handleTyping(self, guiEvent):
         self._autoCapitalize()
+
     def _handleErasing(self, guiEvent):
         self._autoCapitalize()
 
     def _autoCapitalize(self):
         name = self.guiItem.getWtext()
         # capitalize each word, allowing for things like McMutton
-        capName = u''
+        capName = ''
         # track each individual word to detect prefixes like Mc
-        wordSoFar = u''
+        wordSoFar = ''
         # track whether the previous character was part of a word or not
         wasNonWordChar = True
         for i, character in enumerate(name):
@@ -232,9 +234,9 @@ class DirectEntry(DirectFrame):
             #   This assumes that string.lower and string.upper will return different
             #   values for all unicode letters.
             # - Don't count apostrophes as a break between words
-            if character.lower() == character.upper() and character != u"'":
+            if character.lower() == character.upper() and character != "'":
                 # we are between words
-                wordSoFar = u''
+                wordSoFar = ''
                 wasNonWordChar = True
             else:
                 capitalize = False

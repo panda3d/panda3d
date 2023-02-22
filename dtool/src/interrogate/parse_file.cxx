@@ -82,6 +82,7 @@ show_type_or_expression(const string &str) {
            << "is_fundamental = " << type->is_fundamental() << "\n"
            << "is_standard_layout = " << type->is_standard_layout() << "\n"
            << "is_trivial = " << type->is_trivial() << "\n"
+           << "is_trivially_copyable = " << type->is_trivially_copyable() << "\n"
            << "is_default_constructible = " << type->is_default_constructible() << "\n"
            << "is_copy_constructible = " << type->is_copy_constructible() << "\n"
            << "is_copy_assignable = " << type->is_copy_assignable() << "\n"

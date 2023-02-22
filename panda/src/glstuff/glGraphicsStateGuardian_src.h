@@ -723,7 +723,7 @@ protected:
 #if defined(HAVE_CG) && !defined(OPENGLES)
   CGcontext _cg_context;
   static AtomicAdjust::Integer _num_gsgs_with_cg_contexts;
-  static pvector<CGcontext> _destroyed_cg_contexts;
+  static small_vector<CGcontext> _destroyed_cg_contexts;
 #endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -1204,7 +1204,7 @@ public:
     GLint64 _gpu_sync_time;
     double _cpu_sync_time;
     pvector<std::pair<GLuint, int> > _queries;
-    pvector<GLint64> _latency_refs;
+    small_vector<GLint64> _latency_refs;
   };
   pdeque<FrameTiming> _frame_timings;
   FrameTiming *_current_frame_timing = nullptr;

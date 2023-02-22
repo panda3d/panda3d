@@ -209,7 +209,7 @@ set_name(const string &name) {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }
@@ -237,7 +237,7 @@ get_name_prefix() const {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }

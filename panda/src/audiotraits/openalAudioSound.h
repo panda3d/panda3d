@@ -29,7 +29,7 @@
   #include <AL/alc.h>
 #endif
 
-class EXPCL_OPENAL_AUDIO OpenALAudioSound : public AudioSound {
+class EXPCL_OPENAL_AUDIO OpenALAudioSound final : public AudioSound {
   friend class OpenALAudioManager;
 
 public:

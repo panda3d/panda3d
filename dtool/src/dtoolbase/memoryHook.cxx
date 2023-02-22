@@ -279,7 +279,7 @@ heap_free_single(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_heap_single_size.load(std::memory_order_relaxed));
+  assert(size <= _total_heap_single_size.load(std::memory_order_relaxed));
   _total_heap_single_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
@@ -427,7 +427,7 @@ heap_free_array(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_heap_array_size);
+  assert(size <= _total_heap_array_size);
   _total_heap_array_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 
@@ -550,7 +550,7 @@ mmap_free(void *ptr, size_t size) {
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _total_mmap_size.load(std::memory_order_relaxed));
+  assert(size <= _total_mmap_size.load(std::memory_order_relaxed));
   _total_mmap_size.fetch_sub(size, std::memory_order_relaxed);
 #endif
 

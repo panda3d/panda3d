@@ -43,7 +43,7 @@ class ObjectPool:
             self._type2objs[typ].append(obj)
             try:
                 self._len2obj[len(obj)] = obj
-            except:
+            except Exception:
                 pass
         self._count2types = invertDictLossless(type2count)
 

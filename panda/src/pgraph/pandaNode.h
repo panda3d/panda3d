@@ -46,6 +46,7 @@
 #include "extension.h"
 #include "simpleHashMap.h"
 #include "geometricBoundingVolume.h"
+#include "small_vector.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -520,7 +521,7 @@ private:
     // children do not circularly reference each other.
     PandaNode *_parent;
   };
-  typedef ov_set<UpConnection> UpList;
+  typedef ov_set<UpConnection, std::less<UpConnection>, small_vector<UpConnection> > UpList;
   typedef CopyOnWriteObj1< UpList, TypeHandle > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This

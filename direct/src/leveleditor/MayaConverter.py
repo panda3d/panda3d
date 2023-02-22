@@ -1,4 +1,4 @@
-from direct.wxwidgets.WxAppShell import *
+import wx
 import os
 from . import ObjectGlobals as OG
 

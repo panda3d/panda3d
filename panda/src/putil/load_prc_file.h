@@ -60,17 +60,12 @@ load_prc_file_data(const std::string &name, const std::string &data);
 EXPCL_PANDA_PUTIL bool
 unload_prc_file(ConfigPage *page);
 
-#ifdef HAVE_OPENSSL
-
 /**
  * Fills HashVal with the hash from the current prc file state as reported by
  * ConfigVariableManager::write_prc_variables().
  */
 EXPCL_PANDA_PUTIL void
 hash_prc_variables(HashVal &hash);
-
-#endif  // HAVE_OPENSSL
-
 
 END_PUBLISH
 

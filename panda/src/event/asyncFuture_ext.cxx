@@ -226,7 +226,7 @@ result(PyObject *self, PyObject *timeout) const {
   double timeout_val;
   if (timeout != Py_None) {
     timeout_val = PyFloat_AsDouble(timeout);
-    if (timeout_val == -1.0 && _PyErr_OCCURRED()) {
+    if (timeout_val == -1.0 && PyErr_Occurred()) {
       return nullptr;
     }
   }

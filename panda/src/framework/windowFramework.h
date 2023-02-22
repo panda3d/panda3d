@@ -33,6 +33,7 @@
 #include "textNode.h"
 #include "eventHandler.h"
 #include "genericAsyncTask.h"
+#include "small_vector.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -166,7 +167,7 @@ private:
   PT(DisplayRegion) _display_region_3d;
 
   NodePath _camera_group;
-  typedef pvector< PT(Camera) > Cameras;
+  typedef small_vector< PT(Camera) > Cameras;
   Cameras _cameras;
 
   NodePath _render;

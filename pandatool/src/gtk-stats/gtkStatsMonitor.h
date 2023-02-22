@@ -16,7 +16,6 @@
 
 #include "pandatoolbase.h"
 
-#include "gtkStatsGraph.h"
 #include "pStatMonitor.h"
 #include "pointerTo.h"
 #include "pset.h"
@@ -25,6 +24,7 @@
 
 #include <gtk/gtk.h>
 
+class GtkStatsGraph;
 class GtkStatsServer;
 class GtkStatsChartMenu;
 

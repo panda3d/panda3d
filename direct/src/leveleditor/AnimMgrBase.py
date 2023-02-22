@@ -5,7 +5,9 @@ Defines AnimMgrBase
 import os
 import math
 
-from direct.interval.IntervalGlobal import *
+from direct.interval.ActorInterval import ActorInterval
+from direct.interval.LerpInterval import LerpFunc, LerpPosHprInterval
+from direct.interval.MetaInterval import Parallel, Sequence
 from panda3d.core import VBase3
 from . import ObjectGlobals as OG
 from . import AnimGlobals as AG
@@ -23,23 +25,23 @@ class AnimMgrBase:
 
         #normal properties
         self.lerpFuncs = {
-            'H' : self.lerpFuncH,
-            'P' : self.lerpFuncP,
-            'R' : self.lerpFuncR,
-            'SX' : self.lerpFuncSX,
-            'SY' : self.lerpFuncSY,
-            'SZ' : self.lerpFuncSZ,
-            'CR' : self.lerpFuncCR,
-            'CG' : self.lerpFuncCG,
-            'CB' : self.lerpFuncCB,
-            'CA' : self.lerpFuncCA
+            'H': self.lerpFuncH,
+            'P': self.lerpFuncP,
+            'R': self.lerpFuncR,
+            'SX': self.lerpFuncSX,
+            'SY': self.lerpFuncSY,
+            'SZ': self.lerpFuncSZ,
+            'CR': self.lerpFuncCR,
+            'CG': self.lerpFuncCG,
+            'CB': self.lerpFuncCB,
+            'CA': self.lerpFuncCA
         }
 
         #Properties which has animation curves
         self.curveLerpFuncs = {
-            'X' : [ self.lerpFuncX, self.lerpCurveFuncX ],
-            'Y' : [ self.lerpFuncY, self.lerpCurveFuncY ],
-            'Z' : [ self.lerpFuncZ, self.lerpCurveFuncZ ]
+            'X': [self.lerpFuncX, self.lerpCurveFuncX],
+            'Y': [self.lerpFuncY, self.lerpCurveFuncY],
+            'Z': [self.lerpFuncZ, self.lerpCurveFuncZ]
         }
 
     def reset(self):

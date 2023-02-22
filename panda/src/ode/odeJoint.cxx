@@ -32,8 +32,8 @@ OdeJoint::
 OdeJoint() :
   _id(nullptr) {
   if (odejoint_cat.is_debug()) {
-    std::ostream &out = odejoint_cat.debug();
-    out << get_type() << "(" << _id  << ")\n";
+    odejoint_cat.debug()
+      << "OdeJoint(" << _id  << ")\n";
   }
 }
 
@@ -41,8 +41,8 @@ OdeJoint::
 OdeJoint(dJointID id) :
   _id(id) {
   if (odejoint_cat.is_debug()) {
-    std::ostream &out = odejoint_cat.debug();
-    out << get_type() << "(" << _id  << ")\n";
+    odejoint_cat.debug()
+      << "OdeJoint(" << _id  << ")\n";
   }
 }
 

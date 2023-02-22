@@ -1,6 +1,6 @@
 __all__ = ["install"]
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr, Stack
 import sys
@@ -9,6 +9,7 @@ import traceback
 notify = directNotify.newCategory("ExceptionVarDump")
 
 reentry = 0
+
 
 def _varDump__init__(self, *args, **kArgs):
     global reentry
@@ -30,7 +31,9 @@ def _varDump__init__(self, *args, **kArgs):
     self._moved__init__(*args, **kArgs)
     reentry -= 1
 
+
 sReentry = 0
+
 
 def _varDump__print(exc):
     global sReentry
@@ -60,6 +63,7 @@ def _varDump__print(exc):
     notify.info(exc._savedExcString)
     sReentry -= 1
 
+
 oldExcepthook = None
 # store these values here so that Task.py can always reliably access them
 # from its main exception handler
@@ -68,8 +72,10 @@ wantStackDumpUpload = False
 variableDumpReasons = []
 dumpOnExceptionInit = False
 
+
 class _AttrNotFound:
     pass
+
 
 def _excepthookDumpVars(eType, eValue, tb):
     origTb = tb
@@ -137,7 +143,7 @@ def _excepthookDumpVars(eType, eValue, tb):
                         # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
                         try:
                             className = attr.__class__.__name__
-                        except:
+                        except Exception:
                             pass
                         else:
                             if className == 'method-wrapper':
@@ -168,15 +174,16 @@ def _excepthookDumpVars(eType, eValue, tb):
             timeMgr = None
             try:
                 timeMgr = base.cr.timeManager
-            except:
+            except Exception:
                 try:
                     timeMgr = simbase.air.timeManager
-                except:
+                except Exception:
                     pass
             if timeMgr:
                 timeMgr.setStackDump(s)
 
     oldExcepthook(eType, eValue, origTb)
+
 
 def install(log, upload):
     """Installs the exception hook."""

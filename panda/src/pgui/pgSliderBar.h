@@ -96,7 +96,7 @@ PUBLISHED:
   INLINE static std::string get_adjust_prefix();
   INLINE std::string get_adjust_event() const;
 
-  virtual void set_active(bool active);
+  virtual void set_active(bool active) final;
 
   void remanage();
   void recompute();

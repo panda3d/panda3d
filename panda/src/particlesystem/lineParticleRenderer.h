@@ -71,10 +71,10 @@ private:
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
-  virtual void init_geoms();
+  virtual void init_geoms() final;
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
-  virtual void resize_pool(int new_size);
+  virtual void resize_pool(int new_size) final;
 
   static PStatCollector _render_collector;
 };

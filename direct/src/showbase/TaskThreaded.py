@@ -46,7 +46,8 @@ class TaskThreaded:
         self.ignoreAll()
 
     def getTimeslice(self):
-        return self.___timeslice
+        return self.__timeslice
+
     def setTimeslice(self, timeslice):
         self.__timeslice = timeslice
 

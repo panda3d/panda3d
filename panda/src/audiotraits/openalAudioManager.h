@@ -36,7 +36,7 @@ class OpenALAudioSound;
 extern void al_audio_errcheck(const char *context);
 extern void alc_audio_errcheck(const char *context,ALCdevice* device);
 
-class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
+class EXPCL_OPENAL_AUDIO OpenALAudioManager final : public AudioManager {
   class SoundData;
 
   friend class OpenALAudioSound;

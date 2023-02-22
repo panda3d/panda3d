@@ -15,14 +15,6 @@
  *
  */
 INLINE_LINMATH FLOATNAME(LVecBase4)::
-FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) {
-  set(copy[0], copy[1], copy[2], copy[3]);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(FLOATTYPE fill_value) {
   fill(fill_value);
 }

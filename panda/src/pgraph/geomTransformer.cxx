@@ -1460,6 +1460,10 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   }
 
   int num_vertices = vdata->get_num_rows();
+  if (num_vertices <= 0) {
+    return;
+  }
+
   int new_num_vertices = referenced_vertices.get_num_on_bits();
   if (num_vertices <= new_num_vertices) {
     // All vertices are used.

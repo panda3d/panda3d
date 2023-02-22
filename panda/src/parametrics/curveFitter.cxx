@@ -213,7 +213,7 @@ wrap_hpr() {
  */
 void CurveFitter::
 sort_points() {
-  sort(_data.begin(), _data.end());
+  std::sort(_data.begin(), _data.end());
 }
 
 /**

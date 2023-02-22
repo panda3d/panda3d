@@ -20,7 +20,7 @@ MsgName2Id = {
     'CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU'  : 9011,
 
     'CLIENT_OBJECT_UPDATE_FIELD' : 120,  # Matches MsgTypes.CLIENT_OBJECT_SET_FIELD
-    }
+}
 
 # create id->name table for debugging
 MsgId2Names = invertDictLossless(MsgName2Id)

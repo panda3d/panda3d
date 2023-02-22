@@ -1991,13 +1991,11 @@ quantize(size_t max_colors) {
 void PNMImage::
 perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed,
                   float ox, float oy) {
-  float x, y;
-  float noise;
   PerlinNoise2 perlin (sx * _x_size, sy * _y_size, table_size, seed);
-  for (x = 0; x < _x_size; ++x) {
-    for (y = 0; y < _y_size; ++y) {
-      noise = perlin.noise(x + ox, y + oy);
-      set_xel(x, y, 0.5 * (noise + 1.0));
+  for (int x = 0; x < _x_size; ++x) {
+    for (int y = 0; y < _y_size; ++y) {
+      float noise = perlin.noise(x + ox, y + oy);
+      set_xel(x, y, 0.5f * (noise + 1.0f));
     }
   }
 }
@@ -2008,12 +2006,10 @@ perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed,
  */
 void PNMImage::
 perlin_noise_fill(StackedPerlinNoise2 &perlin) {
-  float x, y;
-  float noise;
-  for (x = 0; x < _x_size; ++x) {
-    for (y = 0; y < _y_size; ++y) {
-      noise = perlin.noise(x / (float) _x_size, y / (float) _y_size);
-      set_xel(x, y, 0.5 * (noise + 1.0));
+  for (int x = 0; x < _x_size; ++x) {
+    for (int y = 0; y < _y_size; ++y) {
+      float noise = perlin.noise(x / (float) _x_size, y / (float) _y_size);
+      set_xel(x, y, 0.5f * (noise + 1.0f));
     }
   }
 }

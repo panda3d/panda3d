@@ -33,9 +33,6 @@ class MiniTaskManager:
         except ValueError:
             pass
 
-    def __executeTask(self, task):
-        return task(task)
-
     def step(self):
         i = 0
         while i < len(self.taskList):

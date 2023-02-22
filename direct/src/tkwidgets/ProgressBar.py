@@ -4,7 +4,7 @@ A  basic widget for showing the progress being made in a task.
 
 __all__ = ['ProgressBar']
 
-from direct.showbase.TkGlobal import *
+import tkinter as tk
 
 
 class ProgressBar:
@@ -30,9 +30,9 @@ class ProgressBar:
         self.labelText=labelText
         self.labelFormat=labelFormat
         self.value=value
-        self.frame=Frame(master, relief=appearance, bd=bd)
-        self.canvas=Canvas(self.frame, height=height, width=width, bd=0,
-                           highlightthickness=0, background=background)
+        self.frame=tk.Frame(master, relief=appearance, bd=bd)
+        self.canvas=tk.Canvas(self.frame, height=height, width=width, bd=0,
+                              highlightthickness=0, background=background)
         self.scale=self.canvas.create_rectangle(0, 0, width, height,
                                                 fill=fillColor)
         self.label=self.canvas.create_text(self.canvas.winfo_reqwidth() / 2,

@@ -6,10 +6,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectSlider']
 
-from panda3d.core import *
+from panda3d.core import PGSliderBar, Vec3
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 from math import isnan
 
 
@@ -18,6 +18,7 @@ class DirectSlider(DirectFrame):
     DirectSlider -- a widget which represents a slider that the
     user can pull left and right to represent a continuous value.
     """
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -34,20 +35,20 @@ class DirectSlider(DirectFrame):
             # Function to be called repeatedly as slider is moved
             ('command',        None,               None),
             ('extraArgs',      [],                 None),
-            )
+        )
 
         if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.08, 0.08, -1, 1),   None),
                 ('frameVisibleScale', (0.25, 1),         None),
-                )
+            )
         else:
             # These are the default options for a horizontal layout.
             optiondefs += (
                 ('frameSize',      (-1, 1, -0.08, 0.08),  None),
                 ('frameVisibleScale', (1, 0.25),        None),
-                )
+            )
 
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

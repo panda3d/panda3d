@@ -1,5 +1,13 @@
 from panda3d.core import NodePath
-from panda3d.physics import *
+from panda3d.physics import (
+    ActorNode,
+    AngularEulerIntegrator,
+    AngularVectorForce,
+    ForceNode,
+    LinearEulerIntegrator,
+    LinearFrictionForce,
+    LinearVectorForce,
+)
 
 
 class RotationTest(NodePath):
@@ -90,8 +98,8 @@ class RotationTest(NodePath):
         #self.actorNode.updateTransform()
 
 if __name__ == "__main__":
-    from direct.directbase.ThreeUpStart import *
-    test=RotationTest()
+    from direct.directbase.ThreeUpStart import base
+    test = RotationTest()
     test.reparentTo(base.render)
     test.setup()
     base.camera.setY(-10.0)

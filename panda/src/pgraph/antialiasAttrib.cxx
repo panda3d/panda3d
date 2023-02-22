@@ -106,7 +106,7 @@ output(std::ostream &out) const {
   }
   if ((_mode & M_better) != 0) {
     out << sep << "better";
-    sep = '|';
+    //sep = '|';
   }
 }
 

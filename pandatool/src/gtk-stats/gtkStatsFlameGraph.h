@@ -25,7 +25,7 @@ class GtkStatsLabel;
  * A window that draws a flame chart, which shows the collectors explicitly
  * stopping and starting, one frame at a time.
  */
-class GtkStatsFlameGraph : public PStatFlameGraph, public GtkStatsGraph {
+class GtkStatsFlameGraph final : public PStatFlameGraph, public GtkStatsGraph {
 public:
   GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
                      int collector_index=-1);

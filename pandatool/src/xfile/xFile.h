@@ -34,7 +34,7 @@ public:
   XFile(bool keep_names=false);
   ~XFile();
 
-  virtual void clear();
+  virtual void clear() final;
 
   bool read(Filename filename);
   bool read(std::istream &in, const std::string &filename = std::string());
