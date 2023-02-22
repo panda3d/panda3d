@@ -109,7 +109,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 
   LightMutexHolder holder(gsg_list->_lock);
 
-  if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg) != gsg_list->_gsgs.end()) {
+  if (std::find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg) != gsg_list->_gsgs.end()) {
     // Already on the list.
     return;
   }
@@ -135,7 +135,7 @@ remove_gsg(GraphicsStateGuardianBase *gsg) {
   LightMutexHolder holder(gsg_list->_lock);
 
   GSGList::GSGs::iterator gi;
-  gi = find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg);
+  gi = std::find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg);
   if (gi == gsg_list->_gsgs.end()) {
     // Already removed, or never added.
     return;

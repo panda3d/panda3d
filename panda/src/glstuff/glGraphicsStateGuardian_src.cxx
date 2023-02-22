@@ -98,7 +98,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_copy_texture_finish_pcollector("Draw
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 AtomicAdjust::Integer CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts = 0;
-pvector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
+small_vector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
 #endif
 
 // The following noop functions are assigned to the corresponding glext

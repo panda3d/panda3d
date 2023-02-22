@@ -15,7 +15,6 @@
 #define SIMPLEHASHMAP_H
 
 #include "pandabase.h"
-#include "pvector.h"
 #include "config_putil.h"
 
 /**

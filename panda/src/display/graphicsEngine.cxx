@@ -777,7 +777,7 @@ render_frame() {
         }
       }
     }
-    _windows.swap(new_windows);
+    _windows = std::move(new_windows);
 
     // Go ahead and release any textures' ram images for textures that were
     // drawn in the previous frame.
@@ -969,7 +969,7 @@ open_windows() {
 
   ReMutexHolder holder(_lock, current_thread);
 
-  pvector<PT(GraphicsOutput)> new_windows;
+  NewWindows new_windows;
   {
     MutexHolder new_windows_holder(_new_windows_lock, current_thread);
     if (_new_windows.empty()) {
@@ -1016,7 +1016,7 @@ open_windows() {
     }
 
     // Steal the list, since remove_window() may remove from _new_windows.
-    new_windows.swap(_new_windows);
+    new_windows = std::move(_new_windows);
   }
 
   do_resort_windows();

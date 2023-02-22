@@ -20,7 +20,7 @@
 
 #include "textNode.h"
 #include "pointerTo.h"
-#include "pvector.h"
+#include "small_vector.h"
 #include "clockObject.h"
 #include "textAssembler.h"
 #include "pipeline.h"
@@ -168,7 +168,8 @@ private:
   std::string _candidate_active;
   std::string _candidate_inactive;
 
-  typedef pvector< PT(TextNode) > TextDefs;
+  // Most entries have 3 states.
+  typedef small_vector<PT(TextNode), 3> TextDefs;
   TextDefs _text_defs;
 
   // This is the subgraph that renders both the text and the cursor.

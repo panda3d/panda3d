@@ -21,6 +21,7 @@
 #include "luse.h"
 #include "lightMutex.h"
 #include "patomic.h"
+#include "small_vector.h"
 
 // A handful of forward references.
 
@@ -263,7 +264,7 @@ private:
   struct GSGList {
     LightMutex _lock;
 
-    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    typedef small_vector<GraphicsStateGuardianBase *> GSGs;
     GSGs _gsgs;
     GraphicsStateGuardianBase *_default_gsg = nullptr;
   };

@@ -319,8 +319,8 @@ filter_to_max(int max_texture_stages) const {
   RenderStages priority_stages = _render_stages;
 
   // This sort function uses the STL function object defined above.
-  sort(priority_stages.begin(), priority_stages.end(),
-       CompareTextureStagePriorities());
+  std::sort(priority_stages.begin(), priority_stages.end(),
+            CompareTextureStagePriorities());
 
   // Now lop off all of the stages after the first max_texture_stages.
   priority_stages.erase(priority_stages.begin() + max_texture_stages,
@@ -979,8 +979,8 @@ sort_on_stages() {
     _render_stages.push_back(&sn);
   }
 
-  sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
-  sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
+  std::sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
+  std::sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
 
   // We'd like to clear the _filtered map, in case the TextureStage priority
   // values have changed as well, but we can't do that here: it's too

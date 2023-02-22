@@ -25,6 +25,7 @@
 #include "pmap.h"
 #include "pset.h"
 #include "pvector.h"
+#include "small_vector.h"
 #include "indirectCompareTo.h"
 #include "lightReMutex.h"
 
@@ -197,7 +198,7 @@ private:
 
   GeomVertexAnimationSpec _animation;
 
-  typedef pvector< PT(GeomVertexArrayFormat) > Arrays;
+  typedef small_vector<PT(GeomVertexArrayFormat), 2> Arrays;
   Arrays _arrays;
 
   class DataTypeRecord {

@@ -604,7 +604,7 @@ write_data(xel *array, xelval *alpha_data) {
 
           // Re-sort the palette to put the semitransparent pixels at the
           // beginning.
-          sort(palette.begin(), palette.end(), LowAlphaCompare());
+          std::sort(palette.begin(), palette.end(), LowAlphaCompare());
 
           double palette_scale = 255.0 / _maxval;
 

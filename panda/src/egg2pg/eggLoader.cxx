@@ -1866,7 +1866,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
 
   // Now that we've created all of our children, put them in the proper order
   // and tell the LOD node about them.
-  sort(instances.begin(), instances.end());
+  std::sort(instances.begin(), instances.end());
 
   if (!instances.empty()) {
     // Set up the LOD node's center.  All of the children should have the same
