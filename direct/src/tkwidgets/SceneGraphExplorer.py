@@ -28,8 +28,10 @@ DEFAULT_MENU_ITEMS = [
     'Place', 'Set Name', 'Set Color', 'Explore',
     'Separator']
 
+
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
+
     def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):
         if nodePath is None:
             nodePath = base.render
@@ -37,7 +39,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialise superclass
@@ -146,6 +148,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         if sceneGraphItem:
             sceneGraphItem.reveal()
             sceneGraphItem.select()
+
 
 class SceneGraphExplorerItem(TreeItem):
 

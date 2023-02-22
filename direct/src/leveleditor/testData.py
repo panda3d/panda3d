@@ -68,5 +68,5 @@ if objects['1252623762.9gjeon']:
 
 if hasattr(base, 'le'):
     ui.layerEditorUI.reset()
-    ui.layerEditorUI.addLayerEntry('Layer1', 1 )
+    ui.layerEditorUI.addLayerEntry('Layer1', 1)
     ui.layerEditorUI.addLayerData(1, '1252538687.73gjeon')

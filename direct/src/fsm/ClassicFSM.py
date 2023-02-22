@@ -150,7 +150,6 @@ class ClassicFSM(DirectObject):
     def getCurrentState(self):
         return self.__currentState
 
-
     # lookup funcs
 
     def getStateNamed(self, stateName):
@@ -315,7 +314,6 @@ class ClassicFSM(DirectObject):
                 ClassicFSM.notify.warning(msg)
             return 0
 
-
     def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
         """
         force a transition -- for debugging ONLY
@@ -355,7 +353,7 @@ class ClassicFSM(DirectObject):
             self.__currentState.isTransitionDefined(aStateName) or
             aStateName in [self.__currentState.getName(),
                            self.__finalState.getName()]
-            )
+        )
 
         if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)

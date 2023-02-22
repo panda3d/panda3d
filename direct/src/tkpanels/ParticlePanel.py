@@ -66,7 +66,7 @@ class ParticlePanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',     self.appname,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Record particle effect
@@ -112,7 +112,6 @@ class ParticlePanel(AppShell):
         self.effectsDict[self.particleEffect.getName()] = (
             self.particleEffect)
         self.forcePagesDict = {}
-
 
     def createInterface(self):
         # Handle to the toplevels hull
@@ -171,6 +170,7 @@ class ParticlePanel(AppShell):
         self.effectsLabelMenu.add_command(
             label = 'Place Particle Effect',
             command = lambda s = self: Placer.place(s.particleEffect))
+
         def togglePEVis(s = self):
             if s.particleEffect.isHidden():
                 s.particleEffect.show()
@@ -257,7 +257,7 @@ class ParticlePanel(AppShell):
              'Age in seconds at which the system (vs. particles) should die',
              self.setSystemLifespan,
              0.0, None, None)
-            )
+        )
         self.createFloaters(systemPage, systemFloaterDefs)
 
         # Checkboxes
@@ -327,19 +327,18 @@ class ParticlePanel(AppShell):
 
         self.createCheckbutton(
             zSpinPage, 'Z Spin Factory', 'Enable Angular Velocity',
-            ("On: angular velocity is used; " +
-             "Off: final angle is used"),
+            'On: angular velocity is used; Off: final angle is used',
             self.toggleAngularVelocity, 0, side = tk.TOP)
 
         self.createFloater(
             zSpinPage, 'Z Spin Factory', 'Angular Velocity',
-             'How fast sprites rotate',
-             command = self.setFactoryZSpinAngularVelocity)
+            'How fast sprites rotate',
+            command = self.setFactoryZSpinAngularVelocity)
 
         self.createFloater(
             zSpinPage, 'Z Spin Factory', 'Angular Velocity Spread',
-             'Variation in how fast sprites rotate',
-             command = self.setFactoryZSpinAngularVelocitySpread)
+            'Variation in how fast sprites rotate',
+            command = self.setFactoryZSpinAngularVelocitySpread)
 
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Initial Angle',
                              'Starting angle in degrees',
@@ -996,7 +995,7 @@ class ParticlePanel(AppShell):
             widgets.append(
                 self.createFloater(parent, category, label, balloonHelp,
                                    command, min, max, resolution)
-                )
+            )
         return widgets
 
     def createFloater(self, parent, category, text, balloonHelp,
@@ -1158,7 +1157,7 @@ class ParticlePanel(AppShell):
                 label = effect.getName(),
                 command = (lambda s = self,
                            e = effect: s.selectEffectNamed(e.getName()))
-                )
+            )
             effectActive = tk.IntVar()
             effectActive.set(effect.isEnabled())
             self.effectsEnableMenu.add_checkbutton(
@@ -1183,7 +1182,7 @@ class ParticlePanel(AppShell):
                 label = name,
                 command = (lambda s = self,
                            n = name: s.selectParticlesNamed(n))
-                )
+            )
             particleActive = tk.IntVar()
             particleActive.set(particle.isEnabled())
             self.particlesEnableMenu.add_checkbutton(
@@ -1208,7 +1207,7 @@ class ParticlePanel(AppShell):
                 label = name,
                 command = (lambda s = self,
                            n = name: s.selectForceGroupNamed(n))
-                )
+            )
             forceActive = tk.IntVar()
             forceActive.set(force.isEnabled())
             self.forceGroupEnableMenu.add_checkbutton(
@@ -1379,24 +1378,33 @@ class ParticlePanel(AppShell):
             self.particles.getLocalVelocityFlag())
         self.getVariable('System', 'System Grows Older').set(
             self.particles.getSystemGrowsOlderFlag())
+
     def setSystemPoolSize(self, value):
         self.particles.setPoolSize(int(value))
+
     def setSystemBirthRate(self, value):
         self.particles.setBirthRate(value)
+
     def setSystemLitterSize(self, value):
         self.particles.setLitterSize(int(value))
+
     def setSystemLitterSpread(self, value):
         self.particles.setLitterSpread(int(value))
+
     def setSystemLifespan(self, value):
         self.particles.setSystemLifespan(value)
+
     def toggleSystemLocalVelocity(self):
         self.particles.setLocalVelocityFlag(
             self.getVariable('System', 'Render Space Velocities').get())
+
     def toggleSystemGrowsOlder(self):
         self.particles.setSystemGrowsOlderFlag(
             self.getVariable('System', 'System Grows Older').get())
+
     def setSystemPos(self, pos):
         self.particles.nodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
+
     def setSystemHpr(self, pos):
         self.particles.nodePath.setHpr(Vec3(pos[0], pos[1], pos[2]))
 
@@ -1427,28 +1435,39 @@ class ParticlePanel(AppShell):
 
     def setFactoryLifeSpan(self, value):
         self.particles.factory.setLifespanBase(value)
+
     def setFactoryLifeSpanSpread(self, value):
         self.particles.factory.setLifespanSpread(value)
+
     def setFactoryParticleMass(self, value):
         self.particles.factory.setMassBase(value)
+
     def setFactoryParticleMassSpread(self, value):
         self.particles.factory.setMassSpread(value)
+
     def setFactoryTerminalVelocity(self, value):
         self.particles.factory.setTerminalVelocityBase(value)
+
     def setFactoryTerminalVelocitySpread(self, value):
         self.particles.factory.setTerminalVelocitySpread(value)
     # Point Page #
     # Z Spin Page #
+
     def setFactoryZSpinInitialAngle(self, angle):
         self.particles.factory.setInitialAngle(angle)
+
     def setFactoryZSpinInitialAngleSpread(self, spread):
         self.particles.factory.setInitialAngleSpread(spread)
+
     def setFactoryZSpinFinalAngle(self, angle):
         self.particles.factory.setFinalAngle(angle)
+
     def setFactoryZSpinFinalAngleSpread(self, spread):
         self.particles.factory.setFinalAngleSpread(spread)
+
     def setFactoryZSpinAngularVelocity(self, vel):
         self.particles.factory.setAngularVelocity(vel)
+
     def setFactoryZSpinAngularVelocitySpread(self, spread):
         self.particles.factory.setAngularVelocitySpread(spread)
 
@@ -1539,6 +1558,7 @@ class ParticlePanel(AppShell):
             self.getWidget('Tangent Ring Emitter', 'Radius Spread').set(
                 radiusSpread, 0)
     # All #
+
     def setEmissionType(self, newType = None):
         if newType:
             type = newType
@@ -1601,57 +1621,76 @@ class ParticlePanel(AppShell):
         self.particles.emitter.setMinBound(Point3(point[0],
                                                   point[1],
                                                   point[2]))
+
     def setEmitterBoxPoint2(self, point):
         self.particles.emitter.setMaxBound(Point3(point[0],
                                                   point[1],
                                                   point[2]))
     # Disc #
+
     def setEmitterDiscRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+
     def setEmitterDiscInnerAngle(self, angle):
         self.particles.emitter.setInnerAngle(angle)
+
     def setEmitterDiscInnerVelocity(self, velocity):
         self.particles.emitter.setInnerMagnitude(velocity)
+
     def setEmitterDiscOuterAngle(self, angle):
         self.particles.emitter.setOuterAngle(angle)
+
     def setEmitterDiscOuterVelocity(self, velocity):
         self.particles.emitter.setOuterMagnitude(velocity)
+
     def toggleEmitterDiscCubicLerping(self):
         self.particles.emitter.setCubicLerping(
             self.getVariable('Disc Emitter', 'Cubic Lerping').get())
     # Line #
+
     def setEmitterLinePoint1(self, point):
         self.particles.emitter.setEndpoint1(Point3(point[0],
                                                    point[1],
                                                    point[2]))
+
     def setEmitterLinePoint2(self, point):
         self.particles.emitter.setEndpoint2(Point3(point[0],
                                                    point[1],
                                                    point[2]))
     # Point #
+
     def setEmitterPointPosition(self, pos):
         self.particles.emitter.setLocation(Point3(pos[0], pos[1], pos[2]))
     # Rectangle #
+
     def setEmitterRectanglePoint1(self, point):
         self.particles.emitter.setMinBound(Point2(point[0], point[1]))
+
     def setEmitterRectanglePoint2(self, point):
         self.particles.emitter.setMaxBound(Point2(point[0], point[1]))
     # Ring #
+
     def setEmitterRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+
     def setEmitterRingRadiusSpread(self, radiusSpread):
         self.particles.emitter.setRadiusSpread(radiusSpread)
+
     def setEmitterRingLaunchAngle(self, angle):
         self.particles.emitter.setAngle(angle)
     # Sphere surface #
+
     def setEmitterSphereSurfaceRadius(self, radius):
         self.particles.emitter.setRadius(radius)
     # Sphere volume #
+
     def setEmitterSphereVolumeRadius(self, radius):
         self.particles.emitter.setRadius(radius)
     # Tangent ring #
+
     def setEmitterTangentRingRadius(self, radius):
         self.particles.emitter.setRadius(radius)
+
     def setEmitterTangentRingRadiusSpread(self, radiusSpread):
         self.particles.emitter.setRadiusSpread(radiusSpread)
 
@@ -1849,13 +1888,16 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setHeadColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def setRendererLineTailColor(self, color):
         self.particles.renderer.setTailColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def setRendererLineScaleFactor(self, sf):
         self.particles.renderer.setLineScaleFactor(sf)
     # Geom #
+
     def setRendererGeomNode(self, event):
         node = None
         nodePath = base.loader.loadModel(self.rendererGeomNode.get())
@@ -1865,16 +1907,20 @@ class ParticlePanel(AppShell):
             self.particles.geomReference = self.rendererGeomNode.get()
             self.particles.renderer.setGeomNode(node)
     # Point #
+
     def setRendererPointSize(self, size):
         self.particles.renderer.setPointSize(size)
+
     def setRendererPointStartColor(self, color):
         self.particles.renderer.setStartColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def setRendererPointEndColor(self, color):
         self.particles.renderer.setEndColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def rendererPointSelectBlendType(self, blendType):
         if blendType == "PP_ONE_COLOR":
             bType = PointParticleRenderer.PPONECOLOR
@@ -1883,6 +1929,7 @@ class ParticlePanel(AppShell):
         elif blendType == "PP_BLEND_VEL":
             bType = PointParticleRenderer.PPBLENDVEL
         self.particles.renderer.setBlendType(bType)
+
     def rendererPointSelectBlendMethod(self, blendMethod):
         if blendMethod == "PP_NO_BLEND":
             bMethod = BaseParticleRenderer.PPNOBLEND
@@ -1892,18 +1939,23 @@ class ParticlePanel(AppShell):
             bMethod = BaseParticleRenderer.PPBLENDCUBIC
         self.particles.renderer.setBlendMethod(bMethod)
     # Sparkle #
+
     def setRendererSparkleCenterColor(self, color):
         self.particles.renderer.setCenterColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def setRendererSparkleEdgeColor(self, color):
         self.particles.renderer.setEdgeColor(
             Vec4(color[0]/255.0, color[1]/255.0,
                  color[2]/255.0, color[3]/255.0))
+
     def setRendererSparkleBirthRadius(self, radius):
         self.particles.renderer.setBirthRadius(radius)
+
     def setRendererSparkleDeathRadius(self, radius):
         self.particles.renderer.setDeathRadius(radius)
+
     def setRendererSparkleLifeScale(self, lifeScaleMethod):
         if lifeScaleMethod == 'SP_NO_SCALE':
             lScale = SparkleParticleRenderer.SPNOSCALE
@@ -1911,6 +1963,7 @@ class ParticlePanel(AppShell):
             lScale = SparkleParticleRenderer.SPSCALE
         self.particles.renderer.setLifeScale(lScale)
     # Sprite #
+
     def setSpriteSourceType(self):
         if self.rendererSpriteSourceType.get() == 0:
             self.rendererSpriteTextureEntry['state'] = 'normal'
@@ -1929,9 +1982,11 @@ class ParticlePanel(AppShell):
 
     def setRendererSpriteAnimationFrameRate(self, rate):
         self.particles.renderer.setAnimateFramesRate(rate)
+
     def setRendererSpriteAnimationEnable(self):
         self.particles.renderer.setAnimateFramesEnable(
             self.getVariable('Sprite Renderer','Enable Animation').get())
+
     def addRendererSpriteAnimationTexture(self):
         ren = self.particles.getRenderer()
         parent = self.rendererSpriteAnimationFrame
@@ -1953,6 +2008,7 @@ class ParticlePanel(AppShell):
             self.rendererSpriteAnimationWidgetList.append(
                 self.createSpriteAnimationTextureWidget(parent, anim, repr(frameNum)))
         parent.pack(fill=tk.BOTH, expand=1)
+
     def addRendererSpriteAnimationFromNode(self):
         ren = self.particles.getRenderer()
         parent = self.rendererSpriteAnimationFrame
@@ -1978,9 +2034,11 @@ class ParticlePanel(AppShell):
     def toggleRendererSpriteXScale(self):
         self.particles.renderer.setXScaleFlag(
             self.getVariable('Sprite Renderer', 'X Scale').get())
+
     def toggleRendererSpriteYScale(self):
         self.particles.renderer.setYScaleFlag(
             self.getVariable('Sprite Renderer', 'Y Scale').get())
+
     def toggleRendererSpriteAnimAngle(self):
         self.particles.renderer.setAnimAngleFlag(
             self.getVariable('Sprite Renderer', 'Anim Angle').get())
@@ -1991,14 +2049,19 @@ class ParticlePanel(AppShell):
 
     def setRendererSpriteInitialXScale(self, xScale):
         self.particles.renderer.setInitialXScale(xScale)
+
     def setRendererSpriteFinalXScale(self, xScale):
         self.particles.renderer.setFinalXScale(xScale)
+
     def setRendererSpriteInitialYScale(self, yScale):
         self.particles.renderer.setInitialYScale(yScale)
+
     def setRendererSpriteFinalYScale(self, yScale):
         self.particles.renderer.setFinalYScale(yScale)
+
     def setRendererSpriteNonAnimatedTheta(self, theta):
         self.particles.renderer.setNonanimatedTheta(theta)
+
     def setRendererSpriteBlendMethod(self, blendMethod):
         if blendMethod == 'PP_NO_BLEND':
             bMethod = BaseParticleRenderer.PPNOBLEND
@@ -2008,9 +2071,11 @@ class ParticlePanel(AppShell):
             bMethod = BaseParticleRenderer.PPBLENDCUBIC
         else:
             bMethod = BaseParticleRenderer.PPNOBLEND
+
     def toggleRendererSpriteAlphaDisable(self):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
+
     def setRendererColorBlendAttrib(self, rendererName, blendMethodStr, incomingOperandStr, fbufferOperandStr):
         self.particles.getRenderer().setColorBlendMode(getattr(ColorBlendAttrib, blendMethodStr),
                                                        getattr(ColorBlendAttrib, incomingOperandStr),
@@ -2024,48 +2089,56 @@ class ParticlePanel(AppShell):
             self.getWidget(rendererName,'Fbuffer Op.').pack_forget()
 
         self.updateRendererWidgets()
+
     def setRendererSpriteColorBlendMethod(self, blendMethod):
         blendMethodStr = blendMethod
         incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
         fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
     def setRendererSpriteColorBlendIncomingOperand(self, operand):
         blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
         incomingOperandStr = operand
         fbufferOperandStr = self.getVariable('Sprite Renderer','Fbuffer Op.').get()
 
         self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
     def setRendererSpriteColorBlendFbufferOperand(self, operand):
         blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
         incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
         self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
 
-
     # GeomParticleRenderer Functionality
+
     def toggleRendererGeomXScale(self):
         self.particles.renderer.setXScaleFlag(
             self.getVariable('Geom Renderer', 'X Scale').get())
+
     def toggleRendererGeomYScale(self):
         self.particles.renderer.setYScaleFlag(
             self.getVariable('Geom Renderer', 'Y Scale').get())
+
     def toggleRendererGeomZScale(self):
         self.particles.renderer.setZScaleFlag(
             self.getVariable('Geom Renderer', 'Z Scale').get())
 
     def setRendererGeomInitialXScale(self, xScale):
         self.particles.renderer.setInitialXScale(xScale)
+
     def setRendererGeomFinalXScale(self, xScale):
         self.particles.renderer.setFinalXScale(xScale)
 
     def setRendererGeomInitialYScale(self, yScale):
         self.particles.renderer.setInitialYScale(yScale)
+
     def setRendererGeomFinalYScale(self, yScale):
         self.particles.renderer.setFinalYScale(yScale)
 
     def setRendererGeomInitialZScale(self, zScale):
         self.particles.renderer.setInitialZScale(zScale)
+
     def setRendererGeomFinalZScale(self, zScale):
         self.particles.renderer.setFinalZScale(zScale)
 
@@ -2086,7 +2159,6 @@ class ParticlePanel(AppShell):
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
         self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
-
 
     def addConstantInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
@@ -2187,17 +2259,22 @@ class ParticlePanel(AppShell):
     def createInterpolationSegmentFrame(self, parent, segName, seg):
         frame = tk.Frame(parent, relief = tk.RAISED, borderwidth = 2)
         lFrame = tk.Frame(frame, relief = tk.FLAT)
+
         def removeInterpolationSegmentFrame(s = self, seg = seg, fr = frame):
             s.particles.getRenderer().getColorInterpolationManager().clearSegment(seg.getId())
             fr.pack_forget()
+
         def setSegEnabled(s=self, n=segName):
             enabled = s.getVariable('Sprite Renderer', n+' Enabled')
             seg.setEnabled(enabled.get())
+
         def setIsModulated(s=self, n=segName):
             modulated = s.getVariable('Sprite Renderer', n+' isModulated')
             seg.setIsModulated(modulated.get())
+
         def setSegBegin(time):
             seg.setTimeBegin(time)
+
         def setSegEnd(time):
             seg.setTimeEnd(time)
         tk.Button(lFrame, text = 'X',
@@ -2236,6 +2313,7 @@ class ParticlePanel(AppShell):
 
     def createConstantInterpolationSegmentWidget(self, parent, segName, segment):
         fun = segment.getFunction()
+
         def setSegColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0, color[1]/255.0,
@@ -2255,10 +2333,12 @@ class ParticlePanel(AppShell):
 
     def createLinearInterpolationSegmentWidget(self, parent, segName, segment):
         fun = segment.getFunction()
+
         def setSegColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0, color[1]/255.0,
                      color[2]/255.0, color[3]/255.0))
+
         def setSegColorB(color):
             fun.setColorB(
                 Vec4(color[0]/255.0, color[1]/255.0,
@@ -2284,16 +2364,20 @@ class ParticlePanel(AppShell):
 
     def createStepwaveInterpolationSegmentWidget(self, parent, segName, segment):
         fun = segment.getFunction()
+
         def setColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0, color[1]/255.0,
                      color[2]/255.0, color[3]/255.0))
+
         def setColorB(color):
             fun.setColorB(
                 Vec4(color[0]/255.0, color[1]/255.0,
                      color[2]/255.0, color[3]/255.0))
+
         def setWidthA(width):
             fun.setWidthA(width)
+
         def setWidthB(width):
             fun.setWidthB(width)
 
@@ -2327,14 +2411,17 @@ class ParticlePanel(AppShell):
 
     def createSinusoidInterpolationSegmentWidget(self, parent, segName, segment):
         fun = segment.getFunction()
+
         def setColorA(color):
             fun.setColorA(
                 Vec4(color[0]/255.0, color[1]/255.0,
                      color[2]/255.0, color[3]/255.0))
+
         def setColorB(color):
             fun.setColorB(
                 Vec4(color[0]/255.0, color[1]/255.0,
                      color[2]/255.0, color[3]/255.0))
+
         def setPeriod(period):
             fun.setPeriod(period)
 
@@ -2543,18 +2630,25 @@ class ParticlePanel(AppShell):
 
     def addLinearVectorForce(self):
         self.addForce(LinearVectorForce())
+
     def addLinearFrictionForce(self):
         self.addForce(LinearFrictionForce())
+
     def addLinearJitterForce(self):
         self.addForce(LinearJitterForce())
+
     def addLinearNoiseForce(self):
         self.addForce(LinearNoiseForce())
+
     def addLinearSinkForce(self):
         self.addForce(LinearSinkForce())
+
     def addLinearSourceForce(self):
         self.addForce(LinearSourceForce())
+
     def addLinearCylinderVortexForce(self):
         self.addForce(LinearCylinderVortexForce())
+
     def addLinearUserDefinedForce(self):
         self.addForce(LinearUserDefinedForce())
 
@@ -2650,6 +2744,7 @@ class ParticlePanel(AppShell):
     def createForceFrame(self, forcePage, forceName, force):
         frame = tk.Frame(forcePage, relief = tk.RAISED, borderwidth = 2)
         lFrame = tk.Frame(frame, relief = tk.FLAT)
+
         def removeForce(s = self, f = force, fr = frame):
             s.forceGroup.removeForce(f)
             fr.pack_forget()
@@ -2667,9 +2762,11 @@ class ParticlePanel(AppShell):
     def createLinearForceWidgets(self, frame, pageName, forceName, force):
         def setAmplitude(amp, f = force):
             f.setAmplitude(amp)
+
         def toggleMassDependent(s=self, f=force, p=pageName, n=forceName):
             v = s.getVariable(p, n+' Mass Dependent')
             f.setMassDependent(v.get())
+
         def setVectorMasks(s=self, f=force, p=pageName, n=forceName):
             xMask = s.getVariable(p, n+' Mask X').get()
             yMask = s.getVariable(p, n+' Mask Y').get()
@@ -2698,6 +2795,7 @@ class ParticlePanel(AppShell):
 
     def createForceActiveWidget(self, frame, pageName, forceName, force):
         cbName = forceName + ' Active'
+
         def toggle(s = self, f = force, p = pageName, n = cbName):
             s.toggleForce(f, p, n)
         self.createCheckbutton(frame, pageName, cbName,
@@ -2741,10 +2839,13 @@ class ParticlePanel(AppShell):
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
         forceName = 'Vortex Force-' + repr(count)
+
         def setCoef(coef, f = force):
             f.setCoef(coef)
+
         def setLength(length, f = force):
             f.setLength(length)
+
         def setRadius(radius, f = force):
             f.setRadius(radius)
         frame = self.createForceFrame(forcePage, forceName, force)
@@ -2775,8 +2876,10 @@ class ParticlePanel(AppShell):
             if type == 'FT_ONE_OVER_R_CUBED':
                 #f.setFalloffType(LinearDistanceForce.FTONEOVERRCUBED)
                 f.setFalloffType(2)
+
         def setForceCenter(vec, f = force):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
+
         def setRadius(radius, f = force):
             f.setRadius(radius)
         forceName = type + ' Force-' + repr(count)
@@ -2813,12 +2916,12 @@ class ParticlePanel(AppShell):
 
 ######################################################################
 
+
 # Create demo in root window for testing.
 if __name__ == '__main__':
-
     try:
         base
-    except:
+    except NameError:
         from direct.showbase.ShowBase import ShowBase
         base = ShowBase()
 

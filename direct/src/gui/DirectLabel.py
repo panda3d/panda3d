@@ -9,11 +9,13 @@ __all__ = ['DirectLabel']
 from panda3d.core import PGItem
 from .DirectFrame import DirectFrame
 
+
 class DirectLabel(DirectFrame):
     """
     DirectLabel(parent) - Create a DirectGuiWidget which has multiple
     states.  User explicitly chooses a state to display
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
@@ -32,7 +34,7 @@ class DirectLabel(DirectFrame):
             ('numStates',       1,         None),
             ('state',           self.inactiveInitState, None),
             ('activeState',     0,         self.setActiveState),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 

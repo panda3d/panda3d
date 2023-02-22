@@ -134,7 +134,6 @@ class DirectSession(DirectObject):
                 for i in range(len(fastrak))[1:]:
                     self.fastrak.append(DirectFastrak.DirectFastrak(fastrak[0] + ':' + fastrak[i]))
 
-
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
@@ -196,7 +195,7 @@ class DirectSession(DirectObject):
             ['DIRECT-doWrtReparent', self.doWrtReparent],
             ['DIRECT-doReparent', self.doReparent],
             ['DIRECT-doSelect', self.doSelect],
-            ]
+        ]
 
         if base.wantTk:
             from direct.tkpanels import Placer
@@ -265,7 +264,7 @@ class DirectSession(DirectObject):
             'shift-[': ('DIRECT-Undo', 'DIRECT-Undo'),
             ']': ('DIRECT-Redo', 'DIRECT-Redo'),
             'shift-]': ('DIRECT-Redo', 'DIRECT-Redo'),
-            }
+        }
 
         self.hotKeyMap = {
             'c': ('Center Camera', 'DIRECT-centerCamIn'),
@@ -293,14 +292,14 @@ class DirectSession(DirectObject):
             'shift-a': ('Toggle Vis all', 'DIRECT-toggleVisAll'),
             'w': ('Toggle Wireframe', 'DIRECT-toggleWireframe'),
             'control-z': ('Undo', 'LE-Undo'),
-            'shift-z' : ('Redo', 'LE-Redo'),
+            'shift-z': ('Redo', 'LE-Redo'),
             'control-d': ('Duplicate', 'LE-Duplicate'),
             'control-l': ('Make Live', 'LE-MakeLive'),
             'control-n': ('New Scene', 'LE-NewScene'),
             'control-s': ('Save Scene', 'LE-SaveScene'),
             'control-o': ('Open Scene', 'LE-OpenScene'),
             'control-q': ('Quit', 'LE-Quit'),
-            }
+        }
 
         self.speicalKeyMap = {
                               'enter': 'DIRECT-enter',
@@ -326,7 +325,6 @@ class DirectSession(DirectObject):
         else:
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
-
 
     def addPassThroughKey(self,key):
 
@@ -876,6 +874,7 @@ class DirectSession(DirectObject):
             # If nothing specified, try selected node path
             nodePath = self.selected.last
         base.direct.select(nodePath)
+
         def fitTask(state, self = self):
             self.cameraControl.fitOnWidget()
             return Task.done

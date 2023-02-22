@@ -89,7 +89,7 @@ class BufferViewer(DirectObject):
                 if not self.isValidTextureSet(elt):
                     return 0
         else:
-            return (x=="all") or (isinstance(x, Texture)) or (isinstance(x, GraphicsOutput))
+            return x == "all" or isinstance(x, Texture) or isinstance(x, GraphicsOutput)
 
     def isEnabled(self):
         """Returns true if the buffer viewer is currently enabled."""
@@ -237,8 +237,8 @@ class BufferViewer(DirectObject):
                 self.analyzeTextureSet(win, set)
         elif x == "all":
             self.analyzeTextureSet(self.engine, set)
-        else: return
-
+        else:
+            return
 
     def makeFrame(self, sizex, sizey):
         """Access: private.  Each texture card is displayed with
@@ -271,14 +271,14 @@ class BufferViewer(DirectObject):
         triangles = GeomTriangles(Geom.UHStatic)
         for i in range(2):
             delta = i*8
-            triangles.addVertices(0+delta, 4+delta, 1+delta)
-            triangles.addVertices(1+delta, 4+delta, 5+delta)
-            triangles.addVertices(1+delta, 5+delta, 2+delta)
-            triangles.addVertices(2+delta, 5+delta, 6+delta)
-            triangles.addVertices(2+delta, 6+delta, 3+delta)
-            triangles.addVertices(3+delta, 6+delta, 7+delta)
-            triangles.addVertices(3+delta, 7+delta, 0+delta)
-            triangles.addVertices(0+delta, 7+delta, 4+delta)
+            triangles.addVertices(0 + delta, 4 + delta, 1 + delta)
+            triangles.addVertices(1 + delta, 4 + delta, 5 + delta)
+            triangles.addVertices(1 + delta, 5 + delta, 2 + delta)
+            triangles.addVertices(2 + delta, 5 + delta, 6 + delta)
+            triangles.addVertices(2 + delta, 6 + delta, 3 + delta)
+            triangles.addVertices(3 + delta, 6 + delta, 7 + delta)
+            triangles.addVertices(3 + delta, 7 + delta, 0 + delta)
+            triangles.addVertices(0 + delta, 7 + delta, 4 + delta)
         triangles.closePrimitive()
 
         geom = Geom(vdata)
@@ -286,7 +286,6 @@ class BufferViewer(DirectObject):
         geomnode=GeomNode("card-frame")
         geomnode.addGeom(geom)
         return NodePath(geomnode)
-
 
     def maintainReadout(self, task):
         """Access: private.  Whenever necessary, rebuilds the entire
@@ -408,24 +407,24 @@ class BufferViewer(DirectObject):
 
         bordersize = 4.0
 
-        if (float(self.sizex)==0.0) and (float(self.sizey)==0.0):
+        if float(self.sizex) == 0.0 and float(self.sizey) == 0.0:
             sizey = int(0.4266666667 * self.win.getYSize())
             sizex = (sizey * aspectx) // aspecty
-            v_sizey = (self.win.getYSize() - (rows-1) - (rows*2)) // rows
+            v_sizey = (self.win.getYSize() - (rows - 1) - (rows * 2)) // rows
             v_sizex = (v_sizey * aspectx) // aspecty
             if (v_sizey < sizey) or (v_sizex < sizex):
                 sizey = v_sizey
                 sizex = v_sizex
 
             adjustment = 2
-            h_sizex = float (self.win.getXSize() - adjustment) / float (cols)
+            h_sizex = float(self.win.getXSize() - adjustment) / float(cols)
 
             h_sizex -= bordersize
             if h_sizex < 1.0:
                 h_sizex = 1.0
 
             h_sizey = (h_sizex * aspecty) // aspectx
-            if (h_sizey < sizey) or (h_sizex < sizex):
+            if h_sizey < sizey or h_sizex < sizex:
                 sizey = h_sizey
                 sizex = h_sizex
         else:
@@ -466,7 +465,7 @@ class BufferViewer(DirectObject):
 
         for r in range(rows):
             for c in range(cols):
-                index = c + r*cols
+                index = c + r * cols
                 if index < ncards:
                     index = (index + self.cardindex) % len(cards)
 
@@ -474,7 +473,7 @@ class BufferViewer(DirectObject):
                     posy = diry * (1.0 - ((r + 0.5) * (fsizey + fpixely * bordersize))) - (fpixely * diry)
                     placer = NodePath("card-structure")
                     placer.setPos(Point3.rfu(posx, 0, posy))
-                    placer.setScale(Vec3.rfu(fsizex*0.5, 1.0, fsizey*0.5))
+                    placer.setScale(Vec3.rfu(fsizex * 0.5, 1.0, fsizey * 0.5))
                     placer.setBin(self.cullbin, self.cullsort)
                     placer.reparentTo(self.renderParent)
                     frame.instanceTo(placer)

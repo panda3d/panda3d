@@ -46,7 +46,7 @@ class PyDatagramIterator(DatagramIterator):
         STString: DatagramIterator.getString,
         STBlob: DatagramIterator.getBlob,
         STBlob32: DatagramIterator.getBlob32,
-        }
+    }
 
     getChannel = DatagramIterator.getUint64
 

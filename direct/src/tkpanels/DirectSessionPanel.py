@@ -37,7 +37,7 @@ class DirectSessionPanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Call superclass initialization function
@@ -82,7 +82,7 @@ class DirectSessionPanel(AppShell):
             ('DIRECT_redoListEmpty', self.redoListEmptyHook),
             ('DIRECT_selectedNodePath', self.selectedNodePathHook),
             ('DIRECT_addLight', self.addLight),
-            ]
+        ]
         for event, method in self.actionEvents:
             self.accept(event, method)
 
@@ -476,7 +476,6 @@ class DirectSessionPanel(AppShell):
 
         lightFrame.pack(expand = 1, fill = tk.BOTH)
 
-
     def createGridPage(self, gridPage):
         tk.Label(gridPage, text = 'Grid',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
@@ -649,7 +648,7 @@ class DirectSessionPanel(AppShell):
                 else:
                     # Good eval but not a node path, give up
                     nodePath = None
-            except:
+            except Exception:
                 # Bogus eval
                 nodePath = None
                 # Clear bogus entry from listbox
@@ -699,7 +698,7 @@ class DirectSessionPanel(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -740,6 +739,7 @@ class DirectSessionPanel(AppShell):
     # Background #
     def setBackgroundColor(self, r, g, b):
         self.setBackgroundColorVec((r, g, b))
+
     def setBackgroundColorVec(self, color):
         base.setBackgroundColor(color[0]/255.0,
                                 color[1]/255.0,

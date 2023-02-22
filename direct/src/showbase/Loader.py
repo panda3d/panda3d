@@ -480,8 +480,8 @@ class Loader(DirectObject):
                 i += 1
             return cb
 
-
     # font loading funcs
+
     def loadFont(self, modelPath,
                  spaceAdvance = None, lineHeight = None,
                  pointSize = None,
@@ -926,7 +926,6 @@ class Loader(DirectObject):
         return texture
 
     def unloadTexture(self, texture):
-
         """
         Removes the previously-loaded texture from the cache, so
         that when the last reference to it is gone, it will be
@@ -971,7 +970,6 @@ class Loader(DirectObject):
 
     def loadSound(self, manager, soundPath, positional = False,
                   callback = None, extraArgs = []):
-
         """Loads one or more sound files, specifying the particular
         AudioManager that should be used to load them.  The soundPath
         may be either a single filename, or a list of filenames.  If a
@@ -1021,7 +1019,7 @@ class Loader(DirectObject):
     def unloadSfx(self, sfx):
         if sfx:
             if self.base.sfxManagerList:
-                self.base.sfxManagerList[0].uncacheSound (sfx.getName())
+                self.base.sfxManagerList[0].uncacheSound(sfx.getName())
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
 ##         if nodeCount == 0:
@@ -1033,7 +1031,7 @@ class Loader(DirectObject):
 ##             self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
     def loadShader(self, shaderPath, okMissing = False):
-        shader = ShaderPool.loadShader (shaderPath)
+        shader = ShaderPool.loadShader(shaderPath)
         if not shader and not okMissing:
             message = 'Could not load shader file: %s' % (shaderPath)
             raise IOError(message)

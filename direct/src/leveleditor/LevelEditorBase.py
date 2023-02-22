@@ -28,6 +28,7 @@ from .MayaConverter import FROM_BAM_TO_MAYA, MayaConverter
 
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """
+
     def __init__(self):
         #loadPrcFileData('startup', 'window-type none')
         self.currentFile = None
@@ -86,7 +87,7 @@ class LevelEditorBase(DirectObject):
             ('DIRECT-mouse3', self.handleMouse3),
             ('DIRECT-mouse3Up', self.handleMouse3Up),
             ('DIRECT-toggleWidgetVis', self.toggleWidget),
-            ])
+        ])
 
         # Add all the action events
         for event in self.actionEvents:
@@ -143,13 +144,11 @@ class LevelEditorBase(DirectObject):
         if base.direct.fAlt or modifiers == 4:
             self.fMoveCamera = True
             return
-        if self.mode == self.CREATE_CURVE_MODE :
+        if self.mode == self.CREATE_CURVE_MODE:
             self.curveEditor.createCurve()
-
 
     def handleMouse1Up(self):
         self.fMoveCamera = False
-
 
     def handleMouse2(self, modifiers):
         if base.direct.fAlt or modifiers == 4:

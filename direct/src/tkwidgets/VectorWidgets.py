@@ -35,7 +35,7 @@ class VectorEntry(Pmw.MegaWidget):
             ('numDigits',           2,              self._setSigDigits),
             ('type',                'floater',      None),
             ('state',               'normal',       self._setState),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize superclass
@@ -104,7 +104,6 @@ class VectorEntry(Pmw.MegaWidget):
         # if the user kills the floaterGroup and then tries to pop it open again
         self._floaters.userdeletefunc(self._floaters.withdraw)
         self._floaters.withdraw()
-
 
         # Make sure entries are updated
         self.set(self['value'])
@@ -252,13 +251,14 @@ class VectorEntry(Pmw.MegaWidget):
             self.component('fGroup').configure(
                 valuator_entry_background = self.entryBackground)
 
+
 class Vector2Entry(VectorEntry):
     def __init__(self, parent = None, **kw):
         # Initialize options for the class
         optiondefs = (
             ('dim',    2,       Pmw.INITOPT),
             ('fGroup_labels',   ('X','Y','Z'),  None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass, make sure dim makes it to superclass
         VectorEntry.__init__(self, parent, dim = self['dim'])
@@ -266,13 +266,14 @@ class Vector2Entry(VectorEntry):
         # where myClass is the argument passed into inialiseoptions
         self.initialiseoptions(Vector2Entry)
 
+
 class Vector3Entry(VectorEntry):
     def __init__(self, parent = None, **kw):
         # Initialize options for the class
         optiondefs = (
             ('dim',    3,       Pmw.INITOPT),
             ('fGroup_labels',   ('X','Y','Z'),  None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass, make sure dim makes it to superclass
         VectorEntry.__init__(self, parent, dim = self['dim'])
@@ -280,19 +281,21 @@ class Vector3Entry(VectorEntry):
         # where myClass is the argument passed into inialiseoptions
         self.initialiseoptions(Vector3Entry)
 
+
 class Vector4Entry(VectorEntry):
     def __init__(self, parent = None, **kw):
         # Initialize options for the class
         optiondefs = (
             ('dim',     4,      Pmw.INITOPT),
             ('fGroup_labels',   ('X','Y','Z','W'),  None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass, make sure dim makes it to superclass
         VectorEntry.__init__(self, parent, dim = self['dim'])
         # Needed because this method checks if self.__class__ is myClass
         # where myClass is the argument passed into inialiseoptions
         self.initialiseoptions(Vector4Entry)
+
 
 class ColorEntry(VectorEntry):
     def __init__(self, parent = None, **kw):
@@ -305,7 +308,7 @@ class ColorEntry(VectorEntry):
             ('max',                     255.0,              None),
             ('nuDigits',                0,                  None),
             ('valuator_resolution',     1.0,                None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass, make sure dim makes it to superclass
@@ -326,6 +329,7 @@ class ColorEntry(VectorEntry):
             initialcolor = tuple(self.get()[:3]))[0]
         if color:
             self.set((color[0], color[1], color[2], self.getAt(3)))
+
 
 if __name__ == '__main__':
     root = tk.Toplevel()

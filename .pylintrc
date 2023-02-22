@@ -493,7 +493,8 @@ disable=raw-checker-failed,
         using-constant-test,
         wrong-import-order,
         wrong-import-position,
-        not-callable
+        not-callable,
+        wildcard-import
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -615,6 +616,7 @@ contextmanager-decorators=contextlib.contextmanager
 # expressions are accepted.
 generated-members=base.cr,
                   base.le,
+                  base.localAvatar,
                   Pmw.AboutDialog,
                   Pmw.Balloon,
                   Pmw.ButtonBox,
@@ -629,8 +631,10 @@ generated-members=base.cr,
                   Pmw.MenuBar,
                   Pmw.MessageBar,
                   Pmw.NoteBook,
+                  Pmw.OK,
                   Pmw.OptionMenu,
                   Pmw.OptionMenu,
+                  Pmw.PARTIAL,
                   Pmw.PanedWidget,
                   Pmw.ScrolledCanvas,
                   Pmw.ScrolledFrame,
@@ -640,8 +644,10 @@ generated-members=base.cr,
                   Pmw.aboutcopyright,
                   Pmw.aboutversion,
                   Pmw.forwardmethods,
+                  Pmw.integervalidator,
                   Pmw.popgrab,
                   Pmw.pushgrab,
+                  Pmw.realvalidator,
                   Pmw.setgeometryanddeiconify
 
 # Tells whether to warn about missing members when the owner of the attribute
@@ -699,7 +705,8 @@ additional-builtins=base,
                     cluster,
                     launcher,
                     taskMgr,
-                    localAvatar
+                    localAvatar,
+                    game
 
 # Tells whether unused global variables should be treated as a violation.
 allow-global-unused-variables=yes

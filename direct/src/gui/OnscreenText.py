@@ -20,6 +20,7 @@ ScreenPrompt = 3
 NameConfirm = 4
 BlackOnWhite = 5
 
+
 class OnscreenText(NodePath):
 
     def __init__(self, text = '',
@@ -465,7 +466,7 @@ class OnscreenText(NodePath):
             Mat4.scaleMat(Vec3.rfu(self.__scale[0], 1, self.__scale[1])) *
             Mat4.rotateMat(self.__roll, Vec3.back()) *
             Mat4.translateMat(Point3.rfu(self.__pos[0], 0, self.__pos[1]))
-            )
+        )
         self.textNode.setTransform(mat)
 
     def setWordwrap(self, wordwrap):

@@ -275,32 +275,32 @@ class CompilationEnvironment:
 
     def compileExe(self, filename, basename, extraLink=[]):
         compile = self.compileObjExe % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'MD' : self.MD,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'MD': self.MD,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
         link = self.linkExe % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
@@ -308,37 +308,38 @@ class CompilationEnvironment:
 
     def compileDll(self, filename, basename, extraLink=[]):
         compile = self.compileObjDll % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'MD' : self.MD,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'MD': self.MD,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
         link = self.linkDll % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            'dllext' : self.dllext,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+            'dllext': self.dllext,
+        }, **sysconf.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
             raise Exception('failed to link %s.' % basename)
+
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -675,7 +676,7 @@ okMissing = [
     'direct.extensions_native.extensions_darwin', '_manylinux',
     'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
     'collections.Sequence', 'numpy_distutils', '_winapi',
-    ]
+]
 
 # Since around macOS 10.15, Apple's codesigning process has become more strict.
 # Appending data to the end of a Mach-O binary is now explicitly forbidden. The
@@ -721,6 +722,7 @@ lc_indices_to_slide = {
     LC_FUNCTION_STARTS: [2],
     LC_DATA_IN_CODE: [2],
 }
+
 
 class Freezer:
     class ModuleDef:
@@ -1141,7 +1143,7 @@ class Freezer:
             if mdef.implicit and '.' in newName:
                 # For implicit modules, check if the parent is excluded.
                 parentName, baseName = newName.rsplit('.', 1)
-                if parentName in excludeDict :
+                if parentName in excludeDict:
                     mdef = excludeDict[parentName]
 
             if mdef.exclude:
@@ -1182,7 +1184,7 @@ class Freezer:
                 self.__loadModule(mdef)
                 # Since it successfully loaded, it's no longer a guess.
                 mdef.guess = False
-            except:
+            except Exception:
                 # Something went wrong, guess it's not an importable
                 # module.
                 pass
@@ -1220,7 +1222,7 @@ class Freezer:
 
             try:
                 self.__loadModule(self.ModuleDef(modname, implicit=True))
-            except:
+            except Exception:
                 missing.append(modname)
 
         # Now, any new modules we found get added to the export list.
@@ -1596,7 +1598,7 @@ class Freezer:
         text = programFile % {
             'moduleDefs': '\n'.join(moduleDefs),
             'moduleList': '\n'.join(moduleList),
-            }
+        }
 
         if self.linkExtensionModules and self.extras:
             # Should we link in extension modules?  If so, we write out a new
@@ -1697,11 +1699,11 @@ class Freezer:
             if self.platform.startswith('win'):
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
-                'frozenMainCode' : code,
-                'programName' : os.path.basename(basename),
-                'dllexport' : dllexport,
-                'dllimport' : dllimport,
-                }
+                'frozenMainCode': code,
+                'programName': os.path.basename(basename),
+                'dllexport': dllexport,
+                'dllimport': dllimport,
+            }
             if self.platform.startswith('win'):
                 target = basename + '.exe'
             else:
@@ -1716,10 +1718,10 @@ class Freezer:
                 target = basename + '.so'
 
             initCode = dllInitCode % {
-                'moduleName' : os.path.basename(basename),
-                'dllexport' : dllexport,
-                'dllimport' : dllimport,
-                }
+                'moduleName': os.path.basename(basename),
+                'dllexport': dllexport,
+                'dllimport': dllimport,
+            }
             compileFunc = self.cenv.compileDll
 
         self.writeCode(filename, initCode=initCode)
@@ -2356,7 +2358,6 @@ class Freezer:
 
     def makeForbiddenModuleListEntry(self, moduleName):
         return '  {"%s", NULL, 0},' % (moduleName)
-
 
     def __writingModule(self, moduleName):
         """ Returns true if we are outputting the named module in this

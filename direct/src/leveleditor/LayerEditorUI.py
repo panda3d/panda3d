@@ -16,7 +16,7 @@ class LayerEditorUI(wx.Panel):
         self.layersDataDict = dict()
         self.layersDataDictNextKey = 0
         self.systemLayerKeys = []
-        self.llist = wx.ListCtrl(self, -1, style=wx.LC_REPORT|wx.LC_EDIT_LABELS|wx.LC_NO_HEADER)
+        self.llist = wx.ListCtrl(self, -1, style=wx.LC_REPORT | wx.LC_EDIT_LABELS | wx.LC_NO_HEADER)
         self.llist.InsertColumn(0, "Layers")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -170,7 +170,7 @@ class LayerEditorUI(wx.Panel):
     def removeObj(self):
         objNodePath = base.direct.selected.last
         if objNodePath is None:
-            wx.MessageBox("No object was selected.", self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+            wx.MessageBox("No object was selected.", self.editorTxt, wx.OK | wx.ICON_EXCLAMATION)
             return
         obj = self.editor.objectMgr.findObjectByNodePath(objNodePath)
         if obj is not None:
@@ -179,11 +179,11 @@ class LayerEditorUI(wx.Panel):
     def addObj(self):
         index = self.llist.GetFirstSelected()
         if index == -1:
-            wx.MessageBox("No layer was selected.", self.editorTxt,  wx.OK|wx.ICON_EXCLAMATION)
+            wx.MessageBox("No layer was selected.", self.editorTxt, wx.OK | wx.ICON_EXCLAMATION)
             return
         objNodePath = base.direct.selected.last
         if objNodePath is None:
-            wx.MessageBox("No object was selected.", self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+            wx.MessageBox("No object was selected.", self.editorTxt, wx.OK | wx.ICON_EXCLAMATION)
             return
 
         # Checking if the object was laready added to the layer
@@ -193,7 +193,7 @@ class LayerEditorUI(wx.Panel):
             layersData = self.layersDataDict[i]
             for j in range(len(layersData)):
                 if layersData[j] == obj[OG.OBJ_UID]:
-                    wx.MessageBox("Selected object already is this layer", self.editorTxt, wx.OK|wx.ICON_EXCLAMATION)
+                    wx.MessageBox("Selected object already is this layer", self.editorTxt, wx.OK | wx.ICON_EXCLAMATION)
                     return
             # Looking for the object in the other layers
             # If the object is found - delete it.
@@ -220,7 +220,7 @@ class LayerEditorUI(wx.Panel):
     def HideObj(self, hide):
         index = self.llist.GetFirstSelected()
         if index == -1:
-            wx.MessageBox("No layer was selected.", self.editorTxt,  wx.OK|wx.ICON_EXCLAMATION)
+            wx.MessageBox("No layer was selected.", self.editorTxt, wx.OK | wx.ICON_EXCLAMATION)
             return
 
         key = self.llist.GetItemData(index)

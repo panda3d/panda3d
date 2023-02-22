@@ -7,6 +7,7 @@ from .ActionMgr import ActionChangeHierarchy, ActionDeleteObjById
 
 from . import ObjectGlobals as OG
 
+
 class SceneGraphUIDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
         print("in SceneGraphUIDropTarget::init...")
@@ -16,6 +17,7 @@ class SceneGraphUIDropTarget(wx.TextDropTarget):
     def OnDropText(self, x, y, text):
         print("in SceneGraphUIDropTarget::OnDropText...")
         self.editor.ui.sceneGraphUI.changeHierarchy(text, x, y)
+
 
 class SceneGraphUIBase(wx.Panel):
     def __init__(self, parent, editor):
@@ -121,7 +123,7 @@ class SceneGraphUIBase(wx.Panel):
         if obj is None:
             return
 
-        if parentNP is None :
+        if parentNP is None:
             parentNP = obj[OG.OBJ_NP].getParent()
         parentObj = self.editor.objectMgr.findObjectByNodePath(parentNP)
 

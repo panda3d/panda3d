@@ -20,16 +20,16 @@ class EntryScale(Pmw.MegaWidget):
         optiondefs = (
             ('state',        None,          None),
             ('value',        0.0,           Pmw.INITOPT),
-            ('resolution',          0.001,         None),
-            ('command',             None,          None),
-            ('preCallback',         None,          None),
-            ('postCallback',        None,          None),
-            ('callbackData',        [],            None),
-            ('min',                 0.0,           self._updateValidate),
-            ('max',                 100.0,         self._updateValidate),
-            ('text',                'EntryScale',  self._updateLabelText),
-            ('numDigits',   2,             self._setSigDigits),
-            )
+            ('resolution',   0.001,         None),
+            ('command',      None,          None),
+            ('preCallback',  None,          None),
+            ('postCallback', None,          None),
+            ('callbackData', [],            None),
+            ('min',          0.0,           self._updateValidate),
+            ('max',          100.0,         self._updateValidate),
+            ('text',         'EntryScale',  self._updateLabelText),
+            ('numDigits',    2,             self._setSigDigits),
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialise superclass
@@ -57,16 +57,16 @@ class EntryScale(Pmw.MegaWidget):
                                           (('entry', 'entryField_entry'),),
                                           None,
                                           Pmw.EntryField, self.labelFrame,
-                                          entry_width = 10,
-                                          validate = { 'validator': 'real',
-                                                       'min': self['min'],
-                                                       'max': self['max'],
-                                                       'minstrict': 0,
-                                                       'maxstrict': 0},
-                                          entry_justify = 'right',
-                                          entry_textvar = self.entryValue,
-                                          command = self._entryCommand)
-        self.entry.pack(side='left', padx = 4)
+                                          entry_width=10,
+                                          validate={'validator': 'real',
+                                                    'min': self['min'],
+                                                    'max': self['max'],
+                                                    'minstrict': 0,
+                                                    'maxstrict': 0},
+                                          entry_justify='right',
+                                          entry_textvar=self.entryValue,
+                                          command=self._entryCommand)
+        self.entry.pack(side='left', padx=4)
 
         # Create the EntryScale's label
         self.label = self.createcomponent('label', (), None,
@@ -270,6 +270,7 @@ class EntryScale(Pmw.MegaWidget):
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """
 
+
 class EntryScaleGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
@@ -295,7 +296,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
             # Destroy or withdraw
             ('fDestroy',        0,                      INITOPT)
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget
@@ -450,9 +451,9 @@ def rgbPanel(nodePath, callback = None):
                           dim = 4,
                           labels = ['R','G','B','A'],
                           value = [int(initColor[0]),
-                                          int(initColor[1]),
-                                          int(initColor[2]),
-                                          int(initColor[3])],
+                                   int(initColor[1]),
+                                   int(initColor[2]),
+                                   int(initColor[3])],
                           Valuator_max = 255,
                           Valuator_resolution = 1,
                           # Destroy not withdraw panel on dismiss

@@ -4,14 +4,19 @@ from . import ObjectGlobals as OG
 
 class ObjectGen:
     """ Base class for obj definitions """
+
     def __init__(self, name=''):
         self.name = name
 
 
 class ObjectBase(ObjectGen):
     """ Base class for obj definitions """
-    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], animNames = [], animDict = {}, properties={},
-                 movable = True, actor = False, named=False, updateModelFunction = None, orderedProperties=[], propertiesMask={}):
+
+    def __init__(self, name='', createFunction=None, model=None, models=[],
+                 anims=[], animNames=[], animDict={}, properties={},
+                 movable=True, actor=False, named=False,
+                 updateModelFunction=None, orderedProperties=[],
+                 propertiesMask={}):
         ObjectGen.__init__(self, name)
         self.createFunction = createFunction
         self.model = model
@@ -33,11 +38,14 @@ class ObjectBase(ObjectGen):
 class ObjectCurve(ObjectBase):
     def __init__(self, *args, **kw):
         ObjectBase.__init__(self, *args, **kw)
-        self.properties['Degree'] =[OG.PROP_UI_COMBO,   # UI type
-                                    OG.PROP_INT,        # data type
-                                    ('base.le.objectMgr.updateCurve', {'val':OG.ARG_VAL, 'obj':OG.ARG_OBJ}),    # update function
-                                    3,                  # default value
-                                    [2, 3, 4]]          # value range
+        self.properties['Degree'] = [
+            OG.PROP_UI_COMBO,   # UI type
+            OG.PROP_INT,        # data type
+            ('base.le.objectMgr.updateCurve', {'val': OG.ARG_VAL, 'obj': OG.ARG_OBJ}), # update function
+            3,                  # default value
+            [2, 3, 4],          # value range
+        ]
+
 
 class ObjectPaletteBase:
     """
@@ -72,9 +80,9 @@ class ObjectPaletteBase:
         self.data[item.name] = item
         self.dataKeys.append(item.name)
 
-    def add(self, item, parentName = None):
+    def add(self, item, parentName=None):
         if isinstance(item, str):
-            self.insertItem(ObjectGen(name = item), parentName)
+            self.insertItem(ObjectGen(name=item), parentName)
         else:
             self.insertItem(item, parentName)
 
@@ -91,9 +99,8 @@ class ObjectPaletteBase:
                     if node is not None:
                         deleteItems[key] = node
             return item
-        except:
+        except Exception:
             return None
-        return None
 
     def delete(self, name):
         try:
@@ -103,14 +110,13 @@ class ObjectPaletteBase:
                 deleteItems[name] = node
             for key in list(deleteItems.keys()):
                 item = self.dataStruct.pop(key)
-        except:
+        except Exception:
             return
-        return
 
     def findItem(self, name):
         try:
             item = self.data[name]
-        except:
+        except Exception:
             return None
         return item
 
@@ -137,7 +143,7 @@ class ObjectPaletteBase:
             item = self.data.pop(oldName)
             item.name = newName
             self.data[newName] = item
-        except:
+        except Exception:
             return False
         return True
 

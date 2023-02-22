@@ -11,6 +11,7 @@ from direct.task import Task
 
 class CurveEditor(DirectObject):
     """ CurveEditor will create and edit the curve """
+
     def __init__(self, editor):
         self.editor = editor
         self.i = 0
@@ -76,11 +77,11 @@ class CurveEditor(DirectObject):
         self.i = 0
         for item in self.curveControl:
             item[1].hide()
-        if self.editor.preMode == self.editor.BASE_MODE :
+        if self.editor.preMode == self.editor.BASE_MODE:
             pass
-        if self.editor.preMode == self.editor.CREATE_CURVE_MODE :
+        if self.editor.preMode == self.editor.CREATE_CURVE_MODE:
             self.updateScene()
-        if self.editor.preMode == self.editor.EDIT_CURVE_MODE :
+        if self.editor.preMode == self.editor.EDIT_CURVE_MODE:
             self.doneEdit()
         self.curveControl = []
         self.curve = []

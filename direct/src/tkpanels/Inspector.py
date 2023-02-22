@@ -19,6 +19,7 @@ import tkinter as tk
 
 ### public API
 
+
 def inspect(anObject):
     """Opens up a window for visually inspecting the details of a given Python
     object.  See :ref:`inspection-utilities`.
@@ -29,6 +30,7 @@ def inspect(anObject):
     return inspectorWindow
 
 ### private
+
 
 def inspectorFor(anObject):
     typeName = type(anObject).__name__.capitalize() + 'Type'
@@ -72,7 +74,8 @@ def initializeInspectorMap():
         'StringType': 'SequenceInspector',
         'TupleType': 'SequenceInspector',
         'TypeType': 'Inspector',
-         'UnboundMethodType': 'FunctionInspector'}
+        'UnboundMethodType': 'FunctionInspector',
+    }
 
     for each in notFinishedTypes:
         _InspectorMap[each] = 'Inspector'
@@ -119,10 +122,7 @@ class Inspector:
         object = self.partNumber(partNumber)
         doc = None
         if callable(object):
-            try:
-                doc = object.__doc__
-            except:
-                pass
+            doc = getattr(object, '__doc__', None)
         if doc:
             return str(object) + '\n' + str(doc)
         else:
@@ -150,9 +150,11 @@ class Inspector:
 
 ###
 
+
 class ModuleInspector(Inspector):
     def namedParts(self):
         return ['__dict__']
+
 
 class ClassInspector(Inspector):
     def namedParts(self):
@@ -161,21 +163,26 @@ class ClassInspector(Inspector):
     def title(self):
         return self.object.__name__ + ' Class'
 
+
 class InstanceInspector(Inspector):
     def title(self):
         return self.object.__class__.__name__
+
     def namedParts(self):
         return ['__class__'] + dir(self.object)
 
 ###
 
+
 class FunctionInspector(Inspector):
     def title(self):
         return self.object.__name__ + "()"
 
+
 class InstanceMethodInspector(Inspector):
     def title(self):
         return str(self.object.__self__.__class__) + "." + self.object.__name__ + "()"
+
 
 class CodeInspector(Inspector):
     def title(self):
@@ -183,11 +190,13 @@ class CodeInspector(Inspector):
 
 ###
 
+
 class ComplexInspector(Inspector):
     def namedParts(self):
         return ['real', 'imag']
 
 ###
+
 
 class DictionaryInspector(Inspector):
 
@@ -208,6 +217,7 @@ class DictionaryInspector(Inspector):
         else:
             return getattr(self.object, key)
 
+
 class SequenceInspector(Inspector):
     def initializePartsList(self):
         Inspector.initializePartsList(self)
@@ -224,6 +234,7 @@ class SequenceInspector(Inspector):
         else:
             return getattr(self.object, index)
 
+
 class SliceInspector(Inspector):
     def namedParts(self):
         return ['start', 'stop', 'step']
@@ -231,6 +242,7 @@ class SliceInspector(Inspector):
 
 ### Initialization
 initializeInspectorMap()
+
 
 class InspectorWindow:
     def __init__(self, inspector):
@@ -346,8 +358,8 @@ class InspectorWindow:
             command = self.commandWidget.get(commandStart,
                                              commandStart + ' lineend')
             if command:
-                partDict = { 'this': self.selectedPart(),
-                             'object': self.topInspector().object }
+                partDict = {'this': self.selectedPart(),
+                            'object': self.topInspector().object}
                 result = eval(command, partDict)
                 self.commandWidget.insert(tk.INSERT, repr(result) + '\n>>> ')
                 self.commandWidget.see(tk.INSERT)
@@ -395,7 +407,7 @@ class InspectorWindow:
         text = tk.Label(
             frame, justify = tk.LEFT,
             text = "ListBox shows selected object's attributes\nDouble click or use right arrow on an instance variable to dive down.\nDouble click self or use left arrow to pop back up.\nUse up and down arrow keys to move from item to item in the current level.\n\nValue box (upper right) shows current value of selected item\n\nCommand box (lower right) is used to evaluate python commands\nLocal variables 'object' and 'this' are defined as the current object being inspected\nand the current attribute selected."
-            )
+        )
         text.pack()
 
     #Private

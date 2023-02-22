@@ -33,12 +33,12 @@ class DirectWaitBar(DirectFrame):
             ('barTexture',     None,               self.setBarTexture),
             ('barRelief',      DGG.FLAT,           self.setBarRelief),
             ('sortOrder',      DGG.NO_FADE_SORT_INDEX, None),
-            )
+        )
         if 'text' in kw:
             textoptiondefs = (
                 ('text_pos',    (0, -0.025),          None),
                 ('text_scale',  0.1,                 None)
-                )
+            )
         else:
             textoptiondefs = ()
         # Merge keyword options with default options

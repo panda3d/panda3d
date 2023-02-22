@@ -15,6 +15,7 @@ import tkinter as tk
 
 #TODO: Task to monitor pose
 
+
 class Placer(AppShell):
     # Override class variables here
     appname = 'Placer Panel'
@@ -28,7 +29,7 @@ class Placer(AppShell):
         optiondefs = (
             ('title',       self.appname,       None),
             ('nodePath',    base.direct.camera,      None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Call superclass initialization function
@@ -355,8 +356,8 @@ class Placer(AppShell):
         self.scaleY['command'] = self.xform
         self.scaleZ['command'] = self.xform
 
-
     ### WIDGET OPERATIONS ###
+
     def setMovementMode(self, movementMode):
         # Set prefix
         namePrefix = ''
@@ -407,7 +408,7 @@ class Placer(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -464,7 +465,7 @@ class Placer(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -782,10 +783,12 @@ class Placer(AppShell):
         self.orbitFromCS.removeNode()
         self.orbitToCS.removeNode()
 
+
 def place(nodePath):
     return Placer(nodePath = nodePath)
 
 ######################################################################
+
 
 # Create demo in root window for testing.
 if __name__ == '__main__':

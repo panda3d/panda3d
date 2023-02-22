@@ -16,12 +16,13 @@ import tkinter as tk
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
 
+
 class Floater(Valuator):
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('style',  VALUATOR_MINI,   INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass
         Valuator.__init__(self, parent)
@@ -70,7 +71,7 @@ class FloaterWidget(Pmw.MegaWidget):
             ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass
@@ -234,7 +235,7 @@ class FloaterGroup(Pmw.MegaToplevel):
             ('command',         None,                   None),
             # A tuple of labels, one for each floater
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget

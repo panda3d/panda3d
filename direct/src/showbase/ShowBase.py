@@ -146,6 +146,7 @@ if __debug__:
     from . import OnScreenDebug
     import warnings
 
+
 @atexit.register
 def exitfunc():
     if getattr(builtins, 'base', None) is not None:
@@ -154,6 +155,8 @@ def exitfunc():
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
 # *seem* to cause anyone any problems.
+
+
 class ShowBase(DirectObject.DirectObject):
 
     #: The deprecated `.DConfig` interface for accessing config variables.
@@ -610,6 +613,7 @@ class ShowBase(DirectObject.DirectObject):
     def pushCTrav(self, cTrav):
         self.cTravStack.push(self.cTrav)
         self.cTrav = cTrav
+
     def popCTrav(self):
         self.cTrav = self.cTravStack.pop()
 
@@ -829,7 +833,7 @@ class ShowBase(DirectObject.DirectObject):
         # Save this lambda here for convenience; we'll use it to call
         # down to the underlying _doOpenWindow() with all of the above
         # parameters.
-        func = lambda : self._doOpenWindow(
+        func = lambda: self._doOpenWindow(
             props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
             host = host, type = type, name = name, size = size,
             aspectRatio = aspectRatio, makeCamera = makeCamera,
@@ -1727,7 +1731,6 @@ class ShowBase(DirectObject.DirectObject):
             self.recorder.addRecorder('mouse', mouseRecorder)
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
-
 
         mw = self.buttonThrowers[0].getParent()
 
@@ -2861,7 +2864,6 @@ class ShowBase(DirectObject.DirectObject):
                     camera = None, size = 128,
                     cameraMask = PandaNode.getAllCameraMask(),
                     sourceLens = None):
-
         """
         Similar to :meth:`screenshot()`, this sets up a temporary cube
         map Texture which it uses to take a series of six snapshots of
@@ -3427,7 +3429,6 @@ class ShowBase(DirectObject.DirectObject):
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()
-
 
     # Snake-case aliases, for people who prefer these.  We're in the process
     # of migrating everyone to use the snake-case alternatives.

@@ -22,11 +22,13 @@ INNER_SF = 0.2
 DIAL_FULL_SIZE = 45
 DIAL_MINI_SIZE = 30
 
+
 class Dial(Valuator):
     """
     Valuator widget which includes an angle dial and an entry for setting
     floating point values
     """
+
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
@@ -35,7 +37,7 @@ class Dial(Valuator):
             ('delta',             1.0,            self.setDelta),
             ('fSnap',             0,              self.setSnap),
             ('fRollover',         1,              self.setRollover),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         Valuator.__init__(self, parent)
         self.initialiseoptions(Dial)
@@ -70,19 +72,19 @@ class Dial(Valuator):
     def addValuatorPropertiesToDialog(self):
         self.addPropertyToDialog(
             'base',
-            { 'widget': self._valuator,
-              'type': 'real',
-              'help': 'Dial value = base + delta * numRevs'})
+            {'widget': self._valuator,
+             'type': 'real',
+             'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'delta',
-            { 'widget': self._valuator,
-              'type': 'real',
-              'help': 'Dial value = base + delta * numRevs'})
+            {'widget': self._valuator,
+             'type': 'real',
+             'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'numSegments',
-            { 'widget': self._valuator,
-              'type': 'integer',
-              'help': 'Number of segments to divide dial into.'})
+            {'widget': self._valuator,
+             'type': 'integer',
+             'help': 'Number of segments to divide dial into.'})
 
     def addValuatorMenuEntries(self):
         # The popup menu
@@ -137,7 +139,7 @@ class AngleDial(Dial):
             ('delta',             360.0,          None),
             ('fRollover',         0,              None),
             ('dial_numSegments',  12,             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass
         Dial.__init__(self, parent)
@@ -179,7 +181,7 @@ class DialWidget(Pmw.MegaWidget):
             ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass

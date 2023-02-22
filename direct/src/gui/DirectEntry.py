@@ -21,6 +21,7 @@ ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
 ENTRY_NO_FOCUS_STATE = PGEntry.SNoFocus    # 1
 ENTRY_INACTIVE_STATE = PGEntry.SInactive   # 2
 
+
 class DirectEntry(DirectFrame):
     """
     DirectEntry(parent) - Create a DirectGuiWidget which responds
@@ -82,7 +83,7 @@ class DirectEntry(DirectFrame):
             ('autoCapitalize',  0,                self.autoCapitalizeFunc),
             ('autoCapitalizeAllowPrefixes', DirectEntry.AllowCapNamePrefixes, None),
             ('autoCapitalizeForcePrefixes', DirectEntry.ForceCapNamePrefixes, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -215,6 +216,7 @@ class DirectEntry(DirectFrame):
 
     def _handleTyping(self, guiEvent):
         self._autoCapitalize()
+
     def _handleErasing(self, guiEvent):
         self._autoCapitalize()
 

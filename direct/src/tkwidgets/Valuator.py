@@ -12,11 +12,13 @@ import Pmw
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
 
+
 class Valuator(Pmw.MegaWidget):
     sfBase = 3.0
     sfDist = 7
     deadband = 5
     """ Base class for widgets used to interactively adjust numeric values """
+
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
@@ -45,7 +47,7 @@ class Valuator(Pmw.MegaWidget):
             ('postCallback',      None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',      [],             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass
@@ -126,15 +128,15 @@ class Valuator(Pmw.MegaWidget):
                  },
 
                 'min':
-                { 'widget': self,
-                  'type': 'real',
-                  'fNone': 1,
-                  'help': 'Minimum allowable value. Enter None for no minimum.'},
+                {'widget': self,
+                 'type': 'real',
+                 'fNone': 1,
+                 'help': 'Minimum allowable value. Enter None for no minimum.'},
                 'max':
-                { 'widget': self,
-                  'type': 'real',
-                  'fNone': 1,
-                  'help': 'Maximum allowable value. Enter None for no maximum.'},
+                {'widget': self,
+                 'type': 'real',
+                 'fNone': 1,
+                 'help': 'Maximum allowable value. Enter None for no maximum.'},
                 'numDigits':
                 {'widget': self,
                  'type': 'integer',
@@ -149,10 +151,10 @@ class Valuator(Pmw.MegaWidget):
                  },
 
                 'resetValue':
-                { 'widget': self,
-                  'type': 'real',
-                  'help': 'Enter value to set widget to on reset.'}
-                }
+                {'widget': self,
+                 'type': 'real',
+                 'help': 'Enter value to set widget to on reset.'}
+            }
             # Property list defines the display order of the properties
             self.propertyList = [
                 'state', 'text', 'min', 'max', 'numDigits',
@@ -308,7 +310,6 @@ class Valuator(Pmw.MegaWidget):
         self._popupMenu.post(event.widget.winfo_pointerx(),
                              event.widget.winfo_pointery())
 
-
     def _popupPropertiesDialog(self):
         WidgetPropertiesDialog.WidgetPropertiesDialog(
             self.propertyDict,
@@ -338,6 +339,7 @@ FLOATER = 'floater'
 DIAL = 'dial'
 ANGLEDIAL = 'angledial'
 SLIDER = 'slider'
+
 
 class ValuatorGroup(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
@@ -369,7 +371,7 @@ class ValuatorGroup(Pmw.MegaWidget):
             ('postCallback',      None,                 None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',      [],                   None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget
@@ -407,7 +409,7 @@ class ValuatorGroup(Pmw.MegaWidget):
                 preCallback = self._preCallback,
                 postCallback = self._postCallback,
                 callbackData = [self],
-                )
+            )
             f.pack(side = self['side'], expand = 1, fill = tk.X)
             self._valuatorList.append(f)
 
@@ -472,7 +474,6 @@ class ValuatorGroup(Pmw.MegaWidget):
         return str
 
 
-
 class ValuatorGroupPanel(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
@@ -506,7 +507,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             ('callbackData',      [],                   self._setCallbackData),
             # Destroy or withdraw
             ('fDestroy',        0,                      INITOPT)
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget
@@ -593,6 +594,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
     def reset(self):
         self.set(self['value'])
 
+
 Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
 
 
@@ -665,7 +667,6 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
         'Valuator Group', 'command',
         label='Clear Transparency', command=lambda: nodePath.clearTransparency())
 
-
     # System color picker
     menubar.addmenuitem(
         'Valuator Group', 'command',
@@ -702,6 +703,7 @@ def lightRGBPanel(light, style = 'mini'):
             initialcolor = tuple(vgp.get()[:3]))[0]
         if color:
             vgp.set((color[0], color[1], color[2], vgp.getAt(3)))
+
     def printToLog():
         n = light.getName()
         c=light.getColor()

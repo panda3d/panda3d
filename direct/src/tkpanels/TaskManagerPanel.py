@@ -21,7 +21,7 @@ class TaskManagerPanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         self.taskMgr = taskMgr
@@ -38,9 +38,9 @@ class TaskManagerPanel(AppShell):
         self.taskMgrWidget = TaskManagerWidget(
             self.interior(), self.taskMgr)
 
-
     def onDestroy(self, event):
         self.taskMgrWidget.onDestroy()
+
 
 class TaskManagerWidget(DirectObject):
     """

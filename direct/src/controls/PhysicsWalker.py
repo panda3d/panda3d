@@ -55,6 +55,7 @@ import math
 
 #import LineStream
 
+
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
@@ -546,7 +547,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if (airborneHeight > self.avatarRadius*0.5
-                or physObject.getVelocity().getZ() > 0.0
+                    or physObject.getVelocity().getZ() > 0.0
                 ): # Check stair angles before changing this.
             # ...the avatar is airborne (maybe a lot or a tiny amount).
             self.isAirborne = 1

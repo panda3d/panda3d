@@ -40,6 +40,7 @@ import builtins
 # Also, I'm not sure multiple camera-group configurations are working for the
 # cluster system.
 
+
 class ClusterServer(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterServer")
     MSG_NUM = 2000000
@@ -101,8 +102,6 @@ class ClusterServer(DirectObject.DirectObject):
             clusterDaemonPort = CLUSTER_DAEMON_PORT
         self.daemon.serverReady(clusterDaemonClient, clusterDaemonPort)
 
-
-
     def startListenerPollTask(self):
         # Run this task near the start of frame, sometime after the dataLoop
         taskMgr.add(self.listenerPollTask, "serverListenerPollTask", -40)
@@ -125,7 +124,6 @@ class ClusterServer(DirectObject.DirectObject):
                 self.notify.warning("getNewConnection returned false")
         return Task.cont
 
-
     def addNamedObjectMapping(self, object, name, hasColor = True,
                               priority = 0):
         if name not in self.objectMappings:
@@ -138,7 +136,6 @@ class ClusterServer(DirectObject.DirectObject):
         if name in self.objectMappings:
             self.objectMappings.pop(name)
 
-
     def redoSortedPriorities(self):
 
         self.sortedControlMappings = []
@@ -147,7 +144,6 @@ class ClusterServer(DirectObject.DirectObject):
                                                key])
 
         self.sortedControlMappings.sort()
-
 
     def addControlMapping(self, objectName, controlledName, offset = None,
                           priority = 0):
@@ -165,13 +161,11 @@ class ClusterServer(DirectObject.DirectObject):
         if objectName in self.controlMappings:
             self.controlOffsets[objectName] = offset
 
-
     def removeControlMapping(self, name):
         if name in self.controlMappings:
             self.controlMappings.pop(name)
             self.controlPriorities.pop(name)
         self.redoSortedPriorities()
-
 
     def startControlObjectTask(self):
         self.notify.debug("moving control objects")
@@ -188,7 +182,6 @@ class ClusterServer(DirectObject.DirectObject):
 
         self.sendNamedMovementDone()
         return Task.cont
-
 
     def sendNamedMovementDone(self):
         self.notify.debug("named movement done")
@@ -333,7 +326,6 @@ class ClusterServer(DirectObject.DirectObject):
         else:
             self.notify.debug("recieved unknown named object command: "+name)
 
-
     def handleMessageQueue(self):
         #print(self.messageQueue)
         for data in self.messageQueue:
@@ -369,5 +361,5 @@ class ClusterServer(DirectObject.DirectObject):
         command = self.msgHandler.parseCommandStringDatagram(dgi)
         try:
             exec(command, __builtins__)
-        except:
+        except Exception:
             pass

@@ -34,7 +34,7 @@ class OnScreenDebug:
         color = {
             "black": Vec4(0, 0, 0, 1),
             "white": Vec4(1, 1, 1, 1),
-            }
+        }
         fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").value]
         bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").value]
         fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)

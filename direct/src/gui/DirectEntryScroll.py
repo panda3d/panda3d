@@ -11,7 +11,7 @@ class DirectEntryScroll(DirectFrame):
             ('pgFunc',         PGVirtualFrame,      None),
             ('relief', None, None),
             ('clipSize',     (-1, 1, -1, 1),        self.setClipSize),
-            )
+        )
 
         self.defineoptions(kw, optiondefs)
         DirectFrame.__init__(self, parent, **kw)
@@ -80,7 +80,6 @@ class DirectEntryScroll(DirectFrame):
         if abs(distanceToCenter) > (clipExtent * 0.5):
             self.moveToCenterCursor()
 
-
     def moveToCenterCursor(self):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
         canvasX = self.canvas.getX()
@@ -120,7 +119,6 @@ class DirectEntryScroll(DirectFrame):
         self.entry.destroy()
         self.entry = None
         DirectFrame.destroy(self)
-
 
     def getCanvas(self):
         return self.canvas

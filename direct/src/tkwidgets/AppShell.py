@@ -27,8 +27,10 @@ if not hasattr(builtins, "widgetDict"):
 if not hasattr(builtins, "variableDict"):
     builtins.variableDict = {}
 
+
 def resetWidgetDict():
     builtins.widgetDict = {}
+
 
 def resetVariableDict():
     builtins.variableDict = {}
@@ -63,7 +65,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
             ('frameheight',    self.frameHeight,    Pmw.INITOPT),
             ('usecommandarea', self.usecommandarea, Pmw.INITOPT),
             ('usestatusarea',  self.usestatusarea,  Pmw.INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # If no toplevel passed in, create one
         if parent is None:
@@ -166,7 +168,6 @@ class AppShell(Pmw.MegaWidget, DirectObject):
                                      padx=self['padx'],
                                      pady=self['pady'])
 
-
     def __createMessageBar(self):
         # Create the message bar area for help and status messages.
         frame = self.createcomponent('bottomtray', (), None,
@@ -199,9 +200,8 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         Pmw.aboutversion(self.appversion)
         Pmw.aboutcopyright(self.copyright)
         Pmw.aboutcontact(
-          'For more information, contact:\n %s\n Phone: %s\n Email: %s' %\
-                      (self.contactname, self.contactphone,
-                       self.contactemail))
+            'For more information, contact:\n %s\n Phone: %s\n Email: %s' % \
+            (self.contactname, self.contactphone, self.contactemail))
         self.about = Pmw.AboutDialog(self._hull,
                                      applicationname=self.appname)
         self.about.withdraw()
@@ -509,6 +509,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # Record widget
         self.addWidget(category, text, widget)
         return widget
+
     def transformRGB(self, rgb, max = 1.0):
         retval = '#'
         for v in [rgb[0], rgb[1], rgb[2]]:
@@ -519,6 +520,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
                 v = 0
             retval = "%s%02x" % (retval, int(v))
         return retval
+
 
 class TestAppShell(AppShell):
     # Override class variables here
@@ -548,6 +550,7 @@ class TestAppShell(AppShell):
     def createInterface(self):
         self.createButtons()
         self.createMain()
+
 
 if __name__ == '__main__':
     test = TestAppShell(balloon_state='none')

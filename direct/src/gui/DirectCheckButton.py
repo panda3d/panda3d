@@ -12,12 +12,14 @@ from panda3d.core import PGFrameStyle, VBase4
 from .DirectButton import DirectButton
 from .DirectLabel import DirectLabel
 
+
 class DirectCheckButton(DirectButton):
     """
     DirectCheckButton(parent) - Create a DirectGuiWidget which responds
     to mouse clicks by setting a state of on or off and execute a callback
     function (passing that state through) if defined
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         # A Direct Frame can have:
@@ -42,7 +44,7 @@ class DirectCheckButton(DirectButton):
             ('boxImageScale', 1, None),
             ('boxImageColor', None, None),
             ('boxRelief', 'sunken', None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
@@ -166,7 +168,6 @@ class DirectCheckButton(DirectButton):
                 newpos[2] += bbounds[2]-lbounds[2] + self['boxBorder'] + ibw[1]
 
             self.indicator.setPos(newpos[0], newpos[1], newpos[2])
-
 
     def commandFunc(self, event):
         self['indicatorValue'] = 1 - self['indicatorValue']

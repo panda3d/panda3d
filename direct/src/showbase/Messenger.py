@@ -417,7 +417,7 @@ class Messenger:
                 # Release the lock temporarily while we call the method.
                 self.lock.release()
                 try:
-                    result = method (*(extraArgs + sentArgs))
+                    result = method(*(extraArgs + sentArgs))
                 finally:
                     self.lock.acquire()
 

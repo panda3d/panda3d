@@ -60,7 +60,7 @@ def rebindClass(filename):
     res = findClass(className)
 
     if not res:
-        print ('Warning: Finder could not find class')
+        print('Warning: Finder could not find class')
         # Remove the temp file we made
         file.close()
         os.remove(filename)
@@ -87,7 +87,7 @@ def rebindClass(filename):
     file.close()
     os.remove(filename)
 
-    print ('    Finished rebind')
+    print('    Finished rebind')
 
 
 def copyFuncs(fromClass, toClass):
@@ -148,24 +148,27 @@ def copyFuncs(fromClass, toClass):
         # print "adding new func: ", oldFunc, funcName, newFunc
         setattr(toClass, funcName, newFunc)
 
+
 def replaceMessengerFunc(replaceFuncList):
     try:
         messenger
-    except:
+    except Exception:
         return
     for oldFunc, funcName, newFunc in replaceFuncList:
         res = messenger.replaceMethod(oldFunc, newFunc)
         if res:
             print('replaced %s messenger function(s): %s' % (res, funcName))
 
+
 def replaceTaskMgrFunc(replaceFuncList):
     try:
         taskMgr
-    except:
+    except Exception:
         return
     for oldFunc, funcName, newFunc in replaceFuncList:
         if taskMgr.replaceMethod(oldFunc, newFunc):
             print('replaced taskMgr function: %s' % funcName)
+
 
 def replaceStateFunc(replaceFuncList):
     if not sys.modules.get('base.direct.fsm.State'):
@@ -176,27 +179,30 @@ def replaceStateFunc(replaceFuncList):
         if res:
             print('replaced %s FSM transition function(s): %s' % (res, funcName))
 
+
 def replaceCRFunc(replaceFuncList):
     try:
         base.cr
-    except:
+    except Exception:
         return
     # masad: Gyedo's fake cr causes a crash in followingreplaceMethod on rebinding, so
     # I throw in the isFake check. I still think the fake cr should be eliminated.
-    if hasattr(base.cr,'isFake'):
+    if hasattr(base.cr, 'isFake'):
         return
     for oldFunc, funcName, newFunc in replaceFuncList:
         if base.cr.replaceMethod(oldFunc, newFunc):
             print('replaced DistributedObject function: %s' % funcName)
 
+
 def replaceAIRFunc(replaceFuncList):
     try:
         simbase.air
-    except:
+    except Exception:
         return
     for oldFunc, funcName, newFunc in replaceFuncList:
         if simbase.air.replaceMethod(oldFunc, newFunc):
             print('replaced DistributedObject function: %s' % funcName)
+
 
 def replaceIvalFunc(replaceFuncList):
     # Make sure we have imported IntervalManager and thus created

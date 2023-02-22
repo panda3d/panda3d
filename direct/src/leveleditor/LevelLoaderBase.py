@@ -1,5 +1,6 @@
 import imp
 
+
 class LevelLoaderBase:
     """
     Base calss for LevelLoader
@@ -7,6 +8,7 @@ class LevelLoaderBase:
     which you will use to load level editor data in your game.
     Refer LevelLoader.py for example.
     """
+
     def __init__(self):
         self.defaultPath = None # this should be set in your LevelLoader.py
         self.initLoader()
@@ -32,6 +34,6 @@ class LevelLoaderBase:
         try:
             module = imp.load_module(fileName, file, pathname, description)
             return True
-        except:
+        except Exception:
             print('failed to load %s'%fileName)
             return None

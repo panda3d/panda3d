@@ -17,6 +17,7 @@ class DirectScrollBar(DirectFrame):
     DirectScrollBar -- a widget which represents a scroll bar the user can
     use for paging through a large document or panel.
     """
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -35,18 +36,18 @@ class DirectScrollBar(DirectFrame):
             # Function to be called repeatedly as the bar is scrolled
             ('command',        None,               None),
             ('extraArgs',      [],                 None),
-            )
+        )
 
         if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.04, 0.04, -0.5, 0.5),   None),
-                )
+            )
         else:
             # These are the default options for a horizontal layout.
             optiondefs += (
                 ('frameSize',      (-0.5, 0.5, -0.04, 0.04),  None),
-                )
+            )
 
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

@@ -26,12 +26,12 @@ class WxPandaShell(WxAppShell):
                        '\nAll Rights Reserved.')
 
     MENU_TEXTS = {
-        ID_FOUR_VIEW : ("Four Views", None),
-        ID_TOP_VIEW : ("Top View", None),
-        ID_FRONT_VIEW : ("Front View", None),
-        ID_LEFT_VIEW : ("Left View", None),
-        ID_PERSP_VIEW : ("Persp View", None),
-        }
+        ID_FOUR_VIEW: ("Four Views", None),
+        ID_TOP_VIEW: ("Top View", None),
+        ID_FRONT_VIEW: ("Front View", None),
+        ID_LEFT_VIEW: ("Left View", None),
+        ID_PERSP_VIEW: ("Persp View", None),
+    }
 
     def __init__(self, fStartDirect = False):
         base = getattr(ShowBaseGlobal, 'base', None)

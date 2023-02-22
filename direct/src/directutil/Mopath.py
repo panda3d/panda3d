@@ -23,7 +23,7 @@ class Mopath(DirectObject):
 
     def __init__(self, name = None, fluid = 1, objectToLoad = None, upVectorNodePath = None, reverseUpVector = False):
         if name is None:
-            name = 'mopath%d' % self.nameIndex
+            name = f'mopath{self.nameIndex}'
             self.nameIndex = self.nameIndex + 1
         self.name = name
         self.fluid = fluid
@@ -38,12 +38,12 @@ class Mopath(DirectObject):
         self.upVectorNodePath = upVectorNodePath
         self.reverseUpVector = reverseUpVector
         self.reset()
-        if isinstance( objectToLoad, NodePath ):
-            self.loadNodePath( objectToLoad )
-        elif isinstance( objectToLoad, str ):
-            self.loadFile( objectToLoad )
+        if isinstance(objectToLoad, NodePath):
+            self.loadNodePath(objectToLoad)
+        elif isinstance(objectToLoad, str):
+            self.loadFile(objectToLoad)
         elif objectToLoad is not None:
-            print("Mopath: Unable to load object '%s', objectToLoad must be a file name string or a NodePath" % objectToLoad)
+            print(f"Mopath: Unable to load object '{objectToLoad}', objectToLoad must be a file name string or a NodePath")
 
     def getMaxT(self):
         return self.maxT * self.timeScale
@@ -69,7 +69,6 @@ class Mopath(DirectObject):
             self.maxT = self.hprNurbsCurve.getMaxT()
         else:
             print('Mopath: no valid curves in nodePath: %s' % nodePath)
-
 
     def reset(self):
         self.maxT = 0.0

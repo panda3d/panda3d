@@ -14,6 +14,7 @@ CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
 Y_AXIS = Vec3(0, 1, 0)
 
+
 class DirectCameraControl(DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectCameraControl')
@@ -50,7 +51,7 @@ class DirectCameraControl(DirectObject):
             ['DIRECT-mouse2Up', self.mouseFlyStop],
             ['DIRECT-mouse3', self.mouseDollyStart],
             ['DIRECT-mouse3Up', self.mouseDollyStop],
-            ]
+        ]
 
         # [gjeon] moved all of the hotkeys to single place for easy remapping
 ##         self.keyEvents = [
@@ -101,7 +102,7 @@ class DirectCameraControl(DirectObject):
             ['DIRECT-removeManipulateCameraTask', self.removeManipulateCameraTask],
             ['DIRECT-zoomInCam', self.zoomCam, 0.5, t],
             ['DIRECT-zoomOutCam', self.zoomCam, -2.0, t],
-            ]
+        ]
         # set this to true to prevent the camera from rolling
         self.lockRoll = False
         # NIK - flag to determine whether to use maya camera controls
@@ -351,7 +352,7 @@ class DirectCameraControl(DirectObject):
         else:
             moveDir = Vec3(Y_AXIS)
 
-        if self.useMayaCamControls : # use maya controls
+        if self.useMayaCamControls: # use maya controls
             moveDir.assign(moveDir * ((base.direct.dr.mouseDeltaX -1.0 * base.direct.dr.mouseDeltaY)
                                     * state.zoomSF))
             hVal = 0.0
@@ -613,7 +614,7 @@ class DirectCameraControl(DirectObject):
                                          startColor = Vec4(1, 0, 0, 1),
                                          blendType = 'easeInOut'),
             Func(self.coaMarker.stash)
-            )
+        )
         self.coaMarkerColorIval.start()
 
     def homeCam(self):
@@ -699,7 +700,6 @@ class DirectCameraControl(DirectObject):
                         name = 'manipulateCamera')
         self.__startManipulateCamera(ival = ival)
 
-
     def zoomCam(self, zoomFactor, t):
         self.__stopManipulateCamera()
         # Record undo point
@@ -769,7 +769,6 @@ class DirectCameraControl(DirectObject):
                         name = 'manipulateCamera')
         self.__startManipulateCamera(ival = ival)
 
-
     def swingCamAboutWidget(self, degrees, t):
         # Remove existing camera manipulation task
         self.__stopManipulateCamera()
@@ -833,7 +832,6 @@ class DirectCameraControl(DirectObject):
         ival = Sequence(ival, Func(self.reparentCam, parent),
                         name = 'manipulateCamera')
         self.__startManipulateCamera(ival = ival)
-
 
     def moveToFit(self):
         # How big is the active widget?

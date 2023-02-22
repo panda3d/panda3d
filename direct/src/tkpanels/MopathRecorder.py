@@ -46,6 +46,7 @@ PRF_UTILITIES = [
     'lambda s = self: s.playbackMarker.setZ(render, 0.0)',
     'lambda s = self: s.followTerrain(10.0)']
 
+
 class MopathRecorder(AppShell, DirectObject):
     # Override class variables here
     appname = 'Mopath Recorder Panel'
@@ -63,7 +64,7 @@ class MopathRecorder(AppShell, DirectObject):
             ('title',       self.appname,         None),
             ('nodePath',    None,                 None),
             ('name',        name,                 None)
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Call superclass initialization function
@@ -191,7 +192,7 @@ class MopathRecorder(AppShell, DirectObject):
             ('DIRECT_manipulateObjectStart', self.manipulateObjectStartHook),
             ('DIRECT_manipulateObjectCleanup',
              self.manipulateObjectCleanupHook),
-            ]
+        ]
         for event, method in self.actionEvents:
             self.accept(event, method)
 
@@ -930,6 +931,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def disableKeyframeButton(self):
         self.getWidget('Recording', 'Add Keyframe')['state'] = 'disabled'
+
     def enableKeyframeButton(self):
         self.getWidget('Recording', 'Add Keyframe')['state'] = 'normal'
 
@@ -1211,7 +1213,7 @@ class MopathRecorder(AppShell, DirectObject):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox

@@ -659,8 +659,10 @@ class DirectGuiBase(DirectObject.DirectObject):
         gEvent = event + self.guiId
         self.ignore(gEvent)
 
+
 def toggleGuiGridSnap():
     DirectGuiWidget.snapToGrid = 1 - DirectGuiWidget.snapToGrid
+
 
 def setGuiGridSpacing(spacing):
     DirectGuiWidget.gridSpacing = spacing
@@ -722,7 +724,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('suppressMouse',  1,            DGG.INITOPT),
             ('suppressKeys',   0,            DGG.INITOPT),
             ('enableEdit',     1,            DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -829,7 +831,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
         editVec = Vec3(vWidget2render2d - vMouse2render2d)
         if base.mouseWatcherNode.getModifierButtons().isDown(
-            KeyboardButton.control()):
+                KeyboardButton.control()):
             t = taskMgr.add(self.guiScaleTask, 'guiEditTask')
             t.refPos = vWidget2render2d
             t.editVecLen = editVec.length()
@@ -910,7 +912,6 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.bounds[1] + bw[0],
             self.bounds[2] - bw[1],
             self.bounds[3] + bw[1])
-
 
     def getBounds(self, state = 0):
         self.stateNodePath[state].calcTightBounds(self.ll, self.ur)

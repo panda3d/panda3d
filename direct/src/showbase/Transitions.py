@@ -81,7 +81,7 @@ class Transitions:
                 image = self.fadeModel,
                 image_scale = (4, 2, 2),
                 state = DGG.NORMAL,
-                )
+            )
             if not self.fadeModel:
                 # No fade model was given, so we make this the fade model.
                 self.fade["relief"] = DGG.FLAT
@@ -255,7 +255,6 @@ class Transitions:
         self.alphaOn.set(r, g, b, 1)
         self.alphaOff.set(r, g, b, 0)
 
-
     ##################################################
     # Iris
     ##################################################
@@ -403,7 +402,7 @@ class Transitions:
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
                 sortOrder = 0,
-                )
+            )
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxBottom',
@@ -418,7 +417,7 @@ class Transitions:
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
                 sortOrder = 0,
-                )
+            )
 
             # masad: always place these at the bottom of render
             self.letterboxTop.setBin('sorted',0)
@@ -472,7 +471,7 @@ class Transitions:
                                 # startPos = Vec3(0, 0, 1),
                                 blendType=blendType
                                 ),
-                ),
+            ),
                                           Func(self.__finishLetterbox),
                                           name = self.letterboxTaskName,
                                           )
@@ -508,7 +507,7 @@ class Transitions:
                                 # startPos = Vec3(0, 0, 0.8),
                                 blendType=blendType
                                 ),
-                ),
+            ),
                 Func(self.letterbox.stash),
                 Func(self.__finishLetterbox),
                 Func(messenger.send, 'letterboxOff'),

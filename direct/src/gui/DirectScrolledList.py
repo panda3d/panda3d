@@ -37,7 +37,7 @@ class DirectScrolledListItem(DirectButton):
         optiondefs = (
             ('parent', self._parent,    None),
             ('command', self.select, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectButton.__init__(self)
@@ -91,7 +91,7 @@ class DirectScrolledList(DirectFrame):
             ('forceHeight',        None,      self.setForceHeight),
             ('incButtonCallback',  None,      self.setIncButtonCallback),
             ('decButtonCallback',  None,      self.setDecButtonCallback),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -198,7 +198,7 @@ class DirectScrolledList(DirectFrame):
         #print "scrollTo[", index,"] called, len(self[items])=", len(self["items"])," self[numItemsVisible]=", self["numItemsVisible"]
         try:
             self["numItemsVisible"]
-        except:
+        except Exception:
             # RAU hack to kill 27633
             self.notify.info('crash 27633 fixed!')
             return

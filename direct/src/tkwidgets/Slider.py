@@ -9,18 +9,20 @@ from .Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
 import Pmw
 import tkinter as tk
 
+
 class Slider(Valuator):
     """
     Valuator widget which includes an min/max slider and an entry for setting
     floating point values in a range
     """
+
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('min',        0.0,           self.setMin),
             ('max',        100.0,         self.setMax),
             ('style',      VALUATOR_MINI,   INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         Valuator.__init__(self, parent)
         # Can not enter None for min or max, update propertyDict to reflect
@@ -441,14 +443,19 @@ class SliderWidget(Pmw.MegaWidget):
 
     def _incrementValue(self, event):
         self.set(self.value + self.increment)
+
     def _bigIncrementValue(self, event):
         self.set(self.value + self.increment * 10.0)
+
     def _decrementValue(self, event):
         self.set(self.value - self.increment)
+
     def _bigDecrementValue(self, event):
         self.set(self.value - self.increment * 10.0)
+
     def _goToMin(self, event):
         self.set(self['min'])
+
     def _goToMax(self, event):
         self.set(self['max'])
 

@@ -72,7 +72,7 @@ class DirectManipulationControl(DirectObject):
             ['DIRECT-widgetScaleDown', self.scaleWidget, 0.5],
             ['shift-f', self.objectHandles.growToFit],
             ['i', self.plantSelectedNodePath],
-            ]
+        ]
         self.defaultSkipFlags = DG.SKIP_HIDDEN | DG.SKIP_BACKFACE
         self.optionalSkipFlags = 0
         self.unmovableTagList = []
@@ -192,8 +192,8 @@ class DirectManipulationControl(DirectObject):
         return Task.done
 
     def watchMouseTask(self, state):
-        if (((abs (state.initX - base.direct.dr.mouseX)) > 0.01) or
-            ((abs (state.initY - base.direct.dr.mouseY)) > 0.01)):
+        if (abs(state.initX - base.direct.dr.mouseX) > 0.01 or
+            abs(state.initY - base.direct.dr.mouseY) > 0.01):
             taskMgr.remove('manip-move-wait')
             self.mode = 'move'
             self.manipulateObject()
@@ -221,8 +221,8 @@ class DirectManipulationControl(DirectObject):
         endX = base.direct.dr.mouseX
         endY = base.direct.dr.mouseY
 
-        if (((abs (endX - startX)) < 0.01) and
-            ((abs (endY - startY)) < 0.01)):
+        if (abs(endX - startX) < 0.01 and
+            abs(endY - startY) < 0.01):
             return
 
         self.marquee = LineNodePath(base.render2d, 'marquee', 0.5, VBase4(.8, .6, .6, 1))
@@ -1056,8 +1056,8 @@ class DirectManipulationControl(DirectObject):
             self.initScale *
             (self.objectHandles.getWidgetIntersectPt(
             self.manipRef, 'y').length() /
-             self.initScaleMag)
-            )
+                self.initScaleMag)
+        )
         base.direct.widget.setScale(currScale)
 
     ## Utility functions ##
@@ -1081,6 +1081,7 @@ class DirectManipulationControl(DirectObject):
             # Let everyone know that something was moved
             messenger.send('DIRECT_manipulateObjectCleanup',
                            [base.direct.selected.getSelectedAsList()])
+
 
 class ObjectHandles(NodePath, DirectObject):
     def __init__(self, name='objectHandles'):
@@ -1753,6 +1754,7 @@ class ObjectHandles(NodePath, DirectObject):
                 lineOrigin, lineDir, DG.ORIGIN, DG.Z_AXIS))
 
         return self.hitPt
+
 
 def drawBox(lines, center, sideLength):
     l = sideLength * 0.5

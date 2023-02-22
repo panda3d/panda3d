@@ -33,6 +33,7 @@ def _createContainerLeak():
         # use tuples as keys since they can't be weakref'd, and use an instance
         # since it can't be repr/eval'd
         # that will force the leak detector to hold a normal 'non-weak' reference
+
         class LeakKey:
             pass
         base.leakContainer[(LeakKey(),)] = {}
@@ -47,13 +48,17 @@ def _createContainerLeak():
             return task.done
     leakContainer()
 
+
 def _createTaskLeak():
     leakTaskName = uniqueName('leakedTask')
     leakDoLaterName = uniqueName('leakedDoLater')
+
     def nullTask(task=None):
         return task.cont
+
     def nullDoLater(task=None):
         return task.done
+
     def leakTask(task=None, leakTaskName=leakTaskName):
         base = getBase()
         taskMgr.add(nullTask, uniqueName(leakTaskName))
@@ -63,8 +68,10 @@ def _createTaskLeak():
             return task.done
     leakTask()
 
+
 class NoDictKey:
     pass
+
 
 class Indirection:
     """
@@ -75,6 +82,7 @@ class Indirection:
     TODO: store string components that are duplicates of strings in the actual system so that
     Python will keep one copy and reduce memory usage
     """
+
     def __init__(self, evalStr=None, dictKey=NoDictKey):
         # if this is a dictionary lookup, pass dictKey instead of evalStr
         self.evalStr = evalStr
@@ -89,7 +97,7 @@ class Indirection:
             try:
                 keyEval = eval(keyRepr)
                 useEval = True
-            except:
+            except Exception:
                 pass
             if useEval:
                 # check to make sure the eval succeeded
@@ -114,6 +122,7 @@ class Indirection:
 
     def acquire(self):
         self._refCount += 1
+
     def release(self):
         self._refCount -= 1
         if self._refCount == 0:
@@ -163,6 +172,7 @@ class Indirection:
 
     def __repr__(self):
         return self.getString()
+
 
 class ObjectRef:
     """
@@ -346,10 +356,12 @@ class ObjectRef:
             pass
         return result
 
+
 class FindContainers(Job):
     """
     Explore the Python graph, looking for objects that support __len__()
     """
+
     def __init__(self, name, leakDetector):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -382,7 +394,7 @@ class FindContainers(Job):
             pass
         try:
             base
-        except:
+        except Exception:
             pass
         else:
             ref = ObjectRef(Indirection(evalStr='base.__dict__'), id(base.__dict__))
@@ -391,7 +403,7 @@ class FindContainers(Job):
                 pass
         try:
             simbase
-        except:
+        except Exception:
             pass
         else:
             ref = ObjectRef(Indirection(evalStr='simbase.__dict__'), id(simbase.__dict__))
@@ -411,7 +423,7 @@ class FindContainers(Job):
         # how good of a starting object is this object for traversing the object graph?
         try:
             return len(startObj)
-        except:
+        except Exception:
             return 1
 
     def _isDeadEnd(self, obj, objName=None):
@@ -426,7 +438,7 @@ class FindContainers(Job):
             return True
         try:
             className = obj.__class__.__name__
-        except:
+        except Exception:
             pass
         else:
             # prevent infinite recursion in built-in containers related to methods
@@ -512,9 +524,9 @@ class FindContainers(Job):
                             # make a generator that yields containers a # of times that is
                             # proportional to their length
                             for fw in makeFlywheelGen(
-                                list(startRefWorkingList.source.values()),
-                                countFunc=lambda x: self.getStartObjAffinity(x),
-                                scale=.05):
+                                    list(startRefWorkingList.source.values()),
+                                    countFunc=lambda x: self.getStartObjAffinity(x),
+                                    scale=.05):
                                 yield None
                             startRefWorkingList.refGen = fw
                     if curObjRef is None:
@@ -529,7 +541,7 @@ class FindContainers(Job):
                         try:
                             for containerRef in self._leakDetector.getContainerByIdGen(startId):
                                 yield None
-                        except:
+                        except Exception:
                             # ref is invalid
                             self.notify.debug('invalid startRef, stored as id %s' % startId)
                             self._leakDetector.removeContainerById(startId)
@@ -539,7 +551,7 @@ class FindContainers(Job):
                 try:
                     for curObj in curObjRef.getContainerGen():
                         yield None
-                except:
+                except Exception:
                     self.notify.debug('lost current container, ref.getContainerGen() failed')
                     # that container is gone, try again
                     curObjRef = None
@@ -642,6 +654,7 @@ class FindContainers(Job):
                 raise
         yield Job.Done
 
+
 class CheckContainers(Job):
     """
     Job to check container sizes and find potential leaks; sub-job of ContainerLeakDetector
@@ -724,7 +737,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (1)')
                                     else:
@@ -745,7 +758,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (2)')
                                     else:
@@ -766,7 +779,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (3)')
                                     else:
@@ -785,6 +798,7 @@ class CheckContainers(Job):
             if __dev__:
                 raise
         yield Job.Done
+
 
 class FPTObjsOfType(Job):
     def __init__(self, name, leakDetector, otn, doneCallback=None):
@@ -818,9 +832,9 @@ class FPTObjsOfType(Job):
                 yield None
                 try:
                     for container in self._leakDetector.getContainerByIdGen(
-                        id, getInstance=getInstance):
+                            id, getInstance=getInstance):
                         yield None
-                except:
+                except Exception:
                     pass
                 else:
                     if hasattr(container, '__class__'):
@@ -830,9 +844,9 @@ class FPTObjsOfType(Job):
                     if self._otn.lower() in cName.lower():
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(
-                                id, getInstance=getInstance):
+                                    id, getInstance=getInstance):
                                 yield None
-                        except:
+                        except Exception:
                             pass
                         else:
                             print('GPTC(' + self._otn + '):' + self.getJobName() + ': ' + ptc)
@@ -845,6 +859,7 @@ class FPTObjsOfType(Job):
     def finished(self):
         if self._doneCallback:
             self._doneCallback(self)
+
 
 class FPTObjsNamed(Job):
     def __init__(self, name, leakDetector, on, doneCallback=None):
@@ -878,7 +893,7 @@ class FPTObjsNamed(Job):
                 try:
                     for container in self._leakDetector.getContainerByIdGen(id):
                         yield None
-                except:
+                except Exception:
                     pass
                 else:
                     name = self._leakDetector._id2ref[id].getFinalIndirectionStr()
@@ -886,7 +901,7 @@ class FPTObjsNamed(Job):
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(id):
                                 yield None
-                        except:
+                        except Exception:
                             pass
                         else:
                             print('GPTCN(' + self._on + '):' + self.getJobName() + ': ' + ptc)
@@ -900,11 +915,13 @@ class FPTObjsNamed(Job):
         if self._doneCallback:
             self._doneCallback(self)
 
+
 class PruneObjectRefs(Job):
     """
     Job to destroy any container refs that are no longer valid.
     Checks validity by asking for each container
     """
+
     def __init__(self, name, leakDetector):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -926,7 +943,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in self._leakDetector.getContainerByIdGen(id):
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     self._leakDetector.removeContainerById(id)
             _id2baseStartRef = self._leakDetector._findContainersJob._id2baseStartRef
@@ -936,7 +953,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in _id2baseStartRef[id].getContainerGen():
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     del _id2baseStartRef[id]
             _id2discoveredStartRef = self._leakDetector._findContainersJob._id2discoveredStartRef
@@ -946,7 +963,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in _id2discoveredStartRef[id].getContainerGen():
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     del _id2discoveredStartRef[id]
         except Exception as e:
@@ -954,6 +971,7 @@ class PruneObjectRefs(Job):
             if __dev__:
                 raise
         yield Job.Done
+
 
 class ContainerLeakDetector(Job):
     """
@@ -1028,12 +1046,14 @@ class ContainerLeakDetector(Job):
     @classmethod
     def addPrivateObj(cls, obj):
         cls.PrivateIds.add(id(obj))
+
     @classmethod
     def removePrivateObj(cls, obj):
         cls.PrivateIds.remove(id(obj))
 
     def _getCheckTaskName(self):
         return 'checkForLeakingContainers-%s' % self._serialNum
+
     def _getPruneTaskName(self):
         return 'pruneLeakingContainerRefs-%s' % self._serialNum
 
@@ -1043,16 +1063,20 @@ class ContainerLeakDetector(Job):
     def getContainerByIdGen(self, id, **kwArgs):
         # return a generator to look up a container
         return self._id2ref[id].getContainerGen(**kwArgs)
+
     def getContainerById(self, id):
         for result in self._id2ref[id].getContainerGen():
             pass
         return result
+
     def getContainerNameByIdGen(self, id, **kwArgs):
         return self._id2ref[id].getEvalStrGen(**kwArgs)
+
     def getContainerNameById(self, id):
         if id in self._id2ref:
             return repr(self._id2ref[id])
         return '<unknown container>'
+
     def removeContainerById(self, id):
         if id in self._id2ref:
             self._id2ref[id].destroy()

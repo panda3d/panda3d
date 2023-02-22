@@ -13,6 +13,7 @@ import gc
 
 __all__ = ["ConnectionRepository", "GCTrigger"]
 
+
 class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
     """
@@ -233,7 +234,7 @@ class ConnectionRepository(
         distObj.parentId = 0
         distObj.zoneId = 0
         # updateRequiredFields calls announceGenerate
-        return  distObj
+        return distObj
 
     def readDCFile(self, dcFileNames = None):
         """
@@ -589,7 +590,7 @@ class ConnectionRepository(
         if self.http is None:
             try:
                 self.http = HTTPClient()
-            except:
+            except Exception:
                 pass
 
         return self.http
@@ -666,6 +667,7 @@ class ConnectionRepository(
 
     def uniqueName(self, idString):
         return "%s-%s" % (idString, self.uniqueId)
+
 
 class GCTrigger:
     # used to trigger garbage collection

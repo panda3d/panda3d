@@ -11,7 +11,7 @@ property =  [
     "translateX",
     "translateY",
     "translateZ"
-    ]
+]
 
 #----------------------------------------------------------------------
 ZoomIn = PyEmbeddedImage(
@@ -79,10 +79,12 @@ TwoTangents = PyEmbeddedImage(
 
 #----------------------------------------------------------------------
 
+
 class GraphEditorWindow(wx.Window):
     """
     This is the main graph editor window.
     """
+
     def __init__(self, parent, windowSize, property, xRange, yRange, curFrame, object):
         wx.Window.__init__(self, parent, size = windowSize, style = wx.SUNKEN_BORDER)
 
@@ -388,7 +390,7 @@ class GraphEditorWindow(wx.Window):
             dc.DrawLine(list[0][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[0][AG.KEYFRAME][AG.LOCAL_VALUE][1], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][1])
             return
 
-        if len(list)>=3 :
+        if len(list) >= 3:
             for i in range(len(list)-1):
                 x1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]
                 y1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
@@ -405,7 +407,6 @@ class GraphEditorWindow(wx.Window):
                 x2 = x1 + (x4 - x1) / 3.0
                 scale1 = (x2 - x1) / t1x
                 y2 = y1 - t1y * scale1
-
 
                 x3 = x4 - (x4 - x1) / 3.0
                 scale2 = (x4 - x3) / t2x
@@ -445,12 +446,12 @@ class GraphEditorWindow(wx.Window):
             pointY = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
 
             if list[i][AG.KEYFRAME][AG.SELECT] == 0:
-                dc.SetPen(wx.Pen("black",3))
+                dc.SetPen(wx.Pen("black", 3))
                 dc.SetBrush(wx.Brush("black"))
                 dc.DrawCircle(pointX, pointY, 2)
 
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
-                dc.SetPen(wx.Pen("cyan",3))
+                dc.SetPen(wx.Pen("cyan", 3))
                 dc.SetBrush(wx.Brush("cyan"))
                 dc.DrawCircle(pointX, pointY, 2)
 
@@ -460,64 +461,64 @@ class GraphEditorWindow(wx.Window):
                 X1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]
                 Y1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
                 if self._OneTangent is True:
-                    for j in range(3,5):
+                    for j in range(3, 5):
                         X = list[i][j][AG.LOCAL_VALUE][0]
                         Y = list[i][j][AG.LOCAL_VALUE][1]
                         if list[i][j][AG.SELECT] == 1:
-                            dc.SetPen(wx.Pen("cyan",3))
+                            dc.SetPen(wx.Pen("cyan", 3))
                             dc.SetBrush(wx.Brush("cyan"))
                             dc.DrawCircle(X, Y, 2)
 
-                            dc.SetPen(wx.Pen("cyan",1))
+                            dc.SetPen(wx.Pen("cyan", 1))
                             dc.DrawLine(X1, Y1, X, Y)
 
                         if list[i][j][AG.SELECT] == 0:
-                            dc.SetPen(wx.Pen("brown",3))
+                            dc.SetPen(wx.Pen("brown", 3))
                             dc.SetBrush(wx.Brush("brown"))
                             dc.DrawCircle(X, Y, 2)
 
-                            dc.SetPen(wx.Pen("brown",1))
+                            dc.SetPen(wx.Pen("brown", 1))
                             dc.DrawLine(X1, Y1, X, Y)
 
                 if self._OneTangent is False:
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("cyan",3))
+                        dc.SetPen(wx.Pen("cyan", 3))
                         dc.SetBrush(wx.Brush("cyan"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("cyan",1))
+                        dc.SetPen(wx.Pen("cyan", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("navy",3))
+                        dc.SetPen(wx.Pen("navy", 3))
                         dc.SetBrush(wx.Brush("navy"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("navy",1))
+                        dc.SetPen(wx.Pen("navy", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("cyan",3))
+                        dc.SetPen(wx.Pen("cyan", 3))
                         dc.SetBrush(wx.Brush("cyan"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("cyan",1))
+                        dc.SetPen(wx.Pen("cyan", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("brown",3))
+                        dc.SetPen(wx.Pen("brown", 3))
                         dc.SetBrush(wx.Brush("brown"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("brown",1))
+                        dc.SetPen(wx.Pen("brown", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
     def DrawSelectRec(self, dc):
@@ -706,7 +707,7 @@ class GraphEditorWindow(wx.Window):
                     newPointX = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0] + moveX
                     newPointY = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1] + moveY
 
-                    newSlope = [list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] - newPointX , newPointY - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]]
+                    newSlope = [list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] - newPointX, newPointY - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]]
 
                     temp0 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0]
                     temp1 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1]
@@ -740,7 +741,7 @@ class GraphEditorWindow(wx.Window):
                     newPointX = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0] + moveX
                     newPointY = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1] + moveY
 
-                    newSlope = [newPointX  - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] , list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1] - newPointY]
+                    newSlope = [newPointX  - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1] - newPointY]
 
                     temp0 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][0]
                     temp1 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1]
@@ -785,6 +786,7 @@ class GraphEditorUI(wx.Dialog):
     """
     This is the graph editor main class implementation.
     """
+
     def __init__(self, parent, editor, object):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title="Graph Editor",
                            pos=wx.DefaultPosition, size=(735, 535))
@@ -805,10 +807,10 @@ class GraphEditorUI(wx.Dialog):
         bmpOneTangent = OneTangent.GetBitmap()
         bmpTwoTangents = TwoTangents.GetBitmap()
 
-        self.buttonZoomIn = wx.BitmapButton(self.mainPanel1, -1, bmpZoomIn, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonZoomOut = wx.BitmapButton(self.mainPanel1, -1, bmpZoomOut, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonOneTangent = wx.BitmapButton(self.mainPanel1, -1, bmpOneTangent, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonTwoTangents = wx.BitmapButton(self.mainPanel1, -1, bmpTwoTangents, size = (30,30),style = wx.BU_AUTODRAW)
+        self.buttonZoomIn = wx.BitmapButton(self.mainPanel1, -1, bmpZoomIn, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonZoomOut = wx.BitmapButton(self.mainPanel1, -1, bmpZoomOut, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonOneTangent = wx.BitmapButton(self.mainPanel1, -1, bmpOneTangent, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonTwoTangents = wx.BitmapButton(self.mainPanel1, -1, bmpTwoTangents, size = (30, 30),style = wx.BU_AUTODRAW)
 
         self.mainPanel2 = wx.Panel(self, -1)
 

@@ -8,6 +8,7 @@ import tkinter as tk
 
 class WidgetPropertiesDialog(tk.Toplevel):
     """Class to open dialogs to adjust widget properties."""
+
     def __init__(self, propertyDict, propertyList = None, parent = None,
                  title = 'Widget Properties'):
         """Initialize a dialog.
@@ -44,8 +45,8 @@ class WidgetPropertiesDialog(tk.Toplevel):
         # Initialize window state
         self.grab_set()
         self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
         self.initial_focus.focus_set()
         self.wait_window(self)
 
@@ -83,18 +84,18 @@ class WidgetPropertiesDialog(tk.Toplevel):
             helpString = propertySet.get('help', None)
             # Create label
             label = tk.Label(master, text=property, justify=tk.LEFT)
-            label.grid(row=count, column = 0, padx=5, sticky=tk.W)
+            label.grid(row=count, column=0, padx=5, sticky=tk.W)
 
             # Create entry
-            entry = Pmw.EntryField(master, entry_justify = 'right')
-            entry.grid(row=count, column = 1, padx=5, sticky=tk.W+tk.E)
+            entry = Pmw.EntryField(master, entry_justify=tk.RIGHT)
+            entry.grid(row=count, column=1, padx=5, sticky=tk.W + tk.E)
             if initialvalue is None:
                 entry.insert(0, 'None')
             else:
                 entry.insert(0, initialvalue)
 
             # Create balloon for help
-            balloon = Pmw.Balloon(state = 'balloon')
+            balloon = Pmw.Balloon(state='balloon')
             self.balloonList.append(balloon)
             # extra info if None is allowed value
             if helpString is None:
@@ -106,23 +107,23 @@ class WidgetPropertiesDialog(tk.Toplevel):
             if entryType == 'real':
                 # Only allow real numbers
                 if fAllowNone:
-                    entry['validate'] = { 'validator': self.realOrNone }
+                    entry['validate'] = {'validator': self.realOrNone}
                 else:
-                    entry['validate'] = { 'validator': 'real' }
+                    entry['validate'] = {'validator': 'real'}
                 if helpString is None:
                     helpString = 'Enter a floating point number' + extra + '.'
             elif entryType == 'integer':
                 # Only allow integer values
                 if fAllowNone:
-                    entry['validate'] = { 'validator': self.intOrNone }
+                    entry['validate'] = {'validator': self.intOrNone}
                 else:
-                    entry['validate'] = { 'validator': 'integer' }
+                    entry['validate'] = {'validator': 'integer'}
                 if helpString is None:
-                    helpString = 'Enter an integer' + extra + '.'
+                    helpString = f'Enter an integer{extra}.'
             else:
                 # Anything goes with a string widget
                 if helpString is None:
-                    helpString = 'Enter a string' + extra + '.'
+                    helpString = f'Enter a string{extra}.'
             # Bind balloon with help string to entry
             balloon.bind(entry, helpString)
             # Create callback to execute whenever a value is changed
@@ -133,6 +134,7 @@ class WidgetPropertiesDialog(tk.Toplevel):
             # Keep track of the entrys
             entryList.append(entry)
             count += 1
+
         # Set initial focus
         if len(entryList) > 0:
             entry = entryList[0]

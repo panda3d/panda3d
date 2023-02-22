@@ -122,11 +122,7 @@ class SceneGraphLeakDetector(LeakDetector):
         LeakDetector.destroy(self)
 
     def __len__(self):
-        try:
-            # this will be available when the build server finishes
-            return self._render.countNumDescendants()
-        except:
-            return self._render.getNumDescendants()
+        return self._render.countNumDescendants()
 
     def __repr__(self):
         return 'SceneGraphLeakDetector(%s)' % self._render
@@ -138,15 +134,7 @@ class SceneGraphLeakDetector(LeakDetector):
 
 class CppMemoryUsage(LeakDetector):
     def __len__(self):
-        haveMemoryUsage = True
-        try:
-            MemoryUsage
-        except:
-            haveMemoryUsage = False
-        if haveMemoryUsage:
-            return int(MemoryUsage.getCurrentCppSize())
-        else:
-            return 0
+        return MemoryUsage.getCurrentCppSize()
 
 
 class TaskLeakDetectorBase:

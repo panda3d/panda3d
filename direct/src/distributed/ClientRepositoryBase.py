@@ -122,7 +122,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def _getMsgName(self, msgId):
         # we might get a list of message names, use the first one
-        return makeList(MsgId2Names.get(msgId, 'UNKNOWN MESSAGE: %s' % msgId))[0]
+        return makeList(MsgId2Names.get(msgId, f'UNKNOWN MESSAGE: {msgId}'))[0]
 
     def allocateContext(self):
         self.context+=1
@@ -161,7 +161,7 @@ class ClientRepositoryBase(ConnectionRepository):
         # Look up the dclass
         assert parentId == self.GameGlobalsId or parentId in self.doId2do
         dclass = self.dclassesByNumber[classId]
-        assert self.notify.debug("performing generate for %s %s" % (dclass.getName(), doId))
+        assert self.notify.debug(f"performing generate for {dclass.getName()} {doId}")
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
@@ -360,7 +360,6 @@ class ClientRepositoryBase(ConnectionRepository):
             # updateRequiredOtherFields calls announceGenerate
         return distObj
 
-
     def disableDoId(self, doId, ownerView=False):
         table, cache = self.getTables(ownerView)
         # Make sure the object exists
@@ -442,7 +441,6 @@ class ClientRepositoryBase(ConnectionRepository):
             # This object has been fully generated.  It's OK to update.
             self.__doUpdate(doId, di, ovUpdated)
 
-
     def __doUpdate(self, doId, di, ovUpdated):
         # Find the DO
         do = self.doId2do.get(doId)
@@ -463,13 +461,12 @@ class ClientRepositoryBase(ConnectionRepository):
                 if handle:
                     dclass = self.dclassesByName[handle.dclassName]
                     dclass.receiveUpdate(handle, di)
-
                 else:
                     self.notify.warning(
-                        "Asked to update non-existent DistObj " + str(doId))
-            except:
+                        f"Asked to update non-existent DistObj {doId}")
+            except Exception:
                 self.notify.warning(
-                        "Asked to update non-existent DistObj " + str(doId) + "and failed to find it")
+                    f"Asked to update non-existent DistObj {doId} and failed to find it")
 
     def __doUpdateOwner(self, doId, di):
         ovObj = self.doId2ownerView.get(doId)
@@ -488,7 +485,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self.bootedText = di.getString()
 
             self.notify.warning(
-                "Server is booting us out (%d): %s" % (self.bootedIndex, self.bootedText))
+                f"Server is booting us out ({self.bootedIndex}): {self.bootedText}")
         else:
             self.bootedIndex = None
             self.bootedText = None
@@ -536,7 +533,6 @@ class ClientRepositoryBase(ConnectionRepository):
                 doDict[doId] = do
         return doDict
 
-
     def considerHeartbeat(self):
         """Send a heartbeat message if we haven't sent one recently."""
         if not self.heartbeatStarted:
@@ -566,7 +562,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def waitForNextHeartBeat(self):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
-                              "heartBeat", taskChain = 'net')
+                              "heartBeat", taskChain='net')
 
     def replaceMethod(self, oldMethod, newFunction):
         return 0

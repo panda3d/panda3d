@@ -128,7 +128,7 @@ class FSMInspector(AppShell):
         optiondefs = (
             ('title', fsm.getName(), None),
             ('gridSize', '0.25i', self._setGridSize),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         self.fsm = fsm
@@ -393,6 +393,7 @@ class FSMInspector(AppShell):
             self.ignore(self.name + '_' + si.getName() + '_entered')
             self.ignore(self.name + '_' + si.getName() + '_exited')
 
+
 class StateInspector(Pmw.MegaArchetype):
     def __init__(self, inspector, state, **kw):
 
@@ -412,7 +413,7 @@ class StateInspector(Pmw.MegaArchetype):
         optiondefs = (
             ('radius', '0.375i', self._setRadius),
             ('gridSize', '0.25i', self._setGridSize),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the parent class
@@ -438,7 +439,6 @@ class StateInspector(Pmw.MegaArchetype):
             self.rect = self._canvas.create_rectangle((- half), (- half),
                                                      half, half,
                                                      tags = (self.tag,))
-
 
         # The Popup State Menu
         self._popupMenu = tk.Menu(self._canvas, tearoff = 0)

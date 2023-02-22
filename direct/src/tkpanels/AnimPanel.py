@@ -19,6 +19,7 @@ import tkinter as tk
 FRAMES = 0
 SECONDS = 1
 
+
 class AnimPanel(AppShell):
     # Override class variables
     appname = 'Anim Panel'
@@ -38,7 +39,7 @@ class AnimPanel(AppShell):
             ('title',               self.appname,       None),
             ('actorList',           [],                 None),
             ('Actor_label_width',   12,                 None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # direct session that spawned me, if any, used
@@ -54,7 +55,6 @@ class AnimPanel(AppShell):
         self.actorControlIndex = 0
         # Initialize the superclass
         AppShell.__init__(self)
-
 
         # Execute option callbacks
         self.initialiseoptions(AnimPanel)
@@ -270,7 +270,7 @@ class AnimPanel(AppShell):
             initialdir = '/i/beta',
             title = 'Load Animation',
             parent = self.component('hull')
-            )
+        )
         if not animFilename or animFilename == 'None':
             # no file selected, canceled
             return
@@ -290,7 +290,6 @@ class AnimPanel(AppShell):
             currActor.loadAnims({fileBaseNameBase:fileBaseNameBase})
         self.clearActorControls()
         self.createActorControls()
-
 
     def playActorControls(self):
         self.stopActorControls()
@@ -372,6 +371,7 @@ class AnimPanel(AppShell):
             self.destroyCallBack = None
         AppShell.destroy(self)
 
+
 class ActorControl(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
 
@@ -391,7 +391,7 @@ class ActorControl(Pmw.MegaWidget):
             ('active',          initActive,         None),
             ('sLabel_width',    5,                  None),
             ('sLabel_font',     DEFAULT_FONT,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass
@@ -661,6 +661,7 @@ class ActorControl(Pmw.MegaWidget):
         """
         self.fOneShot = 1
         self.goToT((self.currT-(1/self.fps))%self.duration)
+
 
 """
 # EXAMPLE CODE

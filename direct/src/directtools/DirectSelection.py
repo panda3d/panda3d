@@ -26,6 +26,8 @@ COA_ORIGIN = 0
 COA_CENTER = 1
 
 # MRM: To do: handle broken node paths in selected and deselected dicts
+
+
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
     def __init__(self, nodePath, bboxColor=None):
@@ -64,6 +66,7 @@ class DirectNodePath(NodePath):
 
     def getMax(self):
         return self.bbox.getMax()
+
 
 class SelectedNodePaths(DirectObject):
     def __init__(self):
@@ -445,7 +448,7 @@ class DirectBoundingBox:
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
                 'Center:\t\t%s\n' % self.vecAsString(self.center) +
                 'Radius:\t\t%.2f' % self.radius
-               )
+                )
 
 
 class SelectionQueue(CollisionHandlerQueue):
@@ -588,18 +591,18 @@ class SelectionQueue(CollisionHandlerQueue):
                 # Skip if parented to a camera.
                 pass
             # Can pick unpickable, use the first visible node
-            elif (skipFlags & DG.SKIP_UNPICKABLE) and\
+            elif (skipFlags & DG.SKIP_UNPICKABLE) and \
                  (nodePath.getName() in self.unpickable):
                 # Skip if in unpickable list
                 pass
-            elif base.direct and\
+            elif base.direct and \
                  ((skipFlags & DG.SKIP_WIDGET) and
-                (nodePath.getTag('WidgetName') != base.direct.widget.getName())):
+                 (nodePath.getTag('WidgetName') != base.direct.widget.getName())):
                 # Skip if this widget part is not belong to current widget
                 pass
-            elif base.direct and\
+            elif base.direct and \
                  ((skipFlags & DG.SKIP_WIDGET) and base.direct.fControl and
-                (nodePath.getName()[2:] == 'ring')):
+                 (nodePath.getName()[2:] == 'ring')):
                 # Skip when ununiformly scale in ortho view
                 pass
             else:
@@ -607,6 +610,7 @@ class SelectionQueue(CollisionHandlerQueue):
                 self.setCurrentEntry(entry)
                 break
         return self.getCurrentEntry()
+
 
 class SelectionRay(SelectionQueue):
     def __init__(self, parentNP = None):
