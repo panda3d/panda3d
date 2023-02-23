@@ -13,13 +13,12 @@
 
 #include "httpDigestAuthorization.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
-#include "httpChannel.h"
+#include "hashVal.h"
 #include "string_utils.h"
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include <openssl/ssl.h>
-#include <openssl/md5.h>
+#include "urlSpec.h"
+
 #include <time.h>
 
 using std::ostream;
@@ -292,19 +291,9 @@ get_hex_nonce_count() const {
  */
 string HTTPDigestAuthorization::
 calc_md5(const string &source) {
-  unsigned char binary[MD5_DIGEST_LENGTH];
-
-  MD5((const unsigned char *)source.data(), source.length(), binary);
-
-  string result;
-  result.reserve(MD5_DIGEST_LENGTH * 2);
-
-  for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-    result += hexdigit((binary[i] >> 4) & 0xf);
-    result += hexdigit(binary[i] & 0xf);
-  }
-
-  return result;
+  HashVal hv;
+  hv.hash_string(source);
+  return hv.as_hex();
 }
 
 ostream &

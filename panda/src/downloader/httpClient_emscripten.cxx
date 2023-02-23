@@ -388,12 +388,10 @@ generate_auth(const URLSpec &url, const string &challenge) {
   PT(HTTPAuthorization) auth;
   HTTPAuthorization::AuthenticationSchemes::iterator si;
 
-#ifdef HAVE_OPENSSL
   si = schemes.find("digest");
   if (si != schemes.end()) {
     auth = new HTTPDigestAuthorization((*si).second, url, false);
   }
-#endif
 
   if (auth == nullptr || !auth->is_valid()) {
     si = schemes.find("basic");
