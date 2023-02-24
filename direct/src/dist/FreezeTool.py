@@ -1232,7 +1232,7 @@ class Freezer:
         # sysconfigdata module on POSIX systems.
         missing = []
         if 'sysconfig' in self.mf.modules and \
-           ('linux' in self.platform or 'mac' in self.platform):
+           ('linux' in self.platform or 'mac' in self.platform or 'emscripten' in self.platform):
             modname = '_sysconfigdata'
             if sys.version_info >= (3, 6):
                 modname += '_'
@@ -1244,6 +1244,12 @@ class Freezer:
                     modname += '_linux_' + arch + '-linux-gnu'
                 elif 'mac' in self.platform:
                     modname += '_darwin_darwin'
+                elif 'emscripten' in self.platform:
+                    if '_' in self.platform:
+                        arch = self.platform.split('_', 1)[1]
+                    else:
+                        arch = 'wasm32'
+                    modname += '_emscripten_' + arch + '-emscripten'
 
             try:
                 self.__loadModule(self.ModuleDef(modname, implicit=True))
