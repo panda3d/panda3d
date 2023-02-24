@@ -92,6 +92,7 @@ hiddenImports = {
     'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
+    'setuptools.monkey': ['setuptools.msvc'],
 }
 
 if sys.version_info >= (3,):
