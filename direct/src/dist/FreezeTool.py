@@ -1226,7 +1226,10 @@ class Freezer:
                         except ImportError:
                             pass
                 else:
-                    self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    try:
+                        self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    except ImportError:
+                        pass
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
