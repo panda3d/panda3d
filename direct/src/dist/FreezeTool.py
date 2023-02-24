@@ -89,6 +89,7 @@ defaultHiddenImports = {
     'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
+    'setuptools.monkey': ['setuptools.msvc'],
 }
 
 
@@ -141,6 +142,11 @@ def updatecache(filename, module_globals=None):
 def lazycache(filename, module_globals):
     pass
 """,
+
+    # Used by setuptools to redirect distutils to setuptools' vendored copy.
+    # This causes problems because it makes assumptions about __file__, so we
+    # simply implement the logic ourselves.
+    '_distutils_hack.override': '',
 }
 
 # These are missing modules that we've reported already this session.
@@ -2722,6 +2728,22 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                         path = [os.path.dirname(fn)] + path
                 except ImportError:
                     pass
+
+            elif (fullname == 'distutils' and 'setuptools' in self.modules and
+                  '_distutils_hack.override' in self.modules):
+                # Redirect to setuptools' vendored copy.
+                setuptools = self.modules['setuptools']
+                return self.find_module('_distutils', setuptools.__path__, parent=setuptools)
+
+        elif parent is not None and parent.__name__ in ('setuptools.extern', 'pkg_resources.extern'):
+            # Look for vendored versions of these libraries.
+            root = self.modules[parent.__name__.split('.', 1)[0]]
+            try:
+                fp, fn, stuff = self.find_module('_vendor', root.__path__, parent=root)
+                vendor = self.load_module(root.__name__ + '._vendor', fp, fn, stuff)
+                return self.find_module(name, vendor.__path__, parent=vendor)
+            except ImportError:
+                pass
 
         # Look for the module on the search path.
         ns_dirs = []
