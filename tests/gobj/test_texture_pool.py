@@ -46,19 +46,19 @@ def pool():
 @pytest.fixture(scope='session')
 def image_gray_path():
     "Generates a grayscale image."
-    yield from yield_image('-gray.png', channels=1)
+    yield from yield_image('.bw', channels=1)
 
 
 @pytest.fixture(scope='session')
 def image_rgb_path():
     "Generates an RGB image."
-    yield from yield_image('-rgb.png', channels=3)
+    yield from yield_image('.rgb', channels=3)
 
 
 @pytest.fixture(scope='session')
 def image_rgba_path():
     "Generates an RGBA image."
-    yield from yield_image('-rgba.png', channels=4)
+    yield from yield_image('.rgba', channels=4)
 
 
 @pytest.fixture(scope='function')
