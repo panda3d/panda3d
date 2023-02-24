@@ -6,7 +6,6 @@ on how to use these commands.
 
 import os
 import plistlib
-import pkg_resources
 import sys
 import subprocess
 import zipfile
@@ -58,6 +57,7 @@ def _register_python_loaders():
 
     registry = p3d.LoaderFileTypeRegistry.getGlobalPtr()
 
+    import pkg_resources
     for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
         registry.register_deferred_type(entry_point)
 
