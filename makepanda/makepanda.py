@@ -1035,6 +1035,17 @@ if (COMPILER=="GCC"):
         python_lib = SDK["PYTHONVERSION"]
         SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
+        if not PkgSkip("PYTHON") and GetTarget() == "emscripten":
+            # Python may have been compiled with these requirements.
+            # Is there a cleaner way to check this?
+            LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
+            if not PkgHasCustomLocation("PYTHON"):
+                python_libdir = GetThirdpartyDir() + "python/lib"
+                if os.path.isfile(python_libdir + "/libmpdec.a"):
+                    LibName("PYTHON", python_libdir + "/libmpdec.a")
+                if os.path.isfile(python_libdir + "/libexpat.a"):
+                    LibName("PYTHON", python_libdir + "/libexpat.a")
+
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
             LibName("PYTHON", "-lrt")
