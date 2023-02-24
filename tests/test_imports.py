@@ -9,23 +9,30 @@ import pytest
 
 
 def test_imports_panda3d():
-    import importlib, os
+    import importlib, os, sys
     import panda3d
-    dir = os.path.dirname(panda3d.__file__)
 
-    # Iterate over the things in the panda3d package that look like modules.
-    extensions = set(importlib.machinery.all_suffixes())
+    # Look for panda3d.* modules in builtins - pfreeze might put them there.
+    for mod in sys.builtin_module_names:
+        if mod.startswith('panda3d.'):
+            importlib.import_module(mod)
 
-    for basename in os.listdir(dir):
-        if basename.startswith('lib'):
-            # This not a Python module.
-            continue
+    if panda3d.__spec__.origin != 'frozen':
+        dir = os.path.dirname(panda3d.__file__)
 
-        module = basename.split('.', 1)[0]
-        ext = basename[len(module):]
+        # Iterate over the things in the panda3d package that look like modules.
+        extensions = set(importlib.machinery.all_suffixes())
 
-        if ext in extensions:
-            importlib.import_module('panda3d.%s' % (module))
+        for basename in os.listdir(dir):
+            if basename.startswith('lib'):
+                # This not a Python module.
+                continue
+
+            module = basename.split('.', 1)[0]
+            ext = basename[len(module):]
+
+            if ext in extensions:
+                importlib.import_module('panda3d.%s' % (module))
 
 
 def test_imports_direct():
