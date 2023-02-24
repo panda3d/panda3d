@@ -9,7 +9,7 @@ import imp
 import platform
 import struct
 import io
-import distutils.sysconfig as sysconf
+import sysconfig
 import zipfile
 import importlib
 import warnings
@@ -170,8 +170,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = sysconf.get_python_inc()
-        self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
+        self.PythonIPath = sysconfig.get_path('include')
+        self.PythonVersion = sysconfig.get_config_var("LDVERSION") or sysconfig.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
