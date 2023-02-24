@@ -24,7 +24,7 @@
 using std::string;
 
 static const char * const extensions_sgi[] = {
-  "rgb", "rgba", "sgi"
+  "rgb", "rgba", "sgi", "bw"
 };
 static const int num_extensions_sgi = sizeof(extensions_sgi) / sizeof(const char *);
 

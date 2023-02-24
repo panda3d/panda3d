@@ -9,7 +9,7 @@ import imp
 import platform
 import struct
 import io
-import distutils.sysconfig as sysconf
+import sysconfig
 import zipfile
 import importlib
 import warnings
@@ -89,6 +89,7 @@ defaultHiddenImports = {
     'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
+    'setuptools.monkey': ['setuptools.msvc'],
 }
 
 
@@ -141,6 +142,11 @@ def updatecache(filename, module_globals=None):
 def lazycache(filename, module_globals):
     pass
 """,
+
+    # Used by setuptools to redirect distutils to setuptools' vendored copy.
+    # This causes problems because it makes assumptions about __file__, so we
+    # simply implement the logic ourselves.
+    '_distutils_hack.override': '',
 }
 
 # These are missing modules that we've reported already this session.
@@ -170,8 +176,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = sysconf.get_python_inc()
-        self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
+        self.PythonIPath = sysconfig.get_path('include')
+        self.PythonVersion = sysconfig.get_config_var("LDVERSION") or sysconfig.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -1201,13 +1207,16 @@ class Freezer:
                         except ImportError:
                             pass
                 else:
-                    self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    try:
+                        self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    except ImportError:
+                        pass
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
         missing = []
         if 'sysconfig' in self.mf.modules and \
-           ('linux' in self.platform or 'mac' in self.platform):
+           ('linux' in self.platform or 'mac' in self.platform or 'emscripten' in self.platform):
             modname = '_sysconfigdata'
             if sys.version_info >= (3, 6):
                 modname += '_'
@@ -1219,6 +1228,12 @@ class Freezer:
                     modname += '_linux_' + arch + '-linux-gnu'
                 elif 'mac' in self.platform:
                     modname += '_darwin_darwin'
+                elif 'emscripten' in self.platform:
+                    if '_' in self.platform:
+                        arch = self.platform.split('_', 1)[1]
+                    else:
+                        arch = 'wasm32'
+                    modname += '_emscripten_' + arch + '-emscripten'
 
             try:
                 self.__loadModule(self.ModuleDef(modname, implicit=True))
@@ -2378,6 +2393,8 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         :param debug: an integer indicating the level of verbosity
         """
 
+        self.builtin_module_names = kw.pop('builtin_module_names', sys.builtin_module_names)
+
         self.suffixes = kw.pop('suffixes', imp.get_suffixes())
         self.optimize = kw.pop('optimize', -1)
 
@@ -2702,11 +2719,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if fullname in overrideModules:
             return (None, '', ('.py', 'r', imp.PY_SOURCE))
 
+        # It's built into the interpreter.
+        if fullname in self.builtin_module_names:
+            return (None, None, ('', '', imp.C_BUILTIN))
+
         # If no search path is given, look for a built-in module.
         if path is None:
-            if name in sys.builtin_module_names:
-                return (None, None, ('', '', imp.C_BUILTIN))
-
             path = self.path
 
             if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
@@ -2719,6 +2737,22 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                         path = [os.path.dirname(fn)] + path
                 except ImportError:
                     pass
+
+            elif (fullname == 'distutils' and 'setuptools' in self.modules and
+                  '_distutils_hack.override' in self.modules):
+                # Redirect to setuptools' vendored copy.
+                setuptools = self.modules['setuptools']
+                return self.find_module('_distutils', setuptools.__path__, parent=setuptools)
+
+        elif parent is not None and parent.__name__ in ('setuptools.extern', 'pkg_resources.extern'):
+            # Look for vendored versions of these libraries.
+            root = self.modules[parent.__name__.split('.', 1)[0]]
+            try:
+                fp, fn, stuff = self.find_module('_vendor', root.__path__, parent=root)
+                vendor = self.load_module(root.__name__ + '._vendor', fp, fn, stuff)
+                return self.find_module(name, vendor.__path__, parent=vendor)
+            except ImportError:
+                pass
 
         # Look for the module on the search path.
         ns_dirs = []

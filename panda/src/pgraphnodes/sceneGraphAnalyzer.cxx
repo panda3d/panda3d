@@ -35,10 +35,13 @@
 static std::string smart_mem_string(size_t bytes) {
   std::ostringstream out;
   float fbytes = static_cast<float>(bytes);
+#if SIZE_MAX > 4294967296
   if (bytes > 4294967296) { // 4 GiB
     out << std::setprecision(3) << fbytes / 1024.0 / 1024.0 / 1024.0 << " GiB";
   }
-  else if (bytes > 10485760) { // 10 MiB
+  else
+#endif
+  if (bytes > 10485760) { // 10 MiB
     out << std::setprecision(3) << fbytes / 1024.0 / 1024.0 << " MiB";
   }
   else {
