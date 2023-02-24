@@ -2378,6 +2378,8 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         :param debug: an integer indicating the level of verbosity
         """
 
+        self.builtin_module_names = kw.pop('builtin_module_names', sys.builtin_module_names)
+
         self.suffixes = kw.pop('suffixes', imp.get_suffixes())
         self.optimize = kw.pop('optimize', -1)
 
@@ -2702,11 +2704,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if fullname in overrideModules:
             return (None, '', ('.py', 'r', imp.PY_SOURCE))
 
+        # It's built into the interpreter.
+        if fullname in self.builtin_module_names:
+            return (None, None, ('', '', imp.C_BUILTIN))
+
         # If no search path is given, look for a built-in module.
         if path is None:
-            if name in sys.builtin_module_names:
-                return (None, None, ('', '', imp.C_BUILTIN))
-
             path = self.path
 
             if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
