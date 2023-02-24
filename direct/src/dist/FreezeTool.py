@@ -9,7 +9,10 @@ import imp
 import platform
 import struct
 import io
-import distutils.sysconfig as sysconf
+try:
+    import distutils.sysconfig as sysconf
+except ImportError:
+    import sysconfig as sysconf
 import zipfile
 import importlib
 
@@ -223,7 +226,10 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = sysconf.get_python_inc()
+        if hasattr(sysconf, 'get_python_inc'):
+            self.PythonIPath = sysconf.get_python_inc()
+        else:
+            self.PythonIPath = sysconf.get_path('include')
         self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
