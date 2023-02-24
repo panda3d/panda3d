@@ -219,7 +219,7 @@ class SequenceInspector(Inspector):
         if partNumber == 0:
             return self.object
         index = self.privatePartNumber(partNumber)
-        if type(index) == IntType:
+        if isinstance(index, int):
             return self.object[index]
         else:
             return getattr(self.object, index)

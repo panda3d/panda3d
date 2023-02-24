@@ -1827,7 +1827,7 @@ class DelayedCall:
         self._removeDoLater()
     def finish(self):
         if not self._finished:
-            self._doCallback()
+            self._doCallback(None)
         self.destroy()
     def _addDoLater(self):
         taskMgr.doMethodLater(self._delay, self._doCallback, self._taskName)
