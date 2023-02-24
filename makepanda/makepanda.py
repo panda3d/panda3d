@@ -1498,9 +1498,9 @@ def CompileCxx(obj,src,opts):
                 # Fast math is nice, but we'd like to see NaN in dev builds.
                 cmd += " -fno-finite-math-only"
 
-        # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
-        if GetTarget() != "emscripten":
-            cmd += " -fno-unsafe-math-optimizations"
+            # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
+            if GetTarget() != "emscripten":
+                cmd += " -fno-unsafe-math-optimizations"
 
         if (optlevel==1):
             if GetTarget() == "emscripten":
