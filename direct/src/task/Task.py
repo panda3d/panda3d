@@ -36,7 +36,6 @@ from panda3d.core import (
     ClockObject,
     ConfigVariableBool,
     GlobPattern,
-    PandaSystem,
     PythonTask,
     Thread,
 )
@@ -539,7 +538,7 @@ class TaskManager:
         """Starts the task manager running.  Does not return until an
         exception is encountered (including KeyboardInterrupt). """
 
-        if PandaSystem.getPlatform() == 'emscripten':
+        if sys.platform == 'emscripten':
             return
 
         # Set the clock to have last frame's time in case we were
