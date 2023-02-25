@@ -5,9 +5,9 @@ intervals either in parallel or in a specified sequential order.
 
 __all__ = ['MetaInterval', 'Sequence', 'Parallel', 'ParallelEndTogether', 'Track']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import PStatCollector, ostream
+from panda3d.direct import CInterval, CMetaInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from .IntervalManager import ivalMgr
 from . import Interval
 from direct.task.Task import TaskManager
@@ -106,7 +106,7 @@ class MetaInterval(CMetaInterval):
         self.pstats = None
         if __debug__ and TaskManager.taskTimerVerbose:
             self.pname = name.split('-', 1)[0]
-            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
+            self.pstats = PStatCollector("App:Tasks:ivalLoop:%s" % (self.pname))
 
         self.pythonIvals = []
 

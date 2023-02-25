@@ -403,7 +403,7 @@ write_status(std::ostream &out) const {
   out << "Sleeping:";
   // Copy and sort for convenience.
   Sleeping s2 = _sleeping;
-  sort(s2.begin(), s2.end(), CompareStartTime());
+  std::sort(s2.begin(), s2.end(), CompareStartTime());
   for (si = s2.begin(); si != s2.end(); ++si) {
     out << " " << *(*si)->_parent_obj << "(" << (*si)->_wake_time - now
         << "s)";

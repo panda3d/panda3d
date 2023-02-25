@@ -44,7 +44,7 @@ PUBLISHED:
     M_confined,
   };
 
-  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
+  PY_EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
 
 PUBLISHED:
   void operator = (const WindowProperties &copy);
@@ -70,9 +70,9 @@ PUBLISHED:
   INLINE void set_origin(int x_origin, int y_origin);
 #ifdef CPPPARSER
   INLINE LPoint2i get_origin() const;
-#else
+#else // CPPPARSER
   INLINE const LPoint2i &get_origin() const;
-#endif
+#endif // CPPPARSER
   INLINE int get_x_origin() const;
   INLINE int get_y_origin() const;
   INLINE bool has_origin() const;
@@ -83,9 +83,9 @@ PUBLISHED:
   INLINE void set_size(int x_size, int y_size);
 #ifdef CPPPARSER
   INLINE LVector2i get_size() const;
-#else
+#else // CPPPARSER
   INLINE const LVector2i &get_size() const;
-#endif
+#endif // CPPPARSER
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -102,9 +102,9 @@ PUBLISHED:
   INLINE void set_title(const std::string &title);
 #ifdef CPPPARSER
   INLINE std::string get_title() const;
-#else
+#else // CPPPARSER
   INLINE const std::string &get_title() const;
-#endif
+#endif // CPPPARSER
   INLINE bool has_title() const;
   INLINE void clear_title();
   MAKE_PROPERTY2(title, has_title, get_title, set_title, clear_title);
@@ -172,9 +172,9 @@ PUBLISHED:
   INLINE void set_icon_filename(const Filename &icon_filename);
 #ifdef CPPPARSER
   INLINE Filename get_icon_filename() const;
-#else
+#else // CPPPARSER
   INLINE const Filename &get_icon_filename() const;
-#endif
+#endif // CPPPARSER
   INLINE bool has_icon_filename() const;
   INLINE void clear_icon_filename();
   MAKE_PROPERTY2(icon_filename, has_icon_filename, get_icon_filename,
@@ -183,9 +183,9 @@ PUBLISHED:
   INLINE void set_cursor_filename(const Filename &cursor_filename);
 #ifdef CPPPARSER
   INLINE Filename get_cursor_filename() const;
-#else
+#else // CPPPARSER
   INLINE const Filename &get_cursor_filename() const;
-#endif
+#endif // CPPPARSER
   INLINE bool has_cursor_filename() const;
   INLINE void clear_cursor_filename();
   MAKE_PROPERTY2(cursor_filename, has_cursor_filename, get_cursor_filename,
@@ -205,8 +205,8 @@ PUBLISHED:
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
 
-  EXTENSION(PyObject *__getstate__(PyObject *self) const);
-  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
+  PY_EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  PY_EXTENSION(void __setstate__(PyObject *self, PyObject *state));
 
   void add_properties(const WindowProperties &other);
 
@@ -278,4 +278,4 @@ INLINE std::ostream &operator << (std::ostream &out, const WindowProperties &pro
 
 #include "windowProperties.I"
 
-#endif
+#endif // !WINDOWPROPERTIES_H

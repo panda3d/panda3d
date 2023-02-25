@@ -2,15 +2,15 @@
 
 __all__ = ['Interval']
 
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import ClockObject, PStatCollector
+from panda3d.direct import CInterval
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task, TaskManager
 from direct.task.TaskManagerGlobal import taskMgr
-from direct.extensions_native import CInterval_extensions
-from direct.extensions_native import NodePath_extensions
+from direct.extensions_native import CInterval_extensions # pylint: disable=unused-import
+from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 import math
 
 
@@ -41,7 +41,7 @@ class Interval(DirectObject):
         self.pstats = None
         if __debug__ and TaskManager.taskTimerVerbose:
             self.pname = name.split('-', 1)[0]
-            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
+            self.pstats = PStatCollector("App:Tasks:ivalLoop:%s" % (self.pname))
 
         # Set true if the interval should be invoked if it was
         # completely skipped over during initialize or finalize, false

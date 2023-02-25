@@ -114,11 +114,9 @@ PUBLISHED:
   static void lru_epoch();
   INLINE static VertexDataBook &get_book();
 
-#ifdef HAVE_PYTHON
-  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
-  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
-  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
-#endif
+  PY_EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
+  PY_EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+  PY_EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 
 public:
   virtual void evict_lru();
@@ -310,12 +308,12 @@ PUBLISHED:
                          const unsigned char *source,
                          size_t from_start, size_t from_size);
 
-  EXTENSION(void copy_data_from(PyObject *buffer));
-  EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
-                                   PyObject *buffer));
-  EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
-                                   PyObject *buffer,
-                                   size_t from_start, size_t from_size));
+  PY_EXTENSION(void copy_data_from(PyObject *buffer));
+  PY_EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
+                                      PyObject *buffer));
+  PY_EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
+                                      PyObject *buffer,
+                                      size_t from_start, size_t from_size));
 
   INLINE vector_uchar get_data() const;
   void set_data(const vector_uchar &data);
@@ -355,4 +353,4 @@ INLINE std::ostream &operator << (std::ostream &out, const GeomVertexArrayData &
 
 #include "geomVertexArrayData.I"
 
-#endif
+#endif // !GEOMVERTEXARRAYDATA_H

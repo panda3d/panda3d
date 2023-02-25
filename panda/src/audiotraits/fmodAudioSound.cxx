@@ -37,9 +37,8 @@ TypeHandle FmodAudioSound::_type_handle;
  * Constructor All sound will DEFAULT load as a 2D sound unless otherwise
  * specified.
  */
-
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
+FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) : AudioSound(positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
   audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
               << file->get_original_filename());

@@ -39,7 +39,7 @@ PUBLISHED:
   };
 
   constexpr DoubleBitMask() = default;
-  EXTENSION(DoubleBitMask(PyObject *init_value));
+  PY_EXTENSION(DoubleBitMask(PyObject *init_value));
 
   INLINE static DoubleBitMask<BMType> all_on();
   INLINE static DoubleBitMask<BMType> all_off();
@@ -113,8 +113,8 @@ PUBLISHED:
   INLINE void operator >>= (int shift);
 
   EXTENSION(bool __bool__() const);
-  EXTENSION(PyObject *__int__() const);
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(PyObject *__int__() const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
@@ -148,4 +148,4 @@ typedef DoubleBitMask<BitMaskNative> DoubleBitMaskNative;
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, DoubleBitMask<DoubleBitMaskNative>);
 typedef DoubleBitMask<DoubleBitMaskNative> QuadBitMaskNative;
 
-#endif
+#endif // !DOUBLEBITMASK_H

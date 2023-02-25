@@ -22,7 +22,7 @@ main(int argc, char *argv[]) {
 
   // Create the server window.
   GtkStatsServer *server = new GtkStatsServer;
-  server->new_session();
+  server->parse_command_line(argc, argv);
 
   // Now get lost in the message loop.
   gtk_main();

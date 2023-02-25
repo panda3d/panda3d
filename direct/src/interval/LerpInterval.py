@@ -10,11 +10,11 @@ __all__ = [
     'LerpColorInterval', 'LerpColorScaleInterval',
     'LerpTexOffsetInterval', 'LerpTexRotateInterval', 'LerpTexScaleInterval',
     'LerpFunctionInterval', 'LerpFunc','LerpFunctionNoStateInterval','LerpFuncNS'
-    ]
+]
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import LOrientationf, NodePath
+from panda3d.direct import CInterval, CLerpNodePathInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 from . import LerpBlendHelpers
 
@@ -24,6 +24,7 @@ from . import LerpBlendHelpers
 # an Interval, so they can run in the low-level C++ code at high
 # performance.
 #
+
 
 class LerpNodePathInterval(CLerpNodePathInterval):
     # This is the base class for all of the lerps, defined below, that
@@ -99,6 +100,7 @@ class LerpNodePathInterval(CLerpNodePathInterval):
 ##
 #####################################################################
 
+
 class LerpPosInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, startPos = None,
                  other = None, blendType = 'noBlend',
@@ -157,6 +159,7 @@ class LerpHprInterval(LerpNodePathInterval):
             self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpQuatInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, quat = None,
                  startHpr = None, startQuat = None,
@@ -195,6 +198,7 @@ class LerpQuatInterval(LerpNodePathInterval):
             self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, scale, startScale = None,
                  other = None, blendType = 'noBlend',
@@ -220,6 +224,7 @@ class LerpScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpShearInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, shear, startShear = None,
                  other = None, blendType = 'noBlend',
@@ -244,6 +249,7 @@ class LerpShearInterval(LerpNodePathInterval):
             self.setupParam(self.setEndShear, self.endShear)
             self.setupParam(self.setStartShear, self.startShear)
         LerpNodePathInterval.privDoEvent(self, t, event)
+
 
 class LerpPosHprInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr,
@@ -281,6 +287,7 @@ class LerpPosHprInterval(LerpNodePathInterval):
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
+
 
 class LerpPosQuatInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, quat = None,
@@ -327,6 +334,7 @@ class LerpPosQuatInterval(LerpNodePathInterval):
             self.setupParam(self.setStartQuat, self.startQuat)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpHprScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, hpr, scale,
                  startHpr = None, startQuat = None, startScale = None,
@@ -364,6 +372,7 @@ class LerpHprScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
+
 
 class LerpQuatScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, quat = None, scale = None,
@@ -413,6 +422,7 @@ class LerpQuatScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpPosHprScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr, scale,
                  startPos = None, startHpr = None, startQuat = None,
@@ -458,6 +468,7 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
+
 
 class LerpPosQuatScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, quat = None, scale = None,
@@ -515,6 +526,7 @@ class LerpPosQuatScaleInterval(LerpNodePathInterval):
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpPosHprScaleShearInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, hpr, scale, shear,
                  startPos = None, startHpr = None, startQuat = None,
@@ -568,6 +580,7 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
             self.setupParam(self.setEndShear, self.endShear)
             self.setupParam(self.setStartShear, self.startShear)
         LerpNodePathInterval.privDoEvent(self, t, event)
+
 
 class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, pos, quat = None, scale = None,
@@ -635,6 +648,7 @@ class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
             self.setupParam(self.setStartShear, self.startShear)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+
 class LerpColorInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, color, startColor = None,
                  other = None, blendType = 'noBlend',
@@ -647,6 +661,7 @@ class LerpColorInterval(LerpNodePathInterval):
         if override is not None:
             self.setOverride(override)
 
+
 class LerpColorScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, colorScale, startColorScale = None,
                  other = None, blendType = 'noBlend',
@@ -658,6 +673,7 @@ class LerpColorScaleInterval(LerpNodePathInterval):
             self.setStartColorScale(startColorScale)
         if override is not None:
             self.setOverride(override)
+
 
 class LerpTexOffsetInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texOffset, startTexOffset = None,
@@ -674,6 +690,7 @@ class LerpTexOffsetInterval(LerpNodePathInterval):
         if override is not None:
             self.setOverride(override)
 
+
 class LerpTexRotateInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texRotate, startTexRotate = None,
                  other = None, blendType = 'noBlend',
@@ -689,6 +706,7 @@ class LerpTexRotateInterval(LerpNodePathInterval):
         if override is not None:
             self.setOverride(override)
 
+
 class LerpTexScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texScale, startTexScale = None,
                  other = None, blendType = 'noBlend',
@@ -703,8 +721,6 @@ class LerpTexScaleInterval(LerpNodePathInterval):
             self.setTextureStage(textureStage)
         if override is not None:
             self.setOverride(override)
-
-
 
 
 #
@@ -733,6 +749,7 @@ class LerpFunctionNoStateInterval(Interval.Interval):
     # create LerpFunctionInterval DirectNotify category
     notify = directNotify.newCategory('LerpFunctionNoStateInterval')
     # Class methods
+
     def __init__(self, function, duration = 0.0, fromData = 0, toData = 1,
                  blendType = 'noBlend', extraArgs = [], name = None):
         """__init__(function, duration, fromData, toData, name)
@@ -758,9 +775,8 @@ class LerpFunctionNoStateInterval(Interval.Interval):
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
-    #def privDoEvent(self,t,event):
-
-        #print "doing event",t,event
+    #def privDoEvent(self, t, event):
+        #print("doing event", t, event)
         #bt = self.blendType(t/self.duration)
         #data = (self.fromData * (1 - bt)) + (self.toData * bt)
         ## Evaluate function
@@ -770,7 +786,7 @@ class LerpFunctionNoStateInterval(Interval.Interval):
 
     def privStep(self, t):
         # Evaluate the function
-        #print "doing priv step",t
+        #print("doing priv step", t)
         if t >= self.duration:
             # Set to end value
             if t > self.duration:
@@ -787,12 +803,14 @@ class LerpFunctionNoStateInterval(Interval.Interval):
             self.function(*[data] + self.extraArgs)
 
         # Print debug information
-#        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        #assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
 
         self.state = CInterval.SStarted
         self.currT = t
 
 # New interface
+
+
 class LerpFuncNS(LerpFunctionNoStateInterval):
     def __init__(self, *args, **kw):
         LerpFunctionNoStateInterval.__init__(self, *args, **kw)
@@ -810,6 +828,7 @@ class LerpFunctionInterval(Interval.Interval):
     # create LerpFunctionInterval DirectNotify category
     notify = directNotify.newCategory('LerpFunctionInterval')
     # Class methods
+
     def __init__(self, function, duration = 0.0, fromData = 0, toData = 1,
                  blendType = 'noBlend', extraArgs = [], name = None):
         """__init__(function, duration, fromData, toData, name)
@@ -838,7 +857,7 @@ class LerpFunctionInterval(Interval.Interval):
 
     def privStep(self, t):
         # Evaluate the function
-        #print "doing priv step",t
+        #print("doing priv step", t)
         if t >= self.duration:
             # Set to end value
             self.function(*[self.toData] + self.extraArgs)
@@ -853,12 +872,14 @@ class LerpFunctionInterval(Interval.Interval):
             self.function(*[data] + self.extraArgs)
 
         # Print debug information
-#        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        #assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
 
         self.state = CInterval.SStarted
         self.currT = t
 
 # New interface
+
+
 class LerpFunc(LerpFunctionInterval):
     def __init__(self, *args, **kw):
         LerpFunctionInterval.__init__(self, *args, **kw)

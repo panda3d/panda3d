@@ -24,6 +24,7 @@
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
 #include "boundingHexahedron.h"
+#include "memoryBase.h"
 #include "pointerTo.h"
 #include "drawMask.h"
 #include "typedObject.h"
@@ -94,7 +95,7 @@ private:
   static TypeHandle _type_handle;
 
 private:
-  class Point {
+  class Point : public MemoryBase {
   public:
     INLINE Point();
     INLINE Point(const LVecBase3 &point, const LColor &color);

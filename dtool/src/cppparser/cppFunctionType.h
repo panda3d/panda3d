@@ -68,6 +68,7 @@ public:
 
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_trivially_copyable() const;
 
   virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;

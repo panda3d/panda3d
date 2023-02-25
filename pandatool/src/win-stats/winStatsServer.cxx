@@ -28,16 +28,13 @@ const char *const WinStatsServer::_window_class_name = "server";
  *
  */
 WinStatsServer::
-WinStatsServer() {
+WinStatsServer() : _port(pstats_port) {
+  set_program_brief("Windows PStats client");
+  add_option("p", "port", 0, "", &ProgramBase::dispatch_int, nullptr, &_port);
+
   _last_session = Filename::expand_from(
     "$USER_APPDATA/Panda3D-" PANDA_ABI_VERSION_STR "/last-session.pstats");
   _last_session.set_binary();
-
-  _window = 0;
-  _menu_bar = 0;
-  _options_menu = 0;
-
-  _time_units = 0;
 
   // Create the fonts used for rendering the UI.
   NONCLIENTMETRICS metrics = {0};
@@ -49,6 +46,52 @@ WinStatsServer() {
   }
 
   create_window();
+}
+
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
+bool WinStatsServer::
+handle_args(ProgramBase::Args &args) {
+  if (args.empty()) {
+    new_session();
+    return true;
+  }
+  else if (args.size() == 1) {
+    Filename fn = Filename::from_os_specific(args[0]);
+    fn.set_binary();
+    WinStatsMonitor *monitor = new WinStatsMonitor(this);
+    if (!monitor->read(fn)) {
+      delete monitor;
+
+      std::ostringstream stream;
+      stream << "Failed to load session file: " << fn;
+      std::string str = stream.str();
+      MessageBox(_window, str.c_str(), "PStats Error",
+                 MB_OK | MB_ICONEXCLAMATION);
+      return true;
+    }
+
+    // Enable the "New Session", "Save Session" and "Close Session" menu items.
+    MENUITEMINFO mii;
+    memset(&mii, 0, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_STATE;
+    mii.fState = MFS_ENABLED;
+    SetMenuItemInfoA(_session_menu, MI_session_new, FALSE, &mii);
+    SetMenuItemInfoA(_session_menu, MI_session_save, FALSE, &mii);
+    SetMenuItemInfoA(_session_menu, MI_session_close, FALSE, &mii);
+    SetMenuItemInfoA(_session_menu, MI_session_export_json, FALSE, &mii);
+
+    _monitor = monitor;
+    return true;
+  }
+  else {
+    nout << "At most one filename may be specified on the command-line.\n";
+    return false;
+  }
 }
 
 /**
@@ -81,12 +124,21 @@ make_monitor(const NetAddress &address) {
  */
 void WinStatsServer::
 lost_connection(PStatMonitor *monitor) {
-  // Store a backup now, in case PStats crashes or something.
-  _last_session.make_dir();
-  if (monitor->write(_last_session)) {
-    nout << "Wrote to " << _last_session << "\n";
+  if (_monitor != nullptr && !_monitor->_have_data) {
+    // We didn't have any data yet.  Just silently restart the session.
+    _monitor->close();
+    _monitor = nullptr;
+    if (new_session()) {
+      return;
+    }
   } else {
-    nout << "Failed to write to " << _last_session << "\n";
+    // Store a backup now, in case PStats crashes or something.
+    _last_session.make_dir();
+    if (monitor->write(_last_session)) {
+      nout << "Wrote to " << _last_session << "\n";
+    } else {
+      nout << "Failed to write to " << _last_session << "\n";
+    }
   }
 
   stop_listening();
@@ -103,16 +155,16 @@ new_session() {
     return false;
   }
 
-  if (listen()) {
+  if (listen(_port)) {
     {
       std::ostringstream strm;
-      strm << "PStats Server (listening on port " << pstats_port << ")";
+      strm << "PStats Server (listening on port " << _port << ")";
       std::string title = strm.str();
       SetWindowTextA(_window, title.c_str());
     }
     {
       std::ostringstream strm;
-      strm << "Waiting for client to connect on port " << pstats_port << "...";
+      strm << "Waiting for client to connect on port " << _port << "...";
       std::string title = strm.str();
       int part = -1;
       SendMessage(_status_bar, SB_SETPARTS, 1, (LPARAM)&part);
@@ -146,9 +198,9 @@ new_session() {
 
   std::ostringstream stream;
   stream
-    << "Unable to open port " << pstats_port
-    << ".  Try specifying a different\n"
-    << "port number using pstats-port in your Config file.";
+    << "Unable to open port " << _port << ".  Try specifying a different "
+    << "port number using pstats-port in your Config file or the -p option on "
+    << "the command-line.";
   std::string str = stream.str();
   MessageBox(_window, str.c_str(), "PStats Error",
              MB_OK | MB_ICONEXCLAMATION);
@@ -673,12 +725,15 @@ register_window_class(HINSTANCE application) {
     return;
   }
 
+  HMODULE imageres = LoadLibraryExA("imageres.dll", 0, LOAD_LIBRARY_AS_DATAFILE);
+
   WNDCLASS wc;
 
   ZeroMemory(&wc, sizeof(WNDCLASS));
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
+  wc.hIcon = LoadIcon(imageres, MAKEINTRESOURCE(150));
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;

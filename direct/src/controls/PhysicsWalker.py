@@ -23,14 +23,38 @@ from direct.showbase.InputStateGlobal import inputState
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from direct.extensions_native import Mat3_extensions
-from direct.extensions_native import VBase3_extensions
-from direct.extensions_native import VBase4_extensions
-from panda3d.core import *
-from panda3d.physics import *
+from direct.extensions_native import Mat3_extensions # pylint: disable=unused-import
+from direct.extensions_native import VBase3_extensions # pylint: disable=unused-import
+from direct.extensions_native import VBase4_extensions # pylint: disable=unused-import
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerFloor,
+    CollisionHandlerQueue,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    LRotationf,
+    Mat3,
+    NodePath,
+    Point3,
+    Vec3,
+)
+from panda3d.physics import (
+    ActorNode,
+    ForceNode,
+    LinearEulerIntegrator,
+    LinearFrictionForce,
+    LinearVectorForce,
+    PhysicsCollisionHandler,
+    PhysicsManager,
+)
 import math
 
 #import LineStream
+
 
 class PhysicsWalker(DirectObject.DirectObject):
 
@@ -523,7 +547,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if (airborneHeight > self.avatarRadius*0.5
-                or physObject.getVelocity().getZ() > 0.0
+                    or physObject.getVelocity().getZ() > 0.0
                 ): # Check stair angles before changing this.
             # ...the avatar is airborne (maybe a lot or a tiny amount).
             self.isAirborne = 1

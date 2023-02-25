@@ -98,11 +98,11 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
+  PY_EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
   BLOCKING std::istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(std::istream *stream);
 
-  EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
+  PY_EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
   BLOCKING std::ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
   BLOCKING std::ostream *open_append_file(const Filename &filename);
   BLOCKING static void close_write_file(std::ostream *stream);
@@ -172,4 +172,4 @@ private:
 
 #include "virtualFileSystem.I"
 
-#endif
+#endif // !VIRTUALFILESYSTEM_H

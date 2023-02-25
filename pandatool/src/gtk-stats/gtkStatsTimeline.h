@@ -26,7 +26,7 @@ class GtkStatsMonitor;
  * horizontal scrolling timeline, with concurrent start/stop pairs stacked
  * underneath each other.
  */
-class GtkStatsTimeline : public PStatTimeline, public GtkStatsGraph {
+class GtkStatsTimeline final : public PStatTimeline, public GtkStatsGraph {
 public:
   GtkStatsTimeline(GtkStatsMonitor *monitor);
   virtual ~GtkStatsTimeline();
@@ -78,10 +78,10 @@ private:
   static gboolean key_release_callback(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
   int row_to_pixel(int y) const {
-    return y * _pixel_scale * 5 + _pixel_scale;
+    return y * _pixel_scale * 5 + _pixel_scale - _scroll;
   }
   int pixel_to_row(int y) const {
-    return (y - _pixel_scale) / (_pixel_scale * 5);
+    return (y + _scroll - _pixel_scale) / (_pixel_scale * 5);
   }
 
   GtkWidget *_thread_area;
@@ -90,6 +90,7 @@ private:
 
   int _highlighted_row = -1;
   int _highlighted_x = 0;
+  int _scroll = 0;
   ColorBar _popup_bar;
 };
 

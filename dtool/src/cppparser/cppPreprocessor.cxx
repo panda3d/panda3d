@@ -2680,6 +2680,7 @@ check_keyword(const string &name) {
   if (name == "__is_polymorphic") return KW_IS_POLYMORPHIC;
   if (name == "__is_standard_layout") return KW_IS_STANDARD_LAYOUT;
   if (name == "__is_trivial") return KW_IS_TRIVIAL;
+  if (name == "__is_trivially_copyable") return KW_IS_TRIVIALLY_COPYABLE;
   if (name == "__is_union") return KW_IS_UNION;
   if (name == "long") return KW_LONG;
   if (name == "__make_map_keys_seq") return KW_MAKE_MAP_KEYS_SEQ;

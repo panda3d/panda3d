@@ -13,8 +13,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "config_express.h"
 #include "error_utils.h"
 #include "patchfile.h"
@@ -1074,7 +1072,7 @@ compute_file_patches(ostream &write_stream,
     uint32_t remaining_bytes = result_file_length - start_pos;
     cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos],
                        0, 0);
-    start_pos += remaining_bytes;
+    //start_pos += remaining_bytes;
   }
 
   PANDA_FREE_ARRAY(link_table);
@@ -1350,5 +1348,3 @@ patch_subfile(ostream &write_stream,
 
   return true;
 }
-
-#endif // HAVE_OPENSSL

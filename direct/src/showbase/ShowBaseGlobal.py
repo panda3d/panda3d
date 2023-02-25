@@ -18,7 +18,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # py
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager, ConfigVariableBool
 from panda3d.core import NodePath, PGTop
-from . import DConfig as config
+from . import DConfig as config # pylint: disable=unused-import
 import warnings
 
 __dev__ = ConfigVariableBool('want-dev', __debug__).value

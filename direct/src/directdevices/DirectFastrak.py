@@ -1,8 +1,9 @@
 """ Class used to create and control radamec device """
+from panda3d.core import Vec3
 from direct.showbase.DirectObject import DirectObject
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from .DirectDeviceManager import *
+from .DirectDeviceManager import DirectDeviceManager
 
 from direct.directnotify import DirectNotifyGlobal
 

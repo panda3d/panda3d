@@ -2,7 +2,7 @@
 Defines ObjectPalette tree UI
 """
 import wx
-from .PaletteTreeCtrl import *
+from .PaletteTreeCtrl import PaletteTreeCtrl
 
 
 class ObjectPaletteUI(wx.Panel):
@@ -64,11 +64,11 @@ class ObjectPaletteUI(wx.Panel):
         data1 = self.tree.GetItemText(item1)
         data2 = self.tree.GetItemText(item2)
         if self.opSort == self.opSortAlpha:
-            return cmp(data1, data2)
+            return (data1 > data2) - (data1 < data2)
         else:
             index1 = self.palette.dataKeys.index(data1)
             index2 = self.palette.dataKeys.index(data2)
-        return cmp(index1, index2)
+            return (index1 > index2) - (index1 < index2)
 
     def getSelected(self):
         return self.tree.GetItemData(self.tree.GetSelection())

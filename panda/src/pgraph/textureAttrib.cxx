@@ -253,12 +253,15 @@ unify_texture_stages(TextureStage *stage) const {
  * Returns a new TextureAttrib, just like this one, but with all references to
  * the given texture replaced with the new texture.
  *
+ * As of Panda3D 1.10.13, new_tex may be null to remove the texture.
+ *
  * @since 1.10.4
  */
 CPT(RenderAttrib) TextureAttrib::
 replace_texture(Texture *tex, Texture *new_tex) const {
   TextureAttrib *attrib = nullptr;
 
+  size_t j = 0;
   for (size_t i = 0; i < _on_stages.size(); ++i) {
     const StageNode &sn = _on_stages[i];
     if (sn._texture == tex) {
@@ -266,8 +269,14 @@ replace_texture(Texture *tex, Texture *new_tex) const {
         attrib = new TextureAttrib(*this);
       }
 
-      attrib->_on_stages[i]._texture = new_tex;
+      if (new_tex != nullptr) {
+        attrib->_on_stages[j]._texture = new_tex;
+      } else {
+        attrib->_on_stages.erase(attrib->_on_stages.begin() + j);
+        continue;
+      }
     }
+    ++j;
   }
 
   if (attrib != nullptr) {
@@ -310,8 +319,8 @@ filter_to_max(int max_texture_stages) const {
   RenderStages priority_stages = _render_stages;
 
   // This sort function uses the STL function object defined above.
-  sort(priority_stages.begin(), priority_stages.end(),
-       CompareTextureStagePriorities());
+  std::sort(priority_stages.begin(), priority_stages.end(),
+            CompareTextureStagePriorities());
 
   // Now lop off all of the stages after the first max_texture_stages.
   priority_stages.erase(priority_stages.begin() + max_texture_stages,
@@ -970,8 +979,8 @@ sort_on_stages() {
     _render_stages.push_back(&sn);
   }
 
-  sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
-  sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
+  std::sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
+  std::sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
 
   // We'd like to clear the _filtered map, in case the TextureStage priority
   // values have changed as well, but we can't do that here: it's too

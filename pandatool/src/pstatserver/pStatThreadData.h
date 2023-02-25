@@ -24,6 +24,7 @@
 class PStatCollectorDef;
 class PStatFrameData;
 class PStatClientData;
+class PStatClientVersion;
 
 /**
  * A collection of FrameData structures for recently-received frames within a
@@ -39,7 +40,7 @@ public:
 
   INLINE const PStatClientData *get_client_data() const;
 
-  bool is_empty() const;
+  INLINE bool is_empty() const;
 
   int get_latest_frame_number() const;
   int get_oldest_frame_number() const;
@@ -59,11 +60,12 @@ public:
 
   void set_history(double time);
   double get_history() const;
+  bool prune_history(double time);
 
   void record_new_frame(int frame_number, PStatFrameData *frame_data);
 
   void write_datagram(Datagram &dg) const;
-  void read_datagram(DatagramIterator &scan);
+  void read_datagram(DatagramIterator &scan, PStatClientVersion *version);
 
 private:
   void compute_elapsed_frames() const;

@@ -69,8 +69,8 @@ PUBLISHED:
   void flush();
 
   // These help implement Python pickle support.
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(void __setstate__(PyObject *self, vector_uchar data));
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(void __setstate__(PyObject *self, vector_uchar data));
 
   virtual void write_datagram(Datagram &destination) const;
   virtual void read_datagram(DatagramIterator &source);

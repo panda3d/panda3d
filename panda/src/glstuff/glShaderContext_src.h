@@ -20,6 +20,7 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 #include "paramTexture.h"
+#include "small_vector.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -68,7 +69,7 @@ public:
 private:
   bool _validated;
   GLuint _glsl_program;
-  typedef pvector<GLuint> GLSLShaders;
+  typedef small_vector<GLuint, 2> GLSLShaders;
   GLSLShaders _glsl_shaders;
 
   WCPT(RenderState) _state_rs;

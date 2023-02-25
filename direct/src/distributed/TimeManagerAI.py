@@ -1,5 +1,5 @@
-from panda3d.core import *
-from direct.distributed.ClockDelta import *
+from direct.directnotify import DirectNotifyGlobal
+from direct.distributed.ClockDelta import globalClockDelta
 from direct.distributed import DistributedObjectAI
 
 class TimeManagerAI(DistributedObjectAI.DistributedObjectAI):

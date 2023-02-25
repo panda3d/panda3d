@@ -94,13 +94,11 @@ PUBLISHED:
   INLINE static PT(InternalName) get_view();
   INLINE static PT(InternalName) get_instance_matrix();
 
-#ifdef HAVE_PYTHON
   // These versions are exposed to Python, which have additional logic to map
   // from Python interned strings.
-  EXTENSION(static PT(InternalName) make(PyObject *str));
+  PY_EXTENSION(static PT(InternalName) make(PyObject *str));
 
-  EXTENSION(PyObject *__reduce__() const);
-#endif
+  PY_EXTENSION(PyObject *__reduce__() const);
 
 public:
 #ifdef HAVE_PYTHON

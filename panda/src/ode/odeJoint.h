@@ -83,7 +83,7 @@ PUBLISHED:
   INLINE void set_feedback(bool flag = true);
   INLINE OdeJointFeedback *get_feedback();
 
-  EXTENSION(void attach(PyObject *body1, PyObject *body2));
+  PY_EXTENSION(void attach(PyObject *body1, PyObject *body2));
   void attach_bodies(const OdeBody &body1, const OdeBody &body2);
   void attach_body(const OdeBody &body, int index);
   void detach();
@@ -93,7 +93,7 @@ PUBLISHED:
   INLINE bool operator == (const OdeJoint &other) const;
   operator bool () const;
 
-  EXTENSION(PyObject *convert() const);
+  PY_EXTENSION(PyObject *convert() const);
   OdeBallJoint convert_to_ball() const;
   OdeHingeJoint convert_to_hinge() const;
   OdeSliderJoint convert_to_slider() const;

@@ -360,6 +360,8 @@ post_txa_file() {
 
   _properties._anisotropic_degree = _request._anisotropic_degree;
 
+  _properties._srgb = _request._srgb;
+
   if (_properties._color_type == nullptr) {
     _properties._color_type = _request._properties._color_type;
     _properties._alpha_type = _request._properties._alpha_type;

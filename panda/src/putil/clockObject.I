@@ -213,10 +213,10 @@ check_errors(Thread *current_thread) {
  */
 INLINE ClockObject *ClockObject::
 get_global_clock() {
-  ClockObject *clock = (ClockObject *)AtomicAdjust::get_ptr(_global_clock);
+  ClockObject *clock = _global_clock.load(std::memory_order_consume);
   if (UNLIKELY(clock == nullptr)) {
     make_global_clock();
-    clock = (ClockObject *)_global_clock;
+    clock = _global_clock.load(std::memory_order_consume);
   }
   return clock;
 }

@@ -28,6 +28,7 @@ def _unpack_zstring(mem, offs=0):
         c = mem[offs]
     return str
 
+
 def _unpack_wstring(mem, offs=0):
     "Read a UCS-2 string from memory."
     name_len, = unpack('<H', mem[offs:offs+2])
@@ -36,6 +37,7 @@ def _unpack_wstring(mem, offs=0):
         offs += 2
         name += chr(*unpack('<H', mem[offs:offs+2]))
     return name
+
 
 def _padded(n, boundary):
     align = n % boundary
@@ -250,11 +252,11 @@ class VersionInfoResource(object):
             self.struct_version = dwords[1]
         if len(dwords) > 3:
             self.file_version = \
-               (int(dwords[2] >> 16), int(dwords[2] & 0xffff),
+                (int(dwords[2] >> 16), int(dwords[2] & 0xffff),
                 int(dwords[3] >> 16), int(dwords[3] & 0xffff))
         if len(dwords) > 5:
             self.product_version = \
-               (int(dwords[4] >> 16), int(dwords[4] & 0xffff),
+                (int(dwords[4] >> 16), int(dwords[4] & 0xffff),
                 int(dwords[5] >> 16), int(dwords[5] & 0xffff))
         if len(dwords) > 7:
             self.file_flags_mask = dwords[6]
@@ -302,7 +304,7 @@ class VersionInfoResource(object):
             # It contains a value.
             if type:
                 # It's a wchar array value.
-                value = u""
+                value = ""
                 c, = unpack('<H', data[offset:offset+2])
                 offset += 2
                 while c:
@@ -599,6 +601,36 @@ class PEFile(object):
         self.resources = ResourceTable()
         if self.res_rva.addr and self.res_rva.size:
             self.resources.unpack_from(self.vmem, self.res_rva.addr)
+
+    def _mark_address_modified(self, rva):
+        for section in self.sections:
+            if rva >= section.vaddr and rva - section.vaddr <= section.size:
+                section.modified = True
+
+    def rename_export(self, old_name, new_name):
+        """ Renames a symbol in the export table. """
+
+        assert len(new_name) <= len(old_name)
+
+        new_name = new_name.ljust(len(old_name) + 1, '\0').encode('ascii')
+
+        start = self.exp_rva.addr
+        expdir = expdirtab(*unpack('<IIHHIIIIIII', self.vmem[start:start+40]))
+        if expdir.nnames == 0 or expdir.ordinals == 0 or expdir.names == 0:
+            return False
+
+        nptr = expdir.names
+        for i in range(expdir.nnames):
+            name_rva, = unpack('<I', self.vmem[nptr:nptr+4])
+            if name_rva != 0:
+                name = _unpack_zstring(self.vmem, name_rva)
+                if name == old_name:
+                    self.vmem[name_rva:name_rva+len(new_name)] = new_name
+                    self._mark_address_modified(name_rva)
+                    return True
+            nptr += 4
+
+        return False
 
     def get_export_address(self, symbol_name):
         """ Finds the virtual address for a named export symbol. """

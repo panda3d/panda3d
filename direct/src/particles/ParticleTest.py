@@ -3,7 +3,7 @@ if __name__ == "__main__":
     from panda3d.core import Vec3
     from panda3d.physics import LinearVectorForce
 
-    from direct.directbase.TestStart import *
+    from direct.directbase.TestStart import base
     from direct.tkpanels import ParticlePanel
 
     from . import ParticleEffect
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     # Particle effect
     pe = ParticleEffect.ParticleEffect('particle-fx')
-    pe.reparentTo(render)
+    pe.reparentTo(base.render)
     #pe.setPos(0.0, 5.0, 4.0)
     pe.addForceGroup(fg)
     pe.addParticles(p)

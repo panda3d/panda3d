@@ -1,7 +1,8 @@
 
-from panda3d.core import *
+from panda3d.core import Filename, NodePath, VirtualFileSystem, getModelPath
 
 # Leave these imports in, they may be used by ptf files.
+from panda3d.core import * # pylint: disable=unused-import
 from panda3d.physics import * # pylint: disable=unused-import
 from . import Particles # pylint: disable=unused-import
 from . import ForceGroup # pylint: disable=unused-import
@@ -214,7 +215,7 @@ class ParticleEffect(NodePath):
             data = vfs.readFile(fn, True)
             data = data.replace(b'\r', b'')
             exec(data)
-        except:
+        except Exception:
             self.notify.warning('loadConfig: failed to load particle file: '+ repr(filename))
             raise
 

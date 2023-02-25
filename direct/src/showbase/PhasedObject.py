@@ -1,4 +1,4 @@
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 
 class PhasedObject:
@@ -118,19 +118,19 @@ class PhasedObject:
             self.setPhase(-1)
 
     def __loadPhase(self, phase):
-        aPhase = self.phaseAliasMap.get(phase,phase)
-        getattr(self, 'loadPhase%s' % aPhase,
-                lambda: self.__phaseNotFound('load',aPhase))()
+        aPhase = self.phaseAliasMap.get(phase, phase)
+        getattr(self, f'loadPhase{aPhase}',
+                lambda: self.__phaseNotFound('load', aPhase))()
         self.phase = phase
 
     def __unloadPhase(self, phase):
-        aPhase = self.phaseAliasMap.get(phase,phase)
-        getattr(self, 'unloadPhase%s' % aPhase,
-                lambda: self.__phaseNotFound('unload',aPhase))()
-        self.phase = (phase - 1)
+        aPhase = self.phaseAliasMap.get(phase, phase)
+        getattr(self, f'unloadPhase{aPhase}',
+                lambda: self.__phaseNotFound('unload', aPhase))()
+        self.phase = phase - 1
 
     def __phaseNotFound(self, mode, aPhase):
-        assert self.notify.debug('%s%s() not found!\n' % (mode,aPhase))
+        assert self.notify.debug(f'{mode}{aPhase}() not found!\n')
 
 if __debug__:
     class AnfaPhasedObject(PhasedObject):

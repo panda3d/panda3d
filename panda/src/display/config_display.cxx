@@ -29,6 +29,7 @@
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
+#include "screenshotRequest.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
 #include "windowHandle.h"
@@ -461,7 +462,8 @@ ConfigVariableInt accum_bits
  PRC_DESC("The minimum number of accumulator buffer bits requested."));
 ConfigVariableInt multisamples
 ("multisamples", 0,
- PRC_DESC("The minimum number of samples requested."));
+ PRC_DESC("The number of samples requested. Set this to 1 to request "
+          "the maximum number of samples available"));
 ConfigVariableInt back_buffers
 ("back-buffers", 1,
  PRC_DESC("The default number of back buffers requested."));
@@ -534,6 +536,7 @@ init_libdisplay() {
   MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
+  ScreenshotRequest::init_type();
   StandardMunger::init_type();
   StereoDisplayRegion::init_type();
 #ifdef SUPPORT_SUBPROCESS_WINDOW

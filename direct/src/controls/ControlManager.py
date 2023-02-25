@@ -41,15 +41,12 @@ class ControlManager:
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
 
-
-
         if self.passMessagesThrough: # for not breaking toontown
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
-
 
     def __str__(self):
         return 'ControlManager: using \'%s\'' % self.currentControlsName
@@ -325,7 +322,7 @@ class ControlManager:
             self.WASDTurnTokens = (
                 inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD),
-                )
+            )
 
             inputState.set("turnLeft", slideLeftWASDSet, inputSource=inputState.WASD)
             inputState.set("turnRight", slideRightWASDSet, inputSource=inputState.WASD)
@@ -337,7 +334,7 @@ class ControlManager:
             self.WASDTurnTokens = (
                 inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD),
-                )
+            )
 
             inputState.set("slideLeft", turnLeftWASDSet, inputSource=inputState.WASD)
             inputState.set("slideRight", turnRightWASDSet, inputSource=inputState.WASD)

@@ -41,10 +41,10 @@ PUBLISHED:
                                      const OdeBody &body2,
                                      const int joint_type);
   static PT(OdeCollisionEntry) collide(const OdeGeom &geom1, const OdeGeom &geom2,
-                                      const short int max_contacts = 150);
+                                       const short int max_contacts = 150);
 
-  EXTENSION(static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
-                                PyObject* arg, PyObject* callback));
+  PY_EXTENSION(static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
+                                   PyObject* arg, PyObject* callback));
 
   static OdeGeom space_to_geom(const OdeSpace &space);
 

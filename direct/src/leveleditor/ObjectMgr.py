@@ -1,7 +1,7 @@
 """
 Defines ObjectMgr
 """
-from .ObjectMgrBase import *
+from .ObjectMgrBase import ObjectMgrBase
 
 class ObjectMgr(ObjectMgrBase):
     """ ObjectMgr will create, manage, update objects in the scene """

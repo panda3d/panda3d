@@ -3,17 +3,26 @@
 __all__ = ['DirectSessionPanel']
 
 # Import Tkinter, Pmw, and the dial code
-from panda3d.core import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
+from panda3d.core import (
+    AmbientLight,
+    DirectionalLight,
+    LightAttrib,
+    NodePath,
+    PointLight,
+    Spotlight,
+    Vec4,
+)
+from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import SceneGraphExplorer
 from direct.tkwidgets import MemoryExplorer
+from direct.task.TaskManagerGlobal import taskMgr
 from .TaskManagerPanel import TaskManagerWidget
 import Pmw
+import tkinter as tk
 
 
 class DirectSessionPanel(AppShell):
@@ -28,7 +37,7 @@ class DirectSessionPanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Call superclass initialization function
@@ -73,7 +82,7 @@ class DirectSessionPanel(AppShell):
             ('DIRECT_redoListEmpty', self.redoListEmptyHook),
             ('DIRECT_selectedNodePath', self.selectedNodePathHook),
             ('DIRECT_addLight', self.addLight),
-            ]
+        ]
         for event, method in self.actionEvents:
             self.accept(event, method)
 
@@ -83,7 +92,7 @@ class DirectSessionPanel(AppShell):
         # Add placer commands to menubar
         self.menuBar.addmenu('DIRECT', 'Direct Session Panel Operations')
 
-        self.directEnabled = BooleanVar()
+        self.directEnabled = tk.BooleanVar()
         self.directEnabled.set(1)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Enabled',
@@ -91,7 +100,7 @@ class DirectSessionPanel(AppShell):
                                  variable = self.directEnabled,
                                  command = self.toggleDirect)
 
-        self.directGridEnabled = BooleanVar()
+        self.directGridEnabled = tk.BooleanVar()
         self.directGridEnabled.set(base.direct.grid.isEnabled())
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Grid Enabled',
@@ -110,7 +119,7 @@ class DirectSessionPanel(AppShell):
             label = 'Toggle Widget Mode',
             command = base.direct.manipulationControl.toggleObjectHandlesMode)
 
-        self.directWidgetOnTop = BooleanVar()
+        self.directWidgetOnTop = tk.BooleanVar()
         self.directWidgetOnTop.set(0)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Widget On Top',
@@ -128,7 +137,7 @@ class DirectSessionPanel(AppShell):
 
         # Widget to select node paths (and display list of selected node paths)
         self.nodePathMenu = Pmw.ComboBox(
-            menuFrame, labelpos = W, label_text = 'DIRECT Select:',
+            menuFrame, labelpos = tk.W, label_text = 'DIRECT Select:',
             entry_width = 20,
             selectioncommand = self.selectNodePathNamed,
             scrolledlist_items = self.nodePathNames)
@@ -137,32 +146,32 @@ class DirectSessionPanel(AppShell):
             self.nodePathMenu.component('entryfield_entry'))
         self.nodePathMenuBG = (
             self.nodePathMenuEntry.configure('background')[3])
-        self.nodePathMenu.pack(side = LEFT, fill = X, expand = 1)
+        self.nodePathMenu.pack(side = tk.LEFT, fill = tk.X, expand = 1)
         self.bind(self.nodePathMenu, 'Select node path to manipulate')
 
-        self.undoButton = Button(menuFrame, text = 'Undo',
-                                 command = base.direct.undo)
+        self.undoButton = tk.Button(menuFrame, text = 'Undo',
+                                    command = base.direct.undo)
         if base.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
             self.undoButton['state'] = 'disabled'
-        self.undoButton.pack(side = LEFT, expand = 0)
+        self.undoButton.pack(side = tk.LEFT, expand = 0)
         self.bind(self.undoButton, 'Undo last operation')
 
-        self.redoButton = Button(menuFrame, text = 'Redo',
-                                 command = base.direct.redo)
+        self.redoButton = tk.Button(menuFrame, text = 'Redo',
+                                    command = base.direct.redo)
         if base.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
             self.redoButton['state'] = 'disabled'
-        self.redoButton.pack(side = LEFT, expand = 0)
+        self.redoButton.pack(side = tk.LEFT, expand = 0)
         self.bind(self.redoButton, 'Redo last operation')
 
         # The master frame for the dials
-        mainFrame = Frame(interior)
+        mainFrame = tk.Frame(interior)
 
         # Paned widget for dividing two halves
-        framePane = Pmw.PanedWidget(mainFrame, orient = HORIZONTAL)
+        framePane = Pmw.PanedWidget(mainFrame, orient = tk.HORIZONTAL)
         sgeFrame = framePane.add('left', min = 250)
         notebookFrame = framePane.add('right', min = 300)
 
@@ -171,12 +180,12 @@ class DirectSessionPanel(AppShell):
             sgeFrame, nodePath = render,
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 300)
-        self.SGE.pack(fill = BOTH, expand = 1)
-        sgeFrame.pack(side = LEFT, fill = 'both', expand = 1)
+        self.SGE.pack(fill = tk.BOTH, expand = 1)
+        sgeFrame.pack(side = tk.LEFT, fill = 'both', expand = 1)
 
         # Create the notebook pages
         notebook = Pmw.NoteBook(notebookFrame)
-        notebook.pack(fill = BOTH, expand = 1)
+        notebook.pack(fill = tk.BOTH, expand = 1)
         self.createEnvPage(notebook.add('Environment'))
         self.createLightsPage(notebook.add('Lights'))
         self.createGridPage(notebook.add('Grid'))
@@ -186,36 +195,36 @@ class DirectSessionPanel(AppShell):
 
         notebook.setnaturalsize()
 
-        framePane.pack(expand = 1, fill = BOTH)
+        framePane.pack(expand = 1, fill = tk.BOTH)
         mainFrame.pack(fill = 'both', expand = 1)
 
         # Put this here so it isn't called right away
         notebook['raisecommand'] = self.updateInfo
 
     def createEnvPage(self, envPage):
-        bkgrdFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
+        bkgrdFrame = tk.Frame(envPage, borderwidth = 2, relief = 'sunken')
 
-        Label(bkgrdFrame, text = 'Background',
-              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        tk.Label(bkgrdFrame, text = 'Background',
+                 font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
         self.backgroundColor = VectorWidgets.ColorEntry(
             bkgrdFrame, text = 'Background Color')
         self.backgroundColor['command'] = self.setBackgroundColorVec
-        self.backgroundColor.pack(fill = X, expand = 0)
+        self.backgroundColor.pack(fill = tk.X, expand = 0)
         self.bind(self.backgroundColor, 'Set background color')
-        bkgrdFrame.pack(fill = BOTH, expand = 0)
+        bkgrdFrame.pack(fill = tk.BOTH, expand = 0)
 
-        drFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
-        Label(drFrame, text = 'Display Region',
-              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        drFrame = tk.Frame(envPage, borderwidth = 2, relief = 'sunken')
+        tk.Label(drFrame, text = 'Display Region',
+                 font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
         nameList = ['Display Region ' + repr(x) for x in range(len(base.direct.drList))]
         self.drMenu = Pmw.ComboBox(
-            drFrame, labelpos = W, label_text = 'Display Region:',
+            drFrame, labelpos = tk.W, label_text = 'Display Region:',
             entry_width = 20,
             selectioncommand = self.selectDisplayRegionNamed,
             scrolledlist_items = nameList)
-        self.drMenu.pack(fill = X, expand = 0)
+        self.drMenu.pack(fill = tk.X, expand = 0)
         self.bind(self.drMenu, 'Select display region to configure')
 
         self.nearPlane = Floater.Floater(
@@ -223,7 +232,7 @@ class DirectSessionPanel(AppShell):
             text = 'Near Plane',
             min = 0.01)
         self.nearPlane['command'] = self.setNear
-        self.nearPlane.pack(fill = X, expand = 0)
+        self.nearPlane.pack(fill = tk.X, expand = 0)
         self.bind(self.nearPlane, 'Set near plane distance')
 
         self.farPlane = Floater.Floater(
@@ -231,17 +240,17 @@ class DirectSessionPanel(AppShell):
             text = 'Far Plane',
             min = 0.01)
         self.farPlane['command'] = self.setFar
-        self.farPlane.pack(fill = X, expand = 0)
+        self.farPlane.pack(fill = tk.X, expand = 0)
         self.bind(self.farPlane, 'Set far plane distance')
 
-        fovFrame = Frame(drFrame)
-        fovFloaterFrame = Frame(fovFrame)
+        fovFrame = tk.Frame(drFrame)
+        fovFloaterFrame = tk.Frame(fovFrame)
         self.hFov = Slider.Slider(
             fovFloaterFrame,
             text = 'Horizontal FOV',
             min = 0.01, max = 170.0)
         self.hFov['command'] = self.setHFov
-        self.hFov.pack(fill = X, expand = 0)
+        self.hFov.pack(fill = tk.X, expand = 0)
         self.bind(self.hFov, 'Set horizontal field of view')
 
         self.vFov = Slider.Slider(
@@ -249,66 +258,66 @@ class DirectSessionPanel(AppShell):
             text = 'Vertical FOV',
             min = 0.01, max = 170.0)
         self.vFov['command'] = self.setVFov
-        self.vFov.pack(fill = X, expand = 0)
+        self.vFov.pack(fill = tk.X, expand = 0)
         self.bind(self.vFov, 'Set vertical field of view')
-        fovFloaterFrame.pack(side = LEFT, fill = X, expand = 1)
+        fovFloaterFrame.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
-        frame = Frame(fovFrame)
-        self.lockedFov = BooleanVar()
+        frame = tk.Frame(fovFrame)
+        self.lockedFov = tk.BooleanVar()
         self.lockedFov.set(1)
-        self.lockedFovButton = Checkbutton(
+        self.lockedFovButton = tk.Checkbutton(
             frame,
             text = 'Locked',
-            anchor = 'w', justify = LEFT,
+            anchor = 'w', justify = tk.LEFT,
             variable = self.lockedFov)
-        self.lockedFovButton.pack(fill = X, expand = 0)
+        self.lockedFovButton.pack(fill = tk.X, expand = 0)
 
-        self.resetFovButton = Button(
+        self.resetFovButton = tk.Button(
             frame,
             text = 'Reset',
             command = self.resetFov)
-        self.resetFovButton.pack(fill = X, expand = 0)
-        frame.pack(side = LEFT, fill = X, expand = 0)
-        fovFrame.pack(fill = X, expand = 1)
+        self.resetFovButton.pack(fill = tk.X, expand = 0)
+        frame.pack(side = tk.LEFT, fill = tk.X, expand = 0)
+        fovFrame.pack(fill = tk.X, expand = 1)
 
-        drFrame.pack(fill = BOTH, expand = 0)
+        drFrame.pack(fill = tk.BOTH, expand = 0)
 
         ## Render Style ##
-        toggleFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
-        Label(toggleFrame, text = 'Toggle Render Style',
-              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
-        self.toggleBackfaceButton = Button(
+        toggleFrame = tk.Frame(envPage, borderwidth = 2, relief = 'sunken')
+        tk.Label(toggleFrame, text = 'Toggle Render Style',
+                 font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        self.toggleBackfaceButton = tk.Button(
             toggleFrame,
             text = 'Backface',
             command = base.toggleBackface)
-        self.toggleBackfaceButton.pack(side = LEFT, fill = X, expand = 1)
+        self.toggleBackfaceButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
-        self.toggleLightsButton = Button(
+        self.toggleLightsButton = tk.Button(
             toggleFrame,
             text = 'Lights',
             command = base.direct.lights.toggle)
-        self.toggleLightsButton.pack(side = LEFT, fill = X, expand = 1)
+        self.toggleLightsButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
-        self.toggleTextureButton = Button(
+        self.toggleTextureButton = tk.Button(
             toggleFrame,
             text = 'Texture',
             command = base.toggleTexture)
-        self.toggleTextureButton.pack(side = LEFT, fill = X, expand = 1)
+        self.toggleTextureButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
-        self.toggleWireframeButton = Button(
+        self.toggleWireframeButton = tk.Button(
             toggleFrame,
             text = 'Wireframe',
             command = base.toggleWireframe)
-        self.toggleWireframeButton.pack(fill = X, expand = 1)
-        toggleFrame.pack(side = LEFT, fill = X, expand = 1)
+        self.toggleWireframeButton.pack(fill = tk.X, expand = 1)
+        toggleFrame.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
     def createLightsPage(self, lightsPage):
         # Lights #
-        lightFrame = Frame(lightsPage, borderwidth = 2, relief = 'sunken')
-        self.lightsButton = Menubutton(lightFrame, text = 'Lights',
-                                       font=('MSSansSerif', 14, 'bold'),
-                                       activebackground = '#909090')
-        lightsMenu = Menu(self.lightsButton)
+        lightFrame = tk.Frame(lightsPage, borderwidth = 2, relief = 'sunken')
+        self.lightsButton = tk.Menubutton(lightFrame, text = 'Lights',
+                                          font=('MSSansSerif', 14, 'bold'),
+                                          activebackground = '#909090')
+        lightsMenu = tk.Menu(self.lightsButton)
         lightsMenu.add_command(label = 'Add Ambient Light',
                             command = self.addAmbient)
         lightsMenu.add_command(label = 'Add Directional Light',
@@ -332,52 +341,52 @@ class DirectSessionPanel(AppShell):
         self.lightNotebook['raisecommand'] = self.updateLightInfo
 
         # Main light switch
-        mainSwitchFrame = Frame(lightFrame)
-        Label(mainSwitchFrame,
-              text = 'Lighting:').pack(side = LEFT, expand = 0)
-        self.enableLights = BooleanVar()
-        self.enableLightsButton = Checkbutton(
+        mainSwitchFrame = tk.Frame(lightFrame)
+        tk.Label(mainSwitchFrame,
+                 text = 'Lighting:').pack(side = tk.LEFT, expand = 0)
+        self.enableLights = tk.BooleanVar()
+        self.enableLightsButton = tk.Checkbutton(
             mainSwitchFrame,
             text = 'Enabled/Disabled',
             variable = self.enableLights,
             command = self.toggleLights)
-        self.enableLightsButton.pack(side = LEFT, fill = X, expand = 0)
-        mainSwitchFrame.pack(fill = X, expand = 0)
+        self.enableLightsButton.pack(side = tk.LEFT, fill = tk.X, expand = 0)
+        mainSwitchFrame.pack(fill = tk.X, expand = 0)
 
         # Widget to select a light to configure
         nameList = base.direct.lights.getNameList()
-        lightMenuFrame = Frame(lightFrame)
+        lightMenuFrame = tk.Frame(lightFrame)
 
         self.lightMenu = Pmw.ComboBox(
-            lightMenuFrame, labelpos = W, label_text = 'Light:',
+            lightMenuFrame, labelpos = tk.W, label_text = 'Light:',
             entry_width = 20,
             selectioncommand = self.selectLightNamed,
             scrolledlist_items = nameList)
-        self.lightMenu.pack(side = LEFT, fill = X, expand = 0)
+        self.lightMenu.pack(side = tk.LEFT, fill = tk.X, expand = 0)
         self.bind(self.lightMenu, 'Select light to configure')
 
-        self.lightActive = BooleanVar()
-        self.lightActiveButton = Checkbutton(
+        self.lightActive = tk.BooleanVar()
+        self.lightActiveButton = tk.Checkbutton(
             lightMenuFrame,
             text = 'On/Off',
             variable = self.lightActive,
             command = self.toggleActiveLight)
-        self.lightActiveButton.pack(side = LEFT, fill = X, expand = 0)
+        self.lightActiveButton.pack(side = tk.LEFT, fill = tk.X, expand = 0)
 
         # Pack light menu
-        lightMenuFrame.pack(fill = X, expand = 0, padx = 2)
+        lightMenuFrame.pack(fill = tk.X, expand = 0, padx = 2)
 
         self.lightColor = VectorWidgets.ColorEntry(
             lightFrame, text = 'Light Color')
         self.lightColor['command'] = self.setLightColor
-        self.lightColor.pack(fill = X, expand = 0, padx = 4)
+        self.lightColor.pack(fill = tk.X, expand = 0, padx = 4)
         self.bind(self.lightColor, 'Set active light color')
 
         # Directional light controls
         self.dSpecularColor = VectorWidgets.ColorEntry(
             directionalPage, text = 'Specular Color')
         self.dSpecularColor['command'] = self.setSpecularColor
-        self.dSpecularColor.pack(fill = X, expand = 0)
+        self.dSpecularColor.pack(fill = tk.X, expand = 0)
         self.bind(self.dSpecularColor,
                   'Set directional light specular color')
 
@@ -385,7 +394,7 @@ class DirectSessionPanel(AppShell):
         self.pSpecularColor = VectorWidgets.ColorEntry(
             pointPage, text = 'Specular Color')
         self.pSpecularColor['command'] = self.setSpecularColor
-        self.pSpecularColor.pack(fill = X, expand = 0)
+        self.pSpecularColor.pack(fill = tk.X, expand = 0)
         self.bind(self.pSpecularColor,
                   'Set point light specular color')
 
@@ -394,7 +403,7 @@ class DirectSessionPanel(AppShell):
             text = 'Constant Attenuation',
             min = 0.0, max = 1.0, value = 1.0)
         self.pConstantAttenuation['command'] = self.setConstantAttenuation
-        self.pConstantAttenuation.pack(fill = X, expand = 0)
+        self.pConstantAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.pConstantAttenuation,
                   'Set point light constant attenuation')
 
@@ -403,7 +412,7 @@ class DirectSessionPanel(AppShell):
             text = 'Linear Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
         self.pLinearAttenuation['command'] = self.setLinearAttenuation
-        self.pLinearAttenuation.pack(fill = X, expand = 0)
+        self.pLinearAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.pLinearAttenuation,
                   'Set point light linear attenuation')
 
@@ -412,7 +421,7 @@ class DirectSessionPanel(AppShell):
             text = 'Quadratic Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
         self.pQuadraticAttenuation['command'] = self.setQuadraticAttenuation
-        self.pQuadraticAttenuation.pack(fill = X, expand = 0)
+        self.pQuadraticAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.pQuadraticAttenuation,
                   'Set point light quadratic attenuation')
 
@@ -420,7 +429,7 @@ class DirectSessionPanel(AppShell):
         self.sSpecularColor = VectorWidgets.ColorEntry(
             spotPage, text = 'Specular Color')
         self.sSpecularColor['command'] = self.setSpecularColor
-        self.sSpecularColor.pack(fill = X, expand = 0)
+        self.sSpecularColor.pack(fill = tk.X, expand = 0)
         self.bind(self.sSpecularColor,
                   'Set spot light specular color')
 
@@ -429,7 +438,7 @@ class DirectSessionPanel(AppShell):
             text = 'Constant Attenuation',
             min = 0.0, max = 1.0, value = 1.0)
         self.sConstantAttenuation['command'] = self.setConstantAttenuation
-        self.sConstantAttenuation.pack(fill = X, expand = 0)
+        self.sConstantAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.sConstantAttenuation,
                   'Set spot light constant attenuation')
 
@@ -438,7 +447,7 @@ class DirectSessionPanel(AppShell):
             text = 'Linear Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
         self.sLinearAttenuation['command'] = self.setLinearAttenuation
-        self.sLinearAttenuation.pack(fill = X, expand = 0)
+        self.sLinearAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.sLinearAttenuation,
                   'Set spot light linear attenuation')
 
@@ -447,7 +456,7 @@ class DirectSessionPanel(AppShell):
             text = 'Quadratic Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
         self.sQuadraticAttenuation['command'] = self.setQuadraticAttenuation
-        self.sQuadraticAttenuation.pack(fill = X, expand = 0)
+        self.sQuadraticAttenuation.pack(fill = tk.X, expand = 0)
         self.bind(self.sQuadraticAttenuation,
                   'Set spot light quadratic attenuation')
 
@@ -456,47 +465,46 @@ class DirectSessionPanel(AppShell):
             text = 'Exponent',
             min = 0.0, max = 1.0, value = 0.0)
         self.sExponent['command'] = self.setExponent
-        self.sExponent.pack(fill = X, expand = 0)
+        self.sExponent.pack(fill = tk.X, expand = 0)
         self.bind(self.sExponent,
                   'Set spot light exponent')
 
         # MRM: Add frustum controls
 
         self.lightNotebook.setnaturalsize()
-        self.lightNotebook.pack(expand = 1, fill = BOTH)
+        self.lightNotebook.pack(expand = 1, fill = tk.BOTH)
 
-        lightFrame.pack(expand = 1, fill = BOTH)
-
+        lightFrame.pack(expand = 1, fill = tk.BOTH)
 
     def createGridPage(self, gridPage):
-        Label(gridPage, text = 'Grid',
+        tk.Label(gridPage, text = 'Grid',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
-        self.enableGrid = BooleanVar()
-        self.enableGridButton = Checkbutton(
+        self.enableGrid = tk.BooleanVar()
+        self.enableGridButton = tk.Checkbutton(
             gridPage,
             text = 'Enabled/Disabled',
-            anchor = 'w', justify = LEFT,
+            anchor = 'w', justify = tk.LEFT,
             variable = self.enableGrid,
             command = self.toggleGrid)
-        self.enableGridButton.pack(fill = X, expand = 0)
+        self.enableGridButton.pack(fill = tk.X, expand = 0)
 
-        self.xyzSnap = BooleanVar()
-        self.xyzSnapButton = Checkbutton(
+        self.xyzSnap = tk.BooleanVar()
+        self.xyzSnapButton = tk.Checkbutton(
             gridPage,
             text = 'XYZ Snap',
-            anchor = 'w', justify = LEFT,
+            anchor = 'w', justify = tk.LEFT,
             variable = self.xyzSnap,
             command = self.toggleXyzSnap)
-        self.xyzSnapButton.pack(fill = X, expand = 0)
+        self.xyzSnapButton.pack(fill = tk.X, expand = 0)
 
-        self.hprSnap = BooleanVar()
-        self.hprSnapButton = Checkbutton(
+        self.hprSnap = tk.BooleanVar()
+        self.hprSnapButton = tk.Checkbutton(
             gridPage,
             text = 'HPR Snap',
-            anchor = 'w', justify = LEFT,
+            anchor = 'w', justify = tk.LEFT,
             variable = self.hprSnap,
             command = self.toggleHprSnap)
-        self.hprSnapButton.pack(fill = X, expand = 0)
+        self.hprSnapButton.pack(fill = tk.X, expand = 0)
 
         self.gridSpacing = Floater.Floater(
             gridPage,
@@ -504,7 +512,7 @@ class DirectSessionPanel(AppShell):
             min = 0.1,
             value = base.direct.grid.getGridSpacing())
         self.gridSpacing['command'] = base.direct.grid.setGridSpacing
-        self.gridSpacing.pack(fill = X, expand = 0)
+        self.gridSpacing.pack(fill = tk.X, expand = 0)
 
         self.gridSize = Floater.Floater(
             gridPage,
@@ -512,7 +520,7 @@ class DirectSessionPanel(AppShell):
             min = 1.0,
             value = base.direct.grid.getGridSize())
         self.gridSize['command'] = base.direct.grid.setGridSize
-        self.gridSize.pack(fill = X, expand = 0)
+        self.gridSize.pack(fill = tk.X, expand = 0)
 
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
@@ -520,29 +528,29 @@ class DirectSessionPanel(AppShell):
             style = 'mini',
             value = base.direct.grid.getSnapAngle())
         self.gridSnapAngle['command'] = base.direct.grid.setSnapAngle
-        self.gridSnapAngle.pack(fill = X, expand = 0)
+        self.gridSnapAngle.pack(fill = tk.X, expand = 0)
 
     def createDevicePage(self, devicePage):
-        Label(devicePage, text = 'DEVICES',
+        tk.Label(devicePage, text = 'DEVICES',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
         if base.direct.joybox is not None:
-            joyboxFrame = Frame(devicePage, borderwidth = 2, relief = 'sunken')
-            Label(joyboxFrame, text = 'Joybox',
-                  font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
-            self.enableJoybox = BooleanVar()
+            joyboxFrame = tk.Frame(devicePage, borderwidth = 2, relief = 'sunken')
+            tk.Label(joyboxFrame, text = 'Joybox',
+                     font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+            self.enableJoybox = tk.BooleanVar()
             self.enableJoybox.set(1)
-            self.enableJoyboxButton = Checkbutton(
+            self.enableJoyboxButton = tk.Checkbutton(
                 joyboxFrame,
                 text = 'Enabled/Disabled',
-                anchor = 'w', justify = LEFT,
+                anchor = 'w', justify = tk.LEFT,
                 variable = self.enableJoybox,
                 command = self.toggleJoybox)
-            self.enableJoyboxButton.pack(fill = X, expand = 0)
-            joyboxFrame.pack(fill = X, expand = 0)
+            self.enableJoyboxButton.pack(fill = tk.X, expand = 0)
+            joyboxFrame.pack(fill = tk.X, expand = 0)
 
             self.jbModeMenu = Pmw.ComboBox(
-                joyboxFrame, labelpos = W, label_text = 'Joybox Mode:',
+                joyboxFrame, labelpos = tk.W, label_text = 'Joybox Mode:',
                 label_width = 16, entry_width = 20,
                 selectioncommand = self.selectJBModeNamed,
                 scrolledlist_items = ['Joe Mode', 'Drive Mode', 'Orbit Mode',
@@ -550,10 +558,10 @@ class DirectSessionPanel(AppShell):
                                       'Walkthru Mode', 'Demo Mode',
                                       'HPRXYZ Mode'])
             self.jbModeMenu.selectitem('Joe Mode')
-            self.jbModeMenu.pack(fill = X, expand = 1)
+            self.jbModeMenu.pack(fill = tk.X, expand = 1)
 
             self.jbNodePathMenu = Pmw.ComboBox(
-                joyboxFrame, labelpos = W, label_text = 'Joybox Node Path:',
+                joyboxFrame, labelpos = tk.W, label_text = 'Joybox Node Path:',
                 label_width = 16, entry_width = 20,
                 selectioncommand = self.selectJBNodePathNamed,
                 scrolledlist_items = self.jbNodePathNames)
@@ -562,7 +570,7 @@ class DirectSessionPanel(AppShell):
                 self.jbNodePathMenu.component('entryfield_entry'))
             self.jbNodePathMenuBG = (
                 self.jbNodePathMenuEntry.configure('background')[3])
-            self.jbNodePathMenu.pack(fill = X, expand = 1)
+            self.jbNodePathMenu.pack(fill = tk.X, expand = 1)
             self.bind(self.jbNodePathMenu,
                       'Select node path to manipulate using the joybox')
 
@@ -570,26 +578,26 @@ class DirectSessionPanel(AppShell):
                 joyboxFrame,
                 text = 'XYZ Scale Factor',
                 value = 1.0,
-                hull_relief = RIDGE, hull_borderwidth = 2,
+                hull_relief = tk.RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbXyzSF['command'] = (
                 lambda v: base.direct.joybox.setXyzMultiplier(v))
-            self.jbXyzSF.pack(fill = X, expand = 0)
+            self.jbXyzSF.pack(fill = tk.X, expand = 0)
             self.bind(self.jbXyzSF, 'Set joybox XYZ speed multiplier')
 
             self.jbHprSF = Slider.Slider(
                 joyboxFrame,
                 text = 'HPR Scale Factor',
                 value = 1.0,
-                hull_relief = RIDGE, hull_borderwidth = 2,
+                hull_relief = tk.RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbHprSF['command'] = (
                 lambda v: base.direct.joybox.setHprMultiplier(v))
-            self.jbHprSF.pack(fill = X, expand = 0)
+            self.jbHprSF.pack(fill = tk.X, expand = 0)
             self.bind(self.jbHprSF, 'Set joybox HPR speed multiplier')
 
     def createTasksPage(self, tasksPage):
-        Label(tasksPage, text = 'TASKS',
+        tk.Label(tasksPage, text = 'TASKS',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.taskMgrPanel = TaskManagerWidget(tasksPage, taskMgr)
         self.taskMgrPanel.taskListBox['listbox_height'] = 10
@@ -599,7 +607,7 @@ class DirectSessionPanel(AppShell):
             memPage, nodePath = render,
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 250)
-        self.MemExp.pack(fill = BOTH, expand = 1)
+        self.MemExp.pack(fill = tk.BOTH, expand = 1)
 
     def toggleDirect(self):
         if self.directEnabled.get():
@@ -640,7 +648,7 @@ class DirectSessionPanel(AppShell):
                 else:
                     # Good eval but not a node path, give up
                     nodePath = None
-            except:
+            except Exception:
                 # Bogus eval
                 nodePath = None
                 # Clear bogus entry from listbox
@@ -690,7 +698,7 @@ class DirectSessionPanel(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -731,6 +739,7 @@ class DirectSessionPanel(AppShell):
     # Background #
     def setBackgroundColor(self, r, g, b):
         self.setBackgroundColorVec((r, g, b))
+
     def setBackgroundColorVec(self, color):
         base.setBackgroundColor(color[0]/255.0,
                                 color[1]/255.0,

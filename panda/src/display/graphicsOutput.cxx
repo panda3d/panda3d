@@ -977,6 +977,43 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 }
 
 /**
+ * Like save_screenshot, but performs both the texture transfer and the saving
+ * to disk in the background.  Returns a future that can be awaited.
+ *
+ * This captures the frame that was last submitted by the App stage to the
+ * render_frame() call.  This may not be the latest frame shown on the screen
+ * if the multi-threaded pipeline is used, in which case the request may take
+ * several frames extra to complete.
+ */
+PT(ScreenshotRequest) GraphicsOutput::
+save_async_screenshot(const Filename &filename, const std::string &image_comment) {
+  PT(ScreenshotRequest) request = get_async_screenshot();
+  request->add_output_file(filename, image_comment);
+  return request;
+}
+
+/**
+ * Used to obtain a new Texture object containing the previously rendered frame.
+ * Unlike get_screenshot, this works asynchronously, meaning that the contents
+ * are transferred in the background.  Returns a future that can be awaited.
+ *
+ * This captures the frame that was last submitted by the App stage to the
+ * render_frame() call.  This may not be the latest frame shown on the screen
+ * if the multi-threaded pipeline is used, in which case the request may take
+ * several frames extra to complete.
+ */
+PT(ScreenshotRequest) GraphicsOutput::
+get_async_screenshot() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, current_thread);
+  if (cdata->_screenshot_request == nullptr) {
+    PT(Texture) texture = new Texture("screenshot of " + get_name());
+    cdata->_screenshot_request = new ScreenshotRequest(texture);
+  }
+  return cdata->_screenshot_request;
+}
+
+/**
  * Returns a PandaNode containing a square polygon.  The dimensions are
  * (-1,0,-1) to (1,0,1). The texture coordinates are such that the texture of
  * this GraphicsOutput is aligned properly to the polygon.  The GraphicsOutput
@@ -1469,6 +1506,56 @@ copy_to_textures() {
 }
 
 /**
+ * Do the necessary copies for the get_async_screenshot request.
+ */
+void GraphicsOutput::
+copy_async_screenshot() {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(ScreenshotRequest) request;
+  {
+    CDWriter cdata(_cycler, current_thread);
+    if (cdata->_screenshot_request == nullptr) {
+      return;
+    }
+    request = std::move(cdata->_screenshot_request);
+    cdata->_screenshot_request.clear();
+  }
+
+  // Make sure it is cleared from upstream stages as well.
+  OPEN_ITERATE_UPSTREAM_ONLY(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    if (cdata->_screenshot_request == request) {
+      cdata->_screenshot_request.clear();
+    }
+  }
+  CLOSE_ITERATE_UPSTREAM_ONLY(_cycler);
+
+  PStatTimer timer(_copy_texture_pcollector);
+
+  RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                                get_fb_properties());
+  DisplayRegion *dr = _overlay_display_region;
+
+  Texture *texture = request->get_result();
+
+  if (_fb_properties.is_stereo()) {
+    // We've got two texture views to copy.
+    texture->set_num_views(2);
+
+    RenderBuffer left(_gsg, buffer._buffer_type & ~RenderBuffer::T_right);
+    RenderBuffer right(_gsg, buffer._buffer_type & ~RenderBuffer::T_left);
+
+    _gsg->framebuffer_copy_to_ram(texture, 0, _target_tex_page,
+                                  dr, left, request);
+    _gsg->framebuffer_copy_to_ram(texture, 1, _target_tex_page,
+                                  dr, right, request);
+  } else {
+    _gsg->framebuffer_copy_to_ram(texture, 0, _target_tex_page,
+                                  dr, buffer, request);
+  }
+}
+
+/**
  * Generates a GeomVertexData for a texture card.
  */
 PT(GeomVertexData) GraphicsOutput::
@@ -1653,7 +1740,8 @@ CData(const GraphicsOutput::CData &copy) :
   _active(copy._active),
   _one_shot_frame(copy._one_shot_frame),
   _active_display_regions(copy._active_display_regions),
-  _active_display_regions_stale(copy._active_display_regions_stale)
+  _active_display_regions_stale(copy._active_display_regions_stale),
+  _screenshot_request(copy._screenshot_request)
 {
 }
 

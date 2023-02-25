@@ -163,7 +163,7 @@ new_collector(int collector_index) {
 
   // We might need to update our menus.
   for (GtkStatsChartMenu *chart_menu : _chart_menus) {
-    chart_menu->do_update();
+    chart_menu->check_update();
   }
 }
 
@@ -204,6 +204,23 @@ new_data(int thread_index, int frame_number) {
 
     // Flash the window.
     gtk_window_set_urgency_hint(GTK_WINDOW(_window), TRUE);
+  }
+}
+
+/**
+ * Called when a thread should be removed from the list of threads.
+ */
+void GtkStatsMonitor::
+remove_thread(int thread_index) {
+  for (ChartMenus::iterator it = _chart_menus.begin(); it != _chart_menus.end(); ++it) {
+    GtkStatsChartMenu *chart_menu = *it;
+    if (chart_menu->get_thread_index() == thread_index) {
+      chart_menu->remove_from_menu_bar(_menu_bar);
+      delete chart_menu;
+      _chart_menus.erase(it);
+      --_next_chart_index;
+      return;
+    }
   }
 }
 
@@ -268,6 +285,14 @@ user_guide_bars_changed() {
 GtkWidget *GtkStatsMonitor::
 get_window() const {
   return _window;
+}
+
+/**
+ *
+ */
+GtkAccelGroup *GtkStatsMonitor::
+get_accel_group() const {
+  return ((GtkStatsServer *)_server)->get_accel_group();
 }
 
 /**
@@ -522,7 +547,7 @@ setup_speed_menu() {
         self->set_scroll_speed(12);
       }
     }), this);
-  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+  //group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
 
   item = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);

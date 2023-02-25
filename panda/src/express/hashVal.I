@@ -164,11 +164,8 @@ read_stream(StreamReader &source) {
   _hv[3] = source.get_uint32();
 }
 
-#ifdef HAVE_OPENSSL
 /**
- * Generates the hash value by hashing the indicated data.  This method is
- * only defined if we have the OpenSSL library (which provides md5
- * functionality) available.
+ * Generates the hash value by hashing the indicated data.
  */
 INLINE void HashVal::
 hash_ramfile(const Ramfile &ramfile) {
@@ -176,9 +173,7 @@ hash_ramfile(const Ramfile &ramfile) {
 }
 
 /**
- * Generates the hash value by hashing the indicated data.  This method is
- * only defined if we have the OpenSSL library (which provides md5
- * functionality) available.
+ * Generates the hash value by hashing the indicated data.
  */
 INLINE void HashVal::
 hash_string(const std::string &data) {
@@ -186,15 +181,12 @@ hash_string(const std::string &data) {
 }
 
 /**
- * Generates the hash value by hashing the indicated data.  This method is
- * only defined if we have the OpenSSL library (which provides md5
- * functionality) available.
+ * Generates the hash value by hashing the indicated data.
  */
 INLINE void HashVal::
 hash_bytes(const vector_uchar &data) {
   hash_buffer((const char *)&data[0], data.size());
 }
-#endif  // HAVE_OPENSSL
 
 /**
  * Converts a single nibble to a hex digit.
@@ -220,6 +212,16 @@ fromhex(char digit) {
   }
 }
 
+/**
+ * Initializes the MD5 state.
+ */
+INLINE void HashVal::
+md5_init() {
+  _hv[0] = 0x67452301;
+  _hv[1] = 0xefcdab89;
+  _hv[2] = 0x98badcfe;
+  _hv[3] = 0x10325476;
+}
 
 INLINE std::ostream &operator << (std::ostream &out, const HashVal &hv) {
   hv.output(out);

@@ -126,8 +126,6 @@ void MeshDrawer2D::end() {
 
 }
 
-
-
 /**
  * Draws a tiled rectangle, size of tiles is in us and vs
  */
@@ -138,7 +136,7 @@ rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
 ) {
 
   PN_stdfloat x_fit = w/us;
-  PN_stdfloat y_fit = h/vs;
+  PN_stdfloat y_fit;
   PN_stdfloat x_pos = x;
 
   while (x_fit > 0){
@@ -149,7 +147,7 @@ rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
       PN_stdfloat fixed_us = us;
       PN_stdfloat fixed_vs = vs;
 
-      // we are cuttin in the middle of a tile x direction
+      // we are cutting in the middle of a tile x direction
       if (x_fit < 1){
         fixed_us = w;
         while (fixed_us > us){
@@ -157,7 +155,7 @@ rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
         }
       }
 
-      // we are cuttin in the middel of a tile y directon
+      // we are cutting in the middle of a tile y directon
       if (y_fit < 1){
         fixed_vs = h;
         while (fixed_vs > vs){
@@ -173,10 +171,7 @@ rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     x_pos += us;
     x_fit -= 1;
   }
-
-
 }
-
 
 /**
  * Draws a 2d rectangle, with borders and corders, taken from the surrounding

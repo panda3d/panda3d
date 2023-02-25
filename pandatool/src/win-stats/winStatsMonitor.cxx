@@ -173,6 +173,22 @@ new_thread(int thread_index) {
 }
 
 /**
+ * Called when a thread should be removed from the list of threads.
+ */
+void WinStatsMonitor::
+remove_thread(int thread_index) {
+  for (ChartMenus::iterator it = _chart_menus.begin(); it != _chart_menus.end(); ++it) {
+    WinStatsChartMenu *chart_menu = *it;
+    if (chart_menu->get_thread_index() == thread_index) {
+      chart_menu->remove_from_menu_bar(_menu_bar);
+      delete chart_menu;
+      _chart_menus.erase(it);
+      return;
+    }
+  }
+}
+
+/**
  * Called as each frame's data is made available.  There is no guarantee the
  * frames will arrive in order, or that all of them will arrive at all.  The
  * monitor should be prepared to accept frames received out-of-order or
@@ -347,7 +363,9 @@ choose_collector_color(int collector_index) {
     sizeof(CHOOSECOLORA),
     _window,
     0,
-    RGB(encode_sRGB_uchar(current[0]), encode_sRGB_uchar(current[1]), encode_sRGB_uchar(current[2])),
+    RGB(encode_sRGB_uchar((float)current[0]),
+        encode_sRGB_uchar((float)current[1]),
+        encode_sRGB_uchar((float)current[2])),
     (LPDWORD)custom_colors,
     CC_FULLOPEN | CC_RGBINIT,
     0,

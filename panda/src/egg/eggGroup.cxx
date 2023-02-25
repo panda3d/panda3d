@@ -1403,7 +1403,7 @@ ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   }
   if (bits & EggGroup::CF_level) {
     out << space << "level";
-    space = " ";
+    //space = " ";
   }
   return out;
 }

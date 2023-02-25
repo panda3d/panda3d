@@ -6,7 +6,29 @@ to learn more about loading animated models.
 
 __all__ = ['Actor']
 
-from panda3d.core import *
+from panda3d.core import (
+    AnimBundleNode,
+    AnimControlCollection,
+    Character,
+    ConfigVariableBool,
+    DecalEffect,
+    Filename,
+    GlobPattern,
+    LineStream,
+    LoaderOptions,
+    LODNode,
+    ModelNode,
+    MovingPartBase,
+    MovingPartMatrix,
+    NodePath,
+    PandaNode,
+    PartBundle,
+    PartSubset,
+    Point3,
+    TransformState,
+    Vec3,
+    autoBind,
+)
 from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Loader import Loader

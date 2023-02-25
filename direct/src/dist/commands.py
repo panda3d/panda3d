@@ -6,7 +6,6 @@ on how to use these commands.
 
 import os
 import plistlib
-import pkg_resources
 import sys
 import subprocess
 import zipfile
@@ -49,24 +48,40 @@ def _parse_dict(input):
     return d
 
 
+def _register_python_loaders():
+    # We need this method so that we don't depend on direct.showbase.Loader.
+    if getattr(_register_python_loaders, 'done', None):
+        return
 
-def egg2bam(_build_cmd, srcpath, dstpath):
+    _register_python_loaders.done = True
+
+    registry = p3d.LoaderFileTypeRegistry.getGlobalPtr()
+
+    import pkg_resources
+    for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+        registry.register_deferred_type(entry_point)
+
+
+def _model_to_bam(_build_cmd, srcpath, dstpath):
     if dstpath.endswith('.gz') or dstpath.endswith('.pz'):
         dstpath = dstpath[:-3]
     dstpath = dstpath + '.bam'
-    try:
-        subprocess.check_call([
-            'egg2bam',
-            '-o', dstpath,
-            '-pd', os.path.dirname(os.path.abspath(srcpath)),
-            '-ps', 'rel',
-            srcpath
-        ])
-    except FileNotFoundError:
-        raise RuntimeError('egg2bam failed: egg2bam was not found in the PATH')
-    except (subprocess.CalledProcessError, OSError) as err:
-        raise RuntimeError('egg2bam failed: {}'.format(err))
-    return dstpath
+
+    src_fn = p3d.Filename.from_os_specific(srcpath)
+    dst_fn = p3d.Filename.from_os_specific(dstpath)
+
+    _register_python_loaders()
+
+    loader = p3d.Loader.get_global_ptr()
+    options = p3d.LoaderOptions(p3d.LoaderOptions.LF_report_errors |
+                                p3d.LoaderOptions.LF_no_ram_cache)
+    node = loader.load_sync(src_fn, options)
+    if not node:
+        raise IOError('Failed to load model: %s' % (srcpath))
+
+    if not p3d.NodePath(node).write_bam_file(dst_fn):
+        raise IOError('Failed to write .bam file: %s' % (dstpath))
+
 
 macosx_binary_magics = (
     b'\xFE\xED\xFA\xCE', b'\xCE\xFA\xED\xFE',
@@ -110,7 +125,7 @@ PACKAGE_LIB_DIRS = {
     'PyQt5':  [('PyQt5/Qt5/bin', 'PyQt5_Qt5')],
 }
 
-SITE_PY = u"""
+SITE_PY = """
 import sys
 from _frozen_importlib import _imp, FrozenImporter
 
@@ -243,7 +258,6 @@ class build_apps(setuptools.Command):
         ('platforms=', 'p', 'a list of platforms to build for'),
     ]
     default_file_handlers = {
-        '.egg': egg2bam,
     }
 
     def initialize_options(self):
@@ -277,13 +291,16 @@ class build_apps(setuptools.Command):
         self.log_filename = None
         self.log_filename_strftime = True
         self.log_append = False
+        self.prefer_discrete_gpu = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
+        self.strip_docstrings = True
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
         self.pypi_extra_indexes = [
             'https://archive.panda3d.org/thirdparty',
         ]
         self.file_handlers = {}
+        self.bam_model_extensions = ['.egg', '.gltf', '.glb']
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -444,6 +461,15 @@ class build_apps(setuptools.Command):
         for glob in self.exclude_dependencies:
             glob.case_sensitive = False
 
+        # bam_model_extensions registers a 2bam handler for each given extension.
+        # They can override a default handler, but not a custom handler.
+        if self.bam_model_extensions:
+            for ext in self.bam_model_extensions:
+                ext = '.' + ext.lstrip('.')
+                assert ext not in self.file_handlers, \
+                    'Extension {} occurs in both file_handlers and bam_model_extensions!'.format(ext)
+                self.file_handlers[ext] = _model_to_bam
+
         tmp = self.default_file_handlers.copy()
         tmp.update(self.file_handlers)
         self.file_handlers = tmp
@@ -566,7 +592,7 @@ class build_apps(setuptools.Command):
 
         whlcache = os.path.join(self.build_base, '__whl_cache__')
 
-        pip_version = int(pip.__version__.split('.')[0])
+        pip_version = int(pip.__version__.split('.', 1)[0])
         if pip_version < 9:
             raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
 
@@ -625,11 +651,16 @@ class build_apps(setuptools.Command):
             self.icon_objects.get('*', None),
         )
 
-        if icon is not None:
+        if icon is not None or self.prefer_discrete_gpu:
             pef = pefile.PEFile()
             pef.open(runtime, 'r+')
-            pef.add_icon(icon)
-            pef.add_resource_section()
+            if icon is not None:
+                pef.add_icon(icon)
+                pef.add_resource_section()
+            if self.prefer_discrete_gpu:
+                if not pef.rename_export("SymbolPlaceholder___________________", "AmdPowerXpressRequestHighPerformance") or \
+                   not pef.rename_export("SymbolPlaceholder__", "NvOptimusEnablement"):
+                    self.warn("Failed to apply prefer_discrete_gpu, newer target Panda3D version may be required")
             pef.write_changes()
             pef.close()
 
@@ -944,7 +975,8 @@ class build_apps(setuptools.Command):
             freezer = FreezeTool.Freezer(
                 platform=platform,
                 path=path,
-                hiddenImports=self.hidden_imports
+                hiddenImports=self.hidden_imports,
+                optimize=2 if self.strip_docstrings else 1
             )
             freezer.addModule('__main__', filename=mainscript)
             if platform.startswith('android'):
@@ -1089,7 +1121,7 @@ class build_apps(setuptools.Command):
 
                 # Remove python version string
                 parts = basename.split('.')
-                if len(parts) >= 3 and '-' in parts[-2]:
+                if len(parts) >= 3 and ('-' in parts[-2] or parts[-2] == 'abi' + str(sys.version_info[0])):
                     parts = parts[:-2] + parts[-1:]
                     basename = '.'.join(parts)
 
@@ -1462,7 +1494,8 @@ class build_apps(setuptools.Command):
         for idx in string_tables.keys():
             elf.seek(shoff + idx * shentsize)
             type, offset, size, link, entsize = struct.unpack_from(section_struct, elf.read(shentsize))
-            if type != 3: continue
+            if type != 3:
+                continue
             elf.seek(offset)
             string_tables[idx] = elf.read(size)
 
@@ -1617,6 +1650,10 @@ class bdist_apps(setuptools.Command):
         'manylinux_2_24_ppc64': ['gztar'],
         'manylinux_2_24_ppc64le': ['gztar'],
         'manylinux_2_24_s390x': ['gztar'],
+        'manylinux_2_28_x86_64': ['gztar'],
+        'manylinux_2_28_aarch64': ['gztar'],
+        'manylinux_2_28_ppc64le': ['gztar'],
+        'manylinux_2_28_s390x': ['gztar'],
         'android': ['aab'],
         # Everything else defaults to ['zip']
     }
@@ -1684,9 +1721,10 @@ class bdist_apps(setuptools.Command):
             optval = getattr(self, opt)
             if optval is not None:
                 setattr(build_cmd, opt, optval)
-        build_cmd.finalize_options()
         if not self.skip_build:
             self.run_command('build_apps')
+        else:
+            build_cmd.finalize_options()
 
         platforms = build_cmd.platforms
         build_base = os.path.abspath(build_cmd.build_base)
@@ -1710,3 +1748,14 @@ class bdist_apps(setuptools.Command):
                     continue
 
                 self.installer_functions[installer](self, basename, build_dir)
+
+
+def finalize_distribution_options(dist):
+    """Entry point for compatibility with setuptools>=61, see #1394."""
+
+    options = dist.get_option_dict('build_apps')
+    if options.get('gui_apps') or options.get('console_apps'):
+        # Make sure this is set to avoid auto-discovery taking place.
+        if getattr(dist.metadata, 'py_modules', None) is None and \
+           getattr(dist.metadata, 'packages', None) is None:
+            dist.py_modules = []

@@ -29,7 +29,7 @@
 #ifdef HAVE_OPENSSL
 typedef struct x509_st X509;
 typedef struct evp_pkey_st EVP_PKEY;
-#endif
+#endif // HAVE_OPENSSL
 
 /**
  * A file that contains a set of files.
@@ -84,8 +84,8 @@ PUBLISHED:
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                         int compression_level);
 
-  EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
-  EXTENSION(INLINE PyObject *get_encryption_password() const);
+  PY_EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
+  PY_EXTENSION(INLINE PyObject *get_encryption_password() const);
 
 #ifdef HAVE_OPENSSL
   bool add_signature(const Filename &certificate,
@@ -208,7 +208,7 @@ private:
     int _compression_level;  // Not preserved on disk.
 #ifdef HAVE_OPENSSL
     EVP_PKEY *_pkey;         // Not preserved on disk.
-#endif
+#endif // HAVE_OPENSSL
   };
 
   INLINE std::streampos word_to_streampos(size_t word) const;
@@ -238,7 +238,7 @@ private:
 #ifdef HAVE_OPENSSL
   typedef pvector<CertChain> Certificates;
   Certificates _signatures;
-#endif
+#endif // HAVE_OPENSSL
 
   std::streampos _offset;
   IStreamWrapper *_read;
@@ -285,4 +285,4 @@ private:
 
 #include "multifile.I"
 
-#endif
+#endif // !MULTIFILE_H

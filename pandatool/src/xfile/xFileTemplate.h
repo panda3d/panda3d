@@ -34,7 +34,7 @@ public:
 
   virtual bool is_template_def() const;
 
-  virtual void clear();
+  virtual void clear() final;
   virtual void write_text(std::ostream &out, int indent_level) const;
 
   INLINE bool is_standard() const;

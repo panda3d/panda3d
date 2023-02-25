@@ -39,7 +39,77 @@ __all__ = ['ShowBase', 'WindowControls']
 # Annoying and very noisy, but sometimes useful
 #import VerboseImport
 
-from panda3d.core import *
+from panda3d.core import (
+    AntialiasAttrib,
+    AudioManager,
+    AudioSound,
+    BitMask32,
+    ButtonThrower,
+    Camera,
+    ClockObject,
+    CollisionTraverser,
+    ColorBlendAttrib,
+    ConfigPageManager,
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    ConfigVariableFilename,
+    ConfigVariableInt,
+    ConfigVariableManager,
+    ConfigVariableString,
+    DataGraphTraverser,
+    DepthTestAttrib,
+    DepthWriteAttrib,
+    DriveInterface,
+    ExecutionEnvironment,
+    Filename,
+    FisheyeMaker,
+    FrameBufferProperties,
+    FrameRateMeter,
+    GeomNode,
+    GraphicsEngine,
+    GraphicsOutput,
+    GraphicsPipe,
+    GraphicsPipeSelection,
+    GraphicsWindow,
+    InputDeviceManager,
+    InputDeviceNode,
+    KeyboardButton,
+    LensNode,
+    Mat4,
+    ModelNode,
+    ModifierButtons,
+    MouseAndKeyboard,
+    MouseRecorder,
+    MouseWatcher,
+    NodePath,
+    Notify,
+    OrthographicLens,
+    PandaNode,
+    PandaSystem,
+    PerspectiveLens,
+    PGMouseWatcherBackground,
+    PGTop,
+    PNMImage,
+    PStatClient,
+    PythonCallbackObject,
+    RecorderController,
+    RenderModeAttrib,
+    RenderState,
+    RescaleNormalAttrib,
+    SceneGraphAnalyzerMeter,
+    TexGenAttrib,
+    Texture,
+    TextureStage,
+    Thread,
+    Trackball,
+    Transform2SG,
+    TransformState,
+    TrueClock,
+    VBase4,
+    VirtualFileSystem,
+    WindowProperties,
+    getModelPath,
+)
 from panda3d.direct import throw_new_frame, init_app_for_gui
 from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
 from . import DConfig
@@ -76,6 +146,7 @@ if __debug__:
     from . import OnScreenDebug
     import warnings
 
+
 @atexit.register
 def exitfunc():
     if getattr(builtins, 'base', None) is not None:
@@ -84,6 +155,8 @@ def exitfunc():
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
 # *seem* to cause anyone any problems.
+
+
 class ShowBase(DirectObject.DirectObject):
 
     #: The deprecated `.DConfig` interface for accessing config variables.
@@ -487,11 +560,15 @@ class ShowBase(DirectObject.DirectObject):
             DGG.setDefaultClickSound(self.loader.loadSfx("audio/sfx/GUI_click.wav"))
             DGG.setDefaultRolloverSound(self.loader.loadSfx("audio/sfx/GUI_rollover.wav"))
 
+        # Create a private DirectObject - allowing base.accept for window-event
+        # as well as allowing ShowBase's default handling of this.
+        self.__directObject = DirectObject.DirectObject()
+
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
         self.__prevWindowProperties = None
-        self.accept('window-event', self.windowEvent)
+        self.__directObject.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
         from . import Transitions
@@ -536,6 +613,7 @@ class ShowBase(DirectObject.DirectObject):
     def pushCTrav(self, cTrav):
         self.cTravStack.push(self.cTrav)
         self.cTrav = cTrav
+
     def popCTrav(self):
         self.cTrav = self.cTravStack.pop()
 
@@ -579,7 +657,17 @@ class ShowBase(DirectObject.DirectObject):
         exitfunc and will be called at application exit time
         automatically.
 
-        This function is designed to be safe to call multiple times."""
+        This function is designed to be safe to call multiple times.
+
+        When called from a thread other than the main thread, this will create
+        a task to schedule the destroy on the main thread, and wait for this to
+        complete.
+        """
+
+        if Thread.getCurrentThread() != Thread.getMainThread():
+            task = taskMgr.add(self.destroy, extraArgs=[])
+            task.wait()
+            return
 
         for cb in self.finalExitCallbacks[:]:
             cb()
@@ -620,7 +708,7 @@ class ShowBase(DirectObject.DirectObject):
 
         try:
             self.direct.panel.destroy()
-        except:
+        except Exception:
             pass
 
         if hasattr(self, 'win'):
@@ -745,7 +833,7 @@ class ShowBase(DirectObject.DirectObject):
         # Save this lambda here for convenience; we'll use it to call
         # down to the underlying _doOpenWindow() with all of the above
         # parameters.
-        func = lambda : self._doOpenWindow(
+        func = lambda: self._doOpenWindow(
             props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
             host = host, type = type, name = name, size = size,
             aspectRatio = aspectRatio, makeCamera = makeCamera,
@@ -1151,7 +1239,7 @@ class ShowBase(DirectObject.DirectObject):
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
         """
-        ## This is the root of the 3-D scene graph.
+        #: This is the root of the 3-D scene graph.
         self.render = NodePath('render')
         self.render.setAttrib(RescaleNormalAttrib.makeDefault())
 
@@ -1170,7 +1258,7 @@ class ShowBase(DirectObject.DirectObject):
         # for the benefit of creating DirectGui elements before ShowBase.
         from . import ShowBaseGlobal
 
-        ## This is the root of the 2-D scene graph.
+        #: This is the root of the 2-D scene graph.
         self.render2d = ShowBaseGlobal.render2d
 
         # Set up some overrides to turn off certain properties which
@@ -1191,12 +1279,12 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
-        ## The normal 2-d DisplayRegion has an aspect ratio that
-        ## matches the window, but its coordinate system is square.
-        ## This means anything we parent to render2d gets stretched.
-        ## For things where that makes a difference, we set up
-        ## aspect2d, which scales things back to the right aspect
-        ## ratio along the X axis (Z is still from -1 to 1)
+        #: The normal 2-d DisplayRegion has an aspect ratio that
+        #: matches the window, but its coordinate system is square.
+        #: This means anything we parent to render2d gets stretched.
+        #: For things where that makes a difference, we set up
+        #: aspect2d, which scales things back to the right aspect
+        #: ratio along the X axis (Z is still from -1 to 1)
         self.aspect2d = ShowBaseGlobal.aspect2d
 
         aspectRatio = self.getAspectRatio()
@@ -1204,13 +1292,13 @@ class ShowBase(DirectObject.DirectObject):
 
         self.a2dBackground = self.aspect2d.attachNewNode("a2dBackground")
 
-        ## The Z position of the top border of the aspect2d screen.
+        #: The Z position of the top border of the aspect2d screen.
         self.a2dTop = 1.0
-        ## The Z position of the bottom border of the aspect2d screen.
+        #: The Z position of the bottom border of the aspect2d screen.
         self.a2dBottom = -1.0
-        ## The X position of the left border of the aspect2d screen.
+        #: The X position of the left border of the aspect2d screen.
         self.a2dLeft = -aspectRatio
-        ## The X position of the right border of the aspect2d screen.
+        #: The X position of the right border of the aspect2d screen.
         self.a2dRight = aspectRatio
 
         self.a2dTopCenter = self.aspect2d.attachNewNode("a2dTopCenter")
@@ -1250,9 +1338,9 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
         self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)
 
-        ## This special root, pixel2d, uses units in pixels that are relative
-        ## to the window. The upperleft corner of the window is (0, 0),
-        ## the lowerleft corner is (xsize, -ysize), in this coordinate system.
+        #: This special root, pixel2d, uses units in pixels that are relative
+        #: to the window. The upperleft corner of the window is (0, 0),
+        #: the lowerleft corner is (xsize, -ysize), in this coordinate system.
         self.pixel2d = self.render2d.attachNewNode(PGTop("pixel2d"))
         self.pixel2d.setPos(-1, 0, 1)
         xsize, ysize = self.getSize()
@@ -1282,25 +1370,25 @@ class ShowBase(DirectObject.DirectObject):
         self.render2dp.setMaterialOff(1)
         self.render2dp.setTwoSided(1)
 
-        ## The normal 2-d DisplayRegion has an aspect ratio that
-        ## matches the window, but its coordinate system is square.
-        ## This means anything we parent to render2dp gets stretched.
-        ## For things where that makes a difference, we set up
-        ## aspect2dp, which scales things back to the right aspect
-        ## ratio along the X axis (Z is still from -1 to 1)
+        #: The normal 2-d DisplayRegion has an aspect ratio that
+        #: matches the window, but its coordinate system is square.
+        #: This means anything we parent to render2dp gets stretched.
+        #: For things where that makes a difference, we set up
+        #: aspect2dp, which scales things back to the right aspect
+        #: ratio along the X axis (Z is still from -1 to 1)
         self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2dp"))
         self.aspect2dp.node().setStartSort(16384)
 
         aspectRatio = self.getAspectRatio()
         self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
 
-        ## The Z position of the top border of the aspect2dp screen.
+        #: The Z position of the top border of the aspect2dp screen.
         self.a2dpTop = 1.0
-        ## The Z position of the bottom border of the aspect2dp screen.
+        #: The Z position of the bottom border of the aspect2dp screen.
         self.a2dpBottom = -1.0
-        ## The X position of the left border of the aspect2dp screen.
+        #: The X position of the left border of the aspect2dp screen.
         self.a2dpLeft = -aspectRatio
-        ## The X position of the right border of the aspect2dp screen.
+        #: The X position of the right border of the aspect2dp screen.
         self.a2dpRight = aspectRatio
 
         self.a2dpTopCenter = self.aspect2dp.attachNewNode("a2dpTopCenter")
@@ -1324,9 +1412,9 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
         self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
 
-        ## This special root, pixel2d, uses units in pixels that are relative
-        ## to the window. The upperleft corner of the window is (0, 0),
-        ## the lowerleft corner is (xsize, -ysize), in this coordinate system.
+        #: This special root, pixel2dp, uses units in pixels that are relative
+        #: to the window. The upperleft corner of the window is (0, 0),
+        #: the lowerleft corner is (xsize, -ysize), in this coordinate system.
         self.pixel2dp = self.render2dp.attachNewNode(PGTop("pixel2dp"))
         self.pixel2dp.node().setStartSort(16384)
         self.pixel2dp.setPos(-1, 0, 1)
@@ -1644,14 +1732,13 @@ class ShowBase(DirectObject.DirectObject):
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
 
-
         mw = self.buttonThrowers[0].getParent()
 
-        ## A special ButtonThrower to generate keyboard events and
-        ## include the time from the OS.  This is separate only to
-        ## support legacy code that did not expect a time parameter; it
-        ## will eventually be folded into the normal ButtonThrower,
-        ## above.
+        #: A special ButtonThrower to generate keyboard events and
+        #: include the time from the OS.  This is separate only to
+        #: support legacy code that did not expect a time parameter; it
+        #: will eventually be folded into the normal ButtonThrower,
+        #: above.
         self.timeButtonThrower = mw.attachNewNode(ButtonThrower('timeButtons'))
         self.timeButtonThrower.node().setPrefix('time-')
         self.timeButtonThrower.node().setTimeFlag(1)
@@ -2579,9 +2666,9 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeVis.setLightOff(1)
             self.oobeCullFrustum = None
 
-            self.accept('oobe-down', self.__oobeButton, extraArgs = [''])
-            self.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
-            self.accept('oobe-up', self.__oobeButton, extraArgs = ['-up'])
+            self.__directObject.accept('oobe-down', self.__oobeButton, extraArgs = [''])
+            self.__directObject.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
+            self.__directObject.accept('oobe-up', self.__oobeButton, extraArgs = ['-up'])
 
         if self.oobeMode:
             # Disable OOBE mode.
@@ -2613,7 +2700,7 @@ class ShowBase(DirectObject.DirectObject):
             self.bboard.post('oobeEnabled', True)
             try:
                 cameraParent = localAvatar
-            except:
+            except NameError:
                 # Make oobeCamera be a sibling of wherever camera is now.
                 cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)
@@ -2713,7 +2800,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def screenshot(self, namePrefix = 'screenshot',
                    defaultFilename = 1, source = None,
-                   imageComment=""):
+                   imageComment="", blocking=True):
         """ Captures a screenshot from the main window or from the
         specified window or Texture and writes it to a filename in the
         current directory (or to a specified directory).
@@ -2735,6 +2822,13 @@ class ShowBase(DirectObject.DirectObject):
         generated by makeCubeMap(), namePrefix should contain the hash
         mark ('#') character.
 
+        Normally, this call will block until the screenshot is fully
+        written.  To write the screenshot in a background thread
+        instead, pass blocking = False.  In this case, the return value
+        is a future that can be awaited.
+
+        A "screenshot" event will be sent once the screenshot is saved.
+
         :returns: The filename if successful, or None if there is a problem.
         """
 
@@ -2751,8 +2845,12 @@ class ShowBase(DirectObject.DirectObject):
                 saved = source.write(filename, 0, 0, 1, 0)
             else:
                 saved = source.write(filename)
-        else:
+        elif blocking:
             saved = source.saveScreenshot(filename, imageComment)
+        else:
+            request = source.saveAsyncScreenshot(filename, imageComment)
+            request.addDoneCallback(lambda fut, filename=filename: messenger.send('screenshot', [filename]))
+            return request
 
         if saved:
             # Announce to anybody that a screenshot has been taken
@@ -2766,7 +2864,6 @@ class ShowBase(DirectObject.DirectObject):
                     camera = None, size = 128,
                     cameraMask = PandaNode.getAllCameraMask(),
                     sourceLens = None):
-
         """
         Similar to :meth:`screenshot()`, this sets up a temporary cube
         map Texture which it uses to take a series of six snapshots of
@@ -3140,7 +3237,7 @@ class ShowBase(DirectObject.DirectObject):
             # Set a timer to run the Panda frame 60 times per second.
             wxFrameRate = ConfigVariableDouble('wx-frame-rate', 60.0)
             self.wxTimer = wx.Timer(self.wxApp)
-            self.wxTimer.Start(1000.0 / wxFrameRate.value)
+            self.wxTimer.Start(int(round(1000.0 / wxFrameRate.value)))
             self.wxApp.Bind(wx.EVT_TIMER, self.__wxTimerCallback)
 
             # wx is now the main loop, not us any more.
@@ -3321,12 +3418,17 @@ class ShowBase(DirectObject.DirectObject):
         not running from within a p3d file.  When we *are* within a p3d
         file, the Panda3D runtime has to be responsible for running the
         main loop, so we can't allow the application to do it.
+
+        This method must be called from the main thread, otherwise an error is
+        thrown.
         """
+        if Thread.getCurrentThread() != Thread.getMainThread():
+            self.notify.error("run() must be called from the main thread.")
+            return
 
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()
-
 
     # Snake-case aliases, for people who prefer these.  We're in the process
     # of migrating everyone to use the snake-case alternatives.

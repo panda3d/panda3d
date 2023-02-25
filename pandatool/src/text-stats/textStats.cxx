@@ -41,7 +41,7 @@ TextStats() {
   add_option
     ("p", "port", 0,
      "Specify the TCP port to listen for connections on.  By default, this "
-     "is taken from the pstats-host Config variable.",
+     "is taken from the pstats-port Config variable.",
      &TextStats::dispatch_int, nullptr, &_port);
 
   add_option

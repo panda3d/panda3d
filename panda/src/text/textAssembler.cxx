@@ -42,7 +42,6 @@
 
 using std::max;
 using std::min;
-using std::move;
 using std::wstring;
 
 // This is the factor by which CT_small scales the character down.
@@ -539,6 +538,7 @@ assemble_text() {
   PlacedGlyphs::const_iterator pgi;
   for (pgi = placed_glyphs.begin(); pgi != placed_glyphs.end(); ++pgi) {
     const GlyphPlacement &placement = (*pgi);
+    nassertd(placement._properties != nullptr) continue;
 
     if (placement._properties != properties) {
       // Get a new set of properties for future glyphs.
@@ -1197,7 +1197,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
-          glyphs.push_back(move(quad._glyph));
+          glyphs.push_back(std::move(quad._glyph));
         }
       } else {
         // 64-bit vertex case.
@@ -1245,7 +1245,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
-          glyphs.push_back(move(quad._glyph));
+          glyphs.push_back(std::move(quad._glyph));
         }
       }
     }
@@ -1751,7 +1751,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     // it may involve multiple Geoms if we need to add cheesy accents or
     // ligatures.
     GlyphPlacement placement;
-    placement._glyph = move(glyph);
+    placement._glyph = std::move(glyph);
     placement._scale = glyph_scale;
     placement._xpos = xpos + x_offset;
     placement._ypos = properties.get_glyph_shift() + y_offset;
@@ -1801,7 +1801,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
   // LVecBase4(0), RenderState::make_empty());
 
   GlyphPlacement placement;
-  placement._glyph = move(glyph);
+  placement._glyph = std::move(glyph);
   placement._xpos = 0;
   placement._ypos = 0;
   placement._scale = 1;
@@ -2458,7 +2458,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
     quad._dimensions += LVecBase4(offset[0], -offset[1], offset[0], -offset[1]);
     quad._glyph = _glyph;
 
-    quad_map[state->compose(_glyph->get_state())].push_back(move(quad));
+    quad_map[state->compose(_glyph->get_state())].push_back(std::move(quad));
   }
 }
 

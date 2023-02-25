@@ -418,6 +418,10 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "XDG_DATA_HOME") {
     Filename home_dir = Filename::get_home_directory();
     return home_dir.get_fullpath() + "/.local/share";
+
+  } else if (var == "XDG_STATE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/state";
   }
 #endif // _WIN32
 
@@ -435,12 +439,7 @@ ns_set_environment_variable(const string &var, const string &value) {
 #ifdef _MSC_VER
   _putenv_s(var.c_str(), value.c_str());
 #else
-  string putstr = var + "=" + value;
-
-  // putenv() requires us to malloc a new C-style string.
-  char *put = (char *)malloc(putstr.length() + 1);
-  strcpy(put, putstr.c_str());
-  putenv(put);
+  setenv(var.c_str(), value.c_str(), 1);
 #endif
 }
 

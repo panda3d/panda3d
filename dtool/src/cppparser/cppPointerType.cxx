@@ -108,6 +108,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPPointerType::
+is_trivially_copyable() const {
+  return true;
+}
+
+/**
  * Returns true if the type can be constructed using the given argument.
  */
 bool CPPPointerType::

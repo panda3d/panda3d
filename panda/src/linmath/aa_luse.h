@@ -59,6 +59,13 @@ typedef LPoint3d LTexCoord3d;
 typedef LVecBase4d LColord;
 typedef LVecBase3d LRGBColord;
 
+// These used to be separate classes, but now they're just typedefs.
+typedef LVecBase4f UnalignedLVecBase4f;
+typedef LVecBase4d UnalignedLVecBase4d;
+typedef LVecBase4i UnalignedLVecBase4i;
+typedef LMatrix4f UnalignedLMatrix4f;
+typedef LMatrix4d UnalignedLMatrix4d;
+
 // The following names are only for legacy Python code.  These aren't real
 // typedefs; they're just commands to interrogate.
 #ifdef CPPPARSER

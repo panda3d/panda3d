@@ -351,7 +351,7 @@ class CommonFilters:
             text += "{\n"
             text += "  o_color = tex2D(k_txcolor, %s);\n" % (texcoords["color"])
             if "CartoonInk" in configuration:
-                text += CARTOON_BODY % {"texcoord" : texcoords["aux"]}
+                text += CARTOON_BODY % {"texcoord": texcoords["aux"]}
             if "AmbientOcclusion" in configuration:
                 text += "  o_color *= tex2D(k_txssao2, %s).r;\n" % (texcoords["ssao2"])
             if "BlurSharpen" in configuration:
@@ -466,6 +466,13 @@ class CommonFilters:
             return task.cont
 
     def setMSAA(self, samples):
+        """Enables multisample anti-aliasing on the render-to-texture buffer.
+        If you enable this, it is recommended to leave any multisample request
+        on the main framebuffer OFF (ie. don't set framebuffer-multisample true
+        in Config.prc), since it would be a waste of resources otherwise.
+
+        .. versionadded:: 1.10.13
+        """
         fullrebuild = "MSAA" not in self.configuration or self.configuration["MSAA"].samples != samples
         newconfig = FilterConfig()
         newconfig.samples = samples

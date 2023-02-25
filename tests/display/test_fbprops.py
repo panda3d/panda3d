@@ -101,3 +101,166 @@ def test_fbquality_rgba64():
     assert fb_rgba8.get_quality(req_rgb1) > fb_rgba16.get_quality(req_rgb1)
     assert fb_rgba8.get_quality(req_rgb0_alpha0) > fb_rgba16.get_quality(req_rgb0_alpha0)
     assert fb_rgba8.get_quality(req_rgb1_alpha1) > fb_rgba16.get_quality(req_rgb1_alpha1)
+
+
+def test_fbquality_multi_samples():
+    # Make sure that we get appropriate quality levels for different sample requests
+    
+    fb_0_samples = FrameBufferProperties()
+    fb_0_samples.set_rgb_color(1)
+    fb_0_samples.set_multisamples(0)
+    
+    fb_2_samples = FrameBufferProperties()
+    fb_2_samples.set_rgb_color(1)
+    fb_2_samples.set_multisamples(2)
+    
+    fb_4_samples = FrameBufferProperties()
+    fb_4_samples.set_rgb_color(1)
+    fb_4_samples.set_multisamples(4)
+    
+    fb_8_samples = FrameBufferProperties()
+    fb_8_samples.set_rgb_color(1)
+    fb_8_samples.set_multisamples(8)
+    
+    fb_16_samples = FrameBufferProperties()
+    fb_16_samples.set_rgb_color(1)
+    fb_16_samples.set_multisamples(16)
+    
+    req_0_samples = FrameBufferProperties()
+    req_0_samples.set_multisamples(0)
+    
+    req_1_samples = FrameBufferProperties()
+    req_1_samples.set_multisamples(1)
+    
+    req_2_samples = FrameBufferProperties()
+    req_2_samples.set_multisamples(2)
+    
+    req_4_samples = FrameBufferProperties()
+    req_4_samples.set_multisamples(4)
+    
+    req_8_samples = FrameBufferProperties()
+    req_8_samples.set_multisamples(8)
+    
+    req_16_samples = FrameBufferProperties()
+    req_16_samples.set_multisamples(16)
+
+    # a fb which does not provide the requested number of samples should always 
+    # have a lower quality than another
+    assert fb_2_samples.get_quality(req_4_samples) < fb_2_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_4_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_8_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_16_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_16_samples.get_quality(req_16_samples)
+    assert fb_8_samples.get_quality(req_16_samples) < fb_2_samples.get_quality(req_2_samples)
+    
+    # a fb which has more than the requested samples should have a 
+    # lower quality than one that matches exactly
+    assert fb_2_samples.get_quality(req_2_samples) > fb_4_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_8_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_16_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_16_samples.get_quality(req_8_samples)
+    
+    # the more additional samples the fb provides rather than what is requested, 
+    # the lower the quality should be
+    assert fb_16_samples.get_quality(req_2_samples) < fb_8_samples.get_quality(req_2_samples)
+    assert fb_8_samples.get_quality(req_2_samples) < fb_4_samples.get_quality(req_2_samples)
+    
+    # if the special value of 1 sample is requested, the fb with the highest samples should be 
+    # in favour
+    assert fb_16_samples.get_quality(req_1_samples) > fb_8_samples.get_quality(req_1_samples)
+    assert fb_16_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
+    assert fb_16_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    assert fb_8_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
+    assert fb_8_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    
+    # if 0 samples are requested, the fb with the highest samples should get a reduced quality level
+    assert fb_16_samples.get_quality(req_0_samples) < fb_8_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+
+    # if samples are requested we prefer the ones with samples instead of having none
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_4_samples)
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_8_samples)
+    assert fb_0_samples.get_quality(req_2_samples) < fb_2_samples.get_quality(req_16_samples)
+    
+    # we prefer buffers without samples if we don't request some
+    assert fb_0_samples.get_quality(req_0_samples) > fb_2_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_4_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_8_samples.get_quality(req_0_samples)
+    assert fb_0_samples.get_quality(req_0_samples) > fb_16_samples.get_quality(req_0_samples)
+
+
+def test_fbquality_coverage_samples():
+    # Make sure that we get appropriate quality levels for different sample requests
+    
+    fb_2_samples = FrameBufferProperties()
+    fb_2_samples.set_rgb_color(1)
+    fb_2_samples.set_coverage_samples(2)
+    
+    fb_4_samples = FrameBufferProperties()
+    fb_4_samples.set_rgb_color(1)
+    fb_4_samples.set_coverage_samples(4)
+    
+    fb_8_samples = FrameBufferProperties()
+    fb_8_samples.set_rgb_color(1)
+    fb_8_samples.set_coverage_samples(8)
+    
+    fb_16_samples = FrameBufferProperties()
+    fb_16_samples.set_rgb_color(1)
+    fb_16_samples.set_coverage_samples(16)
+    
+    req_0_samples = FrameBufferProperties()
+    req_0_samples.set_coverage_samples(0)
+    
+    req_1_samples = FrameBufferProperties()
+    req_1_samples.set_coverage_samples(1)
+    
+    req_2_samples = FrameBufferProperties()
+    req_2_samples.set_coverage_samples(2)
+    
+    req_4_samples = FrameBufferProperties()
+    req_4_samples.set_coverage_samples(4)
+    
+    req_8_samples = FrameBufferProperties()
+    req_8_samples.set_coverage_samples(8)
+    
+    req_16_samples = FrameBufferProperties()
+    req_16_samples.set_coverage_samples(16)
+
+    # a fb which does not provide the requested number of samples should always 
+    # have a lower quality than another
+    assert fb_2_samples.get_quality(req_4_samples) < fb_2_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_4_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_8_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_16_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_4_samples) < fb_16_samples.get_quality(req_16_samples)
+    assert fb_8_samples.get_quality(req_16_samples) < fb_2_samples.get_quality(req_2_samples)
+    
+    # a fb which has more than the requested samples should have a 
+    # lower quality than one that matches exactly
+    assert fb_2_samples.get_quality(req_2_samples) > fb_4_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_8_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_16_samples.get_quality(req_2_samples)
+    assert fb_2_samples.get_quality(req_2_samples) > fb_16_samples.get_quality(req_8_samples)
+    
+    # the more additional samples the fb provides rather than what is requested, 
+    # the lower the quality should be
+    assert fb_16_samples.get_quality(req_2_samples) < fb_8_samples.get_quality(req_2_samples)
+    assert fb_8_samples.get_quality(req_2_samples) < fb_4_samples.get_quality(req_2_samples)
+    
+    # if the special value of 1 sample is requested, the fb with the highest samples should be 
+    # in favour
+    assert fb_16_samples.get_quality(req_1_samples) > fb_8_samples.get_quality(req_1_samples)
+    assert fb_16_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
+    assert fb_16_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    assert fb_8_samples.get_quality(req_1_samples) > fb_4_samples.get_quality(req_1_samples)
+    assert fb_8_samples.get_quality(req_1_samples) > fb_2_samples.get_quality(req_1_samples)
+    
+    # if 0 samples are requested, the fb with the highest samples should get a reduced quality level
+    assert fb_16_samples.get_quality(req_0_samples) < fb_8_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_16_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_4_samples.get_quality(req_0_samples)
+    assert fb_8_samples.get_quality(req_0_samples) < fb_2_samples.get_quality(req_0_samples)

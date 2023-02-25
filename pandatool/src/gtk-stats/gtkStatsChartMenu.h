@@ -15,10 +15,10 @@
 #define GTKSTATSCHARTMENU_H
 
 #include "pandatoolbase.h"
+#include "gtkStatsMonitor.h"
 
 #include <gtk/gtk.h>
 
-class GtkStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
@@ -27,8 +27,12 @@ class PStatViewLevel;
  */
 class GtkStatsChartMenu {
 public:
+  typedef GtkStatsMonitor::ChartType ChartType;
+
   GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
   ~GtkStatsChartMenu();
+
+  int get_thread_index() const { return _thread_index; }
 
   GtkWidget *get_menu_widget();
   void add_to_menu_bar(GtkWidget *menu_bar, int position);
@@ -38,8 +42,10 @@ public:
   void do_update();
 
 private:
-  void add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
-                bool show_level);
+  bool add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
+                bool show_level, int insert_at);
+  GtkWidget *make_menu_item(const char *label, int collector_index,
+                            ChartType chart_type, bool show_level = false);
 
   static void remove_menu_child(GtkWidget *widget, gpointer data);
   static void activate_close_all(GtkWidget *widget, gpointer data);
@@ -52,6 +58,11 @@ private:
   int _last_level_index;
   GtkWidget *_menu;
   GtkWidget *_menu_item = nullptr;
+
+  // Pair of menu item, submenu
+  std::vector<std::pair<GtkWidget *, GtkWidget *> > _collector_items;
+  int _time_items_end = 0;
+  int _level_items_end = 0;
 };
 
 #endif

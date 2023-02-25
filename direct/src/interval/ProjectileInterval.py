@@ -2,9 +2,8 @@
 
 __all__ = ['ProjectileInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import CollisionParabola, LParabola, NodePath, Point3, VBase3
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from .Interval import Interval
 from direct.showbase import PythonUtil
 

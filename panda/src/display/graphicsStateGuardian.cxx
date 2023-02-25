@@ -57,6 +57,7 @@
 #include "colorScaleAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "fogAttrib.h"
+#include "renderModeAttrib.h"
 #include "config_pstatclient.h"
 
 #include <limits.h>
@@ -1267,6 +1268,25 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
     return;
   }
+  case Shader::SMO_texconst_i: {
+    const TexGenAttrib *tga;
+    const TextureAttrib *ta;
+
+    int num_stages = 0;
+    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tga)) {
+      num_stages = std::min(count, (int)ta->get_num_on_stages());
+    }
+
+    int i = 0;
+    for (; i < num_stages; ++i) {
+      LVecBase3 value = tga->get_constant_value(ta->get_on_stage(i));
+      into[i].set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, value[0], value[1], value[2], 1);
+    }
+    for (; i < count; ++i) {
+      into[i] = LMatrix4::ident_mat();
+    }
+    return;
+  }
   case Shader::SMO_tex_is_alpha_i: {
     // This is a hack so we can support both F_alpha and other formats in the
     // default shader, to fix font rendering in GLES2
@@ -1626,6 +1646,33 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
                   0, 0, 0, 0,
                   0, 0, 0, 0);
     }
+    return;
+  }
+  case Shader::SMO_attr_pointparams: {
+    const RenderModeAttrib *target_render_mode;
+    _target_rs->get_attrib_def(target_render_mode);
+
+    PN_stdfloat thickness = target_render_mode->get_thickness();
+    PN_stdfloat catten = thickness;
+    PN_stdfloat patten = 0.0f;
+    if (target_render_mode->get_perspective()) {
+      LVecBase2i pixel_size = _current_display_region->get_pixel_size();
+
+      LVector3 height(0.0f, thickness, 1.0f);
+      height = height * _projection_mat->get_mat();
+      height = height * _internal_transform->get_scale()[1];
+      PN_stdfloat s = height[1] * pixel_size[1];
+
+      if (_current_lens->is_orthographic()) {
+        catten = s;
+        patten = 0.0f;
+      } else {
+        catten = 0.0f;
+        patten = s;
+      }
+    }
+
+    into[0].set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, thickness, catten, patten, 0.0f);
     return;
   }
   default:
@@ -3037,11 +3084,15 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
  * into system memory, not texture memory.  Returns true on success, false on
  * failure.
  *
+ * If a future is given, the operation may be scheduled to occur in the
+ * background, in which case the texture will be passed as the result of the
+ * future when the operation is complete.
+ *
  * This completely redefines the ram image of the indicated texture.
  */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
-                        const RenderBuffer &) {
+                        const RenderBuffer &, ScreenshotRequest *) {
   return false;
 }
 
@@ -3608,7 +3659,7 @@ ensure_generated_shader(const RenderState *state) {
       if (!_supports_basic_shaders) {
         return;
       }
-      _shader_generator = new ShaderGenerator(this);
+      _shader_generator = new ShaderGenerator(_shader_caps, _supports_shadow_filter);
     }
     if (state->_generated_shader == nullptr ||
         state->_generated_shader_seq != _generated_shader_seq) {

@@ -2,17 +2,16 @@
 This is the module for curve edit
 """
 
-from panda3d.core import *
-from direct.wxwidgets.WxPandaShell import *
-from direct.showbase.DirectObject import *
+from panda3d.core import BitMask32, Mat4, NodePath
+from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectSelection import SelectionRay
 from direct.showutil.Rope import Rope
-from .ActionMgr import *
 from direct.task import Task
 
 
 class CurveEditor(DirectObject):
     """ CurveEditor will create and edit the curve """
+
     def __init__(self, editor):
         self.editor = editor
         self.i = 0
@@ -51,7 +50,7 @@ class CurveEditor(DirectObject):
                             self.currentCurve = self.currentRope.ropeNode.getCurve()
                             self.currentCurve.setVertex(item[0], self.selected.getPos())
                             self.accept("DIRECT-delete", self.onControlerDelete)
-                            return task.cont
+                            return Task.cont
 
     def onControlerDelete(self):
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:
@@ -78,11 +77,11 @@ class CurveEditor(DirectObject):
         self.i = 0
         for item in self.curveControl:
             item[1].hide()
-        if self.editor.preMode == self.editor.BASE_MODE :
+        if self.editor.preMode == self.editor.BASE_MODE:
             pass
-        if self.editor.preMode == self.editor.CREATE_CURVE_MODE :
+        if self.editor.preMode == self.editor.CREATE_CURVE_MODE:
             self.updateScene()
-        if self.editor.preMode == self.editor.EDIT_CURVE_MODE :
+        if self.editor.preMode == self.editor.EDIT_CURVE_MODE:
             self.doneEdit()
         self.curveControl = []
         self.curve = []

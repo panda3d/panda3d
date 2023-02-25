@@ -1,26 +1,41 @@
 import math
 
-from panda3d.core import *
-from .DirectUtil import *
+from panda3d.core import (
+    CollisionNode,
+    ConfigVariableBool,
+    ConfigVariableString,
+    CSDefault,
+    NodePath,
+    Point3,
+    TextNode,
+    VBase3,
+    VBase4,
+    Vec3,
+    Vec4,
+    decomposeMatrix,
+    deg2Rad,
+)
+from .DirectUtil import useDirectRenderStyle
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.BulletinBoardGlobal import bulletinBoard as bboard
 from direct.task import Task
 
-from .DirectGlobals import DIRECT_NO_MOD
+from . import DirectGlobals as DG
 from .DirectCameraControl import DirectCameraControl
 from .DirectManipulation import DirectManipulationControl
 from .DirectSelection import SelectionRay, COA_ORIGIN, SelectedNodePaths
 from .DirectGrid import DirectGrid
 #from DirectGeometry import *
 from .DirectLights import DirectLights
-from direct.cluster.ClusterClient import createClusterClient, DummyClusterClient
-from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkpanels import Placer
 ## from direct.tkwidgets import Slider
 ## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
-from direct.interval.IntervalGlobal import *
+from direct.interval.IntervalGlobal import Func, Sequence
+from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.MessengerGlobal import messenger
+
 
 class DirectSession(DirectObject):
 
@@ -117,7 +132,6 @@ class DirectSession(DirectObject):
                 for i in range(len(fastrak))[1:]:
                     self.fastrak.append(DirectFastrak.DirectFastrak(fastrak[0] + ':' + fastrak[i]))
 
-
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
@@ -179,7 +193,7 @@ class DirectSession(DirectObject):
             ['DIRECT-doWrtReparent', self.doWrtReparent],
             ['DIRECT-doReparent', self.doReparent],
             ['DIRECT-doSelect', self.doSelect],
-            ]
+        ]
 
         if base.wantTk:
             from direct.tkpanels import Placer
@@ -248,7 +262,7 @@ class DirectSession(DirectObject):
             'shift-[': ('DIRECT-Undo', 'DIRECT-Undo'),
             ']': ('DIRECT-Redo', 'DIRECT-Redo'),
             'shift-]': ('DIRECT-Redo', 'DIRECT-Redo'),
-            }
+        }
 
         self.hotKeyMap = {
             'c': ('Center Camera', 'DIRECT-centerCamIn'),
@@ -276,14 +290,14 @@ class DirectSession(DirectObject):
             'shift-a': ('Toggle Vis all', 'DIRECT-toggleVisAll'),
             'w': ('Toggle Wireframe', 'DIRECT-toggleWireframe'),
             'control-z': ('Undo', 'LE-Undo'),
-            'shift-z' : ('Redo', 'LE-Redo'),
+            'shift-z': ('Redo', 'LE-Redo'),
             'control-d': ('Duplicate', 'LE-Duplicate'),
             'control-l': ('Make Live', 'LE-MakeLive'),
             'control-n': ('New Scene', 'LE-NewScene'),
             'control-s': ('Save Scene', 'LE-SaveScene'),
             'control-o': ('Open Scene', 'LE-OpenScene'),
             'control-q': ('Quit', 'LE-Quit'),
-            }
+        }
 
         self.speicalKeyMap = {
                               'enter': 'DIRECT-enter',
@@ -303,13 +317,15 @@ class DirectSession(DirectObject):
             self.clusterMode = ConfigVariableString("cluster-mode", '').value
 
         if self.clusterMode == 'client':
+            from direct.cluster.ClusterClient import createClusterClient
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
+            from direct.cluster.ClusterServer import ClusterServer
             self.cluster = ClusterServer(base.camera, base.cam)
         else:
+            from direct.cluster.ClusterClient import DummyClusterClient
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
-
 
     def addPassThroughKey(self,key):
 
@@ -541,7 +557,7 @@ class DirectSession(DirectObject):
                     base.mouseWatcher = winCtrl.mouseWatcher
                     base.mouseWatcherNode = winCtrl.mouseWatcher.node()
                     base.direct.dr.mouseUpdate()
-                    LE_showInOneCam(self.selectedNPReadout, self.camera.getName())
+                    DG.LE_showInOneCam(self.selectedNPReadout, self.camera.getName())
                     base.direct.widget = base.direct.manipulationControl.widgetList[base.camList.index(NodePath(winCtrl.camNode))]
 
                 input = input[8:] # get rid of camera prefix
@@ -590,8 +606,8 @@ class DirectSession(DirectObject):
             self.fControl = 1
             # [gjeon] to update control key information while mouse1 is pressed
             if self.fMouse1:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_CONTROL_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_CONTROL_MOD
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'control-up':
             self.fControl = 0
@@ -601,16 +617,16 @@ class DirectSession(DirectObject):
             self.fAlt = 1
             # [gjeon] to update alt key information while mouse1 is pressed
             if self.fMouse1:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
             elif self.fMouse2:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
             elif self.fMouse3:
-                modifiers = DIRECT_NO_MOD
-                modifiers |= DIRECT_ALT_MOD
+                modifiers = DG.DIRECT_NO_MOD
+                modifiers |= DG.DIRECT_ALT_MOD
                 messenger.send('DIRECT-mouse3', sentArgs = [modifiers])
         elif input == 'alt-up':
             self.fAlt = 0
@@ -637,24 +653,24 @@ class DirectSession(DirectObject):
             self.select(self.selected.last)
 
     def getModifiers(self, input, base):
-        modifiers = DIRECT_NO_MOD
+        modifiers = DG.DIRECT_NO_MOD
         modifierString = input[: input.find(base)]
         if modifierString.find('shift') != -1:
-            modifiers |= DIRECT_SHIFT_MOD
+            modifiers |= DG.DIRECT_SHIFT_MOD
         if modifierString.find('control') != -1:
-            modifiers |= DIRECT_CONTROL_MOD
+            modifiers |= DG.DIRECT_CONTROL_MOD
         if modifierString.find('alt') != -1:
-            modifiers |= DIRECT_ALT_MOD
+            modifiers |= DG.DIRECT_ALT_MOD
         return modifiers
 
     def gotShift(self, modifiers):
-        return modifiers & DIRECT_SHIFT_MOD
+        return modifiers & DG.DIRECT_SHIFT_MOD
 
     def gotControl(self, modifiers):
-        return modifiers & DIRECT_CONTROL_MOD
+        return modifiers & DG.DIRECT_CONTROL_MOD
 
     def gotAlt(self, modifiers):
-        return modifiers & DIRECT_ALT_MOD
+        return modifiers & DG.DIRECT_ALT_MOD
 
     def setFScaleWidgetByCam(self, flag):
         self.fScaleWidgetByCam = flag
@@ -708,7 +724,7 @@ class DirectSession(DirectObject):
             else:
                 self.widget.showWidget()
             editTypes = self.manipulationControl.getEditTypes([dnp])
-            if (editTypes & EDIT_TYPE_UNEDITABLE) == EDIT_TYPE_UNEDITABLE:
+            if (editTypes & DG.EDIT_TYPE_UNEDITABLE) == DG.EDIT_TYPE_UNEDITABLE:
                 self.manipulationControl.disableWidgetMove()
             else:
                 self.manipulationControl.enableWidgetMove()
@@ -831,7 +847,7 @@ class DirectSession(DirectObject):
             # Temporarily set node path color
             nodePath.setColor(flashColor)
             # Clean up color in a few seconds
-            t = taskMgr.doMethodLater(DIRECT_FLASH_DURATION,
+            t = taskMgr.doMethodLater(DG.DIRECT_FLASH_DURATION,
                                       # This is just a dummy task
                                       self.flashDummy,
                                       'flashNodePath',)
@@ -859,6 +875,7 @@ class DirectSession(DirectObject):
             # If nothing specified, try selected node path
             nodePath = self.selected.last
         base.direct.select(nodePath)
+
         def fitTask(state, self = self):
             self.cameraControl.fitOnWidget()
             return Task.done
@@ -1203,12 +1220,13 @@ class DisplayRegionContext(DirectObject):
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
 
+
 class DisplayRegionList(DirectObject):
     def __init__(self):
         self.displayRegionList = []
         i = 0
         # Things are funky if we are oobe
-        if (hasattr(base, 'oobeMode') and base.oobeMode):
+        if getattr(base, 'oobeMode', False):
             # assume we only have one cam at this point
             drc = DisplayRegionContext(base.cam)
             self.displayRegionList.append(drc)
@@ -1224,10 +1242,9 @@ class DisplayRegionList(DirectObject):
             # a display region for each real display region, and then
             # keep track of which are currently active (e.g. use a flag)
             # processing only them.
-            for camIndex in range(len(base.camList)):
-                cam = base.camList[camIndex]
-                if cam.getName()=='<noname>':
-                    cam.setName('Camera%d' % camIndex)
+            for camIndex, cam in enumerate(base.camList):
+                if cam.name == '<noname>':
+                    cam.name = f'Camera{camIndex}'
                 drc = DisplayRegionContext(cam)
                 self.displayRegionList.append(drc)
 
@@ -1272,7 +1289,7 @@ class DisplayRegionList(DirectObject):
         for dr in self.displayRegionList:
             dr.setVfov(fov)
 
-    def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
+    def mouseUpdate(self, modifiers = DG.DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
         #base.direct.dr = self.getCurrentDr()

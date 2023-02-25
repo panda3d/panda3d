@@ -12,6 +12,7 @@
  */
 
 #import "cocoaPandaWindowDelegate.h"
+#include "config_cocoadisplay.h"
 
 @implementation CocoaPandaWindowDelegate
 - (id) initWithGraphicsWindow:(CocoaGraphicsWindow*)window {
@@ -51,11 +52,19 @@
 }
 
 - (BOOL) windowShouldClose:(id)sender {
-  bool should_close = _graphicsWindow->handle_close_request();
-  if (should_close) {
-    _graphicsWindow->handle_close_event();
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Received windowShouldClose for window " << _graphicsWindow << "\n";
   }
-  return should_close;
+  return _graphicsWindow->handle_close_request();
+}
+
+- (void) windowWillClose:(id)sender {
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Received windowWillClose for window " << _graphicsWindow << "\n";
+  }
+  _graphicsWindow->handle_close_event();
 }
 
 @end

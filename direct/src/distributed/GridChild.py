@@ -1,6 +1,6 @@
 from direct.distributed.DistributedSmoothNodeBase import DistributedSmoothNodeBase
 from direct.distributed.GridParent import GridParent
-from direct.showbase.PythonUtil import report
+from direct.showbase.PythonUtil import report, getBase
 
 
 class GridChild:

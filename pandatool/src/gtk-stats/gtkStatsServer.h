@@ -15,18 +15,21 @@
 #define GTKSTATSSERVER_H
 
 #include "pandatoolbase.h"
+#include "programBase.h"
 #include "pStatServer.h"
 #include "gtkStatsMonitor.h"
 
 /**
  * The class that owns the main loop, waiting for client connections.
  */
-class GtkStatsServer : public PStatServer {
+class GtkStatsServer : public PStatServer, public ProgramBase {
 public:
   GtkStatsServer();
 
-  virtual PStatMonitor *make_monitor(const NetAddress &address);
-  virtual void lost_connection(PStatMonitor *monitor);
+  virtual bool handle_args(Args &args) override;
+
+  virtual PStatMonitor *make_monitor(const NetAddress &address) override;
+  virtual void lost_connection(PStatMonitor *monitor) override;
 
   bool new_session();
   bool open_session();
@@ -36,6 +39,7 @@ public:
   bool close_session();
 
   GtkWidget *get_window() const;
+  GtkAccelGroup *get_accel_group() const;
   GtkWidget *get_menu_bar() const;
   GtkWidget *get_status_bar() const;
 
@@ -57,10 +61,12 @@ private:
   Filename _last_session;
   Filename _save_filename;
 
-  GtkWidget *_window;
-  GtkWidget *_menu_bar;
-  GtkWidget *_session_menu;
-  GtkWidget *_options_menu;
+  int _port = -1;
+  GtkWidget *_window = nullptr;
+  GtkAccelGroup *_accel_group = nullptr;
+  GtkWidget *_menu_bar = nullptr;
+  GtkWidget *_session_menu = nullptr;
+  GtkWidget *_options_menu = nullptr;
   GtkWidget *_status_bar;
   GtkWidget *_status_bar_label = nullptr;
   GtkWidget *_new_session_menu_item;
@@ -68,7 +74,7 @@ private:
   GtkWidget *_save_session_menu_item;
   GtkWidget *_close_session_menu_item;
   GtkWidget *_export_session_menu_item;
-  int _time_units;
+  int _time_units = 0;
 };
 
 #endif

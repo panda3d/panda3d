@@ -1,8 +1,15 @@
 """Class used to create and control VRPN devices."""
 
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import *
-from panda3d.vrpn import *
+from panda3d.core import (
+    AnalogNode,
+    ButtonNode,
+    ConfigVariableDouble,
+    ConfigVariableString,
+    DialNode,
+    TrackerNode,
+)
+from panda3d.vrpn import VrpnClient
 
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
@@ -52,7 +59,7 @@ class DirectButtons(ButtonNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -101,7 +108,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -169,7 +176,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
 
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:
-            return self.normalize(self[chan], minVal, maxVal, sfx)
+            return self.normalize(self[chan], minVal, maxVal, sf)
         except IndexError:
             return 0.0
 
@@ -199,7 +206,7 @@ class DirectTracker(TrackerNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -231,7 +238,7 @@ class DirectDials(DialNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 
@@ -282,7 +289,7 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
         # Attach node to data graph
         try:
             self._base = base
-        except:
+        except NameError:
             self._base = simbase
         self.nodePath = self._base.dataRoot.attachNewNode(self)
 

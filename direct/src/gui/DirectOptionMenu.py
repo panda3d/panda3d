@@ -6,12 +6,11 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectOptionMenu']
 
-from panda3d.core import *
+from panda3d.core import OmniBoundingVolume, TextNode, VBase3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectButton import *
-from .DirectLabel import *
-from .DirectFrame import *
+from .DirectButton import DirectButton
+from .DirectFrame import DirectFrame
 
 
 class DirectOptionMenu(DirectButton):
@@ -22,6 +21,7 @@ class DirectOptionMenu(DirectButton):
     To cancel the popup menu click anywhere on the screen outside of the
     popup menu.  No command is executed in this case.
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         optiondefs = (
@@ -43,7 +43,7 @@ class DirectOptionMenu(DirectButton):
             ('text_align',  TextNode.ALeft, None),
             # Remove press effect because it looks a bit funny
             ('pressEffect',     0,          DGG.INITOPT),
-           )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses

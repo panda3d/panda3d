@@ -43,11 +43,9 @@ class Thread;
 class EXPCL_PANDA_PSTATCLIENT PStatCollector {
 #ifdef DO_PSTATS
 
-private:
-  INLINE PStatCollector(PStatClient *client, int index);
-
 public:
   PStatCollector() = default;
+  INLINE PStatCollector(PStatClient *client, int index);
 
 PUBLISHED:
   INLINE explicit PStatCollector(const std::string &name,

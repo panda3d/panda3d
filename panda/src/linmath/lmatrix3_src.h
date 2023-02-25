@@ -68,7 +68,7 @@ PUBLISHED:
                                      const FLOATNAME(LVecBase3) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix3));
 
-  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
 
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(

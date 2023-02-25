@@ -56,7 +56,7 @@ PUBLISHED:
   void clear_rejected_properties();
   WindowProperties get_rejected_properties() const;
 
-  EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
+  PY_EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
 
   INLINE bool is_closed() const;
   virtual bool is_active() const;
@@ -169,7 +169,7 @@ private:
 #ifdef HAVE_PYTHON
   typedef pset<GraphicsWindowProc*> PythonWinProcClasses;
   PythonWinProcClasses _python_window_proc_classes;
-#endif
+#endif // HAVE_PYTHON
 
 public:
   static TypeHandle get_class_type() {
@@ -194,4 +194,4 @@ private:
 
 #include "graphicsWindow.I"
 
-#endif /* GRAPHICSWINDOW_H */
+#endif // !GRAPHICSWINDOW_H

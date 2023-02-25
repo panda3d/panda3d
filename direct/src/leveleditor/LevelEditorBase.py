@@ -5,19 +5,30 @@ You should write your own LevelEditor class inheriting this.
 Refer LevelEditor.py for example.
 """
 
-from direct.showbase.DirectObject import *
-from direct.directtools.DirectUtil import *
-from direct.gui.DirectGui import *
-from panda3d.core import ClockObject
+import os
+import wx
 
-from .CurveEditor import *
-from .FileMgr import *
-from .ActionMgr import *
-from .MayaConverter import *
+from direct.showbase.DirectObject import DirectObject
+from direct.directtools.DirectUtil import useDirectRenderStyle
+from direct.gui.OnscreenText import OnscreenText
+from panda3d.core import BitMask32, ClockObject, Mat4, NodePath, Point3, TextNode, Vec4
+
+from . import ObjectGlobals as OG
+from .CurveEditor import CurveEditor
+from .FileMgr import FileMgr
+from .ActionMgr import (
+    ActionDeleteObj,
+    ActionDeselectAll,
+    ActionMgr,
+    ActionSelectObj,
+    ActionTransformObj,
+)
+from .MayaConverter import FROM_BAM_TO_MAYA, MayaConverter
 
 
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """
+
     def __init__(self):
         #loadPrcFileData('startup', 'window-type none')
         self.currentFile = None
@@ -30,7 +41,7 @@ class LevelEditorBase(DirectObject):
 
         self.fMoveCamera = False
 
-        self.NPParent = render
+        self.NPParent = base.render
 
         # define your own config file in inherited class
         self.settingsFile = None
@@ -76,7 +87,7 @@ class LevelEditorBase(DirectObject):
             ('DIRECT-mouse3', self.handleMouse3),
             ('DIRECT-mouse3Up', self.handleMouse3Up),
             ('DIRECT-toggleWidgetVis', self.toggleWidget),
-            ])
+        ])
 
         # Add all the action events
         for event in self.actionEvents:
@@ -95,7 +106,7 @@ class LevelEditorBase(DirectObject):
         useDirectRenderStyle(self.statusReadout)
         self.statusReadout.reparentTo(hidden)
         self.statusLines = []
-        taskMgr.doMethodLater(5, self.updateStatusReadoutTimeouts, 'updateStatus')
+        base.taskMgr.doMethodLater(5, self.updateStatusReadoutTimeouts, 'updateStatus')
 
         self.loadSettings()
         self.reset()
@@ -133,13 +144,11 @@ class LevelEditorBase(DirectObject):
         if base.direct.fAlt or modifiers == 4:
             self.fMoveCamera = True
             return
-        if self.mode == self.CREATE_CURVE_MODE :
+        if self.mode == self.CREATE_CURVE_MODE:
             self.curveEditor.createCurve()
-
 
     def handleMouse1Up(self):
         self.fMoveCamera = False
-
 
     def handleMouse2(self, modifiers):
         if base.direct.fAlt or modifiers == 4:
@@ -226,7 +235,7 @@ class LevelEditorBase(DirectObject):
         self.ui.buildContextMenu(nodePath)
 
         if self.mode == self.EDIT_CURVE_MODE:
-            taskMgr.add(self.curveEditor.editCurve, "modify")
+            base.taskMgr.add(self.curveEditor.editCurve, "modify")
             self.curveEditor.accept("DIRECT-enter", self.curveEditor.onBaseMode)
 
     def deselectAll(self, np=None):
@@ -390,7 +399,7 @@ class LevelEditorBase(DirectObject):
                 self.statusLines.append([time,status,color])
 
         # update display of new status lines
-        self.statusReadout.reparentTo(aspect2d)
+        self.statusReadout.reparentTo(base.aspect2d)
         statusText = ""
         lastColor = None
         for currLine in self.statusLines:

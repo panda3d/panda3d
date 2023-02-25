@@ -49,7 +49,7 @@ PUBLISHED:
 
   INLINE BitArray();
   BitArray(const SparseArray &from);
-  EXTENSION(BitArray(PyObject *init_value));
+  PY_EXTENSION(BitArray(PyObject *init_value));
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();
@@ -87,7 +87,7 @@ PUBLISHED:
   int get_next_higher_different_bit(int low_bit) const;
 
   INLINE size_t get_num_words() const;
-  INLINE MaskType get_word(size_t n) const;
+  INLINE WordType get_word(size_t n) const;
   INLINE void set_word(size_t n, WordType value);
 
   void invert_in_place();
@@ -129,13 +129,14 @@ PUBLISHED:
   void operator >>= (int shift);
 
   EXTENSION(bool __bool__() const);
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *state));
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *state));
 
 public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
+  INLINE MaskType get_word_internal(size_t n) const;
   INLINE void copy_on_write();
   void ensure_has_word(int n);
   void normalize();
@@ -171,4 +172,4 @@ operator << (std::ostream &out, const BitArray &array) {
   return out;
 }
 
-#endif
+#endif // !BITARRAY_H

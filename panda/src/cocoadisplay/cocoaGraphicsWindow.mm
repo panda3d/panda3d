@@ -76,7 +76,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (NSApp == nil) {
     [CocoaPandaApp sharedApplication];
 
-    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] initWithEngine:engine];
     [NSApp setDelegate:delegate];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -186,29 +186,29 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   cocoagsg->lock_context();
 
   // Set the drawable.
-  if (_properties.get_fullscreen()) {
-    // Fullscreen.
-    CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
-  } else {
-    // Although not recommended, it is technically possible to use the same
-    // context with multiple different-sized windows.  If that happens, the
-    // context needs to be updated accordingly.
-    if ([cocoagsg->_context view] != _view) {
-      // XXX I'm not 100% sure that changing the view requires it to update.
-      _context_needs_update = true;
-      [cocoagsg->_context setView:_view];
+  // Although not recommended, it is technically possible to use the same
+  // context with multiple different-sized windows.  If that happens, the
+  // context needs to be updated accordingly.
+  if ([cocoagsg->_context view] != _view) {
+    // XXX I'm not 100% sure that changing the view requires it to update.
+    _context_needs_update = true;
+    [cocoagsg->_context setView:_view];
 
-      if (cocoadisplay_cat.is_spam()) {
-        cocoadisplay_cat.spam()
-          << "Switching context to view " << _view << "\n";
-      }
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Switching context to view " << _view << "\n";
     }
   }
 
   // Update the context if necessary, to make it reallocate buffers etc.
   if (_context_needs_update) {
-    [cocoagsg->_context update];
-    _context_needs_update = false;
+    if ([NSThread isMainThread]) {
+      [cocoagsg->_context update];
+      _context_needs_update = false;
+    } else {
+      cocoagsg->unlock_context();
+      return false;
+    }
   }
 
   // Lock the view for drawing.
@@ -349,6 +349,18 @@ process_events() {
   }
 
   [pool release];
+
+  if (_context_needs_update && _gsg != nullptr) {
+    CocoaGraphicsStateGuardian *cocoagsg;
+    DCAST_INTO_V(cocoagsg, _gsg);
+
+    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
+      cocoagsg->lock_context();
+      _context_needs_update = false;
+      [cocoagsg->_context update];
+      cocoagsg->unlock_context();
+    }
+  }
 }
 
 /**
@@ -609,7 +621,7 @@ open_window() {
     }
 
     if (_properties.get_fullscreen()) {
-      [_window setLevel: NSMainMenuWindowLevel + 1];
+      [_window setLevel: CGShieldingWindowLevel()];
     } else {
       switch (_properties.get_z_order()) {
       case WindowProperties::Z_bottom:
@@ -802,12 +814,17 @@ set_properties_now(WindowProperties &properties) {
           if (switched) {
             if (_window != nil) {
               // For some reason, setting the style mask makes it give up its
-              // first-responder status.
+              // first-responder status.  And for some reason, we need to first
+              // restore the window to normal level before we switch fullscreen,
+              // otherwise we may get a black bar if we're currently on Z_top.
+              if (_properties.get_z_order() != WindowProperties::Z_normal) {
+                [_window setLevel: NSNormalWindowLevel];
+              }
               if ([_window respondsToSelector:@selector(setStyleMask:)]) {
                 [_window setStyleMask:NSBorderlessWindowMask];
               }
               [_window makeFirstResponder:_view];
-              [_window setLevel:NSMainMenuWindowLevel+1];
+              [_window setLevel:CGShieldingWindowLevel()];
               [_window makeKeyAndOrderFront:nil];
             }
 
@@ -835,8 +852,12 @@ set_properties_now(WindowProperties &properties) {
         _properties.set_fullscreen(false);
 
         // Force properties to be reset to their actual values
-        properties.set_undecorated(_properties.get_undecorated());
-        properties.set_z_order(_properties.get_z_order());
+        if (!properties.has_undecorated()) {
+          properties.set_undecorated(_properties.get_undecorated());
+        }
+        if (!properties.has_z_order()) {
+          properties.set_z_order(_properties.get_z_order());
+        }
         properties.clear_fullscreen();
       }
     }
@@ -851,6 +872,58 @@ set_properties_now(WindowProperties &properties) {
       [_window deminiaturize:nil];
     }
     properties.clear_minimized();
+  }
+
+  if (properties.has_title() && _window != nil) {
+    _properties.set_title(properties.get_title());
+    [_window setTitle:[NSString stringWithUTF8String:properties.get_title().c_str()]];
+    properties.clear_title();
+  }
+
+  if (properties.has_fixed_size() && _window != nil) {
+    _properties.set_fixed_size(properties.get_fixed_size());
+    [_window setShowsResizeIndicator:!properties.get_fixed_size()];
+
+    if (!_properties.get_fullscreen()) {
+      // If our window is decorated, change the style mask to show or hide the
+      // resize button appropriately.  However, if we're specifying the
+      // 'undecorated' property also, then we'll be setting the style mask
+      // about 25 LOC further down, so we won't need to bother setting it
+      // here.
+      if (!properties.has_undecorated() && !_properties.get_undecorated() &&
+          [_window respondsToSelector:@selector(setStyleMask:)]) {
+        if (properties.get_fixed_size()) {
+          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
+                                NSMiniaturizableWindowMask ];
+        } else {
+          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
+                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
+        }
+        [_window makeFirstResponder:_view];
+      }
+    }
+
+    properties.clear_fixed_size();
+  }
+
+  if (properties.has_undecorated() && _window != nil && [_window respondsToSelector:@selector(setStyleMask:)]) {
+    _properties.set_undecorated(properties.get_undecorated());
+
+    if (!_properties.get_fullscreen()) {
+      if (properties.get_undecorated()) {
+        [_window setStyleMask: NSBorderlessWindowMask];
+      } else if (_properties.get_fixed_size()) {
+        // Fixed size windows should not show the resize button.
+        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
+                               NSMiniaturizableWindowMask ];
+      } else {
+        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
+                               NSMiniaturizableWindowMask | NSResizableWindowMask ];
+      }
+      [_window makeFirstResponder:_view];
+    }
+
+    properties.clear_undecorated();
   }
 
   if (properties.has_size()) {
@@ -912,10 +985,19 @@ set_properties_now(WindowProperties &properties) {
     NSRect frame;
     NSRect container;
     if (_window != nil) {
-      frame = [_window contentRectForFrameRect:[_window frame]];
+      NSRect window_frame = [_window frame];
+      frame = [_window contentRectForFrameRect:window_frame];
       NSScreen *screen = [_window screen];
       nassertv(screen != nil);
       container = [screen frame];
+
+      // Prevent the centering from overlapping the Dock
+      if (y < 0) {
+        NSRect visible_frame = [screen visibleFrame];
+        if (window_frame.size.height == visible_frame.size.height) {
+          y = 0;
+        }
+      }
     } else {
       frame = [_view frame];
       container = [[_view superview] frame];
@@ -955,58 +1037,6 @@ set_properties_now(WindowProperties &properties) {
       [_window zoom:nil];
     }
     properties.clear_maximized();
-  }
-
-  if (properties.has_title() && _window != nil) {
-    _properties.set_title(properties.get_title());
-    [_window setTitle:[NSString stringWithUTF8String:properties.get_title().c_str()]];
-    properties.clear_title();
-  }
-
-  if (properties.has_fixed_size() && _window != nil) {
-    _properties.set_fixed_size(properties.get_fixed_size());
-    [_window setShowsResizeIndicator:!properties.get_fixed_size()];
-
-    if (!_properties.get_fullscreen()) {
-      // If our window is decorated, change the style mask to show or hide the
-      // resize button appropriately.  However, if we're specifying the
-      // 'undecorated' property also, then we'll be setting the style mask
-      // about 25 LOC further down, so we won't need to bother setting it
-      // here.
-      if (!properties.has_undecorated() && !_properties.get_undecorated() &&
-          [_window respondsToSelector:@selector(setStyleMask:)]) {
-        if (properties.get_fixed_size()) {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask ];
-        } else {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
-        }
-        [_window makeFirstResponder:_view];
-      }
-    }
-
-    properties.clear_fixed_size();
-  }
-
-  if (properties.has_undecorated() && _window != nil && [_window respondsToSelector:@selector(setStyleMask:)]) {
-    _properties.set_undecorated(properties.get_undecorated());
-
-    if (!_properties.get_fullscreen()) {
-      if (properties.get_undecorated()) {
-        [_window setStyleMask: NSBorderlessWindowMask];
-      } else if (_properties.get_fixed_size()) {
-        // Fixed size windows should not show the resize button.
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask ];
-      } else {
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask | NSResizableWindowMask ];
-      }
-      [_window makeFirstResponder:_view];
-    }
-
-    properties.clear_undecorated();
   }
 
   if (properties.has_foreground() && !_properties.get_fullscreen() && _window != nil) {
@@ -1114,6 +1144,18 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_mouse_mode(properties.get_mouse_mode());
       properties.clear_mouse_mode();
       break;
+    }
+  }
+
+  if (_context_needs_update && _gsg != nullptr) {
+    CocoaGraphicsStateGuardian *cocoagsg;
+    DCAST_INTO_V(cocoagsg, _gsg);
+
+    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
+      cocoagsg->lock_context();
+      _context_needs_update = false;
+      [cocoagsg->_context update];
+      cocoagsg->unlock_context();
     }
   }
 }
@@ -1228,7 +1270,11 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     // Switch back to the mode we were in when we were still windowed.
     CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
     CGDisplayModeRelease(_windowed_mode);
-    CGDisplayRelease(_display);
+    if (CGDisplayIsMain(_display)) {
+      CGReleaseAllDisplays();
+    } else {
+      CGDisplayRelease(_display);
+    }
     _windowed_mode = NULL;
     _context_needs_update = true;
 
@@ -1243,14 +1289,31 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     _fullscreen_mode = mode;
     _context_needs_update = true;
 
+    // Display must be captured by the application before switching mode.
+    // If not, the change of mode and resolution will be applied on all the other applications,
+    // although they are no longer visible.
+    // This also leads to weird bugs when switching back to the desktop mode.
     CGError err;
-    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
-
+    if (CGDisplayIsMain(_display)) {
+      // In multidisplay setup, all the displays must be captured or the switch will be notified anyway.
+      err = CGCaptureAllDisplays();
+    } else {
+      err = CGDisplayCapture(_display);
+    }
     if (err != kCGErrorSuccess) {
       return false;
     }
 
-    CGDisplayCapture(_display);
+    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
+
+    if (err != kCGErrorSuccess) {
+      if (CGDisplayIsMain(_display)) {
+        CGReleaseAllDisplays();
+      } else {
+        CGDisplayRelease(_display);
+      }
+      return false;
+    }
 
     NSRect frame = [[[_view window] screen] frame];
     if (cocoadisplay_cat.is_debug()) {

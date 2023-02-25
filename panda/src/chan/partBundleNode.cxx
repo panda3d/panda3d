@@ -97,7 +97,7 @@ add_bundle(PartBundle *bundle) {
  */
 void PartBundleNode::
 do_add_bundle_handle(PartBundleHandle *handle) {
-  Bundles::iterator bi = find(_bundles.begin(), _bundles.end(), handle);
+  Bundles::iterator bi = std::find(_bundles.begin(), _bundles.end(), handle);
   if (bi != _bundles.end()) {
     // This handle is already within the node.
     return;

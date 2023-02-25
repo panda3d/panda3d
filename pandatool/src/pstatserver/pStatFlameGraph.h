@@ -70,7 +70,8 @@ protected:
   virtual void normal_guide_bars();
 
   virtual void begin_draw();
-  virtual void draw_bar(int depth, int from_x, int to_x, int collector_index);
+  virtual void draw_bar(int depth, int from_x, int to_x,
+                        int collector_index, int parent_index);
   virtual void end_draw();
   virtual void idle();
 
@@ -106,6 +107,7 @@ private:
     double _values[_num_average_frames] = {0.0};
 
     double _start_time = 0.0;
+    int _count = 0;
     bool _started = false;
 
     int _collector_index = -1;

@@ -11,11 +11,14 @@ import builtins
 class MessengerLeakObject(DirectObject):
     def __init__(self):
         self.accept('leakEvent', self._handleEvent)
+
     def _handleEvent(self):
         pass
 
+
 def _leakMessengerObject():
     leakObject = MessengerLeakObject()
+
 
 class MessengerLeakDetector(Job):
     # check for objects that are only referenced by the messenger
@@ -37,19 +40,19 @@ class MessengerLeakDetector(Job):
             builtinIds.add(id(base))
             builtinIds.add(id(base.cr))
             builtinIds.add(id(base.cr.doId2do))
-        except:
+        except Exception:
             pass
         try:
             builtinIds.add(id(simbase))
             builtinIds.add(id(simbase.air))
             builtinIds.add(id(simbase.air.doId2do))
-        except:
+        except Exception:
             pass
         try:
             builtinIds.add(id(uber))
             builtinIds.add(id(uber.air))
             builtinIds.add(id(uber.air.doId2do))
-        except:
+        except Exception:
             pass
 
         while True:
