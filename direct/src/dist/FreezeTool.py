@@ -370,6 +370,8 @@ extern PyAPI_FUNC(int) PyImport_ExtendInittab(struct _inittab *newtab);
 
 /* Main program */
 
+EXTRA_INIT_FUNC_DECLS
+
 int
 Py_FrozenMain(int argc, char **argv)
 {
@@ -448,6 +450,8 @@ Py_FrozenMain(int argc, char **argv)
 #else
     PySys_SetArgv(argc, argv);
 #endif
+
+EXTRA_INIT_FUNC_CALLS
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -838,6 +842,12 @@ class Freezer:
         # (moduleName, filename).  filename will be None for built-in
         # modules.
         self.extras = []
+
+        # This is a list of init functions that must be called after
+        # Py_Initialize(), but before importing __main__.  This is a
+        # tuple of (return type, name).  They should use C calling
+        # convention.
+        self.extraInitFuncs = []
 
         # Set this to true if extension modules should be linked in to
         # the resulting executable.
@@ -1711,6 +1721,18 @@ class Freezer:
 
         if compileToExe:
             code = self.frozenMainCode
+
+            decls = ''
+            calls = ''
+            for func in self.extraInitFuncs:
+                if isinstance(func, str):
+                    func = ('void', func)
+                decls += f'extern {func[0]} {func[1]}();\n'
+                calls += f'    {func[1]}();\n';
+
+            code = code.replace('EXTRA_INIT_FUNC_DECLS', decls)
+            code = code.replace('EXTRA_INIT_FUNC_CALLS', calls)
+
             if self.platform.startswith('win'):
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
