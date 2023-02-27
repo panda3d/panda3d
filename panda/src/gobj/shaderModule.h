@@ -95,6 +95,7 @@ PUBLISHED:
   MAKE_PROPERTY(used_capabilities, get_used_capabilities);
   MAKE_SEQ_PROPERTY(inputs, get_num_inputs, get_input);
   MAKE_SEQ_PROPERTY(outputs, get_num_outputs, get_output);
+  MAKE_SEQ_PROPERTY(parameters, get_num_parameters, get_parameter);
   MAKE_SEQ_PROPERTY(spec_constants, get_num_spec_constants, get_spec_constant);
 
   virtual std::string get_ir() const=0;
