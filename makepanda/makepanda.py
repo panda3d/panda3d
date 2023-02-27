@@ -829,6 +829,7 @@ if (COMPILER == "MSVC"):
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/MachineIndependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/GenericCodeGen.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/SPIRV.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang-default-resource-limits.lib")
 
     IncDirectory("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/include")
     LibName("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/lib/SPIRV-Tools.lib")
