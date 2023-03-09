@@ -1180,7 +1180,7 @@ write_class_details(ostream &out, Object *obj) {
     out << "static void *Dtool_UpcastInterface_" << ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type) {\n";
     out << "  Dtool_PyTypedObject *type = DtoolInstance_TYPE(self);\n";
     out << "  if (type != &Dtool_" << ClassName << ") {\n";
-    out << "    printf(\"" << ClassName << " ** Bad Source Type-- Requesting Conversion from %s to %s\\n\", Py_TYPE(self)->tp_name, requested_type->_PyType.tp_name); fflush(nullptr);\n";;
+    out << "    printf(\"%s ** Bad Source Type-- Requesting Conversion from %s to %s\\n\", \"" << ClassName << "\", Py_TYPE(self)->tp_name, requested_type->_PyType.tp_name); fflush(nullptr);\n";
     out << "    return nullptr;\n";
     out << "  }\n";
     out << "\n";

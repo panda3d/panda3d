@@ -848,7 +848,7 @@ reset() {
 
   _supported_geom_rendering =
 #ifndef OPENGLES
-    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point |
+    Geom::GR_render_mode_point |
 #endif
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
@@ -856,6 +856,16 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
+
+#ifndef OPENGLES
+  // Observed bug on PINEBOOK Pro: regular OpenGL 3.3 driver doesn't support
+  // wireframe mode, it just renders the solid mesh
+  // GL_RENDERER = Mali-T860 (Panfrost)
+  // GL_VERSION = 3.3 (Compatibility Profile) Mesa 22.3.6
+  if (_gl_vendor != "Panfrost") {
+    _supported_geom_rendering |= Geom::GR_render_mode_wireframe;
+  }
+#endif
 
   _supports_point_parameters = false;
 
