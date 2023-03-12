@@ -7,7 +7,7 @@ if hasattr(base, 'le'):
     ui.sceneGraphUI.reset()
 
 else:
-    objectMgr = base.objectMgr
+    objectMgr = base.objectMgr  # type: ignore[attr-defined]
 # temporary place holder for nodepath
 objects = {}
 

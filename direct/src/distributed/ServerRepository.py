@@ -19,7 +19,7 @@ from panda3d.core import (
     getModelPath,
 )
 from panda3d.direct import DCFile
-from direct.distributed.MsgTypesCMU import (
+from direct.distributed.MsgTypesCMU import (  # type: ignore[attr-defined]
     CLIENT_DISCONNECT_CMU,
     CLIENT_OBJECT_GENERATE_CMU,
     CLIENT_OBJECT_UPDATE_FIELD,

@@ -2927,7 +2927,7 @@ if __name__ == '__main__':
 
     root = Pmw.initialise()
     pp = ParticlePanel()
-    base.pp=pp
+    base.pp=pp  # type: ignore[attr-defined]
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()
     base.run()

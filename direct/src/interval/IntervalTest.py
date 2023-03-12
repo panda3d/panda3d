@@ -175,11 +175,11 @@ if __name__ == "__main__":
     # Just to take time
     i2 = LerpPosInterval(base.camera, 2.0, Point3(0, 10, 5))
     # This will be relative to end of camera move
-    i3 = FunctionInterval(printPreviousEnd)
+    i3 = FunctionInterval(printPreviousEnd)  # type: ignore[assignment]
     # Just to take time
     i4 = LerpPosInterval(base.camera, 2.0, Point3(0, 0, 5))
     # This will be relative to the start of the camera move
-    i5 = FunctionInterval(printPreviousStart)
+    i5 = FunctionInterval(printPreviousStart)  # type: ignore[assignment]
     # This will be relative to track start
     i6 = FunctionInterval(printTrackStart)
     # This will print some arguments
