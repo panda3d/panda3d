@@ -400,6 +400,11 @@ jobs:
       run: |
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Run mypy on direct
+      shell: bash
+      run: |
+        python -m pip install mypy==1.1.1
+        python -m mypy built/direct
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
