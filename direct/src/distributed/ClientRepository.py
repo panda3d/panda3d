@@ -3,7 +3,7 @@
 from .ClientRepositoryBase import ClientRepositoryBase
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.MessengerGlobal import messenger
-from .MsgTypesCMU import (
+from .MsgTypesCMU import (  # type: ignore[attr-defined]
     CLIENT_DISCONNECT_CMU,
     CLIENT_HEARTBEAT_CMU,
     CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU,

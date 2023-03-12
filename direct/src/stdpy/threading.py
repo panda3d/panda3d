@@ -83,8 +83,8 @@ class ThreadBase:
 # Copy these static methods from Panda's Thread object.  These are
 # useful if you may be running in Panda's SIMPLE_THREADS compilation
 # mode.
-ThreadBase.forceYield = core.Thread.forceYield
-ThreadBase.considerYield = core.Thread.considerYield
+ThreadBase.forceYield = core.Thread.forceYield  # type: ignore[attr-defined]
+ThreadBase.considerYield = core.Thread.considerYield  # type: ignore[attr-defined]
 
 
 class Thread(ThreadBase):

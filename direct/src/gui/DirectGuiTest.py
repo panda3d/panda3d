@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-__all__ = []
+__all__ = ()
 
 
 if __name__ == "__main__":

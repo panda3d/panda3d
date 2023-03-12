@@ -1,6 +1,8 @@
 # classes for event-driven programming
 # http://en.wikipedia.org/wiki/Event-driven_programming
 
+from __future__ import annotations
+
 __all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
            'EventArgument', ]
 
@@ -180,14 +182,14 @@ class ReceivesMultipleStateChanges:
         pass
 
 if __debug__:
-    rsc = ReceivesMultipleStateChanges()
+    rmsc = ReceivesMultipleStateChanges()
     sv = StateVar(0)
     sv2 = StateVar('b')
-    rsc._subscribeTo(sv, 'a')
-    rsc._subscribeTo(sv2, 2)
-    rsc._unsubscribe('a')
-    rsc.destroy()
-    del rsc
+    rmsc._subscribeTo(sv, 'a')
+    rmsc._subscribeTo(sv2, 2)
+    rmsc._unsubscribe('a')
+    rmsc.destroy()
+    del rmsc
 
 class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
     # calls func with provided args whenever arguments' state changes
@@ -250,7 +252,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
             PushesStateChanges._handleStateChange(self)
 
 if __debug__:
-    l = []
+    l: list[int] = []
     def handler1(value, l=l):
         l.append(value)
     assert not l

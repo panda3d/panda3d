@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from panda3d.core import (
@@ -62,7 +64,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     notify = directNotify.newCategory("DistancePhasedObject")
     __InstanceSequence = 0
-    __InstanceDeque = []
+    __InstanceDeque: list[int] = []
 
     @staticmethod
     def __allocateId():
@@ -330,6 +332,7 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
 
 if __debug__ and 0:
+    from .ShowBaseGlobal import base
     cSphere = CollisionSphere(0, 0, 0, 0.1)
     cNode = CollisionNode('camCol')
     cNode.addSolid(cSphere)
@@ -352,6 +355,6 @@ if __debug__ and 0:
                                    fromCollideNode=cNodePath,
                                    )
 
-    p.reparentTo(render)
+    p.reparentTo(base.render)
     p._DistancePhasedNode__oneTimeCollide()
     base.eventMgr.doEvents()

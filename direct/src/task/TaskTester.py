@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-__all__ = []
+__all__ = ()
 
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task

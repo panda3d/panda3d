@@ -21,19 +21,19 @@ import builtins
 
 # Create toplevel widget dictionary
 if not hasattr(builtins, "widgetDict"):
-    builtins.widgetDict = {}
+    builtins.widgetDict = {}  # type: ignore[attr-defined]
 
 # Create toplevel variable dictionary
 if not hasattr(builtins, "variableDict"):
-    builtins.variableDict = {}
+    builtins.variableDict = {}  # type: ignore[attr-defined]
 
 
 def resetWidgetDict():
-    builtins.widgetDict = {}
+    builtins.widgetDict = {}  # type: ignore[attr-defined]
 
 
 def resetVariableDict():
-    builtins.variableDict = {}
+    builtins.variableDict = {}  # type: ignore[attr-defined]
 
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel

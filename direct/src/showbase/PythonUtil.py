@@ -1,5 +1,7 @@
 """Contains miscellaneous utility functions and classes."""
 
+from __future__ import annotations
+
 __all__ = [
 
     'indent', 'doc', 'adjust', 'difference', 'intersection', 'union',
@@ -39,6 +41,7 @@ import time
 import builtins
 import importlib
 import functools
+from collections.abc import Callable
 
 __report_indent = 3
 
@@ -699,9 +702,9 @@ if __debug__:
         return profileDecorator
 
     # intercept profile-related file operations to avoid disk access
-    movedOpenFuncs = []
-    movedDumpFuncs = []
-    movedLoadFuncs = []
+    movedOpenFuncs: list[Callable] = []
+    movedDumpFuncs: list[Callable] = []
+    movedLoadFuncs: list[Callable] = []
     profileFilenames = set()
     profileFilenameList = Stack()
     profileFilename2file = {}
@@ -1899,7 +1902,7 @@ class SubframeCall:
 
 
 class PStatScope:
-    collectors = {}
+    collectors: dict = {}
 
     def __init__(self, level = None):
         self.levels = []
@@ -2665,52 +2668,52 @@ class PriorityCallbacks:
             callback()
 
 
-builtins.Functor = Functor
-builtins.Stack = Stack
-builtins.Queue = Queue
-builtins.SerialNumGen = SerialNumGen
-builtins.SerialMaskedGen = SerialMaskedGen
-builtins.ScratchPad = ScratchPad
-builtins.uniqueName = uniqueName
-builtins.serialNum = serialNum
+builtins.Functor = Functor  # type: ignore[attr-defined]
+builtins.Stack = Stack  # type: ignore[attr-defined]
+builtins.Queue = Queue  # type: ignore[attr-defined]
+builtins.SerialNumGen = SerialNumGen  # type: ignore[attr-defined]
+builtins.SerialMaskedGen = SerialMaskedGen  # type: ignore[attr-defined]
+builtins.ScratchPad = ScratchPad  # type: ignore[attr-defined]
+builtins.uniqueName = uniqueName  # type: ignore[attr-defined]
+builtins.serialNum = serialNum  # type: ignore[attr-defined]
 if __debug__:
-    builtins.profiled = profiled
-    builtins.exceptionLogged = exceptionLogged
-builtins.itype = itype
-builtins.appendStr = appendStr
-builtins.bound = bound
-builtins.clamp = clamp
-builtins.lerp = lerp
-builtins.makeList = makeList
-builtins.makeTuple = makeTuple
+    builtins.profiled = profiled  # type: ignore[attr-defined]
+    builtins.exceptionLogged = exceptionLogged  # type: ignore[attr-defined]
+builtins.itype = itype  # type: ignore[attr-defined]
+builtins.appendStr = appendStr  # type: ignore[attr-defined]
+builtins.bound = bound  # type: ignore[attr-defined]
+builtins.clamp = clamp  # type: ignore[attr-defined]
+builtins.lerp = lerp  # type: ignore[attr-defined]
+builtins.makeList = makeList  # type: ignore[attr-defined]
+builtins.makeTuple = makeTuple  # type: ignore[attr-defined]
 if __debug__:
-    builtins.printStack = printStack
-    builtins.printReverseStack = printReverseStack
-    builtins.printVerboseStack = printVerboseStack
-builtins.DelayedCall = DelayedCall
-builtins.DelayedFunctor = DelayedFunctor
-builtins.FrameDelayedCall = FrameDelayedCall
-builtins.SubframeCall = SubframeCall
-builtins.invertDict = invertDict
-builtins.invertDictLossless = invertDictLossless
-builtins.getBase = getBase
-builtins.getRepository = getRepository
-builtins.safeRepr = safeRepr
-builtins.fastRepr = fastRepr
-builtins.nullGen = nullGen
-builtins.flywheel = flywheel
-builtins.loopGen = loopGen
+    builtins.printStack = printStack  # type: ignore[attr-defined]
+    builtins.printReverseStack = printReverseStack  # type: ignore[attr-defined]
+    builtins.printVerboseStack = printVerboseStack  # type: ignore[attr-defined]
+builtins.DelayedCall = DelayedCall  # type: ignore[attr-defined]
+builtins.DelayedFunctor = DelayedFunctor  # type: ignore[attr-defined]
+builtins.FrameDelayedCall = FrameDelayedCall  # type: ignore[attr-defined]
+builtins.SubframeCall = SubframeCall  # type: ignore[attr-defined]
+builtins.invertDict = invertDict  # type: ignore[attr-defined]
+builtins.invertDictLossless = invertDictLossless  # type: ignore[attr-defined]
+builtins.getBase = getBase  # type: ignore[attr-defined]
+builtins.getRepository = getRepository  # type: ignore[attr-defined]
+builtins.safeRepr = safeRepr  # type: ignore[attr-defined]
+builtins.fastRepr = fastRepr  # type: ignore[attr-defined]
+builtins.nullGen = nullGen  # type: ignore[attr-defined]
+builtins.flywheel = flywheel  # type: ignore[attr-defined]
+builtins.loopGen = loopGen  # type: ignore[attr-defined]
 if __debug__:
-    builtins.StackTrace = StackTrace
-builtins.report = report
-builtins.pstatcollect = pstatcollect
-builtins.MiniLog = MiniLog
-builtins.MiniLogSentry = MiniLogSentry
-builtins.logBlock = logBlock
-builtins.HierarchyException = HierarchyException
-builtins.deeptype = deeptype
-builtins.Default = Default
-builtins.configIsToday = configIsToday
-builtins.typeName = typeName
-builtins.safeTypeName = safeTypeName
-builtins.histogramDict = histogramDict
+    builtins.StackTrace = StackTrace  # type: ignore[attr-defined]
+builtins.report = report  # type: ignore[attr-defined]
+builtins.pstatcollect = pstatcollect  # type: ignore[attr-defined]
+builtins.MiniLog = MiniLog  # type: ignore[attr-defined]
+builtins.MiniLogSentry = MiniLogSentry  # type: ignore[attr-defined]
+builtins.logBlock = logBlock  # type: ignore[attr-defined]
+builtins.HierarchyException = HierarchyException  # type: ignore[attr-defined]
+builtins.deeptype = deeptype  # type: ignore[attr-defined]
+builtins.Default = Default  # type: ignore[attr-defined]
+builtins.configIsToday = configIsToday  # type: ignore[attr-defined]
+builtins.typeName = typeName  # type: ignore[attr-defined]
+builtins.safeTypeName = safeTypeName  # type: ignore[attr-defined]
+builtins.histogramDict = histogramDict  # type: ignore[attr-defined]

@@ -6,6 +6,8 @@ Modified by gjeon.
 Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close
 """
 
+from __future__ import annotations
+
 __all__ = ["Viewport", "ViewportManager"]
 
 from panda3d.core import (
@@ -36,7 +38,7 @@ VPPERSPECTIVE = 13
 
 class ViewportManager:
     """Manages the global viewport stuff."""
-    viewports = []
+    viewports: list[Viewport] = []
     gsg = None
 
     @staticmethod
@@ -58,7 +60,7 @@ class ViewportManager:
             v.Layout(*args, **kwargs)
 
 
-class Viewport(WxPandaWindow, DirectObject):
+class Viewport(WxPandaWindow, DirectObject):  # type: ignore[misc, valid-type]
     """Class representing a 3D Viewport."""
     CREATENEW  = CREATENEW
     VPLEFT     = VPLEFT

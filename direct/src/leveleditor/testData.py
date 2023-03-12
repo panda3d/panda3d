@@ -1,4 +1,5 @@
 from panda3d.core import Point3, VBase3
+from direct.showbase.ShowBaseGlobal import base
 
 if hasattr(base, 'le'):
     objectMgr = base.le.objectMgr

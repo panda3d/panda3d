@@ -84,6 +84,8 @@ Code overview:
     see if any keywords are left unused.  If so, an error is raised.
 """
 
+from __future__ import annotations
+
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
@@ -682,7 +684,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     else:
         inactiveInitState = DGG.DISABLED
 
-    guiDict = {}
+    guiDict: dict[str, DirectGuiWidget] = {}
 
     def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths

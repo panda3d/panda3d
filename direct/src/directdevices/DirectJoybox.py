@@ -3,6 +3,7 @@ from direct.showbase.DirectObject import DirectObject
 from .DirectDeviceManager import ANALOG_DEADBAND, ANALOG_MAX, ANALOG_MIN, DirectDeviceManager
 from direct.directtools.DirectUtil import CLAMP
 from direct.gui import OnscreenText
+from direct.showbase.ShowBaseGlobal import base
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import ButtonRegistry, ButtonThrower, ClockObject, NodePath, VBase3, Vec3
