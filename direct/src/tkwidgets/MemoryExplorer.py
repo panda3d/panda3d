@@ -8,7 +8,7 @@ DEFAULT_BT_WIDTH = 50.0
 
 #--------------------------------------------------------------------------
 #--------------------------------------------------------------------------
-class MemoryExplorer(Pmw.MegaWidget, DirectObject):
+class MemoryExplorer(Pmw.MegaWidget, DirectObject):  # type: ignore[name-defined]
 
     #--------------------------------------------------------------------------
     # Init

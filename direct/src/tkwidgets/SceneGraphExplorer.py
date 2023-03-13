@@ -29,7 +29,7 @@ DEFAULT_MENU_ITEMS = [
     'Separator']
 
 
-class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):  # type: ignore[attr-defined]
+class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):  # type: ignore[attr-defined, name-defined]
     "Graphical display of a scene graph"
 
     def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):

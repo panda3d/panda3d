@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter.colorchooser import askcolor
 
 
-class VectorEntry(Pmw.MegaWidget):  # type: ignore[attr-defined]
+class VectorEntry(Pmw.MegaWidget):  # type: ignore[attr-defined, name-defined]
     def __init__(self, parent = None, **kw):
 
         # Default vector size

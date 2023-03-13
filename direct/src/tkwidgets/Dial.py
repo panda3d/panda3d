@@ -148,7 +148,7 @@ class AngleDial(Dial):
         self.initialiseoptions(AngleDial)
 
 
-class DialWidget(Pmw.MegaWidget):  # type: ignore[attr-defined]
+class DialWidget(Pmw.MegaWidget):  # type: ignore[attr-defined, name-defined]
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
