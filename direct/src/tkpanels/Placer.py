@@ -792,5 +792,5 @@ def place(nodePath):
 
 # Create demo in root window for testing.
 if __name__ == '__main__':
-    root = Pmw.initialise()
+    root = Pmw.initialise()  # type: ignore[attr-defined]
     widget = Placer()

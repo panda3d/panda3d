@@ -394,7 +394,7 @@ class FSMInspector(AppShell):
             self.ignore(self.name + '_' + si.getName() + '_exited')
 
 
-class StateInspector(Pmw.MegaArchetype):
+class StateInspector(Pmw.MegaArchetype):  # type: ignore[attr-defined]
     def __init__(self, inspector, state, **kw):
 
         # Record inspector and state

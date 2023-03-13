@@ -13,7 +13,7 @@ VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
 
 
-class Valuator(Pmw.MegaWidget):
+class Valuator(Pmw.MegaWidget):  # type: ignore[attr-defined]
     sfBase = 3.0
     sfDist = 7
     deadband = 5

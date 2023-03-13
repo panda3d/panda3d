@@ -47,7 +47,7 @@ class Floater(Valuator):
         self.interior().columnconfigure(0, weight = 1)
 
 
-class FloaterWidget(Pmw.MegaWidget):
+class FloaterWidget(Pmw.MegaWidget):  # type: ignore[attr-defined]
     def __init__(self, parent = None, **kw):
         #define the megawidget options
         INITOPT = Pmw.INITOPT
@@ -214,7 +214,7 @@ class FloaterWidget(Pmw.MegaWidget):
         self._widget.itemconfigure('floater', fill = 'grey50')
 
 
-class FloaterGroup(Pmw.MegaToplevel):
+class FloaterGroup(Pmw.MegaToplevel):  # type: ignore[attr-defined]
     def __init__(self, parent = None, **kw):
 
         # Default group size

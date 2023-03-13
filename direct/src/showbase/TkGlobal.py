@@ -31,7 +31,7 @@ def bordercolors(root, colorName):
         '#%04x%04x%04x' % (darkRGB[0], darkRGB[1], darkRGB[2])
     )
 
-Pmw.Color.bordercolors = bordercolors
+Pmw.Color.bordercolors = bordercolors  # type: ignore[attr-defined]
 del bordercolors
 
 

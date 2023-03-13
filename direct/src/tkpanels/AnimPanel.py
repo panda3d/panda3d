@@ -372,7 +372,7 @@ class AnimPanel(AppShell):
         AppShell.destroy(self)
 
 
-class ActorControl(Pmw.MegaWidget):
+class ActorControl(Pmw.MegaWidget):  # type: ignore[attr-defined]
     def __init__(self, parent = None, **kw):
 
         INITOPT = Pmw.INITOPT

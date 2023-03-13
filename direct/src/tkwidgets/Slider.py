@@ -80,7 +80,7 @@ class Slider(Valuator):
 
 
 # Based on Pmw ComboBox code.
-class SliderWidget(Pmw.MegaWidget):
+class SliderWidget(Pmw.MegaWidget):  # type: ignore[attr-defined]
     def __init__(self, parent = None, **kw):
 
         # Define the megawidget options.

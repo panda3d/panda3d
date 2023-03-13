@@ -2925,7 +2925,7 @@ if __name__ == '__main__':
         from direct.showbase.ShowBase import ShowBase
         base = ShowBase()
 
-    root = Pmw.initialise()
+    root = Pmw.initialise()  # type: ignore[attr-defined]
     pp = ParticlePanel()
     base.pp=pp  # type: ignore[attr-defined]
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
