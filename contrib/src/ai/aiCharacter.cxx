@@ -42,24 +42,24 @@ AICharacter::~AICharacter() {
  * direction of the force.
  */
 void AICharacter::
-update() {
+update(PN_stdfloat dt) {
   if (!_steering->is_off(_steering->_none)) {
+    static const LRotation ai_flip = LRotation(180, 0, 0);
+    static const LMatrix4 ai_flip_matrix = LMatrix4::rotate_mat(ai_flip.get_angle(), ai_flip.get_axis_normalized());
     LVecBase3 old_pos = _ai_char_np.get_pos();
     LVecBase3 steering_force = _steering->calculate_prioritized();
     LVecBase3 acceleration = steering_force / _mass;
 
-    _velocity = acceleration;
+    _velocity += acceleration * dt;
 
-    LVecBase3 direction = _steering->_steering_force;
-    direction.normalize();
+    _ai_char_np.set_pos(old_pos + _velocity * dt);
 
-    _ai_char_np.set_pos(old_pos + _velocity) ;
+    if (steering_force.length_squared() > 0) {
+      LVecBase3 direction = _steering->_steering_force;
+      direction.normalize();
+      ai_flip_matrix.xform_vec_in_place(direction);
 
-    if (steering_force.length() > 0) {
-      _ai_char_np.look_at(old_pos + (direction * 5));
-      _ai_char_np.set_h(_ai_char_np.get_h() + 180);
-      _ai_char_np.set_p(-_ai_char_np.get_p());
-      _ai_char_np.set_r(-_ai_char_np.get_r());
+      _ai_char_np.look_at(_ai_char_np.get_pos() + direction);
     }
   } else {
     _steering->_steering_force = LVecBase3(0.0, 0.0, 0.0);

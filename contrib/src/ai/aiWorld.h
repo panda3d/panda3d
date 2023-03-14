@@ -56,7 +56,7 @@ PUBLISHED:
     void remove_obstacle(NodePath obstacle);
 
     void print_list();
-    void update();
+    void update(PN_stdfloat dt = 1.0);
 };
 
 #endif

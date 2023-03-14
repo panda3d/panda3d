@@ -70,9 +70,9 @@ void AIWorld::print_list() {
  * The AIWorld update function calls the update function of all the AI
  * characters which have been added to the AIWorld.
  */
-void AIWorld::update() {
+void AIWorld::update(PN_stdfloat dt) {
   for (AICharacter *ai_char : _ai_char_pool) {
-    ai_char->update();
+    ai_char->update(dt);
   }
 }
 
