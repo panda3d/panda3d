@@ -95,9 +95,7 @@ class Inspector:
 
     def initializePartsList(self):
         self._partsList = []
-        keys = self.namedParts()
-        keys.sort()
-        for each in keys:
+        for each in sorted(self.namedParts()):
             self._partsList.append(each)
             #if not callable(getattr(self.object, each)):
             #    self._partsList.append(each)
@@ -202,9 +200,7 @@ class DictionaryInspector(Inspector):
 
     def initializePartsList(self):
         Inspector.initializePartsList(self)
-        keys = list(self.object.keys())
-        keys.sort()
-        for each in keys:
+        for each in sorted(self.object):
             self._partsList.append(each)
 
     def partNumber(self, partNumber):

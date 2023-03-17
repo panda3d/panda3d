@@ -1146,15 +1146,12 @@ class Freezer:
 
         # Walk through the list in sorted order, so we reach parents
         # before children.
-        names = list(self.modules.items())
-        names.sort()
-
         excludeDict = {}
         implicitParentDict = {}
         includes = []
         autoIncludes = []
         origToNewName = {}
-        for newName, mdef in names:
+        for newName, mdef in sorted(self.modules.items()):
             moduleName = mdef.moduleName
             origToNewName[moduleName] = newName
             if mdef.implicit and '.' in newName:

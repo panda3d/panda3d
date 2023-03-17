@@ -66,9 +66,7 @@ class DirectLights(NodePath):
 
     def getNameList(self):
         # Return a sorted list of all lights in the light dict
-        nameList = [x.getName() for x in self.lightDict.values()]
-        nameList.sort()
-        return nameList
+        return sorted(x.getName() for x in self.lightDict.values())
 
     def create(self, ltype):
         ltype = ltype.lower()

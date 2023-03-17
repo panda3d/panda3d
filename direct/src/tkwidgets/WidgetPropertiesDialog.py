@@ -21,8 +21,7 @@ class WidgetPropertiesDialog(tk.Toplevel):
         self.propertyDict = propertyDict
         self.propertyList = propertyList
         if self.propertyList is None:
-            self.propertyList = list(self.propertyDict.keys())
-            self.propertyList.sort()
+            self.propertyList = sorted(self.propertyDict)
         # Use default parent if none specified
         if not parent:
             parent = tk._default_root

@@ -358,8 +358,7 @@ class FSMInspector(AppShell):
 
     def printLayout(self):
         dict = self.stateInspectorDict
-        keys = list(dict.keys())
-        keys.sort()
+        keys = sorted(dict)
         print("ClassicFSM.ClassicFSM('%s', [" % self.name)
         for key in keys[:-1]:
             si = dict[key]

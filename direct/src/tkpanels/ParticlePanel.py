@@ -1174,9 +1174,7 @@ class ParticlePanel(AppShell):
         self.particlesLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         particles = self.particleEffect.getParticlesList()
-        names = [x.getName() for x in particles]
-        names.sort()
-        for name in names:
+        for name in sorted(x.getName() for x in particles):
             particle = self.particleEffect.getParticlesNamed(name)
             self.particlesLabelMenu.add_command(
                 label = name,
@@ -1199,9 +1197,7 @@ class ParticlePanel(AppShell):
         self.forceGroupLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         forceGroupList = self.particleEffect.getForceGroupList()
-        names = [x.getName() for x in forceGroupList]
-        names.sort()
-        for name in names:
+        for name in sorted(x.getName() for x in forceGroupList):
             force = self.particleEffect.getForceGroupNamed(name)
             self.forceGroupLabelMenu.add_command(
                 label = name,
