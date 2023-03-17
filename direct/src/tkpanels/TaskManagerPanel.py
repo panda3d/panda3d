@@ -151,10 +151,8 @@ class TaskManagerWidget(DirectObject):
         # Get a list of task names
         taskNames = []
         self.__taskDict = {}
-        tasks = self.taskMgr.getTasks()
-        tasks.sort(key = lambda t: t.getName())
         count = 0
-        for task in tasks:
+        for task in sorted(self.taskMgr.getTasks(), key=lambda t: t.getName()):
             taskNames.append(task.getName())
             self.__taskDict[count] = task
             count += 1

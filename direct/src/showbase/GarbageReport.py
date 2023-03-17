@@ -294,8 +294,7 @@ class GarbageReport(Job):
             if self._args.fullReport:
                 garbageIndices = range(self.numGarbage)
             else:
-                garbageIndices = list(self.cycleIds)
-                garbageIndices.sort()
+                garbageIndices = sorted(self.cycleIds)
             numGarbage = len(garbageIndices)
 
             # log each individual item with a number in front of it

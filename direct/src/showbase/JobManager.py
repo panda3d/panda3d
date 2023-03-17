@@ -141,9 +141,7 @@ class JobManager:
 
     def _getSortedPriorities(self):
         # returns all job priorities in ascending order
-        priorities = list(self._pri2jobId2job.keys())
-        priorities.sort()
-        return priorities
+        return sorted(self._pri2jobId2job)
 
     def _process(self, task=None):
         if self._useOverflowTime is None:
