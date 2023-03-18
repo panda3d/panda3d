@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import List
 
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -64,7 +64,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     notify = directNotify.newCategory("DistancePhasedObject")
     __InstanceSequence = 0
-    __InstanceDeque: list[int] = []
+    __InstanceDeque: List[int] = []
 
     @staticmethod
     def __allocateId():

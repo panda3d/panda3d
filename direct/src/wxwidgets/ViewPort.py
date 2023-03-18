@@ -6,9 +6,9 @@ Modified by gjeon.
 Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close
 """
 
-from __future__ import annotations
-
 __all__ = ["Viewport", "ViewportManager"]
+
+from typing import List
 
 from panda3d.core import (
     BitMask32,
@@ -38,7 +38,7 @@ VPPERSPECTIVE = 13
 
 class ViewportManager:
     """Manages the global viewport stuff."""
-    viewports: list[Viewport] = []
+    viewports: List['Viewport'] = []
     gsg = None
 
     @staticmethod

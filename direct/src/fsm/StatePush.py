@@ -1,10 +1,10 @@
 # classes for event-driven programming
 # http://en.wikipedia.org/wiki/Event-driven_programming
 
-from __future__ import annotations
-
 __all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
            'EventArgument', ]
+
+from typing import List
 
 from direct.showbase.DirectObject import DirectObject
 
@@ -252,7 +252,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
             PushesStateChanges._handleStateChange(self)
 
 if __debug__:
-    l: list[int] = []
+    l: List[int] = []
     def handler1(value, l=l):
         l.append(value)
     assert not l

@@ -1,6 +1,6 @@
 """MsgTypes module: contains distributed object message types"""
 
-from __future__ import annotations
+from typing import List
 
 from direct.showbase.PythonUtil import invertDictLossless
 
@@ -148,7 +148,7 @@ MsgId2Names = invertDictLossless(MsgName2Id)
 globals().update(MsgName2Id)
 
 # These messages are ignored when the client is headed to the quiet zone
-QUIET_ZONE_IGNORED_LIST: list[int] = [
+QUIET_ZONE_IGNORED_LIST: List[int] = [
 
     # We mustn't ignore updates, because some updates for localToon
     # are always important.

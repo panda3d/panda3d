@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
@@ -9,12 +7,13 @@ from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
 import sys
 import io
+from typing import Set
 
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
     # set of containers that should not be included in the report
-    PrivateIds: set[int] = set()
+    PrivateIds: Set[int] = set()
 
     def __init__(self, name, log=False, limit=None, threaded=False):
         Job.__init__(self, name)

@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Dict
 
 from panda3d.core import NodePath
 
@@ -15,8 +15,8 @@ from panda3d.core import NodePath
 class GridParent:
 
     # this lets GridParents share CellOrigins
-    GridZone2CellOrigin: dict[tuple, NodePath] = {}
-    GridZone2count: dict[tuple, int] = {}
+    GridZone2CellOrigin: Dict[tuple, NodePath] = {}
+    GridZone2count: Dict[tuple, int] = {}
     @staticmethod
     def getCellOrigin(grid, zoneId):
         tup = (grid, zoneId)

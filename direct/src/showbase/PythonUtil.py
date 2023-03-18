@@ -1,7 +1,5 @@
 """Contains miscellaneous utility functions and classes."""
 
-from __future__ import annotations
-
 __all__ = [
 
     'indent', 'doc', 'adjust', 'difference', 'intersection', 'union',
@@ -41,7 +39,7 @@ import time
 import builtins
 import importlib
 import functools
-from collections.abc import Callable
+from typing import Callable, Dict, List
 
 __report_indent = 3
 
@@ -702,9 +700,9 @@ if __debug__:
         return profileDecorator
 
     # intercept profile-related file operations to avoid disk access
-    movedOpenFuncs: list[Callable] = []
-    movedDumpFuncs: list[Callable] = []
-    movedLoadFuncs: list[Callable] = []
+    movedOpenFuncs: List[Callable] = []
+    movedDumpFuncs: List[Callable] = []
+    movedLoadFuncs: List[Callable] = []
     profileFilenames = set()
     profileFilenameList = Stack()
     profileFilename2file = {}
@@ -1902,7 +1900,7 @@ class SubframeCall:
 
 
 class PStatScope:
-    collectors: dict = {}
+    collectors: Dict = {}
 
     def __init__(self, level = None):
         self.levels = []

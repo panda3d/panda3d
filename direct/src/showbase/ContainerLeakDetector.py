@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import direct.showbase.DConfig as config
 from direct.showbase.PythonUtil import makeFlywheelGen, flywheel
@@ -14,6 +12,7 @@ import weakref
 import random
 import builtins
 import sys
+from typing import Set
 
 
 deadEndTypes = frozenset((
@@ -985,7 +984,7 @@ class ContainerLeakDetector(Job):
     """
     notify = directNotify.newCategory("ContainerLeakDetector")
     # set of containers that should not be examined
-    PrivateIds: set[int] = set()
+    PrivateIds: Set[int] = set()
 
     def __init__(self, name, firstCheckDelay = None):
         Job.__init__(self, name)
