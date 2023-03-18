@@ -683,7 +683,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     else:
         inactiveInitState = DGG.DISABLED
 
-    guiDict: Dict[str, DirectGuiWidget] = {}
+    guiDict: Dict[str, 'DirectGuiWidget'] = {}
 
     def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths
