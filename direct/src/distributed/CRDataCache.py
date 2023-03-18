@@ -81,11 +81,11 @@ if __debug__:
     dc._startMemLeakCheck()
 
     cd = CachedDOData()
-    cd.foo = 34  # type: ignore[attr-defined]
+    cd.foo = 34
     dc.setCachedData(1, 'testCachedData', cd)
     del cd
     cd = CachedDOData()
-    cd.bar = 45  # type: ignore[attr-defined]
+    cd.bar = 45
     dc.setCachedData(1, 'testCachedData2', cd)
     del cd
     assert dc.hasCachedData(1)
@@ -104,7 +104,7 @@ if __debug__:
     dc._checkMemLeaks()
 
     cd = CachedDOData()
-    cd.bar = 1234  # type: ignore[attr-defined]
+    cd.bar = 1234
     dc.setCachedData(43, 'testCachedData2', cd)
     del cd
     assert dc.hasCachedData(43)
