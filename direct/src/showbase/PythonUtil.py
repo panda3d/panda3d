@@ -2458,18 +2458,6 @@ def formatTimeCompact(seconds):
     return result
 
 
-if __debug__ and __name__ == '__main__':
-    ftc = formatTimeCompact
-    assert ftc(0) == '0s'
-    assert ftc(1) == '1s'
-    assert ftc(60) == '1m0s'
-    assert ftc(64) == '1m4s'
-    assert ftc(60*60) == '1h0m0s'
-    assert ftc(24*60*60) == '1d0h0m0s'
-    assert ftc(24*60*60 + 2*60*60 + 34*60 + 12) == '1d2h34m12s'
-    del ftc
-
-
 def formatTimeExact(seconds):
     # like formatTimeCompact but leaves off '0 seconds', '0 minutes' etc. for
     # times that are e.g. 1 hour, 3 days etc.
@@ -2494,19 +2482,6 @@ def formatTimeExact(seconds):
     if seconds or result == '':
         result += '%ss' % seconds
     return result
-
-
-if __debug__ and __name__ == '__main__':
-    fte = formatTimeExact
-    assert fte(0) == '0s'
-    assert fte(1) == '1s'
-    assert fte(2) == '2s'
-    assert fte(61) == '1m1s'
-    assert fte(60) == '1m'
-    assert fte(60*60) == '1h'
-    assert fte(24*60*60) == '1d'
-    assert fte((24*60*60) + (2 * 60)) == '1d0h2m'
-    del fte
 
 
 class AlphabetCounter:
@@ -2538,28 +2513,6 @@ class AlphabetCounter:
         return result
 
     __next__ = next
-
-
-if __debug__ and __name__ == '__main__':
-    def testAlphabetCounter():
-        tempList = []
-        ac = AlphabetCounter()
-        for i in range(26*3):
-            tempList.append(ac.next())
-        assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                            'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
-                            'BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU','BV','BW','BX','BY','BZ',]
-        ac = AlphabetCounter()
-        num  = 26 # A-Z
-        num += (26*26) # AA-ZZ
-        num += 26 # AAZ
-        num += 1 # ABA
-        num += 2 # ABC
-        for i in range(num):
-            x = ac.next()
-        assert x == 'ABC'
-    testAlphabetCounter()
-    del testAlphabetCounter
 
 
 class Default:

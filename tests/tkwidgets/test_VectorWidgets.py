@@ -1,0 +1,16 @@
+import tkinter as tk
+from direct.tkwidgets import VectorWidgets
+
+
+def test_VectorEntry():
+    root = tk.Toplevel()
+    root.title('Vector Widget demo')
+
+    ve = VectorWidgets.VectorEntry(root)
+    ve.pack()
+    v3e = VectorWidgets.Vector3Entry(root)
+    v3e.pack()
+    v4e = VectorWidgets.Vector4Entry(root)
+    v4e.pack()
+    ce = VectorWidgets.ColorEntry(root)
+    ce.pack()
