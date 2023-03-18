@@ -2919,9 +2919,10 @@ class ParticlePanel(AppShell):
 
 # Create demo in root window for testing.
 if __name__ == '__main__':
-    try:
-        base  # type: ignore[has-type, used-before-def]
-    except NameError:
+    from direct.showbase import ShowBaseGlobal
+    if hasattr(ShowBaseGlobal, 'base'):
+        base = ShowBaseGlobal.base
+    else:
         from direct.showbase.ShowBase import ShowBase
         base = ShowBase()
 
