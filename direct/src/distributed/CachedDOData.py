@@ -22,8 +22,8 @@ class CachedDOData:
         pass
 
     # These next two methods tell mypy to allow arbitrary attributes.
-    def __getattr__(self, name: str):
-        return getattr(self, name)
+    def __getattribute__(self, name: str):
+        return object.__getattribute__(self, name)
 
     def __setattr__(self, name: str, value) -> None:
-        setattr(self, name, value)
+        object.__setattr__(self, name, value)
