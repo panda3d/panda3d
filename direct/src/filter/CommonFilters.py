@@ -351,7 +351,7 @@ class CommonFilters:
             text += "{\n"
             text += "  o_color = tex2D(k_txcolor, %s);\n" % (texcoords["color"])
             if "CartoonInk" in configuration:
-                text += CARTOON_BODY % {"texcoord" : texcoords["aux"]}
+                text += CARTOON_BODY % {"texcoord": texcoords["aux"]}
             if "AmbientOcclusion" in configuration:
                 text += "  o_color *= tex2D(k_txssao2, %s).r;\n" % (texcoords["ssao2"])
             if "BlurSharpen" in configuration:

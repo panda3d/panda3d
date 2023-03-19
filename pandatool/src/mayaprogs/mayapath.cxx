@@ -279,9 +279,7 @@ main(int argc, char *argv[]) {
       Filename openmaya_standard = get_openmaya_filename(standard_maya_location);
 
       if (openmaya_given != openmaya_standard) {
-#ifdef HAVE_OPENSSL
-        // If we have OpenSSL, we can use it to check the md5 hashes of the
-        // DLL.
+        // Check the md5 hashes of the DLL.
         HashVal hash_given, hash_standard;
         if (!hash_standard.hash_file(openmaya_standard)) {
           // Couldn't read the standard file, so use the given one.
@@ -302,33 +300,6 @@ main(int argc, char *argv[]) {
             }
           }
         }
-#else // HAVE_OPENSSL
-      // Without OpenSSL, just check the DLL filesize only.
-        off_t size_given, size_standard;
-        size_standard = openmaya_standard.get_file_size();
-        if (size_standard == 0) {
-          // Couldn't read the standard file, so use the given one.
-
-        } else {
-          size_given = openmaya_given.get_file_size();
-          if (size_given == 0) {
-            // Couldn't even read the given file; use the standard one
-            // instead.
-            maya_location = standard_maya_location;
-
-          } else {
-            if (size_standard != size_given) {
-              // No match; it must be the wrong version.
-              cerr << "$MAYA_LOCATION points to wrong version; using standard location instead.\n";
-              maya_location = standard_maya_location;
-
-            } else {
-              // The size matches; keep the given MAYA_LOCATION setting.
-            }
-          }
-        }
-
-#endif  // HAVE_OPENSSL
       }
     }
   }

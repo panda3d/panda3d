@@ -1,7 +1,6 @@
 """DistributedObject module: contains the DistributedObject class"""
 
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.direct import DCPacker
 from direct.showbase.MessengerGlobal import messenger
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
@@ -25,7 +24,7 @@ ESNum2Str = {
     ESDisabled: 'ESDisabled',
     ESGenerating: 'ESGenerating',
     ESGenerated: 'ESGenerated',
-    }
+}
 
 
 class DistributedObject(DistributedObjectBase):
@@ -241,7 +240,6 @@ class DistributedObject(DistributedObjectBase):
         """
         assert self.notify.debug('announceGenerate(): %s' % (self.doId))
 
-
     def _deactivateDO(self):
         # after this is called, the object is no longer an active DistributedObject
         # and it may be placed in the cache
@@ -325,9 +323,9 @@ class DistributedObject(DistributedObjectBase):
         """
         return self.doId
 
-
     #This message was moved out of announce generate
     #to avoid ordering issues.
+
     def postGenerateMessage(self):
         if self.activeState != ESGenerated:
             self.activeState = ESGenerated

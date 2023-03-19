@@ -6105,14 +6105,6 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     }
   }
 
-  // Choose an appropriate quality level.
-  if (quality_level == Texture::QL_default) {
-    quality_level = cdata->_quality_level;
-  }
-  if (quality_level == Texture::QL_default) {
-    quality_level = texture_quality_level;
-  }
-
   if (compression == CM_rgtc) {
     // We should compress RGTC ourselves, as squish does not support it.
     if (cdata->_component_type != T_unsigned_byte) {
@@ -6185,6 +6177,14 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
   }
 
 #ifdef HAVE_SQUISH
+  // Choose an appropriate quality level.
+  if (quality_level == Texture::QL_default) {
+    quality_level = cdata->_quality_level;
+  }
+  if (quality_level == Texture::QL_default) {
+    quality_level = texture_quality_level;
+  }
+
   if (cdata->_texture_type != TT_3d_texture &&
       cdata->_texture_type != TT_2d_texture_array &&
       cdata->_component_type == T_unsigned_byte) {

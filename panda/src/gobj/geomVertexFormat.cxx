@@ -364,15 +364,13 @@ void GeomVertexFormat::
 remove_empty_arrays() {
   nassertv(!is_registered());
 
-  Arrays orig_arrays;
-  orig_arrays.swap(_arrays);
-  Arrays::const_iterator ai;
-  for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
-    GeomVertexArrayFormat *array_format = (*ai);
+  Arrays new_arrays;
+  for (PT(GeomVertexArrayFormat) &array_format : _arrays) {
     if (array_format->get_num_columns() != 0) {
-      _arrays.push_back(array_format);
+      new_arrays.push_back(std::move(array_format));
     }
   }
+  _arrays = std::move(new_arrays);
 }
 
 /**
@@ -382,9 +380,8 @@ remove_empty_arrays() {
 size_t GeomVertexFormat::
 get_num_columns() const {
   size_t num_columns = 0;
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    num_columns += (*ai)->get_num_columns();
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    num_columns += array_format->get_num_columns();
   }
   return num_columns;
 }
@@ -394,12 +391,11 @@ get_num_columns() const {
  */
 const GeomVertexColumn *GeomVertexFormat::
 get_column(size_t i) const {
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (size_t)(*ai)->get_num_columns()) {
-      return (*ai)->get_column(i);
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    if (i < (size_t)array_format->get_num_columns()) {
+      return array_format->get_column(i);
     }
-    i -= (*ai)->get_num_columns();
+    i -= array_format->get_num_columns();
   }
 
   return nullptr;
@@ -410,12 +406,11 @@ get_column(size_t i) const {
  */
 const InternalName *GeomVertexFormat::
 get_column_name(size_t i) const {
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (size_t)(*ai)->get_num_columns()) {
-      return (*ai)->get_column(i)->get_name();
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    if (i < (size_t)array_format->get_num_columns()) {
+      return array_format->get_column(i)->get_name();
     }
-    i -= (*ai)->get_num_columns();
+    i -= array_format->get_num_columns();
   }
 
   return nullptr;
@@ -717,7 +712,7 @@ do_register() {
   nassertv(_columns_by_name.empty());
 
   Arrays orig_arrays;
-  orig_arrays.swap(_arrays);
+  std::swap(orig_arrays, _arrays);
   Arrays::const_iterator ai;
   for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
     CPT(GeomVertexArrayFormat) array_format = (*ai);

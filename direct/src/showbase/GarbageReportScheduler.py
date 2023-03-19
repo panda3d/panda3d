@@ -1,4 +1,6 @@
 from direct.showbase.GarbageReport import GarbageReport
+from direct.showbase.PythonUtil import serialNum
+from direct.task.TaskManagerGlobal import taskMgr
 
 
 class GarbageReportScheduler:

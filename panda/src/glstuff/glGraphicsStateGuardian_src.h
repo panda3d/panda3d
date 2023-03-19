@@ -469,6 +469,8 @@ public:
   INLINE int get_gl_version_minor() const;
   INLINE bool has_fixed_function_pipeline() const;
 
+  INLINE int get_max_vertex_attrib_stride() const;
+
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
@@ -756,6 +758,11 @@ protected:
   bool _use_vertex_attrib_binding;
   CPT(GeomVertexFormat) _current_vertex_format;
   const GeomVertexColumn *_vertex_attrib_columns[32];
+#ifdef __EMSCRIPTEN__
+  static const int _max_vertex_attrib_stride = 255;
+#else
+  int _max_vertex_attrib_stride = INT_MAX;
+#endif
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;
@@ -1216,7 +1223,7 @@ public:
     GLint64 _gpu_sync_time;
     double _cpu_sync_time;
     pvector<std::pair<GLuint, int> > _queries;
-    pvector<GLint64> _latency_refs;
+    small_vector<GLint64> _latency_refs;
   };
   pdeque<FrameTiming> _frame_timings;
   FrameTiming *_current_frame_timing = nullptr;

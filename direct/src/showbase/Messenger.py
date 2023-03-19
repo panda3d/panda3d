@@ -6,7 +6,7 @@ __all__ = ['Messenger']
 
 from direct.stdpy.threading import Lock
 from direct.directnotify import DirectNotifyGlobal
-from .PythonUtil import *
+from .PythonUtil import safeRepr
 import types
 
 
@@ -417,7 +417,7 @@ class Messenger:
                 # Release the lock temporarily while we call the method.
                 self.lock.release()
                 try:
-                    result = method (*(extraArgs + sentArgs))
+                    result = method(*(extraArgs + sentArgs))
                 finally:
                     self.lock.acquire()
 

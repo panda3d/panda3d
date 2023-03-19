@@ -1,10 +1,10 @@
-from panda3d.core import *
-from direct.showbase.DirectObject import *
+from panda3d.core import ClockObject, ConfigVariableDouble, ConfigVariableInt
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
+from direct.showbase.MessengerGlobal import messenger
 
 
 class TimeManager(DistributedObject.DistributedObject):

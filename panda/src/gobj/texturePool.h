@@ -49,22 +49,27 @@ PUBLISHED:
   BLOCKING INLINE static Texture *load_texture(const Filename &filename,
                                                int primary_file_num_channels = 0,
                                                bool read_mipmaps = false,
-                                               const LoaderOptions &options = LoaderOptions());
+                                               const LoaderOptions &options = LoaderOptions(),
+                                               const SamplerState &sampler = SamplerState());
   BLOCKING INLINE static Texture *load_texture(const Filename &filename,
                                                const Filename &alpha_filename,
                                                int primary_file_num_channels = 0,
                                                int alpha_file_channel = 0,
                                                bool read_mipmaps = false,
-                                               const LoaderOptions &options = LoaderOptions());
+                                               const LoaderOptions &options = LoaderOptions(),
+                                               const SamplerState &sampler = SamplerState());
   BLOCKING INLINE static Texture *load_3d_texture(const Filename &filename_pattern,
                                                   bool read_mipmaps = false,
-                                                  const LoaderOptions &options = LoaderOptions());
+                                                  const LoaderOptions &options = LoaderOptions(),
+                                                  const SamplerState &sampler = SamplerState());
   BLOCKING INLINE static Texture *load_2d_texture_array(const Filename &filename_pattern,
                                                         bool read_mipmaps = false,
-                                                        const LoaderOptions &options = LoaderOptions());
+                                                        const LoaderOptions &options = LoaderOptions(),
+                                                        const SamplerState &sampler = SamplerState());
   BLOCKING INLINE static Texture *load_cube_map(const Filename &filename_pattern,
                                                 bool read_mipmaps = false,
-                                                const LoaderOptions &options = LoaderOptions());
+                                                const LoaderOptions &options = LoaderOptions(),
+                                                const SamplerState &sampler = SamplerState());
 
   INLINE static Texture *get_normalization_cube_map(int size);
   INLINE static Texture *get_alpha_scale_map();
@@ -128,22 +133,31 @@ private:
   Texture *ns_load_texture(const Filename &orig_filename,
                            int primary_file_num_channels,
                            bool read_mipmaps,
-                           const LoaderOptions &options);
+                           const LoaderOptions &options,
+                           const SamplerState &sampler);
   Texture *ns_load_texture(const Filename &orig_filename,
                            const Filename &orig_alpha_filename,
                            int primary_file_num_channels,
                            int alpha_file_channel,
                            bool read_mipmaps,
-                           const LoaderOptions &options);
+                           const LoaderOptions &options,
+                           const SamplerState &sampler);
   Texture *ns_load_3d_texture(const Filename &filename_pattern,
                               bool read_mipmaps,
-                              const LoaderOptions &options);
+                              const LoaderOptions &options,
+                              const SamplerState &sampler);
   Texture *ns_load_2d_texture_array(const Filename &filename_pattern,
                                     bool read_mipmaps,
-                                    const LoaderOptions &options);
+                                    const LoaderOptions &options,
+                                    const SamplerState &sampler);
   Texture *ns_load_cube_map(const Filename &filename_pattern,
                             bool read_mipmaps,
-                            const LoaderOptions &options);
+                            const LoaderOptions &options,
+                            const SamplerState &sampler);
+
+  void apply_texture_attributes(Texture *tex, const LoaderOptions &options,
+                                const SamplerState &sampler);
+
   Texture *ns_get_normalization_cube_map(int size);
   Texture *ns_get_alpha_scale_map();
 
@@ -187,14 +201,25 @@ private:
   Mutex _filter_lock;
 
   struct LookupKey {
+    LookupKey() = default;
+    INLINE LookupKey(Texture::TextureType texture_type,
+                     int primary_file_num_channels, int alpha_file_channel,
+                     const LoaderOptions &options, const SamplerState &sampler);
+
     Filename _fullpath;
     Filename _alpha_fullpath;
     int _primary_file_num_channels = 0;
     int _alpha_file_channel = 0;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
+    Texture::Format _texture_format = (Texture::Format)0;
+    Texture::CompressionMode _texture_compress = Texture::CM_default;
+    Texture::QualityLevel _texture_quality = Texture::QL_default;
+    SamplerState _texture_sampler;
+    bool _force_srgb = false;
 
     INLINE bool operator < (const LookupKey &other) const;
   };
+
   typedef pmap<LookupKey, PT(Texture)> Textures;
   Textures _textures;
   typedef pmap<Filename, Filename> RelpathLookup;

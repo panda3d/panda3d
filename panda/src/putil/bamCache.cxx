@@ -965,28 +965,12 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
  */
 string BamCache::
 hash_filename(const string &filename) {
-#ifdef HAVE_OPENSSL
-  // With OpenSSl, use the MD5 hash of the filename.
+  // Use the MD5 hash of the filename.
   HashVal hv;
   hv.hash_string(filename);
   ostringstream strm;
   hv.output_hex(strm);
   return strm.str();
-
-#else  // HAVE_OPENSSL
-  // Without OpenSSL, don't get fancy; just build a simple hash.
-  unsigned int hash = 0;
-  for (string::const_iterator si = filename.begin();
-       si != filename.end();
-       ++si) {
-    hash = (hash * 9109) + (unsigned int)(*si);
-  }
-
-  ostringstream strm;
-  strm << std::hex << std::setw(8) << std::setfill('0') << hash;
-  return strm.str();
-
-#endif  // HAVE_OPENSSL
 }
 
 /**

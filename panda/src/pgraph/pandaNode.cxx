@@ -4030,8 +4030,7 @@ complete_up_list(PandaNode::Up &up_list, const string &tag,
   new_up_list.sort();
 
   // Make it permanent.
-  up_list.swap(new_up_list);
-  new_up_list.clear();
+  up_list = std::move(new_up_list);
 
   return pi;
 }
@@ -4060,8 +4059,7 @@ complete_down_list(PandaNode::Down &down_list, const string &tag,
   // should be preserved from one session to the next.
 
   // Make it permanent.
-  down_list.swap(new_down_list);
-  new_down_list.clear();
+  down_list = std::move(new_down_list);
 
   return pi;
 }

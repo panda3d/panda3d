@@ -15,7 +15,7 @@
 #include "lightMutexHolder.h"
 #include <algorithm>
 
-AtomicAdjust::Pointer GraphicsStateGuardianBase::_gsg_list;
+patomic<GraphicsStateGuardianBase::GSGList *> GraphicsStateGuardianBase::_gsg_list { nullptr };
 UpdateSeq GraphicsStateGuardianBase::_generated_shader_seq;
 TypeHandle GraphicsStateGuardianBase::_type_handle;
 
@@ -29,7 +29,7 @@ TypeHandle GraphicsStateGuardianBase::_type_handle;
  */
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_default_gsg() {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   if (gsg_list == nullptr) {
     // Nobody created a GSG list, so we won't have any GSGs either.
     return nullptr;
@@ -44,7 +44,7 @@ get_default_gsg() {
  */
 void GraphicsStateGuardianBase::
 set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   if (gsg_list == nullptr) {
     // Nobody ever created a GSG list.  How could we have a GSG?
     nassertv(false);
@@ -52,7 +52,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
   }
 
   LightMutexHolder holder(gsg_list->_lock);
-  if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), default_gsg) == gsg_list->_gsgs.end()) {
+  if (std::find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), default_gsg) == gsg_list->_gsgs.end()) {
     // The specified GSG doesn't exist or it has already destructed.
     nassert_raise("GSG not found or already destructed");
     return;
@@ -66,7 +66,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
  */
 size_t GraphicsStateGuardianBase::
 get_num_gsgs() {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   if (gsg_list == nullptr) {
     // Nobody created a GSG list, so we won't have any GSGs either.
     return 0;
@@ -81,7 +81,7 @@ get_num_gsgs() {
  */
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_gsg(size_t n) {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   nassertr(gsg_list != nullptr, nullptr);
 
   LightMutexHolder holder(gsg_list->_lock);
@@ -95,15 +95,12 @@ get_gsg(size_t n) {
  */
 void GraphicsStateGuardianBase::
 add_gsg(GraphicsStateGuardianBase *gsg) {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   if (gsg_list == nullptr) {
     gsg_list = new GSGList;
-    gsg_list->_default_gsg = nullptr;
 
-    GSGList *orig_gsg_list = (GSGList *)
-      AtomicAdjust::compare_and_exchange_ptr(_gsg_list, nullptr, gsg_list);
-
-    if (orig_gsg_list != nullptr) {
+    GSGList *orig_gsg_list = nullptr;
+    if (!_gsg_list.compare_exchange_strong(orig_gsg_list, gsg_list, std::memory_order_release, std::memory_order_consume)) {
       // Another thread beat us to it.  No problem, we'll use that.
       delete gsg_list;
       gsg_list = orig_gsg_list;
@@ -112,7 +109,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 
   LightMutexHolder holder(gsg_list->_lock);
 
-  if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg) != gsg_list->_gsgs.end()) {
+  if (std::find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg) != gsg_list->_gsgs.end()) {
     // Already on the list.
     return;
   }
@@ -129,7 +126,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
  */
 void GraphicsStateGuardianBase::
 remove_gsg(GraphicsStateGuardianBase *gsg) {
-  GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
+  GSGList *gsg_list = _gsg_list.load(std::memory_order_consume);
   if (gsg_list == nullptr) {
     // No GSGs were added yet, or the program is destructing anyway.
     return;
@@ -138,7 +135,7 @@ remove_gsg(GraphicsStateGuardianBase *gsg) {
   LightMutexHolder holder(gsg_list->_lock);
 
   GSGList::GSGs::iterator gi;
-  gi = find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg);
+  gi = std::find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), gsg);
   if (gi == gsg_list->_gsgs.end()) {
     // Already removed, or never added.
     return;

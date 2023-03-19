@@ -169,7 +169,7 @@ EvdevInputDevice::
   if (_fd != -1) {
     if (_ff_id != -1) {
       // Remove force-feedback effect.
-      do_set_vibration(0, 0);
+      EvdevInputDevice::do_set_vibration(0, 0);
       ioctl(_fd, EVIOCRMFF, _ff_id);
       _ff_id = -1;
     }

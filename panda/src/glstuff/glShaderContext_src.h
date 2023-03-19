@@ -20,6 +20,7 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 #include "paramTexture.h"
+#include "small_vector.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -80,7 +81,7 @@ private:
     GLuint _handle;
     bool _needs_compile;
   };
-  typedef pvector<Module> Modules;
+  typedef small_vector<Module, 2> Modules;
   Modules _modules;
   bool _needs_reflection = false;
   bool _needs_query_uniform_locations = false;

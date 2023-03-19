@@ -158,7 +158,7 @@ public:
  */
 void AnimGroup::
 sort_descendants() {
-  sort(_children.begin(), _children.end(), AnimGroupAlphabeticalOrder());
+  std::sort(_children.begin(), _children.end(), AnimGroupAlphabeticalOrder());
 
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {

@@ -537,11 +537,10 @@ validate() const {
       size_t index = (size_t)index_array[slot];
       ++count;
       if (index >= _num_entries) {
-        util_cat.error()
+        write(util_cat->error()
           << "SimpleHashMap " << this << " is invalid: slot " << slot
           << " contains index " << index << " which is past the end of the"
-             " table\n";
-        write(util_cat.error(false));
+             " table\n");
         return false;
       }
       nassertd(index < _num_entries) continue;
@@ -551,21 +550,19 @@ validate() const {
         wants_slot = next_hash(wants_slot);
       }
       if (wants_slot != slot) {
-        util_cat.error()
+        write(util_cat->error()
           << "SimpleHashMap " << this << " is invalid: key "
           << _table[index]._key << " should be in slot " << wants_slot
-          << " instead of " << slot << " (ideal is " << ideal_slot << ")\n";
-        write(util_cat.error(false));
+          << " instead of " << slot << " (ideal is " << ideal_slot << ")\n");
         return false;
       }
     }
   }
 
   if (count != _num_entries) {
-    util_cat.error()
+    write(util_cat->error()
       << "SimpleHashMap " << this << " is invalid: reports " << _num_entries
-      << " entries, actually has " << count << "\n";
-    write(util_cat.error(false));
+      << " entries, actually has " << count << "\n");
     return false;
   }
 

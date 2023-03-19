@@ -16,7 +16,7 @@ class ClassicStyle(FSM.FSM):
             'Red': ['Green'],
             'Yellow': ['Red'],
             'Green': ['Yellow'],
-            }
+        }
 
     def enterRed(self):
         print("enterRed(self, '%s', '%s')" % (self.oldState, self.newState))

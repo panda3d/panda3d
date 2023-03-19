@@ -547,7 +547,7 @@ setup_speed_menu() {
         self->set_scroll_speed(12);
       }
     }), this);
-  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+  //group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
 
   item = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);

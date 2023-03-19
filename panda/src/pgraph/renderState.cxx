@@ -1897,8 +1897,6 @@ int RenderState::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  int num_attribs = 0;
-
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
   for (size_t i = 0; i < (*_read_overrides).size(); ++i) {
     int override = (*_read_overrides)[i];
@@ -1909,7 +1907,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       if (slot > 0 && slot < reg->get_max_slots()) {
         _attributes[slot].set(attrib, override);
         _filled_slots.set_bit(slot);
-        ++num_attribs;
       }
     }
   }

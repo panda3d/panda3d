@@ -1,5 +1,7 @@
+import pytest
+physics = pytest.importorskip("panda3d.physics")
+
 from direct.particles.GlobalForceGroup import GlobalForceGroup
-from panda3d import physics
 
 
 def test_GlobalForceGroup():

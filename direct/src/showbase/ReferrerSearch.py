@@ -113,7 +113,7 @@ class ReferrerSearch(Job):
                        (isinstance(ref, dict) and \
                         list(ref.keys()) == list(locals().keys())) or \
                        ref is self.__dict__ or \
-                       id(ref) in self.visited) ]
+                       id(ref) in self.visited)]
 
         # Check to see if this object has an unusually large
         # ref-count.  This usually indicates that it is some
@@ -162,7 +162,7 @@ class ReferrerSearch(Job):
                              # We found the reference on self
                              ref is self.__dict__ or \
                              # We've already seen this referrer
-                             id(ref) in self.visited) ]
+                             id(ref) in self.visited)]
 
         # Check to see if this object has an unusually large
         # ref-count.  This usually indicates that it is some

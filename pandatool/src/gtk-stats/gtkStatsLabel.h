@@ -15,6 +15,7 @@
 #define GTKSTATSLABEL_H
 
 #include "pandatoolbase.h"
+#include "luse.h"
 
 #include <gtk/gtk.h>
 #include <cairo.h>

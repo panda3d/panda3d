@@ -45,6 +45,8 @@ Please use assert (properly) and do proper error handling; and use
 where it helps you resist using assert for error handling.
 """
 
+__all__ = ["verify"]
+
 from panda3d.core import ConfigVariableBool
 
 # Set to true to load pdb on failure.

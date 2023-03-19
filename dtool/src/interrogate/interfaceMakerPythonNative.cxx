@@ -1180,7 +1180,7 @@ write_class_details(ostream &out, Object *obj) {
     out << "static void *Dtool_UpcastInterface_" << ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type) {\n";
     out << "  Dtool_PyTypedObject *type = DtoolInstance_TYPE(self);\n";
     out << "  if (type != &Dtool_" << ClassName << ") {\n";
-    out << "    printf(\"" << ClassName << " ** Bad Source Type-- Requesting Conversion from %s to %s\\n\", Py_TYPE(self)->tp_name, requested_type->_PyType.tp_name); fflush(nullptr);\n";;
+    out << "    printf(\"%s ** Bad Source Type-- Requesting Conversion from %s to %s\\n\", \"" << ClassName << "\", Py_TYPE(self)->tp_name, requested_type->_PyType.tp_name); fflush(nullptr);\n";
     out << "    return nullptr;\n";
     out << "  }\n";
     out << "\n";
@@ -1664,11 +1664,6 @@ write_module_class(ostream &out, Object *obj) {
   std::string cClassName =  obj->_itype.get_true_name();
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
 
-  bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
-  if (!is_runtime_typed && has_get_class_type_function(obj->_itype._cpptype)) {
-    is_runtime_typed = true;
-  }
-
   out << "/**\n";
   out << " * Python method tables for " << ClassName << " (" << export_class_name << ")\n" ;
   out << " */\n";
@@ -1917,7 +1912,7 @@ write_module_class(ostream &out, Object *obj) {
           write_function_forset(out, def._remaps, 0, 0, expected_params, 2, true, true,
                                 AT_no_args, return_flags, false);
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -1957,7 +1952,7 @@ write_module_class(ostream &out, Object *obj) {
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                 AT_single_arg, RF_err_null | RF_pyobject, false, !all_nonconst);
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2075,7 +2070,7 @@ write_module_class(ostream &out, Object *obj) {
                                   true, true, AT_varargs, RF_int | RF_decref_args, true);
 
             out << "    Py_DECREF(args);\n";
-            out << "    if (!_PyErr_OCCURRED()) {\n";
+            out << "    if (!PyErr_Occurred()) {\n";
             out << "      Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 8, expected_params);
             out << ");\n";
@@ -2094,7 +2089,7 @@ write_module_class(ostream &out, Object *obj) {
             write_function_forset(out, delattr_remaps, 1, 1, expected_params, 4,
                                   true, true, AT_single_arg, RF_int, true);
 
-            out << "    if (!_PyErr_OCCURRED()) {\n";
+            out << "    if (!PyErr_Occurred()) {\n";
             out << "      Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 8, expected_params);
             out << ");\n";
@@ -2126,7 +2121,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  if (res != nullptr) {\n";
           out << "    return res;\n";
           out << "  }\n";
-          out << "  if (_PyErr_OCCURRED() != PyExc_AttributeError) {\n";
+          out << "  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {\n";
           out << "    return nullptr;\n";
           out << "  }\n";
           out << "  PyErr_Clear();\n\n";
@@ -2165,7 +2160,11 @@ write_module_class(ostream &out, Object *obj) {
           // assume the bounds are 0 .. this->size() (this is the same
           // assumption that Python makes).
           out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
+          out << "#ifdef NDEBUG\n";
+          out << "    PyErr_SetString(PyExc_IndexError, \"index out of range\");\n";
+          out << "#else\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
+          out << "#endif\n";
           out << "    return nullptr;\n";
           out << "  }\n";
 
@@ -2173,7 +2172,7 @@ write_module_class(ostream &out, Object *obj) {
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                 AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2197,7 +2196,11 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
+          out << "#ifdef NDEBUG\n";
+          out << "    PyErr_SetString(PyExc_IndexError, \"index out of range\");\n";
+          out << "#else\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
+          out << "#endif\n";
           out << "    return -1;\n";
           out << "  }\n";
 
@@ -2224,7 +2227,7 @@ write_module_class(ostream &out, Object *obj) {
                                 true, true, AT_single_arg, RF_int, false, true, "index");
           out << "  }\n\n";
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2292,7 +2295,7 @@ write_module_class(ostream &out, Object *obj) {
                                 true, true, AT_single_arg, RF_int, false);
           out << "  }\n\n";
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2528,7 +2531,7 @@ write_module_class(ostream &out, Object *obj) {
                                 true, true, AT_single_arg, return_flags, true);
           out << "  }\n\n";
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    return Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2587,7 +2590,7 @@ write_module_class(ostream &out, Object *obj) {
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                 AT_single_arg, RF_compare, false, true);
 
-          out << "  if (!_PyErr_OCCURRED()) {\n";
+          out << "  if (!PyErr_Occurred()) {\n";
           out << "    Dtool_Raise_BadArgumentsError(\n";
           output_quoted(out, 6, expected_params);
           out << ");\n";
@@ -2802,7 +2805,7 @@ write_module_class(ostream &out, Object *obj) {
 
       // End of switch block
       out << "  }\n\n";
-      out << "  if (_PyErr_OCCURRED()) {\n";
+      out << "  if (PyErr_Occurred()) {\n";
       out << "    PyErr_Clear();\n";
       out << "  }\n\n";
     }
@@ -2819,7 +2822,7 @@ write_module_class(ostream &out, Object *obj) {
       // no matching comparison operator was found.
       out << "  // All is not lost; we still have the compare_to function to fall back onto.\n";
       out << "  int cmpval = " << slots["tp_compare"]._wrapper_name << "(self, arg);\n";
-      out << "  if (cmpval == -1 && _PyErr_OCCURRED()) {\n";
+      out << "  if (cmpval == -1 && PyErr_Occurred()) {\n";
       out << "    if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
       out << "      PyErr_Clear();\n";
       out << "    } else {\n";
@@ -3497,7 +3500,7 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   out << "    if (PyType_Ready((PyTypeObject *)&Dtool_" << ClassName << ") < 0) {\n"
-         "      Dtool_Raise_TypeError(\"PyType_Ready(" << ClassName << ")\");\n"
+         "      PyErr_Format(PyExc_TypeError, \"PyType_Ready(%s)\", \"" << ClassName << "\");\n"
          "      return;\n"
          "    }\n"
          "    Py_INCREF((PyTypeObject *)&Dtool_" << ClassName << ");\n"
@@ -3961,7 +3964,7 @@ write_function_for_name(ostream &out, Object *obj,
     out << "#endif\n";
     indent(out, 2) << "}\n";
 
-    out << "  if (!_PyErr_OCCURRED()) {\n"
+    out << "  if (!PyErr_Occurred()) {\n"
         << "    ";
     if ((return_flags & ~RF_pyobject) == RF_err_null) {
       out << "return ";
@@ -4039,7 +4042,7 @@ write_function_for_name(ostream &out, Object *obj,
     // figure out a way in the future to better determine when it will be and
     // won't be necessary to write this out.
     if (args_type != AT_no_args) {
-      out << "  if (!_PyErr_OCCURRED()) {\n"
+      out << "  if (!PyErr_Occurred()) {\n"
           << "    ";
       if ((return_flags & ~RF_pyobject) == RF_err_null) {
         out << "return ";
@@ -5109,9 +5112,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       }
 
       CPPEnumType *enum_type = (CPPEnumType *)TypeManager::unwrap(type);
-      CPPType *underlying_type = enum_type->get_underlying_type();
-      underlying_type = TypeManager::unwrap_const(underlying_type);
-
+      //CPPType *underlying_type = enum_type->get_underlying_type();
+      //underlying_type = TypeManager::unwrap_const(underlying_type);
       //indent(out, indent_level);
       //underlying_type->output_instance(out, param_name + "_val", &parser);
       //out << default_expr << ";\n";
@@ -5217,7 +5219,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         extra_convert <<
           "size_t arg_val = PyLongOrInt_AsSize_t(arg);\n"
           "#ifndef NDEBUG\n"
-          "if (arg_val == (size_t)-1 && _PyErr_OCCURRED()) {\n";
+          "if (arg_val == (size_t)-1 && PyErr_Occurred()) {\n";
         error_return(extra_convert, 2, return_flags);
         extra_convert <<
           "}\n"
@@ -6317,7 +6319,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // terminate on error.
       if (!may_raise_typeerror || report_errors) {
         indent(out, indent_level)
-          << "if (_PyErr_OCCURRED()) {\n";
+          << "if (PyErr_Occurred()) {\n";
       } else {
         // If a method is some extension method that takes a PyObject*, and it
         // raised a TypeError, continue.  The documentation tells us not to
@@ -6326,7 +6328,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         // the TypeError we want to catch here is going to be generated by a
         // PyErr_SetString call, not by user code.
         indent(out, indent_level)
-          << "PyObject *exception = _PyErr_OCCURRED();\n";
+          << "PyObject *exception = PyErr_Occurred();\n";
         indent(out, indent_level)
           << "if (exception == PyExc_TypeError) {\n";
         indent(out, indent_level)
@@ -6859,7 +6861,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
     // IndexError if we're out of bounds.
     out << "  if (index < 0 || index >= (Py_ssize_t)"
         << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+    out << "#ifdef NDEBUG\n";
+    out << "    PyErr_SetString(PyExc_IndexError, \"index out of range\");\n";
+    out << "#else\n";
     out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+    out << "#endif\n";
     out << "    return nullptr;\n";
     out << "  }\n";
 
@@ -6886,7 +6892,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                           AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
 
-    out << "  if (!_PyErr_OCCURRED()) {\n";
+    out << "  if (!PyErr_Occurred()) {\n";
     out << "    return Dtool_Raise_BadArgumentsError(\n";
     output_quoted(out, 6, expected_params);
     out << ");\n"
@@ -6906,7 +6912,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
       out << "  if (index < 0 || index >= (Py_ssize_t)"
           << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+      out << "#ifdef NDEBUG\n";
+      out << "    PyErr_SetString(PyExc_IndexError, \"index out of range\");\n";
+      out << "#else\n";
       out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+      out << "#endif\n";
       out << "    return -1;\n";
       out << "  }\n";
 
@@ -6919,7 +6929,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
         }
         out << "    return 0;\n";
       } else {
-        out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
+        out << "#ifdef NDEBUG\n"
+               "    Dtool_Raise_TypeError(\"can't delete attribute\");\n"
+               "#else\n"
+               "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
+               "#endif\n"
                "    return -1;\n";
       }
       out << "  }\n";
@@ -6952,7 +6966,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
                             expected_params, 2, true, true, AT_single_arg,
                             RF_int, false, false, "index");
 
-      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "  if (!PyErr_Occurred()) {\n";
       out << "    Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n";
@@ -6981,7 +6995,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
                             expected_params, 2, true, true, AT_single_arg,
                             RF_pyobject | RF_err_null, false, false, "index");
 
-      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "  if (!PyErr_Occurred()) {\n";
       out << "    Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n";
@@ -7049,7 +7063,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                           AT_single_arg, RF_pyobject | RF_err_null, false, true);
 
-    out << "  if (!_PyErr_OCCURRED()) {\n";
+    out << "  if (!PyErr_Occurred()) {\n";
     out << "    return Dtool_Raise_BadArgumentsError(\n";
     output_quoted(out, 6, expected_params);
     out << ");\n"
@@ -7100,7 +7114,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
                               RF_int, false, false);
         out << "    return -1;\n";
       } else {
-        out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
+        out << "#ifdef NDEBUG\n"
+               "    Dtool_Raise_TypeError(\"can't delete attribute\");\n"
+               "#else\n"
+               "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << "[] attribute\");\n"
+               "#endif\n"
                "    return -1;\n";
       }
       out << "  }\n";
@@ -7128,7 +7146,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
                             expected_params, 2, true, true, AT_varargs,
                             RF_int | RF_decref_args, false, false);
 
-      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "  if (!PyErr_Occurred()) {\n";
       out << "    Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n";
@@ -7157,7 +7175,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
       if (len_remap != nullptr) {
         out << "  if (index < 0 || index >= (Py_ssize_t)"
             << len_remap->get_call_str("local_this", pexprs) << ") {\n";
+        out << "#ifdef NDEBUG\n";
+        out << "    PyErr_SetString(PyExc_IndexError, \"index out of range\");\n";
+        out << "#else\n";
         out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << "." << ielem.get_name() << "[] index out of range\");\n";
+        out << "#endif\n";
         out << "    return nullptr;\n";
         out << "  }\n";
       }
@@ -7178,7 +7200,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                             AT_no_args, RF_pyobject | RF_err_null, false, true, "index");
 
-      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "  if (!PyErr_Occurred()) {\n";
       out << "    return Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n"
@@ -7343,8 +7365,12 @@ write_getset(ostream &out, Object *obj, Property *property) {
         out << "    " << cClassName << "::" << property->_deleter->_ifunc.get_name() << "();\n"
             << "    return 0;\n";
       } else {
-        out << "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << " attribute\");\n"
-                "    return -1;\n";
+        out << "#ifdef NDEBUG\n"
+               "    Dtool_Raise_TypeError(\"can't delete attribute\");\n"
+               "#else\n"
+               "    Dtool_Raise_TypeError(\"can't delete " << ielem.get_name() << " attribute\");\n"
+               "#endif\n"
+               "    return -1;\n";
       }
       out << "  }\n";
 
@@ -7375,7 +7401,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
                             expected_params, 2, true, true, AT_single_arg,
                             RF_int, false, false);
 
-      out << "  if (!_PyErr_OCCURRED()) {\n";
+      out << "  if (!PyErr_Occurred()) {\n";
       out << "    Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n";

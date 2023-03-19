@@ -23,6 +23,7 @@
 #include "ordered_vector.h"
 #include "vector_int.h"
 #include "epvector.h"
+#include "small_vector.h"
 
 /**
  * Indicates the set of TextureStages and their associated Textures that
@@ -147,7 +148,7 @@ private:
   typedef ov_set<StageNode, CompareTextureStagePointer, epvector<StageNode> > Stages;
   Stages _on_stages;  // set of all "on" stages, indexed by pointer.
 
-  typedef pvector<StageNode *> RenderStages;
+  typedef small_vector<StageNode *> RenderStages;
   RenderStages _render_stages;      // all "on" stages, sorted in render order.
   RenderStages _render_ff_stages;   // fixed-function stages only, in render order.
   unsigned int _next_implicit_sort;

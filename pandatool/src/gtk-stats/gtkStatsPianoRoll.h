@@ -28,7 +28,7 @@ class GtkStatsMonitor;
  * A window that draws a piano-roll style chart, which shows the collectors
  * explicitly stopping and starting, one frame at a time.
  */
-class GtkStatsPianoRoll : public PStatPianoRoll, public GtkStatsGraph {
+class GtkStatsPianoRoll final : public PStatPianoRoll, public GtkStatsGraph {
 public:
   GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index);
   virtual ~GtkStatsPianoRoll();

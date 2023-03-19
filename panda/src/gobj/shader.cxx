@@ -27,7 +27,6 @@
 #include "shaderCompiler.h"
 
 using std::istream;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -2959,7 +2958,7 @@ make(string body, ShaderLanguage lang) {
     lang = SL_Cg;
   }
 
-  ShaderFile sbody(move(body));
+  ShaderFile sbody(std::move(body));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3013,8 +3012,8 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
     return nullptr;
   }
 
-  ShaderFile sbody(move(vertex), move(fragment), move(geometry),
-                   move(tess_control), move(tess_evaluation));
+  ShaderFile sbody(std::move(vertex), std::move(fragment), std::move(geometry),
+                   std::move(tess_control), std::move(tess_evaluation));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3058,7 +3057,7 @@ make_compute(ShaderLanguage lang, string body) {
 
   ShaderFile sbody;
   sbody._separate = true;
-  sbody._compute = move(body);
+  sbody._compute = std::move(body);
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);

@@ -1,5 +1,15 @@
 
-from panda3d.core import *
+from panda3d.core import (
+    AmbientLight,
+    DirectionalLight,
+    LightAttrib,
+    Material,
+    NodePath,
+    PerspectiveLens,
+    PointLight,
+    Spotlight,
+    VBase4,
+)
 from direct.showbase.MessengerGlobal import messenger
 
 

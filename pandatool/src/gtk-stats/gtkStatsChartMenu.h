@@ -15,10 +15,10 @@
 #define GTKSTATSCHARTMENU_H
 
 #include "pandatoolbase.h"
+#include "gtkStatsMonitor.h"
 
 #include <gtk/gtk.h>
 
-class GtkStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 

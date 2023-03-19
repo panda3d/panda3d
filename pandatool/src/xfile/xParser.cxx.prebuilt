@@ -1,20 +1,20 @@
 /* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
-   
+
       Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
    Foundation, Inc.
-   
+
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
@@ -27,7 +27,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -96,8 +96,8 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
-static XFile *x_file = (XFile *)NULL;
-static XFileNode *current_node = (XFileNode *)NULL;
+static XFile *x_file = nullptr;
+static XFileNode *current_node = nullptr;
 static PT(XFileDataDef) current_data_def;
 
 ////////////////////////////////////////////////////////////////////
@@ -113,8 +113,8 @@ x_init_parser(std::istream &in, const std::string &filename, XFile &file) {
 
 void
 x_cleanup_parser() {
-  x_file = (XFile *)NULL;
-  current_node = (XFileNode *)NULL;
+  x_file = nullptr;
+  current_node = nullptr;
 }
 
 
@@ -1576,7 +1576,7 @@ yyreduce:
 #line 172 "xParser.yxx"
     {
   XFileTemplate *xtemplate = x_file->find_template((yyvsp[(1) - (3)].str));
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + (yyvsp[(1) - (3)].str));
   } else {
     current_data_def = new XFileDataDef(x_file, (yyvsp[(2) - (3)].str), XFileDataDef::T_template, xtemplate);
@@ -1700,7 +1700,7 @@ yyreduce:
 #line 237 "xParser.yxx"
     {
   XFileTemplate *xtemplate = x_file->find_template((yyvsp[(1) - (2)].str));
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + (yyvsp[(1) - (2)].str));
   } else {
     current_data_def = new XFileDataDef(x_file, (yyvsp[(2) - (2)].str), XFileDataDef::T_template, xtemplate);
@@ -1724,7 +1724,7 @@ yyreduce:
 #line 263 "xParser.yxx"
     {
   XFileNode *data_def = current_node->find_child((yyvsp[(1) - (1)].str));
-  if (data_def == (XFileNode *)NULL) {
+  if (data_def == nullptr) {
     yyerror("Unknown identifier: " + (yyvsp[(1) - (1)].str));
   } else {
     current_data_def->add_array_def(XFileArrayDef(DCAST(XFileDataDef, data_def)));
@@ -1754,7 +1754,7 @@ yyreduce:
 #line 284 "xParser.yxx"
     {
   XFileTemplate *xtemplate = x_file->find_template((yyvsp[(1) - (1)].str));
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + (yyvsp[(1) - (1)].str));
   } else {
     DCAST(XFileTemplate, current_node)->add_option(xtemplate);
@@ -1768,7 +1768,7 @@ yyreduce:
 #line 293 "xParser.yxx"
     {
   XFileTemplate *xtemplate = x_file->find_template((yyvsp[(2) - (2)].guid));
-  if (xtemplate == (XFileTemplate *)NULL) {
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + (yyvsp[(1) - (2)].str));
   } else {
     if (xtemplate->get_name() != (yyvsp[(1) - (2)].str)) {
@@ -1823,11 +1823,11 @@ yyreduce:
     {
   XFileTemplate *xtemplate = x_file->find_template((yyvsp[(1) - (3)].str));
   (yyval.u.node) = current_node;
-  
-  if (xtemplate == (XFileTemplate *)NULL) {
+
+  if (xtemplate == nullptr) {
     yyerror("Unknown template: " + (yyvsp[(1) - (3)].str));
   } else {
-    XFileDataNodeTemplate *templ = 
+    XFileDataNodeTemplate *templ =
       new XFileDataNodeTemplate(x_file, (yyvsp[(2) - (3)].str), xtemplate);
     current_node->add_child(templ);
     current_node = templ;
@@ -1841,7 +1841,7 @@ yyreduce:
 #line 363 "xParser.yxx"
     {
   if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
-    XFileDataNodeTemplate *current_template = 
+    XFileDataNodeTemplate *current_template =
       DCAST(XFileDataNodeTemplate, current_node);
     current_template->finalize_parse_data();
   }
@@ -1876,7 +1876,7 @@ yyreduce:
 #line 391 "xParser.yxx"
     {
   if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
-    XFileDataNodeTemplate *current_template = 
+    XFileDataNodeTemplate *current_template =
       DCAST(XFileDataNodeTemplate, current_node);
     current_template->add_parse_int((yyvsp[(1) - (1)].int_list));
   }
@@ -1889,7 +1889,7 @@ yyreduce:
 #line 399 "xParser.yxx"
     {
   if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
-    XFileDataNodeTemplate *current_template = 
+    XFileDataNodeTemplate *current_template =
       DCAST(XFileDataNodeTemplate, current_node);
     current_template->add_parse_double((yyvsp[(1) - (1)].double_list));
   }
@@ -1902,7 +1902,7 @@ yyreduce:
 #line 407 "xParser.yxx"
     {
   if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
-    XFileDataNodeTemplate *current_template = 
+    XFileDataNodeTemplate *current_template =
       DCAST(XFileDataNodeTemplate, current_node);
     current_template->add_parse_string((yyvsp[(1) - (2)].str));
   }
@@ -1923,7 +1923,7 @@ yyreduce:
 #line 438 "xParser.yxx"
     {
   XFileDataNodeTemplate *data_object = x_file->find_data_object((yyvsp[(1) - (1)].str));
-  if (data_object == (XFileDataObject *)NULL) {
+  if (data_object == nullptr) {
     yyerror("Unknown data_object: " + (yyvsp[(1) - (1)].str));
   }
 
@@ -1937,7 +1937,7 @@ yyreduce:
 #line 447 "xParser.yxx"
     {
   XFileDataNodeTemplate *data_object = x_file->find_data_object((yyvsp[(2) - (2)].guid));
-  if (data_object == (XFileDataObject *)NULL) {
+  if (data_object == nullptr) {
     yyerror("Unknown data_object: " + (yyvsp[(1) - (2)].str));
   } else {
     if (data_object->get_name() != (yyvsp[(1) - (2)].str)) {

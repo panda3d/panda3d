@@ -145,7 +145,7 @@ read_node(bool report_errors) {
     object = read_object();
   }
 
-  if (object == TypedWritable::Null) {
+  if (object == nullptr) {
     if (report_errors) {
       loader_cat.error() << "Bam file " << _bam_filename << " is empty.\n";
     }

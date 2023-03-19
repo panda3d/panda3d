@@ -82,6 +82,7 @@ protected:
   const char *alloc_freg();
 
   Filename _cache_filename;
+  bool _use_pointcoord;
   bool _use_shadow_filter;
   int _num_indexed_transforms;
 

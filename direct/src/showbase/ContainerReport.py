@@ -53,22 +53,22 @@ class ContainerReport(Job):
             id(self._type2id2len),
             id(self._queue),
             id(self._instanceDictIds),
-            ]))
+        ]))
         # push on a few things that we want to give priority
         # for the sake of the variable-name printouts
         try:
             base
-        except:
+        except NameError:
             pass
         else:
-            self._enqueueContainer( base.__dict__,
+            self._enqueueContainer(base.__dict__,
                                    'base')
         try:
             simbase
-        except:
+        except NameError:
             pass
         else:
-            self._enqueueContainer( simbase.__dict__,
+            self._enqueueContainer(simbase.__dict__,
                                    'simbase')
         self._queue.push(__builtins__)
         self._id2pathStr[id(__builtins__)] = ''
@@ -86,7 +86,7 @@ class ContainerReport(Job):
             try:
                 if parentObj.__class__.__name__ == 'method-wrapper':
                     continue
-            except:
+            except Exception:
                 pass
 
             if isinstance(parentObj, (str, bytes)):
@@ -142,7 +142,7 @@ class ContainerReport(Job):
             if not isinstance(parentObj, io.TextIOWrapper):
                 try:
                     itr = iter(parentObj)
-                except:
+                except Exception:
                     pass
                 else:
                     try:
@@ -150,7 +150,7 @@ class ContainerReport(Job):
                         while 1:
                             try:
                                 attr = next(itr)
-                            except:
+                            except Exception:
                                 # some custom classes don't do well when iterated
                                 attr = None
                                 break
@@ -168,7 +168,7 @@ class ContainerReport(Job):
 
             try:
                 childNames = dir(parentObj)
-            except:
+            except Exception:
                 pass
             else:
                 childName = None
@@ -176,7 +176,7 @@ class ContainerReport(Job):
                 for childName in childNames:
                     try:
                         child = getattr(parentObj, childName)
-                    except:
+                    except Exception:
                         continue
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
@@ -206,12 +206,13 @@ class ContainerReport(Job):
         # if it's a container, put it in the tables
         try:
             length = len(obj)
-        except:
+        except Exception:
             length = None
         if length is not None and length > 0:
             self._id2container[objId] = obj
             self._type2id2len.setdefault(type(obj), {})
             self._type2id2len[type(obj)][objId] = length
+
     def _examine(self, obj):
         # return False if it's an object that can't contain or lead to other objects
         if type(obj) in deadEndTypes:

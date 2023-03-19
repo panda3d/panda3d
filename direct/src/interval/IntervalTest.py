@@ -4,11 +4,24 @@ __all__ = []
 
 
 if __name__ == "__main__":
-    from panda3d.core import *
+    from panda3d.core import Filename, Point3, Vec3
+    from direct.showbase.DirectObject import DirectObject
     from direct.showbase.ShowBase import ShowBase
-    from direct.actor.Actor import *
+    from direct.actor.Actor import Actor
     from direct.directutil import Mopath
-    from .IntervalGlobal import *
+    from direct.showbase.MessengerGlobal import messenger
+    from .ActorInterval import ActorInterval
+    from .FunctionInterval import (
+        AcceptInterval,
+        EventInterval,
+        FunctionInterval,
+        IgnoreInterval,
+        PosHprInterval,
+    )
+    from .LerpInterval import LerpPosInterval, LerpHprInterval, LerpPosHprInterval
+    from .MopathInterval import MopathInterval
+    from .SoundInterval import SoundInterval
+    from .MetaInterval import PREVIOUS_END, PREVIOUS_START, TRACK_START, Track
 
     base = ShowBase()
 

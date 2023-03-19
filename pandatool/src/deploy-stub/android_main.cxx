@@ -279,7 +279,7 @@ void android_main(struct android_app *app) {
       break;
     }
     if (n < 0) {
-      if (_PyErr_OCCURRED() != PyExc_SystemExit) {
+      if (!PyErr_ExceptionMatches(PyExc_SystemExit)) {
         PyErr_Print();
       } else {
         PyErr_Clear();
