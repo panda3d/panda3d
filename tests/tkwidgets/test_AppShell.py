@@ -1,3 +1,5 @@
+import pytest
+pytest.importorskip('Pmw')
 from direct.tkwidgets import AppShell
 
 

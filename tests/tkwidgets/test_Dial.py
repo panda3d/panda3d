@@ -1,4 +1,6 @@
 import tkinter as tk
+import pytest
+pytest.importorskip('Pmw')
 from direct.tkwidgets.Dial import Dial
 
 
