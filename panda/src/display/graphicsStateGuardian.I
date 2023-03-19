@@ -740,7 +740,7 @@ set_shader_model(ShaderModel shader_model) {
 /**
  * Returns a bitmask of the supported shader capabilities.
  */
-INLINE int GraphicsStateGuardian::
+INLINE uint64_t GraphicsStateGuardian::
 get_supported_shader_capabilities() const {
   return _supported_shader_caps;
 }

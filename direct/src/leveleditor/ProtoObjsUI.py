@@ -4,8 +4,7 @@ Defines ProtoObjs List UI
 import wx
 import os
 
-from panda3d.core import *
-from .ProtoObjs import *
+from panda3d.core import Filename
 
 
 class ProtoDropTarget(wx.PyDropTarget):
@@ -118,14 +117,14 @@ class ProtoObjsUI(wx.Panel):
             if name.upper().endswith(ext.upper()):
                 try:
                     index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
-                    self.protoObjs.data[name]= filename
+                    self.protoObjs.data[name] = filename
                     self.addObj(filename)
-                except:
+                except Exception:
                     pass
                 break
 
     def addNewItem(self, result):
-       ProtoObjsUI.AquireFile(self, result[1])
+        ProtoObjsUI.AquireFile(self, result[1])
 
     def AquireFile(self, filename):
         label = self.findLabel(filename)

@@ -28,7 +28,7 @@ set_view_data(int view, const void *ptr) {
   Texture *tex = get_result();
   PTA_uchar new_image = tex->modify_ram_image();
   unsigned char *image_ptr = new_image.p();
-  size_t image_size = tex->get_ram_image_size();
+  size_t image_size;
   if (z >= 0 || view > 0) {
     image_size = tex->get_expected_ram_page_size();
     if (z >= 0) {
@@ -43,6 +43,8 @@ set_view_data(int view, const void *ptr) {
         return;
       }
     }
+  } else {
+    image_size = tex->get_ram_image_size();
   }
   memcpy(image_ptr, ptr, image_size);
 }

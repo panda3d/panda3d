@@ -251,12 +251,12 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
 
 if __debug__:
     l = []
-    def handler(value, l=l):
+    def handler1(value, l=l):
         l.append(value)
-    assert l == []
+    assert not l
     sv = StateVar(0)
-    fc = FunctionCall(handler, sv)
-    assert l == []
+    fc = FunctionCall(handler1, sv)
+    assert not l
     fc.pushCurrentState()
     assert l == [0,]
     sv.set(1)
@@ -267,17 +267,17 @@ if __debug__:
     sv.destroy()
     del fc
     del sv
-    del handler
+    del handler1
     del l
 
     l = []
-    def handler(value, kDummy=None, kValue=None, l=l):
+    def handler2(value, kDummy=None, kValue=None, l=l):
         l.append((value, kValue))
-    assert l == []
+    assert not l
     sv = StateVar(0)
     ksv = StateVar('a')
-    fc = FunctionCall(handler, sv, kValue=ksv)
-    assert l == []
+    fc = FunctionCall(handler2, sv, kValue=ksv)
+    assert not l
     fc.pushCurrentState()
     assert l == [(0,'a',),]
     sv.set(1)
@@ -288,7 +288,7 @@ if __debug__:
     sv.destroy()
     del fc
     del sv
-    del handler
+    del handler2
     del l
 
 class EnterExit(StateChangeNode):
@@ -323,7 +323,7 @@ if __debug__:
     sv = StateVar(0)
     ee = EnterExit(sv, enter, exit)
     sv.set(0)
-    assert l == []
+    assert not l
     sv.set(1)
     assert l == [1,]
     sv.set(2)
@@ -357,7 +357,7 @@ if __debug__:
         l.append(value)
     p = Pulse()
     fc = FunctionCall(handler, p)
-    assert l == []
+    assert not l
     fc.pushCurrentState()
     assert l == [False, ]
     p.sendPulse()

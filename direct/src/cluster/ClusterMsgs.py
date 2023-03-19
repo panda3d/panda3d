@@ -3,7 +3,7 @@
 # This module is intended to supply routines and dataformats common to
 # both ClusterClient and ClusterServer.
 
-from panda3d.core import *
+from panda3d.core import NetDatagram
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import time

@@ -1,5 +1,12 @@
 from panda3d.core import NodePath
-from panda3d.physics import *
+from panda3d.physics import (
+    ActorNode,
+    AngularEulerIntegrator,
+    ForceNode,
+    LinearEulerIntegrator,
+    LinearFrictionForce,
+    LinearVectorForce,
+)
 
 
 class FallTest(NodePath):
@@ -80,8 +87,8 @@ class FallTest(NodePath):
         #self.actorNode.updateTransform()
 
 if __name__ == "__main__":
-    from direct.directbase.ThreeUpStart import *
-    test=FallTest()
+    from direct.directbase.ThreeUpStart import base
+    test = FallTest()
     test.reparentTo(base.render)
     test.setup()
     base.camera.setY(-10.0)

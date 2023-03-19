@@ -17,6 +17,33 @@
 
 #include "dcast.h"
 
+// Maps required extensions to shader caps, so we can do a slightly better job
+// at checking whether a given shader module is supported by the GSG.
+static struct ExtensionCaps { const char *ext; uint64_t caps; } _extension_caps[] = {
+  {"GL_ARB_compute_shader", ShaderEnums::C_compute_shader},
+  {"GL_ARB_derivative_control", ShaderEnums::C_derivative_control},
+  {"GL_ARB_draw_instanced", ShaderEnums::C_instance_id},
+  {"GL_ARB_enhanced_layouts", ShaderEnums::C_enhanced_layouts},
+  {"GL_ARB_geometry_shader4", ShaderEnums::C_geometry_shader},
+  {"GL_ARB_gpu_shader_fp64", ShaderEnums::C_double},
+  {"GL_ARB_shader_bit_encoding", ShaderEnums::C_bit_encoding},
+  {"GL_ARB_shader_image_load_store", ShaderEnums::C_image_load_store},
+  {"GL_ARB_shader_texture_lod", ShaderEnums::C_texture_lod},
+  {"GL_ARB_tessellation_shader", ShaderEnums::C_tessellation_shader},
+  {"GL_ARB_texture_buffer_object", ShaderEnums::C_texture_buffer},
+  {"GL_ARB_texture_query_levels", ShaderEnums::C_texture_query_levels},
+  {"GL_ARB_texture_query_lod", ShaderEnums::C_texture_query_lod},
+  {"GL_EXT_geometry_shader", ShaderEnums::C_geometry_shader},
+  {"GL_EXT_gpu_shader4", ShaderEnums::C_unified_model},
+  {"GL_EXT_shader_texture_lod", ShaderEnums::C_texture_lod},
+  {"GL_EXT_shadow_samplers", ShaderEnums::C_shadow_samplers},
+  {"GL_EXT_tessellation_shader", ShaderEnums::C_tessellation_shader},
+  {"GL_OES_sample_variables", ShaderEnums::C_sample_variables},
+  {"GL_OES_standard_derivatives", ShaderEnums::C_standard_derivatives},
+  {"GL_OES_texture_buffer", ShaderEnums::C_texture_buffer},
+  {nullptr, 0},
+};
+
 TypeHandle ShaderCompilerGlslPreProc::_type_handle;
 
 /**
@@ -50,11 +77,8 @@ get_languages() const {
  * ShaderModule on success.
  */
 PT(ShaderModule) ShaderCompilerGlslPreProc::
-compile_now(ShaderModule::Stage stage, std::istream &in,
-            const Filename &fullpath, BamCacheRecord *record) const {
-  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
-  std::string &into = module->_raw_source;
-
+compile_now(Stage stage, std::istream &in, const Filename &fullpath,
+            BamCacheRecord *record) const {
   // Create a name that's easier to read in error messages.
   std::string filename;
   if (fullpath.empty()) {
@@ -69,24 +93,26 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     }
   }
 
-  std::ostringstream sstr;
-  std::set<Filename> open_files;
-  if (r_preprocess_source(module, sstr, in, filename, fullpath, open_files, record)) {
-    into = sstr.str();
-
-    // Strip trailing whitespace.
-    while (!into.empty() && isspace(into[into.size() - 1])) {
-      into.resize(into.size() - 1);
-    }
-
-    // Except add back a newline at the end, which is needed by Intel drivers.
-    into += "\n";
-
-    module->_record = record;
-    return module;
-  } else {
+  State state;
+  if (!r_preprocess_source(state, in, filename, fullpath, record)) {
     return nullptr;
   }
+
+  if (!state.has_code) {
+    shader_cat.error()
+      << "GLSL shader " << filename << " does not contain any code!\n";
+    return nullptr;
+  }
+  if (!state.version) {
+    shader_cat.warning()
+      << "GLSL shader " << filename << " does not contain a #version line!\n";
+  }
+
+  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, state.code.str(), state.version);
+  module->_included_files = std::move(state.included_files);
+  module->_used_caps |= state.required_caps;
+  module->_record = record;
+  return module;
 }
 
 /**
@@ -97,20 +123,19 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
  * recursive includes.
  */
 bool ShaderCompilerGlslPreProc::
-r_preprocess_source(ShaderModuleGlsl *module,
-                    std::ostream &out, std::istream &in, const std::string &fn,
-                    const Filename &full_fn, std::set<Filename> &once_files,
-                    BamCacheRecord *record, int fileno, int depth) const {
+r_preprocess_source(State &state, std::istream &in, const std::string &fn,
+                    const Filename &full_fn, BamCacheRecord *record, int fileno,
+                    int depth) const {
 
   // Iterate over the lines for things we may need to preprocess.
   std::string line;
   int ext_google_include = 0; // 1 = warn, 2 = enable
   int ext_google_line = 0;
-  bool had_include = false;
-  bool had_version = false;
-  bool had_code = false;
+  bool had_nested_include = false;
   int lineno = 0;
   bool write_line_directive = (fileno != 0);
+
+  std::ostream &out = state.code;
 
   while (std::getline(in, line)) {
     ++lineno;
@@ -136,9 +161,8 @@ r_preprocess_source(ShaderModuleGlsl *module,
           out.put('\n');
         }
         ++lineno;
-      } else {
-        break;
       }
+      else break;
     }
 
     // Look for comments to strip.  This is necessary because comments may
@@ -148,8 +172,8 @@ r_preprocess_source(ShaderModuleGlsl *module,
     if (line_comment < block_comment) {
       // A line comment - strip off the rest of the line.
       line.resize(line_comment);
-
-    } else if (block_comment < line_comment) {
+    }
+    else if (block_comment < line_comment) {
       // A block comment.  Search for closing block.
       std::string line2 = line.substr(block_comment + 2);
 
@@ -198,7 +222,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
         write_line_directive = false;
       }
       out << line << "\n";
-      had_code = true;
+      state.has_code = true;
       continue;
     }
 
@@ -217,14 +241,14 @@ r_preprocess_source(ShaderModuleGlsl *module,
             // A regular include, with double quotes.  Probably a local file.
             source_dir = full_fn.get_dirname();
             incfn = incfile;
-
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^>]> %zn", incfile, &nread) == 1
+          }
+          else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^>]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.
             incfn = incfile;
-
-          } else {
+          }
+          else {
             // Couldn't parse it.
             shader_cat.error()
               << "Malformed #pragma include at line " << lineno
@@ -234,7 +258,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
         }
 
         // OK, great.  Process the include.
-        if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
+        if (!r_preprocess_include(state, incfn, source_dir, record, depth + 1)) {
           // An error occurred.  Pass on the failure.
           shader_cat.error(false) << "included at line "
             << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -243,11 +267,13 @@ r_preprocess_source(ShaderModuleGlsl *module,
 
         // Restore the line counter.
         write_line_directive = true;
-        had_include = true;
-        had_code = true;
+        if (state.cond_nesting > 0) {
+          had_nested_include = true;
+        }
+        state.has_code = true;
         continue;
-
-      } else if (strcmp(pragma, "once") == 0) {
+      }
+      else if (strcmp(pragma, "once") == 0) {
         // Do a stricter syntax check, just to be extra safe.
         if (sscanf(line.c_str(), " # pragma%*[ \t]once %zn", &nread) != 0 ||
             nread != line.size()) {
@@ -268,36 +294,52 @@ r_preprocess_source(ShaderModuleGlsl *module,
         }
 
         if (!full_fn.empty()) {
-          once_files.insert(full_fn);
+          state.once_files.insert(full_fn);
         }
         continue;
       }
       // Otherwise, just pass it through to the driver.
-
-    } else if (strcmp(directive, "endif") == 0) {
+    }
+    else if (strncmp(directive, "if", 2) == 0) {
+      // Keep track of the level of conditional nesting.
+      state.cond_nesting++;
+    }
+    else if (strcmp(directive, "endif") == 0) {
       // Check for an #endif after an include.  We have to restore the line
       // number in case the include happened under an #if block.
-      if (had_include) {
+      if (had_nested_include) {
         write_line_directive = true;
       }
-
-    } else if (strcmp(directive, "version") == 0) {
-      had_version = true;
-
-    } else if (strcmp(directive, "extension") == 0) {
+      state.cond_nesting--;
+    }
+    else if (strcmp(directive, "version") == 0) {
+      if (sscanf(line.c_str(), " # version %d", &state.version) != 1 || state.version <= 0) {
+        shader_cat.error()
+          << "Invalid version number at line " << lineno << " of file " << fn
+          << ": " << line << "\n";
+        return false;
+      }
+    }
+    else if (strcmp(directive, "extension") == 0) {
       // Check for special preprocessing extensions.
       char extension[256];
       char behavior[9];
       if (sscanf(line.c_str(), " # extension%*[ \t]%255[^: \t] : %8s", extension, behavior) == 2) {
         // Parse the behavior string.
         int mode;
-        if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
+        if (strcmp(behavior, "require") == 0) {
+          mode = 3;
+        }
+        else if (strcmp(behavior, "enable") == 0) {
           mode = 2;
-        } else if (strcmp(behavior, "warn") == 0) {
+        }
+        else if (strcmp(behavior, "warn") == 0) {
           mode = 1;
-        } else if (strcmp(behavior, "disable") == 0) {
+        }
+        else if (strcmp(behavior, "disable") == 0) {
           mode = 0;
-        } else {
+        }
+        else {
           shader_cat.error()
             << "Extension directive specifies invalid behavior at line "
             << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -305,7 +347,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
         }
 
         if (strcmp(extension, "all") == 0) {
-          if (mode == 2) {
+          if (mode >= 2) {
             shader_cat.error()
               << "Extension directive for 'all' may only specify 'warn' or "
                  "'disable' at line " << lineno << " of file " << fn
@@ -316,28 +358,44 @@ r_preprocess_source(ShaderModuleGlsl *module,
           ext_google_line = mode;
           // Still pass it through to the driver, so it can enable other
           // extensions.
-
-        } else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
+        }
+        else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
           // Enable the Google extension support for #include statements.
           // This also implicitly enables GL_GOOGLE_cpp_style_line_directive.
           // This matches the behavior of Khronos' glslang reference compiler.
           ext_google_include = mode;
           ext_google_line = mode;
           continue;
-
-        } else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
+        }
+        else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
           // Enables strings in #line statements.
           ext_google_line = mode;
           continue;
         }
-      } else {
+        else if (mode == 3 && state.cond_nesting == 0) {
+          // Pick up the capabilities used by this extension.
+          ExtensionCaps *caps = _extension_caps;
+          while (caps->ext) {
+            int result = strcmp(extension, caps->ext);
+            if (result < 0) {
+              break;
+            }
+            if (result == 0) {
+              state.required_caps |= caps->caps;
+              break;
+            }
+            ++caps;
+          }
+        }
+      }
+      else {
         shader_cat.error()
           << "Failed to parse extension directive at line "
           << lineno << " of file " << fn << ":\n  " << line << "\n";
         return false;
       }
-
-    } else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
+    }
+    else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
       // Warn about extension use if requested.
       if (ext_google_include == 1) {
         shader_cat.warning()
@@ -366,7 +424,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
 
       // OK, great.  Process the include.
       Filename source_dir = full_fn.get_dirname();
-      if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
+      if (!r_preprocess_include(state, incfn, source_dir, record, depth + 1)) {
         // An error occurred.  Pass on the failure.
         shader_cat.error(false) << "included at line "
           << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -375,11 +433,13 @@ r_preprocess_source(ShaderModuleGlsl *module,
 
       // Restore the line counter.
       write_line_directive = true;
-      had_include = true;
-      had_code = true;
+      if (state.cond_nesting > 0) {
+        had_nested_include = true;
+      }
+      state.has_code = true;
       continue;
-
-    } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
+    }
+    else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
       // It's a #line directive.  See if it uses a string instead of number.
       char filestr[2048];
       if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %zn", &lineno, filestr, &nread) == 2
@@ -397,7 +457,8 @@ r_preprocess_source(ShaderModuleGlsl *module,
 
         // Replace the string line number with an integer.  This is something
         // we can substitute later when parsing the GLSL log from the driver.
-        fileno = module->add_included_file(filestr);
+        fileno = ShaderModuleGlsl::_fileno_offset + (int)state.included_files.size();
+        state.included_files.push_back(filestr);
         out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
         continue;
       }
@@ -410,21 +471,8 @@ r_preprocess_source(ShaderModuleGlsl *module,
     out << line << "\n";
   }
 
-  if (fileno == 0) {
-    if (!had_code) {
-      shader_cat.error()
-        << "GLSL shader " << fn << " does not contain any code!\n";
-      return false;
-    }
-    if (!had_version) {
-      shader_cat.warning()
-        << "GLSL shader " << fn << " does not contain a #version line!\n";
-    }
-  }
-
   return true;
 }
-
 
 /**
  * Loads a given GLSL file line by line, and processes any #pragma include and
@@ -434,11 +482,9 @@ r_preprocess_source(ShaderModuleGlsl *module,
  * recursive includes.
  */
 bool ShaderCompilerGlslPreProc::
-r_preprocess_include(ShaderModuleGlsl *module,
-                     std::ostream &out, const std::string &fn,
-                     const Filename &source_dir,
-                     std::set<Filename> &once_files,
-                     BamCacheRecord *record, int depth) const {
+r_preprocess_include(State &state, const std::string &fn,
+                     const Filename &source_dir, BamCacheRecord *record,
+                     int depth) const {
 
   if (depth > glsl_include_recursion_limit) {
     shader_cat.error()
@@ -461,7 +507,7 @@ r_preprocess_include(ShaderModuleGlsl *module,
   }
 
   Filename full_fn = vf->get_filename();
-  if (once_files.find(full_fn) != once_files.end()) {
+  if (state.once_files.find(full_fn) != state.once_files.end()) {
     // If this file had a #pragma once, just move on.
     return true;
   }
@@ -488,14 +534,15 @@ r_preprocess_include(ShaderModuleGlsl *module,
   // Write it into the vector so that we can substitute it later when we are
   // parsing the GLSL error log.  Don't store the full filename because it
   // would just be too long to display.
-  int fileno = module->add_included_file(fn);
+  int fileno = ShaderModuleGlsl::_fileno_offset + (int)state.included_files.size();
+  state.included_files.push_back(fn);
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
       << "Preprocessing shader include " << fileno << ": " << fn << "\n";
   }
 
-  bool result = r_preprocess_source(module, out, *source, fn, full_fn, once_files, record, fileno, depth);
+  bool result = r_preprocess_source(state, *source, fn, full_fn, record, fileno, depth);
   vf->close_read_file(source);
   return result;
 }

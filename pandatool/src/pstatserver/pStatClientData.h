@@ -45,6 +45,8 @@ public:
   bool is_alive() const;
   void close();
 
+  double get_latest_time() const;
+
   int get_num_collectors() const;
   bool has_collector(int index) const;
   int find_collector(const std::string &fullname) const;
@@ -62,12 +64,16 @@ public:
   int find_thread(const std::string &name) const;
   std::string get_thread_name(int index) const;
   const PStatThreadData *get_thread_data(int index) const;
+  bool is_thread_alive(int index) const;
 
   int get_child_distance(int parent, int child) const;
 
 
   void add_collector(PStatCollectorDef *def);
-  void define_thread(int thread_index, const std::string &name = std::string());
+  void define_thread(int thread_index, const std::string &name = std::string(),
+                     bool mark_alive = false);
+  void expire_thread(int thread_index);
+  void remove_thread(int thread_index);
 
   void record_new_frame(int thread_index, int frame_number,
                         PStatFrameData *frame_data);
@@ -101,6 +107,7 @@ private:
   public:
     std::string _name;
     PT(PStatThreadData) _data;
+    bool _is_alive = false;
   };
   typedef pvector<Thread> Threads;
   Threads _threads;

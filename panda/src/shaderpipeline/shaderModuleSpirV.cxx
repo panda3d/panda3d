@@ -46,18 +46,6 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   for (InstructionIterator it = _instructions.begin(); it != _instructions.begin_annotations(); ++it) {
     Instruction op = *it;
     switch (op.opcode) {
-    case spv::OpExtInst:
-      {
-        const Definition &def = writer.get_definition(op.args[2]);
-        nassertv(def._dtype == DT_ext_inst);
-        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
-          // We mark the use of the GLSL roundEven() function, which requires
-          // GLSL 1.30 or HLSL SM 4.0.
-          _used_caps |= C_round_even;
-        }
-      }
-      break;
-
     case spv::OpMemoryModel:
       if (op.args[0] != spv::AddressingModelLogical) {
         shader_cat.error()
@@ -71,18 +59,58 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       }
       break;
 
+    case spv::OpExecutionMode:
+      if (op.nargs >= 3 && op.args[1] == spv::ExecutionModeInvocations) {
+        if (op.args[2] != 1) {
+          _used_caps |= C_geometry_shader_instancing;
+        }
+      }
+      break;
+
     case spv::OpCapability:
       switch ((spv::Capability)op.args[0]) {
       case spv::CapabilityFloat64:
         _used_caps |= C_double;
         break;
 
-      case spv::CapabilityImageGatherExtended:
-        _used_caps |= C_texture_gather;
+      case spv::CapabilityAtomicStorage:
+        _used_caps |= C_atomic_counters;
+        break;
+
+      case spv::CapabilityUniformBufferArrayDynamicIndexing:
+      case spv::CapabilitySampledImageArrayDynamicIndexing:
+      case spv::CapabilityStorageBufferArrayDynamicIndexing:
+      case spv::CapabilityStorageImageArrayDynamicIndexing:
+      case spv::CapabilityInputAttachmentArrayDynamicIndexing:
+      case spv::CapabilityUniformTexelBufferArrayDynamicIndexing:
+      case spv::CapabilityStorageTexelBufferArrayDynamicIndexing:
+        // It would be great if we could rely on this and call this a day.
+        // However, glslang is not currently capable of detecting and generating
+        // this capability (see KhronosGroup/glslang#2056).  So we still have to
+        // go through the trouble of determining this ourselves.
+        _used_caps |= C_dynamic_indexing;
+        break;
+
+      case spv::CapabilityClipDistance:
+        _used_caps |= C_clip_distance;
+        break;
+
+      case spv::CapabilityCullDistance:
+        _used_caps |= C_cull_distance;
         break;
 
       case spv::CapabilityImageCubeArray:
+      case spv::CapabilitySampledCubeArray:
         _used_caps |= C_cube_map_array;
+        break;
+
+      case spv::CapabilitySampledBuffer:
+      case spv::CapabilityImageBuffer:
+        _used_caps |= C_texture_buffer;
+        break;
+
+      case spv::CapabilityDerivativeControl:
+        _used_caps |= C_derivative_control;
         break;
 
       default:
@@ -99,6 +127,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   // front-end of glslang.  If so, unwrap it back down to individual uniforms.
   uint32_t type_id = writer.find_definition("$Global");
   if (type_id) {
+    if (shader_cat.is_spam()) {
+      shader_cat.spam()
+        << "Flattening $Global uniform block with type " << type_id << "\n";
+    }
     writer.flatten_struct(type_id);
   }
 
@@ -112,14 +144,24 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   for (uint32_t id = 0; id < _instructions.get_id_bound(); ++id) {
     const Definition &def = writer.get_definition(id);
 
-    if (def.is_used() && def._type != nullptr &&
-        def._type->contains_scalar_type(ShaderType::ST_double)) {
-      _used_caps |= C_double;
+    if (def.is_used() && def._type != nullptr) {
+      if (def._type->contains_scalar_type(ShaderType::ST_double)) {
+        _used_caps |= C_double;
+      }
+      if (const ShaderType::Matrix *matrix_type = def._type->as_matrix()) {
+        if (matrix_type->get_num_rows() != matrix_type->get_num_columns()) {
+          _used_caps |= C_non_square_matrices;
+        }
+      }
+      if (def._type->contains_scalar_type(ShaderType::ST_uint)) {
+        _used_caps |= C_unified_model;
+      }
     }
 
     if (def._dtype == DT_variable && !def.is_builtin()) {
       // Ignore empty structs/arrays.
-      if (def._type->get_num_interface_locations() == 0) {
+      int num_locations = def._type->get_num_interface_locations();
+      if (num_locations == 0) {
         continue;
       }
 
@@ -131,19 +173,33 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
       if (def._storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
+
+        if (stage == Stage::fragment) {
+          // Integer varyings require shader model 4.
+          if (def._type->contains_scalar_type(ShaderType::ST_uint) ||
+              def._type->contains_scalar_type(ShaderType::ST_int) ||
+              def._type->contains_scalar_type(ShaderType::ST_bool)) {
+            _used_caps |= C_unified_model;
+          }
+        }
       }
       else if (def._storage_class == spv::StorageClassOutput) {
+        if (!_outputs.empty() || num_locations > 1) {
+          // This shader requires MRT.
+          _used_caps |= C_draw_buffers;
+        }
+
         _outputs.push_back(std::move(var));
       }
       else if (def._storage_class == spv::StorageClassUniformConstant) {
-        if (def._flags & DF_dref_sampled) {
+        const ShaderType::SampledImage *sampled_image_type =
+          def._type->as_sampled_image();
+        if (sampled_image_type != nullptr) {
           // Image variable sampled with depth ref.  Make sure this is actually
           // a shadow sampler; this isn't always done by the compiler, and the
           // spec isn't clear that this is necessary, but it helps spirv-cross
           // properly generate shadow samplers.
-          const ShaderType::SampledImage *sampled_image_type =
-            def._type->as_sampled_image();
-          if (sampled_image_type != nullptr && !sampled_image_type->is_shadow()) {
+          if ((def._flags & DF_dref_sampled) != 0 && !sampled_image_type->is_shadow()) {
             // No, change the type of this variable.
             var.type = ShaderType::register_type(ShaderType::SampledImage(
               sampled_image_type->get_texture_type(),
@@ -152,19 +208,70 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
             writer.set_variable_type(id, var.type);
           }
+          if (sampled_image_type->get_sampled_type() == ShaderType::ST_uint ||
+              sampled_image_type->get_sampled_type() == ShaderType::ST_int) {
+            _used_caps |= C_texture_integer;
+          }
+          switch (sampled_image_type->get_texture_type()) {
+          case Texture::TT_buffer_texture:
+            _used_caps |= C_texture_buffer;
+            break;
+          case Texture::TT_cube_map_array:
+            _used_caps |= C_cube_map_array;
+            // fall through
+          case Texture::TT_1d_texture_array:
+          case Texture::TT_2d_texture_array:
+            _used_caps |= C_texture_array;
+            break;
+          default:
+            break;
+          }
+        }
+        if (def._flags & DF_dynamically_indexed &&
+            (sampled_image_type != nullptr || def._type->contains_opaque_type())) {
+          _used_caps |= C_dynamic_indexing;
         }
         _parameters.push_back(std::move(var));
       }
+      else if (def._storage_class == spv::StorageClassStorageBuffer) {
+        // For whatever reason, in GLSL, the name of an SSBO is derived from the
+        // name of the struct type.
+        const Definition &type_pointer_def = writer.get_definition(def._type_id);
+        nassertd(type_pointer_def._dtype == DT_type_pointer) continue;
+        const Definition &type_def = writer.get_definition(type_pointer_def._type_id);
+        nassertd(type_def._dtype == DT_type) continue;
+        nassertd(!type_def._name.empty()) continue;
 
-      if (def._type->contains_scalar_type(ShaderType::ST_int) ||
-          def._type->contains_scalar_type(ShaderType::ST_uint)) {
-        _used_caps |= C_integer;
+        var.name = InternalName::make(type_def._name);
+        _parameters.push_back(std::move(var));
+
+        _used_caps |= C_storage_buffer;
       }
     }
     else if (def._dtype == DT_variable && def.is_used() &&
              def._storage_class == spv::StorageClassInput) {
       // Built-in input variable.
       switch (def._builtin) {
+      case spv::BuiltInClipDistance:
+        if ((_used_caps & C_clip_distance) == 0) {
+          shaderpipeline_cat.warning()
+            << "Shader uses " << "ClipDistance"
+            << ", but does not declare capability!\n";
+
+          _used_caps |= C_clip_distance;
+        }
+        break;
+
+      case spv::BuiltInCullDistance:
+        if ((_used_caps & C_cull_distance) == 0) {
+          shaderpipeline_cat.warning()
+            << "Shader uses " << "CullDistance"
+            << ", but does not declare capability!\n";
+
+          _used_caps |= C_cull_distance;
+        }
+        break;
+
       case spv::BuiltInVertexId:
         _used_caps |= C_vertex_id;
         break;
@@ -175,6 +282,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
       case spv::BuiltInPrimitiveId:
         _used_caps |= C_primitive_id;
+        break;
+
+      case spv::BuiltInPointCoord:
+        _used_caps |= C_point_coord;
         break;
 
       case spv::BuiltInSampleId:
@@ -190,7 +301,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     else if (def._dtype == DT_type && def._type != nullptr) {
       if (const ShaderType::Matrix *matrix_type = def._type->as_matrix()) {
         if (matrix_type->get_num_rows() != matrix_type->get_num_columns()) {
-          _used_caps |= C_matrix_non_square;
+          _used_caps |= C_non_square_matrices;
         }
       }
     }
@@ -219,25 +330,64 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   // from the module.
   strip();
 
-  // Check for more caps.
+  // Check for more caps, now that we've optimized the module.
+  for (InstructionIterator it = _instructions.begin_annotations(); it != _instructions.end_annotations(); ++it) {
+    Instruction op = *it;
+    if (op.opcode == spv::OpDecorate) {
+      if (writer.get_definition(op.args[0]).is_builtin()) {
+        continue;
+      }
+      switch ((spv::Decoration)op.args[1]) {
+      case spv::DecorationNoPerspective:
+        _used_caps |= C_noperspective_interpolation;
+        break;
+      case spv::DecorationFlat:
+        _used_caps |= C_unified_model;
+        break;
+      case spv::DecorationSample:
+        _used_caps |= C_multisample_interpolation;
+        break;
+      case spv::DecorationInvariant:
+        //_used_caps |= C_invariant;
+        break;
+      case spv::DecorationComponent:
+        _used_caps |= C_enhanced_layouts;
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
   for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
     Instruction op = *it;
     switch (op.opcode) {
-    case spv::OpDecorate:
-      if ((spv::Decoration)op.args[1] == spv::DecorationInvariant) {
-        _used_caps |= C_invariant;
+    case spv::OpExtInst:
+      {
+        const Definition &def = writer.get_definition(op.args[2]);
+        nassertv(def._dtype == DT_ext_inst);
+        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
+          // We mark the use of the GLSL roundEven() function, which requires
+          // GLSL 1.30 or HLSL SM 4.0.
+          _used_caps |= C_unified_model;
+        }
       }
+      break;
+
+    case spv::OpImageTexelPointer:
+      // These can only be used for atomic ops.
+      _used_caps |= C_image_load_store | C_image_atomic;
       break;
 
     case spv::OpImageRead:
     case spv::OpImageWrite:
+    case spv::OpImageSparseRead:
       _used_caps |= C_image_load_store;
       break;
 
     case spv::OpImageSampleExplicitLod:
     case spv::OpImageSampleProjExplicitLod:
       if (stage != Stage::vertex) {
-        // TODO: check grad
         _used_caps |= C_texture_lod;
       }
       // fall through
@@ -246,18 +396,20 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       if (stage == Stage::vertex) {
         _used_caps |= C_vertex_texture;
       }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
       break;
 
     case spv::OpImageSampleDrefExplicitLod:
     case spv::OpImageSampleProjDrefExplicitLod:
       if (stage != Stage::vertex) {
-        // TODO: check grad
         _used_caps |= C_texture_lod;
       }
       // fall through
     case spv::OpImageSampleDrefImplicitLod:
     case spv::OpImageSampleProjDrefImplicitLod:
-      _used_caps |= C_sampler_shadow;
+      _used_caps |= C_shadow_samplers;
 
       {
         const Definition &sampler_def = writer.get_definition(op.args[2]);
@@ -272,16 +424,42 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       if (stage == Stage::vertex) {
         _used_caps |= C_vertex_texture;
       }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
       break;
 
     case spv::OpImageFetch:
+      _used_caps |= C_unified_model;
+      break;
+
     case spv::OpImageQuerySizeLod:
     case spv::OpImageQuerySize:
-      _used_caps |= C_texture_fetch;
+      {
+        const Definition &image_def = writer.get_definition(op.args[2]);
+        if (image_def._type != nullptr && image_def._type->as_image() != nullptr) {
+          _used_caps |= C_image_query_size;
+        } else {
+          _used_caps |= C_texture_query_size;
+        }
+      }
       break;
 
     case spv::OpImageGather:
-      _used_caps |= C_texture_gather;
+    case spv::OpImageSparseGather:
+      {
+        const Definition &component = writer.get_definition(op.args[4]);
+        if (component._dtype == DT_constant && component._constant == 0) {
+          _used_caps |= C_texture_gather_red;
+        } else {
+          _used_caps |= C_texture_gather_any;
+        }
+      }
+      break;
+
+    case spv::OpImageDrefGather:
+    case spv::OpImageSparseDrefGather:
+      _used_caps |= C_texture_gather_any;
       break;
 
     case spv::OpImageQueryLod:
@@ -300,9 +478,25 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       _used_caps |= C_bit_encoding;
       break;
 
+    case spv::OpConvertFToU:
+    case spv::OpConvertUToF:
+    case spv::OpUConvert:
+    case spv::OpUDiv:
+    case spv::OpUMod:
+    case spv::OpUMulExtended:
+    case spv::OpUGreaterThan:
+    case spv::OpUGreaterThanEqual:
+    case spv::OpULessThan:
+    case spv::OpULessThanEqual:
+    case spv::OpShiftRightLogical:
+      _used_caps |= C_unified_model;
+      if (op.opcode != spv::OpUMulExtended) {
+        break;
+      }
+      // fall through
+
     case spv::OpIAddCarry:
     case spv::OpISubBorrow:
-    case spv::OpUMulExtended:
     case spv::OpSMulExtended:
       _used_caps |= C_extended_arithmetic;
       break;
@@ -314,6 +508,12 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
     case spv::OpDPdyCoarse:
     case spv::OpFwidthCoarse:
       _used_caps |= C_derivative_control;
+      // fall through
+
+    case spv::OpDPdx:
+    case spv::OpDPdy:
+    case spv::OpFwidth:
+      _used_caps |= C_standard_derivatives;
       break;
 
     default:
@@ -341,10 +541,12 @@ get_ir() const {
 
 /**
  * Links the stage with the given previous stage, by matching up its inputs with
- * the outputs of the previous stage and assigning locations.
+ * the outputs of the previous stage.  Rather than reassigning the locations
+ * directly, this method just returns the location remappings that need to be
+ * made, or returns false if the stages cannot be linked.
  */
 bool ShaderModuleSpirV::
-link_inputs(const ShaderModule *previous) {
+link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const {
   if (!previous->is_of_type(ShaderModuleSpirV::get_class_type())) {
     return false;
   }
@@ -352,11 +554,9 @@ link_inputs(const ShaderModule *previous) {
     return false;
   }
 
-  pmap<int, int> location_remap;
-
   ShaderModuleSpirV *spv_prev = (ShaderModuleSpirV *)previous;
 
-  for (Variable &input : _inputs) {
+  for (const Variable &input : _inputs) {
     int i = spv_prev->find_output(input.name);
     if (i < 0) {
       shader_cat.error()
@@ -374,14 +574,10 @@ link_inputs(const ShaderModule *previous) {
     }
 
     if (!input.has_location() || output.get_location() != input.get_location()) {
-      location_remap[input.get_location()] = output.get_location();
-      input._location = output.get_location();
+      remap[input.get_location()] = output.get_location();
     }
   }
 
-  if (!location_remap.empty()) {
-    remap_locations(spv::StorageClassInput, location_remap);
-  }
   return true;
 }
 
@@ -390,7 +586,25 @@ link_inputs(const ShaderModule *previous) {
  * not included in the map remain untouched.
  */
 void ShaderModuleSpirV::
-remap_parameter_locations(pmap<int, int> &locations) {
+remap_input_locations(const pmap<int, int> &locations) {
+  remap_locations(spv::StorageClassInput, locations);
+
+  for (Variable &input : _inputs) {
+    if (input.has_location()) {
+      pmap<int, int>::const_iterator it = locations.find(input.get_location());
+      if (it != locations.end()) {
+        input._location = it->second;
+      }
+    }
+  }
+}
+
+/**
+ * Remaps parameters with a given location to a given other location.  Locations
+ * not included in the map remain untouched.
+ */
+void ShaderModuleSpirV::
+remap_parameter_locations(const pmap<int, int> &locations) {
   remap_locations(spv::StorageClassUniformConstant, locations);
 
   // If we extracted out the parameters, replace the locations there as well.
@@ -726,7 +940,8 @@ get_definition(uint32_t id) const {
 }
 
 /**
- * Returns a mutable definition by its identifier.
+ * Returns a mutable definition by its identifier.  May invalidate existing
+ * definition references.
  */
 ShaderModuleSpirV::Definition &ShaderModuleSpirV::InstructionWriter::
 modify_definition(uint32_t id) {
@@ -907,6 +1122,29 @@ remove_unused_variables() {
     Instruction op = *it;
 
     switch (op.opcode) {
+    case spv::OpEntryPoint:
+      {
+        // Skip the string literal by skipping words until we have a zero byte.
+        uint32_t i = 2;
+        while (i < op.nargs
+            && (op.args[i] & 0x000000ff) != 0
+            && (op.args[i] & 0x0000ff00) != 0
+            && (op.args[i] & 0x00ff0000) != 0
+            && (op.args[i] & 0xff000000) != 0) {
+          ++i;
+        }
+        ++i;
+        // Remove the deleted IDs from the entry point interface.
+        while (i < (*it).nargs) {
+          if (delete_ids.count((*it).args[i])) {
+            it = _instructions.erase_arg(it, i);
+          } else {
+            ++i;
+          }
+        }
+      }
+      break;
+
     case spv::OpName:
     case spv::OpMemberName:
     case spv::OpDecorate:
@@ -921,6 +1159,7 @@ remove_unused_variables() {
     case spv::OpVariable:
       if (op.nargs >= 2 && delete_ids.count(op.args[1])) {
         it = _instructions.erase(it);
+        continue;
       }
       break;
 
@@ -928,12 +1167,15 @@ remove_unused_variables() {
     case spv::OpAccessChain:
     case spv::OpInBoundsAccessChain:
     case spv::OpPtrAccessChain:
+    case spv::OpInBoundsPtrAccessChain:
     case spv::OpCopyObject:
     case spv::OpBitcast:
+    case spv::OpCopyLogical:
       // Delete these uses of unused variable
       if (delete_ids.count(op.args[2])) {
         delete_ids.insert(op.args[1]);
         it = _instructions.erase(it);
+        continue;
       }
       break;
 
@@ -954,10 +1196,11 @@ flatten_struct(uint32_t type_id) {
   const ShaderType::Struct *struct_type;
   DCAST_INTO_V(struct_type, _defs[type_id]._type);
 
+  // Contains the ID of the struct type, variable, and any dependencies.
   pset<uint32_t> deleted_ids;
 
-  // Maps access chains accessing struct members to the created variable IDs for
-  // that struct member.
+  // Maps access chains accessing struct members to the created variable IDs
+  // for that struct member.
   pmap<uint32_t, uint32_t> deleted_access_chains;
 
   // Collect type pointers that we have to create.
@@ -1045,6 +1288,7 @@ flatten_struct(uint32_t type_id) {
     case spv::OpAccessChain:
     case spv::OpInBoundsAccessChain:
     case spv::OpPtrAccessChain:
+    case spv::OpInBoundsPtrAccessChain:
       if (deleted_ids.count(op.args[2])) {
         uint32_t index = _defs[op.args[3]]._constant;
         if (op.nargs > 4) {
@@ -1127,6 +1371,9 @@ flatten_struct(uint32_t type_id) {
     case spv::OpAtomicOr:
     case spv::OpAtomicXor:
     case spv::OpAtomicFlagTestAndSet:
+    case spv::OpAtomicFMinEXT:
+    case spv::OpAtomicFMaxEXT:
+    case spv::OpAtomicFAddEXT:
       // If this triggers, the struct is being loaded into another variable,
       // which means we can't unwrap this (for now).
       nassertv(!deleted_ids.count(op.args[2]));
@@ -1139,8 +1386,8 @@ flatten_struct(uint32_t type_id) {
       }
       else if (deleted_ids.count(_defs[op.args[1]]._origin_id)) {
         // Origin points to deleted variable, change to proper variable.
-        Definition &def = modify_definition(op.args[1]);
         const Definition &from = get_definition(op.args[2]);
+        Definition &def = modify_definition(op.args[1]);
         def._origin_id = from._origin_id;
       }
       mark_used(op.args[1]);
@@ -1195,18 +1442,13 @@ flatten_struct(uint32_t type_id) {
       else if (deleted_access_chains.count(op.args[2])) {
         op.args[2] = deleted_access_chains[op.args[2]];
 
-        // Copy the type since the storage class may have changed.
-        op.args[0] = get_definition(op.args[2])._type_id;
-
         Definition &def = modify_definition(op.args[1]);
         def._origin_id = op.args[2];
-        def._type_id = op.args[0];
-      }
-      break;
+        def._type_id = get_definition(op.args[2])._type_id;
 
-    case spv::OpSelect:
-      mark_used(op.args[3]);
-      mark_used(op.args[4]);
+        // Copy the type since the storage class may have changed.
+        op.args[0] = def._type_id;
+      }
       break;
 
     case spv::OpBitcast:
@@ -1221,6 +1463,28 @@ flatten_struct(uint32_t type_id) {
       if (_defs[op.args[0]]._dtype != DT_type_pointer) {
         mark_used(op.args[1]);
       }
+      break;
+
+    case spv::OpSelect:
+      mark_used(op.args[3]);
+      mark_used(op.args[4]);
+      break;
+
+    case spv::OpReturnValue:
+      mark_used(op.args[0]);
+      break;
+
+    case spv::OpCopyLogical:
+      // Can't copy pointers using this instruction.
+      nassertv(!deleted_ids.count(op.args[2]));
+      nassertv(!deleted_access_chains.count(op.args[2]));
+      break;
+
+    case spv::OpPtrEqual:
+    case spv::OpPtrNotEqual:
+    case spv::OpPtrDiff:
+      mark_used(op.args[2]);
+      mark_used(op.args[3]);
       break;
 
     default:
@@ -1589,6 +1853,8 @@ set_variable_type(uint32_t variable_id, const ShaderType *type) {
     case spv::OpAtomicAnd:
     case spv::OpAtomicOr:
     case spv::OpAtomicXor:
+    case spv::OpAtomicFMinEXT:
+    case spv::OpAtomicFMaxEXT:
     case spv::OpAtomicFAddEXT:
       nassertd(inserted) break;
 
@@ -1612,6 +1878,27 @@ set_variable_type(uint32_t variable_id, const ShaderType *type) {
         pointer_ids.insert(op.args[1]);
       }
       if (object_ids.count(op.args[2])) {
+        op.args[0] = type_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_id;
+        object_ids.insert(op.args[1]);
+      }
+      break;
+
+    case spv::OpSelect:
+      nassertd(inserted) break;
+
+      // The result type for this op must be the same for both operands.
+      nassertd(pointer_ids.count(op.args[3]) == pointer_ids.count(op.args[4]));
+      nassertd(object_ids.count(op.args[3]) == object_ids.count(op.args[4]));
+
+      if (pointer_ids.count(op.args[3])) {
+        op.args[0] = type_pointer_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_pointer_id;
+        pointer_ids.insert(op.args[1]);
+      }
+      if (object_ids.count(op.args[3])) {
         op.args[0] = type_id;
         _defs[op.args[1]]._type = type;
         _defs[op.args[1]]._type_id = type_id;
@@ -1764,7 +2051,7 @@ r_define_type_pointer(InstructionIterator &it, const ShaderType *type, spv::Stor
   type_pointer_id = _instructions.allocate_id();
   record_type_pointer(type_pointer_id, storage_class, type_id);
 
-  _instructions.insert(it, spv::OpTypePointer,
+  it = _instructions.insert(it, spv::OpTypePointer,
     {type_pointer_id, (uint32_t)storage_class, type_id});
   ++it;
 
@@ -1902,17 +2189,16 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
 
     uint32_t nargs = 8;
     switch (image_type->get_access()) {
-    case ShaderType::Image::Access::unknown:
-      break;
-    case ShaderType::Image::Access::read_only:
+    case ShaderType::Access::none:
+    case ShaderType::Access::read_only:
       args[8] = spv::AccessQualifierReadOnly;
       ++nargs;
       break;
-    case ShaderType::Image::Access::write_only:
+    case ShaderType::Access::write_only:
       args[8] = spv::AccessQualifierWriteOnly;
       ++nargs;
       break;
-    case ShaderType::Image::Access::read_write:
+    case ShaderType::Access::read_write:
       args[8] = spv::AccessQualifierReadWrite;
       ++nargs;
       break;
@@ -2232,23 +2518,29 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         return;
       }
 
-      ShaderType::Image::Access access = ShaderType::Image::Access::unknown;
+      ShaderType::Access access = ShaderType::Access::read_write;
       if (op.nargs > 8) {
         switch ((spv::AccessQualifier)op.args[8]) {
         case spv::AccessQualifierReadOnly:
-          access = ShaderType::Image::Access::read_only;
+          access = ShaderType::Access::read_only;
           break;
         case spv::AccessQualifierWriteOnly:
-          access = ShaderType::Image::Access::write_only;
+          access = ShaderType::Access::write_only;
           break;
         case spv::AccessQualifierReadWrite:
-          access = ShaderType::Image::Access::read_write;
+          access = ShaderType::Access::read_write;
           break;
         default:
           shader_cat.error()
             << "Invalid access qualifier in OpTypeImage instruction.\n";
           break;
         }
+      }
+      if (_defs[op.args[0]]._flags & DF_non_writable) {
+        access = (access & ShaderType::Access::read_only);
+      }
+      if (_defs[op.args[0]]._flags & DF_non_readable) {
+        access = (access & ShaderType::Access::write_only);
       }
 
       record_type(op.args[0], ShaderType::register_type(
@@ -2289,6 +2581,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpTypeStruct:
     {
       Definition &struct_def = _defs[op.args[0]];
+      int access_flags = DF_non_writable | DF_non_readable;
       ShaderType::Struct type;
       for (size_t i = 0; i < op.nargs - 1; ++i) {
         uint32_t member_type_id = op.args[i + 1];
@@ -2305,13 +2598,42 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
           // Ignore built-in member.
           continue;
         }
-        if (member_def._offset >= 0) {
-          type.add_member(_defs[member_type_id]._type, member_def._name, (uint32_t)member_def._offset);
-        } else {
-          type.add_member(_defs[member_type_id]._type, member_def._name);
+
+        const ShaderType *member_type = _defs[member_type_id]._type;
+        if (member_def._flags & (DF_non_writable | DF_non_readable)) {
+          // If an image member has the readonly/writeonly qualifiers,
+          // then we'll inject those back into the type.
+          if (const ShaderType::Image *image = member_type->as_image()) {
+            ShaderType::Access access = image->get_access();
+            if (member_def._flags & DF_non_writable) {
+              access = (access & ShaderType::Access::read_only);
+            }
+            if (member_def._flags & DF_non_readable) {
+              access = (access & ShaderType::Access::write_only);
+            }
+            if (access != image->get_access()) {
+              member_type = ShaderType::register_type(ShaderType::Image(
+                image->get_texture_type(),
+                image->get_sampled_type(),
+                access));
+            }
+          }
         }
+        if (member_def._offset >= 0) {
+          type.add_member(member_type, member_def._name, (uint32_t)member_def._offset);
+        } else {
+          type.add_member(member_type, member_def._name);
+        }
+
+        // If any member is writable, the struct shan't be marked readonly.
+        access_flags &= member_def._flags;
       }
       record_type(op.args[0], ShaderType::register_type(std::move(type)));
+
+      // If all struct members are flagged readonly/writeonly, we tag the type
+      // so as well, since glslang doesn't decorate an SSBO in its entirety as
+      // readonly/writeonly properly (it applies it to all members instead)
+      _defs[op.args[0]]._flags |= access_flags;
     }
     break;
 
@@ -2324,10 +2646,23 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     record_constant(op.args[1], op.args[0], op.args + 2, op.nargs - 2);
     break;
 
+  case spv::OpConstantNull:
+    if (current_function_id != 0) {
+      shader_cat.error()
+        << "OpConstantNull" << " may not occur within a function!\n";
+      return;
+    }
+    record_constant(op.args[1], op.args[0], nullptr, 0);
+    break;
+
+  case spv::OpConstantComposite:
+  case spv::OpSpecConstantComposite:
+    modify_definition(op.args[1])._flags |= DF_constant_expression;
+    break;
+
   case spv::OpSpecConstantTrue:
   case spv::OpSpecConstantFalse:
   case spv::OpSpecConstant:
-    // A specialization constant.
     record_spec_constant(op.args[1], op.args[0]);
     break;
 
@@ -2424,6 +2759,9 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpAtomicOr:
   case spv::OpAtomicXor:
   case spv::OpAtomicFlagTestAndSet:
+  case spv::OpAtomicFMinEXT:
+  case spv::OpAtomicFMaxEXT:
+  case spv::OpAtomicFAddEXT:
     record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
 
     // A load from the pointer is enough for us to consider it "used", for now.
@@ -2437,25 +2775,53 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     mark_used(op.args[0]);
     break;
 
-  case spv::OpAccessChain:
-  case spv::OpInBoundsAccessChain:
-  case spv::OpPtrAccessChain:
-  case spv::OpCopyObject:
-    // Record the access chain or pointer copy, so that as soon as something is
-    // loaded through them we can transitively mark everything as "used".
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
-    break;
-
   case spv::OpCopyMemory:
   case spv::OpCopyMemorySized:
     mark_used(op.args[0]);
     mark_used(op.args[1]);
     break;
 
+  case spv::OpAccessChain:
+  case spv::OpInBoundsAccessChain:
+  case spv::OpPtrAccessChain:
+  case spv::OpInBoundsPtrAccessChain:
+    // Record the access chain or pointer copy, so that as soon as something is
+    // loaded through them we can transitively mark everything as "used".
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+
+    // If one of the indices (including the base element for OpPtrAccessChain)
+    // isn't a constant expression, we mark the variable as dynamically-indexed.
+    for (size_t i = 3; i < op.nargs; ++i) {
+      if ((_defs[op.args[i]]._flags & DF_constant_expression) == 0) {
+        const Definition &def = get_definition(op.args[1]);
+        nassertv(def._origin_id != 0);
+        _defs[def._origin_id]._flags |= DF_dynamically_indexed;
+        break;
+      }
+    }
+    break;
+
+  case spv::OpArrayLength:
+  case spv::OpConvertPtrToU:
+    mark_used(op.args[2]);
+    break;
+
   case spv::OpDecorate:
     switch ((spv::Decoration)op.args[1]) {
+    case spv::DecorationBufferBlock:
+      _defs[op.args[0]]._flags |= DF_buffer_block;
+      break;
+
     case spv::DecorationBuiltIn:
       _defs[op.args[0]]._builtin = (spv::BuiltIn)op.args[2];
+      break;
+
+    case spv::DecorationNonWritable:
+      _defs[op.args[0]]._flags |= DF_non_writable;
+      break;
+
+    case spv::DecorationNonReadable:
+      _defs[op.args[0]]._flags |= DF_non_readable;
       break;
 
     case spv::DecorationLocation:
@@ -2481,8 +2847,30 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       _defs[op.args[0]].modify_member(op.args[1])._builtin = (spv::BuiltIn)op.args[3];
       break;
 
+    case spv::DecorationNonWritable:
+      _defs[op.args[0]].modify_member(op.args[1])._flags |= DF_non_writable;
+      break;
+
+    case spv::DecorationNonReadable:
+      _defs[op.args[0]].modify_member(op.args[1])._flags |= DF_non_readable;
+      break;
+
+    case spv::DecorationLocation:
+      _defs[op.args[0]].modify_member(op.args[1])._location = op.args[3];
+      break;
+
+    case spv::DecorationBinding:
+      shader_cat.error()
+        << "Invalid " << "binding" << " decoration on struct member\n";
+      break;
+
+    case spv::DecorationDescriptorSet:
+      shader_cat.error()
+        << "Invalid " << "set" << " decoration on struct member\n";
+      break;
+
     case spv::DecorationOffset:
-      _defs[op.args[0]].modify_member(op.args[1])._offset = (spv::BuiltIn)op.args[3];
+      _defs[op.args[0]].modify_member(op.args[1])._offset = op.args[3];
       break;
 
     default:
@@ -2498,9 +2886,15 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     }
     break;
 
-  case spv::OpArrayLength:
-  case spv::OpConvertPtrToU:
-    mark_used(op.args[2]);
+  case spv::OpCopyObject:
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    // fall through
+
+  case spv::OpCompositeExtract:
+    // Composite types are used for some arithmetic ops.
+    if (_defs[op.args[2]]._flags & DF_constant_expression) {
+      _defs[op.args[1]]._flags |= DF_constant_expression;
+    }
     break;
 
   case spv::OpImageSampleImplicitLod:
@@ -2543,13 +2937,6 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     }
     break;
 
-  case spv::OpSelect:
-    // This can in theory operate on pointers, which is why we handle this
-    //mark_used(op.args[2]);
-    mark_used(op.args[3]);
-    mark_used(op.args[4]);
-    break;
-
   case spv::OpBitcast:
     record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
 
@@ -2557,6 +2944,93 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     if (_defs[op.args[0]]._dtype != DT_type_pointer) {
       mark_used(op.args[1]);
     }
+    // fall through, counts as unary arithmetic
+  case spv::OpConvertFToU:
+  case spv::OpConvertFToS:
+  case spv::OpConvertSToF:
+  case spv::OpConvertUToF:
+  case spv::OpQuantizeToF16:
+  case spv::OpSatConvertSToU:
+  case spv::OpSatConvertUToS:
+  case spv::OpConvertUToPtr:
+  case spv::OpSNegate:
+  case spv::OpFNegate:
+  case spv::OpAny:
+  case spv::OpAll:
+  case spv::OpIsNan:
+  case spv::OpIsInf:
+  case spv::OpIsFinite:
+  case spv::OpIsNormal:
+  case spv::OpSignBitSet:
+  case spv::OpNot:
+    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0) {
+      _defs[op.args[1]]._flags |= DF_constant_expression;
+    }
+    break;
+
+  // Binary arithmetic operators
+  case spv::OpIAdd:
+  case spv::OpFAdd:
+  case spv::OpISub:
+  case spv::OpFSub:
+  case spv::OpIMul:
+  case spv::OpFMul:
+  case spv::OpUDiv:
+  case spv::OpSDiv:
+  case spv::OpFDiv:
+  case spv::OpUMod:
+  case spv::OpSRem:
+  case spv::OpSMod:
+  case spv::OpFRem:
+  case spv::OpFMod:
+  case spv::OpVectorTimesScalar:
+  case spv::OpMatrixTimesScalar:
+  case spv::OpVectorTimesMatrix:
+  case spv::OpMatrixTimesVector:
+  case spv::OpMatrixTimesMatrix:
+  case spv::OpOuterProduct:
+  case spv::OpDot:
+  case spv::OpIAddCarry:
+  case spv::OpISubBorrow:
+  case spv::OpUMulExtended:
+  case spv::OpSMulExtended:
+  case spv::OpShiftRightLogical:
+  case spv::OpShiftRightArithmetic:
+  case spv::OpShiftLeftLogical:
+  case spv::OpBitwiseOr:
+  case spv::OpBitwiseXor:
+  case spv::OpBitwiseAnd:
+    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0 &&
+        (_defs[op.args[3]]._flags & DF_constant_expression) != 0) {
+      _defs[op.args[1]]._flags |= DF_constant_expression;
+    }
+    break;
+
+  case spv::OpSelect:
+    // This can in theory operate on pointers, which is why we handle this
+    //mark_used(op.args[2]);
+    mark_used(op.args[3]);
+    mark_used(op.args[4]);
+
+    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0 &&
+        (_defs[op.args[3]]._flags & DF_constant_expression) != 0 &&
+        (_defs[op.args[4]]._flags & DF_constant_expression) != 0) {
+      _defs[op.args[1]]._flags |= DF_constant_expression;
+    }
+    break;
+
+  case spv::OpReturnValue:
+    // A pointer can be returned when certain caps are present, so track it.
+    mark_used(op.args[0]);
+    break;
+
+  case spv::OpPtrEqual:
+  case spv::OpPtrNotEqual:
+  case spv::OpPtrDiff:
+    // Consider a variable "used" if its pointer value is being compared, to be
+    // on the safe side.
+    mark_used(op.args[2]);
+    mark_used(op.args[3]);
     break;
 
   default:
@@ -2594,10 +3068,12 @@ record_type(uint32_t id, const ShaderType *type) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type || type_def._dtype == DT_type_pointer);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_type_pointer;
   def._type = type_def._type;
   def._storage_class = storage_class;
@@ -2609,6 +3085,9 @@ record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_pointer_def = get_definition(type_pointer_id);
   if (type_pointer_def._dtype != DT_type_pointer && type_pointer_def._type_id != 0) {
     shader_cat.error()
@@ -2624,7 +3103,12 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
     return;
   }
 
-  Definition &def = modify_definition(id);
+  // In older versions of SPIR-V, an SSBO was defined using BufferBlock.
+  if (storage_class == spv::StorageClassUniform &&
+      (type_def._flags & DF_buffer_block) != 0) {
+    storage_class = spv::StorageClassStorageBuffer;
+  }
+
   def._dtype = DT_variable;
   def._type = type_def._type;
   def._type_id = type_pointer_id;
@@ -2632,22 +3116,48 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
   def._origin_id = id;
   def._function_id = function_id;
 
-  if (shader_cat.is_debug() && storage_class == spv::StorageClassUniformConstant) {
-    shader_cat.debug()
-      << "Defined uniform " << id << ": " << def._name;
-
-    if (def.has_location()) {
-      shader_cat.debug(false) << " (location " << def._location << ")";
-    }
-
-    shader_cat.debug(false) << " with ";
-
-    if (def._type != nullptr) {
-      shader_cat.debug(false) << "type " << *def._type << "\n";
-    } else {
-      shader_cat.debug(false) << "unknown type\n";
+  if (def._flags & (DF_non_writable | DF_non_readable)) {
+    // If an image variable has the readonly/writeonly qualifiers, then we'll
+    // inject those back into the type.
+    if (const ShaderType::Image *image = def._type->as_image()) {
+      ShaderType::Access access = image->get_access();
+      if (def._flags & DF_non_writable) {
+        access = (access & ShaderType::Access::read_only);
+      }
+      if (def._flags & DF_non_readable) {
+        access = (access & ShaderType::Access::write_only);
+      }
+      if (access != image->get_access()) {
+        def._type = ShaderType::register_type(ShaderType::Image(
+          image->get_texture_type(),
+          image->get_sampled_type(),
+          access));
+      }
     }
   }
+
+#ifndef NDEBUG
+  if (storage_class == spv::StorageClassUniformConstant && shader_cat.is_debug()) {
+    std::ostream &out = shader_cat.debug()
+      << "Defined uniform " << id;
+
+    if (!def._name.empty()) {
+      out << ": " << def._name;
+    }
+
+    if (def.has_location()) {
+      out << " (location " << def._location << ")";
+    }
+
+    out << " with ";
+
+    if (def._type != nullptr) {
+      out << "type " << *def._type << "\n";
+    } else {
+      out << "unknown type\n";
+    }
+  }
+#endif
 }
 
 /**
@@ -2655,10 +3165,12 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type || type_def._dtype == DT_type_pointer);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_function_parameter;
   def._type = type_def._type;
   def._origin_id = id;
@@ -2672,18 +3184,16 @@ record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords) {
-  const Definition &type_def = get_definition(type_id);
-  nassertv(type_def._dtype == DT_type);
-
+  // Call modify_definition first, because it may invalidate references
   Definition &def = modify_definition(id);
+
+  const Definition &type_def = get_definition(type_id);
+
   def._dtype = DT_constant;
   def._type_id = type_id;
-  def._type = type_def._type;
-  if (nwords > 0) {
-    def._constant = words[0];
-  } else {
-    def._constant = 0;
-  }
+  def._type = (type_def._dtype == DT_type) ? type_def._type : nullptr;
+  def._constant = (nwords > 0) ? words[0] : 0;
+  def._flags |= DF_constant_expression;
 }
 
 /**
@@ -2701,9 +3211,11 @@ record_ext_inst_import(uint32_t id, const char *import) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_function(uint32_t id, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_function;
   def._type = type_def._type;
   def._type_id = type_id;
@@ -2719,10 +3231,12 @@ record_function(uint32_t id, uint32_t type_id) {
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   const Definition &from_def = get_definition(from_id);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_temporary;
   def._type = type_def._type;
   def._type_id = type_id;
@@ -2737,13 +3251,16 @@ record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t funct
  */
 void ShaderModuleSpirV::InstructionWriter::
 record_spec_constant(uint32_t id, uint32_t type_id) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type);
 
-  Definition &def = modify_definition(id);
   def._dtype = DT_spec_constant;
   def._type_id = type_id;
   def._type = type_def._type;
+  def._flags |= DF_constant_expression;
 }
 
 /**

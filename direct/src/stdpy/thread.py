@@ -14,7 +14,7 @@ __all__ = [
     'force_yield', 'consider_yield',
     'forceYield', 'considerYield',
     'TIMEOUT_MAX'
-    ]
+]
 
 from panda3d import core
 import sys
@@ -85,16 +85,21 @@ class LockType:
     def __exit__(self, t, v, tb):
         self.release()
 
+
 # Helper to generate new thread names
 _counter = 0
+
+
 def _newname(template="Thread-%d"):
     global _counter
     _counter = _counter + 1
     return template % _counter
 
+
 _threads = {}
 _nextThreadId = 0
 _threadsLock = core.Mutex('thread._threadsLock')
+
 
 def start_new_thread(function, args, kwargs = {}, name = None):
     def threadFunc(threadId, function = function, args = args, kwargs = kwargs):
@@ -126,6 +131,7 @@ def start_new_thread(function, args, kwargs = {}, name = None):
     finally:
         _threadsLock.release()
 
+
 def _add_thread(thread, wrapper):
     """ Adds the indicated core.Thread object, with the indicated Python
     wrapper, to the thread list.  Returns the new thread ID. """
@@ -142,6 +148,7 @@ def _add_thread(thread, wrapper):
 
     finally:
         _threadsLock.release()
+
 
 def _get_thread_wrapper(thread, wrapperClass):
     """ Returns the thread wrapper for the indicated thread.  If there
@@ -179,6 +186,7 @@ def _get_thread_wrapper(thread, wrapperClass):
 
         finally:
             _threadsLock.release()
+
 
 def _get_thread_locals(thread, i):
     """ Returns the locals dictionary for the indicated thread.  If
@@ -237,14 +245,18 @@ def interrupt_main():
     # TODO.
     pass
 
+
 def exit():
     raise SystemExit
+
 
 def allocate_lock():
     return LockType()
 
+
 def get_ident():
     return core.Thread.getCurrentThread().this
+
 
 def stack_size(size = 0):
     raise error

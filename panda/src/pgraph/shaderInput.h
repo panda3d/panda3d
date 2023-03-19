@@ -49,9 +49,7 @@ PUBLISHED:
   static const ShaderInput &get_blank();
   INLINE explicit ShaderInput(CPT_InternalName name, int priority=0);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(explicit ShaderInput(CPT_InternalName name, PyObject *value, int priority=0));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(explicit ShaderInput(CPT_InternalName name, PyObject *value, int priority=0));
 
 public:
   INLINE ShaderInput(CPT_InternalName name, Texture *tex, int priority=0);

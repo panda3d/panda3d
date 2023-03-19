@@ -455,6 +455,19 @@ add_member(const ShaderType *type, std::string name, uint32_t offset) {
 }
 
 /**
+ * Returns true if this type is or contains any opaque type.
+ */
+bool ShaderType::Struct::
+contains_opaque_type() const {
+  for (const Member &member : _members) {
+    if (member.type != nullptr && member.type->contains_opaque_type()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Struct::
@@ -628,6 +641,15 @@ unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
 }
 
 /**
+ * Returns true if this type is or contains any opaque type.
+ */
+bool ShaderType::Array::
+contains_opaque_type() const {
+  nassertr_always(_element_type != nullptr, false);
+  return _element_type->contains_opaque_type();
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Array::
@@ -764,6 +786,12 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::Image::
 output(std::ostream &out) const {
+  if ((_access & Access::write_only) == Access::none) {
+    out << "readonly ";
+  }
+  if ((_access & Access::read_only) == Access::none) {
+    out << "writeonly ";
+  }
   if (_sampled_type == ST_int) {
     out << 'i';
   } else if (_sampled_type == ST_uint) {
@@ -789,6 +817,14 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_access > other_image._access)
        - (_access < other_image._access);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Image::
+contains_scalar_type(ScalarType type) const {
+  return _sampled_type == type;
 }
 
 /**
@@ -882,6 +918,14 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_shadow > other_sampled_image._shadow)
        - (_shadow < other_sampled_image._shadow);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::SampledImage::
+contains_scalar_type(ScalarType type) const {
+  return _sampled_type == type;
 }
 
 /**

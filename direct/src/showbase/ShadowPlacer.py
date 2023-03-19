@@ -10,7 +10,14 @@ __all__ = ['ShadowPlacer']
 
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.directnotify import DirectNotifyGlobal
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    CollisionHandlerFloor,
+    CollisionNode,
+    CollisionRay,
+    CollisionTraverser,
+    NodePath,
+)
 from . import DirectObject
 
 class ShadowPlacer(DirectObject.DirectObject):

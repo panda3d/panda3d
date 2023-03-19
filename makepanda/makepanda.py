@@ -836,6 +836,7 @@ if (COMPILER == "MSVC"):
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/MachineIndependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/GenericCodeGen.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/SPIRV.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang-default-resource-limits.lib")
 
     IncDirectory("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/include")
     LibName("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/lib/SPIRV-Tools.lib")
@@ -923,8 +924,8 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("VULKAN",    "",          ("vulkan"), "vulkan/vulkan.h")
-    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
-    SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
+    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
@@ -1028,6 +1029,7 @@ if (COMPILER=="GCC"):
         LibName("GLSLANG", "-Wl,--exclude-libs,libOSDependent.a")
         LibName("GLSLANG", "-Wl,--exclude-libs,libOGLCompiler.a")
         LibName("GLSLANG", "-Wl,--exclude-libs,libHLSL.a")
+        LibName("GLSLANG", "-Wl,--exclude-libs,libglslang-default-resource-limits.a")
 
         LibName("SPIRV-TOOLS", "-Wl,--exclude-libs,libSPIRV-Tools.a")
         LibName("SPIRV-TOOLS", "-Wl,--exclude-libs,libSPIRV-Tools-opt.a")
@@ -6195,6 +6197,8 @@ if PkgSkip("PYTHON") == 0:
         LibName('DEPLOYSTUB', "-Wl,--disable-new-dtags,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
+    elif GetTarget() == 'darwin':
+        LibName('DEPLOYSTUB', "-Wl,-sectcreate,__PANDA,__panda,/dev/null")
 
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':

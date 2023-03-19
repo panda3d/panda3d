@@ -237,6 +237,7 @@ StageNode(const TextureStage *stage, unsigned int implicit_sort, int override) :
   // with it properly.
   _stage((TextureStage *)stage),
   _has_sampler(false),
+  _ff_tc_index(0),
   _implicit_sort(implicit_sort),
   _override(override)
 {

@@ -37,7 +37,7 @@
 #include "cullTraverser.h"
 #include "callbackObject.h"
 #include "luse.h"
-#include "epvector.h"
+#include "small_vector.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -197,7 +197,7 @@ public:
     LVecBase4i _pixels;
     LVecBase4i _pixels_i;
   };
-  typedef epvector<Region> Regions;
+  typedef small_vector<Region> Regions;
 
 private:
   class CData;

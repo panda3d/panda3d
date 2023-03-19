@@ -5,7 +5,15 @@ that can be used during widget construction
 
 __all__ = []
 
-from panda3d.core import *
+from panda3d.core import (
+    KeyboardButton,
+    MouseButton,
+    PGButton,
+    PGEntry,
+    PGFrameStyle,
+    PGSliderBar,
+    TextNode,
+)
 
 defaultFont = None
 defaultFontFunc = TextNode.getDefaultFont
@@ -138,11 +146,9 @@ def setDefaultFontFunc(newFontFunc):
     defaultFontFunc = newFontFunc
 
 def getDefaultDialogGeom():
-    global defaultDialogGeom
     return defaultDialogGeom
 
 def getDefaultDialogRelief():
-    global defaultDialogRelief
     return defaultDialogRelief
 
 def setDefaultDialogGeom(newDialogGeom, relief=None):

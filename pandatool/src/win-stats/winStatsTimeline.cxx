@@ -620,7 +620,9 @@ additional_window_paint(HDC hdc) {
   SetTextAlign(hdc, TA_LEFT | TA_TOP | TA_NOUPDATECP);
 
   for (const ThreadRow &thread_row : _threads) {
-    draw_thread_label(hdc, thread_row);
+    if (thread_row._visible) {
+      draw_thread_label(hdc, thread_row);
+    }
   }
 }
 

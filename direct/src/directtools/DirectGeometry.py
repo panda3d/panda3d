@@ -1,8 +1,23 @@
-
-from panda3d.core import *
-from .DirectGlobals import *
-from .DirectUtil import *
+from panda3d.core import (
+    CSDefault,
+    GeomNode,
+    LineSegs,
+    Mat4,
+    NodePath,
+    Point3,
+    Quat,
+    VBase3,
+    VBase4,
+    Vec3,
+    composeMatrix,
+    decomposeMatrix,
+    deg2Rad,
+    rad2Deg,
+)
+from .DirectGlobals import Q_EPSILON, UNIT_VEC, ZERO_VEC
+from .DirectUtil import CLAMP
 import math
+
 
 class LineNodePath(NodePath):
     def __init__(self, parent = None, name = None,
@@ -126,12 +141,15 @@ class LineNodePath(NodePath):
 ##
 ## Given a point in space, and a direction, find the point of intersection
 ## of that ray with a plane at the specified origin, with the specified normal
-def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
+
+
+def planeIntersect(lineOrigin, lineDir, planeOrigin, normal):
     t = 0
     offset = planeOrigin - lineOrigin
     t = offset.dot(normal) / lineDir.dot(normal)
     hitPt = lineDir * t
     return hitPt + lineOrigin
+
 
 def getNearProjectionPoint(nodePath):
     # Find the position of the projection of the specified node path
@@ -143,6 +161,7 @@ def getNearProjectionPoint(nodePath):
     else:
         # Object is coplaner with camera, just return something reasonable
         return Point3(0, base.direct.dr.near, 0)
+
 
 def getScreenXY(nodePath):
     # Where does the node path's projection fall on the near plane
@@ -158,12 +177,14 @@ def getScreenXY(nodePath):
     # Return the resulting value
     return screenXY
 
+
 def getCrankAngle(center):
     # Used to compute current angle of mouse (relative to the coa's
     # origin) in screen space
     x = base.direct.dr.mouseX - center[0]
     y = base.direct.dr.mouseY - center[2]
     return 180 + rad2Deg(math.atan2(y, x))
+
 
 def relHpr(nodePath, base, h, p, r):
     # Compute nodePath2newNodePath relative to base coordinate system
@@ -188,6 +209,8 @@ def relHpr(nodePath, base, h, p, r):
     nodePath.setHpr(hpr)
 
 # Quaternion interpolation
+
+
 def qSlerp(startQuat, endQuat, t):
     startQ = Quat(startQuat)
     destQuat = Quat(Quat.identQuat())

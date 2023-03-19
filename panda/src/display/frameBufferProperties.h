@@ -144,10 +144,8 @@ PUBLISHED:
   MAKE_PROPERTY(float_color, get_float_color, set_float_color);
   MAKE_PROPERTY(float_depth, get_float_depth, set_float_depth);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *self, PyObject *state));
 
   // Other.
 

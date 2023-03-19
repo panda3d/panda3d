@@ -1,4 +1,4 @@
-from panda3d.core import *
+from panda3d.core import CardMaker, LineSegs, TextNode, Texture, TransparencyAttrib
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase import ShowBaseGlobal
 

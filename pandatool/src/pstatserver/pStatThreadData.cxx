@@ -39,15 +39,6 @@ PStatThreadData::
 ~PStatThreadData() {
 }
 
-
-/**
- * Returns true if the structure contains no frames, false otherwise.
- */
-bool PStatThreadData::
-is_empty() const {
-  return _frames.empty();
-}
-
 /**
  * Returns the frame number of the most recent frame stored in the data.
  */
@@ -248,6 +239,25 @@ get_history() const {
   return _history;
 }
 
+/**
+ * Given a timestamp representing the time of the latest known frame, removes
+ * any frames older than the configured history.  Returns true if the data is
+ * now empty.
+ */
+bool PStatThreadData::
+prune_history(double time) {
+  double oldest_allowable_time = time - _history;
+  while (!_frames.empty() &&
+         (_frames.front() == nullptr ||
+          _frames.front()->is_time_empty() ||
+          _frames.front()->get_start() < oldest_allowable_time)) {
+    delete _frames.front();
+    _frames.pop_front();
+    _first_frame_number++;
+  }
+
+  return _frames.empty();
+}
 
 /**
  * Makes room for and stores a new frame's worth of data.  Calling this
@@ -261,27 +271,16 @@ void PStatThreadData::
 record_new_frame(int frame_number, PStatFrameData *frame_data) {
   nassertv(frame_data != nullptr);
   nassertv(!frame_data->is_empty());
-  double time = frame_data->get_start();
 
   // First, remove all the old frames that fall outside of our history window.
-  double oldest_allowable_time = time - _history;
-  while (!_frames.empty() &&
-         (_frames.front() == nullptr ||
-          _frames.front()->is_time_empty() ||
-          _frames.front()->get_start() < oldest_allowable_time)) {
-    delete _frames.front();
-    _frames.pop_front();
-    _first_frame_number++;
-  }
-
-  // Now, add enough empty frame definitions to account for the latest frame
+  // Then, add enough empty frame definitions to account for the latest frame
   // number.  This might involve some skips, since we don't guarantee that we
   // get all the frames in order or even at all.
-  if (_frames.empty()) {
+  if (prune_history(frame_data->get_start())) {
     _first_frame_number = frame_number;
     _frames.push_back(nullptr);
-
-  } else {
+  }
+  else {
     while (_first_frame_number + (int)_frames.size() <= frame_number) {
       _frames.push_back(nullptr);
     }

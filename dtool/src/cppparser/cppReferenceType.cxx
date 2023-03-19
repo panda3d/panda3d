@@ -106,6 +106,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPReferenceType::
+is_trivially_copyable() const {
+  return false;
+}
+
+/**
  * Returns true if the type can be constructed using the given argument.
  */
 bool CPPReferenceType::

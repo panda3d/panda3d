@@ -328,6 +328,7 @@ new_frame(int thread_index, int frame_number) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
+  nassertv(pthread != nullptr);
 
   // If we're the main thread, we should exchange control packets with the
   // server.
@@ -428,6 +429,7 @@ add_frame(int thread_index, int frame_number, PStatFrameData &&frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
+  nassertv(pthread != nullptr);
 
   // If we're the main thread, we should exchange control packets with the
   // server.
@@ -456,6 +458,22 @@ add_frame(int thread_index, int frame_number, PStatFrameData &&frame_data) {
 
   enqueue_frame_data(thread_index, frame_number, std::move(frame_data));
   _client->stop(pstats_index, current_thread_index);
+}
+
+/**
+ * Removes a thread from PStats.
+ */
+void PStatClientImpl::
+remove_thread(int thread_index) {
+  nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
+
+  PStatClientControlMessage message;
+  message._type = PStatClientControlMessage::T_expire_thread;
+  message._first_thread_index = thread_index;
+
+  Datagram datagram;
+  message.encode(datagram);
+  _writer.send(datagram, _tcp_connection, true);
 }
 
 /**
@@ -541,6 +559,8 @@ transmit_frame_data(int thread_index, int frame_number,
                     const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
   PStatClient::InternalThread *thread = _client->get_thread_ptr(thread_index);
+  nassertv(thread != nullptr);
+
   if (_is_connected && thread->_is_active) {
 
     // We don't want to send too many packets in a hurry and flood the server.
@@ -680,12 +700,6 @@ send_hello() {
   message._major_version = get_current_pstat_major_version();
   message._minor_version = get_current_pstat_minor_version();
 
-  // The Python profiling feature may send nested start/stop pairs, so requires
-  // a server version capable of dealing with this.
-  if (pstats_python_profiler && message._major_version <= 3) {
-    message._major_version = 3;
-    message._minor_version = std::max(message._minor_version, 1);
-  }
 
   Datagram datagram;
   message.encode(datagram);
@@ -733,7 +747,11 @@ report_new_threads() {
     PStatClient::ThreadPointer *threads =
       (PStatClient::ThreadPointer *)_client->_threads;
     while (_threads_reported < _client->_num_threads) {
-      message._names.push_back(threads[_threads_reported]->_name);
+      if (threads[_threads_reported] != nullptr) {
+        message._names.push_back(threads[_threads_reported]->_name);
+      } else {
+        message._names.push_back(std::string());
+      }
       _threads_reported++;
     }
 

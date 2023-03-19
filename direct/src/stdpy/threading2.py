@@ -202,13 +202,13 @@ class _Condition(_Verbose):
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
-    def _release_save(self):
+    def _release_save(self): # pylint: disable=method-hidden
         self.__lock.release()           # No state to save
 
-    def _acquire_restore(self, x):
+    def _acquire_restore(self, x): # pylint: disable=method-hidden
         self.__lock.acquire()           # Ignore saved state
 
-    def _is_owned(self):
+    def _is_owned(self): # pylint: disable=method-hidden
         # Return True if lock is owned by currentThread.
         # This method is called only if __lock doesn't have _is_owned().
         if self.__lock.acquire(0):

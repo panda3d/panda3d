@@ -128,6 +128,7 @@ public:
     virtual ~PStatsCallback();
     virtual void deactivate_hook(Thread *thread);
     virtual void activate_hook(Thread *thread);
+    virtual void delete_hook(Thread *thread);
   };
 
   INLINE void set_pstats_index(int pstats_index);

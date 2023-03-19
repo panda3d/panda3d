@@ -24,10 +24,13 @@
 
 #ifdef PHAVE_UTIME_H
 #include <utime.h>
+#endif
 
 // We assume we have these too.
+#ifndef _WIN32
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #ifdef PHAVE_GLOB_H
@@ -2317,7 +2320,7 @@ touch() const {
   // time.  For these systems, we'll just temporarily open the file in append
   // mode, then close it again (it gets closed when the pfstream goes out of
   // scope).
-  pfstream file;
+  pofstream file;
   return open_append(file);
 #endif  // _WIN32, PHAVE_UTIME_H
 }

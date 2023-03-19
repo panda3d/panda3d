@@ -16,8 +16,6 @@
 #include "shaderInput_ext.h"
 #include "shaderAttrib.h"
 
-using std::move;
-
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
@@ -215,7 +213,7 @@ find_net_python_tag(PyObject *key) const {
  */
 NodePath
 py_decode_NodePath_from_bam_stream(vector_uchar data) {
-  return py_decode_NodePath_from_bam_stream_persist(nullptr, move(data));
+  return py_decode_NodePath_from_bam_stream_persist(nullptr, std::move(data));
 }
 
 /**
@@ -235,7 +233,7 @@ py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar dat
     }
   }
 
-  return NodePath::decode_from_bam_stream(move(data), reader);
+  return NodePath::decode_from_bam_stream(std::move(data), reader);
 }
 
 /**
@@ -253,9 +251,9 @@ set_shader_input(CPT_InternalName name, PyObject *value, int priority) {
   }
 
   ShaderInput &input = attrib->_inputs[name];
-  invoke_extension(&input).__init__(move(name), value, priority);
+  invoke_extension(&input).__init__(std::move(name), value, priority);
 
-  if (!_PyErr_OCCURRED()) {
+  if (!PyErr_Occurred()) {
     node->set_attrib(ShaderAttrib::return_new(attrib));
   }
 }
@@ -294,10 +292,10 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
 
     CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
-    invoke_extension(&input).__init__(move(name), value);
+    invoke_extension(&input).__init__(std::move(name), value);
   }
 
-  if (!_PyErr_OCCURRED()) {
+  if (!PyErr_Occurred()) {
     node->set_attrib(ShaderAttrib::return_new(attrib));
   }
 }

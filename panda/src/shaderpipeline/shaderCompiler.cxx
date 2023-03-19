@@ -49,7 +49,7 @@ ShaderCompiler::
  * ShaderModule on success.
  */
 PT(ShaderModule) ShaderCompiler::
-compile_now(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record) const {
+compile_now(Stage stage, const Filename &fn, BamCacheRecord *record) const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
   if (vf == nullptr) {
@@ -75,6 +75,10 @@ compile_now(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *recor
         << "Shader module " << fn << " found in disk cache.\n";
       return module;
     }
+  }
+
+  if (record2 != nullptr) {
+    record2->add_dependent_file(vf);
   }
 
   std::istream *in = vf->open_read_file(true);

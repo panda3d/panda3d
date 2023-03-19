@@ -102,6 +102,7 @@ protected:
     Rows _rows;
     size_t _row_offset = 0;
     int _last_frame = -1;
+    bool _visible = false;
   };
   typedef pvector<ThreadRow> ThreadRows;
   ThreadRows _threads;

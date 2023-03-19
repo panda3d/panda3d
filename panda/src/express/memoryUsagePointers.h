@@ -50,9 +50,9 @@ PUBLISHED:
   std::string get_type_name(size_t n) const;
   double get_age(size_t n) const;
 
-#if defined(DO_MEMORY_USAGE) && defined(HAVE_PYTHON)
-  EXTENSION(PyObject *get_python_pointer(size_t n) const);
-#endif // DO_MEMORY_USAGE && HAVE_PYTHON
+#if defined(DO_MEMORY_USAGE)
+  PY_EXTENSION(PyObject *get_python_pointer(size_t n) const);
+#endif // DO_MEMORY_USAGE
 
   void clear();
 

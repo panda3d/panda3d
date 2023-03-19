@@ -16,7 +16,6 @@
 
 #include "pandatoolbase.h"
 
-#include "gtkStatsGraph.h"
 #include "pStatMonitor.h"
 #include "pointerTo.h"
 #include "pset.h"
@@ -25,6 +24,7 @@
 
 #include <gtk/gtk.h>
 
+class GtkStatsGraph;
 class GtkStatsServer;
 class GtkStatsChartMenu;
 
@@ -71,6 +71,7 @@ public:
   virtual void new_collector(int collector_index);
   virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);
+  virtual void remove_thread(int thread_index);
   virtual void lost_connection();
   virtual void idle();
   virtual bool has_idle();

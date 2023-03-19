@@ -23,7 +23,6 @@
 
 using std::max;
 using std::min;
-using std::move;
 
 GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = nullptr;
 TypeHandle GeomVertexArrayFormat::_type_handle;
@@ -56,7 +55,7 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
 }
 
 /**
@@ -76,8 +75,8 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
 }
 
 /**
@@ -100,9 +99,9 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
-  add_column(move(name2), num_components2, numeric_type2, contents2);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name2), num_components2, numeric_type2, contents2);
 }
 
 /**
@@ -128,10 +127,10 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
-  add_column(move(name2), num_components2, numeric_type2, contents2);
-  add_column(move(name3), num_components3, numeric_type3, contents3);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name2), num_components2, numeric_type2, contents2);
+  add_column(std::move(name3), num_components3, numeric_type3, contents3);
 }
 
 /**
@@ -223,7 +222,7 @@ add_column(CPT_InternalName name, int num_components,
     start = _total_bytes;
   }
 
-  return add_column(GeomVertexColumn(move(name), num_components, numeric_type, contents,
+  return add_column(GeomVertexColumn(std::move(name), num_components, numeric_type, contents,
                                      start, column_alignment));
 }
 
@@ -552,8 +551,8 @@ get_format_string(bool pad) const {
   }
 
   // Synthesize the format string.
-  char *fmt = (char*) malloc(row_size + 1);
-  memset((void*) fmt, 0, row_size + 1);
+  char *fmt = (char *)alloca(row_size + 1);
+  memset((void *)fmt, 0, row_size + 1);
   int fi = 0;
   int offset = 0;
 
@@ -567,6 +566,7 @@ get_format_string(bool pad) const {
     }
 
     char fmt_code = 'x';
+    int num_components = column->get_num_components();
     switch (column->get_numeric_type()) {
     case NT_uint8:
       fmt_code = 'B';
@@ -579,6 +579,7 @@ get_format_string(bool pad) const {
     case NT_uint32:
     case NT_packed_dcba:
     case NT_packed_dabc:
+    case NT_packed_ufloat:
       fmt_code = 'I';
       break;
 
@@ -605,22 +606,21 @@ get_format_string(bool pad) const {
     default:
       gobj_cat.error()
         << "Unknown numeric type " << column->get_numeric_type() << "!\n";
-      return nullptr;
+      num_components *= column->get_component_bytes();
     }
-    memset((void*) (fmt + fi), fmt_code, column->get_num_components());
+    memset((void*) (fmt + fi), fmt_code, num_components);
     offset += column->get_total_bytes();
-    fi += column->get_num_components();
+    fi += num_components;
   }
 
   if (offset < row_size) {
     // Add padding bytes.
     int pad = row_size - offset;
-    memset((void*) (fmt + fi), 'x', pad);
+    memset((void *)(fmt + fi), 'x', pad);
+    ++fi;
   }
 
-  std::string fmt_string (fmt);
-  free(fmt);
-  return fmt_string;
+  return std::string(fmt, (size_t)fi);
 }
 
 /**

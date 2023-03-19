@@ -2,7 +2,7 @@
 ContainerLeakDetector.
 """
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool, MemoryUsage
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PythonUtil import safeTypeName, typeName, uniqueName, serialNum
 from direct.showbase.Job import Job
@@ -21,11 +21,11 @@ class LeakDetector:
             builtins.leakDetectors = {}
         self._leakDetectorsKey = self.getLeakDetectorKey()
         if __dev__:
-            assert self._leakDetectorsKey not in leakDetectors
-        leakDetectors[self._leakDetectorsKey] = self
+            assert self._leakDetectorsKey not in builtins.leakDetectors
+        builtins.leakDetectors[self._leakDetectorsKey] = self
 
     def destroy(self):
-        del leakDetectors[self._leakDetectorsKey]
+        del builtins.leakDetectors[self._leakDetectorsKey]
 
     def getLeakDetectorKey(self):
         # this string will be shown to the end user and should ideally contain enough information to
@@ -122,11 +122,7 @@ class SceneGraphLeakDetector(LeakDetector):
         LeakDetector.destroy(self)
 
     def __len__(self):
-        try:
-            # this will be available when the build server finishes
-            return self._render.countNumDescendants()
-        except:
-            return self._render.getNumDescendants()
+        return self._render.countNumDescendants()
 
     def __repr__(self):
         return 'SceneGraphLeakDetector(%s)' % self._render
@@ -138,15 +134,7 @@ class SceneGraphLeakDetector(LeakDetector):
 
 class CppMemoryUsage(LeakDetector):
     def __len__(self):
-        haveMemoryUsage = True
-        try:
-            MemoryUsage
-        except:
-            haveMemoryUsage = False
-        if haveMemoryUsage:
-            return int(MemoryUsage.getCurrentCppSize())
-        else:
-            return 0
+        return MemoryUsage.getCurrentCppSize()
 
 
 class TaskLeakDetectorBase:

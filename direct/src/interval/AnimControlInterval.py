@@ -2,9 +2,9 @@
 
 __all__ = ['AnimControlInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import AnimControl, AnimControlCollection, ConfigVariableBool
+from panda3d.direct import CInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 import math
 
@@ -97,7 +97,7 @@ class AnimControlInterval(Interval.Interval):
         # Must we play the animation backwards?  We play backwards if
         # either (or both) of the following is true: the playRate is
         # negative, or endFrame is before startFrame.
-        self.reverse = (playRate < 0)
+        self.reverse = playRate < 0
         if self.endFrame < self.startFrame:
             self.reverse = 1
             t = self.endFrame

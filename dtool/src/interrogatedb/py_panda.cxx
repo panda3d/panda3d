@@ -134,11 +134,10 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
  *
  * Returns true if there is an active exception, false otherwise.
  *
- * In the NDEBUG case, this is simply a #define to _PyErr_OCCURRED() (which is
- * an undocumented inline version of PyErr_Occurred()).
+ * In the NDEBUG case, this is simply a #define to PyErr_Occurred().
  */
 bool _Dtool_CheckErrorOccurred() {
-  if (_PyErr_OCCURRED()) {
+  if (PyErr_Occurred()) {
     return true;
   }
   if (Notify::ptr()->has_assert_failed()) {
@@ -231,7 +230,7 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  * NULL, otherwise Py_None.
  */
 PyObject *_Dtool_Return_None() {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -248,7 +247,7 @@ PyObject *_Dtool_Return_None() {
  * NULL, otherwise the given boolean value as a PyObject *.
  */
 PyObject *Dtool_Return_Bool(bool value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG
@@ -267,7 +266,7 @@ PyObject *Dtool_Return_Bool(bool value) {
  * increased.
  */
 PyObject *_Dtool_Return(PyObject *value) {
-  if (UNLIKELY(_PyErr_OCCURRED())) {
+  if (UNLIKELY(PyErr_Occurred())) {
     return nullptr;
   }
 #ifndef NDEBUG

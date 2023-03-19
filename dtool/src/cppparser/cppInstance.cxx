@@ -348,7 +348,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
   }
 
   CPPFunctionType *func = _type->as_function_type();
-  if (func != nullptr) {
+  if (func != nullptr && scope != nullptr) {
     string method_name = get_local_name(scope);
     string class_name = scope->get_local_name();
 

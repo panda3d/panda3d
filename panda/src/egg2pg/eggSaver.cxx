@@ -1462,6 +1462,12 @@ get_egg_texture(Texture *tex) {
       case Texture::F_srgb_alpha:
         temp.set_format(EggTexture::F_srgb_alpha);
         break;
+      case Texture::F_sluminance:
+        temp.set_format(EggTexture::F_sluminance);
+        break;
+      case Texture::F_sluminance_alpha:
+        temp.set_format(EggTexture::F_sluminance_alpha);
+        break;
       default:
         break;
       }

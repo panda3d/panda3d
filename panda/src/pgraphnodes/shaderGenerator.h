@@ -82,6 +82,7 @@ protected:
   const char *alloc_freg();
 
   Filename _cache_filename;
+  bool _use_pointcoord;
   bool _use_shadow_filter;
   int _num_indexed_transforms;
 
@@ -114,7 +115,7 @@ protected:
       F_out_alpha_glow        = 0x080000,
       F_out_aux_normal        = 0x100000,
       F_out_aux_glow          = 0x200000,
-      F_hardware_animation    = 0x400000,
+      F_perspective_points    = 0x400000,
       F_indexed_transforms    = 0x800000,
 
       F_ALPHA_TEST_SHIFT      = 24,

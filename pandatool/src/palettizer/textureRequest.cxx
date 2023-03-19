@@ -21,6 +21,7 @@ TextureRequest::
 TextureRequest() {
   _got_size = false;
   _got_num_channels = false;
+  _srgb = false;
   _x_size = 0;
   _y_size = 0;
   _num_channels = 0;

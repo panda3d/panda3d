@@ -20,6 +20,8 @@
 #include "nodeCachedReferenceCount.h"
 #include "luse.h"
 #include "lightMutex.h"
+#include "patomic.h"
+#include "small_vector.h"
 
 // A handful of forward references.
 
@@ -121,7 +123,7 @@ PUBLISHED:
   virtual bool get_supports_compressed_texture_format(int compression_mode) const=0;
 
   virtual bool get_supports_multisample() const=0;
-  virtual int get_supported_shader_capabilities() const=0;
+  virtual uint64_t get_supported_shader_capabilities() const=0;
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_shadow_filter() const=0;
 
@@ -262,11 +264,11 @@ private:
   struct GSGList {
     LightMutex _lock;
 
-    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    typedef small_vector<GraphicsStateGuardianBase *> GSGs;
     GSGs _gsgs;
-    GraphicsStateGuardianBase *_default_gsg;
+    GraphicsStateGuardianBase *_default_gsg = nullptr;
   };
-  static AtomicAdjust::Pointer _gsg_list;
+  static patomic<GSGList *> _gsg_list;
 
 protected:
   static UpdateSeq _generated_shader_seq;

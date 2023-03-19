@@ -1,7 +1,7 @@
 """SampleObject module: contains the SampleObject class"""
 
-from direct.directnotify.DirectNotifyGlobal import *
-from direct.distributed.DistributedObject import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.distributed.DistributedObject import DistributedObject
 
 class SampleObject(DistributedObject):
 

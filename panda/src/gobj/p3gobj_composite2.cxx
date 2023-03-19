@@ -8,6 +8,7 @@
 #include "shader.cxx"
 #include "shaderBuffer.cxx"
 #include "shaderContext.cxx"
+#include "shaderEnums.cxx"
 #include "shaderModule.cxx"
 #include "shaderType.cxx"
 #include "simpleAllocator.cxx"

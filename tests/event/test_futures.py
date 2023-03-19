@@ -174,6 +174,8 @@ def test_task_cancel_during_run():
         task.result()
 
 
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
 def test_task_cancel_waiting():
     # Calling result() in a threaded task chain should cancel the future being
     # waited on if the surrounding task is cancelled.

@@ -213,13 +213,13 @@ static const string default_vshader_fp64 =
 
 static const string default_fshader =
   "#version 330\n"
-  "in vec2 texcoord;\n"
+  "in vec3 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
   "void main(void) {\n"
-  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  p3d_FragColor = textureProj(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  p3d_FragColor *= color;\n"
   "}\n";
@@ -783,7 +783,7 @@ reset() {
 
   _supported_geom_rendering =
 #ifndef OPENGLES
-    Geom::GR_render_mode_wireframe | Geom::GR_render_mode_point |
+    Geom::GR_render_mode_point |
 #endif
     Geom::GR_indexed_point |
     Geom::GR_point | Geom::GR_point_uniform_size |
@@ -791,6 +791,16 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
+
+#ifndef OPENGLES
+  // Observed bug on PINEBOOK Pro: regular OpenGL 3.3 driver doesn't support
+  // wireframe mode, it just renders the solid mesh
+  // GL_RENDERER = Mali-T860 (Panfrost)
+  // GL_VERSION = 3.3 (Compatibility Profile) Mesa 22.3.6
+  if (_gl_vendor != "Panfrost") {
+    _supported_geom_rendering |= Geom::GR_render_mode_wireframe;
+  }
+#endif
 
   _supports_point_parameters = false;
 
@@ -1115,15 +1125,23 @@ reset() {
 #ifndef OPENGLES
   _supports_cube_map_array = is_at_least_gl_version(4, 0) ||
                              has_extension("GL_ARB_texture_cube_map_array");
+#elif defined(OPENGLES_2)
+  _supports_cube_map_array = is_at_least_gles_version(3, 2) ||
+                             has_extension("GL_OES_texture_cube_map_array") ||
+                             has_extension("GL_EXT_texture_cube_map_array");
 #endif
 
 #ifndef OPENGLES
   if (is_at_least_gl_version(3, 1)) {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBuffer");
     _supports_buffer_texture = true;
-
-  } else if (has_extension("GL_ARB_texture_buffer_object")) {
+  }
+  else if (has_extension("GL_ARB_texture_buffer_object")) {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBufferARB");
+    _supports_buffer_texture = true;
+  }
+  else if (has_extension("GL_EXT_texture_buffer_object")) {
+    _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBufferEXT");
     _supports_buffer_texture = true;
   }
 #endif
@@ -1712,64 +1730,99 @@ reset() {
 #elif defined(OPENGLES)
   _supports_glsl = true;
   _supported_shader_caps =
-      ShaderModule::C_basic_shader |
-      ShaderModule::C_vertex_texture |
-      ShaderModule::C_invariant;
+      Shader::C_basic_shader |
+      Shader::C_vertex_texture |
+      Shader::C_point_coord;
 
   if (is_at_least_gles_version(3, 0)) {
     _supported_shader_caps |=
-      ShaderModule::C_sampler_shadow |
-      ShaderModule::C_matrix_non_square |
-      ShaderModule::C_integer |
-      ShaderModule::C_texture_lod |
-      ShaderModule::C_texture_fetch |
-      ShaderModule::C_sampler_cube_shadow |
-      ShaderModule::C_vertex_id |
-      ShaderModule::C_round_even |
-      ShaderModule::C_instance_id |
-      ShaderModule::C_bit_encoding;
+      Shader::C_standard_derivatives |
+      Shader::C_shadow_samplers |
+      Shader::C_non_square_matrices |
+      Shader::C_unified_model |
+      Shader::C_texture_array |
+      Shader::C_texture_integer |
+      Shader::C_texture_lod |
+      Shader::C_texture_query_size |
+      Shader::C_sampler_cube_shadow |
+      Shader::C_vertex_id |
+      Shader::C_draw_buffers |
+      Shader::C_instance_id |
+      Shader::C_bit_encoding;
+
+    if (has_extension("GL_EXT_texture_query_lod")) {
+      _supported_shader_caps |= Shader::C_texture_query_lod;
+    }
+    if (has_extension("GL_OES_sample_variables")) {
+      _supported_shader_caps |= Shader::C_sample_variables;
+    }
+    if (has_extension("OES_shader_multisample_interpolation")) {
+      _supported_shader_caps |= Shader::C_multisample_interpolation;
+    }
+    if (has_extension("OES_shader_image_atomic")) {
+      _supported_shader_caps |= Shader::C_image_atomic;
+    }
   }
   else {
     if (has_extension("GL_EXT_shadow_samplers")) {
-      _supported_shader_caps |= ShaderModule::C_sampler_shadow;
+      _supported_shader_caps |= Shader::C_shadow_samplers;
+    }
+    if (has_extension("GL_NV_non_square_matrices")) {
+      _supported_shader_caps |= Shader::C_non_square_matrices;
+    }
+    if (has_extension("GL_NV_shadow_samplers_cube")) {
+      _supported_shader_caps |= Shader::C_sampler_cube_shadow;
     }
     if (has_extension("GL_EXT_shader_texture_lod")) {
-      _supported_shader_caps |= ShaderModule::C_texture_lod;
+      _supported_shader_caps |= Shader::C_texture_lod;
+    }
+    if (has_extension("GL_EXT_draw_buffers")) {
+      _supported_shader_caps |= Shader::C_draw_buffers;
     }
   }
 
   if (is_at_least_gles_version(3, 1)) {
     _supported_shader_caps |=
-      ShaderModule::C_texture_gather |
-      ShaderModule::C_extended_arithmetic |
-      ShaderModule::C_image_load_store |
-      ShaderModule::C_compute_shader;
+      Shader::C_texture_gather_red |
+      Shader::C_texture_gather_any |
+      Shader::C_extended_arithmetic |
+      Shader::C_atomic_counters |
+      Shader::C_image_load_store |
+      Shader::C_image_query_size |
+      Shader::C_compute_shader;
+
+    if (has_extension("GL_OES_geometry_shader")) {
+      _supported_shader_caps |=
+        Shader::C_geometry_shader |
+        Shader::C_primitive_id;
+    }
+    if (has_extension("GL_OES_texture_buffer")) {
+      _supported_shader_caps |= Shader::C_texture_buffer;
+    }
+    if (_supports_cube_map_array) {
+      _supported_shader_caps |= Shader::C_cube_map_array;
+    }
+    if (has_extension("GL_OES_gpu_shader5") || has_extension("GL_EXT_gpu_shader5")) {
+      _supported_shader_caps |= Shader::C_dynamic_indexing;
+    }
   }
 
   if (is_at_least_gles_version(3, 2)) {
     _supported_shader_caps |=
-      ShaderModule::C_double |
-      ShaderModule::C_cube_map_array |
-      ShaderModule::C_tessellation_shader |
-      ShaderModule::C_sample_variables |
-      ShaderModule::C_buffer_texture;
-
-    if (has_extension("GL_EXT_geometry_shader")) {
-      _supported_shader_caps |=
-        ShaderModule::C_geometry_shader |
-        ShaderModule::C_primitive_id;
-    }
-    if (has_extension("GL_EXT_tessellation_shader")) {
-      _supported_shader_caps |= ShaderModule::C_tessellation_shader;
-    }
+      Shader::C_texture_buffer |
+      Shader::C_geometry_shader |
+      Shader::C_primitive_id |
+      Shader::C_cube_map_array |
+      Shader::C_geometry_shader_instancing |
+      Shader::C_tessellation_shader |
+      Shader::C_sample_variables |
+      Shader::C_multisample_interpolation |
+      Shader::C_dynamic_indexing |
+      Shader::C_image_atomic;
   }
-  else {
-    if (has_extension("GL_OES_sample_variables")) {
-      _supported_shader_caps |= ShaderModule::C_sample_variables;
-    }
-    if (has_extension("GL_OES_texture_buffer")) {
-      _supported_shader_caps |= ShaderModule::C_buffer_texture;
-    }
+
+  if (has_extension("GL_EXT_clip_cull_distance")) {
+    _supported_shader_caps |= Shader::C_clip_distance;
   }
 
 #else
@@ -1787,112 +1840,186 @@ reset() {
     // 4.1 guarantees support for 4.10
     // 4.x guarantees support for 1.40-4.x0 (for x >= 2)
     _supported_shader_caps |=
-      ShaderModule::C_basic_shader |
-      ShaderModule::C_vertex_texture |
-      ShaderModule::C_sampler_shadow;
+      Shader::C_basic_shader |
+      Shader::C_point_coord |
+      Shader::C_standard_derivatives |
+      Shader::C_shadow_samplers;
 
     // OpenGL 2.1
     if (_glsl_version >= 120) {
-      _supported_shader_caps |=
-        ShaderModule::C_invariant |
-        ShaderModule::C_matrix_non_square;
+      _supported_shader_caps |= Shader::C_non_square_matrices;
     }
 
     // OpenGL 3.0
     if (_glsl_version >= 130) {
       _supported_shader_caps |=
-        ShaderModule::C_integer |
-        ShaderModule::C_texture_lod |
-        ShaderModule::C_texture_fetch |
-        ShaderModule::C_sampler_cube_shadow |
-        ShaderModule::C_vertex_id |
-        ShaderModule::C_round_even;
+        Shader::C_vertex_texture |
+        Shader::C_texture_lod |
+        Shader::C_unified_model |
+        Shader::C_noperspective_interpolation |
+        Shader::C_texture_array |
+        Shader::C_texture_integer |
+        Shader::C_texture_query_size |
+        Shader::C_sampler_cube_shadow |
+        Shader::C_vertex_id |
+        Shader::C_draw_buffers |
+        Shader::C_clip_distance;
     }
     else {
+      GLint max_vertex_texture_units = 0;
+      glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_units);
+      if (max_vertex_texture_units > 0) {
+        _supported_shader_caps |= Shader::C_vertex_texture;
+      }
       if (has_extension("GL_ARB_shader_texture_lod")) {
-        _supported_shader_caps |= ShaderModule::C_texture_lod;
+        _supported_shader_caps |= Shader::C_texture_lod;
       }
       if (has_extension("GL_EXT_gpu_shader4")) {
         // These are in principle supported, but SPIRV-Cross might need to be
         // changed to be able to leverage these.  Most cards that have this
         // extension also support GLSL 1.30, so it might not be worth adding.
         _supported_shader_caps |=
-          //ShaderModule::C_integer |
-          ShaderModule::C_texture_fetch |
-          //ShaderModule::C_sampler_cube_shadow |
-          ShaderModule::C_round_even;
+          Shader::C_unified_model |
+          Shader::C_noperspective_interpolation |
+          Shader::C_texture_lod |
+          Shader::C_texture_query_size |
+          Shader::C_sampler_cube_shadow |
+          Shader::C_instance_id | // zero if instancing not supported
+          Shader::C_primitive_id;
+
+        if (has_extension("GL_EXT_texture_integer")) {
+          _supported_shader_caps |= Shader::C_texture_integer;
+        }
+        if (has_extension("GL_EXT_texture_array")) {
+          _supported_shader_caps |= Shader::C_texture_array;
+        }
+        if (has_extension("GL_EXT_texture_buffer_object")) {
+          _supported_shader_caps |= Shader::C_texture_buffer;
+        }
+      }
+      if (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_draw_buffers")) {
+        _supported_shader_caps |= Shader::C_draw_buffers;
       }
     }
 
     // OpenGL 3.1
     if (_glsl_version >= 140 || has_extension("GL_ARB_draw_instanced")) {
-      _supported_shader_caps |= ShaderModule::C_instance_id;
+      _supported_shader_caps |= Shader::C_instance_id;
     }
     if (_glsl_version >= 140 || has_extension("GL_ARB_texture_buffer_object")) {
-      _supported_shader_caps |= ShaderModule::C_buffer_texture;
+      _supported_shader_caps |= Shader::C_texture_buffer;
     }
 
     // OpenGL 3.2
     if (_glsl_version >= 150 || has_extension("GL_ARB_geometry_shader4")) {
       _supported_shader_caps |=
-        ShaderModule::C_geometry_shader |
-        ShaderModule::C_primitive_id;
+        Shader::C_geometry_shader |
+        Shader::C_primitive_id;
       _supported_geom_rendering |= Geom::GR_adjacency;
     }
 
     if (_glsl_version >= 330 || has_extension("GL_ARB_shader_bit_encoding")) {
-      _supported_shader_caps |= ShaderModule::C_bit_encoding;
+      _supported_shader_caps |= Shader::C_bit_encoding;
     }
 
     if (_glsl_version >= 400) {
       _supported_shader_caps |=
-        ShaderModule::C_texture_gather |
-        ShaderModule::C_double |
-        ShaderModule::C_cube_map_array |
-        ShaderModule::C_tessellation_shader |
-        ShaderModule::C_sample_variables |
-        ShaderModule::C_extended_arithmetic |
-        ShaderModule::C_texture_query_lod;
+        Shader::C_texture_query_lod |
+        Shader::C_texture_gather_red |
+        Shader::C_texture_gather_any |
+        Shader::C_double |
+        Shader::C_cube_map_array |
+        Shader::C_geometry_shader_instancing |
+        Shader::C_tessellation_shader |
+        Shader::C_sample_variables |
+        Shader::C_extended_arithmetic |
+        Shader::C_multisample_interpolation |
+        Shader::C_dynamic_indexing;
     }
     else {
-      // This extension is very limited, should we break up C_texture_gather?
-      //if (has_extension("GL_ARB_texture_gather")) {
-      //  _supported_shader_caps |= ShaderModule::C_texture_gather;
-      //}
+      if (has_extension("GL_ARB_texture_query_lod")) {
+        _supported_shader_caps |= Shader::C_texture_query_lod;
+      }
+      if (has_extension("GL_ARB_texture_gather")) {
+        _supported_shader_caps |= Shader::C_texture_gather_red;
+      }
       if (has_extension("GL_ARB_gpu_shader_fp64")) {
-        _supported_shader_caps |= ShaderModule::C_double;
+        _supported_shader_caps |= Shader::C_double;
+      }
+      if (has_extension("GL_ARB_gpu_shader5")) {
+        _supported_shader_caps |=
+          Shader::C_texture_gather_red |
+          Shader::C_texture_gather_any |
+          Shader::C_geometry_shader_instancing |
+          Shader::C_dynamic_indexing;
       }
       if (has_extension("GL_ARB_tessellation_shader")) {
-        _supported_shader_caps |= ShaderModule::C_tessellation_shader;
+        _supported_shader_caps |= Shader::C_tessellation_shader;
       }
-      if (has_extension("GL_ARB_texture_query_lod")) {
-        _supported_shader_caps |= ShaderModule::C_texture_query_lod;
+      if (has_extension("GL_ARB_sample_shading")) {
+        _supported_shader_caps |= Shader::C_sample_variables;
       }
     }
 
-    if (_glsl_version >= 420 || has_extension("GL_ARB_shader_image_load_store")) {
-      _supported_shader_caps |= ShaderModule::C_image_load_store;
+    if (_glsl_version >= 420) {
+      _supported_shader_caps |=
+        Shader::C_atomic_counters |
+        Shader::C_image_load_store |
+        Shader::C_image_atomic;
+    }
+    else {
+      if (has_extension("GL_ARB_shader_atomic_counters")) {
+        _supported_shader_caps |= Shader::C_atomic_counters;
+      }
+      if (has_extension("GL_ARB_shader_image_load_store")) {
+        _supported_shader_caps |=
+          Shader::C_image_load_store |
+          Shader::C_image_atomic;
+      }
     }
 
-    if (_glsl_version >= 430 || has_extension("GL_ARB_compute_shader")) {
-      _supported_shader_caps |= ShaderModule::C_compute_shader;
+    if (_glsl_version >= 430) {
+      _supported_shader_caps |=
+        Shader::C_image_query_size |
+        Shader::C_texture_query_levels |
+        Shader::C_storage_buffer |
+        Shader::C_compute_shader;
     }
-
-    if (_glsl_version >= 430 || has_extension("GL_ARB_texture_query_levels")) {
-      _supported_shader_caps |= ShaderModule::C_texture_query_levels;
+    else {
+      if (has_extension("GL_ARB_shader_image_size")) {
+        _supported_shader_caps |= Shader::C_image_query_size;
+      }
+      if (has_extension("GL_ARB_texture_query_levels")) {
+        _supported_shader_caps |= Shader::C_texture_query_levels;
+      }
+      if (has_extension("GL_ARB_shader_storage_buffer_object")) {
+        _supported_shader_caps |= Shader::C_storage_buffer;
+      }
+      if (has_extension("GL_ARB_compute_shader")) {
+        _supported_shader_caps |= Shader::C_compute_shader;
+      }
     }
 
     if (_glsl_version >= 440 || has_extension("GL_ARB_enhanced_layouts")) {
-      _supported_shader_caps |= ShaderModule::C_enhanced_layouts;
+      _supported_shader_caps |= Shader::C_enhanced_layouts;
     }
 
     if (_glsl_version >= 450) {
       _supported_shader_caps |=
-        ShaderModule::C_derivative_control |
-        ShaderModule::C_texture_query_samples;
+        Shader::C_derivative_control |
+        Shader::C_texture_query_samples |
+        Shader::C_cull_distance;
     }
-    else if (has_extension("GL_ARB_derivative_control")) {
-      _supported_shader_caps |= ShaderModule::C_derivative_control;
+    else {
+      if (has_extension("GL_ARB_derivative_control")) {
+        _supported_shader_caps |= Shader::C_derivative_control;
+      }
+      if (has_extension("GL_ARB_shader_texture_image_samples")) {
+        _supported_shader_caps |= Shader::C_texture_query_samples;
+      }
+      if (has_extension("GL_ARB_cull_distance")) {
+        _supported_shader_caps |= Shader::C_cull_distance;
+      }
     }
   }
 
@@ -2039,11 +2166,25 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
 
-    if (is_at_least_gl_version(2, 1)) {
+    // NVIDIA drivers will (for pview.exe specifically) report only OpenGL 1.2
+    // but also GLSL 120.  But it's not possible to fully support GLSL 120
+    // without the ability to pass non-square matrices, so we assume that these
+    // function pointers do exist, and issue a warning otherwise.
+    if (_glsl_version >= 120 || is_at_least_gl_version(2, 1)) {
       _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
          get_extension_func("glUniformMatrix3x4fv");
       _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
          get_extension_func("glUniformMatrix4x3fv");
+
+      if (_glUniformMatrix3x4fv == nullptr || _glUniformMatrix4x3fv == nullptr) {
+        _supported_shader_caps &= ~Shader::C_non_square_matrices;
+        GLCAT.warning()
+          << "GLSL 1.20 advertised as supported by OpenGL runtime, but could "
+             "not get pointers to functions to set non-square matrices.\n";
+      }
+    } else {
+      _glUniformMatrix3x4fv = nullptr;
+      _glUniformMatrix4x3fv = nullptr;
     }
 
     if (is_at_least_gl_version(3, 0)) {
@@ -3629,6 +3770,43 @@ reset() {
   }
 #endif
 
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
+  _max_vertex_attrib_stride = -1;
+#ifdef OPENGLES
+  if (is_at_least_gles_version(3, 1))
+#else
+  if (is_at_least_gl_version(4, 4))
+#endif
+  {
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIB_STRIDE, &_max_vertex_attrib_stride);
+
+    if (_max_vertex_attrib_stride < 0) {
+      GLCAT.warning()
+        << "Failed to query GL_MAX_VERTEX_ATTRIB_STRIDE.\n";
+    }
+    else if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex attrib stride = " << _max_vertex_attrib_stride << "\n";
+    }
+  }
+  if (_max_vertex_attrib_stride < 0) {
+    // OpenGL doesn't specify a maximum before version 4.4 / ES 3.1, but
+    // drivers really do have one.  Make an educated guess.
+#ifdef OPENGLES
+    _max_vertex_attrib_stride = (_gl_vendor == "Qualcomm") ? INT_MAX : 2048;
+#elif defined(_WIN32)
+    _max_vertex_attrib_stride = (_gl_vendor == "Intel") ? 4095 : 2048;
+#else
+    _max_vertex_attrib_stride = 2048;
+#endif
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex attrib stride = " << _max_vertex_attrib_stride
+        << " (guessed)\n";
+    }
+  }
+#endif  // !OPENGLES_1
+
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
   _current_vao_index = 0;
@@ -3790,7 +3968,7 @@ reset() {
   if (GLCAT.is_debug()) {
     std::ostream &out = GLCAT.debug();
     out << "shader caps = ";
-    ShaderModule::output_capabilities(out, _supported_shader_caps);
+    Shader::output_capabilities(out, _supported_shader_caps);
     out << "\n";
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
   }
@@ -6965,6 +7143,16 @@ setup_array_data(const unsigned char *&client_pointer,
     client_pointer = array_reader->get_read_pointer(force);
     return (client_pointer != nullptr);
   }
+
+#ifndef OPENGLES_1
+  int stride = array_reader->get_array_format()->get_stride();
+  if (stride > _max_vertex_attrib_stride) {
+    GLCAT.error()
+      << "Vertex array stride " << stride << " exceeds supported maximum "
+      << _max_vertex_attrib_stride << "!\n";
+    return false;
+  }
+#endif
 
   // Prepare the buffer object and bind it.
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
@@ -12396,6 +12584,8 @@ set_state_and_transform(const RenderState *target,
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
+  int tex_gen_slot = TexGenAttrib::get_class_slot();
+  int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
     //PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
@@ -12411,7 +12601,7 @@ set_state_and_transform(const RenderState *target,
       _target_texture = (const TextureAttrib *)
         _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
       _target_tex_gen = (const TexGenAttrib *)
-        _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
+        _target_rs->get_attrib_def(tex_gen_slot);
     }
 #endif
     do_issue_texture();
@@ -12419,28 +12609,36 @@ set_state_and_transform(const RenderState *target,
     // Since the TexGen and TexMatrix states depend partly on the particular
     // set of textures in use, we should force both of those to be reissued
     // every time we change the texture state.
-    _state_mask.clear_bit(TexGenAttrib::get_class_slot());
-    _state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
+    _state_mask.clear_bit(tex_gen_slot);
+    _state_mask.clear_bit(tex_matrix_slot);
 
     _state_texture = _target_texture;
     _state_mask.set_bit(texture_slot);
   }
+  else if (_target_rs->get_attrib(tex_gen_slot) != _state_rs->get_attrib(tex_gen_slot) ||
+           !_state_mask.get_bit(tex_gen_slot)) {
+    _target_tex_gen = (const TexGenAttrib *)_target_rs->get_attrib_def(tex_gen_slot);
 
-  // If one of the previously-loaded TexGen modes modified the texture matrix,
-  // then if either state changed, we have to change both of them now.
-  if (_tex_gen_modifies_mat) {
-    int tex_gen_slot = TexGenAttrib::get_class_slot();
-    int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
-    if (_target_rs->get_attrib(tex_gen_slot) != _state_rs->get_attrib(tex_gen_slot) ||
-        _target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
-        !_state_mask.get_bit(tex_gen_slot) ||
-        !_state_mask.get_bit(tex_matrix_slot)) {
+#ifdef SUPPORT_FIXED_FUNCTION
+#ifdef OPENGLES_1
+    if (_has_texture_alpha_scale) {
+#else
+    if (_has_texture_alpha_scale && _current_shader == nullptr) {
+#endif
+      PT(TextureStage) stage = get_alpha_scale_texture_stage();
+      _target_tex_gen = DCAST(TexGenAttrib, _target_tex_gen->add_stage
+                              (stage, TexGenAttrib::M_constant, LTexCoord3(_current_color_scale[3], 0.0f, 0.0f)));
+    }
+#endif  // SUPPORT_FIXED_FUNCTION
+
+    // If one of the previously-loaded TexGen modes modified the texture matrix,
+    // then if either state changed, we have to change both of them now.
+    if (_tex_gen_modifies_mat) {
       _state_mask.clear_bit(tex_gen_slot);
       _state_mask.clear_bit(tex_matrix_slot);
     }
   }
 
-  int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
   if (_target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
       !_state_mask.get_bit(tex_matrix_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_tex_matrix_pcollector);
@@ -12455,11 +12653,15 @@ set_state_and_transform(const RenderState *target,
       _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
     }
 #endif
+
+    // See previous occurrence of this check.
+    if (_tex_gen_modifies_mat) {
+      _state_mask.clear_bit(tex_gen_slot);
+    }
   }
 
 #ifdef SUPPORT_FIXED_FUNCTION
   if (has_fixed_function_pipeline()) {
-    int tex_gen_slot = TexGenAttrib::get_class_slot();
     if (_target_tex_gen != _state_tex_gen ||
         !_state_mask.get_bit(tex_gen_slot)) {
       // PStatGPUTimer timer(this, _draw_set_state_tex_gen_pcollector);

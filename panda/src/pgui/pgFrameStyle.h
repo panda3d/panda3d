@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "luse.h"
+#include "memoryBase.h"
 #include "texture.h"
 #include "pointerTo.h"
 
@@ -26,7 +27,7 @@ class NodePath;
 /**
  *
  */
-class EXPCL_PANDA_PGUI PGFrameStyle {
+class EXPCL_PANDA_PGUI PGFrameStyle : public MemoryBase {
 PUBLISHED:
   INLINE PGFrameStyle();
   INLINE PGFrameStyle(const PGFrameStyle &copy);

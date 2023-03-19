@@ -151,6 +151,7 @@ private:
 
   virtual void deactivate_hook(Thread *thread);
   virtual void activate_hook(Thread *thread);
+  virtual void delete_hook(Thread *thread);
 
 private:
   // This mutex protects everything in this class.

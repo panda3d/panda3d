@@ -27,7 +27,6 @@
 #include "shaderCompiler.h"
 
 using std::istream;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -383,6 +382,12 @@ cp_dependency(ShaderMatInput inp) {
   }
   if (inp == SMO_tex_is_alpha_i || inp == SMO_texcolor_i) {
     dep |= SSD_texture | SSD_frame;
+  }
+  if (inp == SMO_texconst_i) {
+    dep |= SSD_tex_gen;
+  }
+  if (inp == SMO_attr_pointparams) {
+    dep |= SSD_render_mode | SSD_transform | SSD_frame;
   }
 
   return dep;
@@ -2149,6 +2154,22 @@ bind_parameter(const Parameter &param) {
         bind._arg[1] = nullptr;
         bind._index = atoi(pieces[1].c_str() + 5);
       }
+      else if (pieces[1] == "pointparams") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_pointparams;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+
+        if (type->as_vector()->get_num_components() == 3) {
+          bind._piece = Shader::SMP_row3x3;
+        } else {
+          bind._piece = Shader::SMP_row3;
+        }
+      }
       else {
         return report_parameter_error(name, type, "unrecognized parameter name");
       }
@@ -2165,12 +2186,17 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_alight_x;
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2262,13 +2288,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texscale_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2281,13 +2312,42 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texcolor_i;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texconst") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texconst_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._index = atoi(pieces[1].c_str());
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
 
       cp_add_mat_spec(bind);
       return true;
@@ -2432,12 +2492,18 @@ bind_parameter(const Parameter &param) {
       }
       ShaderMatSpec bind;
       bind._id = param;
-      bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texpad_x;
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
+
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2455,6 +2521,21 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = InternalName::make(pieces[1]);
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+
+      switch (type->as_vector()->get_num_components()) {
+      case 2:
+        bind._piece = Shader::SMP_row3x2;
+        break;
+
+      case 3:
+        bind._piece = Shader::SMP_row3x3;
+        break;
+
+      case 4:
+        bind._piece = Shader::SMP_row3;
+        break;
+      }
+
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2889,7 +2970,7 @@ make(string body, ShaderLanguage lang) {
     lang = SL_Cg;
   }
 
-  ShaderFile sbody(move(body));
+  ShaderFile sbody(std::move(body));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -2943,8 +3024,8 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
     return nullptr;
   }
 
-  ShaderFile sbody(move(vertex), move(fragment), move(geometry),
-                   move(tess_control), move(tess_evaluation));
+  ShaderFile sbody(std::move(vertex), std::move(fragment), std::move(geometry),
+                   std::move(tess_control), std::move(tess_evaluation));
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -2988,7 +3069,7 @@ make_compute(ShaderLanguage lang, string body) {
 
   ShaderFile sbody;
   sbody._separate = true;
-  sbody._compute = move(body);
+  sbody._compute = std::move(body);
 
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
@@ -3047,18 +3128,26 @@ add_module(PT(ShaderModule) module) {
 
   int used_caps = module->get_used_capabilities();
 
-  // Make sure we have a unique copy.
+  // Make sure that any modifications made to the module will not affect other
+  // Shader objects, by storing it as copy-on-write.
   COWPT(ShaderModule) cow_module = std::move(module);
 
-  // Link its inputs up with the previous stage.
   if (!_modules.empty()) {
-    //TODO: Check whether it's already linked properly to possibly avoid cloning
-    // the module.
-    PT(ShaderModule) module = cow_module.get_write_pointer();
-    if (!module->link_inputs(_modules.back()._module.get_read_pointer())) {
-      shader_cat.error()
-        << "Unable to match shader module interfaces.\n";
-      return false;
+    // Link its inputs up with the previous stage.
+    pmap<int, int> location_remap;
+    {
+      CPT(ShaderModule) module = cow_module.get_read_pointer();
+      if (!module->link_inputs(_modules.back()._module.get_read_pointer(), location_remap)) {
+        shader_cat.error()
+          << "Unable to match shader module interfaces.\n";
+        return false;
+      }
+    }
+
+    if (!location_remap.empty()) {
+      // Make sure we have a unique copy so that we can do the remappings.
+      PT(ShaderModule) module = cow_module.get_write_pointer();
+      module->remap_input_locations(location_remap);
     }
   }
   else if (stage == Stage::vertex) {

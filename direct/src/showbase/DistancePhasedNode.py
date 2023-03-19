@@ -1,6 +1,13 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    CollisionHandlerEvent,
+    CollisionNode,
+    CollisionSphere,
+    CollisionTraverser,
+    NodePath,
+)
 from .PhasedObject import PhasedObject
 
 
@@ -253,6 +260,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
                 self.cTrav.traverse(self)
             base.eventMgr.doEvents()
 
+
 class BufferedDistancePhasedNode(DistancePhasedNode):
     """
     This class is similar to DistancePhasedNode except you can also
@@ -322,7 +330,7 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
 
 if __debug__ and 0:
-    cSphere = CollisionSphere(0,0,0,0.1)
+    cSphere = CollisionSphere(0, 0, 0, 0.1)
     cNode = CollisionNode('camCol')
     cNode.addSolid(cSphere)
     cNodePath = NodePath(cNode)
@@ -337,11 +345,11 @@ if __debug__ and 0:
     eventHandler.addOutPattern('exit%in')
 
     # messenger.toggleVerbose()
-    base.cTrav.addCollider(cNodePath,eventHandler)
+    base.cTrav.addCollider(cNodePath, eventHandler)
 
-    p = BufferedDistancePhasedNode('p',{'At':(10,20),'Near':(100,200),'Far':(1000, 1020)},
-                                   autoCleanup = False,
-                                   fromCollideNode = cNodePath,
+    p = BufferedDistancePhasedNode('p', {'At': (10, 20), 'Near': (100, 200), 'Far': (1000, 1020)},
+                                   autoCleanup=False,
+                                   fromCollideNode=cNodePath,
                                    )
 
     p.reparentTo(render)

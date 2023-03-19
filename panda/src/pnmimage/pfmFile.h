@@ -170,11 +170,9 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_points() const);
+  PY_EXTENSION(PyObject *get_points() const);
 
-  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
-#endif
+  PY_EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
 
 public:
   INLINE const vector_float &get_table() const;

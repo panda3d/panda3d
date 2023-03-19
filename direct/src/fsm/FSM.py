@@ -615,9 +615,8 @@ class FSM(DirectObject):
         try:
             className = self.__class__.__name__
             if self.state:
-                str = ('%s FSM:%s in state "%s"' % (className, self._name, self.state))
+                return f'{className} FSM:{self._name} in state "{self.state}"'
             else:
-                str = ('%s FSM:%s in transition from \'%s\' to \'%s\'' % (className, self._name, self.oldState, self.newState))
-            return str
+                return f'{className} FSM:{self._name} in transition from \'{self.oldState}\' to \'{self.newState}\''
         finally:
             self.fsmLock.release()

@@ -42,6 +42,7 @@ TextureProperties() {
   _anisotropic_degree = 0;
   _color_type = nullptr;
   _alpha_type = nullptr;
+  _srgb = false;
 }
 
 /**
@@ -59,6 +60,7 @@ TextureProperties(const TextureProperties &copy) :
   _anisotropic_degree(copy._anisotropic_degree),
   _color_type(copy._color_type),
   _alpha_type(copy._alpha_type),
+  _srgb(copy._srgb),
   _got_num_channels(copy._got_num_channels),
   _num_channels(copy._num_channels),
   _effective_num_channels(copy._effective_num_channels)
@@ -83,6 +85,7 @@ operator = (const TextureProperties &copy) {
   _num_channels = copy._num_channels;
   _effective_num_channels = copy._effective_num_channels;
   _format = copy._format;
+  _srgb = copy._srgb;
 }
 
 /**
@@ -168,6 +171,8 @@ uses_alpha() const {
   case EggTexture::F_alpha:
   case EggTexture::F_luminance_alpha:
   case EggTexture::F_luminance_alphamask:
+  case EggTexture::F_srgb_alpha:
+  case EggTexture::F_sluminance_alpha:
     return true;
 
   default:
@@ -210,6 +215,9 @@ update_properties(const TextureProperties &other) {
     _num_channels = other._num_channels;
     _effective_num_channels = _num_channels;
   }
+
+  _srgb = other._srgb;
+
   if (_force_format) {
     // If we've forced our own format, it doesn't change.
   } else if (other._force_format) {
@@ -260,6 +268,7 @@ fully_define() {
 
     case EggTexture::F_luminance_alpha:
     case EggTexture::F_luminance_alphamask:
+    case EggTexture::F_sluminance_alpha:
       _num_channels = 2;
       break;
 
@@ -268,6 +277,7 @@ fully_define() {
     case EggTexture::F_blue:
     case EggTexture::F_alpha:
     case EggTexture::F_luminance:
+    case EggTexture::F_sluminance:
       _num_channels = 1;
       break;
     }
@@ -294,6 +304,8 @@ fully_define() {
     case EggTexture::F_luminance_alphamask:
     case EggTexture::F_srgb:
     case EggTexture::F_srgb_alpha:
+    case EggTexture::F_sluminance:
+    case EggTexture::F_sluminance_alpha:
       break;
 
     case EggTexture::F_rgba12:
@@ -323,6 +335,7 @@ fully_define() {
       case EggTexture::F_blue:
       case EggTexture::F_alpha:
       case EggTexture::F_luminance:
+      case EggTexture::F_sluminance:
         break;
 
         // These formats suggest an alpha channel; they are quietly replaced
@@ -332,8 +345,16 @@ fully_define() {
         _format = EggTexture::F_luminance;
         break;
 
+      case EggTexture::F_sluminance_alpha:
+        _format = EggTexture::F_sluminance;
+        break;
+
       default:
-        _format = EggTexture::F_luminance;
+        if (_srgb) {
+          _format = EggTexture::F_sluminance;
+        } else {
+          _format = EggTexture::F_luminance;
+        }
       }
       break;
 
@@ -341,6 +362,7 @@ fully_define() {
       switch (_format) {
       case EggTexture::F_luminance_alpha:
       case EggTexture::F_luminance_alphamask:
+      case EggTexture::F_sluminance_alpha:
         break;
 
         // These formats implicitly reduce the number of channels to 1.
@@ -349,10 +371,15 @@ fully_define() {
       case EggTexture::F_blue:
       case EggTexture::F_alpha:
       case EggTexture::F_luminance:
+      case EggTexture::F_sluminance:
         break;
 
       default:
-        _format = EggTexture::F_luminance_alpha;
+        if (_srgb) {
+          _format = EggTexture::F_sluminance_alpha;
+        } else {
+          _format = EggTexture::F_luminance_alpha;
+        }
       }
       break;
 
@@ -363,6 +390,7 @@ fully_define() {
       case EggTexture::F_rgb8:
       case EggTexture::F_rgb5:
       case EggTexture::F_rgb332:
+      case EggTexture::F_srgb:
         break;
 
         // These formats suggest an alpha channel; they are quietly replaced
@@ -382,10 +410,15 @@ fully_define() {
       case EggTexture::F_blue:
       case EggTexture::F_alpha:
       case EggTexture::F_luminance:
+      case EggTexture::F_sluminance:
         break;
 
       default:
-        _format = EggTexture::F_rgb;
+        if (_srgb) {
+          _format = EggTexture::F_srgb;
+        } else {
+          _format = EggTexture::F_rgb;
+        }
       }
       break;
 
@@ -397,6 +430,7 @@ fully_define() {
       case EggTexture::F_rgba8:
       case EggTexture::F_rgba4:
       case EggTexture::F_rgba5:
+      case EggTexture::F_srgb_alpha:
         break;
 
         // These formats implicitly reduce the number of channels to 3.
@@ -405,12 +439,14 @@ fully_define() {
       case EggTexture::F_rgb8:
       case EggTexture::F_rgb5:
       case EggTexture::F_rgb332:
+      case EggTexture::F_srgb:
         _effective_num_channels = 3;
         break;
 
         // These formats implicitly reduce the number of channels to 2.
       case EggTexture::F_luminance_alpha:
       case EggTexture::F_luminance_alphamask:
+      case EggTexture::F_sluminance_alpha:
         _effective_num_channels = 2;
         break;
 
@@ -420,12 +456,42 @@ fully_define() {
       case EggTexture::F_blue:
       case EggTexture::F_alpha:
       case EggTexture::F_luminance:
+      case EggTexture::F_sluminance:
         _effective_num_channels = 1;
         break;
 
       default:
-        _format = EggTexture::F_rgba;
+        if (_srgb) {
+          _format = EggTexture::F_srgb_alpha;
+        } else {
+          _format = EggTexture::F_rgba;
+        }
       }
+    }
+  }
+
+  // Respect the _srgb flag.  If this is set, it means the texture is in sRGB
+  // color space and the format should be changed to reflect that.
+  if (_srgb) {
+    switch (_num_channels) {
+    case 1:
+      // Don't respect sRGB for textures using the F_alpha format, which
+      // indicates that the image represents an alpha channel, not a color
+      // channel.
+      if (_format != EggTexture::F_alpha) {
+        _format = EggTexture::F_sluminance;
+      }
+      break;
+    case 2:
+      _format = EggTexture::F_sluminance_alpha;
+      break;
+    case 3:
+      _format = EggTexture::F_srgb;
+      break;
+    case 4:
+    default:
+      _format = EggTexture::F_srgb_alpha;
+      break;
     }
   }
 
@@ -504,6 +570,9 @@ operator < (const TextureProperties &other) const {
   if (_anisotropic_degree != other._anisotropic_degree) {
     return _anisotropic_degree < other._anisotropic_degree;
   }
+  if (_srgb != other._srgb) {
+    return _srgb < other._srgb;
+  }
   if (_color_type != other._color_type) {
     return _color_type < other._color_type;
   }
@@ -525,6 +594,7 @@ operator == (const TextureProperties &other) const {
           _magfilter == other._magfilter &&
           _quality_level == other._quality_level &&
           _anisotropic_degree == other._anisotropic_degree &&
+          _srgb == other._srgb &&
           _color_type == other._color_type &&
           (_color_type == nullptr ||
            _alpha_type == other._alpha_type));
@@ -606,6 +676,12 @@ get_format_string(EggTexture::Format format) {
 
   case EggTexture::F_srgb_alpha:
     return "sa";
+
+  case EggTexture::F_sluminance:
+    return "sl";
+
+  case EggTexture::F_sluminance_alpha:
+    return "st";
   }
 
   return "x";
@@ -779,6 +855,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32((int)_magfilter);
   datagram.add_int32((int)_quality_level);
   datagram.add_int32(_anisotropic_degree);
+  datagram.add_bool(_srgb);
   writer->write_pointer(datagram, _color_type);
   writer->write_pointer(datagram, _alpha_type);
 }
@@ -851,6 +928,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _quality_level = (EggTexture::QualityLevel)scan.get_int32();
   }
   _anisotropic_degree = scan.get_int32();
+
+  if (Palettizer::_read_pi_version >= 21) {
+    _srgb = scan.get_bool();
+  }
 
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type

@@ -20,7 +20,7 @@
 
 #include "pStatTimer.h"
 
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio/videoio_c.h>
 
 TypeHandle WebcamVideoCursorOpenCV::_type_handle;
 

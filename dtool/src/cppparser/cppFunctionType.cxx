@@ -189,6 +189,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPFunctionType::
+is_trivially_copyable() const {
+  return false;
+}
+
+/**
  *
  */
 void CPPFunctionType::

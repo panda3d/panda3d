@@ -16,8 +16,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "filename.h"
 #include "buffer.h"
 #include "patchfile.h"
@@ -43,7 +41,5 @@ private:
 };
 
 #include "patcher.I"
-
-#endif  // HAVE_OPENSSL
 
 #endif

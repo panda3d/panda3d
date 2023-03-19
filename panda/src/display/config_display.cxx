@@ -462,7 +462,8 @@ ConfigVariableInt accum_bits
  PRC_DESC("The minimum number of accumulator buffer bits requested."));
 ConfigVariableInt multisamples
 ("multisamples", 0,
- PRC_DESC("The minimum number of samples requested."));
+ PRC_DESC("The number of samples requested. Set this to 1 to request "
+          "the maximum number of samples available"));
 ConfigVariableInt back_buffers
 ("back-buffers", 1,
  PRC_DESC("The default number of back buffers requested."));

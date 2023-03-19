@@ -1,9 +1,8 @@
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import ConfigVariableInt, GeomNode, NodePath, PerspectiveLens, Point3, VBase2
 from direct.fsm.FSM import FSM
-from direct.interval.IntervalGlobal import *
+from direct.interval.IntervalGlobal import LerpScaleInterval, Sequence
 from direct.distributed.DistributedObject import DistributedObject
-
+from direct.showbase.MessengerGlobal import messenger
 
 _camera_id = ConfigVariableInt('camera-id', -1)
 _aware_of_cameras = ConfigVariableInt('aware-of-cameras', 0)

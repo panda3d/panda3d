@@ -84,10 +84,8 @@ PUBLISHED:
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                         int compression_level);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
-  EXTENSION(INLINE PyObject *get_encryption_password() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(INLINE PyObject *set_encryption_password(PyObject *encryption_password) const);
+  PY_EXTENSION(INLINE PyObject *get_encryption_password() const);
 
 #ifdef HAVE_OPENSSL
   bool add_signature(const Filename &certificate,

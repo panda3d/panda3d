@@ -15,10 +15,10 @@
 #define GTKSTATSCHARTMENU_H
 
 #include "pandatoolbase.h"
+#include "gtkStatsMonitor.h"
 
 #include <gtk/gtk.h>
 
-class GtkStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
@@ -31,6 +31,8 @@ public:
 
   GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
   ~GtkStatsChartMenu();
+
+  int get_thread_index() const { return _thread_index; }
 
   GtkWidget *get_menu_widget();
   void add_to_menu_bar(GtkWidget *menu_bar, int position);

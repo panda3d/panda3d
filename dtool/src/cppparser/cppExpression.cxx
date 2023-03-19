@@ -953,6 +953,9 @@ evaluate() const {
     case KW_IS_TRIVIAL:
       return Result(_u._type_trait._type->is_trivial());
 
+    case KW_IS_TRIVIALLY_COPYABLE:
+      return Result(_u._type_trait._type->is_trivially_copyable());
+
     case KW_IS_UNION:
       {
         CPPExtensionType *ext_type = _u._type_trait._type->as_extension_type();
@@ -2137,6 +2140,9 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
       break;
     case KW_IS_TRIVIAL:
       out << "__is_trivial";
+      break;
+    case KW_IS_TRIVIALLY_COPYABLE:
+      out << "__is_trivially_copyable";
       break;
     case KW_IS_UNION:
       out << "__is_union";

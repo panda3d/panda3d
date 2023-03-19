@@ -6,9 +6,10 @@ Requires Pmw."""
 __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
-from .Tree import *
+from direct.showbase.MessengerGlobal import messenger
+from .Tree import TreeItem, TreeNode
 import Pmw
+import tkinter as tk
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!
 DEFAULT_MENU_ITEMS = [
@@ -27,8 +28,10 @@ DEFAULT_MENU_ITEMS = [
     'Place', 'Set Name', 'Set Color', 'Explore',
     'Separator']
 
+
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
+
     def __init__(self, parent = None, nodePath = None, isItemEditable = True, **kw):
         if nodePath is None:
             nodePath = base.render
@@ -36,7 +39,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialise superclass
@@ -49,7 +52,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
 
         # Setup up container
         interior = self.interior()
-        interior.configure(relief = GROOVE, borderwidth = 2)
+        interior.configure(relief = tk.GROOVE, borderwidth = 2)
 
         # Create a label and an entry
         self._scrolledCanvas = self.createcomponent(
@@ -61,7 +64,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
         self._scrolledCanvas.resizescrollregion()
-        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = BOTH)
+        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = tk.BOTH)
 
         self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
         self._canvas.bind('<B2-Motion>', self.mouse2Motion)
@@ -77,14 +80,14 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
                               DEFAULT_MENU_ITEMS + self['menuItems'])
         self._node.expand()
 
-        self._parentFrame = Frame(interior)
+        self._parentFrame = tk.Frame(interior)
         self._label = self.createcomponent(
             'parentLabel',
             (), None,
-            Label, (interior,),
+            tk.Label, (interior,),
             text = 'Active Reparent Target: ',
-            anchor = W, justify = LEFT)
-        self._label.pack(fill = X)
+            anchor = tk.W, justify = tk.LEFT)
+        self._label.pack(fill = tk.X)
 
         # Add update parent label
         def updateLabel(nodePath = None, s = self):
@@ -146,6 +149,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
             sceneGraphItem.reveal()
             sceneGraphItem.select()
 
+
 class SceneGraphExplorerItem(TreeItem):
 
     """Example TreeItem subclass -- browse the file system."""
@@ -197,7 +201,7 @@ def explore(nodePath = None):
     if nodePath is None:
         nodePath = base.render
 
-    tl = Toplevel()
+    tl = tk.Toplevel()
     tl.title('Explore: ' + nodePath.getName())
     sge = SceneGraphExplorer(parent = tl, nodePath = nodePath)
     sge.pack(expand = 1, fill = 'both')

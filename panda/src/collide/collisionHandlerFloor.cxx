@@ -111,7 +111,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   if (!got_max && got_min) {
     // We've fallen through the world, but we're also under some walkable
     // geometry.  Move us up to the lowest surface:
-    got_max = true;
+    //got_max = true;
     max_height = min_height;
     highest = lowest;
   }

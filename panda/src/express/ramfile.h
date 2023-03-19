@@ -27,20 +27,16 @@ PUBLISHED:
 
   INLINE void seek(size_t pos);
   INLINE size_t tell() const;
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *read(size_t length));
-  EXTENSION(PyObject *readline());
-  EXTENSION(PyObject *readlines());
+  PY_EXTENSION(PyObject *read(size_t length));
+  PY_EXTENSION(PyObject *readline());
+  PY_EXTENSION(PyObject *readlines());
 
-  EXTENSION(PyObject *get_data() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_data() const);
   INLINE size_t get_data_size() const;
   INLINE void clear();
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *state));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *state));
 public:
   std::string read(size_t length);
   std::string readline();

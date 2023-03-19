@@ -70,6 +70,7 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
           "renderers.  See Texture::set_quality_level()."));
 
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
+PStatCollector Texture::_texture_write_pcollector("*:Texture:Write");
 TypeHandle Texture::_type_handle;
 TypeHandle Texture::CData::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_unspecified;
@@ -5198,6 +5199,8 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
 bool Texture::
 do_write(CData *cdata,
          const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) {
+  PStatTimer timer(_texture_write_pcollector);
+
   if (is_txo_filename(fullpath)) {
     if (!do_has_bam_rawdata(cdata)) {
       do_get_bam_rawdata(cdata);
@@ -6102,14 +6105,6 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     }
   }
 
-  // Choose an appropriate quality level.
-  if (quality_level == Texture::QL_default) {
-    quality_level = cdata->_quality_level;
-  }
-  if (quality_level == Texture::QL_default) {
-    quality_level = texture_quality_level;
-  }
-
   if (compression == CM_rgtc) {
     // We should compress RGTC ourselves, as squish does not support it.
     if (cdata->_component_type != T_unsigned_byte) {
@@ -6182,6 +6177,14 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
   }
 
 #ifdef HAVE_SQUISH
+  // Choose an appropriate quality level.
+  if (quality_level == Texture::QL_default) {
+    quality_level = cdata->_quality_level;
+  }
+  if (quality_level == Texture::QL_default) {
+    quality_level = texture_quality_level;
+  }
+
   if (cdata->_texture_type != TT_3d_texture &&
       cdata->_texture_type != TT_2d_texture_array &&
       cdata->_component_type == T_unsigned_byte) {

@@ -14,10 +14,11 @@
 #ifndef SHADERMODULE_H
 #define SHADERMODULE_H
 
-#include "copyOnWriteObject.h"
 #include "bamCacheRecord.h"
-#include "shaderType.h"
+#include "copyOnWriteObject.h"
 #include "internalName.h"
+#include "shaderEnums.h"
+#include "shaderType.h"
 
 /**
  * Represents a single shader module in some intermediate representation for
@@ -28,17 +29,8 @@
  * shared between multiple Shader objects, with a unique copy automatically
  * being created if the Shader needs to manipulate the module.
  */
-class EXPCL_PANDA_GOBJ ShaderModule : public CopyOnWriteObject {
+class EXPCL_PANDA_GOBJ ShaderModule : public CopyOnWriteObject, public ShaderEnums {
 PUBLISHED:
-  enum class Stage {
-    vertex,
-    tess_control,
-    tess_evaluation,
-    geometry,
-    fragment,
-    compute,
-  };
-
   /**
    * Defines an interface variable.
    */
@@ -72,7 +64,7 @@ public:
   virtual ~ShaderModule();
 
   INLINE Stage get_stage() const;
-  INLINE int get_used_capabilities() const;
+  INLINE uint64_t get_used_capabilities() const;
 
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
@@ -94,78 +86,21 @@ public:
 
   typedef pmap<CPT_InternalName, Variable *> VariablesByName;
 
-  virtual bool link_inputs(const ShaderModule *previous);
-  virtual void remap_parameter_locations(pmap<int, int> &remap);
+  virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const;
+  virtual void remap_input_locations(const pmap<int, int> &remap);
+  virtual void remap_parameter_locations(const pmap<int, int> &remap);
 
 PUBLISHED:
   MAKE_PROPERTY(stage, get_stage);
+  MAKE_PROPERTY(used_capabilities, get_used_capabilities);
   MAKE_SEQ_PROPERTY(inputs, get_num_inputs, get_input);
   MAKE_SEQ_PROPERTY(outputs, get_num_outputs, get_output);
+  MAKE_SEQ_PROPERTY(parameters, get_num_parameters, get_parameter);
   MAKE_SEQ_PROPERTY(spec_constants, get_num_spec_constants, get_spec_constant);
 
   virtual std::string get_ir() const=0;
 
 public:
-  /**
-   * Indicates which features are used by the shader, which can be used by the
-   * driver to check whether cross-compilation is possible, or whether certain
-   * transformation steps may need to be applied.
-   */
-  enum Capabilities : uint64_t {
-    C_basic_shader = 1 << 0,
-    C_vertex_texture = 1 << 1,
-    C_sampler_shadow = 1 << 2, // 1D and 2D only
-
-    // GLSL 1.20
-    C_invariant = 1 << 3,
-    C_matrix_non_square = 1 << 4,
-
-    // GLSL 1.30
-    C_integer = 1 << 5,
-    C_texture_lod = 1 << 6, // textureLod in vshader doesn't count, textureGrad does
-    C_texture_fetch = 1 << 7, // texelFetch, textureSize, etc.
-    C_sampler_cube_shadow = 1 << 8,
-    C_vertex_id = 1 << 9,
-    C_round_even = 1 << 10, // roundEven function, also in SM 4.0
-
-    // GLSL 1.40 / SM 4.0
-    C_instance_id = 1 << 11,
-    C_buffer_texture = 1 << 12, // ES 3.20
-
-    // GLSL 1.50 / SM 4.0
-    C_geometry_shader = 1 << 13,
-    C_primitive_id = 1 << 14,
-
-    // GLSL 3.30 / ES 3.00 / SM 4.0
-    C_bit_encoding = 1 << 15,
-
-    // GLSL 4.00 / ES 3.20 / SM 5.0
-    C_texture_gather = 1 << 16,
-    C_double = 1 << 17,
-    C_cube_map_array = 1 << 18,
-    C_tessellation_shader = 1 << 19,
-    C_sample_variables = 1 << 20,
-    C_extended_arithmetic = 1 << 21,
-    C_texture_query_lod = 1 << 22, // not in ES
-
-    // GLSL 4.20 / ES 3.10 / SM 5.0
-    C_image_load_store = 1 << 23,
-
-    // GLSL 4.30 / ES 3.10 / SM 5.0
-    C_compute_shader = 1 << 24,
-    C_texture_query_levels = 1 << 25, // not in ES
-
-    // GLSL 4.40 / ARB_enhanced_layouts
-    C_enhanced_layouts = 1 << 26,
-
-    // GLSL 4.50
-    C_derivative_control = 1 << 27,
-    C_texture_query_samples = 1 << 28,
-  };
-
-  static std::string format_stage(Stage stage);
-  static void output_capabilities(std::ostream &out, int capabilities);
-
   virtual void output(std::ostream &out) const;
 
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
@@ -179,7 +114,7 @@ protected:
   //std::pvector<Filename> _source_files;
   Filename _source_filename;
   //time_t _source_modified = 0;
-  int _used_caps = 0;
+  uint64_t _used_caps = 0;
 
   typedef pvector<Variable> Variables;
   Variables _inputs;
@@ -215,10 +150,6 @@ private:
 INLINE std::ostream &operator << (std::ostream &out, const ShaderModule &module) {
   module.output(out);
   return out;
-}
-
-INLINE std::ostream &operator << (std::ostream &out, ShaderModule::Stage stage) {
-  return out << ShaderModule::format_stage(stage);
 }
 
 #include "shaderModule.I"

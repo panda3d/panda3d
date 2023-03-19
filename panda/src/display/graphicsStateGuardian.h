@@ -226,7 +226,7 @@ PUBLISHED:
   INLINE void set_shader_model(ShaderModel shader_model);
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
-  INLINE int get_supported_shader_capabilities() const;
+  INLINE uint64_t get_supported_shader_capabilities() const;
   MAKE_PROPERTY(supported_shader_capabilities, get_supported_shader_capabilities);
 
   virtual int get_supported_geom_rendering() const;
@@ -256,9 +256,7 @@ PUBLISHED:
   MAKE_PROPERTY(texture_quality_override, get_texture_quality_override,
                                           set_texture_quality_override);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_prepared_textures() const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *get_prepared_textures() const);
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
@@ -640,7 +638,7 @@ protected:
 
   ShaderModel _auto_detect_shader_model;
   ShaderModel _shader_model;
-  int _supported_shader_caps;
+  uint64_t _supported_shader_caps;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 

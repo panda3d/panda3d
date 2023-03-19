@@ -23,7 +23,7 @@ get_stage() const {
 /**
  * Returns the set of capabilities used by this shader.
  */
-INLINE int ShaderModule::
+INLINE uint64_t ShaderModule::
 get_used_capabilities() const {
   return _used_caps;
 }

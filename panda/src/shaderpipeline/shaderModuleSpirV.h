@@ -37,8 +37,9 @@ public:
   INLINE const uint32_t *get_data() const;
   INLINE size_t get_data_size() const;
 
-  virtual bool link_inputs(const ShaderModule *previous) override;
-  virtual void remap_parameter_locations(pmap<int, int> &remap) override;
+  virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const override;
+  virtual void remap_input_locations(const pmap<int, int> &remap) override;
+  virtual void remap_parameter_locations(const pmap<int, int> &remap) override;
 
   virtual std::string get_ir() const override;
 
@@ -140,6 +141,19 @@ public:
     // respectively one with and without depth comparison
     DF_dref_sampled = 4,
     DF_non_dref_sampled = 8,
+
+    // Set if we know for sure that this can be const-evaluated.
+    DF_constant_expression = 16,
+
+    // Set for arrays that are indexed with a non-const index.
+    DF_dynamically_indexed = 32,
+
+    // Has the "buffer block" decoration (older versions of SPIR-V).
+    DF_buffer_block = 64,
+
+    // If both of these are set, no access is permitted (size queries only)
+    DF_non_writable = 128, // readonly
+    DF_non_readable = 256, // writeonly
   };
 
   /**
@@ -151,6 +165,7 @@ public:
     int _location = -1;
     int _offset = -1;
     spv::BuiltIn _builtin = spv::BuiltInMax;
+    int _flags = 0; // Only readonly/writeonly
   };
   typedef pvector<MemberDefinition> MemberDefinitions;
 
@@ -173,7 +188,7 @@ public:
     MemberDefinitions _members;
     int _flags = 0;
 
-    // Only defined for DT_global and DT_type_pointer.
+    // Only defined for DT_variable and DT_type_pointer.
     spv::StorageClass _storage_class;
 
     INLINE bool is_used() const;

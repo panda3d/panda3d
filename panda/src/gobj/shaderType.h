@@ -49,6 +49,13 @@ public:
     ST_bool,
   };
 
+  enum class Access {
+    none = 0,
+    read_only = 1,
+    write_only = 2,
+    read_write = 3,
+  };
+
 private:
   typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
   static Registry *_registered_types;
@@ -74,6 +81,7 @@ PUBLISHED:
 public:
   virtual bool is_aggregate_type() const { return false; }
   virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const;
+  virtual bool contains_opaque_type() const { return false; }
   virtual bool contains_scalar_type(ScalarType type) const { return false; }
   virtual bool as_scalar_type(ScalarType &type,
                               uint32_t &num_elements,
@@ -109,6 +117,14 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+constexpr ShaderType::Access operator & (ShaderType::Access a, ShaderType::Access b) {
+  return (ShaderType::Access)((unsigned int)a & (unsigned int)b);
+}
+
+constexpr ShaderType::Access operator | (ShaderType::Access a, ShaderType::Access b) {
+  return (ShaderType::Access)((unsigned int)a | (unsigned int)b);
+}
 
 std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type);
 
@@ -274,6 +290,7 @@ public:
   virtual int get_num_parameter_locations() const override;
 
   bool is_aggregate_type() const override { return true; }
+  virtual bool contains_opaque_type() const override;
   virtual bool contains_scalar_type(ScalarType type) const override;
   const Struct *as_struct() const override { return this; }
 
@@ -320,6 +337,7 @@ public:
 
   virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
 
+  virtual bool contains_opaque_type() const override;
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
@@ -367,14 +385,6 @@ private:
  * Image type.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType {
-PUBLISHED:
-  enum class Access {
-    unknown = 0,
-    read_only = 1,
-    write_only = 2,
-    read_write = 3,
-  };
-
 public:
   INLINE Image(Texture::TextureType texture_type, ScalarType sampled_type, Access access);
 
@@ -385,6 +395,9 @@ public:
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual bool contains_opaque_type() const override { return true; }
+  virtual bool contains_scalar_type(ScalarType type) const override;
 
   const Image *as_image() const override { return this; }
 
@@ -461,6 +474,9 @@ public:
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual bool contains_opaque_type() const override { return true; }
+  virtual bool contains_scalar_type(ScalarType type) const override;
 
   const SampledImage *as_sampled_image() const override { return this; }
 

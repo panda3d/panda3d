@@ -31,11 +31,11 @@ sharedPackages = {}
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
-compiledExtensions = [ 'pyc', 'pyo' ]
+compiledExtensions = ['pyc', 'pyo']
 if not __debug__:
     # In optimized mode, we prefer loading .pyo files over .pyc files.
     # We implement that by reversing the extension names.
-    compiledExtensions = [ 'pyo', 'pyc' ]
+    compiledExtensions = ['pyo', 'pyc']
 
 
 class VFSImporter:
@@ -103,6 +103,7 @@ class VFSImporter:
 
         #print >>sys.stderr, "not found."
         return None
+
 
 class VFSLoader:
     """ The second part of VFSImporter, this is created for a
@@ -298,7 +299,6 @@ class VFSLoader:
         else:
             raise ValueError("Timestamp wrong on %s" % (vfile))
 
-
     def _compile(self, filename, source):
         """ Compiles the Python source code to a code object and
         attempts to write it to an appropriate .pyc file.  May raise
@@ -472,6 +472,8 @@ class VFSSharedLoader:
 
 
 _registered = False
+
+
 def register():
     """ Register the VFSImporter on the path_hooks, if it has not
     already been registered, so that future Python import statements

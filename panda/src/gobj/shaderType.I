@@ -196,7 +196,7 @@ get_sampled_type() const {
 /**
  * Returns the way this image is accessed.
  */
-INLINE ShaderType::Image::Access ShaderType::Image::
+INLINE ShaderType::Access ShaderType::Image::
 get_access() const {
   return _access;
 }

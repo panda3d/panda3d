@@ -70,6 +70,8 @@ public:
   void new_frame(int thread_index, int frame_number = -1);
   void add_frame(int thread_index, int frame_number, PStatFrameData &&frame_data);
 
+  void remove_thread(int thread_index);
+
 private:
   void enqueue_frame_data(int thread_index, int frame_number,
                           PStatFrameData &&frame_data);

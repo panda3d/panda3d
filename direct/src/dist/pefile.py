@@ -28,6 +28,7 @@ def _unpack_zstring(mem, offs=0):
         c = mem[offs]
     return str
 
+
 def _unpack_wstring(mem, offs=0):
     "Read a UCS-2 string from memory."
     name_len, = unpack('<H', mem[offs:offs+2])
@@ -36,6 +37,7 @@ def _unpack_wstring(mem, offs=0):
         offs += 2
         name += chr(*unpack('<H', mem[offs:offs+2]))
     return name
+
 
 def _padded(n, boundary):
     align = n % boundary
@@ -250,11 +252,11 @@ class VersionInfoResource(object):
             self.struct_version = dwords[1]
         if len(dwords) > 3:
             self.file_version = \
-               (int(dwords[2] >> 16), int(dwords[2] & 0xffff),
+                (int(dwords[2] >> 16), int(dwords[2] & 0xffff),
                 int(dwords[3] >> 16), int(dwords[3] & 0xffff))
         if len(dwords) > 5:
             self.product_version = \
-               (int(dwords[4] >> 16), int(dwords[4] & 0xffff),
+                (int(dwords[4] >> 16), int(dwords[4] & 0xffff),
                 int(dwords[5] >> 16), int(dwords[5] & 0xffff))
         if len(dwords) > 7:
             self.file_flags_mask = dwords[6]
@@ -302,7 +304,7 @@ class VersionInfoResource(object):
             # It contains a value.
             if type:
                 # It's a wchar array value.
-                value = u""
+                value = ""
                 c, = unpack('<H', data[offset:offset+2])
                 offset += 2
                 while c:
