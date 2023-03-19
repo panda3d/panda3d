@@ -1,12 +1,11 @@
-import tkinter as tk
 import pytest
 pytest.importorskip('Pmw')
 from direct.tkwidgets.Floater import Floater, FloaterGroup
 
 
-def test_Floater():
+def test_Floater(tk_toplevel):
     # Initialise Tkinter and Pmw.
-    root = tk.Toplevel()
+    root = tk_toplevel
     root.title('Pmw Floater demonstration')
 
     # Dummy command

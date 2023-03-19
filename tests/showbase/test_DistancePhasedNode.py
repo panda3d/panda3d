@@ -4,7 +4,7 @@ from direct.showbase.DistancePhasedNode import BufferedDistancePhasedNode
 
 
 def test_BufferedDistancePhasedNode():
-    base = ShowBase()
+    base = ShowBase(windowType='offscreen')
     cSphere = core.CollisionSphere(0, 0, 0, 0.1)
     cNode = core.CollisionNode('camCol')
     cNode.addSolid(cSphere)

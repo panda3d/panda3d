@@ -4,8 +4,8 @@ pytest.importorskip('Pmw')
 from direct.tkwidgets.Dial import Dial
 
 
-def test_Dial():
-    tl = tk.Toplevel()
+def test_Dial(tk_toplevel):
+    tl = tk_toplevel
     d = Dial(tl)
     d2 = Dial(tl, dial_numSegments = 12, max = 360,
               dial_fRollover = 0, value = 180)

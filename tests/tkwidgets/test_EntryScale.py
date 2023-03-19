@@ -1,12 +1,11 @@
-import tkinter as tk
 import pytest
 pytest.importorskip('Pmw')
 from direct.tkwidgets.EntryScale import EntryScale, EntryScaleGroup
 
 
-def test_EntryScale():
+def test_EntryScale(tk_toplevel):
     # Initialise Tkinter and Pmw.
-    root = tk.Toplevel()
+    root = tk_toplevel
     root.title('Pmw EntryScale demonstration')
 
     # Dummy command

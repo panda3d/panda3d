@@ -5,7 +5,7 @@ from direct.tkpanels.ParticlePanel import ParticlePanel
 
 
 def test_ParticlePanel():
-    base = ShowBase()
+    base = ShowBase(windowType='none')
     root = Pmw.initialise()
     pp = ParticlePanel()
     base.pp=pp

@@ -1,11 +1,10 @@
-import tkinter as tk
 import pytest
 pytest.importorskip('Pmw')
 from direct.tkwidgets import VectorWidgets
 
 
-def test_VectorEntry():
-    root = tk.Toplevel()
+def test_VectorEntry(tk_toplevel):
+    root = tk_toplevel
     root.title('Vector Widget demo')
 
     ve = VectorWidgets.VectorEntry(root)
