@@ -1,9 +1,13 @@
+import sys
 import tkinter as tk
 import pytest
+from panda3d import core
 
 
 @pytest.fixture
 def tk_toplevel():
+    if sys.platform == 'darwin' and not core.ConfigVariableBool('want-tk', False):
+        pytest.skip('"want-tk" must be true to use tkinter with Panda3D on macOS')
     try:
         root = tk.Toplevel()
     except tk.TclError as e:
