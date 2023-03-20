@@ -4,12 +4,12 @@ from direct.showbase.DistancePhasedNode import BufferedDistancePhasedNode
 
 
 def test_BufferedDistancePhasedNode():
-    base = ShowBase(windowType='offscreen')
+    base = ShowBase(windowType='none')
     cSphere = core.CollisionSphere(0, 0, 0, 0.1)
     cNode = core.CollisionNode('camCol')
     cNode.addSolid(cSphere)
     cNodePath = core.NodePath(cNode)
-    cNodePath.reparentTo(base.cam)
+    # cNodePath.reparentTo(base.cam)
     # cNodePath.show()
     # cNodePath.setPos(25,0,0)
 

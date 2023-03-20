@@ -4,8 +4,8 @@ from direct.showbase.ShowBase import ShowBase
 from direct.tkpanels.Placer import Placer
 
 
-def test_Placer():
-    base = ShowBase(windowType='offscreen')
+def test_Placer(window):
+    base = ShowBase()
     base.start_direct()
     root = Pmw.initialise()
     widget = Placer()

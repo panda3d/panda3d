@@ -4,7 +4,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.tkpanels.ParticlePanel import ParticlePanel
 
 
-def test_ParticlePanel():
+def test_ParticlePanel(tk_toplevel):
     base = ShowBase(windowType='none')
     root = Pmw.initialise()
     pp = ParticlePanel()
