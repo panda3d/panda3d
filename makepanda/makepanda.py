@@ -3288,6 +3288,8 @@ if GetTarget() == 'windows':
     CopyAllHeaders('panda/src/wgldisplay')
 elif GetTarget() == 'darwin':
     CopyAllHeaders('panda/src/cocoadisplay')
+    if not PkgSkip('GL'):
+        CopyAllHeaders('panda/src/cocoagldisplay')
 elif GetTarget() == 'android':
     CopyAllHeaders('panda/src/android')
     CopyAllHeaders('panda/src/androiddisplay')
@@ -4647,15 +4649,24 @@ if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("GL") and not PkgSki
 # DIRECTORY: panda/src/cocoadisplay/
 #
 
-if GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and not PkgSkip("GL"):
-    OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+if GetTarget() == 'darwin' and not PkgSkip("COCOA"):
+    OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'COCOA']
     TargetAdd('p3cocoadisplay_composite1.obj', opts=OPTS, input='p3cocoadisplay_composite1.mm')
+
+#
+# DIRECTORY: panda/src/cocoagldisplay/
+#
+
+if GetTarget() == 'darwin' and not PkgSkip("COCOA") and not PkgSkip("GL"):
+    OPTS=['DIR:panda/src/cocoagldisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+    TargetAdd('p3cocoagldisplay_composite1.obj', opts=OPTS, input='p3cocoagldisplay_composite1.mm')
     OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
     TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
     TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
     TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
     TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
     TargetAdd('libpandagl.dll', input='p3cocoadisplay_composite1.obj')
+    TargetAdd('libpandagl.dll', input='p3cocoagldisplay_composite1.obj')
     if not PkgSkip('PANDAFX'):
         TargetAdd('libpandagl.dll', input='libpandafx.dll')
     TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
