@@ -111,6 +111,12 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     extensions.push_back("VK_KHR_win32_surface");
     _has_surface_ext = true;
   }
+#elif defined(HAVE_COCOA)
+  if (has_instance_extension("VK_EXT_metal_surface")) {
+    extensions.push_back("VK_KHR_surface");
+    extensions.push_back("VK_EXT_metal_surface");
+    _has_surface_ext = true;
+  }
 #elif defined(HAVE_X11)
   if (has_instance_extension("VK_KHR_xlib_surface")) {
     extensions.push_back("VK_KHR_surface");
@@ -701,6 +707,10 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
 #endif  // !NDEBUG
 
   _is_valid = true;
+
+#ifdef HAVE_COCOA
+  _supported_types = OT_window | OT_buffer | OT_texture_buffer;
+#endif
 }
 
 /**

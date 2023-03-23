@@ -2623,6 +2623,15 @@ def SdkLocateAndroid():
         SDK["JDK"] = jdk_home
 
 def SdkLocateVulkan():
+    if GetTarget() not in ('windows', 'darwin'):
+        return
+
+    path = os.environ.get('VULKAN_SDK')
+    if path and os.path.isdir(path):
+        print("Using Vulkan SDK at %s" % (path))
+        SDK["VULKAN"] = path
+        return
+
     if GetHost() != 'windows' or GetTarget() != 'windows':
         return
 

@@ -14,6 +14,11 @@
 #include "vulkanGraphicsWindow.h"
 #include "vulkanGraphicsStateGuardian.h"
 
+#ifdef HAVE_COCOA
+#include <objc/objc.h>
+#include <objc/message.h>
+#endif
+
 TypeHandle VulkanGraphicsWindow::_type_handle;
 
 /**
@@ -443,6 +448,21 @@ open_window() {
   surface_info.hwnd = _hWnd;
 
   err = vkCreateWin32SurfaceKHR(vkpipe->_instance, &surface_info, nullptr, &_surface);
+
+#elif defined(HAVE_COCOA)
+  CAMetalLayer *layer;
+  layer = ((CAMetalLayer *(*)(objc_class *cls, SEL sel))objc_msgSend)(objc_getClass("CAMetalLayer"), sel_registerName("layer"));
+  ((void (*)(id self, SEL sel, id delegate))objc_msgSend)((id)layer, sel_registerName("setDelegate:"), _view);
+  ((void (*)(id self, SEL sel, BOOL arg))objc_msgSend)(_view, sel_registerName("setWantsLayer:"), TRUE);
+  ((void (*)(id self, SEL sel, id arg))objc_msgSend)(_view, sel_registerName("setLayer:"), (id)layer);
+
+  VkMetalSurfaceCreateInfoEXT surface_info;
+  surface_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+  surface_info.pNext = nullptr;
+  surface_info.flags = 0;
+  surface_info.pLayer = layer;
+
+  err = vkCreateMetalSurfaceEXT(vkpipe->_instance, &surface_info, nullptr, &_surface);
 
 #elif defined(HAVE_X11)
   VkXlibSurfaceCreateInfoKHR surface_info;

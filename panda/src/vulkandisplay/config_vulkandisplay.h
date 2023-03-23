@@ -31,6 +31,9 @@ extern "C" EXPCL_VULKANDISPLAY int get_pipe_type_p3vulkandisplay();
 #ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 
+#elif defined(HAVE_COCOA)
+#define VK_USE_PLATFORM_METAL_EXT
+
 #elif defined(HAVE_X11)
 // Make sure Eigen is included first to avoid conflict
 #include "lsimpleMatrix.h"

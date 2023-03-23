@@ -923,12 +923,21 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
-    SmartPkgEnable("VULKAN",    "",          ("vulkan"), "vulkan/vulkan.h")
     SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
+
+    if "VULKAN" in SDK:
+        IncDirectory("VULKAN", os.path.join(SDK["VULKAN"], "include"))
+        if GetTarget() == "darwin":
+            # This gets copied to built/lib, below
+            LibName("VULKAN", "-lMoltenVK")
+        else:
+            LibName("VULKAN", os.path.join(SDK["VULKAN"], "lib", "libvulkan.so"))
+    else:
+        SmartPkgEnable("VULKAN", "", ("vulkan"), "vulkan/vulkan.h")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -3201,6 +3210,16 @@ if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
     if os.path.isfile(os.path.join(dir, "vcruntime" + vcver + ".dll")):
         CopyFile(GetOutputDir() + "/bin/", os.path.join(dir, "vcruntime" + vcver + ".dll"))
 
+# Copy over the MoltenVK library.
+if GetTarget() == 'darwin' and not PkgSkip("VULKAN") and "VULKAN" in SDK:
+    dylib = os.path.join(SDK["VULKAN"], "lib", "libMoltenVK.dylib")
+    target = os.path.join(GetOutputDir(), "lib", "libMoltenVK.dylib")
+    if NeedsBuild([target], [dylib]):
+        CopyFile(target, dylib)
+        oscmd('install_name_tool -id @loader_path/../lib/libMoltenVK.dylib ' + target)
+        oscmd('codesign -f -s - ' + target)
+        JustBuilt([target], [dylib])
+
 ########################################################################
 ##
 ## Copy various stuff into the build.
@@ -4836,6 +4855,9 @@ if not PkgSkip("VULKAN"):
   if GetTarget() == 'windows':
     TargetAdd('libp3vulkandisplay.dll', input='libp3windisplay.dll')
     TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN'])
+  elif GetTarget() == 'darwin':
+    TargetAdd('libp3vulkandisplay.dll', input='p3cocoadisplay_composite1.obj')
+    TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'CARBON'])
   else:
     TargetAdd('libp3vulkandisplay.dll', input='p3x11display_composite1.obj')
     TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
