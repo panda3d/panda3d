@@ -16,6 +16,7 @@
 #include "vulkanGraphicsBuffer.h"
 #include "pandaVersion.h"
 #include "displayInformation.h"
+#include "small_vector.h"
 
 /**
  * Callback called by the VK_EXT_debug_utils extension whenever one of the
@@ -62,6 +63,25 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     pvkEnumerateInstanceVersion(&inst_version);
   }
 
+  // Query supported layers, and enable the ones we want.
+  small_vector<const char *> layers;
+
+  uint32_t num_inst_layers = 0;
+  vkEnumerateInstanceLayerProperties(&num_inst_layers, nullptr);
+
+  VkLayerProperties *inst_layers = nullptr;
+  if (num_inst_layers > 0) {
+    inst_layers = (VkLayerProperties *)
+      alloca(sizeof(VkLayerProperties) * num_inst_layers);
+
+    vkEnumerateInstanceLayerProperties(&num_inst_layers, inst_layers);
+    for (uint32_t i = 0; i < num_inst_layers; ++i) {
+      if (strcmp(inst_layers[i].layerName, "VK_LAYER_KHRONOS_validation") == 0) {
+        layers.push_back("VK_LAYER_KHRONOS_validation");
+      }
+    }
+  }
+
   // Query supported instance extensions.
   uint32_t num_inst_extensions = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
@@ -76,10 +96,6 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       _instance_extensions[std::string(inst_extensions[i].extensionName)] = inst_extensions[i].specVersion;
     }
   }
-
-  const char *const layers[] = {
-    "VK_LAYER_KHRONOS_validation",
-  };
 
   std::vector<const char *> extensions;
 
@@ -126,8 +142,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   inst_info.pNext = nullptr;
   inst_info.flags = 0;
   inst_info.pApplicationInfo = &app_info;
-  inst_info.enabledLayerCount = 1;
-  inst_info.ppEnabledLayerNames = layers;
+  inst_info.enabledLayerCount = layers.size();
+  inst_info.ppEnabledLayerNames = &layers[0];
   inst_info.enabledExtensionCount = extensions.size();
   inst_info.ppEnabledExtensionNames = &extensions[0];
 
@@ -419,7 +435,12 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       }
     }
 
-    // Enumerate supported extensions.
+    // Enumerate supported layers and extensions.
+    vulkandisplay_cat.debug() << "Supported instance layers:\n";
+    for (uint32_t i = 0; i < num_inst_layers; ++i) {
+      vulkandisplay_cat.debug() << "  " << inst_layers[i].layerName << "\n";
+    }
+
     vulkandisplay_cat.debug() << "Supported instance extensions:\n";
     for (uint32_t i = 0; i < num_inst_extensions; ++i) {
       vulkandisplay_cat.debug() << "  " << inst_extensions[i].extensionName << "\n";
