@@ -537,9 +537,10 @@ open_window() {
       _surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
     }
     _surface_format.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-  } else {
+  }
+  else {
     // Find a format that meets the requirements.
-    nassertr(num_formats > 1, false);
+    nassertr(num_formats > 0, false);
     _surface_format = formats[0];
 
     if (_fb_properties.get_srgb_color()) {
