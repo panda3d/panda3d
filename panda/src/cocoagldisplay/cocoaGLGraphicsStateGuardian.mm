@@ -6,12 +6,12 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file cocoaGraphicsStateGuardian.mm
+ * @file cocoaGLGraphicsStateGuardian.mm
  * @author rdb
  * @date 2012-05-14
  */
 
-#include "cocoaGraphicsStateGuardian.h"
+#include "cocoaGLGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
 #include "lightReMutexHolder.h"
 
@@ -30,34 +30,34 @@
 
 /**
  * Called whenever a display wants a frame.  The context argument contains the
- * applicable CocoaGraphicsStateGuardian.
+ * applicable CocoaGLGraphicsStateGuardian.
  */
 static CVReturn
 display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
                 const CVTimeStamp* output_time, CVOptionFlags flags_in,
                 CVOptionFlags *flags_out, void *context) {
-  CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)context;
+  CocoaGLGraphicsStateGuardian *gsg = (CocoaGLGraphicsStateGuardian *)context;
   gsg->_swap_lock.lock();
   gsg->_swap_condition.notify();
   gsg->_swap_lock.unlock();
   return kCVReturnSuccess;
 }
 
-TypeHandle CocoaGraphicsStateGuardian::_type_handle;
+TypeHandle CocoaGLGraphicsStateGuardian::_type_handle;
 
 /**
  *
  */
-CocoaGraphicsStateGuardian::
-CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-                           CocoaGraphicsStateGuardian *share_with) :
+CocoaGLGraphicsStateGuardian::
+CocoaGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
+                           CocoaGLGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(engine, pipe),
   _swap_condition(_swap_lock)
 {
   _share_context = nil;
   _context = nil;
 
-  if (share_with != (CocoaGraphicsStateGuardian *)NULL) {
+  if (share_with != (CocoaGLGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
@@ -66,8 +66,8 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 /**
  *
  */
-CocoaGraphicsStateGuardian::
-~CocoaGraphicsStateGuardian() {
+CocoaGLGraphicsStateGuardian::
+~CocoaGLGraphicsStateGuardian() {
   if (_format != nil) {
     [_format release];
   }
@@ -88,7 +88,7 @@ CocoaGraphicsStateGuardian::
  * Creates a CVDisplayLink, which tells us when the display the window is on
  * will want a frame.
  */
-bool CocoaGraphicsStateGuardian::
+bool CocoaGLGraphicsStateGuardian::
 setup_vsync() {
   if (_display_link != nil) {
     // Already set up.
@@ -125,7 +125,7 @@ setup_vsync() {
 /**
  * Gets the FrameBufferProperties to match the indicated config.
  */
-void CocoaGraphicsStateGuardian::
+void CocoaGLGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_format, int screen) {
 
   properties.clear();
@@ -210,7 +210,7 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
  * Selects a visual or fbconfig for all the windows and buffers that use this
  * gsg.  Also creates the GL context and obtains the visual.
  */
-void CocoaGraphicsStateGuardian::
+void CocoaGLGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     CGDirectDisplayID display,
                     bool need_pbuffer) {
@@ -357,7 +357,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 /**
  * Queries the runtime version of OpenGL in use.
  */
-void CocoaGraphicsStateGuardian::
+void CocoaGLGraphicsStateGuardian::
 query_gl_version() {
   GLGraphicsStateGuardian::query_gl_version();
 
@@ -381,7 +381,7 @@ query_gl_version() {
  * extension is defined in the OpenGL runtime prior to calling this; it is an
  * error to call this for a function that is not defined.
  */
-void *CocoaGraphicsStateGuardian::
+void *CocoaGLGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   char* fullname = (char*) malloc(strlen(name) + 2);
   strcpy(fullname + 1, name);

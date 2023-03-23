@@ -1,13 +1,11 @@
-if(NOT APPLE OR NOT HAVE_GL OR NOT HAVE_COCOA)
+if(NOT APPLE OR NOT HAVE_COCOA)
   return()
 endif()
 
 set(P3COCOADISPLAY_HEADERS
   config_cocoadisplay.h
-  cocoaGraphicsBuffer.h cocoaGraphicsBuffer.I
   cocoaGraphicsPipe.h cocoaGraphicsPipe.I
   cocoaGraphicsWindow.h cocoaGraphicsWindow.I
-  cocoaGraphicsStateGuardian.h cocoaGraphicsStateGuardian.I
   cocoaPandaApp.h
   cocoaPandaView.h
   cocoaPandaWindow.h
@@ -17,9 +15,7 @@ set(P3COCOADISPLAY_HEADERS
 
 set(P3COCOADISPLAY_SOURCES
   config_cocoadisplay.mm
-  cocoaGraphicsBuffer.mm
   cocoaGraphicsPipe.mm
-  cocoaGraphicsStateGuardian.mm
   cocoaGraphicsWindow.mm
   cocoaPandaApp.mm
   cocoaPandaView.mm
@@ -31,7 +27,7 @@ set(P3COCOADISPLAY_SOURCES
 composite_sources(p3cocoadisplay P3COCOADISPLAY_SOURCES)
 add_component_library(p3cocoadisplay SYMBOL BUILDING_PANDA_COCOADISPLAY
   ${P3COCOADISPLAY_HEADERS} ${P3COCOADISPLAY_SOURCES})
-target_link_libraries(p3cocoadisplay p3glgsg panda)
+target_link_libraries(p3cocoadisplay panda)
 
 # Frameworks:
 find_library(APPLICATIONSERVICES_LIBRARY ApplicationServices)
@@ -46,5 +42,5 @@ mark_as_advanced(
   APPLICATIONSERVICES_LIBRARY APPKIT_LIBRARY CARBON_LIBRARY CORE_VIDEO_LIBRARY)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3cocoadisplay EXPORT OpenGL COMPONENT OpenGL DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(TARGETS p3cocoadisplay EXPORT Core COMPONENT Core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

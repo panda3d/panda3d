@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file cocoaGraphicsStateGuardian.I
+ * @file cocoaGLGraphicsStateGuardian.I
  * @author rdb
  * @date 2012-05-14
  */
@@ -15,7 +15,7 @@
  * Gets the FrameBufferProperties for all windows and buffers that use this
  * GSG.
  */
-INLINE const FrameBufferProperties &CocoaGraphicsStateGuardian::
+INLINE const FrameBufferProperties &CocoaGLGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;
 }
@@ -23,7 +23,7 @@ get_fb_properties() const {
 /**
  * Locks the context.
  */
-INLINE void CocoaGraphicsStateGuardian::
+INLINE void CocoaGLGraphicsStateGuardian::
 lock_context() {
   nassertv(_context != nil);
   CGLLockContext((CGLContextObj) [_context CGLContextObj]);
@@ -32,7 +32,7 @@ lock_context() {
 /**
  * Unlocks the context.
  */
-INLINE void CocoaGraphicsStateGuardian::
+INLINE void CocoaGLGraphicsStateGuardian::
 unlock_context() {
   nassertv(_context != nil);
   CGLUnlockContext((CGLContextObj) [_context CGLContextObj]);
