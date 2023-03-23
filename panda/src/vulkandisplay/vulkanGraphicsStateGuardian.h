@@ -189,25 +189,25 @@ public:
                                   Texture::ComponentType &type);
 
 public:
-  VkDevice _device;
+  VkDevice _device = VK_NULL_HANDLE;
   uint32_t _graphics_queue_family_index;
   PT(Texture) _white_texture;
 
 private:
-  VkQueue _queue;
-  VkQueue _dma_queue;
-  VkCommandPool _cmd_pool;
+  VkQueue _queue = VK_NULL_HANDLE;
+  VkQueue _dma_queue = VK_NULL_HANDLE;
+  VkCommandPool _cmd_pool = VK_NULL_HANDLE;
   pvector<VkRect2D> _viewports;
-  VkPipelineCache _pipeline_cache;
-  VkDescriptorPool _descriptor_pool;
-  VulkanShaderContext *_default_sc;
-  VulkanShaderContext *_current_shader;
+  VkPipelineCache _pipeline_cache = VK_NULL_HANDLE;
+  VkDescriptorPool _descriptor_pool = VK_NULL_HANDLE;
+  VulkanShaderContext *_default_sc = nullptr;
+  VulkanShaderContext *_current_shader = nullptr;
   const ShaderType::Struct *_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
   uint32_t _instance_count = 0;
 
   // Single large uniform buffer used for everything in a frame.
-  VkBuffer _uniform_buffer;
+  VkBuffer _uniform_buffer = VK_NULL_HANDLE;
   VulkanMemoryBlock _uniform_buffer_memory;
   CircularAllocator _uniform_buffer_allocator;
   void *_uniform_buffer_ptr = nullptr;
@@ -221,12 +221,12 @@ private:
   void *_staging_buffer_ptr = nullptr;
 
   // Stores current framebuffer info.
-  VkRenderPass _render_pass;
-  VulkanTextureContext *_fb_color_tc;
-  VulkanTextureContext *_fb_depth_tc;
+  VkRenderPass _render_pass = VK_NULL_HANDLE;
+  VulkanTextureContext *_fb_color_tc = nullptr;
+  VulkanTextureContext *_fb_depth_tc = nullptr;
   VkSampleCountFlagBits _fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
-  VkSemaphore _wait_semaphore;
-  VkSemaphore _signal_semaphore;
+  VkSemaphore _wait_semaphore = VK_NULL_HANDLE;
+  VkSemaphore _signal_semaphore = VK_NULL_HANDLE;
 
   // Remembers semaphores created on this device.
   pvector<VkSemaphore> _semaphores;
@@ -261,7 +261,7 @@ private:
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;
   pdeque<VulkanMemoryPage> _memory_pages;
-  VkDeviceSize _total_allocated;
+  VkDeviceSize _total_allocated = 0u;
 
   // Queued buffer-to-RAM transfer.
   struct QueuedDownload {

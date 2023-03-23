@@ -554,7 +554,7 @@ destroy_framebuffer() {
       if (vkgsg->_last_frame_data != nullptr) {
         vkgsg->_last_frame_data->_pending_destroy_image_views.push_back(attach._tc->_image_view);
       } else {
-        vkDestroyImageView(vkgsg->_device, attach._tc->_image_view, nullptr);
+        vkDestroyImageView(device, attach._tc->_image_view, nullptr);
       }
       attach._tc->_image_view = VK_NULL_HANDLE;
     }
@@ -563,7 +563,7 @@ destroy_framebuffer() {
       if (vkgsg->_last_frame_data != nullptr) {
         vkgsg->_last_frame_data->_pending_destroy_images.push_back(attach._tc->_image);
       } else {
-        vkDestroyImage(vkgsg->_device, attach._tc->_image, nullptr);
+        vkDestroyImage(device, attach._tc->_image, nullptr);
       }
       attach._tc->_image = VK_NULL_HANDLE;
     }
@@ -577,7 +577,7 @@ destroy_framebuffer() {
     if (vkgsg->_last_frame_data != nullptr) {
       vkgsg->_last_frame_data->_pending_destroy_framebuffers.push_back(_framebuffer);
     } else {
-      vkDestroyFramebuffer(vkgsg->_device, _framebuffer, nullptr);
+      vkDestroyFramebuffer(device, _framebuffer, nullptr);
     }
     _framebuffer = VK_NULL_HANDLE;
   }

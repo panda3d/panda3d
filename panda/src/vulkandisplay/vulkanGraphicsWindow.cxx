@@ -32,16 +32,7 @@ VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                      int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host) :
-  BaseGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
-  _surface(VK_NULL_HANDLE),
-  _swapchain(VK_NULL_HANDLE),
-  _render_pass(VK_NULL_HANDLE),
-  _image_available(VK_NULL_HANDLE),
-  _render_complete(VK_NULL_HANDLE),
-  _current_clear_mask(-1),
-  _ms_color_tc(nullptr),
-  _depth_stencil_tc(nullptr),
-  _image_index(0)
+  BaseGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
 }
 

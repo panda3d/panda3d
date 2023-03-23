@@ -65,14 +65,14 @@ protected:
   bool create_swapchain();
 
 private:
-  VkSurfaceKHR _surface;
-  VkSwapchainKHR _swapchain;
-  VkRenderPass _render_pass;
-  int _current_clear_mask;
+  VkSurfaceKHR _surface = VK_NULL_HANDLE;
+  VkSwapchainKHR _swapchain = VK_NULL_HANDLE;
+  VkRenderPass _render_pass = VK_NULL_HANDLE;
+  int _current_clear_mask = -1;
 
   // We'll need these to synchronize the rendering with the presentation.
-  VkSemaphore _render_complete;
-  VkSemaphore _image_available;
+  VkSemaphore _render_complete = VK_NULL_HANDLE;
+  VkSemaphore _image_available = VK_NULL_HANDLE;
 
   LVecBase2i _swapchain_size;
   VkSurfaceFormatKHR _surface_format;
@@ -83,13 +83,13 @@ private:
   };
   typedef pvector<SwapBuffer> SwapBuffers;
   SwapBuffers _swap_buffers;
-  uint32_t _image_index;
+  uint32_t _image_index = 0;
   VkImageLayout _final_layout;
 
   VulkanTextureContext *_ms_color_tc = nullptr;
   VkSampleCountFlagBits _ms_count = VK_SAMPLE_COUNT_1_BIT;
 
-  VulkanTextureContext *_depth_stencil_tc;
+  VulkanTextureContext *_depth_stencil_tc = nullptr;
   VkFormat _depth_stencil_format;
   VkImageAspectFlags _depth_stencil_aspect_mask;
 

@@ -70,17 +70,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                             VulkanGraphicsStateGuardian *share_with,
                             uint32_t queue_family_index) :
   GraphicsStateGuardian(CS_default, engine, pipe),
-  _device(VK_NULL_HANDLE),
-  _queue(VK_NULL_HANDLE),
-  _dma_queue(VK_NULL_HANDLE),
-  _graphics_queue_family_index(queue_family_index),
-  _cmd_pool(VK_NULL_HANDLE),
-  _render_pass(VK_NULL_HANDLE),
-  _wait_semaphore(VK_NULL_HANDLE),
-  _signal_semaphore(VK_NULL_HANDLE),
-  _pipeline_cache(VK_NULL_HANDLE),
-  _default_sc(nullptr),
-  _total_allocated(0)
+  _graphics_queue_family_index(queue_family_index)
 {
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
@@ -2879,8 +2869,8 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
 
   // Temporary, prepare_now should really deal with the resizing
-  if (tc->_extent.width != tex->get_x_size() ||
-      tc->_extent.height != tex->get_y_size()) {
+  if (tc->_extent.width != (uint32_t)tex->get_x_size() ||
+      tc->_extent.height != (uint32_t)tex->get_y_size()) {
     pgo->release_texture(tc);
     DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
   }
