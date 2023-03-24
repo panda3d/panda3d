@@ -16,8 +16,12 @@
 #include "displayInformation.h"
 
 #import <Foundation/NSAutoreleasePool.h>
+#import <Foundation/NSArray.h>
+#import <Foundation/NSDictionary.h>
+#import <Foundation/NSThread.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSRunningApplication.h>
+#import <AppKit/NSScreen.h>
 
 #include <mach-o/arch.h>
 
