@@ -10,7 +10,7 @@ p.s. A great deal of this code is just code moved from ClientRepository.py.
 from typing import Dict, List
 
 from panda3d.core import ConfigVariableBool
-from .MsgTypes import CLIENT_ADD_INTEREST, CLIENT_ADD_INTEREST_MULTIPLE, CLIENT_REMOVE_INTEREST  # type: ignore[attr-defined]
+from .MsgTypes import CLIENT_ADD_INTEREST, CLIENT_ADD_INTEREST_MULTIPLE, CLIENT_REMOVE_INTEREST
 from direct.showbase import DirectObject
 from direct.showbase.MessengerGlobal import messenger
 from .PyDatagram import PyDatagram

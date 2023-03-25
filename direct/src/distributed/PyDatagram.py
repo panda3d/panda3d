@@ -27,7 +27,7 @@ from panda3d.direct import (
 )
 # Import the type numbers
 
-from direct.distributed.MsgTypes import CONTROL_CHANNEL  # type: ignore[attr-defined]
+from direct.distributed.MsgTypes import CONTROL_CHANNEL
 
 
 class PyDatagram(Datagram):
