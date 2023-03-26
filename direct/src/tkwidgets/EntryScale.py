@@ -11,7 +11,7 @@ from tkinter.simpledialog import askfloat, askstring
 from tkinter.colorchooser import askcolor
 
 
-class EntryScale(Pmw.MegaWidget):  # type: ignore[attr-defined, name-defined]
+class EntryScale(Pmw.MegaWidget):
     "Scale with linked and validated entry"
 
     def __init__(self, parent = None, **kw):
@@ -271,7 +271,7 @@ class EntryScale(Pmw.MegaWidget):  # type: ignore[attr-defined, name-defined]
         """ User redefinable callback executed on button release """
 
 
-class EntryScaleGroup(Pmw.MegaToplevel):  # type: ignore[attr-defined, name-defined]
+class EntryScaleGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
         # Default group size

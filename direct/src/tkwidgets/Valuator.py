@@ -13,7 +13,7 @@ VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
 
 
-class Valuator(Pmw.MegaWidget):  # type: ignore[attr-defined, name-defined]
+class Valuator(Pmw.MegaWidget):
     sfBase = 3.0
     sfDist = 7
     deadband = 5
@@ -341,7 +341,7 @@ ANGLEDIAL = 'angledial'
 SLIDER = 'slider'
 
 
-class ValuatorGroup(Pmw.MegaWidget):  # type: ignore[name-defined]
+class ValuatorGroup(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
 
         # Default group size
@@ -474,7 +474,7 @@ class ValuatorGroup(Pmw.MegaWidget):  # type: ignore[name-defined]
         return str
 
 
-class ValuatorGroupPanel(Pmw.MegaToplevel):  # type: ignore[name-defined]
+class ValuatorGroupPanel(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
         # Default group size
@@ -595,7 +595,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):  # type: ignore[name-defined]
         self.set(self['value'])
 
 
-Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')  # type: ignore[attr-defined]
+Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
 
 
 def rgbPanel(nodePath, callback = None, style = 'mini'):

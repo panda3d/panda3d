@@ -29,16 +29,16 @@ if not hasattr(builtins, "variableDict"):
 
 
 def resetWidgetDict():
-    builtins.widgetDict = {}  # type: ignore[attr-defined]
+    builtins.widgetDict = {}
 
 
 def resetVariableDict():
-    builtins.variableDict = {}  # type: ignore[attr-defined]
+    builtins.variableDict = {}
 
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
 # to use as a container if you wish.  If no toplevel passed in, create one
-class AppShell(Pmw.MegaWidget, DirectObject):  # type: ignore[attr-defined, name-defined]
+class AppShell(Pmw.MegaWidget, DirectObject):
     appversion      = '1.0'
     appname         = 'Generic Application Frame'
     copyright       = ('Copyright 2004 Walt Disney Imagineering.' +
