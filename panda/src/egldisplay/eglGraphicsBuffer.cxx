@@ -38,9 +38,10 @@ eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   DCAST_INTO_V(egl_pipe, _pipe);
   _pbuffer = EGL_NO_SURFACE;
 
-  // Since the pbuffer never gets flipped, we get screenshots from the same
-  // buffer we draw into.
-  _screenshot_buffer_type = _draw_buffer_type;
+  // EGL pbuffers only have a back buffer (see 2.2.2 in spec), and it is never
+  // flipped (eglSwapBuffers is a no-op).
+  _draw_buffer_type = RenderBuffer::T_back;
+  _screenshot_buffer_type = RenderBuffer::T_back;
 }
 
 /**
