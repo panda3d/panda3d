@@ -1,16 +1,15 @@
+from panda3d.core import Vec3
+from panda3d.physics import LinearVectorForce
+from direct.particles import ParticleEffect
+from direct.particles import Particles
+from direct.particles import ForceGroup
+from direct.showbase.ShowBase import ShowBase
+from direct.tkpanels import ParticlePanel
 
-if __name__ == "__main__":
-    from panda3d.core import Vec3
-    from panda3d.physics import LinearVectorForce
 
-    from direct.directbase.TestStart import base
-    from direct.tkpanels import ParticlePanel
-
-    from . import ParticleEffect
-    from . import Particles
-    from . import ForceGroup
-
+def test_particle():
     # Showbase
+    base = ShowBase(windowType='none')
     base.enableParticles()
 
     # ForceGroup
@@ -31,4 +30,4 @@ if __name__ == "__main__":
     # Particle Panel
     pp = ParticlePanel.ParticlePanel(pe)
 
-    base.run()
+    base.destroy()
