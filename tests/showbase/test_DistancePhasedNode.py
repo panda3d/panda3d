@@ -1,10 +1,8 @@
 from panda3d import core
-from direct.showbase.ShowBase import ShowBase
 from direct.showbase.DistancePhasedNode import BufferedDistancePhasedNode
 
 
-def test_BufferedDistancePhasedNode():
-    base = ShowBase(windowType='none')
+def test_BufferedDistancePhasedNode(base):
     cSphere = core.CollisionSphere(0, 0, 0, 0.1)
     cNode = core.CollisionNode('camCol')
     cNode.addSolid(cSphere)
@@ -30,4 +28,3 @@ def test_BufferedDistancePhasedNode():
     p.reparentTo(base.render)
     p._DistancePhasedNode__oneTimeCollide()
     base.eventMgr.doEvents()
-    base.destroy()

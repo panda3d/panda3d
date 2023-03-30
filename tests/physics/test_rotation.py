@@ -8,7 +8,6 @@ from panda3d.physics import (
     LinearFrictionForce,
     LinearVectorForce,
 )
-from direct.showbase.ShowBase import ShowBase
 
 
 class RotationTest(NodePath):
@@ -99,14 +98,10 @@ class RotationTest(NodePath):
         #self.actorNode.updateTransform()
 
 
-def test_RotationTest():
-    base = ShowBase(windowType='none')
+def test_RotationTest(base):
     base.enableParticles()
     base.addAngularIntegrator()
-    try:
-        test = RotationTest()
-        test.reparentTo(base.render)
-        test.setup()
-        # base.camera.setY(-10.0)
-    finally:
-        base.destroy()
+    test = RotationTest()
+    test.reparentTo(base.render)
+    test.setup()
+    # base.camera.setY(-10.0)

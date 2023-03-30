@@ -3,7 +3,6 @@ from panda3d.physics import LinearVectorForce
 from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
-from direct.showbase.ShowBase import ShowBase
 
 
 class ParticleFloorTest(NodePath):
@@ -49,13 +48,9 @@ class ParticleFloorTest(NodePath):
         self.f.enable()
 
 
-def test_ParticleFloorTest():
-    base = ShowBase(windowType='none')
+def test_ParticleFloorTest(base):
     base.enableParticles()
-    try:
-        pt = ParticleFloorTest()
-        pt.reparentTo(base.render)
-        pt.start()
-        # base.camera.setY(-10.0)
-    finally:
-        base.destroy()
+    pt = ParticleFloorTest()
+    pt.reparentTo(base.render)
+    pt.start()
+    # base.camera.setY(-10.0)

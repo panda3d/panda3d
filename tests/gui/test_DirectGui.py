@@ -1,14 +1,11 @@
 from random import random
 from panda3d.core import Point3
-from direct.showbase.ShowBase import ShowBase
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.gui import DirectGuiGlobals
 from direct.gui.DirectGui import DirectButton, DirectDialog, DirectEntry, DirectFrame, YesNoDialog
 
 
-def test_DirectGui():
-    base = ShowBase(windowType='none')
-
+def test_DirectGui(base):
     # EXAMPLE CODE
     # Load a model
     smiley = base.loader.loadModel('models/misc/smiley')
@@ -137,5 +134,3 @@ def test_DirectGui():
     print('WIDTH: %s' % de1.getWidth())
     print('HEIGHT: %s' % de1.getHeight())
     print('CENTER: %s' % (de1.getCenter(),))
-
-    base.destroy()

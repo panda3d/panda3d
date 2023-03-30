@@ -7,7 +7,6 @@ from panda3d.physics import (
     LinearFrictionForce,
     LinearVectorForce,
 )
-from direct.showbase.ShowBase import ShowBase
 
 
 class FallTest(NodePath):
@@ -88,14 +87,10 @@ class FallTest(NodePath):
         #self.actorNode.updateTransform()
 
 
-def test_FallTest():
-    base = ShowBase(windowType='none')
+def test_FallTest(base):
     base.enableParticles()
     base.addAngularIntegrator()
-    try:
-        test = FallTest()
-        test.reparentTo(base.render)
-        test.setup()
-        # base.camera.setY(-10.0)
-    finally:
-        base.destroy()
+    test = FallTest()
+    test.reparentTo(base.render)
+    test.setup()
+    # base.camera.setY(-10.0)

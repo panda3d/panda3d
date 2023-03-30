@@ -3,12 +3,10 @@ from panda3d.physics import LinearVectorForce
 from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
-from direct.showbase.ShowBase import ShowBase
 
 
-def test_particle():
+def test_particle(base):
     # Showbase
-    base = ShowBase(windowType='none')
     base.enableParticles()
 
     # ForceGroup
@@ -28,5 +26,3 @@ def test_particle():
 
     # Particle Panel
     # pp = ParticlePanel.ParticlePanel(pe)
-
-    base.destroy()

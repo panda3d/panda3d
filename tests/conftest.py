@@ -2,6 +2,14 @@ import sys
 import tkinter as tk
 import pytest
 from panda3d import core
+from direct.showbase.ShowBase import ShowBase
+
+
+@pytest.fixture
+def base():
+    base = ShowBase(windowType='none')
+    yield base
+    base.destroy()
 
 
 @pytest.fixture
