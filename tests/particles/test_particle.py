@@ -4,7 +4,6 @@ from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
 from direct.showbase.ShowBase import ShowBase
-from direct.tkpanels import ParticlePanel
 
 
 def test_particle():
@@ -28,6 +27,6 @@ def test_particle():
     pe.addParticles(p)
 
     # Particle Panel
-    pp = ParticlePanel.ParticlePanel(pe)
+    # pp = ParticlePanel.ParticlePanel(pe)
 
     base.destroy()

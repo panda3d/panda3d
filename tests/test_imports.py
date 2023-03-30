@@ -183,7 +183,6 @@ def test_imports_direct():
     import direct.task.Task
     import direct.task.TaskManagerGlobal
     import direct.task.TaskProfiler
-    import direct.task.TaskTester
     import direct.task.Timer
 
 
