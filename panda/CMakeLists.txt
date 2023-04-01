@@ -54,6 +54,7 @@ add_subdirectory(src/recorder)
 add_subdirectory(src/testbed)
 add_subdirectory(src/text)
 add_subdirectory(src/tform)
+add_subdirectory(src/tinydisplay)
 add_subdirectory(src/vision)
 add_subdirectory(src/vrpn)
 add_subdirectory(src/wgldisplay)
@@ -85,7 +86,7 @@ set(CORE_MODULE_COMPONENTS
   p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
   p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
   p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
-  p3prc p3dtoolutil p3dtoolbase
+  p3tinydisplay p3prc p3dtoolutil p3dtoolbase
 )
 
 if(WANT_NATIVE_NET)
