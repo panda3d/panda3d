@@ -69,10 +69,8 @@ set(P3TINYDISPLAY_SOURCES
 )
 
 composite_sources(p3tinydisplay P3TINYDISPLAY_SOURCES)
-add_component_library(p3tinydisplay SYMBOL BUILDING_TINYDISPLAY
-    ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES})
+add_component_library(p3tinydisplay SYMBOL BUILDING_TINYDISPLAY ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES})
 target_link_libraries(p3tinydisplay panda p3windisplay)
-target_interrogate(p3tinydisplay ALL)
 
 if(NOT BUILD_METALIBS)
     install(TARGETS p3tinydisplay
@@ -82,4 +80,3 @@ if(NOT BUILD_METALIBS)
       INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
       ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3TINYDISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

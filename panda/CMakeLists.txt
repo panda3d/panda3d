@@ -86,7 +86,7 @@ set(CORE_MODULE_COMPONENTS
   p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
   p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
   p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
-  p3tinydisplay p3prc p3dtoolutil p3dtoolbase
+  p3prc p3dtoolutil p3dtoolbase
 )
 
 if(WANT_NATIVE_NET)
