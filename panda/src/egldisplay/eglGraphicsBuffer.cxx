@@ -121,6 +121,30 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 /**
+ *
+ */
+void eglGraphicsBuffer::
+set_size(int x, int y) {
+  nassertv_always(_gsg != nullptr);
+
+  if (_size.get_x() != x || _size.get_y() != y) {
+    eglDestroySurface(_egl_display, _pbuffer);
+
+    int attrib_list[] = {
+      EGL_WIDTH, x,
+      EGL_HEIGHT, y,
+      EGL_NONE
+    };
+
+    eglGraphicsStateGuardian *eglgsg;
+    DCAST_INTO_V(eglgsg, _gsg);
+    _pbuffer = eglCreatePbufferSurface(eglgsg->_egl_display, eglgsg->_fbconfig, attrib_list);
+  }
+
+  set_size_and_recalc(x, y);
+}
+
+/**
  * Closes the buffer right now.  Called from the window thread.
  */
 void eglGraphicsBuffer::
