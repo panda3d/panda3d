@@ -551,7 +551,8 @@ class build_apps(setuptools.Command):
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
 
-        subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        pip_wrapper = os.path.join(os.path.dirname(__file__), 'pip_wrapper.py')
+        subprocess.check_call([sys.executable, pip_wrapper] + pip_args)
 
         # Return a list of paths to the downloaded whls
         return [
