@@ -17,8 +17,8 @@ import os
 from direct.dist import FreezeTool
 
 def usage(code, msg = ''):
-    print(file=sys.stderr, __doc__)
-    print(file=sys.stderr, msg)
+    print(__doc__, file=sys.stderr)
+    print(msg, file=sys.stderr)
     sys.exit(code)
 
 if __name__ == '__main__':
