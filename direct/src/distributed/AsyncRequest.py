@@ -1,4 +1,4 @@
-from typing import Dict
+from __future__ import annotations
 
 #from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
@@ -41,7 +41,7 @@ class AsyncRequest(DirectObject):
     will be called again when the new self.neededObjects is complete.  You
     may repeat this as necessary.
     """
-    _asyncRequests: Dict[int, 'AsyncRequest'] = {}
+    _asyncRequests: dict[int, AsyncRequest] = {}
 
     notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 

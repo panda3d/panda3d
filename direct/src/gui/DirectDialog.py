@@ -4,12 +4,12 @@ See the :ref:`directdialog` page in the programming manual for a more
 in-depth explanation and an example of how to use this class.
 """
 
+from __future__ import annotations
+
 __all__ = [
     'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',
     'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
 ]
-
-from typing import Dict
 
 from panda3d.core import NodePath, Point3, TextNode, VBase3
 from direct.showbase import ShowBaseGlobal
@@ -47,7 +47,7 @@ def cleanupDialog(uniqueName):
 
 class DirectDialog(DirectFrame):
 
-    AllDialogs: Dict[str, 'DirectDialog'] = {}
+    AllDialogs: dict[str, DirectDialog] = {}
     PanelIndex = 0
 
     def __init__(self, parent=None, **kw):
