@@ -15,7 +15,7 @@ SocketIP.InitNetworkDriver();
 
 addr = SocketAddress()
 addr.setHost("127.0.0.1",6666)
-print (addr.getIpPort())
+print(addr.getIpPort())
 
 MyConection = BufferedDatagramConnection(0,4096000,4096000,102400);
 #help(BufferedDatagramConnection)
