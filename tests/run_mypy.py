@@ -15,7 +15,7 @@ def main():
         shutil.copytree(direct_src, direct_copy)
         subprocess.run([
             'mypy',
-            str(direct_src),
+            str(direct_copy),
             '--config-file',
             str(mypy_config),
         ])
