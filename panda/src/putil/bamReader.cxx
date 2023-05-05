@@ -315,7 +315,7 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
  * time to call it.
  *
  * This must be called at least once after reading a particular object via
- * get_object() in order to validate that object.
+ * read_object() in order to validate that object.
  *
  * The return value is true if all objects have been resolved, or false if
  * some objects are still outstanding (in which case you will need to call
