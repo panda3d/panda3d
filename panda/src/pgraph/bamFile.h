@@ -74,7 +74,11 @@ PUBLISHED:
   BamReader *get_reader();
   BamWriter *get_writer();
 
+public:
+  EXTENSION(PyObject *get_file_version() const);
+
 PUBLISHED:
+  MAKE_PROPERTY(file_version, get_file_version);
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
 
