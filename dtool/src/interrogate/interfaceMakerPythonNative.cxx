@@ -1669,7 +1669,11 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     if (!func->_has_this) {
-      flags += " | METH_STATIC";
+      if (func->_flags & FunctionRemap::F_explicit_cls) {
+        flags += " | METH_CLASS";
+      } else {
+        flags += " | METH_STATIC";
+      }
 
       // Skip adding this entry if we also have a property with the same name.
       // In that case, we will use a Dtool_StaticProperty to disambiguate
@@ -3526,6 +3530,9 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   // This will be NULL for static funcs, so prevent code from using it.
   if (func->_has_this) {
     prototype += "self";
+  }
+  else if (func->_flags & FunctionRemap::F_explicit_cls) {
+    prototype += "cls";
   }
 
   switch (func->_args_type) {
