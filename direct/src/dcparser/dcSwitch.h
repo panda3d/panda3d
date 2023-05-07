@@ -29,7 +29,7 @@ class DCField;
  */
 class EXPCL_DIRECT_DCPARSER DCSwitch : public DCDeclaration {
 public:
-  DCSwitch(const std::string &name, DCField *key_parameter);
+  DCSwitch(const std::string &name, DCField *key_parameter, DCSwitch *outer);
   virtual ~DCSwitch();
 
 PUBLISHED:
@@ -56,7 +56,7 @@ public:
   bool add_default();
   bool add_field(DCField *field);
   void add_break();
-
+  
   const DCPackerInterface *apply_switch(const char *value_data, size_t length) const;
 
   virtual void output(std::ostream &out, bool brief) const;
@@ -70,6 +70,8 @@ public:
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   bool do_check_match_switch(const DCSwitch *other) const;
+  
+  DCSwitch *get_outer() const;
 
 public:
   typedef pvector<DCField *> Fields;
@@ -139,6 +141,8 @@ private:
   // This map indexes into the _cases vector, above.
   typedef pmap<vector_uchar, int> CasesByValue;
   CasesByValue _cases_by_value;
+  
+  DCSwitch *_outer;
 };
 
 #endif

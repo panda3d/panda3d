@@ -64,7 +64,7 @@ public:
  *
  */
 DCClass::
-DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
+DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class, DCClass *outer) :
 #ifdef WITHIN_PANDA
   _class_update_pcollector(_update_pcollector, name),
   _class_generate_pcollector(_generate_pcollector, name),
@@ -72,7 +72,8 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
   _dc_file(dc_file),
   _name(name),
   _is_struct(is_struct),
-  _bogus_class(bogus_class)
+  _bogus_class(bogus_class),
+  _outer(outer)
 {
   _number = -1;
   _constructor = nullptr;

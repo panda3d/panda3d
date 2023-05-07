@@ -1756,7 +1756,7 @@ yyreduce:
   case 30:
 #line 299 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
-  current_class = new DCClass(dc_file, (yyvsp[0].str), false, false);
+  current_class = new DCClass(dc_file, (yyvsp[0].str), false, false, current_class);
 }
 #line 1762 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;
@@ -1765,7 +1765,7 @@ yyreduce:
 #line 303 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
   (yyval.u.dclass) = current_class;
-  current_class = (yyvsp[-4].u.dclass);
+  current_class = current_class->get_outer();
 }
 #line 1771 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;
@@ -1781,7 +1781,7 @@ yyreduce:
     DCClass *dclass = dc_file->get_class_by_name((yyvsp[0].str));
     if (dclass == nullptr) {
       // Create a bogus class as a forward reference.
-      dclass = new DCClass(dc_file, (yyvsp[0].str), false, true);
+      dclass = new DCClass(dc_file, (yyvsp[0].str), false, true, nullptr);
       dc_file->add_class(dclass);
     }
     if (dclass->is_struct()) {
@@ -1873,7 +1873,7 @@ yyreduce:
   case 44:
 #line 403 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
-  current_class = new DCClass(dc_file, (yyvsp[0].str), true, false);
+  current_class = new DCClass(dc_file, (yyvsp[0].str), true, false, current_class);
 }
 #line 1879 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;
@@ -1882,7 +1882,7 @@ yyreduce:
 #line 407 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
   (yyval.u.dclass) = current_class;
-  current_class = (yyvsp[-4].u.dclass);
+  current_class = current_class->get_outer();
 }
 #line 1888 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;
@@ -1898,7 +1898,7 @@ yyreduce:
     DCClass *dstruct = dc_file->get_class_by_name((yyvsp[0].str));
     if (dstruct == nullptr) {
       // Create a bogus class as a forward reference.
-      dstruct = new DCClass(dc_file, (yyvsp[0].str), false, true);
+      dstruct = new DCClass(dc_file, (yyvsp[0].str), false, true, nullptr);
       dc_file->add_class(dstruct);
     }
     if (!dstruct->is_struct()) {
@@ -1975,7 +1975,7 @@ yyreduce:
     {
   if (current_class == nullptr) {
     yyerror("Cannot define a method outside of a struct or class.");
-    DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
+    DCClass *temp_class = new DCClass(dc_file, "temp", false, false, nullptr);  // memory leak.
     current_atomic = new DCAtomicField((yyvsp[-1].str), temp_class, false);
   } else {
     current_atomic = new DCAtomicField((yyvsp[-1].str), current_class, false);
@@ -2963,7 +2963,7 @@ yyreduce:
   case 176:
 #line 1245 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
-  current_switch = new DCSwitch((yyvsp[-4].str), (yyvsp[-2].u.field));
+  current_switch = new DCSwitch((yyvsp[-4].str), (yyvsp[-2].u.field), current_switch);
 }
 #line 2969 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;
@@ -2972,7 +2972,7 @@ yyreduce:
 #line 1249 "direct/src/dcparser/dcParser.yxx" /* yacc.c:1651  */
     {
   (yyval.u.dswitch) = current_switch;
-  current_switch = (DCSwitch *)(yyvsp[-2].u.parameter);
+  current_switch = current_switch->get_outer();
 }
 #line 2978 "built/tmp/dcParser.yxx.c" /* yacc.c:1651  */
     break;

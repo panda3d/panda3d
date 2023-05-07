@@ -26,9 +26,10 @@ using std::string;
  * via delete when the switch destructs.
  */
 DCSwitch::
-DCSwitch(const string &name, DCField *key_parameter) :
+DCSwitch(const string &name, DCField *key_parameter, DCSwitch *outer) :
   _name(name),
-  _key_parameter(key_parameter)
+  _key_parameter(key_parameter),
+  _outer(outer)
 {
   _default_case = nullptr;
   _fields_added = false;
@@ -518,6 +519,15 @@ do_check_match_switch(const DCSwitch *other) const {
   }
 
   return true;
+}
+
+
+/**
+ * Returns the outer DCSwitch if this switch is nested.
+ */
+DCSwitch *DCSwitch::
+get_outer() const {
+  return _outer;
 }
 
 /**

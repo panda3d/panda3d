@@ -80,3 +80,11 @@ stop_generate() {
   _class_generate_pcollector.stop();
 #endif
 }
+
+/**
+ * Returns the outer DCClass if this class is nested.
+ */
+INLINE DCClass *DCClass::
+get_outer() const {
+  return _outer;
+}

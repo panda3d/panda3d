@@ -297,12 +297,12 @@ dclass_or_struct:
 dclass:
         KW_DCLASS optional_name
 {
-  current_class = new DCClass(dc_file, $2, false, false);
+  current_class = new DCClass(dc_file, $2, false, false, current_class);
 }
         dclass_derivation '{' dclass_fields '}'
 {
   $$ = current_class;
-  current_class = $<u.dclass>3;
+  current_class = current_class->get_outer();
 }
         ;
 
@@ -317,7 +317,7 @@ dclass_name:
     DCClass *dclass = dc_file->get_class_by_name($1);
     if (dclass == nullptr) {
       // Create a bogus class as a forward reference.
-      dclass = new DCClass(dc_file, $1, false, true);
+      dclass = new DCClass(dc_file, $1, false, true, nullptr);
       dc_file->add_class(dclass);
     }
     if (dclass->is_struct()) {
@@ -401,12 +401,12 @@ dclass_field:
 struct:
         KW_STRUCT optional_name
 {
-  current_class = new DCClass(dc_file, $2, true, false);
+  current_class = new DCClass(dc_file, $2, true, false, current_class);
 }
         struct_derivation '{' struct_fields '}'
 {
   $$ = current_class;
-  current_class = $<u.dclass>3;
+  current_class = current_class->get_outer();
 }
         ;
 
@@ -421,7 +421,7 @@ struct_name:
     DCClass *dstruct = dc_file->get_class_by_name($1);
     if (dstruct == nullptr) {
       // Create a bogus class as a forward reference.
-      dstruct = new DCClass(dc_file, $1, false, true);
+      dstruct = new DCClass(dc_file, $1, false, true, nullptr);
       dc_file->add_class(dstruct);
     }
     if (!dstruct->is_struct()) {
@@ -490,7 +490,7 @@ atomic_field:
 {
   if (current_class == nullptr) {
     yyerror("Cannot define a method outside of a struct or class.");
-    DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
+    DCClass *temp_class = new DCClass(dc_file, "temp", false, false, nullptr);  // memory leak.
     current_atomic = new DCAtomicField($1, temp_class, false);
   } else {
     current_atomic = new DCAtomicField($1, current_class, false);
@@ -1243,12 +1243,12 @@ optional_name:
 switch:
         KW_SWITCH optional_name '(' parameter_or_atomic ')' '{'
 {
-  current_switch = new DCSwitch($2, $4);
+  current_switch = new DCSwitch($2, $4, current_switch);
 }
         switch_fields '}'
 {
   $$ = current_switch;
-  current_switch = (DCSwitch *)$<u.parameter>7;
+  current_switch = current_switch->get_outer();
 }
         ;
 

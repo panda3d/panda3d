@@ -45,7 +45,8 @@ class DCParameter;
 class EXPCL_DIRECT_DCPARSER DCClass : public DCDeclaration {
 public:
   DCClass(DCFile *dc_file, const std::string &name,
-          bool is_struct, bool bogus_class);
+          bool is_struct, bool bogus_class,
+          DCClass *outer);
   ~DCClass();
 
 PUBLISHED:
@@ -140,6 +141,8 @@ public:
   bool add_field(DCField *field);
   void add_parent(DCClass *parent);
   void set_number(int number);
+  
+  INLINE DCClass *get_outer() const;
 
 private:
   void shadow_inherited_field(const std::string &name);
@@ -172,6 +175,8 @@ private:
   typedef pmap<int, DCField *> FieldsByIndex;
   FieldsByIndex _fields_by_index;
 
+  DCClass *_outer;
+    
   friend class DCField;
 
 #ifdef WITHIN_PANDA
