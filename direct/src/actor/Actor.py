@@ -1878,7 +1878,7 @@ class Actor(DirectObject, NodePath):
             animDictItems = self.getAnimDictItems(partName,lodName,partDict)
         
             if animName is None:
-                controls = self.getPlayingAnimationControls(animDictItems)
+                controls += self.getPlayingAnimationControls(animDictItems)
             
             else:
                 # get the named animation(s) only.
@@ -1889,7 +1889,7 @@ class Actor(DirectObject, NodePath):
                     # A list of animNames, or True to indicate all anims.
                     animNameList = animName
                 
-                controls = self.collectAnimControls(animName, lodName, 
+                controls += self.collectAnimControls(animName, lodName, 
                             animDictItems, animDict, partName, 
                             partNameList, allowAsyncBind)
             
