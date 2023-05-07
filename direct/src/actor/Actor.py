@@ -1770,7 +1770,7 @@ class Actor(DirectObject, NodePath):
 
         return None
     
-    def getAnimControlDictItems(self,lodName):
+   def getAnimControlDictItems(self, lodName):
         """
         build list of lodNames and corresponding animControlDicts requested.
         """
@@ -1787,15 +1787,15 @@ class Actor(DirectObject, NodePath):
                 animControlDictItems = [(lodName, partDict)]
         return animControlDictItems
     
-    def getAnimDictItems(self,partName,lodName,partDict):
+    def getAnimDictItems(self, partName, lodName,partDict):
         """
         utility function for '.getAnimControls'
         """
-        
+
         animDictItems = []
         if partName is None:
             # Get all main parts, but not sub-parts.
-            
+
             for thisPart, animDict in partDict.items():
                 if thisPart not in self.__subpartDict:
                     animDictItems.append((thisPart, animDict))
@@ -1823,7 +1823,7 @@ class Actor(DirectObject, NodePath):
                     animDictItems.append((pName, animDict))
         return animDictItems
     
-    def searchSubparts(self,animName,animDict,partNameList):
+    def searchSubparts(self, animName, animDict,partNameList):
         """
         searches subparts for the given animName and adds 
         the animation to the given animDict
@@ -1889,11 +1889,13 @@ class Actor(DirectObject, NodePath):
                     # A list of animNames, or True to indicate all anims.
                     animNameList = animName
                 
-                controls = self.collectAnimControls(animName, lodName, animDictItems, animDict, partName, partNameList, allowAsyncBind)
+                controls = self.collectAnimControls(animName, lodName, 
+                            animDictItems, animDict, partName, 
+                            partNameList, allowAsyncBind)
             
         return controls
     
-    def getPlayingAnimationControls(self,animDictItems):
+    def getPlayingAnimationControls(self, animDictItems):
         # get all playing animations
         controls = []
         for thisPart, animDict in animDictItems:
@@ -1902,8 +1904,10 @@ class Actor(DirectObject, NodePath):
                     controls.append(anim.animControl)
         return controls
     
-    def collectAnimControls(self, animName, lodName, animDictItems, animDict, partName, partNameList, allowAsyncBind):
-        controls=[]
+    def collectAnimControls(self, animName, lodName, animDictItems, 
+                            animDict, partName, partNameList, 
+                            allowAsyncBind):
+        controls = []
         for thisPart, animDict in animDictItems:
             names = animNameList
             if animNameList is True:
@@ -1911,15 +1915,17 @@ class Actor(DirectObject, NodePath):
             for animName in names:
                 anim = animDict.get(animName)
                 if anim is None and partName is not None:
-                    anim = self.searchSubparts(animName,animDict,partNameList)
-                
+                    anim = self.searchSubparts(animName, animDict, partNameList)
+
                 if anim is None:
                     # anim was not present
-                    assert Actor.notify.debug("couldn't find anim: %s" % (animName))
+                    assert Actor.notify.debug(
+                        "couldn't find anim: %s" % (animName))
                 else:
                     # bind the animation first if we need to
-                    animControl = self.fixAnimControl(anim, animName, thisPart, lodName, allowAsyncBind)
-                    
+                    animControl = self.fixAnimControl(
+                        anim, animName, thisPart, lodName, allowAsyncBind)
+
                     if animControl:
                         controls.append(animControl)
         return controls
