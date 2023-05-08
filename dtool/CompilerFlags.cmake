@@ -101,7 +101,7 @@ endif()
 # Set warning levels
 if(MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W3")
-  set(CMAKE_CCXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 
 else()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
