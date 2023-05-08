@@ -1689,6 +1689,8 @@ class bdist_apps(setuptools.Command):
             setattr(self, opt, None)
 
     def finalize_options(self):
+        import pkg_resources
+
         # We need to massage the inputs a bit in case they came from a
         # setup.cfg file.
         self.installers = {
