@@ -1150,8 +1150,9 @@ clear_pipe() {
 
 /**
  * Changes the x_size and y_size, then recalculates structures that depend on
- * size.  The recalculation currently includes: - compute_pixels on all the
- * graphics regions.  - updating the texture card, if one is present.
+ * size.  The recalculation currently includes:
+ *  - compute_pixels on all the graphics regions.
+ *  - updating the texture card, if one is present.
  */
 void GraphicsOutput::
 set_size_and_recalc(int x, int y) {
@@ -1163,11 +1164,8 @@ set_size_and_recalc(int x, int y) {
   int fb_x_size = get_fb_x_size();
   int fb_y_size = get_fb_y_size();
 
-  TotalDisplayRegions::iterator dri;
-  for (dri = _total_display_regions.begin();
-       dri != _total_display_regions.end();
-       ++dri) {
-    (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
+  for (DisplayRegion *dr : _total_display_regions) {
+    dr->compute_pixels_all_stages(fb_x_size, fb_y_size);
   }
 
   if (_texture_card != nullptr && _texture_card->get_num_geoms() > 0) {
