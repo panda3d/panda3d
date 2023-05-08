@@ -96,6 +96,7 @@ hiddenImports = {
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
     'setuptools.monkey': ['setuptools.msvc'],
+    'shapely._geometry_helpers': ['shapely._geos'],
 }
 
 if sys.version_info >= (3,):
