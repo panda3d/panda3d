@@ -551,7 +551,20 @@ class build_apps(setuptools.Command):
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
 
-        subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        except:
+            # Display a more helpful message for these common issues.
+            if platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
+                new_platform = platform.replace('manylinux2010_', 'manylinux2014_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.11.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('manylinux1_') and sys.version_info >= (3, 10):
+                new_platform = platform.replace('manylinux1_', 'manylinux2014_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.10.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('macosx_10_6_') and sys.version_info >= (3, 8):
+                new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.8.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            raise
 
         # Return a list of paths to the downloaded whls
         return [
