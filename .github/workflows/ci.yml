@@ -40,7 +40,7 @@ jobs:
           eigen: NO
 
         - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-10.15
+          os: macOS-11
           config: Coverage
           unity: YES
           generator: Xcode
@@ -50,7 +50,7 @@ jobs:
           eigen: YES
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-10.15
+          os: macOS-11
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -87,7 +87,7 @@ jobs:
         fetch-depth: 10
 
     - name: Self-destruct makepanda
-      run: python makepanda/selfdestruct.py --yes
+      run: python3 makepanda/selfdestruct.py --yes
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
