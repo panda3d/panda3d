@@ -2495,6 +2495,21 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             else:
                 code = fp.read()
 
+            # Strip out delvewheel patch (see GitHub issue #1492)
+            if isinstance(code, bytes):
+                # Don't look for \n at the end, it may also be \r\n
+                start_marker = b'# start delvewheel patch'
+                end_marker = b'# end delvewheel patch'
+            else:
+                start_marker = '# start delvewheel patch'
+                end_marker = '# end delvewheel patch'
+
+            start = code.find(start_marker)
+            while start >= 0:
+                end = code.find(end_marker, start) + len(end_marker)
+                code = code[:start] + code[end:]
+                start = code.find(start_marker)
+
             code += b'\n' if isinstance(code, bytes) else '\n'
             if sys.version_info >= (3, 2):
                 co = compile(code, pathname, 'exec', optimize=self.optimize)
