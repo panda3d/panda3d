@@ -43,7 +43,7 @@ static void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyType
   return nullptr;
 }
 
-static Dtool_PyInstDef *Dtool_Wrap_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
+static PyObject *Dtool_Wrap_DTOOL_SUPER_BASE(void *from_this, PyTypeObject *from_type) {
   return nullptr;
 }
 

@@ -140,7 +140,8 @@ PUBLISHED:
 
 public:
 #ifdef HAVE_PYTHON
-  PyObject *get_python_type() const;
+  PyTypeObject *get_python_type() const;
+  PyObject *wrap_python(void *ptr, PyTypeObject *cast_from = nullptr) const;
 #endif // HAVE_PYTHON
 
   void *allocate_array(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);

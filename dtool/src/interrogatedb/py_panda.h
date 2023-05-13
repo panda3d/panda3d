@@ -41,7 +41,7 @@ struct Dtool_PyTypedObject;
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
-typedef Dtool_PyInstDef *(*WrapFunction)(void *, Dtool_PyTypedObject *);
+typedef PyObject *(*WrapFunction)(void *, PyTypeObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
 typedef void (*ModuleClassInitFunction)(PyObject *module);
 

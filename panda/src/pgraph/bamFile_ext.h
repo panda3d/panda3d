@@ -29,6 +29,8 @@
 template<>
 class Extension<BamFile> : public ExtensionBase<BamFile> {
 public:
+  PyObject *read_object();
+
   PyObject *get_file_version() const;
 };
 

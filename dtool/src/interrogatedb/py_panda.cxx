@@ -454,15 +454,11 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // IF the class is possibly a run time typed object
   if (type_index > 0) {
     // get best fit class...
-    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
-    if (target_class != nullptr) {
-      // cast to the type...
-      Dtool_PyInstDef *self = target_class->_Dtool_WrapInterface(local_this_in, &known_class_type);
-      if (self != nullptr) {
-        self->_memory_rules = memory_rules;
-        self->_is_const = is_const;
-        return (PyObject *)self;
-      }
+    Dtool_PyInstDef *self = (Dtool_PyInstDef *)TypeHandle::from_index(type_index).wrap_python(local_this_in, &known_class_type._PyType);
+    if (self != nullptr) {
+      self->_memory_rules = memory_rules;
+      self->_is_const = is_const;
+      return (PyObject *)self;
     }
   }
 
