@@ -730,13 +730,13 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
         continue;
       }
 
-      TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
+      TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
       if (tc == nullptr) {
         continue;
       }
 
       int texunit = cgGetParameterResourceIndex(p);
-      gsg->apply_texture(texunit, tc, sampler);
+      gsg->apply_texture(texunit, tc, view, sampler);
     }
   }
 #endif

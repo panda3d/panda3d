@@ -250,16 +250,6 @@ ConfigVariableBool gl_immutable_texture_storage
             "for each texture.  This improves runtime performance, but "
             "changing the size or type of a texture will be slower."));
 
-ConfigVariableBool gl_use_bindless_texture
-  ("gl-use-bindless-texture", false,
-   PRC_DESC("Set this to let Panda use OpenGL's bindless texture "
-            "extension for all textures passed to shaders, for improved "
-            "performance.  This is an experimental feature and comes "
-            "with a few caveats; for one, it requires that all sampler "
-            "uniforms have a layout(bindless_sampler) qualifier, and "
-            "it also requires that the texture properties are not "
-            "modified after the texture handle has been initialized."));
-
 ConfigVariableBool gl_enable_memory_barriers
   ("gl-enable-memory-barriers", true,
    PRC_DESC("If this is set, Panda will make sure that every write "

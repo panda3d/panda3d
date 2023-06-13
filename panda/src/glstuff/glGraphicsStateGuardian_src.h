@@ -143,6 +143,7 @@ typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 typedef void (APIENTRYP PFNGLBLENDEQUATIONSEPARATEPROC) (GLenum modeRGB, GLenum modeAlpha);
 typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
+typedef void (APIENTRYP PFNGLTEXBUFFERPROC) (GLenum target, GLenum internalformat, GLuint buffer);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -343,7 +344,7 @@ public:
   void issue_memory_barrier(GLbitfield barrier);
 #endif
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
+  virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
@@ -632,12 +633,12 @@ protected:
 #endif  // NDEBUG
 
   bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
-  bool apply_texture(CLP(TextureContext) *gtc);
-  bool apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc);
+  bool apply_texture(CLP(TextureContext) *gtc, int view);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler,
+                     CLP(TextureContext) *gtc, int view);
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
-  bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
-                            bool uses_mipmaps, int mipmap_bias,
-                            GLenum texture_target,
+  bool upload_texture_image(CLP(TextureContext) *gtc, int view,
+                            bool needs_reload, int mipmap_bias, int num_levels,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
                             Texture::CompressionMode image_compression);
@@ -646,7 +647,7 @@ protected:
 
   size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
-  bool do_extract_texture_data(CLP(TextureContext) *gtc);
+  bool do_extract_texture_data(CLP(TextureContext) *gtc, int view);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
            Texture *tex, GLenum target, GLenum page_target,
            Texture::ComponentType type,
@@ -833,7 +834,7 @@ public:
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   PFNGLTEXBUFFERPROC _glTexBuffer;
 #endif
 
@@ -967,7 +968,12 @@ public:
 
 #ifndef OPENGLES
   bool _supports_dsa;
+  PFNGLCREATETEXTURESPROC _glCreateTextures;
+  PFNGLTEXTURESTORAGE2DPROC _glTextureStorage2D;
+  PFNGLTEXTURESUBIMAGE2DPROC _glTextureSubImage2D;
+  PFNGLTEXTUREPARAMETERIPROC _glTextureParameteri;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+  PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
 #endif
 
 #ifndef OPENGLES_1

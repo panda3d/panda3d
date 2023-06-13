@@ -274,7 +274,7 @@ munge_format_impl(const GeomVertexFormat *orig,
               column_alignment = texcoord_type->get_column_alignment();
               num_values = texcoord_type->get_num_values();
             }
-            if (start + num_values * sizeof(PN_stdfloat) > glgsg->get_max_vertex_attrib_stride()) {
+            if (start + num_values * sizeof(PN_stdfloat) > (size_t)glgsg->get_max_vertex_attrib_stride()) {
               // We are exceeding the limit for stride reported by the driver.
               // Start a new array.
               new_format->insert_array(insert_at++, new_array_format);

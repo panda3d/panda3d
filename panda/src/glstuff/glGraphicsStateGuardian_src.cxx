@@ -1201,6 +1201,15 @@ reset() {
     _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBufferARB");
     _supports_buffer_texture = true;
   }
+#elif !defined(OPENGLES_1)
+  if (is_at_least_gles_version(3, 2)) {
+    _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBuffer");
+    _supports_buffer_texture = (_glTexBuffer != nullptr);
+  }
+  else if (has_extension("GL_OES_texture_buffer")) {
+    _glTexBuffer = (PFNGLTEXBUFFERPROC)get_extension_func("glTexBufferOES");
+    _supports_buffer_texture = (_glTexBuffer != nullptr);
+  }
 #endif
 
 #ifdef OPENGLES
@@ -2562,8 +2571,18 @@ reset() {
 
 #ifndef OPENGLES
   if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
+    _glCreateTextures = (PFNGLCREATETEXTURESPROC)
+      get_extension_func("glCreateTextures");
+    _glTextureStorage2D = (PFNGLTEXTURESTORAGE2DPROC)
+      get_extension_func("glTextureStorage2D");
+    _glTextureSubImage2D = (PFNGLTEXTURESUBIMAGE2DPROC)
+      get_extension_func("glTextureSubImage2D");
+    _glTextureParameteri = (PFNGLTEXTUREPARAMETERIPROC)
+      get_extension_func("glTextureParameteri");
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
+    _glBindTextureUnit = (PFNGLBINDTEXTUREUNITPROC)
+      get_extension_func("glBindTextureUnit");
 
     _supports_dsa = true;
   } else {
@@ -6243,7 +6262,7 @@ issue_memory_barrier(GLbitfield barriers) {
  * call Texture::prepare().
  */
 TextureContext *CLP(GraphicsStateGuardian)::
-prepare_texture(Texture *tex, int view) {
+prepare_texture(Texture *tex) {
   PStatGPUTimer timer(this, _prepare_texture_pcollector);
 
   report_my_gl_errors();
@@ -6295,8 +6314,12 @@ prepare_texture(Texture *tex, int view) {
     break;
   }
 
-  CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex, view);
-  gtc->_target = get_texture_target(texture_type);
+  CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex);
+
+  // Make sure we have an index so that get_native_id() will already work.
+  GLenum target = get_texture_target(texture_type);
+  gtc->reset_data(target, 1);
+
   report_my_gl_errors();
 
   return gtc;
@@ -6317,17 +6340,18 @@ update_texture(TextureContext *tc, bool force) {
   CLP(TextureContext) *gtc;
   DCAST_INTO_R(gtc, tc, false);
 
+  Texture *tex = tc->get_texture();
+  GLenum target = get_texture_target(tex->get_texture_type());
+  if (gtc->_target != target) {
+    // The target has changed.  That means we have to re-bind a new texture
+    // object.
+    gtc->reset_data(target, tex->get_num_views());
+  }
+
   if (gtc->was_image_modified() || !gtc->_has_storage) {
     PStatGPUTimer timer(this, _texture_update_pcollector);
 
     // If the texture image was modified, reload the texture.
-    apply_texture(gtc);
-
-    Texture *tex = tc->get_texture();
-    if (gtc->was_properties_modified()) {
-      specify_texture(gtc, tex->get_default_sampler());
-    }
-
     bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
     if (!okflag) {
       GLCAT.error()
@@ -6335,16 +6359,29 @@ update_texture(TextureContext *tc, bool force) {
       return false;
     }
 
-  } else if (gtc->was_properties_modified()) {
+    if (gtc->was_properties_modified()) {
+      for (int view = 0; view < gtc->_num_views; ++view) {
+        apply_texture(gtc, view);
+        specify_texture(gtc, tex->get_default_sampler());
+      }
+    }
+  }
+  else if (gtc->was_properties_modified()) {
     PStatGPUTimer timer(this, _texture_update_pcollector);
 
     // If only the properties have been modified, we don't necessarily need to
     // reload the texture.
-    apply_texture(gtc);
+    bool needs_reload = false;
+    for (int view = 0; view < gtc->_num_views; ++view) {
+      apply_texture(gtc, view);
 
-    Texture *tex = tc->get_texture();
-    if (specify_texture(gtc, tex->get_default_sampler())) {
-      // Actually, looks like the texture *does* need to be reloaded.
+      if (specify_texture(gtc, tex->get_default_sampler())) {
+        // Actually, looks like the texture *does* need to be reloaded.
+        needs_reload = true;
+      }
+    }
+
+    if (needs_reload) {
       gtc->mark_needs_reload();
       bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
       if (!okflag) {
@@ -6352,8 +6389,8 @@ update_texture(TextureContext *tc, bool force) {
           << "Could not load " << *tex << "\n";
         return false;
       }
-
-    } else {
+    }
+    else {
       // The texture didn't need reloading, but mark it fully updated now.
       gtc->mark_loaded();
     }
@@ -6381,12 +6418,7 @@ release_texture(TextureContext *tc) {
   _textures_needing_framebuffer_barrier.erase(gtc);
 #endif
 
-  glDeleteTextures(1, &gtc->_index);
-
-  if (gtc->_buffer != 0) {
-    _glDeleteBuffers(1, &gtc->_buffer);
-  }
-
+  gtc->set_num_views(0);
   delete gtc;
 }
 
@@ -6401,8 +6433,6 @@ release_textures(const pvector<TextureContext *> &contexts) {
     return;
   }
 
-  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size() * 2);
-  GLuint *buffers = indices + contexts.size();
   size_t num_indices = 0;
   size_t num_buffers = 0;
 
@@ -6416,14 +6446,32 @@ release_textures(const pvector<TextureContext *> &contexts) {
     _textures_needing_framebuffer_barrier.erase(gtc);
 #endif
 
-    indices[num_indices++] = gtc->_index;
-
-    if (gtc->_buffer != 0) {
-      buffers[num_buffers++] = gtc->_buffer;
+    num_indices += gtc->_num_views;
+    if (gtc->_buffers != nullptr) {
+      num_buffers += gtc->_num_views;
     }
+  }
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * num_indices);
+  GLuint *buffers = (GLuint *)alloca(sizeof(GLuint) * num_buffers);
+  num_indices = 0;
+  num_buffers = 0;
+
+  for (TextureContext *tc : contexts) {
+    CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
+
+    for (int view = 0; view < gtc->_num_views; ++view) {
+      indices[num_indices++] = gtc->_indices[view];
+
+      if (gtc->_buffers != nullptr) {
+        buffers[num_buffers++] = gtc->_buffers[view];
+      }
+    }
+    gtc->_num_views = 0;
 
     delete gtc;
   }
+
 
   glDeleteTextures(num_indices, indices);
 
@@ -6446,16 +6494,44 @@ extract_texture_data(Texture *tex) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
 
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertr(tc != nullptr, false);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+  GLenum target = gtc->_target;
+
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
-    TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != nullptr, false);
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    GLuint index = gtc->get_view_index(view);
+    glBindTexture(target, index);
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", " << index << "): "
+        << *tex << " view " << view << "\n";
+    }
 
-    if (!do_extract_texture_data(gtc)) {
+#ifndef OPENGLES_1
+    if (target == GL_TEXTURE_BUFFER) {
+      _glBindBuffer(GL_TEXTURE_BUFFER, gtc->get_view_buffer(view));
+    }
+#endif
+
+    if (!do_extract_texture_data(gtc, view)) {
       success = false;
     }
   }
+
+  glBindTexture(target, 0);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", 0)\n";
+  }
+
+#ifndef OPENGLES_1
+  if (target == GL_TEXTURE_BUFFER) {
+    _glBindBuffer(GL_TEXTURE_BUFFER, 0);
+  }
+#endif
 
   return success;
 }
@@ -7642,27 +7718,44 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     }
   }
 
-  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != nullptr, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  apply_texture(gtc);
+  GLenum target = get_texture_target(tex->get_texture_type());
+  if (gtc->_target != target) {
+    gtc->reset_data(target, view + 1);
+  }
+  else if (view >= gtc->_num_views) {
+    gtc->set_num_views(view + 1);
+  }
+
+  apply_texture(gtc, view);
   bool needs_reload = specify_texture(gtc, tex->get_default_sampler());
 
-  GLenum target = get_texture_target(tex->get_texture_type());
   GLint internal_format = get_internal_image_format(tex);
   int width = tex->get_x_size();
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
 
   bool uses_mipmaps = tex->uses_mipmaps() && !gl_ignore_mipmaps;
+  int num_levels = 1;
+  bool can_generate = _supports_generate_mipmap;
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+  // OpenGL ES doesn't support generating mipmaps for sRGB textures, so we
+  // have to disable mipmaps, unless we have a special extension.
+  if (internal_format == GL_SRGB8 || internal_format == GL_SRGB8_ALPHA8) {
+    can_generate = has_extension("GL_NV_generate_mipmap_sRGB");
+  }
+#endif
   if (uses_mipmaps) {
-    if (_supports_generate_mipmap) {
+    if (can_generate) {
 #ifndef OPENGLES_2
       if (_glGenerateMipmap == nullptr) {
         glTexParameteri(target, GL_GENERATE_MIPMAP, true);
       }
 #endif
+      num_levels = tex->get_expected_num_mipmap_levels();
     } else {
       // If we can't auto-generate mipmaps, do without mipmaps.
       glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -7687,21 +7780,23 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   if (!gtc->_has_storage ||
       internal_format != gtc->_internal_format ||
-      uses_mipmaps != gtc->_uses_mipmaps ||
       width != gtc->_width ||
       height != gtc->_height ||
-      depth != gtc->_depth) {
+      depth != gtc->_depth ||
+      (gtc->_immutable && num_levels > gtc->_num_levels)) {
     // If the texture properties have changed, we need to reload the image.
     new_image = true;
   }
 
   if (new_image && gtc->_immutable) {
-    gtc->reset_data();
-    glBindTexture(target, gtc->_index);
+    gtc->reset_data(target, view + 1);
+    GLuint index = gtc->get_view_index(view);
+    glBindTexture(target, index);
 
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
+        << "glBindTexture(0x" << hex << target << dec << ", " << index << "): "
+        << *tex << " view " << view << "\n";
     }
   }
 
@@ -7743,12 +7838,12 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   gtc->_has_storage = true;
-  gtc->_simple_loaded = false;
-  gtc->_uses_mipmaps = uses_mipmaps;
   gtc->_internal_format = internal_format;
   gtc->_width = width;
   gtc->_height = height;
   gtc->_depth = depth;
+  gtc->_num_levels = num_levels;
+  gtc->_may_reload_with_mipmaps = !uses_mipmaps && can_generate;
 
   gtc->mark_loaded();
   gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -10019,7 +10114,7 @@ get_texture_target(Texture::TextureType texture_type) const {
     return GL_NONE;
 
   case Texture::TT_buffer_texture:
-#ifndef OPENGLES
+#ifndef OPENGLES_1
     if (_supports_buffer_texture) {
       return GL_TEXTURE_BUFFER;
     }
@@ -10445,7 +10540,7 @@ get_external_image_format(Texture *tex) const {
     return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
     return _supports_depth_stencil ? GL_DEPTH_STENCIL : GL_DEPTH_COMPONENT;
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   case Texture::F_red:
   case Texture::F_r16:
   case Texture::F_r32:
@@ -12690,7 +12785,7 @@ update_standard_texture_bindings() {
 #endif  // OPENGLES
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
-    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
     if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       continue;
@@ -12716,8 +12811,8 @@ update_standard_texture_bindings() {
     }
     // Don't DCAST(); we already did the verification in update_texture.
     CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
-    apply_texture(gtc);
-    apply_sampler(i, _target_texture->get_on_sampler(stage), gtc);
+    apply_texture(gtc, view);
+    apply_sampler(i, _target_texture->get_on_sampler(stage), gtc, view);
 
     if (stage->involves_color_scale() && _color_scale_enabled) {
       LColor color = stage->get_color();
@@ -12868,8 +12963,22 @@ update_standard_texture_bindings() {
  */
 void CLP(GraphicsStateGuardian)::
 apply_white_texture(GLuint unit) {
-  set_active_texture_stage(unit);
-  glBindTexture(GL_TEXTURE_2D, get_white_texture());
+#ifndef OPENGLES
+  if (_supports_dsa) {
+    _glBindTextureUnit(unit, get_white_texture());
+  } else
+#endif
+  {
+    set_active_texture_stage(unit);
+
+    GLuint index = get_white_texture();
+    glBindTexture(GL_TEXTURE_2D, index);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(GL_TEXTURE_2D, " << index << "): all-white texture\n";
+    }
+  }
 
   // Also apply the default sampler, if there's a chance we'd applied anything
   // else.
@@ -12886,7 +12995,24 @@ apply_white_texture(GLuint unit) {
  */
 GLuint CLP(GraphicsStateGuardian)::
 get_white_texture() {
-  if (_white_texture == 0) {
+  if (_white_texture != 0) {
+    return _white_texture;
+  }
+
+  const unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
+
+#ifndef OPENGLES
+  if (_supports_dsa && _supports_tex_storage) {
+    _glCreateTextures(GL_TEXTURE_2D, 1, &_white_texture);
+    _glTextureParameteri(_white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    _glTextureParameteri(_white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    _glTextureParameteri(_white_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    _glTextureParameteri(_white_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    _glTextureStorage2D(_white_texture, 1, GL_RGBA8, 1, 1);
+    _glTextureSubImage2D(_white_texture, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  } else
+#endif
+  {
     glGenTextures(1, &_white_texture);
     glBindTexture(GL_TEXTURE_2D, _white_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -12894,7 +13020,6 @@ get_white_texture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    unsigned char data[] = {0xff, 0xff, 0xff, 0xff};
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, data);
   }
@@ -12928,8 +13053,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
     Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != nullptr);
 
-    int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
-    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
     if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       break;
@@ -13423,18 +13547,13 @@ do_issue_tex_gen() {
  */
 bool CLP(GraphicsStateGuardian)::
 specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
-#ifndef OPENGLES
-  nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
-#endif
-
   Texture *tex = gtc->get_texture();
-
-  GLenum target = get_texture_target(tex->get_texture_type());
+  GLenum target = gtc->_target;
   if (target == GL_NONE) {
     // Unsupported target (e.g.  3-d texturing on GL 1.1).
     return false;
   }
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   if (target == GL_TEXTURE_BUFFER) {
     // Buffer textures may not receive texture parameters.
     return false;
@@ -13550,9 +13669,8 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 
   report_my_gl_errors();
 
-  if (uses_mipmaps && !gtc->_uses_mipmaps) {
-    // Suddenly we require mipmaps.  This means the texture may need
-    // reloading.
+  if (uses_mipmaps && gtc->_may_reload_with_mipmaps) {
+    // Suddenly we require mipmaps, which means the texture may need reloading.
     return true;
   }
 
@@ -13562,26 +13680,26 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
 /**
  * Updates OpenGL with the current information for this texture, and makes it
  * the current texture available for rendering.
+ *
+ * The texture needs to have valid storage, call update_texture() first.
  */
 bool CLP(GraphicsStateGuardian)::
-apply_texture(CLP(TextureContext) *gtc) {
+apply_texture(CLP(TextureContext) *gtc, int view) {
   gtc->set_active(true);
-  GLenum target = get_texture_target(gtc->get_texture()->get_texture_type());
+
+  GLenum target = gtc->_target;
+  assert(target != GL_NONE); // REMOVE ME
   if (target == GL_NONE) {
     return false;
   }
 
-  if (gtc->_target != target) {
-    // The target has changed.  That means we have to re-bind a new texture
-    // object.
-    gtc->reset_data();
-    gtc->_target = target;
-  }
-
-  glBindTexture(target, gtc->_index);
+  GLuint index = gtc->get_view_index(view);
+  glBindTexture(target, index);
   if (GLCAT.is_spam()) {
+    Texture *tex = gtc->get_texture();
     GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *gtc->get_texture() << "\n";
+      << "glBindTexture(GL_TEXTURE_2D, " << index << "): " << *tex
+      << " view " << view << "\n";
   }
 
   report_my_gl_errors();
@@ -13597,7 +13715,7 @@ apply_texture(CLP(TextureContext) *gtc) {
  * applied to the given texture context instead.
  */
 bool CLP(GraphicsStateGuardian)::
-apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc) {
+apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc, int view) {
 #ifndef OPENGLES_1
   if (_supports_sampler_objects) {
     // We support sampler objects.  Prepare the sampler object and bind it to
@@ -13622,19 +13740,18 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     // change the texture parameters if they don't match.
     if (gtc->_active_sampler != sampler) {
       set_active_texture_stage(unit);
-      apply_texture(gtc);
+      apply_texture(gtc, view);
       specify_texture(gtc, sampler);
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gtc->_simple_loaded && !gl_ignore_mipmaps) {
+  if (sampler.uses_mipmaps() && gtc->_may_reload_with_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying to sample it
     // with mipmaps.  We will need to reload it.
     GLCAT.info()
       << "reloading texture " << gtc->get_texture()->get_name()
       << " with mipmaps\n";
 
-    apply_texture(gtc);
     gtc->mark_needs_reload();
     bool okflag = upload_texture(gtc, false, true);
     if (!okflag) {
@@ -13642,6 +13759,8 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
         << "Could not load " << *gtc->get_texture() << "\n";
       return false;
     }
+    // Make sure that the correct view is bound again after upload_texture.
+    apply_texture(gtc, view);
   }
 
   report_my_gl_errors();
@@ -13650,6 +13769,8 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
 
 /**
  * Uploads the entire texture image to OpenGL, including all pages.
+ *
+ * It does not need to be currently bound.
  *
  * The return value is true if successful, or false if the texture has no
  * image.
@@ -13699,12 +13820,6 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       nassertr(!image.is_null(), false);
     }
   }
-
-  int mipmap_bias = 0;
-
-  int width = tex->get_x_size();
-  int height = tex->get_y_size();
-  int depth = tex->get_z_size();
 
   // If we'll use immutable texture storage, we have to pick a sized image
   // format.
@@ -13789,6 +13904,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   // instead; of course, the user doesn't always know ahead of time what the
   // hardware limits are.
 
+  int mipmap_bias = 0;
   if ((max_dimension_x > 0 && max_dimension_y > 0 && max_dimension_z > 0) &&
       image_compression == Texture::CM_off) {
     while (tex->get_expected_mipmap_x_size(mipmap_bias) > max_dimension_x ||
@@ -13808,18 +13924,18 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         }
       }
     }
+  }
 
-    width = tex->get_expected_mipmap_x_size(mipmap_bias);
-    height = tex->get_expected_mipmap_y_size(mipmap_bias);
-    depth = tex->get_expected_mipmap_z_size(mipmap_bias);
+  int width = tex->get_expected_mipmap_x_size(mipmap_bias);
+  int height = tex->get_expected_mipmap_y_size(mipmap_bias);
+  int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
-    if (mipmap_bias != 0) {
-      GLCAT.info()
-        << "Reducing image " << tex->get_name()
-        << " from " << tex->get_x_size() << " x " << tex->get_y_size()
-        << " x " << tex->get_z_size() << " to "
-        << width << " x " << height << " x " << depth << "\n";
-    }
+  if (mipmap_bias != 0) {
+    GLCAT.info()
+      << "Reducing image " << tex->get_name()
+      << " from " << tex->get_x_size() << " x " << tex->get_y_size()
+      << " x " << tex->get_z_size() << " to "
+      << width << " x " << height << " x " << depth << "\n";
   }
 
   if (image_compression != Texture::CM_off) {
@@ -13843,68 +13959,30 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  GLenum target = get_texture_target(texture_type);
-  uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
-#ifndef OPENGLES
-  if (target == GL_TEXTURE_BUFFER) {
-    // Buffer textures may not have mipmaps.
-    uses_mipmaps = false;
-  }
-#endif  // OPENGLES
-
   bool needs_reload = false;
   if (!gtc->_has_storage ||
-      gtc->_uses_mipmaps != uses_mipmaps ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||
       gtc->_depth != depth) {
     // We need to reload a new GL Texture object.
     needs_reload = true;
-
-    if (_use_object_labels) {
-      // This seems like a good time to assign a label for the debug messages.
-      const string &name = tex->get_name();
-      _glObjectLabel(GL_TEXTURE, gtc->_index, name.size(), name.data());
-    }
   }
 
-  if (needs_reload && gtc->_immutable) {
-    GLCAT.info() << "Attempt to modify texture with immutable storage, recreating texture.\n";
-    gtc->reset_data();
-    glBindTexture(target, gtc->_index);
-
-    if (GLCAT.is_spam()) {
-      GLCAT.spam()
-        << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
-    }
+  // Figure out whether mipmaps will be generated by the GPU or by Panda (or
+  // not at all), and how many mipmap levels should be created.
+  uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
+  int num_levels = 1;
+  if (texture_type == Texture::TT_buffer_texture ||
+      (width == 1 && height == 1 && depth == 1)) {
+    // Buffer textures, or 1x1x1 textures, never have mipmaps.
+    gtc->_num_levels = 1;
+    gtc->_generate_mipmaps = false;
+    gtc->_may_reload_with_mipmaps = false;
   }
-
-#ifndef OPENGLES
-  if (target == GL_TEXTURE_BUFFER) {
-    // Buffer textures don't support mipmappping.
+  else if (needs_reload || (uses_mipmaps && gtc->_num_levels <= 1)) {
     gtc->_generate_mipmaps = false;
-
-    if (gtc->_buffer == 0) {
-      // The buffer object wasn't created yet.
-      _glGenBuffers(1, &gtc->_buffer);
-      _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
-      _glTexBuffer(GL_TEXTURE_BUFFER, internal_format, gtc->_buffer);
-      needs_reload = true;
-    } else {
-      _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
-      if (gtc->_internal_format != internal_format) {
-        _glTexBuffer(GL_TEXTURE_BUFFER, internal_format, gtc->_buffer);
-      }
-    }
-  } else
-#endif  // !OPENGLES
-  if (needs_reload) {
-    // Figure out whether mipmaps will be generated by the GPU or by Panda (or
-    // not at all), and how many mipmap levels should be created.
-    gtc->_generate_mipmaps = false;
-    int num_levels = 1;
-    CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
+    gtc->_may_reload_with_mipmaps = false;
 
     bool can_generate = _supports_generate_mipmap;
 #if defined(OPENGLES) && !defined(OPENGLES_1)
@@ -13918,17 +13996,16 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     if (image.is_null()) {
       // We don't even have a RAM image, so we have no choice but to let
       // mipmaps be generated on the GPU.
-      if (uses_mipmaps) {
-        if (can_generate) {
+      if (can_generate) {
+        if (uses_mipmaps) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
           gtc->_generate_mipmaps = true;
-        } else {
-          // If it can't, do without mipmaps.
-          num_levels = 1;
-          glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
+        else if (!gl_ignore_mipmaps) {
+          // If someone asks for mipmaps, we can generate them.
+          gtc->_may_reload_with_mipmaps = true;
         }
       }
-
     } else {
       if (uses_mipmaps) {
         num_levels = tex->get_num_ram_mipmap_images() - mipmap_bias;
@@ -13953,11 +14030,202 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
             gtc->_generate_mipmaps = true;
           } else {
             // If it can't, do without mipmaps.
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            uses_mipmaps = false;
             num_levels = 1;
           }
         }
       }
+      else if (!gl_ignore_mipmaps) {
+        // We don't yet know whether this might succeed, so we will try if
+        // someone asks for it.
+        gtc->_may_reload_with_mipmaps = true;
+      }
+    }
+    if (num_levels > gtc->_num_levels) {
+      // Always need to reallocate storage when we're adding new mipmap levels.
+      needs_reload = true;
+    }
+  }
+  else {
+    // Maybe we need to generate mipmaps on the CPU.
+    num_levels = gtc->_num_levels;
+    if (!image.is_null() && uses_mipmaps) {
+      if (tex->get_num_ram_mipmap_images() - mipmap_bias <= 1) {
+        // No RAM mipmap levels available.  Should we generate some?
+        if (!_supports_generate_mipmap || !driver_generate_mipmaps ||
+            image_compression != Texture::CM_off) {
+          // Yes, the GL can't or won't generate them, so we need to.  Note
+          // that some drivers (nVidia) will *corrupt memory* if you ask them
+          // to generate mipmaps for a pre-compressed texture.
+          tex->generate_ram_mipmap_images();
+        }
+      }
+    }
+  }
+
+  int num_views = tex->get_num_views();
+  if (needs_reload) {
+    if (gtc->_immutable) {
+      GLCAT.info()
+        << "Attempt to modify texture with immutable storage, recreating texture.\n";
+      gtc->reset_data(gtc->_target, num_views);
+    }
+    else if (_supports_tex_storage && gl_immutable_texture_storage) {
+      gtc->_immutable = true;
+    }
+  }
+
+#ifndef OPENGLES_1
+  if (needs_reload || !image.is_null()) {
+    // Make sure that any incoherent writes to this texture have been synced.
+    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
+      issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    }
+  }
+#endif
+
+  // Make sure we have a GL texture name for every view of the texture.
+  int old_num_views = gtc->_num_views;
+  if (old_num_views != num_views) {
+    gtc->set_num_views(num_views);
+  }
+
+  // For a buffer texture, make sure we've created the buffer indices.
+  if (texture_type == Texture::TT_buffer_texture) {
+    nassertr(gtc->_buffers != nullptr, false);
+  }
+
+  bool extract_success = false;
+  if (tex->get_post_load_store_cache()) {
+    extract_success = true;
+  }
+
+  bool success = true;
+  for (int view = 0; view < num_views; ++view) {
+    if (upload_texture_image(gtc, view, needs_reload || view >= old_num_views,
+                             mipmap_bias, num_levels,
+                             internal_format, external_format,
+                             component_type, image_compression)) {
+      gtc->_has_storage = true;
+      gtc->_internal_format = internal_format;
+      gtc->_width = width;
+      gtc->_height = height;
+      gtc->_depth = depth;
+      gtc->_num_levels = num_levels;
+
+      if (extract_success) {
+        // The next call assumes the texture is still bound.
+        if (!do_extract_texture_data(gtc, view)) {
+          extract_success = false;
+        }
+      }
+    }
+    else {
+      success = false;
+    }
+  }
+
+  report_my_gl_errors();
+
+  if (success) {
+    if (needs_reload) {
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
+    }
+
+    nassertr(gtc->_has_storage, false);
+
+    if (extract_success) {
+      tex->set_post_load_store_cache(false);
+      // OK, get the RAM image, and save it in a BamCache record.
+      if (tex->has_ram_image()) {
+        BamCache *cache = BamCache::get_global_ptr();
+        PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
+        if (record != nullptr) {
+          record->set_data(tex, tex);
+          cache->store(record);
+        }
+      }
+    }
+
+    GraphicsEngine *engine = get_engine();
+    nassertr(engine != nullptr, false);
+    engine->texture_uploaded(tex);
+    gtc->mark_loaded();
+
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Loads a texture image, or one page of a cube map image, from system RAM to
+ * texture memory.
+ */
+bool CLP(GraphicsStateGuardian)::
+upload_texture_image(CLP(TextureContext) *gtc, int view, bool needs_reload,
+                     int mipmap_bias, int num_levels, GLint internal_format,
+                     GLint external_format, GLenum component_type,
+                     Texture::CompressionMode image_compression) {
+  // Make sure the error stack is cleared out before we begin.
+  clear_my_gl_errors();
+
+  if (image_compression != Texture::CM_off && !_supports_compressed_texture) {
+    return false;
+  }
+
+  GLenum target = gtc->_target;
+  if (target == GL_NONE) {
+    // Unsupported target (e.g.  3-d texturing on GL 1.1).
+    return false;
+  }
+
+  Texture *tex = gtc->get_texture();
+  nassertr(tex != nullptr, false);
+  Texture::TextureType texture_type = tex->get_texture_type();
+
+  GLuint index = gtc->get_view_index(view);
+  glBindTexture(target, index);
+
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << index << "): "
+      << *tex << " view " << view << "\n";
+  }
+
+  if (_use_object_labels && needs_reload) {
+    // This seems like a good time to assign a label for the debug messages.
+    const string &name = tex->get_name();
+    if (gtc->_num_views == 1) {
+      _glObjectLabel(GL_TEXTURE, index, name.size(), name.data());
+    } else {
+      // Add a suffix for a multiview texture.
+      char *buffer = (char *)alloca(name.size() + 32);
+      int size = sprintf(buffer, "%s#%d", name.c_str(), view);
+      _glObjectLabel(GL_TEXTURE, index, size, buffer);
+    }
+  }
+
+  CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
+  int width = tex->get_expected_mipmap_x_size(mipmap_bias);
+  int height = tex->get_expected_mipmap_y_size(mipmap_bias);
+  int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
+
+#ifndef OPENGLES_1
+  if (target == GL_TEXTURE_BUFFER) {
+    GLuint buffer = gtc->get_view_buffer(view);
+    nassertr(buffer != 0, false);
+    _glBindBuffer(GL_TEXTURE_BUFFER, buffer);
+    if (needs_reload) {
+      _glTexBuffer(GL_TEXTURE_BUFFER, internal_format, buffer);
+    }
+  } else
+#endif  // !OPENGLES
+  if (needs_reload) {
+    if (num_levels <= 1) {
+      // If we have no mipmaps, tell OpenGL this before we upload the texture
+      // images, to give it a hint not to expect them.
+      glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     if (_supports_texture_max_level) {
@@ -14011,12 +14279,12 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     // using glTexImage to load all of the individual images one by one later,
     // but we are not allowed to change the texture size or number of mipmap
     // levels after this point.
-    if (gl_immutable_texture_storage && _supports_tex_storage && !gtc->_has_storage) {
+    if (gtc->_immutable) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
-          << "allocating storage for texture " << tex->get_name() << ", " << width
-           << " x " << height << " x " << depth << ", mipmaps " << num_levels
-          << ", uses_mipmaps = " << uses_mipmaps << "\n";
+          << "allocating storage for texture " << tex->get_name() << ", "
+          << width << " x " << height << " x " << depth << ", mipmaps "
+          << num_levels << "\n";
       }
 
       switch (texture_type) {
@@ -14039,179 +14307,46 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         break;
       }
 
-      gtc->_has_storage = true;
-      gtc->_simple_loaded = false;
-      gtc->_immutable = true;
-      gtc->_uses_mipmaps = uses_mipmaps;
-      gtc->_internal_format = internal_format;
-      gtc->_width = width;
-      gtc->_height = height;
-      gtc->_depth = depth;
-      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
-
       needs_reload = false;
     }
-  } else {
-    // Maybe we need to generate mipmaps on the CPU.
-    if (!image.is_null() && uses_mipmaps) {
-      if (tex->get_num_ram_mipmap_images() - mipmap_bias <= 1) {
-        // No RAM mipmap levels available.  Should we generate some?
-        if (!_supports_generate_mipmap || !driver_generate_mipmaps ||
-            image_compression != Texture::CM_off) {
-          // Yes, the GL can't or won't generate them, so we need to.  Note
-          // that some drivers (nVidia) will *corrupt memory* if you ask them
-          // to generate mipmaps for a pre-compressed texture.
-          tex->generate_ram_mipmap_images();
-        }
-      }
-    }
   }
 
-  bool success = upload_texture_image
-    (gtc, needs_reload, uses_mipmaps, mipmap_bias, target,
-     internal_format, external_format, component_type, image_compression);
-
-  if (gtc->_generate_mipmaps && _glGenerateMipmap != nullptr &&
-      !image.is_null()) {
-    // We uploaded an image; we may need to generate mipmaps.
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "generating mipmaps for texture " << tex->get_name() << ", "
-        << width << " x " << height << " x " << depth
-        << ", uses_mipmaps = " << uses_mipmaps << "\n";
-    }
-    _glGenerateMipmap(target);
-  }
-
-  maybe_gl_finish();
-
-  if (success) {
-    if (needs_reload) {
-      gtc->_has_storage = true;
-      gtc->_simple_loaded = false;
-      gtc->_uses_mipmaps = uses_mipmaps;
-      gtc->_internal_format = internal_format;
-      gtc->_width = width;
-      gtc->_height = height;
-      gtc->_depth = depth;
-
-      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
-    }
-
-    nassertr(gtc->_has_storage, false);
-
-    if (tex->get_post_load_store_cache()) {
-      tex->set_post_load_store_cache(false);
-      // OK, get the RAM image, and save it in a BamCache record.
-      if (do_extract_texture_data(gtc)) {
-        if (tex->has_ram_image()) {
-          BamCache *cache = BamCache::get_global_ptr();
-          PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-          if (record != nullptr) {
-            record->set_data(tex, tex);
-            cache->store(record);
-          }
-        }
-      }
-    }
-
-    GraphicsEngine *engine = get_engine();
-    nassertr(engine != nullptr, false);
-    engine->texture_uploaded(tex);
-    gtc->mark_loaded();
-
-    report_my_gl_errors();
-    return true;
-  }
-
-  report_my_gl_errors();
-  return false;
-}
-
-/**
- * Loads a texture image, or one page of a cube map image, from system RAM to
- * texture memory.
- */
-bool CLP(GraphicsStateGuardian)::
-upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
-                     bool uses_mipmaps, int mipmap_bias,
-                     GLenum texture_target,
-                     GLint internal_format,
-                     GLint external_format, GLenum component_type,
-                     Texture::CompressionMode image_compression) {
-  // Make sure the error stack is cleared out before we begin.
-  clear_my_gl_errors();
-
-  if (texture_target == GL_NONE) {
-    // Unsupported target (e.g.  3-d texturing on GL 1.1).
-    return false;
-  }
-  if (image_compression != Texture::CM_off && !_supports_compressed_texture) {
-    return false;
-  }
-
-  Texture *tex = gtc->get_texture();
-  nassertr(tex != nullptr, false);
-
-  CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
-  int width = tex->get_expected_mipmap_x_size(mipmap_bias);
-  int height = tex->get_expected_mipmap_y_size(mipmap_bias);
-  int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
-
-  // Determine the number of images to upload.
-  int num_levels = mipmap_bias + 1;
-  if (uses_mipmaps) {
-    num_levels = tex->get_expected_num_mipmap_levels();
-  }
-
+  // How many mipmap levels do we have available to upload?
   int num_ram_mipmap_levels = 0;
   if (!image.is_null()) {
-    if (uses_mipmaps) {
-      num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
-    } else {
-      num_ram_mipmap_levels = 1;
-    }
+    num_ram_mipmap_levels = std::min(num_levels, tex->get_num_ram_mipmap_images() - mipmap_bias);
   }
-
-#ifndef OPENGLES_1
-  if (needs_reload || num_ram_mipmap_levels > 0) {
-    // Make sure that any incoherent writes to this texture have been synced.
-    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
-      issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
-    }
-  }
-#endif
 
   if (!needs_reload) {
     // Try to subload the image over the existing GL Texture object, possibly
     // saving on texture memory fragmentation.
 
     if (GLCAT.is_debug()) {
-      SparseArray pages = gtc->get_image_modified_pages(0);
+      SparseArray pages = gtc->get_view_modified_pages(view, 0);
       if (num_ram_mipmap_levels == 0) {
         if (tex->has_clear_color()) {
           GLCAT.debug()
-            << "clearing texture " << tex->get_name() << ", "
+            << "clearing texture " << tex->get_name() << " view " << view << ", "
             << width << " x " << height << " x " << depth << ", pages " << pages
-            << ", uses_mipmaps = " << uses_mipmaps << ", clear_color = "
+            << ", mipmaps " << num_levels << ", clear_color = "
             << tex->get_clear_color() << "\n";
         } else {
           GLCAT.debug()
             << "not loading NULL image for texture " << tex->get_name()
-            << ", " << width << " x " << height << " x " << depth
-            << ", pages " << pages << ", uses_mipmaps = " << uses_mipmaps << "\n";
+            << " view " << view << ", " << width << " x " << height << " x " << depth
+            << ", pages " << pages << ", mipmaps = " << num_levels << "\n";
         }
       } else {
         GLCAT.debug()
-          << "updating image data of texture " << tex->get_name()
-          << ", " << width << " x " << height << " x " << depth
+          << "updating image data of texture " << tex->get_name() << " view "
+          << view << ", " << width << " x " << height << " x " << depth
           << ", pages " << pages << ", mipmaps " << num_ram_mipmap_levels
-          << ", uses_mipmaps = " << uses_mipmaps << "\n";
+          << " / " << num_levels << "\n";
       }
     }
 
-    for (int n = mipmap_bias; n < num_levels; ++n) {
-      SparseArray pages = gtc->get_image_modified_pages(n);
+    for (int n = mipmap_bias; n < num_levels + mipmap_bias; ++n) {
+      SparseArray pages = gtc->get_view_modified_pages(view, n);
 
       // we grab the mipmap pointer first, if it is NULL we grab the normal
       // mipmap image pointer which is a PTA_uchar
@@ -14220,7 +14355,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
-          if (n < num_ram_mipmap_levels) {
+          if (n - mipmap_bias < num_ram_mipmap_levels) {
             // We were told we'd have this many RAM mipmap images, but we
             // don't.  Raise a warning.
             GLCAT.warning()
@@ -14233,20 +14368,20 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // The texture has a clear color, so we should fill this mipmap
             // level to a solid color.
 #ifndef OPENGLES
-            if (texture_target != GL_TEXTURE_BUFFER) {
+            if (target != GL_TEXTURE_BUFFER) {
               if (_supports_clear_texture) {
                 // We can do that with the convenient glClearTexImage
                 // function.
                 vector_uchar clear_data = tex->get_clear_data();
 
                 if (pages.has_all_of(0, depth)) {
-                  _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                  _glClearTexImage(index, n - mipmap_bias, external_format,
                                    component_type, (void *)&clear_data[0]);
                 }
                 else for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
                   int begin = pages.get_subrange_begin(sri);
                   int num_pages = pages.get_subrange_end(sri) - begin;
-                  _glClearTexSubImage(gtc->_index, n - mipmap_bias, 0, 0, begin,
+                  _glClearTexSubImage(index, n - mipmap_bias, 0, 0, begin,
                                       width, height, num_pages, external_format,
                                       component_type, (void *)&clear_data[0]);
                 }
@@ -14282,7 +14417,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         size_t view_size = tex->get_ram_mipmap_view_size(n);
-        image_ptr += view_size * gtc->get_view();
+        image_ptr += view_size * view;
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -14299,7 +14434,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(page_size * pages.get_num_on_bits());
 #endif
-      switch (texture_target) {
+      switch (target) {
 #ifndef OPENGLES_1
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
@@ -14309,11 +14444,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             const unsigned char *page_ptr = image_ptr + page_size * begin;
 
             if (image_compression == Texture::CM_off) {
-              _glTexSubImage3D(texture_target, n - mipmap_bias,
+              _glTexSubImage3D(target, n - mipmap_bias,
                                0, 0, begin, width, height, num_pages,
                                external_format, component_type, page_ptr);
             } else {
-              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+              _glCompressedTexSubImage3D(target, n - mipmap_bias,
                                          0, 0, begin, width, height, num_pages,
                                          external_format,
                                          page_size * num_pages, page_ptr);
@@ -14329,10 +14464,10 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
+          glTexSubImage1D(target, n - mipmap_bias, 0, width,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
+          _glCompressedTexSubImage1D(target, n - mipmap_bias, 0, width,
                                      external_format, page_size, image_ptr);
         }
         break;
@@ -14348,11 +14483,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             const unsigned char *page_ptr = image_ptr + page_size * begin;
 
             if (image_compression == Texture::CM_off) {
-              _glTexSubImage3D(texture_target, n - mipmap_bias,
+              _glTexSubImage3D(target, n - mipmap_bias,
                                0, 0, begin, width, height, num_pages,
                                external_format, component_type, page_ptr);
             } else {
-              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+              _glCompressedTexSubImage3D(target, n - mipmap_bias,
                                          0, 0, begin, width, height, num_pages,
                                          external_format,
                                          page_size * num_pages, page_ptr);
@@ -14365,7 +14500,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         break;
 #endif  // OPENGLES_1
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
           _glBufferSubData(GL_TEXTURE_BUFFER, 0, page_size, image_ptr);
@@ -14411,10 +14546,10 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // TexSubImage2D doesn't accept a row-stride parameter.
             height = tex->get_y_size() - tex->get_pad_y_size();
           }
-          glTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
+          glTexSubImage2D(target, n - mipmap_bias, 0, 0, width, height,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
+          _glCompressedTexSubImage2D(target, n - mipmap_bias, 0, 0, width, height,
                                      external_format, page_size, image_ptr);
         }
         break;
@@ -14438,9 +14573,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     // Load the image up from scratch, creating a new GL Texture object.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "loading new texture object for " << tex->get_name() << ", " << width
-        << " x " << height << " x " << depth << ", mipmaps "
-        << num_ram_mipmap_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        << "loading new texture object for " << tex->get_name() << " view "
+        << view << ", " << width << " x " << height << " x " << depth
+        << ", mipmaps " << num_ram_mipmap_levels << " / " << num_levels << "\n";
     }
 
     // If there is immutable storage, this is impossible to do, and we should
@@ -14462,13 +14597,13 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       }
     }
 
-    for (int n = mipmap_bias; n < num_levels; ++n) {
+    for (int n = mipmap_bias; n < num_levels + mipmap_bias; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
       if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
-          if (n < num_ram_mipmap_levels) {
+          if (n - mipmap_bias < num_ram_mipmap_levels) {
             // We were told we'd have this many RAM mipmap images, but we
             // don't.  Raise a warning.
             GLCAT.warning()
@@ -14476,7 +14611,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               << "\n";
             if (_supports_texture_max_level) {
               // Tell the GL we have no more mipmaps for it to use.
-              glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+              glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
             break;
           }
@@ -14486,12 +14621,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             // fill it in with the correct clear color, which we can then
             // upload.
             ptimage = tex->make_ram_mipmap_image(n);
-
-          } else if (image_compression != Texture::CM_off) {
+          }
+          else if (image_compression != Texture::CM_off) {
             // We can't upload a NULL compressed texture.
             if (_supports_texture_max_level) {
               // Tell the GL we have no more mipmaps for it to use.
-              glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
+              glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
             break;
           }
@@ -14503,7 +14638,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       size_t view_size = tex->get_ram_mipmap_view_size(n);
       if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
-        image_ptr += view_size * gtc->get_view();
+        image_ptr += view_size * view;
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -14523,14 +14658,14 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
 #endif
-      switch (texture_target) {
+      switch (target) {
 #ifndef OPENGLES  // 1-d textures not supported by OpenGL ES.  Fall through.
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexImage1D(texture_target, n - mipmap_bias, internal_format,
+          glTexImage1D(target, n - mipmap_bias, internal_format,
                        width, 0, external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage1D(texture_target, n - mipmap_bias, external_format,
+          _glCompressedTexImage1D(target, n - mipmap_bias, external_format,
                                   width, 0, view_size, image_ptr);
         }
         break;
@@ -14540,11 +14675,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+            _glCompressedTexImage3D(target, n - mipmap_bias, external_format,
                                     width, height, depth, 0, view_size, image_ptr);
           }
         } else {
@@ -14559,11 +14694,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+            _glCompressedTexImage3D(target, n - mipmap_bias, external_format,
                                     width, height, depth, 0, view_size, image_ptr);
           }
         } else {
@@ -14571,9 +14706,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
           return false;
         }
         break;
-#endif  // OPENGLES_1
 
-#ifndef OPENGLES
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
           _glBufferData(GL_TEXTURE_BUFFER, view_size, image_ptr,
@@ -14583,7 +14716,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
           return false;
         }
         break;
-#endif  // OPENGLES
+#endif  // OPENGLES_1
 
       case GL_TEXTURE_CUBE_MAP:
         if (_supports_cube_map) {
@@ -14612,11 +14745,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       default:
         if (image_compression == Texture::CM_off) {
-          glTexImage2D(texture_target, n - mipmap_bias, internal_format,
+          glTexImage2D(target, n - mipmap_bias, internal_format,
                        width, height, 0,
                        external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage2D(texture_target, n - mipmap_bias, external_format,
+          _glCompressedTexImage2D(target, n - mipmap_bias, external_format,
                                   width, height, 0, view_size, image_ptr);
         }
       }
@@ -14634,6 +14767,17 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     }
   }
 
+  if (gtc->_generate_mipmaps && _glGenerateMipmap != nullptr && !image.is_null()) {
+    // We uploaded an image; we may need to generate mipmaps.
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "generating mipmaps for texture " << tex->get_name() << " view "
+        << view << ", " << width << " x " << height << " x " << depth
+        << ", mipmaps = " << num_levels << "\n";
+    }
+    _glGenerateMipmap(target);
+  }
+
   report_my_gl_errors();
 
   return true;
@@ -14644,10 +14788,18 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
  */
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
+  gtc->set_active(true);
+
+  if (gtc->_num_levels <= 1) {
+    return;
+  }
+
 #ifndef OPENGLES
   if (_supports_dsa) {
     // OpenGL 4.5 offers an easy way to do this without binding.
-    _glGenerateTextureMipmap(gtc->_index);
+    for (int view = 0; view < gtc->_num_views; ++view) {
+      _glGenerateTextureMipmap(gtc->_indices[view]);
+    }
     return;
   }
 #endif
@@ -14655,9 +14807,20 @@ generate_mipmaps(CLP(TextureContext) *gtc) {
   if (_glGenerateMipmap != nullptr) {
     _state_texture = 0;
     update_texture(gtc, true);
-    apply_texture(gtc);
-    _glGenerateMipmap(gtc->_target);
-    glBindTexture(gtc->_target, 0);
+
+    GLenum target = gtc->_target;
+    for (int view = 0; view < gtc->_num_views; ++view) {
+      glBindTexture(target, gtc->_indices[view]);
+      _glGenerateMipmap(target);
+    }
+    glBindTexture(target, 0);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << target << dec << ", 0)\n";
+    }
+
+    report_my_gl_errors();
   }
 }
 
@@ -14674,6 +14837,15 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   PStatGPUTimer timer(this, _load_texture_pcollector);
   Texture *tex = gtc->get_texture();
   nassertr(tex != nullptr, false);
+
+  gtc->set_num_views(1);
+  GLuint index = gtc->get_view_index(0);
+  glBindTexture(GL_TEXTURE_2D, index);
+
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(GL_TEXTURE_2D, " << index << "): " << *tex << " simple\n";
+  }
 
 #ifdef OPENGLES
   GLenum internal_format = GL_BGRA;
@@ -14711,7 +14883,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   }
 
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps() && _supports_texture_max_level) {
+  if (_supports_texture_max_level) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 
@@ -14727,13 +14899,13 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
                external_format, component_type, image_ptr);
 
   gtc->_has_storage = true;
-  gtc->_simple_loaded = true;
   gtc->_immutable = false;
-  gtc->_uses_mipmaps = false;
   gtc->_internal_format = internal_format;
   gtc->_width = width;
   gtc->_height = height;
   gtc->_depth = 1;
+  gtc->_num_levels = 1;
+  gtc->_may_reload_with_mipmaps = false;
   gtc->update_data_size_bytes(width * height * 4);
 
   gtc->mark_loaded();
@@ -14783,7 +14955,7 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
     // Try to get the compressed size.
     GLint image_size;
     glGetTexLevelParameteriv(page_target, 0,
-                                GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+                             GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
 
     GLenum error_code = gl_get_error();
     if (error_code != GL_NO_ERROR) {
@@ -14834,11 +15006,14 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
 #endif  // OPENGLES
 
   size_t result = num_bytes * width * height * depth * scale;
-  if (gtc->_uses_mipmaps) {
-    result = (result * 4) / 3;
+  for (int n = 1; n < gtc->_num_levels; ++n) {
+    width = max(1, width << 1);
+    height = max(1, height << 1);
+    depth = max(1, depth << 1);
+    result += num_bytes * width * height * depth * scale;
   }
 
-  return result;
+  return result * gtc->_num_views;
 }
 
 /**
@@ -14858,9 +15033,10 @@ check_nonresident_texture(BufferContextChain &chain) {
   size_t ti = 0;
   BufferContext *node = chain.get_first();
   while (node != nullptr) {
+    // For now, we just check whether the first view is resident.
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), node);
     gtc_list[ti] = gtc;
-    texture_list[ti] = gtc->_index;
+    texture_list[ti] = gtc->get_view_index(0);
     node = node->get_next();
     ++ti;
   }
@@ -14884,9 +15060,11 @@ check_nonresident_texture(BufferContextChain &chain) {
 /**
  * The internal implementation of extract_texture_data(), given an already-
  * created TextureContext.
+ *
+ * Assumes that the texture is already bound.
  */
 bool CLP(GraphicsStateGuardian)::
-do_extract_texture_data(CLP(TextureContext) *gtc) {
+do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
   report_my_gl_errors();
 
   GLenum target = gtc->_target;
@@ -14903,18 +15081,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   Texture *tex = gtc->get_texture();
 
-  glBindTexture(target, gtc->_index);
-  if (GLCAT.is_spam()) {
-    GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
-  }
-
-#ifndef OPENGLES
-  if (target == GL_TEXTURE_BUFFER) {
-    _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
-  }
-#endif
-
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
 
@@ -14922,7 +15088,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   GLfloat border_color[4];
 #endif
 
-#ifdef OPENGLES
+#ifdef OPENGLES_1
   if (true) {
 #else
   if (target != GL_TEXTURE_BUFFER) {
@@ -15466,7 +15632,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   tex->set_component_type(type);
   tex->set_format(format);
 
-#ifdef OPENGLES
+#ifdef OPENGLES_1
   if (true) {
 #else
   if (target != GL_TEXTURE_BUFFER) {
@@ -15500,29 +15666,20 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     // existing content.
     PTA_uchar ram_image = tex->modify_ram_image();
     nassertr(ram_image.size() == image.size() * num_views, false);
-    memcpy(ram_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+    memcpy(ram_image.p() + image.size() * view, image.p(), image.size());
   }
 
-  if (gtc->_uses_mipmaps) {
-    // Also get the mipmap levels.
-    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
-    GLint highest_level = num_expected_levels;
-
-    if (_supports_texture_max_level) {
-      glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
-      highest_level = min(highest_level, num_expected_levels);
+  // Also get the mipmap levels.
+  for (int n = 1; n < gtc->_num_levels; ++n) {
+    if (!extract_texture_image(image, page_size, tex, target, page_target,
+                               type, compression, n)) {
+      return false;
     }
-    for (int n = 1; n <= highest_level; ++n) {
-      if (!extract_texture_image(image, page_size, tex, target, page_target,
-                                 type, compression, n)) {
-        return false;
-      }
-      if (num_views == 1) {
-        tex->set_ram_mipmap_image(n, image, page_size);
-      } else {
-        PTA_uchar ram_mipmap_image = tex->modify_ram_mipmap_image(n);
-        memcpy(ram_mipmap_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
-      }
+    if (num_views == 1) {
+      tex->set_ram_mipmap_image(n, image, page_size);
+    } else {
+      PTA_uchar ram_mipmap_image = tex->modify_ram_mipmap_image(n);
+      memcpy(ram_mipmap_image.p() + image.size() * view, image.p(), image.size());
     }
   }
 
@@ -15583,7 +15740,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
       }
     }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
     image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));

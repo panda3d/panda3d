@@ -242,7 +242,7 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->get_texture()->clear_prepared(tc->get_view(), this);
+  tc->get_texture()->clear_prepared(this);
 
   // We have to set the Texture pointer to NULL at this point, since the
   // Texture itself might destruct at any time after it has been released.
@@ -275,7 +275,7 @@ release_all_textures() {
   int num_textures = (int)_prepared_textures.size() + (int)_enqueued_textures.size();
 
   for (TextureContext *tc : _prepared_textures) {
-    tc->get_texture()->clear_prepared(tc->get_view(), this);
+    tc->get_texture()->clear_prepared(this);
     tc->_object = nullptr;
 
     _released_textures.push_back(tc);
@@ -332,13 +332,13 @@ get_num_prepared_textures() const {
  * the TextureContext will be deleted.
  */
 TextureContext *PreparedGraphicsObjects::
-prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
+prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new TextureContext.  There might be several
   // GSG's sharing the same set of textures; if so, it doesn't matter which of
   // them creates the context (since they're all shared anyway).
-  TextureContext *tc = gsg->prepare_texture(tex, view);
+  TextureContext *tc = gsg->prepare_texture(tex);
 
   if (tc != nullptr) {
     bool prepared = _prepared_textures.insert(tc).second;
@@ -1513,13 +1513,11 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = qti->first;
-    for (int view = 0; view < tex->get_num_views(); ++view) {
-      TextureContext *tc = tex->prepare_now(view, this, gsg);
-      if (tc != nullptr) {
-        gsg->update_texture(tc, true);
-        if (view == 0 && qti->second != nullptr) {
-          qti->second->set_result(tc);
-        }
+    TextureContext *tc = tex->prepare_now(this, gsg);
+    if (tc != nullptr) {
+      gsg->update_texture(tc, true);
+      if (qti->second != nullptr) {
+        qti->second->set_result(tc);
       }
     }
   }
