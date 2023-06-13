@@ -6,13 +6,13 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file cocoaGraphicsStateGuardian.h
+ * @file cocoaGLGraphicsStateGuardian.h
  * @author rdb
  * @date 2012-05-14
  */
 
-#ifndef COCOAGRAPHICSSTATEGUARDIAN_H
-#define COCOAGRAPHICSSTATEGUARDIAN_H
+#ifndef COCOAGLGRAPHICSSTATEGUARDIAN_H
+#define COCOAGLGRAPHICSSTATEGUARDIAN_H
 
 #include "pandabase.h"
 #include "cocoaGraphicsPipe.h"
@@ -26,7 +26,7 @@
  * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
  * information.
  */
-class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsStateGuardian : public GLGraphicsStateGuardian {
+class EXPCL_PANDA_COCOAGLDISPLAY CocoaGLGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties,
@@ -35,10 +35,10 @@ public:
                            CGDirectDisplayID display,
                            bool need_pbuffer);
 
-  CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-                             CocoaGraphicsStateGuardian *share_with);
+  CocoaGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
+                               CocoaGLGraphicsStateGuardian *share_with);
 
-  virtual ~CocoaGraphicsStateGuardian();
+  virtual ~CocoaGLGraphicsStateGuardian();
   bool setup_vsync();
 
   INLINE void lock_context();
@@ -64,7 +64,7 @@ public:
   }
   static void init_type() {
     GLGraphicsStateGuardian::init_type();
-    register_type(_type_handle, "CocoaGraphicsStateGuardian",
+    register_type(_type_handle, "CocoaGLGraphicsStateGuardian",
                   GLGraphicsStateGuardian::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -76,6 +76,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "cocoaGraphicsStateGuardian.I"
+#include "cocoaGLGraphicsStateGuardian.I"
 
 #endif

@@ -11,7 +11,7 @@ __all__ = [
     'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
     'findPythonModule', 'mostDerivedLast', 'clampScalar', 'weightedChoice',
     'randFloat', 'normalDistrib', 'weightedRand', 'randUint31', 'randInt32',
-    'SerialNumGen', 'serialNum', 'uniqueName', 'Singleton',
+    'SerialNumGen', 'SerialMaskedGen', 'serialNum', 'uniqueName', 'Singleton',
     'SingletonError', 'printListEnum', 'safeRepr', 'fastRepr',
     'isDefaultValue', 'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
     'getNumberedTypedSortedString', 'printNumberedTyped', 'DelayedCall',

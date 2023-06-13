@@ -36,6 +36,11 @@ class DSearchPath;
  * convention, and it knows how to perform basic OS-specific I/O, like testing
  * for file existence and searching a searchpath, as well as the best way to
  * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
  */
 class EXPCL_DTOOL_DTOOLUTIL Filename {
 PUBLISHED:

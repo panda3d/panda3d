@@ -82,7 +82,7 @@ PUBLISHED:
   int get_num_queued_textures() const;
   int get_num_prepared_textures() const;
 
-  TextureContext *prepare_texture_now(Texture *tex, int view,
+  TextureContext *prepare_texture_now(Texture *tex,
                                       GraphicsStateGuardianBase *gsg);
 
   void enqueue_sampler(const SamplerState &sampler);
