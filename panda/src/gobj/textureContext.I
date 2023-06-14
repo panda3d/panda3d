@@ -15,10 +15,9 @@
  *
  */
 INLINE TextureContext::
-TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   BufferContext(&pgo->_texture_residency, tex),
-  AdaptiveLruPage(0),
-  _view(view)
+  AdaptiveLruPage(0)
 {
 }
 
@@ -31,14 +30,12 @@ get_texture() const {
 }
 
 /**
- * Returns the specific view of a multiview texture this context represents.
- * In the usual case, with a non-multiview texture, this will be 0.
+ * @deprecated since 1.11.0: always returns 0.
  */
 INLINE int TextureContext::
 get_view() const {
-  return _view;
+  return 0;
 }
-
 
 /**
  * Returns true if the texture properties or image have been modified since
@@ -101,6 +98,15 @@ get_image_modified() const {
 INLINE SparseArray TextureContext::
 get_image_modified_pages(int n) const {
   return get_texture()->get_image_modified_pages(_image_modified, n);
+}
+
+/**
+ * Returns a SparseArray indicating which pages of the texture have been
+ * modified since the last call to mark_loaded().
+ */
+INLINE SparseArray TextureContext::
+get_view_modified_pages(int view, int n) const {
+  return get_texture()->get_view_modified_pages(_image_modified, view, n);
 }
 
 /**

@@ -173,6 +173,7 @@ close_window() {
     CFRelease(swap_buffer._data_provider);
     ZB_close(swap_buffer._frame_buffer);
   }
+  _swap_chain.clear();
 
   CocoaGraphicsWindow::close_window();
 }

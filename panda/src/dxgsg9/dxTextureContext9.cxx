@@ -36,18 +36,14 @@ static const DWORD g_LowByteMask = 0x000000FF;
  *
  */
 DXTextureContext9::
-DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
-  TextureContext(pgo, tex, view) {
+DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
+  TextureContext(pgo, tex) {
 
   if (dxgsg9_cat.is_spam()) {
     dxgsg9_cat.spam()
       << "Creating DX texture [" << tex->get_name() << "], minfilter(" << tex->get_minfilter() << "), magfilter(" << tex->get_magfilter() << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
   }
 
-  _d3d_texture = nullptr;
-  _d3d_2d_texture = nullptr;
-  _d3d_volume_texture = nullptr;
-  _d3d_cube_texture = nullptr;
   _has_mipmaps = false;
   _is_render_target = false;
   _managed = -1;
@@ -101,7 +97,7 @@ bool DXTextureContext9::
 create_texture(DXScreenData &scrn) {
 
   // check if the texture has already been created
-  if (_d3d_2d_texture || _d3d_cube_texture || _d3d_volume_texture) {
+  if (!_d3d_textures.empty()) {
     // texture already created, no need to create
     return true;
   }
@@ -146,21 +142,22 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
-  switch (tex->get_texture_type()) {
-    case Texture::TT_1d_texture:
-    case Texture::TT_2d_texture:
-    case Texture::TT_cube_map:
-      // no compression for render target textures, or very small textures
-      if (!tex->get_render_to_texture() &&
-          orig_width >= 4 && orig_height >= 4) {
-        if (texture_wants_compressed){
-          compress_texture = true;
-        }
+  Texture::TextureType texture_type = tex->get_texture_type();
+  switch (texture_type) {
+  case Texture::TT_1d_texture:
+  case Texture::TT_2d_texture:
+  case Texture::TT_cube_map:
+    // no compression for render target textures, or very small textures
+    if (!tex->get_render_to_texture() && orig_width >= 4 && orig_height >= 4) {
+      if (texture_wants_compressed){
+        compress_texture = true;
       }
-      break;
-    case Texture::TT_3d_texture:
-      // compression of 3d textures not supported by all video chips
-      break;
+    }
+    break;
+
+  case Texture::TT_3d_texture:
+    // compression of 3d textures not supported by all video chips
+    break;
   }
 
   if (texture_stored_compressed && !compress_texture) {
@@ -259,7 +256,7 @@ create_texture(DXScreenData &scrn) {
 
   DWORD filter_caps;
 
-  switch (tex->get_texture_type()) {
+  switch (texture_type) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
     filter_caps = scrn._d3dcaps.TextureFilterCaps;
@@ -353,7 +350,7 @@ create_texture(DXScreenData &scrn) {
 
   if (orig_width != target_width || orig_height != target_height ||
       orig_depth != target_depth) {
-    if (tex->get_texture_type() == Texture::TT_3d_texture) {
+    if (texture_type == Texture::TT_3d_texture) {
       dxgsg9_cat.info()
         << "Reducing size of " << tex->get_name()
         << " from " << orig_width << "x" << orig_height << "x" << orig_depth
@@ -970,17 +967,18 @@ create_texture(DXScreenData &scrn) {
       << "D3D create_texture ( ) unknown texture format\n";
   }
 
-  int data_size;
 
-  data_size = target_width * target_height * target_depth;
+  int num_views = tex->get_num_views();
+
+  size_t data_size = target_width * target_height * target_depth;
   if (_has_mipmaps) {
-    data_size = (int) ((PN_stdfloat) data_size * 1.3333333);
+    data_size += data_size / 3;
   }
-  data_size = (int) ((PN_stdfloat) data_size * bytes_per_texel);
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
+  data_size *= bytes_per_texel;
+  if (texture_type == Texture::TT_cube_map) {
     data_size *= 6;
   }
-  update_data_size_bytes(data_size);
+  update_data_size_bytes((size_t)data_size * (size_t)num_views);
 
   int attempts;
 
@@ -991,14 +989,14 @@ create_texture(DXScreenData &scrn) {
       << " reported available.\n";
     dxgsg9_cat.debug()
       << " size is " << target_width << " w * " << target_height << " h * "
-      << target_depth << " d";
+      << target_depth << " d * " << num_views << " v";
     if (_has_mipmaps) {
       dxgsg9_cat.debug(false)
         << " * 1.3333333 mipmaps";
     }
     dxgsg9_cat.debug(false)
       << " * " << bytes_per_texel << " bpt";
-    if (tex->get_texture_type() == Texture::TT_cube_map) {
+    if (texture_type == Texture::TT_cube_map) {
       dxgsg9_cat.debug(false)
         << " * 6 faces";
     }
@@ -1006,45 +1004,55 @@ create_texture(DXScreenData &scrn) {
       << "\n";
   }
 
-  attempts = 0;
-  do
-  {
-    switch (tex->get_texture_type()) {
-    case Texture::TT_1d_texture:
-    case Texture::TT_2d_texture:
-      hr = scrn._d3d_device->CreateTexture
-        (target_width, target_height, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_2d_texture, nullptr);
-      _d3d_texture = _d3d_2d_texture;
-      break;
+  for (int view = 0; view < num_views; ++view) {
+    IDirect3DBaseTexture9 *d3d_texture = nullptr;
+    IDirect3DTexture9 *d3d_2d_texture;
+    IDirect3DVolumeTexture9 *d3d_volume_texture;
+    IDirect3DCubeTexture9 *d3d_cube_texture;
 
-    case Texture::TT_3d_texture:
-      hr = scrn._d3d_device->CreateVolumeTexture
-        (target_width, target_height, target_depth, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_volume_texture, nullptr);
-      _d3d_texture = _d3d_volume_texture;
-      break;
+    attempts = 0;
+    do {
+      switch (texture_type) {
+      case Texture::TT_1d_texture:
+      case Texture::TT_2d_texture:
+        hr = scrn._d3d_device->CreateTexture
+          (target_width, target_height, mip_level_count, usage,
+           target_pixel_format, pool, &d3d_2d_texture, nullptr);
+        d3d_texture = d3d_2d_texture;
+        break;
 
-    case Texture::TT_cube_map:
-      hr = scrn._d3d_device->CreateCubeTexture
-        (target_width, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_cube_texture, nullptr);
-      _d3d_texture = _d3d_cube_texture;
+      case Texture::TT_3d_texture:
+        hr = scrn._d3d_device->CreateVolumeTexture
+          (target_width, target_height, target_depth, mip_level_count, usage,
+           target_pixel_format, pool, &d3d_volume_texture, nullptr);
+        d3d_texture = d3d_volume_texture;
+        break;
 
-      target_height = target_width;
-      break;
+      case Texture::TT_cube_map:
+        hr = scrn._d3d_device->CreateCubeTexture
+          (target_width, mip_level_count, usage,
+           target_pixel_format, pool, &d3d_cube_texture, nullptr);
+        d3d_texture = d3d_cube_texture;
+
+        target_height = target_width;
+        break;
+      }
+
+      attempts++;
+    }
+    while (scrn._dxgsg9->check_dx_allocation(hr, data_size, attempts));
+
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "D3D create_texture failed!" << D3DERRORSTRING(hr);
+      dxgsg9_cat.error()
+        << "  width = " << target_width << " height = " << target_height
+        << " target_pixel_format = " << target_pixel_format << "\n";
+
+      goto error_exit;
     }
 
-    attempts++;
-  } while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "D3D create_texture failed!" << D3DERRORSTRING(hr);
-    dxgsg9_cat.error()
-      << "  width = " << target_width << " height = " << target_height << " target_pixel_format = " << target_pixel_format << "\n";
-
-    goto error_exit;
+    _d3d_textures.push_back(d3d_texture);
   }
 
   if (DEBUG_TEXTURES && dxgsg9_cat.is_debug()) {
@@ -1088,12 +1096,11 @@ create_texture(DXScreenData &scrn) {
 
   return true;
 
- error_exit:
-
-  RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = nullptr;
-  _d3d_volume_texture = nullptr;
-  _d3d_cube_texture = nullptr;
+error_exit:
+  for (IDirect3DBaseTexture9 *d3d_texture : _d3d_textures) {
+    RELEASE(d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
+  }
+  _d3d_textures.clear();
   return false;
 }
 
@@ -1121,18 +1128,20 @@ create_simple_texture(DXScreenData &scrn) {
 
   int data_size = target_width * target_height * 4;
 
+  IDirect3DTexture9 *d3d_2d_texture = nullptr;
   hr = scrn._d3d_device->CreateTexture
     (target_width, target_height, mip_level_count, usage,
-     target_pixel_format, pool, &_d3d_2d_texture, nullptr);
-  _d3d_texture = _d3d_2d_texture;
+     target_pixel_format, pool, &d3d_2d_texture, nullptr);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "D3D create_simple_texture failed!" << D3DERRORSTRING(hr);
     dxgsg9_cat.error()
-      << "  width = " << target_width << " height = " << target_height << " target_pixel_format = " << target_pixel_format << "\n";
+      << "  width = " << target_width << " height = " << target_height
+      << " target_pixel_format = " << target_pixel_format << "\n";
 
     goto error_exit;
   }
+  _d3d_textures.push_back(d3d_2d_texture);
 
   if (DEBUG_TEXTURES && dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
@@ -1144,10 +1153,10 @@ create_simple_texture(DXScreenData &scrn) {
     CPTA_uchar image = get_texture()->get_simple_ram_image();
 
     hr = -1;
-    // hr = fill_d3d_texture_pixels(scrn);
+    // hr = fill_d3d_texture_pixels(view, scrn);
 
     IDirect3DSurface9 *surface = nullptr;
-    _d3d_2d_texture->GetSurfaceLevel(0, &surface);
+    d3d_2d_texture->GetSurfaceLevel(0, &surface);
 
     RECT source_size;
     source_size.left = source_size.top = 0;
@@ -1176,11 +1185,11 @@ create_simple_texture(DXScreenData &scrn) {
   mark_loaded();
   return true;
 
- error_exit:
-  RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = nullptr;
-  _d3d_volume_texture = nullptr;
-  _d3d_cube_texture = nullptr;
+error_exit:
+  for (IDirect3DBaseTexture9 *d3d_texture : _d3d_textures) {
+    RELEASE(d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
+  }
+  _d3d_textures.clear();
   return false;
 }
 
@@ -1189,16 +1198,15 @@ create_simple_texture(DXScreenData &scrn) {
  */
 void DXTextureContext9::
 delete_texture() {
-
-  if (_d3d_texture == nullptr) {
+  if (_d3d_textures.empty()) {
     // don't bother printing the msg below, since we already released it.
     return;
   }
 
-  RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = nullptr;
-  _d3d_volume_texture = nullptr;
-  _d3d_cube_texture = nullptr;
+  for (IDirect3DBaseTexture9 *d3d_texture : _d3d_textures) {
+    RELEASE(d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
+  }
+  _d3d_textures.clear();
 }
 
 /**
@@ -1219,10 +1227,13 @@ extract_texture_data(DXScreenData &screen) {
       << "\n";
     return state;
   }
-  nassertr(IS_VALID_PTR(_d3d_2d_texture), false);
+  nassertr(!_d3d_textures.empty(), false);
+
+  //FIXME: support for multiview textures
+  IDirect3DTexture9 *d3d_2d_texture = get_d3d_2d_texture(0);
 
   D3DSURFACE_DESC desc;
-  hr = _d3d_2d_texture->GetLevelDesc(0, &desc);
+  hr = d3d_2d_texture->GetLevelDesc(0, &desc);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "Texture::GetLevelDesc() failed!" << D3DERRORSTRING(hr);
@@ -1299,11 +1310,12 @@ extract_texture_data(DXScreenData &screen) {
     return state;
   }
 
-  int num_levels = _d3d_2d_texture->GetLevelCount();
+  int num_levels = d3d_2d_texture->GetLevelCount();
 
   tex->set_x_size(desc.Width);
   tex->set_y_size(desc.Height);
   tex->set_z_size(1);
+  tex->set_num_views(1);
   tex->set_component_type(Texture::T_unsigned_byte);
   tex->set_format(format);
   tex->clear_ram_image();
@@ -1315,7 +1327,7 @@ extract_texture_data(DXScreenData &screen) {
     source_surface = 0;
     destination_surface = 0;
 
-    hr = _d3d_2d_texture -> GetSurfaceLevel (0, &source_surface);
+    hr = d3d_2d_texture->GetSurfaceLevel(0, &source_surface);
     if (hr == D3D_OK) {
 
       D3DPOOL pool;
@@ -1389,7 +1401,7 @@ extract_texture_data(DXScreenData &screen) {
   else {
     for (int n = 0; n < num_levels; ++n) {
       D3DLOCKED_RECT rect;
-      hr = _d3d_2d_texture->LockRect(n, &rect, nullptr, D3DLOCK_READONLY);
+      hr = d3d_2d_texture->LockRect(n, &rect, nullptr, D3DLOCK_READONLY);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
           << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
@@ -1428,7 +1440,7 @@ extract_texture_data(DXScreenData &screen) {
         memcpy(image.p(), rect.pBits, size);
       }
 
-      _d3d_2d_texture->UnlockRect(n);
+      d3d_2d_texture->UnlockRect(n);
       if (n == 0) {
         tex->set_ram_image(image, compression);
       } else {
@@ -1741,62 +1753,49 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
  * with texture data.  Takes care of all necessary conversions and error
  * handling.
  */
-HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format)
-{
+HRESULT DXTextureContext9::
+fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format) {
   // This whole function was refactored out of fill_d3d_texture_pixels to make
   // the code more readable and to avoid code duplication.
-  IDirect3DSurface9 *mip_surface = nullptr;
-  bool using_temp_buffer = false;
   HRESULT hr = E_FAIL;
   CPTA_uchar image = get_texture()->get_ram_mipmap_image(mip_level);
-  BYTE *pixels = (BYTE*) image.p();
-  DWORD width  = (DWORD) get_texture()->get_expected_mipmap_x_size(mip_level);
-  DWORD height = (DWORD) get_texture()->get_expected_mipmap_y_size(mip_level);
+  DWORD width  = (DWORD)get_texture()->get_expected_mipmap_x_size(mip_level);
+  DWORD height = (DWORD)get_texture()->get_expected_mipmap_y_size(mip_level);
+  DWORD num_color_channels = get_texture()->get_num_components();
   int component_width = get_texture()->get_component_width();
 
   size_t page_size = get_texture()->get_expected_ram_mipmap_page_size(mip_level);
   size_t view_size;
+  size_t view_stride;
   vector_uchar clear_data;
+  BYTE *image_pixels;
   if (page_size > 0) {
     if (image.is_null()) {
       // Make an image, filled with the texture's clear color.
       image = get_texture()->make_ram_mipmap_image(mip_level);
       nassertr(!image.is_null(), E_FAIL);
-      pixels = (BYTE *)image.p();
     }
-    view_size = image.size();
-    pixels += view_size * get_view();
-    pixels += page_size * depth_index;
+    image_pixels = (BYTE *)image.p();
+    view_size = get_texture()->get_ram_mipmap_view_size(mip_level);
+    view_stride = view_size;
+    image_pixels += page_size * depth_index;
   } else {
     // This is a 0x0 texture, which gets loaded as though it were 1x1.
     width = 1;
     height = 1;
     clear_data = get_texture()->get_clear_data();
-    pixels = clear_data.data();
+    image_pixels = clear_data.data();
     view_size = clear_data.size();
+    view_stride = 0;
   }
-
-  if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
-    nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
-    hr = _d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)depth_index, mip_level, &mip_surface);
-  } else {
-    nassertr(IS_VALID_PTR(_d3d_2d_texture), E_FAIL);
-    hr = _d3d_2d_texture->GetSurfaceLevel(mip_level, &mip_surface);
-  }
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
-      << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
-    return E_FAIL;
-  }
+  nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
 
   RECT source_size;
   source_size.left = source_size.top = 0;
   source_size.right = width;
   source_size.bottom = height;
 
-  UINT source_row_byte_length = calculate_row_byte_length(width, get_texture()->get_num_components(), source_format);
+  UINT source_row_byte_length = calculate_row_byte_length(width, num_color_channels, source_format);
 
   DWORD mip_filter;
   // need filtering if size changes, (also if bitdepth reduced (need
@@ -1807,87 +1806,128 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
     mip_filter |= D3DX_FILTER_SRGB;
   }
 
-  // D3DXLoadSurfaceFromMemory will load black luminance and we want full
-  // white, so convert to explicit luminance-alpha format
-  if (_d3d_format == D3DFMT_A8) {
-    // alloc buffer for explicit D3DFMT_A8L8
-    USHORT *temp_buffer = new USHORT[width * height];
+  // Preallocate temporary buffer for conversion
+  BYTE *temp_buffer = nullptr;
+  if (source_format == D3DFMT_A8 || component_width != 1) {
+    int num_pixels = width * height;
+    if (source_format == D3DFMT_A8) {
+      num_pixels *= 2;
+      source_format = D3DFMT_A8L8;
+      source_row_byte_length *= 2;
+    } else {
+      num_pixels *= num_color_channels;
+    }
+    temp_buffer = new BYTE[num_pixels];
     if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg9_cat.error()
-        << "FillDDTextureMipmapPixels couldnt alloc mem for temp pixbuf!\n";
-      goto exit_FillMipmapSurf;
+        << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+      return E_FAIL;
     }
-    using_temp_buffer = true;
-
-    USHORT *out_pixels = temp_buffer;
-    BYTE *source_pixels = pixels + component_width - 1;
-    for (UINT y = 0; y < height; y++) {
-      for (UINT x = 0; x < width; x++, source_pixels += component_width, out_pixels++) {
-        // add full white, which is our interpretation of alpha-only (similar
-        // to default adding full opaque alpha 0xFF to RGB-only textures)
-        *out_pixels = ((*source_pixels) << 8 ) | 0xFF;
-      }
-    }
-
-    source_format = D3DFMT_A8L8;
-    source_row_byte_length = width * sizeof(USHORT);
-    pixels = (BYTE*)temp_buffer;
-  }
-  else if (component_width != 1) {
-    // Convert from 16-bit per channel (or larger) format down to 8-bit per
-    // channel.  This throws away precision in the original image, but dx8
-    // doesn't support high-precision images anyway.
-
-    int num_components = get_texture()->get_num_components();
-    int num_pixels = width * height * num_components;
-    BYTE *temp_buffer = new BYTE[num_pixels];
-    if (!IS_VALID_PTR(temp_buffer)) {
-      dxgsg9_cat.error() << "FillDDTextureMipmapPixels couldnt alloc mem for temp pixbuf!\n";
-      goto exit_FillMipmapSurf;
-    }
-    using_temp_buffer = true;
-
-    BYTE *source_pixels = pixels + component_width - 1;
-    for (int i = 0; i < num_pixels; i++) {
-      temp_buffer[i] = *source_pixels;
-      source_pixels += component_width;
-    }
-    pixels = (BYTE*)temp_buffer;
   }
 
   // filtering may be done here if texture if targetsize != origsize
+  int num_views = (int)_d3d_textures.size();
+
 #ifdef DO_PSTATS
-  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * height);
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * height * num_views);
 #endif
-  if (source_format == D3DFMT_ATI1 || source_format == D3DFMT_ATI2) {
-    // These formats are not supported by D3DXLoadSurfaceFromMemory.
-    D3DLOCKED_RECT rect;
-    _d3d_2d_texture->LockRect(mip_level, &rect, 0, D3DLOCK_DISCARD);
 
-    unsigned char *dest = (unsigned char *)rect.pBits;
-    memcpy(dest, pixels, view_size);
+  for (int view = 0; view < num_views; ++view) {
+    BYTE *pixels = image_pixels;
+    image_pixels += view_stride;
 
-    _d3d_2d_texture->UnlockRect(mip_level);
+    if (source_format == D3DFMT_ATI1 || source_format == D3DFMT_ATI2) {
+      // These formats are not supported by D3DXLoadSurfaceFromMemory.
+      D3DLOCKED_RECT rect;
 
-  } else {
-    hr = D3DXLoadSurfaceFromMemory
-      (mip_surface, nullptr, nullptr, (LPCVOID)pixels,
-        source_format, source_row_byte_length, nullptr,
-        &source_size, mip_filter, (D3DCOLOR)0x0);
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
-        << ", mip_level " << mip_level
-        << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+      if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
+        IDirect3DCubeTexture9 *d3d_cube_texture = get_d3d_cube_texture(view);
+        nassertr(IS_VALID_PTR(d3d_cube_texture), E_FAIL);
+        d3d_cube_texture->LockRect((D3DCUBEMAP_FACES)depth_index, mip_level, &rect, 0, D3DLOCK_DISCARD);
+
+        unsigned char *dest = (unsigned char *)rect.pBits;
+        memcpy(dest, pixels, view_size);
+
+        d3d_cube_texture->UnlockRect((D3DCUBEMAP_FACES)depth_index, mip_level);
+      } else {
+        IDirect3DTexture9 *d3d_2d_texture = get_d3d_2d_texture(view);
+        nassertr(IS_VALID_PTR(d3d_2d_texture), E_FAIL);
+        d3d_2d_texture->LockRect(mip_level, &rect, 0, D3DLOCK_DISCARD);
+
+        unsigned char *dest = (unsigned char *)rect.pBits;
+        memcpy(dest, pixels, view_size);
+
+        d3d_2d_texture->UnlockRect(mip_level);
+      }
+    }
+    else {
+      if (_d3d_format == D3DFMT_A8 && source_format == D3DFMT_A8L8) {
+        USHORT *out_pixels = (USHORT *)temp_buffer;
+        BYTE *source_pixels = pixels + component_width - 1;
+        for (UINT y = 0; y < height; y++) {
+          for (UINT x = 0; x < width; x++, source_pixels += component_width, out_pixels++) {
+            // add full white, which is our interpretation of alpha-only
+            // (similar to default adding full opaque alpha 0xFF to RGB-only
+            // textures)
+            *out_pixels = ((*source_pixels) << 8) | 0xFF;
+          }
+        }
+        pixels = (BYTE *)temp_buffer;
+      }
+      else if (component_width != 1) {
+        // Convert from 16-bit per channel (or larger) format down to 8-bit per
+        // channel.  This throws away precision in the original image, but dx8
+        // doesn't support high-precision images anyway.
+
+        int num_components = get_texture()->get_num_components();
+        int num_pixels = width * height * num_components;
+
+        BYTE *source_pixels = pixels + component_width - 1;
+        for (int i = 0; i < num_pixels; i++) {
+          temp_buffer[i] = *source_pixels;
+          source_pixels += component_width;
+        }
+        pixels = (BYTE *)temp_buffer;
+      }
+
+      IDirect3DSurface9 *mip_surface = nullptr;
+      if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
+        IDirect3DCubeTexture9 *d3d_cube_texture = get_d3d_cube_texture(view);
+        nassertr(IS_VALID_PTR(d3d_cube_texture), E_FAIL);
+        hr = d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)depth_index, mip_level, &mip_surface);
+      } else {
+        IDirect3DTexture9 *d3d_2d_texture = get_d3d_2d_texture(view);
+        nassertr(IS_VALID_PTR(d3d_2d_texture), E_FAIL);
+        hr = d3d_2d_texture->GetSurfaceLevel(mip_level, &mip_surface);
+      }
+
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+          << ", view " << view << ", mip_level " << mip_level
+          << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
+        return E_FAIL;
+      }
+
+      hr = D3DXLoadSurfaceFromMemory
+        (mip_surface, nullptr, nullptr, (LPCVOID)pixels,
+          source_format, source_row_byte_length, nullptr,
+          &source_size, mip_filter, (D3DCOLOR)0x0);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+          << ", view " << view << ", mip_level " << mip_level
+          << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+      }
+
+      RELEASE(mip_surface, dxgsg9, "FillDDTextureMipmapPixels MipSurface texture ptr", RELEASE_ONCE);
     }
   }
 
-exit_FillMipmapSurf:
-  if (using_temp_buffer) {
-    SAFE_DELETE_ARRAY(pixels);
+  if (temp_buffer != nullptr) {
+    delete[] temp_buffer;
   }
 
-  RELEASE(mip_surface, dxgsg9, "FillDDTextureMipmapPixels MipSurface texture ptr", RELEASE_ONCE);
   return hr;
 }
 
@@ -1899,7 +1939,8 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
   IDirect3DDevice9 *device = scrn._d3d_device;
   Texture *tex = get_texture();
   nassertr(IS_VALID_PTR(tex), E_FAIL);
-  if (tex->get_texture_type() == Texture::TT_3d_texture) {
+  Texture::TextureType texture_type = tex->get_texture_type();
+  if (texture_type == Texture::TT_3d_texture) {
     return fill_d3d_volume_texture_pixels(scrn);
   }
 
@@ -1924,14 +1965,15 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it might be a
     // texture we've rendered to by frame buffer operations or something.
-    if (tex->get_render_to_texture()) {
+    if (tex->get_render_to_texture() && texture_type != Texture::TT_cube_map) {
       HRESULT result;
 
-      if (_d3d_2d_texture) {
+      for (int view = 0; view < (int)_d3d_textures.size(); ++view) {
+        IDirect3DTexture9 *d3d_2d_texture = get_d3d_2d_texture(view);
+
         // clear render to texture
         IDirect3DSurface9 *surface;
-
-        result = _d3d_2d_texture -> GetSurfaceLevel (0, &surface);
+        result = d3d_2d_texture->GetSurfaceLevel(0, &surface);
         if (result == D3D_OK) {
           D3DSURFACE_DESC surface_description;
 
@@ -1981,7 +2023,6 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     }
   }
   //nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
-  nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
 
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
@@ -2017,6 +2058,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     break;
   }
 
+  int num_views = (int)_d3d_textures.size();
   for (unsigned int di = 0; di < orig_depth; di++) {
 
     // fill top level mipmap
@@ -2028,7 +2070,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     if (_has_mipmaps) {
       // if we have pre-calculated mipmap levels, use them, otherwise generate
       // on the fly
-      int miplevel_count = _d3d_texture->GetLevelCount();
+      int miplevel_count = _d3d_textures[0]->GetLevelCount();
       if (miplevel_count <= tex->get_num_loadable_ram_mipmap_images()) {
         if (dxgsg9_cat.is_debug()) {
           dxgsg9_cat.debug()
@@ -2041,45 +2083,51 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
             return hr; // error message was already output in fill_d3d_texture_mipmap_pixels
           }
         }
+
+        return D3D_OK;
       }
       else {
         // mipmaps need to be generated, either use autogen or d3dx functions
+        for (int view = 0; view < num_views; ++view) {
+          IDirect3DBaseTexture9 *d3d_texture = get_d3d_texture(view);
+          nassertr(IS_VALID_PTR(d3d_texture), E_FAIL);
 
-        if (_managed == false && scrn._supports_automatic_mipmap_generation) {
-          if (false)
-          {
-            // hr = _d3d_texture -> SetAutoGenFilterType
-            // (D3DTEXF_PYRAMIDALQUAD); hr = _d3d_texture ->
-            // SetAutoGenFilterType (D3DTEXF_GAUSSIANQUAD); hr = _d3d_texture
-            // -> SetAutoGenFilterType (D3DTEXF_ANISOTROPIC);
-            hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_LINEAR);
-            if (FAILED(hr)) {
-              dxgsg9_cat.error() << "SetAutoGenFilterType failed " << D3DERRORSTRING(hr);
+          if (_managed == false && scrn._supports_automatic_mipmap_generation) {
+            if (false) {
+              IDirect3DBaseTexture9 *d3d_texture = get_d3d_texture(view);
+              nassertr(IS_VALID_PTR(d3d_texture), E_FAIL);
+              //hr = d3d_texture->SetAutoGenFilterType(D3DTEXF_PYRAMIDALQUAD);
+              //hr = d3d_texture->SetAutoGenFilterType(D3DTEXF_GAUSSIANQUAD);
+              //hr = d3d_texture->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC);
+              hr = d3d_texture->SetAutoGenFilterType(D3DTEXF_LINEAR);
+              if (FAILED(hr)) {
+                dxgsg9_cat.error() << "SetAutoGenFilterType failed " << D3DERRORSTRING(hr);
+              }
+
+              d3d_texture->GenerateMipSubLevels();
+            }
+          }
+          else {
+            DWORD mip_filter_flags;
+            if (!dx_use_triangle_mipgen_filter) {
+              mip_filter_flags = D3DX_FILTER_BOX;
+            } else {
+              mip_filter_flags = D3DX_FILTER_TRIANGLE;
             }
 
-            _d3d_texture -> GenerateMipSubLevels ( );
-          }
-        }
-        else {
-          DWORD mip_filter_flags;
-          if (!dx_use_triangle_mipgen_filter) {
-            mip_filter_flags = D3DX_FILTER_BOX;
-          } else {
-            mip_filter_flags = D3DX_FILTER_TRIANGLE;
-          }
+            if (Texture::is_srgb(tex->get_format())) {
+              mip_filter_flags |= D3DX_FILTER_SRGB;
+            }
 
-          if (Texture::is_srgb(tex->get_format())) {
-            mip_filter_flags |= D3DX_FILTER_SRGB;
-          }
+            // mip_filter_flags |= D3DX_FILTER_DITHER;
+            hr = D3DXFilterTexture(d3d_texture, nullptr, 0, mip_filter_flags);
 
-          // mip_filter_flags |= D3DX_FILTER_DITHER;
-          hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
-                                mip_filter_flags);
-
-          if (FAILED(hr)) {
-            dxgsg9_cat.error()
-              << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
-              << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+            if (FAILED(hr)) {
+              dxgsg9_cat.error()
+                << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
+                << " view " << view << ", D3DXFilterTex failed"
+                << D3DERRORSTRING(hr);
+            }
           }
         }
       }
@@ -2126,158 +2174,166 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
 
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
-  nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
+  nassertr(!_d3d_textures.empty(), E_FAIL);
   nassertr(tex->get_texture_type() == Texture::TT_3d_texture, E_FAIL);
 
-  DWORD orig_width  = (DWORD) tex->get_x_size();
-  DWORD orig_height = (DWORD) tex->get_y_size();
-  DWORD orig_depth = (DWORD) tex->get_z_size();
+  DWORD orig_width  = (DWORD)tex->get_x_size();
+  DWORD orig_height = (DWORD)tex->get_y_size();
+  DWORD orig_depth = (DWORD)tex->get_z_size();
   DWORD num_color_channels = tex->get_num_components();
-  D3DFORMAT source_format = _d3d_format;
-  BYTE *image_pixels = (BYTE*)image.p();
   int component_width = tex->get_component_width();
 
-  nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
-
-  size_t view_size = tex->get_ram_mipmap_view_size(0);
-  image_pixels += view_size * get_view();
-
-  IDirect3DVolume9 *mip_level_0 = nullptr;
-  bool using_temp_buffer = false;
-  BYTE *pixels = image_pixels;
-
-  nassertr(IS_VALID_PTR(_d3d_volume_texture), E_FAIL);
-  hr = _d3d_volume_texture->GetVolumeLevel(0, &mip_level_0);
-
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
-      << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
-    return E_FAIL;
-  }
-
-  D3DBOX source_size;
-  source_size.Left = source_size.Top = source_size.Front = 0;
-  source_size.Right = orig_width;
-  source_size.Bottom = orig_height;
-  source_size.Back = orig_depth;
-
+  D3DFORMAT source_format = _d3d_format;
   UINT source_row_byte_length = orig_width * num_color_channels;
   UINT source_page_byte_length = orig_height * source_row_byte_length;
 
-  DWORD level_0_filter, mip_filter_flags;
-  using_temp_buffer = false;
-
-  // need filtering if size changes, (also if bitdepth reduced (need
-  // dithering)??)
-  level_0_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
-
-  if (Texture::is_srgb(tex->get_format())) {
-    level_0_filter |= D3DX_FILTER_SRGB;
-  }
-
-  // D3DXLoadSurfaceFromMemory will load black luminance and we want full
-  // white, so convert to explicit luminance-alpha format
-  if (_d3d_format == D3DFMT_A8) {
-    // alloc buffer for explicit D3DFMT_A8L8
-    USHORT *temp_buffer = new USHORT[orig_width * orig_height * orig_depth];
+  // Preallocate temporary buffer for conversion
+  BYTE *temp_buffer = nullptr;
+  if (_d3d_format == D3DFMT_A8 || component_width != 1) {
+    int num_pixels = orig_width * orig_height * orig_depth;
+    if (_d3d_format == D3DFMT_A8) {
+      num_pixels *= 2;
+      source_format = D3DFMT_A8L8;
+      source_row_byte_length *= 2;
+      source_page_byte_length *= 2;
+    } else {
+      num_pixels *= num_color_channels;
+    }
+    temp_buffer = new BYTE[num_pixels];
     if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg9_cat.error()
         << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-      goto exit_FillDDSurf;
+      return E_FAIL;
     }
-    using_temp_buffer = true;
-
-    USHORT *out_pixels = temp_buffer;
-    BYTE *source_pixels = pixels + component_width - 1;
-    for (UINT z = 0; z < orig_depth; z++) {
-      for (UINT y = 0; y < orig_height; y++) {
-        for (UINT x = 0;
-             x < orig_width;
-             x++, source_pixels += component_width, out_pixels++) {
-          // add full white, which is our interpretation of alpha-only
-          // (similar to default adding full opaque alpha 0xFF to RGB-only
-          // textures)
-          *out_pixels = ((*source_pixels) << 8 ) | 0xFF;
-        }
-      }
-    }
-
-    source_format = D3DFMT_A8L8;
-    source_row_byte_length = orig_width * sizeof(USHORT);
-    source_page_byte_length = orig_height * source_row_byte_length;
-    pixels = (BYTE*)temp_buffer;
-
-  } else if (component_width != 1) {
-    // Convert from 16-bit per channel (or larger) format down to 8-bit per
-    // channel.  This throws away precision in the original image, but dx8
-    // doesn't support high-precision images anyway.
-
-    int num_components = tex->get_num_components();
-    int num_pixels = orig_width * orig_height * orig_depth * num_components;
-    BYTE *temp_buffer = new BYTE[num_pixels];
-    if (!IS_VALID_PTR(temp_buffer)) {
-      dxgsg9_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-      goto exit_FillDDSurf;
-    }
-    using_temp_buffer = true;
-
-    BYTE *source_pixels = pixels + component_width - 1;
-    for (int i = 0; i < num_pixels; i++) {
-      temp_buffer[i] = *source_pixels;
-      source_pixels += component_width;
-    }
-    pixels = (BYTE*)temp_buffer;
   }
 
+  BYTE *image_pixels = (BYTE *)image.p();
+  nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
 
-  // filtering may be done here if texture if targetsize != origsize
+  size_t view_size = tex->get_ram_mipmap_view_size(0);
+  int num_views = (int)_d3d_textures.size();
+
 #ifdef DO_PSTATS
-  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_page_byte_length * orig_depth);
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_page_byte_length * orig_depth * num_views);
 #endif
-  hr = D3DXLoadVolumeFromMemory
-    (mip_level_0, nullptr, nullptr, (LPCVOID)pixels,
-     source_format, source_row_byte_length, source_page_byte_length,
-     nullptr,
-     &source_size, level_0_filter, (D3DCOLOR)0x0);
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
-      << ", D3DXLoadVolumeFromMem failed" << D3DERRORSTRING(hr);
-    goto exit_FillDDSurf;
-  }
 
-  if (_has_mipmaps) {
-    if (!dx_use_triangle_mipgen_filter) {
-      mip_filter_flags = D3DX_FILTER_BOX;
-    } else {
-      mip_filter_flags = D3DX_FILTER_TRIANGLE;
-    }
+  bool success = true;
 
-    if (Texture::is_srgb(tex->get_format())) {
-      mip_filter_flags |= D3DX_FILTER_SRGB;
-    }
+  for (int view = 0; view < num_views; ++view) {
+    IDirect3DVolumeTexture9 *d3d_volume_texture = get_d3d_volume_texture(view);
+    nassertr(IS_VALID_PTR(d3d_volume_texture), E_FAIL);
 
-    // mip_filter_flags| = D3DX_FILTER_DITHER;
+    IDirect3DVolume9 *mip_level_0 = nullptr;
+    BYTE *pixels = image_pixels;
+    image_pixels += view_size;
 
-    hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
-                           mip_filter_flags);
+    hr = d3d_volume_texture->GetVolumeLevel(0, &mip_level_0);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
         << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
-        << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
-      goto exit_FillDDSurf;
+        << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
+      success = false;
+      continue;
     }
+
+    D3DBOX source_size;
+    source_size.Left = source_size.Top = source_size.Front = 0;
+    source_size.Right = orig_width;
+    source_size.Bottom = orig_height;
+    source_size.Back = orig_depth;
+
+    DWORD level_0_filter, mip_filter_flags;
+
+    // need filtering if size changes, (also if bitdepth reduced (need
+    // dithering)??)
+    level_0_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
+
+    if (Texture::is_srgb(tex->get_format())) {
+      level_0_filter |= D3DX_FILTER_SRGB;
+    }
+
+    // D3DXLoadSurfaceFromMemory will load black luminance and we want full
+    // white, so convert to explicit luminance-alpha format
+    if (_d3d_format == D3DFMT_A8 && source_format == D3DFMT_A8L8) {
+      USHORT *out_pixels = (USHORT *)temp_buffer;
+      BYTE *source_pixels = pixels + component_width - 1;
+      for (UINT z = 0; z < orig_depth; z++) {
+        for (UINT y = 0; y < orig_height; y++) {
+          for (UINT x = 0;
+               x < orig_width;
+               x++, source_pixels += component_width, out_pixels++) {
+            // add full white, which is our interpretation of alpha-only
+            // (similar to default adding full opaque alpha 0xFF to RGB-only
+            // textures)
+            *out_pixels = ((*source_pixels) << 8) | 0xFF;
+          }
+        }
+      }
+
+      pixels = (BYTE *)temp_buffer;
+    }
+    else if (component_width != 1) {
+      // Convert from 16-bit per channel (or larger) format down to 8-bit per
+      // channel.  This throws away precision in the original image, but dx8
+      // doesn't support high-precision images anyway.
+
+      int num_components = tex->get_num_components();
+      int num_pixels = orig_width * orig_height * orig_depth * num_components;
+
+      BYTE *source_pixels = pixels + component_width - 1;
+      for (int i = 0; i < num_pixels; i++) {
+        temp_buffer[i] = *source_pixels;
+        source_pixels += component_width;
+      }
+      pixels = (BYTE *)temp_buffer;
+    }
+
+    // filtering may be done here if texture if targetsize != origsize
+    hr = D3DXLoadVolumeFromMemory
+      (mip_level_0, nullptr, nullptr, (LPCVOID)pixels,
+       source_format, source_row_byte_length, source_page_byte_length,
+       nullptr,
+       &source_size, level_0_filter, (D3DCOLOR)0x0);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
+        << " view " << view << ", D3DXLoadVolumeFromMem failed" << D3DERRORSTRING(hr);
+      success = false;
+      continue;
+    }
+
+    if (_has_mipmaps) {
+      if (!dx_use_triangle_mipgen_filter) {
+        mip_filter_flags = D3DX_FILTER_BOX;
+      } else {
+        mip_filter_flags = D3DX_FILTER_TRIANGLE;
+      }
+
+      if (Texture::is_srgb(tex->get_format())) {
+        mip_filter_flags |= D3DX_FILTER_SRGB;
+      }
+
+      // mip_filter_flags| = D3DX_FILTER_DITHER;
+
+      hr = D3DXFilterTexture(d3d_volume_texture, nullptr, 0, mip_filter_flags);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
+          << " view " << view << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+        success = false;
+        continue;
+      }
+    }
+
+    RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
   }
 
- exit_FillDDSurf:
-  if (using_temp_buffer) {
-    SAFE_DELETE_ARRAY(pixels);
+  if (temp_buffer != nullptr) {
+    delete[] temp_buffer;
   }
-  RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
-  return hr;
+
+  return success ? D3D_OK : E_FAIL;
 }
-
 
 /**
  * Returns the largest power of 2 less than or equal to value.

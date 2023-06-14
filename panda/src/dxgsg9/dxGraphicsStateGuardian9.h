@@ -63,8 +63,8 @@ public:
     calc_fb_properties(DWORD cformat, DWORD dformat,
                        DWORD multisampletype, DWORD multisamplequality);
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
-  void apply_texture(int i, TextureContext *tc, const SamplerState &sampler);
+  virtual TextureContext *prepare_texture(Texture *tex);
+  void apply_texture(int i, TextureContext *tc, int view, const SamplerState &sampler);
   virtual bool update_texture(TextureContext *tc, bool force);
   bool upload_texture(DXTextureContext9 *dtc, bool force);
   virtual void release_texture(TextureContext *tc);

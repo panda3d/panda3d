@@ -37,53 +37,29 @@ void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
 
-#ifndef OPENGLES
-  if (_handle != 0) {
-    if (_handle_resident) {
-      _glgsg->_glMakeTextureHandleNonResident(_handle);
-    }
-    _handle_resident = false;
-  } else
-#endif
-  {
-    reset_data();
-  }
-
+  reset_data(_target);
   update_data_size_bytes(0);
   mark_unloaded();
 }
 
 /**
  * Resets the texture object to a new one so a new GL texture object can be
- * uploaded.
+ * uploaded.  This call also allows the texture target to be changed.
  */
 void CLP(TextureContext)::
-reset_data() {
-#ifndef OPENGLES
-  if (_handle != 0 && _handle_resident) {
-    _glgsg->_glMakeTextureHandleNonResident(_handle);
-  }
-#endif
-
+reset_data(GLenum target, int num_views) {
   // Free the texture resources.
-  glDeleteTextures(1, &_index);
+  set_num_views(0);
 
-  if (_buffer != 0) {
-    _glgsg->_glDeleteBuffers(1, &_buffer);
-    _buffer = 0;
-  }
+  _target = target;
 
   // We still need a valid index number, though, in case we want to re-load
   // the texture later.
-  glGenTextures(1, &_index);
+  set_num_views(num_views);
 
-#ifndef OPENGLES
-  _handle = 0;
-  _handle_resident = false;
-#endif
   _has_storage = false;
-  _simple_loaded = false;
   _immutable = false;
+  _may_reload_with_mipmaps = false;
 
 #ifndef OPENGLES_1
   // Mark the texture as coherent.
@@ -118,41 +94,77 @@ get_native_buffer_id() const {
 }
 
 /**
- *
+ * Changes the number of views in the texture.
  */
-#ifndef OPENGLES
 void CLP(TextureContext)::
-make_handle_resident() {
-  if (_handle != 0) {
-    if (!_handle_resident) {
-      _glgsg->_glMakeTextureHandleResident(_handle);
-      _handle_resident = true;
+set_num_views(int num_views) {
+  if (_num_views > num_views) {
+    glDeleteTextures(_num_views - num_views, _indices + _num_views);
+
+    if (_buffers != nullptr) {
+      _glgsg->_glDeleteBuffers(_num_views - num_views, _buffers + num_views);
     }
-    set_resident(true);
-  }
-}
+
+    if (num_views <= 1) {
+      _index = _indices[0];
+      if (_indices != &_index) {
+        delete[] _indices;
+        _indices = &_index;
+      }
+
+#ifndef OPENGLES_1
+      if (_buffers != nullptr) {
+        _buffer = _buffers[0];
+        if (_buffers != &_buffer) {
+          delete[] _buffers;
+          _buffers = &_buffer;
+        }
+        if (num_views == 0) {
+          _buffers = nullptr;
+        }
+      }
 #endif
-
-/**
- * Returns a handle for this texture.  Once this has been created, the texture
- * data may still be updated, but its properties may not.
- */
-#ifndef OPENGLES
-INLINE GLuint64 CLP(TextureContext)::
-get_handle() {
-  return 0;
-  if (!_glgsg->_supports_bindless_texture) {
-    return false;
+    }
   }
+  else if (_num_views == 0 && num_views == 1) {
+    glGenTextures(1, &_index);
+    _indices = &_index;
 
-  if (_handle == 0) {
-    _handle = _glgsg->_glGetTextureHandle(_index);
-  }
-
-  _immutable = true;
-  return _handle;
-}
+#ifndef OPENGLES_1
+    if (_target == GL_TEXTURE_BUFFER) {
+      _glgsg->_glGenBuffers(1, &_buffer);
+      _buffers = &_buffer;
+    }
 #endif
+  }
+  else if (_num_views < num_views) {
+    GLuint *new_indices = new GLuint[num_views];
+    memcpy(new_indices, _indices, sizeof(GLuint) * _num_views);
+    glGenTextures(num_views - _num_views, new_indices + _num_views);
+    if (_indices != &_index) {
+      delete[] _indices;
+    }
+    _indices = new_indices;
+
+#ifndef OPENGLES_1
+    if (_target == GL_TEXTURE_BUFFER) {
+      GLuint *new_buffers = new GLuint[num_views];
+      if (_buffers != nullptr) {
+        memcpy(new_buffers, _buffers, sizeof(GLuint) * _num_views);
+        _glgsg->_glGenBuffers(num_views - _num_views, new_buffers + _num_views);
+        if (_buffers != &_buffer) {
+          delete[] _buffers;
+        }
+      } else {
+        _glgsg->_glGenBuffers(num_views, new_buffers);
+      }
+      _buffers = new_buffers;
+    }
+#endif
+  }
+
+  _num_views = num_views;
+}
 
 #ifndef OPENGLES_1
 /**

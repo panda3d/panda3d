@@ -1,3 +1,4 @@
+#include "bamFile_ext.cxx"
 #include "loaderFileTypeRegistry_ext.cxx"
 #include "nodePath_ext.cxx"
 #include "nodePathCollection_ext.cxx"

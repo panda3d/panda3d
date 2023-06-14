@@ -84,9 +84,9 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
+  virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
-  bool update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmaps);
+  bool update_texture(TextureContext *tc, int view, bool force, int stage_index, bool uses_mipmaps);
   virtual void release_texture(TextureContext *tc);
 
   virtual void do_issue_light();
@@ -112,15 +112,15 @@ private:
   bool apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps);
   bool upload_simple_texture(TinyTextureContext *gtc);
-  bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels);
+  bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_views, int num_levels);
   int get_tex_shift(int orig_size);
 
-  static void copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level);
-  static void copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level);
-  static void copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level, int channel);
-  static void copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level);
-  static void copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level);
-  static void copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level);
+  static void copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level);
+  static void copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level);
+  static void copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level, int channel);
+  static void copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level);
+  static void copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level);
+  static void copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level);
 
   void setup_material(GLMaterial *gl_material, const Material *material);
   void do_auto_rescale_normal();

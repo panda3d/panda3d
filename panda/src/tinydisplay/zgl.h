@@ -119,9 +119,14 @@ typedef struct GLVertex {
 
 /* textures */
 
+typedef struct ZTextureView {
+  ZTextureLevel levels[MAX_MIPMAP_LEVELS];
+} ZTextureView;
+
 /* The combination of all mipmap levels: one complete texture. */
 typedef struct GLTexture {
-  ZTextureLevel levels[MAX_MIPMAP_LEVELS];
+  ZTextureView *views;
+  int num_views;
   int num_levels;
   int xsize, ysize;
   int s_max, t_max;

@@ -1354,12 +1354,12 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
-  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != nullptr, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   GLTexture *gltex = &gtc->_gltex;
-  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
+  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), tex->get_num_views(), 1)) {
     return false;
   }
   LColor border_color = tex->get_border_color();
@@ -1369,7 +1369,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   gltex->border_color.v[2] = border_color[2];
   gltex->border_color.v[3] = border_color[3];
 
-  PIXEL *ip = gltex->levels[0].pixmap + gltex->xsize * gltex->ysize;
+  PIXEL *ip = gltex->views[view].levels[0].pixmap + gltex->xsize * gltex->ysize;
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
   for (int y = 0; y < gltex->ysize; ++y) {
     ip -= gltex->xsize;
@@ -1602,7 +1602,7 @@ set_state_and_transform(const RenderState *target,
  * call Texture::prepare().
  */
 TextureContext *TinyGraphicsStateGuardian::
-prepare_texture(Texture *tex, int view) {
+prepare_texture(Texture *tex) {
   switch (tex->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
@@ -1629,7 +1629,7 @@ prepare_texture(Texture *tex, int view) {
   }
   */
 
-  TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex, view);
+  TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
 
   return gtc;
 }
@@ -1652,7 +1652,7 @@ update_texture(TextureContext *tc, bool force) {
 
   GLTexture *gltex = &gtc->_gltex;
 
-  if (gtc->was_image_modified() || gltex->num_levels == 0) {
+  if (gtc->was_image_modified() || gltex->num_views == 0 || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
     Texture *tex = gtc->get_texture();
     bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
@@ -1678,7 +1678,7 @@ update_texture(TextureContext *tc, bool force) {
  * (and if get_incomplete_render() is true).
  */
 bool TinyGraphicsStateGuardian::
-update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmaps) {
+update_texture(TextureContext *tc, int view, bool force, int stage_index, bool uses_mipmaps) {
   if (!update_texture(tc, force)) {
     return false;
   }
@@ -1699,8 +1699,15 @@ update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmap
 
   _c->current_textures[stage_index] = gltex;
 
+  if (view < 0) {
+    view = 0;
+  }
+  if (view >= gltex->num_views) {
+    view = gltex->num_views - 1;
+  }
+
   ZTextureDef *texture_def = &_c->zb->current_textures[stage_index];
-  texture_def->levels = gltex->levels;
+  texture_def->levels = gltex->views[view].levels;
   texture_def->s_max = gltex->s_max;
   texture_def->t_max = gltex->t_max;
 
@@ -2155,7 +2162,7 @@ do_issue_texture() {
     nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
-    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
     if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       return;
@@ -2165,7 +2172,7 @@ do_issue_texture() {
     const SamplerState &sampler = _target_texture->get_on_sampler(stage);
 
     // Then, turn on the current texture mode.
-    if (!update_texture(tc, false, si, sampler.uses_mipmaps())) {
+    if (!update_texture(tc, view, false, si, sampler.uses_mipmaps())) {
       return;
     }
 
@@ -2418,7 +2425,7 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
       << num_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
   }
 
-  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), num_levels)) {
+  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), tex->get_num_views(), num_levels)) {
     return false;
   }
   LColor border_color = tex->get_border_color();
@@ -2432,78 +2439,80 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   int xsize = gltex->xsize;
   int ysize = gltex->ysize;
 
-  for (int level = 0; level < gltex->num_levels; ++level) {
-    ZTextureLevel *dest = &gltex->levels[level];
+  for (int view = 0; view < gltex->num_views; ++view) {
+    for (int level = 0; level < gltex->num_levels; ++level) {
+      ZTextureLevel *dest = &gltex->views[view].levels[level];
 
-    if (tex->has_ram_mipmap_image(level)) {
-      switch (tex->get_format()) {
-      case Texture::F_rgb:
-      case Texture::F_rgb5:
-      case Texture::F_rgb8:
-      case Texture::F_rgb12:
-      case Texture::F_rgb332:
-        copy_rgb_image(dest, xsize, ysize, gtc, level);
-        break;
+      if (tex->has_ram_mipmap_image(level)) {
+        switch (tex->get_format()) {
+        case Texture::F_rgb:
+        case Texture::F_rgb5:
+        case Texture::F_rgb8:
+        case Texture::F_rgb12:
+        case Texture::F_rgb332:
+          copy_rgb_image(dest, xsize, ysize, gtc, view, level);
+          break;
 
-      case Texture::F_rgba:
-      case Texture::F_rgbm:
-      case Texture::F_rgba4:
-      case Texture::F_rgba5:
-      case Texture::F_rgba8:
-      case Texture::F_rgba12:
-      case Texture::F_rgba16:
-      case Texture::F_rgba32:
-        copy_rgba_image(dest, xsize, ysize, gtc, level);
-        break;
+        case Texture::F_rgba:
+        case Texture::F_rgbm:
+        case Texture::F_rgba4:
+        case Texture::F_rgba5:
+        case Texture::F_rgba8:
+        case Texture::F_rgba12:
+        case Texture::F_rgba16:
+        case Texture::F_rgba32:
+          copy_rgba_image(dest, xsize, ysize, gtc, view, level);
+          break;
 
-      case Texture::F_luminance:
-        copy_lum_image(dest, xsize, ysize, gtc, level);
-        break;
+        case Texture::F_luminance:
+          copy_lum_image(dest, xsize, ysize, gtc, view, level);
+          break;
 
-      case Texture::F_red:
-        copy_one_channel_image(dest, xsize, ysize, gtc, level, 0);
-        break;
+        case Texture::F_red:
+          copy_one_channel_image(dest, xsize, ysize, gtc, view, level, 0);
+          break;
 
-      case Texture::F_green:
-        copy_one_channel_image(dest, xsize, ysize, gtc, level, 1);
-        break;
+        case Texture::F_green:
+          copy_one_channel_image(dest, xsize, ysize, gtc, view, level, 1);
+          break;
 
-      case Texture::F_blue:
-        copy_one_channel_image(dest, xsize, ysize, gtc, level, 2);
-        break;
+        case Texture::F_blue:
+          copy_one_channel_image(dest, xsize, ysize, gtc, view, level, 2);
+          break;
 
-      case Texture::F_alpha:
-        copy_alpha_image(dest, xsize, ysize, gtc, level);
-        break;
+        case Texture::F_alpha:
+          copy_alpha_image(dest, xsize, ysize, gtc, view, level);
+          break;
 
-      case Texture::F_luminance_alphamask:
-      case Texture::F_luminance_alpha:
-        copy_la_image(dest, xsize, ysize, gtc, level);
-        break;
+        case Texture::F_luminance_alphamask:
+        case Texture::F_luminance_alpha:
+          copy_la_image(dest, xsize, ysize, gtc, view, level);
+          break;
 
-      default:
-        tinydisplay_cat.error()
-          << "Unsupported texture format "
-          << tex->get_format() << "!\n";
-        return false;
+        default:
+          tinydisplay_cat.error()
+            << "Unsupported texture format "
+            << tex->get_format() << "!\n";
+          return false;
+        }
+      } else {
+        // Fill the mipmap with a solid color.
+        LColor scaled = tex->get_clear_color().fmin(LColor(1)).fmax(LColor::zero());
+        scaled *= 255;
+        unsigned int clear = RGBA8_TO_PIXEL((int)scaled[0], (int)scaled[1],
+                                            (int)scaled[2], (int)scaled[3]);
+        unsigned int *dpix = (unsigned int *)dest->pixmap;
+        int pixel_count = xsize * ysize;
+        while (pixel_count-- > 0) {
+          *dpix = clear;
+          ++dpix;
+        }
       }
-    } else {
-      // Fill the mipmap with a solid color.
-      LColor scaled = tex->get_clear_color().fmin(LColor(1)).fmax(LColor::zero());
-      scaled *= 255;
-      unsigned int clear = RGBA8_TO_PIXEL((int)scaled[0], (int)scaled[1],
-                                          (int)scaled[2], (int)scaled[3]);
-      unsigned int *dpix = (unsigned int *)dest->pixmap;
-      int pixel_count = xsize * ysize;
-      while (pixel_count-- > 0) {
-        *dpix = clear;
-        ++dpix;
-      }
+
+      bytecount += xsize * ysize * 4;
+      xsize = max(xsize >> 1, 1);
+      ysize = max(ysize >> 1, 1);
     }
-
-    bytecount += xsize * ysize * 4;
-    xsize = max(xsize >> 1, 1);
-    ysize = max(ysize >> 1, 1);
   }
 
   gtc->update_data_size_bytes(bytecount);
@@ -2545,7 +2554,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
       << "loading simple image for " << tex->get_name() << "\n";
   }
 
-  if (!setup_gltex(gltex, width, height, 1)) {
+  if (!setup_gltex(gltex, width, height, 1, 1)) {
     return false;
   }
   LColor border_color = tex->get_border_color();
@@ -2555,7 +2564,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
   gltex->border_color.v[2] = border_color[2];
   gltex->border_color.v[3] = border_color[3];
 
-  ZTextureLevel *dest = &gltex->levels[0];
+  ZTextureLevel *dest = &gltex->views[0].levels[0];
   memcpy(dest->pixmap, image_ptr, image_size);
 
   gtc->mark_loaded();
@@ -2569,7 +2578,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
  * texture is a valid size, false otherwise.
  */
 bool TinyGraphicsStateGuardian::
-setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
+setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_views, int num_levels) {
   if (x_size == 0 || y_size == 0) {
     // A texture without pixels gets turned into a 1x1 texture.
     x_size = 1;
@@ -2588,6 +2597,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     return false;
   }
 
+  num_views = max(num_views, 1);
   num_levels = min(num_levels, MAX_MIPMAP_LEVELS);
 
   gltex->xsize = x_size;
@@ -2601,7 +2611,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   // We allocate one big buffer, large enough to include all the mipmap
   // levels, and index into that buffer for each level.  This cuts down on the
   // number of individual alloc calls we have to make for each texture.
-  int total_bytecount = 0;
+  int view_size = 0;
 
   // Count up the total bytes required for all mipmap levels.
   {
@@ -2609,11 +2619,13 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     int y = y_size;
     for (int level = 0; level < num_levels; ++level) {
       int bytecount = x * y * 4;
-      total_bytecount += bytecount;
+      view_size += bytecount;
       x = max((x >> 1), 1);
       y = max((y >> 1), 1);
     }
   }
+
+  int total_bytecount = view_size * num_views;
 
   if (gltex->total_bytecount != total_bytecount) {
     if (gltex->allocated_buffer != nullptr) {
@@ -2623,37 +2635,48 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     gltex->total_bytecount = total_bytecount;
   }
 
+  if (num_views != gltex->num_views) {
+    if (gltex->views != nullptr) {
+      TinyTextureContext::get_class_type().deallocate_array(gltex->views);
+    }
+
+    gltex->views = (ZTextureView *)TinyTextureContext::get_class_type().allocate_array(sizeof(ZTextureView) * num_views);
+    gltex->num_views = num_views;
+  }
+
   char *next_buffer = (char *)gltex->allocated_buffer;
   char *end_of_buffer = next_buffer + total_bytecount;
 
-  int level = 0;
-  ZTextureLevel *dest = nullptr;
-  while (level < num_levels) {
-    dest = &gltex->levels[level];
-    int bytecount = x_size * y_size * 4;
-    dest->pixmap = (PIXEL *)next_buffer;
-    next_buffer += bytecount;
-    nassertr(next_buffer <= end_of_buffer, false);
+  for (int view = 0; view < num_views; ++view) {
+    int level = 0;
+    ZTextureLevel *dest = nullptr;
+    while (level < num_levels) {
+      dest = &gltex->views[view].levels[level];
+      int bytecount = x_size * y_size * 4;
+      dest->pixmap = (PIXEL *)next_buffer;
+      next_buffer += bytecount;
+      nassertr(next_buffer <= end_of_buffer, false);
 
-    dest->s_mask = ((1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
-    dest->t_mask = ((1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
-    dest->s_shift = (ZB_POINT_ST_FRAC_BITS + level);
-    dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits + level);
+      dest->s_mask = ((1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
+      dest->t_mask = ((1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
+      dest->s_shift = (ZB_POINT_ST_FRAC_BITS + level);
+      dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits + level);
 
-    x_size = max((x_size >> 1), 1);
-    y_size = max((y_size >> 1), 1);
-    s_bits = max(s_bits - 1, 0);
-    t_bits = max(t_bits - 1, 0);
+      x_size = max((x_size >> 1), 1);
+      y_size = max((y_size >> 1), 1);
+      s_bits = max(s_bits - 1, 0);
+      t_bits = max(t_bits - 1, 0);
 
-    ++level;
-  }
+      ++level;
+    }
 
-  // Fill out the remaining mipmap arrays with copies of the last level, so we
-  // don't have to be concerned with running off the end of this array while
-  // scanning out triangles.
-  while (level < MAX_MIPMAP_LEVELS) {
-    gltex->levels[level] = *dest;
-    ++level;
+    // Fill out the remaining mipmap arrays with copies of the last level, so we
+    // don't have to be concerned with running off the end of this array while
+    // scanning out triangles.
+    while (level < MAX_MIPMAP_LEVELS) {
+      gltex->views[view].levels[level] = *dest;
+      ++level;
+    }
   }
 
   return true;
@@ -2682,7 +2705,7 @@ get_tex_shift(int orig_size) {
  * indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
   nassertv(tex->get_expected_mipmap_x_size(level) == xsize &&
@@ -2692,7 +2715,7 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2720,7 +2743,7 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
  * indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
 
@@ -2728,7 +2751,7 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2756,7 +2779,7 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *
  * green, or blue) from the texture into the indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level, int channel) {
+copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level, int channel) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 1);
 
@@ -2764,7 +2787,7 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureCon
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2821,7 +2844,7 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureCon
  * into the indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 2);
 
@@ -2829,7 +2852,7 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2858,7 +2881,7 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc
  * indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 3);
 
@@ -2866,7 +2889,7 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
@@ -2895,7 +2918,7 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
  * indicated ZTexture pixmap.
  */
 void TinyGraphicsStateGuardian::
-copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
+copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int view, int level) {
   Texture *tex = gtc->get_texture();
   nassertv(tex->get_num_components() == 4);
 
@@ -2903,7 +2926,7 @@ copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *g
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
   size_t view_size = tex->get_ram_mipmap_view_size(level);
-  src += view_size * gtc->get_view();
+  src += view_size * view;
 
   // Component width, and offset to the high-order byte.
   int cw = tex->get_component_width();
