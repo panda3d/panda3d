@@ -773,12 +773,30 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture) {
-  using std::swap;
-
   PStatTimer timer(_prepare_texture_pcollector);
 
+  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture);
+  if (tc != nullptr && create_texture(tc)) {
+    return tc;
+  } else {
+    delete tc;
+    return nullptr;
+  }
+}
+
+/**
+ *
+ */
+bool VulkanGraphicsStateGuardian::
+create_texture(VulkanTextureContext *tc) {
+  using std::swap;
+
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
+  DCAST_INTO_R(vkpipe, get_pipe(), false);
+
+  nassertr(tc->_image == VK_NULL_HANDLE, false);
+
+  Texture *texture = tc->get_texture();
 
   VkImageCreateFlags flags = 0;
   VkImageType type;
@@ -822,7 +840,7 @@ prepare_texture(Texture *texture) {
   default:
     vulkandisplay_cat.error()
       << "Unsupported texture type " << texture->get_texture_type() << "!\n";
-    return nullptr;
+    return false;
   }
   const VkExtent3D orig_extent = extent;
 
@@ -859,14 +877,13 @@ prepare_texture(Texture *texture) {
     default:
       vulkandisplay_cat.error()
         << "Texture format " << format << " not supported.\n";
-      return nullptr;
+      return false;
     }
 
     // Update the properties for the new format.
     vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, format, &fmt_props);
   }
 
-  VulkanTextureContext *tc;
   if (!is_buffer) {
     // Image texture.  Is the size supported for this format?
     VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -883,7 +900,7 @@ prepare_texture(Texture *texture) {
       vulkandisplay_cat.error()
         << "Texture has too many layers, this format has a maximum of "
         << num_layers << "\n";
-      return nullptr;
+      return false;
     }
     int mipmap_begin = 0;
     while (extent.width > img_props.maxExtent.width ||
@@ -912,7 +929,7 @@ prepare_texture(Texture *texture) {
     int mipmap_end = mipmap_begin + 1;
     if (texture->uses_mipmaps()) {
       mipmap_end = texture->get_expected_num_mipmap_levels();
-      nassertr(mipmap_end > mipmap_begin, nullptr);
+      nassertr(mipmap_end > mipmap_begin, false);
     }
 
     // Do we need to generate any mipmaps?
@@ -947,10 +964,10 @@ prepare_texture(Texture *texture) {
       num_levels = img_props.maxMipLevels;
     }
 
-    tc = create_image(type, format, extent, num_levels, num_layers,
-                      VK_SAMPLE_COUNT_1_BIT, usage, flags);
-    nassertr_always(tc != nullptr, nullptr);
-    tc->set_texture(texture);
+    if (!create_image(tc, type, format, extent, num_levels, num_layers,
+                      VK_SAMPLE_COUNT_1_BIT, usage, flags)) {
+      return false;
+    }
     tc->_mipmap_begin = mipmap_begin;
     tc->_mipmap_end = mipmap_end;
     tc->_generate_mipmaps = generate_mipmaps;
@@ -1069,10 +1086,8 @@ prepare_texture(Texture *texture) {
       err = vkCreateImageView(_device, &view_info, nullptr, &image_view);
       if (err) {
         vulkan_error(err, "Failed to create image view for texture");
-        tc->destroy_views(_device);
-        vkDestroyImage(_device, tc->_image, nullptr);
-        delete tc;
-        return nullptr;
+        tc->destroy_now(_device);
+        return false;
       }
 
       tc->_image_views.push_back(image_view);
@@ -1085,7 +1100,7 @@ prepare_texture(Texture *texture) {
       vulkandisplay_cat.error()
         << "Buffer texture size " << extent.width << " is too large, maximum size is "
         << _max_buffer_texture_size << " texels\n";
-      return nullptr;
+      return false;
     }
 
     VkBufferUsageFlags usage = 0;
@@ -1106,7 +1121,7 @@ prepare_texture(Texture *texture) {
     VkDeviceSize total_size = view_size * num_views;
     if (!create_buffer(total_size, buffer, block, usage,
                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-      return nullptr;
+      return false;
     }
 
     if (vulkandisplay_cat.is_debug()) {
@@ -1135,15 +1150,13 @@ prepare_texture(Texture *texture) {
           vkDestroyBufferView(_device, buffer_view, nullptr);
         }
         vkDestroyBuffer(_device, buffer, nullptr);
-        delete tc;
-        return nullptr;
+        return false;
       }
 
       buffer_views.push_back(buffer_view);
       view_info.offset += view_size;
     }
 
-    tc = new VulkanTextureContext(get_prepared_objects(), texture);
     tc->_format = format;
     tc->_extent = extent;
     tc->_buffer = buffer;
@@ -1154,7 +1167,7 @@ prepare_texture(Texture *texture) {
 
   // We can't upload it at this point because the texture lock is currently
   // held, so accessing the RAM image will cause a deadlock.
-  return tc;
+  return true;
 }
 
 /**
@@ -1457,6 +1470,7 @@ update_texture(TextureContext *tc, bool force) {
 
   if (vtc->was_modified()) {
     Texture *tex = tc->get_texture();
+    int num_views = tex->get_num_views();
 
     VkExtent3D extent;
     extent.width = tex->get_x_size();
@@ -1474,7 +1488,7 @@ update_texture(TextureContext *tc, bool force) {
       extent.depth = 1;
       arrayLayers = tex->get_z_size();
     }
-    arrayLayers *= tex->get_num_views();
+    arrayLayers *= num_views;
 
     //VkFormat format = get_image_format(tex);
 
@@ -1482,10 +1496,13 @@ update_texture(TextureContext *tc, bool force) {
         extent.width != vtc->_extent.width ||
         extent.height != vtc->_extent.height ||
         extent.depth != vtc->_extent.depth ||
-        arrayLayers != vtc->_array_layers) {
-      // We need to recreate the image entirely. TODO!
-      std::cerr << "have to recreate image\n";
-      return false;
+        arrayLayers != vtc->_array_layers ||
+        (size_t)num_views != vtc->_image_views.size()) {
+      // We need to recreate the image entirely.
+      vtc->release(*_frame_data);
+      if (!create_texture(vtc)) {
+        return false;
+      }
     }
 
     if (!upload_texture(vtc)) {
@@ -1510,57 +1527,7 @@ release_texture(TextureContext *tc) {
   VulkanTextureContext *vtc;
   DCAST_INTO_V(vtc, tc);
 
-  if (vtc->_image != VK_NULL_HANDLE) {
-    _frame_data->_pending_destroy_images.push_back(vtc->_image);
-
-    if (vulkandisplay_cat.is_debug()) {
-      std::ostream &out = vulkandisplay_cat.debug()
-        << "Scheduling image " << vtc->_image;
-
-      if (!vtc->_image_views.empty()) {
-        out << " with views";
-        for (VkImageView image_view : vtc->_image_views) {
-          out << " " << image_view;
-        }
-      }
-
-      out << " for deletion\n";
-    }
-  }
-
-  if (!vtc->_image_views.empty()) {
-    _frame_data->_pending_destroy_image_views.insert(
-      _frame_data->_pending_destroy_image_views.end(),
-      vtc->_image_views.begin(), vtc->_image_views.end());
-  }
-
-  if (vtc->_buffer != VK_NULL_HANDLE) {
-    _frame_data->_pending_destroy_buffers.push_back(vtc->_buffer);
-
-    if (vulkandisplay_cat.is_debug()) {
-      std::ostream &out = vulkandisplay_cat.debug()
-        << "Scheduling buffer " << vtc->_buffer;
-
-      if (!vtc->_buffer_views.empty()) {
-        out << " with views";
-        for (VkBufferView buffer_view : vtc->_buffer_views) {
-          out << " " << buffer_view;
-        }
-      }
-
-      out << " for deletion\n";
-    }
-  }
-
-  if (!vtc->_buffer_views.empty()) {
-    _frame_data->_pending_destroy_buffer_views.insert(
-      _frame_data->_pending_destroy_buffer_views.end(),
-      vtc->_buffer_views.begin(), vtc->_buffer_views.end());
-  }
-
-  // Make sure that the memory remains untouched until the frame is over.
-  _frame_data->_pending_free.push_back(std::move(vtc->_block));
-
+  vtc->release(*_frame_data);
   delete vtc;
 }
 
@@ -2681,37 +2648,7 @@ finish_frame(FrameData &frame_data) {
   _staging_buffer_allocator.set_tail(frame_data._staging_buffer_head);
 
   // Process texture-to-RAM downloads.
-  for (QueuedDownload &down : frame_data._download_queue) {
-    PTA_uchar target = down._texture->modify_ram_image();
-    size_t view_size = down._texture->get_ram_view_size();
-
-    if (auto data = down._block.map()) {
-      // The texture is upside down, so invert it.
-      size_t row_size = down._texture->get_x_size()
-                      * down._texture->get_num_components()
-                      * down._texture->get_component_width();
-      unsigned char *dst = target.p() + view_size * (down._view + 1) - row_size;
-      unsigned char *src = (unsigned char *)data;
-      unsigned char *src_end = src + view_size;
-      while (src < src_end) {
-        memcpy(dst, src, row_size);
-        src += row_size;
-        dst -= row_size;
-      }
-    } else {
-      vulkandisplay_cat.error()
-        << "Failed to map memory for RAM transfer.\n";
-    }
-
-    // We won't need this buffer any more.
-    vkDestroyBuffer(_device, down._buffer, nullptr);
-
-    if (down._request != nullptr) {
-      down._request->finish();
-    }
-  }
-  frame_data._download_queue.clear();
-  frame_data._wait_for_finish = false;
+  frame_data.finish_downloads(_device);
 
   if (_last_frame_data == &frame_data) {
     _last_frame_data = nullptr;
@@ -3053,7 +2990,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   VkDeviceSize buffer_size = tex->get_expected_ram_image_size();
 
   // Create a temporary buffer for transferring into.
-  QueuedDownload down;
+  FrameData::QueuedDownload down;
   if (!create_buffer(buffer_size, down._buffer, down._block,
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
@@ -3193,12 +3130,13 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
 
 /**
  * Shared code for creating an image and allocating memory for it.
- * @return a VulkanTextureContext on success.
+ * @return true on success.
  */
-VulkanTextureContext *VulkanGraphicsStateGuardian::
-create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
-             uint32_t levels, uint32_t layers, VkSampleCountFlagBits samples,
-             VkImageUsageFlags usage, VkImageCreateFlags flags) {
+bool VulkanGraphicsStateGuardian::
+create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
+             const VkExtent3D &extent, uint32_t levels, uint32_t layers,
+             VkSampleCountFlagBits samples, VkImageUsageFlags usage,
+             VkImageCreateFlags flags) {
   VkImageCreateInfo img_info;
   img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   img_info.pNext = nullptr;
@@ -3220,7 +3158,7 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
   VkResult err = vkCreateImage(_device, &img_info, nullptr, &image);
   if (err) {
     vulkan_error(err, "Failed to create image");
-    return nullptr;
+    return false;
   }
 
   // Get the memory requirements, and find an appropriate heap to alloc in.
@@ -3232,17 +3170,17 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
     vulkandisplay_cat.error()
       << "Failed to allocate " << mem_reqs.size << " bytes for image.\n";
     vkDestroyImage(_device, image, nullptr);
-    return nullptr;
+    return false;
   }
 
   // Bind memory to image.
   if (!block.bind_image(image)) {
     vulkan_error(err, "Failed to bind memory to multisample color image");
     vkDestroyImage(_device, image, nullptr);
-    return nullptr;
+    return false;
   }
 
-  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), image, format);
+  tc->_image = image;
   tc->_format = format;
   tc->_extent = extent;
   tc->_mip_levels = levels;
@@ -3251,7 +3189,7 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
 
   tc->set_resident(true);
   tc->update_data_size_bytes(mem_reqs.size);
-  return tc;
+  return true;
 }
 
 /**

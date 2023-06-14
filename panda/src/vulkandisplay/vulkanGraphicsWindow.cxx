@@ -812,32 +812,20 @@ destroy_swapchain() {
   for (SwapBuffer &buffer : _swap_buffers) {
     // Destroy the framebuffers that use the swapchain images.
     vkDestroyFramebuffer(device, buffer._framebuffer, nullptr);
-    buffer._tc->destroy_views(device);
-    buffer._tc->update_data_size_bytes(0);
+    buffer._tc->_image = VK_NULL_HANDLE;
+    buffer._tc->destroy_now(device);
     delete buffer._tc;
   }
   _swap_buffers.clear();
 
   if (_ms_color_tc != nullptr) {
-    _ms_color_tc->destroy_views(device);
-
-    if (_ms_color_tc->_image != VK_NULL_HANDLE) {
-      vkDestroyImage(device, _ms_color_tc->_image, nullptr);
-      _ms_color_tc->_image = VK_NULL_HANDLE;
-    }
-
+    _ms_color_tc->destroy_now(device);
     delete _ms_color_tc;
     _ms_color_tc = nullptr;
   }
 
   if (_depth_stencil_tc != nullptr) {
-    _depth_stencil_tc->destroy_views(device);
-
-    if (_depth_stencil_tc->_image != VK_NULL_HANDLE) {
-      vkDestroyImage(device, _depth_stencil_tc->_image, nullptr);
-      _depth_stencil_tc->_image = VK_NULL_HANDLE;
-    }
-
+    _depth_stencil_tc->destroy_now(device);
     delete _depth_stencil_tc;
     _depth_stencil_tc = nullptr;
   }
@@ -956,7 +944,9 @@ create_swapchain() {
   // Now create an image view for each image.
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
-    buffer._tc = new VulkanTextureContext(pgo, images[i], swapchain_info.imageFormat);
+    buffer._tc = new VulkanTextureContext(pgo);
+    buffer._tc->_image = images[i];
+    buffer._tc->_format = swapchain_info.imageFormat;
     buffer._tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
     buffer._tc->_extent = extent;
     buffer._tc->_mip_levels = 1;
@@ -993,14 +983,16 @@ create_swapchain() {
   _depth_stencil_tc = nullptr;
   VkImageView depth_stencil_view = VK_NULL_HANDLE;
   if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
-    _depth_stencil_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
-      _depth_stencil_format, extent, 1, 1, _ms_count,
-      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    _depth_stencil_tc = new VulkanTextureContext(pgo);
+    _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
 
-    if (_depth_stencil_tc == nullptr) {
+    if (!vkgsg->create_image(_depth_stencil_tc, VK_IMAGE_TYPE_2D,
+                             _depth_stencil_format, extent, 1, 1, _ms_count,
+                             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+      delete _depth_stencil_tc;
+      _depth_stencil_tc = nullptr;
       return false;
     }
-    _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
 
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1036,11 +1028,12 @@ create_swapchain() {
   _ms_color_tc = nullptr;
   VkImageView ms_color_view = VK_NULL_HANDLE;
   if (_ms_count != VK_SAMPLE_COUNT_1_BIT) {
-    _ms_color_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
-      swapchain_info.imageFormat, extent, 1, 1, _ms_count,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-
-    if (_ms_color_tc == nullptr) {
+    _ms_color_tc = new VulkanTextureContext(pgo);
+    if (!vkgsg->create_image(_ms_color_tc, VK_IMAGE_TYPE_2D,
+                             swapchain_info.imageFormat, extent, 1, 1,
+                             _ms_count, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)) {
+      delete _ms_color_tc;
+      _ms_color_tc = nullptr;
       return false;
     }
     _ms_color_tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;

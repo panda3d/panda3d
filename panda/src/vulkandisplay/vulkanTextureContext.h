@@ -23,15 +23,13 @@
  */
 class EXPCL_VULKANDISPLAY VulkanTextureContext : public TextureContext {
 public:
-  INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture);
-  INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat format);
+  INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture = nullptr);
   ~VulkanTextureContext() {};
 
   ALLOC_DELETED_CHAIN(VulkanTextureContext);
 
-  void destroy_views(VkDevice device);
-
-  INLINE void set_texture(Texture *texture);
+  void release(VulkanFrameData &frame_data);
+  void destroy_now(VkDevice device);
 
   INLINE const VkImageView &get_image_view(int view) const;
   INLINE const VkBufferView &get_buffer_view(int view) const;
@@ -47,7 +45,7 @@ public:
                   VkPipelineStageFlags dst_stage_mask, VkAccessFlags dst_access_mask);
 
 public:
-  VkFormat _format;
+  VkFormat _format = VK_FORMAT_UNDEFINED;
   VkExtent3D _extent;
   int _mipmap_begin = 0, _mipmap_end = 1;
   uint32_t _mip_levels = 1;

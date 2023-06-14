@@ -11,6 +11,9 @@
  * @date 2018-06-30
  */
 
+#ifndef VULKANMEMORYPAGE_H
+#define VULKANMEMORYPAGE_H
+
 #include "config_vulkandisplay.h"
 #include "simpleAllocator.h"
 
@@ -118,3 +121,5 @@ public:
 };
 
 #include "vulkanMemoryPage.I"
+
+#endif

@@ -15,6 +15,7 @@
 #define VULKANGRAPHICSSTATEGUARDIAN_H
 
 #include "config_vulkandisplay.h"
+#include "vulkanFrameData.h"
 #include "vulkanMemoryPage.h"
 #include "circularAllocator.h"
 
@@ -30,7 +31,7 @@ class VulkanVertexBufferContext;
  */
 class VulkanGraphicsStateGuardian final : public GraphicsStateGuardian {
 private:
-  struct FrameData;
+  typedef VulkanFrameData FrameData;
 
 public:
   VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
@@ -48,6 +49,7 @@ public:
                        VkFlags required_flags, bool linear);
 
   virtual TextureContext *prepare_texture(Texture *tex);
+  bool create_texture(VulkanTextureContext *vtc);
   bool upload_texture(VulkanTextureContext *vtc);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -140,11 +142,10 @@ private:
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
-  VulkanTextureContext *create_image(VkImageType type, VkFormat format,
-                                     const VkExtent3D &extent, uint32_t levels,
-                                     uint32_t layers, VkSampleCountFlagBits samples,
-                                     VkImageUsageFlags usage,
-                                     VkImageCreateFlags flags = 0);
+  bool create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
+                    const VkExtent3D &extent, uint32_t levels, uint32_t layers,
+                    VkSampleCountFlagBits samples, VkImageUsageFlags usage,
+                    VkImageCreateFlags flags = 0);
 
   VkSemaphore create_semaphore();
 
@@ -263,39 +264,6 @@ private:
   pdeque<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated = 0u;
 
-  // Queued buffer-to-RAM transfer.
-  struct QueuedDownload {
-    VkBuffer _buffer;
-    VulkanMemoryBlock _block;
-    PT(Texture) _texture;
-    int _view;
-    PT(ScreenshotRequest) _request;
-  };
-  typedef pvector<QueuedDownload> DownloadQueue;
-
-  struct FrameData {
-    uint64_t _frame_index = 0;
-    VkFence _fence = VK_NULL_HANDLE;
-    VkCommandBuffer _cmd = VK_NULL_HANDLE;
-    VkCommandBuffer _transfer_cmd = VK_NULL_HANDLE;
-
-    // Keep track of resources that should be deleted after this frame is done.
-    pvector<VulkanMemoryBlock> _pending_free;
-    pvector<VkBuffer> _pending_destroy_buffers;
-    pvector<VkBufferView> _pending_destroy_buffer_views;
-    pvector<VkFramebuffer> _pending_destroy_framebuffers;
-    pvector<VkImage> _pending_destroy_images;
-    pvector<VkImageView> _pending_destroy_image_views;
-    pvector<VkRenderPass> _pending_destroy_render_passes;
-    pvector<VkSampler> _pending_destroy_samplers;
-    pvector<VkDescriptorSet> _pending_free_descriptor_sets;
-
-    VkDeviceSize _uniform_buffer_head = 0;
-    VkDeviceSize _staging_buffer_head = 0;
-
-    DownloadQueue _download_queue;
-    bool _wait_for_finish = false;
-  };
   static const size_t _frame_data_capacity = 5;
   FrameData _frame_data_pool[_frame_data_capacity];
   size_t _frame_data_head = _frame_data_capacity;

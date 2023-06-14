@@ -536,6 +536,7 @@ destroy_framebuffer() {
   DCAST_INTO_V(vkgsg, _gsg);
   VkDevice device = vkgsg->_device;
 
+  // This shouldn't happen within a begin_frame/end_frame pair.
   nassertv(vkgsg->_frame_data == nullptr);
 
   // Make sure that the GSG's command buffer releases its resources.
@@ -550,27 +551,11 @@ destroy_framebuffer() {
 
   // Destroy the resources held for each attachment.
   for (Attachment &attach : _attachments) {
-    if (!attach._tc->_image_views.empty()) {
-      if (vkgsg->_last_frame_data != nullptr) {
-        vkgsg->_last_frame_data->_pending_destroy_image_views.insert(
-          vkgsg->_last_frame_data->_pending_destroy_image_views.end(),
-          attach._tc->_image_views.begin(), attach._tc->_image_views.end());
-        attach._tc->_image_views.clear();
-      } else {
-        attach._tc->destroy_views(device);
-      }
+    if (vkgsg->_last_frame_data != nullptr) {
+      attach._tc->release(*vkgsg->_last_frame_data);
+    } else {
+      attach._tc->destroy_now(device);
     }
-
-    if (attach._tc->_image != VK_NULL_HANDLE) {
-      if (vkgsg->_last_frame_data != nullptr) {
-        vkgsg->_last_frame_data->_pending_destroy_images.push_back(attach._tc->_image);
-      } else {
-        vkDestroyImage(device, attach._tc->_image, nullptr);
-      }
-      attach._tc->_image = VK_NULL_HANDLE;
-    }
-
-    attach._tc->update_data_size_bytes(0);
     delete attach._tc;
   }
   _attachments.clear();
@@ -662,10 +647,10 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
     usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   }
 
-  VulkanTextureContext *tc;
-  tc = vkgsg->create_image(VK_IMAGE_TYPE_2D, format, extent, 1, 1,
-                           VK_SAMPLE_COUNT_1_BIT, usage);
-  if (tc == nullptr) {
+  VulkanTextureContext *tc = new VulkanTextureContext(vkgsg->get_prepared_objects());
+  if (!vkgsg->create_image(tc, VK_IMAGE_TYPE_2D, format, extent, 1, 1,
+                           VK_SAMPLE_COUNT_1_BIT, usage)) {
+    delete tc;
     return false;
   }
 

@@ -12,23 +12,111 @@
  */
 
 #include "vulkanTextureContext.h"
+#include "vulkanFrameData.h"
 
 TypeHandle VulkanTextureContext::_type_handle;
 
 /**
- * Destroys the view handles associated with this context immediately.
+ * Schedules the deletion of the image resources for the end of the frame.
  */
 void VulkanTextureContext::
-destroy_views(VkDevice device) {
+release(VulkanFrameData &frame_data) {
+  if (_image != VK_NULL_HANDLE) {
+    frame_data._pending_destroy_images.push_back(_image);
+
+    if (vulkandisplay_cat.is_debug()) {
+      std::ostream &out = vulkandisplay_cat.debug()
+        << "Scheduling image " << _image;
+
+      if (!_image_views.empty()) {
+        out << " with views";
+        for (VkImageView image_view : _image_views) {
+          out << " " << image_view;
+        }
+      }
+
+      out << " for deletion\n";
+    }
+
+    _image = VK_NULL_HANDLE;
+  }
+
+  if (!_image_views.empty()) {
+    frame_data._pending_destroy_image_views.insert(
+      frame_data._pending_destroy_image_views.end(),
+      _image_views.begin(), _image_views.end());
+
+    _image_views.clear();
+  }
+
+  if (_buffer != VK_NULL_HANDLE) {
+    frame_data._pending_destroy_buffers.push_back(_buffer);
+
+    if (vulkandisplay_cat.is_debug()) {
+      std::ostream &out = vulkandisplay_cat.debug()
+        << "Scheduling buffer " << _buffer;
+
+      if (!_buffer_views.empty()) {
+        out << " with views";
+        for (VkBufferView buffer_view : _buffer_views) {
+          out << " " << buffer_view;
+        }
+      }
+
+      out << " for deletion\n";
+    }
+
+    _buffer = VK_NULL_HANDLE;
+  }
+
+  if (!_buffer_views.empty()) {
+    frame_data._pending_destroy_buffer_views.insert(
+      frame_data._pending_destroy_buffer_views.end(),
+      _buffer_views.begin(), _buffer_views.end());
+
+    _buffer_views.clear();
+  }
+
+  // Make sure that the memory remains untouched until the frame is over.
+  frame_data._pending_free.push_back(std::move(_block));
+
+  // The memory isn't free yet, but it can be reclaimed by the memory allocator
+  // if really necessary by waiting until the frame queue is empty.
+  update_data_size_bytes(0);
+
+  _format = VK_FORMAT_UNDEFINED;
+  _layout = VK_IMAGE_LAYOUT_UNDEFINED;
+}
+
+/**
+ * Destroys the handles associated with this context immediately.
+ */
+void VulkanTextureContext::
+destroy_now(VkDevice device) {
   for (VkImageView image_view : _image_views) {
     vkDestroyImageView(device, image_view, nullptr);
   }
   _image_views.clear();
 
+  if (_image != VK_NULL_HANDLE) {
+    vkDestroyImage(device, _image, nullptr);
+    _image = VK_NULL_HANDLE;
+  }
+
   for (VkBufferView buffer_view : _buffer_views) {
     vkDestroyBufferView(device, buffer_view, nullptr);
   }
   _buffer_views.clear();
+
+  if (_buffer != VK_NULL_HANDLE) {
+    vkDestroyBuffer(device, _buffer, nullptr);
+    _buffer = VK_NULL_HANDLE;
+  }
+
+  update_data_size_bytes(0);
+
+  _format = VK_FORMAT_UNDEFINED;
+  _layout = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 /**

@@ -23,27 +23,6 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture) :
 }
 
 /**
- * Constructs a Texture context that's not associated with a particular
- * texture, but tracks an already existing VkImage object.
- */
-INLINE VulkanTextureContext::
-VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat format) :
-  TextureContext(pgo, nullptr),
-  _format(format),
-  _image(image),
-  //TODO: it is not clear to me what we should set srcStageMask to here.
-  _stage_mask(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) {
-}
-
-/**
- * Sets the Texture object this context is for.
- */
-INLINE void VulkanTextureContext::
-set_texture(Texture *texture) {
-  _object = texture;
-}
-
-/**
  * Returns the VkImageView handle for the given view of the texture.
  */
 INLINE const VkImageView &VulkanTextureContext::
