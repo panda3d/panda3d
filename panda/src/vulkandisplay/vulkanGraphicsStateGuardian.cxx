@@ -772,7 +772,7 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
  * call Texture::prepare().
  */
 TextureContext *VulkanGraphicsStateGuardian::
-prepare_texture(Texture *texture, int view) {
+prepare_texture(Texture *texture) {
   using std::swap;
 
   PStatTimer timer(_prepare_texture_pcollector);
@@ -786,6 +786,8 @@ prepare_texture(Texture *texture, int view) {
   extent.width = texture->get_x_size();
   extent.height = texture->get_y_size();
   extent.depth = 1;
+  int num_views = texture->get_num_views();
+  uint32_t num_layers_per_view = 1;
   uint32_t num_layers = 1;
   uint32_t num_levels = 1;
   bool is_buffer = false;
@@ -823,6 +825,9 @@ prepare_texture(Texture *texture, int view) {
     return nullptr;
   }
   const VkExtent3D orig_extent = extent;
+
+  num_layers_per_view = num_layers;
+  num_layers *= num_views;
 
   // Check if the format is actually supported.
   VkFormat format = get_image_format(texture);
@@ -962,6 +967,11 @@ prepare_texture(Texture *texture, int view) {
       tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
     }
 
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Created image " << tc->_image << " for texture " << *texture << "\n";
+    }
+
     // Now we'll create an image view that describes how we interpret the image.
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1051,21 +1061,22 @@ prepare_texture(Texture *texture, int view) {
     view_info.subresourceRange.baseMipLevel = 0;
     view_info.subresourceRange.levelCount = num_levels;
     view_info.subresourceRange.baseArrayLayer = 0;
-    view_info.subresourceRange.layerCount = num_layers;
+    view_info.subresourceRange.layerCount = num_layers_per_view;
 
-    VkResult err;
-    err = vkCreateImageView(_device, &view_info, nullptr, &tc->_image_view);
-    if (err) {
-      vulkan_error(err, "Failed to create image view for texture");
-      vkDestroyImage(_device, tc->_image, nullptr);
-      delete tc;
-      return nullptr;
-    }
+    for (int view = 0; view < num_views; ++view) {
+      VkImageView image_view;
+      VkResult err;
+      err = vkCreateImageView(_device, &view_info, nullptr, &image_view);
+      if (err) {
+        vulkan_error(err, "Failed to create image view for texture");
+        tc->destroy_views(_device);
+        vkDestroyImage(_device, tc->_image, nullptr);
+        delete tc;
+        return nullptr;
+      }
 
-    if (vulkandisplay_cat.is_debug()) {
-      vulkandisplay_cat.debug()
-        << "Created image " << tc->_image << " and view " << tc->_image_view
-        << " for texture " << *texture << "\n";
+      tc->_image_views.push_back(image_view);
+      view_info.subresourceRange.baseArrayLayer += num_layers_per_view;
     }
   }
   else {
@@ -1087,13 +1098,21 @@ prepare_texture(Texture *texture, int view) {
 
     VkBuffer buffer;
     VulkanMemoryBlock block;
-    VkDeviceSize size = texture->get_expected_ram_image_size();
+    //VkDeviceSize view_size = texture->get_expected_ram_view_size();
+    VkDeviceSize view_size = texture->get_expected_ram_image_size() / (size_t)num_views;
     if (pack_bgr8) {
-      size = size / 3 * 4;
+      view_size = view_size / 3 * 4;
     }
-    if (!create_buffer(size, buffer, block, usage,
+    VkDeviceSize total_size = view_size * num_views;
+    if (!create_buffer(total_size, buffer, block, usage,
                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
       return nullptr;
+    }
+
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Created buffer " << buffer << " with size " << total_size
+        << " for texture " << *texture << "\n";
     }
 
     VkBufferViewCreateInfo view_info;
@@ -1103,27 +1122,32 @@ prepare_texture(Texture *texture, int view) {
     view_info.buffer = buffer;
     view_info.format = format;
     view_info.offset = 0;
-    view_info.range = VK_WHOLE_SIZE;
+    view_info.range = view_size;
 
-    VkBufferView buffer_view;
-    VkResult err;
-    err = vkCreateBufferView(_device, &view_info, nullptr, &buffer_view);
-    if (err) {
-      vulkan_error(err, "Failed to create buffer view for texture");
-      return nullptr;
+    small_vector<VkBufferView> buffer_views;
+    for (int view = 0; view < num_views; ++view) {
+      VkBufferView buffer_view;
+      VkResult err;
+      err = vkCreateBufferView(_device, &view_info, nullptr, &buffer_view);
+      if (err) {
+        vulkan_error(err, "Failed to create buffer view for texture");
+        for (VkBufferView buffer_view : buffer_views) {
+          vkDestroyBufferView(_device, buffer_view, nullptr);
+        }
+        vkDestroyBuffer(_device, buffer, nullptr);
+        delete tc;
+        return nullptr;
+      }
+
+      buffer_views.push_back(buffer_view);
+      view_info.offset += view_size;
     }
 
-    if (vulkandisplay_cat.is_debug()) {
-      vulkandisplay_cat.debug()
-        << "Created buffer " << buffer << " and view " << buffer_view
-        << " for texture " << *texture << "\n";
-    }
-
-    tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
+    tc = new VulkanTextureContext(get_prepared_objects(), texture);
     tc->_format = format;
     tc->_extent = extent;
     tc->_buffer = buffer;
-    tc->_buffer_view = buffer_view;
+    tc->_buffer_views = std::move(buffer_views);
     tc->_block = std::move(block);
     tc->_pack_bgr8 = pack_bgr8;
   }
@@ -1450,6 +1474,7 @@ update_texture(TextureContext *tc, bool force) {
       extent.depth = 1;
       arrayLayers = tex->get_z_size();
     }
+    arrayLayers *= tex->get_num_views();
 
     //VkFormat format = get_image_format(tex);
 
@@ -1485,28 +1510,52 @@ release_texture(TextureContext *tc) {
   VulkanTextureContext *vtc;
   DCAST_INTO_V(vtc, tc);
 
-  if (vtc->_image != VK_NULL_HANDLE && vulkandisplay_cat.is_debug()) {
-    vulkandisplay_cat.debug()
-      << "Deleting image " << vtc->_image << " and view " << vtc->_image_view << "\n";
-  }
-
-  if (vtc->_image_view != VK_NULL_HANDLE) {
-    _frame_data->_pending_destroy_image_views.push_back(vtc->_image_view);
-  }
   if (vtc->_image != VK_NULL_HANDLE) {
     _frame_data->_pending_destroy_images.push_back(vtc->_image);
+
+    if (vulkandisplay_cat.is_debug()) {
+      std::ostream &out = vulkandisplay_cat.debug()
+        << "Scheduling image " << vtc->_image;
+
+      if (!vtc->_image_views.empty()) {
+        out << " with views";
+        for (VkImageView image_view : vtc->_image_views) {
+          out << " " << image_view;
+        }
+      }
+
+      out << " for deletion\n";
+    }
   }
 
-  if (vtc->_buffer != VK_NULL_HANDLE && vulkandisplay_cat.is_debug()) {
-    vulkandisplay_cat.debug()
-      << "Deleting buffer " << vtc->_buffer << " and view " << vtc->_buffer_view << "\n";
+  if (!vtc->_image_views.empty()) {
+    _frame_data->_pending_destroy_image_views.insert(
+      _frame_data->_pending_destroy_image_views.end(),
+      vtc->_image_views.begin(), vtc->_image_views.end());
   }
 
-  if (vtc->_buffer_view != VK_NULL_HANDLE) {
-    _frame_data->_pending_destroy_buffer_views.push_back(vtc->_buffer_view);
-  }
   if (vtc->_buffer != VK_NULL_HANDLE) {
     _frame_data->_pending_destroy_buffers.push_back(vtc->_buffer);
+
+    if (vulkandisplay_cat.is_debug()) {
+      std::ostream &out = vulkandisplay_cat.debug()
+        << "Scheduling buffer " << vtc->_buffer;
+
+      if (!vtc->_buffer_views.empty()) {
+        out << " with views";
+        for (VkBufferView buffer_view : vtc->_buffer_views) {
+          out << " " << buffer_view;
+        }
+      }
+
+      out << " for deletion\n";
+    }
+  }
+
+  if (!vtc->_buffer_views.empty()) {
+    _frame_data->_pending_destroy_buffer_views.insert(
+      _frame_data->_pending_destroy_buffer_views.end(),
+      vtc->_buffer_views.begin(), vtc->_buffer_views.end());
   }
 
   // Make sure that the memory remains untouched until the frame is over.
@@ -1534,15 +1583,15 @@ bool VulkanGraphicsStateGuardian::
 extract_texture_data(Texture *tex) {
   nassertr(_frame_data != nullptr, false);
 
+  VulkanTextureContext *tc;
+  DCAST_INTO_R(tc, tex->prepare_now(get_prepared_objects(), this), false);
+
   bool success = true;
 
   // If we wanted to optimize this use-case, we could allocate a single buffer
   // to hold all texture views and copy that in one go.
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
-    VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
-
     if (!do_extract_image(tc, tex, view)) {
       success = false;
     }
@@ -2866,13 +2915,13 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   PreparedGraphicsObjects *pgo = get_prepared_objects();
 
   VulkanTextureContext *tc;
-  DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
+  DCAST_INTO_R(tc, tex->prepare_now(pgo, this), false);
 
   // Temporary, prepare_now should really deal with the resizing
   if (tc->_extent.width != (uint32_t)tex->get_x_size() ||
       tc->_extent.height != (uint32_t)tex->get_y_size()) {
     pgo->release_texture(tc);
-    DCAST_INTO_R(tc, tex->prepare_now(view, pgo, this), false);
+    DCAST_INTO_R(tc, tex->prepare_now(pgo, this), false);
   }
 
   nassertr(fbtc->_extent.width <= tc->_extent.width &&
@@ -3808,7 +3857,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 
     VkDescriptorImageInfo &image_info = image_infos[i];
     image_info.sampler = _shadow_sampler;
-    image_info.imageView = tc->_image_view;
+    image_info.imageView = tc->get_image_view(0);
     image_info.imageLayout = tc->_layout;
 
     VkWriteDescriptorSet &write = writes[i];
@@ -3866,7 +3915,7 @@ update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
     }
 
     VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, texture->prepare_now(view, _prepared_objects, this), false);
+    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
 
     VulkanSamplerContext *sc;
     DCAST_INTO_R(sc, sampler.prepare_now(_prepared_objects, this), false);
@@ -3898,7 +3947,7 @@ update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
 
     VkDescriptorImageInfo &image_info = image_infos[i];
     image_info.sampler = sc->_sampler;
-    image_info.imageView = tc->_image_view;
+    image_info.imageView = tc->get_image_view(view);
     image_info.imageLayout = tc->_layout;
 
     VkWriteDescriptorSet &write = writes[i];
@@ -3981,7 +4030,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
     }
 
     VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, texture->prepare_now(view, _prepared_objects, this), false);
+    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
 
     VulkanSamplerContext *sc;
     DCAST_INTO_R(sc, sampler.prepare_now(_prepared_objects, this), false);
@@ -4031,12 +4080,12 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
       write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
       VkDescriptorImageInfo &image_info = image_infos[i];
       image_info.sampler = sc->_sampler;
-      image_info.imageView = tc->_image_view;
+      image_info.imageView = tc->get_image_view(view);
       image_info.imageLayout = tc->_layout;
       write.pImageInfo = &image_info;
     } else {
       write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-      write.pTexelBufferView = &tc->_buffer_view;
+      write.pTexelBufferView = &tc->get_buffer_view(view);
     }
 
     ++i;
@@ -4091,7 +4140,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
 
     VulkanTextureContext *tc;
     int view = get_current_tex_view_offset();
-    DCAST_INTO_R(tc, texture->prepare_now(view, _prepared_objects, this), false);
+    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
 
     tc->set_active(true);
     update_texture(tc, true);
@@ -4138,12 +4187,12 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
       write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
       VkDescriptorImageInfo &image_info = image_infos[i];
       image_info.sampler = VK_NULL_HANDLE;
-      image_info.imageView = tc->_image_view;
+      image_info.imageView = tc->get_image_view(view);
       image_info.imageLayout = tc->_layout;
       write.pImageInfo = &image_info;
     } else {
       write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-      write.pTexelBufferView = &tc->_buffer_view;
+      write.pTexelBufferView = &tc->get_buffer_view(view);
     }
 
     ++i;

@@ -47,7 +47,7 @@ public:
   bool allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
                        VkFlags required_flags, bool linear);
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
+  virtual TextureContext *prepare_texture(Texture *tex);
   bool upload_texture(VulkanTextureContext *vtc);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);

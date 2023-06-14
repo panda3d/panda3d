@@ -16,8 +16,8 @@
  * image, allocate the memory and create an image view.
  */
 INLINE VulkanTextureContext::
-VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture, int view) :
-  TextureContext(pgo, texture, view),
+VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture) :
+  TextureContext(pgo, texture),
   //TODO: it is not clear to me what we should set srcStageMask to here.
   _stage_mask(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) {
 }
@@ -28,7 +28,7 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture, int view) :
  */
 INLINE VulkanTextureContext::
 VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat format) :
-  TextureContext(pgo, nullptr, 0),
+  TextureContext(pgo, nullptr),
   _format(format),
   _image(image),
   //TODO: it is not clear to me what we should set srcStageMask to here.
@@ -41,6 +41,30 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat forma
 INLINE void VulkanTextureContext::
 set_texture(Texture *texture) {
   _object = texture;
+}
+
+/**
+ * Returns the VkImageView handle for the given view of the texture.
+ */
+INLINE const VkImageView &VulkanTextureContext::
+get_image_view(int view) const {
+  if (!_image_views.empty()) {
+    return _image_views[std::min(std::max(view, 0), (int)_image_views.size() - 1)];
+  } else {
+    return VK_NULL_HANDLE;
+  }
+}
+
+/**
+ * Returns the VkBufferView handle for the given view of the texture.
+ */
+INLINE const VkBufferView &VulkanTextureContext::
+get_buffer_view(int view) const {
+  if (!_buffer_views.empty()) {
+    return _buffer_views[std::min(std::max(view, 0), (int)_buffer_views.size() - 1)];
+  } else {
+    return VK_NULL_HANDLE;
+  }
 }
 
 /**

@@ -16,6 +16,22 @@
 TypeHandle VulkanTextureContext::_type_handle;
 
 /**
+ * Destroys the view handles associated with this context immediately.
+ */
+void VulkanTextureContext::
+destroy_views(VkDevice device) {
+  for (VkImageView image_view : _image_views) {
+    vkDestroyImageView(device, image_view, nullptr);
+  }
+  _image_views.clear();
+
+  for (VkBufferView buffer_view : _buffer_views) {
+    vkDestroyBufferView(device, buffer_view, nullptr);
+  }
+  _buffer_views.clear();
+}
+
+/**
  * Inserts commands to clear the image.
  */
 void VulkanTextureContext::

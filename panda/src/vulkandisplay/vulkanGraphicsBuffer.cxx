@@ -550,13 +550,15 @@ destroy_framebuffer() {
 
   // Destroy the resources held for each attachment.
   for (Attachment &attach : _attachments) {
-    if (attach._tc->_image_view != VK_NULL_HANDLE) {
+    if (!attach._tc->_image_views.empty()) {
       if (vkgsg->_last_frame_data != nullptr) {
-        vkgsg->_last_frame_data->_pending_destroy_image_views.push_back(attach._tc->_image_view);
+        vkgsg->_last_frame_data->_pending_destroy_image_views.insert(
+          vkgsg->_last_frame_data->_pending_destroy_image_views.end(),
+          attach._tc->_image_views.begin(), attach._tc->_image_views.end());
+        attach._tc->_image_views.clear();
       } else {
-        vkDestroyImageView(device, attach._tc->_image_view, nullptr);
+        attach._tc->destroy_views(device);
       }
-      attach._tc->_image_view = VK_NULL_HANDLE;
     }
 
     if (attach._tc->_image != VK_NULL_HANDLE) {
@@ -606,7 +608,7 @@ create_framebuffer() {
   VkImageView *attach_views = (VkImageView *)alloca(sizeof(VkImageView) * num_attachments);
 
   for (uint32_t i = 0; i < num_attachments; ++i) {
-    attach_views[i] = _attachments[i]._tc->_image_view;
+    attach_views[i] = _attachments[i]._tc->get_image_view(0);
   }
 
   VkFramebufferCreateInfo fb_info;
@@ -703,14 +705,16 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
   }
   tc->_aspect_mask = view_info.subresourceRange.aspectMask;
 
+  VkImageView image_view;
   VkResult err;
-  err = vkCreateImageView(device, &view_info, nullptr, &tc->_image_view);
+  err = vkCreateImageView(device, &view_info, nullptr, &image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for attachment");
     delete tc;
     return false;
   }
 
+  tc->_image_views.push_back(image_view);
   _attachments.push_back({tc, plane});
   return true;
 }

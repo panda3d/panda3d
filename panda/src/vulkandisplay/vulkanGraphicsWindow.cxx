@@ -812,18 +812,14 @@ destroy_swapchain() {
   for (SwapBuffer &buffer : _swap_buffers) {
     // Destroy the framebuffers that use the swapchain images.
     vkDestroyFramebuffer(device, buffer._framebuffer, nullptr);
-    vkDestroyImageView(device, buffer._tc->_image_view, nullptr);
-
+    buffer._tc->destroy_views(device);
     buffer._tc->update_data_size_bytes(0);
     delete buffer._tc;
   }
   _swap_buffers.clear();
 
   if (_ms_color_tc != nullptr) {
-    if (_ms_color_tc->_image_view != VK_NULL_HANDLE) {
-      vkDestroyImageView(device, _ms_color_tc->_image_view, nullptr);
-      _ms_color_tc->_image_view = VK_NULL_HANDLE;
-    }
+    _ms_color_tc->destroy_views(device);
 
     if (_ms_color_tc->_image != VK_NULL_HANDLE) {
       vkDestroyImage(device, _ms_color_tc->_image, nullptr);
@@ -835,10 +831,7 @@ destroy_swapchain() {
   }
 
   if (_depth_stencil_tc != nullptr) {
-    if (_depth_stencil_tc->_image_view != VK_NULL_HANDLE) {
-      vkDestroyImageView(device, _depth_stencil_tc->_image_view, nullptr);
-      _depth_stencil_tc->_image_view = VK_NULL_HANDLE;
-    }
+    _depth_stencil_tc->destroy_views(device);
 
     if (_depth_stencil_tc->_image != VK_NULL_HANDLE) {
       vkDestroyImage(device, _depth_stencil_tc->_image, nullptr);
@@ -986,15 +979,19 @@ create_swapchain() {
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 
-    err = vkCreateImageView(device, &view_info, nullptr, &buffer._tc->_image_view);
+    VkImageView image_view;
+    err = vkCreateImageView(device, &view_info, nullptr, &image_view);
     if (err) {
       vulkan_error(err, "Failed to create image view for swapchain");
       return false;
     }
+
+    buffer._tc->_image_views.push_back(image_view);
   }
 
   // Now create a depth image.
   _depth_stencil_tc = nullptr;
+  VkImageView depth_stencil_view = VK_NULL_HANDLE;
   if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
     _depth_stencil_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
       _depth_stencil_format, extent, 1, 1, _ms_count,
@@ -1026,15 +1023,18 @@ create_swapchain() {
       view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
 
-    err = vkCreateImageView(device, &view_info, nullptr, &_depth_stencil_tc->_image_view);
+    err = vkCreateImageView(device, &view_info, nullptr, &depth_stencil_view);
     if (err) {
       vulkan_error(err, "Failed to create image view for depth/stencil");
       return false;
     }
+
+    _depth_stencil_tc->_image_views.push_back(depth_stencil_view);
   }
 
   // Create a multisample color image.
   _ms_color_tc = nullptr;
+  VkImageView ms_color_view = VK_NULL_HANDLE;
   if (_ms_count != VK_SAMPLE_COUNT_1_BIT) {
     _ms_color_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
       swapchain_info.imageFormat, extent, 1, 1, _ms_count,
@@ -1062,23 +1062,25 @@ create_swapchain() {
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 
-    err = vkCreateImageView(device, &view_info, nullptr, &_ms_color_tc->_image_view);
+    err = vkCreateImageView(device, &view_info, nullptr, &ms_color_view);
     if (err) {
-      vulkan_error(err, "Failed to create image view for depth/stencil");
+      vulkan_error(err, "Failed to create image view for multisample color");
       return false;
     }
+
+    _ms_color_tc->_image_views.push_back(ms_color_view);
   }
 
   // Now finally create a framebuffer for each link in the swap chain.
   VkImageView attach_views[3];
   uint32_t num_views = 1;
 
-  if (_ms_color_tc != nullptr) {
-    attach_views[0] = _ms_color_tc->_image_view;
+  if (ms_color_view != VK_NULL_HANDLE) {
+    attach_views[0] = ms_color_view;
     ++num_views;
   }
-  if (_depth_stencil_tc != nullptr) {
-    attach_views[1] = _depth_stencil_tc->_image_view;
+  if (depth_stencil_view != nullptr) {
+    attach_views[1] = depth_stencil_view;
     ++num_views;
   }
 
@@ -1096,9 +1098,9 @@ create_swapchain() {
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
     if (_ms_color_tc != nullptr) {
-      attach_views[num_views - 1] = buffer._tc->_image_view;
+      attach_views[num_views - 1] = buffer._tc->get_image_view(0);
     } else {
-      attach_views[0] = buffer._tc->_image_view;
+      attach_views[0] = buffer._tc->get_image_view(0);
     }
     err = vkCreateFramebuffer(device, &fb_info, nullptr, &buffer._framebuffer);
     if (err) {

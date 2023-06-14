@@ -16,19 +16,25 @@
 
 #include "config_vulkandisplay.h"
 #include "textureContext.h"
+#include "small_vector.h"
 
 /**
  * Manages a Vulkan image and device memory.
  */
 class EXPCL_VULKANDISPLAY VulkanTextureContext : public TextureContext {
 public:
-  INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture, int view);
+  INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture);
   INLINE VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat format);
   ~VulkanTextureContext() {};
 
   ALLOC_DELETED_CHAIN(VulkanTextureContext);
 
+  void destroy_views(VkDevice device);
+
   INLINE void set_texture(Texture *texture);
+
+  INLINE const VkImageView &get_image_view(int view) const;
+  INLINE const VkBufferView &get_buffer_view(int view) const;
 
   INLINE void access(VkPipelineStageFlags stage_mask, VkAccessFlags access_mask);
   INLINE void discard();
@@ -53,9 +59,9 @@ public:
   // Depending on whether it's a buffer texture or image texture, either the
   // image and image view or buffer and buffer view will be set.
   VkImage _image = VK_NULL_HANDLE;
-  VkImageView _image_view = VK_NULL_HANDLE;
+  small_vector<VkImageView> _image_views;
   VkBuffer _buffer = VK_NULL_HANDLE;
-  VkBufferView _buffer_view = VK_NULL_HANDLE;
+  small_vector<VkBufferView> _buffer_views;
   VulkanMemoryBlock _block;
 
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
