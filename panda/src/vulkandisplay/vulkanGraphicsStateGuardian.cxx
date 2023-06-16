@@ -75,10 +75,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
 
-  const char *const layers[] = {
-    "VK_LAYER_LUNARG_standard_validation",
-  };
-
   std::vector<const char*> extensions;
   if (pipe->has_device_extension("VK_KHR_swapchain")) {
     extensions.push_back("VK_KHR_swapchain");
@@ -107,8 +103,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   device_info.flags = 0;
   device_info.queueCreateInfoCount = 1;
   device_info.pQueueCreateInfos = &queue_info;
-  device_info.enabledLayerCount = 1;
-  device_info.ppEnabledLayerNames = layers;
+  device_info.enabledLayerCount = 0;
+  device_info.ppEnabledLayerNames = nullptr;
   device_info.enabledExtensionCount = extensions.size();
   device_info.ppEnabledExtensionNames = &extensions[0];
   device_info.pEnabledFeatures = nullptr;
