@@ -84,14 +84,14 @@ public:
   NodePath get_mouse();
   NodePath get_button_thrower();
 
-  NodePath get_a2d_top_center();
-  NodePath get_a2d_bottom_center();
-  NodePath get_a2d_left_center();
-  NodePath get_a2d_right_center();
-  NodePath get_a2d_top_left();
-  NodePath get_a2d_top_right();
-  NodePath get_a2d_bottom_left();
-  NodePath get_a2d_bottom_right();
+  INLINE NodePath get_a2d_top_center();
+  INLINE NodePath get_a2d_bottom_center();
+  INLINE NodePath get_a2d_left_center();
+  INLINE NodePath get_a2d_right_center();
+  INLINE NodePath get_a2d_top_left();
+  INLINE NodePath get_a2d_top_right();
+  INLINE NodePath get_a2d_bottom_left();
+  INLINE NodePath get_a2d_bottom_right();
 
   void enable_keyboard();
   void setup_trackball();
