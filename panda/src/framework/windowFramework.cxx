@@ -323,6 +323,31 @@ get_aspect_2d() {
     }
 
     _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+
+    // Create child nodes of aspect_2d anchored to edges/corners of the window.
+    _a2d_top_center = _aspect_2d.attach_new_node("a2d_top_center");
+    _a2d_bottom_center = _aspect_2d.attach_new_node("_a2d_bottom_center");
+    _a2d_left_center = _aspect_2d.attach_new_node("_a2d_left_center");
+    _a2d_right_center = _aspect_2d.attach_new_node("_a2d_right_center");
+    _a2d_top_left = _aspect_2d.attach_new_node("_a2d_top_left");
+    _a2d_top_right = _aspect_2d.attach_new_node("_a2d_top_right");
+    _a2d_bottom_left = _aspect_2d.attach_new_node("_a2d_bottom_left");
+    _a2d_bottom_right = _aspect_2d.attach_new_node("_a2d_bottom_right");
+
+    float a2d_top = 1.0f;
+    float a2d_bottom = -1.0f;
+    float a2d_left = this_aspect_ratio * -1.0f;
+    float a2d_right = this_aspect_ratio;
+
+    // Position nodes to their corresponding places
+    _a2d_top_center.set_pos(0.0f, 0.0f, a2d_top);
+    _a2d_bottom_center.set_pos(0.0f, 0.0f, a2d_bottom);
+    _a2d_left_center.set_pos(a2d_left, 0.0f, 0.0f);
+    _a2d_right_center.set_pos(a2d_right, 0.0f, 0.0f);
+    _a2d_top_left.set_pos(a2d_left, 0.0f, a2d_top);
+    _a2d_top_right.set_pos(a2d_right, 0.0f, a2d_top);
+    _a2d_bottom_left.set_pos(a2d_left, 0.0f, a2d_bottom);
+    _a2d_bottom_right.set_pos(a2d_right, 0.0f, a2d_bottom);
   }
 
   return _aspect_2d;
@@ -402,6 +427,102 @@ get_mouse() {
 NodePath WindowFramework::
 get_button_thrower() {
   return _button_thrower;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top center of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_top_center() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_top_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom center of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_bottom_center() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_bottom_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the left center of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_left_center() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_left_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the right center of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_right_center() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_right_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top left of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_top_left() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_top_left;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top right of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_top_right() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_top_right;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom left of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_bottom_left() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_bottom_left;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom right of the screen.
+ */
+NodePath WindowFramework::
+get_a2d_bottom_right() {
+  if (_aspect_2d.is_empty()) {
+      get_aspect_2d();
+  }
+  return _a2d_bottom_right;
 }
 
 /**
@@ -794,7 +915,7 @@ set_anim_controls(bool enable) {
 /**
  * Reevaluates the dimensions of the window, presumably after the window has
  * been resized by the user or some other force.  Adjusts the render film
- * size, aspect2d scale (aspect ratio) and the dimensionsas of pixel_2d
+ * size, aspect2d scale (aspect ratio) and the dimensions of pixel_2d
  * according to the new window shape, or new config setting.
  */
 void WindowFramework::
@@ -816,7 +937,38 @@ adjust_dimensions() {
   }
 
   if (!_aspect_2d.is_empty()) {
-    _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+    float a2d_top;
+    float a2d_bottom;
+    float a2d_left;
+    float a2d_right;
+
+    if (this_aspect_ratio < 1) {
+      // If the window is TALL, lets expand the top and bottom
+      _aspect_2d.set_scale(1.0f, this_aspect_ratio, this_aspect_ratio);
+
+      a2d_top = 1.0f / this_aspect_ratio;
+      a2d_bottom = -1.0f / this_aspect_ratio;
+      a2d_left = -1.0f;
+      a2d_right = 1.0f;
+    } else {
+      // If the window is WIDE, lets expand the left and right
+      _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+
+      a2d_top = 1.0f;
+      a2d_bottom = -1.0f;
+      a2d_left = this_aspect_ratio * -1.0f;
+      a2d_right = this_aspect_ratio;
+    }
+
+    // Adjust aspect_2d child nodes to new aspect ratio
+    _a2d_top_center.set_pos(0.0f, 0.0f, a2d_top);
+    _a2d_bottom_center.set_pos(0.0f, 0.0f, a2d_bottom);
+    _a2d_left_center.set_pos(a2d_left, 0.0f, 0.0f);
+    _a2d_right_center.set_pos(a2d_right, 0.0f, 0.0f);
+    _a2d_top_left.set_pos(a2d_left, 0.0f, a2d_top);
+    _a2d_top_right.set_pos(a2d_right, 0.0f, a2d_top);
+    _a2d_bottom_left.set_pos(a2d_left, 0.0f, a2d_bottom);
+    _a2d_bottom_right.set_pos(a2d_right, 0.0f, a2d_bottom);
   }
 
   if (!_pixel_2d.is_empty()) {
