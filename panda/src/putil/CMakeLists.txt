@@ -48,7 +48,7 @@ set(P3PUTIL_HEADERS
   load_prc_file.h
   loaderOptions.I loaderOptions.h
   modifierButtons.I modifierButtons.h
-  mouseButton.h mouseData.h
+  mouseButton.h
   nameUniquifier.I nameUniquifier.h
   nodeCachedReferenceCount.h nodeCachedReferenceCount.I
   paramValue.I paramValue.h

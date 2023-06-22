@@ -127,7 +127,7 @@ CocoaGraphicsWindow::
 bool CocoaGraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Hack!  Will go away when we have floating-point mouse pos.
-  MouseData md = get_pointer(device);
+  PointerData md = get_pointer(device);
   if (md.get_x() == x && md.get_y() == y) {
     return true;
   }
@@ -1713,7 +1713,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
 
   } else {
     // We received deltas, so add it to the current mouse position.
-    MouseData md = _input->get_pointer();
+    PointerData md = _input->get_pointer();
     nx = md.get_x() + x;
     ny = md.get_y() + y;
   }
