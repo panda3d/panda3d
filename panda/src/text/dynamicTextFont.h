@@ -41,7 +41,7 @@ typedef struct hb_font_t hb_font_t;
 class EXPCL_PANDA_TEXT DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
-  DynamicTextFont(const char *font_data, int data_length, int face_index);
+  explicit DynamicTextFont(const char *font_data, int data_length, int face_index);
   DynamicTextFont(const DynamicTextFont &copy);
   virtual ~DynamicTextFont();
 
