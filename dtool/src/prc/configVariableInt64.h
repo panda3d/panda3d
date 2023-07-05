@@ -25,10 +25,12 @@
 class EXPCL_DTOOL_PRC ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
   INLINE explicit ConfigVariableInt64(const std::string &name);
-  INLINE explicit ConfigVariableInt64(const std::string &name, int64_t default_value,
+  INLINE explicit ConfigVariableInt64(const std::string &name,
+                                      int64_t default_value,
                                       const std::string &description = std::string(),
                                       int flags = 0);
-  INLINE explicit ConfigVariableInt64(const std::string &name, const std::string &default_value,
+  INLINE explicit ConfigVariableInt64(const std::string &name,
+                                      const std::string &default_value,
                                       const std::string &description = std::string(),
                                       int flags = 0);
 
