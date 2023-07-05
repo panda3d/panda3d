@@ -80,7 +80,20 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     extensions.push_back("VK_KHR_swapchain");
   }
 
+  // Enable all features we may want to use, if they are supported.
   VkPhysicalDeviceFeatures2 enabled_features = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+  enabled_features.features.imageCubeArray = features.imageCubeArray;
+  enabled_features.features.geometryShader = features.geometryShader;
+  enabled_features.features.tessellationShader = features.tessellationShader;
+  enabled_features.features.dualSrcBlend = features.dualSrcBlend;
+  enabled_features.features.logicOp = features.logicOp;
+  enabled_features.features.fillModeNonSolid = features.fillModeNonSolid;
+  enabled_features.features.wideLines = features.wideLines;
+  enabled_features.features.largePoints = features.largePoints;
+  enabled_features.features.alphaToOne = features.alphaToOne;
+  enabled_features.features.samplerAnisotropy = features.samplerAnisotropy;
+  enabled_features.features.textureCompressionETC2 = features.textureCompressionETC2;
+  enabled_features.features.textureCompressionBC = features.textureCompressionBC;
 
   VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features =
     {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT};
