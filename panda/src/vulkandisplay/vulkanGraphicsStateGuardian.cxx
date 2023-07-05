@@ -80,6 +80,19 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     extensions.push_back("VK_KHR_swapchain");
   }
 
+  VkPhysicalDeviceFeatures2 enabled_features = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+
+  VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features =
+    {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT};
+  if (pipe->_gpu_supports_custom_border_colors) {
+    cbc_features.customBorderColors = VK_TRUE;
+    cbc_features.customBorderColorWithoutFormat = VK_TRUE;
+    enabled_features.pNext = &cbc_features;
+
+    extensions.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
+    _supports_custom_border_colors = true;
+  }
+
   // Create a queue in the given queue family.  For now, we assume NVIDIA,
   // which has only one queue family, but we want to separate this out for
   // the sake of AMD cards.
@@ -108,6 +121,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   device_info.enabledExtensionCount = extensions.size();
   device_info.ppEnabledExtensionNames = &extensions[0];
   device_info.pEnabledFeatures = nullptr;
+
+  if (pipe->_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0) ||
+      pipe->has_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+    device_info.pNext = &enabled_features;
+  } else {
+    device_info.pEnabledFeatures = &enabled_features.features;
+  }
 
   VkResult
   err = vkCreateDevice(pipe->_gpu, &device_info, nullptr, &_device);
@@ -1603,7 +1623,6 @@ prepare_sampler(const SamplerState &sampler) {
                                      VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
                                      VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
                                      VK_SAMPLER_ADDRESS_MODE_REPEAT};
-  //TODO: support border color.
   VkSamplerCreateInfo sampler_info;
   sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   sampler_info.pNext = nullptr;
@@ -1630,8 +1649,38 @@ prepare_sampler(const SamplerState &sampler) {
   sampler_info.maxAnisotropy = sampler.get_effective_anisotropic_degree();
   sampler_info.minLod = sampler.get_min_lod();
   sampler_info.maxLod = sampler.get_max_lod();
-  sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
   sampler_info.unnormalizedCoordinates = VK_FALSE;
+
+  LColor border_color = sampler.get_border_color();
+  VkSamplerCustomBorderColorCreateInfoEXT custom_border_color;
+  if (border_color == LColor(0.0, 0.0, 0.0, 0.0)) {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+  }
+  else if (border_color == LColor(0.0, 0.0, 0.0, 1.0)) {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+  }
+  else if (border_color == LColor(1.0, 1.0, 1.0, 1.0)) {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+  }
+  else if (_supports_custom_border_colors) {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_CUSTOM_EXT;
+
+    custom_border_color.sType = VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT;
+    custom_border_color.pNext = nullptr;
+    custom_border_color.customBorderColor.float32[0] = border_color[0];
+    custom_border_color.customBorderColor.float32[1] = border_color[1];
+    custom_border_color.customBorderColor.float32[2] = border_color[2];
+    custom_border_color.customBorderColor.float32[3] = border_color[3];
+    custom_border_color.format = VK_FORMAT_UNDEFINED;
+
+    sampler_info.pNext = &custom_border_color;
+  }
+  else if (border_color[3] >= 0.5f) {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+  }
+  else {
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+  }
 
   VkResult err;
   VkSampler vk_sampler;

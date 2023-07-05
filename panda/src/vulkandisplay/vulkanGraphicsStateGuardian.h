@@ -274,6 +274,9 @@ private:
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;
 
+  // Feature checks.
+  bool _supports_custom_border_colors = false;
+
   // Function pointers.
   PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
   PFN_vkCmdBindPipeline _vkCmdBindPipeline;

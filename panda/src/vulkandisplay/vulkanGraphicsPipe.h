@@ -74,6 +74,7 @@ public:
   VkPhysicalDevice _gpu;
   VkPhysicalDeviceFeatures _gpu_features;
   VkPhysicalDeviceProperties _gpu_properties;
+  bool _gpu_supports_custom_border_colors = false;
   VkPhysicalDeviceMemoryProperties _memory_properties;
   pvector<VkQueueFamilyProperties> _queue_families;
   VkDeviceSize _max_allocation_size;

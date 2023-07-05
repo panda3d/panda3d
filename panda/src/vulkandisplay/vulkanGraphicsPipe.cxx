@@ -125,9 +125,11 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   }
 #endif
 
+  bool has_props2_ext = false;
   if (inst_version < VK_MAKE_VERSION(1, 1, 0) &&
-      has_instance_extension("VK_KHR_get_physical_device_properties2")) {
-    extensions.push_back("VK_KHR_get_physical_device_properties2");
+      has_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    has_props2_ext = true;
   }
 
   VkApplicationInfo app_info;
@@ -262,11 +264,6 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     }
   }
 
-  // Query device limits and memory properties.
-  vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
-  vkGetPhysicalDeviceProperties(_gpu, &_gpu_properties);
-  vkGetPhysicalDeviceMemoryProperties(_gpu, &_memory_properties);
-
   // Query queue information, used by find_queue_family_for_surface.
   uint32_t num_families;
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, nullptr);
@@ -285,6 +282,42 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _device_extensions[std::string(dev_extensions[i].extensionName)] = dev_extensions[i].specVersion;
   }
 
+  // Query device limits and memory properties.
+  vkGetPhysicalDeviceProperties(_gpu, &_gpu_properties);
+  vkGetPhysicalDeviceMemoryProperties(_gpu, &_memory_properties);
+
+  PFN_vkGetPhysicalDeviceFeatures2 pVkGetPhysicalDeviceFeatures2 = nullptr;
+
+  if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+    pVkGetPhysicalDeviceFeatures2 = (PFN_vkGetPhysicalDeviceFeatures2)
+      vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceFeatures2");
+  }
+  else if (has_props2_ext) {
+    pVkGetPhysicalDeviceFeatures2 = (PFN_vkGetPhysicalDeviceFeatures2)
+      vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceFeatures2KHR");
+  }
+
+  if (pVkGetPhysicalDeviceFeatures2 != nullptr) {
+    VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+
+    VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features;
+    cbc_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT;
+    cbc_features.pNext = nullptr;
+    cbc_features.customBorderColors = VK_FALSE;
+    cbc_features.customBorderColorWithoutFormat = VK_FALSE;
+    if (has_device_extension(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME)) {
+      features2.pNext = &cbc_features;
+    }
+
+    pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
+    _gpu_features = features2.features;
+    _gpu_supports_custom_border_colors = cbc_features.customBorderColors
+                                      && cbc_features.customBorderColorWithoutFormat;
+  } else {
+    vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
+    _gpu_supports_custom_border_colors = false;
+  }
+
   // Default the maximum allocation size to the largest of the heaps.
   for (uint32_t i = 0; i < _memory_properties.memoryHeapCount; ++i) {
     VkMemoryHeap &heap = _memory_properties.memoryHeaps[i];
@@ -297,9 +330,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     maint3_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
     maint3_props.maxMemoryAllocationSize = _max_allocation_size;
 
-    VkPhysicalDeviceProperties2 props2 = {};
-    props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-    props2.pNext = &maint3_props;
+    VkPhysicalDeviceProperties2 props2 =
+      {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, &maint3_props};
 
     if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
       PFN_vkGetPhysicalDeviceProperties2 pVkGetPhysicalDeviceProperties2 =
@@ -309,7 +341,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
         pVkGetPhysicalDeviceProperties2(_gpu, &props2);
         _max_allocation_size = maint3_props.maxMemoryAllocationSize;
       }
-    } else if (has_instance_extension("VK_KHR_get_physical_device_properties2")) {
+    }
+    else if (has_props2_ext) {
       PFN_vkGetPhysicalDeviceProperties2KHR pVkGetPhysicalDeviceProperties2KHR =
         (PFN_vkGetPhysicalDeviceProperties2KHR)vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceProperties2KHR");
 
