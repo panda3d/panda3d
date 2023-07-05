@@ -274,6 +274,14 @@ private:
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;
 
+  // Function pointers.
+  PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
+  PFN_vkCmdBindPipeline _vkCmdBindPipeline;
+  PFN_vkCmdDraw _vkCmdDraw;
+  PFN_vkCmdDrawIndexed _vkCmdDrawIndexed;
+  PFN_vkCmdPushConstants _vkCmdPushConstants;
+  PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
+
   friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;
 

@@ -123,6 +123,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     _dma_queue = _queue;
   }
 
+  // Get direct function pointers for functions called frequently.
+  _vkCmdBindIndexBuffer = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(_device, "vkCmdBindIndexBuffer");
+  _vkCmdBindPipeline = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(_device, "vkCmdBindPipeline");
+  _vkCmdDraw = (PFN_vkCmdDraw)vkGetDeviceProcAddr(_device, "vkCmdDraw");
+  _vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
+  _vkCmdPushConstants = (PFN_vkCmdPushConstants)vkGetDeviceProcAddr(_device, "vkCmdPushConstants");
+  _vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)vkGetDeviceProcAddr(_device, "vkUpdateDescriptorSets");
+
   // Create a command pool to allocate command buffers from.
   VkCommandPoolCreateInfo cmd_pool_info;
   cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1756,7 +1764,7 @@ prepare_shader(Shader *shader) {
       write[i].pBufferInfo = &buffer_info[i];
       write[i].pTexelBufferView = nullptr;
     }
-    vkUpdateDescriptorSets(_device, count, write, 0, nullptr);
+    _vkUpdateDescriptorSets(_device, count, write, 0, nullptr);
 
     vkDestroyDescriptorSetLayout(_device, ds_layouts[DS_dynamic_uniforms], nullptr);
   }
@@ -2034,7 +2042,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   // compute.  Should we have separate pool/queue/buffer for compute?
   VkPipeline pipeline = _current_shader->get_compute_pipeline(this);
   nassertv(pipeline != VK_NULL_HANDLE);
-  vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+  _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
 
   vkCmdDispatch(_frame_data->_cmd, num_groups_x, num_groups_y, num_groups_z);
 }
@@ -2085,14 +2093,16 @@ set_state_and_transform(const RenderState *state,
   if (sc->_projection_mat_stage_mask != 0) {
     CPT(TransformState) combined = _projection_mat->compose(trans);
     LMatrix4f matrix = LCAST(float, combined->get_mat());
-    vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
+    _vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout,
+                        sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
   }
 
   if (sc->_color_scale_stage_mask != 0) {
     const ColorScaleAttrib *color_scale_attrib;
     state->get_attrib_def(color_scale_attrib);
     LColorf color = LCAST(float, color_scale_attrib->get_scale());
-    vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 64, 16, color.get_data());
+    _vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout,
+                        sc->_push_constant_stage_mask, 64, 16, color.get_data());
   }
 
   // Update and bind descriptor sets.
@@ -3057,7 +3067,7 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
 
   VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, _fb_ms_count);
   nassertr(pipeline != VK_NULL_HANDLE, false);
-  vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   int num_vertices = reader->get_num_vertices();
 
@@ -3070,11 +3080,11 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
       return false;
     }
 
-    vkCmdBindIndexBuffer(_frame_data->_cmd, ibc->_buffer, 0, ibc->_index_type);
-    vkCmdDrawIndexed(_frame_data->_cmd, num_vertices, _instance_count, 0, 0, 0);
+    _vkCmdBindIndexBuffer(_frame_data->_cmd, ibc->_buffer, 0, ibc->_index_type);
+    _vkCmdDrawIndexed(_frame_data->_cmd, num_vertices, _instance_count, 0, 0, 0);
   } else {
     // A non-indexed primitive.
-    vkCmdDraw(_frame_data->_cmd, num_vertices, _instance_count, reader->get_first_vertex(), 0);
+    _vkCmdDraw(_frame_data->_cmd, num_vertices, _instance_count, reader->get_first_vertex(), 0);
   }
   return true;
 }
@@ -3807,7 +3817,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
     write.pTexelBufferView = nullptr;
   }
 
-  vkUpdateDescriptorSets(_device, num_shadow_maps, writes, 0, nullptr);
+  _vkUpdateDescriptorSets(_device, num_shadow_maps, writes, 0, nullptr);
   return true;
 }
 
@@ -3897,7 +3907,7 @@ update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
     write.pTexelBufferView = nullptr;
   }
 
-  vkUpdateDescriptorSets(_device, num_textures, writes, 0, nullptr);
+  _vkUpdateDescriptorSets(_device, num_textures, writes, 0, nullptr);
   return true;
 }
 
@@ -4132,7 +4142,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
     ++i;
   }
 
-  vkUpdateDescriptorSets(_device, i, writes, 0, nullptr);
+  _vkUpdateDescriptorSets(_device, i, writes, 0, nullptr);
   return true;
 }
 
