@@ -746,6 +746,15 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
     if (flags & VK_MEMORY_PROPERTY_PROTECTED_BIT) {
       vulkandisplay_cat.debug(false) << ", protected";
     }
+    if (flags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD) {
+      vulkandisplay_cat.debug(false) << ", device-coherent";
+    }
+    if (flags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD) {
+      vulkandisplay_cat.debug(false) << ", device-uncached";
+    }
+    if (flags & VK_MEMORY_PROPERTY_RDMA_CAPABLE_BIT_NV) {
+      vulkandisplay_cat.debug(false) << ", rdma-capable";
+    }
     vulkandisplay_cat.debug(false) << "\n";
   }
 

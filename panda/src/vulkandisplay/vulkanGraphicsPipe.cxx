@@ -436,6 +436,15 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
           if (type.propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT) {
             out << " PROTECTED";
           }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD) {
+            out << " DEVICE_COHERENT";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD) {
+            out << " DEVICE_UNCACHED";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_RDMA_CAPABLE_BIT_NV) {
+            out << " RDMA_CAPABLE";
+          }
           out << "\n";
         }
       }
