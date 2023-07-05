@@ -856,6 +856,13 @@ create_texture(VulkanTextureContext *tc) {
   uint32_t num_levels = 1;
   bool is_buffer = false;
 
+  if (extent.width == 0) {
+    extent.width = 1;
+  }
+  if (extent.height == 0) {
+    extent.height = 1;
+  }
+
   switch (texture->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_1d_texture_array:
@@ -966,7 +973,7 @@ create_texture(VulkanTextureContext *tc) {
         << orig_extent.depth << " to " << extent.width << " x "
         << extent.height << " x " << extent.depth << "\n";
 
-      if (!texture->has_ram_mipmap_image(mipmap_begin)) {
+      if (texture->has_ram_image() && !texture->has_ram_mipmap_image(mipmap_begin)) {
         // Ugh, and to do this, we have to generate mipmaps on the CPU.
         texture->generate_ram_mipmap_images();
       }
@@ -993,13 +1000,15 @@ create_texture(VulkanTextureContext *tc) {
           !driver_generate_mipmaps) {
         // Hang on, we don't support blitting using this format.  We'll have to
         // generate the mipmaps on the CPU instead.
-        texture->generate_ram_mipmap_images();
+        if (texture->has_ram_image()) {
+          texture->generate_ram_mipmap_images();
 
-        // We now have as many levels as we're going to get.
-        mipmap_end = texture->get_num_ram_mipmap_images();
+          // We now have as many levels as we're going to get.
+          mipmap_end = texture->get_num_ram_mipmap_images();
+        }
         generate_mipmaps = false;
       } else {
-        // We'll be generating mipmaps from it, so mark it as transfer source.
+        // We may be generating mipmaps from it, so mark it as transfer source.
         usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
       }
     }
@@ -1234,7 +1243,7 @@ upload_texture(VulkanTextureContext *tc) {
   DCAST_INTO_R(vkpipe, get_pipe(), false);
 
   // Do we even have an image to upload?
-  if (texture->get_ram_image().is_null()) {
+  if (texture->get_ram_image().is_null() || texture->get_ram_image_size() == 0) {
     if (texture->has_clear_color()) {
       // No, but we have to clear it to a solid color.
       LColor col = texture->get_clear_color();
@@ -3214,6 +3223,10 @@ create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
              const VkExtent3D &extent, uint32_t levels, uint32_t layers,
              VkSampleCountFlagBits samples, VkImageUsageFlags usage,
              VkImageCreateFlags flags) {
+  nassertr(extent.width > 0, false);
+  nassertr(extent.height > 0, false);
+  nassertr(extent.depth > 0, false);
+
   VkImageCreateInfo img_info;
   img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   img_info.pNext = nullptr;
