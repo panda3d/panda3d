@@ -94,6 +94,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   enabled_features.features.samplerAnisotropy = features.samplerAnisotropy;
   enabled_features.features.textureCompressionETC2 = features.textureCompressionETC2;
   enabled_features.features.textureCompressionBC = features.textureCompressionBC;
+  enabled_features.features.shaderFloat64 = features.shaderFloat64;
 
   VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features =
     {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT};
