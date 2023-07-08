@@ -40,6 +40,7 @@ operator ==(const PipelineKey &other) const {
   return _state == other._state
       && _format == other._format
       && _topology == other._topology
+      && _patch_control_points == other._patch_control_points
       && _multisamples == other._multisamples;
 }
 
@@ -56,6 +57,9 @@ operator < (const PipelineKey &other) const {
   }
   if (_topology != other._topology) {
     return _topology < other._topology;
+  }
+  if (_patch_control_points != other._patch_control_points) {
+    return _patch_control_points < other._patch_control_points;
   }
   return _multisamples < other._multisamples;
 }

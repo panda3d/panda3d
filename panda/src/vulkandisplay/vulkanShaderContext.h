@@ -39,6 +39,7 @@ public:
                           const RenderState *state,
                           const GeomVertexFormat *format,
                           VkPrimitiveTopology topology,
+                          uint32_t patch_control_points,
                           VkSampleCountFlagBits multisamples);
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
@@ -78,6 +79,7 @@ private:
     CPT(RenderState) _state;
     CPT(GeomVertexFormat) _format;
     VkPrimitiveTopology _topology;
+    uint32_t _patch_control_points;
     VkSampleCountFlagBits _multisamples;
   };
 

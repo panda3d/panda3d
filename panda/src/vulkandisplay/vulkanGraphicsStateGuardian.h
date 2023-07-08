@@ -137,7 +137,7 @@ private:
                         ScreenshotRequest *request = nullptr);
 
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
-                         VkPrimitiveTopology topology);
+                         VkPrimitiveTopology topology, uint32_t patch_control_points);
 
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
@@ -152,6 +152,7 @@ public:
   VkPipeline make_pipeline(VulkanShaderContext *sc, const RenderState *state,
                            const GeomVertexFormat *format,
                            VkPrimitiveTopology topology,
+                           uint32_t patch_control_points,
                            VkSampleCountFlagBits multisamples);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 

@@ -631,17 +631,18 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
 VkPipeline VulkanShaderContext::
 get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
              const GeomVertexFormat *format, VkPrimitiveTopology topology,
-             VkSampleCountFlagBits multisamples) {
+             uint32_t patch_control_points, VkSampleCountFlagBits multisamples) {
   PipelineKey key;
   key._state = state;
   key._format = format;
   key._topology = topology;
+  key._patch_control_points = patch_control_points;
   key._multisamples = multisamples;
 
   PipelineMap::const_iterator it;
   it = _pipeline_map.find(key);
   if (it == _pipeline_map.end()) {
-    VkPipeline pipeline = gsg->make_pipeline(this, state, format, topology, multisamples);
+    VkPipeline pipeline = gsg->make_pipeline(this, state, format, topology, patch_control_points, multisamples);
     _pipeline_map[std::move(key)] = pipeline;
     return pipeline;
   } else {
