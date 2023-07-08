@@ -113,11 +113,23 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
   }
 
+  bool success = true;
   for (Shader::LinkedModule &linked_module : _shader->_modules) {
     CPT(ShaderModule) module = linked_module._module.get_read_pointer();
+    nassertd(module != nullptr) {
+      success = false;
+      continue;
+    }
 
-    const ShaderModuleSpirV *spv_module = DCAST(ShaderModuleSpirV, module.p());
-    nassertd(spv_module != nullptr) continue;
+    if (!module->is_of_type(ShaderModuleSpirV::get_class_type())) {
+      vulkandisplay_cat.error()
+        << "Shader modules of type " << module->get_type()
+        << " are not supported in Vulkan\n";
+      success = false;
+      continue;
+    }
+
+    const ShaderModuleSpirV *spv_module = (const ShaderModuleSpirV *)module.p();
 
     // Make a clean copy, so we can do some transformations on it.
     ShaderModuleSpirV::InstructionStream instructions = spv_module->_instructions;
@@ -179,11 +191,20 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     err = vkCreateShaderModule(device, &module_info, nullptr, &_modules[(size_t)spv_module->get_stage()]);
     if (err) {
       vulkan_error(err, "Failed to create shader modules");
-      return false;
+      success = false;
     }
   }
 
-  return true;
+  if (!success) {
+    for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
+      if (_modules[i] != VK_NULL_HANDLE) {
+        vkDestroyShaderModule(device, _modules[i], nullptr);
+        _modules[i] = VK_NULL_HANDLE;
+      }
+    }
+  }
+
+  return success;
 }
 
 /**

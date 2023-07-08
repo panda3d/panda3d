@@ -2163,11 +2163,15 @@ set_state_and_transform(const RenderState *state,
   VulkanShaderContext *sc = _default_sc;
   Shader *shader = (Shader *)_target_shader->get_shader();
   if (shader != nullptr) {
-    DCAST_INTO_V(sc, shader->prepare_now(get_prepared_objects(), this));
+    sc = DCAST(VulkanShaderContext, shader->prepare_now(get_prepared_objects(), this));
   }
 
   _current_shader = sc;
-  nassertv(sc != nullptr);
+  if (UNLIKELY(sc == nullptr)) {
+    // Don't bother updating the state if we don't have a valid shader, because
+    // begin_draw_primitives will return false anyway.
+    return;
+  }
 
   // Put the modelview projection matrix and color scale in the push constants.
   if (sc->_projection_mat_stage_mask != 0) {
