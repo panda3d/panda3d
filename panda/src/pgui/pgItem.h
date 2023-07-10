@@ -132,6 +132,7 @@ PUBLISHED:
   bool has_state_def(int state) const;
   INLINE NodePath &get_state_def(int state);
   MAKE_SEQ(get_state_defs, get_num_state_defs, get_state_def);
+  MAKE_SEQ_PROPERTY(state_defs, get_num_state_defs, get_state_def);
   NodePath instance_to_state_def(int state, const NodePath &path);
 
   PGFrameStyle get_frame_style(int state);
@@ -170,6 +171,17 @@ PUBLISHED:
   INLINE std::string get_repeat_event(const ButtonHandle &button) const;
   INLINE std::string get_release_event(const ButtonHandle &button) const;
   INLINE std::string get_keystroke_event() const;
+
+  MAKE_PROPERTY(enter_prefix, get_enter_prefix);
+  MAKE_PROPERTY(exit_prefix, get_exit_prefix);
+  MAKE_PROPERTY(within_prefix, get_within_prefix);
+  MAKE_PROPERTY(without_prefix, get_without_prefix);
+  MAKE_PROPERTY(focus_in_prefix, get_focus_in_prefix);
+  MAKE_PROPERTY(focus_out_prefix, get_focus_out_prefix);
+  MAKE_PROPERTY(press_prefix, get_press_prefix);
+  MAKE_PROPERTY(repeat_prefix, get_repeat_prefix);
+  MAKE_PROPERTY(release_prefix, get_release_prefix);
+  MAKE_PROPERTY(keystroke_prefix, get_keystroke_prefix);
 
   INLINE LMatrix4 get_frame_inv_xform() const;
 

@@ -51,9 +51,12 @@ PUBLISHED:
   void set_mouse_watcher(MouseWatcher *watcher);
   INLINE MouseWatcher *get_mouse_watcher() const;
   INLINE MouseWatcherGroup *get_group() const;
+  MAKE_PROPERTY(mouse_watcher, get_mouse_watcher, set_mouse_watcher);
+  MAKE_PROPERTY(group, get_group);
 
   INLINE void set_start_sort(int start_sort);
   INLINE int get_start_sort() const;
+  MAKE_PROPERTY(start_sort, get_start_sort, set_start_sort);
 
 public:
   // These methods duplicate the functionality of MouseWatcherGroup.
