@@ -648,16 +648,56 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
              const GeomVertexFormat *format, VkPrimitiveTopology topology,
              uint32_t patch_control_points, VkSampleCountFlagBits multisamples) {
   PipelineKey key;
-  key._state = state;
   key._format = format;
   key._topology = topology;
   key._patch_control_points = patch_control_points;
   key._multisamples = multisamples;
 
+  const ColorAttrib *color_attr;
+  state->get_attrib_def(color_attr);
+  key._color_type = color_attr->get_color_type();
+
+  const RenderModeAttrib *render_mode;
+  if (state->get_attrib(render_mode) &&
+      (render_mode->get_mode() == RenderModeAttrib::M_wireframe ||
+       render_mode->get_mode() == RenderModeAttrib::M_point)) {
+    key._render_mode_attrib = render_mode;
+  }
+
+  const CullFaceAttrib *cull_face;
+  state->get_attrib_def(cull_face);
+  key._cull_face_mode = cull_face->get_effective_mode();
+
+  const DepthWriteAttrib *depth_write;
+  state->get_attrib_def(depth_write);
+  key._depth_write_mode = depth_write->get_mode();
+
+  const DepthTestAttrib *depth_test;
+  state->get_attrib_def(depth_test);
+  key._depth_test_mode = depth_test->get_mode();
+
+  const ColorWriteAttrib *color_write;
+  state->get_attrib_def(color_write);
+  key._color_write_mask = color_write->get_channels();
+
+  const LogicOpAttrib *logic_op;
+  state->get_attrib_def(logic_op);
+  key._logic_op = logic_op->get_operation();
+
+  const ColorBlendAttrib *color_blend;
+  if (state->get_attrib(color_blend) && color_blend->get_mode() == ColorBlendAttrib::M_none) {
+    key._color_blend_attrib = color_blend;
+    key._transparency_mode = TransparencyAttrib::M_none;
+  } else {
+    const TransparencyAttrib *transp;
+    state->get_attrib_def(transp);
+    key._transparency_mode = transp->get_mode();
+  }
+
   PipelineMap::const_iterator it;
   it = _pipeline_map.find(key);
   if (it == _pipeline_map.end()) {
-    VkPipeline pipeline = gsg->make_pipeline(this, state, format, topology, patch_control_points, multisamples);
+    VkPipeline pipeline = gsg->make_pipeline(this, key);
     _pipeline_map[std::move(key)] = pipeline;
     return pipeline;
   } else {

@@ -17,6 +17,16 @@
 #include "config_vulkandisplay.h"
 #include "shaderModuleSpirV.h"
 
+#include "colorAttrib.h"
+#include "renderModeAttrib.h"
+#include "cullFaceAttrib.h"
+#include "depthWriteAttrib.h"
+#include "logicOpAttrib.h"
+#include "colorBlendAttrib.h"
+#include "transparencyAttrib.h"
+
+class VulkanGraphicsStateGuardian;
+
 /**
  * Manages a set of Vulkan shader modules.
  */
@@ -42,6 +52,30 @@ public:
                           uint32_t patch_control_points,
                           VkSampleCountFlagBits multisamples);
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
+
+  /**
+   * Stores whatever is used to key a cached pipeline into the pipeline map.
+   * This allows us to map Panda states to Vulkan pipelines effectively.
+   */
+  struct PipelineKey {
+    INLINE bool operator ==(const PipelineKey &other) const;
+    INLINE bool operator < (const PipelineKey &other) const;
+
+    CPT(GeomVertexFormat) _format;
+    VkPrimitiveTopology _topology;
+    uint32_t _patch_control_points;
+    VkSampleCountFlagBits _multisamples;
+
+    ColorAttrib::Type _color_type;
+    CPT(RenderModeAttrib) _render_mode_attrib;
+    CullFaceAttrib::Mode _cull_face_mode;
+    DepthWriteAttrib::Mode _depth_write_mode;
+    RenderAttrib::PandaCompareFunc _depth_test_mode;
+    int _color_write_mask;
+    LogicOpAttrib::Operation _logic_op;
+    CPT(ColorBlendAttrib) _color_blend_attrib;
+    TransparencyAttrib::Mode _transparency_mode;
+  };
 
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
@@ -71,21 +105,6 @@ private:
   int _push_constant_stage_mask = 0;
   int _projection_mat_stage_mask = 0;
   int _color_scale_stage_mask = 0;
-
-  /**
-   * Stores whatever is used to key a cached pipeline into the pipeline map.
-   * This allows us to map Panda states to Vulkan pipelines effectively.
-   */
-  struct PipelineKey {
-    INLINE bool operator ==(const PipelineKey &other) const;
-    INLINE bool operator < (const PipelineKey &other) const;
-
-    CPT(RenderState) _state;
-    CPT(GeomVertexFormat) _format;
-    VkPrimitiveTopology _topology;
-    uint32_t _patch_control_points;
-    VkSampleCountFlagBits _multisamples;
-  };
 
   // A map of all pipelines that use this shader.  This is in ShaderContext
   // because when a shader is released we have no more use of the pipelines

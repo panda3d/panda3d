@@ -17,6 +17,7 @@
 #include "config_vulkandisplay.h"
 #include "vulkanFrameData.h"
 #include "vulkanMemoryPage.h"
+#include "vulkanShaderContext.h"
 #include "circularAllocator.h"
 
 class VulkanIndexBufferContext;
@@ -149,11 +150,8 @@ public:
 
   VkSemaphore create_semaphore();
 
-  VkPipeline make_pipeline(VulkanShaderContext *sc, const RenderState *state,
-                           const GeomVertexFormat *format,
-                           VkPrimitiveTopology topology,
-                           uint32_t patch_control_points,
-                           VkSampleCountFlagBits multisamples);
+  VkPipeline make_pipeline(VulkanShaderContext *sc,
+                           const VulkanShaderContext::PipelineKey &key);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 
   // Built-in descriptor set indices, ordered by frequency.  Static descriptor

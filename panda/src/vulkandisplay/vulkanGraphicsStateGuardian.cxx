@@ -60,6 +60,8 @@ static const std::string default_fshader =
   "  p3d_FragColor *= color;\n"
   "}\n";
 
+static PStatCollector _make_pipeline_pcollector("Draw:Primitive:Make Pipeline");
+
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
 /**
@@ -3326,13 +3328,29 @@ create_semaphore() {
  * Creates a VkPipeline for the given RenderState+GeomVertexFormat combination.
  */
 VkPipeline VulkanGraphicsStateGuardian::
-make_pipeline(VulkanShaderContext *sc, const RenderState *state,
-              const GeomVertexFormat *format, VkPrimitiveTopology topology,
-              uint32_t patch_control_points, VkSampleCountFlagBits multisamples) {
+make_pipeline(VulkanShaderContext *sc,
+              const VulkanShaderContext::PipelineKey &key) {
+
   if (vulkandisplay_cat.is_spam()) {
     vulkandisplay_cat.spam()
-      << "Making pipeline for state " << *state << " and format " << *format << "\n";
+      << "Making pipeline for"
+      << " format=" << key._format
+      << " topology=" << key._topology
+      << " patch_control_points=" << key._patch_control_points
+      << " multisamples=" << key._multisamples
+      << " color_type=" << key._color_type
+      << " render_mode_attrib=" << key._render_mode_attrib
+      << " cull_face_mode=" << key._cull_face_mode
+      << " depth_write_mode=" << key._depth_write_mode
+      << " depth_test_mode=" << key._depth_test_mode
+      << " color_blend_attrib=" << key._color_blend_attrib
+      << " color_write_mask=" << key._color_write_mask
+      << " logic_op=" << key._logic_op
+      << " transparency_mode=" << key._transparency_mode
+      << "\n";
   }
+
+  PStatTimer timer(_make_pipeline_pcollector);
 
   VkPipelineShaderStageCreateInfo stages[(size_t)Shader::Stage::compute + 1];
   const VkShaderStageFlagBits stage_flags[(size_t)Shader::Stage::compute + 1] = {
@@ -3360,14 +3378,14 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
 
   // Describe each vertex input binding (ie. GeomVertexArray).  Leave two extra
   // slots for the "color" and "null" bindings, see below.
-  int num_bindings = format->get_num_arrays();
+  int num_bindings = key._format->get_num_arrays();
   VkVertexInputBindingDescription *binding_desc = (VkVertexInputBindingDescription *)
     alloca(sizeof(VkVertexInputBindingDescription) * (num_bindings + 2));
 
   int i = 0;
   for (i = 0; i < num_bindings; ++i) {
     binding_desc[i].binding = i;
-    binding_desc[i].stride = format->get_array(i)->get_stride();
+    binding_desc[i].stride = key._format->get_array(i)->get_stride();
     binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
   }
 
@@ -3389,9 +3407,6 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
   ++i;
 
-  const ColorAttrib *color_attr;
-  state->get_attrib_def(color_attr);
-
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = sc->get_shader();
   nassertr(shader != nullptr, VK_NULL_HANDLE);
@@ -3409,7 +3424,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
     attrib_desc[i].location = spec._id._location;
 
     if (spec._name == InternalName::get_color() &&
-        color_attr->get_color_type() != ColorAttrib::T_vertex) {
+        key._color_type != ColorAttrib::T_vertex) {
       // The shader references vertex colors, but they are disabled.
       assert(color_binding >= 0);
       attrib_desc[i].binding = color_binding;
@@ -3418,7 +3433,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       ++i;
       continue;
     }
-    else if (!format->get_array_info(spec._name, array_index, column)) {
+    else if (!key._format->get_array_info(spec._name, array_index, column)) {
       // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "null" vertex buffer
       // containing a fixed value with a stride of 0.
@@ -3524,19 +3539,19 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   assembly_info.pNext = nullptr;
   assembly_info.flags = 0;
-  assembly_info.topology = topology;
+  assembly_info.topology = key._topology;
   assembly_info.primitiveRestartEnable = (
-    topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
-    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
-    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
-    topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
-    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
+    key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
+    key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
+    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
 
   VkPipelineTessellationStateCreateInfo tess_info;
   tess_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
   tess_info.pNext = nullptr;
   tess_info.flags = 0;
-  tess_info.patchControlPoints = patch_control_points;
+  tess_info.patchControlPoints = key._patch_control_points;
 
   VkPipelineViewportStateCreateInfo viewport_info;
   viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -3547,11 +3562,6 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   viewport_info.scissorCount = 1;
   viewport_info.pScissors = nullptr;
 
-  const RenderModeAttrib *render_mode;
-  state->get_attrib_def(render_mode);
-  const CullFaceAttrib *cull_face;
-  state->get_attrib_def(cull_face);
-
   VkPipelineRasterizationStateCreateInfo raster_info;
   raster_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   raster_info.pNext = nullptr;
@@ -3559,8 +3569,9 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   raster_info.depthClampEnable = VK_FALSE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
 
-  if (_supported_geom_rendering & Geom::GR_render_mode_wireframe) {
-    switch (render_mode->get_mode()) {
+  if (key._render_mode_attrib != nullptr &&
+      (_supported_geom_rendering & Geom::GR_render_mode_wireframe) != 0) {
+    switch (key._render_mode_attrib->get_mode()) {
     case RenderModeAttrib::M_filled:
     default:
       raster_info.polygonMode = VK_POLYGON_MODE_FILL;
@@ -3572,42 +3583,38 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       raster_info.polygonMode = VK_POLYGON_MODE_POINT;
       break;
     }
+    raster_info.lineWidth = key._render_mode_attrib->get_thickness();
   } else {
     // Not supported.  The geometry will have been changed at munge time.
     raster_info.polygonMode = VK_POLYGON_MODE_FILL;
+    raster_info.lineWidth = 1.0f;
   }
 
-  raster_info.cullMode = (VkCullModeFlagBits)cull_face->get_effective_mode();
+  raster_info.cullMode = (VkCullModeFlagBits)key._cull_face_mode;
   raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE; // Flipped
   raster_info.depthBiasEnable = VK_FALSE;
   raster_info.depthBiasConstantFactor = 0;
   raster_info.depthBiasClamp = 0;
   raster_info.depthBiasSlopeFactor = 0;
-  raster_info.lineWidth = render_mode->get_thickness();
 
   VkPipelineMultisampleStateCreateInfo ms_info;
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ms_info.pNext = nullptr;
   ms_info.flags = 0;
-  ms_info.rasterizationSamples = multisamples;
+  ms_info.rasterizationSamples = key._multisamples;
   ms_info.sampleShadingEnable = VK_FALSE;
   ms_info.minSampleShading = 0.0;
   ms_info.pSampleMask = nullptr;
   ms_info.alphaToCoverageEnable = VK_FALSE;
   ms_info.alphaToOneEnable = VK_FALSE;
 
-  const DepthWriteAttrib *depth_write;
-  state->get_attrib_def(depth_write);
-  const DepthTestAttrib *depth_test;
-  state->get_attrib_def(depth_test);
-
   VkPipelineDepthStencilStateCreateInfo ds_info;
   ds_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
   ds_info.pNext = nullptr;
   ds_info.flags = 0;
-  ds_info.depthTestEnable = (depth_test->get_mode() != RenderAttrib::M_none);
-  ds_info.depthWriteEnable = depth_write->get_mode();
-  ds_info.depthCompareOp = (VkCompareOp)std::max(0, depth_test->get_mode() - 1);
+  ds_info.depthTestEnable = (key._depth_test_mode != RenderAttrib::M_none);
+  ds_info.depthWriteEnable = key._depth_write_mode;
+  ds_info.depthCompareOp = (VkCompareOp)std::max(0, key._depth_test_mode - 1);
   ds_info.depthBoundsTestEnable = VK_FALSE;
   ds_info.stencilTestEnable = VK_FALSE;
   ds_info.front.failOp = VK_STENCIL_OP_KEEP;
@@ -3621,15 +3628,10 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   ds_info.minDepthBounds = 0;
   ds_info.maxDepthBounds = 0;
 
-  const ColorBlendAttrib *color_blend;
-  state->get_attrib_def(color_blend);
-  const ColorWriteAttrib *color_write;
-  state->get_attrib_def(color_write);
-  const LogicOpAttrib *logic_op;
-  state->get_attrib_def(logic_op);
-
   VkPipelineColorBlendAttachmentState att_state[1];
-  if (color_blend->get_mode() != ColorBlendAttrib::M_none) {
+  if (key._color_blend_attrib != nullptr) {
+    const ColorBlendAttrib *color_blend = key._color_blend_attrib;
+    nassertr(color_blend->get_mode() != ColorBlendAttrib::M_none, VK_NULL_HANDLE);
     att_state[0].blendEnable = VK_TRUE;
     att_state[0].srcColorBlendFactor = (VkBlendFactor)color_blend->get_operand_a();
     att_state[0].dstColorBlendFactor = (VkBlendFactor)color_blend->get_operand_b();
@@ -3641,10 +3643,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
     att_state[0].blendEnable = VK_FALSE;
 
     // No color blend mode enabled; was there a transparency attribute?
-    const TransparencyAttrib *transp;
-    state->get_attrib_def(transp);
-
-    switch (transp->get_mode()) {
+    switch (key._transparency_mode) {
     case TransparencyAttrib::M_none:
     case TransparencyAttrib::M_binary:
       att_state[0].blendEnable = VK_FALSE;
@@ -3693,20 +3692,20 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
     default:
       att_state[0].blendEnable = VK_FALSE;
       vulkandisplay_cat.error()
-        << "invalid transparency mode " << (int)transp->get_mode() << std::endl;
+        << "invalid transparency mode " << (int)key._transparency_mode << std::endl;
       break;
     }
   }
-  att_state[0].colorWriteMask = color_write->get_channels();
+  att_state[0].colorWriteMask = key._color_write_mask;
 
   VkPipelineColorBlendStateCreateInfo blend_info;
   blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   blend_info.pNext = nullptr;
   blend_info.flags = 0;
 
-  if (logic_op->get_operation() != LogicOpAttrib::O_none) {
+  if (key._logic_op != LogicOpAttrib::O_none) {
     blend_info.logicOpEnable = VK_TRUE;
-    blend_info.logicOp = (VkLogicOp)(logic_op->get_operation() - 1);
+    blend_info.logicOp = (VkLogicOp)(key._logic_op - 1);
   } else {
     blend_info.logicOpEnable = VK_FALSE;
     blend_info.logicOp = VK_LOGIC_OP_COPY;
@@ -3715,7 +3714,10 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   blend_info.attachmentCount = 1;
   blend_info.pAttachments = att_state;
 
-  LColor constant_color = color_blend->get_color();
+  LColor constant_color = LColor::zero();
+  if (key._color_blend_attrib != nullptr) {
+    constant_color = key._color_blend_attrib->get_color();
+  }
   blend_info.blendConstants[0] = constant_color[0];
   blend_info.blendConstants[1] = constant_color[1];
   blend_info.blendConstants[2] = constant_color[2];
@@ -3739,7 +3741,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   pipeline_info.pStages = stages;
   pipeline_info.pVertexInputState = &vertex_info;
   pipeline_info.pInputAssemblyState = &assembly_info;
-  pipeline_info.pTessellationState = (patch_control_points > 0) ? &tess_info : nullptr;
+  pipeline_info.pTessellationState = (key._patch_control_points > 0) ? &tess_info : nullptr;
   pipeline_info.pViewportState = &viewport_info;
   pipeline_info.pRasterizationState = &raster_info;
   pipeline_info.pMultisampleState = &ms_info;
