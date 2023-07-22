@@ -32,7 +32,7 @@ public:
   VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_dynamic_uniform_descriptor_set_layout(VkDevice device);
 
-  uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg);
+  uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer);
   uint32_t update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered);
 
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
@@ -46,6 +46,7 @@ public:
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
   VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout _dynamic_uniform_descriptor_set_layout = VK_NULL_HANDLE;
   VkPipelineLayout _pipeline_layout = VK_NULL_HANDLE;
 
   // Describe the two UBOs and push constant range we create.
@@ -60,7 +61,10 @@ private:
   pvector<Shader::ShaderMatSpec> _mat_spec;
 
   VkDescriptorSet _uniform_descriptor_set = VK_NULL_HANDLE;
+  VkBuffer _uniform_buffer = VK_NULL_HANDLE;
   uint32_t _dynamic_uniform_offset = 0;
+
+  bool _uses_vertex_color = false;
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.

@@ -180,11 +180,10 @@ public:
   bool update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr);
   bool update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr);
   bool update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr);
-  void *alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset);
+  bool update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc);
+  void *alloc_dynamic_uniform_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
 
   void *alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
-
-  uint32_t get_color_palette_offset(const LColor &color);
 
   VkFormat get_image_format(const Texture *texture) const;
   static bool lookup_image_format(VkFormat vk_format, Texture::Format &format,
@@ -215,6 +214,9 @@ private:
   void *_uniform_buffer_ptr = nullptr;
   VkDescriptorSet _uniform_descriptor_set;
   VkDeviceSize _uniform_buffer_max_used = 0;
+  uint32_t _uniform_buffer_white_offset = 0;
+  VkBuffer _current_color_buffer = VK_NULL_HANDLE;
+  uint32_t _current_color_offset = 0;
 
   // Staging buffer for CPU-to-GPU uploads.
   VkBuffer _staging_buffer = VK_NULL_HANDLE;
@@ -233,12 +235,10 @@ private:
   // Remembers semaphores created on this device.
   pvector<VkSemaphore> _semaphores;
 
-  // Palette for flat colors.
-  VkBuffer _color_vertex_buffer;
-  VulkanMemoryBlock _color_vertex_memory;
-  int _next_palette_index;
-  typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
-  ColorPaletteIndices _color_palette;
+  // Static "null" vertex buffer if nullDescriptor is not supported.
+  VkBuffer _null_vertex_buffer = VK_NULL_HANDLE;
+  VulkanMemoryBlock _null_vertex_memory;
+  bool _needs_write_null_vertex_data = false;
 
   // Keep track of a created descriptor set and the last frame in which it was
   // bound (since we can only update it once per frame).
@@ -281,6 +281,7 @@ private:
   // Function pointers.
   PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
   PFN_vkCmdBindPipeline _vkCmdBindPipeline;
+  PFN_vkCmdBindVertexBuffers _vkCmdBindVertexBuffers;
   PFN_vkCmdDraw _vkCmdDraw;
   PFN_vkCmdDrawIndexed _vkCmdDrawIndexed;
   PFN_vkCmdPushConstants _vkCmdPushConstants;

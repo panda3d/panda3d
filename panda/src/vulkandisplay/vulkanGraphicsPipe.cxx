@@ -300,22 +300,31 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   if (pVkGetPhysicalDeviceFeatures2 != nullptr) {
     VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
 
-    VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features;
-    cbc_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT;
-    cbc_features.pNext = nullptr;
-    cbc_features.customBorderColors = VK_FALSE;
-    cbc_features.customBorderColorWithoutFormat = VK_FALSE;
+    VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
+      features2.pNext,
+    };
     if (has_device_extension(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME)) {
       features2.pNext = &cbc_features;
+    }
+
+    VkPhysicalDeviceRobustness2FeaturesEXT ro2_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+      features2.pNext,
+    };
+    if (has_device_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME)) {
+      features2.pNext = &ro2_features;
     }
 
     pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
     _gpu_features = features2.features;
     _gpu_supports_custom_border_colors = cbc_features.customBorderColors
                                       && cbc_features.customBorderColorWithoutFormat;
+    _gpu_supports_null_descriptor = ro2_features.nullDescriptor;
   } else {
     vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
     _gpu_supports_custom_border_colors = false;
+    _gpu_supports_null_descriptor = false;
   }
 
   // Default the maximum allocation size to the largest of the heaps.
@@ -741,6 +750,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       << _gpu_properties.limits.maxSamplerAllocationCount << "\n";
     vulkandisplay_cat.debug() << "bufferImageGranularity = "
       << _gpu_properties.limits.bufferImageGranularity << "\n";
+    vulkandisplay_cat.debug() << "minUniformBufferOffsetAlignment = "
+      << _gpu_properties.limits.minUniformBufferOffsetAlignment << "\n";
     vulkandisplay_cat.debug() << "maxColorAttachments = "
       << _gpu_properties.limits.maxColorAttachments << "\n";
     vulkandisplay_cat.debug() << "maxDrawIndexedIndexValue = "

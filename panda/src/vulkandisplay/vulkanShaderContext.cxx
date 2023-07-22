@@ -20,6 +20,13 @@ TypeHandle VulkanShaderContext::_type_handle;
  */
 bool VulkanShaderContext::
 create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type) {
+  for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
+    if (spec._name == InternalName::get_color()) {
+      _uses_vertex_color = true;
+      break;
+    }
+  }
+
   // Compose a struct type for all the mat inputs, also gathering ones that
   // should go into a separate push constant block.  This will become a new
   // uniform block in the shader that replaces the regular uniforms.
@@ -321,6 +328,7 @@ make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
     return VK_NULL_HANDLE;
   }
 
+  _dynamic_uniform_descriptor_set_layout = result;
   return result;
 }
 
@@ -328,13 +336,13 @@ make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
  * Updates the ShaderPtrSpec uniforms, which change with the ShaderAttrib.
  */
 uint32_t VulkanShaderContext::
-update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg) {
+update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer) {
   if (_ptr_block_size == 0) {
     return 0;
   }
 
   uint32_t ubo_offset;
-  void *ptr = gsg->alloc_dynamic_uniform_buffer(_ptr_block_size, ubo_offset);
+  void *ptr = gsg->alloc_dynamic_uniform_buffer(_ptr_block_size, buffer, ubo_offset);
 
   size_t i = 0;
   for (Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
@@ -457,7 +465,8 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
   if (altered & _mat_deps) {
     gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-    void *ptr = gsg->alloc_dynamic_uniform_buffer(_mat_block_size, _dynamic_uniform_offset);
+    VkBuffer ubo;
+    void *ptr = gsg->alloc_dynamic_uniform_buffer(_mat_block_size, ubo, _dynamic_uniform_offset);
 
     size_t i = 0;
     for (Shader::ShaderMatSpec &spec : _mat_spec) {
@@ -619,6 +628,12 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
         dest[11] = data[11];
         continue;
       }
+    }
+
+    if (ubo != _uniform_buffer) {
+      // If the buffer has changed, we need to recreate this descriptor set.
+      gsg->update_dynamic_uniform_descriptor_set(this);
+      _uniform_buffer = ubo;
     }
   }
 

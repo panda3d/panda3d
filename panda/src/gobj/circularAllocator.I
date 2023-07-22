@@ -33,6 +33,16 @@ reset() {
 }
 
 /**
+ * Frees all memory and changes the capacity.
+ */
+INLINE void CircularAllocator::
+reset(size_t capacity) {
+  _head = 0;
+  _tail = 0;
+  _capacity = capacity;
+}
+
+/**
  * Returns the total capacity of the buffer.
  */
 INLINE size_t CircularAllocator::

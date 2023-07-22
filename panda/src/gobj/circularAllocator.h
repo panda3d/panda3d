@@ -39,6 +39,7 @@ public:
   ptrdiff_t alloc(size_t size, size_t alignment=0);
 
   INLINE void reset();
+  INLINE void reset(size_t capacity);
 
   INLINE size_t get_capacity() const;
   INLINE size_t get_size() const;
