@@ -36,7 +36,7 @@
 /**
  *
  */
-class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ShaderAttrib final : public RenderAttrib {
 private:
   INLINE ShaderAttrib();
   INLINE ShaderAttrib(const ShaderAttrib &copy);

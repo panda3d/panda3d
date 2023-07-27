@@ -29,7 +29,7 @@
  * Indicates the set of TextureStages and their associated Textures that
  * should be applied to (or removed from) a node.
  */
-class EXPCL_PANDA_PGRAPH TextureAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH TextureAttrib final : public RenderAttrib {
 protected:
   INLINE TextureAttrib();
   INLINE TextureAttrib(const TextureAttrib &copy);

@@ -25,7 +25,7 @@ class FactoryParams;
  * a kind of light ramp.  So is HDR tone mapping.  So is cartoon shading.  See
  * the constructors for an explanation of each kind of ramp.
  */
-class EXPCL_PANDA_PGRAPH LightRampAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH LightRampAttrib final : public RenderAttrib {
 private:
   INLINE LightRampAttrib();
 

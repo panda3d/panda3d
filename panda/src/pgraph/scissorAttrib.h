@@ -33,7 +33,7 @@ class FactoryParams;
  * See ScissorEffect if you wish to define a region relative to 2-D or 3-D
  * coordinates in the scene graph, with culling.
  */
-class EXPCL_PANDA_PGRAPH ScissorAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ScissorAttrib final : public RenderAttrib {
 private:
   ScissorAttrib(const LVecBase4 &frame);
 
