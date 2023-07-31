@@ -213,12 +213,13 @@ record_alternate_name(TypeHandle type, const string &name) {
  * of interrogate, which expects this to contain a Dtool_PyTypedObject.
  */
 void TypeRegistry::
-record_python_type(TypeHandle type, PyObject *python_type) {
+record_python_type(TypeHandle type, PyTypeObject *cls, PythonWrapFunc *wrap_func) {
   _lock.lock();
 
   TypeRegistryNode *rnode = look_up(type, nullptr);
   if (rnode != nullptr) {
-    rnode->_python_type = python_type;
+    rnode->_python_type = cls;
+    rnode->_python_wrap_func = wrap_func;
   }
 
   _lock.unlock();

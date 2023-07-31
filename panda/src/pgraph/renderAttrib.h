@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 
+#include "config_pgraph.h"
 #include "typedWritableReferenceCount.h"
 #include "renderAttribRegistry.h"
 #include "pointerTo.h"
@@ -161,8 +162,9 @@ PUBLISHED:
 protected:
   INLINE void calc_hash();
 
-  static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
-  static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
+  INLINE static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
+  INLINE static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
+  static CPT(RenderAttrib) do_uniquify(const RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
@@ -184,8 +186,9 @@ private:
   static LightReMutex *_attribs_lock;
   typedef SimpleHashMap<const RenderAttrib *, std::nullptr_t, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
   static Attribs _attribs;
+  static bool _uniquify_attribs;
 
-  int _saved_entry;
+  mutable int _saved_entry;
   size_t _hash;
 
   // This keeps track of our current position through the garbage collection
@@ -195,6 +198,7 @@ private:
   static PStatCollector _garbage_collect_pcollector;
 
   friend class RenderAttribRegistry;
+  friend class RenderState;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

@@ -3711,7 +3711,6 @@ TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
 OPTS=['DIR:panda/src/putil', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
 IGATEFILES.remove("test_bam.h")
-IGATEFILES.remove("config_util.h")
 TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3putil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
 PyTargetAdd('p3putil_ext_composite.obj', opts=OPTS, input='p3putil_ext_composite.cxx')
@@ -3822,7 +3821,6 @@ TargetAdd('p3pstatclient_composite2.obj', opts=OPTS, input='p3pstatclient_compos
 
 OPTS=['DIR:panda/src/pstatclient']
 IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite*.cxx"])
-IGATEFILES.remove("config_pstats.h")
 TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
 PyTargetAdd('p3pstatclient_pStatClient_ext.obj', opts=OPTS, input='pStatClient_ext.cxx')

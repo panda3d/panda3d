@@ -3030,7 +3030,8 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
           cnode->add_solid(csplane);
           return;
         }
-      } else if ((*ci)->is_of_type(EggCompositePrimitive::get_class_type())) {
+      } else if ((*ci)->is_of_type(EggCompositePrimitive::get_class_type()) &&
+                !(*ci)->is_of_type(EggLine::get_class_type())) {
         EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, *ci);
         PT(EggGroup) temp_group = new EggGroup;
         if (comp->triangulate_into(temp_group)) {

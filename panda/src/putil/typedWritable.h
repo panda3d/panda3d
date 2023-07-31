@@ -33,6 +33,9 @@ class ReferenceCount;
  * See also TypedObject for detailed instructions.
  */
 class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
+PUBLISHED:
+  EXTENSION(static PyObject *__new__(PyTypeObject *cls));
+
 public:
   static TypedWritable* const Null;
 
@@ -42,13 +45,13 @@ public:
 
   virtual ~TypedWritable();
 
-  virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual void update_bam_nested(BamWriter *manager);
 
   virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
   virtual bool require_fully_complete() const;
 
 PUBLISHED:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
