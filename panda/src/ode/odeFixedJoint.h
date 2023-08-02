@@ -33,8 +33,8 @@ public:
   OdeFixedJoint(dJointID id);
 
 PUBLISHED:
-  OdeFixedJoint(OdeWorld &world);
-  OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeFixedJoint(OdeWorld &world);
+  explicit OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeFixedJoint();
 
   INLINE void set();

@@ -20,7 +20,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
-  INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
+  INLINE_LINMATH explicit FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
 
   PY_EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
   PY_EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));

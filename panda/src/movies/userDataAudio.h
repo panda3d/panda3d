@@ -31,7 +31,7 @@ class UserDataAudioCursor;
 class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
 
  PUBLISHED:
-  UserDataAudio(int rate, int channels, bool remove_after_read=true);
+  explicit UserDataAudio(int rate, int channels, bool remove_after_read=true);
   virtual ~UserDataAudio();
   virtual PT(MovieAudioCursor) open();
 

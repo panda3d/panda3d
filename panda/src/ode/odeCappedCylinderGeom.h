@@ -31,8 +31,8 @@ public:
   OdeCappedCylinderGeom(dGeomID id);
 
 PUBLISHED:
-  OdeCappedCylinderGeom(dReal radius, dReal length);
-  OdeCappedCylinderGeom(OdeSpace &space, dReal radius, dReal length);
+  explicit OdeCappedCylinderGeom(dReal radius, dReal length);
+  explicit OdeCappedCylinderGeom(OdeSpace &space, dReal radius, dReal length);
   virtual ~OdeCappedCylinderGeom();
 
   INLINE void set_params(dReal radius, dReal length);

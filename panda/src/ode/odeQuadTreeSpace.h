@@ -32,13 +32,13 @@ public:
   OdeQuadTreeSpace(dSpaceID id);
 
 PUBLISHED:
-  OdeQuadTreeSpace(const LPoint3f &center,
-                   const LVecBase3f &extents,
-                   const int depth);
-  OdeQuadTreeSpace(OdeSpace &space,
-                   const LPoint3f &center,
-                   const LVecBase3f &extents,
-                   const int depth);
+  explicit OdeQuadTreeSpace(const LPoint3f &center,
+                            const LVecBase3f &extents,
+                            const int depth);
+  explicit OdeQuadTreeSpace(OdeSpace &space,
+                            const LPoint3f &center,
+                            const LVecBase3f &extents,
+                            const int depth);
   virtual ~OdeQuadTreeSpace();
 
 public:
