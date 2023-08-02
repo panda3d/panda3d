@@ -1,11 +1,7 @@
-"""Undocumented Module"""
-
-__all__ = []
-
-from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
 import random
 
+taskMgr = Task.TaskManager()
 numTasks = 10000
 maxDelay = 20
 counter = 0
@@ -24,8 +20,10 @@ def taskCallback(task):
     spawnNewTask()
     return Task.done
 
-if __name__ == '__main__':
+def test_tasks():
     taskMgr.removeTasksMatching("taskTester*")
 
     for i in range(numTasks):
         spawnNewTask()
+
+    taskMgr.destroy()

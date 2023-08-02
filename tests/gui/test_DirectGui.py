@@ -1,19 +1,11 @@
-"""Undocumented Module"""
+from random import random
+from panda3d.core import Point3
+from direct.task.TaskManagerGlobal import taskMgr
+from direct.gui import DirectGuiGlobals
+from direct.gui.DirectGui import DirectButton, DirectDialog, DirectEntry, DirectFrame, YesNoDialog
 
-__all__ = []
 
-
-if __name__ == "__main__":
-    from panda3d.core import Point3
-    from direct.showbase.ShowBase import ShowBase
-    from direct.task.TaskManagerGlobal import taskMgr
-    from . import DirectGuiGlobals
-    from .DirectGui import DirectButton, DirectDialog, DirectEntry, DirectFrame, YesNoDialog
-    #from whrandom import *
-    from random import random
-
-    base = ShowBase()
-
+def test_DirectGui(base):
     # EXAMPLE CODE
     # Load a model
     smiley = base.loader.loadModel('models/misc/smiley')
@@ -142,5 +134,3 @@ if __name__ == "__main__":
     print('WIDTH: %s' % de1.getWidth())
     print('HEIGHT: %s' % de1.getHeight())
     print('CENTER: %s' % (de1.getCenter(),))
-
-    base.run()

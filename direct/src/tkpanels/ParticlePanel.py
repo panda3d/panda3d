@@ -2909,21 +2909,3 @@ class ParticlePanel(AppShell):
                            min = 0.01,
                            value = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
-
-######################################################################
-
-
-# Create demo in root window for testing.
-if __name__ == '__main__':
-    try:
-        base
-    except NameError:
-        from direct.showbase.ShowBase import ShowBase
-        base = ShowBase()
-
-    root = Pmw.initialise()
-    pp = ParticlePanel()
-    base.pp=pp
-    #ve = VectorEntry(Toplevel(), relief = GROOVE)
-    #ve.pack()
-    base.run()

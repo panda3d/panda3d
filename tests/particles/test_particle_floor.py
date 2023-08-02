@@ -1,4 +1,3 @@
-
 from panda3d.core import NodePath, Vec3
 from panda3d.physics import LinearVectorForce
 from direct.particles import ParticleEffect
@@ -49,10 +48,9 @@ class ParticleFloorTest(NodePath):
         self.f.enable()
 
 
-if __name__ == "__main__":
-    from direct.directbase.TestStart import base
+def test_ParticleFloorTest(base):
+    base.enableParticles()
     pt = ParticleFloorTest()
     pt.reparentTo(base.render)
     pt.start()
-    base.camera.setY(-10.0)
-    base.run()
+    # base.camera.setY(-10.0)

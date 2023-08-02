@@ -26,9 +26,9 @@ class FallTest(NodePath):
         avatarNodePath = base.loader.loadModel("models/misc/smiley")
         assert not avatarNodePath.isEmpty()
 
-        camLL = base.render.find("**/camLL")
-        camLL.reparentTo(avatarNodePath)
-        camLL.setPosHpr(0, -10, 0, 0, 0, 0)
+        # camLL = base.render.find("**/camLL")
+        # camLL.reparentTo(avatarNodePath)
+        # camLL.setPosHpr(0, -10, 0, 0, 0, 0)
         avatarNodePath.reparentTo(actorNodePath)
         #avatarNodePath.setPos(Vec3(0))
         #avatarNodePath.setHpr(Vec3(0))
@@ -86,10 +86,11 @@ class FallTest(NodePath):
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()
 
-if __name__ == "__main__":
-    from direct.directbase.ThreeUpStart import base
+
+def test_FallTest(base):
+    base.enableParticles()
+    base.addAngularIntegrator()
     test = FallTest()
     test.reparentTo(base.render)
     test.setup()
-    base.camera.setY(-10.0)
-    base.run()
+    # base.camera.setY(-10.0)
