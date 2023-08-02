@@ -24,7 +24,7 @@ class FactoryParams;
 /**
  * Applies a scale to audio volume for positional sounds in the scene graph.
  */
-class EXPCL_PANDA_PGRAPH AudioVolumeAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH AudioVolumeAttrib final : public RenderAttrib {
 protected:
   AudioVolumeAttrib(bool off, PN_stdfloat volume);
   INLINE AudioVolumeAttrib(const AudioVolumeAttrib &copy);

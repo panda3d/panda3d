@@ -859,16 +859,12 @@ class build_apps(setuptools.Command):
             libdir = os.path.dirname(dtool_fn.to_os_specific())
             etcdir = os.path.join(libdir, '..', 'etc')
 
-            etcfiles = os.listdir(etcdir)
-            etcfiles.sort(reverse=True)
-            for fn in etcfiles:
+            for fn in sorted(os.listdir(etcdir), reverse=True):
                 if fn.lower().endswith('.prc'):
                     with open(os.path.join(etcdir, fn)) as f:
                         prcstring += f.read()
         else:
-            etcfiles = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
-            etcfiles.sort(reverse=True)
-            for fn in etcfiles:
+            for fn in sorted((i for i in p3dwhl.namelist() if i.endswith('.prc')), reverse=True):
                 with p3dwhl.open(fn) as f:
                     prcstring += f.read().decode('utf8')
 

@@ -102,6 +102,15 @@ set_color(const LVecBase4 &color) {
 }
 
 /**
+ * Unsets the color of the card.
+ */
+INLINE void CardMaker::
+clear_color() {
+  _has_color = false;
+  _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+/**
  * Sets the flag indicating whether vertices will be generated with normals or
  * not.  Normals are required if you intend to enable lighting on the card,
  * but are just wasted space and bandwidth otherwise, so there is a (slight)

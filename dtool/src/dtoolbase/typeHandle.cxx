@@ -155,11 +155,27 @@ deallocate_array(void *ptr) {
 /**
  * Returns the internal void pointer that is stored for interrogate's benefit.
  */
-PyObject *TypeHandle::
+PyTypeObject *TypeHandle::
 get_python_type() const {
   TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
   if (rnode != nullptr) {
     return rnode->get_python_type();
+  } else {
+    return nullptr;
+  }
+}
+
+/**
+ * Returns a Python wrapper object corresponding to the given C++ pointer.
+ */
+PyObject *TypeHandle::
+wrap_python(void *ptr, PyTypeObject *cast_from) const {
+  if (ptr == nullptr) {
+    return nullptr;
+  }
+  TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
+  if (rnode != nullptr) {
+    return rnode->wrap_python(ptr, cast_from);
   } else {
     return nullptr;
   }

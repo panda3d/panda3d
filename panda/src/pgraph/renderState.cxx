@@ -1287,8 +1287,8 @@ return_unique(RenderState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.  nassertr(_states.find(state) ==
-    // state->_saved_entry, pt_state);
+    // This state is already in the cache.
+    //nassertr(_states.find(state) == state->_saved_entry, pt_state);
     return state;
   }
 
@@ -1300,7 +1300,7 @@ return_unique(RenderState *state) {
     while (slot >= 0) {
       Attribute &attrib = state->_attributes[slot];
       nassertd(attrib._attrib != nullptr) continue;
-      attrib._attrib = attrib._attrib->get_unique();
+      attrib._attrib = RenderAttrib::do_uniquify(attrib._attrib);
       mask.clear_bit(slot);
       slot = mask.get_lowest_on_bit();
     }

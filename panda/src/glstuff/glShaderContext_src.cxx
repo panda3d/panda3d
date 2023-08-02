@@ -1461,6 +1461,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   if (param_size == 1) {
     // A single uniform (not an array, or an array of size 1).
     switch (param_type) {
+#ifndef OPENGLES
+      case GL_INT_SAMPLER_1D:
+      case GL_INT_SAMPLER_1D_ARRAY:
+      case GL_UNSIGNED_INT_SAMPLER_1D:
+      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+      case GL_SAMPLER_1D:
+      case GL_SAMPLER_1D_ARRAY:
+      case GL_SAMPLER_1D_SHADOW:
+#endif
       case GL_INT_SAMPLER_2D:
       case GL_INT_SAMPLER_3D:
       case GL_INT_SAMPLER_2D_ARRAY:
@@ -1472,22 +1481,13 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_SAMPLER_CUBE_SHADOW:
       case GL_SAMPLER_2D_ARRAY:
       case GL_SAMPLER_2D_ARRAY_SHADOW:
-#ifndef OPENGLES
-      case GL_INT_SAMPLER_1D:
-      case GL_INT_SAMPLER_1D_ARRAY:
       case GL_INT_SAMPLER_BUFFER:
       case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_UNSIGNED_INT_SAMPLER_1D:
-      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_BUFFER:
       case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_SAMPLER_1D:
-      case GL_SAMPLER_1D_ARRAY:
-      case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_BUFFER:
       case GL_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-#endif  // !OPENGLES
       case GL_SAMPLER_2D:
       case GL_SAMPLER_2D_SHADOW:
       case GL_SAMPLER_3D:
@@ -1679,18 +1679,22 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
 #ifndef OPENGLES
       case GL_IMAGE_1D:
+      case GL_INT_IMAGE_1D:
+      case GL_UNSIGNED_INT_IMAGE_1D:
+#endif
       case GL_IMAGE_CUBE_MAP_ARRAY:
       case GL_IMAGE_BUFFER:
-      case GL_INT_IMAGE_1D:
       case GL_INT_IMAGE_CUBE_MAP_ARRAY:
       case GL_INT_IMAGE_BUFFER:
-      case GL_UNSIGNED_INT_IMAGE_1D:
       case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_IMAGE_BUFFER:
-#endif
         // This won't really change at runtime, so we might as well bind once
         // and then forget about it.
+        // Note that OpenGL ES doesn't support changing this at runtime, so we
+        // rely on the shader using a layout declaration.
+#ifndef OPENGLES
         _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
+#endif
         {
           ImageInput input;
           input._name = InternalName::make(param_name);
@@ -1881,7 +1885,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
       return false;
     }
 
-#ifndef OPENGLES
   case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
     if (!_glgsg->_supports_shadow_filter) {
       GLCAT.error()
@@ -1913,7 +1916,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses buffer texture, which is unsupported by the driver.\n";
       return false;
     }
-#endif  // !OPENGLES
 
   default:
     GLCAT.error()
@@ -2598,56 +2600,25 @@ disable_shader_texture_bindings() {
 
   DO_PSTATS_STUFF(_glgsg->_texture_state_pcollector.add_level(1));
 
-  for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
 #ifndef OPENGLES
-    // Check if bindless was used, if so, there's nothing to unbind.
-    if (_glgsg->_supports_bindless_texture) {
-      GLint p = _shader->_tex_spec[i]._id._seqno;
+  if (_glgsg->_supports_multi_bind) {
+    _glgsg->_glBindTextures(0, _shader->_tex_spec.size(), nullptr);
+  }
+  else if (_glgsg->_supports_dsa) {
+    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+      _glgsg->_glBindTextureUnit(i, 0);
+    }
+  }
+  else
+#endif
+  {
+    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+      _glgsg->set_active_texture_stage(i);
 
-      if (_glsl_uniform_handles.count(p) > 0) {
-        continue;
+      GLenum target = _glgsg->get_texture_target((Texture::TextureType)_shader->_tex_spec[i]._desired_type);
+      if (target != GL_NONE) {
+        glBindTexture(target, 0);
       }
-    }
-
-    if (_glgsg->_supports_multi_bind) {
-      // There are non-bindless textures to unbind, and we're lazy, so let's
-      // go and unbind everything after this point using one multi-bind call,
-      // and then break out of the loop.
-      _glgsg->_glBindTextures(i, _shader->_tex_spec.size() - i, nullptr);
-      break;
-    }
-#endif
-
-    _glgsg->set_active_texture_stage(i);
-
-    switch (_shader->_tex_spec[i]._desired_type) {
-    case Texture::TT_1d_texture:
-#ifndef OPENGLES
-      glBindTexture(GL_TEXTURE_1D, 0);
-#endif
-      break;
-
-    case Texture::TT_2d_texture:
-      glBindTexture(GL_TEXTURE_2D, 0);
-      break;
-
-    case Texture::TT_3d_texture:
-      glBindTexture(GL_TEXTURE_3D, 0);
-      break;
-
-    case Texture::TT_2d_texture_array:
-      glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-      break;
-
-    case Texture::TT_cube_map:
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-      break;
-
-    case Texture::TT_buffer_texture:
-#ifndef OPENGLES
-      glBindTexture(GL_TEXTURE_BUFFER, 0);
-#endif
-      break;
     }
   }
 
@@ -2738,14 +2709,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
       CLP(TextureContext) *gtc;
 
       if (tex != nullptr) {
-        int view = _glgsg->get_current_tex_view_offset();
-
-        gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+        gtc = DCAST(CLP(TextureContext), tex->prepare_now(_glgsg->_prepared_objects, _glgsg));
         if (gtc != nullptr) {
           input._gtc = gtc;
 
           _glgsg->update_texture(gtc, true);
-          gl_tex = gtc->_index;
+
+          int view = _glgsg->get_current_tex_view_offset();
+          gl_tex = gtc->get_view_index(view);
 
 #ifndef OPENGLES
           if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
@@ -2880,7 +2851,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       // enabled.
     }
 
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(_glgsg->_prepared_objects, _glgsg));
     if (gtc == nullptr) {
       if (multi_bind) {
         textures[i] = 0;
@@ -2890,49 +2861,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
 #ifndef OPENGLES
-    GLint p = spec._id._seqno;
-
     // If it was recently written to, we will have to issue a memory barrier
     // soon.
     if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {
       barriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
     }
-
-    // Try bindless texturing first, if supported.
-    if (gl_use_bindless_texture && _glgsg->_supports_bindless_texture) {
-      // We demand the real texture, since we won't be able to change the
-      // texture properties after this point.
-      if (multi_bind) {
-        textures[i] = 0;
-        samplers[i] = 0;
-      }
-      if (!_glgsg->update_texture(gtc, true)) {
-        continue;
-      }
-
-      GLuint64 handle = gtc->get_handle();
-      if (handle != 0) {
-        gtc->make_handle_resident();
-        gtc->set_active(true);
-
-        // Check if we have already specified this texture handle.  If so, no
-        // need to call glUniformHandle again.
-        pmap<GLint, GLuint64>::const_iterator it;
-        it = _glsl_uniform_handles.find(p);
-        if (it != _glsl_uniform_handles.end() && it->second == handle) {
-          // Already specified.
-          continue;
-        } else {
-          _glgsg->_glUniformHandleui64(p, handle);
-          _glsl_uniform_handles[p] = handle;
-        }
-        continue;
-      }
-    }
 #endif
 
-    // Bindless texturing wasn't supported or didn't work, so let's just bind
-    // the texture normally.
     // Note that simple RAM images are always 2-D for now, so to avoid errors,
     // we must load the real texture if this is not for a sampler2D.
     bool force = (spec._desired_type != Texture::TT_2d_texture);
@@ -2943,7 +2878,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         textures[i] = 0;
       } else {
         gtc->set_active(true);
-        textures[i] = gtc->_index;
+        textures[i] = gtc->get_view_index(view);
       }
 
       SamplerContext *sc = sampler.prepare_now(_glgsg->get_prepared_objects(), _glgsg);
@@ -2962,8 +2897,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
       if (!_glgsg->update_texture(gtc, force)) {
         continue;
       }
-      _glgsg->apply_texture(gtc);
-      _glgsg->apply_sampler(i, sampler, gtc);
+      _glgsg->apply_texture(gtc, view);
+      _glgsg->apply_sampler(i, sampler, gtc, view);
     }
   }
 

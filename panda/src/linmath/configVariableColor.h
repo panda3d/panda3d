@@ -34,13 +34,15 @@
  */
 class EXPCL_PANDA_LINMATH ConfigVariableColor : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableColor(const std::string &name);
-  INLINE ConfigVariableColor(const std::string &name, const LColor &default_value,
-                             const std::string &description = std::string(),
-                             int flags = 0);
-  INLINE ConfigVariableColor(const std::string &name, const std::string &default_value,
-                             const std::string &description = std::string(),
-                             int flags = 0);
+  INLINE explicit ConfigVariableColor(const std::string &name);
+  INLINE explicit ConfigVariableColor(const std::string &name,
+                                      const LColor &default_value,
+                                      const std::string &description = std::string(),
+                                      int flags = 0);
+  INLINE explicit ConfigVariableColor(const std::string &name,
+                                      const std::string &default_value,
+                                      const std::string &description = std::string(),
+                                      int flags = 0);
 
   INLINE void operator = (const LColor &value);
   INLINE operator const LColor & () const;

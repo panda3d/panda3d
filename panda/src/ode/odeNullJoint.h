@@ -33,8 +33,8 @@ public:
   OdeNullJoint(dJointID id);
 
 PUBLISHED:
-  OdeNullJoint(OdeWorld &world);
-  OdeNullJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeNullJoint(OdeWorld &world);
+  explicit OdeNullJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeNullJoint();
 
 public:

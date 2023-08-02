@@ -32,8 +32,8 @@ public:
   OdeHingeJoint(dJointID id);
 
 PUBLISHED:
-  OdeHingeJoint(OdeWorld &world);
-  OdeHingeJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeHingeJoint(OdeWorld &world);
+  explicit OdeHingeJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeHingeJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);

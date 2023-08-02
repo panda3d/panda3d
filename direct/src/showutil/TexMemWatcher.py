@@ -756,8 +756,8 @@ class TexMemWatcher(DirectObject):
 
         # Sort the regions from largest to smallest to maximize
         # packing effectiveness.
-        texRecords = list(self.texRecordsByTex.values())
-        texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
+        texRecords = sorted(self.texRecordsByTex.values(),
+                            key=lambda tr: (tr.tw, tr.th), reverse=True)
 
         for tr in texRecords:
             self.placeTexture(tr)

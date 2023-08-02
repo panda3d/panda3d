@@ -24,7 +24,7 @@ class FactoryParams;
  * Assigns geometry to a particular bin by name.  The bins must be created
  * separately via the CullBinManager interface.
  */
-class EXPCL_PANDA_PGRAPH CullBinAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH CullBinAttrib final : public RenderAttrib {
 private:
   INLINE CullBinAttrib();
 

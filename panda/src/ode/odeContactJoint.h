@@ -34,8 +34,8 @@ public:
   OdeContactJoint(dJointID id);
 
 PUBLISHED:
-  OdeContactJoint(OdeWorld &world, const OdeContact &contact);
-  OdeContactJoint(OdeWorld &world, OdeJointGroup &joint_group, const OdeContact &contact);
+  explicit OdeContactJoint(OdeWorld &world, const OdeContact &contact);
+  explicit OdeContactJoint(OdeWorld &world, OdeJointGroup &joint_group, const OdeContact &contact);
   virtual ~OdeContactJoint();
 
 public:

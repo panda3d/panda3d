@@ -47,7 +47,11 @@ PUBLISHED:
   bool open_read(std::istream &in, const std::string &bam_filename = "stream",
                  bool report_errors = true);
 
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
+  EXTENSION(PyObject *read_object());
+#else
   TypedWritable *read_object();
+#endif
 
   bool is_eof() const;
   bool resolve();
