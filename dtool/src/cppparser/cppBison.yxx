@@ -2971,8 +2971,17 @@ base_specification:
         ;
 
 enum:
-        enum_decl '{' enum_body '}'
+        enum_decl
 {
+  if (current_enum->_scope != nullptr) {
+    push_scope(current_enum->_scope);
+  }
+}
+        '{' enum_body '}'
+{
+  if (current_enum->_scope != nullptr) {
+    pop_scope();
+  }
   $$ = current_enum;
   current_enum = nullptr;
 }
