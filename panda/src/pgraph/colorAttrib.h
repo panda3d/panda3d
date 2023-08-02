@@ -24,7 +24,7 @@ class FactoryParams;
 /**
  * Indicates what color should be applied to renderable geometry.
  */
-class EXPCL_PANDA_PGRAPH ColorAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ColorAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Type {
     T_vertex, T_flat, T_off

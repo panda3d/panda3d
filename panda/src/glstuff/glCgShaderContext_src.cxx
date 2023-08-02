@@ -1054,26 +1054,38 @@ disable_shader_texture_bindings() {
     return;
   }
 
-  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) continue;
+  if (_glgsg->_supports_dsa) {
+    // The DSA extension has a single call for unbinding all targets for a
+    // given texture unit.
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    int texunit = cgGetParameterResourceIndex(p);
-    _glgsg->set_active_texture_stage(texunit);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->_glBindTextureUnit(texunit, 0);
+    }
+  } else {
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    glBindTexture(GL_TEXTURE_1D, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    if (_glgsg->_supports_3d_texture) {
-      glBindTexture(GL_TEXTURE_3D, 0);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->set_active_texture_stage(texunit);
+
+      glBindTexture(GL_TEXTURE_1D, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      if (_glgsg->_supports_3d_texture) {
+        glBindTexture(GL_TEXTURE_3D, 0);
+      }
+      if (_glgsg->_supports_2d_texture_array) {
+        glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
+      }
+      if (_glgsg->_supports_cube_map) {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      }
+      // This is probably faster - but maybe not as safe?
+      // cgGLDisableTextureParameter(p);
     }
-    if (_glgsg->_supports_2d_texture_array) {
-      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
-    }
-    if (_glgsg->_supports_cube_map) {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
-    // This is probably faster - but maybe not as safe?
-    // cgGLDisableTextureParameter(p);
   }
 
   cg_report_errors();
@@ -1132,7 +1144,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     _glgsg->set_active_texture_stage(texunit);
 
-    TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
+    TextureContext *tc = tex->prepare_now(_glgsg->_prepared_objects, _glgsg);
     if (tc == nullptr) {
       continue;
     }
@@ -1148,8 +1160,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
-    _glgsg->apply_texture(gtc);
-    _glgsg->apply_sampler(texunit, sampler, gtc);
+    _glgsg->apply_texture(gtc, view);
+    _glgsg->apply_sampler(texunit, sampler, gtc, view);
   }
 
   cg_report_errors();

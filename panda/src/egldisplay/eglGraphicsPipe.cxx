@@ -323,7 +323,6 @@ make_output(const std::string &name,
   if (retry == 2) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)) {
       return nullptr;
     }

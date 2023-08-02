@@ -15,7 +15,7 @@ SocketIP.InitNetworkDriver();
 
 addr = SocketAddress()
 addr.setHost("127.0.0.1",6666)
-print addr.getIpPort()
+print(addr.getIpPort())
 
 MyConection = BufferedDatagramConnection(0,4096000,4096000,102400);
 #help(BufferedDatagramConnection)
@@ -47,4 +47,4 @@ while 1==1:
 
     MyConection.Flush();
     time.sleep(1)
-    print "loop"
+    print("loop")

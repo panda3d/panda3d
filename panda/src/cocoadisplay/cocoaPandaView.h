@@ -14,18 +14,15 @@
 #include "graphicsWindow.h"
 
 #import <AppKit/NSView.h>
-#import <AppKit/NSOpenGL.h>
 
 class CocoaGraphicsWindow;
 
 @interface CocoaPandaView : NSView {
   @private
-    NSOpenGLContext *_context;
     CocoaGraphicsWindow *_graphicsWindow;
 }
 
-- (id) initWithFrame:(NSRect)frameRect context:(NSOpenGLContext*)context window:(CocoaGraphicsWindow*)window;
-- (NSOpenGLContext*) openGLContext;
+- (id) initWithFrame:(NSRect)frameRect window:(CocoaGraphicsWindow*)window;
 - (GraphicsWindow*) graphicsWindow;
 
 - (void) drawRect:(NSRect)dirtyRect;

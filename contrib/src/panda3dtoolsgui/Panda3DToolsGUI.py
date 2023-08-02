@@ -1905,7 +1905,7 @@ class main(wx.Frame):
                             self.txaExtraLines.append(line)
                 txafile.close()
             except:
-                print "Error opening .txa file!"
+                print("Error opening .txa file!")
             self.palettize_saveTxaTxt.SetValue(os.path.join(dirname + os.sep , filename))
         dlg.Destroy()
 
@@ -2705,7 +2705,7 @@ class main(wx.Frame):
             selectedItemIndex = int(self.batchTree.GetItemText(selectedItemId).split()[0])-1
             batchItem = self.batchList[selectedItemIndex]
 
-            print '\n'+self.BuildCommand(batchItem)
+            print('\n'+self.BuildCommand(batchItem))
 
             if (batchItem['cmd'].count('maya2egg')):
                 # Display Maya2Egg Tool Panel
@@ -2840,7 +2840,7 @@ class main(wx.Frame):
                                 self.txaExtraLines.append(line)
                     txafile.close()
                 except:
-                    print "Error opening .txa file!"
+                    print("Error opening .txa file!")
 
             self.batchItemNameTxt.SetValue(batchItem['label'])
 

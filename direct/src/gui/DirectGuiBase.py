@@ -618,9 +618,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
     def components(self):
         # Return a list of all components.
-        names = list(self.__componentInfo.keys())
-        names.sort()
-        return names
+        return sorted(self.__componentInfo)
 
     def hascomponent(self, component):
         return component in self.__componentInfo

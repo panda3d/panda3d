@@ -22,9 +22,11 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableString : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableString(const std::string &name);
-  INLINE ConfigVariableString(const std::string &name, const std::string &default_value,
-                              const std::string &description = std::string(), int flags = 0);
+  INLINE explicit ConfigVariableString(const std::string &name);
+  INLINE explicit ConfigVariableString(const std::string &name,
+                                       const std::string &default_value,
+                                       const std::string &description = std::string(),
+                                       int flags = 0);
 
   INLINE void operator = (const std::string &value);
   INLINE operator const std::string & () const;

@@ -58,7 +58,13 @@ if(HAVE_OPENAL)
   composite_sources(p3openal_audio P3OPENAL_SOURCES)
   add_library(p3openal_audio ${MODULE_TYPE} ${P3OPENAL_HEADERS} ${P3OPENAL_SOURCES})
   set_target_properties(p3openal_audio PROPERTIES DEFINE_SYMBOL BUILDING_OPENAL_AUDIO)
-  target_link_libraries(p3openal_audio panda PKG::OPENAL)
+  target_link_libraries(p3openal_audio panda)
+
+  if(HAVE_OPENAL_FRAMEWORK)
+    target_link_libraries(p3openal_audio "-framework OpenAL")
+  else()
+    target_link_libraries(p3openal_audio PKG::OPENAL)
+  endif()
 
   if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
     # When statically linking OpenAL, keep its symbols private to this module.

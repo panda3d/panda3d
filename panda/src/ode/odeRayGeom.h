@@ -31,7 +31,7 @@ public:
 
 PUBLISHED:
   OdeRayGeom(dReal length);
-  OdeRayGeom(OdeSpace &space, dReal length);
+  explicit OdeRayGeom(OdeSpace &space, dReal length);
   virtual ~OdeRayGeom();
 
   INLINE void set_length(dReal length);

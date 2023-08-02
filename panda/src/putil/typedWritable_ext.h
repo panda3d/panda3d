@@ -29,6 +29,8 @@
 template<>
 class Extension<TypedWritable> : public ExtensionBase<TypedWritable> {
 public:
+  static PyObject *__new__(PyTypeObject *cls);
+
   PyObject *__reduce__(PyObject *self) const;
   PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 

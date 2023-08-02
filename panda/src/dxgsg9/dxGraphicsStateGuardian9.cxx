@@ -189,8 +189,8 @@ DXGraphicsStateGuardian9::
  * call Texture::prepare().
  */
 TextureContext *DXGraphicsStateGuardian9::
-prepare_texture(Texture *tex, int view) {
-  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex, view);
+prepare_texture(Texture *tex) {
+  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex);
 
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg9_cat.error()
@@ -206,7 +206,7 @@ prepare_texture(Texture *tex, int view) {
  * stage.
  */
 void DXGraphicsStateGuardian9::
-apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
+apply_texture(int i, TextureContext *tc, int view, const SamplerState &sampler) {
   if (tc == nullptr) {
     // The texture wasn't bound properly or something, so ensure texturing is
     // disabled and just return.
@@ -296,7 +296,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   float lod_bias = sampler.get_lod_bias();
   set_sampler_state(i, D3DSAMP_MIPMAPLODBIAS, *(DWORD*)&lod_bias);
 
-  _d3d_device->SetTexture(i, dtc->get_d3d_texture());
+  _d3d_device->SetTexture(i, dtc->get_d3d_texture(view));
 }
 
 /**
@@ -384,20 +384,10 @@ release_texture(TextureContext *tc) {
  */
 bool DXGraphicsStateGuardian9::
 extract_texture_data(Texture *tex) {
-  bool success = true;
-
-  int num_views = tex->get_num_views();
-  for (int view = 0; view < num_views; ++view) {
-    TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != nullptr, false);
-    DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
-
-    if (!dtc->extract_texture_data(*_screen)) {
-      success = false;
-    }
-  }
-
-  return success;
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertr(tc != nullptr, false);
+  DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+  return dtc->extract_texture_data(*_screen);
 }
 
 /**
@@ -1851,7 +1841,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   // must use a render target type texture for StretchRect
   tex->set_render_to_texture(true);
 
-  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == nullptr) {
     return false;
   }
@@ -1868,10 +1858,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     // for now.
     return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, true);
   }
-  nassertr(dtc->get_d3d_2d_texture() != nullptr, false);
+  IDirect3DTexture9 *d3d_2d_texture = dtc->get_d3d_2d_texture(view);
+  nassertr(d3d_2d_texture != nullptr, false);
 
   IDirect3DSurface9 *tex_level_0;
-  hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
+  hr = d3d_2d_texture->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     return false;
@@ -1896,7 +1887,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
           << "Unable to re-create texture " << *dtc->get_texture() << endl;
         return false;
       }
-      hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
+      hr = d3d_2d_texture->GetSurfaceLevel(0, &tex_level_0);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
         return false;
@@ -3663,8 +3654,8 @@ update_standard_texture_bindings() {
     // We always reissue every stage in DX, just in case the texcoord index or
     // texgen mode or some other property has changed.
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
-    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    apply_texture(si, tc, sampler);
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    apply_texture(si, tc, view, sampler);
     set_texture_blend_mode(si, stage);
 
     int texcoord_dimensions = 2;

@@ -30,6 +30,8 @@
  */
 class EXPCL_DTOOL_DTOOLBASE TypeRegistryNode {
 public:
+  typedef PyObject *PythonWrapFunc(void *ptr, PyTypeObject *cast_from);
+
   TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref);
 
   static bool is_derived_from(const TypeRegistryNode *child,
@@ -38,7 +40,8 @@ public:
   static TypeHandle get_parent_towards(const TypeRegistryNode *child,
                                        const TypeRegistryNode *base);
 
-  INLINE PyObject *get_python_type() const;
+  INLINE PyTypeObject *get_python_type() const;
+  INLINE PyObject *wrap_python(void *ptr, PyTypeObject *cast_from) const;
 
   void clear_subtree();
   void define_subtree();
@@ -49,7 +52,8 @@ public:
   typedef std::vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;
   Classes _child_classes;
-  PyObject *_python_type = nullptr;
+  PyTypeObject *_python_type = nullptr;
+  PythonWrapFunc *_python_wrap_func = nullptr;
 
   patomic<size_t> _memory_usage[TypeHandle::MC_limit];
 
@@ -81,7 +85,8 @@ private:
   void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
 
-  PyObject *r_get_python_type() const;
+  PyTypeObject *r_get_python_type() const;
+  PyObject *r_wrap_python(void *ptr, PyTypeObject *cast_from) const;
 
   static bool check_derived_from(const TypeRegistryNode *child,
                                  const TypeRegistryNode *base);

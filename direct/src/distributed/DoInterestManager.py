@@ -514,8 +514,7 @@ class DoInterestManager(DirectObject.DirectObject):
         datagram = PyDatagram()
         # Add message type
         if isinstance(zoneIdList, list):
-            vzl = list(zoneIdList)
-            vzl.sort()
+            vzl = sorted(zoneIdList)
             uniqueElements(vzl)
             datagram.addUint16(CLIENT_ADD_INTEREST_MULTIPLE)
             datagram.addUint32(contextId)

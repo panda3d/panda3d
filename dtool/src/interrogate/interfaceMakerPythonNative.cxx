@@ -115,6 +115,7 @@ RenameSet methodRenameDictionary[] = {
   { "__deepcopy__"  , "__deepcopy__",           0 },
   { "__getstate__"  , "__getstate__",           0 },
   { "__setstate__"  , "__setstate__",           0 },
+  { "__new__"       , "__new__",                0 },
   { "print"         , "Cprint",                 0 },
   { "CInterval.set_t", "_priv__cSetT",          0 },
   { nullptr, nullptr, -1 }
@@ -664,6 +665,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__new__") {
+    def._answer_location = "tp_new";
+    def._wrapper_type = WT_new;
+    return true;
+  }
+
   if (remap->_type == FunctionRemap::T_typecast_method) {
     // A typecast operator.  Check for a supported low-level typecast type.
     if (TypeManager::is_bool(remap->_return_type->get_orig_type())) {
@@ -1106,10 +1113,14 @@ write_class_details(ostream &out, Object *obj) {
   out << " */\n";
 
   // First write out all the wrapper functions for the methods.
+  bool have_new = false;
   for (Function *func : obj->_methods) {
     if (func) {
       // Write the definition of the generic wrapper function for this
       // function.
+      if (func->_ifunc.get_name() == "__new__") {
+        have_new = true;
+      }
       write_function_for_top(out, obj, func);
     }
   }
@@ -1128,10 +1139,16 @@ write_class_details(ostream &out, Object *obj) {
   if (obj->_constructors.size() == 0) {
     // We still need to write a dummy constructor to prevent inheriting the
     // constructor from a base class.
-    out << fname << " {\n"
-      "  Dtool_Raise_TypeError(\"cannot init abstract class\");\n"
-      "  return -1;\n"
-      "}\n\n";
+    if (have_new) {
+      out << fname << " {\n"
+        "  return 0;\n"
+        "}\n\n";
+    } else {
+      out << fname << " {\n"
+        "  Dtool_Raise_TypeError(\"cannot init abstract class\");\n"
+        "  return -1;\n"
+        "}\n\n";
+    }
   }
 
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
@@ -1221,18 +1238,17 @@ write_class_details(ostream &out, Object *obj) {
     out << "  return nullptr;\n";
     out << "}\n\n";
 
-    out << "static Dtool_PyInstDef *Dtool_Wrap_" << ClassName << "(void *from_this, Dtool_PyTypedObject *from_type) {\n";
-    out << "  if (from_this == nullptr || from_type == nullptr) {\n";
-    out << "    return nullptr;\n";
-    out << "  }\n";
+    //NB. This may be called with nullptr in either argument and should produce
+    // a valid wrapper object even with a null pointer.
+    out << "static PyObject *Dtool_Wrap_" << ClassName << "(void *from_this, PyTypeObject *from_type) {\n";
     out << "  " << cClassName << " *to_this;\n";
-    out << "  if (from_type == &Dtool_" << ClassName << ") {\n";
+    out << "  if (from_type == nullptr || from_type == &Dtool_" << ClassName << "._PyType) {\n";
     out << "    to_this = (" << cClassName << "*)from_this;\n";
     out << "  }\n";
     for (di = details.begin(); di != details.end(); di++) {
       if (di->second._can_downcast && di->second._is_legal_py_class) {
-        out << "  else if (from_type == Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
-        out << "    " << di->second._to_class_name << "* other_this = (" << di->second._to_class_name << "*)from_this;\n" ;
+        out << "  else if (from_type == (PyTypeObject *)Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
+        out << "    " << di->second._to_class_name << " *other_this = (" << di->second._to_class_name << " *)from_this;\n" ;
         out << "    to_this = (" << cClassName << "*)other_this;\n";
         out << "  }\n";
       }
@@ -1247,7 +1263,7 @@ write_class_details(ostream &out, Object *obj) {
     out << "  self->_ptr_to_object = to_this;\n";
     out << "  self->_memory_rules = false;\n";
     out << "  self->_is_const = false;\n";
-    out << "  return self;\n";
+    out << "  return (PyObject *)self;\n";
     out << "}\n\n";
   }
 }
@@ -1405,8 +1421,9 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
           out << "    TypeHandle handle = " << type->get_local_name(&parser)
               << "::get_class_type();\n";
           out << "    Dtool_" << safe_name << "._type = handle;\n";
-          out << "    registry->record_python_type(handle, "
-                 "(PyObject *)&Dtool_" << safe_name << ");\n";
+          out << "    registry->record_python_type(handle,"
+                 " &Dtool_" << safe_name << "._PyType,"
+                 " Dtool_Wrap_" << safe_name << ");\n";
           out << "  }\n";
         } else {
           if (IsPandaTypedObject(type->as_struct_type())) {
@@ -1706,7 +1723,11 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     if (!func->_has_this) {
-      flags += " | METH_STATIC";
+      if (func->_flags & FunctionRemap::F_explicit_cls) {
+        flags += " | METH_CLASS";
+      } else {
+        flags += " | METH_STATIC";
+      }
 
       // Skip adding this entry if we also have a property with the same name.
       // In that case, we will use a Dtool_StaticProperty to disambiguate
@@ -2620,6 +2641,17 @@ write_module_class(ostream &out, Object *obj) {
         }
         break;
 
+      case WT_new:
+        {
+          string fname = "static PyObject *" + def._wrapper_name + "(PyTypeObject *cls, PyObject *args, PyObject *kwds)\n";
+
+          std::vector<FunctionRemap *> remaps;
+          remaps.insert(remaps.end(), def._remaps.begin(), def._remaps.end());
+          string expected_params;
+          write_function_for_name(out, obj, remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
+        }
+        break;
+
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
@@ -3225,7 +3257,7 @@ write_module_class(ostream &out, Object *obj) {
   // allocfunc tp_alloc;
   out << "    PyType_GenericAlloc,\n";
   // newfunc tp_new;
-  out << "    Dtool_new_" << ClassName << ",\n";
+  write_function_slot(out, 4, slots, "tp_new", "Dtool_new_" + ClassName);
   // freefunc tp_free;
   if (obj->_protocol_types & Object::PT_python_gc) {
     out << "    PyObject_GC_Del,\n";
@@ -3651,6 +3683,9 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   // This will be NULL for static funcs, so prevent code from using it.
   if (func->_has_this) {
     prototype += "self";
+  }
+  else if (func->_flags & FunctionRemap::F_explicit_cls) {
+    prototype += "cls";
   }
 
   switch (func->_args_type) {

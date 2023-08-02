@@ -13,9 +13,9 @@ elseif(HAVE_WGL)
   set(PANDAGL_PIPE_TYPE "wglGraphicsPipe")
 
 elseif(HAVE_COCOA)
-  list(APPEND PANDAGL_LINK_TARGETS p3cocoadisplay)
-  set(PANDAGL_PIPE_TYPE "CocoaGraphicsPipe")
-  set(PANDAGL_PIPE_INCLUDE "cocoaGraphicsPipe.h")
+  list(APPEND PANDAGL_LINK_TARGETS p3cocoagldisplay p3cocoadisplay)
+  set(PANDAGL_PIPE_TYPE "CocoaGLGraphicsPipe")
+  set(PANDAGL_PIPE_INCLUDE "cocoaGLGraphicsPipe.h")
 
 else()
   message("") # Add extra line before error

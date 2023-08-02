@@ -32,16 +32,16 @@
 class EXPCL_PANDA_GOBJ TransformBlend {
 PUBLISHED:
   INLINE TransformBlend();
-  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0);
-  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
-                        const VertexTransform *transform1, PN_stdfloat weight1);
-  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
-                        const VertexTransform *transform1, PN_stdfloat weight1,
-                        const VertexTransform *transform2, PN_stdfloat weight2);
-  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
-                        const VertexTransform *transform1, PN_stdfloat weight1,
-                        const VertexTransform *transform2, PN_stdfloat weight2,
-                        const VertexTransform *transform3, PN_stdfloat weight3);
+  INLINE explicit TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0);
+  INLINE explicit TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                                 const VertexTransform *transform1, PN_stdfloat weight1);
+  INLINE explicit TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                                 const VertexTransform *transform1, PN_stdfloat weight1,
+                                 const VertexTransform *transform2, PN_stdfloat weight2);
+  INLINE explicit TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                                 const VertexTransform *transform1, PN_stdfloat weight1,
+                                 const VertexTransform *transform2, PN_stdfloat weight2,
+                                 const VertexTransform *transform3, PN_stdfloat weight3);
   INLINE TransformBlend(const TransformBlend &copy);
   INLINE void operator = (const TransformBlend &copy);
   INLINE ~TransformBlend();

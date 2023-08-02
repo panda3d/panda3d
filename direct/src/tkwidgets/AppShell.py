@@ -550,7 +550,3 @@ class TestAppShell(AppShell):
     def createInterface(self):
         self.createButtons()
         self.createMain()
-
-
-if __name__ == '__main__':
-    test = TestAppShell(balloon_state='none')

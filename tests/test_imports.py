@@ -93,7 +93,6 @@ def test_imports_direct():
     import direct.gui.DirectGui
     import direct.gui.DirectGuiBase
     import direct.gui.DirectGuiGlobals
-    import direct.gui.DirectGuiTest
     import direct.gui.DirectLabel
     import direct.gui.DirectOptionMenu
     import direct.gui.DirectRadioButton
@@ -112,7 +111,6 @@ def test_imports_direct():
     import direct.interval.Interval
     import direct.interval.IntervalGlobal
     import direct.interval.IntervalManager
-    import direct.interval.IntervalTest
     import direct.interval.LerpBlendHelpers
     import direct.interval.LerpInterval
     import direct.interval.MetaInterval
@@ -185,7 +183,6 @@ def test_imports_direct():
     import direct.task.Task
     import direct.task.TaskManagerGlobal
     import direct.task.TaskProfiler
-    import direct.task.TaskTester
     import direct.task.Timer
 
 
@@ -196,13 +193,9 @@ def test_imports_direct_physics():
     import direct.particles.ForceGroup
     import direct.particles.GlobalForceGroup
     import direct.particles.ParticleEffect
-    import direct.particles.ParticleFloorTest
     import direct.particles.ParticleManagerGlobal
-    import direct.particles.ParticleTest
     import direct.particles.Particles
     import direct.particles.SpriteParticleRendererExt
-    import direct.physics.FallTest
-    import direct.physics.RotationTest
     import direct.showbase.PhysicsManagerGlobal
 
 

@@ -548,7 +548,7 @@ get_scene() const {
  * call Texture::prepare().
  */
 TextureContext *GraphicsStateGuardian::
-prepare_texture(Texture *, int view) {
+prepare_texture(Texture *) {
   return nullptr;
 }
 

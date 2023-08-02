@@ -6,22 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file mouseData.h
+ * @file cocoaGLGraphicsWindow.I
  * @author rdb
- * @date 2018-09-24
+ * @date 2023-03-18
  */
-
-#ifndef MOUSEDATA_H
-#define MOUSEDATA_H
-
-#include "pointerData.h"
-
-BEGIN_PUBLISH
-/**
- * Deprecated alias for PointerData.
- */
-typedef PointerData MouseData;
-
-END_PUBLISH
-
-#endif

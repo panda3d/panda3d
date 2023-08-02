@@ -6,7 +6,16 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file cocoaGraphicsBuffer.I
+ * @file config_cocoagldisplay.h
  * @author rdb
- * @date 2017-12-19
+ * @date 2023-03-20
  */
+
+#ifndef CONFIG_COCOAGLDISPLAY_H
+#define CONFIG_COCOAGLDISPLAY_H
+
+#include "config_cocoadisplay.h"
+
+extern EXPCL_PANDA_COCOAGLDISPLAY void init_libcocoagldisplay();
+
+#endif

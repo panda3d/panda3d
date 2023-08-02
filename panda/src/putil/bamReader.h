@@ -132,8 +132,12 @@ PUBLISHED:
   INLINE const LoaderOptions &get_loader_options() const;
   INLINE void set_loader_options(const LoaderOptions &options);
 
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
+  EXTENSION(PyObject *read_object());
+#else
   BLOCKING TypedWritable *read_object();
   BLOCKING bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+#endif
 
   INLINE bool is_eof() const;
   bool resolve();

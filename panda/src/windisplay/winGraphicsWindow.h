@@ -72,7 +72,7 @@ public:
                     GraphicsOutput *host);
   virtual ~WinGraphicsWindow();
 
-  virtual MouseData get_pointer(int device) const;
+  virtual PointerData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
 
   virtual void close_ime();
@@ -109,8 +109,10 @@ protected:
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
 
+  bool do_fullscreen_switch(int x_size, int y_size);
   virtual bool do_fullscreen_switch();
   virtual bool do_windowed_switch();
+  bool do_fullscreen_enable(int x_size, int y_size);
   virtual bool do_fullscreen_enable();
   virtual bool do_fullscreen_disable();
 

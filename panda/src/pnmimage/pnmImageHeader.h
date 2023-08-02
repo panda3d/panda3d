@@ -118,12 +118,12 @@ PUBLISHED:
     INLINE PixelSpec() = default;
 
   PUBLISHED:
-    INLINE PixelSpec(xelval gray_value);
-    INLINE PixelSpec(xelval gray_value, xelval alpha);
+    INLINE explicit PixelSpec(xelval gray_value);
+    INLINE explicit PixelSpec(xelval gray_value, xelval alpha);
     INLINE PixelSpec(xelval red, xelval green, xelval blue);
     INLINE PixelSpec(xelval red, xelval green, xelval blue, xelval alpha);
     INLINE PixelSpec(const xel &rgb);
-    INLINE PixelSpec(const xel &rgb, xelval alpha);
+    INLINE explicit PixelSpec(const xel &rgb, xelval alpha);
 
     INLINE bool operator < (const PixelSpec &other) const;
     INLINE bool operator == (const PixelSpec &other) const;

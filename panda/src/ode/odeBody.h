@@ -38,7 +38,7 @@ public:
   OdeBody(dBodyID id);
 
 PUBLISHED:
-  OdeBody(OdeWorld &world);
+  explicit OdeBody(OdeWorld &world);
   virtual ~OdeBody();
   void destroy();
   INLINE bool is_empty() const;

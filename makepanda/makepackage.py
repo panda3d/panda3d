@@ -745,7 +745,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     dist.write('</installer-script>\n')
     dist.close()
 
-    oscmd('hdiutil create Panda3D-rw.dmg -volname "Panda3D SDK %s" -srcfolder dstroot/Panda3D' % (version))
+    oscmd('hdiutil create Panda3D-rw.dmg -fs HFS+ -volname "Panda3D SDK %s" -srcfolder dstroot/Panda3D' % (version))
     oscmd('hdiutil convert Panda3D-rw.dmg -format UDBZ -o %s' % (dmg_name))
     oscmd('rm -f Panda3D-rw.dmg')
 

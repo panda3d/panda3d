@@ -230,14 +230,11 @@ class ContainerReport(Job):
         if type not in self._type2id2len:
             return
         len2ids = invertDictLossless(self._type2id2len[type])
-        lengths = list(len2ids.keys())
-        lengths.sort()
-        lengths.reverse()
         print('=====')
         print('===== %s' % type)
         count = 0
         stop = False
-        for l in lengths:
+        for l in sorted(len2ids, reverse=True):
             #len2ids[l].sort()
             pathStrList = list()
             for id in len2ids[l]:
@@ -259,9 +256,8 @@ class ContainerReport(Job):
         for type in initialTypes:
             for i in self._outputType(type, **kArgs):
                 yield None
-        otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
-        otherTypes.sort(key=lambda obj: obj.__name__)
-        for type in otherTypes:
+        otherTypes = set(self._type2id2len).difference(initialTypes)
+        for type in sorted(otherTypes, key=lambda obj: obj.__name__):
             for i in self._outputType(type, **kArgs):
                 yield None
 

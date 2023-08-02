@@ -12,7 +12,6 @@
  */
 
 #include "cocoaGraphicsWindow.h"
-#include "cocoaGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
 #include "cocoaPandaApp.h"
@@ -40,7 +39,6 @@
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSText.h>
-#import <OpenGL/OpenGL.h>
 #import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
@@ -108,7 +106,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   CocoaGraphicsPipe *cocoa_pipe;
   DCAST_INTO_V(cocoa_pipe, _pipe);
-  _display = cocoa_pipe->_display;
+  _display = cocoa_pipe->get_display_id();
 }
 
 /**
@@ -129,7 +127,7 @@ CocoaGraphicsWindow::
 bool CocoaGraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Hack!  Will go away when we have floating-point mouse pos.
-  MouseData md = get_pointer(device);
+  PointerData md = get_pointer(device);
   if (md.get_x() == x && md.get_y() == y) {
     return true;
   }
@@ -159,147 +157,6 @@ move_pointer(int device, int x, int y) {
     // No support for raw mice at the moment.
   }
   return false;
-}
-
-
-/**
- * This function will be called within the draw thread before beginning
- * rendering for a given frame.  It should do whatever setup is required, and
- * return true if the frame should be rendered, or false if it should be
- * skipped.
- */
-bool CocoaGraphicsWindow::
-begin_frame(FrameMode mode, Thread *current_thread) {
-  PStatTimer timer(_make_current_pcollector, current_thread);
-
-  begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-
-  CocoaGraphicsStateGuardian *cocoagsg;
-  DCAST_INTO_R(cocoagsg, _gsg, false);
-  nassertr(cocoagsg->_context != nil, false);
-  nassertr(_view != nil, false);
-
-  // Place a lock on the context.
-  cocoagsg->lock_context();
-
-  // Set the drawable.
-  // Although not recommended, it is technically possible to use the same
-  // context with multiple different-sized windows.  If that happens, the
-  // context needs to be updated accordingly.
-  if ([cocoagsg->_context view] != _view) {
-    // XXX I'm not 100% sure that changing the view requires it to update.
-    _context_needs_update = true;
-    [cocoagsg->_context setView:_view];
-
-    if (cocoadisplay_cat.is_spam()) {
-      cocoadisplay_cat.spam()
-        << "Switching context to view " << _view << "\n";
-    }
-  }
-
-  // Update the context if necessary, to make it reallocate buffers etc.
-  if (_context_needs_update) {
-    if ([NSThread isMainThread]) {
-      [cocoagsg->_context update];
-      _context_needs_update = false;
-    } else {
-      cocoagsg->unlock_context();
-      return false;
-    }
-  }
-
-  // Lock the view for drawing.
-  if (!_properties.get_fullscreen()) {
-    nassertr_always([_view lockFocusIfCanDraw], false);
-  }
-
-  // Make the context current.
-  [cocoagsg->_context makeCurrentContext];
-
-  // Now that we have made the context current to a window, we can reset the
-  // GSG state if this is the first time it has been used.  (We can't just
-  // call reset() when we construct the GSG, because reset() requires having a
-  // current context.)
-  cocoagsg->reset_if_new();
-
-  if (mode == FM_render) {
-    // begin_render_texture();
-    clear_cube_map_selection();
-  }
-
-  _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame(current_thread);
-}
-
-/**
- * This function will be called within the draw thread after rendering is
- * completed for a given frame.  It should do whatever finalization is
- * required.
- */
-void CocoaGraphicsWindow::
-end_frame(FrameMode mode, Thread *current_thread) {
-  end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-
-  if (!_properties.get_fullscreen()) {
-    [_view unlockFocus];
-  }
-  // Release the context.
-  CocoaGraphicsStateGuardian *cocoagsg;
-  DCAST_INTO_V(cocoagsg, _gsg);
-
-  cocoagsg->unlock_context();
-
-  if (mode == FM_render) {
-    // end_render_texture();
-    copy_to_textures();
-  }
-
-  _gsg->end_frame(current_thread);
-
-  if (mode == FM_render) {
-    trigger_flip();
-    clear_cube_map_selection();
-  }
-}
-
-/**
- * This function will be called within the draw thread after begin_flip() has
- * been called on all windows, to finish the exchange of the front and back
- * buffers.
- *
- * This should cause the window to wait for the flip, if necessary.
- */
-void CocoaGraphicsWindow::
-end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
-
-    CocoaGraphicsStateGuardian *cocoagsg;
-    DCAST_INTO_V(cocoagsg, _gsg);
-
-    if (_vsync_enabled) {
-      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
-      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
-        cocoagsg->_swap_lock.lock();
-        cocoagsg->_swap_condition.wait();
-        cocoagsg->_swap_lock.unlock();
-      }
-    }
-
-    cocoagsg->lock_context();
-
-    // Swap the front and back buffer.
-    [cocoagsg->_context flushBuffer];
-
-    // Flush the window
-    [[_view window] flushWindow];
-
-    cocoagsg->unlock_context();
-  }
-  GraphicsWindow::end_flip();
 }
 
 /**
@@ -351,15 +208,7 @@ process_events() {
   [pool release];
 
   if (_context_needs_update && _gsg != nullptr) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    DCAST_INTO_V(cocoagsg, _gsg);
-
-    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      _context_needs_update = false;
-      [cocoagsg->_context update];
-      cocoagsg->unlock_context();
-    }
+    update_context();
   }
 }
 
@@ -369,34 +218,6 @@ process_events() {
  */
 bool CocoaGraphicsWindow::
 open_window() {
-  CocoaGraphicsPipe *cocoa_pipe;
-  DCAST_INTO_R(cocoa_pipe, _pipe, false);
-
-  // GSG CreationInitialization
-  CocoaGraphicsStateGuardian *cocoagsg;
-  if (_gsg == 0) {
-    // There is no old gsg.  Create a new one.
-    cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, NULL);
-    cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
-    _gsg = cocoagsg;
-  } else {
-    // If the old gsg has the wrong pixel format, create a new one that shares
-    // with the old gsg.
-    DCAST_INTO_R(cocoagsg, _gsg, false);
-    if (!cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
-      cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, cocoagsg);
-      cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
-      _gsg = cocoagsg;
-    }
-  }
-
-  if (cocoagsg->_context == nil) {
-    // Could not obtain a proper context.
-    _gsg.clear();
-    close_window();
-    return false;
-  }
-
   // Fill in the blanks.
   if (!_properties.has_origin()) {
     _properties.set_origin(-2, -2);
@@ -476,7 +297,7 @@ open_window() {
   NSEnumerator *e = [[NSScreen screens] objectEnumerator];
   while (screen = (NSScreen *) [e nextObject]) {
     NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
-    if (cocoa_pipe->_display == (CGDirectDisplayID) [num longValue]) {
+    if (_display == (CGDirectDisplayID) [num longValue]) {
       break;
     }
   }
@@ -545,19 +366,16 @@ open_window() {
     }
   }
 
-  // Lock the context, so we can safely operate on it.
-  cocoagsg->lock_context();
-
   // Create the NSView to render to.
   NSRect rect = NSMakeRect(0, 0, _properties.get_x_size(), _properties.get_y_size());
-  _view = [[CocoaPandaView alloc] initWithFrame:rect context:cocoagsg->_context window:this];
-  if (_parent_window_handle == (WindowHandle *)NULL) {
+  _view = [[CocoaPandaView alloc] initWithFrame:rect window:this];
+  if (_parent_window_handle == nullptr) {
     [_window setContentView:_view];
     [_window makeFirstResponder:_view];
   }
 
   // Check if we have an NSView to attach our NSView to.
-  if (parent_nsview != NULL) {
+  if (parent_nsview != nullptr) {
     [parent_nsview addSubview:_view];
   }
 
@@ -566,7 +384,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_int((size_t) _view);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -672,29 +490,6 @@ open_window() {
     }
   }
 
-  // Make the context current.
-  _context_needs_update = false;
-  [cocoagsg->_context makeCurrentContext];
-  [cocoagsg->_context setView:_view];
-  [cocoagsg->_context update];
-
-  cocoagsg->reset_if_new();
-
-  // Release the context.
-  cocoagsg->unlock_context();
-
-  if (!cocoagsg->is_valid()) {
-    close_window();
-    return false;
-  }
-
-  if (!cocoagsg->get_fb_properties().verify_hardware_software
-      (_fb_properties, cocoagsg->get_gl_renderer())) {
-    close_window();
-    return false;
-  }
-  _fb_properties = cocoagsg->get_fb_properties();
-
   // Reset dead key state.
   _dead_key_state = 0;
 
@@ -709,8 +504,6 @@ open_window() {
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
     CGAssociateMouseAndMouseCursorPosition(NO);
   }
-
-  _vsync_enabled = sync_video && cocoagsg->setup_vsync();
 
   return true;
 }
@@ -730,15 +523,8 @@ close_window() {
     _cursor = nil;
   }
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
-
-    if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      [cocoagsg->_context clearDrawable];
-      cocoagsg->unlock_context();
-    }
+  if (_gsg != nullptr) {
+    unbind_context();
     _gsg.clear();
   }
 
@@ -755,8 +541,6 @@ close_window() {
     [_view release];
     _view = nil;
   }
-
-  _vsync_enabled = false;
 
   GraphicsWindow::close_window();
 }
@@ -1148,16 +932,22 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (_context_needs_update && _gsg != nullptr) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    DCAST_INTO_V(cocoagsg, _gsg);
-
-    if (cocoagsg != nullptr && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      _context_needs_update = false;
-      [cocoagsg->_context update];
-      cocoagsg->unlock_context();
-    }
+    update_context();
   }
+}
+
+/**
+ *
+ */
+void CocoaGraphicsWindow::
+update_context() {
+}
+
+/**
+ *
+ */
+void CocoaGraphicsWindow::
+unbind_context() {
 }
 
 /**
@@ -1663,17 +1453,9 @@ handle_close_event() {
   _window = nil;
 
   // Get rid of the GSG
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
-
-    if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      [cocoagsg->_context clearDrawable];
-      cocoagsg->unlock_context();
-    }
+  if (_gsg != nullptr) {
+    unbind_context();
     _gsg.clear();
-    _vsync_enabled = false;
   }
 
   // Dump the view, too
@@ -1931,7 +1713,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
 
   } else {
     // We received deltas, so add it to the current mouse position.
-    MouseData md = _input->get_pointer();
+    PointerData md = _input->get_pointer();
     nx = md.get_x() + x;
     ny = md.get_y() + y;
   }

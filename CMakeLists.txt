@@ -24,6 +24,9 @@ endif()
 
 # Set defaults for macOS, must be before project().
 if(APPLE)
+  # Needed for enable_language(OBJCXX)
+  cmake_minimum_required(VERSION 3.16)
+
   set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum macOS version to target")
   set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 
@@ -45,6 +48,11 @@ string(REGEX REPLACE "^.*=${_s}" "" _version "${_version}")
 project(Panda3D VERSION ${_version})
 unset(_version)
 unset(_s)
+
+if(APPLE)
+  # Allows separating out C++ flags from ObjC++ flags
+  enable_language(OBJCXX)
+endif()
 
 # Determine the possible build types.  Must be *after* calling project().
 set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
