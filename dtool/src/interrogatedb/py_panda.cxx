@@ -623,7 +623,7 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
       if (main_module == NULL) {
         interrogatedb_cat.warning() << "Unable to import __main__\n";
       }
-      
+
       // Extract the __file__ attribute, if present.
       Filename main_dir;
       PyObject *file_attr = nullptr;
@@ -784,9 +784,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03060000
-      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
-#elif PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
 #else
       return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;
