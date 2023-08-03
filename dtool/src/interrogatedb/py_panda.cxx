@@ -801,7 +801,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03060000
+#if PY_VERSION_HEX >= 0x03060000 && PY_VERSION_HEX < 0x030D0000
       return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
 #elif PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
