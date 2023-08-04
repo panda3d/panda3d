@@ -123,10 +123,7 @@ class Thread(ThreadBase):
         self.__dict__['ident'] = threadId
 
     def __del__(self):
-        # On interpreter shutdown, the _thread module might have
-        # already been cleaned up.
-        if _thread and _thread._remove_thread_id:
-            _thread._remove_thread_id(self.ident)
+        _thread._remove_thread_id(self.ident)
 
     def is_alive(self):
         thread = self.__thread
