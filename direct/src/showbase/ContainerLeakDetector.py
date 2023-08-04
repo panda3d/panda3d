@@ -11,7 +11,6 @@ import types
 import weakref
 import random
 import builtins
-import sys
 
 
 deadEndTypes = frozenset((
@@ -566,7 +565,7 @@ class FindContainers(Job):
                 curObjRef = None
 
                 # types.CellType was added in Python 3.8
-                if sys.version_info >= (3, 8) and type(curObj) is types.CellType:
+                if type(curObj) is types.CellType:
                     child = curObj.cell_contents
                     hasLength = self._hasLength(child)
                     notDeadEnd = not self._isDeadEnd(child)

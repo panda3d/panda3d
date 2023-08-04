@@ -9,8 +9,8 @@
 ########################################################################
 
 import sys
-if sys.version_info < (3, 6):
-    print("This version of Python is not supported, use version 3.6 or higher.")
+if sys.version_info < (3, 8):
+    print("This version of Python is not supported, use version 3.8 or higher.")
     exit(1)
 
 try:

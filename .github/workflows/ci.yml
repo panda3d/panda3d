@@ -180,38 +180,6 @@ jobs:
       run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
 
-    - name: Setup Python (Python 3.7)
-      if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.7'
-    - name: Configure (Python 3.7)
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      run: >
-        cmake -DWANT_PYTHON_VERSION=3.7 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
-    - name: Build (Python 3.7)
-      if: contains(matrix.python, 'YES')
-      # BEGIN A
-      working-directory: build
-      run: cmake --build . --config ${{ matrix.config }} --parallel 4
-      # END A
-    - name: Test (Python 3.7)
-      # BEGIN B
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      env:
-        PYTHONPATH: ${{ matrix.config }}
-      run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
-        $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
-        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
-      # END B
-
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
       uses: actions/setup-python@v4
@@ -438,20 +406,6 @@ jobs:
       run: |
         python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.8
-      shell: bash
-      run: |
-        python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
-
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.7'
-    - name: Build Python 3.7
-      shell: bash
-      run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
-    - name: Test Python 3.7
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
