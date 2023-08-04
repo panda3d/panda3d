@@ -120,7 +120,7 @@ from direct.extensions_native import NodePath_extensions # pylint: disable=unuse
 # This needs to be available early for DirectGUI imports
 import sys
 import builtins
-builtins.config = DConfig
+builtins.config = DConfig  # type: ignore[attr-defined]
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from .MessengerGlobal import messenger

@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-__all__ = []
+__all__ = ()
 
 
 if __name__ == "__main__":
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     base = ShowBase()
 
     boat = base.loader.loadModel('models/misc/smiley')
-    boat.reparentTo(render)
+    boat.reparentTo(base.render)
 
     donald = Actor()
     donald.loadModel("phase_6/models/char/donald-wheel-1000")
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     donald.reparentTo(boat)
 
     dock = base.loader.loadModel('models/misc/smiley')
-    dock.reparentTo(render)
+    dock.reparentTo(base.render)
 
     sound = base.loader.loadSfx('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
     foghorn = base.loader.loadSfx('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     foghornSound = SoundInterval(foghorn, name='foghorn')
     soundTrack2 = Track([(foghornStartTime, foghornSound)], 'soundtrack2')
 
-    mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, soundTrack2, waterEventTrack,
+    mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, soundTrack2, waterEventTrack,  # type: ignore[name-defined]
                          donaldSteerTrack])
     # Print out MultiTrack parameters
     print(mtrack)
@@ -175,11 +175,11 @@ if __name__ == "__main__":
     # Just to take time
     i2 = LerpPosInterval(base.camera, 2.0, Point3(0, 10, 5))
     # This will be relative to end of camera move
-    i3 = FunctionInterval(printPreviousEnd)
+    i3 = FunctionInterval(printPreviousEnd)  # type: ignore[assignment]
     # Just to take time
     i4 = LerpPosInterval(base.camera, 2.0, Point3(0, 0, 5))
     # This will be relative to the start of the camera move
-    i5 = FunctionInterval(printPreviousStart)
+    i5 = FunctionInterval(printPreviousStart)  # type: ignore[assignment]
     # This will be relative to track start
     i6 = FunctionInterval(printTrackStart)
     # This will print some arguments

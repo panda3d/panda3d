@@ -11,7 +11,7 @@ Note that you cannot directly import :data:`~builtins.base` from this module
 since ShowBase may not have been created yet; instead, ShowBase dynamically
 adds itself to this module's scope when instantiated."""
 
-__all__ = []
+__all__ = ()
 
 from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # pylint: disable=unused-import
@@ -22,6 +22,8 @@ from . import DConfig as config # pylint: disable=unused-import
 import warnings
 
 __dev__ = ConfigVariableBool('want-dev', __debug__).value
+
+base: ShowBase
 
 #: The global instance of the :ref:`virtual-file-system`, as obtained using
 #: :meth:`panda3d.core.VirtualFileSystem.getGlobalPtr()`.
@@ -81,7 +83,7 @@ def inspect(anObject):
 
 
 import builtins
-builtins.inspect = inspect
+builtins.inspect = inspect  # type: ignore[attr-defined]
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:

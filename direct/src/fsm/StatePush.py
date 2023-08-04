@@ -1,6 +1,8 @@
 # classes for event-driven programming
 # http://en.wikipedia.org/wiki/Event-driven_programming
 
+from __future__ import annotations
+
 __all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
            'EventArgument', ]
 

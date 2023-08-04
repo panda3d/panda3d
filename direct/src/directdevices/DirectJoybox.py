@@ -41,8 +41,12 @@ class DirectJoybox(DirectObject):
     xyzMultiplier = 1.0
     hprMultiplier = 1.0
 
-    def __init__(self, device = 'CerealBox', nodePath = base.direct.camera,
-                 headingNP = base.direct.camera):
+    def __init__(self, device = 'CerealBox', nodePath = None, headingNP = None):
+        from direct.showbase.ShowBaseGlobal import base
+        if nodePath is None:
+            nodePath = base.direct.camera
+        if headingNP is None:
+            headingNP = base.direct.camera
         # See if device manager has been initialized
         if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
