@@ -545,7 +545,17 @@ do_python_task() {
       Py_DECREF(_generator);
       _generator = nullptr;
 
-#if PY_VERSION_HEX >= 0x03030000
+#if PY_VERSION_HEX >= 0x030D0000 // Python 3.13
+      // Python 3.13 does not support _PyGen_FetchStopIterationValue anymore.
+      if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
+        PyObject *exc = PyErr_GetRaisedException();
+        result = ((PyStopIterationObject *)exc)->value;
+        if (result == nullptr) {
+          result = Py_None;
+        }
+        Py_INCREF(result);
+        Py_DECREF(exc);
+#elif PY_VERSION_HEX >= 0x03030000
       if (_PyGen_FetchStopIterationValue(&result) == 0) {
 #else
       if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
