@@ -617,9 +617,12 @@ do_python_task() {
       Py_DECREF(_generator);
       _generator = nullptr;
 
+#if PY_VERSION_HEX >= 0x030D0000 // Python 3.13
+      // Python 3.13 does not support _PyGen_FetchStopIterationValue anymore.
+      if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
+#else
       if (_PyGen_FetchStopIterationValue(&result) == 0) {
-        PyErr_Clear();
-
+#endif
         if (_must_cancel) {
           // Task was cancelled right before finishing.  Make sure it is not
           // getting rerun or marked as successfully completed.
@@ -636,12 +639,26 @@ do_python_task() {
             task_cat.debug()
               << *this << " received StopIteration from coroutine.\n";
           }
+
           // Store the result in _exc_value because that's not used anyway.
           Py_XDECREF(_exc_value);
+
+#if PY_VERSION_HEX >= 0x030D0000 // Python 3.13
+          PyObject *exc = PyErr_GetRaisedException();
+          _exc_value = ((PyStopIterationObject *)exc)->value;
+
+          Py_INCREF(_exc_value);
+          Py_DECREF(exc);
+#else
+          // Use exception gathered from _PyGen_FetchStopIterationValue
           _exc_value = result;
+#endif
+
+          PyErr_Clear();
           return DS_done;
         }
 
+        PyErr_Clear();
       } else if (PyErr_ExceptionMatches(Extension<AsyncFuture>::get_cancelled_error_type())) {
         // Someone cancelled the coroutine, and it did not bother to handle it,
         // so we should consider it cancelled.
