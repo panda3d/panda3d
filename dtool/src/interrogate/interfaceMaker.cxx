@@ -77,8 +77,8 @@ InterfaceMaker::Function::
  */
 InterfaceMaker::MakeSeq::
 MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
-  _name(name),
   _imake_seq(imake_seq),
+  _name(name),
   _length_getter(nullptr),
   _element_getter(nullptr)
 {
@@ -237,7 +237,7 @@ generate_wrappers() {
 
   int num_global_elements = idb->get_num_global_elements();
   for (int gi = 0; gi < num_global_elements; ++gi) {
-    printf(" Global Type = %d", gi);
+    //printf(" Global Type = %d", gi);
     TypeIndex type_index = idb->get_global_element(gi);
     record_object(type_index);
   }
@@ -256,12 +256,12 @@ generate_wrappers() {
       FunctionIndex func_index = iman.get_getter();
       record_function(dummy_type, func_index);
     }
-    printf(" Manifests %d\n", mi);
+    //printf(" Manifests %d\n", mi);
   }
 
   int num_elements = idb->get_num_global_elements();
   for (int ei = 0; ei < num_elements; ei++) {
-    printf(" Element %d\n", ei);
+    //printf(" Element %d\n", ei);
 
     ElementIndex element_index = idb->get_global_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);

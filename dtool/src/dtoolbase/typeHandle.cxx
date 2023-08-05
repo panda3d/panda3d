@@ -13,7 +13,6 @@
 
 #include "typeHandle.h"
 #include "typeRegistryNode.h"
-#include "atomicAdjust.h"
 
 /**
  * Returns the total allocated memory used by objects of this type, for the
@@ -29,7 +28,7 @@ get_memory_usage(MemoryClass memory_class) const {
   } else {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    return (size_t)AtomicAdjust::get(rnode->_memory_usage[memory_class]);
+    return rnode->_memory_usage[memory_class].load(std::memory_order_relaxed);
   }
 #endif  // DO_MEMORY_USAGE
   return 0;
@@ -48,10 +47,8 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    AtomicAdjust::add(rnode->_memory_usage[memory_class], (AtomicAdjust::Integer)size);
-    // cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " <<
-    // rnode->_memory_usage[memory_class] << "\n";
-    if (rnode->_memory_usage[memory_class] < 0) {
+    size_t prev = rnode->_memory_usage[memory_class].fetch_add(size, std::memory_order_relaxed);
+    if (prev + size < prev) {
       std::cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
@@ -72,10 +69,8 @@ dec_memory_usage(MemoryClass memory_class, size_t size) {
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    AtomicAdjust::add(rnode->_memory_usage[memory_class], -(AtomicAdjust::Integer)size);
-    // cerr << *this << ".dec(" << memory_class << ", " << size << ") -> " <<
-    // rnode->_memory_usage[memory_class] << "\n";
-    assert(rnode->_memory_usage[memory_class] >= 0);
+    size_t prev = rnode->_memory_usage[memory_class].fetch_sub(size, std::memory_order_relaxed);
+    assert(prev - size <= prev);
   }
 #endif  // DO_MEMORY_USAGE
 }
@@ -97,8 +92,8 @@ allocate_array(size_t size) {
 #endif
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)alloc_size);
-    if (rnode->_memory_usage[MC_array] < 0) {
+    size_t prev = rnode->_memory_usage[MC_array].fetch_add(alloc_size, std::memory_order_relaxed);
+    if (prev + size < prev) {
       std::cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
@@ -124,8 +119,11 @@ reallocate_array(void *old_ptr, size_t size) {
 
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)new_size - (AtomicAdjust::Integer)old_size);
-    assert(rnode->_memory_usage[MC_array] >= 0);
+    if (new_size > old_size) {
+      rnode->_memory_usage[MC_array].fetch_add(new_size - old_size, std::memory_order_relaxed);
+    } else {
+      rnode->_memory_usage[MC_array].fetch_sub(old_size - new_size, std::memory_order_relaxed);
+    }
   }
 #else
   void *new_ptr = PANDA_REALLOC_ARRAY(old_ptr, size);
@@ -146,8 +144,8 @@ deallocate_array(void *ptr) {
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
     assert(rnode != nullptr);
-    AtomicAdjust::add(rnode->_memory_usage[MC_array], -(AtomicAdjust::Integer)alloc_size);
-    assert(rnode->_memory_usage[MC_array] >= 0);
+    size_t prev = rnode->_memory_usage[MC_array].fetch_sub(alloc_size, std::memory_order_relaxed);
+    assert(prev - alloc_size <= prev);
   }
 #endif  // DO_MEMORY_USAGE
   PANDA_FREE_ARRAY(ptr);
@@ -157,7 +155,7 @@ deallocate_array(void *ptr) {
 /**
  * Returns the internal void pointer that is stored for interrogate's benefit.
  */
-PyObject *TypeHandle::
+PyTypeObject *TypeHandle::
 get_python_type() const {
   TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
   if (rnode != nullptr) {
@@ -166,26 +164,23 @@ get_python_type() const {
     return nullptr;
   }
 }
-#endif
 
 /**
- * Return the Index of the BEst fit Classs from a set
+ * Returns a Python wrapper object corresponding to the given C++ pointer.
  */
-int TypeHandle::
-get_best_parent_from_Set(const std::set< int > &legal_vals) const {
-  if (legal_vals.find(_index) != legal_vals.end()) {
-    return _index;
+PyObject *TypeHandle::
+wrap_python(void *ptr, PyTypeObject *cast_from) const {
+  if (ptr == nullptr) {
+    return nullptr;
   }
-
-  for (int pi = 0; pi < get_num_parent_classes(); ++pi) {
-    TypeHandle ph = get_parent_class(pi);
-    int val = ph.get_best_parent_from_Set(legal_vals);
-    if (val > 0) {
-      return val;
-    }
+  TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
+  if (rnode != nullptr) {
+    return rnode->wrap_python(ptr, cast_from);
+  } else {
+    return nullptr;
   }
-  return -1;
 }
+#endif
 
 std::ostream &
 operator << (std::ostream &out, TypeHandle::MemoryClass mem_class) {

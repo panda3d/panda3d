@@ -535,8 +535,8 @@ get_data() const {
 INLINE vector_uchar GeomVertexArrayDataHandle::
 get_subdata(size_t start, size_t size) const {
   mark_used();
-  start = std::min(start, _cdata->_buffer.get_size());
-  size = std::min(size, _cdata->_buffer.get_size() - start);
+  start = (std::min)(start, _cdata->_buffer.get_size());
+  size = (std::min)(size, _cdata->_buffer.get_size() - start);
   const unsigned char *ptr = _cdata->_buffer.get_read_pointer(true) + start;
   return vector_uchar(ptr, ptr + size);
 }

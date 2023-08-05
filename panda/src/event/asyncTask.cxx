@@ -21,7 +21,7 @@
 using std::string;
 
 AtomicAdjust::Integer AsyncTask::_next_task_id;
-PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
+PStatCollector AsyncTask::_tasks_pcollector("App:Tasks");
 TypeHandle AsyncTask::_type_handle;
 
 /**
@@ -68,6 +68,9 @@ AsyncTask::
  * Removes the task from its active manager, if any, and makes the state
  * S_inactive (or possible S_servicing_removed).  This is a no-op if the state
  * is already S_inactive.
+ *
+ * If the task is a coroutine that is currently awaiting a future, this will
+ * fail, but see also cancel().
  */
 bool AsyncTask::
 remove() {
@@ -206,11 +209,11 @@ set_name(const string &name) {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }
-  PStatCollector parent(_show_code_pcollector, name.substr(0, trimmed));
+  PStatCollector parent(_tasks_pcollector, name.substr(0, trimmed));
   // prevent memory leak _task_pcollector = PStatCollector(parent,
   // name.substr(0, end));
   _task_pcollector = parent;
@@ -234,7 +237,7 @@ get_name_prefix() const {
       --p;
       trimmed = p;
     } else {
-      p = trimmed;
+      //p = trimmed;
       break;
     }
   }
@@ -457,7 +460,8 @@ unlock_and_do_task() {
 }
 
 /**
- * Cancels this task.  This is equivalent to remove().
+ * Cancels this task.  This is equivalent to remove(), except for coroutines,
+ * for which it will throw an exception into any currently pending await.
  */
 bool AsyncTask::
 cancel() {

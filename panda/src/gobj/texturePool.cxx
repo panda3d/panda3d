@@ -28,6 +28,8 @@
 #include "mutexHolder.h"
 #include "dcast.h"
 
+#include <algorithm>
+
 using std::istream;
 using std::ostream;
 using std::string;
@@ -66,13 +68,87 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
  * Records a TexturePoolFilter object that may operate on texture images as
  * they are loaded from disk.
  */
-void TexturePool::
-register_filter(TexturePoolFilter *filter) {
-  MutexHolder holder(_lock);
+bool TexturePool::
+ns_register_filter(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  // Make sure we haven't already registered this filter.
+  if (std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end()) {
+    gobj_cat->warning()
+      << "Attempted to register texture filter " << *tex_filter
+      << " more than once.\n";
+    return false;
+  }
 
   gobj_cat.info()
-    << "Registering Texture filter " << *filter << "\n";
-  _filter_registry.push_back(filter);
+    << "Registering Texture filter " << *tex_filter << "\n";
+  _filter_registry.push_back(tex_filter);
+  return true;
+}
+
+/**
+ * Stops all TexturePoolFilter objects from operating on this pool.
+ */
+void TexturePool::
+ns_clear_filters() {
+  MutexHolder holder(_filter_lock);
+
+  _filter_registry.clear();
+}
+
+/**
+ * Checks whether the given TexturePoolFilter object is
+ * currently registered in the texture pool or not.
+ */
+bool TexturePool::
+ns_is_filter_registered(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  return std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
+}
+
+/**
+ * Stops a TexturePoolFilter object from operating on this pool.
+ */
+bool TexturePool::
+ns_unregister_filter(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  FilterRegistry::iterator fi = std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter);
+
+  if (fi == _filter_registry.end()) {
+    gobj_cat.warning()
+      << "Attempted to unregister texture filter " << *tex_filter
+      << " which was not registered.\n";
+    return false;
+  }
+
+  gobj_cat.info()
+    << "Unregistering Texture filter " << *tex_filter << "\n";
+  _filter_registry.erase(fi);
+  return true;
+}
+
+/**
+ * Returns the total number of registered texture pool filters.
+ */
+size_t TexturePool::
+get_num_filters() const {
+  return _filter_registry.size();
+}
+
+/**
+ * Returns the nth texture pool filter registered.
+ */
+TexturePoolFilter *TexturePool::
+get_filter(size_t i) const {
+  MutexHolder holder(_filter_lock);
+
+  if (i >= 0 && i < _filter_registry.size()) {
+    return _filter_registry[i];
+  }
+
+  return nullptr;
 }
 
 /**
@@ -198,13 +274,69 @@ ns_has_texture(const Filename &orig_filename) {
 }
 
 /**
+ * The nonstatic implementation of get_texture().
+ */
+Texture *TexturePool::
+ns_get_texture(const Filename &orig_filename, int primary_file_num_channels,
+               bool read_mipmaps) {
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  {
+    MutexHolder holder(_lock);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, LoaderOptions());
+
+    Textures::const_iterator ti;
+    ti = _textures.find(key);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
+ * The nonstatic implementation of get_texture().
+ */
+Texture *TexturePool::
+ns_get_texture(const Filename &orig_filename,
+               const Filename &orig_alpha_filename,
+               int primary_file_num_channels,
+               int alpha_file_channel,
+               bool read_mipmaps) {
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  key._alpha_file_channel = alpha_file_channel;
+  {
+    MutexHolder holder(_lock);
+    LoaderOptions options;
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
+    resolve_filename(key._alpha_fullpath, orig_alpha_filename, read_mipmaps, options);
+
+    Textures::const_iterator ti;
+    ti = _textures.find(key);
+    if (ti != _textures.end()) {
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
  * The nonstatic implementation of load_texture().
  */
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-                bool read_mipmaps, const LoaderOptions &options) {
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
+
+  LookupKey key(Texture::TT_2d_texture, primary_file_num_channels, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -223,10 +355,13 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
+  bool use_filters = (options.get_texture_flags() & LoaderOptions::TF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
-                 read_mipmaps, options);
+  if (use_filters) {
+    tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
+                   read_mipmaps, options);
+  }
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
@@ -346,8 +481,10 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   nassertr(!tex->get_fullpath().empty(), tex);
 
   // Finally, apply any post-loading texture filters.
-  tex = post_load(tex);
-
+  if (use_filters) {
+    tex = post_load(tex);
+  }
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -359,15 +496,13 @@ ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
-                bool read_mipmaps, const LoaderOptions &options) {
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
-                           read_mipmaps, options);
+                           read_mipmaps, options, sampler);
   }
 
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
-  key._alpha_file_channel = alpha_file_channel;
+  LookupKey key(Texture::TT_2d_texture, primary_file_num_channels, alpha_file_channel, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -386,10 +521,13 @@ ns_load_texture(const Filename &orig_filename,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
+  bool use_filters = (options.get_texture_flags() & LoaderOptions::TF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, orig_alpha_filename, primary_file_num_channels,
-                 alpha_file_channel, read_mipmaps, options);
+  if (use_filters) {
+    tex = pre_load(orig_filename, orig_alpha_filename, primary_file_num_channels,
+                   alpha_file_channel, read_mipmaps, options);
+  }
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
@@ -476,8 +614,10 @@ ns_load_texture(const Filename &orig_filename,
   nassertr(!tex->get_fullpath().empty(), tex);
 
   // Finally, apply any post-loading texture filters.
-  tex = post_load(tex);
-
+  if (use_filters) {
+    tex = post_load(tex);
+  }
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -486,12 +626,11 @@ ns_load_texture(const Filename &orig_filename,
  */
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
-                   bool read_mipmaps, const LoaderOptions &options) {
+                   bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_3d_texture;
+  LookupKey key(Texture::TT_3d_texture, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -580,6 +719,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -588,12 +728,11 @@ ns_load_3d_texture(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_2d_texture_array(const Filename &filename_pattern,
-                         bool read_mipmaps, const LoaderOptions &options) {
+                         bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_2d_texture_array;
+  LookupKey key(Texture::TT_2d_texture_array, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -682,6 +821,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -690,12 +830,11 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
-                 const LoaderOptions &options) {
+                 const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_cube_map;
+  LookupKey key(Texture::TT_cube_map, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -784,6 +923,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -803,6 +943,49 @@ ns_get_normalization_cube_map(int size) {
   }
 
   return _normalization_cube_map;
+}
+
+/**
+ * The texture is loaded, apply any atributes that were sent in with the texture through LoaderOptions
+ * and Sampler State
+ */
+void TexturePool::
+apply_texture_attributes(Texture *tex, const LoaderOptions &options, const SamplerState &sampler) {
+  int format = options.get_texture_format();
+  if (format != 0) {
+    tex->set_format((Texture::Format)format);
+  }
+  else if (options.get_texture_flags() & LoaderOptions::TF_force_srgb) {
+    int num_components = tex->get_num_components();
+    if (num_components == 1) {
+      if (!Texture::has_alpha(tex->get_format())) {
+        tex->set_format(Texture::F_sluminance);
+      }
+    }
+    else if (num_components == 2 && Texture::has_alpha(tex->get_format())) {
+      tex->set_format(Texture::F_sluminance_alpha);
+    }
+    else if (num_components == 3) {
+      tex->set_format(Texture::F_srgb);
+    }
+    else if (num_components == 4) {
+      tex->set_format(Texture::F_srgb_alpha);
+    }
+    else {
+      gobj_cat.warning()
+        << "Unable to enable sRGB format on texture " << tex->get_name()
+        << " with specified format " << tex->get_format() << "\n";
+    }
+  }
+  int compression = options.get_texture_compression();
+  if (compression != 0) {
+    tex->set_compression((Texture::CompressionMode)compression);
+  }
+  int quality = options.get_texture_quality();
+  if (quality != 0) {
+    tex->set_quality_level((Texture::QualityLevel)quality);
+  }
+  tex->set_default_sampler(sampler);
 }
 
 /**
@@ -1212,8 +1395,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          int primary_file_num_channels, int alpha_file_channel,
          bool read_mipmaps, const LoaderOptions &options) {
   PT(Texture) tex;
-
-  MutexHolder holder(_lock);
+  MutexHolder holder(_filter_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
@@ -1237,7 +1419,7 @@ PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
 
-  MutexHolder holder(_lock);
+  MutexHolder holder(_filter_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();

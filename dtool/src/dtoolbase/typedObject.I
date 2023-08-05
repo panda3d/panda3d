@@ -44,14 +44,6 @@ is_exact_type(TypeHandle handle) const {
 }
 
 /**
- *
- */
-INLINE int TypedObject::
-get_best_parent_from_Set(const std::set<int> &inset) const {
-  return get_type().get_best_parent_from_Set(inset);
-}
-
-/**
  * Returns the object, upcast (if necessary) to a TypedObject pointer.
  */
 INLINE TypedObject *TypedObject::

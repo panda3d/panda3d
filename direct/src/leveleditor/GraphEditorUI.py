@@ -3,7 +3,6 @@ Defines Graph Editor
 """
 import wx
 import math
-from .PaletteTreeCtrl import *
 from . import ObjectGlobals as OG
 from . import AnimGlobals as AG
 from wx.lib.embeddedimage import PyEmbeddedImage
@@ -12,7 +11,7 @@ property =  [
     "translateX",
     "translateY",
     "translateZ"
-    ]
+]
 
 #----------------------------------------------------------------------
 ZoomIn = PyEmbeddedImage(
@@ -80,17 +79,19 @@ TwoTangents = PyEmbeddedImage(
 
 #----------------------------------------------------------------------
 
+
 class GraphEditorWindow(wx.Window):
     """
     This is the main graph editor window.
     """
+
     def __init__(self, parent, windowSize, property, xRange, yRange, curFrame, object):
         wx.Window.__init__(self, parent, size = windowSize, style = wx.SUNKEN_BORDER)
 
         self._mainDialog = wx.GetTopLevelParent(self)
         self.w,self.h = self.GetClientSize()
 
-        self.zoom = float(2)
+        self.zoom = 2.0
         self._mouseIn = False
         self._selectRec = False
         self._selectHandler = False
@@ -100,10 +101,10 @@ class GraphEditorWindow(wx.Window):
         self.curFrame = curFrame
         self.property = property
 
-        self.zeroPos = (float(0), self.h/float(2))
+        self.zeroPos = (0.0, self.h / 2.0)
         self.zero = 0
-        self.unitWidth = self.w/float(xRange)
-        self.unitHeight = self.h/float(yRange)
+        self.unitWidth = self.w / float(xRange)
+        self.unitHeight = self.h / float(yRange)
 
         self.generateInfo()
         self.InitBuffer()
@@ -158,31 +159,31 @@ class GraphEditorWindow(wx.Window):
         t2x = item[AG.OUTSLOPE][0]*self.unitWidth
         t2y = item[AG.OUTSLOPE][1]*self.unitHeight
 
-        tanA = t1y/t1x
-        temp1 = float(1)/(tanA**2+1)
-        if t1x <0 :
+        tanA = t1y / t1x
+        temp1 = 1.0 / (tanA ** 2 + 1)
+        if t1x < 0:
             cosA = -math.sqrt(abs(temp1))
-        if t1x >=0:
+        if t1x >= 0:
             cosA = math.sqrt(abs(temp1))
-        temp2 = (tanA**2)*temp1
-        if t1y <0 :
+        temp2 = (tanA ** 2) * temp1
+        if t1y < 0:
             sinA = -math.sqrt(abs(temp2))
-        if t1y >=0:
+        if t1y >= 0:
             sinA = math.sqrt(abs(temp2))
 
         x2 = x1-float(self.unitWidth*self.zoom)*cosA
         y2 = y1+float(self.unitWidth*self.zoom)*sinA
 
-        tanA = t2y/t2x
-        temp1 = float(1)/(tanA**2+1)
-        if t2x <0 :
+        tanA = t2y / t2x
+        temp1 = 1.0 / (tanA ** 2 + 1)
+        if t2x < 0:
             cosA = -math.sqrt(abs(temp1))
-        if t2x >=0:
+        if t2x >= 0:
             cosA = math.sqrt(abs(temp1))
-        temp2 = (tanA**2)*temp1
-        if t2y <0 :
+        temp2 = (tanA ** 2) * temp1
+        if t2y < 0:
             sinA = -math.sqrt(abs(temp2))
-        if t2y >=0:
+        if t2y >= 0:
             sinA = math.sqrt(abs(temp2))
 
         x3 = x1+float(self.unitWidth*self.zoom)*cosA
@@ -214,9 +215,9 @@ class GraphEditorWindow(wx.Window):
 
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
-        dc.DrawLine(self.zeroPos[0], float(0), self.zeroPos[0], self.h)
+        dc.DrawLine(self.zeroPos[0], 0.0, self.zeroPos[0], self.h)
         st = str(self.zero)
         self.tw,self.th = dc.GetTextExtent(st)
         dc.DrawText(st, self.zeroPos[0]+1.0, self.h-self.th-0.5)
@@ -228,7 +229,7 @@ class GraphEditorWindow(wx.Window):
             posPos = self.zeroPos[0]+self.unitWidth
             posNum = self.zero + 1
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth
@@ -236,37 +237,37 @@ class GraphEditorWindow(wx.Window):
 
             negPos = self.zeroPos[0]-self.unitWidth
             negNum = self.zero - 1
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth
                 posNum -= 1
 
         elif self.unitWidth >= 10 and self.unitWidth <= 25:
-            posPos = self.zeroPos[0]+self.unitWidth*float(2)
+            posPos = self.zeroPos[0]+self.unitWidth*2.0
             posNum = self.zero + 2
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
-                posPos += self.unitWidth*float(2)
+                posPos += self.unitWidth*2.0
                 posNum += 2
 
-            negPos = self.zeroPos[0]-self.unitWidth*float(2)
+            negPos = self.zeroPos[0]-self.unitWidth*2.0
             negNum = self.zero - 2
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
-                negPos -= self.unitWidth*float(2)
+                negPos -= self.unitWidth*2.0
                 posNum -= 2
 
         elif self.unitWidth >= 2 and self.unitWidth <= 10:
             posPos = self.zeroPos[0]+self.unitWidth*float(5)
             posNum = self.zero + 5
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth*float(5)
@@ -274,8 +275,8 @@ class GraphEditorWindow(wx.Window):
 
             negPos = self.zeroPos[0]-self.unitWidth*float(5)
             negNum = self.zero - 5
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth*float(5)
@@ -284,9 +285,9 @@ class GraphEditorWindow(wx.Window):
     def DrawYCoord(self,dc):
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
-        dc.DrawLine(float(0), self.zeroPos[1], self.w, self.zeroPos[1])
+        dc.DrawLine(0.0, self.zeroPos[1], self.w, self.zeroPos[1])
         st = str(self.zero)
         dc.DrawText(st, 5.0, self.zeroPos[1]-1.0)
 
@@ -296,8 +297,8 @@ class GraphEditorWindow(wx.Window):
 
         posPos = self.zeroPos[1]-self.unitHeight*float(5)
         posNum = self.zero + 5
-        while posPos >= float(0):
-            dc.DrawLine(float(0), posPos, self.w, posPos)
+        while posPos >= 0.0:
+            dc.DrawLine(0.0, posPos, self.w, posPos)
             st = str(posNum)
             self.drawYNumber(dc, st, posPos)
             posPos -= self.unitHeight*float(5)
@@ -306,7 +307,7 @@ class GraphEditorWindow(wx.Window):
         negPos = self.zeroPos[1]+self.unitHeight*float(5)
         negNum = self.zero - 5
         while negPos <= self.h:
-            dc.DrawLine(float(0), negPos, self.w, negPos)
+            dc.DrawLine(0.0, negPos, self.w, negPos)
             st = str(negNum)
             self.drawYNumber(dc, st, negPos)
             negPos += self.unitHeight*float(5)
@@ -339,7 +340,7 @@ class GraphEditorWindow(wx.Window):
             curFramePos = self.zeroPos[0]+self.curFrame*self.unitWidth
             dc.SetPen(wx.Pen("red"))
             dc.SetBrush(wx.Brush("red"))
-            dc.DrawLine(curFramePos, float(0), curFramePos, self.h)
+            dc.DrawLine(curFramePos, 0.0, curFramePos, self.h)
         else:
             pass
 
@@ -366,19 +367,19 @@ class GraphEditorWindow(wx.Window):
 
     def DrawCurve(self, dc):
         if self.property == self._mainDialog.namestr:
-           self.drawX(dc)
-           self.drawY(dc)
-           self.drawZ(dc)
-           return
+            self.drawX(dc)
+            self.drawY(dc)
+            self.drawZ(dc)
+            return
         if self.property == property[AG.X]:
-           self.drawX(dc)
-           return
+            self.drawX(dc)
+            return
         if self.property == property[AG.Y]:
-           self.drawY(dc)
-           return
+            self.drawY(dc)
+            return
         if self.property == property[AG.Z]:
-           self.drawZ(dc)
-           return
+            self.drawZ(dc)
+            return
 
     def drawSingleCurve(self, list, dc):
         if len(list) == 1:
@@ -389,7 +390,7 @@ class GraphEditorWindow(wx.Window):
             dc.DrawLine(list[0][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[0][AG.KEYFRAME][AG.LOCAL_VALUE][1], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][1])
             return
 
-        if len(list)>=3 :
+        if len(list) >= 3:
             for i in range(len(list)-1):
                 x1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]
                 y1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
@@ -403,32 +404,31 @@ class GraphEditorWindow(wx.Window):
                 t2x = list[i+1][AG.IN_SLOPE][0]
                 t2y = list[i+1][AG.IN_SLOPE][1]
 
-                x2 = x1 + (x4 - x1) / float(3);
-                scale1 = (x2 - x1) / t1x;
-                y2 = y1 - t1y * scale1;
+                x2 = x1 + (x4 - x1) / 3.0
+                scale1 = (x2 - x1) / t1x
+                y2 = y1 - t1y * scale1
 
+                x3 = x4 - (x4 - x1) / 3.0
+                scale2 = (x4 - x3) / t2x
+                y3 = y4 + t2y * scale2
 
-                x3 = x4 - (x4 - x1) / float(3);
-                scale2 = (x4 - x3) / t2x;
-                y3 = y4 + t2y * scale2;
+                ax = - 1.0 * x1 + 3.0 * x2 - 3.0 * x3 + 1.0 * x4
+                bx =   3.0 * x1 - 6.0 * x2 + 3.0 * x3 + 0.0 * x4
+                cx = - 3.0 * x1 + 3.0 * x2 + 0.0 * x3 + 0.0 * x4
+                dx =   1.0 * x1 + 0.0 * x2 - 0.0 * x3 + 0.0 * x4
 
-                ax = - float(1) * x1 + float(3) * x2 - float(3) * x3 + float(1) * x4;
-                bx =   float(3) * x1 - float(6) * x2 + float(3) * x3 + float(0) * x4;
-                cx = - float(3) * x1 + float(3) * x2 + float(0) * x3 + float(0) * x4;
-                dx =   float(1) * x1 + float(0) * x2 - float(0) * x3 + float(0) * x4;
-
-                ay = - float(1) * y1 + float(3) * y2 - float(3) * y3 + float(1) * y4;
-                by =   float(3) * y1 - float(6) * y2 + float(3) * y3 + float(0) * y4;
-                cy = - float(3) * y1 + float(3) * y2 + float(0) * y3 + float(0) * y4;
-                dy =   float(1) * y1 + float(0) * y2 - float(0) * y3 + float(0) * y4;
+                ay = - 1.0 * y1 + 3.0 * y2 - 3.0 * y3 + 1.0 * y4
+                by =   3.0 * y1 - 6.0 * y2 + 3.0 * y3 + 0.0 * y4
+                cy = - 3.0 * y1 + 3.0 * y2 + 0.0 * y3 + 0.0 * y4
+                dy =   1.0 * y1 + 0.0 * y2 - 0.0 * y3 + 0.0 * y4
 
                 preX = x1
                 preY = y1
                 t = 0.001
 
-                while t<=float(1):
-                    x = ax * t*t*t + bx * t*t + cx * t + dx;
-                    y = ay * t*t*t + by * t*t + cy * t + dy;
+                while t <= 1.0:
+                    x = ax * t*t*t + bx * t*t + cx * t + dx
+                    y = ay * t*t*t + by * t*t + cy * t + dy
 
                     curX = x
                     curY = y
@@ -446,12 +446,12 @@ class GraphEditorWindow(wx.Window):
             pointY = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
 
             if list[i][AG.KEYFRAME][AG.SELECT] == 0:
-                dc.SetPen(wx.Pen("black",3))
+                dc.SetPen(wx.Pen("black", 3))
                 dc.SetBrush(wx.Brush("black"))
                 dc.DrawCircle(pointX, pointY, 2)
 
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
-                dc.SetPen(wx.Pen("cyan",3))
+                dc.SetPen(wx.Pen("cyan", 3))
                 dc.SetBrush(wx.Brush("cyan"))
                 dc.DrawCircle(pointX, pointY, 2)
 
@@ -460,69 +460,69 @@ class GraphEditorWindow(wx.Window):
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
                 X1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]
                 Y1 = list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]
-                if self._OneTangent == True:
-                    for j in range(3,5):
+                if self._OneTangent is True:
+                    for j in range(3, 5):
                         X = list[i][j][AG.LOCAL_VALUE][0]
                         Y = list[i][j][AG.LOCAL_VALUE][1]
                         if list[i][j][AG.SELECT] == 1:
-                            dc.SetPen(wx.Pen("cyan",3))
+                            dc.SetPen(wx.Pen("cyan", 3))
                             dc.SetBrush(wx.Brush("cyan"))
                             dc.DrawCircle(X, Y, 2)
 
-                            dc.SetPen(wx.Pen("cyan",1))
+                            dc.SetPen(wx.Pen("cyan", 1))
                             dc.DrawLine(X1, Y1, X, Y)
 
                         if list[i][j][AG.SELECT] == 0:
-                            dc.SetPen(wx.Pen("brown",3))
+                            dc.SetPen(wx.Pen("brown", 3))
                             dc.SetBrush(wx.Brush("brown"))
                             dc.DrawCircle(X, Y, 2)
 
-                            dc.SetPen(wx.Pen("brown",1))
+                            dc.SetPen(wx.Pen("brown", 1))
                             dc.DrawLine(X1, Y1, X, Y)
 
-                if self._OneTangent == False:
+                if self._OneTangent is False:
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("cyan",3))
+                        dc.SetPen(wx.Pen("cyan", 3))
                         dc.SetBrush(wx.Brush("cyan"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("cyan",1))
+                        dc.SetPen(wx.Pen("cyan", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("navy",3))
+                        dc.SetPen(wx.Pen("navy", 3))
                         dc.SetBrush(wx.Brush("navy"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("navy",1))
+                        dc.SetPen(wx.Pen("navy", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("cyan",3))
+                        dc.SetPen(wx.Pen("cyan", 3))
                         dc.SetBrush(wx.Brush("cyan"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("cyan",1))
+                        dc.SetPen(wx.Pen("cyan", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
                         Y = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1]
-                        dc.SetPen(wx.Pen("brown",3))
+                        dc.SetPen(wx.Pen("brown", 3))
                         dc.SetBrush(wx.Brush("brown"))
                         dc.DrawCircle(X, Y, 2)
 
-                        dc.SetPen(wx.Pen("brown",1))
+                        dc.SetPen(wx.Pen("brown", 1))
                         dc.DrawLine(X1, Y1, X, Y)
 
     def DrawSelectRec(self, dc):
-        if self._selectRec == True:
+        if self._selectRec is True:
             dc.SetPen(wx.Pen("navy", 1))
             dc.SetBrush(wx.Brush("navy"))
             ## dc.SetLogicalFunction(wx.AND)
@@ -531,21 +531,21 @@ class GraphEditorWindow(wx.Window):
             dc.DrawLine(self.newPos[0], self.newPos[1], self.pos[0], self.newPos[1])
             dc.DrawLine(self.newPos[0], self.newPos[1], self.newPos[0], self.pos[1])
 
-    def OnSize(self,evt):
+    def OnSize(self, evt):
         self.InitBuffer()
 
-    def OnLeftDown(self,evt):
+    def OnLeftDown(self, evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= float(0) and point[1]<= float(self.h):
-            if point[0]>= float(0) and point[0]<= float(self.w):
+        if point[1] >= 0.0 and point[1] <= float(self.h):
+            if point[0] >= 0.0 and point[0] <= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
             self.CaptureMouse()
             self.pos = point
 
-    def OnLeftUp(self,evt):
+    def OnLeftUp(self, evt):
         if self.GetCapture():
             self.ReleaseMouse()
             self._mouseIn = False
@@ -553,11 +553,11 @@ class GraphEditorWindow(wx.Window):
             self.setSelection()
             self.SetGraphEditorData(self.property, self.curFrame)
 
-    def OnMiddleDown(self,evt):
+    def OnMiddleDown(self, evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= float(0) and point[1]<= float(self.h):
-            if point[0]>= float(0) and point[0]<= float(self.w):
+        if point[1] >= 0.0 and point[1] <= float(self.h):
+            if point[0] >= 0.0 and point[0] <= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
@@ -568,12 +568,12 @@ class GraphEditorWindow(wx.Window):
         if self.GetCapture():
             self.ReleaseMouse()
 
-    def OnMotion(self,evt):
+    def OnMotion(self, evt):
         self._mouseIn = False
         if evt.Dragging() and evt.LeftIsDown():
             self.newPos = (evt.GetX(), evt.GetY())
-            if self.newPos[1]>= float(0) and self.newPos[1]<= float(self.h):
-                if self.newPos[0]>= float(0) and self.newPos[0]<= float(self.w):
+            if self.newPos[1] >= 0.0 and self.newPos[1] <= float(self.h):
+                if self.newPos[0] >= 0.0 and self.newPos[0] <= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -586,8 +586,8 @@ class GraphEditorWindow(wx.Window):
 
         if evt.Dragging() and evt.MiddleIsDown():
             self.newMidPos = (evt.GetX(), evt.GetY())
-            if self.newMidPos[1]>= float(0) and self.newMidPos[1]<= float(self.h):
-                if self.newMidPos[0]>= float(0) and self.newMidPos[0]<= float(self.w):
+            if self.newMidPos[1] >= 0.0 and self.newMidPos[1] <= float(self.h):
+                if self.newMidPos[0] >= 0.0 and self.newMidPos[0] <= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -608,19 +608,19 @@ class GraphEditorWindow(wx.Window):
         for i in range(len(list)):
             if list[i][AG.KEYFRAME][AG.SELECT] == 1:
                 inside = self.inside(self.pos, self.newPos, (list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]))
-                if inside == True:
+                if inside is True:
                     list[i][AG.KEYFRAME][AG.SELECT] = 0
-                if inside == False:
+                if inside is False:
                     find = False
                     for j in range(3,5):
                         inside = self.inside(self.pos, self.newPos, (list[i][j][AG.LOCAL_VALUE][0], list[i][j][AG.LOCAL_VALUE][1]))
-                        if inside == False:
+                        if inside is False:
                             list[i][j][AG.SELECT] = 0
-                        if inside == True:
+                        if inside is True:
                             list[i][j][AG.SELECT] = 1
                             find = True
                             flag = True
-                    if find == False:
+                    if find is False:
                         list[i][AG.KEYFRAME][AG.SELECT] == 0
 
         return flag
@@ -628,52 +628,52 @@ class GraphEditorWindow(wx.Window):
     def setNewKey(self, list):
         for i in range(len(list)):
             inside = self.inside(self.pos, self.newPos, (list[i][2][0][0], list[i][2][0][1]))
-            if inside == True:
+            if inside is True:
                 list[i][AG.KEYFRAME][AG.SELECT] = 1
-            if inside == False:
+            if inside is False:
                 list[i][AG.KEYFRAME][AG.SELECT] = 0
 
     def setSelection(self):
         if self.property == self._mainDialog.namestr:
-           self.setSelectionBase(self.X)
-           self.setSelectionBase(self.Y)
-           self.setSelectionBase(self.Z)
-           return
+            self.setSelectionBase(self.X)
+            self.setSelectionBase(self.Y)
+            self.setSelectionBase(self.Z)
+            return
         if self.property == property[AG.X]:
-           self.setSelectionBase(self.X)
-           return
+            self.setSelectionBase(self.X)
+            return
         if self.property == property[AG.Y]:
-           self.setSelectionBase(self.Y)
-           return
+            self.setSelectionBase(self.Y)
+            return
         if self.property == property[AG.Z]:
-           self.setSelectionBase(self.Z)
-           return
+            self.setSelectionBase(self.Z)
+            return
 
     def setSelectionBase(self, list):
         self.setExistKey(list)
-        if self.setExistKey(list) == True:
+        if self.setExistKey(list) is True:
             return
         else:
             self.setNewKey(list)
 
     def inside(self, point0, point1, point):
-        if point0[0]<=point1[0] and point0[1]<=point1[1]:
-            if point0[0]<point[0] and point[0]<point1[0] and point0[1]<point[1] and point[1]<point1[1]:
+        if point0[0] <= point1[0] and point0[1] <= point1[1]:
+            if point0[0] < point[0] and point[0] < point1[0] and point0[1] < point[1] and point[1] < point1[1]:
                 return True
             else:
                 return False
-        elif point1[0]<=point0[0] and point0[1]<=point1[1]:
-            if point1[0]<point[0] and point[0]<point0[0] and point0[1]<point[1] and point[1]<point1[1]:
+        elif point1[0] <= point0[0] and point0[1] <= point1[1]:
+            if point1[0] < point[0] and point[0] < point0[0] and point0[1] < point[1] and point[1] < point1[1]:
                 return True
             else:
                 return False
-        elif point0[0]<=point1[0] and point1[1]<=point0[1]:
-            if point0[0]<point[0] and point[0]<point1[0] and point1[1]<point[1] and point[1]<point0[1]:
+        elif point0[0] <= point1[0] and point1[1] <= point0[1]:
+            if point0[0] < point[0] and point[0] < point1[0] and point1[1] < point[1] and point[1] < point0[1]:
                 return True
             else:
                 return False
-        elif point1[0]<=point0[0] and point1[1]<=point0[1]:
-            if point1[0]<point[0] and point[0]<point0[0] and point1[1]<point[1] and point[1]<point0[1]:
+        elif point1[0] <= point0[0] and point1[1] <= point0[1]:
+            if point1[0] < point[0] and point[0] < point0[0] and point1[1] < point[1] and point[1] < point0[1]:
                 return True
             else:
                 return False
@@ -682,19 +682,19 @@ class GraphEditorWindow(wx.Window):
 
     def recalculateSlope(self):
         if self.property == self._mainDialog.namestr:
-           self.recalculateSlopeBase(self.X)
-           self.recalculateSlopeBase(self.Y)
-           self.recalculateSlopeBase(self.Z)
-           return
+            self.recalculateSlopeBase(self.X)
+            self.recalculateSlopeBase(self.Y)
+            self.recalculateSlopeBase(self.Z)
+            return
         if self.property == property[AG.X]:
-           self.recalculateSlopeBase(self.X)
-           return
+            self.recalculateSlopeBase(self.X)
+            return
         if self.property == property[AG.Y]:
-           self.recalculateSlopeBase(self.Y)
-           return
+            self.recalculateSlopeBase(self.Y)
+            return
         if self.property == property[AG.Z]:
-           self.recalculateSlopeBase(self.Z)
-           return
+            self.recalculateSlopeBase(self.Z)
+            return
 
     def recalculateSlopeBase(self, list):
         #recalculate the tangent slope
@@ -707,24 +707,24 @@ class GraphEditorWindow(wx.Window):
                     newPointX = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0] + moveX
                     newPointY = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][1] + moveY
 
-                    newSlope = [list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] - newPointX , newPointY - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]]
+                    newSlope = [list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] - newPointX, newPointY - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1]]
 
                     temp0 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0]
                     temp1 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1]
                     self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = newSlope[0]/self.unitWidth
                     self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = newSlope[1]/self.unitHeight
                     handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
-                    if handler[1][0][0]>= list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
+                    if handler[1][0][0] >= list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = temp0
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = temp1
                         return
                     if handler[1][0][0] < list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
-                        if self._OneTangent == False:
+                        if self._OneTangent is False:
                             list[i][AG.IN_TANGENT][0] = handler[1][0]
                             list[i][AG.IN_SLOPE][0] = handler[3][0]
                             list[i][AG.IN_SLOPE][1] = handler[3][1]
 
-                        if self._OneTangent == True:
+                        if self._OneTangent is True:
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][0] = newSlope[0]/self.unitWidth
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1] = newSlope[1]/self.unitHeight
                             handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
@@ -741,7 +741,7 @@ class GraphEditorWindow(wx.Window):
                     newPointX = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0] + moveX
                     newPointY = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][1] + moveY
 
-                    newSlope = [newPointX  - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0] , list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1] - newPointY]
+                    newSlope = [newPointX  - list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[i][AG.KEYFRAME][AG.LOCAL_VALUE][1] - newPointY]
 
                     temp0 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][0]
                     temp1 = self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1]
@@ -754,12 +754,12 @@ class GraphEditorWindow(wx.Window):
                         self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.OUTSLOPE][1] = temp1
                         return
                     if handler[2][0][0] > list[i][AG.KEYFRAME][AG.LOCAL_VALUE][0]:
-                        if self._OneTangent == False:
+                        if self._OneTangent is False:
                             list[i][AG.OUT_TANGENT][0] = handler[2][0]
                             list[i][AG.OUT_SLOPE][0] = handler[4][0]
                             list[i][AG.OUT_SLOPE][1] = handler[4][1]
 
-                        if self._OneTangent == True:
+                        if self._OneTangent is True:
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][0] = newSlope[0]/self.unitWidth
                             self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]][AG.INSLOPE][1] = newSlope[1]/self.unitHeight
                             handler = self.generateHandler(self._mainDialog.editor.animMgr.keyFramesInfo[list[i][AG.KEY]][list[i][AG.I]])
@@ -786,6 +786,7 @@ class GraphEditorUI(wx.Dialog):
     """
     This is the graph editor main class implementation.
     """
+
     def __init__(self, parent, editor, object):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title="Graph Editor",
                            pos=wx.DefaultPosition, size=(735, 535))
@@ -806,10 +807,10 @@ class GraphEditorUI(wx.Dialog):
         bmpOneTangent = OneTangent.GetBitmap()
         bmpTwoTangents = TwoTangents.GetBitmap()
 
-        self.buttonZoomIn = wx.BitmapButton(self.mainPanel1, -1, bmpZoomIn, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonZoomOut = wx.BitmapButton(self.mainPanel1, -1, bmpZoomOut, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonOneTangent = wx.BitmapButton(self.mainPanel1, -1, bmpOneTangent, size = (30,30),style = wx.BU_AUTODRAW)
-        self.buttonTwoTangents = wx.BitmapButton(self.mainPanel1, -1, bmpTwoTangents, size = (30,30),style = wx.BU_AUTODRAW)
+        self.buttonZoomIn = wx.BitmapButton(self.mainPanel1, -1, bmpZoomIn, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonZoomOut = wx.BitmapButton(self.mainPanel1, -1, bmpZoomOut, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonOneTangent = wx.BitmapButton(self.mainPanel1, -1, bmpOneTangent, size = (30, 30),style = wx.BU_AUTODRAW)
+        self.buttonTwoTangents = wx.BitmapButton(self.mainPanel1, -1, bmpTwoTangents, size = (30, 30),style = wx.BU_AUTODRAW)
 
         self.mainPanel2 = wx.Panel(self, -1)
 
@@ -863,7 +864,7 @@ class GraphEditorUI(wx.Dialog):
 
     def AddTreeNodes(self, parentItem, items):
         for item in items:
-            if type(item) == str:
+            if isinstance(item, str):
                 self.tree.AppendItem(parentItem, item)
 
     def OnSelChanged(self, evt):
@@ -873,25 +874,25 @@ class GraphEditorUI(wx.Dialog):
             self.graphEditorWindow.refresh()
             self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnZoomIn(self,evt):
+    def OnZoomIn(self, evt):
         self.graphEditorWindow.zoom = self.graphEditorWindow.zoom/float(1.2)
         self.graphEditorWindow.unitWidth = self.graphEditorWindow.unitWidth*float(1.2)
         self.graphEditorWindow.unitHeight = self.graphEditorWindow.unitHeight*float(1.2)
         self.graphEditorWindow.generateInfo()
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnZoomOut(self,evt):
+    def OnZoomOut(self, evt):
         self.graphEditorWindow.zoom = self.graphEditorWindow.zoom*float(1.2)
         self.graphEditorWindow.unitWidth = self.graphEditorWindow.unitWidth/float(1.2)
         self.graphEditorWindow.unitHeight = self.graphEditorWindow.unitHeight/float(1.2)
         self.graphEditorWindow.generateInfo()
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnOneTangent(self,evt):
+    def OnOneTangent(self, evt):
         self.graphEditorWindow._OneTangent = True
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
-    def OnTwoTangents(self,evt):
+    def OnTwoTangents(self, evt):
         self.graphEditorWindow._OneTangent = False
         self.graphEditorWindow.SetGraphEditorData(self.str, self.curFrame)
 
@@ -902,16 +903,8 @@ class GraphEditorUI(wx.Dialog):
         else:
             pass
 
-    def OnExit(self,evt):
+    def OnExit(self, evt):
         self.Destroy()
         self.editor.ui.graphEditorMenuItem.Check(False)
         self.object = None
         self.editor.GRAPH_EDITOR = False
-
-
-
-
-
-
-
-

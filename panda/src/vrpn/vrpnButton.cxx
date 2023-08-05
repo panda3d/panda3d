@@ -71,6 +71,15 @@ unmark(VrpnButtonDevice *device) {
 }
 
 /**
+ * Polls the connected device.  Normally you should not call this directly;
+ * this will be called by the VrpnClient.
+ */
+void VrpnButton::
+poll() {
+  _button->mainloop();
+}
+
+/**
  *
  */
 void VrpnButton::

@@ -47,6 +47,7 @@ FfmpegVideoCursor::
 FfmpegVideoCursor() :
   _max_readahead_frames(0),
   _thread_priority(ffmpeg_thread_priority),
+  _pixel_format((int)AV_PIX_FMT_NONE),
   _lock("FfmpegVideoCursor::_lock"),
   _action_cvar(_lock),
   _thread_status(TS_stopped),
@@ -55,7 +56,6 @@ FfmpegVideoCursor() :
   _format_ctx(nullptr),
   _video_ctx(nullptr),
   _convert_ctx(nullptr),
-  _pixel_format((int)AV_PIX_FMT_NONE),
   _video_index(-1),
   _frame(nullptr),
   _frame_out(nullptr),
@@ -274,7 +274,9 @@ start_thread() {
 
     // Create and start the thread object.
     _thread_status = TS_wait;
-    _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
+    _thread = new GenericThread(_filename.get_basename(), _sync_name, [this]{
+      thread_main();
+    });
     if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
       _thread = nullptr;
@@ -543,7 +545,7 @@ open_stream() {
   _video_timebase = av_q2d(stream->time_base);
   _min_fseek = (int)(3.0 / _video_timebase);
 
-  AVCodec *pVideoCodec = nullptr;
+  const AVCodec *pVideoCodec = nullptr;
   if (ffmpeg_prefer_libvpx) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
     if (codecpar->codec_id == AV_CODEC_ID_VP9) {
@@ -616,7 +618,7 @@ close_stream() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);
 #else
-    delete _video_ctx;
+    av_free(_video_ctx);
 #endif
   }
   _video_ctx = nullptr;
@@ -669,14 +671,6 @@ cleanup() {
 }
 
 /**
- * The thread main function, static version (for passing to GenericThread).
- */
-void FfmpegVideoCursor::
-st_thread_main(void *self) {
-  ((FfmpegVideoCursor *)self)->thread_main();
-}
-
-/**
  * The thread main function.
  */
 void FfmpegVideoCursor::
@@ -704,7 +698,7 @@ thread_main() {
     while (do_poll()) {
       // Keep doing stuff as long as there's something to do.
       _lock.release();
-      PStatClient::thread_tick(_sync_name);
+      PStatClient::thread_tick();
       Thread::consider_yield();
       _lock.acquire();
     }

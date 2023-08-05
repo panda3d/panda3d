@@ -27,7 +27,7 @@
  * geometry at this level and below.  A LightAttrib can either add lights or
  * remove lights from the total set of "on" lights.
  */
-class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH LightAttrib final : public RenderAttrib {
 protected:
   INLINE LightAttrib();
   LightAttrib(const LightAttrib &copy);
@@ -85,8 +85,10 @@ PUBLISHED:
 
   CPT(RenderAttrib) add_on_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_on_light(const NodePath &light) const;
+  CPT(RenderAttrib) replace_on_light(const NodePath &source, const NodePath &dest) const;
   CPT(RenderAttrib) add_off_light(const NodePath &light) const;
   CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
+  CPT(RenderAttrib) replace_off_light(const NodePath &source, const NodePath &dest) const;
 
   NodePath get_most_important_light() const;
   LColor get_ambient_contribution() const;

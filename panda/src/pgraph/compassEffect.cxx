@@ -120,20 +120,56 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     return;
   }
 
-  CPT(TransformState) true_net_transform = data.get_net_transform(trav);
-  CPT(TransformState) want_net_transform = true_net_transform;
-  adjust_transform(want_net_transform, node_transform, data.node());
+  if (data._instances == nullptr) {
+    CPT(TransformState) true_net_transform = data.get_net_transform(trav);
+    CPT(TransformState) want_net_transform = true_net_transform;
+    adjust_transform(want_net_transform, node_transform, data.node());
 
-  // Now compute the transform that will convert true_net_transform to
-  // want_transform.  This is inv(true_net_transform) * want_transform.
-  CPT(TransformState) compass_transform =
-    true_net_transform->invert_compose(want_net_transform);
+    // Now compute the transform that will convert true_net_transform to
+    // want_transform.  This is inv(true_net_transform) * want_transform.
+    CPT(TransformState) compass_transform =
+      true_net_transform->invert_compose(want_net_transform);
 
-  // And modify our local node's apparent transform so that
-  // true_net_transform->compose(new_node_transform) produces the same result
-  // we would have gotten had we actually computed
-  // want_transform->compose(orig_node_transform).
-  node_transform = compass_transform->compose(node_transform);
+    // And modify our local node's apparent transform so that
+    // true_net_transform->compose(new_node_transform) produces the same result
+    // we would have gotten had we actually computed
+    // want_transform->compose(orig_node_transform).
+    node_transform = compass_transform->compose(node_transform);
+  }
+  else {
+    // Compute the billboard effect for every instance individually.
+    InstanceList *instances = new InstanceList(*data._instances);
+    data._instances = instances;
+
+    CPT(TransformState) parent_net_transform = data.get_net_transform(trav);
+    CPT(TransformState) invert_net_transform = parent_net_transform->get_inverse();
+
+    // We make use of the fact that we know adjust_transform() does not modify
+    // its node_transform parameter.
+    CPT(TransformState) node_transform_copy = node_transform;
+    if (node_transform_copy->is_identity()) {
+      // Slightly optimized case.
+      for (InstanceList::Instance &instance : *instances) {
+        CPT(TransformState) true_net_transform = parent_net_transform->compose(instance.get_transform());
+        CPT(TransformState) want_net_transform = true_net_transform;
+        adjust_transform(want_net_transform, node_transform_copy, data.node());
+
+        instance.set_transform(invert_net_transform->compose(want_net_transform));
+      }
+    }
+    else {
+      // We apply the node_transform to the instances.
+      node_transform = TransformState::make_identity();
+
+      for (InstanceList::Instance &instance : *instances) {
+        CPT(TransformState) true_net_transform = parent_net_transform->compose(instance.get_transform());
+        CPT(TransformState) want_net_transform = true_net_transform;
+        adjust_transform(want_net_transform, node_transform_copy, data.node());
+
+        instance.set_transform(invert_net_transform->compose(want_net_transform)->compose(node_transform_copy));
+      }
+    }
+  }
 }
 
 /**

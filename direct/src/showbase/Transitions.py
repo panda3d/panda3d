@@ -4,16 +4,17 @@ a particular color."""
 
 __all__ = ['Transitions']
 
-from panda3d.core import *
+from panda3d.core import AsyncFuture, ConfigVariableBool, NodePath, TransparencyAttrib, Vec3, Vec4
 from direct.showbase import ShowBaseGlobal
+from direct.showbase.MessengerGlobal import messenger
 from direct.gui.DirectGui import DirectFrame
 from direct.gui import DirectGuiGlobals as DGG
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
 from direct.interval.MetaInterval import Sequence, Parallel
 from direct.interval.FunctionInterval import Func
 
-class Transitions:
 
+class Transitions:
     # These may be reassigned before the fade or iris transitions are
     # actually invoked to change the models that will be used.
     IrisModelName = "models/misc/iris"
@@ -80,7 +81,7 @@ class Transitions:
                 image = self.fadeModel,
                 image_scale = (4, 2, 2),
                 state = DGG.NORMAL,
-                )
+            )
             if not self.fadeModel:
                 # No fade model was given, so we make this the fade model.
                 self.fade["relief"] = DGG.FLAT
@@ -100,7 +101,7 @@ class Transitions:
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
 
-        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
@@ -122,7 +123,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
@@ -147,10 +148,10 @@ class Transitions:
             # If we're about to fade in from black, go ahead and
             # preload all the textures etc.
             base.graphicsEngine.renderFrame()
-            render.prepareScene(gsg)
-            render2d.prepareScene(gsg)
+            base.render.prepareScene(gsg)
+            base.render2d.prepareScene(gsg)
 
-        if (t == 0):
+        if t == 0:
             # Fade in immediately with no lerp
             #print "transitiosn: fadeIn 0.0"
             self.noTransitions()
@@ -177,12 +178,12 @@ class Transitions:
         fadeIn or call noFade.
         lerp
         """
-        if (t == 0):
+        if t == 0:
             # Fade out immediately with no lerp
             self.noTransitions()
             self.loadFade()
 
-            self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+            self.fade.reparentTo(ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
@@ -215,7 +216,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+        self.fade.reparentTo(ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(self.alphaOn[0],
                            self.alphaOn[1],
                            self.alphaOn[2],
@@ -231,7 +232,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+        self.fade.reparentTo(ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(color)
 
     def noFade(self):
@@ -254,14 +255,13 @@ class Transitions:
         self.alphaOn.set(r, g, b, 1)
         self.alphaOff.set(r, g, b, 0)
 
-
     ##################################################
     # Iris
     ##################################################
 
     def loadIris(self):
-        if self.iris == None:
-            self.iris = loader.loadModel(self.IrisModelName)
+        if self.iris is None:
+            self.iris = base.loader.loadModel(self.IrisModelName)
             self.iris.setPos(0, 0, 0)
 
     def irisIn(self, t=0.5, finishIval=None, blendType = 'noBlend'):
@@ -273,13 +273,13 @@ class Transitions:
         """
         self.noTransitions()
         self.loadIris()
-        if (t == 0):
+        if t == 0:
             self.iris.detachNode()
             fut = AsyncFuture()
             fut.setResult(None)
             return fut
         else:
-            self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+            self.iris.reparentTo(ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX)
 
             scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
@@ -307,14 +307,14 @@ class Transitions:
         self.noTransitions()
         self.loadIris()
         self.loadFade()  # we need this to cover up the hole.
-        if (t == 0):
+        if t == 0:
             self.iris.detachNode()
             self.fadeOut(0)
             fut = AsyncFuture()
             fut.setResult(None)
             return fut
         else:
-            self.iris.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
+            self.iris.reparentTo(ShowBaseGlobal.aspect2d, DGG.FADE_SORT_INDEX)
 
             scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
@@ -340,7 +340,7 @@ class Transitions:
         if self.transitionIval:
             self.transitionIval.pause()
             self.transitionIval = None
-        if self.iris != None:
+        if self.iris is not None:
             self.iris.detachNode()
         # Actually we need to remove the fade too,
         # because the iris effect uses it.
@@ -381,8 +381,8 @@ class Transitions:
 
             # TODO: This model isn't available everywhere.  We should
             # pass it in as a parameter.
-            button = loader.loadModel('models/gui/toplevel_gui',
-                                      okMissing = True)
+            button = base.loader.loadModel('models/gui/toplevel_gui',
+                                           okMissing = True)
 
             barImage = None
             if button:
@@ -402,7 +402,7 @@ class Transitions:
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
                 sortOrder = 0,
-                )
+            )
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxBottom',
@@ -417,12 +417,12 @@ class Transitions:
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
                 sortOrder = 0,
-                )
+            )
 
             # masad: always place these at the bottom of render
             self.letterboxTop.setBin('sorted',0)
             self.letterboxBottom.setBin('sorted',0)
-            self.letterbox.reparentTo(render2d, -1)
+            self.letterbox.reparentTo(ShowBaseGlobal.render2d, -1)
             self.letterboxOff(0)
 
     def noLetterbox(self):
@@ -450,7 +450,7 @@ class Transitions:
         self.noLetterbox()
         self.loadLetterbox()
         self.letterbox.unstash()
-        if (t == 0):
+        if t == 0:
             self.letterboxBottom.setPos(0, 0, -1)
             self.letterboxTop.setPos(0, 0, 0.8)
             fut = AsyncFuture()
@@ -471,7 +471,7 @@ class Transitions:
                                 # startPos = Vec3(0, 0, 1),
                                 blendType=blendType
                                 ),
-                ),
+            ),
                                           Func(self.__finishLetterbox),
                                           name = self.letterboxTaskName,
                                           )
@@ -487,7 +487,7 @@ class Transitions:
         self.noLetterbox()
         self.loadLetterbox()
         self.letterbox.unstash()
-        if (t == 0):
+        if t == 0:
             self.letterbox.stash()
             fut = AsyncFuture()
             fut.setResult(None)
@@ -507,12 +507,12 @@ class Transitions:
                                 # startPos = Vec3(0, 0, 0.8),
                                 blendType=blendType
                                 ),
-                ),
-                                          Func(self.letterbox.stash),
-                                          Func(self.__finishLetterbox),
-                                          Func(messenger.send,'letterboxOff'),
-                                          name = self.letterboxTaskName,
-                                          )
+            ),
+                Func(self.letterbox.stash),
+                Func(self.__finishLetterbox),
+                Func(messenger.send, 'letterboxOff'),
+                name = self.letterboxTaskName,
+            )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()

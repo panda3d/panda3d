@@ -1,12 +1,33 @@
+from panda3d.core import (
+    BitMask32,
+    BoundingSphere,
+    CollisionHandlerQueue,
+    CollisionNode,
+    CollisionRay,
+    CollisionSegment,
+    CollisionSphere,
+    CollisionTraverser,
+    GeomNode,
+    Mat4,
+    NodePath,
+    Point3,
+    TransformState,
+    VBase4,
+    Vec3,
+    Vec4,
+)
 from direct.showbase.DirectObject import DirectObject
-from .DirectGlobals import *
-from .DirectUtil import *
-from .DirectGeometry import *
+from direct.showbase.MessengerGlobal import messenger
+from . import DirectGlobals as DG
+from .DirectUtil import useDirectRenderStyle
+from .DirectGeometry import LineNodePath
 
 COA_ORIGIN = 0
 COA_CENTER = 1
 
 # MRM: To do: handle broken node paths in selected and deselected dicts
+
+
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
     def __init__(self, nodePath, bboxColor=None):
@@ -45,6 +66,7 @@ class DirectNodePath(NodePath):
 
     def getMax(self):
         return self.bbox.getMax()
+
 
 class SelectedNodePaths(DirectObject):
     def __init__(self):
@@ -95,7 +117,7 @@ class SelectedNodePaths(DirectObject):
             dnp = self.getDeselectedDict(id)
             if dnp:
                 # Remove it from the deselected dictionary
-                del(self.deselectedDict[id])
+                del self.deselectedDict[id]
                 # Show its bounding box
                 dnp.highlight()
             else:
@@ -125,7 +147,7 @@ class SelectedNodePaths(DirectObject):
             # Hide its bounding box
             dnp.dehighlight()
             # Remove it from the selected dictionary
-            del(self.selectedDict[id])
+            del self.selectedDict[id]
             if dnp in self.selectedList: # [gjeon]
                 self.selectedList.remove(dnp)
             # And keep track of it in the deselected dictionary
@@ -308,7 +330,7 @@ class DirectBoundingBox:
         # Create a line segments object for the bbox
         lines = LineNodePath(hidden)
         lines.node().setName('bboxLines')
-        if (bboxColor):
+        if bboxColor:
             lines.setColor(VBase4(*bboxColor))
         else:
             lines.setColor(VBase4(1., 0., 0., 1.))
@@ -352,7 +374,7 @@ class DirectBoundingBox:
         return lines
 
     def setBoxColorScale(self, r, g, b, a):
-        if (self.lines):
+        if self.lines:
             self.lines.reset()
             self.lines = None
         self.lines = self.createBBoxLines((r, g, b, a))
@@ -426,7 +448,7 @@ class DirectBoundingBox:
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
                 'Center:\t\t%s\n' % self.vecAsString(self.center) +
                 'Radius:\t\t%.2f' % self.radius
-               )
+                )
 
 
 class SelectionQueue(CollisionHandlerQueue):
@@ -438,7 +460,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # Current index and entry in collision queue
         self.index = -1
         self.entry = None
-        self.skipFlags = SKIP_NONE
+        self.skipFlags = DG.SKIP_NONE
         # Create a collision node path attached to the given NP
         self.collisionNodePath = NodePath(CollisionNode("collisionNP"))
         self.setParentNP(parentNP)
@@ -453,7 +475,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # Let the traverser know about the collision node and the queue
         self.ct.addCollider(self.collisionNodePath, self)
         # List of objects that can't be selected
-        self.unpickable = UNPICKABLE
+        self.unpickable = DG.UNPICKABLE
         # Derived class must add Collider to complete initialization
 
     def setParentNP(self, parentNP):
@@ -529,7 +551,7 @@ class SelectionQueue(CollisionHandlerQueue):
             # Well, no way to tell.  Assume we're not backfacing.
             return 0
 
-        if direct:
+        if base.direct:
             cam = base.direct.cam
         else:
             cam = base.cam
@@ -547,10 +569,10 @@ class SelectionQueue(CollisionHandlerQueue):
         v.normalize()
         return v.dot(n) >= 0
 
-    def findNextCollisionEntry(self, skipFlags = SKIP_NONE):
+    def findNextCollisionEntry(self, skipFlags = DG.SKIP_NONE):
         return self.findCollisionEntry(skipFlags, self.index + 1)
 
-    def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0):
+    def findCollisionEntry(self, skipFlags = DG.SKIP_NONE, startIndex = 0):
         # Init self.index and self.entry
         self.setCurrentIndex(-1)
         self.setCurrentEntry(None)
@@ -558,29 +580,29 @@ class SelectionQueue(CollisionHandlerQueue):
         for i in range(startIndex, self.getNumEntries()):
             entry = self.getEntry(i)
             nodePath = entry.getIntoNodePath()
-            if (skipFlags & SKIP_HIDDEN) and nodePath.isHidden():
+            if (skipFlags & DG.SKIP_HIDDEN) and nodePath.isHidden():
                 # Skip if hidden node
                 pass
-            elif (skipFlags & SKIP_BACKFACE) and self.isEntryBackfacing(entry):
+            elif (skipFlags & DG.SKIP_BACKFACE) and self.isEntryBackfacing(entry):
                 # Skip, if backfacing poly
                 pass
-            elif ((skipFlags & SKIP_CAMERA) and
-                  (camera in nodePath.getAncestors())):
+            elif (skipFlags & DG.SKIP_CAMERA) and \
+                 (base.camera in nodePath.getAncestors()):
                 # Skip if parented to a camera.
                 pass
             # Can pick unpickable, use the first visible node
-            elif ((skipFlags & SKIP_UNPICKABLE) and
-                  (nodePath.getName() in self.unpickable)):
+            elif (skipFlags & DG.SKIP_UNPICKABLE) and \
+                 (nodePath.getName() in self.unpickable):
                 # Skip if in unpickable list
                 pass
-            elif base.direct and\
-                 ((skipFlags & SKIP_WIDGET) and
-                (nodePath.getTag('WidgetName') != base.direct.widget.getName())):
+            elif base.direct and \
+                 ((skipFlags & DG.SKIP_WIDGET) and
+                 (nodePath.getTag('WidgetName') != base.direct.widget.getName())):
                 # Skip if this widget part is not belong to current widget
                 pass
-            elif base.direct and\
-                 ((skipFlags & SKIP_WIDGET) and base.direct.fControl and
-                (nodePath.getName()[2:] == 'ring')):
+            elif base.direct and \
+                 ((skipFlags & DG.SKIP_WIDGET) and base.direct.fControl and
+                 (nodePath.getName()[2:] == 'ring')):
                 # Skip when ununiformly scale in ortho view
                 pass
             else:
@@ -588,6 +610,7 @@ class SelectionQueue(CollisionHandlerQueue):
                 self.setCurrentEntry(entry)
                 break
         return self.getCurrentEntry()
+
 
 class SelectionRay(SelectionQueue):
     def __init__(self, parentNP = None):
@@ -602,7 +625,7 @@ class SelectionRay(SelectionQueue):
         if xy:
             mx = xy[0]
             my = xy[1]
-        elif direct:
+        elif base.direct:
             mx = base.direct.dr.mouseX
             my = base.direct.dr.mouseY
         else:
@@ -613,7 +636,7 @@ class SelectionRay(SelectionQueue):
             mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
 
-        if direct:
+        if base.direct:
             self.collider.setFromLens(base.direct.camNode, mx, my)
         else:
             self.collider.setFromLens(base.camNode, mx, my)
@@ -622,7 +645,7 @@ class SelectionRay(SelectionQueue):
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = None,
-                    skipFlags = SKIP_ALL):
+                    skipFlags = DG.SKIP_ALL):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithBitMask(bitMask)
@@ -630,7 +653,7 @@ class SelectionRay(SelectionQueue):
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
-    def pickGeom(self, targetNodePath = None, skipFlags = SKIP_ALL,
+    def pickGeom(self, targetNodePath = None, skipFlags = DG.SKIP_ALL,
                  xy = None):
         if targetNodePath is None:
             targetNodePath = render
@@ -639,7 +662,7 @@ class SelectionRay(SelectionQueue):
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
-    def pickWidget(self, targetNodePath = None, skipFlags = SKIP_NONE):
+    def pickWidget(self, targetNodePath = None, skipFlags = DG.SKIP_NONE):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithWidget()
@@ -656,7 +679,7 @@ class SelectionRay(SelectionQueue):
 
     def pickGeom3D(self, targetNodePath = None,
                    origin = Point3(0), dir = Vec3(0, 0, -1),
-                   skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
+                   skipFlags = DG.SKIP_HIDDEN | DG.SKIP_CAMERA):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithGeom()
@@ -667,7 +690,7 @@ class SelectionRay(SelectionQueue):
     def pickBitMask3D(self, bitMask = BitMask32.allOff(),
                       targetNodePath = None,
                       origin = Point3(0), dir = Vec3(0, 0, -1),
-                      skipFlags = SKIP_ALL):
+                      skipFlags = DG.SKIP_ALL):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithBitMask(bitMask)
@@ -697,7 +720,7 @@ class SelectionSegment(SelectionQueue):
         self.numColliders += 1
 
     def pickGeom(self, targetNodePath = None, endPointList = [],
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
+                 skipFlags = DG.SKIP_HIDDEN | DG.SKIP_CAMERA):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithGeom()
@@ -712,7 +735,7 @@ class SelectionSegment(SelectionQueue):
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = None, endPointList = [],
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
+                 skipFlags = DG.SKIP_HIDDEN | DG.SKIP_CAMERA):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithBitMask(bitMask)
@@ -780,7 +803,7 @@ class SelectionSphere(SelectionQueue):
         return self.findCollisionEntry(skipFlags)
 
     def pickGeom(self, targetNodePath = None,
-                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
+                 skipFlags = DG.SKIP_HIDDEN | DG.SKIP_CAMERA):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithGeom()
@@ -788,9 +811,8 @@ class SelectionSphere(SelectionQueue):
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = None,
-                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA):
+                    skipFlags = DG.SKIP_HIDDEN | DG.SKIP_CAMERA):
         if targetNodePath is None:
             targetNodePath = render
         self.collideWithBitMask(bitMask)
         return self.pick(targetNodePath, skipFlags)
-

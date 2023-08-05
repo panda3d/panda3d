@@ -14,6 +14,26 @@ def test_sphere_into_box():
     assert entry.get_surface_point(np_from) == Point3(0, 0, 4)
     assert entry.get_surface_normal(np_into) == Vec3(0, 0, 1)  # Testing surface normal
 
+    # Fully inside
+    entry, np_from, np_into = make_collision(CollisionSphere(0, 0, 0, 1), box)
+    assert entry is not None
+
+    # Inside but touching one of the sides
+    entry, np_from, np_into = make_collision(CollisionSphere(1.5, 0, 0, 1), box)
+    assert entry is not None
+
+    # Exactly inside one of the sides
+    entry, np_from, np_into = make_collision(CollisionSphere(2, 0, 0, 1), box)
+    assert entry is not None
+
+    # Touching one of the sides from the outside
+    entry, np_from, np_into = make_collision(CollisionSphere(2.5, 0, 0, 1), box)
+    assert entry is not None
+
+    # Outside on one of the axes
+    entry, np_from, np_into = make_collision(CollisionSphere(3.5, 0, 0, 1), box)
+    assert entry is None
+
     # No collision
     entry = make_collision(CollisionSphere(100, 100, 100, 100), box)[0]
     assert entry is None

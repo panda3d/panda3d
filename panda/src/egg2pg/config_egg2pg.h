@@ -54,6 +54,7 @@ extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_preload_simple_textures;
 extern EXPCL_PANDA_EGG2PG ConfigVariableDouble egg_vertex_membership_quantize;
 extern EXPCL_PANDA_EGG2PG ConfigVariableInt egg_vertex_max_num_joints;
 extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_implicit_alpha_binary;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_force_srgb_textures;
 
 extern EXPCL_PANDA_EGG2PG void init_libegg2pg();
 

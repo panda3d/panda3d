@@ -13,7 +13,7 @@
 
 #include "pta_uchar.h"
 
-template class PointerToBase<ReferenceCountedVector<uchar> >;
-template class PointerToArrayBase<uchar>;
+template class PointerToBase<ReferenceCountedVector<unsigned char> >;
+template class PointerToArrayBase<unsigned char>;
 template class PointerToArray<unsigned char>;
 template class ConstPointerToArray<unsigned char>;

@@ -1,16 +1,16 @@
-"""Contains the DirectScrolledFrame class."""
+"""Contains the DirectScrolledFrame class.
+
+See the :ref:`directscrolledframe` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectScrolledFrame']
 
-from panda3d.core import *
+from panda3d.core import NodePath, PGScrollFrame
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectScrollBar import *
+from .DirectFrame import DirectFrame
+from .DirectScrollBar import DirectScrollBar
 
-"""
-import DirectScrolledFrame
-d = DirectScrolledFrame(borderWidth=(0, 0))
-"""
 
 class DirectScrolledFrame(DirectFrame):
     """
@@ -24,6 +24,7 @@ class DirectScrolledFrame(DirectFrame):
     0 and explicitly position and hide or show the scroll bars
     yourself.
     """
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -35,7 +36,7 @@ class DirectScrolledFrame(DirectFrame):
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
             ('scrollBarWidth', 0.08,               self.setScrollBarWidth),
             ('borderWidth',    (0.01, 0.01),       self.setBorderWidth),
-            )
+        )
 
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -73,15 +74,21 @@ class DirectScrolledFrame(DirectFrame):
         self.initialiseoptions(DirectScrolledFrame)
 
     def setScrollBarWidth(self):
+        if self.fInit:
+            return
+
         w = self['scrollBarWidth']
-        self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, -1, 1)
-        self.horizontalScroll["frameSize"] = (-1, 1, -w / 2.0, w / 2.0)
+        self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, self.verticalScroll["frameSize"][2], self.verticalScroll["frameSize"][3])
+        self.horizontalScroll["frameSize"] = (self.horizontalScroll["frameSize"][0], self.horizontalScroll["frameSize"][1], -w / 2.0, w / 2.0)
 
     def setCanvasSize(self):
         f = self['canvasSize']
         self.guiItem.setVirtualFrame(f[0], f[1], f[2], f[3])
 
     def getCanvas(self):
+        """Returns the NodePath of the virtual canvas.  Nodes parented to this
+        canvas will show inside the scrolled area.
+        """
         return self.canvas
 
     def setManageScrollBars(self):

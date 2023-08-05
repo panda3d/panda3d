@@ -33,17 +33,13 @@ pm_message(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  // Windows doesn't define vsnprintf().  Hope we don't overflow.
-  vsprintf(buffer, format, ap);
-#else
+
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
+  va_end(ap);
+
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.info() << buffer << "\n";
-
-  va_end(ap);
 }
 
 /**
@@ -56,18 +52,13 @@ pm_error(const char *format, ...) {
   va_start(ap, format);
 
   static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  // Windows doesn't define vsnprintf().  Hope we don't overflow.
-  vsprintf(buffer, format, ap);
-#else
+  char buffer[buffer_size + 1];
+
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
-  nassertv(strlen(buffer) < buffer_size);
+  buffer[buffer_size] = 0;
+  va_end(ap);
 
   pnmimage_cat.error() << buffer << "\n";
-
-  va_end(ap);
 
   // Now we're supposed to exit.  Inconvenient if we were running Panda
   // interactively, but that's the way it is.

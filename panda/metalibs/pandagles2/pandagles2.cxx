@@ -9,8 +9,13 @@
 #define OPENGLES_2
 #include "config_gles2gsg.h"
 
+#if defined(ANDROID)
+#include "config_androiddisplay.h"
+#include "androidGraphicsPipe.h"
+#else
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
+#endif
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -21,7 +26,12 @@
 void
 init_libpandagles2() {
   init_libgles2gsg();
+
+#if defined(ANDROID)
+  init_libandroiddisplay();
+#else
   init_libegldisplay();
+#endif
 }
 
 /**
@@ -30,5 +40,9 @@ init_libpandagles2() {
  */
 int
 get_pipe_type_pandagles2() {
+#if defined(ANDROID)
+  return AndroidGraphicsPipe::get_class_type().get_index();
+#else
   return eglGraphicsPipe::get_class_type().get_index();
+#endif
 }

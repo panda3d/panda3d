@@ -122,7 +122,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypePNG::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -133,7 +132,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypePNG::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -453,8 +451,8 @@ png_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
  * This is our own warning handler.  It is called by the png library to issue
  * a warning message.
  */
-void PNMFileTypePNG::Reader::
-png_warning(png_structp, png_const_charp warning_msg) {
+void (PNMFileTypePNG::Reader::
+png_warning)(png_structp, png_const_charp warning_msg) {
   pnmimage_png_cat.warning()
     << warning_msg << "\n";
 }
@@ -463,8 +461,8 @@ png_warning(png_structp, png_const_charp warning_msg) {
  * This is our own error handler.  It is called by the png library to issue a
  * fatal error message.
  */
-void PNMFileTypePNG::Reader::
-png_error(png_structp png_ptr, png_const_charp error_msg) {
+void (PNMFileTypePNG::Reader::
+png_error)(png_structp png_ptr, png_const_charp error_msg) {
   pnmimage_png_cat.error()
     << error_msg << "\n";
 
@@ -606,7 +604,7 @@ write_data(xel *array, xelval *alpha_data) {
 
           // Re-sort the palette to put the semitransparent pixels at the
           // beginning.
-          sort(palette.begin(), palette.end(), LowAlphaCompare());
+          std::sort(palette.begin(), palette.end(), LowAlphaCompare());
 
           double palette_scale = 255.0 / _maxval;
 
@@ -923,8 +921,8 @@ png_flush_data(png_structp png_ptr) {
  * This is our own warning handler.  It is called by the png library to issue
  * a warning message.
  */
-void PNMFileTypePNG::Writer::
-png_warning(png_structp, png_const_charp warning_msg) {
+void (PNMFileTypePNG::Writer::
+png_warning)(png_structp, png_const_charp warning_msg) {
   pnmimage_png_cat.warning()
     << warning_msg << "\n";
 }
@@ -933,8 +931,8 @@ png_warning(png_structp, png_const_charp warning_msg) {
  * This is our own error handler.  It is called by the png library to issue a
  * fatal error message.
  */
-void PNMFileTypePNG::Writer::
-png_error(png_structp png_ptr, png_const_charp error_msg) {
+void (PNMFileTypePNG::Writer::
+png_error)(png_structp png_ptr, png_const_charp error_msg) {
   pnmimage_png_cat.error()
     << error_msg << "\n";
 

@@ -15,7 +15,6 @@
 #define BUFFER_H
 
 #include "pandabase.h"
-#include "typedef.h"
 #include "referenceCount.h"
 
 /**

@@ -11,14 +11,9 @@
 from direct.showbase.DirectObject import DirectObject
 from seTree import TreeNode, TreeItem
 
-import Pmw, sys
-
-if sys.version_info >= (3, 0):
-    from tkinter import IntVar, Frame, Label
-    import tkinter
-else:
-    from Tkinter import IntVar, Frame, Label
-    import Tkinter as tkinter
+import Pmw
+from tkinter import IntVar, Frame, Label
+import tkinter
 
 # changing these strings requires changing sceneEditor.py SGE_ strs too!
 # This list of items will be showed on the pop out window when user right click on

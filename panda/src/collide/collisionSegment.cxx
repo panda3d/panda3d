@@ -146,7 +146,7 @@ fill_viz_geom() {
   }
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("collision", GeomVertexFormat::get_v3cp(),
+    ("collision", GeomVertexFormat::get_v3c(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 

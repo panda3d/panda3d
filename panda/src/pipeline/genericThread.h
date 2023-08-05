@@ -17,6 +17,9 @@
 #include "pandabase.h"
 #include "thread.h"
 
+#ifndef CPPPARSER
+#include <functional>
+
 /**
  * A generic thread type that allows calling a C-style thread function without
  * having to subclass.
@@ -27,19 +30,16 @@ public:
 
   GenericThread(const std::string &name, const std::string &sync_name);
   GenericThread(const std::string &name, const std::string &sync_name, ThreadFunc *function, void *user_data);
+  GenericThread(const std::string &name, const std::string &sync_name, std::function<void()> function);
 
-  INLINE void set_function(ThreadFunc *function);
-  INLINE ThreadFunc *get_function() const;
-
-  INLINE void set_user_data(void *user_data);
-  INLINE void *get_user_data() const;
+  INLINE void set_function(std::function<void()> function);
+  INLINE const std::function<void()> &get_function() const;
 
 protected:
   virtual void thread_main();
 
 private:
-  ThreadFunc *_function;
-  void *_user_data;
+  std::function<void()> _function;
 
 public:
   static TypeHandle get_class_type() {
@@ -61,4 +61,6 @@ private:
 
 #include "genericThread.I"
 
-#endif
+#endif  // CPPPARSER
+
+#endif  // GENERICTHREAD_H

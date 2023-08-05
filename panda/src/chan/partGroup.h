@@ -19,7 +19,6 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
-#include "typedef.h"
 #include "thread.h"
 #include "plist.h"
 #include "luse.h"

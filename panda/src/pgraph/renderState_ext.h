@@ -29,9 +29,12 @@
 template<>
 class Extension<RenderState> : public ExtensionBase<RenderState> {
 public:
+  static CPT(RenderState) make(PyObject *args, PyObject *kwds);
+
   PyObject *get_composition_cache() const;
   PyObject *get_invert_composition_cache() const;
   static PyObject *get_states();
+  static PyObject *get_unused_states();
 };
 
 #endif  // HAVE_PYTHON

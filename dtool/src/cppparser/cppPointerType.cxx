@@ -108,6 +108,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPPointerType::
+is_trivially_copyable() const {
+  return true;
+}
+
+/**
  * Returns true if the type can be constructed using the given argument.
  */
 bool CPPPointerType::
@@ -245,6 +253,12 @@ output_instance(std::ostream &out, int indent_level, CPPScope *scope,
       ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0)) {
     // We have to output pointers-to-method with a scoping before the '*'.
     star = ftype->_class_owner->get_fully_scoped_name() + "::*";
+  }
+
+  if (!_attributes.is_empty()) {
+    std::ostringstream strm;
+    strm << star << _attributes << " ";
+    star = strm.str();
   }
 
   _pointing_at->output_instance(out, indent_level, scope, complete,

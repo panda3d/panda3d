@@ -12,7 +12,7 @@
  */
 
 #include "mouseAndKeyboard.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "buttonHandle.h"
 #include "buttonEvent.h"
 #include "dataNodeTransmit.h"

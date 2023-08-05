@@ -61,8 +61,7 @@ get_child_vector(const PhysicsObject* po) {
   physics_debug(" v "<<v<<" len "<<v.length()
       <<" friction "<<friction<<" len "<<friction.length()
       <<" dot "<<(normalize(v).dot(normalize(friction))));
-  assert(friction.almost_equal(LVector3::zero())
-      || IS_NEARLY_EQUAL(normalize(v).dot(normalize(friction)), -1.0f));
+  assert(friction.almost_equal(LVector3::zero()) || v.dot(friction) < 0.0f);
   // cary said to cap this at zero so that friction can't reverse your
   // direction, but it seems to me that if you're computing: v + (-v * _coef),
   // _coef in [0, 1] that this will always be greater than or equal to zero.

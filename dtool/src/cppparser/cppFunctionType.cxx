@@ -189,6 +189,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPFunctionType::
+is_trivially_copyable() const {
+  return false;
+}
+
+/**
  *
  */
 void CPPFunctionType::
@@ -224,10 +232,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
     if (_flags & F_override) {
       out << " override";
     }
+    if (!_attributes.is_empty()) {
+      out << " " << _attributes;
+    }
     out << " -> ";
     _return_type->output(out, indent_level, scope, false);
-
-  } else {
+  }
+  else {
     _return_type->output(out, indent_level, scope, complete);
     out << "(";
     _parameters->output(out, scope, true, num_default_parameters);
@@ -243,6 +254,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
     }
     if (_flags & F_override) {
       out << " override";
+    }
+    if (!_attributes.is_empty()) {
+      out << " " << _attributes;
     }
   }
 }
@@ -278,8 +292,8 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   if (_flags & (F_constructor | F_destructor)) {
     // No return type for constructors and destructors.
     out << prename << name << str;
-
-  } else if (_flags & F_trailing_return_type) {
+  }
+  else if (_flags & F_trailing_return_type) {
     // It was declared using trailing return type, so let's format it that
     // way.
     out << "auto ";
@@ -291,12 +305,13 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
     }
 
     out << str;
-
-  } else if (_flags & F_operator_typecast) {
+  }
+  else if (_flags & F_operator_typecast) {
     out << "operator ";
-    _return_type->output_instance(out, indent_level, scope, complete, "", prename + str);
-
-  } else {
+    _return_type->output_instance(out, indent_level, scope, complete,
+                                  "", prename + str);
+  }
+  else {
     if (prename.empty()) {
       _return_type->output_instance(out, indent_level, scope, complete,
                                     "", prename + name + str);
@@ -320,6 +335,10 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   }
   if (_flags & F_override) {
     out << " override";
+  }
+
+  if (!_attributes.is_empty()) {
+    out << " " << _attributes;
   }
 
   if (_flags & F_trailing_return_type) {

@@ -12,7 +12,7 @@
  */
 
 /**
- * Returns true if the implicit *.prc files have already been loaded, false
+ * Returns true if the implicit `*.prc` files have already been loaded, false
  * otherwise.  Normally this will only be false briefly before startup.
  */
 INLINE bool ConfigPageManager::
@@ -21,7 +21,7 @@ loaded_implicit_pages() const {
 }
 
 /**
- * Searches the PRC_DIR and/or PRC_PATH directories for *.prc files and loads
+ * Searches the PRC_DIR and/or PRC_PATH directories for `*.prc` files and loads
  * them in as pages.  This is normally called automatically at startup time,
  * when the first variable's value is referenced.  See also
  * reload_implicit_pages().
@@ -46,9 +46,9 @@ get_search_path() {
 }
 
 /**
- * Returns the number of patterns, like "*.prc", that are compiled in that
+ * Returns the number of patterns, like `*.prc`, that are compiled in that
  * will be searched for as default config filenames.  Normally there is only
- * one pattern, and it is "*.prc", but others may be specified with the
+ * one pattern, and it is `*.prc`, but others may be specified with the
  * PRC_FILENAME variable in Config.pp.
  */
 INLINE size_t ConfigPageManager::
@@ -67,7 +67,7 @@ get_prc_pattern(size_t n) const {
 }
 
 /**
- * Returns the number of patterns, like "*.pre", that are compiled in that
+ * Returns the number of patterns, like `*.pre`, that are compiled in that
  * will be searched for as special config files that are understood to be
  * encrypted.
  */
@@ -87,7 +87,7 @@ get_prc_encrypted_pattern(size_t n) const {
 }
 
 /**
- * Returns the number of patterns, like "*.exe", that are compiled in that
+ * Returns the number of patterns, like `*.exe`, that are compiled in that
  * will be searched for as special config files that are to be executed as a
  * program, and their output taken to be input.  This is normally empty.
  */

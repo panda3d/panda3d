@@ -313,7 +313,7 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
     }
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
-  nassertr(bytes_read == size, nullptr);
+  nassertr(bytes_read == size, false);
   double finish_time = ClockObject::get_global_clock()->get_real_time();
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()

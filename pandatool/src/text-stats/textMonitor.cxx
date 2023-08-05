@@ -22,9 +22,10 @@
  *
  */
 TextMonitor::
-TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data ) : PStatMonitor(server) {
-    _outStream = outStream;    //[PECI]
-    _show_raw_data = show_raw_data;
+TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data, bool json) : PStatMonitor(server) {
+  _outStream = outStream;    //[PECI]
+  _show_raw_data = show_raw_data;
+  _json = json;
 }
 
 /**
@@ -74,6 +75,30 @@ got_bad_version(int client_major, int client_minor,
 }
 
 /**
+ * Called whenever a new Thread definition is received from the client.
+ * Generally, the client will send all of its threads over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept
+ * new Thread definitions midstream.
+ */
+void TextMonitor::
+new_thread(int thread_index) {
+  if (_json) {
+    const PStatClientData *client_data = get_client_data();
+
+    int pid = get_client_pid();
+    if (pid < 0) {
+      pid = _dummy_pid;
+    }
+
+    (*_outStream)
+      << "{\"name\":\"thread_name\",\"ph\":\"M\",\"pid\":" << pid
+      << ",\"tid\":" << thread_index << ",\"args\":{\"name\":\""
+      << client_data->get_thread_name(thread_index) << "\"}},\n";
+  }
+}
+
+/**
  * Called as each frame's data is made available.  There is no gurantee the
  * frames will arrive in order, or that all of them will arrive at all.  The
  * monitor should be prepared to accept frames received out-of-order or
@@ -84,12 +109,29 @@ new_data(int thread_index, int frame_number) {
   PStatView &view = get_view(thread_index);
   const PStatThreadData *thread_data = view.get_thread_data();
 
-  if (frame_number == thread_data->get_latest_frame_number()) {
-    view.set_to_frame(frame_number);
+  view.set_to_frame(frame_number);
 
-    if (view.all_collectors_known()) {
-      const PStatClientData *client_data = get_client_data();
+  if (true) {
+    const PStatClientData *client_data = get_client_data();
 
+    if (_json) {
+      int pid = get_client_pid();
+      if (pid < 0) {
+        pid = _dummy_pid;
+      }
+
+      const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
+      size_t num_events = frame_data.get_num_events();
+      for (size_t i = 0; i < num_events; ++i) {
+        int collector_index = frame_data.get_time_collector(i);
+        (*_outStream)
+          << "{\"name\":\"" << client_data->get_collector_fullname(collector_index)
+          << "\",\"ts\":" << (uint64_t)(frame_data.get_time(i) * 1000000)
+          << ",\"ph\":\"" << (frame_data.is_start(i) ? 'B' : 'E') << "\""
+          << ",\"tid\":" << thread_index << ",\"pid\":" << pid << "},\n";
+      }
+    }
+    else {
       (*_outStream) << "\rThread "
            << client_data->get_thread_name(thread_index)
            << " frame " << frame_number << ", "
@@ -99,8 +141,8 @@ new_data(int thread_index, int frame_number) {
       if (_show_raw_data) {
         const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
         (*_outStream) << "raw data:\n";
-        int num_events = frame_data.get_num_events();
-        for (int i = 0; i < num_events; ++i) {
+        size_t num_events = frame_data.get_num_events();
+        for (size_t i = 0; i < num_events; ++i) {
           // The iomanipulators are much too clumsy.
           char formatted[32];
           sprintf(formatted, "%15.06lf", frame_data.get_time(i));
@@ -149,6 +191,7 @@ new_data(int thread_index, int frame_number) {
 void TextMonitor::
 lost_connection() {
   nout << "Lost connection.\n";
+  ++_dummy_pid;
 }
 
 /**

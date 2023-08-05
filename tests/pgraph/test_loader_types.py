@@ -3,6 +3,7 @@ import pytest
 import tempfile
 import os
 from contextlib import contextmanager
+import sys
 
 
 @pytest.fixture
@@ -218,3 +219,10 @@ def test_loader_ram_cache(test_filename):
         assert model1 == model2
 
         ModelPool.release_model(model2)
+
+
+def test_loader_file_type_registry_pickle():
+    from direct.stdpy.pickle import dumps, loads
+
+    registry = LoaderFileTypeRegistry.get_global_ptr()
+    assert loads(dumps(registry, -1)) == registry

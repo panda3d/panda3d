@@ -87,6 +87,45 @@ typedef struct _XRRCrtcInfo {
 typedef void (*pfn_XRRFreeScreenResources)(XRRScreenResources *resources);
 typedef void (*pfn_XRRFreeCrtcInfo)(XRRCrtcInfo *crtcInfo);
 
+typedef struct {
+  int deviceid;
+  int mask_len;
+  unsigned char *mask;
+} XIEventMask;
+
+typedef struct {
+  int mask_len;
+  unsigned char *mask;
+  double *values;
+} XIValuatorState;
+
+typedef struct {
+  int type;
+  unsigned long serial;
+  Bool send_event;
+  X11_Display *display;
+  int extension;
+  int evtype;
+  Time time;
+  int deviceid;
+  int sourceid;
+  int detail;
+  int flags;
+  XIValuatorState valuators;
+  double *raw_values;
+} XIRawEvent;
+
+#define XI_RawMotion 17
+#define XI_RawMotionMask (1 << XI_RawMotion)
+
+#define XISetMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] |=  (1 << ((event) & 7)))
+#define XIClearMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &= ~(1 << ((event) & 7)))
+#define XIMaskIsSet(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &   (1 << ((event) & 7)))
+#define XIMaskLen(event) (((event) >> 3) + 1)
+
+#define XIAllDevices 0
+#define XIAllMasterDevices 1
+
 class FrameBufferProperties;
 
 /**
@@ -105,9 +144,14 @@ public:
 
   INLINE X11_Cursor get_hidden_cursor();
 
+  INLINE const std::string &get_startup_id() const;
+  void send_startup_notification();
+
   INLINE bool supports_relative_mouse() const;
-  INLINE bool enable_relative_mouse();
-  INLINE void disable_relative_mouse();
+  INLINE bool enable_dga_mouse();
+  INLINE void disable_dga_mouse();
+  bool enable_raw_mouse();
+  void disable_raw_mouse();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
@@ -124,18 +168,25 @@ public:
 
 public:
   // Atom specifications.
+  Atom _utf8_string;
   Atom _wm_delete_window;
-  Atom _net_wm_pid;
-  Atom _net_wm_window_type;
-  Atom _net_wm_window_type_splash;
-  Atom _net_wm_window_type_fullscreen;
-  Atom _net_wm_state;
-  Atom _net_wm_state_fullscreen;
-  Atom _net_wm_state_above;
-  Atom _net_wm_state_below;
-  Atom _net_wm_state_add;
-  Atom _net_wm_state_remove;
+  Atom _net_startup_id;
+  Atom _net_startup_info;
+  Atom _net_startup_info_begin;
   Atom _net_wm_bypass_compositor;
+  Atom _net_wm_pid;
+  Atom _net_wm_ping;
+  Atom _net_wm_state;
+  Atom _net_wm_state_above;
+  Atom _net_wm_state_add;
+  Atom _net_wm_state_below;
+  Atom _net_wm_state_fullscreen;
+  Atom _net_wm_state_maximized_horz;
+  Atom _net_wm_state_maximized_vert;
+  Atom _net_wm_state_remove;
+  Atom _net_wm_window_type;
+  Atom _net_wm_window_type_fullscreen;
+  Atom _net_wm_window_type_splash;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);
@@ -170,6 +221,8 @@ public:
   pfn_XRRConfigCurrentConfiguration _XRRConfigCurrentConfiguration;
   pfn_XRRSetScreenConfig _XRRSetScreenConfig;
 
+  int _xi_opcode;
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -177,6 +230,9 @@ protected:
   XIM _im;
 
   X11_Cursor _hidden_cursor;
+
+  std::string _startup_id;
+  bool _sent_startup_notification = false;
 
   typedef Bool (*pfn_XF86DGAQueryVersion)(X11_Display *, int*, int*);
   typedef Status (*pfn_XF86DGADirectVideo)(X11_Display *, int, int);
@@ -189,6 +245,11 @@ protected:
   pfn_XRRFreeScreenResources _XRRFreeScreenResources;
   pfn_XRRGetCrtcInfo _XRRGetCrtcInfo;
   pfn_XRRFreeCrtcInfo _XRRFreeCrtcInfo;
+
+  typedef Status (*pfn_XIQueryVersion)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XISelectEvents)(X11_Display *, X11_Window, XIEventMask *, int);
+  pfn_XISelectEvents _XISelectEvents = nullptr;
+  int _num_raw_mouse_windows = 0;
 
 private:
   void make_hidden_cursor();

@@ -34,8 +34,8 @@ public:
   OdeUniversalJoint(dJointID id);
 
 PUBLISHED:
-  OdeUniversalJoint(OdeWorld &world);
-  OdeUniversalJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeUniversalJoint(OdeWorld &world);
+  explicit OdeUniversalJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeUniversalJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);

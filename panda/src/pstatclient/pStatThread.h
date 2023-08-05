@@ -36,14 +36,17 @@ PUBLISHED:
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);
 
-  void new_frame();
-  void add_frame(const PStatFrameData &frame_data);
+  void new_frame(int frame_number = -1);
+  void add_frame(int frame_number, PStatFrameData &&frame_data);
 
   Thread *get_thread() const;
   INLINE int get_index() const;
 
   MAKE_PROPERTY(thread, get_thread);
   MAKE_PROPERTY(index, get_index);
+
+public:
+  PStatClient *get_client() const;
 
 private:
   PStatClient *_client;

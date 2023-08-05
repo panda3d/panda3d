@@ -312,6 +312,22 @@ make_wrapper_entry(FunctionIndex function_index) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
   }
 
+  if (_flags & F_copy_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_copy_constructor;
+  }
+
+  if (_flags & F_coerce_constructor) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_coerce_constructor;
+  }
+
+  if (_extension) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_extension;
+  }
+
+  if (_cppfunc->_attributes.has_attribute("deprecated")) {
+    iwrapper._flags |= InterrogateFunctionWrapper::F_deprecated;
+  }
+
   Parameters::const_iterator pi;
   for (pi = _parameters.begin();
        pi != _parameters.end();
@@ -326,6 +342,9 @@ make_wrapper_entry(FunctionIndex function_index) {
     param._name = (*pi)._name;
     if ((*pi)._has_name) {
       param._parameter_flags |= InterrogateFunctionWrapper::PF_has_name;
+    }
+    if ((*pi)._remap->has_default_value()) {
+      param._parameter_flags |= InterrogateFunctionWrapper::PF_is_optional;
     }
     iwrapper._parameters.push_back(param);
   }
@@ -419,6 +438,17 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << ')';
     }
 
+  } else if (_type == T_item_assignment_operator) {
+    call << "(";
+    _parameters[0]._remap->pass_parameter(call, container);
+    call << ")[";
+
+    size_t pn = _first_true_parameter;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    call << "] = ";
+    ++pn;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+
   } else {
     const char *separator = "";
 
@@ -464,14 +494,13 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << separator << "self";
       separator = ", ";
     }
-
-    size_t pn = _first_true_parameter;
-    size_t num_parameters = pexprs.size();
-
-    if (_type == T_item_assignment_operator) {
-      // The last parameter is the value to set.
-      --num_parameters;
+    if (_flags & F_explicit_cls) {
+      call << separator << "cls";
+      separator = ", ";
     }
+
+    size_t pn;
+    size_t num_parameters = pexprs.size();
 
     for (pn = _first_true_parameter;
          pn < num_parameters; ++pn) {
@@ -481,11 +510,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
     call << ")";
-
-    if (_type == T_item_assignment_operator) {
-      call << " = ";
-      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-    }
   }
 
   return call.str();
@@ -568,6 +592,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
   } else if ((ifunc._flags & InterrogateFunction::F_setter) != 0) {
     _type = T_setter;
+
+  } else if ((ifunc._flags & InterrogateFunction::F_item_assignment) != 0) {
+    _type = T_item_assignment_operator;
   }
 
   if ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0) {
@@ -623,14 +650,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         fname == "operator <<=" ||
         fname == "operator >>=") {
       _type = T_assignment_method;
-
-    } else if (fname == "operator []" && !_const_method && rtype != nullptr) {
-       // Check if this is an item-assignment operator.
-      CPPReferenceType *reftype = rtype->as_reference_type();
-      if (reftype != nullptr && reftype->_pointing_at->as_const_type() == nullptr) {
-        // It returns a mutable reference.
-        _type = T_item_assignment_operator;
-      }
     }
   }
 
@@ -707,36 +726,10 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
     }
 
-  } else if (_type == T_item_assignment_operator) {
-    // An item-assignment method isn't really a thing in C++, but it is in
-    // scripting languages, so we use this to denote item-access operators
-    // that return a non-const reference.
-
-    if (_cpptype == nullptr) {
-      nout << "Method " << *_cppfunc << " has no struct type\n";
-      return false;
-    } else {
-      // Synthesize a const reference parameter for the assignment.
-      CPPType *bare_type = TypeManager::unwrap_reference(rtype);
-      CPPType *const_type = CPPType::new_type(new CPPConstType(bare_type));
-      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(const_type));
-
-      Parameter param;
-      param._has_name = true;
-      param._name = "assign_val";
-      param._remap = interface_maker->remap_parameter(_cpptype, ref_type);
-
-      if (param._remap == nullptr || !param._remap->is_valid()) {
-        nout << "Invalid remap for assignment type of method " << *_cppfunc << "\n";
-        return false;
-      }
-      _parameters.push_back(param);
-
-      // Pretend we don't return anything at all.
-      CPPType *void_type = TypeManager::get_void_type();
-      _return_type = interface_maker->remap_parameter(_cpptype, void_type);
-      _void_return = true;
-    }
+  } else if (fname == "operator <=>") {
+    // This returns an opaque object that we must leave unchanged.
+    _return_type = new ParameterRemapUnchanged(rtype);
+    _void_return = false;
 
   } else {
     // The normal case.
@@ -792,14 +785,20 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     first_param = 1;
   }
 
-  if (_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
+  if (_parameters.size() > first_param &&
       TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
     // Here's a special case.  If the first parameter of a nonstatic method
     // is a PyObject * called "self", then we will automatically fill it in
-    // from the this pointer, and remove it from the generated parameter
-    // list.
-    _parameters.erase(_parameters.begin() + first_param);
-    _flags |= F_explicit_self;
+    // from the this pointer, and remove it from the generated parameter list.
+    // For static methods, we offer "cls" instead, containing the type object.
+    if (_parameters[first_param]._name == "self") {
+      _parameters.erase(_parameters.begin() + first_param);
+      _flags |= F_explicit_self;
+    }
+    else if (!_has_this && _parameters[first_param]._name == "cls") {
+      _parameters.erase(_parameters.begin() + first_param);
+      _flags |= F_explicit_cls;
+    }
   }
 
   if (_parameters.size() == first_param) {
@@ -883,8 +882,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     } else if (fname == "make") {
       if (!_has_this && _parameters.size() >= 1 &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
-        // We can use this for coercion.
-        _flags |= F_coerce_constructor;
+        // We can use this for coercion, except if this is a kwargs param that
+        // does not have a default value.
+        if ((_flags & F_explicit_args) == 0 ||
+            _parameters.size() != first_param + 2 ||
+            _parameters[first_param + 1]._remap->has_default_value()) {
+          _flags |= F_coerce_constructor;
+        }
       }
 
       if (_args_type == InterfaceMaker::AT_varargs) {
@@ -900,9 +904,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (fname == "operator /") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
 
     } else if (fname == "get_key" || fname == "get_hash") {
@@ -919,6 +923,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
             || fname == "__getattr__"
             || fname == "__delattr__") {
       // Just to prevent these from getting keyword arguments.
+
+    } else if (fname == "__setstate__") {
+      _args_type = InterfaceMaker::AT_single_arg;
 
     } else {
       if (_args_type == InterfaceMaker::AT_varargs) {
@@ -944,9 +951,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   case T_assignment_method:
     if (fname == "operator /=") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
     }
     break;

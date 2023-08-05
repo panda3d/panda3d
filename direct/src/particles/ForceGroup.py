@@ -1,10 +1,24 @@
-from panda3d.core import *
-from panda3d.physics import *
+from panda3d.core import NodePath
+from panda3d.physics import (
+    AngularForce,
+    AngularVectorForce,
+    ForceNode,
+    LinearCylinderVortexForce,
+    LinearDistanceForce,
+    LinearForce,
+    LinearFrictionForce,
+    LinearJitterForce,
+    LinearNoiseForce,
+    LinearSinkForce,
+    LinearSourceForce,
+    LinearVectorForce,
+)
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.PhysicsManagerGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal
 import sys
+import warnings
+
 
 class ForceGroup(DirectObject):
 
@@ -12,7 +26,7 @@ class ForceGroup(DirectObject):
     id = 1
 
     def __init__(self, name=None):
-        if (name == None):
+        if name is None:
             self.name = 'ForceGroup-%d' % ForceGroup.id
             ForceGroup.id += 1
         else:
@@ -50,26 +64,29 @@ class ForceGroup(DirectObject):
 
     def addForce(self, force):
         self.node.addForce(force)
-        if (self.particleEffect):
+        if self.particleEffect:
             self.particleEffect.addForce(force)
 
     def removeForce(self, force):
         self.node.removeForce(force)
-        if (self.particleEffect != None):
+        if self.particleEffect is not None:
             self.particleEffect.removeForce(force)
 
     # Get/set
     def getName(self):
+        warnings.warn("Deprecated: access .name directly instead.", DeprecationWarning, stacklevel=2)
         return self.name
+
     def getNode(self):
         return self.node
+
     def getNodePath(self):
         return self.nodePath
 
     # Utility functions
     def __getitem__(self, index):
         numForces = self.node.getNumForces()
-        if ((index < 0) or (index >= numForces)):
+        if index < 0 or index >= numForces:
             raise IndexError
         return self.node.getForce(index)
 
@@ -96,11 +113,11 @@ class ForceGroup(DirectObject):
                     radius = f.getRadius()
                     falloffType = f.getFalloffType()
                     ftype = 'FTONEOVERR'
-                    if (falloffType == LinearDistanceForce.FTONEOVERR):
+                    if falloffType == LinearDistanceForce.FTONEOVERR:
                         ftype = 'FTONEOVERR'
-                    elif (falloffType == LinearDistanceForce.FTONEOVERRSQUARED):
+                    elif falloffType == LinearDistanceForce.FTONEOVERRSQUARED:
                         ftype = 'FTONEOVERRSQUARED'
-                    elif (falloffType == LinearDistanceForce.FTONEOVERRCUBED):
+                    elif falloffType == LinearDistanceForce.FTONEOVERRCUBED:
                         ftype = 'FTONEOVERRCUBED'
                     forceCenter = f.getForceCenter()
                     if isinstance(f, LinearSinkForce):
@@ -121,6 +138,12 @@ class ForceGroup(DirectObject):
             elif isinstance(f, AngularForce):
                 if isinstance(f, AngularVectorForce):
                     vec = f.getQuat()
-                    file.write(fname + ' = AngularVectorForce(Quat(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2], vec[3]))
+                    file.write(fname + ' = AngularVectorForce(Quat(%.4f, %.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2], vec[3]))
             file.write(fname + '.setActive(%d)\n' % f.getActive())
             file.write(targ + '.addForce(%s)\n' % fname)
+
+    is_enabled = isEnabled
+    get_node = getNode
+    get_node_path = getNodePath
+    as_list = asList
+    print_params = printParams

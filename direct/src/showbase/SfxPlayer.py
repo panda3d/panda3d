@@ -4,7 +4,8 @@ a particular location."""
 __all__ = ['SfxPlayer']
 
 import math
-from panda3d.core import *
+from panda3d.core import AudioSound
+
 
 class SfxPlayer:
     """
@@ -55,7 +56,7 @@ class SfxPlayer:
                 d = node.getDistance(base.cam)
         if not cutoff:
             cutoff = self.cutoffDistance
-        if d == None or d > cutoff:
+        if d is None or d > cutoff:
             volume = 0
         else:
             if SfxPlayer.UseInverseSquare:

@@ -48,7 +48,6 @@
 #include "textureReloadRequest.h"
 #include "textureStage.h"
 #include "textureContext.h"
-#include "timerQueryContext.h"
 #include "samplerContext.h"
 #include "samplerState.h"
 #include "shader.h"
@@ -301,6 +300,22 @@ ConfigVariableBool vertex_animation_align_16
           "impacts only vertex formats created within Panda subsystems; custom "
           "vertex formats are not affected."));
 
+ConfigVariableBool vertex_colors_prefer_packed
+("vertex-colors-prefer-packed",
+#ifdef _WIN32
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("This specifies whether to optimize vertex colors for OpenGL or for "
+          "DirectX 9.  If set to true (the default on Windows), Panda will "
+          "generate DirectX-style vertex colors, which are also supported in "
+          "newer OpenGL versions (although they may be buggy on some cards, "
+          "such as AMD RDNA).  If false, Panda will always use OpenGL-style "
+          "vertex colors, causing a minor performance penalty in DirectX 9.  "
+          "You probably should set this to false if you know you will not be "
+          "using DirectX 9."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "
@@ -349,6 +364,23 @@ ConfigVariableDouble simple_image_threshold
           "simple-image-size.  Larger numbers will result in smaller "
           "simple images.  Generally the value should be considerably "
           "less than 1."));
+
+ConfigVariableInt texture_reload_num_threads
+ ("texture-reload-num-threads", 1,
+  PRC_DESC("The number of threads that will be started by the Texture class "
+           "to reload textures asynchronously.  These threads will only be "
+           "started if the asynchronous interface is used, and if threading "
+           "support is compiled into Panda.  The default is one thread, "
+           "which allows textures to be loaded one at a time in a single "
+           "asychronous thread.  You can set this higher, particularly if "
+           "you have many CPU's available, to allow loading multiple models "
+           "simultaneously."));
+
+ConfigVariableEnum<ThreadPriority> texture_reload_thread_priority
+ ("texture-reload-thread-priority", TP_normal,
+  PRC_DESC("The default thread priority to assign to the threads created for "
+           "asynchronous texture loading.  The default is 'normal'; you may "
+           "also specify 'low', 'high', or 'urgent'."));
 
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
@@ -487,7 +519,7 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
          "in seconds, that is imposed on every asynchronous load attempt "
          "(within the thread).  Its purpose is to help debug errors that "
          "may occur when an asynchronous load is delayed.  The "
-         "delay is per-model, and all aync loads will be queued "
+         "delay is per-model, and all async loads will be queued "
          "up behind the delay--it is as if the time it takes to read a "
          "file is increased by this amount per read."));
 
@@ -593,7 +625,6 @@ ConfigureFn(config_gobj) {
   TexturePoolFilter::init_type();
   TextureReloadRequest::init_type();
   TextureStage::init_type();
-  TimerQueryContext::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();

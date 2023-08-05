@@ -9,9 +9,12 @@ __all__ = ['FSMException', 'FSM']
 
 
 from direct.showbase.DirectObject import DirectObject
-from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import PythonUtil
+from direct.directnotify import DirectNotifyGlobal
 from direct.stdpy.threading import RLock
+from panda3d.core import AsyncTaskManager, AsyncFuture, PythonTask
+import types
 
 
 class FSMException(Exception):
@@ -24,6 +27,19 @@ class AlreadyInTransition(FSMException):
 
 class RequestDenied(FSMException):
     pass
+
+
+class Transition(tuple):
+    """Used for the return value of fsm.request().  Behaves like a tuple, for
+    historical reasons."""
+
+    _future = None
+
+    def __await__(self):
+        if self._future:
+            yield self._future
+
+        return tuple(self)
 
 
 class FSM(DirectObject):
@@ -117,7 +133,7 @@ class FSM(DirectObject):
     at construction time; it is simply in Off already by convention.
     If you need to call code in enterOff() to initialize your FSM
     properly, call it explicitly in the constructor.  Similarly, when
-    cleanup() is called or the FSM is destructed, the FSM transitions
+    `cleanup()` is called or the FSM is destructed, the FSM transitions
     back to 'Off' by convention.  (It does call enterOff() at this
     point, but does not call exitOff().)
 
@@ -152,6 +168,15 @@ class FSM(DirectObject):
     # map, no transitions are implicitly allowed--all transitions
     # must be approved by some filter function.
     defaultTransitions = None
+
+    __doneFuture = AsyncFuture()
+    __doneFuture.set_result(None)
+
+    # An enum class for special states like the DEFAULT or ANY state,
+    # that should be treatened by the FSM in a special way
+    class EnumStates():
+        ANY = 1
+        DEFAULT = 2
 
     def __init__(self, name):
         self.fsmLock = RLock()
@@ -233,14 +258,20 @@ class FSM(DirectObject):
     def isInTransition(self):
         self.fsmLock.acquire()
         try:
-            return self.state == None
+            return self.state is None
         finally:
             self.fsmLock.release()
 
     def forceTransition(self, request, *args):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
-        exitState() followed by enterState()."""
+        exitState() followed by enterState().
+
+        If the FSM is currently undergoing a transition, this will
+        queue up the new transition.
+
+        Returns a future, which can be used to await the transition.
+        """
 
         self.fsmLock.acquire()
         try:
@@ -250,24 +281,30 @@ class FSM(DirectObject):
 
             if not self.state:
                 # Queue up the request.
-                self.__requestQueue.append(PythonUtil.Functor(
-                    self.forceTransition, request, *args))
-                return
+                fut = AsyncFuture()
+                self.__requestQueue.append((PythonUtil.Functor(
+                    self.forceTransition, request, *args), fut))
+                return fut
 
-            self.__setState(request, *args)
+            result = self.__setState(request, *args)
+            return result._future or self.__doneFuture
         finally:
             self.fsmLock.release()
 
     def demand(self, request, *args):
         """Requests a state transition, by code that does not expect
         the request to be denied.  If the request is denied, raises a
-        RequestDenied exception.
+        `RequestDenied` exception.
 
-        Unlike request(), this method allows a new request to be made
+        Unlike `request()`, this method allows a new request to be made
         while the FSM is currently in transition.  In this case, the
         request is queued up and will be executed when the current
         transition finishes.  Multiple requests will queue up in
         sequence.
+
+        The return value of this function can be used in an `await`
+        expression to suspend the current coroutine until the
+        transition is done.
         """
 
         self.fsmLock.acquire()
@@ -277,12 +314,15 @@ class FSM(DirectObject):
                 self._name, request, str(args)[1:]))
             if not self.state:
                 # Queue up the request.
-                self.__requestQueue.append(PythonUtil.Functor(
-                    self.demand, request, *args))
-                return
+                fut = AsyncFuture()
+                self.__requestQueue.append((PythonUtil.Functor(
+                    self.demand, request, *args), fut))
+                return fut
 
-            if not self.request(request, *args):
+            result = self.request(request, *args)
+            if not result:
                 raise RequestDenied("%s (from state: %s)" % (request, self.state))
+            return result._future or self.__doneFuture
         finally:
             self.fsmLock.release()
 
@@ -290,7 +330,7 @@ class FSM(DirectObject):
         """Requests a state transition (or other behavior).  The
         request may be denied by the FSM's filter function.  If it is
         denied, the filter function may either raise an exception
-        (RequestDenied), or it may simply return None, without
+        (`RequestDenied`), or it may simply return None, without
         changing the FSM's state.
 
         The request parameter should be a string.  The request, along
@@ -305,9 +345,14 @@ class FSM(DirectObject):
 
         If the FSM is currently in transition (i.e. in the middle of
         executing an enterState or exitState function), an
-        AlreadyInTransition exception is raised (but see demand(),
+        `AlreadyInTransition` exception is raised (but see `demand()`,
         which will queue these requests up and apply when the
-        transition is complete)."""
+        transition is complete).
+
+        If the previous state's exitFunc or the new state's enterFunc
+        is a coroutine, the state change may not have been applied by
+        the time request() returns, but you can use `await` on the
+        return value to await the transition."""
 
         self.fsmLock.acquire()
         try:
@@ -324,7 +369,7 @@ class FSM(DirectObject):
                     result = (result,) + args
 
                 # Otherwise, assume it's a (name, *args) tuple
-                self.__setState(*result)
+                return self.__setState(*result)
 
             return result
         finally:
@@ -333,12 +378,10 @@ class FSM(DirectObject):
     def defaultEnter(self, *args):
         """ This is the default function that is called if there is no
         enterState() method for a particular state name. """
-        pass
 
     def defaultExit(self):
         """ This is the default function that is called if there is no
         exitState() method for a particular state name. """
-        pass
 
     def defaultFilter(self, request, args):
         """This is the function that is called if there is no
@@ -382,6 +425,27 @@ class FSM(DirectObject):
                 # accept it.
                 return (request,) + args
 
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(self.state, []):
+                # Whenever we have a '*' as our to transition, we allow
+                # to transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
+                # If the requested state is in the default transitions
+                # from any state list, we also alow to transit to the
+                # new state
+                return (request,) + args
+
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
+                # This is like we had set the defaultTransitions to None.
+                # Any state can transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get(FSM.EnumStates.DEFAULT, []):
+                # This is the fallback state that we use whenever no
+                # other trnasition was possible
+                return (request,) + args
+
             # If self.defaultTransitions is not None, it is an error
             # to request a direct state transition (capital letter
             # request) not listed in defaultTransitions and not
@@ -401,7 +465,6 @@ class FSM(DirectObject):
             return (request,) + args
         return self.defaultFilter(request, args)
 
-
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""
         self.fsmLock.acquire()
@@ -410,18 +473,17 @@ class FSM(DirectObject):
         finally:
             self.fsmLock.release()
 
-
     def requestNext(self, *args):
         """Request the 'next' state in the predefined state array."""
         self.fsmLock.acquire()
         try:
             if self.stateArray:
                 if not self.state in self.stateArray:
-                    self.request(self.stateArray[0])
+                    return self.request(self.stateArray[0])
                 else:
                     cur_index = self.stateArray.index(self.state)
                     new_index = (cur_index + 1) % len(self.stateArray)
-                    self.request(self.stateArray[new_index], args)
+                    return self.request(self.stateArray[new_index], args)
             else:
                 assert self.notifier.debug(
                                     "stateArray empty. Can't switch to next.")
@@ -435,11 +497,11 @@ class FSM(DirectObject):
         try:
             if self.stateArray:
                 if not self.state in self.stateArray:
-                    self.request(self.stateArray[0])
+                    return self.request(self.stateArray[0])
                 else:
                     cur_index = self.stateArray.index(self.state)
                     new_index = (cur_index - 1) % len(self.stateArray)
-                    self.request(self.stateArray[new_index], args)
+                    return self.request(self.stateArray[new_index], args)
             else:
                 assert self.notifier.debug(
                                     "stateArray empty. Can't switch to next.")
@@ -447,8 +509,26 @@ class FSM(DirectObject):
             self.fsmLock.release()
 
     def __setState(self, newState, *args):
-        # Internal function to change unconditionally to the indicated
-        # state.
+        # Internal function to change unconditionally to the indicated state.
+
+        transition = Transition((newState,) + args)
+
+        # See if we can transition immediately by polling the coroutine.
+        coro = self.__transition(newState, *args)
+        try:
+            coro.send(None)
+        except StopIteration:
+            # We managed to apply this straight away.
+            return transition
+
+        # Continue the state transition in a task.
+        task = PythonTask(coro)
+        mgr = AsyncTaskManager.get_global_ptr()
+        mgr.add(task)
+        transition._future = task
+        return transition
+
+    async def __transition(self, newState, *args):
         assert self.state
         assert self.notify.debug("%s to state %s." % (self._name, newState))
 
@@ -458,10 +538,13 @@ class FSM(DirectObject):
 
         try:
             if not self.__callFromToFunc(self.oldState, self.newState, *args):
-                self.__callExitFunc(self.oldState)
-                self.__callEnterFunc(self.newState, *args)
-                pass
-            pass
+                result = self.__callExitFunc(self.oldState)
+                if isinstance(result, types.CoroutineType):
+                    await result
+
+                result = self.__callEnterFunc(self.newState, *args)
+                if isinstance(result, types.CoroutineType):
+                    await result
         except:
             # If we got an exception during the enter or exit methods,
             # go directly to state "InternalError" and raise up the
@@ -481,26 +564,27 @@ class FSM(DirectObject):
         del self.newState
 
         if self.__requestQueue:
-            request = self.__requestQueue.pop(0)
+            request, fut = self.__requestQueue.pop(0)
             assert self.notify.debug("%s continued queued request." % (self._name))
-            request()
+            await request()
+            fut.set_result(None)
 
     def __callEnterFunc(self, name, *args):
         # Calls the appropriate enter function when transitioning into
         # a new state, if it exists.
-        assert self.state == None and self.newState == name
+        assert self.state is None and self.newState == name
 
         func = getattr(self, "enter" + name, None)
         if not func:
             # If there's no matching enterFoo() function, call
             # defaultEnter() instead.
             func = self.defaultEnter
-        func(*args)
+        return func(*args)
 
     def __callFromToFunc(self, oldState, newState, *args):
         # Calls the appropriate fromTo function when transitioning into
         # a new state, if it exists.
-        assert self.state == None and self.oldState == oldState and self.newState == newState
+        assert self.state is None and self.oldState == oldState and self.newState == newState
 
         func = getattr(self, "from%sTo%s" % (oldState,newState), None)
         if func:
@@ -511,14 +595,14 @@ class FSM(DirectObject):
     def __callExitFunc(self, name):
         # Calls the appropriate exit function when leaving a
         # state, if it exists.
-        assert self.state == None and self.oldState == name
+        assert self.state is None and self.oldState == name
 
         func = getattr(self, "exit" + name, None)
         if not func:
             # If there's no matching exitFoo() function, call
             # defaultExit() instead.
             func = self.defaultExit
-        func()
+        return func()
 
     def __repr__(self):
         return self.__str__()
@@ -531,9 +615,8 @@ class FSM(DirectObject):
         try:
             className = self.__class__.__name__
             if self.state:
-                str = ('%s FSM:%s in state "%s"' % (className, self._name, self.state))
+                return f'{className} FSM:{self._name} in state "{self.state}"'
             else:
-                str = ('%s FSM:%s in transition from \'%s\' to \'%s\'' % (className, self._name, self.oldState, self.newState))
-            return str
+                return f'{className} FSM:{self._name} in transition from \'{self.oldState}\' to \'{self.newState}\''
         finally:
             self.fsmLock.release()

@@ -297,7 +297,7 @@ erase(iterator first, iterator last) {
   ((To *)(this->_void_ptr))->erase(first, last);
 }
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 /**
  *
  */
@@ -471,9 +471,9 @@ set_data(const std::string &data) {
 template<class Element>
 INLINE std::string PointerToArray<Element>::
 get_subdata(size_type n, size_type count) const {
-  n = std::min(n, size());
-  count = std::max(count, n);
-  count = std::min(count, size() - n);
+  n = (std::min)(n, size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, size() - n);
   return std::string((const char *)(p() + n), sizeof(Element) * count);
 }
 
@@ -844,7 +844,7 @@ back() const {
   return ((To *)(this->_void_ptr))->back();
 }
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 /**
  *
  */
@@ -965,9 +965,9 @@ get_data() const {
 template<class Element>
 INLINE std::string ConstPointerToArray<Element>::
 get_subdata(size_type n, size_type count) const {
-  n = std::min(n, size());
-  count = std::max(count, n);
-  count = std::min(count, size() - n);
+  n = (std::min)(n, size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, size() - n);
   return std::string((const char *)(p() + n), sizeof(Element) * count);
 }
 

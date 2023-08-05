@@ -74,6 +74,8 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
     }
   }
 #endif
+
+  _mat_part_cache = new LMatrix4[s->cp_get_mat_cache_size()];
 }
 
 /**
@@ -92,6 +94,8 @@ DXShaderContext9::
     delete _vertex_element_array;
     _vertex_element_array = nullptr;
   }
+
+  delete[] _mat_part_cache;
 }
 
 /**
@@ -232,19 +236,25 @@ issue_parameters(GSG *gsg, int altered) {
       }
     }
 
-    for (size_t i = 0; i < _shader->_mat_spec.size(); ++i) {
-      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+    if (altered & _shader->_mat_deps) {
+      gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-      if (altered & (spec._dep[0] | spec._dep[1])) {
+      for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
+        if ((altered & spec._dep) == 0) {
+          continue;
+        }
+
         CGparameter p = _cg_parameter_map[spec._id._seqno];
         if (p == nullptr) {
           continue;
         }
-        const LMatrix4 *val = gsg->fetch_specified_value(spec, altered);
+
+        const LMatrix4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
         if (val) {
           HRESULT hr;
           PN_stdfloat v [4];
           LMatrix4f temp_matrix = LCAST(float, *val);
+          LMatrix3f temp_matrix3;
 
           hr = D3D_OK;
 
@@ -305,6 +315,33 @@ issue_parameters(GSG *gsg, int altered) {
             v[0] = data[3]; v[1] = data[7]; v[2] = data[11]; v[3] = data[15];
             hr = cgD3D9SetUniform(p, v);
             break;
+
+          case Shader::SMP_upper3x3:
+            // TRANSPOSE REQUIRED
+            temp_matrix3 = temp_matrix.get_upper_3();
+            temp_matrix3.transpose_in_place();
+            data = temp_matrix3.get_data();
+
+            hr = cgD3D9SetUniform(p, data);
+            break;
+
+          case Shader::SMP_transpose3x3:
+            // NO TRANSPOSE REQUIRED
+            temp_matrix3 = temp_matrix.get_upper_3();
+            data = temp_matrix3.get_data();
+
+            hr = cgD3D9SetUniform(p, data);
+            break;
+
+          case Shader::SMP_cell15:
+            hr = cgD3D9SetUniform(p, data + 15);
+            continue;
+          case Shader::SMP_cell14:
+            hr = cgD3D9SetUniform(p, data + 14);
+            continue;
+          case Shader::SMP_cell13:
+            hr = cgD3D9SetUniform(p, data + 13);
+            continue;
 
           default:
             dxgsg9_cat.error()
@@ -684,7 +721,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
         continue;
       }
 
-      if (spec._suffix != 0) {
+      if (spec._suffix != nullptr) {
         // The suffix feature is inefficient.  It is a temporary hack.
         tex = tex->load_related(spec._suffix);
       }
@@ -693,13 +730,13 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
         continue;
       }
 
-      TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
+      TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
       if (tc == nullptr) {
         continue;
       }
 
       int texunit = cgGetParameterResourceIndex(p);
-      gsg->apply_texture(texunit, tc, sampler);
+      gsg->apply_texture(texunit, tc, view, sampler);
     }
   }
 #endif

@@ -3,6 +3,7 @@
 /thirdparty/
 /targetroot/
 /dstroot/
+/sdks/
 
 # Core dumps and traces
 core
@@ -16,6 +17,7 @@ vgcore.*
 *.save.1
 *.sublime-workspace
 .vscode/
+.idea/
 
 # Temporary build files
 /_vfsimporter.*
@@ -54,6 +56,9 @@ CTestTestfile.cmake
 Thumbs.db
 ehthumbs.db
 
+# macOS
+.DS_Store
+
 # Python
 __pycache__/
 *.pyc
@@ -63,3 +68,6 @@ __pycache__/
 .tox/
 .cache/
 .pytest_cache/
+/.settings/
+/.cproject
+/.project

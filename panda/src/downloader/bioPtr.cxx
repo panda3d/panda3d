@@ -31,6 +31,18 @@
 #include <fcntl.h>
 #endif
 
+// For some reason in msys those two macros are not defined correctly in the
+// header file ws2tcpip.h
+// Also, those lines will be removed when the engine change
+// _WIN32_WINNT to 0x0600
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0x00000400
+#endif
+
+#ifndef AI_V4MAPPED
+#define AI_V4MAPPED 0x00000800
+#endif
+
 using std::string;
 
 #ifdef _WIN32
@@ -54,6 +66,33 @@ static string format_error() {
 }
 #else
 #define format_error() strerror(errno)
+#endif
+
+#if defined(_WIN32) && defined(LIBRESSL_VERSION_NUMBER)
+/**
+* This exists to work around an issue with LibreSSL's version of
+* BIO_sock_should_retry, which does not understand Windows error codes.
+* The implementation here matches the behaviour of OpenSSL on Windows.
+*/
+static int
+sock_should_retry(int i) {
+  if (i == 0 || i == -1) {
+    int err = WSAGetLastError();
+
+    switch (err) {
+    case WSAEWOULDBLOCK:
+    case ENOTCONN:
+    case EINPROGRESS:
+    case EALREADY:
+      return 1;
+    default:
+      break;
+    }
+  }
+  return 0;
+}
+#else
+#define sock_should_retry(err) BIO_sock_should_retry(err)
 #endif
 
 /**
@@ -95,6 +134,7 @@ BioPtr(const URLSpec &url) : _connecting(false) {
     // These hints tell getaddrinfo what kind of address to return.
     struct addrinfo hints, *res = nullptr;
     memset(&hints, 0, sizeof(hints));
+
     hints.ai_flags = AI_V4MAPPED | AI_ADDRCONFIG;
     hints.ai_family = support_ipv6 ? AF_UNSPEC : AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -201,8 +241,7 @@ connect() {
     result = BIO_sock_error(fd);
   } else {
     result = ::connect(fd, (sockaddr *)&_addr, _addrlen);
-
-    if (result != 0 && BIO_sock_should_retry(-1)) {
+    if (result != 0 && sock_should_retry(-1)) {
       // It's still in progress; we should retry later.  This causes
       // should_retry() to return true.
       BIO_set_flags(_bio, BIO_FLAGS_SHOULD_RETRY);

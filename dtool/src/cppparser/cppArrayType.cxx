@@ -81,6 +81,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPArrayType::
+is_trivially_copyable() const {
+  return _element_type->is_trivially_copyable();
+}
+
+/**
  * Returns true if the type is default-constructible.
  */
 bool CPPArrayType::
@@ -189,6 +197,11 @@ output_instance(std::ostream &out, int indent_level, CPPScope *scope,
     brackets << *_bounds;
   }
   brackets << "]";
+
+  if (!_attributes.is_empty()) {
+    brackets << " " << _attributes;
+  }
+
   std::string bracketsstr = brackets.str();
 
   _element_type->output_instance(out, indent_level, scope, complete,

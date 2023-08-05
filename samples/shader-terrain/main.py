@@ -20,6 +20,7 @@ class ShaderTerrainDemo(ShowBase):
             textures-power-2 none
             gl-coordinate-system default
             window-title Panda3D ShaderTerrainMesh Demo
+            filled-wireframe-apply-shader true
 
             # As an optimization, set this to the maximum number of cameras
             # or lights that will be rendering the terrain at any given time.

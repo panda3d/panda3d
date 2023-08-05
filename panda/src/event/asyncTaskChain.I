@@ -21,6 +21,46 @@ is_started() const {
   return (_state == S_started);
 }
 
+#ifndef CPPPARSER
+/**
+ * Adds a new task to the task chain which calls the indicated callable.
+ * This method is defined as a more convenient alternative to subclassing
+ * AsyncTask.
+ *
+ * This given callable allowed to be any object defining a call operator that
+ * accepts an AsyncTask pointer and returns a DoneStatus.
+ *
+ * Returns the newly created AsyncTask object.
+ *
+ * @since 1.11.0
+ */
+template<class Callable>
+INLINE AsyncTask *AsyncTaskChain::
+add(Callable callable, const std::string &name, int sort, int priority) {
+  class InlineTask final : public AsyncTask {
+  public:
+    InlineTask(Callable callable, const std::string &name, int sort, int priority) :
+      AsyncTask(name),
+      _callable(std::move(callable)) {
+      _sort = sort;
+      _priority = priority;
+    }
+
+    ALLOC_DELETED_CHAIN(InlineTask);
+
+  private:
+    virtual DoneStatus do_task() override final {
+      return _callable(this);
+    }
+
+    Callable _callable;
+  };
+  AsyncTask *task = new InlineTask(std::move(callable), name, sort, priority);
+  add(task);
+  return task;
+}
+#endif
+
 /**
  * Returns the time at which the next sleeping thread will awaken, or -1 if
  * there are no sleeping threads.  Assumes the lock is already held.

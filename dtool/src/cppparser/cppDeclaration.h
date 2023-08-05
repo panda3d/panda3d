@@ -19,6 +19,7 @@
 #include "cppVisibility.h"
 #include "cppFile.h"
 #include "cppCommentBlock.h"
+#include "cppAttributeList.h"
 
 #include <string>
 #include <vector>
@@ -59,6 +60,9 @@ class CPPPreprocessor;
 class CPPDeclaration {
 public:
   enum SubType {
+    // Empty declaration
+    ST_empty,
+
     // Subtypes of CPPDeclaration
     ST_instance,
     ST_type_declaration,
@@ -87,7 +91,7 @@ public:
     ST_closure,
   };
 
-  CPPDeclaration(const CPPFile &file);
+  CPPDeclaration(const CPPFile &file, CPPAttributeList attr = CPPAttributeList());
   CPPDeclaration(const CPPDeclaration &copy);
   virtual ~CPPDeclaration() {};
 
@@ -114,9 +118,9 @@ public:
   Instantiations _instantiations;
 
   virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
-                      bool complete) const=0;
+                      bool complete) const;
 
-  virtual SubType get_subtype() const=0;
+  virtual SubType get_subtype() const;
 
   virtual CPPInstance *as_instance();
   virtual CPPClassTemplateParameter *as_class_template_parameter();
@@ -216,6 +220,7 @@ public:
   CPPTemplateScope *_template_scope;
   CPPFile _file;
   CPPCommentBlock *_leading_comment;
+  CPPAttributeList _attributes;
 
 protected:
   virtual bool is_equal(const CPPDeclaration *other) const;

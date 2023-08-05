@@ -21,6 +21,7 @@
 #include "typedObject.h"
 #include "indent.h"
 #include "pointerToArray.h"
+#include "extension.h"
 
 #include "checksumHashGenerator.h"
 
@@ -41,12 +42,14 @@ public:
   typedef BitMaskNative MaskType;
   typedef MaskType::WordType WordType;
 
+  INLINE BitArray(WordType init_value);
+
 PUBLISHED:
   enum { num_bits_per_word = MaskType::num_bits };
 
   INLINE BitArray();
-  INLINE BitArray(WordType init_value);
   BitArray(const SparseArray &from);
+  PY_EXTENSION(BitArray(PyObject *init_value));
 
   INLINE static BitArray all_on();
   INLINE static BitArray all_off();
@@ -84,7 +87,7 @@ PUBLISHED:
   int get_next_higher_different_bit(int low_bit) const;
 
   INLINE size_t get_num_words() const;
-  INLINE MaskType get_word(size_t n) const;
+  INLINE WordType get_word(size_t n) const;
   INLINE void set_word(size_t n, WordType value);
 
   void invert_in_place();
@@ -125,10 +128,15 @@ PUBLISHED:
   void operator <<= (int shift);
   void operator >>= (int shift);
 
+  EXTENSION(bool __bool__() const);
+  PY_EXTENSION(PyObject *__getstate__() const);
+  PY_EXTENSION(void __setstate__(PyObject *state));
+
 public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
+  INLINE MaskType get_word_internal(size_t n) const;
   INLINE void copy_on_write();
   void ensure_has_word(int n);
   void normalize();
@@ -137,6 +145,8 @@ private:
   typedef PTA(MaskType) Array;
   Array _array;
   int _highest_bits;  // Either 0 or 1.
+
+  friend class Extension<BitArray>;
 
 public:
   void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -162,4 +172,4 @@ operator << (std::ostream &out, const BitArray &array) {
   return out;
 }
 
-#endif
+#endif // !BITARRAY_H

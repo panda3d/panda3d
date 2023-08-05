@@ -599,6 +599,10 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
     return false;
   }
 
+  // Grabbing the lock early prevents any other thread in stage 0 from also
+  // trying to modify the channel list at the same time.
+  CDLockedReader cdata(_cycler);
+
   plist<int> holes;
   int channel_index = 0;
   pick_channel_index(holes, channel_index);
@@ -616,7 +620,6 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
                  subset.is_include_empty(), bound_joints, subset);
   control->setup_anim(this, anim, channel_index, bound_joints);
 
-  CDReader cdata(_cycler);
   determine_effective_channels(cdata);
 
   return true;
@@ -629,7 +632,7 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
  */
 void PartBundle::
 add_node(PartBundleNode *node) {
-  nassertv(find(_nodes.begin(), _nodes.end(), node) == _nodes.end());
+  nassertv(std::find(_nodes.begin(), _nodes.end(), node) == _nodes.end());
   _nodes.push_back(node);
 }
 
@@ -640,7 +643,7 @@ add_node(PartBundleNode *node) {
  */
 void PartBundle::
 remove_node(PartBundleNode *node) {
-  Nodes::iterator ni = find(_nodes.begin(), _nodes.end(), node);
+  Nodes::iterator ni = std::find(_nodes.begin(), _nodes.end(), node);
   nassertv(ni != _nodes.end());
   _nodes.erase(ni);
 }

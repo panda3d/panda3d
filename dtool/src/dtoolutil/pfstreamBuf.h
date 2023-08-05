@@ -22,7 +22,7 @@
 // compiling under Windows.  Turn this off to use popen(), even on Windows.
 // (popen() doesn't seem to work on Win9x, although it does work on NT-based
 // variants.)
-#ifdef WIN32_VC
+#ifdef _WIN32
 #define WIN_PIPE_CALLS 1
 #endif
 
@@ -34,14 +34,14 @@
 
 #else  // WIN_PIPE_CALLS
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
 #endif
 
 #endif // WIN_PIPE_CALLS
 
-class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf : public std::streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf final : public std::streambuf {
 public:
   enum Direction { Input, Output };
 

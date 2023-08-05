@@ -1,4 +1,4 @@
-from direct.wxwidgets.WxAppShell import *
+import wx
 import os
 from . import ObjectGlobals as OG
 
@@ -183,4 +183,3 @@ class MayaConverter(wx.Dialog):
 
         if self.callBack:
             self.callBack(result)
-

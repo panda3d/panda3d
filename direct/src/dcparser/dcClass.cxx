@@ -24,8 +24,8 @@ using std::string;
 
 #ifdef WITHIN_PANDA
 #ifndef CPPPARSER
-PStatCollector DCClass::_update_pcollector("App:Show code:readerPollTask:Update");
-PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Generate");
+PStatCollector DCClass::_update_pcollector("App:Tasks:readerPollTask:Update");
+PStatCollector DCClass::_generate_pcollector("App:Tasks:readerPollTask:Generate");
 #endif  // CPPPARSER
 
 ConfigVariableBool dc_multiple_inheritance
@@ -77,7 +77,9 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
   _number = -1;
   _constructor = nullptr;
 
+#ifdef WITHIN_PANDA
   _python_class_defs = nullptr;
+#endif
 }
 
 /**
@@ -85,9 +87,7 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
  */
 DCClass::
 ~DCClass() {
-  if (_constructor != nullptr) {
-    delete _constructor;
-  }
+  delete _constructor;
 
   Fields::iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {

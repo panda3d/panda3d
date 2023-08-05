@@ -15,7 +15,6 @@
 #define SIMPLEHASHMAP_H
 
 #include "pandabase.h"
-#include "pvector.h"
 #include "config_putil.h"
 
 /**
@@ -141,6 +140,15 @@ public:
   size_t _num_entries;
 
   Compare _comp;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type();
+
+private:
+  static TypeHandle _type_handle;
 #endif  // CPPPARSER
 };
 

@@ -38,6 +38,7 @@ PUBLISHED:
 
   void close();
 
+  bool write_header(const vector_uchar &header);
   bool write_header(const std::string &header);
   virtual bool put_datagram(const Datagram &data);
   virtual bool copy_datagram(SubfileInfo &result, const Filename &filename);

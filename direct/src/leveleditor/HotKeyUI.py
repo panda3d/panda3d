@@ -116,9 +116,7 @@ class HotKeyPanel(ScrolledPanel):
 
     def updateUI(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        keys = list(base.direct.hotKeyMap.keys())
-        keys.sort()
-        for key in keys:
+        for key in sorted(base.direct.hotKeyMap):
             keyDesc = base.direct.hotKeyMap[key]
             itemPanel = wx.Panel(self)
             sizer = wx.BoxSizer(wx.HORIZONTAL)

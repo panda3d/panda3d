@@ -27,10 +27,11 @@ PandaIOStream(std::istream &stream) : _istream(stream) {
  */
 size_t PandaIOStream::
 FileSize() const {
+  _istream.clear();
   std::streampos cur = _istream.tellg();
   _istream.seekg(0, ios::end);
   std::streampos end = _istream.tellg();
-  _istream.seekg(cur, ios::beg);
+  _istream.seekg(cur);
   return end;
 }
 
@@ -47,8 +48,14 @@ Flush() {
  */
 size_t PandaIOStream::
 Read(void *buffer, size_t size, size_t count) {
-  _istream.read((char*) buffer, size * count);
-  return _istream.gcount();
+  _istream.read((char *)buffer, size * count);
+
+  if (_istream.eof()) {
+    // Gracefully handle EOF.
+    _istream.clear(ios::eofbit);
+  }
+
+  return _istream.gcount() / size;
 }
 
 /**

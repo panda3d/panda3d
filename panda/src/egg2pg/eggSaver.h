@@ -77,7 +77,9 @@ private:
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_character_node(Character *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
-  void convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap);
+  void convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
+                                CharacterJointMap *jointMap,
+                                const CharacterJoint *parent_joint = nullptr);
   void convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
                               EggGroupNode *egg_parent, bool has_decal,
                               CharacterJointMap *joint_map);

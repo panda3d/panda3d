@@ -12,6 +12,7 @@
  */
 
 #include "pStatClientData.h"
+#include "pStatFrameData.h"
 #include "pStatReader.h"
 
 #include "pStatCollectorDef.h"
@@ -20,16 +21,15 @@ using std::string;
 
 PStatCollectorDef PStatClientData::_null_collector(-1, "Unknown");
 
-
-
 /**
  *
  */
 PStatClientData::
 PStatClientData(PStatReader *reader) :
+  _is_alive(true),
+  _is_dirty(false),
   _reader(reader)
 {
-  _is_alive = true;
 }
 
 /**
@@ -37,10 +37,26 @@ PStatClientData(PStatReader *reader) :
  */
 PStatClientData::
 ~PStatClientData() {
-  Collectors::const_iterator ci;
-  for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    delete (*ci)._def;
+  for (Collector &collector : _collectors) {
+    delete collector._def;
   }
+}
+
+/**
+ * Clears the is_dirty() flag.
+ */
+void PStatClientData::
+clear_dirty() const {
+  _is_dirty = false;
+}
+
+/**
+ * Returns true if the data was modified since the last time clear_dirty() was
+ * called.
+ */
+bool PStatClientData::
+is_dirty() const {
+  return _is_dirty;
 }
 
 /**
@@ -65,6 +81,22 @@ close() {
 }
 
 /**
+ * Returns the timestamp (in seconds elapsed since connection) of the latest
+ * available frame.
+ */
+double PStatClientData::
+get_latest_time() const {
+  double time = 0.0;
+  for (const Thread &thread : _threads) {
+    if (thread._data != nullptr && !thread._data->is_empty()) {
+      time = std::max(time, thread._data->get_latest_time());
+    }
+  }
+
+  return time;
+}
+
+/**
  * Returns the total number of collectors the Data knows about.
  */
 int PStatClientData::
@@ -81,6 +113,28 @@ bool PStatClientData::
 has_collector(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
           _collectors[index]._def != nullptr);
+}
+
+/**
+ * Returns the index of the collector with the given full name, or -1 if no
+ * such collector has been defined by the client.
+ */
+int PStatClientData::
+find_collector(const std::string &fullname) const {
+  // Take the last bit, we can compare it more cheaply, only check the full
+  // name if the basename matches.
+  const char *colon = strrchr(fullname.c_str(), ':');
+  std::string name(colon != nullptr ? colon + 1 : fullname.c_str());
+
+  for (int index = 0; index < get_num_collectors(); ++index) {
+    const PStatCollectorDef *def = _collectors[index]._def;
+    if (def != nullptr && def->_name == name &&
+        get_collector_fullname(index) == fullname) {
+      return index;
+    }
+  }
+
+  return -1;
 }
 
 /**
@@ -153,6 +207,10 @@ set_collector_has_level(int index, int thread_index, bool flag) {
     }
   }
 
+  if (any_changed) {
+    _is_dirty = true;
+  }
+
   return any_changed;
 }
 
@@ -202,8 +260,23 @@ get_num_threads() const {
  */
 bool PStatClientData::
 has_thread(int index) const {
-  return (index >= 0 && index < (int)_threads.size() &&
+  return (index >= 0 && (size_t)index < _threads.size() &&
           !_threads[index]._name.empty());
+}
+
+/**
+ * Returns the index of the thread with the given name, or -1 if no such thread
+ * has yet been defined.
+ */
+int PStatClientData::
+find_thread(const std::string &name) const {
+  for (int index = 0; index < get_num_threads(); ++index) {
+    if (_threads[index]._name == name) {
+      return index;
+    }
+  }
+
+  return -1;
 }
 
 /**
@@ -224,8 +297,16 @@ get_thread_name(int index) const {
 const PStatThreadData *PStatClientData::
 get_thread_data(int index) const {
   ((PStatClientData *)this)->define_thread(index);
-  nassertr(index >= 0 && index < (int)_threads.size(), nullptr);
+  nassertr(index >= 0 && (size_t)index < _threads.size(), nullptr);
   return _threads[index]._data;
+}
+
+/**
+ * Returns true if the given thread is still alive.
+ */
+bool PStatClientData::
+is_thread_alive(int index) const {
+  return (index >= 0 && (size_t)index < _threads.size() && _threads[index]._is_alive);
 }
 
 /**
@@ -280,6 +361,8 @@ add_collector(PStatCollectorDef *def) {
       set_collector_has_level(def->_parent_index, thread_index, true);
     }
   }
+
+  _is_dirty = true;
 }
 
 /**
@@ -287,13 +370,17 @@ add_collector(PStatCollectorDef *def) {
  * information just arrived from the client.
  */
 void PStatClientData::
-define_thread(int thread_index, const string &name) {
+define_thread(int thread_index, const string &name, bool mark_alive) {
   // A sanity check on the index number.
   nassertv(thread_index < 1000);
 
   // Make sure we have enough slots allocated.
   while ((int)_threads.size() <= thread_index) {
     _threads.push_back(Thread());
+  }
+
+  if (mark_alive) {
+    _threads[thread_index]._is_alive = true;
   }
 
   if (!name.empty()) {
@@ -303,8 +390,32 @@ define_thread(int thread_index, const string &name) {
   if (_threads[thread_index]._data.is_null()) {
     _threads[thread_index]._data = new PStatThreadData(this);
   }
+
+  _is_dirty = true;
 }
 
+/**
+ * Indicates that the given thread has expired.  Presumably this is information
+ * just arrived from the client.
+ */
+void PStatClientData::
+expire_thread(int thread_index) {
+  if (thread_index >= 0 && (size_t)thread_index < _threads.size()) {
+    _threads[thread_index]._is_alive = false;
+  }
+}
+
+/**
+ * Removes the given thread data entirely.
+ */
+void PStatClientData::
+remove_thread(int thread_index) {
+  if (thread_index >= 0 && (size_t)thread_index < _threads.size()) {
+    _threads[thread_index]._name.clear();
+    _threads[thread_index]._data.clear();
+    _threads[thread_index]._is_alive = false;
+  }
+}
 
 /**
  * Makes room for and stores a new frame's worth of data associated with some
@@ -319,6 +430,102 @@ record_new_frame(int thread_index, int frame_number,
   define_thread(thread_index);
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
   _threads[thread_index]._data->record_new_frame(frame_number, frame_data);
+  _is_dirty = true;
+}
+
+/**
+ * Writes the client data in the form of a JSON output that can be loaded into
+ * Chrome's event tracer.
+ */
+void PStatClientData::
+write_json(std::ostream &out, int pid) const {
+  out << "[\n";
+
+  for (int thread_index = 0; thread_index < get_num_threads(); ++thread_index) {
+    const Thread &thread = _threads[thread_index];
+
+    if (thread_index == 0) {
+      out << "{\"name\":\"thread_name\",\"ph\":\"M\",\"pid\":" << pid
+          << ",\"tid\":0,\"args\":{\"name\":\"Main\"}}";
+    }
+    else if (!thread._name.empty()) {
+      out
+        << ",\n{\"name\":\"thread_name\",\"ph\":\"M\",\"pid\":" << pid
+        << ",\"tid\":" << thread_index << ",\"args\":{\"name\":\""
+        << thread._name << "\"}}";
+    }
+    if (thread._data == nullptr || thread._data->is_empty()) {
+      continue;
+    }
+
+    int first_frame = thread._data->get_oldest_frame_number();
+    int last_frame = thread._data->get_latest_frame_number();
+    for (int frame_number = first_frame; frame_number <= last_frame; ++frame_number) {
+      const PStatFrameData &frame_data = thread._data->get_frame(frame_number);
+      size_t num_events = frame_data.get_num_events();
+      for (size_t i = 0; i < num_events; ++i) {
+        int collector_index = frame_data.get_time_collector(i);
+        out
+          << ",\n{\"name\":\"" << get_collector_fullname(collector_index)
+          << "\",\"ts\":" << (uint64_t)(frame_data.get_time(i) * 1000000)
+          << ",\"ph\":\"" << (frame_data.is_start(i) ? 'B' : 'E') << "\""
+          << ",\"pid\":" << pid << ",\"tid\":" << thread_index << "}";
+      }
+    }
+  }
+
+  out << "\n]\n";
+  out.flush();
+}
+
+/**
+ * Writes the client data to a datagram.
+ */
+void PStatClientData::
+write_datagram(Datagram &dg) const {
+  for (const Collector &collector : _collectors) {
+    PStatCollectorDef *def = collector._def;
+    if (def != nullptr && def->_index != -1) {
+      def->write_datagram(dg);
+      collector._is_level.write_datagram(nullptr, dg);
+    }
+  }
+  dg.add_int16(-1);
+
+  int thread_index = 0;
+  for (const Thread &thread : _threads) {
+    if (thread._data != nullptr) {
+      dg.add_int16(thread_index);
+      dg.add_string(thread._name);
+      thread._data->write_datagram(dg);
+    }
+    ++thread_index;
+  }
+  dg.add_int16(-1);
+}
+
+/**
+ * Restores the client data from a datagram.
+ */
+void PStatClientData::
+read_datagram(DatagramIterator &scan) {
+  while (scan.peek_int16() != -1) {
+    PStatCollectorDef *def = new PStatCollectorDef;
+    def->read_datagram(scan);
+    add_collector(def);
+    _collectors[def->_index]._is_level.read_datagram(scan, nullptr);
+  }
+  scan.skip_bytes(2);
+
+  int thread_index;
+  while ((thread_index = scan.get_int16()) != -1) {
+    std::string name = scan.get_string();
+    define_thread(thread_index, name, true);
+
+    _threads[thread_index]._data->read_datagram(scan, this);
+  }
+
+  update_toplevel_collectors();
 }
 
 /**
@@ -344,9 +551,8 @@ void PStatClientData::
 update_toplevel_collectors() {
   _toplevel_collectors.clear();
 
-  Collectors::const_iterator ci;
-  for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    PStatCollectorDef *def = (*ci)._def;
+  for (Collector &collector : _collectors) {
+    PStatCollectorDef *def = collector._def;
     if (def != nullptr && def->_parent_index == 0) {
       _toplevel_collectors.push_back(def->_index);
     }

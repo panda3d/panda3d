@@ -31,9 +31,7 @@ EggCharacterFilter() : EggMultiFilter(false) {
  */
 EggCharacterFilter::
 ~EggCharacterFilter() {
-  if (_collection != nullptr) {
-    delete _collection;
-  }
+  delete _collection;
 }
 
 /**

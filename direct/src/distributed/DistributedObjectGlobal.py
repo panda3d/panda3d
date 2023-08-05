@@ -21,4 +21,3 @@ class DistributedObjectGlobal(DistributedObject):
         DistributedObject.__init__(self, cr)
         self.parentId = 0
         self.zoneId = 0
-

@@ -242,7 +242,7 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->get_texture()->clear_prepared(tc->get_view(), this);
+  tc->get_texture()->clear_prepared(this);
 
   // We have to set the Texture pointer to NULL at this point, since the
   // Texture itself might destruct at any time after it has been released.
@@ -274,12 +274,8 @@ release_all_textures() {
 
   int num_textures = (int)_prepared_textures.size() + (int)_enqueued_textures.size();
 
-  Textures::iterator tci;
-  for (tci = _prepared_textures.begin();
-       tci != _prepared_textures.end();
-       ++tci) {
-    TextureContext *tc = (*tci);
-    tc->get_texture()->clear_prepared(tc->get_view(), this);
+  for (TextureContext *tc : _prepared_textures) {
+    tc->get_texture()->clear_prepared(this);
     tc->_object = nullptr;
 
     _released_textures.push_back(tc);
@@ -336,13 +332,13 @@ get_num_prepared_textures() const {
  * the TextureContext will be deleted.
  */
 TextureContext *PreparedGraphicsObjects::
-prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
+prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new TextureContext.  There might be several
   // GSG's sharing the same set of textures; if so, it doesn't matter which of
   // them creates the context (since they're all shared anyway).
-  TextureContext *tc = gsg->prepare_texture(tex, view);
+  TextureContext *tc = gsg->prepare_texture(tex);
 
   if (tc != nullptr) {
     bool prepared = _prepared_textures.insert(tc).second;
@@ -599,11 +595,7 @@ release_all_geoms() {
 
   int num_geoms = (int)_prepared_geoms.size() + (int)_enqueued_geoms.size();
 
-  Geoms::iterator gci;
-  for (gci = _prepared_geoms.begin();
-       gci != _prepared_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
+  for (GeomContext *gc : _prepared_geoms) {
     gc->_geom->clear_prepared(this);
     gc->_geom = nullptr;
 
@@ -774,11 +766,7 @@ release_all_shaders() {
 
   int num_shaders = (int)_prepared_shaders.size() + (int)_enqueued_shaders.size();
 
-  Shaders::iterator sci;
-  for (sci = _prepared_shaders.begin();
-       sci != _prepared_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
+  for (ShaderContext *sc : _prepared_shaders) {
     sc->_shader->clear_prepared(this);
     sc->_shader = nullptr;
 
@@ -952,11 +940,8 @@ release_all_vertex_buffers() {
 
   int num_vertex_buffers = (int)_prepared_vertex_buffers.size() + (int)_enqueued_vertex_buffers.size();
 
-  Buffers::iterator vbci;
-  for (vbci = _prepared_vertex_buffers.begin();
-       vbci != _prepared_vertex_buffers.end();
-       ++vbci) {
-    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
+  for (BufferContext *bc : _prepared_vertex_buffers) {
+    VertexBufferContext *vbc = (VertexBufferContext *)bc;
     vbc->get_data()->clear_prepared(this);
     vbc->_object = nullptr;
 
@@ -973,9 +958,8 @@ release_all_vertex_buffers() {
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_vertex_buffers);
-    BufferList::iterator li;
-    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
-      VertexBufferContext *vbc = (VertexBufferContext *)(*li);
+    for (BufferContext *bc : buffer_list) {
+      VertexBufferContext *vbc = (VertexBufferContext *)bc;
       _released_vertex_buffers.push_back(vbc);
     }
   }
@@ -1150,11 +1134,8 @@ release_all_index_buffers() {
 
   int num_index_buffers = (int)_prepared_index_buffers.size() + (int)_enqueued_index_buffers.size();
 
-  Buffers::iterator ibci;
-  for (ibci = _prepared_index_buffers.begin();
-       ibci != _prepared_index_buffers.end();
-       ++ibci) {
-    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
+  for (BufferContext *bc : _prepared_index_buffers) {
+    IndexBufferContext *ibc = (IndexBufferContext *)bc;
     ibc->get_data()->clear_prepared(this);
     ibc->_object = nullptr;
 
@@ -1171,10 +1152,9 @@ release_all_index_buffers() {
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_index_buffers);
-    BufferList::iterator li;
-    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
-      IndexBufferContext *vbc = (IndexBufferContext *)(*li);
-      _released_index_buffers.push_back(vbc);
+    for (BufferContext *bc : buffer_list) {
+      IndexBufferContext *ibc = (IndexBufferContext *)bc;
+      _released_index_buffers.push_back(ibc);
     }
   }
   _index_buffer_cache.clear();
@@ -1337,12 +1317,9 @@ release_all_shader_buffers() {
 
   int num_shader_buffers = (int)_prepared_shader_buffers.size() + (int)_enqueued_shader_buffers.size();
 
-  Buffers::iterator bci;
-  for (bci = _prepared_shader_buffers.begin();
-       bci != _prepared_shader_buffers.end();
-       ++bci) {
-
-    BufferContext *bc = (BufferContext *)(*bci);
+  for (BufferContext *bc : _prepared_shader_buffers) {
+    ((ShaderBuffer *)bc->_object)->clear_prepared(this);
+    bc->_object = nullptr;
     _released_shader_buffers.push_back(bc);
   }
 
@@ -1536,13 +1513,11 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = qti->first;
-    for (int view = 0; view < tex->get_num_views(); ++view) {
-      TextureContext *tc = tex->prepare_now(view, this, gsg);
-      if (tc != nullptr) {
-        gsg->update_texture(tc, true);
-        if (view == 0 && qti->second != nullptr) {
-          qti->second->set_result(tc);
-        }
+    TextureContext *tc = tex->prepare_now(this, gsg);
+    if (tc != nullptr) {
+      gsg->update_texture(tc, true);
+      if (qti->second != nullptr) {
+        qti->second->set_result(tc);
       }
     }
   }
@@ -1605,6 +1580,12 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   }
 
   _enqueued_index_buffers.clear();
+
+  for (ShaderBuffer *buffer : _enqueued_shader_buffers) {
+    buffer->prepare_now(this, gsg);
+  }
+
+  _enqueued_shader_buffers.clear();
 }
 
 /**
@@ -1672,10 +1653,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
            (int)buffer_cache_size > released_buffer_cache_size) {
       BufferContext *released_buffer = buffer_list.back();
       buffer_list.pop_back();
-      if (released_buffer->_object != nullptr) {
-        released_buffer->_object = nullptr;
-        released_buffers.push_back(released_buffer);
-      }
+      released_buffers.push_back(released_buffer);
       buffer_cache_size -= release_key._data_size_bytes;
     }
 

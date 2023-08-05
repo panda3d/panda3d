@@ -27,29 +27,25 @@ extern EXPCL_PANDA_PNMIMAGE const float to_linear_float_table[256];
 
 BEGIN_PUBLISH
 
-EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(unsigned char val);
-EXPCL_PANDA_PNMIMAGE INLINE float decode_sRGB_float(float val);
-EXPCL_PANDA_PNMIMAGE INLINE unsigned char decode_sRGB_uchar(unsigned char val);
-EXPCL_PANDA_PNMIMAGE INLINE unsigned char decode_sRGB_uchar(float val);
+INLINE float decode_sRGB_float(unsigned char val);
+INLINE float decode_sRGB_float(float val);
+INLINE unsigned char decode_sRGB_uchar(unsigned char val);
+INLINE unsigned char decode_sRGB_uchar(float val);
 
-EXPCL_PANDA_PNMIMAGE INLINE float encode_sRGB_float(unsigned char val);
-EXPCL_PANDA_PNMIMAGE INLINE float encode_sRGB_float(float val);
-EXPCL_PANDA_PNMIMAGE INLINE unsigned char encode_sRGB_uchar(unsigned char val);
-EXPCL_PANDA_PNMIMAGE INLINE unsigned char encode_sRGB_uchar(float val);
+INLINE float encode_sRGB_float(unsigned char val);
+INLINE float encode_sRGB_float(float val);
+INLINE unsigned char encode_sRGB_uchar(unsigned char val);
+INLINE unsigned char encode_sRGB_uchar(float val);
 
 END_PUBLISH
 
 // These functions convert more than one component in one go, which can be
 // faster due to vectorization.
-EXPCL_PANDA_PNMIMAGE INLINE void encode_sRGB_uchar(const LColorf &from,
-                                                   xel &into);
-EXPCL_PANDA_PNMIMAGE INLINE void encode_sRGB_uchar(const LColorf &from,
-                                                   xel &into, xelval &into_alpha);
+INLINE void encode_sRGB_uchar(const LColorf &from, xel &into);
+INLINE void encode_sRGB_uchar(const LColorf &from, xel &into, xelval &into_alpha);
 
-EXPCL_PANDA_PNMIMAGE INLINE void encode_sRGB_uchar(const LColord &from,
-                                                   xel &into);
-EXPCL_PANDA_PNMIMAGE INLINE void encode_sRGB_uchar(const LColord &from,
-                                                   xel &into, xelval &into_alpha);
+INLINE void encode_sRGB_uchar(const LColord &from, xel &into);
+INLINE void encode_sRGB_uchar(const LColord &from, xel &into, xelval &into_alpha);
 
 // Use these functions if you know that SSE2 support is available.  Otherwise,
 // they will crash!

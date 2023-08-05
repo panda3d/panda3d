@@ -15,9 +15,11 @@
  *
  */
 INLINE TinyTextureContext::
-TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
-  TextureContext(pgo, tex, view)
+TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
+  TextureContext(pgo, tex)
 {
+  _gltex.views = nullptr;
+  _gltex.num_views = 0;
   _gltex.num_levels = 0;
   _gltex.allocated_buffer = nullptr;
   _gltex.total_bytecount = 0;

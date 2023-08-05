@@ -5,6 +5,7 @@ __all__ = ['randHash', 'RandomNumGen']
 from direct.directnotify import DirectNotifyGlobal
 from panda3d.core import Mersenne
 
+
 def randHash(num):
     """ this returns a random 16-bit integer, given a seed integer.
     It will always return the same output given the same input.
@@ -14,9 +15,9 @@ def randHash(num):
     rng = RandomNumGen(num)
     return rng.randint(0, (1<<16) - 1)
 
+
 class RandomNumGen:
-    notify = \
-      DirectNotifyGlobal.directNotify.newCategory("RandomNumGen")
+    notify = DirectNotifyGlobal.directNotify.newCategory("RandomNumGen")
 
     def __init__(self, seed):
         """seed must be an integer or another RandomNumGen"""
@@ -32,11 +33,10 @@ class RandomNumGen:
 
     def __rand(self, N):
         """returns integer in [0..N)"""
-        """
-        # using modulus biases the numbers a little bit
-        # the bias is worse for larger values of N
-        return self.__rng.getUint31() % N
-        """
+
+        ## using modulus biases the numbers a little bit
+        ## the bias is worse for larger values of N
+        #return self.__rng.getUint31() % N
 
         # this technique produces an even distribution.
         # random.py would solve this problem like so:

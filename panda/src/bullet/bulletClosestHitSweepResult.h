@@ -11,8 +11,8 @@
  * @date 2010-12-01
  */
 
-#ifndef __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
-#define __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#ifndef BULLETCLOSESTHITSWEEPRESULT_H
+#define BULLETCLOSESTHITSWEEPRESULT_H
 
 #include "pandabase.h"
 
@@ -20,13 +20,14 @@
 #include "bullet_utils.h"
 
 #include "luse.h"
+#include "memoryBase.h"
 #include "pandaNode.h"
 #include "collideMask.h"
 
 /**
  *
  */
-struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::ClosestConvexResultCallback {
+struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::ClosestConvexResultCallback, public MemoryBase {
 
 PUBLISHED:
   INLINE static BulletClosestHitSweepResult empty();
@@ -61,4 +62,4 @@ private:
 
 #include "bulletClosestHitSweepResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#endif // BULLETCLOSESTHITSWEEPRESULT_H

@@ -151,7 +151,7 @@ PUBLISHED:
 
   void obstacle_avoidance(float feeler_length = 1.0);
 
-  void path_follow(float follow_wt);
+  void path_follow(float follow_wt = 1.0f);
   void add_to_path(LVecBase3 pos);
   void start_follow(std::string type = "normal");
 

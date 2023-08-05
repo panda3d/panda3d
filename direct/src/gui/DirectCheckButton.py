@@ -1,12 +1,17 @@
 """A DirectCheckButton is a type of button that toggles between two states
 when clicked.  It also has a separate indicator that can be modified
-separately."""
+separately.
+
+See the :ref:`directcheckbutton` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectCheckButton']
 
-from panda3d.core import *
-from .DirectButton import *
-from .DirectLabel import *
+from panda3d.core import PGFrameStyle, VBase4
+from .DirectButton import DirectButton
+from .DirectLabel import DirectLabel
+
 
 class DirectCheckButton(DirectButton):
     """
@@ -14,6 +19,7 @@ class DirectCheckButton(DirectButton):
     to mouse clicks by setting a state of on or off and execute a callback
     function (passing that state through) if defined
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         # A Direct Frame can have:
@@ -38,7 +44,7 @@ class DirectCheckButton(DirectButton):
             ('boxImageScale', 1, None),
             ('boxImageColor', None, None),
             ('boxRelief', 'sunken', None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
@@ -57,12 +63,12 @@ class DirectCheckButton(DirectButton):
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)
         # After initialization with X giving it the correct size, put back space
-        if self['boxImage'] ==  None:
+        if self['boxImage'] is None:
             self.indicator['text'] = (' ', '*')
             self.indicator['text_pos'] = (0, -.2)
         else:
             self.indicator['text'] = (' ', ' ')
-        if self['boxImageColor'] != None and self['boxImage'] !=  None:
+        if self['boxImageColor'] is not None and self['boxImage'] is not None:
             self.colors = [VBase4(0, 0, 0, 0), self['boxImageColor']]
             self.component('indicator')['image_color'] = VBase4(0, 0, 0, 0)
 
@@ -80,7 +86,7 @@ class DirectCheckButton(DirectButton):
         else:
             # Use ready state to compute bounds
             frameType = self.frameStyle[0].getType()
-            if fClearFrame and (frameType != PGFrameStyle.TNone):
+            if fClearFrame and frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
                 # To force an update of the button
@@ -88,7 +94,7 @@ class DirectCheckButton(DirectButton):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
@@ -163,10 +169,9 @@ class DirectCheckButton(DirectButton):
 
             self.indicator.setPos(newpos[0], newpos[1], newpos[2])
 
-
     def commandFunc(self, event):
         self['indicatorValue'] = 1 - self['indicatorValue']
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
 
         if self['command']:
@@ -175,12 +180,5 @@ class DirectCheckButton(DirectButton):
 
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
-
-
-
-
-
-
-

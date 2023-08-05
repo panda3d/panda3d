@@ -44,7 +44,7 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
 
   _shape = new btHeightfieldTerrainShape(_num_rows,
                                          _num_cols,
-                                         _data,
+                                         (const void *)_data,
                                          max_height,
                                          up,
                                          true, false);
@@ -102,7 +102,7 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
 
   _shape = new btHeightfieldTerrainShape(_num_rows,
                                          _num_cols,
-                                         _data,
+                                         (const void *)_data,
                                          max_height,
                                          up,
                                          true, false);
@@ -127,7 +127,7 @@ BulletHeightfieldShape(const BulletHeightfieldShape &copy) {
 
   _shape = new btHeightfieldTerrainShape(_num_rows,
                                          _num_cols,
-                                         _data,
+                                         (const void *)_data,
                                          _max_height,
                                          _up,
                                          true, false);
@@ -200,7 +200,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   size_t size = (size_t)_num_rows * (size_t)_num_cols;
   delete [] _data;
-  _data = new float[size];
+  _data = new btScalar[size];
 
   for (size_t i = 0; i < size; ++i) {
     _data[i]  = scan.get_stdfloat();
@@ -208,7 +208,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _shape = new btHeightfieldTerrainShape(_num_rows,
                                          _num_cols,
-                                         _data,
+                                         (const void *)_data,
                                          _max_height,
                                          _up,
                                          true, false);

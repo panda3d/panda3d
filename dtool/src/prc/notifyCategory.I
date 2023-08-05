@@ -49,7 +49,7 @@ set_severity(NotifySeverity severity) {
   _severity = severity;
 #else
   // enforce the no-debug, no-spam rule.
-  _severity = std::max(severity, NS_info);
+  _severity = (std::max)(severity, NS_info);
 #endif
   invalidate_cache();
 }

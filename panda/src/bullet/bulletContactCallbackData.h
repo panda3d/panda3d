@@ -11,8 +11,8 @@
  * @date 2012-11-22
  */
 
-#ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
-#define __BULLET_CONTACT_CALLBACK_DATA_H__
+#ifndef BULLETCONTACTCALLBACKDATA_H
+#define BULLETCONTACTCALLBACKDATA_H
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -28,10 +28,10 @@
 class EXPCL_PANDABULLET BulletContactCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletContactCallbackData(BulletManifoldPoint &mp,
-                                   PandaNode *node0, PandaNode *node1,
-                                   int id0, int id1,
-                                   int index0, int index1);
+  INLINE explicit BulletContactCallbackData(BulletManifoldPoint &mp,
+                                            PandaNode *node0, PandaNode *node1,
+                                            int id0, int id1,
+                                            int index0, int index1);
 
   INLINE BulletManifoldPoint &get_manifold() const;
   INLINE PandaNode *get_node0() const;
@@ -81,4 +81,4 @@ private:
 
 #include "bulletContactCallbackData.I"
 
-#endif // __BULLET_CONTACT_CALLBACK_DATA_H__
+#endif // BULLETCONTACTCALLBACKDATA_H

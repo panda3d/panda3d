@@ -168,7 +168,7 @@ private:
 
   COWPT(AnimPreloadTable) _anim_preload;
 
-  typedef pvector<PartBundleNode *> Nodes;
+  typedef small_vector<PartBundleNode *> Nodes;
   Nodes _nodes;
 
   typedef pmap<WCPT(TransformState), WPT(PartBundle), std::owner_less<WCPT(TransformState)> > AppliedTransforms;

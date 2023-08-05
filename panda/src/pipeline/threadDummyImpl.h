@@ -24,11 +24,16 @@
 
 class Thread;
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>  // For Sleep().
+#endif
+
+#ifdef ANDROID
+#include <jni.h>
+typedef struct _JNIEnv _jni_env;
 #endif
 
 /**
@@ -57,6 +62,19 @@ public:
   INLINE static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();
+
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+  bool attach_java_vm();
+  static void bind_java_thread();
+#endif
+
+  INLINE static bool get_context_switches(size_t &, size_t &);
+
+private:
+#ifdef ANDROID
+  JNIEnv *_jni_env = nullptr;
+#endif
 };
 
 #include "threadDummyImpl.I"

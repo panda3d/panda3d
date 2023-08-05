@@ -73,6 +73,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool old_alpha_blend;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_origin;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool fullscreen;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool maximized;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool undecorated;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_fixed_size;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool cursor_hidden;
@@ -83,6 +84,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableString window_title;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt parent_window_handle;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool win_unexposed_draw;
 extern EXPCL_PANDA_DISPLAY ConfigVariableFilename subprocess_window;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool ime_aware;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableString framebuffer_mode;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_hardware;
@@ -103,11 +105,13 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt accum_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt shadow_depth_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool shadow_cube_map_filter;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableColor background_color;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
+extern EXPCL_PANDA_DISPLAY ConfigVariableDouble display_zoom;
 
 extern EXPCL_PANDA_DISPLAY void init_libdisplay();
 

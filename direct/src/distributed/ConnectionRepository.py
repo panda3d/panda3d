@@ -1,16 +1,18 @@
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.core import DocumentSpec, Filename, HTTPClient, VirtualFileSystem, getModelPath
+from panda3d.direct import CConnectionRepository, DCPacker
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
+from direct.showbase.MessengerGlobal import messenger
 from .PyDatagramIterator import PyDatagramIterator
 
-import inspect
 import gc
 
 __all__ = ["ConnectionRepository", "GCTrigger"]
+
 
 class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
@@ -119,7 +121,7 @@ class ConnectionRepository(
 
         self._serverAddress = ''
 
-        if self.config.GetBool('gc-save-all', 1):
+        if self.config.GetBool('gc-save-all', 0):
             # set gc to preserve every object involved in a cycle, even ones that
             # would normally be freed automatically during garbage collect
             # allows us to find and fix these cycles, reducing or eliminating the
@@ -175,7 +177,7 @@ class ConnectionRepository(
         def applyFieldValues(distObj, dclass, values):
             for i in range(dclass.getNumInheritedFields()):
                 field = dclass.getInheritedField(i)
-                if field.asMolecularField() == None:
+                if field.asMolecularField() is None:
                     value = values.get(field.getName(), None)
                     if value is None and field.isRequired():
                         # Gee, this could be better.  What would really be
@@ -214,7 +216,7 @@ class ConnectionRepository(
 
         # Construct a new one
         classDef = dclass.getClassDef()
-        if classDef == None:
+        if classDef is None:
             self.notify.error("Could not create an undefined %s object."%(
                 dclass.getName()))
         distObj = classDef(self)
@@ -232,7 +234,7 @@ class ConnectionRepository(
         distObj.parentId = 0
         distObj.zoneId = 0
         # updateRequiredFields calls announceGenerate
-        return  distObj
+        return distObj
 
     def readDCFile(self, dcFileNames = None):
         """
@@ -252,7 +254,7 @@ class ConnectionRepository(
             dcFileNames = [dcFileNames]
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -260,6 +262,7 @@ class ConnectionRepository(
             searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
                 pathname = Filename(dcFileName)
+                vfs = VirtualFileSystem.getGlobalPtr()
                 vfs.resolveFilename(pathname, searchPath)
                 readResult = dcFile.read(pathname)
                 if not readResult:
@@ -308,6 +311,8 @@ class ConnectionRepository(
 
         # Now get the class definition for the classes named in the DC
         # file.
+        import inspect
+
         for i in range(dcFile.getNumClasses()):
             dclass = dcFile.getClass(i)
             number = dclass.getNumber()
@@ -321,7 +326,7 @@ class ConnectionRepository(
                 classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
             if classDef is None:
@@ -378,7 +383,7 @@ class ConnectionRepository(
             # in the DC file.
             for i in range(dcFile.getNumClasses()):
                 dclass = dcFile.getClass(i)
-                if ((dclass.getName()+ownerDcSuffix) in ownerImportSymbols):
+                if dclass.getName() + ownerDcSuffix in ownerImportSymbols:
                     number = dclass.getNumber()
                     className = dclass.getName() + ownerDcSuffix
 
@@ -462,7 +467,7 @@ class ConnectionRepository(
         hasProxy = 0
         if self.checkHttp():
             proxies = self.http.getProxiesForUrl(serverList[0])
-            hasProxy = (proxies != 'DIRECT')
+            hasProxy = proxies != 'DIRECT'
 
         if hasProxy:
             self.notify.info("Connecting to gameserver via proxy list: %s" % (proxies))
@@ -582,10 +587,10 @@ class ConnectionRepository(
         # available.  Returns the HTTPClient (also self.http), or None
         # if not set.
 
-        if self.http == None:
+        if self.http is None:
             try:
                 self.http = HTTPClient()
-            except:
+            except Exception:
                 pass
 
         return self.http
@@ -661,7 +666,8 @@ class ConnectionRepository(
             self.setSimulatedDisconnect(0)
 
     def uniqueName(self, idString):
-        return ("%s-%s" % (idString, self.uniqueId))
+        return "%s-%s" % (idString, self.uniqueId)
+
 
 class GCTrigger:
     # used to trigger garbage collection

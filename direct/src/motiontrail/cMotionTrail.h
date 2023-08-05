@@ -25,8 +25,7 @@
 #include "plist.h"
 #include "epvector.h"
 
-class CMotionTrailVertex {
-public:
+struct CMotionTrailVertex : public MemoryBase {
   LPoint4 _vertex;
   LVecBase4 _start_color;
   LVecBase4 _end_color;
@@ -35,9 +34,8 @@ public:
   PT(NurbsCurveEvaluator) _nurbs_curve_evaluator;
 };
 
-class CMotionTrailFrame {
-public:
-  UnalignedLMatrix4 _transform;
+struct CMotionTrailFrame : public MemoryBase {
+  LMatrix4 _transform;
   PN_stdfloat _time;
 };
 
@@ -71,8 +69,8 @@ public:
  */
 class EXPCL_DIRECT_MOTIONTRAIL CMotionTrail : public TypedReferenceCount {
 PUBLISHED:
-  CMotionTrail();
-  ~CMotionTrail();
+  CMotionTrail() = default;
+  ~CMotionTrail() = default;
 
   void reset();
   void reset_vertex_list();
@@ -80,63 +78,65 @@ PUBLISHED:
   void enable(bool enable);
 
   void set_geom_node(GeomNode *geom_node);
-  void add_vertex(LVector4 *vertex, LVector4 *start_color, LVector4 *end_color, PN_stdfloat v);
+  void add_vertex(const LVector4 &vertex, const LVector4 &start_color,
+                  const LVector4 &end_color, PN_stdfloat v);
 
-  void set_parameters(PN_stdfloat sampling_time, PN_stdfloat time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, PN_stdfloat resolution_distance);
+  void set_parameters(PN_stdfloat sampling_time, PN_stdfloat time_window,
+                      bool use_texture, bool calculate_relative_matrix,
+                      bool use_nurbs, PN_stdfloat resolution_distance);
 
   int check_for_update(PN_stdfloat current_time);
-  void update_motion_trail(PN_stdfloat current_time, LMatrix4 *transform);
+  void update_motion_trail(PN_stdfloat current_time, const LMatrix4 &transform);
 
 public:
+  void begin_geometry(int num_quads);
+  void add_geometry_quad(
+    const LPoint3 &v0, const LPoint3 &v1, const LPoint3 &v2, const LPoint3 &v3,
+    const LVector4 &c0, const LVector4 &c1, const LVector4 &c2, const LVector4 &c3,
+    const LVector2 &t0, const LVector2 &t1, const LVector2 &t2, const LVector2 &t3);
+  void end_geometry(const LPoint3 &min_vertex, const LPoint3 &max_vertex);
 
-  void begin_geometry();
-  void add_geometry_quad(LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
-  void add_geometry_quad(LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
-  void end_geometry();
+  bool _active = true;
+  bool _enable = true;
 
-  int _active;
-  int _enable;
+  bool _pause = false;
+  PN_stdfloat _pause_time = 0.0f;
 
-  int _pause;
-  PN_stdfloat _pause_time;
+  bool _fade = false;
+  bool _fade_end = false;
+  PN_stdfloat _fade_time = 0.0f;
+  PN_stdfloat _fade_start_time = 0.0f;
+  PN_stdfloat _fade_color_scale = 1.0f;
 
-  int _fade;
-  int _fade_end;
-  PN_stdfloat _fade_time;
-  PN_stdfloat _fade_start_time;
-  PN_stdfloat _fade_color_scale;
-
-  PN_stdfloat _last_update_time;
+  PN_stdfloat _last_update_time = 0.0f;
 
   typedef epvector<CMotionTrailVertex> VertexList;
   VertexList _vertex_list;
-  typedef plist<CMotionTrailFrame> FrameList;
+  typedef pdeque<CMotionTrailFrame> FrameList;
   FrameList _frame_list;
+  PN_stdfloat _vertex_bounds_radius = 0.0f;
 
   // parameters
-  PN_stdfloat _color_scale;
-  PN_stdfloat _sampling_time;
-  PN_stdfloat _time_window;
-  bool _square_t;
-  bool _use_texture;
-  int _calculate_relative_matrix;
+  PN_stdfloat _color_scale = 1.0f;
+  PN_stdfloat _sampling_time = 0.0f;
+  PN_stdfloat _time_window = 1.0f;
+  bool _square_t = true;
+  bool _use_texture = false;
+  bool _calculate_relative_matrix = false;
 
   // nurbs parameters
-  bool _use_nurbs;
-  PN_stdfloat _resolution_distance;
+  bool _use_nurbs = false;
+  PN_stdfloat _resolution_distance = 0.5f;
 
   // geom
   PT(GeomNode) _geom_node;
 
   // real-time data
-  int _vertex_index;
   PT(GeomVertexData) _vertex_data;
   GeomVertexWriter _vertex_writer;
   GeomVertexWriter _color_writer;
   GeomVertexWriter _texture_writer;
   PT(GeomTriangles) _triangles;
-
-  CMotionTrailVertex *_vertex_array;
 
 public:
   static TypeHandle get_class_type() {
@@ -154,7 +154,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
 };
 
 #endif

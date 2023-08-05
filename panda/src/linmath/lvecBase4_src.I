@@ -15,14 +15,6 @@
  *
  */
 INLINE_LINMATH FLOATNAME(LVecBase4)::
-FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy) {
-  set(copy[0], copy[1], copy[2], copy[3]);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LVecBase4)::
 FLOATNAME(LVecBase4)(FLOATTYPE fill_value) {
   fill(fill_value);
 }
@@ -436,7 +428,34 @@ project(const FLOATNAME(LVecBase4) &onto) const {
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 operator < (const FLOATNAME(LVecBase4) &other) const {
   TAU_PROFILE("bool LVecBase4::operator <(const LVecBase4 &)", " ", TAU_USER);
-  return (compare_to(other) < 0);
+#ifdef FLOATTYPE_IS_INT
+  if (_v(0) != other._v(0)) {
+    return _v(0) < other._v(0);
+  }
+  if (_v(1) != other._v(1)) {
+    return _v(1) < other._v(1);
+  }
+  if (_v(2) != other._v(2)) {
+    return _v(2) < other._v(2);
+  }
+  if (_v(3) != other._v(3)) {
+    return _v(3) < other._v(3);
+  }
+#else
+  if (!IS_THRESHOLD_COMPEQ(_v(0), other._v(0), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(0) < other._v(0);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(1), other._v(1), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(1) < other._v(1);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(2), other._v(2), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(2) < other._v(2);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(3), other._v(3), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(3) < other._v(3);
+  }
+#endif
+  return false;
 }
 
 /**
@@ -893,100 +912,4 @@ read_datagram(DatagramIterator &source) {
   _v(2) = source.get_stdfloat();
   _v(3) = source.get_stdfloat();
 #endif
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
-FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy) {
-  set(copy[0], copy[1], copy[2], copy[3]);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
-FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value) {
-  fill(fill_value);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)::
-FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
-  TAU_PROFILE("UnalignedLVecBase4::UnalignedLVecBase4(FLOATTYPE, ...)", " ", TAU_USER);
-  set(x, y, z, w);
-}
-
-/**
- * Sets each element of the vector to the indicated fill_value.  This is
- * particularly useful for initializing to zero.
- */
-INLINE_LINMATH void FLOATNAME(UnalignedLVecBase4)::
-fill(FLOATTYPE fill_value) {
-  TAU_PROFILE("void UnalignedLVecBase4::fill()", " ", TAU_USER);
-  _v(0) = fill_value;
-  _v(1) = fill_value;
-  _v(2) = fill_value;
-  _v(3) = fill_value;
-}
-
-/**
- *
- */
-INLINE_LINMATH void FLOATNAME(UnalignedLVecBase4)::
-set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
-  TAU_PROFILE("void UnalignedLVecBase4::set()", " ", TAU_USER);
-  _v(0) = x;
-  _v(1) = y;
-  _v(2) = z;
-  _v(3) = w;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLVecBase4)::
-operator [](int i) const {
-  nassertr(i >= 0 && i < 4, 0);
-  return _v(i);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATTYPE &FLOATNAME(UnalignedLVecBase4)::
-operator [](int i) {
-  nassertr(i >= 0 && i < 4, _v(0));
-  return _v(i);
-}
-
-/**
- * Returns the address of the first of the three data elements in the vector.
- * The remaining elements occupy the next positions consecutively in memory.
- */
-INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLVecBase4)::
-get_data() const {
-  return &_v(0);
-}
-
-/**
- *
- */
-INLINE_LINMATH bool FLOATNAME(UnalignedLVecBase4)::
-operator == (const FLOATNAME(UnalignedLVecBase4) &other) const {
-  return (_v(0) == other._v(0) &&
-          _v(1) == other._v(1) &&
-          _v(2) == other._v(2) &&
-          _v(3) == other._v(3));
-}
-
-/**
- *
- */
-INLINE_LINMATH bool FLOATNAME(UnalignedLVecBase4)::
-operator != (const FLOATNAME(UnalignedLVecBase4) &other) const {
-  return !operator == (other);
 }

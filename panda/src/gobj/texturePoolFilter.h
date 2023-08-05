@@ -40,9 +40,11 @@ class LoaderOptions;
  * problem should call tex->set_keep_ram_image(true).
  */
 class EXPCL_PANDA_GOBJ TexturePoolFilter : public TypedObject {
-public:
-  virtual ~TexturePoolFilter();
+PUBLISHED:
+  TexturePoolFilter() = default;
+  virtual ~TexturePoolFilter() = default;
 
+public:
   virtual PT(Texture) pre_load(const Filename &orig_filename,
                                const Filename &orig_alpha_filename,
                                int primary_file_num_channels,

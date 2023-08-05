@@ -35,17 +35,17 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableSearchPath(const std::string &name,
-                                  const std::string &description = std::string(),
-                                  int flags = 0);
-  INLINE ConfigVariableSearchPath(const std::string &name,
-                                  const DSearchPath &default_value,
-                                  const std::string &description,
-                                  int flags = 0);
-  INLINE ConfigVariableSearchPath(const std::string &name,
-                                  const std::string &default_value,
-                                  const std::string &description,
-                                  int flags = 0);
+  INLINE explicit ConfigVariableSearchPath(const std::string &name,
+                                           const std::string &description = std::string(),
+                                           int flags = 0);
+  INLINE explicit ConfigVariableSearchPath(const std::string &name,
+                                           const DSearchPath &default_value,
+                                           const std::string &description,
+                                           int flags = 0);
+  INLINE explicit ConfigVariableSearchPath(const std::string &name,
+                                           const std::string &default_value,
+                                           const std::string &description,
+                                           int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
   INLINE operator DSearchPath () const;

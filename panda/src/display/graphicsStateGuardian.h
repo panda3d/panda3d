@@ -44,7 +44,6 @@
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
-#include "timerQueryContext.h"
 #include "loader.h"
 #include "shaderAttrib.h"
 #include "texGenAttrib.h"
@@ -255,7 +254,7 @@ PUBLISHED:
   MAKE_PROPERTY(texture_quality_override, get_texture_quality_override,
                                           set_texture_quality_override);
 
-  EXTENSION(PyObject *get_prepared_textures() const);
+  PY_EXTENSION(PyObject *get_prepared_textures() const);
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
@@ -264,7 +263,7 @@ PUBLISHED:
   void clear_flash_texture();
   Texture *get_flash_texture() const;
   MAKE_PROPERTY(flash_texture, get_flash_texture, set_flash_texture);
-#endif
+#endif // !NDEBUG || !CPPPARSER
 
 PUBLISHED:
   virtual bool has_extension(const std::string &extension) const;
@@ -290,7 +289,7 @@ PUBLISHED:
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
+  virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
@@ -320,7 +319,8 @@ public:
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
 
-  virtual PT(TimerQueryContext) issue_timer_query(int pstats_index);
+  virtual void issue_timer_query(int pstats_index);
+  virtual void issue_latency_query(int pstats_index);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
@@ -336,10 +336,12 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
-                                       LMatrix4 &t, int index);
-  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LMatrix4 *cache, int altered);
+  void fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                            LMatrix4 *into, int count = 1);
+  void fetch_specified_member(const NodePath &np, CPT_InternalName member,
+                              LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
@@ -361,8 +363,6 @@ PUBLISHED:
 public:
   virtual void end_frame(Thread *current_thread);
 
-  void flush_timer_queries();
-
   void set_current_properties(const FrameBufferProperties *properties);
 
   virtual bool depth_offset_decals();
@@ -373,7 +373,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
@@ -424,7 +424,8 @@ public:
   virtual bool framebuffer_copy_to_texture
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+   ScreenshotRequest *request = nullptr);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
@@ -443,7 +444,8 @@ public:
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
-#endif
+  PStatThread get_pstats_thread();
+#endif // DO_PSTATS
 
 protected:
   virtual void reissue_transforms();
@@ -600,14 +602,7 @@ protected:
 #ifdef DO_PSTATS
   int _pstats_gpu_thread;
   bool _timer_queries_active;
-  PStatFrameData _pstats_gpu_data;
-
-  int _last_query_frame;
-  int _last_num_queried;
-  // double _timer_delta;
-  typedef pdeque<PT(TimerQueryContext)> TimerQueryQueue;
-  TimerQueryQueue _pending_timer_queries;
-#endif
+#endif // DO_PSTATS
 
   bool _copy_texture_inverted;
   bool _supports_multisample;
@@ -656,15 +651,15 @@ protected:
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
-#else
+#else // !NDEBUG
   PT(Texture) _flash_texture_unused;
-#endif
+#endif // !NDEBUG
 
 public:
   // Statistics
-  static PStatCollector _vertex_buffer_switch_pcollector;
-  static PStatCollector _index_buffer_switch_pcollector;
-  static PStatCollector _shader_buffer_switch_pcollector;
+  //static PStatCollector _vertex_buffer_switch_pcollector;
+  //static PStatCollector _index_buffer_switch_pcollector;
+  //static PStatCollector _shader_buffer_switch_pcollector;
   static PStatCollector _load_vertex_buffer_pcollector;
   static PStatCollector _load_index_buffer_pcollector;
   static PStatCollector _load_shader_buffer_pcollector;
@@ -697,7 +692,6 @@ public:
   static PStatCollector _wait_occlusion_pcollector;
   static PStatCollector _wait_timer_pcollector;
   static PStatCollector _timer_queries_pcollector;
-  static PStatCollector _command_latency_pcollector;
 
   static PStatCollector _prepare_pcollector;
   static PStatCollector _prepare_texture_pcollector;
@@ -770,4 +764,4 @@ EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsStateG
 
 #include "graphicsStateGuardian.I"
 
-#endif
+#endif // !GRAPHICSSTATEGUARDIAN_H

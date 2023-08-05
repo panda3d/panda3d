@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_SHAPE_H__
-#define __BULLET_SHAPE_H__
+#ifndef BULLETSHAPE_H
+#define BULLETSHAPE_H
 
 #include "pandabase.h"
 
@@ -45,7 +45,7 @@ PUBLISHED:
   PN_stdfloat get_margin() const;
 
   BoundingSphere get_shape_bounds() const;
-  
+
   MAKE_PROPERTY(polyhedral, is_polyhedral);
   MAKE_PROPERTY(convex, is_convex);
   MAKE_PROPERTY(convex_2d, is_convex_2d);
@@ -86,4 +86,4 @@ private:
 
 #include "bulletShape.I"
 
-#endif // __BULLET_SHAPE_H__
+#endif // BULLETSHAPE_H

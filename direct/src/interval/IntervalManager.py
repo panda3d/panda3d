@@ -3,9 +3,8 @@ this class, ivalMgr."""
 
 __all__ = ['IntervalManager', 'ivalMgr']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import EventQueue
+from panda3d.direct import CIntervalManager, Dtool_BorrowThisReference
 from direct.showbase import EventManager
 import fnmatch
 
@@ -134,7 +133,7 @@ class IntervalManager(CIntervalManager):
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):
             self.ivals.append(None)
-        assert self.ivals[index] == None or self.ivals[index] == interval
+        assert self.ivals[index] is None or self.ivals[index] == interval
         self.ivals[index] = interval
 
 #: The global IntervalManager object.

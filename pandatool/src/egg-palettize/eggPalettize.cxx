@@ -321,6 +321,12 @@ describe_input_file() {
             "match the number of channels.  As above, any valid egg texture "
             "format may be used, e.g. force-rgba12, force-rgb5, etc.\n\n");
 
+  show_text("  srgb", 10,
+            "This specifies that this texture is in sRGB space and the format "
+            "should be changed to reflect that.  The texture format will be "
+            "changed to the appropriate sRGB equivalent based on the number "
+            "of image channels.\n\n");
+
   show_text("  keep-format", 10,
             "This specifies that the image format requested by an egg file "
             "should be exactly preserved, without attempting to optimize "

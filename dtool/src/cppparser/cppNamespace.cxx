@@ -20,11 +20,12 @@
  *
  */
 CPPNamespace::
-CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
-  CPPDeclaration(file),
+CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file,
+             CPPAttributeList attr) :
+  CPPDeclaration(file, std::move(attr)),
+  _is_inline(false),
   _ident(ident),
-  _scope(scope),
-  _is_inline(false)
+  _scope(scope)
 {
 }
 
@@ -77,15 +78,20 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) cons
   if (_is_inline) {
     out << "inline ";
   }
+  out << "namespace ";
+
   if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     out << "namespace " << _ident->get_local_name(scope);
-
-  } else {
+  }
+  else {
+    if (!_attributes.is_empty()) {
+      out << _attributes << " ";
+    }
     if (_ident != nullptr) {
-      out << "namespace " << _ident->get_local_name(scope) << " {\n";
+      out << _ident->get_local_name(scope) << " {\n";
     } else {
-      out << "namespace {\n";
+      out << "{\n";
     }
 
     _scope->write(out, indent_level + 2, _scope);

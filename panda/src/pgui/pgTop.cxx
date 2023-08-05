@@ -29,6 +29,10 @@ PGTop(const std::string &name) :
 {
   set_cull_callback();
 
+  // We flag the PGTop as renderable, even though it technically doesn't have
+  // anything to render, but we do need the traverser to visit it every frame.
+  set_renderable();
+
   _start_sort = 0;
 
   // A PGTop node normally has an infinite bounding volume.  Screw culling.
@@ -109,19 +113,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   // We've taken care of the traversal, thank you.
   return false;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool PGTop::
-is_renderable() const {
-  // We flag the PGTop as renderable, even though it technically doesn't have
-  // anything to render, but we do need the traverser to visit it every frame.
-  return true;
 }
 
 /**

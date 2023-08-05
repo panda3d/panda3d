@@ -138,3 +138,11 @@ INLINE void ConfigVariableInt::
 set_word(size_t n, int value) {
   set_int_word(n, value);
 }
+
+/**
+ * Returns true if the variable is not 0.
+ */
+INLINE bool ConfigVariableInt::
+__bool__() const {
+  return get_value() != 0;
+}

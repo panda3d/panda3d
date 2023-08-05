@@ -16,7 +16,13 @@ although it does send messages that allow a listener to play sounds or
 animations based on walker events.
 """
 
-from panda3d.core import *
+from panda3d.core import (
+    BitMask32,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionSphere,
+    CollisionTraverser,
+)
 from direct.directnotify import DirectNotifyGlobal
 from . import NonPhysicsWalker
 
@@ -28,9 +34,6 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
-        """
-        Set up the avatar for collisions
-        """
         """
         Set up the avatar for collisions
         """
@@ -102,11 +105,9 @@ class ObserverWalker(NonPhysicsWalker.NonPhysicsWalker):
         Activate the arrow keys, etc.
         """
         assert self.debugPrint("enableAvatarControls")
-        pass
 
     def disableAvatarControls(self):
         """
         Ignore the arrow keys, etc.
         """
         assert self.debugPrint("disableAvatarControls")
-        pass

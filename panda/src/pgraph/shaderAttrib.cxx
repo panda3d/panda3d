@@ -172,13 +172,12 @@ clear_shader() const {
 CPT(RenderAttrib) ShaderAttrib::
 set_flag(int flag, bool value) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
   if (value) {
-    result->_flags |= bit;
+    result->_flags |= flag;
   } else {
-    result->_flags &= ~bit;
+    result->_flags &= ~flag;
   }
-  result->_has_flags |= bit;
+  result->_has_flags |= flag;
   return return_new(result);
 }
 
@@ -188,9 +187,8 @@ set_flag(int flag, bool value) const {
 CPT(RenderAttrib) ShaderAttrib::
 clear_flag(int flag) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
-  result->_flags &= ~bit;
-  result->_has_flags &= ~bit;
+  result->_flags &= ~flag;
+  result->_has_flags &= ~flag;
   return return_new(result);
 }
 
@@ -251,6 +249,8 @@ set_shader_inputs(const pvector<ShaderInput> &inputs) const {
  * Sets the geometry instance count.  Do not confuse this with instanceTo,
  * which is used for animation instancing, and has nothing to do with this.  A
  * value of 0 means not to use instancing at all.
+ *
+ * This value should not be set if F_hardware_instancing is also set.
  */
 CPT(RenderAttrib) ShaderAttrib::
 set_instance_count(int instance_count) const {
@@ -532,7 +532,8 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     if (p.get_value_type() == ShaderInput::M_nodepath) {
       const NodePath &np = p.get_nodepath();
       nassertr(!np.is_empty(), LMatrix4::ident_mat());
-      return np.get_transform()->get_mat();
+      matrix = np.get_transform()->get_mat();
+      return matrix;
 
     } else if (p.get_value_type() == ShaderInput::M_numeric &&
                p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {

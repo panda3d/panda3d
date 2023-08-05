@@ -23,9 +23,9 @@
 #include "trueClock.h"
 
 #if defined(CPPPARSER)
-#elif defined(WIN32_VC) || defined(WIN64_VC)
+#elif defined(_WIN32)
 #include <winsock2.h>  // For gethostname()
-#include <Iphlpapi.h> // For GetAdaptersAddresses()
+#include <iphlpapi.h> // For GetAdaptersAddresses()
 #elif defined(__ANDROID__)
 #include <net/if.h>
 #else
@@ -478,7 +478,7 @@ scan_interfaces() {
   _interfaces.clear();
   _interfaces_scanned = true;
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
   ULONG family = support_ipv6 ? AF_UNSPEC : AF_INET;
   ULONG buffer_size = 0;
@@ -544,7 +544,7 @@ scan_interfaces() {
 #elif defined(__ANDROID__)
   // TODO: implementation using netlink_socket?
 
-#else  // WIN32_VC
+#else  // _WIN32
   struct ifaddrs *ifa;
   if (getifaddrs(&ifa) != 0) {
     // Failure.
@@ -578,7 +578,7 @@ scan_interfaces() {
 
   freeifaddrs(ifa);
 
-#endif // WIN32_VC
+#endif // _WIN32
 }
 
 /**

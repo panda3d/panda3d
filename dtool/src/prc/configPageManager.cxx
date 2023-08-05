@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <ctype.h>
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
@@ -97,6 +97,7 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
+#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -120,17 +121,17 @@ reload_implicit_pages() {
     const char *main_dir;
     const char *log_filename;
   };
-#ifdef _MSC_VER
-  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
+#ifdef _WIN32
+  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(nullptr), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#ifndef _MSC_VER
+#ifndef _WIN32
     // Clear the error flag.
     dlerror();
 #endif
@@ -162,7 +163,7 @@ reload_implicit_pages() {
     _prc_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       // On windows, the file system is case-insensitive, so the pattern
       // should be too.
       glob.set_case_sensitive(false);
@@ -184,7 +185,7 @@ reload_implicit_pages() {
     _prc_encrypted_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_encrypted_patterns.push_back(glob);
@@ -204,7 +205,7 @@ reload_implicit_pages() {
     _prc_executable_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_executable_patterns.push_back(glob);
@@ -459,6 +460,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();
@@ -481,7 +483,7 @@ reload_implicit_pages() {
   PandaFileStreamBuf::_newline_mode = newline_mode;
 #endif  // USE_PANDAFILESTREAM
 
-#ifdef WIN32
+#ifdef _WIN32
   // We don't necessarily want an error dialog when we fail to load a .dll
   // file.  But sometimes it is useful for debugging.
   ConfigVariableBool show_dll_error_dialog
@@ -498,7 +500,6 @@ reload_implicit_pages() {
     SetErrorMode(SEM_FAILCRITICALERRORS);
   }
 #endif
-
 }
 
 /**
@@ -720,28 +721,7 @@ scan_up_from(Filename &result, const Filename &dir,
  */
 void ConfigPageManager::
 config_initialized() {
-  Notify::ptr()->config_initialized();
-
-#ifndef NDEBUG
-  ConfigVariableString panda_package_version
-    ("panda-package-version", "local_dev",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_version_str(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-  ConfigVariableString panda_package_host_url
-    ("panda-package-host-url", "",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_host_url(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-
-  PandaSystem *panda_sys = PandaSystem::get_global_ptr();
-  panda_sys->set_package_version_string(panda_package_version);
-  panda_sys->set_package_host_url(panda_package_host_url);
-#endif  // NDEBUG
+  Notify::config_initialized();
 
   // Also set up some other low-level things.
   ConfigVariableEnum<TextEncoder::Encoding> text_encoding

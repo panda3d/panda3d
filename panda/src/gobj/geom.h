@@ -62,9 +62,10 @@ protected:
   Geom(const Geom &copy);
 
 PUBLISHED:
-  void operator = (const Geom &copy);
   virtual ~Geom();
   ALLOC_DELETED_CHAIN(Geom);
+
+  void operator = (const Geom &copy) = delete;
 
   virtual Geom *make_copy() const;
 
@@ -157,8 +158,10 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
+  bool is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const;
+
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomVertexData *vertex_data,
+            const GeomVertexData *vertex_data, size_t num_instances,
             bool force, Thread *current_thread) const;
 
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
@@ -182,6 +185,7 @@ private:
 
   INLINE void mark_internal_bounds_stale(CData *cdata);
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
+  void compute_nested_vertices(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                             PN_stdfloat &sq_center_dist, bool &found_any,
@@ -295,7 +299,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -324,6 +328,7 @@ private:
 
     CPT(BoundingVolume) _internal_bounds;
     int _nested_vertices;
+    bool _nested_vertices_stale;
     bool _internal_bounds_stale;
     BoundingVolume::BoundsType _bounds_type;
     CPT(BoundingVolume) _user_bounds;
@@ -433,7 +438,7 @@ public:
 
   bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
-            bool force) const;
+            size_t num_instances, bool force) const;
 
 private:
   const Geom *_object;

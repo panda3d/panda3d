@@ -132,8 +132,12 @@ PUBLISHED:
   INLINE const LoaderOptions &get_loader_options() const;
   INLINE void set_loader_options(const LoaderOptions &options);
 
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
+  EXTENSION(PyObject *read_object());
+#else
   BLOCKING TypedWritable *read_object();
   BLOCKING bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+#endif
 
   INLINE bool is_eof() const;
   bool resolve();
@@ -148,14 +152,14 @@ PUBLISHED:
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
 
-  EXTENSION(PyObject *get_file_version() const);
+  PY_EXTENSION(PyObject *get_file_version() const);
 
 PUBLISHED:
   MAKE_PROPERTY(source, get_source, set_source);
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(loader_options, get_loader_options, set_loader_options);
 
-  MAKE_PROPERTY(file_version, get_file_version);
+  PY_MAKE_PROPERTY(file_version, get_file_version);
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
 
@@ -202,7 +206,7 @@ public:
   INLINE static WritableFactory *get_factory();
 
 PUBLISHED:
-  EXTENSION(static void register_factory(TypeHandle handle, PyObject *func));
+  PY_EXTENSION(static void register_factory(TypeHandle handle, PyObject *func));
 
 private:
   INLINE static void create_factory();
@@ -350,4 +354,4 @@ parse_params(const FactoryParams &params,
 
 #include "bamReader.I"
 
-#endif
+#endif // !__BAM_READER_

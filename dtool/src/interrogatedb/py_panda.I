@@ -122,30 +122,38 @@ INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
  */
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
-  nassertr(known_class != nullptr, nullptr);
-  return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)get_type_handle(T).wrap_python(obj);
+  nassertr(self != nullptr, nullptr);
+  self->_memory_rules = memory_rules;
+  self->_is_const = true;
+  return (PyObject *)self;
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
-  nassertr(known_class != nullptr, nullptr);
-  return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)get_type_handle(T).wrap_python(obj);
+  nassertr(self != nullptr, nullptr);
+  self->_memory_rules = memory_rules;
+  self->_is_const = false;
+  return (PyObject *)self;
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
-  nassertr(known_class != nullptr, nullptr);
-  return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)get_type_handle(T).wrap_python(obj);
+  nassertr(self != nullptr, nullptr);
+  self->_memory_rules = memory_rules;
+  self->_is_const = true;
+  return (PyObject *)self;
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
-  nassertr(known_class != nullptr, nullptr);
-  return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *)get_type_handle(T).wrap_python(obj);
+  nassertr(self != nullptr, nullptr);
+  self->_memory_rules = memory_rules;
+  self->_is_const = false;
+  return (PyObject *)self;
 }
 
 /**

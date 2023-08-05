@@ -959,32 +959,32 @@ stop_all_sounds() {
  */
 void OpenALAudioManager::
 update() {
-  ReMutexHolder holder(_lock);
+  ReMutexHolder const holder(_lock);
 
-  // See if any of our playing sounds have ended we must first collect a
-  // seperate list of finished sounds and then iterated over those again
-  // calling their finished method.  We can't call finished() within a loop
-  // iterating over _sounds_playing since finished() modifies _sounds_playing
-  SoundsPlaying sounds_finished;
-
-  double rtc = TrueClock::get_global_ptr()->get_short_time();
-  SoundsPlaying::iterator i=_sounds_playing.begin();
-  for (; i!=_sounds_playing.end(); ++i) {
-    OpenALAudioSound *sound = (*i);
+  // See if any of our playing sounds have ended.
+  double const rtc = TrueClock::get_global_ptr()->get_short_time();
+  SoundsPlaying::iterator i = _sounds_playing.begin();
+  while (i != _sounds_playing.end()) {
+    // The post-increment syntax is *very* important here.
+    // As both OpenALAudioSound::pull_used_buffers and OpenALAudioSound::finished can modify the list of sounds playing
+    // by erasing 'sound' from the list, thus invaliding the iterator.
+    PT(OpenALAudioSound) sound = *(i++);
     sound->pull_used_buffers();
+
+    // If pull_used_buffers() encountered an error, the sound was cleaned up.
+    // No need to do anymore work.
+    if (!sound->is_valid()) {
+      continue;
+    }
+
     sound->push_fresh_buffers();
     sound->restart_stalled_audio();
     sound->cache_time(rtc);
-    if ((sound->_source == 0)||
-        ((sound->_stream_queued.size() == 0)&&
+    if (sound->_source == 0 ||
+        (sound->_stream_queued.empty() &&
          (sound->_loops_completed >= sound->_playing_loops))) {
-      sounds_finished.insert(*i);
+      sound->finished();
     }
-  }
-
-  i=sounds_finished.begin();
-  for (; i!=sounds_finished.end(); ++i) {
-    (**i).finished();
   }
 }
 

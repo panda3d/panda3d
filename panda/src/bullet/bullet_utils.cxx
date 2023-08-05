@@ -60,8 +60,9 @@ LPoint3 btVector3_to_LPoint3(const btVector3 &p) {
  */
 btMatrix3x3 LMatrix3_to_btMatrix3x3(const LMatrix3 &m) {
 
+  LMatrix4 m4(m);
   btMatrix3x3 result;
-  result.setFromOpenGLSubMatrix((const btScalar *)m.get_data());
+  result.setFromOpenGLSubMatrix((const btScalar *)m4.get_data());
   return result;
 }
 
@@ -70,11 +71,11 @@ btMatrix3x3 LMatrix3_to_btMatrix3x3(const LMatrix3 &m) {
  */
 LMatrix3 btMatrix3x3_to_LMatrix3(const btMatrix3x3 &m) {
 
-  btScalar cells[9];
+  btScalar cells[12];
   m.getOpenGLSubMatrix(cells);
   return LMatrix3((PN_stdfloat)cells[0], (PN_stdfloat)cells[1], (PN_stdfloat)cells[2],
-                  (PN_stdfloat)cells[3], (PN_stdfloat)cells[4], (PN_stdfloat)cells[5],
-                  (PN_stdfloat)cells[6], (PN_stdfloat)cells[7], (PN_stdfloat)cells[8]);
+                  (PN_stdfloat)cells[4], (PN_stdfloat)cells[5], (PN_stdfloat)cells[6],
+                  (PN_stdfloat)cells[8], (PN_stdfloat)cells[9], (PN_stdfloat)cells[10]);
 }
 
 /**
@@ -118,10 +119,9 @@ btTransform LMatrix4_to_btTrans(const LMatrix4 &m) {
  */
 LMatrix4 btTrans_to_LMatrix4(const btTransform &trans) {
 
-  return TransformState::make_pos_quat_scale(
+  return TransformState::make_pos_quat(
     btVector3_to_LVector3(trans.getOrigin()),
-    btQuat_to_LQuaternion(trans.getRotation()),
-    LVector3(1.0f, 1.0f, 1.0f))->get_mat();
+    btQuat_to_LQuaternion(trans.getRotation()))->get_mat();
 }
 
 /**

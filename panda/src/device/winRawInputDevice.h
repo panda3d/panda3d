@@ -59,16 +59,16 @@ private:
       idx._button = index;
       return idx;
     }
-    static Index axis(int index, bool is_signed=true) {
+    static Index axis(int index, int sign_bit = 0) {
       Index idx;
       idx._axis = index;
-      idx._signed = is_signed;
+      idx._sign_bit = sign_bit;
       return idx;
     }
 
     int _button;
     int _axis;
-    bool _signed;
+    int _sign_bit;
   };
 
   // Maps a "data index" to either button index or axis index.

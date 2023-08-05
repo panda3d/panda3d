@@ -36,7 +36,7 @@
 /**
  *
  */
-class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ShaderAttrib final : public RenderAttrib {
 private:
   INLINE ShaderAttrib();
   INLINE ShaderAttrib(const ShaderAttrib &copy);
@@ -47,10 +47,11 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   enum {
-    F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
-    F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
-    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
-    F_shader_point_size   = 3,  // Shader provides point size, not RenderModeAttrib
+    F_disable_alpha_write = 1 << 0,  // Suppress writes to color buffer alpha channel.
+    F_subsume_alpha_test  = 1 << 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 1 << 2,  // Shader needs pre-animated vertices
+    F_shader_point_size   = 1 << 3,  // Shader provides point size, not RenderModeAttrib
+    F_hardware_instancing = 1 << 4,  // Shader needs instance list
   };
 
   INLINE bool               has_shader() const;
@@ -91,12 +92,12 @@ public:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, double n1=0, double n2=0, double n3=0, double n4=1,
                                             int priority=0) const;
-                                            
+
   CPT(RenderAttrib) set_shader_inputs(const pvector<ShaderInput> &inputs) const;
 
 PUBLISHED:
-  EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
-  EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
+  PY_EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
+  PY_EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
 
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
 
@@ -193,4 +194,4 @@ private:
 
 #include "shaderAttrib.I"
 
-#endif  // SHADERATTRIB_H
+#endif  // !SHADERATTRIB_H

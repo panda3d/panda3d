@@ -769,7 +769,7 @@ enquote_string(ostream &out, char quote_mark, const string &str) {
     if ((*pi) == quote_mark || (*pi) == '\\') {
       out << '\\' << (*pi);
 
-    } else if (!isprint(*pi)) {
+    } else if (!isprint(*pi) || (*pi) == '\t') {
       char buffer[10];
       sprintf(buffer, "%02x", (unsigned char)(*pi));
       out << "\\x" << buffer;

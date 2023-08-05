@@ -44,9 +44,7 @@ DCPackerCatalog(const DCPackerCatalog &copy) :
  */
 DCPackerCatalog::
 ~DCPackerCatalog() {
-  if (_live_catalog != nullptr) {
-    delete _live_catalog;
-  }
+  delete _live_catalog;
 
   SwitchCatalogs::iterator si;
   for (si = _switch_catalogs.begin(); si != _switch_catalogs.end(); ++si) {

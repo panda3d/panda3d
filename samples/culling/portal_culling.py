@@ -135,7 +135,7 @@ class Game(ShowBase):
     def update(self, task):
         """Updates the camera based on the keyboard input. Once this is
         done, then the CellManager's update function is called."""
-        delta = globalClock.getDt()
+        delta = base.clock.dt
         move_x = delta * 3 * -self.keys['a'] + delta * 3 * self.keys['d']
         move_z = delta * 3 * self.keys['s'] + delta * 3 * -self.keys['w']
         self.camera.setPos(self.camera, move_x, -move_z, 0)

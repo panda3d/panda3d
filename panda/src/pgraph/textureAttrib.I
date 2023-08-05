@@ -236,9 +236,10 @@ StageNode(const TextureStage *stage, unsigned int implicit_sort, int override) :
   // Yeah, we cast away the constness here.  Just too much trouble to deal
   // with it properly.
   _stage((TextureStage *)stage),
+  _has_sampler(false),
+  _ff_tc_index(0),
   _implicit_sort(implicit_sort),
-  _override(override),
-  _has_sampler(false)
+  _override(override)
 {
 }
 

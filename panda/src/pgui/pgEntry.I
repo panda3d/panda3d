@@ -113,6 +113,12 @@ set_cursor_position(int position) {
     _cursor_position = position;
     _cursor_stale = true;
     _blink_start = ClockObject::get_global_clock()->get_frame_time();
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      update_cursor();
+    }
+#endif
   }
 }
 
@@ -185,6 +191,13 @@ set_max_width(PN_stdfloat max_width) {
   LightReMutexHolder holder(_lock);
   _max_width = max_width;
   _text_geom_stale = true;
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    update_text();
+    update_cursor();
+  }
+#endif
 }
 
 /**
@@ -206,9 +219,17 @@ INLINE void PGEntry::
 set_num_lines(int num_lines) {
   LightReMutexHolder holder(_lock);
   nassertv(num_lines >= 1);
-  _num_lines = num_lines;
-  _text_geom_stale = true;
-  update_text();
+  if (_num_lines != num_lines) {
+    _num_lines = num_lines;
+    _text_geom_stale = true;
+    update_text();
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      update_cursor();
+    }
+#endif
+  }
 }
 
 /**
@@ -300,6 +321,13 @@ set_obscure_mode(bool flag) {
   if (_obscure_mode != flag) {
     _obscure_mode = flag;
     _text_geom_stale = true;
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      update_text();
+      update_cursor();
+    }
+#endif
   }
 }
 
@@ -325,6 +353,13 @@ set_overflow_mode(bool flag) {
     _overflow_mode = flag;
     _text_geom_stale = true;
     _cursor_stale = true;
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      update_text();
+      update_cursor();
+    }
+#endif
   }
 }
 
@@ -518,7 +553,12 @@ set_wtext(const std::wstring &wtext) {
     ret = _obscure_text.set_wtext(std::wstring(_text.get_num_characters(), '*'));
   }
   _text_geom_stale = true;
-  set_cursor_position(std::min(_cursor_position, _text.get_num_characters()));
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    update_text();
+  }
+#endif
+  set_cursor_position((std::min)(_cursor_position, _text.get_num_characters()));
   return ret;
 }
 

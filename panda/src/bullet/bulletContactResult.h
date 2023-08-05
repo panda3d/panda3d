@@ -11,8 +11,8 @@
  * @date 2010-03-08
  */
 
-#ifndef __BULLET_CONTACT_RESULT_H__
-#define __BULLET_CONTACT_RESULT_H__
+#ifndef BULLETCONTACTRESULT_H
+#define BULLETCONTACTRESULT_H
 
 #include "pandabase.h"
 
@@ -28,10 +28,11 @@ struct EXPCL_PANDABULLET BulletContact {
 
 public:
   BulletContact();
+  BulletContact(btManifoldPoint &mp);
   BulletContact(const BulletContact &other);
 
 PUBLISHED:
-  INLINE BulletManifoldPoint &get_manifold_point();
+  INLINE BulletManifoldPoint get_manifold_point();
   INLINE PandaNode *get_node0() const;
   INLINE PandaNode *get_node1() const;
   INLINE int get_idx0() const;
@@ -110,4 +111,4 @@ private:
 
 #include "bulletContactResult.I"
 
-#endif // __BULLET_CONTACT_RESULT_H__
+#endif // BULLETCONTACTRESULT_H

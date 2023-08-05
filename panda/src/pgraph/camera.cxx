@@ -28,8 +28,8 @@ Camera(const string &name, Lens *lens) :
   LensNode(name, lens),
   _active(true),
   _camera_mask(~PandaNode::get_overall_bit()),
-  _initial_state(RenderState::make_empty()),
-  _lod_scale(1)
+  _lod_scale(1),
+  _initial_state(RenderState::make_empty())
 {
 }
 
@@ -42,8 +42,8 @@ Camera(const Camera &copy) :
   _active(copy._active),
   _scene(copy._scene),
   _camera_mask(copy._camera_mask),
-  _initial_state(copy._initial_state),
   _lod_scale(copy._lod_scale),
+  _initial_state(copy._initial_state),
   _tag_state_key(copy._tag_state_key),
   _tag_states(copy._tag_states)
 {
@@ -249,7 +249,7 @@ add_display_region(DisplayRegion *display_region) {
 void Camera::
 remove_display_region(DisplayRegion *display_region) {
   DisplayRegions::iterator dri =
-    find(_display_regions.begin(), _display_regions.end(), display_region);
+    std::find(_display_regions.begin(), _display_regions.end(), display_region);
   if (dri != _display_regions.end()) {
     _display_regions.erase(dri);
   }

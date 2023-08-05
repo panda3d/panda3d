@@ -94,6 +94,7 @@ void PStatReader::
 lost_connection() {
   _client_data->_is_alive = false;
   _monitor->lost_connection();
+  _manager->lost_connection(_monitor);
   _client_data.clear();
 
   _manager->close_connection(_tcp_connection);
@@ -195,11 +196,13 @@ handle_client_control_message(const PStatClientControlMessage &message) {
           (message._major_version == server_major_version &&
            message._minor_version > server_minor_version)) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
+                              message._client_pid,
                               message._major_version, message._minor_version,
                               server_major_version, server_minor_version);
         _monitor->close();
       } else {
-        _monitor->hello_from(message._client_hostname, message._client_progname);
+        _monitor->hello_from(message._client_hostname, message._client_progname,
+                             message._client_pid);
       }
     }
     break;
@@ -215,11 +218,37 @@ handle_client_control_message(const PStatClientControlMessage &message) {
 
   case PStatClientControlMessage::T_define_threads:
     {
+      // See if we can clean up old threads, so that we don't clutter up the
+      // view if we are creating many threads.
+      for (int thread_index = 0; thread_index < _client_data->get_num_threads(); ++thread_index) {
+        if (_client_data->has_thread(thread_index) && !_client_data->is_thread_alive(thread_index)) {
+          PStatThreadData *thread_data = (PStatThreadData *)_client_data->get_thread_data(thread_index);
+          if (thread_data->prune_history(_client_data->get_latest_time())) {
+            _client_data->remove_thread(thread_index);
+            _monitor->remove_thread(thread_index);
+          }
+        }
+      }
+
       for (int i = 0; i < (int)message._names.size(); i++) {
         int thread_index = message._first_thread_index + i;
         std::string name = message._names[i];
-        _client_data->define_thread(thread_index, name);
+        _client_data->define_thread(thread_index, name, true);
         _monitor->new_thread(thread_index);
+      }
+    }
+    break;
+
+  case PStatClientControlMessage::T_expire_thread:
+    if (_client_data->has_thread(message._first_thread_index)) {
+      // Remove the thread right away if it has no recent data.
+      PStatThreadData *thread_data = (PStatThreadData *)_client_data->get_thread_data(message._first_thread_index);
+      if (thread_data->prune_history(_client_data->get_latest_time())) {
+        _client_data->remove_thread(message._first_thread_index);
+        _monitor->remove_thread(message._first_thread_index);
+      } else {
+        // Otherwise, just mark it as expired, and we'll remove it later.
+        _client_data->expire_thread(message._first_thread_index);
       }
     }
     break;
@@ -270,7 +299,11 @@ handle_client_udp_data(const Datagram &datagram) {
  */
 void PStatReader::
 dequeue_frame_data() {
-  while (!_queued_frame_data.empty()) {
+  if (_queued_frame_data.empty()) {
+    return;
+  }
+
+  do {
     const FrameData &data = _queued_frame_data.front();
     nassertv(_client_data != nullptr);
 
@@ -291,5 +324,17 @@ dequeue_frame_data() {
     _monitor->new_data(data._thread_index, data._frame_number);
 
     _queued_frame_data.pop_front();
+  }
+  while (!_queued_frame_data.empty());
+
+  // Clean up old threads.
+  for (int thread_index = 0; thread_index < _client_data->get_num_threads(); ++thread_index) {
+    if (_client_data->has_thread(thread_index) && !_client_data->is_thread_alive(thread_index)) {
+      PStatThreadData *thread_data = (PStatThreadData *)_client_data->get_thread_data(thread_index);
+      if (thread_data->prune_history(_client_data->get_latest_time())) {
+        _client_data->remove_thread(thread_index);
+        _monitor->remove_thread(thread_index);
+      }
+    }
   }
 }

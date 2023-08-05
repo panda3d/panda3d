@@ -32,7 +32,9 @@
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    PANDA_FREE_SINGLE(ptr);                                  \
+    if (ptr != nullptr) {                                    \
+      PANDA_FREE_SINGLE(ptr);                                \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -44,7 +46,9 @@
     return ptr;                                              \
   }                                                          \
   inline void operator delete[](void *ptr) {                 \
-    PANDA_FREE_ARRAY(ptr);                                   \
+    if (ptr != nullptr) {                                    \
+      PANDA_FREE_ARRAY(ptr);                                 \
+    }                                                        \
   }                                                          \
   inline void operator delete[](void *, void *) {            \
   }

@@ -30,9 +30,10 @@ protected:
   AnimChannelScalarTable();
   AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy);
 
-public:
-  AnimChannelScalarTable(AnimGroup *parent, const std::string &name);
+PUBLISHED:
+  explicit AnimChannelScalarTable(AnimGroup *parent, const std::string &name);
 
+public:
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, PN_stdfloat &value);

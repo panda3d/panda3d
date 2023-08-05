@@ -21,7 +21,7 @@
 #include "config_putil.h"
 #include "load_dso.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>  // For GetSystemDirectory()
 #endif
 
@@ -285,7 +285,7 @@ get_dls_pathname() {
     return dls_filename;
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   Filename pathname;
 
   // Get the registry key from DirectMusic

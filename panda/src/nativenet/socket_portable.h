@@ -1,5 +1,5 @@
-#ifndef __SOCKET_PORTABLE_H__
-#define __SOCKET_PORTABLE_H__
+#ifndef SOCKET_PORTABLE_H
+#define SOCKET_PORTABLE_H
 // Lots of stuff to make network socket-based io transparent across multiple
 // platforms
 
@@ -17,43 +17,11 @@ typedef unsigned long SOCKET;
 #include <netinet/in.h>
 
 /************************************************************************
-* HP SOCKET LIBRARY STUFF
-************************************************************************/
-#elif defined(HP_SOCK)
-
-#ifndef _INCLUDE_HPUX_SOURCE
-#define _INCLUDE_HPUX_SOURCE
-#define _INCLUDE_POSIX_SOURCE
-#define _INCLUDE_XOPEN_SOURCE
-#endif
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
-
-#define socket_read read
-#define socket_write write
-#define socket_close close
-
-#define DO_CONNECT(a,b,c)   connect(a,b,c)
-#define DO_SOCKET_READ(a,b,c,d)     socket_read(a,b,c)
-#define DO_SOCKET_WRITE(a,b,c,d)    socket_write(a,b,c)
-
-#define GETERROR()                  errno
-
-
-#define  SOCKIOCTL       ioctl
-typedef unsigned long SOCKET;
-#define BAD_SOCKET 0xffffffff
-
-
-/************************************************************************
 * WINSOCK 32 bit STUFF
 ************************************************************************/
 #elif defined(_WIN32)
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 
 typedef u_short sa_family_t;
 
@@ -315,4 +283,4 @@ No Host Type defined !!
 #error  Fatal
 #endif
 
-#endif //__SOCKET_PORTABLE_H__
+#endif //SOCKET_PORTABLE_H

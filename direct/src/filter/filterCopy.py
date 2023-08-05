@@ -3,13 +3,14 @@ COPY = """
 
 
 void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord : TEXCOORD0,
              out float4 l_position : POSITION,
              out float2 l_texcoord : TEXCOORD0,
              uniform float4 texpad_src,
              uniform float4x4 mat_modelproj)
 {
-  l_position=mul(mat_modelproj, vtx_position);
-  l_texcoord = (vtx_position.xz * texpad_src.xy) + texpad_src.xy;
+  l_position = mul(mat_modelproj, vtx_position);
+  l_texcoord = vtx_texcoord * texpad_src.xy * 2;
 }
 
 void fshader(float2 l_texcoord : TEXCOORD0,

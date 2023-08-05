@@ -429,9 +429,21 @@ type_trait(int trait, CPPType *type, CPPType *arg) {
 CPPExpression CPPExpression::
 sizeof_func(CPPType *type) {
   CPPExpression expr(0);
-  expr._type = T_sizeof;
+  expr._type = T_sizeof_type;
   expr._u._typecast._to = type;
   expr._u._typecast._op1 = nullptr;
+  return expr;
+}
+
+/**
+ *
+ */
+CPPExpression CPPExpression::
+sizeof_func(CPPExpression *op1) {
+  CPPExpression expr(0);
+  expr._type = T_sizeof_expr;
+  expr._u._typecast._to = nullptr;
+  expr._u._typecast._op1 = op1;
   return expr;
 }
 
@@ -579,7 +591,7 @@ evaluate() const {
     if (_u._variable->_type != nullptr &&
         _u._variable->_initializer != nullptr) {
       // A constexpr variable, which is treated as const.
-      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+      if (_u._variable->_storage_class & (CPPInstance::SC_constexpr | CPPInstance::SC_constinit)) {
         return _u._variable->_initializer->evaluate();
       }
       // A const variable.  Fetch its assigned value.
@@ -629,7 +641,8 @@ evaluate() const {
   case T_empty_aggregate_init:
   case T_new:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
+  case T_sizeof_expr:
   case T_sizeof_ellipsis:
     return Result();
 
@@ -803,6 +816,13 @@ evaluate() const {
         return Result(r1.as_integer() >= r2.as_integer());
       }
 
+    case SPACESHIP:
+      if (r1._type == RT_real || r2._type == RT_real) {
+        return Result((r1.as_real() > r2.as_real()) - (r1.as_real() < r2.as_real()));
+      } else {
+        return Result((r1.as_integer() > r2.as_integer()) - (r1.as_integer() < r2.as_integer()));
+      }
+
     case '<':
       if (r1._type == RT_real || r2._type == RT_real) {
         return Result(r1.as_real() < r2.as_real());
@@ -839,6 +859,9 @@ evaluate() const {
 
     case ',':
       return r2;
+
+    case KW_NOEXCEPT:
+      return Result();
 
     default:
       cerr << "**unexpected operator**\n";
@@ -929,6 +952,9 @@ evaluate() const {
 
     case KW_IS_TRIVIAL:
       return Result(_u._type_trait._type->is_trivial());
+
+    case KW_IS_TRIVIALLY_COPYABLE:
+      return Result(_u._type_trait._type->is_trivially_copyable());
 
     case KW_IS_UNION:
       {
@@ -1058,7 +1084,8 @@ determine_type() const {
   case T_default_new:
     return CPPType::new_type(new CPPPointerType(_u._typecast._to));
 
-  case T_sizeof:
+  case T_sizeof_type:
+  case T_sizeof_expr:
   case T_sizeof_ellipsis:
   case T_alignof:
     // Note: this should actually be size_t, but that is defined as a typedef
@@ -1159,7 +1186,11 @@ determine_type() const {
     case GECOMPARE:
     case '<':
     case '>':
+    case KW_NOEXCEPT:
       return bool_type;
+
+    case SPACESHIP:
+      return nullptr;
 
     case '?':
       return t2;
@@ -1334,9 +1365,12 @@ is_fully_specified() const {
   case T_default_construct:
   case T_empty_aggregate_init:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
   case T_alignof:
     return _u._typecast._to->is_fully_specified();
+
+  case T_sizeof_expr:
+    return _u._typecast._op1->is_fully_specified();
 
   case T_sizeof_ellipsis:
     return _u._ident->is_fully_specified();
@@ -1469,12 +1503,19 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   case T_default_construct:
   case T_empty_aggregate_init:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
   case T_alignof:
     rep->_u._typecast._to =
       _u._typecast._to->substitute_decl(subst, current_scope, global_scope)
       ->as_type();
     any_changed = any_changed || (rep->_u._typecast._to != _u._typecast._to);
+    break;
+
+  case T_sizeof_expr:
+    rep->_u._typecast._op1 =
+      _u._typecast._op1->substitute_decl(subst, current_scope, global_scope)
+      ->as_expression();
+    any_changed = any_changed || (rep->_u._typecast._op1 != _u._typecast._op1);
     break;
 
   case T_trinary_operation:
@@ -1542,7 +1583,7 @@ is_tbd() const {
   case T_variable:
     if (_u._variable->_type != nullptr &&
         _u._variable->_initializer != nullptr) {
-      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+      if (_u._variable->_storage_class & (CPPInstance::SC_constexpr | CPPInstance::SC_constinit)) {
         return false;
       }
       CPPConstType *const_type = _u._variable->_type->as_const_type();
@@ -1567,9 +1608,12 @@ is_tbd() const {
   case T_new:
   case T_default_construct:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
   case T_alignof:
     return _u._typecast._to->is_tbd();
+
+  case T_sizeof_expr:
+    return _u._typecast._op1->is_tbd();
 
   case T_trinary_operation:
     if (_u._op._op3->is_tbd()) {
@@ -1807,10 +1851,15 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << "())";
     break;
 
-  case T_sizeof:
+  case T_sizeof_type:
     out << "sizeof(";
     _u._typecast._to->output(out, indent_level, scope, false);
     out << ")";
+    break;
+
+  case T_sizeof_expr:
+    out << "sizeof ";
+    _u._typecast._op1->output(out, indent_level, scope, false);
     break;
 
   case T_sizeof_ellipsis:
@@ -1864,6 +1913,12 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
     case 'f': // Function evaluation, no parameters.
       _u._op._op1->output(out, indent_level, scope, false);
       out << "()";
+      break;
+
+    case KW_NOEXCEPT:
+      out << "noexcept(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     default:
@@ -1920,6 +1975,14 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
       out << "(";
       _u._op._op1->output(out, indent_level, scope, false);
       out << " >= ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
+      break;
+
+    case SPACESHIP:
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " <=> ";
       _u._op._op2->output(out, indent_level, scope, false);
       out << ")";
       break;
@@ -2078,6 +2141,9 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
     case KW_IS_TRIVIAL:
       out << "__is_trivial";
       break;
+    case KW_IS_TRIVIALLY_COPYABLE:
+      out << "__is_trivially_copyable";
+      break;
     case KW_IS_UNION:
       out << "__is_union";
       break;
@@ -2222,9 +2288,12 @@ is_equal(const CPPDeclaration *other) const {
   case T_default_construct:
   case T_empty_aggregate_init:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
   case T_alignof:
     return _u._typecast._to == ot->_u._typecast._to;
+
+  case T_sizeof_expr:
+    return _u._typecast._op1 == ot->_u._typecast._op1;
 
   case T_unary_operation:
     return *_u._op._op1 == *ot->_u._op._op1;
@@ -2324,9 +2393,12 @@ is_less(const CPPDeclaration *other) const {
   case T_default_construct:
   case T_empty_aggregate_init:
   case T_default_new:
-  case T_sizeof:
+  case T_sizeof_type:
   case T_alignof:
     return _u._typecast._to < ot->_u._typecast._to;
+
+  case T_sizeof_expr:
+    return _u._typecast._op1 < ot->_u._typecast._op1;
 
   case T_trinary_operation:
     if (*_u._op._op3 != *ot->_u._op._op3) {

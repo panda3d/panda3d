@@ -23,11 +23,14 @@
  * ARB_draw_buffers extensions.  This design has significant advantages over
  * the older wglGraphicsBuffer and glxGraphicsBuffer:
  *
- * * Can export depth and stencil.  * Supports auxiliary bitplanes.  *
- * Supports non-power-of-two padding.  * Supports tracking of host window
- * size.  * Supports cumulative render-to-texture.  * Faster than pbuffers.  *
- * Can render onto a texture without clearing it first.  * Supports
- * multisample antialiased rendering.
+ * - Can export depth and stencil.
+ * - Supports auxiliary bitplanes.
+ * - Supports non-power-of-two padding.
+ * - Supports tracking of host window size.
+ * - Supports cumulative render-to-texture.
+ * - Faster than pbuffers.
+ * - Can render onto a texture without clearing it first.
+ * - Supports multisample antialiased rendering.
  *
  * Some of these deserve a little explanation.  Auxiliary bitplanes are
  * additional bitplanes above and beyond the normal depth,stencil,color.  One
@@ -45,7 +48,6 @@
  * EXT_framebuffer_blit to allow for multisample antialiasing these offscreen
  * render targets.  If these extensions are unavailable the buffer will render
  * as if multisamples is 0.
- *
  */
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
@@ -58,7 +60,7 @@ public:
                       GraphicsOutput *host);
   virtual ~CLP(GraphicsBuffer)();
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   virtual void clear(Thread *current_thread);
 #endif
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
@@ -90,7 +92,7 @@ protected:
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
-  void attach_tex(int layer, int view, Texture *attach, GLenum attachpoint);
+  void attach_tex(GLenum attachpoint, CLP(TextureContext) *gtc, int view, int layer);
   bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();

@@ -483,8 +483,8 @@ get_border_stitching() {
  */
 INLINE double GeoMipTerrain::
 get_pixel_value(int x, int y) {
-  x = std::max(std::min(x,int(_xsize-1)),0);
-  y = std::max(std::min(y,int(_ysize-1)),0);
+  x = (std::max)((std::min)(x,int(_xsize-1)),0);
+  y = (std::max)((std::min)(y,int(_ysize-1)),0);
   if (_heightfield.is_grayscale()) {
     return double(_heightfield.get_bright(x, y));
   } else {

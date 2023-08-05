@@ -37,7 +37,7 @@
 #include "cullTraverser.h"
 #include "callbackObject.h"
 #include "luse.h"
-#include "epvector.h"
+#include "small_vector.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -81,6 +81,9 @@ PUBLISHED:
   INLINE void set_dimensions(const LVecBase4 &dimensions);
   virtual void set_dimensions(int i, const LVecBase4 &dimensions);
   MAKE_PROPERTY(dimensions, get_dimensions, set_dimensions);
+
+  INLINE void set_depth_range(PN_stdfloat near, PN_stdfloat far);
+  INLINE void get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -160,6 +163,7 @@ PUBLISHED:
   bool get_screenshot(PNMImage &image);
   PT(Texture) get_screenshot();
 
+  void clear_cull_result();
   virtual PT(PandaNode) make_cull_result_graph();
 
 public:
@@ -193,7 +197,7 @@ public:
     LVecBase4i _pixels;
     LVecBase4i _pixels_i;
   };
-  typedef epvector<Region> Regions;
+  typedef small_vector<Region> Regions;
 
 private:
   class CData;
@@ -232,6 +236,7 @@ private:
     }
 
     Regions _regions;
+    LVecBase2 _depth_range;  // near, far
 
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
 
@@ -331,6 +336,8 @@ public:
   INLINE PN_stdfloat get_right(int i = 0) const;
   INLINE PN_stdfloat get_bottom(int i = 0) const;
   INLINE PN_stdfloat get_top(int i = 0) const;
+
+  INLINE void get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;

@@ -1,5 +1,5 @@
-#ifndef __SOCKET_SELECTOR_H__
-#define __SOCKET_SELECTOR_H__
+#ifndef SOCKET_SELECTOR_H
+#define SOCKET_SELECTOR_H
 
 // This is a structure on purpose.  only used as a helper class to save on
 // typing
@@ -76,4 +76,4 @@ inline int Socket_Selector::WaitFor_Write_Error(const Socket_fdset & fd, const T
     return WaitFor(timeout);
 }
 
-#endif //__SOCKET_SELECTOR_H__
+#endif //SOCKET_SELECTOR_H

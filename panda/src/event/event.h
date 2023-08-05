@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "eventParameter.h"
 #include "typedReferenceCount.h"
+#include "small_vector.h"
 
 class EventReceiver;
 
@@ -60,7 +61,7 @@ PUBLISHED:
   MAKE_PROPERTY2(receiver, has_receiver, get_receiver, set_receiver, clear_receiver);
 
 protected:
-  typedef pvector<EventParameter> ParameterList;
+  typedef small_vector<EventParameter> ParameterList;
   ParameterList _parameters;
   EventReceiver *_receiver;
 

@@ -25,7 +25,7 @@ class FactoryParams;
  * make or make_2_sided.  To determine if two sided stencil is supported, call
  * the function GraphicsStateGuardian:: get_supports_two_sided_stencil.
  */
-class EXPCL_PANDA_PGRAPH StencilAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH StencilAttrib final : public RenderAttrib {
 
 private:
   StencilAttrib();

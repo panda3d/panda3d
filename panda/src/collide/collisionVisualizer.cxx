@@ -43,6 +43,7 @@ TypeHandle CollisionVisualizer::_type_handle;
 CollisionVisualizer::
 CollisionVisualizer(const std::string &name) : PandaNode(name), _lock("CollisionVisualizer") {
   set_cull_callback();
+  set_renderable();
 
   // We always want to render the CollisionVisualizer node itself (even if it
   // doesn't appear to have any geometry within it).
@@ -62,6 +63,7 @@ CollisionVisualizer(const CollisionVisualizer &copy) :
   _normal_scale(copy._normal_scale) {
 
   set_cull_callback();
+  set_renderable();
 
   // We always want to render the CollisionVisualizer node itself (even if it
   // doesn't appear to have any geometry within it).
@@ -145,12 +147,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       bool was_detected = (solid_info._detected_count > 0);
       PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
       if (node != nullptr) {
-        CullTraverserData next_data(xform_data, node);
-
         // We don't want to inherit the render state from above for these
         // guys.
-        next_data._state = get_viz_state();
-        trav->traverse(next_data);
+        trav->traverse_down(xform_data, node, xform_data._net_transform, get_viz_state());
       }
     }
 
@@ -159,13 +158,19 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       CPT(RenderState) empty_state = RenderState::make_empty();
       CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, false));
 
-      PT(GeomVertexArrayFormat) point_array_format =
-        new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
-                                  Geom::NT_stdfloat, Geom::C_point,
-                                  InternalName::get_color(), 1,
-                                  Geom::NT_packed_dabc, Geom::C_color,
-                                  InternalName::get_size(), 1,
-                                  Geom::NT_stdfloat, Geom::C_other);
+      PT(GeomVertexArrayFormat) point_array_format;
+      if (vertex_colors_prefer_packed) {
+        point_array_format = new GeomVertexArrayFormat(
+          InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+          InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color,
+          InternalName::get_size(), 1, Geom::NT_stdfloat, Geom::C_other);
+      }
+      else {
+        point_array_format = new GeomVertexArrayFormat(
+          InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+          InternalName::get_color(), 4, Geom::NT_uint8, Geom::C_color,
+          InternalName::get_size(), 1, Geom::NT_stdfloat, Geom::C_other);
+      }
       CPT(GeomVertexFormat) point_format =
         GeomVertexFormat::register_format(point_array_format);
 
@@ -212,7 +217,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // Draw the normal vector at the surface point.
         if (!point._surface_normal.almost_equal(LVector3::zero())) {
           PT(GeomVertexData) line_vdata =
-            new GeomVertexData("viz", GeomVertexFormat::get_v3cp(),
+            new GeomVertexData("viz", GeomVertexFormat::get_v3c(),
                                Geom::UH_stream);
 
           PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
@@ -244,18 +249,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Now carry on to render our child nodes.
   return true;
 }
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool CollisionVisualizer::
-is_renderable() const {
-  return true;
-}
-
 
 /**
  * Writes a brief description of the node to the indicated output stream.

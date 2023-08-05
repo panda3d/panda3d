@@ -41,18 +41,31 @@ CollisionHandlerFloor::
 }
 
 /**
- *
+ * Serializes this object, to implement pickle support.
+ */
+void CollisionHandlerFloor::
+write_datagram(Datagram &dg) const {
+  CollisionHandlerPhysical::write_datagram(dg);
 
- *
+  dg.add_float64(_offset);
+  dg.add_float64(_reach);
+  dg.add_float64(_max_velocity);
+}
 
- *
+/**
+ * Restores the object state from the given datagram, previously obtained using
+ * __getstate__.
+ */
+void CollisionHandlerFloor::
+read_datagram(DatagramIterator &scan) {
+  CollisionHandlerPhysical::read_datagram(scan);
 
- *
+  _offset = scan.get_float64();
+  _reach = scan.get_float64();
+  _max_velocity = scan.get_float64();
+}
 
- *
-
- *
-
+/**
  *
  */
 PN_stdfloat CollisionHandlerFloor::
@@ -98,7 +111,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   if (!got_max && got_min) {
     // We've fallen through the world, but we're also under some walkable
     // geometry.  Move us up to the lowest surface:
-    got_max = true;
+    //got_max = true;
     max_height = min_height;
     highest = lowest;
   }

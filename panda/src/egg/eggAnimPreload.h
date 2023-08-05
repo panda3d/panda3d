@@ -37,6 +37,9 @@ PUBLISHED:
   INLINE bool has_num_frames() const;
   INLINE int get_num_frames() const;
 
+  MAKE_PROPERTY2(fps, has_fps, get_fps, set_fps, clear_fps);
+  MAKE_PROPERTY2(num_frames, has_num_frames, get_num_frames, set_num_frames, clear_num_frames);
+
   virtual void write(std::ostream &out, int indent_level) const;
 
 private:

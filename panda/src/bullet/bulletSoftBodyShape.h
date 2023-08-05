@@ -11,8 +11,8 @@
  * @date 2010-05-06
  */
 
-#ifndef __BULLET_SOFT_BODY_SHAPE_H__
-#define __BULLET_SOFT_BODY_SHAPE_H__
+#ifndef BULLETSOFTBODYSHAPE_H
+#define BULLETSOFTBODYSHAPE_H
 
 #include "pandabase.h"
 
@@ -64,4 +64,5 @@ private:
 
 #include "bulletSoftBodyShape.I"
 
-#endif // __BULLET_SOFT_BODY_SHAPE_H__
+#endif // BULLETSOFTBODYSHAPE_H
+

@@ -968,6 +968,17 @@ read_new(std::istream &in, InterrogateModuleDef *def) {
 
       add_type(index, type);
       num_types--;
+
+      // Older versions of interrogate were not setting these flags.
+      const InterrogateType &itype = get_type(index);
+      FunctionIndex dtor = itype.get_destructor();
+      if (dtor != 0) {
+        update_function(dtor)._flags |= InterrogateFunction::F_destructor;
+      }
+      for (int i = 0; i < itype.number_of_constructors(); ++i) {
+        FunctionIndex ctor = itype.get_constructor(i);
+        update_function(ctor)._flags |= InterrogateFunction::F_constructor;
+      }
     }
   }
 

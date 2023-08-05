@@ -135,6 +135,32 @@ get_post_animated_format() const {
 }
 
 /**
+ * Returns a suitable vertex format for sending the animated vertices to the
+ * graphics backend.  This is the same format as the source format, with the
+ * instancing columns added.
+ *
+ * This may only be called after the format has been registered.  The return
+ * value will have been already registered.
+ */
+CPT(GeomVertexFormat) GeomVertexFormat::
+get_post_instanced_format() const {
+  nassertr(is_registered(), nullptr);
+
+  if (_post_instanced_format == nullptr) {
+    PT(GeomVertexFormat) new_format = new GeomVertexFormat(*this);
+    new_format->add_array(GeomVertexArrayFormat::register_format(GeomVertexArrayFormat::get_instance_array_format()));
+
+    CPT(GeomVertexFormat) registered =
+      GeomVertexFormat::register_format(new_format);
+    ((GeomVertexFormat *)this)->_post_instanced_format = registered;
+  }
+
+  _post_instanced_format->test_ref_count_integrity();
+
+  return _post_instanced_format;
+}
+
+/**
  * Returns a new GeomVertexFormat that includes all of the columns defined in
  * either this GeomVertexFormat or the other one.  If any column is defined in
  * both formats with different sizes (for instance, texcoord2 vs.  texcoord3),
@@ -338,15 +364,13 @@ void GeomVertexFormat::
 remove_empty_arrays() {
   nassertv(!is_registered());
 
-  Arrays orig_arrays;
-  orig_arrays.swap(_arrays);
-  Arrays::const_iterator ai;
-  for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
-    GeomVertexArrayFormat *array_format = (*ai);
+  Arrays new_arrays;
+  for (PT(GeomVertexArrayFormat) &array_format : _arrays) {
     if (array_format->get_num_columns() != 0) {
-      _arrays.push_back(array_format);
+      new_arrays.push_back(std::move(array_format));
     }
   }
+  _arrays = std::move(new_arrays);
 }
 
 /**
@@ -356,9 +380,8 @@ remove_empty_arrays() {
 size_t GeomVertexFormat::
 get_num_columns() const {
   size_t num_columns = 0;
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    num_columns += (*ai)->get_num_columns();
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    num_columns += array_format->get_num_columns();
   }
   return num_columns;
 }
@@ -368,12 +391,11 @@ get_num_columns() const {
  */
 const GeomVertexColumn *GeomVertexFormat::
 get_column(size_t i) const {
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (size_t)(*ai)->get_num_columns()) {
-      return (*ai)->get_column(i);
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    if (i < (size_t)array_format->get_num_columns()) {
+      return array_format->get_column(i);
     }
-    i -= (*ai)->get_num_columns();
+    i -= array_format->get_num_columns();
   }
 
   return nullptr;
@@ -384,12 +406,11 @@ get_column(size_t i) const {
  */
 const InternalName *GeomVertexFormat::
 get_column_name(size_t i) const {
-  Arrays::const_iterator ai;
-  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (size_t)(*ai)->get_num_columns()) {
-      return (*ai)->get_column(i)->get_name();
+  for (GeomVertexArrayFormat *array_format : _arrays) {
+    if (i < (size_t)array_format->get_num_columns()) {
+      return array_format->get_column(i)->get_name();
     }
-    i -= (*ai)->get_num_columns();
+    i -= array_format->get_num_columns();
   }
 
   return nullptr;
@@ -691,7 +712,7 @@ do_register() {
   nassertv(_columns_by_name.empty());
 
   Arrays orig_arrays;
-  orig_arrays.swap(_arrays);
+  std::swap(orig_arrays, _arrays);
   Arrays::const_iterator ai;
   for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
     CPT(GeomVertexArrayFormat) array_format = (*ai);
@@ -818,6 +839,11 @@ do_unregister() {
     unref_delete(_post_animated_format);
   }
   _post_animated_format = nullptr;
+
+  if (_post_instanced_format != nullptr) {
+    unref_delete(_post_instanced_format);
+    _post_instanced_format = nullptr;
+  }
 }
 
 /**

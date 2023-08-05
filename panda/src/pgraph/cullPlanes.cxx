@@ -79,26 +79,33 @@ xform(const LMatrix4 &mat) const {
  * will be added to the state, unless those ClipPlanes are also listed in
  * off_attrib.
  */
-CPT(CullPlanes) CullPlanes::
-apply_state(const CullTraverser *trav, const CullTraverserData *data,
+void CullPlanes::
+apply_state(CPT(CullPlanes) &planes,
+            const CullTraverser *trav, const CullTraverserData *data,
             const ClipPlaneAttrib *net_attrib,
             const ClipPlaneAttrib *off_attrib,
-            const OccluderEffect *node_effect) const {
+            const OccluderEffect *node_effect) {
   if (net_attrib == nullptr && node_effect == nullptr) {
-    return this;
+    return;
   }
 
   PT(CullPlanes) new_planes;
-  if (get_ref_count() == 1) {
-    new_planes = (CullPlanes *)this;
-  } else {
-    new_planes = new CullPlanes(*this);
+  if (planes != nullptr) {
+    if (planes->get_ref_count() == 1) {
+      new_planes = (CullPlanes *)planes.p();
+    } else {
+      new_planes = new CullPlanes(*planes);
+    }
   }
 
   CPT(TransformState) net_transform = nullptr;
 
   if (net_attrib != nullptr) {
     int num_on_planes = net_attrib->get_num_on_planes();
+    if (num_on_planes > 0 && new_planes.is_null()) {
+      new_planes = new CullPlanes;
+    }
+
     for (int i = 0; i < num_on_planes; ++i) {
       NodePath clip_plane = net_attrib->get_on_plane(i);
       Planes::const_iterator pi = new_planes->_planes.find(clip_plane);
@@ -128,13 +135,17 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
     const Lens *lens = scene->get_lens();
 
     int num_on_occluders = node_effect->get_num_on_occluders();
+    if (num_on_occluders > 0 && new_planes.is_null()) {
+      new_planes = new CullPlanes;
+    }
+
     for (int i = 0; i < num_on_occluders; ++i) {
       NodePath occluder = node_effect->get_on_occluder(i);
       Occluders::const_iterator oi = new_planes->_occluders.find(occluder);
       if (oi == new_planes->_occluders.end()) {
         // Here's a new occluder; consider adding it to the list.
         OccluderNode *occluder_node = DCAST(OccluderNode, occluder.node());
-        nassertr(occluder_node->get_num_vertices() == 4, new_planes);
+        nassertv(occluder_node->get_num_vertices() == 4);
 
         CPT(TransformState) occluder_transform = occluder.get_transform(scene->get_cull_center());
 
@@ -247,7 +258,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // existing occluder volumes.
         bool is_enclosed = false;
         Occluders::const_iterator oi;
-        for (oi = _occluders.begin(); oi != _occluders.end(); ++oi) {
+        for (oi = new_planes->_occluders.begin(); oi != new_planes->_occluders.end(); ++oi) {
           int occluder_result = (*oi).second->contains(occluder_gbv);
           if ((occluder_result & BoundingVolume::IF_all) != 0) {
             is_enclosed = true;
@@ -292,14 +303,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         if (show_occluder_volumes) {
           // Draw the frustum for visualization.
-          nassertr(net_transform != nullptr, new_planes);
+          nassertv(net_transform != nullptr);
           trav->draw_bounding_volume(frustum, data->get_internal_transform(trav));
         }
       }
     }
   }
 
-  return new_planes;
+  planes = std::move(new_planes);
 }
 
 /**

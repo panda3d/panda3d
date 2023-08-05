@@ -25,13 +25,13 @@
 #include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #include <direct.h>  // for chdir()
 #endif
 
 using std::string;
 
-MayaApi *MayaApi::_global_api = nullptr;
+PT(MayaApi) MayaApi::_global_api = nullptr;
 
 // We need this bogus object just to force the application to link with
 // OpenMayaAnim.lib; otherwise, Maya will complain (when compiled on Windows)
@@ -218,6 +218,15 @@ open_api(string program_name, bool view_license, bool revertdir) {
 }
 
 /**
+ * Returns true if the global API has been successfully opened and may be used, or
+ * false if the API has not created yet or if there is some problem.
+ */
+bool MayaApi::
+is_api_valid() {
+  return _global_api != nullptr && _global_api->is_valid();
+}
+
+/**
  * Returns true if the API has been successfully opened and may be used, or
  * false if there is some problem.
  */
@@ -226,7 +235,7 @@ is_valid() const {
   return _is_valid;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 static string
 back_to_front_slash(const string &str) {
   string result = str;
