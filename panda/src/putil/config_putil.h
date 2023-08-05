@@ -11,8 +11,8 @@
  * @date 2000-01-04
  */
 
-#ifndef __CONFIG_UTIL_H__
-#define __CONFIG_UTIL_H__
+#ifndef __CONFIG_PUTIL_H__
+#define __CONFIG_PUTIL_H__
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
@@ -54,4 +54,4 @@ extern EXPCL_PANDA_PUTIL ConfigVariableBool cache_check_timestamps;
 
 extern EXPCL_PANDA_PUTIL void init_libputil();
 
-#endif /* __CONFIG_UTIL_H__ */
+#endif /* __CONFIG_PUTIL_H__ */
