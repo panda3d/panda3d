@@ -27,7 +27,7 @@
  * when compiling without support for more specific libraries that are more
  * full-featured, such as libpng or libjpeg.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeStbImage : public PNMFileType {
+class PNMFileTypeStbImage : public PNMFileType {
 public:
   PNMFileTypeStbImage();
 

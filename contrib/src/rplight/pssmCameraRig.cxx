@@ -296,9 +296,10 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4& transform, float max_dis
 
     // Reset the film size, offset and far-plane
     Camera* cam = DCAST(Camera, _cam_nodes[i].node());
-    cam->get_lens()->set_film_size(1, 1);
-    cam->get_lens()->set_film_offset(0, 0);
-    cam->get_lens()->set_near_far(1, 100);
+    Lens *lens = cam->get_lens();
+    lens->set_film_size(1, 1);
+    lens->set_film_offset(0, 0);
+    lens->set_near_far(1, 100);
 
     // Find a good initial position
     _cam_nodes[i].set_pos(cam_start);
@@ -320,16 +321,16 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4& transform, float max_dis
       if (_max_film_sizes[i].get_x() < film_size.get_x()) _max_film_sizes[i].set_x(film_size.get_x());
       if (_max_film_sizes[i].get_y() < film_size.get_y()) _max_film_sizes[i].set_y(film_size.get_y());
 
-      cam->get_lens()->set_film_size(_max_film_sizes[i] * filmsize_bias);
+      lens->set_film_size(_max_film_sizes[i] * filmsize_bias);
     } else {
       // If we don't use a fixed film size, we can just set the film size
       // on the lens.
-      cam->get_lens()->set_film_size(film_size * filmsize_bias);
+      lens->set_film_size(film_size * filmsize_bias);
     }
 
     // Compute new film offset
-    cam->get_lens()->set_film_offset(film_offset);
-    cam->get_lens()->set_near_far(10, best_max_extent.get_z());
+    lens->set_film_offset(film_offset);
+    lens->set_near_far(10, best_max_extent.get_z());
     _camera_nearfar[i] = LVecBase2(10, best_max_extent.get_z());
 
     // Compute the camera MVP
@@ -369,8 +370,16 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3 &light_vector) {
   LMatrix4 transform = cam_node.get_transform()->get_mat();
 
   // Get Camera and Lens pointers
-  Camera* cam = DCAST(Camera, cam_node.get_child(0).node());
-  nassertv(cam != nullptr);
+  Camera *cam;
+  PandaNode *node = cam_node.node();
+  if (node->is_of_type(Camera::get_class_type())) {
+    cam = (Camera *)node;
+  }
+  else {
+    // Perhaps we passed in something like base.camera ?
+    cam = DCAST(Camera, cam_node.get_child(0).node());
+    nassertv(cam != nullptr);
+  }
   Lens* lens = cam->get_lens();
 
   // Extract near and far points:
@@ -391,7 +400,8 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3 &light_vector) {
   }
 
   // Do the actual PSSM
-  compute_pssm_splits( transform, _pssm_distance / lens->get_far(), light_vector );
+  double far_recip = std::max(1.0 / (double)lens->get_far(), (double)lens_far_limit);
+  compute_pssm_splits( transform, _pssm_distance * far_recip, light_vector );
 
   _update_collector.stop();
 }

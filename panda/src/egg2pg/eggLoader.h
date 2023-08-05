@@ -118,7 +118,11 @@ private:
 
   void load_textures();
   bool load_texture(TextureDef &def, EggTexture *egg_tex);
-  void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
+  void set_up_loader_options(EggTexture *egg_tex, LoaderOptions &options, SamplerState &sampler);
+  void set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex);
+  void check_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *egg_tex);
+  Texture::Format convert_format(EggTexture::Format format, EggTexture::EnvType env);
+  Texture::QualityLevel convert_quality_level(EggTexture::QualityLevel mode);
   Texture::CompressionMode convert_compression_mode(EggTexture::CompressionMode compression_mode) const;
   SamplerState::WrapMode convert_wrap_mode(EggTexture::WrapMode wrap_mode) const;
   PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
@@ -163,6 +167,8 @@ private:
   bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,
                    LPoint3 &center, PN_stdfloat &radius, LColor &color);
 
+  bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
+                const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p);
   bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
                 LPoint3 &min_p, LPoint3 &max_p, LColor &color);
 

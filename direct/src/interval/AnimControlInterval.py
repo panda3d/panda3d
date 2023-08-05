@@ -2,9 +2,9 @@
 
 __all__ = ['AnimControlInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.directnotify.DirectNotifyGlobal import *
+from panda3d.core import AnimControl, AnimControlCollection, ConfigVariableBool
+from panda3d.direct import CInterval
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 import math
 
@@ -49,14 +49,14 @@ class AnimControlInterval(Interval.Interval):
         AnimControlInterval.animNum += 1
         # Record class specific variables
 
-        if(isinstance(controls, AnimControlCollection)):
+        if isinstance(controls, AnimControlCollection):
             self.controls = controls
-            if(config.GetBool("strict-anim-ival",0)):
+            if ConfigVariableBool("strict-anim-ival", 0):
                 checkSz = self.controls.getAnim(0).getNumFrames()
                 for i in range(1,self.controls.getNumAnims()):
-                    if(checkSz != self.controls.getAnim(i).getNumFrames()):
+                    if checkSz != self.controls.getAnim(i).getNumFrames():
                         self.notify.error("anim controls don't have the same number of frames!")
-        elif(isinstance(controls, AnimControl)):
+        elif isinstance(controls, AnimControl):
             self.controls = AnimControlCollection()
             self.controls.storeAnim(controls,"")
         else:
@@ -67,24 +67,24 @@ class AnimControlInterval(Interval.Interval):
         self.playRate = playRate
 
         # If no name specified, use id as name
-        if (name == None):
+        if name is None:
             name = id
 
         self.frameRate = self.controls.getAnim(0).getFrameRate() * abs(playRate)
         # Compute start and end frames.
-        if startFrame != None:
+        if startFrame is not None:
             self.startFrame = startFrame
-        elif startTime != None:
+        elif startTime is not None:
             self.startFrame = startTime * self.frameRate
         else:
             self.startFrame = 0
 
-        if endFrame != None:
+        if endFrame is not None:
             self.endFrame = endFrame
-        elif endTime != None:
+        elif endTime is not None:
             self.endFrame = endTime * self.frameRate
-        elif duration != None:
-            if startTime == None:
+        elif duration is not None:
+            if startTime is None:
                 startTime = float(self.startFrame) / float(self.frameRate)
             endTime = startTime + duration
             self.endFrame = duration * self.frameRate
@@ -97,7 +97,7 @@ class AnimControlInterval(Interval.Interval):
         # Must we play the animation backwards?  We play backwards if
         # either (or both) of the following is true: the playRate is
         # negative, or endFrame is before startFrame.
-        self.reverse = (playRate < 0)
+        self.reverse = playRate < 0
         if self.endFrame < self.startFrame:
             self.reverse = 1
             t = self.endFrame
@@ -108,7 +108,7 @@ class AnimControlInterval(Interval.Interval):
 
         # Compute duration if no duration specified
         self.implicitDuration = 0
-        if duration == None:
+        if duration is None:
             self.implicitDuration = 1
             duration = float(self.numFrames) / self.frameRate
 
@@ -180,4 +180,3 @@ class AnimControlInterval(Interval.Interval):
 
         self.state = CInterval.SFinal
         self.intervalDone()
-

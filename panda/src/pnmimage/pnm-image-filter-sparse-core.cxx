@@ -49,10 +49,12 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
 
   WorkType *filter;
   float filter_width;
+  int actual_width;
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (b = 0; b < source.BSIZE(); b++) {
+    memset(temp_source, 0, source.ASIZE() * sizeof(StoreType));
     memset(temp_source_weight, 0, source.ASIZE() * sizeof(StoreType));
     for (a = 0; a < source.ASIZE(); a++) {
       if (source.HASVAL(a, b)) {
@@ -64,7 +66,7 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
     filter_sparse_row(temp_dest, temp_dest_weight, dest.ASIZE(),
                       temp_source, temp_source_weight, source.ASIZE(),
                       scale,
-                      filter, filter_width);
+                      filter, filter_width, actual_width);
 
     for (a = 0; a < dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
@@ -83,16 +85,18 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
   temp_dest_weight = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (a = 0; a < dest.ASIZE(); a++) {
     filter_sparse_row(temp_dest, temp_dest_weight, dest.BSIZE(),
                       matrix[a], matrix_weight[a], source.BSIZE(),
                       scale,
-                      filter, filter_width);
+                      filter, filter_width, actual_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
       if (temp_dest_weight[b] != 0) {
+        // The temp_dest array has already been scaled by
+        // temp_dest_weight; we don't scale it again here.
         dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)source_max);
       }
     }

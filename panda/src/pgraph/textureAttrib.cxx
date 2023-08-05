@@ -109,16 +109,18 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = false;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._has_sampler = false;
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }
@@ -132,17 +134,19 @@ add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._sampler = sampler;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = true;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._sampler = sampler;
+  sn._has_sampler = true;
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }
@@ -158,9 +162,6 @@ remove_on_stage(TextureStage *stage) const {
   Stages::iterator si = attrib->_on_stages.find(StageNode(stage));
   if (si != attrib->_on_stages.end()) {
     attrib->_on_stages.erase(si);
-
-    attrib->_sort_seq = UpdateSeq::old();
-    attrib->_filtered_seq = UpdateSeq::old();
   }
 
   return return_new(attrib);
@@ -182,8 +183,6 @@ add_off_stage(TextureStage *stage, int override) const {
     Stages::iterator si = attrib->_on_stages.find(sn);
     if (si != attrib->_on_stages.end()) {
       attrib->_on_stages.erase(si);
-      attrib->_sort_seq = UpdateSeq::old();
-      attrib->_filtered_seq = UpdateSeq::old();
     }
   }
   return return_new(attrib);
@@ -251,6 +250,43 @@ unify_texture_stages(TextureStage *stage) const {
 }
 
 /**
+ * Returns a new TextureAttrib, just like this one, but with all references to
+ * the given texture replaced with the new texture.
+ *
+ * As of Panda3D 1.10.13, new_tex may be null to remove the texture.
+ *
+ * @since 1.10.4
+ */
+CPT(RenderAttrib) TextureAttrib::
+replace_texture(Texture *tex, Texture *new_tex) const {
+  TextureAttrib *attrib = nullptr;
+
+  size_t j = 0;
+  for (size_t i = 0; i < _on_stages.size(); ++i) {
+    const StageNode &sn = _on_stages[i];
+    if (sn._texture == tex) {
+      if (attrib == nullptr) {
+        attrib = new TextureAttrib(*this);
+      }
+
+      if (new_tex != nullptr) {
+        attrib->_on_stages[j]._texture = new_tex;
+      } else {
+        attrib->_on_stages.erase(attrib->_on_stages.begin() + j);
+        continue;
+      }
+    }
+    ++j;
+  }
+
+  if (attrib != nullptr) {
+    return return_new(attrib);
+  } else {
+    return this;
+  }
+}
+
+/**
  * Returns a new TextureAttrib, very much like this one, but with the number
  * of on_stages reduced to be no more than max_texture_stages.  The number of
  * off_stages in the new TextureAttrib is undefined.
@@ -283,8 +319,8 @@ filter_to_max(int max_texture_stages) const {
   RenderStages priority_stages = _render_stages;
 
   // This sort function uses the STL function object defined above.
-  sort(priority_stages.begin(), priority_stages.end(),
-       CompareTextureStagePriorities());
+  std::sort(priority_stages.begin(), priority_stages.end(),
+            CompareTextureStagePriorities());
 
   // Now lop off all of the stages after the first max_texture_stages.
   priority_stages.erase(priority_stages.begin() + max_texture_stages,
@@ -943,8 +979,8 @@ sort_on_stages() {
     _render_stages.push_back(&sn);
   }
 
-  sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
-  sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
+  std::sort(_render_stages.begin(), _render_stages.end(), CompareTextureStageSort());
+  std::sort(_render_ff_stages.begin(), _render_ff_stages.end(), CompareTextureStageSort());
 
   // We'd like to clear the _filtered map, in case the TextureStage priority
   // values have changed as well, but we can't do that here: it's too

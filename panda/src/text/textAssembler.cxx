@@ -42,7 +42,6 @@
 
 using std::max;
 using std::min;
-using std::move;
 using std::wstring;
 
 // This is the factor by which CT_small scales the character down.
@@ -539,6 +538,7 @@ assemble_text() {
   PlacedGlyphs::const_iterator pgi;
   for (pgi = placed_glyphs.begin(); pgi != placed_glyphs.end(); ++pgi) {
     const GlyphPlacement &placement = (*pgi);
+    nassertd(placement._properties != nullptr) continue;
 
     if (placement._properties != properties) {
       // Get a new set of properties for future glyphs.
@@ -1197,7 +1197,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
-          glyphs.push_back(move(quad._glyph));
+          glyphs.push_back(std::move(quad._glyph));
         }
       } else {
         // 64-bit vertex case.
@@ -1245,7 +1245,7 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
-          glyphs.push_back(move(quad._glyph));
+          glyphs.push_back(std::move(quad._glyph));
         }
       }
     }
@@ -1751,7 +1751,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     // it may involve multiple Geoms if we need to add cheesy accents or
     // ligatures.
     GlyphPlacement placement;
-    placement._glyph = move(glyph);
+    placement._glyph = std::move(glyph);
     placement._scale = glyph_scale;
     placement._xpos = xpos + x_offset;
     placement._ypos = properties.get_glyph_shift() + y_offset;
@@ -1773,7 +1773,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
                 PN_stdfloat underscore_start, PN_stdfloat underscore_end,
                 const TextProperties *underscore_properties) {
 
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3c();
   PT(GeomVertexData) vdata =
     new GeomVertexData("underscore", format, Geom::UH_static);
   vdata->unclean_set_num_rows(2);
@@ -1801,7 +1801,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
   // LVecBase4(0), RenderState::make_empty());
 
   GlyphPlacement placement;
-  placement._glyph = move(glyph);
+  placement._glyph = std::move(glyph);
   placement._xpos = 0;
   placement._ypos = 0;
   placement._scale = 1;
@@ -1843,10 +1843,10 @@ get_character_glyphs(int character, const TextProperties *properties,
   // Maybe we should remap the character to something else--e.g.  a small
   // capital.
   const UnicodeLatinMap::Entry *map_entry =
-    UnicodeLatinMap::look_up(character);
+    UnicodeLatinMap::look_up((char32_t)character);
   if (map_entry != nullptr) {
     if (properties->get_small_caps() &&
-        map_entry->_toupper_character != character) {
+        map_entry->_toupper_character != (char32_t)character) {
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);
       glyph_scale = properties->get_small_caps_scale();
@@ -1871,7 +1871,7 @@ get_character_glyphs(int character, const TextProperties *properties,
       got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
     }
 
-    if (!got_glyph && map_entry->_toupper_character != character) {
+    if (!got_glyph && map_entry->_toupper_character != (char32_t)character) {
       // If we still couldn't find it, try the uppercase equivalent.
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);
@@ -2458,7 +2458,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
     quad._dimensions += LVecBase4(offset[0], -offset[1], offset[0], -offset[1]);
     quad._glyph = _glyph;
 
-    quad_map[state->compose(_glyph->get_state())].push_back(move(quad));
+    quad_map[state->compose(_glyph->get_state())].push_back(std::move(quad));
   }
 }
 

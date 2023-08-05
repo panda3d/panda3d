@@ -352,9 +352,20 @@ choose_pixel_format(const FrameBufferProperties &properties,
           attrib_list[n++] = gl_version[1];
         }
       }
+      int flags = 0;
       if (gl_debug) {
+        flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
+      }
+      if (gl_forward_compatible) {
+        flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        if (gl_version.get_num_words() == 0 || gl_version[0] < 2) {
+          glxdisplay_cat.error()
+            << "gl-forward-compatible requires gl-version >= 3 0\n";
+        }
+      }
+      if (flags != 0) {
         attrib_list[n++] = GLX_CONTEXT_FLAGS_ARB;
-        attrib_list[n++] = GLX_CONTEXT_DEBUG_BIT_ARB;
+        attrib_list[n++] = flags;
       }
       attrib_list[n] = None;
       _context = _glXCreateContextAttribs(_display, _fbconfig, _share_context,

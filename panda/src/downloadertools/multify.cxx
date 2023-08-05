@@ -57,6 +57,7 @@ string dont_compress_str = "jpg,png,mp3,ogg";
 // Default text extensions.  May be overridden with -X.
 string text_ext_str = "txt";
 
+time_t source_date_epoch = (time_t)-1;
 bool got_record_timestamp_flag = false;
 bool record_timestamp_flag = true;
 
@@ -430,6 +431,12 @@ add_files(const vector_string &params) {
     needs_repack = true;
   }
 
+  if (multifile->get_record_timestamp() && source_date_epoch != (time_t)-1) {
+    if (multifile->get_timestamp() > source_date_epoch) {
+      multifile->set_timestamp(source_date_epoch);
+    }
+  }
+
   if (needs_repack) {
     if (!multifile->repack()) {
       cerr << "Failed to write " << multifile_name << ".\n";
@@ -530,6 +537,12 @@ kill_files(const vector_string &params) {
       multifile->remove_subfile(i);
     } else {
       ++i;
+    }
+  }
+
+  if (multifile->get_record_timestamp() && source_date_epoch != (time_t)-1) {
+    if (multifile->get_timestamp() > source_date_epoch) {
+      multifile->set_timestamp(source_date_epoch);
     }
   }
 
@@ -772,11 +785,25 @@ main(int argc, char **argv) {
   // argument if there is not one already.
   if (argc >= 2) {
     if (*argv[1] != '-' && *argv[1] != '\0') {
-      char *new_arg = (char *)PANDA_MALLOC_ARRAY(strlen(argv[1]) + 2);
+      size_t len = strlen(argv[1]);
+      char *new_arg = (char *)PANDA_MALLOC_ARRAY(len + 2);
       new_arg[0] = '-';
-      strcpy(new_arg + 1, argv[1]);
+      memcpy(new_arg + 1, argv[1], len);
+      new_arg[len + 1] = 0;
       argv[1] = new_arg;
     }
+  }
+
+#ifdef _MSC_VER
+  char source_date_epoch_str[64];
+  size_t source_date_epoch_size = 0;
+  if (getenv_s(&source_date_epoch_size, source_date_epoch_str,
+               sizeof(source_date_epoch_str), "SOURCE_DATE_EPOCH"), source_date_epoch_size > 1) {
+#else
+  const char *source_date_epoch_str = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch_str != nullptr && source_date_epoch_str[0] != 0) {
+#endif
+    source_date_epoch = (time_t)strtoll(source_date_epoch_str, nullptr, 10);
   }
 
   extern char *optarg;

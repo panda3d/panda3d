@@ -37,6 +37,6 @@ set_value(int n) {
  * Retreives a value that was previously stored.
  */
 INLINE int BasicSkel::
-get_value() {
+get_value() const {
   return _value;
 }

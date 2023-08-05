@@ -209,6 +209,29 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 }
 
 /**
+ * Removes the array with the given index from the GeomVertexData.
+ */
+INLINE void GeomVertexData::
+remove_array(size_t i) {
+  GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
+  writer.remove_array(i);
+}
+
+/**
+ * Inserts the indicated vertex data array into the list of arrays, which also
+ * modifies the format.  You should be careful that the new array has the same
+ * number of rows as the vertex data.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+INLINE void GeomVertexData::
+insert_array(size_t i, const GeomVertexArrayData *array) {
+  GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
+  writer.insert_array(i, array);
+}
+
+/**
  * Returns a const pointer to the TransformTable assigned to this data.
  * Vertices within the table will index into this table to indicate their
  * dynamic skinning information; this table is used when the vertex animation
@@ -582,7 +605,8 @@ CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept :
  */
 INLINE GeomVertexData::CData::
 CData() :
-  _usage_hint(UH_unspecified)
+  _usage_hint(UH_unspecified),
+  _format(nullptr)
 {
 }
 
@@ -591,8 +615,8 @@ CData() :
  */
 INLINE GeomVertexData::CData::
 CData(const GeomVertexFormat *format, GeomVertexData::UsageHint usage_hint) :
-  _format(format),
-  _usage_hint(usage_hint)
+  _usage_hint(usage_hint),
+  _format(format)
 {
   size_t num_arrays = format->get_num_arrays();
   for (size_t i = 0; i < num_arrays; ++i) {

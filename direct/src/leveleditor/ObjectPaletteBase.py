@@ -1,15 +1,22 @@
 import copy
 from . import ObjectGlobals as OG
 
+
 class ObjectGen:
     """ Base class for obj definitions """
+
     def __init__(self, name=''):
-       self.name = name
+        self.name = name
+
 
 class ObjectBase(ObjectGen):
     """ Base class for obj definitions """
-    def __init__(self, name='', createFunction = None, model = None, models= [], anims = [], animNames = [], animDict = {}, properties={},
-                 movable = True, actor = False, named=False, updateModelFunction = None, orderedProperties=[], propertiesMask={}):
+
+    def __init__(self, name='', createFunction=None, model=None, models=[],
+                 anims=[], animNames=[], animDict={}, properties={},
+                 movable=True, actor=False, named=False,
+                 updateModelFunction=None, orderedProperties=[],
+                 propertiesMask={}):
         ObjectGen.__init__(self, name)
         self.createFunction = createFunction
         self.model = model
@@ -27,14 +34,18 @@ class ObjectBase(ObjectGen):
         # to show/hide properties per editor mode
         self.propertiesMask = copy.deepcopy(propertiesMask)
 
+
 class ObjectCurve(ObjectBase):
     def __init__(self, *args, **kw):
         ObjectBase.__init__(self, *args, **kw)
-        self.properties['Degree'] =[OG.PROP_UI_COMBO,   # UI type
-                                    OG.PROP_INT,        # data type
-                                    ('base.le.objectMgr.updateCurve', {'val':OG.ARG_VAL, 'obj':OG.ARG_OBJ}),    # update function
-                                    3,                  # default value
-                                    [2, 3, 4]]          # value range
+        self.properties['Degree'] = [
+            OG.PROP_UI_COMBO,   # UI type
+            OG.PROP_INT,        # data type
+            ('base.le.objectMgr.updateCurve', {'val': OG.ARG_VAL, 'obj': OG.ARG_OBJ}), # update function
+            3,                  # default value
+            [2, 3, 4],          # value range
+        ]
+
 
 class ObjectPaletteBase:
     """
@@ -59,21 +70,21 @@ class ObjectPaletteBase:
         'item' is the object to be inserted, it can be either a group or obj.
         'parentName' is the name of parent under where this item will be inserted.
         """
-        if type(self.data) != dict:
-           return None
+        if not isinstance(self.data, dict):
+            return None
 
         if parentName is None:
-           parentName = self.rootName
+            parentName = self.rootName
 
         self.dataStruct[item.name] = parentName
         self.data[item.name] = item
         self.dataKeys.append(item.name)
 
-    def add(self, item, parentName = None):
-        if type(item) == str:
-           self.insertItem(ObjectGen(name = item), parentName)
+    def add(self, item, parentName=None):
+        if isinstance(item, str):
+            self.insertItem(ObjectGen(name=item), parentName)
         else:
-           self.insertItem(item, parentName)
+            self.insertItem(item, parentName)
 
     def addHidden(self, item):
         if hasattr(item, 'name'):
@@ -81,33 +92,31 @@ class ObjectPaletteBase:
 
     def deleteStruct(self, name, deleteItems):
         try:
-           item = self.data.pop(name)
-           for key in list(self.dataStruct.keys()):
-               if self.dataStruct[key] == name:
-                  node = self.deleteStruct(key, deleteItems)
-                  if node is not None:
-                     deleteItems[key] = node
-           return item
-        except:
-           return None
-        return None
+            item = self.data.pop(name)
+            for key in list(self.dataStruct.keys()):
+                if self.dataStruct[key] == name:
+                    node = self.deleteStruct(key, deleteItems)
+                    if node is not None:
+                        deleteItems[key] = node
+            return item
+        except Exception:
+            return None
 
     def delete(self, name):
         try:
-           deleteItems = {}
-           node = self.deleteStruct(name, deleteItems)
-           if node is not None:
-              deleteItems[name] = node
-           for key in list(deleteItems.keys()):
-               item = self.dataStruct.pop(key)
-        except:
-           return
-        return
+            deleteItems = {}
+            node = self.deleteStruct(name, deleteItems)
+            if node is not None:
+                deleteItems[name] = node
+            for key in list(deleteItems.keys()):
+                item = self.dataStruct.pop(key)
+        except Exception:
+            return
 
     def findItem(self, name):
         try:
             item = self.data[name]
-        except:
+        except Exception:
             return None
         return item
 
@@ -122,19 +131,19 @@ class ObjectPaletteBase:
     def rename(self, oldName, newName):
         #import pdb;set_trace()
         if oldName == newName:
-           return False
+            return False
         if newName == "":
-           return False
+            return False
         try:
             for key in list(self.dataStruct.keys()):
                 if self.dataStruct[key] == oldName:
-                   self.dataStruct[key] = newName
+                    self.dataStruct[key] = newName
 
             self.dataStruct[newName] = self.dataStruct.pop(oldName)
             item = self.data.pop(oldName)
             item.name = newName
             self.data[newName] = item
-        except:
+        except Exception:
             return False
         return True
 

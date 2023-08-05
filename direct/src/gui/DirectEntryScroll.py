@@ -1,10 +1,9 @@
 __all__ = ['DirectEntryScroll']
 
-from panda3d.core import *
+from panda3d.core import NodePath, OmniBoundingVolume, PGVirtualFrame
 from . import DirectGuiGlobals as DGG
-from .DirectScrolledFrame import *
-from .DirectFrame import *
-from .DirectEntry import *
+from .DirectFrame import DirectFrame
+
 
 class DirectEntryScroll(DirectFrame):
     def __init__(self, entry, parent = None, **kw):
@@ -12,7 +11,7 @@ class DirectEntryScroll(DirectFrame):
             ('pgFunc',         PGVirtualFrame,      None),
             ('relief', None, None),
             ('clipSize',     (-1, 1, -1, 1),        self.setClipSize),
-            )
+        )
 
         self.defineoptions(kw, optiondefs)
         DirectFrame.__init__(self, parent, **kw)
@@ -29,19 +28,42 @@ class DirectEntryScroll(DirectFrame):
            # frameSize = (-0.006, 3.2, -0.015, 0.036),
         # if you need to scale the entry scale it's parent instead
 
-        self.entry = entry
         self.canvas = NodePath(self.guiItem.getCanvasNode())
-        self.entry.reparentTo(self.canvas)
         self.canvas.setPos(0,0,0)
 
-        self.entry.bind(DGG.CURSORMOVE,self.cursorMove)
+        self.entry = None
+        if entry is not None:
+            self.entry = entry
+            self.entry.reparentTo(self.canvas)
+            self.entry.bind(DGG.CURSORMOVE, self.cursorMove)
 
         self.canvas.node().setBounds(OmniBoundingVolume())
         self.canvas.node().setFinal(1)
         self.resetCanvas()
 
+    def setEntry(self, entry):
+        """
+        Sets a DirectEntry element for this scroll frame. A DirectEntryScroll
+        can only hold one entry at a time, so make sure to not call this
+        function twice or call clearEntry before to make sure no entry
+        is already set.
+        """
+        assert self.entry is None, "An entry was already set for this DirectEntryScroll element"
+        self.entry = entry
+        self.entry.reparentTo(self.canvas)
 
+        self.entry.bind(DGG.CURSORMOVE, self.cursorMove)
 
+    def clearEntry(self):
+        """
+        detaches and unbinds the entry from the scroll frame and its
+        events. You'll be responsible for destroying it.
+        """
+        if self.entry is None:
+            return
+        self.entry.unbind(DGG.CURSORMOVE)
+        self.entry.detachNode()
+        self.entry = None
 
     def cursorMove(self, cursorX, cursorY):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
@@ -57,7 +79,6 @@ class DirectEntryScroll(DirectFrame):
 
         if abs(distanceToCenter) > (clipExtent * 0.5):
             self.moveToCenterCursor()
-
 
     def moveToCenterCursor(self):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
@@ -99,7 +120,6 @@ class DirectEntryScroll(DirectFrame):
         self.entry = None
         DirectFrame.destroy(self)
 
-
     def getCanvas(self):
         return self.canvas
 
@@ -114,4 +134,3 @@ class DirectEntryScroll(DirectFrame):
 
     def resetCanvas(self):
         self.canvas.setPos(0,0,0)
-

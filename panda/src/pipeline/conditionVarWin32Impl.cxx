@@ -13,8 +13,11 @@
 
 #include "selectThreadImpl.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 #include "conditionVarWin32Impl.h"
 
-#endif  // WIN32_VC
+// This function gets replaced by PStats to measure the time spent waiting.
+BOOL (__stdcall *ConditionVarWin32Impl::_wait_func)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG) = &SleepConditionVariableSRW;
+
+#endif  // _WIN32

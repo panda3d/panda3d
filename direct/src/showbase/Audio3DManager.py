@@ -4,7 +4,8 @@ __all__ = ['Audio3DManager']
 
 from panda3d.core import Vec3, VBase3, WeakNodePath, ClockObject
 from direct.task.TaskManagerGlobal import Task, taskMgr
-#
+
+
 class Audio3DManager:
 
     def __init__(self, audio_manager, listener_target = None, root = None,
@@ -12,8 +13,8 @@ class Audio3DManager:
         self.audio_manager = audio_manager
         self.listener_target = listener_target
 
-        if (root==None):
-            self.root = render
+        if root is None:
+            self.root = base.render
         else:
             self.root = root
 
@@ -28,14 +29,14 @@ class Audio3DManager:
         Use Audio3DManager.loadSfx to load a sound with 3D positioning enabled
         """
         sound = None
-        if (name):
-            sound=self.audio_manager.getSound(name, 1)
+        if name:
+            sound = self.audio_manager.getSound(name, 1)
         return sound
 
     def setDistanceFactor(self, factor):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         When you change this, don't forget that this effects the scale of setSoundMinDistance
         """
         self.audio_manager.audio3dSetDistanceFactor(factor)
@@ -43,7 +44,7 @@ class Audio3DManager:
     def getDistanceFactor(self):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         """
         return self.audio_manager.audio3dGetDistanceFactor()
 
@@ -330,4 +331,3 @@ class Audio3DManager:
     detach_listener = detachListener
     set_drop_off_factor = setDropOffFactor
     detach_sound = detachSound
-

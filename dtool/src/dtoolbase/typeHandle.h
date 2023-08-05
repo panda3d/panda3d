@@ -97,7 +97,7 @@ PUBLISHED:
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
 
-  EXTENSION(static TypeHandle make(PyTypeObject *classobj));
+  PY_EXTENSION(static TypeHandle make(PyTypeObject *classobj));
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;
@@ -121,8 +121,6 @@ PUBLISHED:
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = nullptr) const;
 
-  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
-
   size_t get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, size_t size);
   void dec_memory_usage(MemoryClass memory_class, size_t size);
@@ -137,10 +135,14 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
+  PY_EXTENSION(PyObject *__reduce__() const);
+  PY_EXTENSION(void __setstate__(PyObject *));
+
 public:
 #ifdef HAVE_PYTHON
-  PyObject *get_python_type() const;
-#endif
+  PyTypeObject *get_python_type() const;
+  PyObject *wrap_python(void *ptr, PyTypeObject *cast_from = nullptr) const;
+#endif // HAVE_PYTHON
 
   void *allocate_array(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);

@@ -1,15 +1,13 @@
-"""OnscreenImage module: contains the OnscreenImage class"""
+"""OnscreenImage module: contains the OnscreenImage class.
+
+See the :ref:`onscreenimage` page in the programming manual for explanation of
+this class.
+"""
 
 __all__ = ['OnscreenImage']
 
-from panda3d.core import *
+from panda3d.core import CardMaker, NodePath, Texture, TexturePool, VBase3
 from direct.showbase.DirectObject import DirectObject
-import sys
-
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
 
 
 class OnscreenImage(DirectObject, NodePath):
@@ -21,14 +19,15 @@ class OnscreenImage(DirectObject, NodePath):
                  parent = None,
                  sort = 0):
         """
-        Make a image node from string or a node path,
-        put it into the 2d sg and set it up with all the indicated parameters.
+        Make a image node from string or a `~panda3d.core.NodePath`, put
+        it into the 2-D scene graph and set it up with all the indicated
+        parameters.
 
-        The parameters are as follows:
+        Parameters:
 
           image: the actual geometry to display or a file name.
-                This may be omitted and specified later via setImage()
-                if you don't have it available.
+                 This may be omitted and specified later via setImage()
+                 if you don't have it available.
 
           pos: the x, y, z position of the geometry on the screen.
                This maybe a 3-tuple of floats or a vector.
@@ -49,8 +48,9 @@ class OnscreenImage(DirectObject, NodePath):
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
 
-        if parent == None:
-            parent = aspect2d
+        if parent is None:
+            from direct.showbase import ShowBaseGlobal
+            parent = ShowBaseGlobal.aspect2d
         self.setImage(image, parent = parent, sort = sort)
 
         # Adjust pose
@@ -89,7 +89,7 @@ class OnscreenImage(DirectObject, NodePath):
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            if transform == None:
+            if transform is None:
                 # If we're replacing a previous image, we throw away
                 # the new image's transform in favor of the original
                 # image's transform.
@@ -101,21 +101,22 @@ class OnscreenImage(DirectObject, NodePath):
         # Assign geometry
         if isinstance(image, NodePath):
             self.assign(image.copyTo(parent, sort))
-        elif isinstance(image, stringType) or \
-             isinstance(image, Texture):
+        elif isinstance(image, str) or isinstance(image, Texture):
             if isinstance(image, Texture):
                 # It's a Texture
                 tex = image
             else:
                 # It's a Texture file name
-                tex = loader.loadTexture(image)
+                tex = TexturePool.loadTexture(image)
+                if not tex:
+                    raise IOError('Could not load texture: %s' % (image))
             cm = CardMaker('OnscreenImage')
             cm.setFrame(-1, 1, -1, 1)
             self.assign(parent.attachNewNode(cm.generate(), sort))
             self.setTexture(tex)
-        elif type(image) == type(()):
+        elif isinstance(image, tuple):
             # Assume its a file+node name, extract texture from node
-            model = loader.loadModel(image[0])
+            model = base.loader.loadModel(image[0])
             if model:
                 node = model.find(image[1])
                 if node:
@@ -136,11 +137,10 @@ class OnscreenImage(DirectObject, NodePath):
             # Use option string to access setter function
             try:
                 setter = getattr(self, 'set' + option[0].upper() + option[1:])
-                if (((setter == self.setPos) or
-                     (setter == self.setHpr) or
-                     (setter == self.setScale)) and
-                    (isinstance(value, tuple) or
-                     isinstance(value, list))):
+                if (setter == self.setPos or
+                    setter == self.setHpr or
+                    setter == self.setScale) and \
+                   isinstance(value, (tuple, list)):
                     setter(*value)
                 else:
                     setter(value)

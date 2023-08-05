@@ -118,6 +118,7 @@ public:
   static bool is_handle(CPPType *type);
   static bool involves_unpublished(CPPType *type);
   static bool involves_protected(CPPType *type);
+  static bool involves_rvalue_reference(CPPType *type);
 
   static bool is_ostream(CPPType *type);
   static bool is_pointer_to_ostream(CPPType *type);

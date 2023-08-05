@@ -29,8 +29,8 @@ GeomVertexWriter(Thread *current_thread) :
  * object.
  */
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, Thread *current_thread) :
-  _vertex_data(vertex_data),
+GeomVertexWriter(PT(GeomVertexData) vertex_data, Thread *current_thread) :
+  _vertex_data(std::move(vertex_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -42,9 +42,9 @@ GeomVertexWriter(GeomVertexData *vertex_data, Thread *current_thread) :
  * data type.
  */
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
+GeomVertexWriter(PT(GeomVertexData) vertex_data, CPT_InternalName name,
                  Thread *current_thread) :
-  _vertex_data(vertex_data),
+  _vertex_data(std::move(vertex_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -56,9 +56,9 @@ GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
  * only.
  */
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexArrayData *array_data,
+GeomVertexWriter(PT(GeomVertexArrayData) array_data,
                  Thread *current_thread) :
-  _array_data(array_data),
+  _array_data(std::move(array_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -69,9 +69,9 @@ GeomVertexWriter(GeomVertexArrayData *array_data,
  * only.
  */
 INLINE GeomVertexWriter::
-GeomVertexWriter(GeomVertexArrayData *array_data, int column,
+GeomVertexWriter(PT(GeomVertexArrayData) array_data, int column,
                  Thread *current_thread) :
-  _array_data(array_data),
+  _array_data(std::move(array_data)),
   _current_thread(current_thread)
 {
   initialize();
@@ -1383,13 +1383,13 @@ inc_add_pointer() {
       _handle = nullptr;
       GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
       writer.check_array_writers();
-      writer.set_num_rows(std::max(write_row + 1, writer.get_num_rows()));
+      writer.set_num_rows((std::max)(write_row + 1, writer.get_num_rows()));
       _handle = writer.get_array_writer(_array);
 
     } else {
       // Otherwise, we can get away with modifying only the one array we're
       // using.
-      _handle->set_num_rows(std::max(write_row + 1, _handle->get_num_rows()));
+      _handle->set_num_rows((std::max)(write_row + 1, _handle->get_num_rows()));
     }
 
     set_pointer(write_row);

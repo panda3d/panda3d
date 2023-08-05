@@ -70,7 +70,7 @@ PUBLISHED:
   // limited add_childremove_child or inserterase interface.  The following
   // implements this.
 public:
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   typedef const PT(EggNode) *pointer;
   typedef const PT(EggNode) *const_pointer;
 #else
@@ -108,8 +108,8 @@ PUBLISHED:
   EggNode *get_first_child();
   EggNode *get_next_child();
 
-  EXTENSION(PyObject *get_children() const);
-  MAKE_PROPERTY(children, get_children);
+  PY_EXTENSION(PyObject *get_children() const);
+  PY_MAKE_PROPERTY(children, get_children);
 
   EggNode *add_child(EggNode *node);
   PT(EggNode) remove_child(EggNode *node);

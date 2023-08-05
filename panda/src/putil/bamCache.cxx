@@ -133,10 +133,16 @@ set_root(const Filename &root) {
   delete _index;
   _index = new BamCacheIndex;
   _index_stale_since = 0;
+
+  if (!vfs->is_directory(_root)) {
+    util_cat.error()
+      << "Unable to make directory " << _root << ", caching disabled.\n";
+    _active = false;
+    return;
+  }
+
   read_index();
   check_cache_size();
-
-  nassertv(vfs->is_directory(_root));
 }
 
 /**
@@ -676,21 +682,27 @@ do_read_index(const Filename &index_pathname) {
 
   DatagramInputFile din;
   if (!din.open(index_pathname)) {
-    util_cat.debug()
-      << "Could not read index file: " << index_pathname << "\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Could not read index file: " << index_pathname << "\n";
+    }
     return nullptr;
   }
 
   string head;
   if (!din.read_header(head, _bam_header.size())) {
-    util_cat.debug()
-      << index_pathname << " is not an index file.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << index_pathname << " is not an index file.\n";
+    }
     return nullptr;
   }
 
   if (head != _bam_header) {
-    util_cat.debug()
-      << index_pathname << " is not an index file.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << index_pathname << " is not an index file.\n";
+    }
     return nullptr;
   }
 
@@ -953,28 +965,12 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
  */
 string BamCache::
 hash_filename(const string &filename) {
-#ifdef HAVE_OPENSSL
-  // With OpenSSl, use the MD5 hash of the filename.
+  // Use the MD5 hash of the filename.
   HashVal hv;
   hv.hash_string(filename);
   ostringstream strm;
   hv.output_hex(strm);
   return strm.str();
-
-#else  // HAVE_OPENSSL
-  // Without OpenSSL, don't get fancy; just build a simple hash.
-  unsigned int hash = 0;
-  for (string::const_iterator si = filename.begin();
-       si != filename.end();
-       ++si) {
-    hash = (hash * 9109) + (unsigned int)(*si);
-  }
-
-  ostringstream strm;
-  strm << std::hex << std::setw(8) << std::setfill('0') << hash;
-  return strm.str();
-
-#endif  // HAVE_OPENSSL
 }
 
 /**

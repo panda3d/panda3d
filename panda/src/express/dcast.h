@@ -62,12 +62,12 @@ INLINE WantType *_dcast_ref(WantType *&, TypedObject *ptr);
 template<class WantType>
 INLINE const WantType *_dcast_ref(WantType *&, const TypedObject *ptr);
 
-#ifdef DO_DCAST
-// _dcast_verify performs the actual verification.
+// _dcast_verify performs the actual verification.  This is an empty function
+// when DO_DCAST is not set, but we still need to define it for ABI
+// compatibility reasons.
 EXPCL_PANDA_EXPRESS bool
 _dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr);
-#endif  // DO_DCAST
 
 #define DCAST_INTO_V(to_pointer, from_pointer) \
   { \

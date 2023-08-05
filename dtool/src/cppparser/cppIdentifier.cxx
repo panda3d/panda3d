@@ -87,6 +87,14 @@ add_name(const CPPNameComponent &name) {
 /**
  *
  */
+void CPPIdentifier::
+prepend(CPPIdentifier *ident) {
+  _names.insert(_names.begin(), ident->_names.begin(), ident->_names.end());
+}
+
+/**
+ *
+ */
 bool CPPIdentifier::
 operator == (const CPPIdentifier &other) const {
   if (_names.size() != other._names.size()) {
@@ -254,19 +262,23 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   }
 
   while (i + 1 < (int)_names.size() && scope != nullptr) {
-    CPPScope *next_scope = scope->find_scope(_names[i].get_name(), global_scope);
+    // Check for an explicitly specialized scope first.
+    CPPScope *next_scope = scope->find_scope(_names[i].get_name_with_templ(), global_scope);
     if (next_scope == nullptr) {
-      if (error_sink != nullptr) {
-        error_sink->error("Symbol " + _names[i].get_name() +
-                          " is not a known scope in " +
-                          scope->get_fully_scoped_name(),
-                          _loc);
+      next_scope = scope->find_scope(_names[i].get_name(), global_scope);
+      if (next_scope == nullptr) {
+        if (error_sink != nullptr) {
+          error_sink->error("Symbol " + _names[i].get_name() +
+                            " is not a known scope in " +
+                            scope->get_fully_scoped_name(),
+                            _loc);
+        }
+        return nullptr;
       }
-      return nullptr;
-    }
-    if (_names[i].has_templ()) {
-      next_scope = next_scope->instantiate(_names[i].get_templ(),
-                                           current_scope, global_scope);
+      if (_names[i].has_templ()) {
+        next_scope = next_scope->instantiate(_names[i].get_templ(),
+                                             current_scope, global_scope);
+      }
     }
     scope = next_scope;
     i++;

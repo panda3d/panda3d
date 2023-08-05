@@ -115,10 +115,13 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
     _XRRSetScreenConfig = x11_pipe->_XRRSetScreenConfig;
   }
 
-  _awaiting_configure = false;
+  _awaiting_configure_since = -1;
   _dga_mouse_enabled = false;
+  _raw_mouse_enabled = false;
   _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
+  _net_wm_ping = x11_pipe->_net_wm_ping;
+  _net_wm_state = x11_pipe->_net_wm_state;
 
   PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
@@ -130,32 +133,26 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
-  if (!_cursor_filenames.empty()) {
-    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
-    for (auto item : _cursor_filenames) {
-      XFreeCursor(_display, item.second);
-    }
-  }
 }
 
 /**
- * Returns the MouseData associated with the nth input device's pointer.  This
+ * Returns the PointerData associated with the nth input device's pointer.  This
  * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
  * mice, use the InputDeviceManager interface.
  */
-MouseData x11GraphicsWindow::
+PointerData x11GraphicsWindow::
 get_pointer(int device) const {
-  MouseData result;
+  PointerData result;
   {
     LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+    nassertr(device >= 0 && device < (int)_input_devices.size(), PointerData());
 
     result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
 
     // We recheck this immediately to get the most up-to-date value, but we
     // won't bother waiting for the lock if we can't.
-    if (device == 0 && !_dga_mouse_enabled && result._in_window &&
-        x11GraphicsPipe::_x_mutex.try_lock()) {
+    if (device == 0 && !_dga_mouse_enabled && !_raw_mouse_enabled &&
+        result._in_window && x11GraphicsPipe::_x_mutex.try_lock()) {
       XEvent event;
       if (_xwindow != None &&
           XQueryPointer(_display, _xwindow, &event.xbutton.root,
@@ -238,7 +235,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == nullptr) {
     return false;
   }
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     // Don't attempt to draw while we have just reconfigured the window and we
     // haven't got the notification back yet.
     return false;
@@ -308,11 +305,10 @@ process_events() {
   WindowProperties properties;
   bool changed_properties = false;
 
-  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
-    if (XFilterEvent(&event, None)) {
-      continue;
-    }
+  XPropertyEvent property_event;
+  bool got_net_wm_state_change = false;
 
+  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     if (got_keyrelease_event) {
       // If a keyrelease event is immediately followed by a matching keypress
       // event, that's just key repeat and we should treat the two events
@@ -323,26 +319,57 @@ process_events() {
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the repeated
-        // keys, not down-and-up messages.
-        handle_keystroke(event.xkey);
+        if (!XFilterEvent(&event, None)) {
+          // In particular, we only generate down messages for the repeated
+          // keys, not down-and-up messages.
+          handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we need
-        // that repeat for backspace.  Rethink later.
-        handle_keypress(event.xkey);
+          // We thought about not generating the keypress event, but we need
+          // that repeat for backspace.  Rethink later.
+          handle_keypress(event.xkey);
+        }
         continue;
 
       } else {
         // This keyrelease event is not immediately followed by a matching
         // keypress event, so it's a genuine release.
+        ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+        if (raw_button != ButtonHandle::none()) {
+          _input->raw_button_up(raw_button);
+        }
+
         handle_keyrelease(keyrelease_event);
       }
+    }
+
+    // Send out a raw key press event before we do XFilterEvent, which will
+    // filter out dead keys and such.
+    if (event.type == KeyPress) {
+      ButtonHandle raw_button = map_raw_button(event.xkey.keycode);
+      if (raw_button != ButtonHandle::none()) {
+        _input->raw_button_down(raw_button);
+      }
+    }
+
+    if (XFilterEvent(&event, None)) {
+      continue;
     }
 
     ButtonHandle button;
 
     switch (event.type) {
     case ReparentNotify:
+      break;
+
+    case PropertyNotify:
+      //std::cout << "PropertyNotify event: atom = " << event.xproperty.atom << std::endl;
+      if (event.xproperty.atom == _net_wm_state) {
+        // currently we're only interested in the net_wm_state type of
+        // changes and only need to gather property informations once at
+        // the end after the while loop
+        property_event = event.xproperty;
+        got_net_wm_state_change = true;
+      }
       break;
 
     case ConfigureNotify:
@@ -355,7 +382,7 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
         _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
       _input->button_down(button);
@@ -363,18 +390,49 @@ process_events() {
 
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
         _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
       _input->button_up(button);
       break;
 
     case MotionNotify:
-      if (_dga_mouse_enabled) {
-        PointerData md = _input->get_pointer();
-        _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
-      } else {
-        _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      if (!_raw_mouse_enabled) {
+        if (_dga_mouse_enabled) {
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
+        } else {
+          _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+        }
+      }
+      break;
+
+    case GenericEvent:
+      if (_raw_mouse_enabled) {
+        XGenericEventCookie *cookie = &event.xcookie;
+        XGetEventData(_display, cookie);
+
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+
+        if (cookie->evtype == XI_RawMotion &&
+            cookie->extension == x11_pipe->_xi_opcode) {
+          const XIRawEvent *raw_event = (const XIRawEvent *)cookie->data;
+          const double *values = raw_event->raw_values;
+
+          double x = 0, y = 0;
+          if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
+            x = values[0];
+          }
+          if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
+            y = values[1];
+          }
+
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+        }
+
+        XFreeEventData(_display, cookie);
       }
       break;
 
@@ -392,7 +450,7 @@ process_events() {
       break;
 
     case EnterNotify:
-      if (_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
         PointerData md = _input->get_pointer();
         _input->set_pointer_in_window(md.get_x(), md.get_y());
       } else {
@@ -429,7 +487,8 @@ process_events() {
       break;
 
     case ClientMessage:
-      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
+      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window &&
+          event.xany.window == _xwindow) {
         // This is a message from the window manager indicating that the user
         // has requested to close the window.
         string close_request_event = get_close_request_event();
@@ -448,6 +507,13 @@ process_events() {
           system_changed_properties(properties);
         }
       }
+      else if ((Atom)(event.xclient.data.l[0]) == _net_wm_ping &&
+               event.xclient.window == _xwindow) {
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+        event.xclient.window = x11_pipe->get_root();
+        XSendEvent(_display, x11_pipe->get_root(), False, SubstructureRedirectMask | SubstructureNotifyMask, &event);
+      }
       break;
 
     case DestroyNotify:
@@ -465,7 +531,14 @@ process_events() {
 
   if (got_configure_event) {
     // Now handle the last configure event we found.
-    _awaiting_configure = false;
+    if (x11display_cat.is_debug() && _awaiting_configure_since != -1) {
+      unsigned long elapsed = (unsigned long)(clock() - _awaiting_configure_since) / (CLOCKS_PER_SEC / 10000);
+      x11display_cat.debug()
+        << "Received ConfigureNotify event after "
+        << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+    }
+
+    _awaiting_configure_since = -1;
 
     // Is this the inner corner or the outer corner?  The Xlib docs say it
     // should be the outer corner, but it appears to be the inner corner on my
@@ -507,10 +580,22 @@ process_events() {
 
     changed_properties = true;
   }
+  else if (_awaiting_configure_since != -1) {
+    unsigned long elapsed = (clock() - _awaiting_configure_since);
+    if (elapsed > CLOCKS_PER_SEC / 10) {
+      // Accept that we're never going to get that configure notify event.
+      if (x11display_cat.is_debug()) {
+        elapsed /= (CLOCKS_PER_SEC / 10000);
+        x11display_cat.debug()
+          << "Giving up on waiting for ConfigureNotify event after "
+          << (elapsed / 10) << "." << (elapsed % 10) << " ms\n";
+      }
+      _awaiting_configure_since = -1;
+    }
+  }
 
-  if (properties.has_foreground() && (
-        _properties.get_mouse_mode() == WindowProperties::M_confined ||
-        _dga_mouse_enabled)) {
+  if (properties.has_foreground() &&
+      (_properties.get_mouse_mode() != WindowProperties::M_absolute)) {
        x11GraphicsPipe *x11_pipe;
        DCAST_INTO_V(x11_pipe, _pipe);
 
@@ -525,17 +610,56 @@ process_events() {
         XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
                     _xwindow, cursor, CurrentTime);
         if (_dga_mouse_enabled) {
-          x11_pipe->enable_relative_mouse();
+          x11_pipe->enable_dga_mouse();
         }
       }
       else {
         // window is leaving the foreground, ungrab the pointer
         if (_dga_mouse_enabled) {
-          x11_pipe->disable_relative_mouse();
+          x11_pipe->disable_dga_mouse();
         } else if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
           XUngrabPointer(_display, CurrentTime);
         }
       }
+  }
+
+  if (got_net_wm_state_change) {
+    // some wm state properties have been changed, check their values
+    // once in this part instead of multiple times in the while loop
+
+    // Check if this window is maximized or not
+    bool is_maximized = false;
+    Atom wmState = property_event.atom;
+    Atom type;
+    int format;
+    unsigned long nItem, bytesAfter;
+    unsigned char *new_window_properties = NULL;
+    // gather all properties from the active dispplay and window
+    XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
+    if (nItem > 0) {
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      // run through all found items
+      for (unsigned long iItem = 0; iItem < nItem; ++iItem) {
+        unsigned long item = reinterpret_cast<unsigned long *>(new_window_properties)[iItem];
+        // check if the item is one of the maximized states
+        if (item == x11_pipe->_net_wm_state_maximized_horz ||
+            item == x11_pipe->_net_wm_state_maximized_vert) {
+          // The window was maximized
+          is_maximized = true;
+        }
+      }
+    }
+
+    // Debug entry
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "set maximized to: " << is_maximized << "\n";
+    }
+
+    // Now make sure the property will get stored correctly
+    properties.set_maximized(is_maximized);
+    changed_properties = true;
   }
 
   if (changed_properties) {
@@ -545,6 +669,11 @@ process_events() {
   if (got_keyrelease_event) {
     // This keyrelease event is not immediately followed by a matching
     // keypress event, so it's a genuine release.
+    ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+    if (raw_button != ButtonHandle::none()) {
+      _input->raw_button_up(raw_button);
+    }
+
     handle_keyrelease(keyrelease_event);
   }
 }
@@ -589,7 +718,13 @@ set_properties_now(WindowProperties &properties) {
       // OK, first figure out which CRTC the window is on.  It may be on more
       // than one, actually, so grab a point in the center in order to figure
       // out which one it's more-or-less mostly on.
-      LPoint2i center = _properties.get_origin() + _properties.get_size() / 2;
+      LPoint2i center(0, 0);
+      if (_properties.has_origin()) {
+        center = _properties.get_origin();
+        if (_properties.has_size()) {
+          center += _properties.get_size() / 2;
+        }
+      }
       int x, y, width, height;
       x11_pipe->find_fullscreen_crtc(center, x, y, width, height);
 
@@ -628,7 +763,7 @@ set_properties_now(WindowProperties &properties) {
         // We may need to change the screen resolution.  The code below is
         // suboptimal; in the future, we probably want to only touch the CRTC
         // that the window is on.
-        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow);
+        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow ? _xwindow : x11_pipe->get_root());
         SizeID old_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         SizeID new_size_id = (SizeID) -1;
         int num_sizes = 0;
@@ -733,6 +868,12 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fullscreen();
   }
 
+  // Same for maximized.
+  if (properties.has_maximized()) {
+    _properties.set_maximized(properties.get_maximized());
+    properties.clear_maximized();
+  }
+
   // The size and position of an already-open window are changed via explicit
   // X calls.  These may still get intercepted by the window manager.  Rather
   // than changing _properties immediately, we'll wait for the ConfigureNotify
@@ -741,12 +882,15 @@ set_properties_now(WindowProperties &properties) {
   int value_mask = 0;
 
   if (_properties.get_fullscreen()) {
-    changes.x = 0;
-    changes.y = 0;
-    value_mask |= CWX | CWY;
-    properties.clear_origin();
-
-  } else if (properties.has_origin()) {
+    if (_properties.get_x_origin() != 0 ||
+        _properties.get_y_origin() != 0) {
+      changes.x = 0;
+      changes.y = 0;
+      value_mask |= CWX | CWY;
+      properties.clear_origin();
+    }
+  }
+  else if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;
@@ -844,8 +988,12 @@ set_properties_now(WindowProperties &properties) {
     case WindowProperties::M_absolute:
       XUngrabPointer(_display, CurrentTime);
       if (_dga_mouse_enabled) {
-        x11_pipe->disable_relative_mouse();
+        x11_pipe->disable_dga_mouse();
         _dga_mouse_enabled = false;
+      }
+      if (_raw_mouse_enabled) {
+        x11_pipe->disable_raw_mouse();
+        _raw_mouse_enabled = false;
       }
       _properties.set_mouse_mode(WindowProperties::M_absolute);
       properties.clear_mouse_mode();
@@ -865,13 +1013,16 @@ set_properties_now(WindowProperties &properties) {
               GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
             x11display_cat.error() << "Failed to grab pointer!\n";
           } else {
-            x11_pipe->enable_relative_mouse();
+            if (x11_pipe->enable_dga_mouse()) {
+              _dga_mouse_enabled = true;
+            } else {
+              _raw_mouse_enabled = _raw_mouse_enabled || x11_pipe->enable_raw_mouse();
+            }
 
             _properties.set_mouse_mode(WindowProperties::M_relative);
             properties.clear_mouse_mode();
-            _dga_mouse_enabled = true;
 
-            // Get the real mouse position, so we can addsubtract our relative
+            // Get the real mouse position, so we can add/subtract our relative
             // coordinates later.
             XEvent event;
             XQueryPointer(_display, _xwindow, &event.xbutton.root,
@@ -879,10 +1030,6 @@ set_properties_now(WindowProperties &properties) {
               &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
             _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
           }
-        } else {
-          x11display_cat.info()
-            << "XF86DGA extension not available, cannot enable relative mouse mode\n";
-          _dga_mouse_enabled = false;
         }
       }
       break;
@@ -893,8 +1040,12 @@ set_properties_now(WindowProperties &properties) {
         DCAST_INTO_V(x11_pipe, _pipe);
 
         if (_dga_mouse_enabled) {
-          x11_pipe->disable_relative_mouse();
+          x11_pipe->disable_dga_mouse();
           _dga_mouse_enabled = false;
+        }
+        if (_raw_mouse_enabled) {
+          x11_pipe->disable_raw_mouse();
+          _raw_mouse_enabled = false;
         }
         X11_Cursor cursor = None;
         if (_properties.get_cursor_hidden()) {
@@ -919,24 +1070,8 @@ set_properties_now(WindowProperties &properties) {
     XReconfigureWMWindow(_display, _xwindow, _screen, value_mask, &changes);
 
     // Don't draw anything until this is done reconfiguring.
-    _awaiting_configure = true;
+    _awaiting_configure_since = clock();
   }
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_absolute() {
-  // unused: remove in 1.10!
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_relative() {
-  // unused: remove in 1.10!
 }
 
 /**
@@ -981,6 +1116,11 @@ close_window() {
     _orig_size_id = -1;
   }
 
+  for (auto item : _cursor_filenames) {
+    XFreeCursor(_display, item.second);
+  }
+  _cursor_filenames.clear();
+
   GraphicsWindow::close_window();
 }
 
@@ -1010,34 +1150,6 @@ open_window() {
   // Make sure we are not making X11 calls from other threads.
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
-  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
-    XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
-    if (_orig_size_id == (SizeID) -1) {
-      _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
-    }
-    int num_sizes, new_size_id = -1;
-    XRRScreenSize *xrrs;
-    xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
-    for (int i = 0; i < num_sizes; ++i) {
-      if (xrrs[i].width == _properties.get_x_size() &&
-          xrrs[i].height == _properties.get_y_size()) {
-        new_size_id = i;
-      }
-    }
-    if (new_size_id == -1) {
-      x11display_cat.error()
-        << "Videocard has no supported display resolutions at specified res ("
-        << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
-      _orig_size_id = -1;
-      return false;
-    }
-    if (new_size_id != _orig_size_id) {
-      _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
-    } else {
-      _orig_size_id = -1;
-    }
-  }
-
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != nullptr) {
@@ -1064,7 +1176,8 @@ open_window() {
     KeyPressMask | KeyReleaseMask |
     EnterWindowMask | LeaveWindowMask |
     PointerMotionMask |
-    FocusChangeMask | StructureNotifyMask;
+    FocusChangeMask | StructureNotifyMask |
+    PropertyChangeMask;
 
   // Initialize window attributes
   XSetWindowAttributes wa;
@@ -1096,17 +1209,41 @@ open_window() {
 
   set_wm_properties(_properties, false);
 
-  // We don't specify any fancy properties of the XIC.  It would be nicer if
-  // we could support fancy IM's that want preedit callbacks, etc., but that
-  // can wait until we have an X server that actually supports these to test
-  // it on.
+  // Initialize the input context, which (if enabled) will enable us to capture
+  // candidate strings and display them inside Panda3D rather than via an
+  // external popup window.
   XIM im = x11_pipe->get_im();
   _ic = nullptr;
   if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       nullptr);
+    if (ime_aware) {
+      XIMCallback start_callback;
+      start_callback.client_data = (XPointer)this;
+      start_callback.callback = (XIMProc)xim_preedit_start;
+      XIMCallback draw_callback;
+      draw_callback.client_data = (XPointer)this;
+      draw_callback.callback = (XIMProc)xim_preedit_draw;
+      XIMCallback caret_callback;
+      caret_callback.client_data = (XPointer)this;
+      caret_callback.callback = (XIMProc)xim_preedit_caret;
+      XIMCallback done_callback;
+      done_callback.client_data = (XPointer)this;
+      done_callback.callback = (XIMProc)xim_preedit_done;
+      XVaNestedList preedit_attributes = XVaCreateNestedList(
+          0,
+          XNPreeditStartCallback, &start_callback,
+          XNPreeditDrawCallback, &draw_callback,
+          XNPreeditCaretCallback, &caret_callback,
+          XNPreeditDoneCallback, &done_callback,
+          nullptr);
+      _ic = XCreateIC(im,
+                      XNInputStyle, XIMPreeditCallbacks | XIMStatusNothing,
+                      XNClientWindow, _xwindow,
+                      XNPreeditAttributes, preedit_attributes,
+                      nullptr);
+    } else {
+      _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                      XNClientWindow, _xwindow, nullptr);
+    }
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1120,6 +1257,15 @@ open_window() {
     // Note that if the cursor fails to load, cursor will be None
     X11_Cursor cursor = get_cursor(_properties.get_cursor_filename());
     XDefineCursor(_display, _xwindow, cursor);
+  }
+
+  // Set _NET_STARTUP_ID if we've got it, so that the window manager knows
+  // this window belongs to a particular launch request.
+  const std::string &startup_id = x11_pipe->get_startup_id();
+  if (!startup_id.empty() && _parent_window_handle == nullptr) {
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_startup_id,
+                    x11_pipe->_utf8_string, 8, PropModeReplace,
+                    (unsigned char *)startup_id.c_str(), startup_id.size());
   }
 
   XMapWindow(_display, _xwindow);
@@ -1139,6 +1285,12 @@ open_window() {
   // And tell our parent window that we're now its child.
   if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
+  }
+
+  // Now that we've opened a window, tell the window manager that the
+  // application has finished starting up.
+  if (!startup_id.empty() && x_send_startup_notification) {
+    x11_pipe->send_startup_notification();
   }
 
   return true;
@@ -1233,6 +1385,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   };
   SetAction set_data[max_set_data];
   int next_set_data = 0;
+
+  if (properties.has_maximized()) {
+    if (properties.get_maximized()) {
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_vert;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 1);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_horz;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 1);
+    } else {
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 0);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 0);
+    }
+  }
 
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
@@ -1337,9 +1501,6 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     // mapped.  To do this, we need to send a client message to the root
     // window for each change.
 
-    x11GraphicsPipe *x11_pipe;
-    DCAST_INTO_V(x11_pipe, _pipe);
-
     for (int i = 0; i < next_set_data; ++i) {
       XClientMessageEvent event;
       memset(&event, 0, sizeof(event));
@@ -1376,6 +1537,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // X server if the user requests a window close.
   Atom protocols[] = {
     _wm_delete_window,
+    _net_wm_ping,
   };
 
   XSetWMProtocols(_display, _xwindow, protocols,
@@ -1454,11 +1616,128 @@ open_raw_mice() {
 }
 
 /**
+ *
+ */
+int x11GraphicsWindow::
+handle_preedit_start() {
+  _preedit_state = new PreeditState;
+
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit started\n";
+  }
+
+  return sizeof(_preedit_state->_buffer) / sizeof(wchar_t);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_draw(XIMPreeditDrawCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.text != nullptr) {
+    // Replace characters in the preedit buffer.
+    int added_chars = data.text->length - data.chg_length;
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length) + data.text->length);
+    state._length += added_chars;
+
+    if (added_chars != 0) {
+      if (state._highlight_start > data.chg_first) {
+        state._highlight_start = std::max(data.chg_first, state._highlight_start + added_chars);
+      }
+      if (state._highlight_end > data.chg_first) {
+        state._highlight_end = std::max(data.chg_first, state._highlight_end + added_chars);
+      }
+    }
+
+    if (data.text->encoding_is_wchar) {
+      memcpy(state._buffer + data.chg_first, data.text->string.wide_char, data.text->length * sizeof(wchar_t));
+    } else {
+      mbstowcs(state._buffer + data.chg_first, data.text->string.multi_byte, data.text->length);
+    }
+
+    if (data.text->feedback != nullptr) {
+      // Update the highlighted region.
+      for (int i = 0; i < data.text->length; ++i) {
+        if (data.text->feedback[i] & XIMReverse) {
+          if (state._highlight_end > state._highlight_start) {
+            state._highlight_start = std::min(state._highlight_start, data.chg_first + i);
+            state._highlight_end = std::max(state._highlight_end, data.chg_first + i + 1);
+          } else {
+            state._highlight_start = data.chg_first + i;
+            state._highlight_end = data.chg_first + i + 1;
+          }
+        }
+        else if (state._highlight_end > state._highlight_start) {
+          if (state._highlight_start == data.chg_first + i) {
+            ++state._highlight_start;
+          }
+          if (state._highlight_end == data.chg_first + i + 1) {
+            --state._highlight_end;
+          }
+          if (state._highlight_end <= state._highlight_start) {
+            state._highlight_start = 0;
+            state._highlight_end = 0;
+          }
+        }
+      }
+    }
+  } else {
+    // Delete characters from the preedit buffer.
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length));
+    state._length -= data.chg_length;
+
+    if (state._highlight_start > data.chg_first) {
+      state._highlight_start = std::max(data.chg_first, state._highlight_start - data.chg_length);
+    }
+    if (state._highlight_end > data.chg_first) {
+      state._highlight_end = std::max(data.chg_first, state._highlight_end - data.chg_length);
+    }
+  }
+  _input->candidate(std::wstring(state._buffer, state._length),
+                    state._highlight_start, state._highlight_end, data.caret);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_caret(XIMPreeditCaretCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.direction == XIMAbsolutePosition) {
+    _input->candidate(std::wstring(state._buffer, state._length),
+                      state._highlight_start, state._highlight_end, data.position);
+  }
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_done() {
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit done\n";
+  }
+  delete _preedit_state;
+  _preedit_state = nullptr;
+}
+
+/**
  * Generates a keystroke corresponding to the indicated X KeyPress event.
  */
 void x11GraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -1493,7 +1772,7 @@ handle_keystroke(XKeyEvent &event) {
  */
 void x11GraphicsWindow::
 handle_keypress(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -1514,13 +1793,6 @@ handle_keypress(XKeyEvent &event) {
     }
     _input->button_down(button);
   }
-
-  if (event.keycode >= 9 && event.keycode <= 135) {
-    ButtonHandle raw_button = map_raw_button(event.keycode);
-    if (raw_button != ButtonHandle::none()) {
-      _input->raw_button_down(raw_button);
-    }
-  }
 }
 
 /**
@@ -1528,7 +1800,7 @@ handle_keypress(XKeyEvent &event) {
  */
 void x11GraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -1548,13 +1820,6 @@ handle_keyrelease(XKeyEvent &event) {
       _input->button_up(KeyboardButton::meta());
     }
     _input->button_up(button);
-  }
-
-  if (event.keycode >= 9 && event.keycode <= 135) {
-    ButtonHandle raw_button = map_raw_button(event.keycode);
-    if (raw_button != ButtonHandle::none()) {
-      _input->raw_button_up(raw_button);
-    }
   }
 }
 
@@ -1982,7 +2247,7 @@ map_raw_button(KeyCode key) const {
   // In any case, this means we can use the same mapping as our raw
   // input code, which uses evdev directly.
   int index = key - 8;
-  if (index >= 0) {
+  if (index > 0 && index < 128) {
     return EvdevInputDevice::map_button(index);
   }
 #endif
@@ -2004,6 +2269,8 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::wheel_left();
   } else if (index == x_wheel_right_button) {
     return MouseButton::wheel_right();
+  } else if (index >= 8) {
+    return MouseButton::button(index - 5);
   } else {
     return MouseButton::button(index - 1);
   }
@@ -2022,6 +2289,13 @@ get_keyboard_map() const {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   for (int k = 9; k <= 135; ++k) {
+    if (k >= 78 && k <= 91) {
+      // Ignore numpad keys for now.  These are not mapped to separate button
+      // handles in Panda, so we don't want their mappings to conflict with
+      // the regular numeric keys.
+      continue;
+    }
+
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
       continue;
@@ -2029,11 +2303,66 @@ get_keyboard_map() const {
 
     KeySym sym = XkbKeycodeToKeysym(_display, k, 0, 0);
     ButtonHandle button = map_button(sym);
-    if (button == ButtonHandle::none()) {
+    std::string label;
+
+    // Compose a label for some keys; I have not yet been able to find an API
+    // that does this effectively.
+    if (sym >= XK_exclam && sym <= XK_asciitilde) {
+      label = toupper((char)sym);
+    }
+    else if (sym >= XK_F1 && sym <= XK_F35) {
+      label = "F" + format_string(sym - XK_F1 + 1);
+    }
+    else if (sym > 0x1000000 && sym < 0x1110000) {
+      // Unicode code point.  Encode as UTF-8.
+      char32_t ch = sym & 0x0ffffff;
+      if ((ch & ~0x7f) == 0) {
+        label = string(1, (char)ch);
+      }
+      else if ((ch & ~0x7ff) == 0) {
+        label =
+          string(1, (char)((ch >> 6) | 0xc0)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+      else if ((ch & ~0xffff) == 0) {
+        label =
+          string(1, (char)((ch >> 12) | 0xe0)) +
+          string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+      else {
+        label =
+          string(1, (char)((ch >> 18) | 0xf0)) +
+          string(1, (char)(((ch >> 12) & 0x3f) | 0x80)) +
+          string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+    }
+    else if ((sym >= XK_exclamdown && sym <= XK_umacron)
+          || (sym >= XK_OE && sym <= XK_Ydiaeresis)
+          || (sym >= XK_Serbian_dje && sym <= XK_Cyrillic_HARDSIGN)
+          || (sym >= XK_kana_fullstop && sym <= XK_semivoicedsound)
+          || (sym >= XK_Arabic_comma && sym <= XK_Arabic_sukun)
+          || (sym >= XK_Greek_ALPHAaccent && sym <= XK_Greek_omega)
+          || (sym >= XK_hebrew_doublelowline && sym <= XK_hebrew_taw)
+          || (sym >= XK_Thai_kokai && sym <= XK_Thai_lekkao)
+          || (sym >= XK_Hangul_Kiyeog && sym <= XK_Hangul_J_YeorinHieuh)
+          || sym == XK_EuroSign
+          || sym == XK_Korean_Won) {
+      // A non-unicode-based keysym.  Translate this to the label.
+      char buffer[255];
+      int nbytes = XkbTranslateKeySym(_display, &sym, 0, buffer, 255, 0);
+      if (nbytes > 0) {
+        label.assign(buffer, nbytes);
+      }
+    }
+
+    if (button == ButtonHandle::none() && label.empty()) {
+      // No label and no mapping; this is useless.
       continue;
     }
 
-    map->map_button(raw_button, button);
+    map->map_button(raw_button, button, label);
   }
 
   return map;
@@ -2047,8 +2376,11 @@ Bool x11GraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
 
-  // We accept any event that is sent to our window.
-  return (event->xany.window == self->_xwindow);
+  // We accept any event that is sent to our window.  However, we have to let
+  // raw mouse events through, since they're not associated with any window.
+  return (event->xany.window == self->_xwindow ||
+    (event->type == GenericEvent && self->_raw_mouse_enabled)) ||
+    (event->type == ClientMessage);
 }
 
 /**
@@ -2363,4 +2695,44 @@ cleanup:
   delete[] andBmp;
 
   return ret;
+}
+
+/**
+ *
+ */
+int x11GraphicsWindow::
+xim_preedit_start(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  return window->handle_preedit_start();
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_draw(XIC ic, XPointer client_data,
+                 XIMPreeditDrawCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_draw(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_caret(XIC ic, XPointer client_data,
+                  XIMPreeditCaretCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_caret(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  window->handle_preedit_done();
 }

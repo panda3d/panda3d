@@ -32,7 +32,9 @@ public:
 PUBLISHED:
   INLINE explicit StreamWriter(std::ostream *out, bool owns_stream);
   INLINE StreamWriter(const StreamWriter &copy);
+  INLINE StreamWriter(StreamWriter &&from) noexcept;
   INLINE void operator = (const StreamWriter &copy);
+  INLINE void operator = (StreamWriter &&from) noexcept;
   INLINE ~StreamWriter();
 
   INLINE std::ostream *get_ostream() const;
@@ -68,7 +70,7 @@ PUBLISHED:
   BLOCKING INLINE void add_fixed_string(const std::string &str, size_t size);
 
   BLOCKING void pad_bytes(size_t size);
-  EXTENSION(void append_data(PyObject *data));
+  PY_EXTENSION(void append_data(PyObject *data));
 
   BLOCKING INLINE void flush();
 
@@ -81,14 +83,8 @@ public:
 private:
   std::ostream *_out;
   bool _owns_stream;
-
-#ifdef HAVE_PYTHON
-PUBLISHED:
-  // Python 2 needs this for printing to work correctly.
-  int softspace;
-#endif
 };
 
 #include "streamWriter.I"
 
-#endif
+#endif // !STREAMWRITER_H

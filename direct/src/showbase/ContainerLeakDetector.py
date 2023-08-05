@@ -1,29 +1,29 @@
+from __future__ import annotations
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import makeFlywheelGen
+import direct.showbase.DConfig as config
+from direct.showbase.PythonUtil import makeFlywheelGen, flywheel
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
+from direct.showbase.PythonUtil import getBase, uniqueName, ScratchPad, nullGen
 from direct.showbase.Job import Job
-import types, weakref, random, sys
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+import types
+import weakref
+import random
+import builtins
 
-if sys.version_info >= (3, 0):
-    import builtins as __builtin__
 
-    intTypes = (int,)
-    deadEndTypes = (bool, types.BuiltinFunctionType,
-                    types.BuiltinMethodType, complex,
-                    float, int,
-                    type(None), type(NotImplemented),
-                    type, types.CodeType, types.FunctionType,
-                    bytes, str, tuple)
-else:
-    import __builtin__
-
-    intTypes = (int, long)
-    deadEndTypes = (types.BooleanType, types.BuiltinFunctionType,
-                    types.BuiltinMethodType, types.ComplexType,
-                    types.FloatType, types.IntType, types.LongType,
-                    types.NoneType, types.NotImplementedType,
-                    types.TypeType, types.CodeType, types.FunctionType,
-                    types.StringType, types.UnicodeType, types.TupleType)
+deadEndTypes = frozenset((
+    types.BuiltinFunctionType, types.BuiltinMethodType,
+    types.CodeType, types.FunctionType,
+    types.GeneratorType, types.CoroutineType,
+    types.AsyncGeneratorType,
+    bool, complex, float, int, type,
+    bytes, str, list, tuple,
+    type(None), type(NotImplemented)
+))
 
 
 def _createContainerLeak():
@@ -34,6 +34,7 @@ def _createContainerLeak():
         # use tuples as keys since they can't be weakref'd, and use an instance
         # since it can't be repr/eval'd
         # that will force the leak detector to hold a normal 'non-weak' reference
+
         class LeakKey:
             pass
         base.leakContainer[(LeakKey(),)] = {}
@@ -48,13 +49,17 @@ def _createContainerLeak():
             return task.done
     leakContainer()
 
+
 def _createTaskLeak():
     leakTaskName = uniqueName('leakedTask')
     leakDoLaterName = uniqueName('leakedDoLater')
+
     def nullTask(task=None):
         return task.cont
+
     def nullDoLater(task=None):
         return task.done
+
     def leakTask(task=None, leakTaskName=leakTaskName):
         base = getBase()
         taskMgr.add(nullTask, uniqueName(leakTaskName))
@@ -64,8 +69,10 @@ def _createTaskLeak():
             return task.done
     leakTask()
 
+
 class NoDictKey:
     pass
+
 
 class Indirection:
     """
@@ -76,6 +83,7 @@ class Indirection:
     TODO: store string components that are duplicates of strings in the actual system so that
     Python will keep one copy and reduce memory usage
     """
+
     def __init__(self, evalStr=None, dictKey=NoDictKey):
         # if this is a dictionary lookup, pass dictKey instead of evalStr
         self.evalStr = evalStr
@@ -90,7 +98,7 @@ class Indirection:
             try:
                 keyEval = eval(keyRepr)
                 useEval = True
-            except:
+            except Exception:
                 pass
             if useEval:
                 # check to make sure the eval succeeded
@@ -115,6 +123,7 @@ class Indirection:
 
     def acquire(self):
         self._refCount += 1
+
     def release(self):
         self._refCount -= 1
         if self._refCount == 0:
@@ -136,7 +145,7 @@ class Indirection:
     def dereferenceDictKey(self, parentDict):
         # look ourselves up in parentDict
         key = self._getNonWeakDictKey()
-        # objects in __builtin__ will have parentDict==None
+        # objects in builtins will have parentDict==None
         if parentDict is None:
             return key
         return parentDict[key]
@@ -165,6 +174,7 @@ class Indirection:
     def __repr__(self):
         return self.getString()
 
+
 class ObjectRef:
     """
     stores a reference to a container in a way that does not prevent garbage
@@ -185,7 +195,7 @@ class ObjectRef:
 
         # make sure we're not storing a reference to the actual object,
         # that could cause a memory leak
-        assert type(objId) in intTypes
+        assert type(objId) is int
         # prevent cycles (i.e. base.loader.base.loader)
         assert not self.goesThrough(objId=objId)
 
@@ -206,7 +216,7 @@ class ObjectRef:
 
     def goesThroughGen(self, obj=None, objId=None):
         if obj is None:
-            assert type(objId) in intTypes
+            assert type(objId) is int
         else:
             objId = id(obj)
         o = None
@@ -253,9 +263,9 @@ class ObjectRef:
             # eval('curObj.foo.bar.someDict')
             evalStr = 'curObj%s' % evalStr
         else:
-            # this eval is not based off of curObj, use the global__builtin__ namespace
-            # put __builtin__ at the start if it's not already there
-            bis = '__builtin__'
+            # this eval is not based off of curObj, use the globalbuiltins namespace
+            # put builtins at the start if it's not already there
+            bis = 'builtins'
             if evalStr[:len(bis)] != bis:
                 evalStr = '%s.%s' % (bis, evalStr)
         try:
@@ -347,10 +357,12 @@ class ObjectRef:
             pass
         return result
 
+
 class FindContainers(Job):
     """
     Explore the Python graph, looking for objects that support __len__()
     """
+
     def __init__(self, name, leakDetector):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -369,21 +381,21 @@ class FindContainers(Job):
         ContainerLeakDetector.addPrivateObj(self.__dict__)
 
         # set up the base containers, the ones that hold most objects
-        ref = ObjectRef(Indirection(evalStr='__builtin__.__dict__'), id(__builtin__.__dict__))
-        self._id2baseStartRef[id(__builtin__.__dict__)] = ref
+        ref = ObjectRef(Indirection(evalStr='builtins.__dict__'), id(builtins.__dict__))
+        self._id2baseStartRef[id(builtins.__dict__)] = ref
         # container for objects that want to make sure they are found by
         # the object exploration algorithm, including objects that exist
         # just to measure things such as C++ memory usage, scene graph size,
         # framerate, etc. See LeakDetectors.py
-        if not hasattr(__builtin__, "leakDetectors"):
-            __builtin__.leakDetectors = {}
-        ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(leakDetectors))
-        self._id2baseStartRef[id(leakDetectors)] = ref
-        for i in self._addContainerGen(__builtin__.__dict__, ref):
+        if not hasattr(builtins, "leakDetectors"):
+            builtins.leakDetectors = {}
+        ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(builtins.leakDetectors))
+        self._id2baseStartRef[id(builtins.leakDetectors)] = ref
+        for i in self._addContainerGen(builtins.__dict__, ref):
             pass
         try:
             base
-        except:
+        except Exception:
             pass
         else:
             ref = ObjectRef(Indirection(evalStr='base.__dict__'), id(base.__dict__))
@@ -392,7 +404,7 @@ class FindContainers(Job):
                 pass
         try:
             simbase
-        except:
+        except Exception:
             pass
         else:
             ref = ObjectRef(Indirection(evalStr='simbase.__dict__'), id(simbase.__dict__))
@@ -412,7 +424,7 @@ class FindContainers(Job):
         # how good of a starting object is this object for traversing the object graph?
         try:
             return len(startObj)
-        except:
+        except Exception:
             return 1
 
     def _isDeadEnd(self, obj, objName=None):
@@ -427,7 +439,7 @@ class FindContainers(Job):
             return True
         try:
             className = obj.__class__.__name__
-        except:
+        except Exception:
             pass
         else:
             # prevent infinite recursion in built-in containers related to methods
@@ -457,14 +469,12 @@ class FindContainers(Job):
         objId = id(obj)
         if objId in self._id2discoveredStartRef:
             existingRef = self._id2discoveredStartRef[objId]
-            if type(existingRef) not in intTypes:
-                if (existingRef.getNumIndirections() >=
-                    ref.getNumIndirections()):
+            if type(existingRef) is not int:
+                if existingRef.getNumIndirections() >= ref.getNumIndirections():
                     # the ref that we already have is more concise than the new ref
                     return
         if objId in self._id2ref:
-            if (self._id2ref[objId].getNumIndirections() >=
-                ref.getNumIndirections()):
+            if self._id2ref[objId].getNumIndirections() >= ref.getNumIndirections():
                 # the ref that we already have is more concise than the new ref
                 return
         storedItem = ref
@@ -515,24 +525,24 @@ class FindContainers(Job):
                             # make a generator that yields containers a # of times that is
                             # proportional to their length
                             for fw in makeFlywheelGen(
-                                list(startRefWorkingList.source.values()),
-                                countFunc=lambda x: self.getStartObjAffinity(x),
-                                scale=.05):
+                                    list(startRefWorkingList.source.values()),
+                                    countFunc=lambda x: self.getStartObjAffinity(x),
+                                    scale=.05):
                                 yield None
                             startRefWorkingList.refGen = fw
                     if curObjRef is None:
                         # this ref set is empty, choose another
-                        # the base set should never be empty (__builtin__ etc.)
+                        # the base set should never be empty (builtins etc.)
                         continue
                     # do we need to go look up the object in _id2ref? sometimes we do that
                     # to avoid storing multiple redundant refs to a single item
-                    if type(curObjRef) in intTypes:
+                    if type(curObjRef) is int:
                         startId = curObjRef
                         curObjRef = None
                         try:
                             for containerRef in self._leakDetector.getContainerByIdGen(startId):
                                 yield None
-                        except:
+                        except Exception:
                             # ref is invalid
                             self.notify.debug('invalid startRef, stored as id %s' % startId)
                             self._leakDetector.removeContainerById(startId)
@@ -542,7 +552,7 @@ class FindContainers(Job):
                 try:
                     for curObj in curObjRef.getContainerGen():
                         yield None
-                except:
+                except Exception:
                     self.notify.debug('lost current container, ref.getContainerGen() failed')
                     # that container is gone, try again
                     curObjRef = None
@@ -555,6 +565,23 @@ class FindContainers(Job):
                 parentObjRef = curObjRef
                 # if we hit a dead end, start over from another container
                 curObjRef = None
+
+                # types.CellType was added in Python 3.8
+                if type(curObj) is types.CellType:
+                    child = curObj.cell_contents
+                    hasLength = self._hasLength(child)
+                    notDeadEnd = not self._isDeadEnd(child)
+                    if hasLength or notDeadEnd:
+                        objRef = ObjectRef(Indirection(evalStr='.cell_contents'),
+                                           id(child), parentObjRef)
+                        yield None
+                        if hasLength:
+                            for i in self._addContainerGen(child, objRef):
+                                yield None
+                        if notDeadEnd:
+                            self._addDiscoveredStartRef(child, objRef)
+                            curObjRef = objRef
+                    continue
 
                 if hasattr(curObj, '__dict__'):
                     child = curObj.__dict__
@@ -605,7 +632,7 @@ class FindContainers(Job):
                                 # don't yield, container might lose this element
                                 pass
                             if not goesThrough:
-                                if curObj is __builtin__.__dict__:
+                                if curObj is builtins.__dict__:
                                     objRef = ObjectRef(Indirection(evalStr='%s' % key),
                                                        id(curObj[key]))
                                 else:
@@ -621,63 +648,13 @@ class FindContainers(Job):
                                         curObjRef = objRef
                     del key
                     del attr
-                    continue
-
-                    try:
-                        childNames = dir(curObj)
-                    except:
-                        pass
-                    else:
-                        try:
-                            index = -1
-                            attrs = []
-                            while 1:
-                                yield None
-                                try:
-                                    attr = next(itr)
-                                except:
-                                    # some custom classes don't do well when iterated
-                                    attr = None
-                                    break
-                                attrs.append(attr)
-                            # we will continue traversing the object graph via one attr,
-                            # choose it at random without taking a big chunk of CPU time
-                            numAttrsLeft = len(attrs) + 1
-                            for attr in attrs:
-                                yield None
-                                index += 1
-                                numAttrsLeft -= 1
-                                hasLength = self._hasLength(attr)
-                                notDeadEnd = False
-                                if curObjRef is None:
-                                    notDeadEnd = not self._isDeadEnd(attr)
-                                if hasLength or notDeadEnd:
-                                    # prevent cycles in the references (i.e. base.loader.base)
-                                    for goesThrough in parentObjRef.goesThrough(curObj[index]):
-                                        # don't yield, container might lose this element
-                                        pass
-                                    if not goesThrough:
-                                        objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
-                                                           id(curObj[index]), parentObjRef)
-                                        yield None
-                                        if hasLength:
-                                            for i in self._addContainerGen(attr, objRef):
-                                                yield None
-                                        if notDeadEnd:
-                                            self._addDiscoveredStartRef(attr, objRef)
-                                            if curObjRef is None and random.randrange(numAttrsLeft) == 0:
-                                                curObjRef = objRef
-                            del attr
-                        except StopIteration as e:
-                            pass
-                        del itr
-                        continue
 
         except Exception as e:
             print('FindContainers job caught exception: %s' % e)
             if __dev__:
                 raise
         yield Job.Done
+
 
 class CheckContainers(Job):
     """
@@ -761,7 +738,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (1)')
                                     else:
@@ -782,7 +759,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (2)')
                                     else:
@@ -803,7 +780,7 @@ class CheckContainers(Job):
                                     try:
                                         for container in self._leakDetector.getContainerByIdGen(objId):
                                             yield None
-                                    except:
+                                    except Exception:
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (3)')
                                     else:
@@ -822,6 +799,7 @@ class CheckContainers(Job):
             if __dev__:
                 raise
         yield Job.Done
+
 
 class FPTObjsOfType(Job):
     def __init__(self, name, leakDetector, otn, doneCallback=None):
@@ -855,21 +833,21 @@ class FPTObjsOfType(Job):
                 yield None
                 try:
                     for container in self._leakDetector.getContainerByIdGen(
-                        id, getInstance=getInstance):
+                            id, getInstance=getInstance):
                         yield None
-                except:
+                except Exception:
                     pass
                 else:
                     if hasattr(container, '__class__'):
                         cName = container.__class__.__name__
                     else:
                         cName = container.__name__
-                    if (self._otn.lower() in cName.lower()):
+                    if self._otn.lower() in cName.lower():
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(
-                                id, getInstance=getInstance):
+                                    id, getInstance=getInstance):
                                 yield None
-                        except:
+                        except Exception:
                             pass
                         else:
                             print('GPTC(' + self._otn + '):' + self.getJobName() + ': ' + ptc)
@@ -882,6 +860,7 @@ class FPTObjsOfType(Job):
     def finished(self):
         if self._doneCallback:
             self._doneCallback(self)
+
 
 class FPTObjsNamed(Job):
     def __init__(self, name, leakDetector, on, doneCallback=None):
@@ -915,7 +894,7 @@ class FPTObjsNamed(Job):
                 try:
                     for container in self._leakDetector.getContainerByIdGen(id):
                         yield None
-                except:
+                except Exception:
                     pass
                 else:
                     name = self._leakDetector._id2ref[id].getFinalIndirectionStr()
@@ -923,7 +902,7 @@ class FPTObjsNamed(Job):
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(id):
                                 yield None
-                        except:
+                        except Exception:
                             pass
                         else:
                             print('GPTCN(' + self._on + '):' + self.getJobName() + ': ' + ptc)
@@ -937,11 +916,13 @@ class FPTObjsNamed(Job):
         if self._doneCallback:
             self._doneCallback(self)
 
+
 class PruneObjectRefs(Job):
     """
     Job to destroy any container refs that are no longer valid.
     Checks validity by asking for each container
     """
+
     def __init__(self, name, leakDetector):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -963,7 +944,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in self._leakDetector.getContainerByIdGen(id):
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     self._leakDetector.removeContainerById(id)
             _id2baseStartRef = self._leakDetector._findContainersJob._id2baseStartRef
@@ -973,7 +954,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in _id2baseStartRef[id].getContainerGen():
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     del _id2baseStartRef[id]
             _id2discoveredStartRef = self._leakDetector._findContainersJob._id2discoveredStartRef
@@ -983,7 +964,7 @@ class PruneObjectRefs(Job):
                 try:
                     for container in _id2discoveredStartRef[id].getContainerGen():
                         yield None
-                except:
+                except Exception:
                     # reference is invalid, remove it
                     del _id2discoveredStartRef[id]
         except Exception as e:
@@ -991,6 +972,7 @@ class PruneObjectRefs(Job):
             if __dev__:
                 raise
         yield Job.Done
+
 
 class ContainerLeakDetector(Job):
     """
@@ -1002,7 +984,7 @@ class ContainerLeakDetector(Job):
     """
     notify = directNotify.newCategory("ContainerLeakDetector")
     # set of containers that should not be examined
-    PrivateIds = set()
+    PrivateIds: set[int] = set()
 
     def __init__(self, name, firstCheckDelay = None):
         Job.__init__(self, name)
@@ -1065,12 +1047,14 @@ class ContainerLeakDetector(Job):
     @classmethod
     def addPrivateObj(cls, obj):
         cls.PrivateIds.add(id(obj))
+
     @classmethod
     def removePrivateObj(cls, obj):
         cls.PrivateIds.remove(id(obj))
 
     def _getCheckTaskName(self):
         return 'checkForLeakingContainers-%s' % self._serialNum
+
     def _getPruneTaskName(self):
         return 'pruneLeakingContainerRefs-%s' % self._serialNum
 
@@ -1080,16 +1064,20 @@ class ContainerLeakDetector(Job):
     def getContainerByIdGen(self, id, **kwArgs):
         # return a generator to look up a container
         return self._id2ref[id].getContainerGen(**kwArgs)
+
     def getContainerById(self, id):
         for result in self._id2ref[id].getContainerGen():
             pass
         return result
+
     def getContainerNameByIdGen(self, id, **kwArgs):
         return self._id2ref[id].getEvalStrGen(**kwArgs)
+
     def getContainerNameById(self, id):
         if id in self._id2ref:
             return repr(self._id2ref[id])
         return '<unknown container>'
+
     def removeContainerById(self, id):
         if id in self._id2ref:
             self._id2ref[id].destroy()

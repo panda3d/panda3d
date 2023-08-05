@@ -1,0 +1,91 @@
+// This is a sample dc file for some of the classes defined within the
+// direct source tree.  It is suggested that you copy this file into
+// your own project (or load it from the direct source tree) and build
+// on it with your own dc file for your own classes.
+
+keyword broadcast;
+keyword ram;
+keyword p2p;
+
+from direct.distributed import DistributedObject/AI
+from direct.distributed import TimeManager/AI
+from direct.distributed import DistributedNode/AI
+from direct.distributed import DistributedSmoothNode/AI
+
+struct BarrierData {
+  uint16 context;
+  string name;
+  uint32 avIds[];
+};
+
+// The most fundamental class
+dclass DistributedObject {
+  // These are used to support DistributedObjectAI.beginBarrier() and
+  // the matching DistributedObject.doneBarrier().  If you don't call
+  // these functions, you don't care about these distributed methods.
+  // (Actually, you probably don't care anyway.)
+  setBarrierData(BarrierData data[]) broadcast ram;
+  setBarrierReady(uint16 context);
+  setLocation(uint32 parentId, uint32 zoneId) broadcast ram;
+};
+
+dclass TimeManager: DistributedObject {
+  requestServerTime(uint8 context) p2p;
+  serverTime(uint8 context, int32 timestamp);
+};
+
+dclass DistributedNode: DistributedObject {
+  setX(int16 / 10) broadcast ram;
+  setY(int16 / 10) broadcast ram;
+  setZ(int16 / 10) broadcast ram;
+  setH(int16 % 360 / 10) broadcast ram;
+  setP(int16 % 360 / 10) broadcast ram;
+  setR(int16 % 360 / 10) broadcast ram;
+
+  setPos: setX, setY, setZ;
+  setHpr: setH, setP, setR;
+  setPosHpr: setX, setY, setZ, setH, setP, setR;
+  setXY: setX, setY;
+  setXZ: setX, setZ;
+  setXYH: setX, setY, setH;
+  setXYZH: setX, setY, setZ, setH;
+};
+
+dclass DistributedSmoothNode: DistributedNode {
+  // Component set pos and hpr functions.
+
+  setComponentL(uint64) broadcast ram;
+  setComponentX(int16 / 10) broadcast ram;
+  setComponentY(int16 / 10) broadcast ram;
+  setComponentZ(int16 / 10) broadcast ram;
+  setComponentH(int16 % 360 / 10) broadcast ram;
+  setComponentP(int16 % 360 / 10) broadcast ram;
+  setComponentR(int16 % 360 / 10) broadcast ram;
+  setComponentT(int16 timestamp) broadcast ram;
+
+  // Composite set pos and hpr functions.  These map to combinations
+  // of one or more of the above components.  They all include
+  // setComponentT(), which must be called last.
+  setSmStop: setComponentT;
+  setSmH: setComponentH, setComponentT;
+  setSmZ: setComponentZ, setComponentT;
+  setSmXY: setComponentX, setComponentY, setComponentT;
+  setSmXZ: setComponentX, setComponentZ, setComponentT;
+  setSmPos: setComponentX, setComponentY, setComponentZ, setComponentT;
+  setSmHpr: setComponentH, setComponentP, setComponentR, setComponentT;
+  setSmXYH: setComponentX, setComponentY, setComponentH, setComponentT;
+  setSmXYZH: setComponentX, setComponentY, setComponentZ, setComponentH, setComponentT;
+  setSmPosHpr: setComponentX, setComponentY, setComponentZ, setComponentH, setComponentP, setComponentR, setComponentT;
+  // special update if L (being location, such as zoneId) changes, send everything, intended to
+  // keep position and 'location' in sync
+  setSmPosHprL: setComponentL, setComponentX, setComponentY, setComponentZ, setComponentH, setComponentP, setComponentR, setComponentT;
+
+  clearSmoothing(int8 bogus) broadcast;
+
+  suggestResync(uint32 avId, int16 timestampA, int16 timestampB,
+                int32 serverTimeSec, uint16 serverTimeUSec,
+                uint16 / 100 uncertainty);
+  returnResync(uint32 avId, int16 timestampB,
+               int32 serverTimeSec, uint16 serverTimeUSec,
+               uint16 / 100 uncertainty);
+};

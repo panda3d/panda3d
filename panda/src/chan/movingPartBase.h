@@ -19,6 +19,7 @@
 #include "partGroup.h"
 #include "partBundle.h"
 #include "animChannelBase.h"
+#include "small_vector.h"
 
 /**
  * This is the base class for a single animatable piece that may be bound to
@@ -75,16 +76,12 @@ protected:
   virtual void determine_effective_channels(const CycleData *root_cdata);
 
   // This is the vector of all channels bound to this part.
-  typedef pvector< PT(AnimChannelBase) > Channels;
+  typedef small_vector< PT(AnimChannelBase) > Channels;
   Channels _channels;
-
-  // This is the number of channels in the above _channels vector that
-  // actually have an effect on this part.
-  int _num_effective_channels;
 
   // This is the single channel that has an effect on this part, as determined
   // by determine_effective_channels().  It is only set if there is exactly
-  // one channel that affects this part (i.e.  _num_effective_channels is 1).
+  // one channel that affects this part (i.e. num_effective_channels is 1).
   // If there are multiple channels, or no channels at all, it is NULL.
   AnimControl *_effective_control;
   PT(AnimChannelBase) _effective_channel;

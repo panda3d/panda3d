@@ -35,7 +35,14 @@ public:
   void register_type(LoaderFileType *type);
   void register_deferred_type(const std::string &extension, const std::string &library);
 
+  void unregister_type(LoaderFileType *type);
+
 PUBLISHED:
+  PY_EXTENSION(void register_type(PyObject *type));
+  PY_EXTENSION(void register_deferred_type(PyObject *entry_point));
+
+  PY_EXTENSION(void unregister_type(PyObject *type));
+
   int get_num_types() const;
   LoaderFileType *get_type(int n) const;
   MAKE_SEQ(get_types, get_num_types, get_type);
@@ -45,6 +52,8 @@ PUBLISHED:
   void write(std::ostream &out, int indent_level = 0) const;
 
   static LoaderFileTypeRegistry *get_global_ptr();
+
+  PY_EXTENSION(PyObject *__reduce__() const);
 
 private:
   void record_extension(const std::string &extension, LoaderFileType *type);
@@ -62,4 +71,4 @@ private:
   static LoaderFileTypeRegistry *_global_ptr;
 };
 
-#endif
+#endif // !LOADERFILETYPEREGISTRY_H

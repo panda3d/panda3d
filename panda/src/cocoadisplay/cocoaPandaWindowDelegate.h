@@ -17,11 +17,7 @@
 
 class CocoaGraphicsWindow;
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 @interface CocoaPandaWindowDelegate : NSObject<NSWindowDelegate> {
-#else
-@interface CocoaPandaWindowDelegate : NSObject {
-#endif
   @private
     CocoaGraphicsWindow *_graphicsWindow;
 }
@@ -34,6 +30,7 @@ class CocoaGraphicsWindow;
 - (void)windowDidBecomeKey:(NSNotification *)notification;
 - (void)windowDidResignKey:(NSNotification *)notification;
 - (BOOL)windowShouldClose:(id)sender;
+- (void)windowWillClose:(id)sender;
 
 // TODO: handle fullscreen on Lion.
 

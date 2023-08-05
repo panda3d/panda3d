@@ -82,6 +82,7 @@ private:
     WT_traverse,
     WT_compare,
     WT_hash,
+    WT_new,
   };
 
   // This enum is passed to the wrapper generation functions to indicate what
@@ -115,6 +116,12 @@ private:
 
     // This raises a KeyError on falsey (or -1) return value.
     RF_raise_keyerror = 0x4000,
+
+    // Invert boolean return value.
+    RF_invert_bool = 0x8000,
+
+    // Used inside a rich comparison function.
+    RF_richcompare_zero = 0x10000,
   };
 
   class SlottedFunctionDef {

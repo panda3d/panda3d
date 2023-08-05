@@ -22,13 +22,9 @@
 #include <stdint.h>
 #include <fcntl.h>
 
-#if PY_MAJOR_VERSION >= 3
-#  include <locale.h>
+#include <locale.h>
 
-#  if PY_MINOR_VERSION < 5
-#    define Py_DecodeLocale _Py_char2wchar
-#  endif
-#endif
+#include "structmember.h"
 
 /* Leave room for future expansion.  We only read pointer 0, but there are
    other pointers that are being read by configPageManager.cxx. */
@@ -37,6 +33,8 @@
 /* Stored in the flags field of the blobinfo structure below. */
 enum Flags {
   F_log_append = 1,
+  F_log_filename_strftime = 2,
+  F_keep_docstrings = 4,
 };
 
 /* Define an exposed symbol where we store the offset to the module data. */
@@ -59,6 +57,13 @@ volatile struct {
   // end up putting it in the .bss section for zero-initialized data.
 } blobinfo = {(uint64_t)-1};
 
+
+#ifdef _WIN32
+// These placeholders can have their names changed by deploy-stub.
+__declspec(dllexport) DWORD SymbolPlaceholder___________________ = 0x00000001;
+__declspec(dllexport) DWORD SymbolPlaceholder__ = 0x00000001;
+#endif
+
 #ifdef MS_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
@@ -70,39 +75,21 @@ static struct _inittab extensions[] = {
     {0, 0},
 };
 
-#if PY_MAJOR_VERSION >= 3
 #  define WIN_UNICODE
 #endif
+
+#ifdef _WIN32
+static wchar_t *log_pathw = NULL;
 #endif
 
-#if defined(_WIN32) && PY_VERSION_HEX < 0x03060000
-static int supports_code_page(UINT cp) {
-  if (cp == 0) {
-    cp = GetACP();
-  }
-
-  /* Shortcut, because we know that these encodings are bundled by default--
-   * see FreezeTool.py and Python's encodings/aliases.py */
-  if (cp != 0 && cp != 1252 && cp != 367 && cp != 437 && cp != 850 && cp != 819) {
-    const struct _frozen *moddef;
-    char codec[100];
-
-    /* Check if the codec was frozen into the program.  We can't check this
-     * using _PyCodec_Lookup, since Python hasn't been initialized yet. */
-    PyOS_snprintf(codec, sizeof(codec), "encodings.cp%u", (unsigned int)cp);
-
-    moddef = PyImport_FrozenModules;
-    while (moddef->name) {
-      if (strcmp(moddef->name, codec) == 0) {
-        return 1;
-      }
-      ++moddef;
-    }
-    return 0;
-  }
-
-  return 1;
-}
+#if PY_VERSION_HEX >= 0x030b0000
+typedef struct {
+  const char *name;
+  const unsigned char *code;
+  int size;
+} ModuleDef;
+#else
+typedef struct _frozen ModuleDef;
 #endif
 
 /**
@@ -225,7 +212,8 @@ static int mkdir_parent(const char *path) {
 static int setup_logging(const char *path, int append) {
 #ifdef _WIN32
   // Does it start with a tilde?  Perform tilde expansion if so.
-  wchar_t pathw[MAX_PATH * 2];
+  wchar_t *pathw = (wchar_t *)malloc(sizeof(wchar_t) * MAX_PATH);
+  pathw[0] = 0;
   size_t offset = 0;
   if (path[0] == '~' && (path[1] == 0 || path[1] == '/' || path[1] == '\\')) {
     // Strip off the tilde.
@@ -233,6 +221,7 @@ static int setup_logging(const char *path, int append) {
 
     // Get the home directory path for the current user.
     if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PROFILE, NULL, 0, pathw))) {
+      free(pathw);
       return 0;
     }
     offset = wcslen(pathw);
@@ -240,25 +229,29 @@ static int setup_logging(const char *path, int append) {
 
   // We need to convert the rest of the path from UTF-8 to UTF-16.
   if (MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw + offset,
-                          (int)(_countof(pathw) - offset)) == 0) {
+                          (int)(MAX_PATH - offset)) == 0) {
+    free(pathw);
     return 0;
   }
 
   DWORD access = append ? FILE_APPEND_DATA : (GENERIC_READ | GENERIC_WRITE);
   int creation = append ? OPEN_ALWAYS : CREATE_ALWAYS;
-  HANDLE handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+  HANDLE handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                               NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
 
   if (handle == INVALID_HANDLE_VALUE) {
     // Make the parent directories first.
     mkdir_parent(pathw);
-    handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+    handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                          NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
   }
 
   if (handle == INVALID_HANDLE_VALUE) {
+    free(pathw);
     return 0;
   }
+
+  log_pathw = pathw;
 
   if (append) {
     SetFilePointer(handle, 0, NULL, FILE_END);
@@ -282,7 +275,7 @@ static int setup_logging(const char *path, int append) {
 
   // Now replace the stdout and stderr file descriptors with one pointing to
   // our desired handle.
-  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | (append ? _O_APPEND : 0));
+  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | _O_APPEND);
   _dup2(fd, _fileno(stdout));
   _dup2(fd, _fileno(stderr));
   _close(fd);
@@ -333,6 +326,54 @@ static int setup_logging(const char *path, int append) {
 #endif
 }
 
+/**
+ * Sets the line_buffering property on a TextIOWrapper object.
+ */
+static int enable_line_buffering(PyObject *file) {
+#if PY_VERSION_HEX >= 0x03070000
+  /* Python 3.7 has a useful reconfigure() method. */
+  PyObject *kwargs = _PyDict_NewPresized(1);
+  PyDict_SetItemString(kwargs, "line_buffering", Py_True);
+  PyObject *args = PyTuple_New(0);
+
+  PyObject *method = PyObject_GetAttrString(file, "reconfigure");
+  if (method != NULL) {
+    PyObject *result = PyObject_Call(method, args, kwargs);
+    Py_DECREF(method);
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
+    if (result != NULL) {
+      Py_DECREF(result);
+    } else {
+      PyErr_Clear();
+      return 0;
+    }
+  } else {
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
+    PyErr_Clear();
+    return 0;
+  }
+#else
+  /* Older versions just don't expose a way to reconfigure(), but it's still
+     safe to override the property; we just have to use a hack to do it,
+     because it's officially marked "readonly". */
+
+  PyTypeObject *type = Py_TYPE(file);
+  PyMemberDef *member = type->tp_members;
+
+  while (member != NULL && member->name != NULL) {
+    if (strcmp(member->name, "line_buffering") == 0) {
+      *((char *)file + member->offset) = 1;
+      return 1;
+    }
+    ++member;
+  }
+  fflush(stdout);
+#endif
+  return 1;
+}
+
 /* Main program */
 
 #ifdef WIN_UNICODE
@@ -343,10 +384,12 @@ int Py_FrozenMain(int argc, char **argv)
 {
     char *p;
     int n, sts = 1;
-    int inspect = 0;
     int unbuffered = 0;
+#ifndef NDEBUG
+    int inspect = 0;
+#endif
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     int i;
     char *oldloc;
     wchar_t **argv_copy = NULL;
@@ -359,25 +402,22 @@ int Py_FrozenMain(int argc, char **argv)
     }
 #endif
 
-#if defined(MS_WINDOWS) && PY_VERSION_HEX >= 0x03040000 && PY_VERSION_HEX < 0x03060000
-    if (!supports_code_page(GetConsoleOutputCP()) ||
-        !supports_code_page(GetConsoleCP())) {
-      /* Revert to the active codepage, and tell Python to use the 'mbcs'
-       * encoding (which always uses the active codepage).  In 99% of cases,
-       * this will be the same thing anyway. */
-      UINT acp = GetACP();
-      SetConsoleCP(acp);
-      SetConsoleOutputCP(acp);
-      Py_SetStandardStreamEncoding("mbcs", NULL);
-    }
-#endif
-
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
     Py_NoSiteFlag = 0;
     Py_NoUserSiteDirectory = 1;
 
+#if PY_VERSION_HEX >= 0x03020000
+    if (blobinfo.flags & F_keep_docstrings) {
+      Py_OptimizeFlag = 1;
+    } else {
+      Py_OptimizeFlag = 2;
+    }
+#endif
+
+#ifndef NDEBUG
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\0')
         inspect = 1;
+#endif
     if ((p = Py_GETENV("PYTHONUNBUFFERED")) && *p != '\0')
         unbuffered = 1;
 
@@ -387,7 +427,7 @@ int Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     oldloc = setlocale(LC_ALL, NULL);
     setlocale(LC_ALL, "");
     for (i = 0; i < argc; i++) {
@@ -408,7 +448,7 @@ int Py_FrozenMain(int argc, char **argv)
 #endif /* MS_WINDOWS */
 
     if (argc >= 1) {
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
         Py_SetProgramName(argv_copy[0]);
 #else
         Py_SetProgramName(argv[0]);
@@ -420,29 +460,19 @@ int Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeInit();
 #endif
 
-#if defined(MS_WINDOWS) && PY_VERSION_HEX < 0x03040000
-    if (!supports_code_page(GetConsoleOutputCP()) ||
-        !supports_code_page(GetConsoleCP())) {
-      /* Same hack as before except for Python 2.7, which doesn't seem to have
-       * a way to set the encoding ahead of time, and setting PYTHONIOENCODING
-       * doesn't seem to work.  Fortunately, Python 2.7 doesn't usually start
-       * causing codec errors until the first print statement. */
+#ifdef MS_WINDOWS
+    /* Ensure that line buffering is enabled on the output streams. */
+    if (!unbuffered) {
       PyObject *sys_stream;
-      UINT acp = GetACP();
-      SetConsoleCP(acp);
-      SetConsoleOutputCP(acp);
-
-      sys_stream = PySys_GetObject("stdin");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
+      sys_stream = PySys_GetObject("__stdout__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stdout\n");
+        fflush(stderr);
       }
-      sys_stream = PySys_GetObject("stdout");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-      sys_stream = PySys_GetObject("stderr");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
+      sys_stream = PySys_GetObject("__stderr__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stderr\n");
+        fflush(stderr);
       }
     }
 #endif
@@ -451,7 +481,7 @@ int Py_FrozenMain(int argc, char **argv)
         fprintf(stderr, "Python %s\n%s\n",
             Py_GetVersion(), Py_GetCopyright());
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     PySys_SetArgv(argc, argv_copy);
 #else
     PySys_SetArgv(argc, argv);
@@ -474,11 +504,7 @@ int Py_FrozenMain(int argc, char **argv)
     sprintf(buffer, "%s/../Frameworks", dir);
 
     PyObject *sys_path = PyList_New(1);
-  #if PY_MAJOR_VERSION >= 3
     PyList_SET_ITEM(sys_path, 0, PyUnicode_FromString(buffer));
-  #else
-    PyList_SET_ITEM(sys_path, 0, PyString_FromString(buffer));
-  #endif
     PySys_SetObject("path", sys_path);
     Py_DECREF(sys_path);
 
@@ -486,6 +512,10 @@ int Py_FrozenMain(int argc, char **argv)
     // for ConfigPageManager to read out and assign to MAIN_DIR.
     sprintf(buffer, "%s/../Resources", dir);
     set_main_dir(buffer);
+
+    // Finally, chdir to it, so that regular Python files are read from the
+    // right location.
+    chdir(buffer);
 #endif
 
     n = PyImport_ImportFrozenModule("__main__");
@@ -498,23 +528,21 @@ int Py_FrozenMain(int argc, char **argv)
     else
         sts = 0;
 
+#ifndef NDEBUG
     if (inspect && isatty((int)fileno(stdin)))
         sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
+#endif
 
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeTerm();
 #endif
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
 error:
     if (argv_copy2) {
         for (i = 0; i < argc; i++) {
-#if PY_MINOR_VERSION >= 4
             PyMem_RawFree(argv_copy2[i]);
-#else
-            PyMem_Free(argv_copy2[i]);
-#endif
         }
     }
 #endif
@@ -603,16 +631,25 @@ static void unmap_blob(void *blob) {
 /**
  * Main entry point to deploy-stub.
  */
-#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
+#ifdef _WIN32
 int wmain(int argc, wchar_t *argv[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
   int retval;
-  struct _frozen *moddef;
+  ModuleDef *moddef;
   const char *log_filename;
   void *blob = NULL;
   log_filename = NULL;
+
+#ifdef __APPLE__
+  // Strip a -psn_xxx argument passed in by macOS when run from an .app bundle.
+  if (argc > 1 && strncmp(argv[1], "-psn_", 5) == 0) {
+    argv[1] = argv[0];
+    ++argv;
+    --argc;
+  }
+#endif
 
   /*
   printf("blob_offset: %d\n", (int)blobinfo.blob_offset);
@@ -650,6 +687,9 @@ int main(int argc, char *argv[]) {
 
     // Offset the pointers in the module table using the base mmap address.
     moddef = blobinfo.pointers[0];
+#if PY_VERSION_HEX < 0x030b0000
+    PyImport_FrozenModules = moddef;
+#endif
     while (moddef->name) {
       moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
       if (moddef->code != 0) {
@@ -658,9 +698,35 @@ int main(int argc, char *argv[]) {
       //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
       moddef++;
     }
+
+    // In Python 3.11, we need to convert this to the new structure format.
+#if PY_VERSION_HEX >= 0x030b0000
+    ModuleDef *moddef_end = moddef;
+    ptrdiff_t num_modules = moddef - (ModuleDef *)blobinfo.pointers[0];
+    struct _frozen *new_moddef = (struct _frozen *)calloc(num_modules + 1, sizeof(struct _frozen));
+    PyImport_FrozenModules = new_moddef;
+    for (moddef = blobinfo.pointers[0]; moddef < moddef_end; ++moddef) {
+      new_moddef->name = moddef->name;
+      new_moddef->code = moddef->code;
+      new_moddef->size = moddef->size < 0 ? -(moddef->size) : moddef->size;
+      new_moddef->is_package = moddef->size < 0;
+      new_moddef->get_code = NULL;
+      new_moddef++;
+    }
+#endif
+  } else {
+    PyImport_FrozenModules = blobinfo.pointers[0];
   }
 
   if (log_filename != NULL) {
+    char log_filename_buf[4096];
+    if (blobinfo.flags & F_log_filename_strftime) {
+      log_filename_buf[0] = 0;
+      time_t now = time(NULL);
+      if (strftime(log_filename_buf, sizeof(log_filename_buf), log_filename, localtime(&now)) > 0) {
+        log_filename = log_filename_buf;
+      }
+    }
     setup_logging(log_filename, (blobinfo.flags & F_log_append) != 0);
   }
 
@@ -672,8 +738,15 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Run frozen application
-  PyImport_FrozenModules = blobinfo.pointers[0];
   retval = Py_FrozenMain(argc, argv);
+
+  fflush(stdout);
+  fflush(stderr);
+
+#if PY_VERSION_HEX >= 0x030b0000
+  free((void *)PyImport_FrozenModules);
+  PyImport_FrozenModules = NULL;
+#endif
 
   unmap_blob(blob);
   return retval;

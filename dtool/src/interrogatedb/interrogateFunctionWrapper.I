@@ -64,6 +64,38 @@ is_callable_by_name() const {
 }
 
 /**
+ * @since 1.10.13
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_copy_constructor() const {
+  return (_flags & F_copy_constructor) != 0;
+}
+
+/**
+ * @since 1.10.13
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_coerce_constructor() const {
+  return (_flags & F_coerce_constructor) != 0;
+}
+
+/**
+ * @since 1.10.13
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_extension() const {
+  return (_flags & F_extension) != 0;
+}
+
+/**
+ * @since 1.11.0
+ */
+INLINE bool InterrogateFunctionWrapper::
+is_deprecated() const {
+  return (_flags & F_deprecated) != 0;
+}
+
+/**
  *
  */
 INLINE bool InterrogateFunctionWrapper::
@@ -144,6 +176,17 @@ INLINE bool InterrogateFunctionWrapper::
 parameter_is_this(int n) const {
   if (n >= 0 && n < (int)_parameters.size()) {
     return (_parameters[n]._parameter_flags & PF_is_this) != 0;
+  }
+  return false;
+}
+
+/**
+ *
+ */
+INLINE bool InterrogateFunctionWrapper::
+parameter_is_optional(int n) const {
+  if (n >= 0 && n < (int)_parameters.size()) {
+    return (_parameters[n]._parameter_flags & PF_is_optional) != 0;
   }
   return false;
 }

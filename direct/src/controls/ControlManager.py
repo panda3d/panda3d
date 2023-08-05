@@ -1,5 +1,6 @@
 
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 #from DirectGui import *
 #from PythonUtil import *
 #from IntervalGlobal import *
@@ -15,7 +16,9 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
 from panda3d.core import ConfigVariableBool
 
-CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
+# This is a hack, it may be better to use a line instead of a ray.
+CollisionHandlerRayStart = 4000.0
+
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
@@ -38,8 +41,6 @@ class ControlManager:
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
 
-
-
         if self.passMessagesThrough: # for not breaking toontown
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
@@ -47,19 +48,18 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
 
-
     def __str__(self):
         return 'ControlManager: using \'%s\'' % self.currentControlsName
 
     def add(self, controls, name="basic"):
-        """
-        controls is an avatar control system.
-        name is any key that you want to use to refer to the
-            the controls later (e.g. using the use(<name>) call).
+        """Add a control instance to the list of available control systems.
 
-        Add a control instance to the list of available control systems.
+        Args:
+            controls: an avatar control system.
+            name (str): any key that you want to use to refer to the controls
+                later (e.g. using the use(<name>) call).
 
-        See also: use().
+        See also: :meth:`use()`.
         """
         assert self.notify.debugCall(id(self))
         assert controls is not None
@@ -77,15 +77,14 @@ class ControlManager:
         return self.controls.get(name)
 
     def remove(self, name):
-        """
-        name is any key that was used to refer to the
-            the controls when they were added (e.g.
-            using the add(<controls>, <name>) call).
+        """Remove a control instance from the list of available control
+        systems.
 
-        Remove a control instance from the list of
-        available control systems.
+        Args:
+            name: any key that was used to refer to the controls when they were
+                added (e.g. using the add(<controls>, <name>) call).
 
-        See also: add().
+        See also: :meth:`add()`.
         """
         assert self.notify.debugCall(id(self))
         oldControls = self.controls.pop(name,None)
@@ -108,7 +107,7 @@ class ControlManager:
 
         Use a previously added control system.
 
-        See also: add().
+        See also: :meth:`add()`.
         """
         assert self.notify.debugCall(id(self))
         if __debug__ and hasattr(self, "ignoreUse"):
@@ -143,7 +142,7 @@ class ControlManager:
     def delete(self):
         assert self.notify.debugCall(id(self))
         self.disable()
-        for controls in self.controls.keys():
+        for controls in list(self.controls.keys()):
             self.remove(controls)
         del self.controls
         del self.currentControls
@@ -291,18 +290,18 @@ class ControlManager:
         self.forceAvJumpToken.release()
         self.forceAvJumpToken = None
 
-    def monitor(self, foo):
+    def monitor(self, _):
         #assert self.debugPrint("monitor()")
         #if 1:
         #    airborneHeight=self.avatar.getAirborneHeight()
         #    onScreenDebug.add("airborneHeight", "% 10.4f"%(airborneHeight,))
-        if 0:
-            onScreenDebug.add("InputState forward", "%d"%(inputState.isSet("forward")))
-            onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
-            onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
-            onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
-            onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
-            onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
+        #if 0:
+        #    onScreenDebug.add("InputState forward", "%d"%(inputState.isSet("forward")))
+        #    onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
+        #    onScreenDebug.add("InputState turnLeft", "%d"%(inputState.isSet("turnLeft")))
+        #    onScreenDebug.add("InputState turnRight", "%d"%(inputState.isSet("turnRight")))
+        #    onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
+        #    onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
 
     def setWASDTurn(self, turn):
@@ -323,7 +322,7 @@ class ControlManager:
             self.WASDTurnTokens = (
                 inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD),
-                )
+            )
 
             inputState.set("turnLeft", slideLeftWASDSet, inputSource=inputState.WASD)
             inputState.set("turnRight", slideRightWASDSet, inputSource=inputState.WASD)
@@ -335,11 +334,10 @@ class ControlManager:
             self.WASDTurnTokens = (
                 inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD),
-                )
+            )
 
             inputState.set("slideLeft", turnLeftWASDSet, inputSource=inputState.WASD)
             inputState.set("slideRight", turnRightWASDSet, inputSource=inputState.WASD)
 
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
-

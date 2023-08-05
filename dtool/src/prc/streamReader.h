@@ -31,7 +31,9 @@ public:
 PUBLISHED:
   INLINE explicit StreamReader(std::istream *in, bool owns_stream);
   INLINE StreamReader(const StreamReader &copy);
+  INLINE StreamReader(StreamReader &&from) noexcept;
   INLINE void operator = (const StreamReader &copy);
+  INLINE void operator = (StreamReader &&from) noexcept;
   INLINE ~StreamReader();
 
   INLINE std::istream *get_istream() const;
@@ -66,11 +68,10 @@ PUBLISHED:
 
   BLOCKING void skip_bytes(size_t size);
   BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
-  EXTENSION(BLOCKING PyObject *extract_bytes(size_t size));
+  PY_EXTENSION(PyObject *extract_bytes(size_t size));
 
-  EXTENSION(BLOCKING PyObject *readline());
-  EXTENSION(BLOCKING PyObject *readlines());
-
+  PY_EXTENSION(PyObject *readline());
+  PY_EXTENSION(PyObject *readlines());
 public:
   BLOCKING vector_uchar extract_bytes(size_t size);
   BLOCKING std::string readline();
@@ -82,4 +83,4 @@ private:
 
 #include "streamReader.I"
 
-#endif
+#endif // !STREAMREADER_H

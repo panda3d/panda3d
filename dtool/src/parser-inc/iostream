@@ -1,16 +1,15 @@
-// Filename: iostream
-// Created by:  drose (12May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iostream
+ * @author drose
+ * @date 2000-05-12
+ */
 
 // This file, and all the other files in this directory, aren't
 // intended to be compiled--they're just parsed by CPPParser (and
@@ -24,6 +23,7 @@
 #include <ios>
 #include <streambuf>
 #include <ostream>
+#include <Python.h>
 
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
@@ -34,6 +34,9 @@ namespace std {
   __published:
     ostream(const ostream&) = delete;
 
+    __extension void write(PyObject *b);
+    __extension void writelines(PyObject *lines);
+
     void put(char c);
     void flush();
     streampos tellp();
@@ -43,9 +46,19 @@ namespace std {
   protected:
     ostream(ostream &&);
   };
+
   class istream : virtual public ios {
   __published:
     istream(const istream&) = delete;
+
+    __extension PyObject *read(Py_ssize_t size=-1);
+    __extension PyObject *read1(Py_ssize_t size=-1);
+    __extension PyObject *readall();
+    __extension std::streamsize readinto(PyObject *b);
+
+    __extension PyObject *readline(Py_ssize_t size=-1);
+    __extension PyObject *readlines(Py_ssize_t hint=-1);
+    __extension PyObject *__iter__(PyObject *self);
 
     int get();
     streampos tellg();
@@ -55,6 +68,7 @@ namespace std {
   protected:
     istream(istream &&);
   };
+
   class iostream : public istream, public ostream {
   __published:
     iostream(const iostream&) = delete;

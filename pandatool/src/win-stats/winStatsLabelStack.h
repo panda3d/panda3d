@@ -16,7 +16,11 @@
 
 #include "pandatoolbase.h"
 #include "pvector.h"
+#include "vector_int.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinStatsLabel;
@@ -33,7 +37,8 @@ public:
 
   void setup(HWND parent_window);
   bool is_setup() const;
-  void set_pos(int x, int y, int width, int height);
+  void set_pos(int x, int y, int width, int height,
+               int top_margin, int bottom_margin);
 
   int get_x() const;
   int get_y() const;
@@ -48,11 +53,17 @@ public:
   void clear_labels();
   int add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
                 int thread_index, int collector_index, bool use_fullname);
+  void replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
+                      int thread_index, const vector_int &collector_indices,
+                      bool use_fullname);
   int get_num_labels() const;
 
   void highlight_label(int collector_index);
+  void update_label_color(int collector_index);
 
 private:
+  void recalculate_label_positions();
+
   void create_window(HWND parent_window);
   static void register_window_class(HINSTANCE application);
 
@@ -66,6 +77,9 @@ private:
   int _height;
   int _ideal_width;
   int _highlight_label;
+  int _top_margin = 0;
+  int _bottom_margin = 0;
+  int _scroll = 0;
 
   typedef pvector<WinStatsLabel *> Labels;
   Labels _labels;

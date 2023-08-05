@@ -1,22 +1,24 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.PythonUtil import itype, fastRepr
 from direct.showbase.Job import Job
-import gc, sys
-
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+import gc
+import builtins
 
 
 class MessengerLeakObject(DirectObject):
     def __init__(self):
         self.accept('leakEvent', self._handleEvent)
+
     def _handleEvent(self):
         pass
 
+
 def _leakMessengerObject():
     leakObject = MessengerLeakObject()
+
 
 class MessengerLeakDetector(Job):
     # check for objects that are only referenced by the messenger
@@ -38,19 +40,19 @@ class MessengerLeakDetector(Job):
             builtinIds.add(id(base))
             builtinIds.add(id(base.cr))
             builtinIds.add(id(base.cr.doId2do))
-        except:
+        except Exception:
             pass
         try:
             builtinIds.add(id(simbase))
             builtinIds.add(id(simbase.air))
             builtinIds.add(id(simbase.air.doId2do))
-        except:
+        except Exception:
             pass
         try:
             builtinIds.add(id(uber))
             builtinIds.add(id(uber.air))
             builtinIds.add(id(uber.air.doId2do))
-        except:
+        except Exception:
             pass
 
         while True:
@@ -80,7 +82,7 @@ class MessengerLeakDetector(Job):
                 foundBuiltin = False
 
                 # breadth-first search, go until you run out of new objects or you find __builtin__
-                while len(nextObjList):
+                while len(nextObjList) > 0:
                     if foundBuiltin:
                         break
                     # swap the lists, prepare for the next pass

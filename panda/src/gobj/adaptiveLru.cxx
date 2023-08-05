@@ -128,7 +128,6 @@ update_page(AdaptiveLruPage *page) {
           page->_average_frame_utilization *= 1.0f - _weight;
         }
 
-        target_priority = page->_priority;
         if (page->_average_frame_utilization >= 1.0f) {
           int integer_average_frame_utilization;
 

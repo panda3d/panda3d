@@ -39,11 +39,14 @@ public:
   ~PStatServer();
 
   bool listen(int port = -1);
+  void stop_listening();
 
   void poll();
   void main_loop(bool *interrupt_flag = nullptr);
 
-  virtual PStatMonitor *make_monitor()=0;
+  virtual PStatMonitor *make_monitor(const NetAddress &address)=0;
+  virtual void lost_connection(PStatMonitor *monitor) {}
+
   void add_reader(Connection *connection, PStatReader *reader);
   void remove_reader(Connection *connection, PStatReader *reader);
 
@@ -67,6 +70,7 @@ private:
   void user_guide_bars_changed();
 
   PStatListener *_listener;
+  PT(Connection) _rendezvous;
 
   typedef pmap<PT(Connection), PStatReader *> Readers;
   Readers _readers;

@@ -18,7 +18,8 @@
 #include "typedReferenceCount.h"
 #include "typedWritableReferenceCount.h"
 #include "eventParameter.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
+#include "small_vector.h"
 
 class AsyncTaskManager;
 class AsyncTask;
@@ -62,12 +63,12 @@ PUBLISHED:
   INLINE AsyncFuture();
   virtual ~AsyncFuture();
 
-  EXTENSION(static PyObject *__await__(PyObject *self));
-  EXTENSION(static PyObject *__iter__(PyObject *self));
+  PY_EXTENSION(static PyObject *__await__(PyObject *self));
+  PY_EXTENSION(static PyObject *__iter__(PyObject *self));
 
   INLINE bool done() const;
   INLINE bool cancelled() const;
-  EXTENSION(PyObject *result(PyObject *timeout = Py_None) const);
+  PY_EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
 
   virtual bool cancel();
 
@@ -75,22 +76,23 @@ PUBLISHED:
   INLINE const std::string &get_done_event() const;
   MAKE_PROPERTY(done_event, get_done_event, set_done_event);
 
-  EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
+  PY_EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
-  EXTENSION(static PyObject *gather(PyObject *args));
+  PY_EXTENSION(static PyObject *gather(PyObject *args));
+  INLINE static PT(AsyncFuture) shield(PT(AsyncFuture) future);
 
   virtual void output(std::ostream &out) const;
 
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
+  PY_EXTENSION(void set_result(PyObject *));
+public:
   INLINE void set_result(std::nullptr_t);
-  INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
   INLINE void set_result(TypedWritableReferenceCount *result);
   INLINE void set_result(const EventParameter &result);
-
-public:
+  void set_result(TypedObject *result);
   void set_result(TypedObject *ptr, ReferenceCount *ref_ptr);
 
   INLINE TypedObject *get_result() const;
@@ -108,7 +110,7 @@ private:
   void wake_task(AsyncTask *task);
 
 protected:
-  enum FutureState {
+  enum FutureState : patomic_unsigned_lock_free::value_type {
     // Pending states
     FS_pending,
     FS_locked_pending,
@@ -119,17 +121,18 @@ protected:
   };
   INLINE bool try_lock_pending();
   INLINE void unlock(FutureState new_state = FS_pending);
+  INLINE FutureState get_future_state() const;
   INLINE bool set_future_state(FutureState state);
 
   AsyncTaskManager *_manager;
   TypedObject *_result;
   PT(ReferenceCount) _result_ref;
-  AtomicAdjust::Integer _future_state;
+  patomic_unsigned_lock_free _future_state;
 
   std::string _done_event;
 
   // Tasks and gathering futures waiting for this one to complete.
-  Futures _waiting;
+  small_vector<PT(AsyncFuture)> _waiting;
 
   friend class AsyncGatheringFuture;
   friend class AsyncTaskChain;
@@ -174,7 +177,7 @@ public:
 
 private:
   const Futures _futures;
-  AtomicAdjust::Integer _num_pending;
+  patomic<size_t> _num_pending;
 
   friend class AsyncFuture;
 
@@ -198,4 +201,4 @@ private:
 
 #include "asyncFuture.I"
 
-#endif
+#endif // !ASYNCFUTURE_H

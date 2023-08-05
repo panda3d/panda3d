@@ -4,11 +4,12 @@ global eventMgr instance."""
 __all__ = ['EventManager']
 
 
-from .MessengerGlobal import *
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.MessengerGlobal import messenger
 from panda3d.core import PStatCollector, EventQueue, EventHandler
 from panda3d.core import ConfigVariableBool
+
 
 class EventManager:
 
@@ -54,17 +55,17 @@ class EventManager:
         """
         Extract the actual data from the eventParameter
         """
-        if (eventParameter.isInt()):
+        if eventParameter.isInt():
             return eventParameter.getIntValue()
-        elif (eventParameter.isDouble()):
+        elif eventParameter.isDouble():
             return eventParameter.getDoubleValue()
-        elif (eventParameter.isString()):
+        elif eventParameter.isString():
             return eventParameter.getStringValue()
-        elif (eventParameter.isWstring()):
+        elif eventParameter.isWstring():
             return eventParameter.getWstringValue()
-        elif (eventParameter.isTypedRefCount()):
+        elif eventParameter.isTypedRefCount():
             return eventParameter.getTypedRefCountValue()
-        elif (eventParameter.isEmpty()):
+        elif eventParameter.isEmpty():
             return None
         else:
             # Must be some user defined type, return the ptr
@@ -88,7 +89,7 @@ class EventManager:
                 paramList.append(eventParameterData)
 
             # Do not print the new frame debug, it is too noisy!
-            if (EventManager.notify.getDebug() and eventName != 'NewFrame'):
+            if EventManager.notify.getDebug() and eventName != 'NewFrame':
                 EventManager.notify.debug('received C++ event named: ' + eventName +
                                           ' parameters: ' + repr(paramList))
             # **************************************************************
@@ -124,7 +125,7 @@ class EventManager:
                 paramList.append(eventParameterData)
 
             # Do not print the new frame debug, it is too noisy!
-            if (EventManager.notify.getDebug() and eventName != 'NewFrame'):
+            if EventManager.notify.getDebug() and eventName != 'NewFrame':
                 EventManager.notify.debug('received C++ event named: ' + eventName +
                                           ' parameters: ' + repr(paramList))
             # Send the event, we used to send it with the event
@@ -136,11 +137,11 @@ class EventManager:
             hyphen = name.find('-')
             if hyphen >= 0:
                 name = name[0:hyphen]
-            pstatCollector = PStatCollector('App:Show code:eventManager:' + name)
+            pstatCollector = PStatCollector('App:Tasks:eventManager:' + name)
             pstatCollector.start()
             if self.eventHandler:
                 cppPstatCollector = PStatCollector(
-                    'App:Show code:eventManager:' + name + ':C++')
+                    'App:Tasks:eventManager:' + name + ':C++')
 
             messenger.send(eventName, paramList)
 
@@ -179,3 +180,6 @@ class EventManager:
         # since the task removal itself might also fire off an event.
         if self.eventQueue is not None:
             self.eventQueue.clear()
+
+    do_events = doEvents
+    process_event = processEvent

@@ -26,6 +26,7 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "dcClass_ext.h"
 #endif
 
 using std::endl;
@@ -34,7 +35,7 @@ using std::string;
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 #ifndef CPPPARSER
-PStatCollector CConnectionRepository::_update_pcollector("App:Show code:readerPollTask:Update");
+PStatCollector CConnectionRepository::_update_pcollector("App:Tasks:readerPollTask:Update");
 #endif  // CPPPARSER
 
 /**
@@ -57,19 +58,18 @@ CConnectionRepository(bool has_owner_view, bool threaded_net) :
   _bdc(4096000,4096000,1400),
   _native(false),
 #endif
+  _has_owner_view(has_owner_view),
+  _handle_c_updates(true),
   _client_datagram(true),
   _handle_datagrams_internally(handle_datagrams_internally),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
+  _in_quiet_zone(0),
   _time_warning(0.0),
-// _msg_channels(),
   _msg_sender(0),
   _msg_type(0),
-  _has_owner_view(has_owner_view),
-  _handle_c_updates(true),
   _want_message_bundling(true),
-  _bundling_msgs(0),
-  _in_quiet_zone(0)
+  _bundling_msgs(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -410,19 +410,12 @@ send_datagram(const Datagram &dg) {
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
       std::ostringstream s;
-
-#if PY_VERSION_HEX >= 0x03030000
-      PyObject *exc_type = PyExc_ConnectionError;
-#else
-      PyObject *exc_type = PyExc_OSError;
-#endif
-
       s << endl << "Error sending message: " << endl;
       dg.dump_hex(s);
       s << "Message data: " << dg.get_data() << endl;
 
       string message = s.str();
-      PyErr_SetString(exc_type, message.c_str());
+      PyErr_SetString(PyExc_ConnectionError, message.c_str());
 #endif
     }
     return result;
@@ -587,7 +580,8 @@ flush() {
 
   #ifdef HAVE_OPENSSL
   if (_http_conn) {
-    return _http_conn->flush();
+    _http_conn->flush();
+    return !_http_conn->is_closed();
   }
   #endif  // HAVE_OPENSSL
 
@@ -693,11 +687,7 @@ handle_update_field() {
       PyObject_GetAttrString(_python_repository, "doId2do");
     nassertr(doId2do != nullptr, false);
 
-    #ifdef USE_PYTHON_2_2_OR_EARLIER
-    PyObject *doId = PyInt_FromLong(do_id);
-    #else
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
-    #endif
     PyObject *distobj = PyDict_GetItem(doId2do, doId);
     Py_DECREF(doId);
     Py_DECREF(doId2do);
@@ -736,7 +726,7 @@ handle_update_field() {
       // get into trouble if it tried to delete the object from the doId2do
       // map.
       Py_INCREF(distobj);
-      dclass->receive_update(distobj, _di);
+      invoke_extension(dclass).receive_update(distobj, _di);
       Py_DECREF(distobj);
 
       if (PyErr_Occurred()) {
@@ -784,11 +774,7 @@ handle_update_field_owner() {
       PyObject_GetAttrString(_python_repository, "doId2ownerView");
     nassertr(doId2ownerView != nullptr, false);
 
-    #ifdef USE_PYTHON_2_2_OR_EARLIER
-    PyObject *doId = PyInt_FromLong(do_id);
-    #else
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
-    #endif
 
     // pass the update to the owner view first
     PyObject *distobjOV = PyDict_GetItem(doId2ownerView, doId);
@@ -820,7 +806,7 @@ handle_update_field_owner() {
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        dclass->receive_update(distobjOV, _odi);
+        invoke_extension(dclass).receive_update(distobjOV, _odi);
         Py_DECREF(distobjOV);
 
         if (PyErr_Occurred()) {
@@ -861,7 +847,7 @@ handle_update_field_owner() {
         // get into trouble if it tried to delete the object from the doId2do
         // map.
         Py_INCREF(distobj);
-        dclass->receive_update(distobj, _di);
+        invoke_extension(dclass).receive_update(distobj, _di);
         Py_DECREF(distobj);
 
         if (PyErr_Occurred()) {
@@ -893,7 +879,7 @@ describe_message(std::ostream &out, const string &prefix,
 
   packer.set_unpack_data((const char *)dg.get_data(), dg.get_length(), false);
   CHANNEL_TYPE do_id;
-  int msg_type;
+  unsigned int msg_type;
   bool is_update = false;
   string full_prefix = "CR::" + prefix;
 
@@ -919,28 +905,29 @@ describe_message(std::ostream &out, const string &prefix,
 
     #ifdef HAVE_PYTHON
     if (_python_repository != nullptr) {
-      PyObject *msgId = PyLong_FromLong(msg_type);
-      nassertv(msgId != nullptr);
-#if PY_MAJOR_VERSION >= 3
-      PyObject *methodName = PyUnicode_FromString("_getMsgName");
-#else
-      PyObject *methodName = PyString_FromString("_getMsgName");
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
 #endif
+
+      PyObject *msgId = PyLong_FromUnsignedLong(msg_type);
+      nassertv(msgId != nullptr);
+      PyObject *methodName = PyUnicode_FromString("_getMsgName");
       nassertv(methodName != nullptr);
 
-      PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
-                                                    msgId, nullptr);
+      PyObject *result =
+        PyObject_CallMethodOneArg(_python_repository, methodName, msgId);
       nassertv(result != nullptr);
 
-#if PY_MAJOR_VERSION >= 3
       msgName += string(PyUnicode_AsUTF8(result));
-#else
-      msgName += string(PyString_AsString(result));
-#endif
 
       Py_DECREF(methodName);
       Py_DECREF(msgId);
       Py_DECREF(result);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
     }
     #endif
     if (msgName.length() == 0) {
@@ -959,15 +946,16 @@ describe_message(std::ostream &out, const string &prefix,
 
     #ifdef HAVE_PYTHON
     if (_python_repository != nullptr) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+#endif
+
       PyObject *doId2do =
         PyObject_GetAttrString(_python_repository, "doId2do");
       nassertv(doId2do != nullptr);
 
-      #ifdef USE_PYTHON_2_2_OR_EARLIER
-      PyObject *doId = PyInt_FromLong(do_id);
-      #else
       PyObject *doId = PyLong_FromUnsignedLong(do_id);
-      #endif
       PyObject *distobj = PyDict_GetItem(doId2do, doId);
       Py_DECREF(doId);
       Py_DECREF(doId2do);
@@ -983,6 +971,10 @@ describe_message(std::ostream &out, const string &prefix,
         dclass = (DCClass *)PyLong_AsVoidPtr(dclass_this);
         Py_DECREF(dclass_this);
       }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
     }
     #endif  // HAVE_PYTHON
 

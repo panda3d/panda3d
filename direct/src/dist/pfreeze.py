@@ -105,7 +105,7 @@ def main(args=None):
         elif opt == '-h':
             usage(0)
         else:
-            print('illegal option: ' + flag)
+            print('illegal option: ' + opt)
             sys.exit(1)
 
     if not basename:

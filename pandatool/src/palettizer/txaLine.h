@@ -81,7 +81,8 @@ private:
     KW_linear,
     KW_mipmap,
     KW_cont,
-    KW_anisotropic
+    KW_anisotropic,
+    KW_srgb,
   };
 
   typedef pvector<Keyword> Keywords;

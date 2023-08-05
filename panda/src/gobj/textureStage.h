@@ -63,6 +63,8 @@ PUBLISHED:
     M_height,       // Rarely used: normal_height  is more efficient.
     M_selector,
     M_normal_gloss,
+
+    M_emission,
   };
 
   enum CombineMode {
@@ -179,7 +181,7 @@ PUBLISHED:
 
   int compare_to(const TextureStage &other) const;
 
-  void write(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
   void output(std::ostream &out) const;
 
   INLINE static TextureStage *get_default();

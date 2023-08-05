@@ -16,6 +16,9 @@
 
 #include "pandatoolbase.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinStatsMonitor;
@@ -30,8 +33,11 @@ public:
   WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index);
   ~WinStatsChartMenu();
 
+  int get_thread_index() const { return _thread_index; }
+
   HMENU get_menu_handle();
   void add_to_menu_bar(HMENU menu_bar, int before_menu_id);
+  void remove_from_menu_bar(HMENU menu_bar);
 
   void check_update();
   void do_update();

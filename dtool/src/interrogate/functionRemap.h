@@ -98,9 +98,10 @@ public:
     F_iter               = 0x0400,
     F_compare_to         = 0x0800,
     F_coerce_constructor = 0x1000,
-    F_divide_float       = 0x2000,
+    F_divide_integer     = 0x2000,
     F_hash               = 0x4000,
     F_explicit_args      = 0x8000,
+    F_explicit_cls       =0x10000,
   };
 
   typedef std::vector<Parameter> Parameters;

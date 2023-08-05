@@ -258,7 +258,7 @@ get_max_vertices_per_primitive() const {
 INLINE int GraphicsStateGuardian::
 get_max_texture_stages() const {
   if (max_texture_stages > 0) {
-    return std::min(_max_texture_stages, (int)max_texture_stages);
+    return (std::min)(_max_texture_stages, (int)max_texture_stages);
   }
   return _max_texture_stages;
 }
@@ -695,7 +695,7 @@ get_timer_queries_active() const {
 INLINE int GraphicsStateGuardian::
 get_max_color_targets() const {
   if (max_color_targets > 0) {
-    return std::min(_max_color_targets, (int)max_color_targets);
+    return (std::min)(_max_color_targets, (int)max_color_targets);
   }
   return _max_color_targets;
 }

@@ -1,4 +1,4 @@
-from panda3d.core import Mutex, ConditionVarFull
+from panda3d.core import Mutex, ConditionVar
 from panda3d import core
 from direct.stdpy import thread
 import pytest
@@ -14,7 +14,7 @@ def yield_thread():
 def test_cvar_notify():
     # Just tests that notifying without waiting does no harm.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     cv.notify()
     cv.notify_all()
@@ -24,15 +24,14 @@ def test_cvar_notify():
 def test_cvar_notify_locked():
     # Tests the same thing, but with the lock held.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
-    m.acquire()
-    cv.notify()
-    m.release()
+    with m:
+        cv.notify()
 
-    m.acquire()
-    cv.notify_all()
-    m.release()
+    with m:
+        cv.notify_all()
+
     del cv
 
 
@@ -42,7 +41,7 @@ def test_cvar_notify_locked():
 def test_cvar_notify_thread(num_threads):
     # Tests notify() with some number of threads waiting.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     # We prematurely notify, so that we can test that it's not doing anything.
     m.acquire()
@@ -72,16 +71,22 @@ def test_cvar_notify_thread(num_threads):
             break
 
     assert state['waiting'] == num_threads
-    m.release()
 
     # OK, now signal it, and yield.  One thread must be unblocked per notify.
     for i in range(num_threads):
         cv.notify()
-        yield_thread()
-        m.acquire()
-        assert state['waiting'] == num_threads - i - 1
-        m.release()
+        expected_waiters = num_threads - i - 1
 
+        for j in range(1000):
+            m.release()
+            yield_thread()
+            m.acquire()
+            if state['waiting'] == expected_waiters:
+                break
+
+        assert state['waiting'] == expected_waiters
+
+    m.release()
     for thread in threads:
         thread.join()
     cv = None
@@ -93,7 +98,7 @@ def test_cvar_notify_thread(num_threads):
 def test_cvar_notify_all_threads(num_threads):
     # Tests notify_all() with some number of threads waiting.
     m = Mutex()
-    cv = ConditionVarFull(m)
+    cv = ConditionVar(m)
 
     # We prematurely notify, so that we can test that it's not doing anything.
     m.acquire()
@@ -123,12 +128,16 @@ def test_cvar_notify_all_threads(num_threads):
             break
 
     assert state['waiting'] == num_threads
-    m.release()
 
     # OK, now signal it, and yield.  All threads must unblock.
     cv.notify_all()
-    yield_thread()
-    m.acquire()
+    for i in range(1000):
+        m.release()
+        yield_thread()
+        m.acquire()
+        if state['waiting'] == 0:
+            break
+
     assert state['waiting'] == 0
     m.release()
 

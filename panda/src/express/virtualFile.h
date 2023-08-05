@@ -56,12 +56,12 @@ PUBLISHED:
   BLOCKING void ls(std::ostream &out = std::cout) const;
   BLOCKING void ls_all(std::ostream &out = std::cout) const;
 
-  EXTENSION(PyObject *read_file(bool auto_unwrap) const);
+  PY_EXTENSION(PyObject *read_file(bool auto_unwrap) const);
   BLOCKING virtual std::istream *open_read_file(bool auto_unwrap) const;
   BLOCKING virtual void close_read_file(std::istream *stream) const;
   virtual bool was_read_successful() const;
 
-  EXTENSION(PyObject *write_file(PyObject *data, bool auto_wrap));
+  PY_EXTENSION(PyObject *write_file(PyObject *data, bool auto_wrap));
   BLOCKING virtual std::ostream *open_write_file(bool auto_wrap, bool truncate);
   BLOCKING virtual std::ostream *open_append_file();
   BLOCKING virtual void close_write_file(std::ostream *stream);
@@ -126,4 +126,4 @@ INLINE std::ostream &operator << (std::ostream &out, const VirtualFile &file);
 
 #include "virtualFile.I"
 
-#endif
+#endif // !VIRTUALFILE_H

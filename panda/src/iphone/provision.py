@@ -34,7 +34,7 @@ command = 'env CODESIGN_ALLOCATE="/Developer/Platforms/iPhoneOS.platform/Develop
     'xcent' : xcent,
     }
 
-print command
+print(command)
 result = os.system(command)
 if result != 0:
     raise StandardError

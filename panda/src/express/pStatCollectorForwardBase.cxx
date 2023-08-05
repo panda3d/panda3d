@@ -13,11 +13,9 @@
 
 #include "pStatCollectorForwardBase.h"
 
-#ifdef DO_PSTATS
 /**
  *
  */
 PStatCollectorForwardBase::
 ~PStatCollectorForwardBase() {
 }
-#endif  // DO_PSTATS

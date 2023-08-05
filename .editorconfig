@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{py,pyw}]
+indent_style = space
+indent_size = 4
+
+[*.{h,c,cxx,cpp,I,T}]
+indent_style = space
+indent_size = 2
+
+[{CMakeLists.txt,*.cmake}]
+indent_style = space
+indent_size = 2
+
+[*.bat]
+end_of_line = crlf

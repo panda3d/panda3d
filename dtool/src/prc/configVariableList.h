@@ -30,9 +30,9 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableList(const std::string &name,
-                            const std::string &description = std::string(),
-                            int flags = 0);
+  INLINE explicit ConfigVariableList(const std::string &name,
+                                     const std::string &description = std::string(),
+                                     int flags = 0);
   INLINE ~ConfigVariableList();
 
   INLINE size_t get_num_values() const;

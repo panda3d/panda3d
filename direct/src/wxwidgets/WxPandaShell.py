@@ -1,23 +1,20 @@
 import wx
 from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.showbase.ShowBase import *
-from direct.directtools.DirectGlobals import *
+from direct.showbase.ShowBase import ShowBase
+from direct.showbase import ShowBaseGlobal
+from direct.directtools.DirectGlobals import SKIP_UNPICKABLE
+from direct.task.TaskManagerGlobal import taskMgr
 
-try:
-    base
-except NameError:
-    base = ShowBase(False, windowType = 'none')
-
-from .WxAppShell import *
-from .ViewPort import *
+from .WxAppShell import WxAppShell
+from .ViewPort import Viewport, ViewportManager
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402
 ID_FRONT_VIEW = 403
 ID_LEFT_VIEW = 404
 ID_PERSP_VIEW = 405
+
 
 class WxPandaShell(WxAppShell):
     """ Class for Panda3D LevelEditor """
@@ -29,14 +26,18 @@ class WxPandaShell(WxAppShell):
                        '\nAll Rights Reserved.')
 
     MENU_TEXTS = {
-        ID_FOUR_VIEW : ("Four Views", None),
-        ID_TOP_VIEW : ("Top View", None),
-        ID_FRONT_VIEW : ("Front View", None),
-        ID_LEFT_VIEW : ("Left View", None),
-        ID_PERSP_VIEW : ("Persp View", None),
-        }
+        ID_FOUR_VIEW: ("Four Views", None),
+        ID_TOP_VIEW: ("Top View", None),
+        ID_FRONT_VIEW: ("Front View", None),
+        ID_LEFT_VIEW: ("Left View", None),
+        ID_PERSP_VIEW: ("Persp View", None),
+    }
 
     def __init__(self, fStartDirect = False):
+        base = getattr(ShowBaseGlobal, 'base', None)
+        if not base:
+            base = ShowBase(False, windowType='none')
+
         fDirect = (base.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
 
@@ -103,7 +104,8 @@ class WxPandaShell(WxAppShell):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.mainFrame, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.SetSizer(sizer)
+        self.Layout()
 
     def initialize(self):
         """Initializes the viewports and editor."""
@@ -112,12 +114,12 @@ class WxPandaShell(WxAppShell):
         self.wxStep()
         ViewportManager.initializeAll()
         # Position the camera
-        if base.trackball != None:
-          base.trackball.node().setPos(0, 30, 0)
-          base.trackball.node().setHpr(0, 15, 0)
+        if base.trackball is not None:
+            base.trackball.node().setPos(0, 30, 0)
+            base.trackball.node().setHpr(0, 15, 0)
 
         # to make persp view as default
-        self.perspViewMenuItem.Toggle()
+        self.perspViewMenuItem.Check()
         self.onViewChange(None, 3)
 
         # initializing direct
@@ -201,9 +203,10 @@ class WxPandaShell(WxAppShell):
     def wxStep(self, task = None):
         """A step in the WX event loop. You can either call this yourself or use as task."""
         while self.evtLoop.Pending():
-          self.evtLoop.Dispatch()
+            self.evtLoop.Dispatch()
         self.evtLoop.ProcessIdle()
-        if task != None: return task.cont
+        if task is not None:
+            return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""
@@ -237,5 +240,3 @@ class WxPandaShell(WxAppShell):
             self.currentView = self.perspView
 
         return self.currentView
-
-

@@ -15,10 +15,9 @@
  *
  */
 INLINE TextureContext::
-TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   BufferContext(&pgo->_texture_residency, tex),
-  AdaptiveLruPage(0),
-  _view(view)
+  AdaptiveLruPage(0)
 {
 }
 
@@ -31,14 +30,12 @@ get_texture() const {
 }
 
 /**
- * Returns the specific view of a multiview texture this context represents.
- * In the usual case, with a non-multiview texture, this will be 0.
+ * @deprecated since 1.11.0: always returns 0.
  */
 INLINE int TextureContext::
 get_view() const {
-  return _view;
+  return 0;
 }
-
 
 /**
  * Returns true if the texture properties or image have been modified since
@@ -68,12 +65,12 @@ was_image_modified() const {
 }
 
 /**
- * Returns true if the texture's "simple" image has been modified since the
- * last time mark_simple_loaded() was called.
+ * Returns true if the given page of the texture image has been modified since
+ * the last time mark_loaded() was called.
  */
 INLINE bool TextureContext::
-was_simple_image_modified() const {
-  return _simple_image_modified != get_texture()->get_simple_image_modified();
+was_image_page_modified(int z, int n) const {
+  return get_texture()->get_image_modified_pages(_image_modified, n).get_bit(z);
 }
 
 /**
@@ -95,12 +92,21 @@ get_image_modified() const {
 }
 
 /**
- * Returns a sequence number which is guaranteed to change at least every time
- * the texture's "simple" image data is modified.
+ * Returns a SparseArray indicating which pages of the texture have been
+ * modified since the last call to mark_loaded().
  */
-INLINE UpdateSeq TextureContext::
-get_simple_image_modified() const {
-  return _simple_image_modified;
+INLINE SparseArray TextureContext::
+get_image_modified_pages(int n) const {
+  return get_texture()->get_image_modified_pages(_image_modified, n);
+}
+
+/**
+ * Returns a SparseArray indicating which pages of the texture have been
+ * modified since the last call to mark_loaded().
+ */
+INLINE SparseArray TextureContext::
+get_view_modified_pages(int view, int n) const {
+  return get_texture()->get_view_modified_pages(_image_modified, view, n);
 }
 
 /**
@@ -122,23 +128,9 @@ mark_loaded() {
   // _data_size_bytes = _data->get_texture_size_bytes();
   _properties_modified = get_texture()->get_properties_modified();
   _image_modified = get_texture()->get_image_modified();
-  update_modified(std::max(_properties_modified, _image_modified));
+  update_modified((std::max)(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
-  set_resident(true);
-}
-
-/**
- * Should be called after the texture's "simple" image has been loaded into
- * graphics memory.
- */
-INLINE void TextureContext::
-mark_simple_loaded() {
-  _properties_modified = get_texture()->get_properties_modified();
-  _simple_image_modified = get_texture()->get_simple_image_modified();
-  update_modified(std::max(_properties_modified, _simple_image_modified));
-
-  // The texture's not exactly resident now, but some part of it is.
   set_resident(true);
 }
 
@@ -149,7 +141,6 @@ INLINE void TextureContext::
 mark_unloaded() {
   _properties_modified = UpdateSeq::old();
   _image_modified = UpdateSeq::old();
-  _simple_image_modified = UpdateSeq::old();
   update_modified(UpdateSeq::old());
 
   set_resident(false);

@@ -63,8 +63,8 @@ public:
     calc_fb_properties(DWORD cformat, DWORD dformat,
                        DWORD multisampletype, DWORD multisamplequality);
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
-  void apply_texture(int i, TextureContext *tc, const SamplerState &sampler);
+  virtual TextureContext *prepare_texture(Texture *tex);
+  void apply_texture(int i, TextureContext *tc, int view, const SamplerState &sampler);
   virtual bool update_texture(TextureContext *tc, bool force);
   bool upload_texture(DXTextureContext9 *dtc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -107,7 +107,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
@@ -127,7 +127,8 @@ public:
                                            const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram(Texture *tex, int view, int z,
                                        const DisplayRegion *dr,
-                                       const RenderBuffer &rb);
+                                       const RenderBuffer &rb,
+                                       ScreenshotRequest *request);
   bool do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
                                   const DisplayRegion *dr,
                                   const RenderBuffer &rb,

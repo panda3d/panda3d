@@ -1,4 +1,4 @@
-"""instantiate global InputState object"""
+"""Instantiates the global :class:`~.InputState.InputState` object."""
 
 __all__ = ['inputState']
 
@@ -7,4 +7,5 @@ __all__ = ['inputState']
 
 from direct.controls import InputState
 
+#: The global :class:`~.InputState.InputState` object.
 inputState = InputState.InputState()

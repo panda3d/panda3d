@@ -23,10 +23,9 @@ bool TypeRegistryNode::_paranoid_inheritance = false;
  */
 TypeRegistryNode::
 TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref) :
-  _handle(handle), _name(name), _ref(ref)
+  _handle(handle), _name(name), _ref(ref), _memory_usage{}
 {
   clear_subtree();
-  memset(_memory_usage, 0, sizeof(_memory_usage));
 }
 
 /**
@@ -312,18 +311,38 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
  * Recurses through the parent nodes to find the best Python type object to
  * represent objects of this type.
  */
-PyObject *TypeRegistryNode::
+PyTypeObject *TypeRegistryNode::
 r_get_python_type() const {
-  Classes::const_iterator ni;
-  for (ni = _parent_classes.begin(); ni != _parent_classes.end(); ++ni) {
-    const TypeRegistryNode *parent = *ni;
+  for (const TypeRegistryNode *parent : _parent_classes) {
     if (parent->_python_type != nullptr) {
       return parent->_python_type;
-
-    } else if (!parent->_parent_classes.empty()) {
-      PyObject *py_type = parent->r_get_python_type();
+    }
+    else if (!parent->_parent_classes.empty()) {
+      PyTypeObject *py_type = parent->r_get_python_type();
       if (py_type != nullptr) {
         return py_type;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+/**
+ * Creates a Python wrapper object to represent the given C++ pointer, which
+ * must be exactly of the correct type, unless cast_from is set to one of its
+ * base classes, in which case it will be cast appropriately.
+ */
+PyObject *TypeRegistryNode::
+r_wrap_python(void *ptr, PyTypeObject *cast_from) const {
+  for (const TypeRegistryNode *parent : _parent_classes) {
+    if (parent->_python_wrap_func != nullptr) {
+      return parent->_python_wrap_func(ptr, cast_from);
+    }
+    else if (!parent->_parent_classes.empty()) {
+      PyObject *wrapper = parent->r_wrap_python(ptr, cast_from);
+      if (wrapper != nullptr) {
+        return wrapper;
       }
     }
   }

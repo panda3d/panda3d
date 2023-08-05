@@ -102,10 +102,10 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
          ++fi) {
       Function *func = (*fi);
       out << "  { \"" << func->_ifunc.get_name() << "\", &" << func->_name
-          << ", METH_VARARGS },\n";
+          << ", METH_VARARGS, nullptr },\n";
     }
   }
-  out << "  { nullptr, nullptr }\n"
+  out << "  { nullptr, nullptr, 0, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"

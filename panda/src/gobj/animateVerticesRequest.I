@@ -27,5 +27,5 @@ AnimateVerticesRequest(GeomVertexData *geom_vertex_data) :
  */
 INLINE bool AnimateVerticesRequest::
 is_ready() const {
-  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
+  return (FutureState)_future_state.load(std::memory_order_relaxed) == FS_finished;
 }

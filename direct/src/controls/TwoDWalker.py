@@ -1,9 +1,13 @@
 """
-TwoDWalker.py is for controling the avatars in a 2D Scroller game environment.
+TwoDWalker.py is for controlling the avatars in a 2D scroller game environment.
 """
 
-from .GravityWalker import *
-from panda3d.core import ConfigVariableBool
+from .GravityWalker import GravityWalker
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.Task import Task
+from panda3d.core import ConfigVariableBool, Vec3
 
 
 class TwoDWalker(GravityWalker):

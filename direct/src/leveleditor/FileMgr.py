@@ -48,5 +48,5 @@ class FileMgr:
             module = imp.load_module(moduleName, file, pathname, description)
             self.editor.updateStatusReadout('Sucessfully opened file %s'%fileName)
             self.editor.fNeedToSave = False
-        except:
+        except Exception:
             print('failed to load %s'%fileName)

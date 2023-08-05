@@ -28,7 +28,7 @@ protected:
   INLINE ParamTextureSampler() {};
 
 PUBLISHED:
-  INLINE ParamTextureSampler(Texture *tex, const SamplerState &sampler);
+  INLINE explicit ParamTextureSampler(Texture *tex, const SamplerState &sampler);
 
   INLINE virtual TypeHandle get_value_type() const;
   INLINE Texture *get_texture() const;
@@ -89,7 +89,7 @@ protected:
   };
 
 PUBLISHED:
-  INLINE ParamTextureImage(Texture *tex, bool read, bool write, int z=-1, int n=0);
+  INLINE explicit ParamTextureImage(Texture *tex, bool read, bool write, int z=-1, int n=0);
 
   INLINE virtual TypeHandle get_value_type() const;
 

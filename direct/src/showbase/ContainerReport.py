@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
+import io
+
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
     # set of containers that should not be included in the report
-    PrivateIds = set()
+    PrivateIds: set[int] = set()
 
     def __init__(self, name, log=False, limit=None, threaded=False):
         Job.__init__(self, name)
@@ -22,7 +28,7 @@ class ContainerReport(Job):
         # for breadth-first searching
         self._queue = Queue()
         jobMgr.add(self)
-        if threaded == False:
+        if not threaded:
             jobMgr.finish(self)
 
     def destroy(self):
@@ -48,22 +54,22 @@ class ContainerReport(Job):
             id(self._type2id2len),
             id(self._queue),
             id(self._instanceDictIds),
-            ]))
+        ]))
         # push on a few things that we want to give priority
         # for the sake of the variable-name printouts
         try:
             base
-        except:
+        except NameError:
             pass
         else:
-            self._enqueueContainer( base.__dict__,
+            self._enqueueContainer(base.__dict__,
                                    'base')
         try:
             simbase
-        except:
+        except NameError:
             pass
         else:
-            self._enqueueContainer( simbase.__dict__,
+            self._enqueueContainer(simbase.__dict__,
                                    'simbase')
         self._queue.push(__builtins__)
         self._id2pathStr[id(__builtins__)] = ''
@@ -81,21 +87,13 @@ class ContainerReport(Job):
             try:
                 if parentObj.__class__.__name__ == 'method-wrapper':
                     continue
-            except:
+            except Exception:
                 pass
 
-            if type(parentObj) in (types.StringType, types.UnicodeType):
+            if isinstance(parentObj, (str, bytes)):
                 continue
 
-            if type(parentObj) in (types.ModuleType, types.InstanceType):
-                child = parentObj.__dict__
-                if self._examine(child):
-                    assert (self._queue.back() is child)
-                    self._instanceDictIds.add(id(child))
-                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
-                continue
-
-            if type(parentObj) is dict:
+            if isinstance(parentObj, dict):
                 key = None
                 attr = None
                 keys = list(parentObj.keys())
@@ -112,7 +110,7 @@ class ContainerReport(Job):
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
-                            assert (self._queue.back() is attr)
+                            assert self._queue.back() is attr
                             if parentObj is __builtins__:
                                 self._id2pathStr[id(attr)] = key
                             else:
@@ -124,10 +122,28 @@ class ContainerReport(Job):
                 del attr
                 continue
 
-            if type(parentObj) is not types.FileType:
+            # types.CellType was added in Python 3.8
+            if type(parentObj) is types.CellType:
+                child = parentObj.cell_contents
+                if self._examine(child):
+                    assert (self._queue.back() is child)
+                    self._instanceDictIds.add(id(child))
+                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)]) + '.cell_contents'
+                continue
+
+            if hasattr(parentObj, '__dict__'):
+                # Instance of a class
+                child = parentObj.__dict__
+                if self._examine(child):
+                    assert (self._queue.back() is child)
+                    self._instanceDictIds.add(id(child))
+                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
+                continue
+
+            if not isinstance(parentObj, io.TextIOWrapper):
                 try:
                     itr = iter(parentObj)
-                except:
+                except Exception:
                     pass
                 else:
                     try:
@@ -135,14 +151,14 @@ class ContainerReport(Job):
                         while 1:
                             try:
                                 attr = next(itr)
-                            except:
+                            except Exception:
                                 # some custom classes don't do well when iterated
                                 attr = None
                                 break
                             if id(attr) not in self._visitedIds:
                                 self._visitedIds.add(id(attr))
                                 if self._examine(attr):
-                                    assert (self._queue.back() is attr)
+                                    assert self._queue.back() is attr
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
@@ -153,17 +169,20 @@ class ContainerReport(Job):
 
             try:
                 childNames = dir(parentObj)
-            except:
+            except Exception:
                 pass
             else:
                 childName = None
                 child = None
                 for childName in childNames:
-                    child = getattr(parentObj, childName)
+                    try:
+                        child = getattr(parentObj, childName)
+                    except Exception:
+                        continue
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
-                            assert (self._queue.back() is child)
+                            assert self._queue.back() is child
                             self._id2pathStr[id(child)] = self._id2pathStr[id(parentObj)] + '.%s' % childName
                 del childName
                 del child
@@ -188,19 +207,16 @@ class ContainerReport(Job):
         # if it's a container, put it in the tables
         try:
             length = len(obj)
-        except:
+        except Exception:
             length = None
         if length is not None and length > 0:
             self._id2container[objId] = obj
             self._type2id2len.setdefault(type(obj), {})
             self._type2id2len[type(obj)][objId] = length
+
     def _examine(self, obj):
         # return False if it's an object that can't contain or lead to other objects
-        if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
-                         types.BuiltinMethodType, types.ComplexType,
-                         types.FloatType, types.IntType, types.LongType,
-                         types.NoneType, types.NotImplementedType,
-                         types.TypeType, types.CodeType, types.FunctionType):
+        if type(obj) in deadEndTypes:
             return False
         # if it's an internal object, ignore it
         if id(obj) in ContainerReport.PrivateIds:
@@ -213,14 +229,11 @@ class ContainerReport(Job):
         if type not in self._type2id2len:
             return
         len2ids = invertDictLossless(self._type2id2len[type])
-        lengths = list(len2ids.keys())
-        lengths.sort()
-        lengths.reverse()
         print('=====')
         print('===== %s' % type)
         count = 0
         stop = False
-        for l in lengths:
+        for l in sorted(len2ids, reverse=True):
             #len2ids[l].sort()
             pathStrList = list()
             for id in len2ids[l]:
@@ -242,9 +255,8 @@ class ContainerReport(Job):
         for type in initialTypes:
             for i in self._outputType(type, **kArgs):
                 yield None
-        otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
-        otherTypes.sort()
-        for type in otherTypes:
+        otherTypes = set(self._type2id2len).difference(initialTypes)
+        for type in sorted(otherTypes, key=lambda obj: obj.__name__):
             for i in self._outputType(type, **kArgs):
                 yield None
 

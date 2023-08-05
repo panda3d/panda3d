@@ -11,14 +11,18 @@
  * @date 2006-01-15
  */
 
+/**
+ *
+ */
 INLINE int CLP(GraphicsBuffer)::
-get_multisample_count()
-{
-    return _requested_multisamples;
+get_multisample_count() {
+  return _requested_multisamples;
 }
 
+/**
+ *
+ */
 INLINE int CLP(GraphicsBuffer)::
-get_coverage_sample_count()
-{
-    return _requested_coverage_samples;
+get_coverage_sample_count() {
+  return _requested_coverage_samples;
 }

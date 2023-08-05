@@ -36,6 +36,8 @@ PUBLISHED:
 
   virtual void write(std::ostream &out, int indent_level) const;
 
+  PY_EXTENSION(PyObject *__reduce__() const);
+
 private:
   CoordinateSystem _value;
 

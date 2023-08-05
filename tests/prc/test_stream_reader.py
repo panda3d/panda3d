@@ -155,3 +155,74 @@ def test_streamreader_readline():
     stream = StringStream(b'\x00\x00')
     reader = StreamReader(stream, False)
     assert reader.readline() == b'\x00\x00'
+
+
+def test_streamreader_readlines():
+    # Empty stream
+    stream = StringStream(b'')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == []
+
+    # Single line without newline
+    stream = StringStream(b'A')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == [b'A']
+    assert reader.readlines() == []
+
+    # Single newline
+    stream = StringStream(b'\n')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == [b'\n']
+    assert reader.readlines() == []
+
+    # Line with text followed by empty line
+    stream = StringStream(b'A\n\n')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == [b'A\n', b'\n']
+    assert reader.readlines() == []
+
+    # Multiple lines
+    stream = StringStream(b'A\nB\nC')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == [b'A\n', b'B\n', b'C']
+    assert reader.readlines() == []
+
+    # Preserve null byte
+    stream = StringStream(b'\x00\x00')
+    reader = StreamReader(stream, False)
+    assert reader.readlines() == [b'\x00\x00']
+
+
+def test_streamreader_extract_bytes():
+    # Empty bytes
+    stream = StringStream(b'')
+    reader = StreamReader(stream, False)
+    assert reader.extract_bytes(10) == b''
+
+    # Small bytes object, small reads
+    stream = StringStream(b'abcd')
+    reader = StreamReader(stream, False)
+    assert reader.extract_bytes(2) == b'ab'
+    assert reader.extract_bytes(2) == b'cd'
+    assert reader.extract_bytes(2) == b''
+
+    # Embedded null bytes
+    stream = StringStream(b'a\x00b\x00c')
+    reader = StreamReader(stream, False)
+    assert reader.extract_bytes(5) == b'a\x00b\x00c'
+
+    # Not enough data in stream to fill buffer
+    stream = StringStream(b'abcdefghijklmnop')
+    reader = StreamReader(stream, False)
+    assert reader.extract_bytes(10) == b'abcdefghij'
+    assert reader.extract_bytes(10) == b'klmnop'
+    assert reader.extract_bytes(10) == b''
+
+    # Read of 0 bytes
+    stream = StringStream(b'abcd')
+    reader = StreamReader(stream, False)
+    assert reader.extract_bytes(0) == b''
+    assert reader.extract_bytes(0) == b''
+
+    # Very large read (8 MiB buffer allocation)
+    assert reader.extract_bytes(8 * 1024 * 1024) == b'abcd'

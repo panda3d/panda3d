@@ -124,7 +124,7 @@ protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
 
-  virtual bool cancel() final;
+  virtual bool cancel();
   virtual bool is_task() const final {return true;}
 
   virtual bool is_runnable();
@@ -156,7 +156,7 @@ protected:
 
   static AtomicAdjust::Integer _next_task_id;
 
-  static PStatCollector _show_code_pcollector;
+  static PStatCollector _tasks_pcollector;
   PStatCollector _task_pcollector;
 
   friend class PythonTask;

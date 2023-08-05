@@ -16,13 +16,6 @@
 TypeHandle TexturePoolFilter::_type_handle;
 
 /**
- *
- */
-TexturePoolFilter::
-~TexturePoolFilter() {
-}
-
-/**
  * This method is called before each texture is loaded from disk, via the
  * TexturePool, for the first time.  If this method returns NULL, then a new
  * Texture will be allocated and loaded from disk normally by the TexturePool;

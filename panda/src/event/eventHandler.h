@@ -22,6 +22,11 @@
 
 #include "pset.h"
 #include "pmap.h"
+#include "pvector.h"
+
+#ifndef CPPPARSER
+#include <functional>
+#endif
 
 class EventQueue;
 
@@ -39,6 +44,12 @@ public:
   // Define a function type suitable for receiving events.
   typedef void EventFunction(const Event *);
   typedef void EventCallbackFunction(const Event *, void *);
+
+#ifdef CPPPARSER
+  typedef EventFunction EventLambda;
+#else
+  typedef std::function<void (const Event *)> EventLambda;
+#endif
 
 PUBLISHED:
   explicit EventHandler(EventQueue *ev_queue);
@@ -58,6 +69,7 @@ public:
   bool add_hook(const std::string &event_name, EventFunction *function);
   bool add_hook(const std::string &event_name, EventCallbackFunction *function,
                 void *data);
+  void add_hook(const std::string &event_name, EventLambda function);
   bool has_hook(const std::string &event_name) const;
   bool has_hook(const std::string &event_name, EventFunction *function) const;
   bool has_hook(const std::string &event_name, EventCallbackFunction *function,
@@ -78,10 +90,13 @@ protected:
   typedef std::pair<EventCallbackFunction*, void*> CallbackFunction;
   typedef pset<CallbackFunction> CallbackFunctions;
   typedef pmap<std::string, CallbackFunctions> CallbackHooks;
+  typedef pvector<EventLambda> LambdaFunctions;
+  typedef pmap<std::string, LambdaFunctions> LambdaHooks;
   typedef pmap<std::string, PT(AsyncFuture)> Futures;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;
+  LambdaHooks _lambdahooks;
   Futures _futures;
   EventQueue &_queue;
 

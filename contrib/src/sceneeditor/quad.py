@@ -10,7 +10,7 @@ from direct.showbase.ShowBaseGlobal import *
 from direct.interval.IntervalGlobal import *
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import *
-import math
+from direct.task import Task
 
 
 class ViewPort:

@@ -68,7 +68,58 @@ INLINE PNMImage::
  */
 INLINE xelval PNMImage::
 clamp_val(int input_value) const {
-  return (xelval)std::min(std::max(0, input_value), (int)get_maxval());
+  return (xelval)(std::min)((std::max)(0, input_value), (int)get_maxval());
+}
+
+/**
+ * A handy function to scale non-alpha values from [0..1] to
+ * [0..get_maxval()].  Do not use this for alpha values, see to_alpha_val.
+ */
+INLINE xel PNMImage::
+to_val(const LRGBColorf &value) const {
+  xel col;
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    {
+      LRGBColorf scaled = value * get_maxval() + 0.5f;
+      col.r = clamp_val((int)scaled[0]);
+      col.g = clamp_val((int)scaled[1]);
+      col.b = clamp_val((int)scaled[2]);
+    }
+    break;
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    col.r = clamp_val((int)
+      (encode_sRGB_float(value[0]) * get_maxval() + 0.5f));
+    col.g = clamp_val((int)
+      (encode_sRGB_float(value[1]) * get_maxval() + 0.5f));
+    col.b = clamp_val((int)
+      (encode_sRGB_float(value[2]) * get_maxval() + 0.5f));
+    break;
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+    encode_sRGB_uchar(LColorf(value, 0.0f), col);
+    break;
+
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    encode_sRGB_uchar_sse2(LColorf(value, 0.0f), col);
+    break;
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    {
+      LRGBColorf scaled = value * 8192.f + 4096.5f;
+      col.r = (std::min)((std::max)(0, (int)scaled[0]), 65535);
+      col.g = (std::min)((std::max)(0, (int)scaled[1]), 65535);
+      col.b = (std::min)((std::max)(0, (int)scaled[2]), 65535);
+    }
+    break;
+  }
+  return col;
 }
 
 /**
@@ -80,7 +131,7 @@ to_val(float input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return (int)(std::min(1.0f, std::max(0.0f, input_value)) * get_maxval() + 0.5f);
+    return (int)((std::min)(1.0f, (std::max)(0.0f, input_value)) * get_maxval() + 0.5f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:
@@ -97,7 +148,7 @@ to_val(float input_value) const {
 
   case XE_scRGB:
   case XE_scRGB_alpha:
-    return std::min(std::max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
+    return (std::min)((std::max)(0, (int)((8192 * input_value) + 4096.5f)), 65535);
 
   default:
     return 0;
@@ -116,12 +167,50 @@ to_alpha_val(float input_value) const {
  * A handy function to scale non-alpha values from [0..get_maxval()] to
  * [0..1].  Do not use this for alpha values, see from_alpha_val.
  */
+INLINE LRGBColorf PNMImage::
+from_val(const xel &col) const {
+  switch (_xel_encoding) {
+  case XE_generic:
+  case XE_generic_alpha:
+    return LRGBColorf(col.r, col.g, col.b) * _inv_maxval;
+
+  case XE_generic_sRGB:
+  case XE_generic_sRGB_alpha:
+    return LRGBColorf(
+      decode_sRGB_float(col.r * _inv_maxval),
+      decode_sRGB_float(col.g * _inv_maxval),
+      decode_sRGB_float(col.b * _inv_maxval));
+
+  case XE_uchar_sRGB:
+  case XE_uchar_sRGB_alpha:
+  case XE_uchar_sRGB_sse2:
+  case XE_uchar_sRGB_alpha_sse2:
+    return LRGBColorf(
+      decode_sRGB_float((unsigned char)col.r),
+      decode_sRGB_float((unsigned char)col.g),
+      decode_sRGB_float((unsigned char)col.b));
+
+  case XE_scRGB:
+  case XE_scRGB_alpha:
+    return LRGBColorf((int)col.r - 4096,
+                      (int)col.g - 4096,
+                      (int)col.b - 4096) * (1.f / 8192.f);
+
+  default:
+    return LRGBColorf(0);
+  }
+}
+
+/**
+ * A handy function to scale non-alpha values from [0..get_maxval()] to
+ * [0..1].  Do not use this for alpha values, see from_alpha_val.
+ */
 INLINE float PNMImage::
 from_val(xelval input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return (float)input_value * _inv_maxval;
+    return (std::min)((float)input_value * _inv_maxval, 1.0f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:
@@ -479,39 +568,7 @@ set_alpha_val(int x, int y, xelval a) {
 INLINE LRGBColorf PNMImage::
 get_xel(int x, int y) const {
   nassertr(x >= 0 && x < _x_size && y >= 0 && y < _y_size, LRGBColorf::zero());
-
-  const xel &col = row(y)[x];
-
-  switch (_xel_encoding) {
-  case XE_generic:
-  case XE_generic_alpha:
-    return LRGBColorf(col.r, col.g, col.b) * _inv_maxval;
-
-  case XE_generic_sRGB:
-  case XE_generic_sRGB_alpha:
-    return LRGBColorf(
-      decode_sRGB_float(col.r * _inv_maxval),
-      decode_sRGB_float(col.g * _inv_maxval),
-      decode_sRGB_float(col.b * _inv_maxval));
-
-  case XE_uchar_sRGB:
-  case XE_uchar_sRGB_alpha:
-  case XE_uchar_sRGB_sse2:
-  case XE_uchar_sRGB_alpha_sse2:
-    return LRGBColorf(
-      decode_sRGB_float((unsigned char)col.r),
-      decode_sRGB_float((unsigned char)col.g),
-      decode_sRGB_float((unsigned char)col.b));
-
-  case XE_scRGB:
-  case XE_scRGB_alpha:
-    return LRGBColorf((int)col.r - 4096,
-                      (int)col.g - 4096,
-                      (int)col.b - 4096) * (1.f / 8192.f);
-
-  default:
-    return LRGBColorf(0);
-  }
+  return from_val(row(y)[x]);
 }
 
 /**
@@ -521,50 +578,7 @@ get_xel(int x, int y) const {
 INLINE void PNMImage::
 set_xel(int x, int y, const LRGBColorf &value) {
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
-
-  xel &col = row(y)[x];
-
-  switch (_xel_encoding) {
-  case XE_generic:
-  case XE_generic_alpha:
-    {
-      LRGBColorf scaled = value * get_maxval() + 0.5f;
-      col.r = clamp_val((int)scaled[0]);
-      col.g = clamp_val((int)scaled[1]);
-      col.b = clamp_val((int)scaled[2]);
-    }
-    break;
-
-  case XE_generic_sRGB:
-  case XE_generic_sRGB_alpha:
-    col.r = clamp_val((int)
-      (encode_sRGB_float(value[0]) * get_maxval() + 0.5f));
-    col.g = clamp_val((int)
-      (encode_sRGB_float(value[1]) * get_maxval() + 0.5f));
-    col.b = clamp_val((int)
-      (encode_sRGB_float(value[2]) * get_maxval() + 0.5f));
-    break;
-
-  case XE_uchar_sRGB:
-  case XE_uchar_sRGB_alpha:
-    encode_sRGB_uchar(LColorf(value, 0.0f), col);
-    break;
-
-  case XE_uchar_sRGB_sse2:
-  case XE_uchar_sRGB_alpha_sse2:
-    encode_sRGB_uchar_sse2(LColorf(value, 0.0f), col);
-    break;
-
-  case XE_scRGB:
-  case XE_scRGB_alpha:
-    {
-      LRGBColorf scaled = value * 8192.f + 4096.5f;
-      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
-      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
-      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
-    }
-    break;
-  }
+  row(y)[x] = to_val(value);
 }
 
 /**
@@ -721,19 +735,19 @@ set_xel_a(int x, int y, const LColorf &value) {
   case XE_scRGB:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
-      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
-      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
+      col.r = (std::min)((std::max)(0, (int)scaled[0]), 65535);
+      col.g = (std::min)((std::max)(0, (int)scaled[1]), 65535);
+      col.b = (std::min)((std::max)(0, (int)scaled[2]), 65535);
     }
     break;
 
   case XE_scRGB_alpha:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
-      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
-      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
-      alpha_row(y)[x] = std::min(std::max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
+      col.r = (std::min)((std::max)(0, (int)scaled[0]), 65535);
+      col.g = (std::min)((std::max)(0, (int)scaled[1]), 65535);
+      col.b = (std::min)((std::max)(0, (int)scaled[2]), 65535);
+      alpha_row(y)[x] = (std::min)((std::max)(0, (int)(value[3] * 65535 + 0.5f)), 65535);
     }
     break;
   }
@@ -1210,14 +1224,14 @@ setup_sub_image(const PNMImage &copy, int &xto, int &yto,
     yto = 0;
   }
 
-  x_size = std::min(x_size, copy.get_x_size() - xfrom);
-  y_size = std::min(y_size, copy.get_y_size() - yfrom);
+  x_size = (std::min)(x_size, copy.get_x_size() - xfrom);
+  y_size = (std::min)(y_size, copy.get_y_size() - yfrom);
 
   xmin = xto;
   ymin = yto;
 
-  xmax = std::min(xmin + x_size, get_x_size());
-  ymax = std::min(ymin + y_size, get_y_size());
+  xmax = (std::min)(xmin + x_size, get_x_size());
+  ymax = (std::min)(ymin + y_size, get_y_size());
 }
 
 /**

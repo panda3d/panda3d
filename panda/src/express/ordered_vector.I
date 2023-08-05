@@ -587,7 +587,7 @@ INLINE void ordered_vector<Key, Compare, Vector>::
 sort_unique() {
   TAU_PROFILE("ordered_vector::sort_unique()", " ", TAU_USER);
   sort(begin(), end(), _compare);
-  iterator new_end = unique(begin(), end(), EquivalentTest(_compare));
+  iterator new_end = std::unique(begin(), end(), EquivalentTest(_compare));
   erase(new_end, end());
 }
 

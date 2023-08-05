@@ -21,6 +21,16 @@ is_global() const {
 }
 
 /**
+ * Returns true if the type is marked as 'deprecated'.
+ *
+ * @since 1.11.0
+ */
+INLINE bool InterrogateType::
+is_deprecated() const {
+  return (_flags & F_deprecated) != 0;
+}
+
+/**
  *
  */
 INLINE bool InterrogateType::

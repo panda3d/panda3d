@@ -136,7 +136,10 @@ private:
  * used to do a full reset of buffers
  */
 inline void Buffered_DatagramConnection::ClearAll(void) {
-  nativenet_cat.error() << "Buffered_DatagramConnection::ClearAll Starting Auto Reset\n";
+  if (nativenet_cat.is_debug()) {
+    nativenet_cat.debug()
+      << "Buffered_DatagramConnection::ClearAll Starting Auto Reset\n";
+  }
   Close();
   _Writer.ReSet();
   _Reader.ReSet();
@@ -215,8 +218,11 @@ inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void)
 inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point)
     :  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize)
 {
-  nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize
-                        << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
+  if (nativenet_cat.is_debug()) {
+    nativenet_cat.debug()
+      << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize
+      << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
+  }
 }
 
 inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
@@ -289,7 +295,9 @@ bool Buffered_DatagramConnection::Flush(void)
  * Reset
  */
 inline void Buffered_DatagramConnection::Reset() {
-  nativenet_cat.error() << "Buffered_DatagramConnection::Reset()\n";
+  if (nativenet_cat.is_debug()) {
+    nativenet_cat.debug() << "Buffered_DatagramConnection::Reset()\n";
+  }
   ClearAll();
 }
 

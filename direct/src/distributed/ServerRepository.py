@@ -1,13 +1,47 @@
 """ServerRepository module: contains the ServerRepository class"""
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.distributed.MsgTypesCMU import *
+from panda3d.core import (
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    ConfigVariableInt,
+    ConnectionWriter,
+    DatagramIterator,
+    Filename,
+    NetAddress,
+    NetDatagram,
+    PointerToConnection,
+    QueuedConnectionListener,
+    QueuedConnectionManager,
+    QueuedConnectionReader,
+    TPLow,
+    UniqueIdAllocator,
+    VirtualFileSystem,
+    getModelPath,
+)
+from panda3d.direct import DCFile
+from direct.distributed.MsgTypesCMU import (
+    CLIENT_DISCONNECT_CMU,
+    CLIENT_OBJECT_GENERATE_CMU,
+    CLIENT_OBJECT_UPDATE_FIELD,
+    CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU,
+    CLIENT_SET_INTEREST_CMU,
+    OBJECT_DELETE_CMU,
+    OBJECT_DISABLE_CMU,
+    OBJECT_GENERATE_CMU,
+    OBJECT_SET_ZONE_CMU,
+    OBJECT_UPDATE_FIELD_CMU,
+    REQUEST_GENERATES_CMU,
+    SET_DOID_RANGE_CMU,
+)
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 
 import inspect
+
+
+_server_doid_range = ConfigVariableInt('server-doid-range', 1000000)
 
 
 class ServerRepository:
@@ -84,7 +118,7 @@ class ServerRepository:
                  threadedNet = None):
         if threadedNet is None:
             # Default value.
-            threadedNet = config.GetBool('threaded-net', False)
+            threadedNet = ConfigVariableBool('threaded-net', False).value
 
         # Set up networking interfaces.
         numThreads = 0
@@ -133,11 +167,11 @@ class ServerRepository:
 
         # The number of doId's to assign to each client.  Must remain
         # constant during server lifetime.
-        self.doIdRange = base.config.GetInt('server-doid-range', 1000000)
+        self.doIdRange = _server_doid_range.value
 
         # An allocator object that assigns the next doIdBase to each
         # client.
-        self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
+        self.idAllocator = UniqueIdAllocator(0, 0xffffffff // self.doIdRange)
 
         self.dcFile = DCFile()
         self.dcSuffix = ''
@@ -217,7 +251,7 @@ class ServerRepository:
         self.hashVal = 0
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -225,6 +259,7 @@ class ServerRepository:
             searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
                 pathname = Filename(dcFileName)
+                vfs = VirtualFileSystem.getGlobalPtr()
                 vfs.resolveFilename(pathname, searchPath)
                 readResult = dcFile.read(pathname)
                 if not readResult:
@@ -268,11 +303,11 @@ class ServerRepository:
             classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
 
-            if classDef == None:
+            if classDef is None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
                 if inspect.ismodule(classDef):
@@ -457,7 +492,7 @@ class ServerRepository:
             return
 
         dcfield = object.dclass.getFieldByIndex(fieldId)
-        if dcfield == None:
+        if dcfield is None:
             self.notify.warning(
                 "Ignoring update for field %s on object %s from client %s; no such field for class %s." % (
                 fieldId, doId, client.doIdBase, object.dclass.getName()))
@@ -628,7 +663,7 @@ class ServerRepository:
         del self.clientsByConnection[client.connection]
         del self.clientsByDoIdBase[client.doIdBase]
 
-        id = client.doIdBase / self.doIdRange
+        id = client.doIdBase // self.doIdRange
         self.idAllocator.free(id)
 
         self.qcr.removeConnection(client.connection)
@@ -689,7 +724,7 @@ class ServerRepository:
     def clientHardDisconnectTask(self, task):
         """ client did not tell us he was leaving but we lost connection to
         him, so we need to update our data and tell others """
-        for client in self.clientsByConnection.values():
+        for client in list(self.clientsByConnection.values()):
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
         return Task.cont

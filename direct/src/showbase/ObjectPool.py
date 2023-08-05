@@ -3,14 +3,16 @@
 __all__ = ['Diff', 'ObjectPool']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
+from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr, itype
 from direct.showbase.PythonUtil import getNumberedTypedString, getNumberedTypedSortedString
 import gc
 
+
 class Diff:
     def __init__(self, lost, gained):
-        self.lost=lost
-        self.gained=gained
+        self.lost = lost
+        self.gained = gained
+
     def printOut(self, full=False):
         print('lost %s objects, gained %s objects' % (len(self.lost), len(self.gained)))
         print('\n\nself.lost\n')
@@ -21,6 +23,7 @@ class Diff:
             self.gained.printObjsByType()
             print('\n\nGAINED-OBJECT REFERRERS\n')
             self.gained.printReferrers(1)
+
 
 class ObjectPool:
     """manipulate a pool of Python objects"""
@@ -40,7 +43,7 @@ class ObjectPool:
             self._type2objs[typ].append(obj)
             try:
                 self._len2obj[len(obj)] = obj
-            except:
+            except Exception:
                 pass
         self._count2types = invertDictLossless(type2count)
 
@@ -87,10 +90,7 @@ class ObjectPool:
     def typeFreqStr(self):
         s  =   'Object Pool: Type Frequencies'
         s += '\n============================='
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types, reverse=True):
             types = makeList(self._count2types[count])
             for typ in types:
                 s += '\n%s\t%s' % (count, typ)
@@ -99,12 +99,10 @@ class ObjectPool:
     def printObjsByType(self):
         print('Object Pool: Objects By Type')
         print('\n============================')
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
         # print types with the smallest number of instances first, in case
         # there's a large group that waits a long time before printing
         #counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types):
             types = makeList(self._count2types[count])
             for typ in types:
                 print('TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ])))
@@ -112,10 +110,7 @@ class ObjectPool:
 
     def printReferrers(self, numEach=3):
         """referrers of the first few of each type of object"""
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types, reverse=True):
             types = makeList(self._count2types[count])
             for typ in types:
                 print('\n\nTYPE: %s' % repr(typ))
@@ -124,7 +119,7 @@ class ObjectPool:
                     print('\nOBJ: %s\n' % safeRepr(obj))
                     referrers = gc.get_referrers(obj)
                     print('%s REFERRERS:\n' % len(referrers))
-                    if len(referrers):
+                    if len(referrers) > 0:
                         print(getNumberedTypedString(referrers, maxLen=80,
                                                     numPrefix='REF'))
                     else:

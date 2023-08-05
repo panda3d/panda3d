@@ -551,11 +551,10 @@ recompute() {
 }
 
 /**
- * Called when the user changes the frame size.
+ * Called when the user changes the frame size.  Assumes the lock is held.
  */
 void PGSliderBar::
 frame_changed() {
-  LightReMutexHolder holder(_lock);
   PGItem::frame_changed();
   _needs_remanage = true;
   _needs_recompute = true;
@@ -606,8 +605,10 @@ item_press(PGItem *item, const MouseWatcherParameter &param) {
       ClockObject::get_global_clock()->get_frame_time() + scroll_initial_delay;
 
   } else if (item == _thumb_button) {
-    _scroll_button_held = nullptr;
-    begin_drag();
+    if (((PGButton *)item)->has_click_button(param.get_button())) {
+      _scroll_button_held = nullptr;
+      begin_drag();
+    }
   }
 }
 

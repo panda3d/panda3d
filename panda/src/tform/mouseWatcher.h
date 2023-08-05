@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool has_mouse() const;
   INLINE bool is_mouse_open() const;
-  INLINE const LPoint2 &get_mouse() const;
+  INLINE LPoint2 get_mouse() const;
   INLINE PN_stdfloat get_mouse_x() const;
   INLINE PN_stdfloat get_mouse_y() const;
 
@@ -84,6 +84,7 @@ PUBLISHED:
   MouseWatcherRegion *get_over_region(const LPoint2 &pos) const;
 
   INLINE bool is_button_down(ButtonHandle button) const;
+  INLINE bool is_raw_button_down(ButtonHandle button) const;
 
   INLINE void set_button_down_pattern(const std::string &pattern);
   INLINE const std::string &get_button_down_pattern() const;
@@ -157,11 +158,9 @@ protected:
   void set_current_regions(Regions &regions);
   void clear_current_regions();
 
-#ifndef NDEBUG
   virtual void do_show_regions(const NodePath &render2d,
                                const std::string &bin_name, int draw_order);
   virtual void do_hide_regions();
-#endif  // NDEBUG
 
   static void intersect_regions(Regions &only_a,
                                 Regions &only_b,
@@ -216,6 +215,7 @@ private:
   LPoint2 _mouse;
   LPoint2 _mouse_pixel;
   BitArray _current_buttons_down;
+  BitArray _current_raw_buttons_down;
 
   LVecBase4 _frame;
 
@@ -260,11 +260,9 @@ private:
   };
   InactivityState _inactivity_state;
 
-#ifndef NDEBUG
   NodePath _show_regions_render2d;
   std::string _show_regions_bin_name;
   int _show_regions_draw_order;
-#endif
 
 protected:
   // Inherited from DataNode

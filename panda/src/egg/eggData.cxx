@@ -114,13 +114,12 @@ read(istream &in) {
   // set it.
   PT(EggData) data = new EggData(*this);
 
-  int error_count;
+  bool success;
   {
-    LightMutexHolder holder(egg_lock);
-    egg_init_parser(in, get_egg_filename(), data, data);
-    eggyyparse();
-    egg_cleanup_parser();
-    error_count = egg_error_count();
+    EggLexerState lexer_state;
+    egg_init_lexer_state(lexer_state, in, get_egg_filename());
+    success = egg_parse(lexer_state, data, data);
+    egg_cleanup_lexer_state(lexer_state);
   }
 
   data->post_read();
@@ -128,7 +127,7 @@ read(istream &in) {
   steal_children(*data);
   (*this) = *data;
 
-  return (error_count == 0);
+  return success;
 }
 
 /**

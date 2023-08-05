@@ -20,6 +20,7 @@
 #include "register_type.h"
 #include "vector_string.h"
 #include "textEncoder.h"
+#include "patomic.h"
 
 #include <assert.h>
 
@@ -35,6 +36,11 @@ class DSearchPath;
  * convention, and it knows how to perform basic OS-specific I/O, like testing
  * for file existence and searching a searchpath, as well as the best way to
  * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
  */
 class EXPCL_DTOOL_DTOOLUTIL Filename {
 PUBLISHED:
@@ -63,13 +69,11 @@ public:
 
 PUBLISHED:
   INLINE Filename();
-  Filename(const Filename &dirname, const Filename &basename);
+  explicit Filename(const Filename &dirname, const Filename &basename);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(Filename(PyObject *path));
+  PY_EXTENSION(Filename(PyObject *path));
 
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-#endif
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
   // Static constructors to explicitly create a filename that refers to a text
   // or binary file.  This is in lieu of calling set_text() or set_binary() or
@@ -113,8 +117,8 @@ PUBLISHED:
   INLINE size_t length() const;
   INLINE char operator [] (size_t n) const;
 
-  EXTENSION(PyObject *__repr__() const);
-  EXTENSION(PyObject *__fspath__() const);
+  PY_EXTENSION(PyObject *__repr__() const);
+  PY_EXTENSION(PyObject *__fspath__() const);
 
   INLINE std::string substr(size_t begin) const;
   INLINE std::string substr(size_t begin, size_t end) const;
@@ -199,9 +203,7 @@ PUBLISHED:
   int find_on_searchpath(const DSearchPath &searchpath);
 
   bool scan_directory(vector_string &contents) const;
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *scan_directory() const);
-#endif
+  PY_EXTENSION(PyObject *scan_directory() const);
 
   bool open_read(std::ifstream &stream) const;
   bool open_write(std::ofstream &stream, bool truncate = true) const;
@@ -232,7 +234,7 @@ PUBLISHED:
   INLINE bool operator != (const std::string &other) const;
   INLINE bool operator < (const std::string &other) const;
   INLINE int compare_to(const Filename &other) const;
-  INLINE bool __nonzero__() const;
+  INLINE bool __bool__() const;
   int get_hash() const;
 
   INLINE void output(std::ostream &out) const;
@@ -265,15 +267,15 @@ protected:
   int _flags;
 
   static TextEncoder::Encoding _filesystem_encoding;
-  static TVOLATILE AtomicAdjust::Pointer _home_directory;
-  static TVOLATILE AtomicAdjust::Pointer _temp_directory;
-  static TVOLATILE AtomicAdjust::Pointer _user_appdata_directory;
-  static TVOLATILE AtomicAdjust::Pointer _common_appdata_directory;
+  static patomic<Filename *> _home_directory;
+  static patomic<Filename *> _temp_directory;
+  static patomic<Filename *> _user_appdata_directory;
+  static patomic<Filename *> _common_appdata_directory;
 
 #ifdef ANDROID
 public:
   static std::string _internal_data_dir;
-#endif
+#endif // ANDROID
 
 public:
   static TypeHandle get_class_type() {
@@ -294,4 +296,4 @@ INLINE std::ostream &operator << (std::ostream &out, const Filename &n) {
 
 #include "filename.I"
 
-#endif
+#endif // !FILENAME_H

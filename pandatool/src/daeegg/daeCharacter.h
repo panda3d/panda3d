@@ -38,10 +38,10 @@ public:
 
   struct Joint {
     INLINE Joint(EggGroup *group, const FCDSceneNode *scene_node) :
+      _bind_pose(LMatrix4d::ident_mat()),
       _group(group),
       _scene_node(scene_node),
-      _character(nullptr),
-      _bind_pose(LMatrix4d::ident_mat()) {}
+      _character(nullptr) {}
 
     LMatrix4d _bind_pose;
     PT(EggGroup) _group;

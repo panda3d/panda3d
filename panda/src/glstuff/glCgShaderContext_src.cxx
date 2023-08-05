@@ -49,18 +49,9 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   nassertv(s->get_language() == Shader::SL_Cg);
 
   // Get a Cg context for this GSG.
-  CGcontext context = glgsg->_cg_context;
-  if (context == 0) {
-    // The GSG doesn't have a Cg context yet.  Create one.
-    glgsg->_cg_context = context = cgCreateContext();
-
-#if CG_VERSION_NUM >= 3100
-    // This just sounds like a good thing to do.
-    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
-    if (glgsg->_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
-      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
-    }
-#endif
+  CGcontext context = glgsg->get_cg_context();
+  if (context == nullptr) {
+    return;
   }
 
   // Ask the shader to compile itself for us and to give us the resulting Cg
@@ -131,6 +122,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   // glVertexPointer).
   size_t nvarying = _shader->_var_spec.size();
   _attributes.resize(nvarying);
+  _used_generic_attribs.clear();
 
   for (size_t i = 0; i < nvarying; ++i) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
@@ -165,7 +157,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
             if (cgGetParameterSemantic(p)) {
               GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
             }
-            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+            GLCAT.error(false) << " should be declared as float3, not float4!\n";
           }
           break;
         case 3:  // gl_Color
@@ -332,7 +324,12 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 #endif
 
     _attributes[i] = loc;
+    if (loc >= 0) {
+      _used_generic_attribs.set_bit(loc);
+    }
   }
+
+  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
 
   _glgsg->report_my_gl_errors();
 }
@@ -343,6 +340,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
+  delete[] _mat_part_cache;
 }
 
 /**
@@ -487,6 +485,14 @@ set_state_and_transform(const RenderState *target_rs,
     if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
+    }
+    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_gen;
+    }
+    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+      altered |= Shader::SSD_render_mode;
     }
     _state_rs = target_rs;
   }
@@ -686,14 +692,14 @@ issue_parameters(int altered) {
   }
 
   if (altered & _shader->_mat_deps) {
-    for (int i = 0; i < (int)_shader->_mat_spec.size(); ++i) {
-      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+    _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-      if ((altered & (spec._dep[0] | spec._dep[1])) == 0) {
+    for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
+      if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, altered);
+      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
       const PN_stdfloat *data = val->get_data();
 
@@ -857,8 +863,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
 
-    GLuint max_p = 0;
-
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
       InternalName *name = bind._name;
@@ -893,8 +897,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          max_p = std::max(max_p, (GLuint)p + 1);
-
           _glgsg->enable_vertex_attrib_array(p);
 
           if (numeric_type == GeomEnums::NT_packed_dabc) {
@@ -914,11 +916,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
-
-        } else {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+        else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {
@@ -1018,10 +1018,14 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
     }
 
-    // Disable attribute arrays we don't use.
-    GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
-    for (GLint p = max_p; p < highest_p; ++p) {
-      _glgsg->disable_vertex_attrib_array(p);
+    // Disable enabled attribute arrays that we don't use.
+    BitMask32 disable = _glgsg->_enabled_vertex_attrib_arrays & ~_used_generic_attribs;
+    if (!disable.is_zero()) {
+      for (GLuint p = (GLuint)disable.get_lowest_on_bit(); p <= (GLuint)disable.get_highest_on_bit(); ++p) {
+        if (disable.get_bit(p)) {
+          _glgsg->disable_vertex_attrib_array(p);
+        }
+      }
     }
   }
 
@@ -1050,26 +1054,38 @@ disable_shader_texture_bindings() {
     return;
   }
 
-  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) continue;
+  if (_glgsg->_supports_dsa) {
+    // The DSA extension has a single call for unbinding all targets for a
+    // given texture unit.
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    int texunit = cgGetParameterResourceIndex(p);
-    _glgsg->set_active_texture_stage(texunit);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->_glBindTextureUnit(texunit, 0);
+    }
+  } else {
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    glBindTexture(GL_TEXTURE_1D, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    if (_glgsg->_supports_3d_texture) {
-      glBindTexture(GL_TEXTURE_3D, 0);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->set_active_texture_stage(texunit);
+
+      glBindTexture(GL_TEXTURE_1D, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      if (_glgsg->_supports_3d_texture) {
+        glBindTexture(GL_TEXTURE_3D, 0);
+      }
+      if (_glgsg->_supports_2d_texture_array) {
+        glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
+      }
+      if (_glgsg->_supports_cube_map) {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      }
+      // This is probably faster - but maybe not as safe?
+      // cgGLDisableTextureParameter(p);
     }
-    if (_glgsg->_supports_2d_texture_array) {
-      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
-    }
-    if (_glgsg->_supports_cube_map) {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
-    // This is probably faster - but maybe not as safe?
-    // cgGLDisableTextureParameter(p);
   }
 
   cg_report_errors();
@@ -1115,20 +1131,20 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    if (spec._suffix != 0) {
+    if (spec._suffix != nullptr) {
       // The suffix feature is inefficient.  It is a temporary hack.
-      if (tex == 0) {
+      if (tex == nullptr) {
         continue;
       }
       tex = tex->load_related(spec._suffix);
     }
-    if ((tex == 0) || (tex->get_texture_type() != spec._desired_type)) {
+    if (tex == nullptr || tex->get_texture_type() != spec._desired_type) {
       continue;
     }
 
     _glgsg->set_active_texture_stage(texunit);
 
-    TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
+    TextureContext *tc = tex->prepare_now(_glgsg->_prepared_objects, _glgsg);
     if (tc == nullptr) {
       continue;
     }
@@ -1144,8 +1160,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
-    _glgsg->apply_texture(gtc);
-    _glgsg->apply_sampler(texunit, sampler, gtc);
+    _glgsg->apply_texture(gtc, view);
+    _glgsg->apply_sampler(texunit, sampler, gtc, view);
   }
 
   cg_report_errors();

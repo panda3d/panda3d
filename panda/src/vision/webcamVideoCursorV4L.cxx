@@ -217,7 +217,7 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
 
   int mode = O_RDWR;
   if (!v4l_blocking) {
-    mode = O_NONBLOCK;
+    mode |= O_NONBLOCK;
   }
 
   _fd = open(src->_device.c_str(), mode);

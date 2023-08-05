@@ -15,7 +15,8 @@
 #define PSTATTHREADDATA_H
 
 #include "pandatoolbase.h"
-
+#include "datagram.h"
+#include "datagramIterator.h"
 #include "referenceCount.h"
 
 #include "pdeque.h"
@@ -23,6 +24,7 @@
 class PStatCollectorDef;
 class PStatFrameData;
 class PStatClientData;
+class PStatClientVersion;
 
 /**
  * A collection of FrameData structures for recently-received frames within a
@@ -38,7 +40,7 @@ public:
 
   INLINE const PStatClientData *get_client_data() const;
 
-  bool is_empty() const;
+  INLINE bool is_empty() const;
 
   int get_latest_frame_number() const;
   int get_oldest_frame_number() const;
@@ -58,11 +60,16 @@ public:
 
   void set_history(double time);
   double get_history() const;
+  bool prune_history(double time);
 
   void record_new_frame(int frame_number, PStatFrameData *frame_data);
 
+  void write_datagram(Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan, PStatClientVersion *version);
+
 private:
-  void compute_elapsed_frames();
+  void compute_elapsed_frames() const;
+
   const PStatClientData *_client_data;
 
   typedef pdeque<PStatFrameData *> Frames;
@@ -70,10 +77,11 @@ private:
   int _first_frame_number;
   double _history;
 
-  bool _computed_elapsed_frames;
-  bool _got_elapsed_frames;
-  int _then_i;
-  int _now_i;
+  // Cached values, updated by compute_elapsed_frames().
+  mutable bool _computed_elapsed_frames;
+  mutable bool _got_elapsed_frames;
+  mutable int _then_i;
+  mutable int _now_i;
 
   static PStatFrameData _null_frame;
 };

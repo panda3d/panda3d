@@ -30,13 +30,14 @@ class TextStats : public ProgramBase, public PStatServer {
 public:
   TextStats();
 
-  virtual PStatMonitor *make_monitor();
+  virtual PStatMonitor *make_monitor(const NetAddress &address);
 
   void run();
 
 private:
   int _port;
   bool _show_raw_data;
+  bool _json = false;
 
   // [PECI]
   bool _got_outputFileName;

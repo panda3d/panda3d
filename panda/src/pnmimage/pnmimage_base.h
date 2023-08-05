@@ -41,7 +41,7 @@ typedef unsigned char gray;
 struct pixel {
 PUBLISHED:
   pixel() = default;
-  pixel(gray fill) : r(fill), g(fill), b(fill) { }
+  explicit pixel(gray fill) : r(fill), g(fill), b(fill) { }
   pixel(gray r, gray g, gray b) : r(r), g(g), b(b) { }
 
   gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }
@@ -59,9 +59,25 @@ PUBLISHED:
   void operator *= (const double mult)
     { r *= mult; g *= mult; b *= mult; }
 
+  bool operator == (const pixel &other) {
+    return r == other.r && g == other.g && r == other.r;
+  }
+  bool operator != (const pixel &other) {
+    return r != other.r || g != other.g || r != other.r;
+  }
+  bool operator < (const pixel &other) const {
+    if (r != other.r) {
+      return r < other.r;
+    }
+    if (g != other.g) {
+      return g < other.g;
+    }
+    return b < other.b;
+  }
+
 #ifdef HAVE_PYTHON
   static int size() { return 3; }
-  void output(std::ostream &out) {
+  void output(std::ostream &out) const {
     out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
   }
 #endif
@@ -97,7 +113,7 @@ typedef gray xelval;
 // pnm defines these functions, and it's easier to emulate them than to
 // rewrite the code that calls them.
 EXPCL_PANDA_PNMIMAGE void pm_message(const char *format, ...);
-EXPCL_PANDA_PNMIMAGE void pm_error(const char *format, ...);  // doesn't return.
+EXPCL_PANDA_PNMIMAGE void pm_error [[noreturn]] (const char *format, ...);
 
 EXPCL_PANDA_PNMIMAGE int pm_maxvaltobits(int maxval);
 EXPCL_PANDA_PNMIMAGE int pm_bitstomaxval(int bits);

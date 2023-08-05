@@ -2,25 +2,44 @@
 GravityWalker.py is for avatars.
 
 A walker control such as this one provides:
-    - creation of the collision nodes
-    - handling the keyboard and mouse input for avatar movement
-    - moving the avatar
+
+- creation of the collision nodes
+- handling the keyboard and mouse input for avatar movement
+- moving the avatar
 
 it does not:
-    - play sounds
-    - play animations
 
-although it does send messeges that allow a listener to play sounds or
+- play sounds
+- play animations
+
+although it does send messages that allow a listener to play sounds or
 animations based on walker events.
 """
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
-from panda3d.core import *
-from direct.extensions_native import VBase3_extensions
-from direct.extensions_native import VBase4_extensions
+from direct.task.TaskManagerGlobal import taskMgr
+from direct.extensions_native import VBase3_extensions # pylint: disable=unused-import
+from direct.extensions_native import VBase4_extensions # pylint: disable=unused-import
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerEvent,
+    CollisionHandlerFluidPusher,
+    CollisionHandlerGravity,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    Mat3,
+    Point3,
+    Vec3,
+)
 import math
 
 
@@ -71,90 +90,6 @@ class GravityWalker(DirectObject.DirectObject):
         self.isAirborne = 0
         self.highMark = 0
 
-    """
-    def spawnTest(self):
-        assert self.notify.debugStateCall(self)
-        if not self.wantDebugIndicator:
-            return
-        from pandac.PandaModules import *
-        from direct.interval.IntervalGlobal import *
-        from toontown.coghq import MovingPlatform
-
-        if hasattr(self, "platform"):
-            # Remove the prior instantiation:
-            self.moveIval.pause()
-            del self.moveIval
-            self.platform.destroy()
-            del self.platform
-            self.platform2.destroy()
-            del self.platform2
-
-        model = loader.loadModel('phase_9/models/cogHQ/platform1')
-        fakeId = id(self)
-        self.platform = MovingPlatform.MovingPlatform()
-        self.platform.setupCopyModel(fakeId, model, 'platformcollision')
-        self.platformRoot = render.attachNewNode("GravityWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(base.localAvatar, Vec3(0.0, 0.0, 1.0))
-        self.platformRoot.setHpr(base.localAvatar, Vec3.zero())
-        self.platform.reparentTo(self.platformRoot)
-
-        self.platform2 = MovingPlatform.MovingPlatform()
-        self.platform2.setupCopyModel(1+fakeId, model, 'platformcollision')
-        self.platform2Root = render.attachNewNode("GravityWalker-spawnTest2-%s"%fakeId)
-        self.platform2Root.setPos(base.localAvatar, Vec3(-16.0, 30.0, 1.0))
-        self.platform2Root.setHpr(base.localAvatar, Vec3.zero())
-        self.platform2.reparentTo(self.platform2Root)
-
-        duration = 5
-        self.moveIval = Parallel(
-                Sequence(
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 30.0, 0.0),
-                                    name='platformOut%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformBack%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 30.0),
-                                    name='platformUp%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformDown%s' % fakeId,
-                                    fluid = 1),
-                ),
-                Sequence(
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, -30.0, 0.0),
-                                    name='platform2Out%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, 30.0, 30.0),
-                                    name='platform2Back%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, -30.0, 0.0),
-                                    name='platform2Up%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformDown%s' % fakeId,
-                                    fluid = 1),
-                ),
-            name='platformIval%s' % fakeId,
-            )
-        self.moveIval.loop()
-    """
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.notify.debugStateCall(self)
         self.avatarControlForwardSpeed=forward
@@ -224,7 +159,7 @@ class GravityWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        if config.GetBool('want-fluid-pusher', 0):
+        if ConfigVariableBool('want-fluid-pusher', 0):
             self.pusher = CollisionHandlerFluidPusher()
         else:
             self.pusher = CollisionHandlerPusher()
@@ -366,11 +301,11 @@ class GravityWalker(DirectObject.DirectObject):
             # make sure we have a shadow traverser
             base.initShadowTrav()
             if active:
-                if 1:
-                    # Please let skyler or drose know if this is causing a problem
-                    # This is a bit of a hack fix:
-                    self.avatarNodePath.setP(0.0)
-                    self.avatarNodePath.setR(0.0)
+                # Please let skyler or drose know if this is causing a problem
+                # This is a bit of a hack fix:
+                self.avatarNodePath.setP(0.0)
+                self.avatarNodePath.setR(0.0)
+
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
@@ -522,7 +457,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.slideSpeed *= GravityWalker.DiagonalFactor
 
         debugRunning = inputState.isSet("debugRunning")
-        if(debugRunning):
+        if debugRunning:
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25

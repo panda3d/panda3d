@@ -388,9 +388,6 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   declaration_bodies << "#include <sstream>\n";
 
   if (build_python_native) {
-    if (library_name.size() > 1) {
-      declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
-    }
     declaration_bodies << "#include \"py_panda.h\"\n";
     declaration_bodies << "#include \"extension.h\"\n";
     declaration_bodies << "#include \"dcast.h\"\n";
@@ -1071,6 +1068,10 @@ scan_function(CPPInstance *function) {
   if (in_ignoreinvolved(ftype)) {
     // The function or its parameters involves something that the user
     // requested we ignore.
+    return;
+  }
+
+  if (TypeManager::involves_rvalue_reference(ftype)) {
     return;
   }
 
@@ -1773,6 +1774,16 @@ get_function(CPPInstance *function, string description,
     ifunction->_flags |= InterrogateFunction::F_operator_typecast;
   }
 
+  if (ftype->_flags & CPPFunctionType::F_constructor) {
+    // This is a constructor.
+    ifunction->_flags |= InterrogateFunction::F_constructor;
+  }
+
+  if (ftype->_flags & CPPFunctionType::F_destructor) {
+    // This is a destructor.
+    ifunction->_flags |= InterrogateFunction::F_destructor;
+  }
+
   if (function->_storage_class & CPPInstance::SC_virtual) {
     // This is a virtual function.
     ifunction->_flags |= InterrogateFunction::F_virtual;
@@ -2038,33 +2049,11 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._length_function = length_function;
   }
 
-  if (make_property->_type == CPPMakeProperty::T_normal) {
-    if (getter != nullptr) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = get_function(getter, "", struct_type,
-                                      struct_type->get_scope(), 0);
-      nassertr(iproperty._getter, 0);
-    }
-  } else {
-    // We could have a mixed sequence/mapping property, so synthesize a
-    // getitem function.  We don't really care what's in here; we just use
-    // this to store the remaps.
-    if (!iproperty.has_getter()) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = InterrogateDatabase::get_ptr()->get_next_index();
-      InterrogateFunction *ifunction = new InterrogateFunction;
-      ifunction->_instances = new InterrogateFunction::Instances;
-      InterrogateDatabase::get_ptr()->add_function(iproperty._getter, ifunction);
-    }
-
-    // Add our getter to the generated getitem function.
-    string signature = TypeManager::get_function_signature(getter);
-    InterrogateFunction &ifunction =
-      InterrogateDatabase::get_ptr()->update_function(iproperty._getter);
-    if (ifunction._instances == nullptr) {
-      ifunction._instances = new InterrogateFunction::Instances;
-    }
-    ifunction._instances->insert(InterrogateFunction::Instances::value_type(signature, getter));
+  if (getter != nullptr) {
+    iproperty._flags |= InterrogateElement::F_has_getter;
+    iproperty._getter = get_function(getter, "", struct_type,
+                                    struct_type->get_scope(), 0);
+    nassertr(iproperty._getter, 0);
   }
 
   if (hasser != nullptr) {
@@ -2392,6 +2381,10 @@ get_type(CPPType *type, bool global) {
     }
   }
 
+  if (type->_attributes.has_attribute("deprecated")) {
+    itype._flags |= InterrogateType::F_deprecated;
+  }
+
   if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 
@@ -2452,6 +2445,11 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     break;
 
   case CPPSimpleType::T_wchar_t:
+    itype._atomic_token = AT_int;
+    break;
+
+  case CPPSimpleType::T_char8_t:
+    itype._flags |= InterrogateType::F_unsigned;
     itype._atomic_token = AT_int;
     break;
 
@@ -2767,7 +2765,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
     function->_vis = V_published;
 
-    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(),
+                                       InterrogateFunction::F_constructor);
     if (find(itype._constructors.begin(), itype._constructors.end(),
              index) == itype._constructors.end()) {
       itype._constructors.push_back(index);
@@ -2793,7 +2792,8 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
     function->_vis = V_published;
 
-    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(),
+                                       InterrogateFunction::F_constructor);
     if (find(itype._constructors.begin(), itype._constructors.end(),
              index) == itype._constructors.end()) {
       itype._constructors.push_back(index);
@@ -2834,7 +2834,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
     itype._destructor = get_function(function, "",
                                      cpptype, cpptype->get_scope(),
-                                     0);
+                                     InterrogateFunction::F_destructor);
     itype._flags |= InterrogateType::F_implicit_destructor;
   }
 }
@@ -3008,6 +3008,9 @@ define_method(CPPInstance *function, InterrogateType &itype,
     // If it isn't, we should publish this method anyway.
   }
 
+  if (TypeManager::involves_rvalue_reference(ftype)) {
+    return;
+  }
 
   FunctionIndex index = get_function(function, "", struct_type, scope, 0);
   if (index != 0) {
@@ -3031,6 +3034,38 @@ define_method(CPPInstance *function, InterrogateType &itype,
       if (find(itype._methods.begin(), itype._methods.end(),
                index) == itype._methods.end()) {
         itype._methods.push_back(index);
+      }
+
+      // For an operator [] returning a non-const reference, we synthesize an
+      // "item-assignment" operator, which does not exist in C++ but does in
+      // scripting languages.  This allows `obj[n] = ...`
+      if (ftype->_return_type != nullptr &&
+          ftype->_return_type->is_reference() &&
+          !ftype->_return_type->remove_reference()->is_const() &&
+          (ftype->_flags & CPPFunctionType::F_const_method) == 0 &&
+          function->get_simple_name() == "operator []") {
+
+        // Make up a CPPFunctionType with extra parameter.
+        CPPType *assign_type = TypeManager::wrap_const_reference(ftype->_return_type->remove_reference());
+        CPPParameterList *params = new CPPParameterList(*(ftype->_parameters));
+        CPPInstance *param1 = new CPPInstance(assign_type, "assign_val");
+        params->_parameters.push_back(param1);
+        CPPType *void_type = TypeManager::get_void_type();
+        CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
+
+        // Now make up an instance for the function.
+        CPPInstance *function = new CPPInstance(ftype, "operator []=");
+        function->_ident->_native_scope = scope;
+
+        FunctionIndex index = get_function(function, "",
+                                           struct_type, scope,
+                                           InterrogateFunction::F_item_assignment);
+        if (index != 0) {
+          if (find(itype._methods.begin(), itype._methods.end(),
+                   index) == itype._methods.end()) {
+            itype._methods.push_back(index);
+          }
+        }
       }
     }
   }

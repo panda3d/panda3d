@@ -11,8 +11,8 @@
  * @date 2000-07-09
  */
 
-#ifndef CONFIG_PSTATS_H
-#define CONFIG_PSTATS_H
+#ifndef CONFIG_PSTATCLIENT_H
+#define CONFIG_PSTATCLIENT_H
 
 #include "pandabase.h"
 
@@ -38,6 +38,8 @@ extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_host;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableInt pstats_port;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_target_frame_rate;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_gpu_timing;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_thread_profiling;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_python_profiler;
 
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_scroll_mode;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_history;
@@ -47,4 +49,4 @@ extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_mem_other;
 
 extern EXPCL_PANDA_PSTATCLIENT void init_libpstatclient();
 
-#endif
+#endif /* CONFIG_PSTATCLIENT_H */

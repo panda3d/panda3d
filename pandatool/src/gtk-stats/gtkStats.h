@@ -16,8 +16,4 @@
 
 #include "pStatServer.h"
 
-#include <gtk/gtk.h>
-
-extern GtkWidget *main_window;
-
 #endif

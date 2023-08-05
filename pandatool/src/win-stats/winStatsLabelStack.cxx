@@ -57,9 +57,7 @@ setup(HWND parent_window) {
   create_window(parent_window);
 
   _ideal_width = 0;
-  Labels::iterator li;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    WinStatsLabel *label = (*li);
+  for (WinStatsLabel *label : _labels) {
     label->setup(_window);
     _ideal_width = std::max(_ideal_width, label->get_ideal_width());
   }
@@ -77,21 +75,17 @@ is_setup() const {
  * Sets the position and size of the label stack on its parent.
  */
 void WinStatsLabelStack::
-set_pos(int x, int y, int width, int height) {
+set_pos(int x, int y, int width, int height, int top_margin, int bottom_margin) {
   _x = x;
   _y = y;
   _width = width;
   _height = height;
+  _top_margin = top_margin;
+  _bottom_margin = bottom_margin;
   SetWindowPos(_window, 0, x, y, _width, _height,
                SWP_NOZORDER | SWP_SHOWWINDOW);
 
-  Labels::iterator li;
-  int yp = height;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    WinStatsLabel *label = (*li);
-    label->set_pos(0, yp, _width);
-    yp -= label->get_height();
-  }
+  recalculate_label_positions();
 }
 
 /**
@@ -167,12 +161,12 @@ get_label_collector_index(int label_index) const {
  */
 void WinStatsLabelStack::
 clear_labels() {
-  Labels::iterator li;
-  for (li = _labels.begin(); li != _labels.end(); ++li) {
-    delete (*li);
+  for (WinStatsLabel *label : _labels) {
+    delete label;
   }
   _labels.clear();
   _ideal_width = 0;
+  _scroll = 0;
 }
 
 /**
@@ -190,14 +184,102 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
     new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
   if (_window) {
     label->setup(_window);
-    label->set_pos(0, yp, _width);
+    label->set_pos(0, yp - _scroll, _width);
   }
   _ideal_width = std::max(_ideal_width, label->get_ideal_width());
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);
 
+  recalculate_label_positions();
+
   return label_index;
+}
+
+/**
+ * Replaces the labels with the given collector indices.
+ */
+void WinStatsLabelStack::
+replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
+               int thread_index, const vector_int &collector_indices,
+               bool use_fullname) {
+
+  _ideal_width = 0;
+
+  // First skip the part of the stack that hasn't changed.
+  size_t li = 0;
+  size_t ci = 0;
+  while (ci < collector_indices.size() && li < _labels.size()) {
+    WinStatsLabel *label = _labels[li];
+    if (collector_indices[ci] != label->get_collector_index()) {
+      // Mismatch.
+      break;
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    ++ci;
+    ++li;
+  }
+
+  if (ci == collector_indices.size()) {
+    if (ci == _labels.size()) {
+      // Perfect, nothing changed.
+      return;
+    }
+
+    // Simple case, just delete the rest.
+    while (li < _labels.size()) {
+      delete _labels[li++];
+    }
+    _labels.resize(ci);
+    return;
+  }
+
+  int yp = _height;
+  if (li > 0) {
+    WinStatsLabel *label = _labels[li - 1];
+    yp = label->get_y() - label->get_height();
+  }
+
+  // Make a map of remaining labels.
+  std::map<int, WinStatsLabel *> label_map;
+  for (size_t li2 = li; li2 < _labels.size(); ++li2) {
+    WinStatsLabel *label = _labels[li2];
+    label_map[label->get_collector_index()] = label;
+  }
+
+  _labels.resize(collector_indices.size());
+
+  while (ci < collector_indices.size()) {
+    int collector_index = collector_indices[ci++];
+
+    WinStatsLabel *label;
+    auto it = label_map.find(collector_index);
+    if (it == label_map.end()) {
+      // It's not in the map.  Create a new label.
+      label = new WinStatsLabel(monitor, graph, thread_index, collector_index, use_fullname);
+      if (_window) {
+        label->setup(_window);
+      }
+    } else {
+      // Erase it from the map, so that it's not deleted.
+      label = it->second;
+      label_map.erase(it);
+    }
+    if (_window) {
+      label->set_pos(0, yp - _scroll, _width);
+    }
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
+    yp -= label->get_height();
+
+    _labels[li++] = label;
+  }
+
+  // Anything that's remaining in the label map should be deleted.
+  for (auto it = label_map.begin(); it != label_map.end(); ++it) {
+    delete it->second;
+  }
+
+  recalculate_label_positions();
 }
 
 /**
@@ -217,14 +299,51 @@ void WinStatsLabelStack::
 highlight_label(int collector_index) {
   if (_highlight_label != collector_index) {
     _highlight_label = collector_index;
-    Labels::iterator li;
-    for (li = _labels.begin(); li != _labels.end(); ++li) {
-      WinStatsLabel *label = (*li);
+
+    for (WinStatsLabel *label : _labels) {
       label->set_highlight(label->get_collector_index() == _highlight_label);
     }
   }
 }
 
+/**
+ * Refreshes the color of the label with the given index.
+ */
+void WinStatsLabelStack::
+update_label_color(int collector_index) {
+  for (WinStatsLabel *label : _labels) {
+    if (label->get_collector_index() == collector_index) {
+      label->update_color();
+    }
+  }
+}
+
+/**
+ * Called to recalculate the positions of all labels in the stack.
+ */
+void WinStatsLabelStack::
+recalculate_label_positions() {
+  int total_height = 0;
+  for (WinStatsLabel *label : _labels) {
+    total_height += label->get_height();
+  }
+  total_height += _bottom_margin + _top_margin;
+  int yp;
+  if (total_height <= _height) {
+    // Fits.  Align to bottom and reset scroll.
+    yp = _height - _bottom_margin;
+    _scroll = 0;
+  } else {
+    // Doesn't fit.  Align to top.
+    yp = total_height - _bottom_margin;
+    _scroll = (std::min)(_scroll, total_height - _height);
+    _scroll = (std::max)(_scroll, 0);
+  }
+  for (WinStatsLabel *label : _labels) {
+    label->set_pos(0, yp - _scroll, _width);
+    yp -= label->get_height();
+  }
+}
 
 /**
  * Creates the window for this stack.
@@ -306,8 +425,35 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       HDC hdc = BeginPaint(hwnd, &ps);
 
       RECT rect = { 0, 0, _width, _height };
-      FillRect(hdc, &rect, (HBRUSH)COLOR_BACKGROUND);
+      FillRect(hdc, &rect, (HBRUSH)COLOR_WINDOW);
       EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  case WM_MOUSEWHEEL:
+    {
+      int total_height = 0;
+      for (WinStatsLabel *label : _labels) {
+        total_height += label->get_height();
+      }
+      total_height += _bottom_margin + _top_margin;
+      if ((total_height > _height || _scroll != 0) && !_labels.empty()) {
+        int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+        delta = (delta * _labels[0]->get_height()) / 120;
+        int new_scroll = _scroll - delta;
+        new_scroll = (std::min)(new_scroll, total_height - _height);
+        new_scroll = (std::max)(new_scroll, 0);
+        delta = new_scroll - _scroll;
+        if (delta != 0) {
+          _scroll = new_scroll;
+          ScrollWindowEx(_window, 0, -delta, NULL, NULL, NULL, NULL, SW_INVALIDATE | SW_SCROLLCHILDREN);
+          int yp = yp = total_height - _bottom_margin;
+          for (WinStatsLabel *label : _labels) {
+            label->set_y_noupdate(yp - _scroll);
+            yp -= label->get_height();
+          }
+        }
+      }
       return 0;
     }
 

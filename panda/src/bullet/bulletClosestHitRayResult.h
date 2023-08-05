@@ -11,8 +11,8 @@
  * @date 2010-02-21
  */
 
-#ifndef __BULLET_CLOSEST_HIT_RAY_RESULT_H__
-#define __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#ifndef BULLETCLOSESTHITRAYRESULT_H
+#define BULLETCLOSESTHITRAYRESULT_H
 
 #include "pandabase.h"
 
@@ -20,13 +20,14 @@
 #include "bullet_utils.h"
 
 #include "luse.h"
+#include "memoryBase.h"
 #include "pandaNode.h"
 #include "collideMask.h"
 
 /**
  *
  */
-struct EXPCL_PANDABULLET BulletClosestHitRayResult : public btCollisionWorld::ClosestRayResultCallback {
+struct EXPCL_PANDABULLET BulletClosestHitRayResult : public btCollisionWorld::ClosestRayResultCallback, public MemoryBase {
 
 PUBLISHED:
   INLINE static BulletClosestHitRayResult empty();
@@ -70,4 +71,4 @@ private:
 
 #include "bulletClosestHitRayResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#endif // BULLETCLOSESTHITRAYRESULT_H

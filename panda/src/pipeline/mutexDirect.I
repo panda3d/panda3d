@@ -60,6 +60,8 @@ acquire() const {
 /**
  * Returns immediately, with a true value indicating the mutex has been
  * acquired, and false indicating it has not.
+ *
+ * @deprecated Python users should use acquire(False), C++ users try_lock()
  */
 INLINE bool MutexDirect::
 try_acquire() const {

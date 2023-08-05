@@ -140,6 +140,10 @@ PandaGetopt(int argc, char *const argv[], const char *optstring,
   // _options[0] is used for invalid characters.
   _options.push_back(Option('?', no_argument));
 
+#ifdef _MSC_VER
+  size_t size;
+#endif
+
   if (optstring[0] == '-') {
     // RETURN_IN_ORDER: Non-option arguments (operands) are handled as if they
     // were the argument to an option with the value 1 ('\001').
@@ -154,8 +158,12 @@ PandaGetopt(int argc, char *const argv[], const char *optstring,
     // argument is reached, or when the element of argv is "--".
     ++optstring;
     _require_order = true;
-
-  } else if (getenv("POSIXLY_CORRECT") != nullptr) {
+  }
+#ifdef _MSC_VER
+  else if (getenv_s(&size, nullptr, 0, "POSIXLY_CORRECT") == 0 && size != 0) {
+#else
+  else if (getenv("POSIXLY_CORRECT") != nullptr) {
+#endif
     // REQUIRE_ORDER.
     _require_order = true;
 
@@ -489,6 +497,15 @@ getopt_long_only(int argc, char *const argv[], const char *optstring,
     pgetopt->permute(argc, (char **)argv);
   }
   return pgetopt->process(opterr, longindex, optarg, optind, optopt);
+}
+
+/**
+ * Resets the internal PandaGetopt state.
+ * This is a necessary step to reset getopt state in general.
+ */
+void
+pgetopt_reset() {
+  pgetopt = nullptr;
 }
 
 #endif  // defined(HAVE_GETOPT) && defined(HAVE_GETOPT_LONG_ONLY)

@@ -20,25 +20,6 @@ get_server_name() const {
 }
 
 /**
- * Returns true if everything seems to be kosher with the server (even if
- * there is no connection), or false otherwise.
- */
-INLINE bool VrpnClient::
-is_valid() const {
-  return (_connection->doing_okay() != 0);
-}
-
-/**
- * Returns true if the connection is established successfully, false
- * otherwise.
- */
-INLINE bool VrpnClient::
-is_connected() const {
-  return (_connection->connected() != 0);
-}
-
-
-/**
  * Little inline function to convert a struct timeval to only seconds
  */
 INLINE double VrpnClient::

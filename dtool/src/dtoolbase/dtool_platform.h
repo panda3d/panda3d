@@ -39,6 +39,8 @@
 #define DTOOL_PLATFORM "osx_i386"
 #elif defined(__x86_64)
 #define DTOOL_PLATFORM "osx_amd64"
+#elif defined(__aarch64__)
+#define DTOOL_PLATFORM "osx_aarch64"
 #endif
 
 #elif defined(__FreeBSD__)
@@ -77,6 +79,9 @@
 
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "linux_ppc"
+
+#elif defined(__e2k__)
+#define DTOOL_PLATFORM "linux_e2k"
 #endif
 
 #if !defined(DTOOL_PLATFORM) && !defined(CPPPARSER)

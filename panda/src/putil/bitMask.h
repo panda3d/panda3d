@@ -125,7 +125,9 @@ PUBLISHED:
 
   INLINE int get_key() const;
 
-  INLINE bool __nonzero__() const;
+  EXTENSION(bool __bool__() const);
+  PY_EXTENSION(PyObject *__int__() const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
@@ -168,8 +170,8 @@ typedef BitMask<uint64_t, 64> BitMask64;
 typedef BitMask32 BitMaskNative;
 #elif NATIVE_WORDSIZE == 64
 typedef BitMask64 BitMaskNative;
-#else
+#else // NATIVE_WORDSIZE
 #error No definition for NATIVE_WORDSIZE--should be defined in dtoolbase.h.
 #endif  // NATIVE_WORDSIZE
 
-#endif
+#endif // !BITMASK_H

@@ -363,7 +363,7 @@ MovieVideoCursor::Buffer::
 Buffer(size_t block_size) :
   _block_size(block_size)
 {
-  _deleted_chain = memory_hook->get_deleted_chain(_block_size);
+  _deleted_chain = DeletedBufferChain::get_deleted_chain(_block_size);
   _block = (unsigned char *)_deleted_chain->allocate(_block_size, get_class_type());
 }
 

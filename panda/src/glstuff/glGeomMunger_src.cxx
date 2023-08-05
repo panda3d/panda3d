@@ -13,6 +13,12 @@
 
 #include "dcast.h"
 
+#ifdef OPENGLES
+#include <atomic>
+
+static std::atomic_flag warned_downgrade_float64 = ATOMIC_FLAG_INIT;
+#endif
+
 TypeHandle CLP(GeomMunger)::_type_handle;
 
 ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
@@ -102,6 +108,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
+#endif  // !OPENGLES
 
   // Convert packed formats that OpenGL may not understand.
   for (size_t i = 0; i < orig->get_num_columns(); ++i) {
@@ -123,8 +130,25 @@ munge_format_impl(const GeomVertexFormat *orig,
                                column->get_contents(), column->get_start(),
                                column->get_column_alignment());
     }
+#ifdef OPENGLES
+    else if (column->get_numeric_type() == NT_float64) {
+      if (!warned_downgrade_float64.test_and_set()) {
+        GLCAT.warning()
+          << "OpenGL ES does not support 64-bit floats; converting vertex data to 32-bit.\n";
+#ifndef NDEBUG
+        if (vertices_float64) {
+          GLCAT.warning()
+            << "You may want to disable vertices-float64 for better performance.\n";
+        }
+#endif
+      }
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), column->get_num_components(),
+                               NT_float32, column->get_contents(),
+                               column->get_start(), column->get_column_alignment());
+    }
+#endif
   }
-#endif  // !OPENGLES
 
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != nullptr &&
@@ -196,6 +220,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     // Combine the primary data columns into a single array.
     new_format = new GeomVertexFormat(*format);
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
+    size_t insert_at = 0;
 
     const GeomVertexColumn *column = format->get_vertex_column();
     if (column != nullptr) {
@@ -239,22 +264,34 @@ munge_format_impl(const GeomVertexFormat *orig,
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
 
+            // Note that we have to add something as a placeholder, even if the
+            // texture coordinates aren't defined.
+            int num_values = 2;
+            int column_alignment = 0;
+            int start = new_array_format->get_total_bytes();
+            start = (start + sizeof(PN_stdfloat) - 1) & ~(sizeof(PN_stdfloat) - 1);
             if (texcoord_type != nullptr) {
-              new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
-                 -1, texcoord_type->get_column_alignment());
-            } else {
-              // We have to add something as a placeholder, even if the
-              // texture coordinates aren't defined.
-              new_array_format->add_column(name, 2, NT_stdfloat, C_texcoord);
+              column_alignment = texcoord_type->get_column_alignment();
+              num_values = texcoord_type->get_num_values();
             }
+            if (start + num_values * sizeof(PN_stdfloat) > (size_t)glgsg->get_max_vertex_attrib_stride()) {
+              // We are exceeding the limit for stride reported by the driver.
+              // Start a new array.
+              new_format->insert_array(insert_at++, new_array_format);
+              new_array_format = new GeomVertexArrayFormat;
+              start = 0;
+            }
+            new_array_format->add_column(name, num_values, NT_stdfloat,
+                                         C_texcoord, start, column_alignment);
             new_format->remove_column(name);
           }
         }
       }
     }
 
-    new_format->insert_array(0, new_array_format);
+    if (new_array_format->get_num_columns() > 0) {
+      new_format->insert_array(insert_at, new_array_format);
+    }
     format = GeomVertexFormat::register_format(new_format);
   }
 
@@ -288,6 +325,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
+#endif  // !OPENGLES
 
   // Convert packed formats that OpenGL may not understand.
   for (size_t i = 0; i < orig->get_num_columns(); ++i) {
@@ -309,8 +347,25 @@ premunge_format_impl(const GeomVertexFormat *orig) {
                                column->get_contents(), column->get_start(),
                                column->get_column_alignment());
     }
+#ifdef OPENGLES
+    else if (column->get_numeric_type() == NT_float64) {
+      if (!warned_downgrade_float64.test_and_set()) {
+        GLCAT.warning()
+          << "OpenGL ES does not support 64-bit floats; converting vertex data to 32-bit.\n";
+#ifndef NDEBUG
+        if (vertices_float64) {
+          GLCAT.warning()
+            << "You may want to disable vertices-float64 for better performance.\n";
+        }
+#endif
+      }
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), column->get_num_components(),
+                               NT_float32, column->get_contents(),
+                               column->get_start(), column->get_column_alignment());
+    }
+#endif
   }
-#endif  // !OPENGLES
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
 
@@ -335,6 +390,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     // of doing this step at load time than you might be at run time.
     new_format = new GeomVertexFormat(*format);
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
+    size_t insert_at = 0;
 
     const GeomVertexColumn *column = format->get_vertex_column();
     if (column != nullptr) {
@@ -379,15 +435,25 @@ premunge_format_impl(const GeomVertexFormat *orig) {
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
 
+            // Note that we have to add something as a placeholder, even if the
+            // texture coordinates aren't defined.
+            int num_values = 2;
+            int column_alignment = 0;
+            int start = new_array_format->get_total_bytes();
+            start = (start + sizeof(PN_stdfloat) - 1) & ~(sizeof(PN_stdfloat) - 1);
             if (texcoord_type != nullptr) {
-              new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
-                 -1, texcoord_type->get_column_alignment());
-            } else {
-              // We have to add something as a placeholder, even if the
-              // texture coordinates aren't defined.
-              new_array_format->add_column(name, 2, NT_stdfloat, C_texcoord);
+              column_alignment = texcoord_type->get_column_alignment();
+              num_values = texcoord_type->get_num_values();
             }
+            if (start + num_values * sizeof(PN_stdfloat) > 2048) {
+              // We are exceeding the limit for stride (and the one that is
+              // guaranteed to be supported).  Start a new array.
+              new_format->insert_array(insert_at++, new_array_format);
+              new_array_format = new GeomVertexArrayFormat;
+              start = 0;
+            }
+            new_array_format->add_column(name, num_values, NT_stdfloat,
+                                         C_texcoord, start, column_alignment);
             new_format->remove_column(name);
           }
         }
@@ -411,7 +477,9 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     }
 
     // Finally, insert the interleaved array first in the format.
-    new_format->insert_array(0, new_array_format);
+    if (new_array_format->get_num_columns() > 0) {
+      new_format->insert_array(insert_at, new_array_format);
+    }
     format = GeomVertexFormat::register_format(new_format);
   }
 

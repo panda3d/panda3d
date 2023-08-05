@@ -16,7 +16,6 @@
 
 #include "dcbase.h"
 #include "primeNumberGenerator.h"
-#include "vector_uchar.h"
 
 /**
  * This class generates an arbitrary hash number from a sequence of ints.

@@ -115,7 +115,11 @@ release(const MouseWatcherParameter &param, bool background) {
   if (has_click_button(param.get_button())) {
     _button_down = false;
     if (get_active()) {
-      if (param.is_outside()) {
+      // Note that a "click" may come from a keyboard button press.  In that
+      // case, instead of checking that the mouse cursor is still over the
+      // button, we check whether the item has keyboard focus.
+      if (param.is_outside() &&
+          (MouseButton::is_mouse_button(param.get_button()) || !get_focus())) {
         set_state(S_ready);
       } else {
         set_state(S_rollover);

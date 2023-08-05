@@ -36,6 +36,7 @@ PUBLISHED:
     E_iso8859,
     E_utf8,
     E_utf16be,
+    E_cp437,
 
     // Deprecated alias for E_utf16be
     E_unicode = E_utf16be,
@@ -53,28 +54,28 @@ PUBLISHED:
   INLINE static Encoding get_default_encoding();
   MAKE_PROPERTY(default_encoding, get_default_encoding, set_default_encoding);
 
-#ifdef CPPPARSER
-  EXTEND void set_text(PyObject *text);
-  EXTEND void set_text(PyObject *text, Encoding encoding);
-#else
+#if defined(CPPPARSER)
+  PY_EXTEND(void set_text(PyObject *text));
+  PY_EXTEND(void set_text(PyObject *text, Encoding encoding));
+#else // CPPPARSER
   INLINE void set_text(const std::string &text);
   INLINE void set_text(const std::string &text, Encoding encoding);
-#endif
+#endif // CPPPARSER
   INLINE void clear_text();
   INLINE bool has_text() const;
 
   void make_upper();
   void make_lower();
 
-#ifdef CPPPARSER
-  EXTEND PyObject *get_text() const;
-  EXTEND PyObject *get_text(Encoding encoding) const;
-  EXTEND void append_text(PyObject *text);
-#else
+#if defined(CPPPARSER)
+  PY_EXTEND(PyObject *get_text() const);
+  PY_EXTEND(PyObject *get_text(Encoding encoding) const);
+  PY_EXTEND(void append_text(PyObject *text));
+#else // CPPPARSER
   INLINE std::string get_text() const;
   INLINE std::string get_text(Encoding encoding) const;
   INLINE void append_text(const std::string &text);
-#endif
+#endif // CPPPARSER
   INLINE void append_unicode_char(char32_t character);
   INLINE size_t get_num_chars() const;
   INLINE int get_unicode_char(size_t index) const;
@@ -107,19 +108,19 @@ PUBLISHED:
   std::wstring get_wtext_as_ascii() const;
   bool is_wtext() const;
 
-#ifdef CPPPARSER
-  EXTEND static PyObject *encode_wchar(char32_t ch, Encoding encoding);
-  EXTEND INLINE PyObject *encode_wtext(const std::wstring &wtext) const;
-  EXTEND static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding);
-  EXTEND INLINE PyObject *decode_text(PyObject *text) const;
-  EXTEND static PyObject *decode_text(PyObject *text, Encoding encoding);
-#else
+#if defined(CPPPARSER)
+  PY_EXTEND(static PyObject *encode_wchar(char32_t ch, Encoding encoding));
+  PY_EXTEND(INLINE PyObject *encode_wtext(const std::wstring &wtext) const);
+  PY_EXTEND(static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding));
+  PY_EXTEND(INLINE PyObject *decode_text(PyObject *text) const);
+  PY_EXTEND(static PyObject *decode_text(PyObject *text, Encoding encoding));
+#else // CPPPARSER
   static std::string encode_wchar(char32_t ch, Encoding encoding);
   INLINE std::string encode_wtext(const std::wstring &wtext) const;
   static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
   INLINE std::wstring decode_text(const std::string &text) const;
   static std::wstring decode_text(const std::string &text, Encoding encoding);
-#endif
+#endif // CPPPARSER
 
   MAKE_PROPERTY(text, get_text, set_text);
 
@@ -151,9 +152,8 @@ operator >> (std::istream &in, TextEncoder::Encoding &encoding);
 
 // This function is declared inline to minimize the risk of link conflicts
 // should another third-party module also define the same output operator.
-INLINE EXPCL_DTOOL_DTOOLUTIL std::ostream &
-operator << (std::ostream &out, const std::wstring &str);
+INLINE std::ostream & operator << (std::ostream &out, const std::wstring &str);
 
 #include "textEncoder.I"
 
-#endif
+#endif // !TEXTENCODER_H

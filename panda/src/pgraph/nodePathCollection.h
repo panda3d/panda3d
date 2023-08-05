@@ -27,10 +27,8 @@ class EXPCL_PANDA_PGRAPH NodePathCollection {
 PUBLISHED:
   NodePathCollection() = default;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(NodePathCollection(PyObject *self, PyObject *sequence));
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-#endif
+  PY_EXTENSION(NodePathCollection(PyObject *self, PyObject *sequence));
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
   void add_path(const NodePath &node_path);
   bool remove_path(const NodePath &node_path);
@@ -74,7 +72,7 @@ PUBLISHED:
 
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const;
 
-  EXTENSION(PyObject *get_tight_bounds() const);
+  PY_EXTENSION(PyObject *get_tight_bounds() const);
 
   void set_texture(Texture *tex, int priority = 0);
   void set_texture(TextureStage *stage, Texture *tex, int priority = 0);
@@ -113,4 +111,4 @@ INLINE std::ostream &operator << (std::ostream &out, const NodePathCollection &c
 
 #include "nodePathCollection.I"
 
-#endif
+#endif // !NODEPATHCOLLECTION_H

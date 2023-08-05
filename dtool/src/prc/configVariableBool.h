@@ -22,11 +22,15 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableBool : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableBool(const std::string &name);
-  INLINE ConfigVariableBool(const std::string &name, bool default_value,
-                            const std::string &description = std::string(), int flags = 0);
-  INLINE ConfigVariableBool(const std::string &name, const std::string &default_value,
-                            const std::string &description = std::string(), int flags = 0);
+  INLINE explicit ConfigVariableBool(const std::string &name);
+  INLINE explicit ConfigVariableBool(const std::string &name,
+                                     bool default_value,
+                                     const std::string &description = std::string(),
+                                     int flags = 0);
+  INLINE explicit ConfigVariableBool(const std::string &name,
+                                     const std::string &default_value,
+                                     const std::string &description = std::string(),
+                                     int flags = 0);
 
   INLINE void operator = (bool value);
   ALWAYS_INLINE operator bool () const;

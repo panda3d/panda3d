@@ -114,49 +114,6 @@ zeros_mat() {
 /**
  *
  */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) {
-  operator = (copy);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
-operator = (const FLOATNAME(LMatrix4) &copy) {
-  TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
-  return *this;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
-operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
-  TAU_PROFILE("void LMatrix4::operator = (const UnalignedLMatrix4 &)", " ", TAU_USER);
-
-  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
-  return *this;
-}
-
-/**
- *
- */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (FLOATTYPE fill_value) {
   fill(fill_value);
@@ -484,13 +441,9 @@ get_col(int col) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_row3(int row) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(row, 0));
-#else
   return FLOATNAME(LVecBase3)((*this)(row, 0),
                               (*this)(row, 1),
                               (*this)(row, 2));
-#endif  // HAVE_EIGEN
 }
 
 /**
@@ -514,13 +467,9 @@ get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_col3(int col) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(0, col));
-#else
   return FLOATNAME(LVecBase3)((*this)(0, col),
                               (*this)(1, col),
                               (*this)(2, col));
-#endif  // HAVE_EIGEN
 }
 
 /**
@@ -1053,7 +1002,7 @@ operator += (const FLOATNAME(LMatrix4) &other) {
 }
 
 /**
- * Performs a memberwise addition between two matrices.
+ * Performs a memberwise subtraction between two matrices.
  */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator -= (const FLOATNAME(LMatrix4) &other) {
@@ -1357,7 +1306,7 @@ invert_in_place() {
 }
 
 /**
- * Computes (*this) += other * weight.
+ * Computes `(*this) += other * weight`.
  */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {
@@ -1633,143 +1582,4 @@ invert(const FLOATNAME(LMatrix4) &a) {
   }
 #endif
   return result;
-}
-
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy) {
-  operator = (copy);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
-operator = (const FLOATNAME(LMatrix4) &copy) {
-  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
-  return *this;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
-operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
-  TAU_PROFILE("void UnalignedLMatrix4::operator =(UnalignedLMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
-  return *this;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-                             FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-                             FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-                             FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
-  TAU_PROFILE("UnalignedLMatrix4::UnalignedLMatrix4(FLOATTYPE, ...)", " ", TAU_USER);
-  set(e00, e01, e02, e03,
-      e10, e11, e12, e13,
-      e20, e21, e22, e23,
-      e30, e31, e32, e33);
-}
-
-/**
- *
- */
-INLINE_LINMATH void FLOATNAME(UnalignedLMatrix4)::
-set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-    FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
-  TAU_PROFILE("void UnalignedLMatrix4::set()", " ", TAU_USER);
-
-  _m(0, 0) = e00;
-  _m(0, 1) = e01;
-  _m(0, 2) = e02;
-  _m(0, 3) = e03;
-
-  _m(1, 0) = e10;
-  _m(1, 1) = e11;
-  _m(1, 2) = e12;
-  _m(1, 3) = e13;
-
-  _m(2, 0) = e20;
-  _m(2, 1) = e21;
-  _m(2, 2) = e22;
-  _m(2, 3) = e23;
-
-  _m(3, 0) = e30;
-  _m(3, 1) = e31;
-  _m(3, 2) = e32;
-  _m(3, 3) = e33;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATTYPE &FLOATNAME(UnalignedLMatrix4)::
-operator () (int row, int col) {
-  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m(0, 0));
-  return _m(row, col);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLMatrix4)::
-operator () (int row, int col) const {
-  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0);
-  return _m(row, col);
-}
-
-/**
- * Returns the address of the first of the nine data elements in the matrix.
- * The remaining elements occupy the next eight positions in row-major order.
- */
-INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLMatrix4)::
-get_data() const {
-  return &_m(0, 0);
-}
-
-/**
- * Returns the number of elements in the matrix, sixteen.
- */
-INLINE_LINMATH int FLOATNAME(UnalignedLMatrix4)::
-get_num_components() const {
-  return 16;
-}
-
-/**
- *
- */
-INLINE_LINMATH bool FLOATNAME(UnalignedLMatrix4)::
-operator == (const FLOATNAME(UnalignedLMatrix4) &other) const {
-  return memcmp(get_data(), other.get_data(), sizeof(FLOATTYPE) * 16) == 0;
-}
-
-/**
- *
- */
-INLINE_LINMATH bool FLOATNAME(UnalignedLMatrix4)::
-operator != (const FLOATNAME(UnalignedLMatrix4) &other) const {
-  return !operator == (other);
 }

@@ -106,7 +106,7 @@ PUBLISHED:
   INLINE int get_tcp_header_size() const;
 
   INLINE bool consider_flush();
-  INLINE bool flush();
+  INLINE void flush();
 
 private:
   std::ostream *_ostream;
@@ -168,7 +168,7 @@ PUBLISHED:
   virtual bool is_closed() = 0;
   virtual void close() = 0;
 
-  INLINE bool flush();
+  INLINE void flush();
 };
 
 /**
@@ -190,7 +190,7 @@ PUBLISHED:
   INLINE void set_tcp_header_size(int tcp_header_size);
   INLINE int get_tcp_header_size() const;
 
-  INLINE bool flush();
+  INLINE void flush();
 };
 
 

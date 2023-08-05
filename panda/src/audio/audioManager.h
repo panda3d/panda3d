@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __AUDIO_MANAGER_H__
-#define __AUDIO_MANAGER_H__
+#ifndef AUDIOMANAGER_H
+#define AUDIOMANAGER_H
 
 #include "config_audio.h"
 #include "audioSound.h"
@@ -106,13 +106,11 @@ PUBLISHED:
   virtual void set_volume(PN_stdfloat volume) = 0;
   virtual PN_stdfloat get_volume() const = 0;
 
-/*
- * Turn the manager on or off.  If you play a sound while the manager is
- * inactive, it won't start.  If you deactivate the manager while sounds are
- * playing, they'll stop.  If you activate the manager while looping sounds
- * are playing (those that have a loop_count of zero), they will start playing
- * from the beginning of their loop.  inits to true.
- */
+  // Turn the manager on or off.  If you play a sound while the manager is
+  // inactive, it won't start.  If you deactivate the manager while sounds are
+  // playing, they'll stop.  If you activate the manager while looping sounds
+  // are playing (those that have a loop_count of zero), they will start
+  // playing from the beginning of their loop.  Defaults to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() const = 0;
 
@@ -178,9 +176,6 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;
 
-  // set_speaker_configuration is a Miles only method.
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=nullptr, LVecBase3 *speaker3=nullptr, LVecBase3 *speaker4=nullptr, LVecBase3 *speaker5=nullptr, LVecBase3 *speaker6=nullptr, LVecBase3 *speaker7=nullptr, LVecBase3 *speaker8=nullptr, LVecBase3 *speaker9=nullptr);
-
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
 
@@ -222,4 +217,4 @@ operator << (std::ostream &out, const AudioManager &mgr) {
 
 #include "audioManager.I"
 
-#endif /* __AUDIO_MANAGER_H__ */
+#endif /* AUDIOMANAGER_H */

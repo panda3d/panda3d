@@ -39,6 +39,7 @@
 #include "boundingSphere.h"
 #include "config_mathutil.h"
 #include "preparedGraphicsObjects.h"
+#include "instanceList.h"
 
 
 bool allow_flatten_color = ConfigVariableBool
@@ -58,6 +59,8 @@ GeomNode(const std::string &name) :
 
   // GeomNodes have a certain set of bits on by default.
   set_into_collide_mask(get_default_collide_mask());
+
+  set_renderable();
 }
 
 /**
@@ -203,38 +206,56 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           // effect on the GeomNode; this may not be true if there is a
           // texture that has been applied at a node above that from which we
           // started the flatten operation, but caveat programmer.
-          NameCount name_count;
-
-          if (geom_attribs._texture != nullptr) {
-            const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
-            int num_on_stages = ta->get_num_on_stages();
-            for (int si = 0; si < num_on_stages; si++) {
-              TextureStage *stage = ta->get_on_stage(si);
-              const InternalName *name = stage->get_texcoord_name();
-              count_name(name_count, name);
-            }
-          }
+          pmap<InternalName *, pset<CPT(TransformState)> > name_transforms;
 
           const TexMatrixAttrib *tma =
             DCAST(TexMatrixAttrib, geom_attribs._tex_matrix);
-
-          CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-
           int num_stages = tma->get_num_stages();
           for (int i = 0; i < num_stages; i++) {
             TextureStage *stage = tma->get_stage(i);
             InternalName *name = stage->get_texcoord_name();
-            if (get_name_count(name_count, name) > 1) {
+            name_transforms[name].insert(tma->get_transform(stage)->get_unique());
+          }
+
+          if (geom_attribs._texture != nullptr) {
+            // There may be stages without a TexMatrixAttrib, which implicitly
+            // use the identity transform.
+            const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
+            int num_on_stages = ta->get_num_on_stages();
+            for (int si = 0; si < num_on_stages; si++) {
+              TextureStage *stage = ta->get_on_stage(si);
+              InternalName *name = stage->get_texcoord_name();
+              if (!tma->has_stage(stage)) {
+                name_transforms[name].insert(TransformState::make_identity());
+              }
+            }
+          }
+
+          CPT(TexMatrixAttrib) new_tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
+
+          for (int i = 0; i < num_stages; i++) {
+            TextureStage *stage = tma->get_stage(i);
+            InternalName *name = stage->get_texcoord_name();
+            auto it = name_transforms.find(name);
+            if (it == name_transforms.end()) {
+              // Already processed this set.
+            }
+            else if (it->second.size() != 1) {
               // We can't transform these texcoords, since the name is used by
               // more than one active stage.
               new_tma = DCAST(TexMatrixAttrib, new_tma->add_stage(stage, tma->get_transform(stage)));
-
-            } else {
+            }
+            else {
               // It's safe to transform these texcoords; the name is used by
-              // no more than one active stage.
-              if (transformer.transform_texcoords(new_geom, name, name, tma->get_mat(stage))) {
+              // no more than one active stage, or all these stages have the
+              // same transform.
+              const TransformState *transform = *(it->second.begin());
+              if (!transform->is_identity() &&
+                  transformer.transform_texcoords(new_geom, name, name, transform->get_mat())) {
                 any_changed = true;
               }
+              // Now make sure we don't transform this set more than once.
+              name_transforms.erase(it);
             }
           }
 
@@ -391,9 +412,24 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
+    // As well as the shaders.
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
+      }
+      else if (sa->auto_shader()) {
+        gsg->ensure_generated_shader(geom_state);
+      }
+      else if (munger->is_of_type(StateMunger::get_class_type())) {
+        // Premunge the state for the fixed-function pipeline.
+        StateMunger *state_munger = (StateMunger *)munger.p();
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
+      }
+      // TODO: prepare the shader inputs.
     }
 
     // And now prepare each of the textures.
@@ -407,16 +443,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           prepared_objects->enqueue_texture(texture);
         }
       }
-    }
-
-    // As well as the shaders.
-    const ShaderAttrib *sa;
-    if (geom_state->get_attrib(sa)) {
-      Shader *shader = (Shader *)sa->get_shader();
-      if (shader != nullptr) {
-        prepared_objects->enqueue_shader(shader);
-      }
-      // TODO: prepare the shader inputs.
     }
   }
 
@@ -482,17 +508,6 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool GeomNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  * Adds the node's contents to the CullResult we are building up during the
  * cull traversal, so that it will be drawn at render time.  For most nodes
  * other than GeomNodes, this is a do-nothing operation.
@@ -507,46 +522,64 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       << " draw_mask = " << data._draw_mask << "\n";
   }
 
+  Thread *current_thread = trav->get_current_thread();
+
   // Get all the Geoms, with no decalling.
-  Geoms geoms = get_geoms(trav->get_current_thread());
+  Geoms geoms = get_geoms(current_thread);
   int num_geoms = geoms.get_num_geoms();
   trav->_geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) internal_transform = data.get_internal_transform(trav);
 
-  for (int i = 0; i < num_geoms; i++) {
-    CPT(Geom) geom = geoms.get_geom(i);
-    if (geom->is_empty()) {
-      continue;
-    }
-
-    CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-    if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
-      // Cull.
-      continue;
-    }
-
-    // Cull the Geom bounding volume against the view frustum andor the cull
-    // planes.  Don't bother unless we've got more than one Geom, since
-    // otherwise the bounding volume of the GeomNode is (probably) the same as
-    // that of the one Geom, and we've already culled against that.
-    if (num_geoms > 1) {
-      if (data._view_frustum != nullptr) {
-        // Cull the individual Geom against the view frustum.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
-        const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
-
-        int result = data._view_frustum->contains(geom_gbv);
-        if (result == BoundingVolume::IF_no_intersection) {
-          // Cull this Geom.
-          continue;
-        }
+  if (num_geoms == 1) {
+    // If there's only one Geom, we don't need to bother culling each individual
+    // Geom bounding volume against the view frustum, since we've already
+    // checked the one on the GeomNode itself.
+    CPT(Geom) geom = geoms.get_geom(0);
+    if (!geom->is_empty()) {
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(0));
+      if (!state->has_cull_callback() || state->cull_callback(trav, data)) {
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), std::move(internal_transform));
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
       }
-      if (!data._cull_planes->is_empty()) {
+    }
+  }
+  else {
+    // More than one Geom.
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(Geom) geom = geoms.get_geom(i);
+      if (geom->is_empty()) {
+        continue;
+      }
+
+      CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+      if (state->has_cull_callback() && !state->cull_callback(trav, data)) {
+        // Cull.
+        continue;
+      }
+
+      if (data._instances != nullptr) {
+        // Draw each individual instance.  We don't bother culling each
+        // individual Geom for each instance; that is probably way too slow.
+        CullableObject *object =
+          new CullableObject(std::move(geom), std::move(state), internal_transform);
+        object->_instances = data._instances;
+        trav->get_cull_handler()->record_object(object, trav);
+        continue;
+      }
+
+      // Cull the individual Geom against the view frustum.
+      if (data._view_frustum != nullptr &&
+          !geom->is_in_view(data._view_frustum, current_thread)) {
+        // Cull this Geom.
+        continue;
+      }
+      if (data._cull_planes != nullptr) {
         // Also cull the Geom against the cull planes.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
+          geom_volume->as_geometric_bounding_volume();
         int result;
         data._cull_planes->do_cull(result, state, geom_gbv);
         if (result == BoundingVolume::IF_no_intersection) {
@@ -554,11 +587,11 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
           continue;
         }
       }
-    }
 
-    CullableObject *object =
-      new CullableObject(std::move(geom), std::move(state), internal_transform);
-    trav->get_cull_handler()->record_object(object, trav);
+      CullableObject *object =
+        new CullableObject(std::move(geom), std::move(state), internal_transform);
+      trav->get_cull_handler()->record_object(object, trav);
+    }
   }
 }
 
@@ -877,6 +910,9 @@ do_premunge(GraphicsStateGuardianBase *gsg,
       CPT(Geom) geom = entry._geom.get_read_pointer();
       PT(GeomMunger) munger = gsg->get_geom_munger(geom_state, current_thread);
       entry._geom = transformer.premunge_geom(geom, munger);
+      if (premunge_remove_unused_vertices) {
+        transformer.register_vertices(entry._geom.get_write_pointer(), true);
+      }
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);

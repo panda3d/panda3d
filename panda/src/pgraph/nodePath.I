@@ -16,8 +16,8 @@
  */
 INLINE NodePath::
 NodePath() :
-  _error_type(ET_ok),
-  _backup_key(0)
+  _backup_key(0),
+  _error_type(ET_ok)
 {
 }
 
@@ -998,7 +998,8 @@ compose_color_scale(PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat 
 }
 
 /**
- * Sets the red scale component of the transform
+ * Sets the red component of the color scale.
+ * @see set_color_scale()
  */
 INLINE void NodePath::
 set_sr(PN_stdfloat sr) {
@@ -1009,7 +1010,8 @@ set_sr(PN_stdfloat sr) {
 }
 
 /**
- * Sets the alpha scale component of the transform
+ * Sets the green component of the color scale.
+ * @see set_color_scale()
  */
 INLINE void NodePath::
 set_sg(PN_stdfloat sg) {
@@ -1020,7 +1022,8 @@ set_sg(PN_stdfloat sg) {
 }
 
 /**
- * Sets the blue scale component of the transform
+ * Sets the blue component of the color scale.
+ * @see set_color_scale()
  */
 INLINE void NodePath::
 set_sb(PN_stdfloat sb) {
@@ -1031,7 +1034,8 @@ set_sb(PN_stdfloat sb) {
 }
 
 /**
- * Sets the alpha scale component of the transform
+ * Sets the alpha component of the color scale.
+ * @see set_color_scale()
  */
 INLINE void NodePath::
 set_sa(PN_stdfloat sa) {
@@ -1042,7 +1046,8 @@ set_sa(PN_stdfloat sa) {
 }
 
 /**
- * Gets the red scale component of the transform
+ * Gets the red component of the color scale.
+ * @see get_color_scale()
  */
 INLINE PN_stdfloat NodePath::
 get_sr() const {
@@ -1050,7 +1055,8 @@ get_sr() const {
 }
 
 /**
- * Gets the green scale component of the transform
+ * Gets the green component of the color scale.
+ * @see get_color_scale()
  */
 INLINE PN_stdfloat NodePath::
 get_sg() const {
@@ -1058,7 +1064,8 @@ get_sg() const {
 }
 
 /**
- * Gets the blue scale component of the transform
+ * Gets the blue component of the color scale.
+ * @see get_color_scale()
  */
 INLINE PN_stdfloat NodePath::
 get_sb() const {
@@ -1066,7 +1073,8 @@ get_sb() const {
 }
 
 /**
- * Gets the alpha scale component of the transform
+ * Gets the alpha component of the color scale.
+ * @see get_color_scale()
  */
 INLINE PN_stdfloat NodePath::
 get_sa() const {
@@ -1838,6 +1846,8 @@ show_through(DrawMask camera_mask) {
  * invisible to all cameras.  It remains part of the scene graph, its bounding
  * volume still contributes to its parent's bounding volume, and it will still
  * be involved in collision tests.
+ *
+ * To undo this, call show().
  */
 INLINE void NodePath::
 hide() {

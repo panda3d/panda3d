@@ -87,17 +87,29 @@ PUBLISHED:
   virtual LMatrix4 get_lcs() const;
   virtual PhysicsObject *make_copy() const;
 
-  #ifndef NDEBUG
-    void set_name(const std::string &name) {
-      _name = name;
-    }
-    const std::string& get_name() {
-      return _name;
-    }
-  #endif
+#if !defined(NDEBUG) || !defined(CPPPARSER)
+  void set_name(const std::string &name) {
+    _name = name;
+  }
+  const std::string &get_name() {
+    return _name;
+  }
+#endif
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent=0) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(mass, get_mass, set_mass);
+  MAKE_PROPERTY(position, get_position, set_position);
+  MAKE_PROPERTY(last_position, get_last_position, set_last_position);
+  MAKE_PROPERTY(velocity, get_velocity, set_velocity);
+  MAKE_PROPERTY(implicit_velocity, get_implicit_velocity);
+  MAKE_PROPERTY(terminal_velocity, get_terminal_velocity, set_terminal_velocity);
+  MAKE_PROPERTY(oriented, get_oriented, set_oriented);
+  MAKE_PROPERTY(orientation, get_orientation, set_orientation);
+  MAKE_PROPERTY(rotation, get_rotation, set_rotation);
 
 private:
   // physical
@@ -115,9 +127,7 @@ private:
   bool _process_me;
   bool _oriented;
 
-  #ifndef NDEBUG
-    std::string _name;
-  #endif
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

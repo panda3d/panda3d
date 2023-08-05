@@ -30,7 +30,7 @@ NotifyCategoryDecl(pgraph, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDecl(loader, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDecl(portal, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 
-extern ConfigVariableBool fake_view_frustum_cull;
+extern EXPCL_PANDA_PGRAPH ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool clip_plane_cull;
 extern ConfigVariableBool allow_portal_cull;
 extern ConfigVariableBool debug_portal_cull;
@@ -46,15 +46,16 @@ extern ConfigVariableBool auto_break_cycles;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool garbage_collect_states;
 extern ConfigVariableDouble garbage_collect_states_rate;
 extern ConfigVariableBool transform_cache;
-extern ConfigVariableBool state_cache;
+extern ALIGN_16BYTE EXPCL_PANDA_PGRAPH ConfigVariableBool state_cache;
 extern ConfigVariableBool uniquify_transforms;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool uniquify_states;
-extern ConfigVariableBool uniquify_attribs;
+extern ALIGN_16BYTE EXPCL_PANDA_PGRAPH ConfigVariableBool uniquify_attribs;
 extern ConfigVariableBool retransform_sprites;
 extern ConfigVariableBool depth_offset_decals;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool premunge_data;
+extern ConfigVariableBool premunge_remove_unused_vertices;
 extern ConfigVariableBool preserve_geom_nodes;
 extern ConfigVariableBool flatten_geoms;
 extern EXPCL_PANDA_PGRAPH ConfigVariableInt max_lenses;
@@ -73,6 +74,8 @@ extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
 
 extern ConfigVariableBool allow_live_flatten;
+
+extern ConfigVariableBool filled_wireframe_apply_shader;
 
 extern EXPCL_PANDA_PGRAPH void init_libpgraph();
 

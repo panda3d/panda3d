@@ -10,10 +10,10 @@ ignoretype Factory<TypedWriteable>
 # builds (to support multi-arch builds), so we don't export this.
 ignoretype BitMaskNative
 
-forcetype PointerToBase<ReferenceCountedVector<ushort> >
-forcetype PointerToArrayBase<ushort>
-forcetype PointerToArray<ushort>
-forcetype ConstPointerToArray<ushort>
+forcetype PointerToBase<ReferenceCountedVector<unsigned short> >
+forcetype PointerToArrayBase<unsigned short>
+forcetype PointerToArray<unsigned short>
+forcetype ConstPointerToArray<unsigned short>
 
 # This is so the extensions for PTA_ushort are made available.
 forceinclude "pointerToArray_ext.h"

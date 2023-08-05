@@ -45,8 +45,7 @@ public:
  * Constructs a new ClipPlaneAttrib object that enables (or disables,
  * according to op) the indicated plane(s).
  *
- * This method is now deprecated.  Use add_on_plane() or add_off_plane()
- * instead.
+ * @deprecated Use add_on_plane() or add_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
@@ -80,8 +79,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
  * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
  * op) the indicate plane(s).
  *
- * This method is now deprecated.  Use add_on_plane() or add_off_plane()
- * instead.
+ * @deprecated Use add_on_plane() or add_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
@@ -118,8 +116,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
  * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
  * op) the indicate plane(s).
  *
- * This method is now deprecated.  Use add_on_plane() or add_off_plane()
- * instead.
+ * @deprecated Use add_on_plane() or add_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
@@ -160,8 +157,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
  * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
  * op) the indicate plane(s).
  *
- * This method is now deprecated.  Use add_on_plane() or add_off_plane()
- * instead.
+ * @deprecated Use add_on_plane() or add_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
@@ -217,9 +213,9 @@ make_default() {
  * were already on, and if O_remove, the planes here are removed from the set
  * of planes that were on.
  *
- * This method is now deprecated.  ClipPlaneAttribs nowadays have a separate
- * list of on_planes and off_planes, so this method doesn't make sense.  Query
- * the lists independently.
+ * @deprecated ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 ClipPlaneAttrib::Operation ClipPlaneAttrib::
 get_operation() const {
@@ -240,9 +236,9 @@ get_operation() const {
 /**
  * Returns the number of planes listed in the attribute.
  *
- * This method is now deprecated.  ClipPlaneAttribs nowadays have a separate
- * list of on_planes and off_planes, so this method doesn't make sense.  Query
- * the lists independently.
+ * @deprecated ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 int ClipPlaneAttrib::
 get_num_planes() const {
@@ -259,9 +255,9 @@ get_num_planes() const {
 /**
  * Returns the nth plane listed in the attribute.
  *
- * This method is now deprecated.  ClipPlaneAttribs nowadays have a separate
- * list of on_planes and off_planes, so this method doesn't make sense.  Query
- * the lists independently.
+ * @deprecated ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 PlaneNode *ClipPlaneAttrib::
 get_plane(int n) const {
@@ -279,9 +275,9 @@ get_plane(int n) const {
  * Returns true if the indicated plane is listed in the attrib, false
  * otherwise.
  *
- * This method is now deprecated.  ClipPlaneAttribs nowadays have a separate
- * list of on_planes and off_planes, so this method doesn't make sense.  Query
- * the lists independently.
+ * @deprecated ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 bool ClipPlaneAttrib::
 has_plane(PlaneNode *plane) const {
@@ -299,8 +295,7 @@ has_plane(PlaneNode *plane) const {
  * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
  * plane added to the list of planes.
  *
- * This method is now deprecated.  Use add_on_plane() or add_off_plane()
- * instead.
+ * @deprecated Use add_on_plane() or add_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 add_plane(PlaneNode *plane) const {
@@ -318,8 +313,7 @@ add_plane(PlaneNode *plane) const {
  * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
  * plane removed from the list of planes.
  *
- * This method is now deprecated.  Use remove_on_plane() or remove_off_plane()
- * instead.
+ * @deprecated Use remove_on_plane() or remove_off_plane() instead.
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 remove_plane(PlaneNode *plane) const {

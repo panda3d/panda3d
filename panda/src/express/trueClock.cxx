@@ -22,7 +22,7 @@ using std::min;
 
 TrueClock *TrueClock::_global_ptr = nullptr;
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 // The Win32 implementation.
 
@@ -113,27 +113,15 @@ get_short_raw_time() {
 /**
  *
  */
-typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
-typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR*, DWORD_PTR*);
-
 bool TrueClock::
 set_cpu_affinity(uint32_t mask) const {
-  HMODULE hker = GetModuleHandle("kernel32");
-  if (hker != 0) {
-    PFNGETPROCESSAFFINITYMASK gp = (PFNGETPROCESSAFFINITYMASK)
-      GetProcAddress(hker, "GetProcessAffinityMask");
-    PFNSETPROCESSAFFINITYMASK sp = (PFNSETPROCESSAFFINITYMASK)
-      GetProcAddress(hker, "SetProcessAffinityMask");
-    if (gp != 0 && sp != 0) {
-      DWORD proc_mask;
-      DWORD sys_mask;
-      if (gp(GetCurrentProcess(), (PDWORD_PTR)&proc_mask, (PDWORD_PTR)&sys_mask)) {
-        // make sure we don't reference CPUs that don't exist
-        proc_mask = mask & sys_mask;
-        if (proc_mask) {
-          return sp(GetCurrentProcess(), proc_mask) != 0;
-        }
-      }
+  DWORD proc_mask;
+  DWORD sys_mask;
+  if (GetProcessAffinityMask(GetCurrentProcess(), (PDWORD_PTR)&proc_mask, (PDWORD_PTR)&sys_mask)) {
+    // make sure we don't reference CPUs that don't exist
+    proc_mask = mask & sys_mask;
+    if (proc_mask) {
+      return SetProcessAffinityMask(GetCurrentProcess(), proc_mask) != 0;
     }
   }
   return false;
@@ -243,10 +231,12 @@ correct_time(double time) {
     // backward in the high-precision clock, since this does appear to happen
     // in a threaded environment.
 
-    clock_cat.debug()
-      << "Clock error detected; elapsed time " << time_delta
-      << "s on high-resolution counter, and " << tod_delta
-      << "s on time-of-day clock.\n";
+    if (clock_cat.is_debug()) {
+      clock_cat.debug()
+        << "Clock error detected; elapsed time " << time_delta
+        << "s on high-resolution counter, and " << tod_delta
+        << "s on time-of-day clock.\n";
+    }
     ++_error_count;
 
     // If both are negative, we call it 0.  If one is negative, we trust the
@@ -483,7 +473,7 @@ set_time_scale(double time, double new_time_scale) {
   _time_scale = new_time_scale;
 }
 
-#else  // !WIN32_VC
+#else  // !_WIN32
 
 // The Posix implementation.
 

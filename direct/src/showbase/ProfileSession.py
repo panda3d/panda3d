@@ -1,17 +1,11 @@
-from __future__ import print_function
 from panda3d.core import TrueClock
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import (
     StdoutCapture, _installProfileCustomFuncs,_removeProfileCustomFuncs,
-    _getProfileResultFileInfo, _setProfileResultsFileInfo)
+    _getProfileResultFileInfo, _setProfileResultsFileInfo, Default)
 import profile
 import pstats
-import sys
-
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 
 
 class PercentStats(pstats.Stats):
@@ -30,10 +24,11 @@ class PercentStats(pstats.Stats):
     def print_stats(self, *amount):
         for filename in self.files:
             print(filename)
-        if self.files: print()
+        if self.files:
+            print()
         indent = ' ' * 8
         for func in self.top_level:
-            print(indent, func_get_function_name(func))
+            print(indent, pstats.func_get_function_name(func))
 
         print(indent, self.total_calls, "function calls", end=' ')
         if self.total_calls != self.prim_calls:
@@ -212,9 +207,9 @@ class ProfileSession:
             _removeProfileCustomFuncs(filename)
 
             # clean up the globals
-            result = globalProfileSessionResult[0]
-            del builtins.__dict__['globalProfileSessionFunc']
-            del builtins.__dict__['globalProfileSessionResult']
+            result = builtins.globalProfileSessionResult[0]
+            del builtins.globalProfileSessionFunc
+            del builtins.globalProfileSessionResult
 
             self._successfulProfiles += 1
 
@@ -373,4 +368,3 @@ class ProfileSession:
                 self._resultCache[k] = output
 
         return output
-

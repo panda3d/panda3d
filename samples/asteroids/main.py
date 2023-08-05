@@ -13,16 +13,18 @@
 # most games so it seemed appropriate to show what a full game in Panda
 # could look like.
 
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import TextNode, TransparencyAttrib
-from panda3d.core import LPoint3, LVector3
-from direct.gui.OnscreenText import OnscreenText
-from direct.task.Task import Task
 from math import sin, cos, pi
 from random import randint, choice, random
+import sys
+
+from direct.gui.OnscreenText import OnscreenText
 from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Wait, Func
-import sys
+from direct.showbase.ShowBase import ShowBase
+from direct.task.Task import Task
+from panda3d.core import TextNode, TransparencyAttrib
+from panda3d.core import LPoint3, LVector3
+from panda3d.core import SamplerState
 
 # Constants that will control the behavior of the game. It is good to
 # group constants like this so that they can be changed once without
@@ -53,8 +55,8 @@ def loadObject(tex=None, pos=LPoint3(0, 0), depth=SPRITE_POS, scale=1,
                transparency=True):
     # Every object uses the plane model and is parented to the camera
     # so that it faces the screen.
-    obj = loader.loadModel("models/plane")
-    obj.reparentTo(camera)
+    obj = base.loader.loadModel("models/plane")
+    obj.reparentTo(base.camera)
 
     # Set the initial position and scale.
     obj.setPos(pos.getX(), depth, pos.getY())
@@ -71,7 +73,9 @@ def loadObject(tex=None, pos=LPoint3(0, 0), depth=SPRITE_POS, scale=1,
 
     if tex:
         # Load and set the requested texture.
-        tex = loader.loadTexture("textures/" + tex)
+        tex = base.loader.loadTexture("textures/" + tex)
+        tex.setWrapU(SamplerState.WM_clamp)
+        tex.setWrapV(SamplerState.WM_clamp)
         obj.setTexture(tex, 1)
 
     return obj
@@ -135,7 +139,7 @@ class AsteroidsDemo(ShowBase):
         # The first argument is the function to be called, and the second
         # argument is the name for the task.  It returns a task object which
         # is passed to the function each frame.
-        self.gameTask = taskMgr.add(self.gameLoop, "gameLoop")
+        self.gameTask = base.taskMgr.add(self.gameLoop, "gameLoop")
 
         # Stores the time at which the next bullet may be fired.
         self.nextBullet = 0.0
@@ -198,7 +202,7 @@ class AsteroidsDemo(ShowBase):
     def gameLoop(self, task):
         # Get the time elapsed since the next frame.  We need this for our
         # distance and velocity calculations.
-        dt = globalClock.getDt()
+        dt = self.clock.dt
 
         # If the ship is not alive, do nothing.  Tasks return Task.cont to
         # signify that the task should continue running. If Task.done were

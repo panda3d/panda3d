@@ -23,7 +23,7 @@ class FactoryParams;
 /**
  * Enables or disables writing to the depth buffer.
  */
-class EXPCL_PANDA_PGRAPH DepthTestAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthTestAttrib final : public RenderAttrib {
 private:
   INLINE DepthTestAttrib(PandaCompareFunc mode = M_less);
 

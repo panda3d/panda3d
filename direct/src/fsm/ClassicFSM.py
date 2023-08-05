@@ -1,24 +1,27 @@
 """Finite State Machine module: contains the ClassicFSM class.
 
-.. note::
-
-   This module and class exist only for backward compatibility with
-   existing code.  New code should use the :mod:`.FSM` module instead.
+Note:
+    This module and class exist only for backward compatibility with
+    existing code.  New code should use the :mod:`.FSM` module instead.
 """
+
+from __future__ import annotations
 
 __all__ = ['ClassicFSM']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 import weakref
 
 if __debug__:
-    _debugFsms = {}
+    _debugFsms: dict[str, weakref.ref] = {}
+
     def printDebugFsmList():
-        global _debugFsms
         for k in sorted(_debugFsms.keys()):
             print("%s %s" % (k, _debugFsms[k]()))
     __builtins__['debugFsmList'] = printDebugFsmList
+
 
 class ClassicFSM(DirectObject):
     """
@@ -45,14 +48,14 @@ class ClassicFSM(DirectObject):
         """__init__(self, string, State[], string, string, int)
 
         ClassicFSM constructor: takes name, list of states, initial state and
-        final state as:
+        final state as::
 
-        fsm = ClassicFSM.ClassicFSM('stopLight',
-          [State.State('red', enterRed, exitRed, ['green']),
-            State.State('yellow', enterYellow, exitYellow, ['red']),
-            State.State('green', enterGreen, exitGreen, ['yellow'])],
-          'red',
-          'red')
+            fsm = ClassicFSM.ClassicFSM('stopLight',
+              [State.State('red', enterRed, exitRed, ['green']),
+                State.State('yellow', enterYellow, exitYellow, ['red']),
+                State.State('green', enterGreen, exitGreen, ['yellow'])],
+              'red',
+              'red')
 
         each state's last argument, a list of allowed state transitions,
         is optional; if left out (or explicitly specified to be
@@ -81,8 +84,7 @@ class ClassicFSM(DirectObject):
         # doing this.
         self.__internalStateInFlux = 0
         if __debug__:
-            global _debugFsms
-            _debugFsms[name]=weakref.ref(self)
+            _debugFsms[name] = weakref.ref(self)
 
     # I know this isn't how __repr__ is supposed to be used, but it
     # is nice and convenient.
@@ -93,12 +95,12 @@ class ClassicFSM(DirectObject):
         """
         Print out something useful about the fsm
         """
+        name = self.getName()
         currentState = self.getCurrentState()
         if currentState:
-            str = ("ClassicFSM " + self.getName() + ' in state "' +
-                   currentState.getName() + '"')
+            str = f'ClassicFSM {name} in state "{currentState.getName()}"'
         else:
-            str = ("ClassicFSM " + self.getName() + ' not in any state')
+            str = f'ClassicFSM {name} not in any state'
         return str
 
     def enterInitialState(self, argList=[]):
@@ -106,7 +108,7 @@ class ClassicFSM(DirectObject):
         if self.__currentState == self.__initialState:
             return
 
-        assert self.__currentState == None
+        assert self.__currentState is None
         self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
         assert not self.__internalStateInFlux
@@ -114,7 +116,7 @@ class ClassicFSM(DirectObject):
     # setters and getters
 
     def getName(self):
-        return(self.__name)
+        return self.__name
 
     def setName(self, name):
         self.__name = name
@@ -133,13 +135,13 @@ class ClassicFSM(DirectObject):
         self.__states[state.getName()] = state
 
     def getInitialState(self):
-        return(self.__initialState)
+        return self.__initialState
 
     def setInitialState(self, initialStateName):
         self.__initialState = self.getStateNamed(initialStateName)
 
     def getFinalState(self):
-        return(self.__finalState)
+        return self.__finalState
 
     def setFinalState(self, finalStateName):
         self.__finalState = self.getStateNamed(finalStateName)
@@ -148,8 +150,7 @@ class ClassicFSM(DirectObject):
         self.request(self.getFinalState().getName())
 
     def getCurrentState(self):
-        return(self.__currentState)
-
+        return self.__currentState
 
     # lookup funcs
 
@@ -197,7 +198,7 @@ class ClassicFSM(DirectObject):
         """
         assert self.__internalStateInFlux
         stateName = aState.getName()
-        if (stateName in self.__states):
+        if stateName in self.__states:
             assert ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name, stateName))
             self.__currentState = aState
             # Only send the state change event if we are inspecting it
@@ -256,7 +257,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
 
@@ -281,8 +282,8 @@ class ClassicFSM(DirectObject):
                               exitArgList)
             return 1
         # We can implicitly always transition to our final state.
-        elif (aStateName == self.__finalState.getName()):
-            if (self.__currentState == self.__finalState):
+        elif aStateName == self.__finalState.getName():
+            if self.__currentState == self.__finalState:
                 # Do not do the transition if we are already in the
                 # final state
                 assert ClassicFSM.notify.debug(
@@ -299,7 +300,7 @@ class ClassicFSM(DirectObject):
                                   exitArgList)
                 return 1
         # are we already in this state?
-        elif (aStateName == self.__currentState.getName()):
+        elif aStateName == self.__currentState.getName():
             assert ClassicFSM.notify.debug(
                 "[%s]: already in state %s and no self transition" %
                 (self.__name, aStateName))
@@ -314,7 +315,6 @@ class ClassicFSM(DirectObject):
             elif self.onUndefTransition == ClassicFSM.DISALLOW_VERBOSE:
                 ClassicFSM.notify.warning(msg)
             return 0
-
 
     def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
         """
@@ -347,7 +347,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                                 (self.__name, aStateName))
 
@@ -355,7 +355,7 @@ class ClassicFSM(DirectObject):
             self.__currentState.isTransitionDefined(aStateName) or
             aStateName in [self.__currentState.getName(),
                            self.__finalState.getName()]
-            )
+        )
 
         if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)
@@ -374,11 +374,3 @@ class ClassicFSM(DirectObject):
 
     def isInternalStateInFlux(self):
         return self.__internalStateInFlux
-
-
-
-
-
-
-
-

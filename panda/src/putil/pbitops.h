@@ -24,27 +24,33 @@
 // This file defines a few low-level bit-operation routines, optimized all to
 // heck.
 
-INLINE int count_bits_in_word(uint16_t x);
-INLINE int count_bits_in_word(uint32_t x);
-INLINE int count_bits_in_word(uint64_t x);
+INLINE int count_bits_in_word(unsigned short x);
+INLINE int count_bits_in_word(unsigned int x);
+INLINE int count_bits_in_word(unsigned long x);
+INLINE int count_bits_in_word(unsigned long long x);
 
-INLINE uint16_t flood_bits_down(uint16_t x);
-INLINE uint32_t flood_bits_down(uint32_t x);
-INLINE uint64_t flood_bits_down(uint64_t x);
-INLINE uint16_t flood_bits_up(uint16_t x);
-INLINE uint32_t flood_bits_up(uint32_t x);
-INLINE uint64_t flood_bits_up(uint64_t x);
+INLINE unsigned short flood_bits_down(unsigned short x);
+INLINE unsigned int flood_bits_down(unsigned int x);
+INLINE unsigned long flood_bits_down(unsigned long x);
+INLINE unsigned long long flood_bits_down(unsigned long long x);
+INLINE unsigned short flood_bits_up(unsigned short x);
+INLINE unsigned int flood_bits_up(unsigned int x);
+INLINE unsigned long flood_bits_up(unsigned long x);
+INLINE unsigned long long flood_bits_up(unsigned long long x);
 
-INLINE int get_lowest_on_bit(uint16_t x);
-INLINE int get_lowest_on_bit(uint32_t x);
-INLINE int get_lowest_on_bit(uint64_t x);
-INLINE int get_highest_on_bit(uint16_t x);
-INLINE int get_highest_on_bit(uint32_t x);
-INLINE int get_highest_on_bit(uint64_t x);
+INLINE int get_lowest_on_bit(unsigned short x);
+INLINE int get_lowest_on_bit(unsigned int x);
+INLINE int get_lowest_on_bit(unsigned long x);
+INLINE int get_lowest_on_bit(unsigned long long x);
+INLINE int get_highest_on_bit(unsigned short x);
+INLINE int get_highest_on_bit(unsigned int x);
+INLINE int get_highest_on_bit(unsigned long x);
+INLINE int get_highest_on_bit(unsigned long long x);
 
-INLINE int get_next_higher_bit(uint16_t x);
-INLINE int get_next_higher_bit(uint32_t x);
-INLINE int get_next_higher_bit(uint64_t x);
+INLINE int get_next_higher_bit(unsigned short x);
+INLINE int get_next_higher_bit(unsigned int x);
+INLINE int get_next_higher_bit(unsigned long x);
+INLINE int get_next_higher_bit(unsigned long long x);
 
 // This table precomputes the number of on bits in each 16-bit word.
 extern EXPCL_PANDA_PUTIL const unsigned char num_bits_on[65536];

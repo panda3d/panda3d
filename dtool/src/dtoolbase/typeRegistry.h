@@ -40,13 +40,18 @@ public:
   // convenience function, defined in register_type.h.
   bool register_type(TypeHandle &type_handle, const std::string &name);
 
+#ifdef HAVE_PYTHON
+  typedef PyObject *PythonWrapFunc(void *ptr, PyTypeObject *cast_from);
+#endif
+
 PUBLISHED:
   TypeHandle register_dynamic_type(const std::string &name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const std::string &name);
 #ifdef HAVE_PYTHON
-  void record_python_type(TypeHandle type, PyObject *python_type);
+  void record_python_type(TypeHandle type, PyTypeObject *cls,
+                          PythonWrapFunc *wrap_func);
 #endif
 
   TypeHandle find_type(const std::string &name) const;
@@ -117,9 +122,6 @@ private:
 
   friend class TypeHandle;
 };
-
-// Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_DTOOL_DTOOLBASE  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
 
 #include "typeHandle.h"
 

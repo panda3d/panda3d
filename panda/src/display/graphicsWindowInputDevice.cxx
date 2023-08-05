@@ -30,14 +30,14 @@ using std::string;
  */
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, bool pointer, bool keyboard) :
-  InputDevice(name, DeviceClass::virtual_device)
+  InputDevice(name, DeviceClass::VIRTUAL)
 {
   if (pointer) {
-    enable_feature(Feature::pointer);
-    add_pointer(PointerType::mouse, 0);
+    enable_feature(Feature::POINTER);
+    add_pointer(PointerType::MOUSE, 0);
   }
   if (keyboard) {
-    enable_feature(Feature::keyboard);
+    enable_feature(Feature::KEYBOARD);
   }
 }
 
@@ -167,7 +167,7 @@ set_pointer_in_window(double x, double y, double time) {
   LightMutexHolder holder(_lock);
   PointerData data = _pointers[0];
   data._id = 0;
-  data._type = PointerType::mouse;
+  data._type = PointerType::MOUSE;
   data._xpos = x;
   data._ypos = y;
   data._in_window = true;

@@ -23,6 +23,7 @@
 
 #include <string>
 
+#include "cppAttributeList.h"
 #include "cppClosureType.h"
 #include "cppExtensionType.h"
 #include "cppFile.h"
@@ -65,6 +66,7 @@ extern CPPPreprocessor *current_lexer;
 class cppyystype {
 public:
   std::string str;
+  CPPAttributeList attr_list;
   union {
     unsigned long long integer;
     long double real;

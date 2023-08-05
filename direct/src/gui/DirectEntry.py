@@ -1,21 +1,26 @@
 """Contains the DirectEntry class, a type of DirectGUI widget that accepts
-text entered using the keyboard."""
+text entered using the keyboard.
+
+See the :ref:`directentry` page in the programming manual for a more in-depth
+explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectEntry']
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool, PGEntry, Point3, TextNode, Vec3
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
 from .OnscreenText import OnscreenText
-import sys
 # import this to make sure it gets pulled into the publish
-import encodings.utf_8
+import encodings.utf_8 # pylint: disable=unused-import
 from direct.showbase.DirectObject import DirectObject
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
 ENTRY_NO_FOCUS_STATE = PGEntry.SNoFocus    # 1
 ENTRY_INACTIVE_STATE = PGEntry.SInactive   # 2
+
 
 class DirectEntry(DirectFrame):
     """
@@ -78,14 +83,14 @@ class DirectEntry(DirectFrame):
             ('autoCapitalize',  0,                self.autoCapitalizeFunc),
             ('autoCapitalizeAllowPrefixes', DirectEntry.AllowCapNamePrefixes, None),
             ('autoCapitalizeForcePrefixes', DirectEntry.ForceCapNamePrefixes, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
-        if self['entryFont'] == None:
+        if self['entryFont'] is None:
             font = DGG.getDefaultFont()
         else:
             font = self['entryFont']
@@ -94,7 +99,7 @@ class DirectEntry(DirectFrame):
         self.onscreenText = self.createcomponent(
             'text', (), None,
             OnscreenText,
-            (), parent = hidden,
+            (), parent = ShowBaseGlobal.hidden,
             # Pass in empty text to avoid extra work, since its really
             # The PGEntry which will use the TextNode to generate geometry
             text = '',
@@ -211,11 +216,12 @@ class DirectEntry(DirectFrame):
 
     def _handleTyping(self, guiEvent):
         self._autoCapitalize()
+
     def _handleErasing(self, guiEvent):
         self._autoCapitalize()
 
     def _autoCapitalize(self):
-        name = self.get().decode('utf-8')
+        name = self.guiItem.getWtext()
         # capitalize each word, allowing for things like McMutton
         capName = ''
         # track each individual word to detect prefixes like Mc
@@ -237,13 +243,13 @@ class DirectEntry(DirectFrame):
                 if wasNonWordChar:
                     # first letter of a word, capitalize it unconditionally;
                     capitalize = True
-                elif (character == character.upper() and
-                      len(self.autoCapitalizeAllowPrefixes) and
-                      wordSoFar in self.autoCapitalizeAllowPrefixes):
+                elif character == character.upper() and \
+                     len(self.autoCapitalizeAllowPrefixes) > 0 and \
+                     wordSoFar in self.autoCapitalizeAllowPrefixes:
                     # first letter after one of the prefixes, allow it to be capitalized
                     capitalize = True
-                elif (len(self.autoCapitalizeForcePrefixes) and
-                      wordSoFar in self.autoCapitalizeForcePrefixes):
+                elif len(self.autoCapitalizeForcePrefixes) > 0 and \
+                     wordSoFar in self.autoCapitalizeForcePrefixes:
                     # first letter after one of the force prefixes, force it to be capitalized
                     capitalize = True
                 if capitalize:
@@ -254,7 +260,8 @@ class DirectEntry(DirectFrame):
                 wordSoFar += character
                 wasNonWordChar = False
             capName += character
-        self.enterText(capName.encode('utf-8'))
+        self.guiItem.setWtext(capName)
+        self.guiItem.setCursorPosition(self.guiItem.getNumCharacters())
 
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
@@ -268,16 +275,9 @@ class DirectEntry(DirectFrame):
         does not change the current cursor position.  Also see
         enterText(). """
 
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-            self.guiItem.setWtext(text)
-        else:
-            self.unicodeText = isinstance(text, unicode)
-            if self.unicodeText:
-                self.guiItem.setWtext(text)
-            else:
-                self.guiItem.setText(text)
+        assert not isinstance(text, bytes)
+        self.unicodeText = True
+        self.guiItem.setWtext(text)
 
     def get(self, plain = False):
         """ Returns the text currently showing in the typable region.
@@ -306,7 +306,7 @@ class DirectEntry(DirectFrame):
         return self.guiItem.getCursorPosition()
 
     def setCursorPosition(self, pos):
-        if (pos < 0):
+        if pos < 0:
             self.guiItem.setCursorPosition(self.guiItem.getNumCharacters() + pos)
         else:
             self.guiItem.setCursorPosition(pos)

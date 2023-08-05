@@ -2,18 +2,24 @@
 Defines ObjectMgrBase
 """
 
-import os, time, copy
+import os
+import time
+import copy
 
-from direct.task import Task
+from panda3d.core import ConfigVariableString, Filename, Mat4, NodePath
 from direct.actor.Actor import Actor
-from panda3d.core import *
-from .ActionMgr import *
+from direct.showbase.PythonUtil import Functor
+from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
+from .ActionMgr import ActionTransformObj, ActionUpdateObjectProp
 from . import ObjectGlobals as OG
+
 
 # python wrapper around a panda.NodePath object
 class PythonNodePath(NodePath):
     def __init__(self,node):
-        NodePath.__init__(self,node)
+        NodePath.__init__(self, node)
+
 
 class ObjectMgrBase:
     """ ObjectMgr will create, manage, update objects in the scene """
@@ -33,9 +39,9 @@ class ObjectMgrBase:
         self.currLiveNP = None
 
         self.Actor = []
-        self.findActors(render)
+        self.findActors(base.render)
         self.Nodes = []
-        self.findNodes(render)
+        self.findNodes(base.render)
 
     def reset(self):
         base.direct.deselectAllCB()
@@ -43,7 +49,7 @@ class ObjectMgrBase:
         for id in list(self.objects.keys()):
             try:
                 self.objects[id][OG.OBJ_NP].removeNode()
-            except:
+            except Exception:
                 pass
             del self.objects[id]
 
@@ -60,13 +66,13 @@ class ObjectMgrBase:
         # [gjeon] to solve the problem of unproper $USERNAME
         userId = os.path.basename(os.path.expandvars('$USERNAME'))
         if userId == '':
-            userId = base.config.GetString("le-user-id")
+            userId = ConfigVariableString("le-user-id").value
         if userId == '':
             userId = 'unknown'
         newUid = str(time.time()) + userId
         # prevent duplicates from being generated in the same frame (this can
         # happen when creating several new objects at once)
-        if (self.lastUid == newUid):
+        if self.lastUid == newUid:
             # append a value to the end to uniquify the id
             newUid = newUid + str(self.lastUidMod)
             self.lastUidMod = self.lastUidMod + 1
@@ -82,23 +88,23 @@ class ObjectMgrBase:
 
         #transfer the curve information from simple positions into control nodes
         for item in curveInfo:
-            controler = render.attachNewNode("controler")
-            controler = loader.loadModel('models/misc/smiley')
-            controlerPathname = 'controler%d' % item[0]
+            controler = base.render.attachNewNode("controler")
+            controler = base.loader.loadModel('models/misc/smiley')
+            controlerPathname = f'controler{item[0]}'
             controler.setName(controlerPathname)
             controler.setPos(item[1])
             controler.setColor(0, 0, 0, 1)
             controler.setScale(0.2)
-            controler.reparentTo(render)
-            controler.setTag('OBJRoot','1')
-            controler.setTag('Controller','1')
+            controler.reparentTo(base.render)
+            controler.setTag('OBJRoot', '1')
+            controler.setTag('Controller', '1')
             curve.append((None, item[1]))
             curveControl.append((item[0], controler))
 
         self.editor.curveEditor.degree = degree
-        self.editor.curveEditor.ropeUpdate (curve)
+        self.editor.curveEditor.ropeUpdate(curve)
         #add new curve to the scene
-        curveObjNP = self.addNewCurve(curveControl, degree, uid, parent, fSelectObject, nodePath = self.editor.curveEditor.currentRope)
+        curveObjNP = self.addNewCurve(curveControl, degree, uid, parent, fSelectObject, nodePath=self.editor.curveEditor.currentRope)
         curveObj = self.findObjectByNodePath(curveObjNP)
         self.editor.objectMgr.updateObjectPropValue(curveObj, 'Degree', degree, fSelectObject=False, fUndo=False)
 
@@ -131,7 +137,7 @@ class ObjectMgrBase:
             newobj = nodePath
 
         newobj.reparentTo(parent)
-        newobj.setTag('OBJRoot','1')
+        newobj.setTag('OBJRoot', '1')
 
         # populate obj data using default values
         properties = {}
@@ -170,7 +176,7 @@ class ObjectMgrBase:
             if objDef is None:
                 objDef = base.protoPalette.findItem(typeName)
         newobj = None
-        if objDef and type(objDef) != dict:
+        if objDef and not isinstance(objDef, dict):
             if not hasattr(objDef, 'createFunction'):
                 return newobj
             if nodePath is None:
@@ -184,7 +190,7 @@ class ObjectMgrBase:
                         elif pair[1] == OG.ARG_PARENT:
                             funcArgs[pair[0]] = parent
 
-                    if type(funcName) == str:
+                    if isinstance(funcName, str):
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
                             if self.editor:
@@ -204,7 +210,7 @@ class ObjectMgrBase:
                         model = objDef.model
                     try:
                         newobj = Actor(model)
-                    except:
+                    except Exception:
                         newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
                     if hasattr(objDef, 'animDict') and objDef.animDict != {}:
                         objDef.anims = objDef.animDict.get(model)
@@ -214,9 +220,9 @@ class ObjectMgrBase:
                     if model is None:
                         model = objDef.model
                     try:
-                        newobjModel = loader.loadModel(model)
-                    except:
-                        newobjModel = loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
+                        newobjModel = base.loader.loadModel(model)
+                    except Exception:
+                        newobjModel = base.loader.loadModel(Filename.fromOsSpecific(model).getFullpath(), okMissing=True)
                     if newobjModel:
                         self.flatten(newobjModel, model, objDef, uid)
                         newobj = PythonNodePath(newobjModel)
@@ -249,7 +255,7 @@ class ObjectMgrBase:
                 return None
 
             newobj.reparentTo(parent)
-            newobj.setTag('OBJRoot','1')
+            newobj.setTag('OBJRoot', '1')
 
             # populate obj data using default values
             properties = {}
@@ -271,11 +277,11 @@ class ObjectMgrBase:
         obj = self.findObjectById(uid)
         nodePath = obj[OG.OBJ_NP]
 
-        for i in range(0,len(self.Actor)):
+        for i in range(0, len(self.Actor)):
             if self.Actor[i] == obj:
                 del self.Actor[i]
                 break
-        for i in range(0,len(self.Nodes)):
+        for i in range(0, len(self.Nodes)):
             if self.Nodes[i][OG.OBJ_UID] == uid:
                 del self.Nodes[i]
                 break
@@ -295,11 +301,11 @@ class ObjectMgrBase:
     def removeObjectByNodePath(self, nodePath):
         uid = self.npIndex.get(nodePath)
         if uid:
-            for i in range(0,len(self.Actor)):
+            for i in range(0, len(self.Actor)):
                 if self.Actor[i][OG.OBJ_UID] == uid:
                     del self.Actor[i]
                     break
-            for i in range(0,len(self.Nodes)):
+            for i in range(0, len(self.Nodes)):
                 if self.Nodes[i][OG.OBJ_UID] == uid:
                     del self.Nodes[i]
                     break
@@ -360,7 +366,7 @@ class ObjectMgrBase:
         self.updateObjectPropertyUI(obj)
         #import pdb;pdb.set_trace()
         if fLEPane == 0:
-           self.editor.ui.sceneGraphUI.select(obj[OG.OBJ_UID])
+            self.editor.ui.sceneGraphUI.select(obj[OG.OBJ_UID])
 
         if not obj[OG.OBJ_DEF].movable:
             if base.direct.widget.fActive:
@@ -506,16 +512,16 @@ class ObjectMgrBase:
             if objDef.actor:
                 try:
                     newobj = Actor(model)
-                except:
+                except Exception:
                     newobj = Actor(Filename.fromOsSpecific(model).getFullpath())
             else:
-                newobjModel = loader.loadModel(model, okMissing=True)
+                newobjModel = base.loader.loadModel(model, okMissing=True)
                 if newobjModel is None:
                     print("Can't load model %s"%model)
                     return
                 self.flatten(newobjModel, model, objDef, uid)
                 newobj = PythonNodePath(newobjModel)
-            newobj.setTag('OBJRoot','1')
+            newobj.setTag('OBJRoot', '1')
 
             # reparent children
             objNP.findAllMatches("=OBJRoot").reparentTo(newobj)
@@ -682,7 +688,7 @@ class ObjectMgrBase:
                         kwargs[key] = funcArgs[key]
                         undoKwargs[key] = funcArgs[key]
 
-                if type(funcName) == str:
+                if isinstance(funcName, str):
                     if funcName.startswith('.'):
                         if self.editor:
                             func = Functor(getattr(self.editor, "objectHandler%s"%funcName), **kwargs)
@@ -719,7 +725,7 @@ class ObjectMgrBase:
         curveNode = obj[OG.OBJ_PROP]['curveInfo']
         curveInfor = []
         for item in curveNode:
-                curveInfor.append((None, item[1].getPos()))
+            curveInfor.append((None, item[1].getPos()))
         curve.setup(degree, curveInfor)
 
     def updateObjectProperties(self, nodePath, propValues):
@@ -799,7 +805,7 @@ class ObjectMgrBase:
     def getSaveData(self):
         self.saveData = []
         self.getPreSaveData()
-        self.traverse(render)
+        self.traverse(base.render)
         self.getPostSaveData()
         return self.saveData
 
@@ -808,14 +814,12 @@ class ObjectMgrBase:
         if there are additional data to be saved before main data
         you can override this function to populate data
         """
-        pass
 
     def getPostSaveData(self):
         """
         if there are additional data to be saved after main data
         you can override this function to populate data
         """
-        pass
 
     def duplicateObject(self, nodePath, parent=None):
         obj = self.findObjectByNodePath(nodePath)
@@ -918,7 +922,6 @@ class ObjectMgrBase:
 
                 self.findActors(child)
 
-
     def findNodes(self, parent):
         for child in parent.getChildren():
             if child.hasTag('OBJRoot') and not child.hasTag('Controller'):
@@ -928,5 +931,3 @@ class ObjectMgrBase:
                     self.Nodes.append(obj)
 
                 self.findActors(child)
-
-

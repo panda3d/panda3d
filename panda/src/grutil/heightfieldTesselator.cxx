@@ -161,10 +161,10 @@ generate() {
   PT(PandaNode) result = new PandaNode(get_name());
   NodePath root(result);
 
-  int total = 0;
+  //int total = 0;
   for (int y=0; y<ycells; y++) {
     for (int x=0; x<xcells; x++) {
-      total += count_triangles(scale,x*size,y*size);
+      /*total += */count_triangles(scale,x*size,y*size);
     }
   }
   for (int y=0; y<ycells; y++) {

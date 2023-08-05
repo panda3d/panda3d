@@ -30,6 +30,7 @@
 #include "renderAttrib.h"
 #include "shaderInput.h"
 #include "boundingBox.h"
+#include "boundingSphere.h"
 #include "samplerState.h"
 #include "config_grutil.h"
 #include "typeHandle.h"
@@ -98,16 +99,15 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _size(0),
   _chunk_size(32),
   _generate_patches(false),
-  _data_texture(nullptr),
+  _heightfield_tex(nullptr),
   _chunk_geom(nullptr),
+  _data_texture(nullptr),
   _current_view_index(0),
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
-  _update_enabled(true),
-  _heightfield_tex(nullptr)
+  _update_enabled(true)
 {
-  set_final(true);
-  set_bounds(new OmniBoundingVolume());
+  set_renderable();
 }
 
 /**
@@ -207,6 +207,7 @@ bool ShaderTerrainMesh::do_check_heightfield() {
 void ShaderTerrainMesh::do_init_data_texture() {
   _data_texture = new Texture("TerrainDataTexture");
   _data_texture->setup_2d_texture(stm_max_chunk_count, stm_max_views, Texture::T_float, Texture::F_rgba32);
+  _data_texture->set_compression(Texture::CM_off);
   _data_texture->set_clear_color(LVector4(0));
   _data_texture->clear_image();
 }
@@ -440,14 +441,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
 }
 
 /**
- * @copydoc PandaNode::is_renderable()
- */
-bool ShaderTerrainMesh::is_renderable() const {
-  return true;
-}
-
-/**
- * @copydoc PandaNode::is_renderable()
+ * @copydoc PandaNode::safe_to_flatten()
  */
 bool ShaderTerrainMesh::safe_to_flatten() const {
   return false;
@@ -561,6 +555,64 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   _basic_collector.stop();
+}
+
+/**
+ * This is used to support NodePath::calc_tight_bounds().  It is not intended
+ * to be called directly, and it has nothing to do with the normal Panda
+ * bounding-volume computation.
+ *
+ * If the node contains any geometry, this updates min_point and max_point to
+ * enclose its bounding box.  found_any is to be set true if the node has any
+ * geometry at all, or left alone if it has none.  This method may be called
+ * over several nodes, so it may enter with min_point, max_point, and
+ * found_any already set.
+ */
+CPT(TransformState) ShaderTerrainMesh::
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
+                  const TransformState *transform, Thread *current_thread) const {
+  CPT(TransformState) next_transform =
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
+                                 current_thread);
+
+  const LMatrix4 &mat = next_transform->get_mat();
+  LPoint3 terrain_min_point = LPoint3(0, 0, 0) * mat;
+  LPoint3 terrain_max_point = LPoint3(1, 1, 1) * mat;
+  if (!found_any) {
+    min_point = terrain_min_point;
+    max_point = terrain_max_point;
+    found_any = true;
+  } else {
+    min_point = min_point.fmin(terrain_min_point);
+    max_point = max_point.fmax(terrain_max_point);
+  }
+
+  return next_transform;
+}
+
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
+void ShaderTerrainMesh::
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
+                        Thread *current_thread) const {
+
+  BoundingVolume::BoundsType btype = get_bounds_type();
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
+  if (btype == BoundingVolume::BT_sphere) {
+    internal_bounds = new BoundingSphere(LPoint3(0.5, 0.5, 0.5), csqrt(0.75));
+  } else {
+    internal_bounds = new BoundingBox(LPoint3(0, 0, 0), LPoint3(1, 1, 1));
+  }
+
+  internal_vertices = 0;
 }
 
 /**

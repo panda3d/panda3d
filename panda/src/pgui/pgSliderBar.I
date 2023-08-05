@@ -381,7 +381,7 @@ get_adjust_event() const {
  */
 INLINE void PGSliderBar::
 internal_set_ratio(PN_stdfloat ratio) {
-  _ratio = std::max(std::min(ratio, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  _ratio = (std::max)((std::min)(ratio, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
   _needs_reposition = true;
   adjust();
 }

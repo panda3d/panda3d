@@ -17,7 +17,6 @@
 INLINE MovingPartBase::
 MovingPartBase(const MovingPartBase &copy) :
   PartGroup(copy),
-  _num_effective_channels(0),
   _effective_control(nullptr),
   _forced_channel(copy._forced_channel)
 {

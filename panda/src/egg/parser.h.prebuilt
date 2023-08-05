@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.2.2.  */
+/* A Bison parser, made by GNU Bison 3.7.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,8 +31,9 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
 
 #ifndef YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED
 # define YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED
@@ -43,103 +45,111 @@
 extern int eggyydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    EGG_NUMBER = 258,
-    EGG_ULONG = 259,
-    EGG_STRING = 260,
-    ANIMPRELOAD = 261,
-    BEZIERCURVE = 262,
-    BFACE = 263,
-    BILLBOARD = 264,
-    BILLBOARDCENTER = 265,
-    BINORMAL = 266,
-    BUNDLE = 267,
-    CLOSED = 268,
-    COLLIDE = 269,
-    COMMENT = 270,
-    COMPONENT = 271,
-    COORDSYSTEM = 272,
-    CV = 273,
-    DART = 274,
-    DNORMAL = 275,
-    DRGBA = 276,
-    DUV = 277,
-    DXYZ = 278,
-    DCS = 279,
-    DISTANCE = 280,
-    DTREF = 281,
-    DYNAMICVERTEXPOOL = 282,
-    EXTERNAL_FILE = 283,
-    GROUP = 284,
-    DEFAULTPOSE = 285,
-    JOINT = 286,
-    KNOTS = 287,
-    INCLUDE = 288,
-    INSTANCE = 289,
-    LINE = 290,
-    LOOP = 291,
-    MATERIAL = 292,
-    MATRIX3 = 293,
-    MATRIX4 = 294,
-    MODEL = 295,
-    MREF = 296,
-    NORMAL = 297,
-    NURBSCURVE = 298,
-    NURBSSURFACE = 299,
-    OBJECTTYPE = 300,
-    ORDER = 301,
-    OUTTANGENT = 302,
-    PATCH = 303,
-    POINTLIGHT = 304,
-    POLYGON = 305,
-    REF = 306,
-    RGBA = 307,
-    ROTATE = 308,
-    ROTX = 309,
-    ROTY = 310,
-    ROTZ = 311,
-    SANIM = 312,
-    SCALAR = 313,
-    SCALE = 314,
-    SEQUENCE = 315,
-    SHADING = 316,
-    SWITCH = 317,
-    SWITCHCONDITION = 318,
-    TABLE = 319,
-    TABLE_V = 320,
-    TAG = 321,
-    TANGENT = 322,
-    TEXLIST = 323,
-    TEXTURE = 324,
-    TLENGTHS = 325,
-    TRANSFORM = 326,
-    TRANSLATE = 327,
-    TREF = 328,
-    TRIANGLEFAN = 329,
-    TRIANGLESTRIP = 330,
-    TRIM = 331,
-    TXT = 332,
-    UKNOTS = 333,
-    UV = 334,
-    AUX = 335,
-    VKNOTS = 336,
-    VERTEX = 337,
-    VERTEXANIM = 338,
-    VERTEXPOOL = 339,
-    VERTEXREF = 340,
-    XFMANIM = 341,
-    XFMSANIM = 342,
-    START_EGG = 343,
-    START_GROUP_BODY = 344,
-    START_TEXTURE_BODY = 345,
-    START_PRIMITIVE_BODY = 346
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    EGG_NUMBER = 258,              /* EGG_NUMBER  */
+    EGG_ULONG = 259,               /* EGG_ULONG  */
+    EGG_STRING = 260,              /* EGG_STRING  */
+    ANIMPRELOAD = 261,             /* ANIMPRELOAD  */
+    BEZIERCURVE = 262,             /* BEZIERCURVE  */
+    BFACE = 263,                   /* BFACE  */
+    BILLBOARD = 264,               /* BILLBOARD  */
+    BILLBOARDCENTER = 265,         /* BILLBOARDCENTER  */
+    BINORMAL = 266,                /* BINORMAL  */
+    BUNDLE = 267,                  /* BUNDLE  */
+    CLOSED = 268,                  /* CLOSED  */
+    COLLIDE = 269,                 /* COLLIDE  */
+    COMMENT = 270,                 /* COMMENT  */
+    COMPONENT = 271,               /* COMPONENT  */
+    COORDSYSTEM = 272,             /* COORDSYSTEM  */
+    CV = 273,                      /* CV  */
+    DART = 274,                    /* DART  */
+    DNORMAL = 275,                 /* DNORMAL  */
+    DRGBA = 276,                   /* DRGBA  */
+    DUV = 277,                     /* DUV  */
+    DXYZ = 278,                    /* DXYZ  */
+    DCS = 279,                     /* DCS  */
+    DISTANCE = 280,                /* DISTANCE  */
+    DTREF = 281,                   /* DTREF  */
+    DYNAMICVERTEXPOOL = 282,       /* DYNAMICVERTEXPOOL  */
+    EXTERNAL_FILE = 283,           /* EXTERNAL_FILE  */
+    GROUP = 284,                   /* GROUP  */
+    DEFAULTPOSE = 285,             /* DEFAULTPOSE  */
+    JOINT = 286,                   /* JOINT  */
+    KNOTS = 287,                   /* KNOTS  */
+    INCLUDE = 288,                 /* INCLUDE  */
+    INSTANCE = 289,                /* INSTANCE  */
+    LINE = 290,                    /* LINE  */
+    LOOP = 291,                    /* LOOP  */
+    MATERIAL = 292,                /* MATERIAL  */
+    MATRIX3 = 293,                 /* MATRIX3  */
+    MATRIX4 = 294,                 /* MATRIX4  */
+    MODEL = 295,                   /* MODEL  */
+    MREF = 296,                    /* MREF  */
+    NORMAL = 297,                  /* NORMAL  */
+    NURBSCURVE = 298,              /* NURBSCURVE  */
+    NURBSSURFACE = 299,            /* NURBSSURFACE  */
+    OBJECTTYPE = 300,              /* OBJECTTYPE  */
+    ORDER = 301,                   /* ORDER  */
+    OUTTANGENT = 302,              /* OUTTANGENT  */
+    PATCH = 303,                   /* PATCH  */
+    POINTLIGHT = 304,              /* POINTLIGHT  */
+    POLYGON = 305,                 /* POLYGON  */
+    REF = 306,                     /* REF  */
+    RGBA = 307,                    /* RGBA  */
+    ROTATE = 308,                  /* ROTATE  */
+    ROTX = 309,                    /* ROTX  */
+    ROTY = 310,                    /* ROTY  */
+    ROTZ = 311,                    /* ROTZ  */
+    SANIM = 312,                   /* SANIM  */
+    SCALAR = 313,                  /* SCALAR  */
+    SCALE = 314,                   /* SCALE  */
+    SEQUENCE = 315,                /* SEQUENCE  */
+    SHADING = 316,                 /* SHADING  */
+    SWITCH = 317,                  /* SWITCH  */
+    SWITCHCONDITION = 318,         /* SWITCHCONDITION  */
+    TABLE = 319,                   /* TABLE  */
+    TABLE_V = 320,                 /* TABLE_V  */
+    TAG = 321,                     /* TAG  */
+    TANGENT = 322,                 /* TANGENT  */
+    TEXLIST = 323,                 /* TEXLIST  */
+    TEXTURE = 324,                 /* TEXTURE  */
+    TLENGTHS = 325,                /* TLENGTHS  */
+    TRANSFORM = 326,               /* TRANSFORM  */
+    TRANSLATE = 327,               /* TRANSLATE  */
+    TREF = 328,                    /* TREF  */
+    TRIANGLEFAN = 329,             /* TRIANGLEFAN  */
+    TRIANGLESTRIP = 330,           /* TRIANGLESTRIP  */
+    TRIM = 331,                    /* TRIM  */
+    TXT = 332,                     /* TXT  */
+    UKNOTS = 333,                  /* UKNOTS  */
+    UV = 334,                      /* UV  */
+    AUX = 335,                     /* AUX  */
+    VKNOTS = 336,                  /* VKNOTS  */
+    VERTEX = 337,                  /* VERTEX  */
+    VERTEXANIM = 338,              /* VERTEXANIM  */
+    VERTEXPOOL = 339,              /* VERTEXPOOL  */
+    VERTEXREF = 340,               /* VERTEXREF  */
+    XFMANIM = 341,                 /* XFMANIM  */
+    XFMSANIM = 342,                /* XFMSANIM  */
+    START_EGG = 343,               /* START_EGG  */
+    START_GROUP_BODY = 344,        /* START_GROUP_BODY  */
+    START_TEXTURE_BODY = 345,      /* START_TEXTURE_BODY  */
+    START_PRIMITIVE_BODY = 346     /* START_PRIMITIVE_BODY  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Tokens.  */
+/* Token kinds.  */
+#define YYEOF 0
+#define YYerror 256
+#define YYUNDEF 257
 #define EGG_NUMBER 258
 #define EGG_ULONG 259
 #define EGG_STRING 260
@@ -232,9 +242,22 @@ extern int eggyydebug;
 
 /* Value type.  */
 
+/* Location type.  */
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
 
-extern YYSTYPE eggyylval;
 
-int eggyyparse (void);
+
+int eggyyparse (EggParserState &state, yyscan_t scanner);
 
 #endif /* !YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED  */

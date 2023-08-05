@@ -29,6 +29,7 @@
 #include "odePlane2dJoint.h"
 
 #ifndef CPPPARSER
+extern Dtool_PyTypedObject Dtool_OdeBody;
 extern Dtool_PyTypedObject Dtool_OdeJoint;
 extern Dtool_PyTypedObject Dtool_OdeBallJoint;
 extern Dtool_PyTypedObject Dtool_OdeHingeJoint;
@@ -48,7 +49,23 @@ extern Dtool_PyTypedObject Dtool_OdePlane2dJoint;
  * attached to the environment.
  */
 void Extension<OdeJoint>::
-attach(const OdeBody *body1, const OdeBody *body2) {
+attach(PyObject *param1, PyObject *param2) {
+  const OdeBody *body1 = nullptr;
+  if (param1 != Py_None) {
+    body1 = (const OdeBody *)DTOOL_Call_GetPointerThisClass(param1, &Dtool_OdeBody, 1, "OdeJoint.attach", true, true);
+    if (body1 == nullptr) {
+      return;
+    }
+  }
+
+  const OdeBody *body2 = nullptr;
+  if (param2 != Py_None) {
+    body2 = (const OdeBody *)DTOOL_Call_GetPointerThisClass(param2, &Dtool_OdeBody, 2, "OdeJoint.attach", true, true);
+    if (body2 == nullptr) {
+      return;
+    }
+  }
+
   if (body1 && body2) {
     _this->attach_bodies(*body1, *body2);
 

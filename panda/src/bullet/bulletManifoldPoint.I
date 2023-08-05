@@ -10,11 +10,3 @@
  * @author enn0x
  * @date 2010-03-07
  */
-
-/**
- *
- */
-INLINE BulletManifoldPoint::
-~BulletManifoldPoint() {
-
-}

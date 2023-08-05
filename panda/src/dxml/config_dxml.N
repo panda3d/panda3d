@@ -1,8 +1,0 @@
-forcetype TiXmlBase
-forcetype TiXmlDeclaration
-forcetype TiXmlDocument
-forcetype TiXmlElement
-forcetype TiXmlNode
-
-# This method can't be exported, because it steals ownership of the pointer.
-ignoremember LinkEndChild

@@ -87,9 +87,13 @@ PUBLISHED:
   INLINE TypedWritable *get_root_node() const;
   INLINE void set_root_node(TypedWritable *root_node);
 
+public:
+  EXTENSION(PyObject *get_file_version() const);
+
 PUBLISHED:
   MAKE_PROPERTY(target, get_target, set_target);
   MAKE_PROPERTY(filename, get_filename);
+  MAKE_PROPERTY(file_version, get_file_version);
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
   MAKE_PROPERTY(file_texture_mode, get_file_texture_mode);

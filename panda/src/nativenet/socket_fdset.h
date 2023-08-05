@@ -1,5 +1,5 @@
-#ifndef __SOCKET_FDSET_H__
-#define __SOCKET_FDSET_H__
+#ifndef SOCKET_FDSET_H
+#define SOCKET_FDSET_H
 
 /*
  * rhh This class needs to be broken into 2 classes: the gathering class and
@@ -52,7 +52,7 @@ inline Socket_fdset::Socket_fdset() {
 inline void Socket_fdset::setForSocketNative(SOCKET inid)
 {
     assert( inid >= 0);
-#ifndef WIN32
+#ifndef _WIN32
     assert(inid < FD_SETSIZE);
 #endif
 
@@ -68,7 +68,7 @@ inline void Socket_fdset::setForSocketNative(SOCKET inid)
 inline bool Socket_fdset::isSetForNative(SOCKET inid) const
 {
     assert( inid >= 0);
-#ifndef WIN32
+#ifndef _WIN32
     assert(inid < FD_SETSIZE);
 #endif
 
@@ -186,4 +186,4 @@ inline int Socket_fdset::WaitForError(bool zeroFds, uint32_t sleep_time)
 }
 
 
-#endif //__SOCKET_FDSET_H__
+#endif //SOCKET_FDSET_H

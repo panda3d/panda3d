@@ -57,10 +57,11 @@ get_depth_bits() const {
  */
 INLINE int FrameBufferProperties::
 get_color_bits() const {
-  return std::max(_property[FBP_color_bits],
-             _property[FBP_red_bits] +
-             _property[FBP_green_bits] +
-             _property[FBP_blue_bits]);
+  return (std::max)(
+    _property[FBP_color_bits],
+    _property[FBP_red_bits] +
+    _property[FBP_green_bits] +
+    _property[FBP_blue_bits]);
 }
 
 /**

@@ -107,7 +107,7 @@ init() {
   // can't safely load the file.
   if (_file_major != _bam_major_ver ||
       _file_minor < _bam_first_minor_ver ||
-      _file_minor > _bam_minor_ver) {
+      _file_minor > _bam_last_minor_ver) {
     bam_cat.error()
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
@@ -120,7 +120,7 @@ init() {
       bam_cat.error()
         << "This program can only load version "
         << _bam_major_ver << "." << _bam_first_minor_ver << " through "
-        << _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
+        << _bam_major_ver << "." << _bam_last_minor_ver << " bams.\n";
     }
 
     return false;
@@ -315,7 +315,7 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
  * time to call it.
  *
  * This must be called at least once after reading a particular object via
- * get_object() in order to validate that object.
+ * read_object() in order to validate that object.
  *
  * The return value is true if all objects have been resolved, or false if
  * some objects are still outstanding (in which case you will need to call
@@ -545,12 +545,13 @@ read_handle(DatagramIterator &scan) {
   string name = scan.get_string();
   bool new_type = false;
 
-  TypeHandle type = TypeRegistry::ptr()->find_type(name);
+  TypeRegistry *type_registry = TypeRegistry::ptr();
+  TypeHandle type = type_registry->find_type(name);
   if (type == TypeHandle::none()) {
     // We've never heard of this type before!  This is really an error
     // condition, but we'll do the best we can and declare it on-the-fly.
 
-    type = TypeRegistry::ptr()->register_dynamic_type(name);
+    type = type_registry->register_dynamic_type(name);
     bam_cat.warning()
       << "Bam file '" << get_filename() << "' contains objects of unknown type: "
       << type << "\n";
@@ -563,7 +564,7 @@ read_handle(DatagramIterator &scan) {
   for (int i = 0; i < num_parent_classes; i++) {
     TypeHandle parent_type = read_handle(scan);
     if (new_type) {
-      TypeRegistry::ptr()->record_derivation(type, parent_type);
+      type_registry->record_derivation(type, parent_type);
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
         if (bam_cat.is_debug()) {

@@ -48,6 +48,7 @@ BulletDebugNode(const char *name) : PandaNode(name) {
   set_bounds(bounds);
   set_final(true);
   set_overall_hidden(true);
+  set_renderable();
 }
 
 /**
@@ -149,17 +150,6 @@ draw_mask_changed() {
 
     _drawer.setDebugMode(mode);
   }
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool BulletDebugNode::
-is_renderable() const {
-  return true;
 }
 
 /**
@@ -384,8 +374,9 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
  */
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, const btVector3 &n2, const btVector3 &color, btScalar alpha) {
-
-  bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << std::endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << std::endl;
+  }
 }
 
 /**
@@ -405,8 +396,9 @@ drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar dista
  */
 void BulletDebugNode::DebugDraw::
 draw3dText(const btVector3 &location, const char *text) {
-
-  bullet_cat.debug() << "draw3dText - not yet implemented!" << std::endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "draw3dText - not yet implemented!" << std::endl;
+  }
 }
 
 /**

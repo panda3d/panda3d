@@ -29,12 +29,12 @@ TextureAttrib() {
 INLINE TextureAttrib::
 TextureAttrib(const TextureAttrib &copy) :
   _on_stages(copy._on_stages),
-  _render_stages(copy._render_stages),
-  _render_ff_stages(copy._render_ff_stages),
+  _render_stages(),
+  _render_ff_stages(),
   _next_implicit_sort(copy._next_implicit_sort),
   _off_stages(copy._off_stages),
   _off_all_stages(copy._off_all_stages),
-  _sort_seq(copy._sort_seq),
+  _sort_seq(UpdateSeq::old()),
   _filtered_seq(UpdateSeq::old())
 {
 }
@@ -236,9 +236,10 @@ StageNode(const TextureStage *stage, unsigned int implicit_sort, int override) :
   // Yeah, we cast away the constness here.  Just too much trouble to deal
   // with it properly.
   _stage((TextureStage *)stage),
+  _has_sampler(false),
+  _ff_tc_index(0),
   _implicit_sort(implicit_sort),
-  _override(override),
-  _has_sampler(false)
+  _override(override)
 {
 }
 

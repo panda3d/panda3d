@@ -14,6 +14,7 @@ module, and so it is therefore layered on top of Panda's thread
 implementation. """
 
 import sys as _sys
+import atexit as _atexit
 
 from direct.stdpy import thread as _thread
 from direct.stdpy.thread import stack_size, _newname, _local as local
@@ -64,7 +65,7 @@ if __debug__:
 
 else:
     # Disable this when using "python -O"
-    class _Verbose(object):
+    class _Verbose(object):  # type: ignore[no-redef]
         def __init__(self, verbose=None):
             pass
         def _note(self, *args):
@@ -201,13 +202,13 @@ class _Condition(_Verbose):
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
-    def _release_save(self):
+    def _release_save(self): # pylint: disable=method-hidden
         self.__lock.release()           # No state to save
 
-    def _acquire_restore(self, x):
+    def _acquire_restore(self, x): # pylint: disable=method-hidden
         self.__lock.acquire()           # Ignore saved state
 
-    def _is_owned(self):
+    def _is_owned(self): # pylint: disable=method-hidden
         # Return True if lock is owned by currentThread.
         # This method is called only if __lock doesn't have _is_owned().
         if self.__lock.acquire(0):
@@ -395,8 +396,12 @@ class Thread(_Verbose):
     # operation on/with a NoneType
     __exc_info = _sys.exc_info
 
+    # Set to True when the _shutdown handler is registered as atexit function.
+    # Protected by _active_limbo_lock.
+    __registered_atexit = False
+
     def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, verbose=None):
+                 args=(), kwargs=None, verbose=None, daemon=None):
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
         if kwargs is None:
@@ -405,7 +410,10 @@ class Thread(_Verbose):
         self.__name = str(name or _newname())
         self.__args = args
         self.__kwargs = kwargs
-        self.__daemonic = self._set_daemon()
+        if daemon is not None:
+            self.__daemonic = daemon
+        else:
+            self.__daemonic = self._set_daemon()
         self.__started = False
         self.__stopped = False
         self.__block = Condition(Lock())
@@ -436,6 +444,14 @@ class Thread(_Verbose):
             self._note("%s.start(): starting thread", self)
         _active_limbo_lock.acquire()
         _limbo[self] = self
+
+        # If we are starting a non-daemon thread, we need to call join() on it
+        # when the interpreter exits.  Python will call _shutdown() on the
+        # built-in threading module automatically, but not on our module.
+        if not self.__daemonic and not Thread.__registered_atexit:
+            _atexit.register(_shutdown)
+            Thread.__registered_atexit = True
+
         _active_limbo_lock.release()
         _start_new_thread(self.__bootstrap, ())
         self.__started = True
@@ -599,6 +615,9 @@ class Thread(_Verbose):
         assert not self.__started, "cannot set daemon status of active thread"
         self.__daemonic = daemonic
 
+    name = property(getName, setName)
+    daemon = property(isDaemon, setDaemon)
+
 # The timer class was contributed by Itamar Shtull-Trauring
 
 def Timer(*args, **kwargs):
@@ -670,7 +689,7 @@ class _MainThread(Thread):
 class _DummyThread(Thread):
 
     def __init__(self):
-        Thread.__init__(self, name=_newname("Dummy-%d"))
+        Thread.__init__(self, name=_newname("Dummy-%d"), daemon=True)
 
         # Thread.__block consumes an OS-level locking primitive, which
         # can never be used by a _DummyThread.  Since a _DummyThread
@@ -743,92 +762,3 @@ def main_thread():
 ##     from thread import _local as local
 ## except ImportError:
 ##     from _threading_local import local
-
-
-# Self-test code
-if __debug__:
-    def _test():
-        from collections import deque
-
-        class BoundedQueue(_Verbose):
-
-            def __init__(self, limit):
-                _Verbose.__init__(self)
-                self.mon = RLock()
-                self.rc = Condition(self.mon)
-                self.wc = Condition(self.mon)
-                self.limit = limit
-                self.queue = deque()
-
-            def put(self, item):
-                self.mon.acquire()
-                while len(self.queue) >= self.limit:
-                    self._note("put(%s): queue full", item)
-                    self.wc.wait()
-                self.queue.append(item)
-                self._note("put(%s): appended, length now %d",
-                           item, len(self.queue))
-                self.rc.notify()
-                self.mon.release()
-
-            def get(self):
-                self.mon.acquire()
-                while not self.queue:
-                    self._note("get(): queue empty")
-                    self.rc.wait()
-                item = self.queue.popleft()
-                self._note("get(): got %s, %d left", item, len(self.queue))
-                self.wc.notify()
-                self.mon.release()
-                return item
-
-        class ProducerThread(Thread):
-
-            def __init__(self, queue, quota):
-                Thread.__init__(self, name="Producer")
-                self.queue = queue
-                self.quota = quota
-
-            def run(self):
-                from random import random
-                counter = 0
-                while counter < self.quota:
-                    counter = counter + 1
-                    self.queue.put("%s.%d" % (self.getName(), counter))
-                    _sleep(random() * 0.00001)
-
-
-        class ConsumerThread(Thread):
-
-            def __init__(self, queue, count):
-                Thread.__init__(self, name="Consumer")
-                self.queue = queue
-                self.count = count
-
-            def run(self):
-                while self.count > 0:
-                    item = self.queue.get()
-                    print(item)
-                    self.count = self.count - 1
-
-        NP = 3
-        QL = 4
-        NI = 5
-
-        Q = BoundedQueue(QL)
-        P = []
-        for i in range(NP):
-            t = ProducerThread(Q, NI)
-            t.setName("Producer-%d" % (i+1))
-            P.append(t)
-        C = ConsumerThread(Q, NI*NP)
-        for t in P:
-            t.start()
-            _sleep(0.000001)
-        C.start()
-        for t in P:
-            t.join()
-        C.join()
-
-    if __name__ == '__main__':
-        _test()

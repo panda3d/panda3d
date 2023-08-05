@@ -1,16 +1,25 @@
-"""This module defines various dialog windows for the DirectGUI system."""
+"""This module defines various dialog windows for the DirectGUI system.
 
-__all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
+See the :ref:`directdialog` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
-from panda3d.core import *
+from __future__ import annotations
+
+__all__ = [
+    'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',
+    'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
+]
+
+from panda3d.core import NodePath, Point3, TextNode, VBase3
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
-import types
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
+
 
 def findDialog(uniqueName):
-    """findPanel(string uniqueName)
-
+    """
     Returns the panel whose uniqueName is given.  This is mainly
     useful for debugging, to get a pointer to the current onscreen
     panel of a particular type.
@@ -18,6 +27,7 @@ def findDialog(uniqueName):
     if uniqueName in DirectDialog.AllDialogs:
         return DirectDialog.AllDialogs[uniqueName]
     return None
+
 
 def cleanupDialog(uniqueName):
     """cleanupPanel(string uniqueName)
@@ -34,52 +44,48 @@ def cleanupDialog(uniqueName):
         # self.cleanup() directly
         DirectDialog.AllDialogs[uniqueName].cleanup()
 
+
 class DirectDialog(DirectFrame):
 
-    AllDialogs = {}
+    AllDialogs: dict[str, DirectDialog] = {}
     PanelIndex = 0
 
-    def __init__(self, parent = None, **kw):
-        """
-        DirectDialog(kw)
-
-        Creates a popup dialog to alert and/or interact with user.
+    def __init__(self, parent=None, **kw):
+        """Creates a popup dialog to alert and/or interact with user.
         Some of the main keywords that can be used to customize the dialog:
-            Keyword              Definition
-            -------              ----------
-            text                 Text message/query displayed to user
-            geom                 Geometry to be displayed in dialog
-            buttonTextList       List of text to show on each button
-            buttonGeomList       List of geometry to show on each button
-            buttonImageList      List of images to show on each button
-            buttonValueList      List of values sent to dialog command for
-                                 each button.  If value is [] then the
-                                 ordinal rank of the button is used as
-                                 its value
-            buttonHotKeyList     List of hotkeys to bind to each button.
-                                 Typing hotkey is equivalent to pressing
-                                 the corresponding button.
-            suppressKeys         Set to true if you wish to suppress keys
-                                 (i.e. Dialog eats key event), false if
-                                 you wish Dialog to pass along key event
-            buttonSize           4-tuple used to specify custom size for
-                                 each button (to make bigger then geom/text
-                                 for example)
-            pad                  Space between border and interior graphics
-            topPad               Extra space added above text/geom/image
-            midPad               Extra space added between text/buttons
-            sidePad              Extra space added to either side of
-                                 text/buttons
-            buttonPadSF          Scale factor used to expand/contract
-                                 button horizontal spacing
-            command              Callback command used when a button is
-                                 pressed.  Value supplied to command
-                                 depends on values in buttonValueList
 
-         Note: Number of buttons on the dialog depends upon the maximum
-               length of any button[Text|Geom|Image|Value]List specified.
-               Values of None are substituted for lists that are shorter
-               than the max length
+        Parameters:
+            text (str): Text message/query displayed to user
+            geom: Geometry to be displayed in dialog
+            buttonTextList: List of text to show on each button
+            buttonGeomList: List of geometry to show on each button
+            buttonImageList: List of images to show on each button
+            buttonValueList: List of values sent to dialog command for
+                each button.  If value is [] then the ordinal rank of
+                the button is used as its value.
+            buttonHotKeyList: List of hotkeys to bind to each button.
+                Typing the hotkey is equivalent to pressing the
+                corresponding button.
+            suppressKeys: Set to true if you wish to suppress keys
+                (i.e. Dialog eats key event), false if you wish Dialog
+                to pass along key event.
+            buttonSize: 4-tuple used to specify custom size for each
+                button (to make bigger then geom/text for example)
+            pad: Space between border and interior graphics
+            topPad: Extra space added above text/geom/image
+            midPad: Extra space added between text/buttons
+            sidePad: Extra space added to either side of text/buttons
+            buttonPadSF: Scale factor used to expand/contract button
+                horizontal spacing
+            command: Callback command used when a button is pressed.
+                Value supplied to command depends on values in
+                buttonValueList.
+
+        Note:
+            The number of buttons on the dialog depends on the maximum
+            length of any button[Text|Geom|Image|Value]List specified.
+            Values of None are substituted for lists that are shorter
+            than the max length
          """
 
         # Inherits from DirectFrame
@@ -116,7 +122,7 @@ class DirectDialog(DirectFrame):
             ('command',           None,          None),
             ('extraArgs',         [],            None),
             ('sortOrder',    DGG.NO_FADE_SORT_INDEX, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs, dynamicGroups = ("button",))
 
@@ -174,7 +180,7 @@ class DirectDialog(DirectFrame):
                 suppressKeys = self['suppressKeys'],
                 frameSize = self['buttonSize'],
                 command = lambda s = self, v = value: s.buttonCommand(v)
-                )
+            )
             self.buttonList.append(button)
 
         # Update dialog when everything has been initialised
@@ -186,8 +192,7 @@ class DirectDialog(DirectFrame):
         bindList = zip(self.buttonList, self['buttonHotKeyList'],
                        self['buttonValueList'])
         for button, hotKey, value in bindList:
-            if ((type(hotKey) == list) or
-                (type(hotKey) == tuple)):
+            if isinstance(hotKey, (list, tuple)):
                 for key in hotKey:
                     button.bind('press-' + key + '-', self.buttonCommand,
                                 extraArgs = [value])
@@ -207,7 +212,7 @@ class DirectDialog(DirectFrame):
             image = None
         # Get size of text/geom without image (for state 0)
         if image:
-            image.reparentTo(hidden)
+            image.reparentTo(ShowBaseGlobal.hidden)
         bounds = self.stateNodePath[0].getTightBounds()
         if image:
             image.reparentTo(self.stateNodePath[0])
@@ -273,13 +278,10 @@ class DirectDialog(DirectFrame):
             # Must compensate for scale
             scale = self['button_scale']
             # Can either be a Vec3 or a tuple of 3 values
-            if (isinstance(scale, Vec3) or
-                (type(scale) == list) or
-                (type(scale) == tuple)):
+            if isinstance(scale, (VBase3, list, tuple)):
                 sx = scale[0]
                 sz = scale[2]
-            elif ((type(scale) == int) or
-                  (type(scale) == float)):
+            elif isinstance(scale, (int, float)):
                 sx = sz = scale
             else:
                 sx = sz = 1
@@ -356,6 +358,7 @@ class DirectDialog(DirectFrame):
             button.destroy()
         DirectFrame.destroy(self)
 
+
 class OkDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
@@ -363,11 +366,12 @@ class OkDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['OK'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_OK],          DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(OkDialog)
+
 
 class OkCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -376,11 +380,12 @@ class OkCancelDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['OK','Cancel'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_OK, DGG.DIALOG_CANCEL], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(OkCancelDialog)
+
 
 class YesNoDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -389,11 +394,12 @@ class YesNoDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Yes', 'No'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(YesNoDialog)
+
 
 class YesNoCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -403,11 +409,12 @@ class YesNoCancelDialog(DirectDialog):
             ('buttonTextList',  ['Yes', 'No', 'Cancel'],  DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO, DGG.DIALOG_CANCEL],
              DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(YesNoCancelDialog)
+
 
 class RetryCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -416,9 +423,8 @@ class RetryCancelDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Retry','Cancel'],   DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_RETRY, DGG.DIALOG_CANCEL], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(RetryCancelDialog)
-

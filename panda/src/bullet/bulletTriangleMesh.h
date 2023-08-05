@@ -11,8 +11,8 @@
  * @date 2010-02-09
  */
 
-#ifndef __BULLET_TRIANGLE_MESH_H__
-#define __BULLET_TRIANGLE_MESH_H__
+#ifndef BULLETTRIANGLEMESH_H
+#define BULLETTRIANGLEMESH_H
 
 #include "pandabase.h"
 
@@ -116,4 +116,4 @@ INLINE std::ostream &operator << (std::ostream &out, const BulletTriangleMesh &o
 
 #include "bulletTriangleMesh.I"
 
-#endif // __BULLET_TRIANGLE_MESH_H__
+#endif // BULLETTRIANGLEMESH_H

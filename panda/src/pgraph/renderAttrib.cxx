@@ -14,7 +14,6 @@
 #include "renderAttrib.h"
 #include "bamReader.h"
 #include "indent.h"
-#include "config_pgraph.h"
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
@@ -22,6 +21,7 @@ using std::ostream;
 
 LightReMutex *RenderAttrib::_attribs_lock = nullptr;
 RenderAttrib::Attribs RenderAttrib::_attribs;
+bool RenderAttrib::_uniquify_attribs = false;
 TypeHandle RenderAttrib::_type_handle;
 
 size_t RenderAttrib::_garbage_index = 0;
@@ -180,6 +180,10 @@ list_attribs(ostream &out) {
  */
 int RenderAttrib::
 garbage_collect() {
+  // This gets called periodically, so use this opportunity to reload the value
+  // from the Config.prc file.
+  _uniquify_attribs = uniquify_attribs && state_cache;
+
   if (!garbage_collect_states) {
     return 0;
   }
@@ -209,14 +213,15 @@ garbage_collect() {
 
   do {
     RenderAttrib *attrib = (RenderAttrib *)_attribs.get_key(si);
-    if (attrib->get_ref_count() == 1) {
+    if (!attrib->unref_if_one()) {
       // This attrib has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _attribs_lock, so it's not possible
       // for some other thread to find the attrib in the cache and ref it
-      // while we're doing this.
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
       attrib->release_new();
-      unref_delete(attrib);
+      delete attrib;
 
       // When we removed it from the hash map, it swapped the last element
       // with the one we just removed.  So the current index contains one we
@@ -304,54 +309,15 @@ validate_attribs() {
 }
 
 /**
- * This function is used by derived RenderAttrib types to share a common
- * RenderAttrib pointer for all equivalent RenderAttrib objects.
- *
- * This is different from return_unique() in that it does not actually
- * guarantee a unique pointer, unless uniquify-attribs is set.
+ * Private implementation of return_new, return_unique, and get_unique.
  */
 CPT(RenderAttrib) RenderAttrib::
-return_new(RenderAttrib *attrib) {
-  nassertr(attrib != nullptr, attrib);
-  if (!uniquify_attribs) {
-    attrib->calc_hash();
-    return attrib;
-  }
-
-  return return_unique(attrib);
-}
-
-/**
- * This function is used by derived RenderAttrib types to share a common
- * RenderAttrib pointer for all equivalent RenderAttrib objects.
- *
- * The make() function of the derived type should create a new RenderAttrib
- * and pass it through return_new(), which will either save the pointer and
- * return it unchanged (if this is the first similar such object) or delete it
- * and return an equivalent pointer (if there was already a similar object
- * saved).
- */
-CPT(RenderAttrib) RenderAttrib::
-return_unique(RenderAttrib *attrib) {
-  nassertr(attrib != nullptr, attrib);
-
-  attrib->calc_hash();
-
-  if (!state_cache) {
-    return attrib;
-  }
-
-#ifndef NDEBUG
-  if (paranoid_const) {
-    nassertr(validate_attribs(), attrib);
-  }
-#endif
-
+do_uniquify(const RenderAttrib *attrib) {
   LightReMutexHolder holder(*_attribs_lock);
 
   if (attrib->_saved_entry != -1) {
-    // This attrib is already in the cache.  nassertr(_attribs.find(attrib)
-    // == attrib->_saved_entry, attrib);
+    // This attrib is already in the cache.
+    //nassertr(_attribs.find(attrib) == attrib->_saved_entry, attrib);
     return attrib;
   }
 
@@ -502,6 +468,12 @@ release_new() {
  */
 void RenderAttrib::
 init_attribs() {
+  // These are copied here so that we can be sure that they are constructed.
+  ALIGN_16BYTE ConfigVariableBool uniquify_attribs("uniquify-attribs", true);
+  ALIGN_16BYTE ConfigVariableBool state_cache("state-cache", true);
+
+  _uniquify_attribs = uniquify_attribs && state_cache;
+
   // TODO: we should have a global Panda mutex to allow us to safely create
   // _attribs_lock without a startup race condition.  For the meantime, this
   // is OK because we guarantee that this method is called at static init

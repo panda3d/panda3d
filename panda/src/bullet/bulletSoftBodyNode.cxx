@@ -187,14 +187,22 @@ transform_changed() {
 
     // Offset between current approx center and current initial transform
     btVector3 pos = LVecBase3_to_btVector3(this->do_get_aabb().get_approx_center());
+#if BT_BULLET_VERSION >= 290
+    btVector3 origin = _soft->getWorldTransform().getOrigin();
+#else
     btVector3 origin = _soft->m_initialWorldTransform.getOrigin();
+#endif
     btVector3 offset = pos - origin;
 
     // Subtract offset to get new transform for the body
     trans.setOrigin(trans.getOrigin() - offset);
 
     // Now apply the new transform
+#if BT_BULLET_VERSION >= 290
+    _soft->transform(_soft->getWorldTransform().inverse());
+#else
     _soft->transform(_soft->m_initialWorldTransform.inverse());
+#endif
     _soft->transform(trans);
 
     if (ts->has_scale()) {

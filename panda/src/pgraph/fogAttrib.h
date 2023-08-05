@@ -22,7 +22,7 @@
 /**
  * Applies a Fog to the geometry at and below this node.
  */
-class EXPCL_PANDA_PGRAPH FogAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH FogAttrib final : public RenderAttrib {
 private:
   INLINE FogAttrib();
 

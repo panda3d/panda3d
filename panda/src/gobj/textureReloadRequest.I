@@ -62,5 +62,5 @@ get_allow_compressed() const {
  */
 INLINE bool TextureReloadRequest::
 is_ready() const {
-  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
+  return (FutureState)_future_state.load(std::memory_order_relaxed) == FS_finished;
 }

@@ -20,6 +20,8 @@
 #include "nodeCachedReferenceCount.h"
 #include "luse.h"
 #include "lightMutex.h"
+#include "patomic.h"
+#include "small_vector.h"
 
 // A handful of forward references.
 
@@ -28,6 +30,7 @@ class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
 class GraphicsOutputBase;
+class ScreenshotRequest;
 
 class VertexBufferContext;
 class IndexBufferContext;
@@ -144,9 +147,10 @@ public:
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 #endif
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view)=0;
+  virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
+  virtual void release_textures(const pvector<TextureContext *> &contexts)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler)=0;
@@ -160,12 +164,15 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;
   virtual void release_vertex_buffer(VertexBufferContext *vbc)=0;
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data)=0;
   virtual void release_index_buffer(IndexBufferContext *ibc)=0;
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data)=0;
   virtual void release_shader_buffer(BufferContext *ibc)=0;
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts)=0;
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z)=0;
 
@@ -199,7 +206,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force)=0;
+                                     size_t num_instances, bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
@@ -216,7 +223,8 @@ public:
   virtual bool framebuffer_copy_to_texture
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
+   ScreenshotRequest *request = nullptr)=0;
 
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
@@ -256,11 +264,11 @@ private:
   struct GSGList {
     LightMutex _lock;
 
-    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    typedef small_vector<GraphicsStateGuardianBase *> GSGs;
     GSGs _gsgs;
-    GraphicsStateGuardianBase *_default_gsg;
+    GraphicsStateGuardianBase *_default_gsg = nullptr;
   };
-  static AtomicAdjust::Pointer _gsg_list;
+  static patomic<GSGList *> _gsg_list;
 
 protected:
   static UpdateSeq _generated_shader_seq;

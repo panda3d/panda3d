@@ -18,10 +18,10 @@
 
 #include "partBundle.h"
 #include "partBundleHandle.h"
-
+#include "lightMutex.h"
 #include "pandaNode.h"
 #include "dcast.h"
-#include "pvector.h"
+#include "small_vector.h"
 
 /**
  * This is a node that contains a pointer to an PartBundle.  Like
@@ -59,13 +59,14 @@ PUBLISHED:
 
 protected:
   void add_bundle(PartBundle *bundle);
-  void add_bundle_handle(PartBundleHandle *handle);
+  void do_add_bundle_handle(PartBundleHandle *handle);
   void steal_bundles(PartBundleNode *other);
   virtual void update_bundle(PartBundleHandle *old_bundle_handle,
                              PartBundle *new_bundle);
 
 protected:
-  typedef pvector< PT(PartBundleHandle) > Bundles;
+  LightMutex _lock;
+  typedef small_vector< PT(PartBundleHandle) > Bundles;
   Bundles _bundles;
 
 public:

@@ -1,7 +1,11 @@
 from panda3d import core
+import os
 import struct
 import pytest
 from _pytest.outcomes import Failed
+
+
+SHADERS_DIR = core.Filename.from_os_specific(os.path.dirname(__file__))
 
 
 # This is the template for the compute shader that is used by run_glsl_test.
@@ -102,6 +106,22 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
         pytest.fail("{0} GLSL assertions triggered:\n{1}".format(count, formatted))
 
 
+def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
+    """Compile supplied GLSL shader paths and check for errors"""
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
+
+    if not gsg.supports_glsl:
+        expect_fail = True
+
+    shader.prepare_now(gsg.prepared_objects, gsg)
+    assert shader.is_prepared(gsg.prepared_objects)
+    if expect_fail:
+        assert shader.get_error_flag()
+    else:
+        assert not shader.get_error_flag()
+
+
 def test_glsl_test(gsg):
     "Test to make sure that the GLSL tests work correctly."
 
@@ -124,15 +144,77 @@ def test_glsl_sampler(gsg):
     tex2.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_rgba32)
     tex2.set_clear_color((1.0, 2.0, -3.14, 0.0))
 
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex3.set_clear_color((0.5, 0.0, 0.0, 1.0))
+
     preamble = """
     uniform sampler1D tex1;
     uniform sampler2D tex2;
+    uniform sampler3D tex3;
     """
     code = """
     assert(texelFetch(tex1, 0, 0) == vec4(0, 2 / 255.0, 1, 1));
     assert(texelFetch(tex2, ivec2(0, 0), 0) == vec4(1.0, 2.0, -3.14, 0.0));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == vec4(0.5, 0.0, 0.0, 1.0));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_isampler(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('bbbb', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('h', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('i', 5))
+
+    preamble = """
+    uniform isampler1D tex1;
+    uniform isampler2D tex2;
+    uniform isampler3D tex3;
+    """
+    code = """
+    assert(texelFetch(tex1, 0, 0) == ivec4(0, 1, 2, 3));
+    assert(texelFetch(tex2, ivec2(0, 0), 0) == ivec4(4, 0, 0, 1));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == ivec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_usampler(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('BBBB', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_unsigned_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('H', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_unsigned_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('I', 5))
+
+    preamble = """
+    uniform usampler1D tex1;
+    uniform usampler2D tex2;
+    uniform usampler3D tex3;
+    """
+    code = """
+    assert(texelFetch(tex1, 0, 0) == uvec4(0, 1, 2, 3));
+    assert(texelFetch(tex2, ivec2(0, 0), 0) == uvec4(4, 0, 0, 1));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == uvec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
 def test_glsl_image(gsg):
@@ -153,6 +235,62 @@ def test_glsl_image(gsg):
     assert(imageLoad(tex2, ivec2(0, 0)) == vec4(1.0, 2.0, -3.14, 0.0));
     """
     run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+
+
+def test_glsl_iimage(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('bbbb', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('h', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('i', 5))
+
+    preamble = """
+    layout(rgba8i) uniform iimage1D tex1;
+    layout(r16i) uniform iimage2D tex2;
+    layout(r32i) uniform iimage3D tex3;
+    """
+    code = """
+    assert(imageLoad(tex1, 0) == ivec4(0, 1, 2, 3));
+    assert(imageLoad(tex2, ivec2(0, 0)) == ivec4(4, 0, 0, 1));
+    assert(imageLoad(tex3, ivec3(0, 0, 0)) == ivec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_uimage(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('BBBB', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_unsigned_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('H', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_unsigned_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('I', 5))
+
+    preamble = """
+    layout(rgba8ui) uniform uimage1D tex1;
+    layout(r16ui) uniform uimage2D tex2;
+    layout(r32ui) uniform uimage3D tex3;
+    """
+    code = """
+    assert(imageLoad(tex1, 0) == uvec4(0, 1, 2, 3));
+    assert(imageLoad(tex2, ivec2(0, 0)) == uvec4(4, 0, 0, 1));
+    assert(imageLoad(tex3, ivec3(0, 0, 0)) == uvec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
 def test_glsl_ssbo(gsg):
@@ -244,6 +382,54 @@ def test_glsl_bool(gsg):
     run_glsl_test(gsg, code, preamble, flags)
 
 
+def test_glsl_mat3(gsg):
+    param1 = core.LMatrix4(core.LMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix3(10, 11, 12, 13, 14, 15, 16, 17, 18))
+
+    preamble = """
+    uniform mat3 param1;
+    uniform mat3 param2;
+    """
+    code = """
+    assert(param1[0] == vec3(1, 2, 3));
+    assert(param1[1] == vec3(4, 5, 6));
+    assert(param1[2] == vec3(7, 8, 9));
+    assert(param2[0] == vec3(10, 11, 12));
+    assert(param2[1] == vec3(13, 14, 15));
+    assert(param2[2] == vec3(16, 17, 18));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+
+
+def test_glsl_mat4(gsg):
+    param1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix4(
+        17, 18, 19, 20,
+        21, 22, 23, 24,
+        25, 26, 27, 28,
+        29, 30, 31, 32))
+
+    preamble = """
+    uniform mat4 param1;
+    uniform mat4 param2;
+    """
+    code = """
+    assert(param1[0] == vec4(1, 2, 3, 4));
+    assert(param1[1] == vec4(5, 6, 7, 8));
+    assert(param1[2] == vec4(9, 10, 11, 12));
+    assert(param1[3] == vec4(13, 14, 15, 16));
+    assert(param2[0] == vec4(17, 18, 19, 20));
+    assert(param2[1] == vec4(21, 22, 23, 24));
+    assert(param2[2] == vec4(25, 26, 27, 28));
+    assert(param2[3] == vec4(29, 30, 31, 32));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+
+
 def test_glsl_pta_int(gsg):
     pta = core.PTA_int((0, 1, 2, 3))
 
@@ -294,6 +480,36 @@ def test_glsl_pta_mat4(gsg):
     run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
+def test_glsl_param_vec4(gsg):
+    param = core.ParamVecBase4((0, 1, 2, 3))
+
+    preamble = """
+    uniform vec4 param;
+    """
+    code = """
+    assert(param.x == 0.0);
+    assert(param.y == 1.0);
+    assert(param.z == 2.0);
+    assert(param.w == 3.0);
+    """
+    run_glsl_test(gsg, code, preamble, {'param': param})
+
+
+def test_glsl_param_ivec4(gsg):
+    param = core.ParamVecBase4i((0, 1, 2, 3))
+
+    preamble = """
+    uniform ivec4 param;
+    """
+    code = """
+    assert(param.x == 0);
+    assert(param.y == 1);
+    assert(param.z == 2);
+    assert(param.w == 3);
+    """
+    run_glsl_test(gsg, code, preamble, {'param': param})
+
+
 def test_glsl_write_extract_image_buffer(gsg):
     # Tests that we can write to a buffer texture on the GPU, and then extract
     # the data on the CPU.  We test two textures since there was in the past a
@@ -329,3 +545,61 @@ def test_glsl_write_extract_image_buffer(gsg):
 
     assert struct.unpack('I', tex1.get_ram_image()) == (123,)
     assert struct.unpack('i', tex2.get_ram_image()) == (-456,)
+
+
+def test_glsl_compile_error(gsg):
+    """Test getting compile errors from bad shaders"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=True)
+
+
+def test_glsl_from_file(gsg):
+    """Test compiling GLSL shaders from files"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
+
+
+def test_glsl_includes(gsg):
+    """Test preprocessing includes in GLSL shaders"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
+
+
+def test_glsl_includes_angle_nodir(gsg):
+    """Test preprocessing includes with angle includes without model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    assert core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path) is None
+
+
+@pytest.fixture
+def with_current_dir_on_model_path():
+    model_path = core.get_model_path()
+    model_path.prepend_directory(core.Filename.from_os_specific(os.path.dirname(__file__)))
+    yield
+    model_path.clear_local_value()
+
+
+def test_glsl_includes_angle_withdir(gsg, with_current_dir_on_model_path):
+    """Test preprocessing includes with angle includes with model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)

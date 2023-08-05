@@ -13,8 +13,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "config_express.h"
 #include "error_utils.h"
 #include "patchfile.h"
@@ -25,15 +23,6 @@
 #include "virtualFileSystem.h"
 
 #include <string.h>  // for strstr
-
-#ifdef HAVE_TAR
-#include <libtar.h>
-#include <fcntl.h>  // for O_RDONLY
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-std::istream *Patchfile::_tar_istream = nullptr;
-#endif  // HAVE_TAR
 
 using std::endl;
 using std::ios;
@@ -47,25 +36,39 @@ using std::string;
 // USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
 /*
- * Patch File Format IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE
- * INSTALLER [ HEADER ] 4 bytes  0xfeebfaac ("magic number") (older patch
- * files have a magic number 0xfeebfaab, indicating they are version number
- * 0.) 2 bytes  version number (if magic number == 0xfeebfaac) 4 bytes  length
- * of starting file (if version >= 1) 16 bytes  MD5 of starting file    (if
- * version >= 1) 4 bytes  length of resulting patched file 16 bytes  MD5 of
- * resultant patched file Note that MD5 hashes are written in the order
- * observed by HashVal::read_stream() and HashVal::write_stream(), which is
- * not the normal linear order.  (Each group of four bytes is reversed.)
+ * Patch File Format
+ * IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
+ *
+ * [ HEADER ]
+ *   4 bytes  0xfeebfaac ("magic number")
+ *            (older patch files have a magic number 0xfeebfaab,
+ *            indicating they are version number 0.)
+ *   2 bytes  version number (if magic number == 0xfeebfaac)
+ *   4 bytes  length of starting file (if version >= 1)
+ *  16 bytes  MD5 of starting file    (if version >= 1)
+ *   4 bytes  length of resulting patched file
+ *  16 bytes  MD5 of resultant patched file
+ *
+ * Note that MD5 hashes are written in the order observed by
+ * HashVal::read_stream() and HashVal::write_stream(), which is not
+ * the normal linear order.  (Each group of four bytes is reversed.)
  */
 
 const int _v0_header_length = 4 + 4 + 16;
 const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
 /*
- * [ ADDCOPY pairs; repeated N times ] 2 bytes  AL = ADD length AL bytes
- * bytes to add 2 bytes  CL = COPY length 4 bytes  offset of data to copy from
- * original file, if CL != 0. If version >= 2, offset is relative to end of
- * previous copy block; if version < 2, offset is relative to beginning of
- * file.  [ TERMINATOR ] 2 bytes  zero-length ADD 2 bytes  zero-length COPY
+ * [ ADD/COPY pairs; repeated N times ]
+ *   2 bytes  AL = ADD length
+ *  AL bytes  bytes to add
+ *   2 bytes  CL = COPY length
+ *   4 bytes  offset of data to copy from original file, if CL != 0.
+ *            If version >= 2, offset is relative to end of previous
+ *            copy block; if version < 2, offset is relative to
+ *            beginning of file.
+ *
+ * [ TERMINATOR ]
+ *   2 bytes  zero-length ADD
+ *   2 bytes  zero-length COPY
  */
 
 // Defines
@@ -258,11 +261,14 @@ read_header(const Filename &patch_file) {
 }
 
 /**
- * Perform one buffer's worth of patching Returns EU_ok while patching Returns
- * EU_success when done If error happens will return one of: EU_error_abort :
- * Patching has not been initiated EU_error_file_invalid : file is corrupted
- * EU_error_invalid_checksum : incompatible patch file
- * EU_error_write_file_rename : could not rename file
+ * Perform one buffer's worth of patching.
+ * Returns one of the following values:
+ * @li @c EU_ok : while patching
+ * @li @c EU_success : when done
+ * @li @c EU_error_abort : Patching has not been initiated
+ * @li @c EU_error_file_invalid : file is corrupted
+ * @li @c EU_error_invalid_checksum : incompatible patch file
+ * @li @c EU_error_write_file_rename : could not rename file
  */
 int Patchfile::
 run() {
@@ -575,8 +581,10 @@ internal_read_header(const Filename &patch_file) {
   // get the MD5 of the resultant patched file
   _MD5_ofResult.read_stream(patch_reader);
 
-  express_cat.debug()
-    << "Patchfile::initiate() - valid patchfile" << endl;
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Patchfile::initiate() - valid patchfile" << endl;
+  }
 
   return EU_success;
 }
@@ -1064,7 +1072,7 @@ compute_file_patches(ostream &write_stream,
     uint32_t remaining_bytes = result_file_length - start_pos;
     cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos],
                        0, 0);
-    start_pos += remaining_bytes;
+    //start_pos += remaining_bytes;
   }
 
   PANDA_FREE_ARRAY(link_table);
@@ -1158,202 +1166,6 @@ compute_mf_patches(ostream &write_stream,
   return true;
 }
 
-#ifdef HAVE_TAR
-/**
- * Uses libtar to extract the location within the tar file of each of the
- * subfiles.  Returns true if the tar file is read successfully, false if
- * there is an error (e.g.  it is not a tar file).
- */
-bool Patchfile::
-read_tar(TarDef &tar, istream &stream) {
-  TAR *tfile;
-  tartype_t tt;
-  tt.openfunc = tar_openfunc;
-  tt.closefunc = tar_closefunc;
-  tt.readfunc = tar_readfunc;
-  tt.writefunc = tar_writefunc;
-
-  stream.seekg(0, ios::beg);
-  nassertr(_tar_istream == nullptr, false);
-  _tar_istream = &stream;
-  if (tar_open(&tfile, (char *)"dummy", &tt, O_RDONLY, 0, 0) != 0) {
-    _tar_istream = nullptr;
-    return false;
-  }
-
-  // Walk through the tar file, noting the current file position as we reach
-  // each subfile.  Use this information to infer the start and end of each
-  // subfile within the stream.
-
-  streampos last_pos = 0;
-  int flag = th_read(tfile);
-  while (flag == 0) {
-    TarSubfile subfile;
-    subfile._name = th_get_pathname(tfile);
-    subfile._header_start = last_pos;
-    subfile._data_start = stream.tellg();
-    subfile._data_end = subfile._data_start + (streampos)th_get_size(tfile);
-    tar_skip_regfile(tfile);
-    subfile._end = stream.tellg();
-    tar.push_back(subfile);
-
-    last_pos = subfile._end;
-    flag = th_read(tfile);
-  }
-
-  // Create one more "subfile" for the bytes at the tail of the file.  This
-  // subfile has no name.
-  TarSubfile subfile;
-  subfile._header_start = last_pos;
-  stream.clear();
-  stream.seekg(0, ios::end);
-  subfile._data_start = stream.tellg();
-  subfile._data_end = subfile._data_start;
-  subfile._end = subfile._data_start;
-  tar.push_back(subfile);
-
-  tar_close(tfile);
-  _tar_istream = nullptr;
-  return (flag == 1);
-}
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-/**
- * Computes patches for the files, knowing that they are both tar files.  This
- * is similar to compute_mf_patches().
- *
- * The tar indexes should have been built up by a previous call to read_tar().
- */
-bool Patchfile::
-compute_tar_patches(ostream &write_stream,
-                    uint32_t offset_orig, uint32_t offset_new,
-                    istream &stream_orig, istream &stream_new,
-                    TarDef &tar_orig, TarDef &tar_new) {
-
-  // Sort the orig list by filename, so we can quickly look up files from the
-  // new list.
-  tar_orig.sort();
-
-  // However, it is important to keep the new list in its original, on-disk
-  // order.
-
-  // Walk through each subfile in the new tar file.  If a particular subfile
-  // exists in both source files, we compute the patches for the subfile; for
-  // a new subfile, we trivially add it.  If a subfile has been removed, we
-  // simply don't add it (we'll never even notice this case).
-
-  IStreamWrapper stream_origw(stream_orig);
-  IStreamWrapper stream_neww(stream_new);
-
-  TarDef::const_iterator ni;
-  streampos last_pos = 0;
-  for (ni = tar_new.begin(); ni != tar_new.end(); ++ni) {
-    const TarSubfile &sf_new =(*ni);
-    nassertr(sf_new._header_start == last_pos, false);
-
-    TarDef::const_iterator oi = tar_orig.find(sf_new);
-
-    if (oi == tar_orig.end()) {
-      // This is a newly-added subfile.  Add it the hard way.
-      express_cat.info()
-        << "Adding subfile " << sf_new._name << "\n";
-
-      streampos new_start = sf_new._header_start;
-      size_t new_size = sf_new._end - sf_new._header_start;
-      char *buffer_new = (char *)PANDA_MALLOC_ARRAY(new_size);
-      stream_new.seekg(new_start, ios::beg);
-      stream_new.read(buffer_new, new_size);
-      cache_add_and_copy(write_stream, new_size, buffer_new, 0, 0);
-      PANDA_FREE_ARRAY(buffer_new);
-
-    } else {
-      // This subfile exists in both the original and the new files.  Patch
-      // it.
-      const TarSubfile &sf_orig =(*oi);
-
-      // We patch the header and data of the file separately, so we can
-      // accurately detect nested multifiles.  The extra data at the end of
-      // the file (possibly introduced by a tar file's blocking) is the
-      // footer, which is also patched separately.
-      if (!patch_subfile(write_stream, offset_orig, offset_new, "",
-                         stream_origw, sf_orig._header_start, sf_orig._data_start,
-                         stream_neww, sf_new._header_start, sf_new._data_start)) {
-        return false;
-      }
-
-      if (!patch_subfile(write_stream, offset_orig, offset_new, sf_new._name,
-                         stream_origw, sf_orig._data_start, sf_orig._data_end,
-                         stream_neww, sf_new._data_start, sf_new._data_end)) {
-        return false;
-      }
-
-      if (!patch_subfile(write_stream, offset_orig, offset_new, "",
-                         stream_origw, sf_orig._data_end, sf_orig._end,
-                         stream_neww, sf_new._data_end, sf_new._end)) {
-        return false;
-      }
-    }
-
-    last_pos = sf_new._end;
-  }
-
-  return true;
-}
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-/**
- * A callback function to redirect libtar to read from our istream instead of
- * using low-level Unix I/O.
- */
-int Patchfile::
-tar_openfunc(const char *, int, ...) {
-  // Since we don't actually open a file--the stream is already open--we do
-  // nothing here.
-  return 0;
-}
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-/**
- * A callback function to redirect libtar to read from our istream instead of
- * using low-level Unix I/O.
- */
-int Patchfile::
-tar_closefunc(int) {
-  // Since we don't actually open a file, no need to close it either.
-  return 0;
-}
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-/**
- * A callback function to redirect libtar to read from our istream instead of
- * using low-level Unix I/O.
- */
-ssize_t Patchfile::
-tar_readfunc(int, void *buffer, size_t nbytes) {
-  nassertr(_tar_istream != nullptr, 0);
-  _tar_istream->read((char *)buffer, nbytes);
-  return (ssize_t)_tar_istream->gcount();
-}
-#endif  // HAVE_TAR
-
-#ifdef HAVE_TAR
-/**
- * A callback function to redirect libtar to read from our istream instead of
- * using low-level Unix I/O.
- */
-ssize_t Patchfile::
-tar_writefunc(int, const void *, size_t) {
-  // Since we use libtar only for reading, it is an error if this method gets
-  // called.
-  nassertr(false, -1);
-  return -1;
-}
-#endif  // HAVE_TAR
-
 /**
  *
  * This implementation uses the "greedy differencing algorithm" described in
@@ -1438,10 +1250,6 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
 
   // Check whether our input files are Panda multifiles or tar files.
   bool is_multifile = false;
-#ifdef HAVE_TAR
-  bool is_tarfile = false;
-  TarDef tar_orig, tar_new;
-#endif  // HAVE_TAR
 
   if (_allow_multifile) {
     if (strstr(file_orig.get_basename().c_str(), ".mf") != nullptr ||
@@ -1463,15 +1271,6 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
       }
       PANDA_FREE_ARRAY(buffer);
     }
-#ifdef HAVE_TAR
-    if (strstr(file_orig.get_basename().c_str(), ".tar") != nullptr ||
-        strstr(file_new.get_basename().c_str(), ".tar") != nullptr) {
-      if (read_tar(tar_orig, stream_orig) &&
-          read_tar(tar_new, stream_new)) {
-        is_tarfile = true;
-      }
-    }
-#endif  // HAVE_TAR
   }
 
   if (is_multifile) {
@@ -1483,17 +1282,6 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
                             stream_orig, stream_new)) {
       return false;
     }
-#ifdef HAVE_TAR
-  } else if (is_tarfile) {
-    if (express_cat.is_debug()) {
-      express_cat.debug()
-        << file_orig.get_basename() << " appears to be a tar file.\n";
-    }
-    if (!compute_tar_patches(write_stream, offset_orig, offset_new,
-                             stream_orig, stream_new, tar_orig, tar_new)) {
-      return false;
-    }
-#endif  // HAVE_TAR
   } else {
     if (express_cat.is_debug()) {
       express_cat.debug()
@@ -1560,5 +1348,3 @@ patch_subfile(ostream &write_stream,
 
   return true;
 }
-
-#endif // HAVE_OPENSSL

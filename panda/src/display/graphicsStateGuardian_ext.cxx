@@ -25,10 +25,11 @@ static bool traverse_callback(TextureContext *tc, void *data) {
   PyObject *element =
     DTool_CreatePyInstanceTyped(tex, Dtool_Texture,
                                 true, false, tex->get_type_index());
-  tex->ref();
+  tex.cheat() = nullptr;
 
   PyObject *list = (PyObject *) data;
   PyList_Append(list, element);
+  Py_DECREF(element);
 
   return true;
 }

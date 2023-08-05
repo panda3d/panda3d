@@ -34,7 +34,7 @@
  */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE Mutex : public MutexDebug
-#else
+#else // DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE Mutex : public MutexDirect
 #endif  // DEBUG_THREADS
 {
@@ -49,6 +49,9 @@ PUBLISHED:
 
   void operator = (const Mutex &copy) = delete;
 
+  EXTENSION(bool acquire(bool blocking=true) const);
+  PY_EXTENSION(bool __enter__());
+  PY_EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 public:
   // This is a global mutex set aside for the purpose of protecting Notify
   // messages from being interleaved between threads.
@@ -57,4 +60,4 @@ public:
 
 #include "pmutex.I"
 
-#endif
+#endif // !PMUTEX_H

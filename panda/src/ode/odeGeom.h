@@ -84,7 +84,7 @@ PUBLISHED:
   INLINE LMatrix3f get_rotation() const;
   INLINE LQuaternionf get_quaternion() const;
   INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
-  EXTENSION(INLINE PyObject *get_AA_bounds() const);
+  PY_EXTENSION(INLINE PyObject *get_AA_bounds() const);
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);
@@ -114,13 +114,13 @@ PUBLISHED:
   // int test_collide_id( int collide_id);
 
   OdeSpace get_space() const;
-  EXTENSION(INLINE PyObject *get_converted_space() const);
+  PY_EXTENSION(INLINE PyObject *get_converted_space() const);
 
   virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeGeom &other) const;
 
-  EXTENSION(PyObject *convert() const);
+  PY_EXTENSION(PyObject *convert() const);
   OdeBoxGeom convert_to_box() const;
   OdeCappedCylinderGeom convert_to_capped_cylinder() const;
   // OdeConvexGeom convert_to_convex() const;

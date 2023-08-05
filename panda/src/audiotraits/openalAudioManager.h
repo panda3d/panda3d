@@ -10,8 +10,8 @@
  * @author Ben Buchwald <bb2@alumni.cmu.edu>
  */
 
-#ifndef __OPENAL_AUDIO_MANAGER_H__
-#define __OPENAL_AUDIO_MANAGER_H__
+#ifndef OPENALAUDIOMANAGER_H
+#define OPENALAUDIOMANAGER_H
 
 #include "pandabase.h"
 
@@ -36,7 +36,7 @@ class OpenALAudioSound;
 extern void al_audio_errcheck(const char *context);
 extern void alc_audio_errcheck(const char *context,ALCdevice* device);
 
-class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
+class EXPCL_OPENAL_AUDIO OpenALAudioManager final : public AudioManager {
   class SoundData;
 
   friend class OpenALAudioSound;
@@ -242,4 +242,4 @@ private:
 
 EXPCL_OPENAL_AUDIO AudioManager *Create_OpenALAudioManager();
 
-#endif /* __OPENAL_AUDIO_MANAGER_H__ */
+#endif /* OPENALAUDIOMANAGER_H */

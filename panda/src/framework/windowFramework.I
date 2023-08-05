@@ -76,6 +76,102 @@ get_display_region_3d() const {
 }
 
 /**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top center of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_top_center() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_top_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom center of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_bottom_center() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_bottom_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the left center of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_left_center() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_left_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the right center of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_right_center() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_right_center;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top left of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_top_left() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_top_left;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the top right of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_top_right() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_top_right;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom left of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_bottom_left() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_bottom_left;
+}
+
+/**
+ * Returns the child node of aspect_2d which is positioned
+ * on the bottom right of the screen.
+ */
+INLINE NodePath WindowFramework::
+get_a2d_bottom_right() {
+  if (_aspect_2d.is_empty()) {
+    get_aspect_2d();
+  }
+  return _a2d_bottom_right;
+}
+
+/**
  * Returns the current state of the anim_controls flag.
  */
 INLINE bool WindowFramework::

@@ -19,14 +19,9 @@ __all__ = ['TreeNode', 'TreeItem']
 # - keep track of object ids to allow more careful cleaning
 # - optimize tree redraw after expand of subnode
 
-import os
-from direct.showbase.TkGlobal import *
-from panda3d.core import *
+from panda3d.core import Filename, getModelPath
+import tkinter as tk
 
-# Initialize icon directory
-ICONDIR = ConfigVariableSearchPath('model-path').findFile(Filename('icons')).toOsSpecific()
-if not os.path.isdir(ICONDIR):
-    raise RuntimeError("can't find DIRECT icon directory (%s)" % repr(ICONDIR))
 
 class TreeNode:
 
@@ -44,7 +39,7 @@ class TreeNode:
         if self.menuList:
             if self.menuList[-1] == 'Separator':
                 self.menuList = self.menuList[:-1]
-        self.menuVar = IntVar()
+        self.menuVar = tk.IntVar()
         self.menuVar.set(0)
         self._popupMenu = None
         self.fSortChildren = False # [gjeon] flag for sorting children or not
@@ -70,14 +65,14 @@ class TreeNode:
         self.parent = None
 
     def geticonimage(self, name):
-        try:
+        if name in self.iconimages:
             return self.iconimages[name]
-        except KeyError:
-            pass
-        file, ext = os.path.splitext(name)
-        ext = ext or ".gif"
-        fullname = os.path.join(ICONDIR, file + ext)
-        image = PhotoImage(master=self.canvas, file=fullname)
+
+        fn = Filename("icons", name)
+        if not fn.resolveFilename(getModelPath().value, "gif"):
+            raise FileNotFoundError("couldn't find \"%s\"" % (fn))
+
+        image = tk.PhotoImage(master=self.canvas, file=fn.toOsSpecific())
         self.iconimages[name] = image
         return image
 
@@ -122,9 +117,8 @@ class TreeNode:
 
     def createPopupMenu(self):
         if self.menuList:
-            self._popupMenu = Menu(self.canvas, tearoff = 0)
-            for i in range(len(self.menuList)):
-                item = self.menuList[i]
+            self._popupMenu = tk.Menu(self.canvas, tearoff = 0)
+            for i, item in enumerate(self.menuList):
                 if item == 'Separator':
                     self._popupMenu.add_separator()
                 else:
@@ -146,9 +140,9 @@ class TreeNode:
     def popupMenuCommand(self):
         command = self.menuList[self.menuVar.get()]
 
-        if (command == 'Expand All'):
+        if command == 'Expand All':
             self.updateAll(1)
-        elif (command == 'Collapse All'):
+        elif command == 'Collapse All':
             self.updateAll(0)
         else:
             skipUpdate = self.item.MenuCommand(command)
@@ -234,7 +228,7 @@ class TreeNode:
         # Remove unused children
         for key in list(self.children.keys()):
             if key not in self.kidKeys:
-                del(self.children[key])
+                del self.children[key]
 
         for key in self.kidKeys:
             child = self.children[key]
@@ -252,9 +246,9 @@ class TreeNode:
             oldcursor = self.canvas['cursor']
             self.canvas['cursor'] = "watch"
             self.canvas.update()
-            self.canvas.delete(ALL)     # XXX could be more subtle
+            self.canvas.delete(tk.ALL)     # XXX could be more subtle
             self.draw(7, 2, fUseCachedChildren)
-            x0, y0, x1, y1 = self.canvas.bbox(ALL)
+            x0, y0, x1, y1 = self.canvas.bbox(tk.ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
@@ -278,9 +272,9 @@ class TreeNode:
             def compareText(x, y):
                 textX = x.GetText()
                 textY = y.GetText()
-                if (textX > textY):
+                if textX > textY:
                     return 1
-                elif (textX == textY):
+                elif textX == textY:
                     return 0
                 else: # textX < textY
                     return -1
@@ -312,7 +306,7 @@ class TreeNode:
         # Remove unused children
         for key in list(self.children.keys()):
             if key not in self.kidKeys:
-                del(self.children[key])
+                del self.children[key]
         cx = x+20
         cy = y+17
         cylast = 0
@@ -375,7 +369,7 @@ class TreeNode:
             label = self.label
         except AttributeError:
             # padding carefully selected (on Windows) to match Entry widget:
-            self.label = Label(self.canvas, text=text, bd=0, padx=2, pady=2)
+            self.label = tk.Label(self.canvas, text=text, bd=0, padx=2, pady=2)
         if self.selected:
             self.label.configure(fg="white", bg="darkblue")
         elif self.setAsTarget:
@@ -401,9 +395,9 @@ class TreeNode:
             self.select(event)
 
     def edit(self, event=None):
-        self.entry = Entry(self.label, bd=0, highlightthickness=1, width=0)
+        self.entry = tk.Entry(self.label, bd=0, highlightthickness=1, width=0)
         self.entry.insert(0, self.label['text'])
-        self.entry.selection_range(0, END)
+        self.entry.selection_range(0, tk.END)
         self.entry.pack(ipadx=5)
         self.entry.focus_set()
         self.entry.bind("<Return>", self.edit_finish)
@@ -497,8 +491,7 @@ class TreeItem:
         """Do not override!  Called by TreeNode."""
         if not self.IsExpandable():
             return []
-        sublist = self.GetSubList()
-        return sublist
+        return self.GetSubList()
 
     def IsEditable(self):
         """Return whether the item's text may be edited."""
@@ -520,6 +513,3 @@ class TreeItem:
 
     def OnSelect(self):
         """Called when item selected."""
-
-
-
