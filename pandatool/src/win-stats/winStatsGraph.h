@@ -23,6 +23,7 @@
 #endif
 #include <windows.h>
 
+class PStatGraph;
 class WinStatsMonitor;
 
 /**
@@ -40,6 +41,7 @@ public:
     DM_guide_bar,
     DM_new_guide_bar,
     DM_sizing,
+    DM_pan,
   };
 
 public:
@@ -48,7 +50,7 @@ public:
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
-  virtual void force_redraw();
+  virtual void force_redraw()=0;
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
@@ -56,7 +58,17 @@ public:
   void set_pause(bool pause);
 
   void user_guide_bars_changed();
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
+  virtual void on_enter_label(int collector_index);
+  virtual void on_leave_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
+
+  void clear_graph_tooltip();
+
+  HWND get_window();
+
+  void reset_collector_color(int collector_index);
 
 protected:
   void close();
@@ -64,13 +76,23 @@ protected:
   void setup_label_stack();
   void move_label_stack();
 
-  HBRUSH get_collector_brush(int collector_index);
+  void start_animation();
+  virtual bool animate(double time, double dt);
+
+  void get_window_state(int &x, int &y, int &width, int &height,
+                        bool &maximized, bool &minimized) const;
+  void set_window_state(int x, int y, int width, int height,
+                        bool maximized, bool minimized);
+
+  HBRUSH get_collector_brush(int collector_index, bool highlight = false);
+  COLORREF get_collector_text_color(int collector_index, bool highlight = false);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void set_drag_mode(DragMode drag_mode);
@@ -80,13 +102,18 @@ protected:
 
 protected:
   // Table of brushes for our various collectors.
-  typedef pmap<int, HBRUSH> Brushes;
+  typedef pmap<int, std::pair<HBRUSH, HBRUSH> > Brushes;
   Brushes _brushes;
+
+  typedef pmap<int, std::pair<COLORREF, COLORREF> > TextColors;
+  TextColors _text_colors;
 
   WinStatsMonitor *_monitor;
   HWND _window;
   HWND _graph_window;
+  HWND _tooltip_window;
   WinStatsLabelStack _label_stack;
+  std::string _tooltip_text;
 
   HCURSOR _sizewe_cursor;
   HCURSOR _hand_cursor;
@@ -98,13 +125,17 @@ protected:
   int _bitmap_xsize, _bitmap_ysize;
   int _left_margin, _right_margin;
   int _top_margin, _bottom_margin;
+  int _top_label_stack_margin;
+  int _pixel_scale;
 
   COLORREF _dark_color;
   COLORREF _light_color;
   COLORREF _user_guide_bar_color;
+  COLORREF _frame_guide_bar_color;
   HPEN _dark_pen;
   HPEN _light_pen;
   HPEN _user_guide_bar_pen;
+  HPEN _frame_guide_bar_pen;
 
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
@@ -112,18 +143,19 @@ protected:
   double _drag_scale_start;
   int _drag_guide_bar;
 
+  int _highlighted_index = -1;
+
   bool _pause;
+
+  bool _timer_running = false;
+  double _time;
 
 private:
   void setup_bitmap(int xsize, int ysize);
   void release_bitmap();
   void create_graph_window();
-  static void register_graph_window_class(HINSTANCE application);
 
-  static LONG WINAPI static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-  static bool _graph_window_class_registered;
-  static const char * const _graph_window_class_name;
+  static LRESULT WINAPI static_graph_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR subclass, DWORD_PTR ref_data);
 
 protected:
   static DWORD graph_window_style;

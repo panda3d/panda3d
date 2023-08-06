@@ -18,10 +18,9 @@
 #include <OpenGL/gl.h>
 
 @implementation CocoaPandaView
-- (id) initWithFrame:(NSRect)frameRect context:(NSOpenGLContext*)context window:(CocoaGraphicsWindow*)window {
+- (id) initWithFrame:(NSRect)frameRect window:(CocoaGraphicsWindow*)window {
   self = [super initWithFrame: frameRect];
 
-  _context = context;
   [self setCanDrawConcurrently:YES];
 
   // If a layer ends up becoming attached to the view, tell AppKit we'll manage
@@ -35,10 +34,6 @@
   _graphicsWindow = window;
 
   return self;
-}
-
-- (NSOpenGLContext*) openGLContext {
-  return _context;
 }
 
 - (GraphicsWindow*) graphicsWindow {
@@ -121,9 +116,7 @@
   NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
   BOOL inside = [self mouse:loc inRect:[self bounds]];
 
-  // the correlation between mouse deltas and location are "debounced"
-  // apparently, so send deltas for both relative and confined modes
-  if (_graphicsWindow->get_properties().get_mouse_mode() != WindowProperties::M_absolute) {
+  if (_graphicsWindow->get_properties().get_mouse_mode() == WindowProperties::M_relative) {
     _graphicsWindow->handle_mouse_moved_event(inside, [event deltaX], [event deltaY], false);
   } else {
     _graphicsWindow->handle_mouse_moved_event(inside, loc.x, loc.y, true);
@@ -172,14 +165,9 @@
   return YES;
 }
 
--(void)setLayer:(CALayer*)layer
-{
-    [super setLayer:layer];
+-(void)setLayer:(CALayer*)layer {
+  [super setLayer:layer];
 
-    // Starting in macOS 10.14, a CALayer will still be attached to a view even
-    // if `wantsLayer` is false. If we don't update the context now, only a
-    // black screen will be rendered until the context is updated some other
-    // way (like through a window resize event).
-    [_context update];
+  _graphicsWindow->update_context();
 }
 @end

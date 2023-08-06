@@ -70,7 +70,7 @@
 
 // With MingW32 this raises the error:
 // Redefinition of '_XINPUT_BATTERY_INFORMATION'
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _WIN32_WINNT < 0x0602
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;
   BYTE BatteryLevel;
@@ -335,43 +335,43 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   switch (caps.SubType) {
   default:
   case XINPUT_DEVSUBTYPE_GAMEPAD:
-    _device_class = DeviceClass::gamepad;
-    _axes[0].axis = Axis::left_trigger;
-    _axes[1].axis = Axis::right_trigger;
-    _axes[2].axis = Axis::left_x;
-    _axes[3].axis = Axis::left_y;
-    _axes[4].axis = Axis::right_x;
-    _axes[5].axis = Axis::right_y;
+    _device_class = DeviceClass::GAMEPAD;
+    _axes[0].axis = Axis::LEFT_TRIGGER;
+    _axes[1].axis = Axis::RIGHT_TRIGGER;
+    _axes[2].axis = Axis::LEFT_X;
+    _axes[3].axis = Axis::LEFT_Y;
+    _axes[4].axis = Axis::RIGHT_X;
+    _axes[5].axis = Axis::RIGHT_Y;
     break;
 
   case XINPUT_DEVSUBTYPE_WHEEL:
-    _device_class = DeviceClass::steering_wheel;
-    _axes[0].axis = Axis::brake;
-    _axes[1].axis = Axis::accelerator;
-    _axes[2].axis = Axis::wheel;
-    _axes[3].axis = Axis::none;
-    _axes[4].axis = Axis::none;
-    _axes[5].axis = Axis::none;
+    _device_class = DeviceClass::STEERING_WHEEL;
+    _axes[0].axis = Axis::BRAKE;
+    _axes[1].axis = Axis::ACCELERATOR;
+    _axes[2].axis = Axis::WHEEL;
+    _axes[3].axis = Axis::NONE;
+    _axes[4].axis = Axis::NONE;
+    _axes[5].axis = Axis::NONE;
     break;
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
-    _device_class = DeviceClass::flight_stick;
-    _axes[0].axis = Axis::yaw;
-    _axes[1].axis = Axis::throttle;
-    _axes[2].axis = Axis::roll;
-    _axes[3].axis = Axis::pitch;
-    _axes[4].axis = Axis::none;
-    _axes[5].axis = Axis::none;
+    _device_class = DeviceClass::FLIGHT_STICK;
+    _axes[0].axis = Axis::YAW;
+    _axes[1].axis = Axis::THROTTLE;
+    _axes[2].axis = Axis::ROLL;
+    _axes[3].axis = Axis::PITCH;
+    _axes[4].axis = Axis::NONE;
+    _axes[5].axis = Axis::NONE;
     break;
 
   case XINPUT_DEVSUBTYPE_DANCE_PAD:
-    _device_class = DeviceClass::dance_pad;
-    _axes[0].axis = Axis::none;
-    _axes[1].axis = Axis::none;
-    _axes[2].axis = Axis::none;
-    _axes[3].axis = Axis::none;
-    _axes[4].axis = Axis::none;
-    _axes[5].axis = Axis::none;
+    _device_class = DeviceClass::DANCE_PAD;
+    _axes[0].axis = Axis::NONE;
+    _axes[1].axis = Axis::NONE;
+    _axes[2].axis = Axis::NONE;
+    _axes[3].axis = Axis::NONE;
+    _axes[4].axis = Axis::NONE;
+    _axes[5].axis = Axis::NONE;
     break;
   }
 
@@ -414,7 +414,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
 
   if (caps.Vibration.wLeftMotorSpeed != 0 ||
       caps.Vibration.wRightMotorSpeed != 0) {
-    enable_feature(Feature::vibration);
+    enable_feature(Feature::VIBRATION);
   }
 
   if (get_battery_information != nullptr) {
@@ -423,7 +423,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
       if (batt.BatteryType != BATTERY_TYPE_DISCONNECTED &&
           batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
-        enable_feature(Feature::battery);
+        enable_feature(Feature::BATTERY);
         _battery_data.level = batt.BatteryLevel;
         _battery_data.max_level = BATTERY_LEVEL_FULL;
       }

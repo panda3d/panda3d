@@ -90,6 +90,15 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 /**
+ *
+ */
+void TinyGraphicsBuffer::
+set_size(int x, int y) {
+  GraphicsBuffer::set_size(x, y);
+  create_frame_buffer();
+}
+
+/**
  * Closes the buffer right now.  Called from the buffer thread.
  */
 void TinyGraphicsBuffer::

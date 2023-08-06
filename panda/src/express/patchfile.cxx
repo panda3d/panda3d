@@ -13,8 +13,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "config_express.h"
 #include "error_utils.h"
 #include "patchfile.h"
@@ -38,25 +36,39 @@ using std::string;
 // USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
 /*
- * Patch File Format IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE
- * INSTALLER [ HEADER ] 4 bytes  0xfeebfaac ("magic number") (older patch
- * files have a magic number 0xfeebfaab, indicating they are version number
- * 0.) 2 bytes  version number (if magic number == 0xfeebfaac) 4 bytes  length
- * of starting file (if version >= 1) 16 bytes  MD5 of starting file    (if
- * version >= 1) 4 bytes  length of resulting patched file 16 bytes  MD5 of
- * resultant patched file Note that MD5 hashes are written in the order
- * observed by HashVal::read_stream() and HashVal::write_stream(), which is
- * not the normal linear order.  (Each group of four bytes is reversed.)
+ * Patch File Format
+ * IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
+ *
+ * [ HEADER ]
+ *   4 bytes  0xfeebfaac ("magic number")
+ *            (older patch files have a magic number 0xfeebfaab,
+ *            indicating they are version number 0.)
+ *   2 bytes  version number (if magic number == 0xfeebfaac)
+ *   4 bytes  length of starting file (if version >= 1)
+ *  16 bytes  MD5 of starting file    (if version >= 1)
+ *   4 bytes  length of resulting patched file
+ *  16 bytes  MD5 of resultant patched file
+ *
+ * Note that MD5 hashes are written in the order observed by
+ * HashVal::read_stream() and HashVal::write_stream(), which is not
+ * the normal linear order.  (Each group of four bytes is reversed.)
  */
 
 const int _v0_header_length = 4 + 4 + 16;
 const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
 /*
- * [ ADDCOPY pairs; repeated N times ] 2 bytes  AL = ADD length AL bytes
- * bytes to add 2 bytes  CL = COPY length 4 bytes  offset of data to copy from
- * original file, if CL != 0. If version >= 2, offset is relative to end of
- * previous copy block; if version < 2, offset is relative to beginning of
- * file.  [ TERMINATOR ] 2 bytes  zero-length ADD 2 bytes  zero-length COPY
+ * [ ADD/COPY pairs; repeated N times ]
+ *   2 bytes  AL = ADD length
+ *  AL bytes  bytes to add
+ *   2 bytes  CL = COPY length
+ *   4 bytes  offset of data to copy from original file, if CL != 0.
+ *            If version >= 2, offset is relative to end of previous
+ *            copy block; if version < 2, offset is relative to
+ *            beginning of file.
+ *
+ * [ TERMINATOR ]
+ *   2 bytes  zero-length ADD
+ *   2 bytes  zero-length COPY
  */
 
 // Defines
@@ -249,11 +261,14 @@ read_header(const Filename &patch_file) {
 }
 
 /**
- * Perform one buffer's worth of patching Returns EU_ok while patching Returns
- * EU_success when done If error happens will return one of: EU_error_abort :
- * Patching has not been initiated EU_error_file_invalid : file is corrupted
- * EU_error_invalid_checksum : incompatible patch file
- * EU_error_write_file_rename : could not rename file
+ * Perform one buffer's worth of patching.
+ * Returns one of the following values:
+ * @li @c EU_ok : while patching
+ * @li @c EU_success : when done
+ * @li @c EU_error_abort : Patching has not been initiated
+ * @li @c EU_error_file_invalid : file is corrupted
+ * @li @c EU_error_invalid_checksum : incompatible patch file
+ * @li @c EU_error_write_file_rename : could not rename file
  */
 int Patchfile::
 run() {
@@ -1057,7 +1072,7 @@ compute_file_patches(ostream &write_stream,
     uint32_t remaining_bytes = result_file_length - start_pos;
     cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos],
                        0, 0);
-    start_pos += remaining_bytes;
+    //start_pos += remaining_bytes;
   }
 
   PANDA_FREE_ARRAY(link_table);
@@ -1333,5 +1348,3 @@ patch_subfile(ostream &write_stream,
 
   return true;
 }
-
-#endif // HAVE_OPENSSL

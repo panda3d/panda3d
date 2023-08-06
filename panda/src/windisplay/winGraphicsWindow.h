@@ -72,12 +72,10 @@ public:
                     GraphicsOutput *host);
   virtual ~WinGraphicsWindow();
 
-  virtual MouseData get_pointer(int device) const;
+  virtual PointerData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
 
   virtual void close_ime();
-
-  virtual void begin_flip();
 
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
@@ -111,8 +109,10 @@ protected:
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
 
+  bool do_fullscreen_switch(int x_size, int y_size);
   virtual bool do_fullscreen_switch();
   virtual bool do_windowed_switch();
+  bool do_fullscreen_enable(int x_size, int y_size);
   virtual bool do_fullscreen_enable();
   virtual bool do_fullscreen_disable();
 
@@ -132,6 +132,7 @@ private:
   void adjust_z_order(WindowProperties::ZOrder last_z_order,
                       WindowProperties::ZOrder this_z_order);
   void initialize_input_devices();
+  bool enable_raw_input();
   void handle_raw_input(HRAWINPUT hraw);
   void track_mouse_leaving(HWND hwnd);
   bool confine_cursor();
@@ -171,7 +172,6 @@ private:
   bool _ime_open;
   bool _ime_active;
   bool _tracking_mouse_leaving;
-  bool _bCursor_in_WindowClientArea;
   HANDLE _input_device_handle[32];
   HCURSOR _cursor;
   DEVMODE _fullscreen_display_mode;
@@ -190,6 +190,7 @@ private:
   bool _ralt_down;
 
   GraphicsWindowInputDevice *_input;
+  bool _raw_input_enabled = false;
 
   // following adds support platform specfic window processing functions.
   typedef pset<GraphicsWindowProc*> WinProcClasses;

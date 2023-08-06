@@ -29,6 +29,7 @@ ConfigureFn(config_pythonCallbackObject) {
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_PythonCallbackObject;
 #endif
 
 /**
@@ -41,17 +42,16 @@ PythonCallbackObject(PyObject *function) {
 
   set_function(function);
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD)
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
-
-#if PY_VERSION_HEX >= 0x03020000
+  // WITH_THREAD symbol defined within Python.h
   Py_Initialize();
-#endif
 
+#if PY_VERSION_HEX < 0x03090000
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
-#endif
+#endif // PY_VERSION_HEX
+#endif // WITH_THREAD
 }
 
 /**
@@ -83,6 +83,14 @@ PyObject *PythonCallbackObject::
 get_function() {
   Py_INCREF(_function);
   return _function;
+}
+
+/**
+ * Implements pickle support.
+ */
+PyObject *PythonCallbackObject::
+__reduce__() const {
+  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject, _function);
 }
 
 /**

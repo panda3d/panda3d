@@ -189,8 +189,8 @@ DXGraphicsStateGuardian9::
  * call Texture::prepare().
  */
 TextureContext *DXGraphicsStateGuardian9::
-prepare_texture(Texture *tex, int view) {
-  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex, view);
+prepare_texture(Texture *tex) {
+  DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex);
 
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg9_cat.error()
@@ -206,7 +206,7 @@ prepare_texture(Texture *tex, int view) {
  * stage.
  */
 void DXGraphicsStateGuardian9::
-apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
+apply_texture(int i, TextureContext *tc, int view, const SamplerState &sampler) {
   if (tc == nullptr) {
     // The texture wasn't bound properly or something, so ensure texturing is
     // disabled and just return.
@@ -245,7 +245,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  unsigned int aniso_degree = sampler.get_effective_anisotropic_degree();
   SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
@@ -296,7 +296,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   float lod_bias = sampler.get_lod_bias();
   set_sampler_state(i, D3DSAMP_MIPMAPLODBIAS, *(DWORD*)&lod_bias);
 
-  _d3d_device->SetTexture(i, dtc->get_d3d_texture());
+  _d3d_device->SetTexture(i, dtc->get_d3d_texture(view));
 }
 
 /**
@@ -357,10 +357,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       async_reload_texture(dtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (dtc->was_simple_image_modified()) {
-          return dtc->create_simple_texture(*_screen);
-        }
-        return true;
+        return dtc->create_simple_texture(*_screen);
       }
     }
   }
@@ -387,20 +384,10 @@ release_texture(TextureContext *tc) {
  */
 bool DXGraphicsStateGuardian9::
 extract_texture_data(Texture *tex) {
-  bool success = true;
-
-  int num_views = tex->get_num_views();
-  for (int view = 0; view < num_views; ++view) {
-    TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != nullptr, false);
-    DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
-
-    if (!dtc->extract_texture_data(*_screen)) {
-      success = false;
-    }
-  }
-
-  return success;
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertr(tc != nullptr, false);
+  DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+  return dtc->extract_texture_data(*_screen);
 }
 
 /**
@@ -1180,8 +1167,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+                      size_t num_instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1854,7 +1841,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   // must use a render target type texture for StretchRect
   tex->set_render_to_texture(true);
 
-  TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == nullptr) {
     return false;
   }
@@ -1871,10 +1858,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     // for now.
     return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, true);
   }
-  nassertr(dtc->get_d3d_2d_texture() != nullptr, false);
+  IDirect3DTexture9 *d3d_2d_texture = dtc->get_d3d_2d_texture(view);
+  nassertr(d3d_2d_texture != nullptr, false);
 
   IDirect3DSurface9 *tex_level_0;
-  hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
+  hr = d3d_2d_texture->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
     return false;
@@ -1899,7 +1887,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
           << "Unable to re-create texture " << *dtc->get_texture() << endl;
         return false;
       }
-      hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
+      hr = d3d_2d_texture->GetSurfaceLevel(0, &tex_level_0);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
         return false;
@@ -1991,8 +1979,17 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
  */
 bool DXGraphicsStateGuardian9::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
-                        const DisplayRegion *dr, const RenderBuffer &rb) {
-  return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
+                        const DisplayRegion *dr, const RenderBuffer &rb,
+                        ScreenshotRequest *request) {
+  bool success = do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
+  if (request != nullptr) {
+    if (success) {
+      request->finish();
+    } else {
+      request->cancel();
+    }
+  }
+  return success;
 }
 
 /**
@@ -2073,6 +2070,35 @@ do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
     D3DSURFACE_DESC surface_description;
 
     backbuffer -> GetDesc (&surface_description);
+
+    // We can't directly call GetRenderTargetData on a multisampled buffer.
+    // Instead, blit it into a temporary target.
+    if (surface_description.MultiSampleType != D3DMULTISAMPLE_NONE) {
+      IDirect3DSurface9 *resolved;
+      hr = _d3d_device->CreateRenderTarget(surface_description.Width,
+                                           surface_description.Height,
+                                           surface_description.Format,
+                                           D3DMULTISAMPLE_NONE, 0, FALSE,
+                                           &resolved, nullptr);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "CreateRenderTarget failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        return false;
+      }
+
+      _d3d_device->StretchRect(backbuffer, nullptr, resolved, nullptr, D3DTEXF_NONE);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "StretchRect failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        resolved->Release();
+        return false;
+      }
+
+      backbuffer->Release();
+      backbuffer = resolved;
+    }
 
     pool = D3DPOOL_SYSTEMMEM;
     hr = _d3d_device->CreateOffscreenPlainSurface(
@@ -3114,6 +3140,7 @@ set_state_and_transform(const RenderState *target,
   }
   _target_rs = target;
 
+  int shader_deps = 0;
   determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
@@ -3143,10 +3170,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_color);
-      _current_shader_context->issue_parameters(this, Shader::SSD_colorscale);
-    }
+    shader_deps |= Shader::SSD_color | Shader::SSD_colorscale;
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -3187,6 +3211,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
     _state_mask.set_bit(render_mode_slot);
+    shader_deps |= Shader::SSD_render_mode;
   }
 
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
@@ -3223,11 +3248,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
+  int shader_slot = ShaderAttrib::get_class_slot();
+  if (_target_shader != _state_shader ||
+      !_state_mask.get_bit(shader_slot)) {
     // PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(shader_slot);
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
@@ -3247,6 +3275,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(texture_slot);
     _state_mask.set_bit(tex_matrix_slot);
     _state_mask.set_bit(tex_gen_slot);
+    shader_deps |= Shader::SSD_tex_matrix | Shader::SSD_tex_gen;
   }
 
   int material_slot = MaterialAttrib::get_class_slot();
@@ -3255,9 +3284,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state_mask.set_bit(material_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_material);
-    }
+    shader_deps |= Shader::SSD_material;
   }
 
   int light_slot = LightAttrib::get_class_slot();
@@ -3282,9 +3309,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_fog_pcollector);
     do_issue_fog();
     _state_mask.set_bit(fog_slot);
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_fog);
-    }
+    shader_deps |= Shader::SSD_fog;
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
@@ -3293,6 +3318,10 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_scissor_pcollector);
     do_issue_scissor();
     _state_mask.set_bit(scissor_slot);
+  }
+
+  if (_current_shader_context != nullptr && shader_deps != 0) {
+    _current_shader_context->issue_parameters(this, shader_deps);
   }
 
   _state_rs = _target_rs;
@@ -3625,8 +3654,8 @@ update_standard_texture_bindings() {
     // We always reissue every stage in DX, just in case the texcoord index or
     // texgen mode or some other property has changed.
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
-    TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    apply_texture(si, tc, sampler);
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    apply_texture(si, tc, view, sampler);
     set_texture_blend_mode(si, stage);
 
     int texcoord_dimensions = 2;
@@ -4778,6 +4807,9 @@ release_swap_chain(DXScreenData *new_context) {
           << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
       }
       return false;
+    }
+    if (new_context->_swap_chain == _swap_chain) {
+      _swap_chain = nullptr;
     }
   }
   return true;

@@ -6,22 +6,18 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrollBar']
 
-from panda3d.core import *
+from panda3d.core import PGSliderBar, Vec3
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 
-"""
-import DirectScrollBar
-d = DirectScrollBar(borderWidth=(0, 0))
-
-"""
 
 class DirectScrollBar(DirectFrame):
     """
     DirectScrollBar -- a widget which represents a scroll bar the user can
     use for paging through a large document or panel.
     """
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -40,18 +36,18 @@ class DirectScrollBar(DirectFrame):
             # Function to be called repeatedly as the bar is scrolled
             ('command',        None,               None),
             ('extraArgs',      [],                 None),
-            )
+        )
 
         if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.04, 0.04, -0.5, 0.5),   None),
-                )
+            )
         else:
             # These are the default options for a horizontal layout.
             optiondefs += (
                 ('frameSize',      (-0.5, 0.5, -0.04, 0.04),  None),
-                )
+            )
 
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -72,7 +68,7 @@ class DirectScrollBar(DirectFrame):
             DirectButton, (self,),
             borderWidth = self['borderWidth'])
 
-        if self.decButton['frameSize'] == None and \
+        if self.decButton['frameSize'] is None and \
            self.decButton.bounds == [0.0, 0.0, 0.0, 0.0]:
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:
@@ -80,7 +76,7 @@ class DirectScrollBar(DirectFrame):
             else:
                 self.decButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
-        if self.incButton['frameSize'] == None and \
+        if self.incButton['frameSize'] is None and \
            self.incButton.bounds == [0.0, 0.0, 0.0, 0.0]:
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:
@@ -196,4 +192,3 @@ class DirectScrollBar(DirectFrame):
 
         if self['command']:
             self['command'](*self['extraArgs'])
-

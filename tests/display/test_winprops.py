@@ -66,3 +66,23 @@ def test_winprops_size_property():
     # Test clear
     props.size = None
     assert not props.has_size()
+
+
+def test_winprops_maximized_property():
+    props = WindowProperties()
+
+    # Test get
+    props.set_maximized(True)
+    assert props.maximized == True
+
+    # Test has
+    props.clear_maximized()
+    assert props.maximized is None
+
+    # Test set
+    props.maximized = True
+    assert props.get_maximized() == True
+
+    # Test clear
+    props.maximized = None
+    assert not props.has_maximized()

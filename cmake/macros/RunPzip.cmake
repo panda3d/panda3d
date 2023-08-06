@@ -13,7 +13,7 @@ function(run_pzip target_name source destination glob)
 
       add_custom_command(OUTPUT "${destination}/${dstfile}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${dstdir}"
-        COMMAND host_pzip -c > "${destination}/${dstfile}" < "${source}/${filename}"
+        COMMAND host_pzip -o "${destination}/${dstfile}" "${source}/${filename}"
         DEPENDS host_pzip
         COMMENT "")
 

@@ -20,9 +20,10 @@
 
 #include "textNode.h"
 #include "pointerTo.h"
-#include "pvector.h"
+#include "small_vector.h"
 #include "clockObject.h"
 #include "textAssembler.h"
+#include "pipeline.h"
 
 /**
  * This is a particular kind of PGItem that handles simple one-line or short
@@ -114,7 +115,7 @@ PUBLISHED:
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
-  virtual void set_active(bool active);
+  virtual void set_active(bool active) final;
   virtual void set_focus(bool focus);
 
   INLINE static std::string get_accept_prefix();
@@ -148,6 +149,7 @@ private:
 
   TextAssembler _text;
   TextAssembler _obscure_text;
+  TextAssembler _candidate_text;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;
@@ -166,7 +168,8 @@ private:
   std::string _candidate_active;
   std::string _candidate_inactive;
 
-  typedef pvector< PT(TextNode) > TextDefs;
+  // Most entries have 3 states.
+  typedef small_vector<PT(TextNode), 3> TextDefs;
   TextDefs _text_defs;
 
   // This is the subgraph that renders both the text and the cursor.

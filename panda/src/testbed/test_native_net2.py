@@ -15,7 +15,7 @@ SocketIP.InitNetworkDriver();
 
 addr = SocketAddress()
 addr.setHost("127.0.0.1",6666)
-print addr.getIpPort()
+print(addr.getIpPort())
 
 MyConection = BufferedDatagramConnection(0,4096000,4096000,102400);
 #help(BufferedDatagramConnection)
@@ -42,8 +42,8 @@ dg1.addUint16(54321)
 while 1==1:
     for x in range(200000):
         if  not MyConection.SendMessage(dg1):
-            print "Error Sending Message"
+            print("Error Sending Message")
 
     MyConection.Flush();
     time.sleep(1)
-    print "loop"
+    print("loop")

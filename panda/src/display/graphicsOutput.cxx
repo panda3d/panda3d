@@ -63,7 +63,7 @@ static CubeFaceDef cube_faces[6] = {
 
 /**
  * Normally, the GraphicsOutput constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsOutput::
 GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -75,10 +75,10 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                GraphicsOutput *host,
                bool default_stereo_flags) :
   _lock("GraphicsOutput"),
+  _size(0, 0),
   _cull_window_pcollector(_cull_pcollector, name),
   _draw_window_pcollector(_draw_pcollector, name),
-  _clear_window_pcollector(_draw_window_pcollector, "Clear"),
-  _size(0, 0)
+  _clear_window_pcollector(_draw_window_pcollector, "Clear")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -358,6 +358,12 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   if (mode == RTM_bind_or_copy || mode == RTM_bind_layered) {
     // If we're still planning on binding, indicate it in texture properly.
     tex->set_render_to_texture(true);
+  }
+  else if ((plane == RTP_depth || plane == RTP_depth_stencil) && _fb_properties.get_depth_bits() == 0) {
+    // If we're not providing the depth buffer, we need something to copy from.
+    display_cat.error()
+      << "add_render_texture: can't copy depth from framebuffer without depth bits!\n";
+    return;
   }
 
   CDWriter cdata(_cycler, true);
@@ -828,6 +834,9 @@ get_active_display_region(int n) const {
  * which will be a texture suitable for applying to geometry within the scene
  * rendered into this window.
  *
+ * If you pass zero as the buffer size, the buffer will have the same size as
+ * the host window, and will automatically be resized when the host window is.
+ *
  * If tex is not NULL, it is the texture that will be set up for rendering
  * into; otherwise, a new Texture object will be created.  In either case, the
  * target texture can be retrieved from the return value with
@@ -968,6 +977,43 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 }
 
 /**
+ * Like save_screenshot, but performs both the texture transfer and the saving
+ * to disk in the background.  Returns a future that can be awaited.
+ *
+ * This captures the frame that was last submitted by the App stage to the
+ * render_frame() call.  This may not be the latest frame shown on the screen
+ * if the multi-threaded pipeline is used, in which case the request may take
+ * several frames extra to complete.
+ */
+PT(ScreenshotRequest) GraphicsOutput::
+save_async_screenshot(const Filename &filename, const std::string &image_comment) {
+  PT(ScreenshotRequest) request = get_async_screenshot();
+  request->add_output_file(filename, image_comment);
+  return request;
+}
+
+/**
+ * Used to obtain a new Texture object containing the previously rendered frame.
+ * Unlike get_screenshot, this works asynchronously, meaning that the contents
+ * are transferred in the background.  Returns a future that can be awaited.
+ *
+ * This captures the frame that was last submitted by the App stage to the
+ * render_frame() call.  This may not be the latest frame shown on the screen
+ * if the multi-threaded pipeline is used, in which case the request may take
+ * several frames extra to complete.
+ */
+PT(ScreenshotRequest) GraphicsOutput::
+get_async_screenshot() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, current_thread);
+  if (cdata->_screenshot_request == nullptr) {
+    PT(Texture) texture = new Texture("screenshot of " + get_name());
+    cdata->_screenshot_request = new ScreenshotRequest(texture);
+  }
+  return cdata->_screenshot_request;
+}
+
+/**
  * Returns a PandaNode containing a square polygon.  The dimensions are
  * (-1,0,-1) to (1,0,1). The texture coordinates are such that the texture of
  * this GraphicsOutput is aligned properly to the polygon.  The GraphicsOutput
@@ -1104,8 +1150,9 @@ clear_pipe() {
 
 /**
  * Changes the x_size and y_size, then recalculates structures that depend on
- * size.  The recalculation currently includes: - compute_pixels on all the
- * graphics regions.  - updating the texture card, if one is present.
+ * size.  The recalculation currently includes:
+ *  - compute_pixels on all the graphics regions.
+ *  - updating the texture card, if one is present.
  */
 void GraphicsOutput::
 set_size_and_recalc(int x, int y) {
@@ -1117,11 +1164,8 @@ set_size_and_recalc(int x, int y) {
   int fb_x_size = get_fb_x_size();
   int fb_y_size = get_fb_y_size();
 
-  TotalDisplayRegions::iterator dri;
-  for (dri = _total_display_regions.begin();
-       dri != _total_display_regions.end();
-       ++dri) {
-    (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
+  for (DisplayRegion *dr : _total_display_regions) {
+    dr->compute_pixels_all_stages(fb_x_size, fb_y_size);
   }
 
   if (_texture_card != nullptr && _texture_card->get_num_geoms() > 0) {
@@ -1460,6 +1504,56 @@ copy_to_textures() {
 }
 
 /**
+ * Do the necessary copies for the get_async_screenshot request.
+ */
+void GraphicsOutput::
+copy_async_screenshot() {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(ScreenshotRequest) request;
+  {
+    CDWriter cdata(_cycler, current_thread);
+    if (cdata->_screenshot_request == nullptr) {
+      return;
+    }
+    request = std::move(cdata->_screenshot_request);
+    cdata->_screenshot_request.clear();
+  }
+
+  // Make sure it is cleared from upstream stages as well.
+  OPEN_ITERATE_UPSTREAM_ONLY(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    if (cdata->_screenshot_request == request) {
+      cdata->_screenshot_request.clear();
+    }
+  }
+  CLOSE_ITERATE_UPSTREAM_ONLY(_cycler);
+
+  PStatTimer timer(_copy_texture_pcollector);
+
+  RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                                get_fb_properties());
+  DisplayRegion *dr = _overlay_display_region;
+
+  Texture *texture = request->get_result();
+
+  if (_fb_properties.is_stereo()) {
+    // We've got two texture views to copy.
+    texture->set_num_views(2);
+
+    RenderBuffer left(_gsg, buffer._buffer_type & ~RenderBuffer::T_right);
+    RenderBuffer right(_gsg, buffer._buffer_type & ~RenderBuffer::T_left);
+
+    _gsg->framebuffer_copy_to_ram(texture, 0, _target_tex_page,
+                                  dr, left, request);
+    _gsg->framebuffer_copy_to_ram(texture, 1, _target_tex_page,
+                                  dr, right, request);
+  } else {
+    _gsg->framebuffer_copy_to_ram(texture, 0, _target_tex_page,
+                                  dr, buffer, request);
+  }
+}
+
+/**
  * Generates a GeomVertexData for a texture card.
  */
 PT(GeomVertexData) GraphicsOutput::
@@ -1640,10 +1734,12 @@ CData() {
 GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :
   _textures(copy._textures),
+  _textures_seq(copy._textures_seq),
   _active(copy._active),
   _one_shot_frame(copy._one_shot_frame),
   _active_display_regions(copy._active_display_regions),
-  _active_display_regions_stale(copy._active_display_regions_stale)
+  _active_display_regions_stale(copy._active_display_regions_stale),
+  _screenshot_request(copy._screenshot_request)
 {
 }
 

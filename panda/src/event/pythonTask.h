@@ -90,6 +90,8 @@ PUBLISHED:
   PyObject *__dict__;
 
 protected:
+  virtual bool cancel();
+
   virtual bool is_runnable();
   virtual DoneStatus do_task();
   DoneStatus do_python_task();
@@ -113,12 +115,13 @@ private:
   PyObject *_exc_traceback;
 
   PyObject *_generator;
-  PyObject *_future_done;
+  PyObject *_fut_waiter;
 
   bool _append_task;
   bool _ignore_return;
   bool _registered_to_owner;
   mutable bool _retrieved_exception;
+  bool _must_cancel = false;
 
   friend class Extension<AsyncFuture>;
 

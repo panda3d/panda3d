@@ -255,8 +255,16 @@ get_cwd() {
  */
 bool ExecutionEnvironment::
 ns_has_environment_variable(const string &var) const {
+  if (_variables.count(var) != 0) {
+    return true;
+  }
+
 #ifdef PREREAD_ENVIRONMENT
-  return _variables.count(var) != 0;
+  return false;
+#elif defined(_WIN32)
+  size_t size = 0;
+  getenv_s(&size, nullptr, 0, var.c_str());
+  return size != 0;
 #else
   return getenv(var.c_str()) != nullptr;
 #endif
@@ -297,10 +305,23 @@ ns_get_environment_variable(const string &var) const {
   }
 
 #ifndef PREREAD_ENVIRONMENT
+#ifdef _WIN32
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    return value;
+  }
+#else
   const char *def = getenv(var.c_str());
   if (def != nullptr) {
     return def;
   }
+#endif
 #endif
 
 #ifdef _WIN32
@@ -397,6 +418,10 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "XDG_DATA_HOME") {
     Filename home_dir = Filename::get_home_directory();
     return home_dir.get_fullpath() + "/.local/share";
+
+  } else if (var == "XDG_STATE_HOME") {
+    Filename home_dir = Filename::get_home_directory();
+    return home_dir.get_fullpath() + "/.local/state";
   }
 #endif // _WIN32
 
@@ -410,12 +435,12 @@ ns_get_environment_variable(const string &var) const {
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
-  string putstr = var + "=" + value;
 
-  // putenv() requires us to malloc a new C-style string.
-  char *put = (char *)malloc(putstr.length() + 1);
-  strcpy(put, putstr.c_str());
-  putenv(put);
+#ifdef _WIN32
+  _putenv_s(var.c_str(), value.c_str());
+#else
+  setenv(var.c_str(), value.c_str(), 1);
+#endif
 }
 
 /**
@@ -439,12 +464,27 @@ ns_clear_shadow(const string &var) {
 
 #ifdef PREREAD_ENVIRONMENT
   // Now we have to replace the value in the table.
+#ifdef _WIN32
+  std::string value(128, '\0');
+  size_t size = value.size();
+  while (getenv_s(&size, &value[0], size, var.c_str()) == ERANGE) {
+    value.resize(size);
+  }
+  if (size != 0) {
+    // Strip off the trailing null byte.
+    value.resize(size - 1);
+    (*vi).second = std::move(value);
+  } else {
+    _variables.erase(vi);
+  }
+#else
   const char *def = getenv(var.c_str());
   if (def != nullptr) {
     (*vi).second = def;
   } else {
     _variables.erase(vi);
   }
+#endif
 #endif  // PREREAD_ENVIRONMENT
 }
 
@@ -801,21 +841,25 @@ read_args() {
 #elif defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
-  size_t bufsize = 4096;
-  char buffer[4096];
+  size_t bufsize = 0;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
   mib[3] = getpid();
-  if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
+  if (sysctl(mib, 4, nullptr, &bufsize, nullptr, 0) == -1) {
     perror("sysctl");
   } else {
-    if (_binary_name.empty()) {
-      _binary_name = buffer;
-    }
-    size_t idx = strlen(buffer) + 1;
-    while (idx < bufsize) {
-      _args.push_back((char*)(buffer + idx));
-      size_t newidx = strlen(buffer + idx);
-      idx += newidx + 1;
+    char *buffer = (char *)alloca(bufsize);
+    if (sysctl(mib, 4, buffer, &bufsize, nullptr, 0) == -1) {
+      perror("sysctl");
+    } else {
+      if (_binary_name.empty()) {
+        _binary_name = buffer;
+      }
+      size_t idx = strlen(buffer) + 1;
+      while (idx < bufsize) {
+        _args.push_back((char*)(buffer + idx));
+        size_t newidx = strlen(buffer + idx);
+        idx += newidx + 1;
+      }
     }
   }
 

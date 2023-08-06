@@ -112,6 +112,10 @@ xform(const LMatrix4 &mat) {
 
     // Transform the center
     _center = _center * mat;
+
+    if (cinf(_radius)) {
+      set_infinite();
+    }
   }
 }
 
@@ -497,9 +501,9 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
 
     if (IS_NEARLY_ZERO(radical)) {
       // Tangent.
-      t1 = t2 = -B / (2.0f*A);
+      t1 = -B / (2.0f*A);
       return (t1 >= 0.0f && t1 <= 1.0f) ?
-                 IF_possible | IF_some : IF_no_intersection;
+        IF_possible | IF_some : IF_no_intersection;
     }
 
     if (radical < 0.0f) {

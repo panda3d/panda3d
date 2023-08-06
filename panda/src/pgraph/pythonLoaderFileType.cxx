@@ -84,11 +84,7 @@ init(PyObject *loader) {
   // it must occur in the list.
   PyObject *extensions = PyObject_GetAttrString(loader, "extensions");
   if (extensions != nullptr) {
-    if (PyUnicode_Check(extensions)
-#if PY_MAJOR_VERSION < 3
-      || PyString_Check(extensions)
-#endif
-      ) {
+    if (PyUnicode_Check(extensions)) {
       Dtool_Raise_TypeError("extensions list should be a list or tuple");
       Py_DECREF(extensions);
       return false;
@@ -111,14 +107,7 @@ init(PyObject *loader) {
       PyObject *extension = items[i];
       const char *extension_str;
       Py_ssize_t extension_len;
-  #if PY_MAJOR_VERSION >= 3
       extension_str = PyUnicode_AsUTF8AndSize(extension, &extension_len);
-  #else
-      if (PyString_AsStringAndSize(extension, (char **)&extension_str, &extension_len) == -1) {
-        extension_str = nullptr;
-      }
-  #endif
-
       if (extension_str == nullptr) {
         Py_DECREF(sequence);
         return false;
@@ -146,11 +135,7 @@ init(PyObject *loader) {
       loader_cat.error()
         << "Registered extension '" << _extension
         << "' does not occur in extensions list of "
-#if PY_MAJOR_VERSION >= 3
         << PyUnicode_AsUTF8(repr) << "\n";
-#else
-        << PyString_AsString(repr) << "\n";
-#endif
       Py_DECREF(repr);
       return false;
     }
@@ -173,23 +158,19 @@ init(PyObject *loader) {
     }
     Py_DECREF(supports_compressed);
   }
+  else {
+    PyErr_Clear();
+  }
 
   _load_func = PyObject_GetAttrString(loader, "load_file");
+  PyErr_Clear();
   _save_func = PyObject_GetAttrString(loader, "save_file");
   PyErr_Clear();
 
   if (_load_func == nullptr && _save_func == nullptr) {
-#if PY_MAJOR_VERSION >= 3
     PyErr_Format(PyExc_TypeError,
                  "loader plug-in %R does not define load_file or save_file function",
                  loader);
-#else
-    PyObject *repr = PyObject_Repr(loader);
-    PyErr_Format(PyExc_TypeError,
-                 "loader plug-in %s does not define load_file or save_file function",
-                 PyString_AsString(repr));
-    Py_DECREF(repr);
-#endif
     return false;
   }
 
@@ -219,11 +200,7 @@ ensure_loaded() const {
 
     loader_cat.info()
       << "loading file type module: "
-#if PY_MAJOR_VERSION >= 3
       << PyUnicode_AsUTF8(repr) << "\n";
-#else
-      << PyString_AsString(repr) << "\n";
-#endif
     Py_DECREF(repr);
   }
 
@@ -238,11 +215,7 @@ ensure_loaded() const {
 
     loader_cat.error()
       << "unable to load "
-#if PY_MAJOR_VERSION >= 3
       << PyUnicode_AsUTF8(repr) << "\n";
-#else
-      << PyString_AsString(repr) << "\n";
-#endif
     Py_DECREF(repr);
   }
 
@@ -358,7 +331,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   Py_DECREF(args);
 
   if (node == nullptr) {
-    PyObject *exc_type = _PyErr_OCCURRED();
+    PyObject *exc_type = PyErr_Occurred();
     if (!exc_type) {
       loader_cat.error()
         << "load_file must return valid PandaNode or raise exception\n";

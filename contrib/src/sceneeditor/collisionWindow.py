@@ -9,7 +9,6 @@ from seColorEntry import *
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-import string, math, types
 from panda3d.core import *
 
 

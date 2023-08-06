@@ -4,6 +4,7 @@
 import time
 import math
 
+
 class Logger:
     def __init__(self, fileName="log"):
         """
@@ -14,18 +15,17 @@ class Logger:
         self.__logFile = None
         self.__logFileName = fileName
 
-    def setTimeStamp(self, bool):
+    def setTimeStamp(self, enable):
         """
         Toggle time stamp printing with log entries on and off
         """
-        self.__timeStamp = bool
+        self.__timeStamp = enable
 
     def getTimeStamp(self):
         """
         Return whether or not we are printing time stamps with log entries
         """
-        return(self.__timeStamp)
-
+        return self.__timeStamp
 
     # logging control
 
@@ -38,12 +38,11 @@ class Logger:
     def log(self, entryString):
         """log(self, string)
         Print the given string to the log file"""
-        if (self.__logFile == None):
+        if self.__logFile is None:
             self.__openLogFile()
-        if (self.__timeStamp):
+        if self.__timeStamp:
             self.__logFile.write(self.__getTimeStamp())
         self.__logFile.write(entryString + '\n')
-
 
     # logging functions
 
@@ -61,7 +60,7 @@ class Logger:
         """
         Close the error/warning output file
         """
-        if (self.__logFile != None):
+        if self.__logFile is not None:
             self.__logFile.close()
 
     def __getTimeStamp(self):
@@ -70,22 +69,8 @@ class Logger:
         """
         t = time.time()
         dt = t - self.__startTime
-        if (dt >= 86400):
-            days = int(math.floor(dt/86400))
-            dt = dt%86400
-        else:
-            days = 0
-        if (dt >= 3600):
-            hours = int(math.floor(dt/3600))
-            dt = dt%3600
-        else:
-            hours = 0
-        if (dt >= 60):
-            minutes = int(math.floor(dt/60))
-            dt = dt%60
-        else:
-            minutes = 0
+        days, dt = divmod(dt, 86400)
+        hours, dt = divmod(dt, 3600)
+        minutes, dt = divmod(dt, 60)
         seconds = int(math.ceil(dt))
-        return("%02d:%02d:%02d:%02d: " % (days, hours, minutes, seconds))
-
-
+        return "%02d:%02d:%02d:%02d: " % (days, hours, minutes, seconds)

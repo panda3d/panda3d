@@ -71,6 +71,7 @@ RopeNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
+  set_renderable();
 }
 
 /**
@@ -163,17 +164,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 }
 
 /**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool RopeNode::
-is_renderable() const {
-  return true;
-}
-
-/**
  *
  */
 void RopeNode::
@@ -243,9 +233,16 @@ get_format(bool support_normals) const {
        Geom::C_normal);
   }
   if (get_use_vertex_color()) {
-    array_format->add_column
-      (InternalName::get_color(), 1, Geom::NT_packed_dabc,
-       Geom::C_color);
+    if (vertex_colors_prefer_packed) {
+      array_format->add_column
+        (InternalName::get_color(), 1, Geom::NT_packed_dabc,
+         Geom::C_color);
+    }
+    else {
+      array_format->add_column
+        (InternalName::get_color(), 4, Geom::NT_uint8,
+         Geom::C_color);
+    }
   }
   if (get_uv_mode() != UV_none) {
     array_format->add_column

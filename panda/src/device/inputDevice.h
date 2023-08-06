@@ -56,84 +56,126 @@ PUBLISHED:
   // type of input device.
   enum class DeviceClass {
     // It is not known what type of device this is.
-    unknown,
+    UNKNOWN,
 
     // This means that the device doesn't correspond to a physical
     // device, but rather to a dynamic source of input events.
-    virtual_device,
+    VIRTUAL,
 
     // A physical, alphabetical keyboard.
-    keyboard,
+    KEYBOARD,
 
-    mouse,
-    touch,
+    MOUSE,
+    TOUCH,
 
     // A gamepad with action buttons, a D-pad, and thumbsticks.
-    gamepad,
+    GAMEPAD,
 
-    flight_stick,
-    steering_wheel,
-    dance_pad,
+    FLIGHT_STICK,
+    STEERING_WHEEL,
+    DANCE_PAD,
 
     // Head-mounted display.
-    hmd,
+    HMD,
 
     // 3D mouse, such as produced by 3Dconnexion.
-    spatial_mouse,
+    SPATIAL_MOUSE,
 
     // A graphics tablet with stylus/pen.
-    digitizer,
+    DIGITIZER,
+
+    // Deprecated aliases.
+    unknown = UNKNOWN,
+    virtual_device = VIRTUAL,
+    keyboard = KEYBOARD,
+    mouse = MOUSE,
+    touch = TOUCH,
+    gamepad = GAMEPAD,
+    flight_stick = FLIGHT_STICK,
+    steering_wheel = STEERING_WHEEL,
+    dance_pad = DANCE_PAD,
+    hmd = HMD,
+    spatial_mouse = SPATIAL_MOUSE,
+    digitizer = DIGITIZER,
   };
 
   enum class Feature {
     // The device provides absolute screen coordinates.
-    pointer,
+    POINTER,
 
     // The device has an interface for providing text input.
-    keyboard,
+    KEYBOARD,
 
     // The device has a motion tracker, such as an HMD.
-    tracker,
+    TRACKER,
 
     // The device can produce force feedback.
-    vibration,
+    VIBRATION,
 
     // The device provides information about battery life.
-    battery,
+    BATTERY,
+
+    // Deprecated aliases.
+    pointer = POINTER,
+    keyboard = KEYBOARD,
+    tracker = TRACKER,
+    vibration = VIBRATION,
+    battery = BATTERY,
   };
 
   enum class Axis {
-    none,
+    NONE,
 
     // Generic translational axes
-    x,
-    y,
-    z,
+    X,
+    Y,
+    Z,
 
     // Generic rotational axes, used by joysticks and 3D mice
-    yaw,
-    pitch,
-    roll,
+    YAW,
+    PITCH,
+    ROLL,
 
     // Gamepad
-    left_x,
-    left_y,
-    left_trigger,
-    right_x,
-    right_y,
-    right_trigger,
+    LEFT_X,
+    LEFT_Y,
+    LEFT_TRIGGER,
+    RIGHT_X,
+    RIGHT_Y,
+    RIGHT_TRIGGER,
 
     // Flight stick specific
-    throttle,
-    rudder, // When available separately from yaw
+    THROTTLE,
+    RUDDER, // When available separately from yaw
 
     // Steering wheel / pedals
-    wheel,
-    accelerator,
-    brake,
+    WHEEL,
+    ACCELERATOR,
+    BRAKE,
 
     // Pen pressure
-    pressure,
+    PRESSURE,
+
+    // Deprecated aliases
+    none = NONE,
+    x = X,
+    y = Y,
+    z = Z,
+    yaw = YAW,
+    pitch = PITCH,
+    roll = ROLL,
+    left_x = LEFT_X,
+    left_y = LEFT_Y,
+    left_trigger = LEFT_TRIGGER,
+    right_x = RIGHT_X,
+    right_y = RIGHT_Y,
+    right_trigger = RIGHT_TRIGGER,
+    throttle = THROTTLE,
+    rudder = RUDDER,
+    wheel = WHEEL,
+    accelerator = ACCELERATOR,
+    brake = BRAKE,
+    pressure = PRESSURE,
   };
 
   enum State {
@@ -168,7 +210,7 @@ PUBLISHED:
   PUBLISHED:
     operator bool() { return known && value != 0.0; }
 
-    Axis axis = Axis::none;
+    Axis axis = Axis::NONE;
     double value = 0.0;
     bool known = false;
 
@@ -319,7 +361,7 @@ protected:
   std::string _name;
   std::string _serial_number;
   std::string _manufacturer;
-  DeviceClass _device_class = DeviceClass::unknown;
+  DeviceClass _device_class = DeviceClass::UNKNOWN;
   unsigned int _features = 0;
   int _event_sequence = 0;
   unsigned short _vendor_id = 0;

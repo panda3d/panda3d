@@ -53,16 +53,16 @@
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
-#endif
-#endif
+#endif // !NOMINMAX
+#endif // _WIN32
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
-#endif
+#endif // !__has_builtin
 
 #ifndef __has_attribute
 #define __has_attribute(x) 0
-#endif
+#endif // !__has_attribute
 
 // Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go
 // to the final untested case after it has failed all the other cases (i.e.
@@ -73,30 +73,30 @@
 #define NODEFAULT  default: __builtin_unreachable();
 #elif defined(_MSC_VER)
 #define NODEFAULT  default: __assume(0);   // special VC keyword
-#else
+#else // NODEFAULT
 #define NODEFAULT
-#endif
+#endif // NODEFAULT
 
 // Use this to hint the compiler that a memory address is aligned.
 #if __has_builtin(__builtin_assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
 #define ASSUME_ALIGNED(x, y) (__builtin_assume_aligned(x, y))
-#else
+#else // ASSUME_ALIGNED
 #define ASSUME_ALIGNED(x, y) (x)
-#endif
+#endif // ASSUME_ALIGNED
 
 #if __has_attribute(assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)
 #define RETURNS_ALIGNED(x) __attribute__((assume_aligned(x)))
-#else
+#else // RETURNS_ALIGNED
 #define RETURNS_ALIGNED(x)
-#endif
+#endif // RETURNS_ALIGNED
 
 #ifdef __GNUC__
 #define LIKELY(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
-#else
+#else // LIKELY/UNLIKELY
 #define LIKELY(x) (x)
 #define UNLIKELY(x) (x)
-#endif
+#endif // LIKELY/UNLIKELY
 
 /*
   include win32 defns for everything up to WinServer2003, and assume
@@ -105,17 +105,17 @@
 */
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
-#endif
+#endif // _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
 
 #ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
-#endif
+#endif // !__STDC_LIMIT_MACROS
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS
-#endif
-#endif
+#endif // !__STDC_CONSTANT_MACROS
+#endif // __cplusplus
 
 // This is a workaround for a glibc bug that is triggered by clang when
 // compiling with -ffast-math.
@@ -123,18 +123,19 @@
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
 #define __extern_always_inline extern __always_inline
-#endif
-#endif
+#endif // !__extern_always_inline
+#endif // __clang__ && __GLIBC__
 
 // Instead of including the Python headers, which will implicitly add a linker
 // flag to link in Python, we'll just excerpt the forward declaration of
 // PyObject.
 typedef struct _object PyObject;
+typedef struct _typeobject PyTypeObject;
 
 #ifndef HAVE_EIGEN
 // If we don't have the Eigen library, don't define LINMATH_ALIGN.
 #undef LINMATH_ALIGN
-#endif
+#endif // !HAVE_EIGEN
 
 #include "dtoolsymbols.h"
 
@@ -146,73 +147,75 @@ typedef struct _object PyObject;
 // headers
 #define _FILE_OFFSET_BITS 64
 #define _LARGEFILE_SOURCE 1
-#endif
+#endif // __GNUC__
 
 #ifdef PHAVE_TYPES_H
 #include <types.h>
-#endif
+#endif // PHAVE_TYPES_H
 
 #ifdef PHAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
+#endif // PHAVE_SYS_TYPES_H
 
 #ifdef PHAVE_MALLOC_H
 #include <malloc.h>
-#endif
+#endif // PHAVE_MALLOC_H
 
 #ifdef PHAVE_SYS_MALLOC_H
 #include <sys/malloc.h>
-#endif
+#endif // PHAVE_SYS_MALLOC_H
 
 #ifdef PHAVE_ALLOCA_H
 #include <alloca.h>
-#endif
+#endif // PHAVE_ALLOCA_H
 
 #ifdef PHAVE_UNISTD_H
 #include <unistd.h>
-#endif
+#endif // PHAVE_UNISTD_H
 
 #ifdef PHAVE_IO_H
 #include <io.h>
-#endif
+#endif // PHAVE_IO_H
 
 #ifdef PHAVE_LOCALE_H
 #include <locale.h>
-#endif
+#endif // PHAVE_LOCALE_H
 
 #ifdef PHAVE_STRING_H
 #include <string.h>
-#endif
+#endif // PHAVE_STRING_H
 
 #ifdef PHAVE_STDLIB_H
 #include <stdlib.h>
-#endif
+#endif // PHAVE_STDLIB_H
 
 #ifdef PHAVE_LIMITS_H
 #include <limits.h>
-#endif
+#endif // PHAVE_LIMITS_H
 
 #ifdef PHAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
+#endif // PHAVE_SYS_TIME_H
 
 #ifdef PHAVE_STDINT_H
 #include <stdint.h>
-#endif
+#endif // PHAVE_STDINT_H
 
 #ifdef CPPPARSER
 #include <stdtypedefs.h>
 
+#ifdef HAVE_PYTHON
 // Also pick up the forward declaration of PyObject.
 #include <Python.h>
-#endif
+#endif // HAVE_PYTHON
+#endif // CPPPARSER
 
 #ifdef USE_TAU
 /* If we're building with the Tau instrumentor, include the
    appropriate header file to pick up the TAU macros. */
 #include <TAU.h>
 #include <Profile/Profiler.h>
-#else
+#else // USE_TAU
 /* Otherwise, if we're not building with the Tau instrumentor, turn
    off all the TAU macros.  We could include the Tau header file to do
    this, but it's better not to assume that Tau is installed. */
@@ -324,7 +327,7 @@ typedef struct _object PyObject;
 #undef WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN 1
 
-#endif
+#endif // WORDS_BIGENDIAN
 
 /* Try to determine if we're compiling in a 64-bit mode. */
 
@@ -332,9 +335,9 @@ typedef struct _object PyObject;
 #define NATIVE_WORDSIZE __WORDSIZE
 #elif defined(_LP64) || defined(_WIN64)
 #define NATIVE_WORDSIZE 64
-#else
+#else // __WORDSIZE
 #define NATIVE_WORDSIZE 32
-#endif
+#endif // __WORDSIZE
 
 /* Some byte-alignment macros. */
 #ifdef CPPPARSER
@@ -355,13 +358,13 @@ typedef struct _object PyObject;
 #define ALIGN_16BYTE __attribute__ ((aligned (16)))
 #define ALIGN_32BYTE __attribute__ ((aligned (32)))
 #define ALIGN_64BYTE __attribute__ ((aligned (64)))
-#else
+#else // ALIGN_*
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
 #define ALIGN_16BYTE
 #define ALIGN_32BYTE
 #define ALIGN_64BYTE
-#endif
+#endif // ALIGN_*
 
 // Do we need to implement memory-alignment enforcement within the MemoryHook
 // class, or will the underlying malloc implementation provide it
@@ -375,6 +378,10 @@ typedef struct _object PyObject;
 // This specialized malloc implementation can perform the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
+#elif defined(USE_MEMORY_MIMALLOC)
+// This one does, too.
+#undef MEMORY_HOOK_DO_ALIGN
+
 #elif defined(USE_MEMORY_PTMALLOC2)
 // But not this one.  For some reason it crashes when we try to build it with
 // alignment 16.  So if we're using ptmalloc2, we need to enforce alignment
@@ -385,16 +392,22 @@ typedef struct _object PyObject;
 // The OS-provided malloc implementation will do the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
+#elif defined(HAVE_MIMALLOC) && defined(_WIN32)
+// Prefer mimalloc on Windows, if we have it.  It is significantly faster than
+// standard malloc, supports multi-threading well and does the alignment too.
+#undef MEMORY_HOOK_DO_ALIGN
+#define USE_MEMORY_MIMALLOC 1
+
 #elif defined(MEMORY_HOOK_DO_ALIGN)
 // We need memory alignment, and we're willing to provide it ourselves.
 
-#else
+#else // malloc alignment
 // We need memory alignment, and we haven't specified whether it should be
 // provided on top of the existing malloc library, or otherwise.  Let's rely
 // on dlmalloc to provide it, it seems to be the most memory-efficient option.
 #define USE_MEMORY_DLMALLOC 1
 
-#endif
+#endif // malloc alignment
 
 #ifdef LINMATH_ALIGN
 /* We require 16-byte alignment of certain structures, to support SSE2.  We
@@ -403,37 +416,37 @@ typedef struct _object PyObject;
 /* Eigen uses AVX instructions, but let's only enable this when compiling with
    double precision, so that we can keep our ABI a bit more stable. */
 #define MEMORY_HOOK_ALIGNMENT 32
-#else
+#else // HAVE_EIGEN alignment
 #define MEMORY_HOOK_ALIGNMENT 16
-#endif
+#endif // HAVE_EIGEN alignment
 /* Otherwise, align to two words.  This seems to be pretty standard to the
    point where some code may rely on this being the case. */
 #elif defined(IS_OSX) || NATIVE_WORDSIZE >= 64
 #define MEMORY_HOOK_ALIGNMENT 16
-#else
+#else // memory alignment
 #define MEMORY_HOOK_ALIGNMENT 8
-#endif
+#endif // memory alignment
 
 #ifdef HAVE_EIGEN
 /* Make sure that Eigen doesn't assume alignment guarantees we don't offer. */
 #define EIGEN_MAX_ALIGN_BYTES MEMORY_HOOK_ALIGNMENT
 #ifndef EIGEN_MPL2_ONLY
 #define EIGEN_MPL2_ONLY 1
-#endif
+#endif // !EIGEN_MPL2_ONLY
 #if !defined(_DEBUG) && !defined(EIGEN_NO_DEBUG)
 #define EIGEN_NO_DEBUG 1
-#endif
-#endif
+#endif // !_DEBUG && !EIGEN_NO_DEBUG
+#endif // HAVE_EIGEN
 
 /* Determine our memory-allocation requirements. */
-#if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
+#if defined(USE_MEMORY_MIMALLOC) || defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
-#else
+#else // memory allocation wrappers
 /* Otherwise, if we have no custom memory management needs at all, we
    might as well turn it all off and go straight to the OS-level
    calls. */
 #define USE_MEMORY_NOWRAPPERS 1
-#endif
+#endif // memory allocation wrappers
 
 /* We must always use the STL allocator nowadays, because we have
    redefined the constructors for pvector, pmap, etc. */
@@ -458,7 +471,18 @@ typedef struct _object PyObject;
 #define MAKE_MAP_KEYS_SEQ(property_name, ...) __make_map_keys_seq(property_name, __VA_ARGS__)
 #define EXTENSION(x) __extension x
 #define EXTEND __extension
-#else
+#ifdef HAVE_PYTHON
+#define PY_EXTENSION(x) __extension x
+#define PY_EXTEND(...) __extension __VA_ARGS__
+#define PY_MAKE_PROPERTY(property_name, ...) __make_property(property_name, __VA_ARGS__)
+#define PY_MAKE_SEQ_PROPERTY(property_name, ...) __make_seq_property(property_name, __VA_ARGS__)
+#else // HAVE_PYTHON
+#define PY_EXTENSION(x)
+#define PY_EXTEND(...)
+#define PY_MAKE_PROPERTY(property_name, ...)
+#define PY_MAKE_SEQ_PROPERTY(property_name, ...)
+#endif // HAVE_PYTHON
+#else // CPPPARSER
 #define BEGIN_PUBLISH
 #define END_PUBLISH
 #define BLOCKING
@@ -470,7 +494,11 @@ typedef struct _object PyObject;
 #define MAKE_MAP_KEYS_SEQ(property_name, ...)
 #define EXTENSION(x)
 #define EXTEND
-#endif
+#define PY_EXTENSION(x)
+#define PY_EXTEND(...)
+#define PY_MAKE_PROPERTY(property_name, ...)
+#define PY_MAKE_SEQ_PROPERTY(property_name, ...)
+#endif // CPPPARSER
 
 /* These symbols are used in dtoolsymbols.h and pandasymbols.h. */
 #if defined(_WIN32) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
@@ -479,10 +507,10 @@ typedef struct _object PyObject;
 #elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __attribute__((visibility("default")))
 #define IMPORT_CLASS
-#else
+#else // IMPORT/EXPORT
 #define EXPORT_CLASS
 #define IMPORT_CLASS
-#endif
+#endif // IMPORT/EXPORT
 
 /* "extern template" is now part of the C++11 standard. */
 #if defined(CPPPARSER) || defined(LINK_ALL_STATIC)
@@ -497,13 +525,13 @@ typedef struct _object PyObject;
    duplicate template instantiations that this causes. */
 #define EXPORT_TEMPL
 #define IMPORT_TEMPL extern
-#else
+#else // IMPORT/EXPORT template
 #define EXPORT_TEMPL extern
 #define IMPORT_TEMPL extern
-#endif
+#endif // IMPORT/EXPORT template
 
 #ifdef __cplusplus
 #include "dtoolbase_cc.h"
-#endif
+#endif // __cplusplus
 
-#endif
+#endif // !DTOOLBASE_H

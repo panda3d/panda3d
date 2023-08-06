@@ -103,7 +103,7 @@ child_integrate(Physical *physical,
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
     // in any direction, among other things.
-    accum_quat = current_object->get_inertial_tensor() * accum_quat;
+    accum_quat = LRotation(current_object->get_inertial_tensor()) * accum_quat;
 
     // derive this into the angular velocity vector.
     LRotation rot_quat = current_object->get_rotation();

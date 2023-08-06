@@ -30,7 +30,7 @@ set(COMPOSITE_SOURCE_EXCLUSIONS "" CACHE STRING
   "A list of targets to skip when compositing sources. This is mainly
 desirable for CI builds.")
 
-set(COMPOSITE_GENERATOR "${CMAKE_SOURCE_DIR}/cmake/scripts/MakeComposite.cmake")
+set(COMPOSITE_GENERATOR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/MakeComposite.cmake")
 
 
 # Define composite_sources()

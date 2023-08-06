@@ -34,6 +34,10 @@ public:
   INLINE FunctionIndex get_function() const;
 
   INLINE bool is_callable_by_name() const;
+  INLINE bool is_copy_constructor() const;
+  INLINE bool is_coerce_constructor() const;
+  INLINE bool is_extension() const;
+  INLINE bool is_deprecated() const;
 
   INLINE bool has_return_value() const;
   INLINE TypeIndex get_return_type() const;
@@ -45,6 +49,7 @@ public:
   INLINE bool parameter_has_name(int n) const;
   INLINE const std::string &parameter_get_name(int n) const;
   INLINE bool parameter_is_this(int n) const;
+  INLINE bool parameter_is_optional(int n) const;
 
   INLINE const std::string &get_unique_name() const;
 
@@ -60,12 +65,17 @@ private:
   enum Flags {
     F_caller_manages   = 0x0001,
     F_has_return       = 0x0002,
-    F_callable_by_name = 0x0004
+    F_callable_by_name = 0x0004,
+    F_copy_constructor = 0x0008,
+    F_coerce_constructor = 0x0010,
+    F_extension        = 0x0020,
+    F_deprecated       = 0x0040,
   };
 
   enum ParameterFlags {
     PF_has_name       = 0x0001,
     PF_is_this        = 0x0002,
+    PF_is_optional    = 0x0004,
   };
 
   int _flags;

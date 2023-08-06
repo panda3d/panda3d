@@ -21,6 +21,8 @@
 
 #include "physical.h"
 #include "config_physics.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 /**
  * Graph node that encapsulated a series of physical objects
@@ -54,6 +56,7 @@ protected:
   PhysicalNode(const PhysicalNode &copy);
 
 private:
+  LightMutex _lock;
   typedef pvector<PT(Physical)> PhysicalsVector;
   PhysicalsVector _physicals;
 

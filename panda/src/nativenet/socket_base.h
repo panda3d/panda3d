@@ -1,5 +1,5 @@
-#ifndef __SOCKET_BASE_H__
-#define __SOCKET_BASE_H__
+#ifndef SOCKET_BASE_H
+#define SOCKET_BASE_H
 
 // Quick way to get all the network code defined
 #include "pandabase.h"
@@ -13,4 +13,4 @@
 #include "socket_fdset.h"
 #include "socket_selector.h"
 
-#endif //__SOCKET_BASE_H__
+#endif //SOCKET_BASE_H

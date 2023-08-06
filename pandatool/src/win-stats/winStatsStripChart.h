@@ -43,7 +43,11 @@ public:
 
   virtual void set_time_units(int unit_mask);
   virtual void set_scroll_speed(double scroll_speed);
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual void on_popup_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
+
+  void set_collector_index(int collector_index);
   void set_vertical_scale(double value_height);
 
 protected:
@@ -57,10 +61,16 @@ protected:
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
 
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
+
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
+  virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void set_drag_mode(DragMode drag_mode);
@@ -79,7 +89,7 @@ private:
   std::string _net_value_text;
 
   HWND _smooth_check_box;
-  static size_t _check_box_height, _check_box_width;
+  int _popup_index = -1;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

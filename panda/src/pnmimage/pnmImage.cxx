@@ -19,10 +19,15 @@
 #include "config_pnmimage.h"
 #include "perlinNoise2.h"
 #include "stackedPerlinNoise2.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 #include <algorithm>
 
 using std::max;
 using std::min;
+
+static PStatCollector _image_read_pcollector("*:PNMImage:read");
+static PStatCollector _image_write_pcollector("*:PNMImage:write");
 
 /**
  *
@@ -319,6 +324,8 @@ read(std::istream &data, const std::string &filename, PNMFileType *type,
  */
 bool PNMImage::
 read(PNMReader *reader) {
+  PStatTimer timer(_image_read_pcollector);
+
   bool has_read_size = _has_read_size;
   int read_x_size = _read_x_size;
   int read_y_size = _read_y_size;
@@ -436,6 +443,8 @@ write(PNMWriter *writer) const {
     delete writer;
     return false;
   }
+
+  PStatTimer timer(_image_write_pcollector);
 
   writer->copy_header_from(*this);
 
@@ -1176,7 +1185,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1184,7 +1193,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] + rgb2[0] * pixel_scale,
               rgb1[1] + rgb2[1] * pixel_scale,
@@ -1210,7 +1219,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1218,7 +1227,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] * rgb2[0] * pixel_scale,
               rgb1[1] * rgb2[1] * pixel_scale,
@@ -1980,14 +1989,13 @@ quantize(size_t max_colors) {
  * PerlinNoise2 class in mathutil.
  */
 void PNMImage::
-perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed) {
-  float x, y;
-  float noise;
+perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed,
+                  float ox, float oy) {
   PerlinNoise2 perlin (sx * _x_size, sy * _y_size, table_size, seed);
-  for (x = 0; x < _x_size; ++x) {
-    for (y = 0; y < _y_size; ++y) {
-      noise = perlin.noise(x, y);
-      set_xel(x, y, 0.5 * (noise + 1.0));
+  for (int x = 0; x < _x_size; ++x) {
+    for (int y = 0; y < _y_size; ++y) {
+      float noise = perlin.noise(x + ox, y + oy);
+      set_xel(x, y, 0.5f * (noise + 1.0f));
     }
   }
 }
@@ -1998,12 +2006,10 @@ perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed) {
  */
 void PNMImage::
 perlin_noise_fill(StackedPerlinNoise2 &perlin) {
-  float x, y;
-  float noise;
-  for (x = 0; x < _x_size; ++x) {
-    for (y = 0; y < _y_size; ++y) {
-      noise = perlin.noise(x / (float) _x_size, y / (float) _y_size);
-      set_xel(x, y, 0.5 * (noise + 1.0));
+  for (int x = 0; x < _x_size; ++x) {
+    for (int y = 0; y < _y_size; ++y) {
+      float noise = perlin.noise(x / (float) _x_size, y / (float) _y_size);
+      set_xel(x, y, 0.5f * (noise + 1.0f));
     }
   }
 }

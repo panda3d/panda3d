@@ -32,15 +32,18 @@ class CPPScope;
 class CPPEnumType : public CPPExtensionType {
 public:
   CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
-              CPPScope *scope, const CPPFile &file);
+              CPPScope *scope, const CPPFile &file,
+              CPPAttributeList attr = CPPAttributeList());
   CPPEnumType(Type type, CPPIdentifier *ident, CPPType *element_type,
-              CPPScope *current_scope, CPPScope *scope, const CPPFile &file);
+              CPPScope *current_scope, CPPScope *scope, const CPPFile &file,
+              CPPAttributeList attr = CPPAttributeList());
 
   bool is_scoped() const;
   CPPType *get_underlying_type();
 
   CPPInstance *add_element(const std::string &name, CPPExpression *value,
-                           CPPPreprocessor *preprocessor, const cppyyltype &pos);
+                           CPPPreprocessor *preprocessor, const cppyyltype &pos,
+                           CPPAttributeList attr = CPPAttributeList());
 
   virtual bool is_incomplete() const;
 

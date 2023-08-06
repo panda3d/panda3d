@@ -131,3 +131,32 @@ def test_sphere_shape():
     assert shape.margin == shape2.margin
     assert shape.name == shape2.name
     assert shape.radius == shape2.radius
+
+
+def test_convex_shape():
+    shape = bullet.BulletConvexHullShape()
+    shape.add_array([
+        (-1.0, -1.0, -1.0),
+        (1.0, -1.0, -1.0),
+        (-1.0, 1.0, -1.0),
+        (-1.0, -1.0, 1.0),
+        (1.0, 1.0, -1.0),
+        (1.0, -1.0, 1.0),
+        (-1.0, 1.0, 1.0),
+        (1.0, 1.0, 1.0),
+    ])
+    shape.margin = 0.5
+
+    shape2 = reconstruct(shape)
+
+    assert type(shape) is type(shape2)
+    assert shape.margin == shape2.margin
+
+
+def test_ghost():
+    node = bullet.BulletGhostNode("some ghost node")
+
+    node2 = reconstruct(node)
+
+    assert type(node) is type(node2)
+    assert node.name == node2.name

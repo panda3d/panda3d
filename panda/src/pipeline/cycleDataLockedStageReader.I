@@ -111,7 +111,9 @@ INLINE CycleDataLockedStageReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataLockedStageReader<CycleDataType>::
 operator -> () const {
+#ifdef _DEBUG
   nassertr(_pointer != nullptr, _cycler->cheat());
+#endif
   return _pointer;
 }
 
@@ -122,7 +124,9 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataLockedStageReader<CycleDataType>::
 operator const CycleDataType * () const {
+#ifdef _DEBUG
   nassertr(_pointer != nullptr, _cycler->cheat());
+#endif
   return _pointer;
 }
 

@@ -112,9 +112,6 @@ unload_prc_file(ConfigPage *page) {
   return cp_mgr->delete_explicit_page(page);
 }
 
-
-#ifdef HAVE_OPENSSL
-
 /**
  * Fills HashVal with the hash from the current prc file state as reported by
  * ConfigVariableManager::write_prc_variables().
@@ -126,5 +123,3 @@ hash_prc_variables(HashVal &hash) {
   cv_mgr->write_prc_variables(strm);
   hash.hash_string(strm.str());
 }
-
-#endif  // HAVE_OPENSSL

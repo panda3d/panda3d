@@ -39,7 +39,7 @@ public:
   };
 
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
-                   const CPPFile &file);
+                   const CPPFile &file, CPPAttributeList attr = CPPAttributeList());
 
   virtual std::string get_simple_name() const;
   virtual std::string get_local_name(CPPScope *scope = nullptr) const;
@@ -49,6 +49,7 @@ public:
   virtual bool is_tbd() const;
   virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_trivially_copyable() const;
   virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;

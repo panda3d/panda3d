@@ -22,6 +22,12 @@ set(P3PSTATCLIENT_SOURCES
   pStatThread.cxx
 )
 
+set(P3PSTATCLIENT_IGATEEXT
+  pStatClient_ext.I
+  pStatClient_ext.cxx
+  pStatClient_ext.h
+)
+
 composite_sources(p3pstatclient P3PSTATCLIENT_SOURCES)
 add_component_library(p3pstatclient SYMBOL BUILDING_PANDA_PSTATCLIENT
   ${P3PSTATCLIENT_HEADERS} ${P3PSTATCLIENT_SOURCES})
@@ -31,7 +37,7 @@ if(HAVE_NET AND WANT_NATIVE_NET)
   target_link_libraries(p3pstatclient p3net)
 endif()
 
-target_interrogate(p3pstatclient ALL)
+target_interrogate(p3pstatclient ALL EXTENSIONS ${P3PSTATCLIENT_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3pstatclient
@@ -42,4 +48,4 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3PSTATCLIENT_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
-install(FILES config_pstats.h COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+install(FILES config_pstatclient.h COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

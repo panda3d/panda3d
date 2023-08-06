@@ -33,6 +33,7 @@
 #include "textNode.h"
 #include "eventHandler.h"
 #include "genericAsyncTask.h"
+#include "small_vector.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -82,6 +83,15 @@ public:
   NodePath get_pixel_2d();
   NodePath get_mouse();
   NodePath get_button_thrower();
+
+  INLINE NodePath get_a2d_top_center();
+  INLINE NodePath get_a2d_bottom_center();
+  INLINE NodePath get_a2d_left_center();
+  INLINE NodePath get_a2d_right_center();
+  INLINE NodePath get_a2d_top_left();
+  INLINE NodePath get_a2d_top_right();
+  INLINE NodePath get_a2d_bottom_left();
+  INLINE NodePath get_a2d_bottom_right();
 
   void enable_keyboard();
   void setup_trackball();
@@ -154,8 +164,6 @@ private:
   void play_button();
   void forward_button();
 
-  static AsyncTask::DoneStatus st_update_anim_controls(GenericAsyncTask *task, void *data);
-
   static void st_back_button(const Event *, void *data);
   static void st_pause_button(const Event *, void *data);
   static void st_play_button(const Event *, void *data);
@@ -168,13 +176,22 @@ private:
   PT(DisplayRegion) _display_region_3d;
 
   NodePath _camera_group;
-  typedef pvector< PT(Camera) > Cameras;
+  typedef small_vector< PT(Camera) > Cameras;
   Cameras _cameras;
 
   NodePath _render;
   NodePath _render_2d;
   NodePath _aspect_2d;
   NodePath _pixel_2d;
+
+  NodePath _a2d_top_center;
+  NodePath _a2d_bottom_center;
+  NodePath _a2d_left_center;
+  NodePath _a2d_right_center;
+  NodePath _a2d_top_left;
+  NodePath _a2d_top_right;
+  NodePath _a2d_bottom_left;
+  NodePath _a2d_bottom_right;
 
   AnimControlCollection _anim_controls;
   bool _anim_controls_enabled;
@@ -183,7 +200,7 @@ private:
   PT(PGSliderBar) _anim_slider;
   PT(PGSliderBar) _play_rate_slider;
   PT(TextNode) _frame_number;
-  PT(GenericAsyncTask) _update_anim_controls_task;
+  PT(AsyncTask) _update_anim_controls_task;
 
   NodePath _mouse;
   NodePath _button_thrower;

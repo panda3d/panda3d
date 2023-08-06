@@ -33,7 +33,7 @@ void PStatListener::
 connection_opened(const PT(Connection) &,
                   const NetAddress &address,
                   const PT(Connection) &new_connection) {
-  PStatMonitor *monitor = _manager->make_monitor();
+  PStatMonitor *monitor = _manager->make_monitor(address);
   if (monitor == nullptr) {
     nout << "Couldn't create monitor!\n";
     return;

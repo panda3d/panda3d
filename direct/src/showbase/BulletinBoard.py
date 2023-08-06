@@ -3,6 +3,8 @@
 __all__ = ['BulletinBoard']
 
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
+
 
 class BulletinBoard:
     """This class implements a global location for key/value pairs to be
@@ -53,8 +55,6 @@ class BulletinBoard:
     def __repr__(self):
         str  = 'Bulletin Board Contents\n'
         str += '======================='
-        keys = list(self._dict.keys())
-        keys.sort()
-        for postName in keys:
+        for postName in sorted(self._dict):
             str += '\n%s: %s' % (postName, self._dict[postName])
         return str

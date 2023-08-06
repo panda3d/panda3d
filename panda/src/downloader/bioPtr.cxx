@@ -68,6 +68,33 @@ static string format_error() {
 #define format_error() strerror(errno)
 #endif
 
+#if defined(_WIN32) && defined(LIBRESSL_VERSION_NUMBER)
+/**
+* This exists to work around an issue with LibreSSL's version of
+* BIO_sock_should_retry, which does not understand Windows error codes.
+* The implementation here matches the behaviour of OpenSSL on Windows.
+*/
+static int
+sock_should_retry(int i) {
+  if (i == 0 || i == -1) {
+    int err = WSAGetLastError();
+
+    switch (err) {
+    case WSAEWOULDBLOCK:
+    case ENOTCONN:
+    case EINPROGRESS:
+    case EALREADY:
+      return 1;
+    default:
+      break;
+    }
+  }
+  return 0;
+}
+#else
+#define sock_should_retry(err) BIO_sock_should_retry(err)
+#endif
+
 /**
  * This flavor of the constructor automatically creates a socket BIO and feeds
  * it the server and port name from the indicated URL.  It doesn't call
@@ -214,8 +241,7 @@ connect() {
     result = BIO_sock_error(fd);
   } else {
     result = ::connect(fd, (sockaddr *)&_addr, _addrlen);
-
-    if (result != 0 && BIO_sock_should_retry(-1)) {
+    if (result != 0 && sock_should_retry(-1)) {
       // It's still in progress; we should retry later.  This causes
       // should_retry() to return true.
       BIO_set_flags(_bio, BIO_FLAGS_SHOULD_RETRY);

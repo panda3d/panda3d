@@ -56,6 +56,49 @@ def test_flywheel():
     assert obj2count[4] == 4 * 3
 
 
+def test_formatTimeCompact():
+    ftc = PythonUtil.formatTimeCompact
+    assert ftc(0) == '0s'
+    assert ftc(1) == '1s'
+    assert ftc(60) == '1m0s'
+    assert ftc(64) == '1m4s'
+    assert ftc(60*60) == '1h0m0s'
+    assert ftc(24*60*60) == '1d0h0m0s'
+    assert ftc(24*60*60 + 2*60*60 + 34*60 + 12) == '1d2h34m12s'
+
+
+def test_formatTimeExact():
+    fte = PythonUtil.formatTimeExact
+    assert fte(0) == '0s'
+    assert fte(1) == '1s'
+    assert fte(2) == '2s'
+    assert fte(61) == '1m1s'
+    assert fte(60) == '1m'
+    assert fte(60*60) == '1h'
+    assert fte(24*60*60) == '1d'
+    assert fte((24*60*60) + (2 * 60)) == '1d0h2m'
+    del fte
+
+
+def test_AlphabetCounter():
+    tempList = []
+    ac = PythonUtil.AlphabetCounter()
+    for i in range(26*3):
+        tempList.append(ac.next())
+    assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                        'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
+                        'BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU','BV','BW','BX','BY','BZ',]
+    ac = PythonUtil.AlphabetCounter()
+    num  = 26 # A-Z
+    num += (26*26) # AA-ZZ
+    num += 26 # AAZ
+    num += 1 # ABA
+    num += 2 # ABC
+    for i in range(num):
+        x = ac.next()
+    assert x == 'ABC'
+
+
 def test_unescape_html_string():
     assert PythonUtil.unescapeHtmlString('asdf') == 'asdf'
     assert PythonUtil.unescapeHtmlString('as+df') == 'as df'
@@ -146,14 +189,6 @@ def test_weighted_choice():
     # Assert that we got 'item1'.
     assert item == items[0]
 
-    # Test PythonUtil.weightedChoice() with an invalid sum.
-    # This time, we're using 2000 so that regardless of the random
-    # number, we will still reach the very last item.
-    item = PythonUtil.weightedChoice(choicelist, sum=100000)
-
-    # Assert that we got 'item8', since we would get the last item.
-    assert item == items[-1]
-
     # Create a bogus random function.
     rnd = lambda: 0.5
 
@@ -165,3 +200,25 @@ def test_weighted_choice():
     # When subtracting that number by each weight, it will reach 0
     # by the time it hits 'item6' in the iteration.
     assert item == items[5]
+
+
+def test_serial():
+    gen = PythonUtil.SerialNumGen()
+    assert gen.next() == 0
+    assert next(gen) == 1
+    assert next(gen) == 2
+    assert gen.next() == 3
+
+
+def test_alphabet_counter():
+    counter = PythonUtil.AlphabetCounter()
+    assert next(counter) == 'A'
+    assert counter.next() == 'B'
+    assert counter.next() == 'C'
+    assert next(counter) == 'D'
+
+    for i in range(26 - 4):
+        next(counter)
+
+    assert next(counter) == 'AA'
+    assert next(counter) == 'AB'

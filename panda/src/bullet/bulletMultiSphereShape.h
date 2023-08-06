@@ -11,8 +11,8 @@
  * @date 2012-01-04
  */
 
-#ifndef __BULLET_MULTI_SPHERE_SHAPE_H__
-#define __BULLET_MULTI_SPHERE_SHAPE_H__
+#ifndef BULLETMULTISPHERESHAPE_H
+#define BULLETMULTISPHERESHAPE_H
 
 #include "pandabase.h"
 
@@ -81,4 +81,4 @@ private:
 
 #include "bulletMultiSphereShape.I"
 
-#endif // __BULLET_MULTI_SPHERE_SHAPE_H__
+#endif // BULLETMULTISPHERESHAPE_H

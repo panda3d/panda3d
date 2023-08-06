@@ -29,6 +29,8 @@
 template<>
 class Extension<BamReader> : public ExtensionBase<BamReader> {
 public:
+  PyObject *read_object();
+
   PyObject *get_file_version() const;
 
   static void register_factory(TypeHandle handle, PyObject *func);

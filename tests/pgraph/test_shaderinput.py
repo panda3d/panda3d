@@ -1,4 +1,9 @@
 from panda3d.core import ShaderInput, Vec4
+from array import array
+
+
+def test_shaderinput_construct_sequence_int():
+    i = ShaderInput('test', array('I', [1, 2, 3, 4]))
 
 
 def test_shaderinput_vector_compare():

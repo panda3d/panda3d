@@ -105,7 +105,7 @@ has_feature(Feature feature) const {
  */
 INLINE bool InputDevice::
 has_pointer() const {
-  return has_feature(Feature::pointer);
+  return has_feature(Feature::POINTER);
 }
 
 /**
@@ -113,7 +113,7 @@ has_pointer() const {
  */
 INLINE bool InputDevice::
 has_keyboard() const {
-  return has_feature(Feature::keyboard);
+  return has_feature(Feature::KEYBOARD);
 }
 
 /**
@@ -122,7 +122,7 @@ has_keyboard() const {
  */
 INLINE bool InputDevice::
 has_tracker() const {
-  return has_feature(Feature::tracker);
+  return has_feature(Feature::TRACKER);
 }
 
 /**
@@ -131,7 +131,7 @@ has_tracker() const {
  */
 INLINE bool InputDevice::
 has_vibration() const {
-  return has_feature(Feature::vibration);
+  return has_feature(Feature::VIBRATION);
 }
 
 /**
@@ -140,7 +140,7 @@ has_vibration() const {
  */
 INLINE bool InputDevice::
 has_battery() const {
-  return has_feature(Feature::battery);
+  return has_feature(Feature::BATTERY);
 }
 
 /**
@@ -270,7 +270,7 @@ get_num_axes() const {
 
 /**
  * Associates the indicated Axis with the axis of the indicated index
- * number.  Pass Axis::none to turn off any association.
+ * number.  Pass Axis::NONE to turn off any association.
  *
  * It is not necessary to call this if you simply want to query the state of
  * the various axes by index number.
@@ -344,7 +344,7 @@ is_axis_known(size_t index) const {
 INLINE void InputDevice::
 set_vibration(double strong, double weak) {
   LightMutexHolder holder(_lock);
-  do_set_vibration(std::max(std::min(strong, 1.0), 0.0), std::max(std::min(weak, 1.0), 0.0));
+  do_set_vibration((std::max)((std::min)(strong, 1.0), 0.0), (std::max)((std::min)(weak, 1.0), 0.0));
 }
 
 /**

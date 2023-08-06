@@ -26,9 +26,9 @@ Pipeline(const std::string &name, int num_stages) :
   Namable(name),
 #ifdef THREADED_PIPELINE
   _num_stages(num_stages),
+  _next_cycle_seq(1),
   _cycle_lock("Pipeline cycle"),
-  _lock("Pipeline"),
-  _next_cycle_seq(1)
+  _lock("Pipeline")
 #else
   _num_stages(1)
 #endif
@@ -157,7 +157,7 @@ cycle() {
           saved_cdatas.push_back(cycler->cycle_2());
 
           // cycle_2() won't leave a cycler dirty.  Add it to the clean list.
-          nassertd(!cycler->_dirty) break;
+          nassertd(!cycler->is_dirty()) break;
           cycler->insert_before(&_clean);
 #ifdef DEBUG_THREADS
           inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
@@ -193,11 +193,11 @@ cycle() {
 
           saved_cdatas.push_back(cycler->cycle_3());
 
-          if (cycler->_dirty) {
+          if (cycler->is_dirty()) {
             // The cycler is still dirty.  Add it back to the dirty list.
-            nassertd(cycler->_dirty == prev_seq) break;
+            nassertd(!cycler->is_dirty(prev_seq)) break;
             cycler->insert_before(&_dirty);
-            cycler->_dirty = next_seq;
+            cycler->mark_dirty(next_seq);
             ++_num_dirty_cyclers;
           } else {
             // The cycler is now clean.  Add it back to the clean list.
@@ -237,11 +237,11 @@ cycle() {
 
           saved_cdatas.push_back(cycler->cycle());
 
-          if (cycler->_dirty) {
+          if (cycler->is_dirty()) {
             // The cycler is still dirty.  Add it back to the dirty list.
-            nassertd(cycler->_dirty == prev_seq) break;
+            nassertd(!cycler->is_dirty(prev_seq)) break;
             cycler->insert_before(&_dirty);
-            cycler->_dirty = next_seq;
+            cycler->mark_dirty(next_seq);
             ++_num_dirty_cyclers;
           } else {
             // The cycler is now clean.  Add it back to the clean list.
@@ -346,9 +346,45 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
   // It's safe to add it to the list while cycling, since the _clean list is
   // not touched during the cycle loop.
   MutexHolder holder(_lock);
-  nassertv(!cycler->_dirty);
+  nassertv(!cycler->is_dirty());
 
   cycler->insert_before(&_clean);
+  ++_num_cyclers;
+
+#ifdef DEBUG_THREADS
+  inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
+#endif
+}
+#endif  // THREADED_PIPELINE
+
+#ifdef THREADED_PIPELINE
+/**
+ * Adds the indicated cycler to the list of cyclers associated with the
+ * pipeline.  This method only exists when true pipelining is configured on.
+ *
+ * If the dirty flag is true, it will be marked as dirty in addition, as though
+ * add_dirty_cycler() were called immediately afterward.
+ */
+void Pipeline::
+add_cycler(PipelineCyclerTrueImpl *cycler, bool dirty) {
+  // It's safe to add it to the list while cycling, since the _clean list is
+  // not touched during the cycle loop.
+  MutexHolder holder(_lock);
+  nassertv(!cycler->is_dirty());
+
+  if (!dirty) {
+    cycler->insert_before(&_clean);
+  }
+  else {
+    nassertv(_num_stages != 1);
+    cycler->insert_before(&_dirty);
+    cycler->mark_dirty(_next_cycle_seq);
+    ++_num_dirty_cyclers;
+
+#ifdef DEBUG_THREADS
+    inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), 1);
+#endif
+  }
   ++_num_cyclers;
 
 #ifdef DEBUG_THREADS
@@ -371,13 +407,13 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
   // It's safe to add it to the list while cycling, since it's not currently
   // on the dirty list.
   MutexHolder holder(_lock);
-  nassertv(!cycler->_dirty);
+  nassertv(!cycler->is_dirty());
   nassertv(_num_stages != 1);
 
   // Remove it from the "clean" list and add it to the "dirty" list.
   cycler->remove_from_list();
   cycler->insert_before(&_dirty);
-  cycler->_dirty = _next_cycle_seq;
+  cycler->mark_dirty(_next_cycle_seq);
   ++_num_dirty_cyclers;
 
 #ifdef DEBUG_THREADS
@@ -401,7 +437,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
   // careful not to cause a race condition.  It's safe for us to remove it
   // during cycle only if it's 0 (clean) or _next_cycle_seq (scheduled for the
   // next cycle, so not owned by the current one).
-  while (cycler->_dirty != 0 && cycler->_dirty != _next_cycle_seq) {
+  while (cycler->is_dirty(_next_cycle_seq)) {
     if (_cycle_lock.try_lock()) {
       // OK, great, we got the lock, so it finished cycling already.
       nassertv(!_cycling);
@@ -409,7 +445,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
       --_num_cyclers;
       cycler->remove_from_list();
 
-      cycler->_dirty = false;
+      cycler->clear_dirty();
       --_num_dirty_cyclers;
 
   #ifdef DEBUG_THREADS
@@ -438,8 +474,8 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
   inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), -1);
 #endif
 
-  if (cycler->_dirty) {
-    cycler->_dirty = 0;
+  if (cycler->is_dirty()) {
+    cycler->clear_dirty();
     --_num_dirty_cyclers;
 #ifdef DEBUG_THREADS
     inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);

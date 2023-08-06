@@ -11,8 +11,8 @@
  * @date 2010-02-17
  */
 
-#ifndef __BULLET_WHEEL_H__
-#define __BULLET_WHEEL_H__
+#ifndef BULLETWHEEL_H
+#define BULLETWHEEL_H
 
 #include "pandabase.h"
 
@@ -143,7 +143,7 @@ PUBLISHED:
 public:
   BulletWheel(btWheelInfo &info);
 
-  INLINE static BulletWheel empty();
+  static BulletWheel empty();
 
 private:
   btWheelInfo &_info;
@@ -151,4 +151,4 @@ private:
 
 #include "bulletWheel.I"
 
-#endif // __BULLET_WHEEL_H__
+#endif // BULLETWHEEL_H

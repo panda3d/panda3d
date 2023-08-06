@@ -25,7 +25,7 @@ class FactoryParams;
  * this node.  This is generally used only during development to help identify
  * bounding volume issues.
  */
-class EXPCL_PANDA_PGRAPH ShowBoundsEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH ShowBoundsEffect final : public RenderEffect {
 private:
   INLINE ShowBoundsEffect();
 

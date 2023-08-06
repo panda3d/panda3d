@@ -24,6 +24,9 @@ LoaderOptions::
 LoaderOptions(int flags) :
   _flags(flags),
   _texture_flags(0),
+  _texture_format(0),
+  _texture_compress(0),
+  _texture_quality(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -87,6 +90,7 @@ output(std::ostream &out) const {
   write_texture_flag(out, sep, "TF_allow_1d", TF_allow_1d);
   write_texture_flag(out, sep, "TF_generate_mipmaps", TF_generate_mipmaps);
   write_texture_flag(out, sep, "TF_allow_compression", TF_allow_compression);
+  write_texture_flag(out, sep, "TF_no_filters", TF_no_filters);
   if (sep.empty()) {
     out << "0";
   }

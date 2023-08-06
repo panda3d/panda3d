@@ -7,6 +7,7 @@ from direct.directnotify import DirectNotifyGlobal
 from . import ClassicFSM
 from . import State
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 
 class FourStateAI:
@@ -122,7 +123,7 @@ class FourStateAI:
                            self.enterState4,
                            self.exitState4,
                            [names[1]]),
-            }
+        }
         self.fsm = ClassicFSM.ClassicFSM('FourState',
                            list(self.states.values()),
                            # Initial State
@@ -143,6 +144,9 @@ class FourStateAI:
     def getState(self):
         assert self.__debugPrint("getState() returning %s"%(self.stateIndex,))
         return [self.stateIndex]
+
+    def sendUpdate(self, fieldName, args = [], sendToId = None):
+        raise NotImplementedError
 
     def sendState(self):
         assert self.__debugPrint("sendState()")
@@ -268,4 +272,3 @@ class FourStateAI:
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
                     id(self), self.stateIndex==4, message))
-

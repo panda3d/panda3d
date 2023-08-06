@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 #from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
-from .ConnectionRepository import *
+from direct.showbase.MessengerGlobal import messenger
+from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import ConfigVariableDouble, ConfigVariableInt, ConfigVariableBool
 
 ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS = 8.0
@@ -37,7 +41,7 @@ class AsyncRequest(DirectObject):
     will be called again when the new self.neededObjects is complete.  You
     may repeat this as necessary.
     """
-    _asyncRequests = {}
+    _asyncRequests: dict[int, AsyncRequest] = {}
 
     notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 
@@ -254,7 +258,8 @@ class AsyncRequest(DirectObject):
                         print("\n\nself.avatarId =", self.avatarId)
                     print("\nself.neededObjects =", self.neededObjects)
                     print("\ntimed out after %s seconds.\n\n"%(task.delayTime,))
-                    import pdb; pdb.set_trace()
+                    import pdb
+                    pdb.set_trace()
             self.delete()
             return Task.done
 
@@ -264,4 +269,4 @@ def cleanupAsyncRequests():
     """
     for asyncRequest in AsyncRequest._asyncRequests:
         asyncRequest.delete()
-    assert AsyncRequest._asyncRequests == {}
+    assert not AsyncRequest._asyncRequests

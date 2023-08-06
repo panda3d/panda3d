@@ -26,6 +26,7 @@
 #include "pmap.h"
 
 class PStatCollectorDef;
+class PStatGraph;
 class PStatServer;
 
 /**
@@ -40,15 +41,22 @@ class PStatMonitor : public ReferenceCount {
 public:
   // The following functions are primarily for use by internal classes to set
   // up the monitor.
-  PStatMonitor(PStatServer *server);
+  PStatMonitor(PStatServer *server = nullptr);
   virtual ~PStatMonitor();
 
-  void hello_from(const std::string &hostname, const std::string &progname);
+  void hello_from(const std::string &hostname, const std::string &progname,
+                  int pid);
   void bad_version(const std::string &hostname, const std::string &progname,
+                   int pid,
                    int client_major, int client_minor,
                    int server_major, int server_minor);
   void set_client_data(PStatClientData *client_data);
 
+  bool write(const Filename &fn) const;
+  bool read(const Filename &fn);
+
+  void open_default_graphs();
+  bool save_default_graphs() const;
 
   // The following functions are for use by user code to determine information
   // about the client data available.
@@ -59,14 +67,18 @@ public:
   INLINE const PStatClientData *get_client_data() const;
   INLINE std::string get_collector_name(int collector_index);
   const LRGBColor &get_collector_color(int collector_index);
+  void set_collector_color(int collector_index, const LRGBColor &color);
+  void clear_collector_color(int collector_index);
 
   INLINE bool is_client_known() const;
   INLINE std::string get_client_hostname() const;
   INLINE std::string get_client_progname() const;
+  INLINE int get_client_pid() const;
+  INLINE bool has_read_filename() const;
+  INLINE const Filename &get_read_filename() const;
 
   PStatView &get_view(int thread_index);
   PStatView &get_level_view(int collector_index, int thread_index);
-
 
   // The following virtual methods may be overridden by a derived monitor
   // class to customize behavior.
@@ -80,6 +92,7 @@ public:
   virtual void new_collector(int collector_index);
   virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);
+  virtual void remove_thread(int thread_index);
 
   virtual void lost_connection();
   virtual void idle();
@@ -88,6 +101,14 @@ public:
   virtual bool is_thread_safe();
 
   virtual void user_guide_bars_changed();
+
+  virtual PStatGraph *open_timeline();
+  virtual PStatGraph *open_strip_chart(int thread_index, int collector_index, bool show_level);
+  virtual PStatGraph *open_flame_graph(int thread_index, int collector_index = -1);
+  virtual PStatGraph *open_piano_roll(int thread_index);
+
+  void write_datagram(Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan);
 
 protected:
   PStatServer *_server;
@@ -98,6 +119,8 @@ private:
   bool _client_known;
   std::string _client_hostname;
   std::string _client_progname;
+  int _client_pid;
+  Filename _read_filename;
 
   typedef pmap<int, PStatView> Views;
   Views _views;
@@ -106,6 +129,13 @@ private:
 
   typedef pmap<int, LRGBColor> Colors;
   Colors _colors;
+
+public:
+  typedef pset<PStatGraph *> Graphs;
+  Graphs _timelines;
+  Graphs _strip_charts;
+  Graphs _flame_graphs;
+  Graphs _piano_rolls;
 };
 
 #include "pStatMonitor.I"

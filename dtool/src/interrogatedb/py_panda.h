@@ -35,12 +35,13 @@ using namespace std;
 #define IMPORT_THIS extern
 #endif
 
+struct Dtool_PyInstDef;
 struct Dtool_PyTypedObject;
 
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
-typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
+typedef PyObject *(*WrapFunction)(void *, PyTypeObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
 typedef void (*ModuleClassInitFunction)(PyObject *module);
 
@@ -78,7 +79,7 @@ struct Dtool_PyTypedObject {
   ModuleClassInitFunction _Dtool_ModuleClassInit;
 
   UpcastFunction _Dtool_UpcastInterface;    // The Upcast Function By Slot
-  DowncastFunction _Dtool_DowncastInterface; // The Downcast Function By Slot
+  WrapFunction _Dtool_WrapInterface; // The Downcast Function By Slot
 
   CoerceFunction _Dtool_ConstCoerce;
   CoerceFunction _Dtool_Coerce;
@@ -204,7 +205,7 @@ INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, i
 EXPCL_PYPANDA bool _Dtool_CheckErrorOccurred();
 
 #ifdef NDEBUG
-#define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != nullptr))
+#define Dtool_CheckErrorOccurred() (UNLIKELY(PyErr_Occurred() != nullptr))
 #else
 #define Dtool_CheckErrorOccurred() (UNLIKELY(_Dtool_CheckErrorOccurred()))
 #endif
@@ -231,8 +232,8 @@ EXPCL_PYPANDA PyObject *Dtool_Return_Bool(bool value);
 EXPCL_PYPANDA PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (LIKELY(_PyErr_OCCURRED() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
-#define Dtool_Return(value) (LIKELY(_PyErr_OCCURRED() == nullptr) ? value : nullptr)
+#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return(value) (LIKELY(PyErr_Occurred() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()
 #define Dtool_Return(value) _Dtool_Return(value)

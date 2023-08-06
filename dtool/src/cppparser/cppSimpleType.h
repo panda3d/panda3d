@@ -28,6 +28,7 @@ public:
     T_bool,
     T_char,
     T_wchar_t,
+    T_char8_t,
     T_char16_t,
     T_char32_t,
     T_int,
@@ -72,6 +73,7 @@ public:
   virtual bool is_fundamental() const;
   virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_trivially_copyable() const;
   virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;

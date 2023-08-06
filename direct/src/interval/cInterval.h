@@ -16,9 +16,10 @@
 
 #include "directbase.h"
 #include "typedReferenceCount.h"
-#include "pvector.h"
+#include "small_vector.h"
 #include "config_interval.h"
 #include "pStatCollector.h"
+#include "extension.h"
 
 class CIntervalManager;
 
@@ -120,6 +121,8 @@ PUBLISHED:
   bool step_play();
 
 PUBLISHED:
+  EXTENSION(PyObject *__await__(PyObject *self));
+
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(duration, get_duration);
   MAKE_PROPERTY(open_ended, get_open_ended);
@@ -175,7 +178,7 @@ private:
   // We keep a record of the "parent" intervals (that is, any CMetaInterval
   // objects that keep a pointer to this one) strictly so we can mark all of
   // our parents dirty when this interval gets dirty.
-  typedef pvector<CInterval *> Parents;
+  typedef small_vector<CInterval *> Parents;
   Parents _parents;
 
   static PStatCollector _root_pcollector;

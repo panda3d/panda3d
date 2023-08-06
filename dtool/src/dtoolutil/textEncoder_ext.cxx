@@ -22,26 +22,11 @@
 void Extension<TextEncoder>::
 set_text(PyObject *text) {
   if (PyUnicode_Check(text)) {
-#if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t len;
     const char *str = PyUnicode_AsUTF8AndSize(text, &len);
     _this->set_text(std::string(str, len), TextEncoder::E_utf8);
-#else
-    Py_ssize_t len = PyUnicode_GET_SIZE(text);
-    wchar_t *str = (wchar_t *)alloca(sizeof(wchar_t) * (len + 1));
-    PyUnicode_AsWideChar((PyUnicodeObject *)text, str, len);
-    _this->set_wtext(std::wstring(str, len));
-#endif
   } else {
-#if PY_MAJOR_VERSION >= 3
     Dtool_Raise_TypeError("expected string");
-#else
-    char *str;
-    Py_ssize_t len;
-    if (PyString_AsStringAndSize(text, (char **)&str, &len) != -1) {
-      _this->set_text(std::string(str, len));
-    }
-#endif
   }
 }
 
@@ -63,13 +48,8 @@ set_text(PyObject *text, TextEncoder::Encoding encoding) {
  */
 PyObject *Extension<TextEncoder>::
 get_text() const {
-#if PY_MAJOR_VERSION >= 3
   std::wstring text = _this->get_wtext();
   return PyUnicode_FromWideChar(text.data(), (Py_ssize_t)text.size());
-#else
-  std::string text = _this->get_text();
-  return PyString_FromStringAndSize((char *)text.data(), (Py_ssize_t)text.size());
-#endif
 }
 
 /**
@@ -78,11 +58,7 @@ get_text() const {
 PyObject *Extension<TextEncoder>::
 get_text(TextEncoder::Encoding encoding) const {
   std::string text = _this->get_text(encoding);
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)text.data(), (Py_ssize_t)text.size());
-#else
-  return PyString_FromStringAndSize((char *)text.data(), (Py_ssize_t)text.size());
-#endif
 }
 
 /**
@@ -91,7 +67,6 @@ get_text(TextEncoder::Encoding encoding) const {
 void Extension<TextEncoder>::
 append_text(PyObject *text) {
   if (PyUnicode_Check(text)) {
-#if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t len;
     const char *str = PyUnicode_AsUTF8AndSize(text, &len);
     std::string text_str(str, len);
@@ -100,22 +75,8 @@ append_text(PyObject *text) {
     } else {
       _this->append_wtext(TextEncoder::decode_text(text_str, TextEncoder::E_utf8));
     }
-#else
-    Py_ssize_t len = PyUnicode_GET_SIZE(text);
-    wchar_t *str = (wchar_t *)alloca(sizeof(wchar_t) * (len + 1));
-    PyUnicode_AsWideChar((PyUnicodeObject *)text, str, len);
-    _this->append_wtext(std::wstring(str, len));
-#endif
   } else {
-#if PY_MAJOR_VERSION >= 3
     Dtool_Raise_TypeError("expected string");
-#else
-    char *str;
-    Py_ssize_t len;
-    if (PyString_AsStringAndSize(text, (char **)&str, &len) != -1) {
-      _this->append_text(std::string(str, len));
-    }
-#endif
   }
 }
 
@@ -125,11 +86,7 @@ append_text(PyObject *text) {
 PyObject *Extension<TextEncoder>::
 encode_wchar(char32_t ch, TextEncoder::Encoding encoding) {
   std::string value = TextEncoder::encode_wchar(ch, encoding);
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
-#else
-  return PyString_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
-#endif
 }
 
 /**
@@ -139,11 +96,7 @@ encode_wchar(char32_t ch, TextEncoder::Encoding encoding) {
 PyObject *Extension<TextEncoder>::
 encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
   std::string value = TextEncoder::encode_wtext(wtext, encoding);
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
-#else
-  return PyString_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
-#endif
 }
 
 /**

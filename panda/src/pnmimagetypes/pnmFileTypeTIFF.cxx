@@ -292,7 +292,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeTIFF::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   install_error_handlers();
   return new Reader(this, file, owns_file, magic_number);
 }
@@ -304,7 +303,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypeTIFF::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   install_error_handlers();
   return new Writer(this, file, owns_file);
 }
@@ -1076,7 +1074,7 @@ write_data(xel *array, xelval *alpha) {
     break;
   }
 
-  buf = (unsigned char*) malloc( bytesperrow );
+  buf = (unsigned char*) alloca( bytesperrow );
   if ( buf == nullptr ) {
     pnmimage_tiff_cat.error()
       << "Can't allocate memory for row buffer\n";
@@ -1147,6 +1145,9 @@ write_data(xel *array, xelval *alpha) {
             pnmimage_tiff_cat.error()
               << "Internal error: color not found?!?  row=" << row
               << " col=" << col << "\n";
+            if (cht != nullptr) {
+              ppm_freecolorhash(cht);
+            }
             return 0;
           }
           *tP++ = (unsigned char) s;
@@ -1189,6 +1190,10 @@ write_data(xel *array, xelval *alpha) {
   }
   TIFFFlushData( tif );
   TIFFClose( tif );
+
+  if (cht != nullptr) {
+    ppm_freecolorhash(cht);
+  }
 
   return _y_size;
 }

@@ -99,7 +99,6 @@ private:
   LPoint3 _center;
   LPoint3 _min;
   LPoint3 _max;
-  PN_stdfloat _x, _y, _z, _radius;
   LPoint3 _vertex[8]; // Each of the Eight Vertices of the Box
   LPlane _planes[6]; //Points to each of the six sides of the Box
 
@@ -119,6 +118,7 @@ private:
 public:
   class PointDef {
   public:
+    PointDef() = default;
     INLINE PointDef(const LPoint2 &p, const LVector2 &v);
     INLINE PointDef(PN_stdfloat x, PN_stdfloat y);
     INLINE PointDef(const PointDef &copy);
@@ -134,24 +134,21 @@ public:
                     const Points &points) const;
 
   bool point_is_inside(const LPoint2 &p, const Points &points) const;
-  PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
+  PN_stdfloat dist_to_polygon(const LPoint2 &p, const PointDef *points, size_t num_points) const;
 
-  void setup_points(const LPoint3 *begin, const LPoint3 *end, int plane);
+  void setup_points(int plane);
   INLINE LPoint2 to_2d(const LVecBase3 &point3d, int plane) const;
   INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
-  INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
   INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
-  bool clip_polygon(Points &new_points, const Points &source_points,
-                    const LPlane &plane,int plane_no) const;
+  bool clip_polygon(Points &new_points, const PointDef *source_points,
+                    size_t num_source_points, const LPlane &plane,
+                    int plane_no) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
                         const TransformState *net_transform, int plane_no) const;
 
 private:
-  Points _points[6]; // one set of points for each of the six planes that make up the box
+  PointDef _points[6][4]; // one set of points for each of the six planes that make up the box
   LMatrix4 _to_2d_mat[6];
-
-public:
-  INLINE Points get_plane_points( int n );
 
 public:
   static void register_with_read_factory();

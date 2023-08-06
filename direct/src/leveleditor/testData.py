@@ -1,4 +1,5 @@
-from panda3d.core import *
+from panda3d.core import Point3, VBase3
+from direct.showbase.ShowBaseGlobal import base
 
 if hasattr(base, 'le'):
     objectMgr = base.le.objectMgr
@@ -6,7 +7,7 @@ if hasattr(base, 'le'):
     ui.sceneGraphUI.reset()
 
 else:
-    objectMgr = base.objectMgr
+    objectMgr = base.objectMgr  # type: ignore[attr-defined]
 # temporary place holder for nodepath
 objects = {}
 
@@ -68,5 +69,5 @@ if objects['1252623762.9gjeon']:
 
 if hasattr(base, 'le'):
     ui.layerEditorUI.reset()
-    ui.layerEditorUI.addLayerEntry('Layer1', 1 )
+    ui.layerEditorUI.addLayerEntry('Layer1', 1)
     ui.layerEditorUI.addLayerData(1, '1252538687.73gjeon')

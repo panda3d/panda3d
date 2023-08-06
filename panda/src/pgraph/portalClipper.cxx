@@ -147,7 +147,7 @@ draw_lines() {
     _created_data = nullptr;
 
     PT(GeomVertexData) vdata = new GeomVertexData
-      ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
+      ("portal", GeomVertexFormat::get_v3c(), Geom::UH_static);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     GeomVertexWriter color(vdata, InternalName::get_color());
 
@@ -208,6 +208,7 @@ prepare_portal(const NodePath &node_path)
   if (node->is_of_type(PortalNode::get_class_type())) {
     _portal_node = DCAST(PortalNode, node);
   }
+  nassertr(_portal_node != nullptr, false);
 
   // Get the geometry from the portal
   if (portal_cat.is_spam()) {

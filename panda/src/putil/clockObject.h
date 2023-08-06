@@ -27,13 +27,14 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "vector_double.h"  // needed to see exported allocators for pdeque
+#include "patomic.h"
 
 class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:
   INLINE TimeVal();
-  INLINE ulong get_sec() const;
-  INLINE ulong get_usec() const;
-  ulong tv[2];
+  INLINE unsigned long get_sec() const;
+  INLINE unsigned long get_usec() const;
+  unsigned long tv[2];
 };
 
 /**
@@ -172,7 +173,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
 
-  static AtomicAdjust::Pointer _global_clock;
+  static patomic<ClockObject *> _global_clock;
 
 public:
   static TypeHandle get_class_type() {

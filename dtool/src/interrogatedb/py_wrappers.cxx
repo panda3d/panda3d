@@ -30,7 +30,7 @@ static void _register_collection(PyTypeObject *type, const char *abc) {
 #endif
         PyObject *sequence = PyDict_GetItemString(dict, abc);
         if (sequence != nullptr) {
-          if (PyObject_CallMethodObjArgs(sequence, register_str, (PyObject *)type, nullptr) == nullptr) {
+          if (PyObject_CallMethodOneArg(sequence, register_str, (PyObject *)type) == nullptr) {
             PyErr_Print();
           }
         }
@@ -308,7 +308,7 @@ static PyObject *Dtool_MutableSequenceWrapper_pop(PyObject *self, PyObject *args
     break;
   case 1:
     index = PyNumber_AsSsize_t(PyTuple_GET_ITEM(args, 0), PyExc_IndexError);
-    if (index == -1 && _PyErr_OCCURRED()) {
+    if (index == -1 && PyErr_Occurred()) {
       return nullptr;
     }
     if (index < 0) {
@@ -361,7 +361,7 @@ static PyObject *Dtool_MutableSequenceWrapper_insert(PyObject *self, PyObject *a
     return Dtool_Raise_TypeError("insert() takes exactly 2 arguments");
   }
   Py_ssize_t index = PyNumber_AsSsize_t(PyTuple_GET_ITEM(args, 0), PyExc_IndexError);
-  if (index == -1 && _PyErr_OCCURRED()) {
+  if (index == -1 && PyErr_Occurred()) {
     return nullptr;
   }
   if (index < 0) {
@@ -371,7 +371,7 @@ static PyObject *Dtool_MutableSequenceWrapper_insert(PyObject *self, PyObject *a
       return PyErr_Format(PyExc_TypeError, "%s.insert() does not support negative indices", wrap->_base._name);
     }
   }
-  return wrap->_insert_func(wrap->_base._self, (ssize_t)std::max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
+  return wrap->_insert_func(wrap->_base._self, (size_t)std::max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
 }
 
 /**
@@ -420,8 +420,8 @@ static int Dtool_MappingWrapper_contains(PyObject *self, PyObject *key) {
   if (value != nullptr) {
     Py_DECREF(value);
     return 1;
-  } else if (_PyErr_OCCURRED() == PyExc_KeyError ||
-             _PyErr_OCCURRED() == PyExc_TypeError) {
+  } else if (PyErr_ExceptionMatches(PyExc_KeyError) ||
+             PyErr_ExceptionMatches(PyExc_TypeError)) {
     PyErr_Clear();
     return 0;
   } else {
@@ -479,7 +479,7 @@ static PyObject *Dtool_MappingWrapper_get(PyObject *self, PyObject *args) {
   PyObject *value = wrap->_getitem_func(wrap->_base._self, key);
   if (value != nullptr) {
     return value;
-  } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
+  } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
     Py_INCREF(defvalue);
     return defvalue;
@@ -943,7 +943,7 @@ static PyObject *Dtool_MutableMappingWrapper_pop(PyObject *self, PyObject *args)
       Py_DECREF(value);
       return nullptr;
     }
-  } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
+  } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
     Py_INCREF(defvalue);
     return defvalue;
@@ -1043,7 +1043,7 @@ static PyObject *Dtool_MutableMappingWrapper_setdefault(PyObject *self, PyObject
   PyObject *value = wrap->_getitem_func(wrap->_base._self, key);
   if (value != nullptr) {
     return value;
-  } else if (_PyErr_OCCURRED() == PyExc_KeyError) {
+  } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
     if (wrap->_setitem_func(wrap->_base._self, key, defvalue) == 0) {
       Py_INCREF(defvalue);

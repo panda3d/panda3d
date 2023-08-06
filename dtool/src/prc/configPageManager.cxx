@@ -97,6 +97,7 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
+#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -121,13 +122,13 @@ reload_implicit_pages() {
     const char *log_filename;
   };
 #ifdef _WIN32
-  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(nullptr), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
 #ifndef _WIN32
@@ -459,6 +460,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();
@@ -498,7 +500,6 @@ reload_implicit_pages() {
     SetErrorMode(SEM_FAILCRITICALERRORS);
   }
 #endif
-
 }
 
 /**
@@ -720,28 +721,7 @@ scan_up_from(Filename &result, const Filename &dir,
  */
 void ConfigPageManager::
 config_initialized() {
-  Notify::ptr()->config_initialized();
-
-#ifndef NDEBUG
-  ConfigVariableString panda_package_version
-    ("panda-package-version", "local_dev",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_version_str(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-  ConfigVariableString panda_package_host_url
-    ("panda-package-host-url", "",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_host_url(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-
-  PandaSystem *panda_sys = PandaSystem::get_global_ptr();
-  panda_sys->set_package_version_string(panda_package_version);
-  panda_sys->set_package_host_url(panda_package_host_url);
-#endif  // NDEBUG
+  Notify::config_initialized();
 
   // Also set up some other low-level things.
   ConfigVariableEnum<TextEncoder::Encoding> text_encoding

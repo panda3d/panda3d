@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Panda3D Stats Monitor
+GenericName=Profiling Tool
+Comment=Analyze performance of Panda3D applications
+TryExec=pstats
+Exec=pstats %f
+StartupNotify=true
+NoDisplay=false
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+MimeType=application/vnd.panda3d.pstats;

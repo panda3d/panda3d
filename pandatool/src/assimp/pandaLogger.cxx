@@ -43,6 +43,15 @@ void PandaLogger::OnDebug(const char *message) {
 /**
  *
  */
+void PandaLogger::OnVerboseDebug(const char *message) {
+  if (assimp_cat.is_spam()) {
+    assimp_cat.spam() << message << "\n";
+  }
+}
+
+/**
+ *
+ */
 void PandaLogger::OnError(const char *message) {
   assimp_cat.error() << message << "\n";
 }

@@ -13,6 +13,7 @@ set(P3DTOOLUTIL_HEADERS
   panda_getopt.h panda_getopt_long.h panda_getopt_impl.h
   pfstream.h pfstream.I pfstreamBuf.h
   preprocess_argv.h
+  small_vector.h small_vector.I
   string_utils.h string_utils.I
   stringDecoder.h stringDecoder.I
   textEncoder.h textEncoder.I
@@ -82,6 +83,8 @@ if(APPLE)
   find_library(FOUNDATION_LIBRARY Foundation)
   find_library(APPKIT_LIBRARY AppKit)
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
+
+  mark_as_advanced(FOUNDATION_LIBRARY APPKIT_LIBRARY)
 endif()
 
 # These are all used by executionEnvironment.cxx/filename.cxx

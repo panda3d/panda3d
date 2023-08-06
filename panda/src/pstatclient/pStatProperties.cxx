@@ -26,10 +26,12 @@
 using std::string;
 
 static const int current_pstat_major_version = 3;
-static const int current_pstat_minor_version = 0;
-// Initialized at 2.0 on 51801, when version numbers were first added.
-// Incremented to 2.1 on 52101 to add support for TCP frame data.  Incremented
-// to 3.0 on 42805 to bump TCP headers to 32 bits.
+static const int current_pstat_minor_version = 2;
+// Initialized at 2.0 on 5/18/01, when version numbers were first added.
+// Incremented to 2.1 on 5/21/01 to add support for TCP frame data.
+// Incremented to 3.0 on 4/28/05 to bump TCP headers to 32 bits.
+// Incremented to 3.1 on 11/29/22 to support nested start/stop pairs.
+// Incremented to 3.2 on 12/10/22 to use 32-bit data counts, T_expire_thread.
 
 /**
  * Returns the current major version number of the PStats protocol.  This is
@@ -108,14 +110,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
   { 1, "App:Collisions:Reset",             { 0.0, 0.0, 0.5 } },
   { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
-  { 1, "App:Show code",                    { 0.8, 0.2, 1.0 } },
-  { 0, "App:Show code:Nametags",           { 0.8, 0.8, 1.0 } },
-  { 0, "App:Show code:Nametags:2d",        { 0.0, 0.0, 0.5 } },
-  { 0, "App:Show code:Nametags:2d:Contents", { 0.0, 0.5, 0.0 } },
-  { 0, "App:Show code:Nametags:2d:Adjust",   { 0.5, 0.0, 0.5 } },
-  { 0, "App:Show code:Nametags:3d",        { 1.0, 0.0, 0.0 } },
-  { 0, "App:Show code:Nametags:3d:Contents", { 0.0, 0.5, 0.0 } },
-  { 0, "App:Show code:Nametags:3d:Adjust",   { 0.5, 0.0, 0.5 } },
+  { 1, "App:Tasks",                        { 0.8, 0.2, 1.0 } },
   { 1, "Cull",                             { 0.21, 0.68, 0.37 },  1.0 / 30.0 },
   { 1, "Cull:Setup",                       { 0.7, 0.4, 0.5 } },
   { 1, "Cull:Sort",                        { 0.3, 0.3, 0.6 } },
@@ -216,10 +211,10 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "RenderStates:Cached",              { 1.0, 0.0, 0.2 } },
   { 1, "RenderStates:Unused",              { 0.2, 0.2, 0.2 } },
   { 1, "PipelineCyclers",                  { 0.5, 0.5, 1.0 },  "", 50000 },
-  { 1, "Dirty PipelineCyclers",            { 0.2, 0.2, 0.2 },  "", 5000 },
+  { 1, "PipelineCyclers:Dirty",            { 0.2, 0.2, 0.2 },  "", 5000 },
   { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
   { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
-  { 1, "Command latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
+  { 1, "window1 latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
   { 0, nullptr }
 };
 

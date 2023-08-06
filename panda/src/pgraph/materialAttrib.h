@@ -24,7 +24,7 @@
  * material is used primarily to control lighting effects, and isn't necessary
  * (or useful) in the absence of lighting.
  */
-class EXPCL_PANDA_PGRAPH MaterialAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH MaterialAttrib final : public RenderAttrib {
 private:
   INLINE MaterialAttrib();
 

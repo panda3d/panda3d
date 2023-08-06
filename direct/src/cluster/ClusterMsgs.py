@@ -3,7 +3,7 @@
 # This module is intended to supply routines and dataformats common to
 # both ClusterClient and ClusterServer.
 
-from panda3d.core import *
+from panda3d.core import NetDatagram
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import time
@@ -31,18 +31,16 @@ CLUSTER_DAEMON_PORT = 8001
 CLUSTER_SERVER_PORT = 1970
 
 # Precede command string with ! to tell server to execute command string
-# NOTE: Had to stick with the import __builtin__ scheme, at startup,
-# __builtins__ is a module, not a dictionary, like it is inside of a module
 # Note, this startup string obviates the need to set any cluster related
 # config variables in the client Configrc files
 SERVER_STARTUP_STRING = (
     '!bash ppython -c ' +
-    '"import __builtin__; ' +
-    '__builtin__.clusterMode = \'server\';' +
-    '__builtin__.clusterServerPort = %s;' +
-    '__builtin__.clusterSyncFlag = %d;' +
-    '__builtin__.clusterDaemonClient = \'%s\';' +
-    '__builtin__.clusterDaemonPort = %d;'
+    '"import builtins; ' +
+    'builtins.clusterMode = \'server\';' +
+    'builtins.clusterServerPort = %s;' +
+    'builtins.clusterSyncFlag = %d;' +
+    'builtins.clusterDaemonClient = \'%s\';' +
+    'builtins.clusterDaemonPort = %d;'
     'from direct.directbase.DirectStart import *; run()"')
 
 class ClusterMsgHandler:
@@ -61,17 +59,17 @@ class ClusterMsgHandler:
         if qcr.dataAvailable():
             datagram = NetDatagram()
             if qcr.getData(datagram):
-                (dgi, type) = self.readHeader(datagram)
+                (dgi, dtype) = self.readHeader(datagram)
             else:
                 dgi = None
-                type = CLUSTER_NONE
+                dtype = CLUSTER_NONE
                 self.notify.warning("getData returned false")
         else:
             datagram = None
             dgi = None
-            type = CLUSTER_NONE
+            dtype = CLUSTER_NONE
         # Note, return datagram to keep a handle on the data
-        return (datagram, dgi, type)
+        return (datagram, dgi, dtype)
 
     def blockingRead(self, qcr):
         """
@@ -87,19 +85,19 @@ class ClusterMsgHandler:
         # Data is available, create a datagram iterator
         datagram = NetDatagram()
         if qcr.getData(datagram):
-            (dgi, type) = self.readHeader(datagram)
+            (dgi, dtype) = self.readHeader(datagram)
         else:
-            (dgi, type) = (None, CLUSTER_NONE)
+            (dgi, dtype) = (None, CLUSTER_NONE)
             self.notify.warning("getData returned false")
         # Note, return datagram to keep a handle on the data
-        return (datagram, dgi, type)
+        return (datagram, dgi, dtype)
 
     def readHeader(self, datagram):
         dgi = PyDatagramIterator(datagram)
         number = dgi.getUint32()
-        type = dgi.getUint8()
-        self.notify.debug("Packet %d type %d received" % (number, type))
-        return (dgi, type)
+        dtype = dgi.getUint8()
+        self.notify.debug("Packet %d type %d received" % (number, dtype))
+        return (dgi, dtype)
 
     def makeCamOffsetDatagram(self, xyz, hpr):
         datagram = PyDatagram()
@@ -300,12 +298,3 @@ class ClusterMsgHandler:
         dt=dgi.getFloat32()
         self.notify.debug('time data=%f %f' % (frameTime, dt))
         return (frameCount, frameTime, dt)
-
-
-
-
-
-
-
-
-

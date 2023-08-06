@@ -1124,7 +1124,9 @@ operator new(size_t size) {
  */
 INLINE void DCPacker::StackElement::
 operator delete(void *ptr) {
-  StackElement *obj = (StackElement *)ptr;
-  obj->_next = _deleted_chain;
-  _deleted_chain = obj;
+  if (ptr != nullptr) {
+    StackElement *obj = (StackElement *)ptr;
+    obj->_next = _deleted_chain;
+    _deleted_chain = obj;
+  }
 }

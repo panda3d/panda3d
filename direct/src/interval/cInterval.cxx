@@ -22,7 +22,7 @@
 using std::ostream;
 using std::string;
 
-PStatCollector CInterval::_root_pcollector("App:Show code:ivalLoop");
+PStatCollector CInterval::_root_pcollector("App:Tasks:ivalLoop");
 TypeHandle CInterval::_type_handle;
 
 static inline string
@@ -654,9 +654,8 @@ void CInterval::
 mark_dirty() {
   if (!_dirty) {
     _dirty = true;
-    Parents::iterator pi;
-    for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
-      (*pi)->mark_dirty();
+    for (CInterval *parent : _parents) {
+      parent->mark_dirty();
     }
   }
 }

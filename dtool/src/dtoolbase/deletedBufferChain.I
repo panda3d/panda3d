@@ -12,6 +12,34 @@
  */
 
 /**
+ * Use get_deleted_chain() to get a new DeletedBufferChain of the appropriate
+ * size.
+ */
+constexpr DeletedBufferChain::
+DeletedBufferChain(size_t buffer_size) : _buffer_size(buffer_size) {
+}
+
+/**
+ * Move constructor.
+ */
+INLINE DeletedBufferChain::
+DeletedBufferChain(DeletedBufferChain &&from) noexcept :
+  _deleted_chain(from._deleted_chain),
+  _buffer_size(from._buffer_size) {
+  from._deleted_chain = nullptr;
+}
+
+/**
+ * Copy constructor.
+ */
+INLINE DeletedBufferChain::
+DeletedBufferChain(const DeletedBufferChain &copy) :
+  _deleted_chain(nullptr),
+  _buffer_size(copy._buffer_size) {
+  assert(copy._deleted_chain == nullptr);
+}
+
+/**
  * Returns true if the pointer is valid, false if it has been deleted or if it
  * was never a valid pointer.
  *
@@ -27,7 +55,7 @@ validate(void *ptr) {
 
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   const ObjectNode *obj = buffer_to_node(ptr);
-  return AtomicAdjust::get(obj->_flag) == DCF_alive;
+  return obj->_flag.load(std::memory_order_relaxed) == DCF_alive;
 #else
   return true;
 #endif  // USE_DELETEDCHAINFLAG
@@ -39,6 +67,30 @@ validate(void *ptr) {
 INLINE size_t DeletedBufferChain::
 get_buffer_size() const {
   return _buffer_size;
+}
+
+/**
+ *
+ */
+INLINE bool DeletedBufferChain::
+operator < (const DeletedBufferChain &other) const {
+  return _buffer_size < other._buffer_size;
+}
+
+/**
+ * Returns a deleted chain of the given size.
+ */
+INLINE DeletedBufferChain *DeletedBufferChain::
+get_deleted_chain(size_t buffer_size) {
+  // We must allocate at least this much space for bookkeeping reasons.
+  buffer_size = (std::max)(buffer_size, sizeof(ObjectNode));
+
+  size_t index = ((buffer_size + sizeof(void *) - 1) / sizeof(void *)) - 1;
+  if (index < num_small_deleted_chains) {
+    return &_small_deleted_chains[index];
+  } else {
+    return get_large_deleted_chain((index + 1) * sizeof(void *));
+  }
 }
 
 /**

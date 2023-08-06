@@ -16,7 +16,7 @@
 #include "dataGraphTraverser.h"
 #include "mouseWatcherParameter.h"
 #include "mouseAndKeyboard.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "buttonEventList.h"
 #include "mouseButton.h"
 #include "throw_event.h"
@@ -575,7 +575,7 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
   // Now sort the regions by pointer.  By convention, the Regions vectors are
   // always kept in order by pointer, so we can do easy linear comparison and
   // intersection operations.
-  sort(regions.begin(), regions.end());
+  std::sort(regions.begin(), regions.end());
 }
 
 /**
@@ -724,22 +724,19 @@ clear_current_regions() {
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      old_region->exit_region(param);
-      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      without_region(old_region, param);
       ++old_ri;
     }
 
     _current_regions.clear();
 
     if (_preferred_region != nullptr) {
-      _preferred_region->exit_region(param);
-      throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+      exit_region(_preferred_region, param);
       _preferred_region = nullptr;
     }
   }
 }
 
-#ifndef NDEBUG
 /**
  * The protected implementation of show_regions().  This assumes the lock is
  * already held.
@@ -747,6 +744,7 @@ clear_current_regions() {
 void MouseWatcher::
 do_show_regions(const NodePath &render2d, const string &bin_name,
                 int draw_order) {
+#ifndef NDEBUG
   MouseWatcherBase::do_show_regions(render2d, bin_name, draw_order);
   _show_regions_render2d = render2d;
   _show_regions_bin_name = bin_name;
@@ -755,16 +753,16 @@ do_show_regions(const NodePath &render2d, const string &bin_name,
   for (MouseWatcherGroup *group : _groups) {
     group->show_regions(render2d, bin_name, draw_order);
   }
-}
 #endif  // NDEBUG
+}
 
-#ifndef NDEBUG
 /**
  * The protected implementation of hide_regions().  This assumes the lock is
  * already held.
  */
 void MouseWatcher::
 do_hide_regions() {
+#ifndef NDEBUG
   MouseWatcherBase::do_hide_regions();
   _show_regions_render2d = NodePath();
   _show_regions_bin_name = string();
@@ -773,8 +771,8 @@ do_hide_regions() {
   for (MouseWatcherGroup *group : _groups) {
     group->hide_regions();
   }
-}
 #endif  // NDEBUG
+}
 
 /**
  * Computes the list of regions that are in both regions_a and regions_b, as
@@ -987,9 +985,6 @@ release(ButtonHandle button) {
     // Button up.  Send the up event associated with the region(s) we were
     // over when the button went down.
 
-    // There is some danger of losing button-up events here.  If more than one
-    // button goes down together, we won't detect both of the button-up events
-    // properly.
     if (_preferred_button_down_region != nullptr) {
       param.set_outside(_preferred_button_down_region != _preferred_region);
       _preferred_button_down_region->release(param);
@@ -997,8 +992,22 @@ release(ButtonHandle button) {
                           _preferred_button_down_region, button);
     }
 
-    _button_down = false;
-    _preferred_button_down_region = nullptr;
+    // Do not stop capturing until the last mouse button has gone up.  This is
+    // needed to prevent stopping the capture until the capturing region has
+    // finished processing all the releases.
+    bool has_button = false;
+    for (size_t i = 0; i < MouseButton::num_mouse_buttons; ++i) {
+      if (MouseButton::_buttons[i] != button &&
+          _current_buttons_down.get_bit(MouseButton::_buttons[i].get_index())) {
+        has_button = true;
+      }
+    }
+
+    if (!has_button) {
+      // The last mouse button went up.
+      _button_down = false;
+      _preferred_button_down_region = nullptr;
+    }
 
   } else {
     // It's a keyboard button; therefore, send the event to every region that
@@ -1413,8 +1422,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_raw_down:
+        _current_raw_buttons_down.set_bit(be._button.get_index());
+        new_button_events.add_event(be);
+        break;
+
       case ButtonEvent::T_raw_up:
-        // These are passed through.
+        _current_raw_buttons_down.clear_bit(be._button.get_index());
         new_button_events.add_event(be);
         break;
       }

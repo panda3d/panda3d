@@ -1,7 +1,31 @@
-from panda3d.core import *
+from panda3d.core import (
+    BitArray,
+    ButtonThrower,
+    Camera,
+    CardMaker,
+    ConfigVariableInt,
+    FrameBufferProperties,
+    GraphicsOutput,
+    GraphicsPipe,
+    LineSegs,
+    Mat4,
+    MouseAndKeyboard,
+    MouseWatcher,
+    MouseWatcherRegion,
+    NodePath,
+    OrthographicLens,
+    PNMImage,
+    TextNode,
+    Texture,
+    TextureStage,
+    TransparencyAttrib,
+    WindowProperties,
+)
 from direct.showbase.DirectObject import DirectObject
+from direct.task.TaskManagerGlobal import taskMgr
 import math
 import copy
+
 
 class TexMemWatcher(DirectObject):
     """
@@ -327,7 +351,10 @@ class TexMemWatcher(DirectObject):
 
         if self.dynamicLimit:
             # Choose a suitable limit by rounding to the next power of two.
-            self.limit = Texture.upToPower2(self.totalSize)
+            limit = 1
+            while limit < self.totalSize:
+                limit *= 2
+            self.limit = limit
 
         # Set our GSG to limit itself to no more textures than we
         # expect to display onscreen, so we don't go crazy with
@@ -476,7 +503,7 @@ class TexMemWatcher(DirectObject):
         tnp = self.isolate.attachNewNode(tn)
         scale = 30.0 / wy
         tnp.setScale(scale * wy / wx, scale, scale)
-        tnp.setPos(render2d, 0, 0, -1 - tn.getBottom() * scale)
+        tnp.setPos(base.render2d, 0, 0, -1 - tn.getBottom() * scale)
 
         labelTop = tn.getHeight() * scale
 
@@ -729,8 +756,8 @@ class TexMemWatcher(DirectObject):
 
         # Sort the regions from largest to smallest to maximize
         # packing effectiveness.
-        texRecords = list(self.texRecordsByTex.values())
-        texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
+        texRecords = sorted(self.texRecordsByTex.values(),
+                            key=lambda tr: (tr.tw, tr.th), reverse=True)
 
         for tr in texRecords:
             self.placeTexture(tr)
@@ -883,7 +910,7 @@ class TexMemWatcher(DirectObject):
             matches.append((match, tp))
 
         if matches:
-            return max(matches)[1]
+            return max(matches, key=lambda match: match[0])[1]
         return None
 
     def findHolePieces(self, area):
@@ -937,7 +964,7 @@ class TexMemWatcher(DirectObject):
     def findLargestHole(self):
         holes = self.findAvailableHoles(0)
         if holes:
-            return max(holes)[1]
+            return max(holes, key=lambda hole: hole[0])[1]
         return None
 
     def findAvailableHoles(self, area, w = None, h = None):
@@ -975,8 +1002,8 @@ class TexMemWatcher(DirectObject):
                 while t < self.h and (self.bitmasks[t] & mask).isZero():
                     t += 1
 
-                tpw = (r - l)
-                tph = (t - b)
+                tpw = r - l
+                tph = t - b
                 tarea = tpw * tph
                 assert tarea > 0
                 if tarea >= area:
@@ -1204,10 +1231,9 @@ class TexRecord:
         self.root = root
 
         # Also, make one or more clickable MouseWatcherRegions.
-        assert self.regions == []
-        for pi in range(len(self.placements)):
-            p = self.placements[pi]
-            r = MouseWatcherRegion('%s:%s' % (self.key, pi), *p.p)
+        assert not self.regions
+        for pi, p in enumerate(self.placements):
+            r = MouseWatcherRegion(f'{self.key}:{pi}', *p.p)
             tmw.mw.addRegion(r)
             self.regions.append(r)
 

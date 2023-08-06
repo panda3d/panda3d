@@ -42,7 +42,6 @@ public:
   virtual void xform(const LMatrix4 &mat);
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
   virtual void output(std::ostream &out) const;
 

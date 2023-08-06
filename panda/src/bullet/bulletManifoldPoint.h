@@ -11,8 +11,8 @@
  * @date 2010-03-07
  */
 
-#ifndef __BULLET_MANIFOLD_POINT_H__
-#define __BULLET_MANIFOLD_POINT_H__
+#ifndef BULLETMANIFOLDPOINT_H
+#define BULLETMANIFOLDPOINT_H
 
 #include "pandabase.h"
 
@@ -27,7 +27,7 @@
 class EXPCL_PANDABULLET BulletManifoldPoint {
 
 PUBLISHED:
-  INLINE ~BulletManifoldPoint();
+  ~BulletManifoldPoint() = default;
 
   int get_life_time() const;
   PN_stdfloat get_distance() const;
@@ -95,8 +95,8 @@ PUBLISHED:
 public:
   BulletManifoldPoint(btManifoldPoint &pt);
 
-  BulletManifoldPoint(const BulletManifoldPoint &other);
-  BulletManifoldPoint& operator=(const BulletManifoldPoint& other);
+  BulletManifoldPoint(const BulletManifoldPoint &other) = default;
+  BulletManifoldPoint& operator=(const BulletManifoldPoint& other) = delete;
 
 private:
   btManifoldPoint &_pt;
@@ -104,4 +104,4 @@ private:
 
 #include "bulletManifoldPoint.I"
 
-#endif // __BULLET_MANIFOLD_POINT_H__
+#endif // BULLETMANIFOLDPOINT_H

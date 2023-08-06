@@ -111,6 +111,9 @@ def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
     shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
     assert shader is not None
 
+    if not gsg.supports_glsl:
+        expect_fail = True
+
     shader.prepare_now(gsg.prepared_objects, gsg)
     assert shader.is_prepared(gsg.prepared_objects)
     if expect_fail:
@@ -141,15 +144,77 @@ def test_glsl_sampler(gsg):
     tex2.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_rgba32)
     tex2.set_clear_color((1.0, 2.0, -3.14, 0.0))
 
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex3.set_clear_color((0.5, 0.0, 0.0, 1.0))
+
     preamble = """
     uniform sampler1D tex1;
     uniform sampler2D tex2;
+    uniform sampler3D tex3;
     """
     code = """
     assert(texelFetch(tex1, 0, 0) == vec4(0, 2 / 255.0, 1, 1));
     assert(texelFetch(tex2, ivec2(0, 0), 0) == vec4(1.0, 2.0, -3.14, 0.0));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == vec4(0.5, 0.0, 0.0, 1.0));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_isampler(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('bbbb', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('h', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('i', 5))
+
+    preamble = """
+    uniform isampler1D tex1;
+    uniform isampler2D tex2;
+    uniform isampler3D tex3;
+    """
+    code = """
+    assert(texelFetch(tex1, 0, 0) == ivec4(0, 1, 2, 3));
+    assert(texelFetch(tex2, ivec2(0, 0), 0) == ivec4(4, 0, 0, 1));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == ivec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_usampler(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('BBBB', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_unsigned_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('H', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_unsigned_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('I', 5))
+
+    preamble = """
+    uniform usampler1D tex1;
+    uniform usampler2D tex2;
+    uniform usampler3D tex3;
+    """
+    code = """
+    assert(texelFetch(tex1, 0, 0) == uvec4(0, 1, 2, 3));
+    assert(texelFetch(tex2, ivec2(0, 0), 0) == uvec4(4, 0, 0, 1));
+    assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == uvec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
 def test_glsl_image(gsg):
@@ -170,6 +235,62 @@ def test_glsl_image(gsg):
     assert(imageLoad(tex2, ivec2(0, 0)) == vec4(1.0, 2.0, -3.14, 0.0));
     """
     run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+
+
+def test_glsl_iimage(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('bbbb', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('h', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('i', 5))
+
+    preamble = """
+    layout(rgba8i) uniform iimage1D tex1;
+    layout(r16i) uniform iimage2D tex2;
+    layout(r32i) uniform iimage3D tex3;
+    """
+    code = """
+    assert(imageLoad(tex1, 0) == ivec4(0, 1, 2, 3));
+    assert(imageLoad(tex2, ivec2(0, 0)) == ivec4(4, 0, 0, 1));
+    assert(imageLoad(tex3, ivec3(0, 0, 0)) == ivec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_uimage(gsg):
+    from struct import pack
+
+    tex1 = core.Texture("")
+    tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8i)
+    tex1.set_ram_image(pack('BBBB', 0, 1, 2, 3))
+
+    tex2 = core.Texture("")
+    tex2.setup_2d_texture(1, 1, core.Texture.T_unsigned_short, core.Texture.F_r16i)
+    tex2.set_ram_image(pack('H', 4))
+
+    tex3 = core.Texture("")
+    tex3.setup_3d_texture(1, 1, 1, core.Texture.T_unsigned_int, core.Texture.F_r32i)
+    tex3.set_ram_image(pack('I', 5))
+
+    preamble = """
+    layout(rgba8ui) uniform uimage1D tex1;
+    layout(r16ui) uniform uimage2D tex2;
+    layout(r32ui) uniform uimage3D tex3;
+    """
+    code = """
+    assert(imageLoad(tex1, 0) == uvec4(0, 1, 2, 3));
+    assert(imageLoad(tex2, ivec2(0, 0)) == uvec4(4, 0, 0, 1));
+    assert(imageLoad(tex3, ivec3(0, 0, 0)) == uvec4(5, 0, 0, 1));
+    """
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
 def test_glsl_ssbo(gsg):
@@ -428,20 +549,57 @@ def test_glsl_write_extract_image_buffer(gsg):
 
 def test_glsl_compile_error(gsg):
     """Test getting compile errors from bad shaders"""
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=True)
 
 
 def test_glsl_from_file(gsg):
     """Test compiling GLSL shaders from files"""
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path)
 
 
 def test_glsl_includes(gsg):
     """Test preprocessing includes in GLSL shaders"""
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_include.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
+
+
+def test_glsl_includes_angle_nodir(gsg):
+    """Test preprocessing includes with angle includes without model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
+    assert core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path) is None
+
+
+@pytest.fixture
+def with_current_dir_on_model_path():
+    model_path = core.get_model_path()
+    model_path.prepend_directory(core.Filename.from_os_specific(os.path.dirname(__file__)))
+    yield
+    model_path.clear_local_value()
+
+
+def test_glsl_includes_angle_withdir(gsg, with_current_dir_on_model_path):
+    """Test preprocessing includes with angle includes with model-path"""
+    suffix = ''
+    if (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
+        suffix = '_legacy'
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path)

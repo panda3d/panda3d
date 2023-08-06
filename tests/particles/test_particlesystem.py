@@ -1,3 +1,6 @@
+import pytest
+pytest.importorskip("panda3d.physics")
+
 from panda3d.core import NodePath, PandaNode
 from direct.particles.ParticleEffect import ParticleEffect
 from direct.particles.Particles import Particles

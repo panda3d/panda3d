@@ -9,10 +9,11 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectRadioButton']
 
-from panda3d.core import *
+from panda3d.core import PGFrameStyle, VBase4
 from . import DirectGuiGlobals as DGG
-from .DirectButton import *
-from .DirectLabel import *
+from .DirectButton import DirectButton
+from .DirectLabel import DirectLabel
+
 
 class DirectRadioButton(DirectButton):
     """
@@ -20,6 +21,7 @@ class DirectRadioButton(DirectButton):
     to mouse clicks by setting given value to given variable and
     execute a callback function (passing that state through) if defined
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         # A Direct Frame can have:
@@ -54,7 +56,7 @@ class DirectRadioButton(DirectButton):
             ('boxImageScale', 1.0, None),
             ('boxImageColor', VBase4(1, 1, 1, 1), None),
             ('boxRelief', None, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
@@ -77,14 +79,14 @@ class DirectRadioButton(DirectButton):
         self.initialiseoptions(DirectRadioButton)
         # After initialization with X giving it the correct size, put back space
         if self['boxGeom'] is None:
-            if not 'boxRelief' in kw and self['boxImage'] is None:
+            if 'boxRelief' not in kw and self['boxImage'] is None:
                 self.indicator['relief'] = DGG.SUNKEN
             self.indicator['text'] = (' ', '*')
             self.indicator['text_pos'] = (0, -.25)
         else:
             self.indicator['text'] = (' ', ' ')
 
-        if self['boxGeomColor'] != None and self['boxGeom'] != None:
+        if self['boxGeomColor'] is not None and self['boxGeom'] is not None:
             self.colors = [VBase4(1, 1, 1, 0), self['boxGeomColor']]
             self.component('indicator')['geom_color'] = VBase4(1, 1, 1, 0)
 
@@ -120,7 +122,7 @@ class DirectRadioButton(DirectButton):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
@@ -160,8 +162,7 @@ class DirectRadioButton(DirectButton):
                     self.bounds[3] += indicatorHeight + (2*self['boxBorder'])
 
         # Set frame to new dimensions
-        if ((frameType != PGFrameStyle.TNone) and
-            (frameType != PGFrameStyle.TFlat)):
+        if frameType != PGFrameStyle.TNone and frameType != PGFrameStyle.TFlat:
             bw = self['borderWidth']
         else:
             bw = (0, 0)
@@ -195,7 +196,6 @@ class DirectRadioButton(DirectButton):
 
             self.indicator.setPos(newpos[0], newpos[1], newpos[2])
 
-
     def commandFunc(self, event):
         if len(self['value']) == len(self['variable']) != 0:
             for i in range(len(self['value'])):
@@ -219,10 +219,10 @@ class DirectRadioButton(DirectButton):
 
     def uncheck(self):
         self['indicatorValue'] = 0
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]
 
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]

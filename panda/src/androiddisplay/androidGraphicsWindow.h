@@ -71,6 +71,7 @@ private:
   EGLDisplay _egl_display;
   EGLSurface _egl_surface;
 
+  bool _primary_pointer_down;
   int32_t _mouse_button_state;
 
   GraphicsWindowInputDevice *_input;

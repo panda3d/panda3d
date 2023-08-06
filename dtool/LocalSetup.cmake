@@ -6,6 +6,7 @@
 # file based on the user's selected configure variables.
 #
 
+include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckIncludeFileCXX)
@@ -137,8 +138,18 @@ check_include_file_cxx(stdint.h PHAVE_STDINT_H)
 #set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
 # Do we have SSE2 support?
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-msse2 HAVE_SSE2)
+if(MSVC)
+  check_cxx_source_compiles("
+#if !defined(__SSE2__) && !defined(_M_X64) && !defined(_M_AMD64) && !defined(_M_IX86_FP)
+#error no
+#endif
+int main (int argc, char *argv[]) {
+  return 0;
+}
+" HAVE_SSE2)
+else()
+  check_cxx_compiler_flag(-msse2 HAVE_SSE2)
+endif()
 
 # Set LINK_ALL_STATIC if we're building everything as static libraries.
 # Also set the library type used for "modules" appropriately.
@@ -158,7 +169,9 @@ endif()
 show_packages()
 
 message("")
-if(INTERROGATE_PYTHON_INTERFACE)
+if(HAVE_PYTHON AND NOT PYTHON_FOUND)
+  message(SEND_ERROR "Configured Panda with Python bindings, but no Python library found.  Disable HAVE_PYTHON to continue.")
+elseif(INTERROGATE_PYTHON_INTERFACE)
   message("Compilation will generate Python interfaces for Python ${PYTHON_VERSION_STRING}.")
 else()
   message("Configuring Panda WITHOUT Python interfaces.")
@@ -186,11 +199,14 @@ message("")
 # Generate dtool_config.h
 if(IS_MULTICONFIG)
   foreach(config ${CMAKE_CONFIGURATION_TYPES})
-    foreach(option ${PER_CONFIG_OPTIONS})
+    string(TOUPPER "${config}" config_upper)
+    foreach(option ${_PER_CONFIG_OPTIONS})
       # Check for the presence of a config-specific option, and override what's
       # in the cache if there is.
-      if(DEFINED ${option}_${config})
-        set(${option} ${${option}_${config}})
+      if(DEFINED "${option}_${config_upper}")
+        set(${option} ${${option}_${config_upper}})
+      else()
+        message(FATAL_ERROR "${option}_${config_upper} is not defined")
       endif()
     endforeach(option)
 
@@ -199,7 +215,7 @@ if(IS_MULTICONFIG)
 
     # unset() does not unset CACHE variables by default, just normal variables.
     # By doing this we're reverting back to what was in the cache.
-    foreach(option ${PER_CONFIG_OPTIONS})
+    foreach(option ${_PER_CONFIG_OPTIONS})
       unset(${option})
     endforeach(option)
   endforeach(config)

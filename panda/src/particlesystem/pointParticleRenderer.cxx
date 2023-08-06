@@ -88,7 +88,7 @@ resize_pool(int new_size) {
 void PointParticleRenderer::
 init_geoms() {
   _vdata = new GeomVertexData
-    ("point_particles", GeomVertexFormat::get_v3cp(),
+    ("point_particles", GeomVertexFormat::get_v3c(),
      Geom::UH_stream);
   PT(Geom) geom = new Geom(_vdata);
   _point_primitive = geom;

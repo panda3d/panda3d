@@ -26,9 +26,10 @@
 #include "thread.h"
 #include "weakPointerTo.h"
 #include "vector_int.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 #include "numeric_types.h"
 #include "bitArray.h"
+#include "extension.h"
 
 class PStatClientImpl;
 class PStatCollector;
@@ -88,19 +89,21 @@ PUBLISHED:
   MAKE_PROPERTY(current_thread, get_current_thread);
   MAKE_PROPERTY(real_time, get_real_time);
 
-  INLINE static bool connect(const std::string &hostname = std::string(), int port = -1);
-  INLINE static void disconnect();
+  EXTEND INLINE static bool connect(const std::string &hostname = std::string(), int port = -1);
+  EXTEND INLINE static void disconnect();
   INLINE static bool is_connected();
 
   INLINE static void resume_after_pause();
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &sync_name);
 
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
-  bool client_connect(std::string hostname, int port);
-  void client_disconnect();
+  EXTEND bool client_connect(std::string hostname, int port);
+  EXTEND void client_disconnect();
   bool client_is_connected() const;
 
   void client_resume_after_pause();
@@ -127,6 +130,7 @@ private:
   void start(int collector_index, int thread_index, double as_of);
   void stop(int collector_index, int thread_index);
   void stop(int collector_index, int thread_index, double as_of);
+  void start_stop(int collector_index, int thread_index, double start, double stop);
 
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, double level);
@@ -147,6 +151,7 @@ private:
 
   virtual void deactivate_hook(Thread *thread);
   virtual void activate_hook(Thread *thread);
+  virtual void delete_hook(Thread *thread);
 
 private:
   // This mutex protects everything in this class.
@@ -195,9 +200,9 @@ private:
     PerThread _per_thread;
   };
   typedef Collector *CollectorPointer;
-  AtomicAdjust::Pointer _collectors;  // CollectorPointer *_collectors;
-  AtomicAdjust::Integer _collectors_size;  // size of the allocated array
-  AtomicAdjust::Integer _num_collectors;   // number of in-use elements within the array
+  patomic<CollectorPointer *> _collectors {nullptr};
+  size_t _collectors_size {0};  // size of the allocated array
+  patomic<int> _num_collectors {0};   // number of in-use elements within the array
 
   // This defines a single thread, i.e.  a separate chain of execution,
   // independent of all other threads.  Timing and level data are maintained
@@ -214,9 +219,10 @@ private:
     bool _is_active;
     int _frame_number;
     double _next_packet;
+    size_t _context_switches = 0;
+    size_t _involuntary_context_switches = 0;
 
     bool _thread_active;
-    BitArray _active_collectors;  // no longer used.
 
     // This mutex is used to protect writes to _frame_data for this particular
     // thread, as well as writes to the _per_thread data for this particular
@@ -224,9 +230,9 @@ private:
     LightMutex _thread_lock;
   };
   typedef InternalThread *ThreadPointer;
-  AtomicAdjust::Pointer _threads;  // ThreadPointer *_threads;
-  AtomicAdjust::Integer _threads_size;  // size of the allocated array
-  AtomicAdjust::Integer _num_threads;   // number of in-use elements within the array
+  patomic<ThreadPointer *> _threads {nullptr};
+  size_t _threads_size {0};  // size of the allocated array
+  patomic<int> _num_threads {0};   // number of in-use elements within the array
 
   mutable PStatClientImpl *_impl;
 
@@ -254,6 +260,8 @@ private:
   friend class PStatThread;
   friend class PStatClientImpl;
   friend class GraphicsStateGuardian;
+
+  friend class Extension<PStatClient>;
 };
 
 #include "pStatClient.I"
@@ -292,10 +300,12 @@ PUBLISHED:
   INLINE static void resume_after_pause() { }
 
   static void main_tick();
+  static void thread_tick();
   static void thread_tick(const std::string &);
 
 public:
   void client_main_tick();
+  void client_thread_tick();
   void client_thread_tick(const std::string &sync_name);
   bool client_connect(std::string hostname, int port);
   void client_disconnect();
@@ -318,6 +328,7 @@ private:
   void start(int collector_index, int thread_index, double as_of);
   void stop(int collector_index, int thread_index);
   void stop(int collector_index, int thread_index, double as_of);
+  void start_stop(int collector_index, int thread_index, double start, double stop);
 
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, double level);

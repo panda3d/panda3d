@@ -548,11 +548,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // For now, read in a linear list of the modes we will assign to each
   // associated TextureStage pointer.  Later, in complete_pointers, we'll fill
   // up the map the with appropriate TextureStageMode pairing.
-  _read_modes.clear();
-  _read_modes.reserve(num_stages);
+  _read_modes.resize(num_stages);
   for (size_t i = 0; i < num_stages; i++) {
     manager->read_pointer(scan);
     Mode mode = (Mode)scan.get_uint8();
-    _read_modes.push_back(mode);
+    _read_modes[i] = mode;
   }
 }

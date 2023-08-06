@@ -68,7 +68,7 @@ PUBLISHED:
                                      const FLOATNAME(LVecBase3) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix3));
 
-  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
 
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(
@@ -90,8 +90,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3) get_col(int col) const;
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
-  MAKE_SEQ_PROPERTY(rows, size, get_row);
-  MAKE_SEQ_PROPERTY(cols, size, get_col);
+  MAKE_SEQ_PROPERTY(rows, size, get_row, set_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col, set_col);
 
   INLINE_LINMATH FLOATNAME(LVecBase2) get_row2(int row) const;
   INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;
@@ -182,6 +182,8 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
+
+  EXTENSION(INLINE_LINMATH FLOATNAME(LMatrix3) __rmul__(FLOATTYPE scalar) const);
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix3) &other);
 

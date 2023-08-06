@@ -20,8 +20,23 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
-from panda3d.core import *
+from direct.task.TaskManagerGlobal import taskMgr
+from panda3d.core import (
+    BitMask32,
+    ClockObject,
+    CollisionHandlerFloor,
+    CollisionHandlerPusher,
+    CollisionNode,
+    CollisionRay,
+    CollisionSphere,
+    CollisionTraverser,
+    ConfigVariableBool,
+    Mat3,
+    Point3,
+    Vec3,
+)
 
 class NonPhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("NonPhysicsWalker")
@@ -184,7 +199,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
-        tempCTrav.traverse(render)
+        tempCTrav.traverse(base.render)
 
     def addBlastForce(self, vector):
         pass
@@ -268,12 +283,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         else:
             self.vel.set(0.0, 0.0, 0.0)
 
-        self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
+        self.__oldPosDelta = self.avatarNodePath.getPosDelta(base.render)
         self.__oldDt = dt
 
-        try:
-            self.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
-        except:
+        if self.__oldDt != 0:
+            self.worldVelocity = self.__oldPosDelta * (1 / self.__oldDt)
+        else:
             # divide by zero
             self.worldVelocity = 0
 

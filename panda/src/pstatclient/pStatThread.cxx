@@ -24,9 +24,9 @@
  * threads with the indicated sync name.
  */
 void PStatThread::
-new_frame() {
+new_frame(int frame_number) {
 #ifdef DO_PSTATS
-  _client->get_impl()->new_frame(_index);
+  _client->get_impl()->new_frame(_index, frame_number);
 #endif
 }
 
@@ -35,9 +35,9 @@ new_frame() {
  * data to send for this frame.
  */
 void PStatThread::
-add_frame(const PStatFrameData &frame_data) {
+add_frame(int frame_number, PStatFrameData &&frame_data) {
 #ifdef DO_PSTATS
-  _client->get_impl()->add_frame(_index, frame_data);
+  _client->get_impl()->add_frame(_index, frame_number, std::move(frame_data));
 #endif
 }
 

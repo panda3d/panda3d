@@ -12,6 +12,14 @@
  */
 
 /**
+ * Returns the particular thread whose data this piano roll reflects.
+ */
+INLINE int PStatPianoRoll::
+get_thread_index() const {
+  return _thread_index;
+}
+
+/**
  * Changes the amount of time the width of the horizontal axis represents.
  * This may force a redraw.
  */

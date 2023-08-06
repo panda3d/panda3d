@@ -8,13 +8,8 @@ from direct.showbase.ShowBase import ShowBase
 ShowBase()
 
 from direct.showbase.TkGlobal import spawnTkLoop
-
-if sys.version_info >= (3, 0):
-    from tkinter import *
-    from tkinter.filedialog import *
-else:
-    from Tkinter import *
-    from tkFileDialog import *
+from tkinter import *
+from tkinter.filedialog import *
 
 from direct.directtools.DirectGlobals import *
 from direct.tkwidgets.AppShell import*
@@ -36,17 +31,12 @@ from seBlendAnimPanel import *
 from controllerWindow import *
 from AlignTool import *
 
-
-
-import os
-import string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.actor import Actor
 import seAnimPanel
 from direct.task import Task
-import math
 
 #################################################################
 # All scene and windows object will be stored in here.

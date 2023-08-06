@@ -3,7 +3,7 @@
 
 This document describes the different kinds of model flags one can place in
 the comment field of MultiGen group beads.  The general format for a model
-flag is: 
+flag is:
                        <egg> { <FLAGNAME> {value} }
 
 The most up-to-date version of this document can be found in:
@@ -30,7 +30,7 @@ The most up-to-date version of this document can be found in:
 <egg> { <ObjectType> {camera-barrier} }      Invisible collision surface for camera and colliders
 <egg> { <ObjectType> {camera-barrier-sphere} }     Invisible sphere collision surface for camera and colliders
 <egg> { <ObjectType> {backstage} }  Modeling reference object
-<egg> { <Decal>      {1} }          Decal the node below to me 
+<egg> { <Decal>      {1} }          Decal the node below to me
                                     (like a window on a wall)
 <egg> { <Scalar> fps { # } }        Set rate of animation for a pfSequence
 
@@ -52,12 +52,12 @@ common flag/value pairs and describes what they are used for.
    which one places the flag (so names like red-hut are more useful than
    names like o34).
 
-<egg> { <Model> {1} }   
+<egg> { <Model> {1} }
 
-   Used to show/hide, change the color, or change the collision properties 
+   Used to show/hide, change the color, or change the collision properties
    of a chunk.
 
-<egg> { <DCS> {1} }     
+<egg> { <DCS> {1} }
 
    Used to move, rotate, or scale a chunk of the model.  Also can be used
    (like the <Model> flag) to show/hide, change the color, and change the
@@ -91,7 +91,7 @@ common flag/value pairs and describes what they are used for.
          a door, for example, so the player can tell when the avatar has
          moved through the door.
       -  BACKSTAGE objects are not translated over to the player.  Modelers
-         should use this flag on reference objects that they include to help 
+         should use this flag on reference objects that they include to help
          in the modeling task (such as scale references)
 
    IMPORTANT NOTE:
@@ -108,7 +108,7 @@ common flag/value pairs and describes what they are used for.
 
                      ********** PROPERTIES **********
 
-These are used to control properties of selected chunks. 
+These are used to control properties of selected chunks.
 
 <egg> { <Scalar> fps { frame-rate } }
 
@@ -124,7 +124,7 @@ These are used to control properties of selected chunks.
    Multiple Flag/value pairs can be combined within an single <egg> field.
    For example:
 
-   <egg> { <Model> {1}  
+   <egg> { <Model> {1}
            <ObjectType> {barrier} }
 
    Generally, the <Model> flag can be combined with most other flags
@@ -134,7 +134,7 @@ These are used to control properties of selected chunks.
    could also be written as:
 
    <egg>{<model>{1}<objecttype>{barrier}}
-         
+
 3) Where to place the flags
 
    All model flags except <Normal> flags are generally placed in the
@@ -154,6 +154,6 @@ These are used to control properties of selected chunks.
 4) Flags at different levels in the model
 
    Flags in lower level beads generally override flags in upper level
-   beads. 
+   beads.
 
 5) For more detailed information see $PANDA/src/doc/eggSyntax.txt.

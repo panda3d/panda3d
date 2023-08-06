@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_DEBUG_NODE_H__
-#define __BULLET_DEBUG_NODE_H__
+#ifndef BULLETDEBUGNODE_H
+#define BULLETDEBUGNODE_H
 
 #include "pandabase.h"
 
@@ -55,7 +55,6 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
@@ -151,4 +150,4 @@ private:
 
 #include "bulletDebugNode.I"
 
-#endif // __BULLET_DEBUG_NODE_H__
+#endif // BULLETDEBUGNODE_H

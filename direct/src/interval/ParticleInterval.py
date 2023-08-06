@@ -4,8 +4,7 @@ Contains the ParticleInterval class
 
 __all__ = ['ParticleInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.direct import CInterval
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from .Interval import Interval
 
@@ -55,13 +54,13 @@ class ParticleInterval(Interval):
         # Generate unique name
         id = 'Particle-%d' % ParticleInterval.particleNum
         ParticleInterval.particleNum += 1
-        if name == None:
+        if name is None:
             name = id
         # Record instance variables
         self.particleEffect = particleEffect
         self.cleanup = cleanup
 
-        if parent != None:
+        if parent is not None:
             self.particleEffect.reparentTo(parent)
         if worldRelative:
             renderParent = render
@@ -132,4 +131,3 @@ class ParticleInterval(Interval):
         if self.cleanup and self.particleEffect:
             self.particleEffect.cleanup()
             self.particleEffect = None
-

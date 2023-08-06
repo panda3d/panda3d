@@ -6,15 +6,17 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectButton']
 
-from panda3d.core import *
+from panda3d.core import Mat4, MouseButton, PGButton
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
+from .DirectFrame import DirectFrame
+
 
 class DirectButton(DirectFrame):
     """
     DirectButton(parent) - Create a DirectGuiWidget which responds
     to mouse clicks and execute a callback function if defined
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
@@ -45,7 +47,7 @@ class DirectButton(DirectFrame):
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,         DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -126,5 +128,3 @@ class DirectButton(DirectFrame):
             self.guiItem.setSound(DGG.ENTER + self.guiId, rolloverSound)
         else:
             self.guiItem.clearSound(DGG.ENTER + self.guiId)
-
-

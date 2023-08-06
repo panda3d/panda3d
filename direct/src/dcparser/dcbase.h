@@ -70,6 +70,7 @@
 #define BEGIN_PUBLISH
 #define END_PUBLISH
 #define BLOCKING
+#define EXTENSION(x)
 
 // These control the declspec(dllexport/dllimport) on Windows.  When compiling
 // outside of Panda, we assume we aren't part of a DLL.
@@ -100,6 +101,7 @@ typedef std::string Filename;
 #define pmap std::map
 #define pset std::set
 #define vector_uchar std::vector<unsigned char>
+#define patof(x) atof(x)
 
 #include <stdint.h>
 #include <string.h>

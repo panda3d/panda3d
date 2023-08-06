@@ -23,7 +23,7 @@
 CPPExtensionType::
 CPPExtensionType(CPPExtensionType::Type type,
                  CPPIdentifier *ident, CPPScope *current_scope,
-                 const CPPFile &file) :
+                 const CPPFile &file, CPPAttributeList attr) :
   CPPType(file),
   _type(type), _ident(ident),
   _alignment(nullptr)
@@ -31,6 +31,7 @@ CPPExtensionType(CPPExtensionType::Type type,
   if (_ident != nullptr) {
     _ident->_native_scope = current_scope;
   }
+  _attributes = std::move(attr);
 }
 
 /**
@@ -100,6 +101,14 @@ is_standard_layout() const {
  */
 bool CPPExtensionType::
 is_trivial() const {
+  return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
+}
+
+/**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPExtensionType::
+is_trivially_copyable() const {
   return (_type == T_enum || _type == T_enum_class || _type == T_enum_struct);
 }
 
@@ -214,6 +223,9 @@ output(std::ostream &out, int, CPPScope *scope, bool complete) const {
     // If we have a name, use it.
     if (complete || cppparser_output_class_keyword) {
       out << _type << " ";
+    }
+    if (complete && !_attributes.is_empty()) {
+      out << _attributes << " ";
     }
     out << _ident->get_local_name(scope);
 

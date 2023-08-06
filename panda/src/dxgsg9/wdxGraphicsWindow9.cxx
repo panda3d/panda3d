@@ -261,7 +261,7 @@ open_window() {
   static ConfigVariableBool always_discard_device("always-discard-device", true);
   bool discard_device = always_discard_device;
 
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     _dxgsg = new DXGraphicsStateGuardian9(_engine, _pipe);
     _gsg = _dxgsg;
   } else {

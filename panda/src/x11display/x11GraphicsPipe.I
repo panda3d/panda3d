@@ -58,6 +58,15 @@ get_hidden_cursor() {
 }
 
 /**
+ * Returns the startup id that may have been passed by the environment variable
+ * DESKTOP_STARTUP_ID.
+ */
+INLINE const std::string &x11GraphicsPipe::
+get_startup_id() const {
+  return _startup_id;
+}
+
+/**
  * Returns true if a form of relative mouse mode is supported on this display.
  */
 INLINE bool x11GraphicsPipe::

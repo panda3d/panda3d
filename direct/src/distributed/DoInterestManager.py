@@ -7,15 +7,24 @@ zone, remove interest in that zone.
 p.s. A great deal of this code is just code moved from ClientRepository.py.
 """
 
-from panda3d.core import *
-from panda3d.direct import *
-from .MsgTypes import *
-from direct.showbase.PythonUtil import *
+from __future__ import annotations
+
+from panda3d.core import ConfigVariableBool
+from .MsgTypes import CLIENT_ADD_INTEREST, CLIENT_ADD_INTEREST_MULTIPLE, CLIENT_REMOVE_INTEREST
 from direct.showbase import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from .PyDatagram import PyDatagram
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import types
-from direct.showbase.PythonUtil import report
+from direct.showbase.PythonUtil import (
+    FrameDelayedCall,
+    ScratchPad,
+    SerialNumGen,
+    report,
+    serialNum,
+    uniqueElements,
+    uniqueName,
+)
 
 class InterestState:
     StateActive = 'Active'
@@ -91,9 +100,9 @@ class DoInterestManager(DirectObject.DirectObject):
     _ContextIdSerialNum = 100
     _ContextIdMask = 0x3FFFFFFF # avoid making Python create a long
 
-    _interests = {}
+    _interests: dict[int, InterestState] = {}
     if __debug__:
-        _debug_interestHistory = []
+        _debug_interestHistory: list[tuple] = []
         _debug_maxDescriptionLen = 40
 
     _SerialGen = SerialNumGen()
@@ -156,7 +165,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         handle = self._getNextHandle()
-        # print 'base.cr.addInterest(',description,',',handle,'):',globalClock.getFrameCount()
+        # print 'base.cr.addInterest(',description,',',handle,'):',base.clock.getFrameCount()
         if self._noNewInterests:
             DoInterestManager.notify.warning(
                 "addInterest: addingInterests on delete: %s" % (handle))
@@ -228,7 +237,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         Stop looking in a (set of) zone(s)
         """
-        # print 'base.cr.removeInterest(',handle,'):',globalClock.getFrameCount()
+        # print 'base.cr.removeInterest(',handle,'):',base.clock.getFrameCount()
 
         assert DoInterestManager.notify.debugCall()
         assert isinstance(handle, InterestHandle)
@@ -375,7 +384,7 @@ class DoInterestManager(DirectObject.DirectObject):
             return
         autoInterests = obj.getAutoInterests()
         obj._autoInterestHandle = None
-        if not len(autoInterests):
+        if len(autoInterests) == 0:
             return
         obj._autoInterestHandle = self.addAutoInterest(obj.doId, autoInterests, '%s-autoInterest' % obj.__class__.__name__)
     def closeAutoInterests(self, obj):
@@ -505,8 +514,7 @@ class DoInterestManager(DirectObject.DirectObject):
         datagram = PyDatagram()
         # Add message type
         if isinstance(zoneIdList, list):
-            vzl = list(zoneIdList)
-            vzl.sort()
+            vzl = sorted(zoneIdList)
             uniqueElements(vzl)
             datagram.addUint16(CLIENT_ADD_INTEREST_MULTIPLE)
             datagram.addUint32(contextId)
@@ -566,7 +574,7 @@ class DoInterestManager(DirectObject.DirectObject):
         def checkMoreInterests():
             # if there are new interests, cancel this delayed callback, another
             # will automatically be scheduled when all interests complete
-            # print 'checkMoreInterests(',self._completeEventCount.num,'):',globalClock.getFrameCount()
+            # print 'checkMoreInterests(',self._completeEventCount.num,'):',base.clock.getFrameCount()
             return self._completeEventCount.num > 0
         def sendEvent():
             messenger.send(self.getAllInterestsCompleteEvent())
@@ -626,6 +634,7 @@ class DoInterestManager(DirectObject.DirectObject):
 
 if __debug__:
     import unittest
+    import time
 
     class AsyncTestCase(unittest.TestCase):
         def setCompleted(self):
@@ -640,7 +649,7 @@ if __debug__:
         suiteClass = AsyncTestSuite
 
     class AsyncTextTestRunner(unittest.TextTestRunner):
-        def run(self, testCase):
+        def run(self, test):
             result = self._makeResult()
             startTime = time.time()
             test(result)
@@ -658,7 +667,8 @@ if __debug__:
                 if failed:
                     self.stream.write("failures=%d" % failed)
                 if errored:
-                    if failed: self.stream.write(", ")
+                    if failed:
+                        self.stream.write(", ")
                     self.stream.write("errors=%d" % errored)
                 self.stream.writeln(")")
             else:

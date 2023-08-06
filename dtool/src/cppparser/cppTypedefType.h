@@ -28,7 +28,8 @@ class CPPInstanceIdentifier;
 class CPPTypedefType : public CPPType {
 public:
   CPPTypedefType(CPPType *type, const std::string &name, CPPScope *current_scope);
-  CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope);
+  CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope,
+                 CPPAttributeList attr = CPPAttributeList());
   CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
                  CPPScope *current_scope, const CPPFile &file);
 
@@ -45,6 +46,7 @@ public:
   virtual bool is_fundamental() const;
   virtual bool is_standard_layout() const;
   virtual bool is_trivial() const;
+  virtual bool is_trivially_copyable() const;
   virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;

@@ -15,10 +15,10 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "httpChannel.h"
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include <openssl/ssl.h>
-#include <openssl/md5.h>
+#include "hashVal.h"
+#include "string_utils.h"
+#include "urlSpec.h"
+
 #include <time.h>
 
 using std::ostream;
@@ -50,7 +50,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
   _algorithm = A_md5;
   ti = tokens.find("algorithm");
   if (ti != tokens.end()) {
-    string algo_str = HTTPChannel::downcase((*ti).second);
+    string algo_str = downcase((*ti).second);
     if (algo_str == "md5") {
       _algorithm = A_md5;
     } else if (algo_str == "md5-sess") {
@@ -63,7 +63,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
   _qop = 0;
   ti = tokens.find("qop");
   if (ti != tokens.end()) {
-    string qop_str = HTTPChannel::downcase((*ti).second);
+    string qop_str = downcase((*ti).second);
     // A comma-delimited list of tokens.
 
     size_t p = 0;
@@ -291,19 +291,9 @@ get_hex_nonce_count() const {
  */
 string HTTPDigestAuthorization::
 calc_md5(const string &source) {
-  unsigned char binary[MD5_DIGEST_LENGTH];
-
-  MD5((const unsigned char *)source.data(), source.length(), binary);
-
-  string result;
-  result.reserve(MD5_DIGEST_LENGTH * 2);
-
-  for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-    result += hexdigit((binary[i] >> 4) & 0xf);
-    result += hexdigit(binary[i] & 0xf);
-  }
-
-  return result;
+  HashVal hv;
+  hv.hash_string(source);
+  return hv.as_hex();
 }
 
 ostream &

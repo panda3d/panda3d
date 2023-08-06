@@ -80,11 +80,7 @@ INLINE void set_matrix_view(Py_buffer &view, int flags, int length, int size, bo
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
-#if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(source)) {
-#else
-  if (PyString_CheckExact(source)) {
-#endif
     // It's a byte sequence, or any object that exports the buffer protocol.
     this->set_data(source);
     return;
@@ -158,11 +154,7 @@ __setitem__(size_t n, const Element &value) {
 template<class Element>
 INLINE PyObject *Extension<PointerToArray<Element> >::
 get_data() const {
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
-#else
-  return PyString_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
-#endif
 }
 
 /**
@@ -175,7 +167,6 @@ get_data() const {
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 set_data(PyObject *data) {
-#if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(data)) {
     // User passed a buffer object.
     Py_buffer view;
@@ -208,33 +199,6 @@ set_data(PyObject *data) {
     PyBuffer_Release(&view);
     return;
   }
-#endif
-
-  // In Python 2, there was also an older buffer protocol, supported by eg.
-  // str and array objects.
-#if PY_MAJOR_VERSION < 3
-  // The old, deprecated buffer interface, as used by eg. the array module.
-  const void *buffer;
-  Py_ssize_t buffer_len;
-  if (!PyUnicode_CheckExact(data) &&
-      PyObject_AsReadBuffer(data, &buffer, &buffer_len) == 0) {
-    if (buffer_len % sizeof(Element) != 0) {
-      PyErr_Format(PyExc_ValueError,
-                   "byte buffer is not a multiple of %zu bytes",
-                   sizeof(Element));
-      return;
-    }
-
-    if (buffer_len > 0) {
-      this->_this->resize(buffer_len / sizeof(Element));
-      memcpy(this->_this->p(), buffer, buffer_len);
-    } else {
-      this->_this->clear();
-    }
-
-    return;
-  }
-#endif
 
   Dtool_Raise_TypeError("PointerToArray.set_data() requires a buffer object");
 }
@@ -249,14 +213,29 @@ set_data(PyObject *data) {
 template<class Element>
 INLINE PyObject *Extension<PointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
-#if PY_MAJOR_VERSION >= 3
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
-#else
-  return PyString_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
-#endif
+}
+
+/**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<PointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (this->_this->is_null()) {
+    return Py_BuildValue("O()", Py_TYPE(self));
+  }
+  else if (this->_this->empty()) {
+    return Py_BuildValue("O(())", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**
@@ -277,11 +256,7 @@ __getitem__(size_t n) const {
 template<class Element>
 INLINE PyObject *Extension<ConstPointerToArray<Element> >::
 get_data() const {
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
-#else
-  return PyString_FromStringAndSize((char *)this->_this->p(), sizeof(Element) * this->_this->size());
-#endif
 }
 
 /**
@@ -294,14 +269,26 @@ get_data() const {
 template<class Element>
 INLINE PyObject *Extension<ConstPointerToArray<Element> >::
 get_subdata(size_t n, size_t count) const {
-  n = std::min(n, this->_this->size());
-  count = std::max(count, n);
-  count = std::min(count, this->_this->size() - n);
-#if PY_MAJOR_VERSION >= 3
+  n = (std::min)(n, this->_this->size());
+  count = (std::max)(count, n);
+  count = (std::min)(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
-#else
-  return PyString_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
-#endif
+}
+
+/**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<ConstPointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (!this->_this->is_null() && this->_this->empty()) {
+    return Py_BuildValue("O([])", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**
@@ -311,7 +298,6 @@ get_subdata(size_t n, size_t count) const {
 template<class Element>
 INLINE int Extension<PointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   const char *format = get_format_code(Element);
   if (format == nullptr) {
     // Not supported.
@@ -350,9 +336,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -362,7 +345,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<LMatrix3f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   if (self != nullptr) {
     Py_INCREF(self);
   }
@@ -376,9 +358,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -388,7 +367,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<LMatrix3d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   if (self != nullptr) {
     Py_INCREF(self);
   }
@@ -402,9 +380,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -414,7 +389,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   if (self != nullptr) {
     Py_INCREF(self);
   }
@@ -428,9 +402,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -440,7 +411,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   if (self != nullptr) {
     Py_INCREF(self);
   }
@@ -454,9 +424,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -465,14 +432,26 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
-#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements view->obj.
   if (view->internal != nullptr) {
     // Oh, right, let's not forget to unref this.
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = nullptr;
   }
-#endif
+}
+
+/**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE PointerToArray<Element> Extension<PointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
+  }
+  return copy;
 }
 
 /**
@@ -482,7 +461,6 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 template<class Element>
 INLINE int Extension<ConstPointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -527,9 +505,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -538,7 +513,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<>
 INLINE int Extension<ConstPointerToArray<LMatrix3f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -557,9 +531,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -568,7 +539,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<>
 INLINE int Extension<ConstPointerToArray<LMatrix3d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -587,9 +557,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -598,7 +565,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<>
 INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -617,9 +583,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -628,7 +591,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<>
 INLINE int Extension<ConstPointerToArray<UnalignedLMatrix4d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
@@ -647,9 +609,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->internal = (void*) this->_this;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -658,12 +617,24 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
-#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements obj->view.
   if (view->internal != nullptr) {
     // Oh, right, let's not forget to unref this.
     unref_delete((const PointerToArray<Element> *)view->internal);
     view->internal = nullptr;
   }
-#endif
+}
+
+/**
+ * A special Python method that is invoked by copy.deepcopy(pta).  This makes
+ * sure that there is truly a unique copy of the array.
+ */
+template<class Element>
+INLINE ConstPointerToArray<Element> Extension<ConstPointerToArray<Element> >::
+__deepcopy__(PyObject *memo) const {
+  PointerToArray<Element> copy;
+  if (!this->_this->is_null()) {
+    copy.v() = this->_this->v();
+  }
+  return copy;
 }

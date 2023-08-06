@@ -213,12 +213,13 @@ record_alternate_name(TypeHandle type, const string &name) {
  * of interrogate, which expects this to contain a Dtool_PyTypedObject.
  */
 void TypeRegistry::
-record_python_type(TypeHandle type, PyObject *python_type) {
+record_python_type(TypeHandle type, PyTypeObject *cls, PythonWrapFunc *wrap_func) {
   _lock.lock();
 
   TypeRegistryNode *rnode = look_up(type, nullptr);
   if (rnode != nullptr) {
-    rnode->_python_type = python_type;
+    rnode->_python_type = cls;
+    rnode->_python_wrap_func = wrap_func;
   }
 
   _lock.unlock();
@@ -539,7 +540,6 @@ TypeRegistry() {
  */
 void TypeRegistry::
 init_global_pointer() {
-  init_memory_hook();
   _global_pointer = new TypeRegistry;
 }
 
@@ -695,22 +695,4 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
 #endif  // NDEBUG
 
   return _handle_registry[handle._index];
-}
-
-/**
-
- */
-extern "C" int
-get_best_parent_from_Set(int id, const std::set<int> &this_set) {
-  // most common case..
-  if (this_set.find(id) != this_set.end()) {
-    return id;
-  }
-
-  TypeHandle th = TypeRegistry::ptr()->find_type_by_id(id);
-  if (th == TypeHandle::none()) {
-    return -1;
-  }
-
-  return th.get_best_parent_from_Set(this_set);
 }

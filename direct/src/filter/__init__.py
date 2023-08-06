@@ -8,4 +8,7 @@ texture values as desired.
 The :class:`.CommonFilters` class contains various filters that are
 provided out of the box, whereas the :class:`.FilterManager` class
 is a lower-level class that allows you to set up your own filters.
+
+See the :ref:`render-to-texture-and-image-postprocessing` section of the
+Programming Guide to learn more about image postprocessing in Panda3D.
 """

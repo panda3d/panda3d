@@ -34,9 +34,10 @@
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
 #include "alphaTestAttrib.h"
+#include "depthBiasAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
-#include "depthOffsetAttrib.h"
 #include "shaderAttrib.h"
 #include "billboardEffect.h"
 #include "compassEffect.h"
@@ -74,7 +75,6 @@
 #include "weakNodePath.h"
 
 using std::max;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -309,6 +309,8 @@ get_sort(Thread *current_thread) const {
  * Searches for a node below the referenced node that matches the indicated
  * string.  Returns the shortest match found, if any, or an empty NodePath if
  * no match can be found.
+ *
+ * The referenced node itself is not considered in the search.
  */
 NodePath NodePath::
 find(const string &path) const {
@@ -349,6 +351,8 @@ find_path_to(PandaNode *node) const {
 /**
  * Returns the complete set of all NodePaths that begin with this NodePath and
  * can be extended by path.  The shortest paths will be listed first.
+ *
+ * The referenced node itself is not considered in the search.
  */
 NodePathCollection NodePath::
 find_all_matches(const string &path) const {
@@ -539,12 +543,45 @@ copy_to(const NodePath &other, int sort, Thread *current_thread) const {
   nassertr(other._error_type == ET_ok, fail());
 
   PandaNode *source_node = node();
-  PT(PandaNode) copy_node = source_node->copy_subgraph(current_thread);
+  PandaNode::InstanceMap inst_map;
+  PT(PandaNode) copy_node = source_node->r_copy_subgraph(inst_map, current_thread);
   nassertr(copy_node != nullptr, fail());
 
   copy_node->reset_prev_transform(current_thread);
 
-  return other.attach_new_node(copy_node, sort, current_thread);
+  NodePath result = other.attach_new_node(copy_node, sort, current_thread);
+
+  // Temporary hack fix: if this root NodePath had lights applied that are
+  // located inside this subgraph, we need to fix them.
+  const RenderState *state = source_node->get_state();
+  const LightAttrib *lattr;
+  if (state->get_attrib(lattr)) {
+    CPT(LightAttrib) new_lattr = lattr;
+
+    for (size_t i = 0; i < lattr->get_num_off_lights(); ++i) {
+      NodePath light = lattr->get_off_light(i);
+      NodePath light2 = light;
+
+      if (light2.replace_copied_nodes(*this, result, inst_map, current_thread)) {
+        new_lattr = DCAST(LightAttrib, new_lattr->replace_off_light(light, light2));
+      }
+    }
+
+    for (size_t i = 0; i < lattr->get_num_on_lights(); ++i) {
+      NodePath light = lattr->get_on_light(i);
+      NodePath light2 = light;
+
+      if (light2.replace_copied_nodes(*this, result, inst_map, current_thread)) {
+        new_lattr = DCAST(LightAttrib, new_lattr->replace_on_light(light, light2));
+      }
+    }
+
+    if (new_lattr != lattr) {
+      result.set_state(state->set_attrib(std::move(new_lattr)));
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -926,6 +963,11 @@ set_pos(const LVecBase3 &pos) {
   node()->reset_prev_transform();
 }
 
+/**
+ * Sets the X component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_x(PN_stdfloat x) {
   nassertv_always(!is_empty());
@@ -934,6 +976,11 @@ set_x(PN_stdfloat x) {
   set_pos(pos);
 }
 
+/**
+ * Sets the Y component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_y(PN_stdfloat y) {
   nassertv_always(!is_empty());
@@ -942,6 +989,11 @@ set_y(PN_stdfloat y) {
   set_pos(pos);
 }
 
+/**
+ * Sets the Z component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_z(PN_stdfloat z) {
   nassertv_always(!is_empty());
@@ -1094,6 +1146,11 @@ set_scale(const LVecBase3 &scale) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the x-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sx(PN_stdfloat sx) {
   nassertv_always(!is_empty());
@@ -1103,6 +1160,11 @@ set_sx(PN_stdfloat sx) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the y-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sy(PN_stdfloat sy) {
   nassertv_always(!is_empty());
@@ -1112,6 +1174,11 @@ set_sy(PN_stdfloat sy) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the z-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sz(PN_stdfloat sz) {
   nassertv_always(!is_empty());
@@ -3140,13 +3207,14 @@ get_texture(TextureStage *stage) const {
  * Recursively searches the scene graph for references to the given texture,
  * and replaces them with the new texture.
  *
+ * As of Panda3D 1.10.13, new_tex may be null to remove the texture.
+ *
  * @since 1.10.4
  */
 void NodePath::
 replace_texture(Texture *tex, Texture *new_tex) {
   nassertv_always(!is_empty());
   nassertv(tex != nullptr);
-  nassertv(new_tex != nullptr);
 
   r_replace_texture(node(), tex, new_tex);
 }
@@ -3315,11 +3383,11 @@ set_shader_input(ShaderInput &&inp) {
     pnode->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != nullptr) {
     const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
-    pnode->set_attrib(sa->set_shader_input(move(inp)));
+    pnode->set_attrib(sa->set_shader_input(std::move(inp)));
   } else {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
-    pnode->set_attrib(sa->set_shader_input(move(inp)));
+    pnode->set_attrib(sa->set_shader_input(std::move(inp)));
   }
 }
 
@@ -4181,14 +4249,20 @@ get_material() const {
 /**
  * Recursively searches the scene graph for references to the given material,
  * and replaces them with the new material.
+ *
+ * As of Panda3D 1.10.13, new_mat may be null to remove the material.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 replace_material(Material *mat, Material *new_mat) {
   nassertv_always(!is_empty());
   nassertv(mat != nullptr);
-  nassertv(new_mat != nullptr);
 
-  CPT(RenderAttrib) new_attrib = MaterialAttrib::make(new_mat);
+  CPT(RenderAttrib) new_attrib;
+  if (new_mat != nullptr) {
+    new_attrib = MaterialAttrib::make(new_mat);
+  }
   r_replace_material(node(), mat, (const MaterialAttrib *)new_attrib.p());
 }
 
@@ -4619,6 +4693,8 @@ get_depth_write() const {
  * bias is always an integer number, and each integer increment represents the
  * smallest possible increment in Z that is sufficient to completely resolve
  * two coplanar polygons.  Positive numbers are closer towards the camera.
+ *
+ * @deprecated See set_depth_bias() instead, which provides more controls.
  */
 void NodePath::
 set_depth_offset(int bias, int priority) {
@@ -4663,6 +4739,40 @@ get_depth_offset() const {
   }
 
   return 0;
+}
+
+/**
+ * This instructs the graphics driver to apply an offset or bias to the
+ * generated depth values for rendered polygons, before they are written to
+ * the depth buffer.  This can be used to shift polygons forward slightly, to
+ * resolve depth conflicts, or self-shadowing artifacts on thin objects.
+ * Positive numbers are further away from the camera.
+ */
+void NodePath::
+set_depth_bias(PN_stdfloat slope_factor, PN_stdfloat constant_factor, PN_stdfloat clamp, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(DepthBiasAttrib::make(slope_factor, constant_factor, clamp), priority);
+}
+
+/**
+ * Completely removes any depth-bias adjustment that may have been set on
+ * this node via set_depth_bias().
+ */
+void NodePath::
+clear_depth_bias() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(DepthBiasAttrib::get_class_slot());
+}
+
+/**
+ * Returns true if a depth-bias adjustment has been explicitly set on this
+ * particular node via set_depth_bias().  If this returns true, then
+ * get_depth_bias() may be called to determine which has been set.
+ */
+bool NodePath::
+has_depth_bias() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(DepthBiasAttrib::get_class_slot());
 }
 
 /**
@@ -4903,6 +5013,8 @@ get_transparency() const {
  * Specifically sets or disables a logical operation on this particular node.
  * If no other nodes override, this will cause geometry to be rendered without
  * color blending but instead using the given logical operator.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 set_logic_op(LogicOpAttrib::Operation op, int priority) {
@@ -4915,6 +5027,8 @@ set_logic_op(LogicOpAttrib::Operation op, int priority) {
  * Completely removes any logical operation that may have been set on this
  * node via set_logic_op(). The geometry at this level and below will
  * subsequently be rendered using standard color blending.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 clear_logic_op() {
@@ -4927,6 +5041,8 @@ clear_logic_op() {
  * particular node via set_logic_op().  If this returns true, then
  * get_logic_op() may be called to determine whether a logical operation has
  * been explicitly disabled for this node or set to particular operation.
+ *
+ * @since 1.10.0
  */
 bool NodePath::
 has_logic_op() const {
@@ -4941,6 +5057,8 @@ has_logic_op() const {
  * has_logic_op().  This does not necessarily imply that the geometry will
  * or will not be rendered with the given logical operation, as there may be
  * other nodes that override.
+ *
+ * @since 1.10.0
  */
 LogicOpAttrib::Operation NodePath::
 get_logic_op() const {
@@ -5444,7 +5562,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            move(transform), current_thread);
+                            std::move(transform), current_thread);
 
   return found_any;
 }
@@ -5744,7 +5862,7 @@ NodePath NodePath::
 decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   NodePath result;
 
-  DatagramBuffer buffer(move(data));
+  DatagramBuffer buffer(std::move(data));
 
   BamReader local_reader;
   if (reader == nullptr) {
@@ -5801,6 +5919,48 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   reader->set_source(nullptr);
 
   return result;
+}
+
+/**
+ * If the given root node is an ancestor of this NodePath, replaces all
+ * components below it using the given instance map.
+ *
+ * This is a helper method used by copy_to().
+ */
+bool NodePath::
+replace_copied_nodes(const NodePath &source, const NodePath &dest,
+                     const PandaNode::InstanceMap &inst_map,
+                     Thread *current_thread) {
+  nassertr(!dest.is_empty(), false);
+
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  pvector<PandaNode *> nodes;
+
+  NodePathComponent *comp = _head;
+  while (comp != nullptr && comp != source._head) {
+    nodes.push_back(comp->get_node());
+
+    comp = comp->get_next(pipeline_stage, current_thread);
+  }
+
+  if (comp == nullptr) {
+    // The given source NodePath isn't an ancestor of this NodePath.
+    return false;
+  }
+
+  // Start at the dest NodePath and compose the new NodePath.
+  PT(NodePathComponent) new_comp = dest._head;
+  pvector<PandaNode *>::reverse_iterator it;
+  for (it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    PandaNode::InstanceMap::const_iterator iit = inst_map.find(*it);
+    nassertr_always(iit != inst_map.end(), false);
+    new_comp = PandaNode::get_component(new_comp, iit->second, pipeline_stage, current_thread);
+  }
+
+  nassertr(new_comp != nullptr, false);
+  _head = std::move(new_comp);
+  return true;
 }
 
 /**
@@ -6722,7 +6882,11 @@ r_replace_material(PandaNode *node, Material *mat,
     const MaterialAttrib *ma;
     if (node_state->get_attrib(ma)) {
       if (mat == ma->get_material()) {
-        node->set_state(node_state->set_attrib(new_attrib));
+        if (new_attrib != nullptr) {
+          node->set_state(node_state->set_attrib(new_attrib));
+        } else {
+          node->set_state(node_state->remove_attrib(MaterialAttrib::get_class_slot()));
+        }
       }
     }
   }
@@ -6741,7 +6905,11 @@ r_replace_material(PandaNode *node, Material *mat,
       if (geom_state->get_attrib(ma)) {
         if (mat == ma->get_material()) {
           // Replace it
-          gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+          if (new_attrib != nullptr) {
+            gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+          } else {
+            gnode->set_geom_state(i, geom_state->remove_attrib(MaterialAttrib::get_class_slot()));
+          }
         }
       }
     }

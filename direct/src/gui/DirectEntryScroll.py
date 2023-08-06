@@ -1,10 +1,9 @@
 __all__ = ['DirectEntryScroll']
 
-from panda3d.core import *
+from panda3d.core import NodePath, OmniBoundingVolume, PGVirtualFrame
 from . import DirectGuiGlobals as DGG
-from .DirectScrolledFrame import *
-from .DirectFrame import *
-from .DirectEntry import *
+from .DirectFrame import DirectFrame
+
 
 class DirectEntryScroll(DirectFrame):
     def __init__(self, entry, parent = None, **kw):
@@ -12,7 +11,7 @@ class DirectEntryScroll(DirectFrame):
             ('pgFunc',         PGVirtualFrame,      None),
             ('relief', None, None),
             ('clipSize',     (-1, 1, -1, 1),        self.setClipSize),
-            )
+        )
 
         self.defineoptions(kw, optiondefs)
         DirectFrame.__init__(self, parent, **kw)
@@ -60,7 +59,8 @@ class DirectEntryScroll(DirectFrame):
         detaches and unbinds the entry from the scroll frame and its
         events. You'll be responsible for destroying it.
         """
-        if self.entry is None: return
+        if self.entry is None:
+            return
         self.entry.unbind(DGG.CURSORMOVE)
         self.entry.detachNode()
         self.entry = None
@@ -79,7 +79,6 @@ class DirectEntryScroll(DirectFrame):
 
         if abs(distanceToCenter) > (clipExtent * 0.5):
             self.moveToCenterCursor()
-
 
     def moveToCenterCursor(self):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
@@ -121,7 +120,6 @@ class DirectEntryScroll(DirectFrame):
         self.entry = None
         DirectFrame.destroy(self)
 
-
     def getCanvas(self):
         return self.canvas
 
@@ -136,4 +134,3 @@ class DirectEntryScroll(DirectFrame):
 
     def resetCanvas(self):
         self.canvas.setPos(0,0,0)
-

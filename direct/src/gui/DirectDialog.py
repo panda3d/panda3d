@@ -4,17 +4,18 @@ See the :ref:`directdialog` page in the programming manual for a more
 in-depth explanation and an example of how to use this class.
 """
 
+from __future__ import annotations
+
 __all__ = [
     'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',
     'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
 ]
 
-from panda3d.core import *
+from panda3d.core import NodePath, Point3, TextNode, VBase3
 from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectButton import *
-import types
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 
 
 def findDialog(uniqueName):
@@ -46,7 +47,7 @@ def cleanupDialog(uniqueName):
 
 class DirectDialog(DirectFrame):
 
-    AllDialogs = {}
+    AllDialogs: dict[str, DirectDialog] = {}
     PanelIndex = 0
 
     def __init__(self, parent=None, **kw):
@@ -121,7 +122,7 @@ class DirectDialog(DirectFrame):
             ('command',           None,          None),
             ('extraArgs',         [],            None),
             ('sortOrder',    DGG.NO_FADE_SORT_INDEX, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs, dynamicGroups = ("button",))
 
@@ -179,7 +180,7 @@ class DirectDialog(DirectFrame):
                 suppressKeys = self['suppressKeys'],
                 frameSize = self['buttonSize'],
                 command = lambda s = self, v = value: s.buttonCommand(v)
-                )
+            )
             self.buttonList.append(button)
 
         # Update dialog when everything has been initialised
@@ -191,8 +192,7 @@ class DirectDialog(DirectFrame):
         bindList = zip(self.buttonList, self['buttonHotKeyList'],
                        self['buttonValueList'])
         for button, hotKey, value in bindList:
-            if ((type(hotKey) == list) or
-                (type(hotKey) == tuple)):
+            if isinstance(hotKey, (list, tuple)):
                 for key in hotKey:
                     button.bind('press-' + key + '-', self.buttonCommand,
                                 extraArgs = [value])
@@ -278,13 +278,10 @@ class DirectDialog(DirectFrame):
             # Must compensate for scale
             scale = self['button_scale']
             # Can either be a Vec3 or a tuple of 3 values
-            if (isinstance(scale, Vec3) or
-                (type(scale) == list) or
-                (type(scale) == tuple)):
+            if isinstance(scale, (VBase3, list, tuple)):
                 sx = scale[0]
                 sz = scale[2]
-            elif ((type(scale) == int) or
-                  (type(scale) == float)):
+            elif isinstance(scale, (int, float)):
                 sx = sz = scale
             else:
                 sx = sz = 1
@@ -361,6 +358,7 @@ class DirectDialog(DirectFrame):
             button.destroy()
         DirectFrame.destroy(self)
 
+
 class OkDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
@@ -368,11 +366,12 @@ class OkDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['OK'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_OK],          DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(OkDialog)
+
 
 class OkCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -381,11 +380,12 @@ class OkCancelDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['OK','Cancel'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_OK, DGG.DIALOG_CANCEL], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(OkCancelDialog)
+
 
 class YesNoDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -394,11 +394,12 @@ class YesNoDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Yes', 'No'],       DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(YesNoDialog)
+
 
 class YesNoCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -408,11 +409,12 @@ class YesNoCancelDialog(DirectDialog):
             ('buttonTextList',  ['Yes', 'No', 'Cancel'],  DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_YES, DGG.DIALOG_NO, DGG.DIALOG_CANCEL],
              DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(YesNoCancelDialog)
+
 
 class RetryCancelDialog(DirectDialog):
     def __init__(self, parent = None, **kw):
@@ -421,9 +423,8 @@ class RetryCancelDialog(DirectDialog):
             # Define type of DirectGuiWidget
             ('buttonTextList',  ['Retry','Cancel'],   DGG.INITOPT),
             ('buttonValueList', [DGG.DIALOG_RETRY, DGG.DIALOG_CANCEL], DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(RetryCancelDialog)
-

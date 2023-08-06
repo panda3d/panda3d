@@ -1,5 +1,5 @@
-#ifndef __SOCKET_FDSET_H__
-#define __SOCKET_FDSET_H__
+#ifndef SOCKET_FDSET_H
+#define SOCKET_FDSET_H
 
 /*
  * rhh This class needs to be broken into 2 classes: the gathering class and
@@ -186,4 +186,4 @@ inline int Socket_fdset::WaitForError(bool zeroFds, uint32_t sleep_time)
 }
 
 
-#endif //__SOCKET_FDSET_H__
+#endif //SOCKET_FDSET_H

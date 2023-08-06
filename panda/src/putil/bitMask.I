@@ -624,15 +624,6 @@ get_key() const {
 }
 
 /**
- * Returns true if the bitmask is not zero.
- */
-template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
-__nonzero__() const {
-  return _word != 0;
-}
-
-/**
  * Adds the bitmask to the indicated hash generator.
  */
 template<class WType, int nbits>

@@ -8,6 +8,7 @@ add_subdirectory(src/audiotraits)
 add_subdirectory(src/chan)
 add_subdirectory(src/char)
 add_subdirectory(src/cocoadisplay)
+add_subdirectory(src/cocoagldisplay)
 add_subdirectory(src/collide)
 add_subdirectory(src/configfiles)
 add_subdirectory(src/cull)
@@ -18,7 +19,6 @@ add_subdirectory(src/distort)
 add_subdirectory(src/downloader)
 add_subdirectory(src/downloadertools)
 add_subdirectory(src/dxgsg9)
-add_subdirectory(src/dxml)
 add_subdirectory(src/egg)
 add_subdirectory(src/egg2pg)
 add_subdirectory(src/egldisplay)
@@ -82,7 +82,7 @@ add_subdirectory(metalibs/pandaphysics)
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
   p3chan p3char p3collide p3cull p3device p3dgraph p3display
-  p3downloader p3dxml p3event p3express p3gobj p3grutil p3gsgbase p3linmath
+  p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
   p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
   p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
   p3prc p3dtoolutil p3dtoolbase
@@ -113,26 +113,50 @@ if(INTERROGATE_PYTHON_INTERFACE)
     set(win32_init "")
   endif()
 
-  file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py"
-    "\"Python bindings for the Panda3D libraries\"
+  set(init_file "\"Python bindings for the Panda3D libraries\"
 
 __version__ = '${PROJECT_VERSION}'
 
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write('''\\
-WARNING: Python 2.7 has reached EOL as of January 1, 2020.
-To suppress this warning, upgrade to Python 3.
-''')
-        sys.stdout.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
 
 ${win32_init}")
 
-  if(BUILD_SHARED_LIBS)
-    install_python_package(panda3d ARCH)
+  set(dtoolconfig_file "'''Alias of :mod:`panda3d.interrogatedb`.
+
+.. deprecated:: 1.10.0
+   This module has been renamed to :mod:`panda3d.interrogatedb`.
+'''
+
+if __debug__:
+    print(\"Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.\")
+from .interrogatedb import *
+")
+
+  if(IS_MULTICONFIG)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+      # Generate an __init__.py in the per-configuration directory.
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/__init__.py" ${init_file})
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+    endforeach(config)
+  else()
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
   endif()
+
+  # Also generate a panda3d.dist-info directory.
+  set(entry_points_file "[distutils.commands]
+build_apps = direct.dist.commands:build_apps
+bdist_apps = direct.dist.commands:bdist_apps
+
+[setuptools.finalize_distribution_options]
+build_apps = direct.dist.commands:finalize_distribution_options
+")
+
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
+                 "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
 
   if(HAVE_BULLET)
     add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)

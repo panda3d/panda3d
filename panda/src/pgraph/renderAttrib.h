@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 
+#include "config_pgraph.h"
 #include "typedWritableReferenceCount.h"
 #include "renderAttribRegistry.h"
 #include "pointerTo.h"
@@ -112,14 +113,12 @@ PUBLISHED:
     // image.  Sphere maps only make sense in eye coordinate space.
     M_eye_sphere_map,
 
-/*
- * Cube maps are a modern improvement on the sphere map; they don't suffer
- * from any polar singularities, but they require six texture images.  They
- * can also be generated dynamically for real-time reflections (see
- * GraphicsOutput::make_cube_map()). Typically, a statically-generated cube
- * map will be in eye space, while a dynamically-generated map will be in
- * world space.  Cube mapping is not supported on all hardware.
- */
+    // Cube maps are a modern improvement on the sphere map; they don't suffer
+    // from any polar singularities, but they require six texture images.  They
+    // can also be generated dynamically for real-time reflections (see
+    // GraphicsOutput::make_cube_map()). Typically, a statically-generated cube
+    // map will be in eye space, while a dynamically-generated map will be in
+    // world space.  Cube mapping is not supported on all hardware.
     M_world_cube_map,
     M_eye_cube_map,
 
@@ -135,17 +134,16 @@ PUBLISHED:
     M_unused,  // formerly M_object_position, now deprecated.
     M_eye_position,
 
-/*
- * With M_point_sprite, texture coordinates will be generated for large points
- * in the range (0,0) - (1,1) from upper-left to lower-right across the
- * point's face.  Without this, each point will have just a single uniform
- * texture coordinate value across its face.  Unfortunately, the generated
- * texture coordinates are inverted (upside-down) from Panda's usual
- * convention, but this is what the graphics card manufacturers decided to
- * use.  You could use a texture matrix to re-invert the texture, but that
- * will probably force the sprites' vertices to be computed in the CPU. You'll
- * have to paint your textures upside-down if you want true hardware sprites.
- */
+    // With M_point_sprite, texture coordinates will be generated for large
+    // points in the range (0,0) - (1,1) from upper-left to lower-right across
+    // the point's face.  Without this, each point will have just a single
+    // uniform texture coordinate value across its face.  Unfortunately, the
+    // generated texture coordinates are inverted (upside-down) from Panda's
+    // usual convention, but this is what the graphics card manufacturers
+    // decided to use.  You could use a texture matrix to re-invert the texture,
+    // but that will probably force the sprites' vertices to be computed in the
+    // CPU. You'll have to paint your textures upside-down if you want true
+    // hardware sprites.
     M_point_sprite,
 
     // M_light_vector generated special 3-d texture coordinates that
@@ -164,8 +162,9 @@ PUBLISHED:
 protected:
   INLINE void calc_hash();
 
-  static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
-  static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
+  INLINE static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
+  INLINE static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
+  static CPT(RenderAttrib) do_uniquify(const RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
@@ -187,8 +186,9 @@ private:
   static LightReMutex *_attribs_lock;
   typedef SimpleHashMap<const RenderAttrib *, std::nullptr_t, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
   static Attribs _attribs;
+  static bool _uniquify_attribs;
 
-  int _saved_entry;
+  mutable int _saved_entry;
   size_t _hash;
 
   // This keeps track of our current position through the garbage collection
@@ -198,6 +198,7 @@ private:
   static PStatCollector _garbage_collect_pcollector;
 
   friend class RenderAttribRegistry;
+  friend class RenderState;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

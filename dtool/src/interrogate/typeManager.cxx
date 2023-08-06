@@ -1111,6 +1111,7 @@ is_integer(CPPType *type) {
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_wchar_t ||
+           simple_type->_type == CPPSimpleType::T_char8_t ||
            simple_type->_type == CPPSimpleType::T_char16_t ||
            simple_type->_type == CPPSimpleType::T_char32_t ||
            simple_type->_type == CPPSimpleType::T_int);
@@ -1148,7 +1149,8 @@ is_unsigned_integer(CPPType *type) {
             simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
            (simple_type->_flags & CPPSimpleType::F_unsigned) != 0) ||
-           (simple_type->_type == CPPSimpleType::T_char16_t ||
+           (simple_type->_type == CPPSimpleType::T_char8_t ||
+            simple_type->_type == CPPSimpleType::T_char16_t ||
             simple_type->_type == CPPSimpleType::T_char32_t);
       }
     }
@@ -2011,6 +2013,46 @@ involves_protected(CPPType *type) {
     if (type->_declaration != nullptr) {
       return (type->_declaration->_vis > V_public);
     }
+    return false;
+  }
+}
+
+/**
+ * Returns true if the type involves an rvalue reference.
+ */
+bool TypeManager::
+involves_rvalue_reference(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return involves_rvalue_reference(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return type->as_reference_type()->_value_category == CPPReferenceType::VC_rvalue;
+
+  case CPPDeclaration::ST_pointer:
+    return involves_rvalue_reference(type->as_pointer_type()->_pointing_at);
+
+  case CPPDeclaration::ST_function:
+    {
+      CPPFunctionType *ftype = type->as_function_type();
+      if (involves_rvalue_reference(ftype->_return_type)) {
+        return true;
+      }
+      const CPPParameterList::Parameters &params =
+        ftype->_parameters->_parameters;
+      CPPParameterList::Parameters::const_iterator pi;
+      for (pi = params.begin(); pi != params.end(); ++pi) {
+        if (involves_rvalue_reference((*pi)->_type)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+  case CPPDeclaration::ST_typedef:
+    return involves_rvalue_reference(type->as_typedef_type()->_type);
+
+  default:
     return false;
   }
 }

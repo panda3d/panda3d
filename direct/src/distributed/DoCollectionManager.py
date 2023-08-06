@@ -113,7 +113,7 @@ class DoCollectionManager:
             return 1
         if dist2 is None:
             return -1
-        if (dist1 < dist2):
+        if dist1 < dist2:
             return -1
         return 1
 
@@ -149,10 +149,7 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = list(count2classes.keys())
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(count2classes, reverse=True):
             count2classes[count].sort()
             for name in count2classes[count]:
                 print('%s %s' % (count, name))
@@ -166,10 +163,7 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = list(count2classes.keys())
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(count2classes, reverse=True):
             count2classes[count].sort()
             for name in count2classes[count]:
                 # print '%s %s' % (count, name)
@@ -270,9 +264,7 @@ class DoCollectionManager:
 
     def deleteDistributedObjects(self):
         # Get rid of all the distributed objects
-        for doId in self.doId2do.keys():
-            # Look up the object
-            do = self.doId2do[doId]
+        for do in list(self.doId2do.values()):
             self.deleteDistObject(do)
 
         # Get rid of everything that manages distributed objects
@@ -316,14 +308,14 @@ class DoCollectionManager:
     def storeObjectLocation(self, object, parentId, zoneId):
         oldParentId = object.parentId
         oldZoneId = object.zoneId
-        if (oldParentId != parentId):
+        if oldParentId != parentId:
             # notify any existing parent that we're moving away
             oldParentObj = self.doId2do.get(oldParentId)
             if oldParentObj is not None:
                 oldParentObj.handleChildLeave(object, oldZoneId)
             self.deleteObjectLocation(object, oldParentId, oldZoneId)
 
-        elif (oldZoneId != zoneId):
+        elif oldZoneId != zoneId:
             # Remove old location
             oldParentObj = self.doId2do.get(oldParentId)
             if oldParentObj is not None:
@@ -333,8 +325,7 @@ class DoCollectionManager:
             # object is already at that parent and zone
             return
 
-        if ((parentId is None) or (zoneId is None) or
-            (parentId == zoneId == 0)):
+        if parentId is None or zoneId is None or (parentId == zoneId == 0):
             # Do not store null values
             object.parentId = None
             object.zoneId = None
@@ -420,10 +411,10 @@ class DoCollectionManager:
         #assert do.doId in self.doId2do
         location = do.getLocation()
         if location:
-           oldParentId, oldZoneId = location
-           oldParentObj = self.doId2do.get(oldParentId)
-           if oldParentObj:
-               oldParentObj.handleChildLeave(do, oldZoneId)
+            oldParentId, oldZoneId = location
+            oldParentObj = self.doId2do.get(oldParentId)
+            if oldParentObj:
+                oldParentObj.handleChildLeave(do, oldZoneId)
         self.deleteObjectLocation(do, do.parentId, do.zoneId)
         ## location = do.getLocation()
         ## if location is not None:

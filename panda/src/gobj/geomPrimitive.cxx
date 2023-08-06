@@ -78,17 +78,6 @@ GeomPrimitive(const GeomPrimitive &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a GeomPrimitive
- * that is actively being used for rendering.
- */
-void GeomPrimitive::
-operator = (const GeomPrimitive &copy) {
-  CopyOnWriteObject::operator = (copy);
-  _cycler = copy._cycler;
-}
-
-/**
  *
  */
 GeomPrimitive::
@@ -442,18 +431,50 @@ offset_vertices(int offset) {
 
     consider_elevate_index_type(cdata, cdata->_max_vertex + offset);
 
-    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
+    {
+      GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                       Thread::get_current_thread());
 
-    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
-    while (!index.is_at_end()) {
-      int vertex = index.get_data1i();
+      size_t num_rows = (size_t)handle.get_num_rows();
+      unsigned char *ptr = handle.get_write_pointer();
+      switch (cdata->_index_type) {
+      case GeomEnums::NT_uint8:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint8_t &v = ((uint8_t *)ptr)[i];
+          if (v != 0xff) {
+            v += offset;
+          }
+        }
+        break;
 
-      if (vertex != strip_cut_index) {
-        index.set_data1i(vertex + offset);
+      case GeomEnums::NT_uint16:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint16_t &v = ((uint16_t *)ptr)[i];
+          if (v != 0xffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint32:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint32_t &v = ((uint32_t *)ptr)[i];
+          if (v != 0xffffffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      default:
+        nassert_raise("unsupported index type");
+        break;
       }
     }
 
-  } else {
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+  }
+  else {
     CDWriter cdata(_cycler, true);
 
     cdata->_first_vertex += offset;
@@ -510,16 +531,49 @@ offset_vertices(int offset, int begin_row, int end_row) {
 
     consider_elevate_index_type(cdata, max_vertex + offset);
 
-    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
-    index.set_row_unsafe(begin_row);
-    for (int j = begin_row; j < end_row; ++j) {
-      int vertex = index.get_data1i();
-      if (vertex != strip_cut_index) {
-        index.set_data1i(vertex + offset);
+    {
+      GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                       Thread::get_current_thread());
+
+      unsigned char *ptr = handle.get_write_pointer();
+      switch (cdata->_index_type) {
+      case GeomEnums::NT_uint8:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint8_t &v = ((uint8_t *)ptr)[i];
+          if (v != 0xff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint16:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint16_t &v = ((uint16_t *)ptr)[i];
+          if (v != 0xffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint32:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint32_t &v = ((uint32_t *)ptr)[i];
+          if (v != 0xffffffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      default:
+        nassert_raise("unsupported index type");
+        break;
       }
     }
 
-  } else {
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+  }
+  else {
     // The supplied values cover all vertices, so we don't need to make it
     // indexed.
     CDWriter cdata(_cycler, true);
@@ -1627,6 +1681,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
+        nassertv(!reader.is_at_end());
+
         LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1653,6 +1709,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1696,6 +1754,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
+        nassertv(!reader.is_at_end());
+
         LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1728,6 +1788,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -2285,6 +2347,25 @@ get_num_primitives() const {
   } else {
     // This is a simple primitive type like a triangle: each primitive uses
     // the same number of vertices.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
+}
+
+/**
+ *
+ */
+int GeomPrimitivePipelineReader::
+get_num_faces() const {
+  int num_vertices_per_primitive = _object->get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    int num_primitives = _cdata->_ends.size();
+    int num_vertices = get_num_vertices();
+    int min_num_vertices_per_primitive = _object->get_min_num_vertices_per_primitive();
+    int num_unused_vertices_per_primitive = _object->get_num_unused_vertices_per_primitive();
+    return num_vertices - (num_primitives * (min_num_vertices_per_primitive - 1)) - ((num_primitives - 1) * num_unused_vertices_per_primitive);
+  } else {
+    // Same as the number of primitives.
     return (get_num_vertices() / num_vertices_per_primitive);
   }
 }

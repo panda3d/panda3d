@@ -11,12 +11,10 @@
  * @date 1999-01-15
  */
 
-class FLOATNAME(UnalignedLMatrix4);
-
 /**
  * This is a 4-by-4 transform matrix.
  */
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) : public MemoryBase {
 public:
   typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
@@ -55,11 +53,8 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix4)() = default;
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other) = default;
-  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
       const FLOATNAME(LMatrix4) &other) = default;
-  INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
-      const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
 
   INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
@@ -72,12 +67,13 @@ PUBLISHED:
                                      const FLOATNAME(LVecBase4) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
-  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
+  PY_EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
 
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3);
-  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,const FLOATNAME(LVecBase3) &trans);
+  INLINE_LINMATH explicit FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
+                                              const FLOATNAME(LVecBase3) &trans);
 
   INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
@@ -105,8 +101,8 @@ PUBLISHED:
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
   MAKE_SEQ(get_row3s, size, get_row3);
-  MAKE_SEQ_PROPERTY(rows, size, get_row);
-  MAKE_SEQ_PROPERTY(cols, size, get_col);
+  MAKE_SEQ_PROPERTY(rows, size, get_row, set_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col, set_col);
 
   // these versions inline better
   INLINE_LINMATH void get_row(FLOATNAME(LVecBase4) &result_vec, int row) const;
@@ -188,6 +184,8 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator /= (FLOATTYPE scalar);
+
+  EXTENSION(INLINE_LINMATH FLOATNAME(LMatrix4) __rmul__(FLOATTYPE scalar) const);
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LMatrix4) &other);
 
@@ -285,8 +283,7 @@ public:
   // The underlying implementation is via the Eigen library, if available.
 
   // Unlike LMatrix3, we fully align LMatrix4 to 16-byte boundaries, to take
-  // advantage of SSE2 optimizations when available.  Sometimes this alignment
-  // requirement is inconvenient, so we also provide UnalignedLMatrix4, below.
+  // advantage of SSE2 optimizations when available.
   typedef LINMATH_MATRIX(FLOATTYPE, 4, 4) EMatrix4;
   EMatrix4 _m;
 
@@ -315,59 +312,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-/**
- * This is an "unaligned" LMatrix4.  It has no functionality other than to
- * store numbers, and it will pack them in as tightly as possible, avoiding
- * any SSE2 alignment requirements shared by the primary LMatrix4 class.
- *
- * Use it only when you need to pack numbers tightly without respect to
- * alignment, and then copy it to a proper LMatrix4 to get actual use from it.
- */
-class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLMatrix4) {
-PUBLISHED:
-  enum {
-    num_components = 16
-  };
-
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)() = default;
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) = default;
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(UnalignedLMatrix4) &copy) = default;
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-                                              FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-                                              FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-                                              FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
-
-  INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-                          FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-                          FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-                          FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
-
-  INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
-  INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
-
-  INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
-
-  INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLMatrix4) &other) const;
-  INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLMatrix4) &other) const;
-
-public:
-  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 4, 4) UMatrix4;
-  UMatrix4 _m;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
-
-private:
-  static TypeHandle _type_handle;
-};
-
 
 INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LMatrix4) &mat) {
   mat.output(out);

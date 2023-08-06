@@ -48,7 +48,7 @@ set(P3PUTIL_HEADERS
   load_prc_file.h
   loaderOptions.I loaderOptions.h
   modifierButtons.I modifierButtons.h
-  mouseButton.h mouseData.h
+  mouseButton.h
   nameUniquifier.I nameUniquifier.h
   nodeCachedReferenceCount.h nodeCachedReferenceCount.I
   paramValue.I paramValue.h
@@ -125,9 +125,24 @@ set(P3PUTIL_SOURCES
 set(P3PUTIL_IGATEEXT
   bamReader_ext.cxx
   bamReader_ext.h
+  bamWriter_ext.cxx
+  bamWriter_ext.h
+  bitArray_ext.cxx
+  bitArray_ext.h
+  bitArray_ext.I
+  bitMask_ext.h
+  bitMask_ext.I
   callbackObject_ext.h
+  doubleBitMask_ext.h
+  doubleBitMask_ext.I
+  paramPyObject.cxx
+  paramPyObject.h
+  paramPyObject.I
   pythonCallbackObject.cxx
   pythonCallbackObject.h
+  sparseArray_ext.cxx
+  sparseArray_ext.h
+  sparseArray_ext.I
   typedWritable_ext.cxx
   typedWritable_ext.h
 )
@@ -147,4 +162,4 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3PUTIL_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
-install(FILES config_util.h COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+install(FILES config_putil.h COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

@@ -32,6 +32,7 @@ ComputeNode(const std::string &name) :
   _dispatcher(new ComputeNode::Dispatcher)
 {
   set_internal_bounds(new OmniBoundingVolume);
+  set_renderable();
 }
 
 /**
@@ -63,17 +64,6 @@ make_copy() const {
 bool ComputeNode::
 safe_to_combine() const {
   return false;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool ComputeNode::
-is_renderable() const {
-  return true;
 }
 
 /**
@@ -135,9 +125,8 @@ do_callback(CallbackData *cbdata) {
 
   CDReader cdata(_cycler);
 
-  Dispatches::const_iterator it;
-  for (it = cdata->_dispatches.begin(); it != cdata->_dispatches.end(); ++it) {
-    gsg->dispatch_compute(it->get_x(), it->get_y(), it->get_z());
+  for (const LVecBase3i &dispatch : cdata->_dispatches) {
+    gsg->dispatch_compute(dispatch[0], dispatch[1], dispatch[2]);
   }
 
   // No need to upcall; we don't have any geometry, after all.
@@ -204,9 +193,8 @@ void ComputeNode::Dispatcher::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint16(_dispatches.size());
 
-  Dispatches::const_iterator it;
-  for (it = _dispatches.begin(); it != _dispatches.end(); ++it) {
-    generic_write_datagram(dg, *it);
+  for (const LVecBase3i &dispatch : _dispatches) {
+    generic_write_datagram(dg, dispatch);
   }
 }
 

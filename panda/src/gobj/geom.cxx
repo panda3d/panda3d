@@ -63,26 +63,6 @@ Geom(const Geom &copy) :
 }
 
 /**
- * The copy assignment operator is not pipeline-safe.  This will completely
- * obliterate all stages of the pipeline, so don't do it for a Geom that is
- * actively being used for rendering.
- */
-void Geom::
-operator = (const Geom &copy) {
-  CopyOnWriteObject::operator = (copy);
-
-  clear_cache();
-
-  _cycler = copy._cycler;
-
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    mark_internal_bounds_stale(cdata);
-  }
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
-}
-
-/**
  *
  */
 Geom::
@@ -805,6 +785,11 @@ make_lines_in_place() {
 #endif
   }
 
+  if (cdata->_primitive_type == PT_polygons ||
+      cdata->_primitive_type == PT_patches) {
+    cdata->_primitive_type = PT_lines;
+  }
+
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
   clear_cache_stage(current_thread);
@@ -842,6 +827,10 @@ make_points_in_place() {
 #endif
   }
 
+  if (cdata->_primitive_type != PT_none) {
+    cdata->_primitive_type = PT_points;
+  }
+
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
   clear_cache_stage(current_thread);
@@ -877,6 +866,10 @@ make_patches_in_place() {
       all_is_valid = false;
     }
 #endif
+  }
+
+  if (cdata->_primitive_type != PT_none) {
+    cdata->_primitive_type = PT_patches;
   }
 
   cdata->_modified = Geom::get_next_modified();
@@ -1105,9 +1098,9 @@ get_bounds(Thread *current_thread) const {
 int Geom::
 get_nested_vertices(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_internal_bounds_stale) {
+  if (cdata->_nested_vertices_stale) {
     CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-    compute_internal_bounds(cdataw, current_thread);
+    compute_nested_vertices(cdataw, current_thread);
     return cdataw->_nested_vertices;
   }
   return cdata->_nested_vertices;
@@ -1295,8 +1288,33 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 }
 
 /**
+ * Returns true if the Geom is within the given view frustum.
+ */
+bool Geom::
+is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const {
+  CDLockedReader cdata(_cycler, current_thread);
+
+  if (cdata->_user_bounds != nullptr) {
+    const GeometricBoundingVolume *gbv = cdata->_user_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+  else if (!cdata->_internal_bounds_stale) {
+    const GeometricBoundingVolume *gbv = cdata->_internal_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+  else {
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+    compute_internal_bounds(cdataw, current_thread);
+    const GeometricBoundingVolume *gbv = cdataw->_internal_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+}
+
+/**
  * Actually draws the Geom with the indicated GSG, using the indicated vertex
  * data (which might have been pre-munged to support the GSG's needs).
+ *
+ * num_instances specifies the number of times to render the geometry.
  *
  * Returns true if all of the primitives were drawn normally, false if there
  * was a problem (for instance, some of the data was nonresident).  If force
@@ -1304,12 +1322,12 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  */
 bool Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomVertexData *vertex_data,
-     bool force, Thread *current_thread) const {
+     size_t num_instances, bool force, Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
-  return geom_reader.draw(gsg, &data_reader, force);
+  return geom_reader.draw(gsg, &data_reader, num_instances, force);
 }
 
 /**
@@ -1332,8 +1350,6 @@ get_next_modified() {
  */
 void Geom::
 compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
-  int num_vertices = 0;
-
   // Get the vertex data, after animation.
   CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
@@ -1433,16 +1449,8 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
     case BoundingVolume::BT_box:
       cdata->_internal_bounds = new BoundingBox(pmin, pmax);
     }
-
-    Primitives::const_iterator pi;
-    for (pi = cdata->_primitives.begin();
-         pi != cdata->_primitives.end();
-         ++pi) {
-      CPT(GeomPrimitive) prim = (*pi).get_read_pointer(current_thread);
-      num_vertices += prim->get_num_vertices();
-    }
-
-  } else {
+  }
+  else {
     // No points; empty bounding volume.
     if (btype == BoundingVolume::BT_sphere) {
       cdata->_internal_bounds = new BoundingSphere;
@@ -1450,9 +1458,26 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
       cdata->_internal_bounds = new BoundingBox;
     }
   }
+  cdata->_internal_bounds_stale = false;
+}
+
+/**
+ * Recomputes the number of nested vertices in this Geom.
+ */
+void Geom::
+compute_nested_vertices(Geom::CData *cdata, Thread *current_thread) const {
+  int num_vertices = 0;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin();
+       pi != cdata->_primitives.end();
+       ++pi) {
+    GeomPrimitivePipelineReader reader((*pi).get_read_pointer(current_thread), current_thread);
+    num_vertices += reader.get_num_vertices();
+  }
 
   cdata->_nested_vertices = num_vertices;
-  cdata->_internal_bounds_stale = false;
+  cdata->_nested_vertices_stale = false;
 }
 
 /**
@@ -1847,11 +1872,12 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
  */
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg,
-     const GeomVertexDataPipelineReader *data_reader, bool force) const {
+     const GeomVertexDataPipelineReader *data_reader,
+     size_t num_instances, bool force) const {
   bool all_ok;
   {
     PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-    all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+    all_ok = gsg->begin_draw_primitives(this, data_reader, num_instances, force);
   }
   if (all_ok) {
     Geom::Primitives::const_iterator pi;

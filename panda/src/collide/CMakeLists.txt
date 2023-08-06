@@ -12,6 +12,7 @@ set(P3COLLIDE_HEADERS
   collisionHandlerPusher.I collisionHandlerPusher.h
   collisionHandlerFluidPusher.I collisionHandlerFluidPusher.h
   collisionHandlerQueue.h
+  collisionHeightfield.I collisionHeightfield.h
   collisionInvSphere.I collisionInvSphere.h
   collisionLine.I collisionLine.h
   collisionLevelStateBase.I collisionLevelStateBase.h
@@ -46,6 +47,7 @@ set(P3COLLIDE_SOURCES
   collisionHandlerPusher.cxx
   collisionHandlerFluidPusher.cxx
   collisionHandlerQueue.cxx
+  collisionHeightfield.cxx
   collisionLevelStateBase.cxx
   collisionLevelState.cxx
   collisionInvSphere.cxx
@@ -65,11 +67,24 @@ set(P3COLLIDE_SOURCES
   config_collide.cxx
 )
 
+set(P3COLLIDE_IGATEEXT
+  collisionHandlerEvent_ext.cxx
+  collisionHandlerEvent_ext.h
+  collisionHandlerPhysical_ext.cxx
+  collisionHandlerPhysical_ext.h
+  collisionHandlerQueue_ext.cxx
+  collisionHandlerQueue_ext.h
+  collisionPolygon_ext.cxx
+  collisionPolygon_ext.h
+  collisionTraverser_ext.cxx
+  collisionTraverser_ext.h
+)
+
 composite_sources(p3collide P3COLLIDE_SOURCES)
 add_component_library(p3collide SYMBOL BUILDING_PANDA_COLLIDE
   ${P3COLLIDE_HEADERS} ${P3COLLIDE_SOURCES})
 target_link_libraries(p3collide p3tform)
-target_interrogate(p3collide ALL)
+target_interrogate(p3collide ALL EXTENSIONS ${P3COLLIDE_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3collide

@@ -11,8 +11,8 @@
  * @date 2012-11-26
  */
 
-#ifndef __BULLET_TICK_CALLBACK_DATA_H__
-#define __BULLET_TICK_CALLBACK_DATA_H__
+#ifndef BULLETTICKCALLBACKDATA_H
+#define BULLETTICKCALLBACKDATA_H
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -26,7 +26,7 @@
 class EXPCL_PANDABULLET BulletTickCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletTickCallbackData(btScalar timestep);
+  INLINE explicit BulletTickCallbackData(btScalar timestep);
 
   INLINE PN_stdfloat get_timestep() const;
 
@@ -58,4 +58,4 @@ private:
 
 #include "bulletTickCallbackData.I"
 
-#endif // __BULLET_TICK_CALLBACK_DATA_H__
+#endif // BULLETTICKCALLBACKDATA_H

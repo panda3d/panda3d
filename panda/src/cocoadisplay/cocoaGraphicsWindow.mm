@@ -12,7 +12,6 @@
  */
 
 #include "cocoaGraphicsWindow.h"
-#include "cocoaGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
 #include "cocoaPandaApp.h"
@@ -40,7 +39,6 @@
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSText.h>
-#import <OpenGL/OpenGL.h>
 #import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
@@ -76,7 +74,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   if (NSApp == nil) {
     [CocoaPandaApp sharedApplication];
 
-    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] init];
+    CocoaPandaAppDelegate *delegate = [[CocoaPandaAppDelegate alloc] initWithEngine:engine];
     [NSApp setDelegate:delegate];
 
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -108,7 +106,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   CocoaGraphicsPipe *cocoa_pipe;
   DCAST_INTO_V(cocoa_pipe, _pipe);
-  _display = cocoa_pipe->_display;
+  _display = cocoa_pipe->get_display_id();
 }
 
 /**
@@ -129,7 +127,7 @@ CocoaGraphicsWindow::
 bool CocoaGraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Hack!  Will go away when we have floating-point mouse pos.
-  MouseData md = get_pointer(device);
+  PointerData md = get_pointer(device);
   if (md.get_x() == x && md.get_y() == y) {
     return true;
   }
@@ -137,15 +135,17 @@ move_pointer(int device, int x, int y) {
   if (device == 0) {
     CGPoint point;
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(x, y + 1);
+      point = CGPointMake(x, y);
     } else {
       point = CGPointMake(x + _properties.get_x_origin(),
-                          y + _properties.get_y_origin() + 1);
+                          y + _properties.get_y_origin());
     }
 
-    // I don't know what the difference between these two methods is.  if
-    // (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
-    if (CGDisplayMoveCursorToPoint(_display, point) == kCGErrorSuccess) {
+    if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+      //After moving (or warping) the mouse position, CG starts an event
+      // suppression interval during which no more mouse events can occur
+      // This interval can be interupted by the following call :
+      CGAssociateMouseAndMouseCursorPosition(YES);
       // Generate a mouse event.
       NSPoint pos = [_window mouseLocationOutsideOfEventStream];
       NSPoint loc = [_view convertPoint:pos fromView:nil];
@@ -157,147 +157,6 @@ move_pointer(int device, int x, int y) {
     // No support for raw mice at the moment.
   }
   return false;
-}
-
-
-/**
- * This function will be called within the draw thread before beginning
- * rendering for a given frame.  It should do whatever setup is required, and
- * return true if the frame should be rendered, or false if it should be
- * skipped.
- */
-bool CocoaGraphicsWindow::
-begin_frame(FrameMode mode, Thread *current_thread) {
-  PStatTimer timer(_make_current_pcollector, current_thread);
-
-  begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-
-  CocoaGraphicsStateGuardian *cocoagsg;
-  DCAST_INTO_R(cocoagsg, _gsg, false);
-  nassertr(cocoagsg->_context != nil, false);
-  nassertr(_view != nil, false);
-
-  // Place a lock on the context.
-  cocoagsg->lock_context();
-
-  // Set the drawable.
-  if (_properties.get_fullscreen()) {
-    // Fullscreen.
-    CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
-  } else {
-    // Although not recommended, it is technically possible to use the same
-    // context with multiple different-sized windows.  If that happens, the
-    // context needs to be updated accordingly.
-    if ([cocoagsg->_context view] != _view) {
-      // XXX I'm not 100% sure that changing the view requires it to update.
-      _context_needs_update = true;
-      [cocoagsg->_context setView:_view];
-
-      if (cocoadisplay_cat.is_spam()) {
-        cocoadisplay_cat.spam()
-          << "Switching context to view " << _view << "\n";
-      }
-    }
-  }
-
-  // Update the context if necessary, to make it reallocate buffers etc.
-  if (_context_needs_update) {
-    [cocoagsg->_context update];
-    _context_needs_update = false;
-  }
-
-  // Lock the view for drawing.
-  if (!_properties.get_fullscreen()) {
-    nassertr_always([_view lockFocusIfCanDraw], false);
-  }
-
-  // Make the context current.
-  [cocoagsg->_context makeCurrentContext];
-
-  // Now that we have made the context current to a window, we can reset the
-  // GSG state if this is the first time it has been used.  (We can't just
-  // call reset() when we construct the GSG, because reset() requires having a
-  // current context.)
-  cocoagsg->reset_if_new();
-
-  if (mode == FM_render) {
-    // begin_render_texture();
-    clear_cube_map_selection();
-  }
-
-  _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame(current_thread);
-}
-
-/**
- * This function will be called within the draw thread after rendering is
- * completed for a given frame.  It should do whatever finalization is
- * required.
- */
-void CocoaGraphicsWindow::
-end_frame(FrameMode mode, Thread *current_thread) {
-  end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-
-  if (!_properties.get_fullscreen()) {
-    [_view unlockFocus];
-  }
-  // Release the context.
-  CocoaGraphicsStateGuardian *cocoagsg;
-  DCAST_INTO_V(cocoagsg, _gsg);
-
-  cocoagsg->unlock_context();
-
-  if (mode == FM_render) {
-    // end_render_texture();
-    copy_to_textures();
-  }
-
-  _gsg->end_frame(current_thread);
-
-  if (mode == FM_render) {
-    trigger_flip();
-    clear_cube_map_selection();
-  }
-}
-
-/**
- * This function will be called within the draw thread after begin_flip() has
- * been called on all windows, to finish the exchange of the front and back
- * buffers.
- *
- * This should cause the window to wait for the flip, if necessary.
- */
-void CocoaGraphicsWindow::
-end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
-
-    CocoaGraphicsStateGuardian *cocoagsg;
-    DCAST_INTO_V(cocoagsg, _gsg);
-
-    if (_vsync_enabled) {
-      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
-      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
-        cocoagsg->_swap_lock.lock();
-        cocoagsg->_swap_condition.wait();
-        cocoagsg->_swap_lock.unlock();
-      }
-    }
-
-    cocoagsg->lock_context();
-
-    // Swap the front and back buffer.
-    [cocoagsg->_context flushBuffer];
-
-    // Flush the window
-    [[_view window] flushWindow];
-
-    cocoagsg->unlock_context();
-  }
-  GraphicsWindow::end_flip();
 }
 
 /**
@@ -347,6 +206,10 @@ process_events() {
   }
 
   [pool release];
+
+  if (_context_needs_update && _gsg != nullptr) {
+    update_context();
+  }
 }
 
 /**
@@ -355,34 +218,6 @@ process_events() {
  */
 bool CocoaGraphicsWindow::
 open_window() {
-  CocoaGraphicsPipe *cocoa_pipe;
-  DCAST_INTO_R(cocoa_pipe, _pipe, false);
-
-  // GSG CreationInitialization
-  CocoaGraphicsStateGuardian *cocoagsg;
-  if (_gsg == 0) {
-    // There is no old gsg.  Create a new one.
-    cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, NULL);
-    cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
-    _gsg = cocoagsg;
-  } else {
-    // If the old gsg has the wrong pixel format, create a new one that shares
-    // with the old gsg.
-    DCAST_INTO_R(cocoagsg, _gsg, false);
-    if (!cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
-      cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, cocoagsg);
-      cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
-      _gsg = cocoagsg;
-    }
-  }
-
-  if (cocoagsg->_context == nil) {
-    // Could not obtain a proper context.
-    _gsg.clear();
-    close_window();
-    return false;
-  }
-
   // Fill in the blanks.
   if (!_properties.has_origin()) {
     _properties.set_origin(-2, -2);
@@ -404,6 +239,9 @@ open_window() {
   }
   if (!_properties.has_minimized()) {
     _properties.set_minimized(false);
+  }
+  if (!_properties.has_maximized()) {
+    _properties.set_maximized(false);
   }
   if (!_properties.has_z_order()) {
     _properties.set_z_order(WindowProperties::Z_normal);
@@ -459,7 +297,7 @@ open_window() {
   NSEnumerator *e = [[NSScreen screens] objectEnumerator];
   while (screen = (NSScreen *) [e nextObject]) {
     NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
-    if (cocoa_pipe->_display == (CGDirectDisplayID) [num longValue]) {
+    if (_display == (CGDirectDisplayID) [num longValue]) {
       break;
     }
   }
@@ -528,19 +366,16 @@ open_window() {
     }
   }
 
-  // Lock the context, so we can safely operate on it.
-  cocoagsg->lock_context();
-
   // Create the NSView to render to.
   NSRect rect = NSMakeRect(0, 0, _properties.get_x_size(), _properties.get_y_size());
-  _view = [[CocoaPandaView alloc] initWithFrame:rect context:cocoagsg->_context window:this];
-  if (_parent_window_handle == (WindowHandle *)NULL) {
+  _view = [[CocoaPandaView alloc] initWithFrame:rect window:this];
+  if (_parent_window_handle == nullptr) {
     [_window setContentView:_view];
     [_window makeFirstResponder:_view];
   }
 
   // Check if we have an NSView to attach our NSView to.
-  if (parent_nsview != NULL) {
+  if (parent_nsview != nullptr) {
     [parent_nsview addSubview:_view];
   }
 
@@ -549,7 +384,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_int((size_t) _view);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -604,7 +439,7 @@ open_window() {
     }
 
     if (_properties.get_fullscreen()) {
-      [_window setLevel: NSMainMenuWindowLevel + 1];
+      [_window setLevel: CGShieldingWindowLevel()];
     } else {
       switch (_properties.get_z_order()) {
       case WindowProperties::Z_bottom:
@@ -625,44 +460,35 @@ open_window() {
 
   if (_properties.get_fullscreen()) {
     // Change the display mode.
-    CGDisplayModeRef mode;
-    mode = find_display_mode(_properties.get_x_size(),
-                             _properties.get_y_size());
+    CFMutableArrayRef modes;
 
-    if (mode == NULL) {
+    modes = find_display_modes(_properties.get_x_size(),
+                               _properties.get_y_size());
+
+    if (CFArrayGetCount(modes) > 0) {
+      bool switched = false;
+      for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+        CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+        if (do_switch_fullscreen(mode)) {
+          switched = true;
+          break;
+        }
+      }
+      CFRelease(modes);
+
+      if (!switched) {
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
+        return false;
+      }
+
+    } else {
       cocoadisplay_cat.error()
         << "Could not find a suitable display mode!\n";
-      return false;
-
-    } else if (!do_switch_fullscreen(mode)) {
-      cocoadisplay_cat.error()
-        << "Failed to change display mode.\n";
+      CFRelease(modes);
       return false;
     }
   }
-
-  // Make the context current.
-  _context_needs_update = false;
-  [cocoagsg->_context makeCurrentContext];
-  [cocoagsg->_context setView:_view];
-  [cocoagsg->_context update];
-
-  cocoagsg->reset_if_new();
-
-  // Release the context.
-  cocoagsg->unlock_context();
-
-  if (!cocoagsg->is_valid()) {
-    close_window();
-    return false;
-  }
-
-  if (!cocoagsg->get_fb_properties().verify_hardware_software
-      (_fb_properties, cocoagsg->get_gl_renderer())) {
-    close_window();
-    return false;
-  }
-  _fb_properties = cocoagsg->get_fb_properties();
 
   // Reset dead key state.
   _dead_key_state = 0;
@@ -676,10 +502,8 @@ open_window() {
   // Enable relative mouse mode, if this was requested.
   if (_properties.has_mouse_mode() &&
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
-    mouse_mode_relative();
+    CGAssociateMouseAndMouseCursorPosition(NO);
   }
-
-  _vsync_enabled = sync_video && cocoagsg->setup_vsync();
 
   return true;
 }
@@ -699,21 +523,14 @@ close_window() {
     _cursor = nil;
   }
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
-
-    if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      [cocoagsg->_context clearDrawable];
-      cocoagsg->unlock_context();
-    }
+  if (_gsg != nullptr) {
+    unbind_context();
     _gsg.clear();
   }
 
   if (_window != nil) {
     [_window close];
-    
+
     // Process events once more so any pending NSEvents are cleared. Not doing
     // this causes the window to stick around after calling [_window close].
     process_events();
@@ -725,25 +542,7 @@ close_window() {
     _view = nil;
   }
 
-  _vsync_enabled = false;
-
   GraphicsWindow::close_window();
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_absolute() {
-  CGAssociateMouseAndMouseCursorPosition(YES);
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_relative() {
-  CGAssociateMouseAndMouseCursorPosition(NO);
 }
 
 /**
@@ -784,46 +583,65 @@ set_properties_now(WindowProperties &properties) {
           height = _properties.get_y_size();
         }
 
-        CGDisplayModeRef mode;
-        mode = find_display_mode(width, height);
+        CFMutableArrayRef modes = find_display_modes(width, height);
 
-        if (mode == NULL) {
+        if (CFArrayGetCount(modes) > 0) {
+          bool switched = false;
+          for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+            CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+            if (do_switch_fullscreen(mode)) {
+              switched = true;
+              break;
+            }
+          }
+
+          if (switched) {
+            if (_window != nil) {
+              // For some reason, setting the style mask makes it give up its
+              // first-responder status.  And for some reason, we need to first
+              // restore the window to normal level before we switch fullscreen,
+              // otherwise we may get a black bar if we're currently on Z_top.
+              if (_properties.get_z_order() != WindowProperties::Z_normal) {
+                [_window setLevel: NSNormalWindowLevel];
+              }
+              if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+                [_window setStyleMask:NSBorderlessWindowMask];
+              }
+              [_window makeFirstResponder:_view];
+              [_window setLevel:CGShieldingWindowLevel()];
+              [_window makeKeyAndOrderFront:nil];
+            }
+
+            // We've already set the size property this way; clear it.
+            properties.clear_size();
+            _properties.set_size(width, height);
+            properties.clear_origin();
+            _properties.set_origin(0, 0);
+            properties.clear_fullscreen();
+            _properties.set_fullscreen(true);
+
+          } else {
+            cocoadisplay_cat.error()
+              << "Failed to change display mode.\n";
+          }
+        } else {
           cocoadisplay_cat.error()
             << "Could not find a suitable display mode with size " << width
             << "x" << height << "!\n";
-
-        } else if (do_switch_fullscreen(mode)) {
-          if (_window != nil) {
-            // For some reason, setting the style mask makes it give up its
-            // first-responder status.
-            if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-              [_window setStyleMask:NSBorderlessWindowMask];
-            }
-            [_window makeFirstResponder:_view];
-            [_window setLevel:NSMainMenuWindowLevel+1];
-            [_window makeKeyAndOrderFront:nil];
-          }
-
-          // We've already set the size property this way; clear it.
-          properties.clear_size();
-          _properties.set_size(width, height);
-          properties.clear_origin();
-          _properties.set_origin(0, 0);
-          properties.clear_fullscreen();
-          _properties.set_fullscreen(true);
-
-        } else {
-          cocoadisplay_cat.error()
-            << "Failed to change display mode.\n";
         }
+        CFRelease(modes);
 
       } else {
         do_switch_fullscreen(NULL);
         _properties.set_fullscreen(false);
 
         // Force properties to be reset to their actual values
-        properties.set_undecorated(_properties.get_undecorated());
-        properties.set_z_order(_properties.get_z_order());
+        if (!properties.has_undecorated()) {
+          properties.set_undecorated(_properties.get_undecorated());
+        }
+        if (!properties.has_z_order()) {
+          properties.set_z_order(_properties.get_z_order());
+        }
         properties.clear_fullscreen();
       }
     }
@@ -838,91 +656,6 @@ set_properties_now(WindowProperties &properties) {
       [_window deminiaturize:nil];
     }
     properties.clear_minimized();
-  }
-
-  if (properties.has_size()) {
-    int width = properties.get_x_size();
-    int height = properties.get_y_size();
-
-    if (!_properties.get_fullscreen()) {
-      if (_window != nil) {
-        [_window setContentSize:NSMakeSize(width, height)];
-      }
-      [_view setFrameSize:NSMakeSize(width, height)];
-
-      if (cocoadisplay_cat.is_debug()) {
-        cocoadisplay_cat.debug()
-          << "Setting size to " << width << ", " << height << "\n";
-      }
-
-      // Cocoa doesn't send an event, and the other resize-window handlers
-      // will do nothing once the properties have been changed, so do this now
-      handle_resize_event();
-      properties.clear_size();
-
-    } else {
-      CGDisplayModeRef mode = find_display_mode(width, height);
-
-      if (mode == NULL) {
-        cocoadisplay_cat.error()
-          << "Could not find a suitable display mode with size " << width
-          << "x" << height << "!\n";
-
-      } else if (do_switch_fullscreen(mode)) {
-        // Yay!  Our resolution has changed.
-        _properties.set_size(width, height);
-        properties.clear_size();
-
-      } else {
-        cocoadisplay_cat.error()
-          << "Failed to change display mode.\n";
-      }
-    }
-  }
-
-  if (properties.has_origin() && !_properties.get_fullscreen()) {
-    int x = properties.get_x_origin();
-    int y = properties.get_y_origin();
-
-    // Get the frame for the screen
-    NSRect frame;
-    NSRect container;
-    if (_window != nil) {
-      frame = [_window contentRectForFrameRect:[_window frame]];
-      NSScreen *screen = [_window screen];
-      nassertv(screen != nil);
-      container = [screen frame];
-    } else {
-      frame = [_view frame];
-      container = [[_view superview] frame];
-    }
-
-    if (x < 0) {
-      x = floor(container.size.width / 2 - frame.size.width / 2);
-    }
-    if (y < 0) {
-      y = floor(container.size.height / 2 - frame.size.height / 2);
-    }
-    _properties.set_origin(x, y);
-
-    if (!_properties.get_fullscreen()) {
-      // Remember, Mac OS X coordinates are flipped in the vertical axis.
-      frame.origin.x = x;
-      frame.origin.y = container.size.height - y - frame.size.height;
-
-      if (cocoadisplay_cat.is_debug()) {
-        cocoadisplay_cat.debug()
-          << "Setting window content origin to "
-          << frame.origin.x << ", " << frame.origin.y << "\n";
-      }
-
-      if (_window != nil) {
-        [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
-      } else {
-        [_view setFrame:frame];
-      }
-    }
-    properties.clear_origin();
   }
 
   if (properties.has_title() && _window != nil) {
@@ -975,6 +708,119 @@ set_properties_now(WindowProperties &properties) {
     }
 
     properties.clear_undecorated();
+  }
+
+  if (properties.has_size()) {
+    int width = properties.get_x_size();
+    int height = properties.get_y_size();
+
+    if (!_properties.get_fullscreen()) {
+      if (_window != nil) {
+        [_window setContentSize:NSMakeSize(width, height)];
+      }
+      [_view setFrameSize:NSMakeSize(width, height)];
+
+      if (cocoadisplay_cat.is_debug()) {
+        cocoadisplay_cat.debug()
+          << "Setting size to " << width << ", " << height << "\n";
+      }
+
+      // Cocoa doesn't send an event, and the other resize-window handlers
+      // will do nothing once the properties have been changed, so do this now
+      handle_resize_event();
+      properties.clear_size();
+
+    } else {
+      CFMutableArrayRef modes = find_display_modes(width, height);
+
+      if (CFArrayGetCount(modes) > 0) {
+        bool switched = false;
+        for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+          CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+          if (do_switch_fullscreen(mode)) {
+            switched = true;
+            break;
+          }
+        }
+
+        if (switched) {
+          // Yay!  Our resolution has changed.
+          _properties.set_size(width, height);
+          properties.clear_size();
+        } else {
+          cocoadisplay_cat.error()
+            << "Failed to change display mode.\n";
+        }
+
+      } else {
+        cocoadisplay_cat.error()
+          << "Could not find a suitable display mode with size " << width
+          << "x" << height << "!\n";
+      }
+      CFRelease(modes);
+    }
+  }
+
+  if (properties.has_origin() && !_properties.get_fullscreen()) {
+    int x = properties.get_x_origin();
+    int y = properties.get_y_origin();
+
+    // Get the frame for the screen
+    NSRect frame;
+    NSRect container;
+    if (_window != nil) {
+      NSRect window_frame = [_window frame];
+      frame = [_window contentRectForFrameRect:window_frame];
+      NSScreen *screen = [_window screen];
+      nassertv(screen != nil);
+      container = [screen frame];
+
+      // Prevent the centering from overlapping the Dock
+      if (y < 0) {
+        NSRect visible_frame = [screen visibleFrame];
+        if (window_frame.size.height == visible_frame.size.height) {
+          y = 0;
+        }
+      }
+    } else {
+      frame = [_view frame];
+      container = [[_view superview] frame];
+    }
+
+    if (x < 0) {
+      x = floor(container.size.width / 2 - frame.size.width / 2);
+    }
+    if (y < 0) {
+      y = floor(container.size.height / 2 - frame.size.height / 2);
+    }
+    _properties.set_origin(x, y);
+
+    if (!_properties.get_fullscreen()) {
+      // Remember, Mac OS X coordinates are flipped in the vertical axis.
+      frame.origin.x = x;
+      frame.origin.y = container.size.height - y - frame.size.height;
+
+      if (cocoadisplay_cat.is_debug()) {
+        cocoadisplay_cat.debug()
+          << "Setting window content origin to "
+          << frame.origin.x << ", " << frame.origin.y << "\n";
+      }
+
+      if (_window != nil) {
+        [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
+      } else {
+        [_view setFrame:frame];
+      }
+    }
+    properties.clear_origin();
+  }
+
+  if (properties.has_maximized() && _window != nil) {
+    _properties.set_maximized(properties.get_maximized());
+    if (properties.get_maximized() != !![_window isZoomed]) {
+      [_window zoom:nil];
+    }
+    properties.clear_maximized();
   }
 
   if (properties.has_foreground() && !_properties.get_fullscreen() && _window != nil) {
@@ -1084,14 +930,32 @@ set_properties_now(WindowProperties &properties) {
       break;
     }
   }
+
+  if (_context_needs_update && _gsg != nullptr) {
+    update_context();
+  }
+}
+
+/**
+ *
+ */
+void CocoaGraphicsWindow::
+update_context() {
+}
+
+/**
+ *
+ */
+void CocoaGraphicsWindow::
+unbind_context() {
 }
 
 /**
  * Returns an appropriate CGDisplayModeRef for the given width and height, or
  * NULL if none was found.
  */
-CGDisplayModeRef CocoaGraphicsWindow::
-find_display_mode(int width, int height) {
+CFMutableArrayRef CocoaGraphicsWindow::
+find_display_modes(int width, int height) {
   CFDictionaryRef options = NULL;
   // On macOS 10.15+ (Catalina), we want to select the display mode with the
   // samescaling factor as the current view to avoid cropping or scaling issues.
@@ -1111,6 +975,9 @@ find_display_mode(int width, int height) {
                                  &kCFTypeDictionaryValueCallBacks);
   }
 #endif
+  CFMutableArrayRef valid_modes;
+  valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
   if (options != NULL) {
     CFRelease(options);
@@ -1121,7 +988,7 @@ find_display_mode(int width, int height) {
 
   // Get the current refresh rate and pixel encoding.
   CFStringRef current_pixel_encoding;
-  int refresh_rate;
+  double refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
   // First check if the current mode is adequate.
@@ -1130,7 +997,9 @@ find_display_mode(int width, int height) {
   if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
       CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
-    return mode;
+    CFArrayAppendValue(valid_modes, mode);
+    CGDisplayModeRelease(mode);
+    return valid_modes;
   }
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
@@ -1153,7 +1022,7 @@ find_display_mode(int width, int height) {
     // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
-        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
         (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
@@ -1161,17 +1030,19 @@ find_display_mode(int width, int height) {
 #endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
-      CFRetain(mode);
-      CFRelease(pixel_encoding);
-      CFRelease(current_pixel_encoding);
-      CFRelease(modes);
-      return mode;
+      if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
+        // Exact match for refresh rate, prioritize this.
+        CFArrayInsertValueAtIndex(valid_modes, 0, mode);
+      } else {
+        CFArrayAppendValue(valid_modes, mode);
+      }
     }
+    CFRelease(pixel_encoding);
   }
 
   CFRelease(current_pixel_encoding);
   CFRelease(modes);
-  return NULL;
+  return valid_modes;
 }
 
 /**
@@ -1189,7 +1060,11 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     // Switch back to the mode we were in when we were still windowed.
     CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
     CGDisplayModeRelease(_windowed_mode);
-    CGDisplayRelease(_display);
+    if (CGDisplayIsMain(_display)) {
+      CGReleaseAllDisplays();
+    } else {
+      CGDisplayRelease(_display);
+    }
     _windowed_mode = NULL;
     _context_needs_update = true;
 
@@ -1204,14 +1079,31 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     _fullscreen_mode = mode;
     _context_needs_update = true;
 
+    // Display must be captured by the application before switching mode.
+    // If not, the change of mode and resolution will be applied on all the other applications,
+    // although they are no longer visible.
+    // This also leads to weird bugs when switching back to the desktop mode.
     CGError err;
-    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
-
+    if (CGDisplayIsMain(_display)) {
+      // In multidisplay setup, all the displays must be captured or the switch will be notified anyway.
+      err = CGCaptureAllDisplays();
+    } else {
+      err = CGDisplayCapture(_display);
+    }
     if (err != kCGErrorSuccess) {
       return false;
     }
 
-    CGDisplayCapture(_display);
+    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
+
+    if (err != kCGErrorSuccess) {
+      if (CGDisplayIsMain(_display)) {
+        CGReleaseAllDisplays();
+      } else {
+        CGDisplayRelease(_display);
+      }
+      return false;
+    }
 
     NSRect frame = [[[_view window] screen] frame];
     if (cocoadisplay_cat.is_debug()) {
@@ -1404,10 +1296,12 @@ handle_resize_event() {
 
   NSRect frame = [_view convertRect:[_view bounds] toView:nil];
 
+  WindowProperties properties;
+  bool changed = false;
+
   if (frame.size.width != _properties.get_x_size() ||
       frame.size.height != _properties.get_y_size()) {
 
-    WindowProperties properties;
     properties.set_size(frame.size.width, frame.size.height);
 
     if (cocoadisplay_cat.is_spam()) {
@@ -1415,6 +1309,18 @@ handle_resize_event() {
         << "Window changed size to (" << frame.size.width
        << ", " << frame.size.height << ")\n";
     }
+    changed = true;
+  }
+
+  if (_window != nil) {
+    bool is_maximized = [_window isZoomed];
+    if (is_maximized != _properties.get_maximized()) {
+      properties.set_maximized(is_maximized);
+      changed = true;
+    }
+  }
+
+  if (changed) {
     system_changed_properties(properties);
   }
 
@@ -1443,6 +1349,31 @@ handle_minimize_event(bool minimized) {
   properties.set_minimized(minimized);
   system_changed_properties(properties);
 }
+
+/**
+ * Called by the window delegate when the window is maximized or
+ * demaximized.
+ */
+void CocoaGraphicsWindow::
+handle_maximize_event(bool maximized) {
+  if (maximized == _properties.get_maximized()) {
+    return;
+  }
+
+  if (cocoadisplay_cat.is_debug()) {
+    if (maximized) {
+      cocoadisplay_cat.debug() << "Window was maximized\n";
+    } else {
+      cocoadisplay_cat.debug() << "Window was demaximized\n";
+    }
+  }
+
+  WindowProperties properties;
+  properties.set_maximized(maximized);
+  system_changed_properties(properties);
+}
+
+
 
 /**
  * Called by the window delegate when the window has become the key window or
@@ -1522,17 +1453,9 @@ handle_close_event() {
   _window = nil;
 
   // Get rid of the GSG
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    CocoaGraphicsStateGuardian *cocoagsg;
-    cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
-
-    if (cocoagsg != NULL && cocoagsg->_context != nil) {
-      cocoagsg->lock_context();
-      [cocoagsg->_context clearDrawable];
-      cocoagsg->unlock_context();
-    }
+  if (_gsg != nullptr) {
+    unbind_context();
     _gsg.clear();
-    _vsync_enabled = false;
   }
 
   // Dump the view, too
@@ -1640,20 +1563,19 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
+  TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
+  CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
   if ([event type] == NSKeyDown) {
     // Translate it to a unicode character for keystrokes.  I would use
     // interpretKeyEvents and insertText, but that doesn't handle dead keys.
-    TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
-    CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
-    const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
-
     UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;
     UniChar ustr[8];
     UniCharCount length;
 
     UCKeyTranslate(layout, [event keyCode], kUCKeyActionDown, modifier_state,
                    LMGetKbdType(), 0, &_dead_key_state, sizeof(ustr), &length, ustr);
-    CFRelease(input_source);
 
     for (int i = 0; i < length; ++i) {
       UniChar c = ustr[i];
@@ -1669,17 +1591,38 @@ handle_key_event(NSEvent *event) {
     }
   }
 
-  NSString *str = [event charactersIgnoringModifiers];
-  if (str == nil || [str length] == 0) {
+  // [NSEvent charactersIgnoringModifiers] doesn't ignore the shift key, so we
+  // need to do what that method is doing manually.
+  _dead_key_state = 0;
+  UniChar c;
+  UniCharCount length;
+  UCKeyTranslate(layout, [event keyCode], kUCKeyActionDisplay,
+    0, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &_dead_key_state,
+    sizeof(c), &length, &c);
+  CFRelease(input_source);
+
+  if (length != 1) {
     return;
   }
-  nassertv_always([str length] == 1);
-  unichar c = [str characterAtIndex: 0];
+
+  // If UCKeyTranslate could not map the key into a valid unicode character or
+  // reserved symbol (See NSEvent.h), it returns 0x10 as translated character.
+  // This happens e.g.e with the combination Fn+F1.. keys.
+  // In that case, as fallback, we use charactersIgnoringModifiers to retrieve
+  // the character without modifiers.
+  if (c == 0x10) {
+    NSString *str = [event charactersIgnoringModifiers];
+    if (str == nil || [str length] != 1) {
+      return;
+    }
+    c = [str characterAtIndex: 0];
+  }
 
   ButtonHandle button = map_key(c);
 
   if (button == ButtonHandle::none()) {
     // That done, continue trying to find out the button handle.
+    NSString *str = [[NSString alloc] initWithCharacters:&c length:length];
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       str = [str lowercaseString];
@@ -1765,13 +1708,12 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
       }
     }
 
-    // Strangely enough, in Cocoa, mouse Y coordinates are 1-based.
     nx = x;
-    ny = y - 1;
+    ny = y;
 
   } else {
     // We received deltas, so add it to the current mouse position.
-    MouseData md = _input->get_pointer();
+    PointerData md = _input->get_pointer();
     nx = md.get_x() + x;
     ny = md.get_y() + y;
   }
@@ -1784,13 +1726,17 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     ny = std::max(0., std::min((double) get_y_size() - 1, ny));
 
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(nx, ny + 1);
+      point = CGPointMake(nx, ny);
     } else {
       point = CGPointMake(nx + _properties.get_x_origin(),
-                          ny + _properties.get_y_origin() + 1);
+                          ny + _properties.get_y_origin());
     }
 
     if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+      //After moving (or warping) the mouse position, CG starts an event
+      // suppression interval during which no more mouse events can occur
+      // This interval can be interupted by the following call :
+      CGAssociateMouseAndMouseCursorPosition(YES);
       in_window = true;
     } else {
       cocoadisplay_cat.warning() << "Failed to return mouse pointer to window\n";
@@ -1833,11 +1779,14 @@ handle_wheel_event(double x, double y) {
     _input->button_up(MouseButton::wheel_down());
   }
 
-  // TODO: check if this is correct, I don't own a MacBook
-  if (x > 0.0) {
+  if (x != 0 && cocoa_invert_wheel_x) {
+    x = -x;
+  }
+
+  if (x < 0.0) {
     _input->button_down(MouseButton::wheel_right());
     _input->button_up(MouseButton::wheel_right());
-  } else if (x < 0.0) {
+  } else if (x > 0.0) {
     _input->button_down(MouseButton::wheel_left());
     _input->button_up(MouseButton::wheel_left());
   }
@@ -2062,6 +2011,7 @@ map_raw_key(unsigned short keycode) const {
   case 0x07: return KeyboardButton::ascii_key('x');
   case 0x08: return KeyboardButton::ascii_key('c');
   case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0A: return KeyboardButton::ascii_key('<');
   case 0x0B: return KeyboardButton::ascii_key('b');
   case 0x0C: return KeyboardButton::ascii_key('q');
   case 0x0D: return KeyboardButton::ascii_key('w');

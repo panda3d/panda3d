@@ -117,8 +117,6 @@ RenderState::
   nassertv(!is_destructing());
   set_destructing();
 
-  LightReMutexHolder holder(*_states_lock);
-
   // unref() should have cleared these.
   nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
@@ -746,6 +744,14 @@ get_num_unused_states() {
   for (size_t si = 0; si < size; ++si) {
     const RenderState *state = _states.get_key(si);
 
+    std::pair<StateCount::iterator, bool> ir =
+      state_count.insert(StateCount::value_type(state, 1));
+    if (!ir.second) {
+      // If the above insert operation fails, then it's already in the
+      // cache; increment its value.
+      (*(ir.first)).second++;
+    }
+
     size_t i;
     size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
@@ -925,15 +931,17 @@ garbage_collect() {
       }
     }
 
-    if (state->get_ref_count() == 1) {
+    if (!state->unref_if_one()) {
       // This state has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _states_lock, so it's not possible
       // for some other thread to find the state in the cache and ref it
-      // while we're doing this.
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
+
       state->release_new();
       state->remove_cache_pointers();
-      state->cache_unref();
+      state->cache_unref_only();
       delete state;
 
       // When we removed it from the hash map, it swapped the last element
@@ -1279,8 +1287,8 @@ return_unique(RenderState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.  nassertr(_states.find(state) ==
-    // state->_saved_entry, pt_state);
+    // This state is already in the cache.
+    //nassertr(_states.find(state) == state->_saved_entry, pt_state);
     return state;
   }
 
@@ -1292,7 +1300,7 @@ return_unique(RenderState *state) {
     while (slot >= 0) {
       Attribute &attrib = state->_attributes[slot];
       nassertd(attrib._attrib != nullptr) continue;
-      attrib._attrib = attrib._attrib->get_unique();
+      attrib._attrib = RenderAttrib::do_uniquify(attrib._attrib);
       mask.clear_bit(slot);
       slot = mask.get_lowest_on_bit();
     }
@@ -1841,6 +1849,7 @@ init_states() {
   // is declared globally, and lives forever.
   RenderState *state = new RenderState;
   state->local_object();
+  state->cache_ref_only();
   state->_saved_entry = _states.store(state, nullptr);
   _empty_state = state;
 }
@@ -1888,8 +1897,6 @@ int RenderState::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  int num_attribs = 0;
-
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
   for (size_t i = 0; i < (*_read_overrides).size(); ++i) {
     int override = (*_read_overrides)[i];
@@ -1900,7 +1907,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       if (slot > 0 && slot < reg->get_max_slots()) {
         _attributes[slot].set(attrib, override);
         _filled_slots.set_bit(slot);
-        ++num_attribs;
       }
     }
   }

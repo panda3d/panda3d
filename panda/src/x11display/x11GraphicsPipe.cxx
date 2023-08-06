@@ -16,6 +16,7 @@
 #include "config_x11display.h"
 #include "frameBufferProperties.h"
 #include "displayInformation.h"
+#include "pstrtod.h"
 
 #include <dlfcn.h>
 
@@ -34,8 +35,8 @@ LightReMutex x11GraphicsPipe::_x_mutex;
  */
 x11GraphicsPipe::
 x11GraphicsPipe(const std::string &display) :
-  _have_xrandr(false),
   _xcursor_size(-1),
+  _have_xrandr(false),
   _XF86DGADirectVideo(nullptr) {
 
   std::string display_spec = display;
@@ -49,6 +50,13 @@ x11GraphicsPipe(const std::string &display) :
     display_spec = ":0.0";
   }
 
+  // Store the current locale, so that we can restore it later.
+  std::string saved_locale;
+  char *saved_locale_p = setlocale(LC_ALL, nullptr);
+  if (saved_locale_p != nullptr) {
+    saved_locale = saved_locale_p;
+  }
+
   // The X docs say we should do this to get international character support
   // from the keyboard.
   setlocale(LC_ALL, "");
@@ -57,6 +65,20 @@ x11GraphicsPipe(const std::string &display) :
   // since all of the internal Panda code assumes this--we need a decimal
   // point to mean a decimal point.
   setlocale(LC_NUMERIC, "C");
+
+  // Also save the startup ID.  We are required to unset it by the FreeDesktop
+  // specification so that it is not propagated to child processes.
+  {
+    char *startup_id = getenv("DESKTOP_STARTUP_ID");
+    if (startup_id != nullptr) {
+      _startup_id.assign(startup_id);
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Got desktop startup ID " << _startup_id << "\n";
+      }
+      unsetenv("DESKTOP_STARTUP_ID");
+    }
+  }
 
   _is_valid = false;
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
@@ -316,8 +338,13 @@ x11GraphicsPipe(const std::string &display) :
   // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, nullptr, nullptr, nullptr);
   if (_im == (XIM)nullptr) {
-    x11display_cat.warning()
-      << "Couldn't open input method.\n";
+    // Fall back to internal input method.
+    XSetLocaleModifiers("@im=none");
+    _im = XOpenIM(_display, nullptr, nullptr, nullptr);
+    if (_im == (XIM)nullptr) {
+      x11display_cat.warning()
+        << "Couldn't open input method.\n";
+    }
   }
 
   // What styles does the current input method support?
@@ -333,19 +360,54 @@ x11GraphicsPipe(const std::string &display) :
   XFree(im_supported_styles);
   */
 
+  // Restore the previous locale.
+  if (!saved_locale.empty()) {
+    setlocale(LC_ALL, saved_locale.c_str());
+  }
+
+  const char *dpi = XGetDefault(_display, "Xft", "dpi");
+  if (dpi != nullptr) {
+    char *endptr = nullptr;
+    double result = pstrtod(dpi, &endptr);
+    if (result != 0 && !cnan(result) && endptr[0] == '\0') {
+      result /= 96;
+      set_detected_display_zoom(result);
+
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Determined display zoom to be " << result
+          << " based on specified Xft.dpi " << dpi << "\n";
+      }
+    } else {
+      x11display_cat.warning()
+        << "Unable to determine display zoom because Xft.dpi is invalid: "
+        << dpi << "\n";
+    }
+  } else if (x11display_cat.is_debug()) {
+    x11display_cat.debug()
+      << "Unable to determine display zoom because Xft.dpi was not set.\n";
+  }
+
   // Get some X atom numbers.
+  _utf8_string = XInternAtom(_display, "UTF8_STRING", false);
   _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
-  _net_wm_pid = XInternAtom(_display, "_NET_WM_PID", false);
-  _net_wm_window_type = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", false);
-  _net_wm_window_type_splash = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_SPLASH", false);
-  _net_wm_window_type_fullscreen = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_FULLSCREEN", false);
-  _net_wm_state = XInternAtom(_display, "_NET_WM_STATE", false);
-  _net_wm_state_fullscreen = XInternAtom(_display, "_NET_WM_STATE_FULLSCREEN", false);
-  _net_wm_state_above = XInternAtom(_display, "_NET_WM_STATE_ABOVE", false);
-  _net_wm_state_below = XInternAtom(_display, "_NET_WM_STATE_BELOW", false);
-  _net_wm_state_add = XInternAtom(_display, "_NET_WM_STATE_ADD", false);
-  _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
+  _net_startup_id = XInternAtom(_display, "_NET_STARTUP_ID", false);
+  _net_startup_info = XInternAtom(_display, "_NET_STARTUP_INFO", false);
+  _net_startup_info_begin = XInternAtom(_display, "_NET_STARTUP_INFO_BEGIN", false);
   _net_wm_bypass_compositor = XInternAtom(_display, "_NET_WM_BYPASS_COMPOSITOR", false);
+  _net_wm_pid = XInternAtom(_display, "_NET_WM_PID", false);
+  _net_wm_ping = XInternAtom(_display, "_NET_WM_PING", false);
+  _net_wm_state = XInternAtom(_display, "_NET_WM_STATE", false);
+  _net_wm_state_above = XInternAtom(_display, "_NET_WM_STATE_ABOVE", false);
+  _net_wm_state_add = XInternAtom(_display, "_NET_WM_STATE_ADD", false);
+  _net_wm_state_below = XInternAtom(_display, "_NET_WM_STATE_BELOW", false);
+  _net_wm_state_fullscreen = XInternAtom(_display, "_NET_WM_STATE_FULLSCREEN", false);
+  _net_wm_state_maximized_horz = XInternAtom(_display, "_NET_WM_STATE_MAXIMIZED_HORZ", false);
+  _net_wm_state_maximized_vert = XInternAtom(_display, "_NET_WM_STATE_MAXIMIZED_VERT", false);
+  _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
+  _net_wm_window_type = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", false);
+  _net_wm_window_type_fullscreen = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_FULLSCREEN", false);
+  _net_wm_window_type_splash = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_SPLASH", false);
 }
 
 /**
@@ -363,9 +425,85 @@ x11GraphicsPipe::
 }
 
 /**
+ * Tells the window manager that the launch sequence with the indicated startup
+ * ID has finished.  Will only send it once, and only if DESKTOP_STARTUP_ID was
+ * passed in as an environment variable.
+ */
+void x11GraphicsPipe::
+send_startup_notification() {
+  if (_sent_startup_notification || _startup_id.empty()) {
+    return;
+  }
+
+  // Allocate enough room for the message, with room for escape characters.
+  char *message = (char *)alloca(_startup_id.size() * 2 + 14);
+  memcpy(message, "remove: ID=\"", 12);
+
+  char *p = message + 12;
+  for (char c : _startup_id) {
+    if (c == '"' || c == '\\') {
+      *p++ = '\\';
+    }
+    *p++ = c;
+  }
+  *p++ = '\"';
+  *p++ = '\0';
+
+  if (x11display_cat.is_debug()) {
+    x11display_cat.debug()
+      << "Sending startup info message: " << message << "\n";
+  }
+
+  // It doesn't *strictly* seem to be necessary to create a window for this
+  // (just passing in the root window works too) but the spec says we should
+  // and GTK does it too, so why not?
+  XSetWindowAttributes attrs;
+  attrs.override_redirect = True;
+  attrs.event_mask = PropertyChangeMask | StructureNotifyMask;
+  X11_Window xwin = XCreateWindow(_display, _root, -100, -100, 1, 1, 0,
+                                  CopyFromParent, CopyFromParent, CopyFromParent,
+                                  CWOverrideRedirect | CWEventMask, &attrs);
+
+  XEvent xevent;
+  xevent.xclient.type = ClientMessage;
+  xevent.xclient.message_type = _net_startup_info_begin;
+  xevent.xclient.display = _display;
+  xevent.xclient.window = xwin;
+  xevent.xclient.format = 8;
+
+  const char *src = message;
+  const char *src_end = message + strlen(message) + 1;
+
+  char *dest, *dest_end;
+  while (src != src_end) {
+    dest = &xevent.xclient.data.b[0];
+    dest_end = dest + 20;
+
+    while (dest != dest_end && src != src_end) {
+      *dest = *src;
+      ++dest;
+      ++src;
+    }
+
+    while (dest != dest_end) {
+      *dest = '\0';
+      ++dest;
+    }
+
+    XSendEvent(_display, _root, False, PropertyChangeMask, &xevent);
+    xevent.xclient.message_type = _net_startup_info;
+  }
+
+  XDestroyWindow(_display, xwin);
+  XFlush(_display);
+
+  _sent_startup_notification = true;
+}
+
+/**
  * Enables raw mouse mode for this display.  Returns false if unsupported.
  */
-INLINE bool x11GraphicsPipe::
+bool x11GraphicsPipe::
 enable_raw_mouse() {
   if (_num_raw_mouse_windows > 0) {
     // Already enabled by another window.
@@ -382,7 +520,7 @@ enable_raw_mouse() {
     XISetMask(mask, XI_RawMotion);
 
     if (_XISelectEvents(_display, _root, &event_mask, 1) == Success) {
-      if (x11display_cat.info()) {
+      if (x11display_cat.is_info()) {
         x11display_cat.info()
           << "Enabled raw mouse events using XInput2 extension\n";
       }

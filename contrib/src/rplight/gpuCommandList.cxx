@@ -51,7 +51,7 @@ void GPUCommandList::add_command(const GPUCommand& cmd) {
  *   list, and are waiting to get processed.
  * @return Amount of commands
  */
-size_t GPUCommandList::get_num_commands() {
+size_t GPUCommandList::get_num_commands() const {
   return _commands.size();
 }
 

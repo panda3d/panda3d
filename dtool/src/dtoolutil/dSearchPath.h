@@ -53,8 +53,8 @@ PUBLISHED:
   };
 
   DSearchPath() = default;
-  DSearchPath(const std::string &path, const std::string &separator = std::string());
-  DSearchPath(const Filename &directory);
+  explicit DSearchPath(const std::string &path, const std::string &separator = std::string());
+  explicit DSearchPath(const Filename &directory);
   DSearchPath(const DSearchPath &copy) = default;
   DSearchPath(DSearchPath &&from) = default;
   ~DSearchPath() = default;

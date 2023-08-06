@@ -30,27 +30,27 @@ public:
   INLINE StringStream(vector_uchar source);
 
 PUBLISHED:
-  EXTENSION(StringStream(PyObject *source));
+  PY_EXTENSION(StringStream(PyObject *source));
   INLINE StringStream();
 
 #if _MSC_VER >= 1800
   INLINE StringStream(const StringStream &copy) = delete;
-#endif
+#endif // _MSC_VER >= 1800
 
   INLINE void clear_data();
   INLINE size_t get_data_size();
 
-  EXTENSION(PyObject *get_data());
-  EXTENSION(void set_data(PyObject *data));
+  PY_EXTENSION(PyObject *get_data());
+  PY_EXTENSION(void set_data(PyObject *data));
 
-  MAKE_PROPERTY(data, get_data, set_data);
+  PY_MAKE_PROPERTY(data, get_data, set_data);
 
 public:
 #ifndef CPPPARSER
   INLINE std::string get_data();
   INLINE void set_data(const std::string &data);
   void set_data(const unsigned char *data, size_t size);
-#endif
+#endif // !CPPPARSER
 
   INLINE void swap_data(vector_uchar &data);
 
@@ -62,4 +62,4 @@ private:
 
 #include "stringStream.I"
 
-#endif
+#endif // !STRINGSTREAM_H

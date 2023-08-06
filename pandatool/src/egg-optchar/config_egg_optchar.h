@@ -18,4 +18,4 @@
 
 void init_egg_optchar();
 
-#endif /* __CONFIG_UTIL_H__ */
+#endif /* CONFIG_EGG_OPTCHAR_H */

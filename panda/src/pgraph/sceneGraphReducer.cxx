@@ -346,7 +346,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 
           new_node->copy_children(child_node);
           node->replace_child(child_node, new_node);
-          child_node = new_node;
+          //child_node = new_node;
         }
       }
     }

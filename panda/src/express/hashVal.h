@@ -15,7 +15,6 @@
 #define HASHVAL_H
 
 #include "pandabase.h"
-#include "typedef.h"
 #include "pnotify.h"
 #include "ramfile.h"
 #include "datagram.h"
@@ -64,20 +63,22 @@ PUBLISHED:
   INLINE void write_stream(StreamWriter &destination) const;
   INLINE void read_stream(StreamReader &source);
 
-#ifdef HAVE_OPENSSL
   bool hash_file(const Filename &filename);
   bool hash_stream(std::istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const std::string &data);
   INLINE void hash_bytes(const vector_uchar &data);
-  void hash_buffer(const char *buffer, int length);
-#endif  // HAVE_OPENSSL
+  void hash_buffer(const char *buffer, size_t length);
 
 private:
   static void encode_hex(uint32_t val, char *buffer);
   static void decode_hex(const char *buffer, uint32_t &val);
   INLINE static char tohex(unsigned int nibble);
   INLINE static unsigned int fromhex(char digit);
+
+  INLINE void md5_init();
+  void md5_update(const unsigned char *buffer);
+  void md5_final(unsigned char *buffer, size_t size, uint64_t total_length);
 
   uint32_t _hv[4];
 };
