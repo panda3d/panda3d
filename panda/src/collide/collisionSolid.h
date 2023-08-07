@@ -181,6 +181,7 @@ private:
   friend class CollisionParabola;
   friend class CollisionHandlerFluidPusher;
   friend class CollisionBox;
+  friend class CollisionHeightfield;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const CollisionSolid &cs) {

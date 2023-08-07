@@ -113,7 +113,7 @@ jobs:
         libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
-        python3-setuptools
+        python3-setuptools python3-tk
 
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
