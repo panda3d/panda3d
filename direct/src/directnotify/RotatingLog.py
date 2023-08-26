@@ -83,7 +83,6 @@ class RotatingLog:
             self.closed = self.file.closed
             self.mode = self.file.mode
             self.name = self.file.name
-            self.softspace = self.file.softspace
             #self.encoding = self.file.encoding # Python 2.3
             #self.newlines = self.file.newlines # Python 2.3, maybe
 
