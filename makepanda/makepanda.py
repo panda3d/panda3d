@@ -1077,6 +1077,9 @@ if (COMPILER=="GCC"):
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+        # When using pre-11.0 SDKs, for PStats
+        if os.path.basename(SDK["MACOSX"]).startswith("MacOSX10."):
+            LibName("COCOA", "-Wl,-U,_OBJC_CLASS_$_NSTrackingSeparatorToolbarItem")
 
         # Temporary exceptions to removal of this flag
         if not PkgSkip("FFMPEG"):
@@ -5911,10 +5914,13 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
+if not PkgSkip("PANDATOOL") and (GetTarget() in ('windows', 'darwin') or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
+    elif GetTarget() == 'darwin':
+        OPTS=['DIR:pandatool/src/mac-stats']
+        TargetAdd('pstats_composite1.obj', opts=OPTS, input='macstats_composite1.mm')
     else:
         OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
@@ -5923,7 +5929,7 @@ if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/

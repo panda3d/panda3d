@@ -988,7 +988,12 @@ draw_frames(int first_frame, int last_frame) {
     if (_scroll_mode) {
       // In scrolling mode, slide the world back.
       int slide_pixels = last_pixel - _xsize;
+      // This is really slow on macOS, just redraw instead
+#ifdef __APPLE__
+      draw_pixels(0, first_pixel - slide_pixels);
+#else
       copy_region(slide_pixels, first_pixel, 0);
+#endif
       first_pixel -= slide_pixels;
       last_pixel -= slide_pixels;
       _start_time += (double)slide_pixels / (double)_xsize * _time_width;
