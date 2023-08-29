@@ -229,6 +229,10 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
 
+  if (time < thread_data->get_oldest_time()) {
+    return -1;
+  }
+
   // And now we can determine which collector within the frame, based on the
   // value height.
   if (_average_mode) {
