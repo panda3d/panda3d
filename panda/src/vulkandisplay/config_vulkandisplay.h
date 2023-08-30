@@ -40,6 +40,9 @@ extern "C" EXPCL_VULKANDISPLAY int get_pipe_type_p3vulkandisplay();
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
+// Necessary for VK_KHR_portability_subset (MoltenVK)
+#define VK_ENABLE_BETA_EXTENSIONS
+
 #include <vulkan/vulkan.h>
 
 #ifdef HAVE_X11

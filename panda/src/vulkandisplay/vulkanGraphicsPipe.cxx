@@ -132,6 +132,12 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     has_props2_ext = true;
   }
 
+  bool has_portability_enum_ext = false;
+  if (has_instance_extension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    has_portability_enum_ext = true;
+  }
+
   VkApplicationInfo app_info;
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   app_info.pNext = nullptr;
@@ -154,6 +160,10 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   inst_info.ppEnabledLayerNames = &layers[0];
   inst_info.enabledExtensionCount = extensions.size();
   inst_info.ppEnabledExtensionNames = &extensions[0];
+
+  if (has_portability_enum_ext) {
+    inst_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+  }
 
   VkResult err = vkCreateInstance(&inst_info, nullptr, &_instance);
   if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {

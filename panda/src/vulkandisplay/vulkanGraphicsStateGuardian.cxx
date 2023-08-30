@@ -124,6 +124,18 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     supports_null_descriptor = true;
   }
 
+  VkPhysicalDevicePortabilitySubsetFeaturesKHR portability_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
+    enabled_features.pNext,
+  };
+  if (pipe->has_device_extension(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME)) {
+    portability_features.imageViewFormatSwizzle = VK_TRUE;
+    portability_features.vertexAttributeAccessBeyondStride = VK_TRUE;
+    enabled_features.pNext = &portability_features;
+
+    extensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+  }
+
   // Create a queue in the given queue family.  For now, we assume NVIDIA,
   // which has only one queue family, but we want to separate this out for
   // the sake of AMD cards.
@@ -283,7 +295,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Create a descriptor set layout for our LightAttrib descriptor set.
-  const uint32_t num_shadow_maps = 16;
+  const uint32_t num_shadow_maps = 8;
   {
     // The depth map is managed by Panda, so we can bake the sampler state into
     // the pipeline layout, which allows lower-latency samples on some cards.
@@ -341,7 +353,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Create a descriptor set layout for our TextureAttrib descriptor set.
-  const uint32_t num_texture_stages = 16;
+  const uint32_t num_texture_stages = 8;
   {
     VkDescriptorSetLayoutBinding stage_bindings[num_texture_stages];
 
@@ -3870,7 +3882,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
  */
 bool VulkanGraphicsStateGuardian::
 update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
-  const size_t num_shadow_maps = 16;
+  const size_t num_shadow_maps = 8;
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_shadow_maps * sizeof(VkWriteDescriptorSet));
   VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_shadow_maps * sizeof(VkDescriptorImageInfo));
 
@@ -3926,7 +3938,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
                    stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
     VkDescriptorImageInfo &image_info = image_infos[i];
-    image_info.sampler = _shadow_sampler;
+    image_info.sampler = VK_NULL_HANDLE;
     image_info.imageView = tc->get_image_view(0);
     image_info.imageLayout = tc->_layout;
 
