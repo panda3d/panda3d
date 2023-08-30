@@ -2155,7 +2155,7 @@ def CompileBundle(target, inputs, opts):
     # Now link the object files to form the bundle.
     if plist is None:
         exit("One plist file must be used when creating a bundle!")
-    bundleName = plistlib.load(plist)["CFBundleExecutable"]
+    bundleName = plistlib.load(open(plist, 'rb'))["CFBundleExecutable"]
 
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
