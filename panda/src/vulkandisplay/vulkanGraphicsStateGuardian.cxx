@@ -124,6 +124,22 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     supports_null_descriptor = true;
   }
 
+  // VK_EXT_vertex_attribute_divisor
+  VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT div_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
+    enabled_features.pNext,
+  };
+  if (pipe->_gpu_supports_vertex_attrib_divisor) {
+    div_features.vertexAttributeInstanceRateDivisor = VK_TRUE;
+    div_features.vertexAttributeInstanceRateZeroDivisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
+    enabled_features.pNext = &div_features;
+
+    extensions.push_back(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+    _supports_vertex_attrib_divisor = true;
+    _supports_vertex_attrib_zero_divisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
+  }
+
+  // VK_KHR_portability_subset
   VkPhysicalDevicePortabilitySubsetFeaturesKHR portability_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
     enabled_features.pNext,
@@ -3394,11 +3410,28 @@ make_pipeline(VulkanShaderContext *sc,
   VkVertexInputBindingDescription *binding_desc = (VkVertexInputBindingDescription *)
     alloca(sizeof(VkVertexInputBindingDescription) * (num_bindings + 2));
 
+  VkVertexInputBindingDivisorDescriptionEXT *divisors;
+  int num_divisors = 0;
+  if (_supports_vertex_attrib_divisor) {
+    divisors = (VkVertexInputBindingDivisorDescriptionEXT *)
+      alloca(sizeof(VkVertexInputBindingDivisorDescriptionEXT) * (num_bindings + 2));
+  }
+
   int i = 0;
   for (i = 0; i < num_bindings; ++i) {
+    const GeomVertexArrayFormat *array = key._format->get_array(i);
     binding_desc[i].binding = i;
-    binding_desc[i].stride = key._format->get_array(i)->get_stride();
-    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    binding_desc[i].stride = array->get_stride();
+    if (array->get_divisor() == 0) {
+      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    } else {
+      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+      if (_supports_vertex_attrib_divisor) {
+        divisors[num_divisors].binding = i;
+        divisors[num_divisors].divisor = array->get_divisor();
+        ++num_divisors;
+      }
+    }
   }
 
   // Prepare "dummy" bindings, in case we need it, which are bound to missing
@@ -3407,8 +3440,19 @@ make_pipeline(VulkanShaderContext *sc,
   if (sc->_uses_vertex_color) {
     color_binding = i;
     binding_desc[i].binding = i;
-    binding_desc[i].stride = 0;
-    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    if (_supports_vertex_attrib_zero_divisor) {
+      // MoltenVK uses portability subset, which doesn't allow zero stride,
+      // but it does support zero divisor.
+      binding_desc[i].stride = 16;
+      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+      divisors[num_divisors].binding = i;
+      divisors[num_divisors].divisor = 0;
+      ++num_divisors;
+    } else {
+      binding_desc[i].stride = 0;
+      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    }
     ++i;
     ++num_bindings;
   }
@@ -3416,7 +3460,15 @@ make_pipeline(VulkanShaderContext *sc,
   int null_binding = -1;
   binding_desc[i].binding = i;
   binding_desc[i].stride = 0;
-  binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  if (_supports_vertex_attrib_zero_divisor) {
+    binding_desc[i].stride = 4;
+    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+    divisors[num_divisors].binding = i;
+    divisors[num_divisors].divisor = 0;
+  } else {
+    binding_desc[i].stride = 0;
+    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  }
   ++i;
 
   // Now describe each vertex attribute (ie. GeomVertexColumn).
@@ -3451,6 +3503,9 @@ make_pipeline(VulkanShaderContext *sc,
       // containing a fixed value with a stride of 0.
       if (null_binding == -1) {
         null_binding = num_bindings++;
+        if (_supports_vertex_attrib_zero_divisor) {
+          ++num_divisors;
+        }
       }
 
       attrib_desc[i].binding = null_binding;
@@ -3546,6 +3601,15 @@ make_pipeline(VulkanShaderContext *sc,
   vertex_info.pVertexBindingDescriptions = binding_desc;
   vertex_info.vertexAttributeDescriptionCount = i;
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
+
+  VkPipelineVertexInputDivisorStateCreateInfoEXT divisor_info;
+  if (num_divisors > 0) {
+    divisor_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT;
+    divisor_info.pNext = vertex_info.pNext;
+    divisor_info.vertexBindingDivisorCount = num_divisors;
+    divisor_info.pVertexBindingDivisors = divisors;
+    vertex_info.pNext = &divisor_info;
+  }
 
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
   assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

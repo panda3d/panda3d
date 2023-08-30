@@ -326,15 +326,28 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       features2.pNext = &ro2_features;
     }
 
+    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT div_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
+      features2.pNext,
+    };
+    if (has_device_extension(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
+      features2.pNext = &div_features;
+    }
+
     pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
     _gpu_features = features2.features;
     _gpu_supports_custom_border_colors = cbc_features.customBorderColors
                                       && cbc_features.customBorderColorWithoutFormat;
     _gpu_supports_null_descriptor = ro2_features.nullDescriptor;
-  } else {
+    _gpu_supports_vertex_attrib_divisor = div_features.vertexAttributeInstanceRateDivisor;
+    _gpu_supports_vertex_attrib_zero_divisor = div_features.vertexAttributeInstanceRateZeroDivisor;
+  }
+  else {
     vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
     _gpu_supports_custom_border_colors = false;
     _gpu_supports_null_descriptor = false;
+    _gpu_supports_vertex_attrib_divisor = false;
+    _gpu_supports_vertex_attrib_zero_divisor = false;
   }
 
   // Default the maximum allocation size to the largest of the heaps.
