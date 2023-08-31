@@ -270,17 +270,22 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   //TODO: dynamic allocation, create more pools if we run out
-  VkDescriptorPoolSize pool_size;
-  pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  pool_size.descriptorCount = 1024;
+  VkDescriptorPoolSize pool_sizes[] = {
+    {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4096},
+    {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 512},
+    {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 256},
+    {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 256},
+    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 256},
+    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 256},
+  };
 
   VkDescriptorPoolCreateInfo pool_info;
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   pool_info.pNext = nullptr;
   pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   pool_info.maxSets = 1024;
-  pool_info.poolSizeCount = 1;
-  pool_info.pPoolSizes = &pool_size;
+  pool_info.poolSizeCount = sizeof(pool_sizes) / sizeof(VkDescriptorPoolSize);
+  pool_info.pPoolSizes = pool_sizes;
 
   err = vkCreateDescriptorPool(_device, &pool_info, nullptr, &_descriptor_pool);
   if (err) {
