@@ -553,10 +553,9 @@ error:
  * Maps the binary blob at the given memory address to memory, and returns the
  * pointer to the beginning of it.
  */
-static void *map_blob(off_t offset, size_t size, const char *path, int load_external) {
+static void *map_blob(off_t offset, size_t size, const char *path) {
   void *blob;
   FILE *runtime;
-  if(!load_external){
 #ifdef _WIN32
     wchar_t buffer[2048];
     GetModuleFileNameW(NULL, buffer, 2048);
@@ -598,21 +597,7 @@ static void *map_blob(off_t offset, size_t size, const char *path, int load_exte
       offset = (off_t)begin;
       size = (size_t)(end - begin);
     }
-  }
-  else {
-      // Loads the blob from the bin file, and stores it in memory
-      runtime = fopen(path, "rb");
-      if(runtime == NULL) {
-          fprintf(stderr, "Couldn't open %s\n", path);
-          exit(1);
-      }
-      fseek(runtime, offset, SEEK_SET);
-      blob = (char *)malloc(size);
-      fread(blob, size, 1, runtime);
-      fclose(runtime);
-      return blob;
-  }
-
+  
   // mmap the section indicated by the offset (or malloc/fread on windows)
 #ifdef _WIN32
   blob = (void *)malloc(size);
@@ -644,11 +629,9 @@ static void unmap_blob(void *blob) {
 /**
  * Gets the file path to the games .bin file which stores the blob made by FreezeTool
  */
-static char *get_blob_path(const char *path) {
+static void get_blob_path(const char *path, char buffer[]) {
 #ifdef MACOS_APP_BUNDLE
-    char buffer[PATH_MAX];
-    
-    uint32_t bufsize = sizeof(buffer);
+    uint32_t bufsize = PATH_MAX;
     
     if (_NSGetExecutablePath(buffer, &bufsize) != 0) {
         exit(1);
@@ -660,22 +643,17 @@ static char *get_blob_path(const char *path) {
     }
     const char *dir = dirname(resolved);
     sprintf(buffer, "%s/../Resources/%s.bin", dir, basename(resolved));
-    return buffer;
 #elif defined(MS_WINDOWS)
-    char buffer[MAX_PATH];
-    DWORD length = GetModuleFileName(NULL, buffer, MAX_PATH);
+    char buff[MAX_PATH];
+    DWORD length = GetModuleFileName(NULL, buff, MAX_PATH);
     if (length == 0){
         exit(1);
     }
-    char *result = (char *)malloc(MAX_PATH);
     char fname[_MAX_FNAME];
-    _splitpath(buffer, NULL, NULL, fname, NULL);
-    sprintf(result, "%s.bin", fname);
-    return result;
+    _splitpath(buff, NULL, NULL, fname, NULL);
+    sprintf(buffer, "%s.bin", fname);
 #else
-    char buffer[PATH_MAX];
     sprintf(buffer, "%s.bin", basename(path));
-    return buffer;
 #endif
 }
 
@@ -684,9 +662,9 @@ static char *get_blob_path(const char *path) {
  * the blobinfo manually. This is to resolve an codesigning issues
  * on ARM64 MacOS
  */
-static void *map_header(const char *path) {
+static void *map_external_blob(const char *path) {
     FILE *runtime;
-    char *buffer;
+    void *blob;
     
     runtime = fopen(path, "rb");
     if(runtime == NULL) {
@@ -695,8 +673,13 @@ static void *map_header(const char *path) {
     }
     fread(&blobinfo, sizeof(blobinfo), 1, runtime);
 
+    // Load the blob from the bin file and store it in memory
+    size_t blob_size = (size_t)blobinfo.blob_size;
+    fseek(runtime, (off_t)blobinfo.blob_offset, SEEK_SET);
+    blob = (char *)malloc(blob_size);
+    fread(blob, blob_size, 1, runtime);
     fclose(runtime);
-    return NULL;
+    return blob;
 }
 
 /**
@@ -711,16 +694,21 @@ int main(int argc, char *argv[]) {
   ModuleDef *moddef;
   const char *log_filename;
   void *blob = NULL;
-  char *blob_path = get_blob_path(argv[0]);
+#if defined(MS_WINDOWS)
+  char blob_path[MAX_PATH];
+#else
+  char blob_path[PATH_MAX];
+#endif
+  get_blob_path(argv[0], blob_path);
   log_filename = NULL;
-  // FreezeTool will overrite blobinfo on non-MacOS to set the blob_offset 
+  // FreezeTool will overwrite blobinfo on non-MacOS to set the blob_offset 
   // to non -1. If it is -1, then we need to load it from FileSystem
   int load_external = 0;
-  if(blobinfo.blob_offset == -1){
-      load_external = 1;
-      map_header(blob_path);
+  if (blobinfo.blob_offset == -1) {
+    load_external = 1;
+    blob = map_external_blob(blob_path);
   }
-
+  
 #ifdef __APPLE__
   // Strip a -psn_xxx argument passed in by macOS when run from an .app bundle.
   if (argc > 1 && strncmp(argv[1], "-psn_", 5) == 0) {
@@ -738,11 +726,14 @@ int main(int argc, char *argv[]) {
   printf("codepage: %d\n", (int)blobinfo.codepage);
   printf("flags: %d\n", (int)blobinfo.flags);
   printf("reserved: %d\n", (int)blobinfo.reserved);
+  printf("load_external: %d\n", load_external);
   */
 
   // If we have a blob offset, we have to map the blob to memory.
   if (blobinfo.version == 0 || blobinfo.blob_offset != 0) {
-    void *blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size, blob_path, load_external);
+    if (!load_external) {
+      blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size, blob_path);
+    }
     assert(blob != NULL);
 
     // Offset the pointers in the header using the base mmap address.
@@ -763,9 +754,6 @@ int main(int argc, char *argv[]) {
     } else {
       blobinfo.pointers[0] = blob;
     }
-#ifdef MS_WINDOWS
-    free(blob_path);
-#endif
 
     // Offset the pointers in the module table using the base mmap address.
     moddef = blobinfo.pointers[0];
