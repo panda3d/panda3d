@@ -249,7 +249,7 @@ add_display_region(DisplayRegion *display_region) {
 void Camera::
 remove_display_region(DisplayRegion *display_region) {
   DisplayRegions::iterator dri =
-    find(_display_regions.begin(), _display_regions.end(), display_region);
+    std::find(_display_regions.begin(), _display_regions.end(), display_region);
   if (dri != _display_regions.end()) {
     _display_regions.erase(dri);
   }

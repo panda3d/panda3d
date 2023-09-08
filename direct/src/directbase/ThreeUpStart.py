@@ -1,15 +1,14 @@
 
 print('ThreeUpStart: Starting up environment.')
 
-from panda3d.core import *
+import direct.showbase.PythonUtil  # pylint: disable=unused-import
 
-from direct.showbase.PythonUtil import *
 from direct.showbase import ThreeUpShow
 
 base = ThreeUpShow.ThreeUpShow()
 
 # Put an axis in the world:
-base.loader.loadModel("models/misc/xyzAxis").reparentTo(render)
+base.loader.loadModel("models/misc/xyzAxis").reparentTo(base.render)
 
 base.camera.setPosHpr(0, -10.0, 0, 0, 0, 0)
 base.camLens.setFov(52.0)

@@ -1,10 +1,11 @@
 """FunctionInterval module: contains the FunctionInterval class"""
 
+from __future__ import annotations
+
 __all__ = ['FunctionInterval', 'EventInterval', 'AcceptInterval', 'IgnoreInterval', 'ParentInterval', 'WrtParentInterval', 'PosInterval', 'HprInterval', 'ScaleInterval', 'PosHprInterval', 'HprScaleInterval', 'PosHprScaleInterval', 'Func', 'Wait']
 
-from panda3d.core import *
-from panda3d.direct import *
-from direct.showbase.MessengerGlobal import *
+from panda3d.direct import WaitInterval
+from direct.showbase.MessengerGlobal import messenger
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 
@@ -24,7 +25,7 @@ class FunctionInterval(Interval.Interval):
     # should not cause any leaks.
     if __debug__:
         import weakref
-        FunctionIntervals = weakref.WeakKeyDictionary()
+        FunctionIntervals: weakref.WeakKeyDictionary[FunctionInterval, int] = weakref.WeakKeyDictionary()
 
         @classmethod
         def replaceMethod(cls, oldFunction, newFunction):

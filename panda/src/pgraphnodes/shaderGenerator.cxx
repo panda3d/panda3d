@@ -75,11 +75,31 @@ static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
 
 /**
  * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The given parameters contain information about the
+ * capabilities of the target for which the shader will be compiled.
+ */
+ShaderGenerator::
+ShaderGenerator(const Shader::ShaderCaps &caps, bool use_shadow_filter) :
+  _use_shadow_filter(use_shadow_filter) {
+
+#ifdef _WIN32
+  // Check matches all OpenGL profiles
+  _use_generic_attr = (caps._active_vprofile <= 6151 || caps._active_vprofile >= 7000);
+#else
+  _use_generic_attr = true;
+#endif
+
+  // Matches gp5fp and glslf profiles
+  _use_pointcoord = (caps._active_fprofile == 7017 || caps._active_fprofile == 7008);
+}
+
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
  * certain results.  The parameter that must be passed is the GSG to which the
  * shader generator belongs.
  */
 ShaderGenerator::
-ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
+ShaderGenerator(const GraphicsStateGuardianBase *gsg) : _use_pointcoord(false) {
   // The ATTR# input semantics seem to map to generic vertex attributes in
   // both arbvp1 and glslv, which behave more consistently.  However, they
   // don't exist in Direct3D 9.  Use this silly little check for now.
@@ -717,6 +737,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   const char *eye_position_freg = nullptr;
   const char *eye_normal_freg = nullptr;
   const char *hpos_freg = nullptr;
+  const char *pointcoord_freg = nullptr;
 
   const char *position_vreg;
   const char *transform_weight_vreg = nullptr;
@@ -762,6 +783,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   bool need_eye_normal = !key._lights.empty() || ((key._outputs & AuxBitplaneAttrib::ABO_aux_normal) != 0);
   bool need_tangents = ((key._texture_flags & ShaderKey::TF_map_normal) != 0);
   bool need_point_size = (key._fog_mode & 0x10000) != 0;
+  bool need_point_coord = false;
 
   // If we have binormal/tangent and eye position, we can pack eye normal in
   // the w channels of the others.
@@ -816,6 +838,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       break;
     case TexGenAttrib::M_eye_position:
       need_eye_position = true;
+      break;
+    case TexGenAttrib::M_point_sprite:
+      need_point_coord = true;
       break;
     default:
       break;
@@ -947,6 +972,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float3 attr_pointparams,\n";
     text << "\t out float l_point_size : PSIZE,\n";
   }
+  if (need_point_coord && !_use_pointcoord) {
+    if (!need_point_size) {
+      text << "\t uniform float3 attr_pointparams,\n";
+    }
+    pointcoord_freg = alloc_freg();
+    text << "\t out float3 l_pointcoord : " << pointcoord_freg << ",\n";
+  }
   text << "\t in float4 vtx_position : " << position_vreg << ",\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
@@ -995,6 +1027,14 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   if (need_point_size) {
     text << "\t l_point_size = attr_pointparams.y + attr_pointparams.z / length(l_eye_position.xyz);\n";
+  }
+  if (need_point_coord && !_use_pointcoord) {
+    if (need_point_size) {
+      text << "\t l_pointcoord = float3(l_position.xy / (2.0f * l_position.w) + float2(0.5f, 0.5f), 1.0f / l_point_size);\n";
+    } else {
+      // Static point size (non-perspective points)
+      text << "\t l_pointcoord = float3(l_position.xy / (2.0f * l_position.w) + float2(0.5f, 0.5f), 1.0f / attr_pointparams.x);\n";
+    }
   }
 
   pmap<const InternalName *, const char *>::const_iterator it;
@@ -1046,6 +1086,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t in float4 l_hpos : " << hpos_freg << ",\n";
     text << "\t in uniform float4 attr_fog,\n";
     text << "\t in uniform float4 attr_fogcolor,\n";
+  }
+  if (need_point_coord) {
+    if (_use_pointcoord) {
+      // In OpenGL, we have point coordinates available in glslf and gp5fp.
+      text << "\t in float2 l_pointcoord : POINTCOORD,\n";
+    } else {
+      // In DirectX 9, we need to calculate them from the fragment coordinates.
+      text << "\t in float3 l_pointcoord : " << pointcoord_freg << ",\n";
+      text << "\t in float2 l_fragcoord : WPOS,\n";
+      text << "\t in uniform float2 sys_windowsize,\n";
+    }
   }
   if (need_world_position) {
     text << "\t in float4 l_world_position : " << world_position_freg << ",\n";
@@ -1207,6 +1258,16 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     case TexGenAttrib::M_eye_position:
       text << "\t float4 texcoord" << i << " = float4(l_eye_position.xyz, 1.0f);\n";
       break;
+    case TexGenAttrib::M_point_sprite:
+      if (_use_pointcoord) {
+        text << "\t float4 texcoord" << i << " = float4(l_pointcoord, 0.0f, 1.0f);\n";
+      } else {
+        if (!_use_generic_attr) {
+          text << "\t l_fragcoord.y = sys_windowsize.y - l_fragcoord.y;\n";
+        }
+        text << "\t float4 texcoord" << i << " = float4((l_fragcoord - l_pointcoord.xy * sys_windowsize) * l_pointcoord.z * float2(1.0f, -1.0f) - float2(0.5f, 0.5f), 0.0f, 1.0f);\n";
+      }
+      break;
     case TexGenAttrib::M_constant:
       text << "\t float4 texcoord" << i << " = texconst_" << i << ";\n";
       break;
@@ -1232,15 +1293,20 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex._type);
     text << "(tex_" << i << ", texcoord" << i << ".";
     switch (tex._type) {
+    case Texture::TT_cube_map_array:
+      text << "xyzw";
+      break;
     case Texture::TT_cube_map:
     case Texture::TT_3d_texture:
     case Texture::TT_2d_texture_array:
       text << "xyz";
       break;
     case Texture::TT_2d_texture:
+    case Texture::TT_1d_texture_array:
       text << "xy";
       break;
     case Texture::TT_1d_texture:
+    case Texture::TT_buffer_texture:
       text << "x";
       break;
     default:
@@ -1284,6 +1350,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << "(tex_" << i << ", texcoord" << i << ".";
       switch (tex._type) {
+      case Texture::TT_cube_map_array:
+        text << "xyzw";
+        break;
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
@@ -1292,7 +1361,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       case Texture::TT_2d_texture:
         text << "xyw";
         break;
+      case Texture::TT_1d_texture_array:
+        text << "xy";
+        break;
       case Texture::TT_1d_texture:
+      case Texture::TT_buffer_texture:
         text << "x";
         break;
       default:
@@ -1916,24 +1989,33 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
 const char *ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {
-    case Texture::TT_1d_texture:
-      return "1D";
-      break;
-    case Texture::TT_2d_texture:
-      return "2D";
-      break;
-    case Texture::TT_3d_texture:
-      return "3D";
-      break;
-    case Texture::TT_cube_map:
-      return "CUBE";
-      break;
-    case Texture::TT_2d_texture_array:
-      return "2DARRAY";
-      break;
-    default:
-      pgraphnodes_cat.error() << "Unsupported texture type!\n";
-      return "2D";
+  case Texture::TT_1d_texture:
+    return "1D";
+
+  case Texture::TT_2d_texture:
+    return "2D";
+
+  case Texture::TT_3d_texture:
+    return "3D";
+
+  case Texture::TT_2d_texture_array:
+    return "2DARRAY";
+
+  case Texture::TT_cube_map:
+    return "CUBE";
+
+  case Texture::TT_buffer_texture:
+    return "BUF";
+
+  case Texture::TT_cube_map_array:
+    return "CUBEARRAY";
+
+  case Texture::TT_1d_texture_array:
+    return "1DARRAY";
+
+  default:
+    pgraphnodes_cat.error() << "Unsupported texture type!\n";
+    return "2D";
   }
 }
 

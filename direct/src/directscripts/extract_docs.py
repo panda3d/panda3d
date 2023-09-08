@@ -16,11 +16,11 @@ from panda3d.interrogatedb import *
 
 
 if 'interrogate_element_is_sequence' not in globals():
-    def interrogate_element_is_sequence(element):
+    def interrogate_element_is_sequence(element): # pylint: disable=function-redefined
         return False
 
 if 'interrogate_element_is_mapping' not in globals():
-    def interrogate_element_is_mapping(element):
+    def interrogate_element_is_mapping(element): # pylint: disable=function-redefined
         return False
 
 
@@ -65,6 +65,7 @@ def comment(code):
     else:
         return ''
 
+
 def block_comment(code):
     code = code.strip()
 
@@ -76,6 +77,7 @@ def block_comment(code):
         return ""
 
     return code
+
 
 def translateFunctionName(name):
     if name.startswith("__"):
@@ -92,6 +94,7 @@ def translateFunctionName(name):
         else:
             new += i[0].upper() + i[1:]
     return new
+
 
 def translateTypeName(name, mangle=True):
     # Equivalent to C++ classNameFromCppName
@@ -114,6 +117,7 @@ def translateTypeName(name, mangle=True):
             class_name += chr
 
     return class_name
+
 
 def translated_type_name(type, scoped=True):
     while interrogate_type_is_wrapped(type):
@@ -205,7 +209,7 @@ def processFunction(handle, function, isConstructor = False):
 
 def processType(handle, type):
     typename = translated_type_name(type, scoped=False)
-    derivations = [ translated_type_name(interrogate_type_get_derivation(type, n)) for n in range(interrogate_type_number_of_derivations(type)) ]
+    derivations = [translated_type_name(interrogate_type_get_derivation(type, n)) for n in range(interrogate_type_number_of_derivations(type))]
 
     if interrogate_type_has_comment(type):
         print(block_comment(interrogate_type_comment(type)), file=handle)
@@ -257,6 +261,7 @@ def processType(handle, type):
         processElement(handle, interrogate_type_get_element(type, i_element))
 
     print("};", file=handle)
+
 
 def processModule(handle, package):
     print("Processing module %s" % (package))

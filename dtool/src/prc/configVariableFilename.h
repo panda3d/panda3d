@@ -27,8 +27,10 @@
 class EXPCL_DTOOL_PRC ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
   INLINE explicit ConfigVariableFilename(const std::string &name);
-  INLINE ConfigVariableFilename(const std::string &name, const Filename &default_value,
-                                const std::string &description = std::string(), int flags = 0);
+  INLINE explicit ConfigVariableFilename(const std::string &name,
+                                         const Filename &default_value,
+                                         const std::string &description = std::string(),
+                                         int flags = 0);
 
   INLINE void operator = (const Filename &value);
   INLINE operator const Filename &() const;

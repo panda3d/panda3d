@@ -3,9 +3,10 @@
 import xml.etree.ElementTree as ET
 
 from ._proto.targeting_pb2 import Abi
-from ._proto.config_pb2 import BundleConfig
-from ._proto.files_pb2 import NativeLibraries
-from ._proto.Resources_pb2 import XmlNode, ResourceTable
+from ._proto.config_pb2 import BundleConfig # pylint: disable=unused-import
+from ._proto.files_pb2 import NativeLibraries # pylint: disable=unused-import
+from ._proto.Resources_pb2 import ResourceTable # pylint: disable=unused-import
+from ._proto.Resources_pb2 import XmlNode
 
 
 AbiAlias = Abi.AbiAlias

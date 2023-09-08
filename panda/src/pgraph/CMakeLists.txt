@@ -204,6 +204,8 @@ set(P3PGRAPH_SOURCES
 )
 
 set(P3PGRAPH_IGATEEXT
+  bamFile_ext.cxx
+  bamFile_ext.h
   loaderFileTypeRegistry_ext.cxx
   loaderFileTypeRegistry_ext.h
   nodePathCollection_ext.cxx

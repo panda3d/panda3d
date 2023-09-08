@@ -1,6 +1,6 @@
 __all__ = ["install"]
 
-from panda3d.core import *
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr, Stack
 import sys
@@ -9,6 +9,7 @@ import traceback
 notify = directNotify.newCategory("ExceptionVarDump")
 
 reentry = 0
+
 
 def _varDump__init__(self, *args, **kArgs):
     global reentry
@@ -30,7 +31,9 @@ def _varDump__init__(self, *args, **kArgs):
     self._moved__init__(*args, **kArgs)
     reentry -= 1
 
+
 sReentry = 0
+
 
 def _varDump__print(exc):
     global sReentry
@@ -60,16 +63,19 @@ def _varDump__print(exc):
     notify.info(exc._savedExcString)
     sReentry -= 1
 
+
 oldExcepthook = None
 # store these values here so that Task.py can always reliably access them
 # from its main exception handler
 wantStackDumpLog = False
 wantStackDumpUpload = False
-variableDumpReasons = []
+variableDumpReasons: list = []
 dumpOnExceptionInit = False
+
 
 class _AttrNotFound:
     pass
+
 
 def _excepthookDumpVars(eType, eValue, tb):
     origTb = tb
@@ -110,15 +116,10 @@ def _excepthookDumpVars(eType, eValue, tb):
         for name, obj in frame.f_locals.items():
             if name in codeNames:
                 name2obj[name] = obj
-        # show them in alphabetical order
-        names = list(name2obj.keys())
-        names.sort()
-        # push them in reverse order so they'll be popped in the correct order
-        names.reverse()
 
         traversedIds = set()
-
-        for name in names:
+        # push them in reverse alphabetical order so they'll be popped in the correct order
+        for name in sorted(name2obj, reverse=True):
             stateStack.push([name, name2obj[name], traversedIds])
 
         while len(stateStack) > 0:
@@ -137,21 +138,17 @@ def _excepthookDumpVars(eType, eValue, tb):
                         # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
                         try:
                             className = attr.__class__.__name__
-                        except:
+                        except Exception:
                             pass
                         else:
                             if className == 'method-wrapper':
                                 continue
                         attrName2obj[attrName] = attr
                 if len(attrName2obj) > 0:
-                    # show them in alphabetical order
-                    attrNames = list(attrName2obj.keys())
-                    attrNames.sort()
-                    # push them in reverse order so they'll be popped in the correct order
-                    attrNames.reverse()
                     ids = set(traversedIds)
                     ids.add(id(obj))
-                    for attrName in attrNames:
+                    # push them in reverse alphabetical order so they'll be popped in the correct order
+                    for attrName in sorted(attrName2obj, reverse=True):
                         obj = attrName2obj[attrName]
                         stateStack.push(['%s.%s' % (name, attrName), obj, ids])
 
@@ -168,15 +165,16 @@ def _excepthookDumpVars(eType, eValue, tb):
             timeMgr = None
             try:
                 timeMgr = base.cr.timeManager
-            except:
+            except Exception:
                 try:
                     timeMgr = simbase.air.timeManager
-                except:
+                except Exception:
                     pass
             if timeMgr:
                 timeMgr.setStackDump(s)
 
     oldExcepthook(eType, eValue, origTb)
+
 
 def install(log, upload):
     """Installs the exception hook."""

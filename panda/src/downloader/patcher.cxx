@@ -13,8 +13,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "config_downloader.h"
 #include "patcher.h"
 #include "filename.h"
@@ -71,5 +69,3 @@ int Patcher::
 run() {
   return _patchfile->run();
 }
-
-#endif  // HAVE_OPENSSL

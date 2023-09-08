@@ -113,7 +113,7 @@ typedef gray xelval;
 // pnm defines these functions, and it's easier to emulate them than to
 // rewrite the code that calls them.
 EXPCL_PANDA_PNMIMAGE void pm_message(const char *format, ...);
-EXPCL_PANDA_PNMIMAGE void pm_error(const char *format, ...);  // doesn't return.
+EXPCL_PANDA_PNMIMAGE void pm_error [[noreturn]] (const char *format, ...);
 
 EXPCL_PANDA_PNMIMAGE int pm_maxvaltobits(int maxval);
 EXPCL_PANDA_PNMIMAGE int pm_bitstomaxval(int bits);

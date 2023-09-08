@@ -20,6 +20,8 @@
 #include "nodeCachedReferenceCount.h"
 #include "luse.h"
 #include "lightMutex.h"
+#include "patomic.h"
+#include "small_vector.h"
 
 // A handful of forward references.
 
@@ -145,7 +147,7 @@ public:
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 #endif
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view)=0;
+  virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
   virtual void release_textures(const pvector<TextureContext *> &contexts)=0;
@@ -262,11 +264,11 @@ private:
   struct GSGList {
     LightMutex _lock;
 
-    typedef pvector<GraphicsStateGuardianBase *> GSGs;
+    typedef small_vector<GraphicsStateGuardianBase *> GSGs;
     GSGs _gsgs;
-    GraphicsStateGuardianBase *_default_gsg;
+    GraphicsStateGuardianBase *_default_gsg = nullptr;
   };
-  static AtomicAdjust::Pointer _gsg_list;
+  static patomic<GSGList *> _gsg_list;
 
 protected:
   static UpdateSeq _generated_shader_seq;

@@ -37,7 +37,7 @@ PUBLISHED:
   const DCClass *get_class() const;
 
 public:
-  virtual DCPackerInterface *get_nested_field(int n) const;
+  virtual DCPackerInterface *get_nested_field(int n) const final;
 
   virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
                                const std::string &name, const std::string &postname) const;

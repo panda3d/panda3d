@@ -51,11 +51,11 @@ LE_CAM_MASKS = {'persp':LE_PERSP_CAM_MASK,
                  'top':LE_TOP_CAM_MASK}
 
 def LE_showInAllCam(nodePath):
-    for camName in LE_CAM_MASKS:
-        nodePath.show(LE_CAM_MASKS[camName])
+    for camName, mask in LE_CAM_MASKS.items():
+        nodePath.show(mask)
 
 def LE_showInOneCam(nodePath, thisCamName):
     LE_showInAllCam(nodePath)
-    for camName in LE_CAM_MASKS:
+    for camName, mask in LE_CAM_MASKS.items():
         if camName != thisCamName:
-            nodePath.hide(LE_CAM_MASKS[camName])
+            nodePath.hide(mask)

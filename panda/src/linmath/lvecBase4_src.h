@@ -15,7 +15,6 @@ class FLOATNAME(LVecBase2);
 class FLOATNAME(LVecBase3);
 class FLOATNAME(LPoint3);
 class FLOATNAME(LVector3);
-class FLOATNAME(UnalignedLVecBase4);
 
 /**
  * This is the base class for all three-component vectors and points.
@@ -39,7 +38,6 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase4)() = default;
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
-  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
   INLINE_LINMATH explicit FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector);
@@ -194,8 +192,6 @@ public:
 
   // Unlike LVecBase2 and LVecBase3, we fully align LVecBase4 to 16-byte
   // boundaries, to take advantage of SSE2 optimizations when available.
-  // Sometimes this alignment requirement is inconvenient, so we also provide
-  // UnalignedLVecBase4, below.
   typedef LINMATH_MATRIX(FLOATTYPE, 1, 4) EVector4;
   EVector4 _v;
 
@@ -207,60 +203,6 @@ private:
   static const FLOATNAME(LVecBase4) _unit_y;
   static const FLOATNAME(LVecBase4) _unit_z;
   static const FLOATNAME(LVecBase4) _unit_w;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
-
-private:
-  static TypeHandle _type_handle;
-};
-
-/**
- * This is an "unaligned" LVecBase4.  It has no functionality other than to
- * store numbers, and it will pack them in as tightly as possible, avoiding
- * any SSE2 alignment requirements shared by the primary LVecBase4 class.
- *
- * Use it only when you need to pack numbers tightly without respect to
- * alignment, and then copy it to a proper LVecBase4 to get actual use from
- * it.
- */
-class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase4) {
-PUBLISHED:
-  enum {
-    num_components = 4,
-
-#ifdef FLOATTYPE_IS_INT
-    is_int = 1
-#else
-    is_int = 0
-#endif
-  };
-
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() = default;
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
-
-  INLINE_LINMATH void fill(FLOATTYPE fill_value);
-  INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
-
-  INLINE_LINMATH FLOATTYPE operator [](int i) const;
-  INLINE_LINMATH FLOATTYPE &operator [](int i);
-  constexpr static int size() { return 4; }
-
-  INLINE_LINMATH const FLOATTYPE *get_data() const;
-  constexpr static int get_num_components() { return 4; }
-
-  INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLVecBase4) &other) const;
-  INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLVecBase4) &other) const;
-
-public:
-  typedef FLOATTYPE numeric_type;
-  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 4) UVector4;
-  UVector4 _v;
 
 public:
   static TypeHandle get_class_type() {

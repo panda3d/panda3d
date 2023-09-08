@@ -6,14 +6,15 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
-from panda3d.core import *
+from panda3d.core import TextNode
 from direct.showbase import ShowBaseGlobal
+from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
-from .DirectFrame import *
-from .DirectButton import *
+from .DirectFrame import DirectFrame
+from .DirectButton import DirectButton
 
 
 class DirectScrolledListItem(DirectButton):
@@ -36,7 +37,7 @@ class DirectScrolledListItem(DirectButton):
         optiondefs = (
             ('parent', self._parent,    None),
             ('command', self.select, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         DirectButton.__init__(self)
@@ -90,7 +91,7 @@ class DirectScrolledList(DirectFrame):
             ('forceHeight',        None,      self.setForceHeight),
             ('incButtonCallback',  None,      self.setIncButtonCallback),
             ('decButtonCallback',  None,      self.setDecButtonCallback),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -197,7 +198,7 @@ class DirectScrolledList(DirectFrame):
         #print "scrollTo[", index,"] called, len(self[items])=", len(self["items"])," self[numItemsVisible]=", self["numItemsVisible"]
         try:
             self["numItemsVisible"]
-        except:
+        except Exception:
             # RAU hack to kill 27633
             self.notify.info('crash 27633 fixed!')
             return

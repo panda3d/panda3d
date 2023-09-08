@@ -195,7 +195,7 @@ cycle() {
 
           if (cycler->is_dirty()) {
             // The cycler is still dirty.  Add it back to the dirty list.
-            nassertd(!cycler->is_dirty(prev_seq));
+            nassertd(!cycler->is_dirty(prev_seq)) break;
             cycler->insert_before(&_dirty);
             cycler->mark_dirty(next_seq);
             ++_num_dirty_cyclers;

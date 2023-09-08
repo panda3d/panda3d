@@ -125,9 +125,8 @@ do_callback(CallbackData *cbdata) {
 
   CDReader cdata(_cycler);
 
-  Dispatches::const_iterator it;
-  for (it = cdata->_dispatches.begin(); it != cdata->_dispatches.end(); ++it) {
-    gsg->dispatch_compute(it->get_x(), it->get_y(), it->get_z());
+  for (const LVecBase3i &dispatch : cdata->_dispatches) {
+    gsg->dispatch_compute(dispatch[0], dispatch[1], dispatch[2]);
   }
 
   // No need to upcall; we don't have any geometry, after all.
@@ -194,9 +193,8 @@ void ComputeNode::Dispatcher::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint16(_dispatches.size());
 
-  Dispatches::const_iterator it;
-  for (it = _dispatches.begin(); it != _dispatches.end(); ++it) {
-    generic_write_datagram(dg, *it);
+  for (const LVecBase3i &dispatch : _dispatches) {
+    generic_write_datagram(dg, dispatch);
   }
 }
 

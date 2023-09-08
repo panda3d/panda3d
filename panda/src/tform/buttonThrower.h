@@ -16,12 +16,13 @@
 
 #include "pandabase.h"
 
-#include "dataNode.h"
-#include "modifierButtons.h"
 #include "buttonEventList.h"
-#include "pvector.h"
-#include "pmap.h"
+#include "dataNode.h"
 #include "eventParameter.h"
+#include "modifierButtons.h"
+#include "pmap.h"
+#include "pvector.h"
+#include "small_vector.h"
 
 /**
  * Throws Panda Events for button down/up events generated within the data
@@ -115,7 +116,7 @@ private:
   bool _time_flag;
   ModifierButtons _mods;
 
-  typedef pvector<EventParameter> ParameterList;
+  typedef small_vector<EventParameter> ParameterList;
   ParameterList _parameters;
 
   typedef pvector<ModifierButtons> ThrowButtonDef;

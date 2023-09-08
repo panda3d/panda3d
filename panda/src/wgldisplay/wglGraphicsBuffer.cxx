@@ -170,7 +170,7 @@ bind_texture_to_pbuffer() {
         tex->set_format(Texture::F_rgb);
       }
     }
-    TextureContext *tc = tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg);
+    TextureContext *tc = tex->prepare_now(_gsg->get_prepared_objects(), _gsg);
     nassertv(tc != nullptr);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
     GLenum target = wglgsg->get_texture_target(tex->get_texture_type());
@@ -180,7 +180,7 @@ bind_texture_to_pbuffer() {
       cdataw->_textures[tex_index]._rtm_mode = RTM_copy_texture;
       return;
     }
-    GLP(BindTexture)(target, gtc->_index);
+    GLP(BindTexture)(target, gtc->get_view_index(0));
     if (_fb_properties.is_single_buffered()) {
       wglgsg->_wglBindTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
     } else {

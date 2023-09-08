@@ -45,7 +45,7 @@ BasePickler = pickle._Pickler
 BaseUnpickler = pickle._Unpickler
 
 
-class Pickler(BasePickler):
+class Pickler(BasePickler):  # type: ignore[misc, valid-type]
 
     def __init__(self, *args, **kw):
         self.bamWriter = BamWriter()
@@ -148,7 +148,7 @@ class Pickler(BasePickler):
         self.save_reduce(obj=obj, *rv)
 
 
-class Unpickler(BaseUnpickler):
+class Unpickler(BaseUnpickler):  # type: ignore[misc, valid-type]
 
     def __init__(self, *args, **kw):
         self.bamReader = BamReader()

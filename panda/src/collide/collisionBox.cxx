@@ -1251,7 +1251,7 @@ dist_to_polygon(const LPoint2 &p, const PointDef *points, size_t num_points) con
   if (d >= 0.0f) {
     if (!got_dist || d < best_dist) {
       best_dist = d;
-      got_dist = true;
+      //got_dist = true;
     }
   }
 

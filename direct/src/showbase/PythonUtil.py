@@ -1,5 +1,7 @@
 """Contains miscellaneous utility functions and classes."""
 
+from __future__ import annotations
+
 __all__ = [
 
     'indent', 'doc', 'adjust', 'difference', 'intersection', 'union',
@@ -11,7 +13,7 @@ __all__ = [
     'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
     'findPythonModule', 'mostDerivedLast', 'clampScalar', 'weightedChoice',
     'randFloat', 'normalDistrib', 'weightedRand', 'randUint31', 'randInt32',
-    'SerialNumGen', 'serialNum', 'uniqueName', 'Singleton',
+    'SerialNumGen', 'SerialMaskedGen', 'serialNum', 'uniqueName', 'Singleton',
     'SingletonError', 'printListEnum', 'safeRepr', 'fastRepr',
     'isDefaultValue', 'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
     'getNumberedTypedSortedString', 'printNumberedTyped', 'DelayedCall',
@@ -20,8 +22,7 @@ __all__ = [
     'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'listToIndex2item',
     'listToItem2index', 'formatTimeCompact', 'deeptype', 'StdoutCapture',
     'StdoutPassthrough', 'Averager', 'getRepository', 'formatTimeExact',
-    'startSuperLog', 'endSuperLog', 'typeName', 'safeTypeName',
-    'histogramDict', 'unescapeHtmlString',
+    'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString',
 ]
 
 if __debug__:
@@ -40,10 +41,12 @@ import time
 import builtins
 import importlib
 import functools
+from typing import Callable
 
 __report_indent = 3
 
-from panda3d.core import ConfigVariableBool, ClockObject
+from panda3d.core import ConfigVariableBool, ConfigVariableString, ConfigFlags
+from panda3d.core import ClockObject
 
 
 ## with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
@@ -88,7 +91,7 @@ class Functor:
         for arg in self._args:
             try:
                 argStr = repr(arg)
-            except:
+            except Exception:
                 argStr = 'bad repr: %s' % arg.__class__
             s += ', %s' % argStr
         for karg, value in list(self._kargs.items()):
@@ -96,43 +99,59 @@ class Functor:
         s += ')'
         return s
 
+
 class Stack:
     def __init__(self):
         self.__list = []
+
     def push(self, item):
         self.__list.append(item)
+
     def top(self):
         # return the item on the top of the stack without popping it off
         return self.__list[-1]
+
     def pop(self):
         return self.__list.pop()
+
     def clear(self):
         self.__list = []
+
     def isEmpty(self):
         return len(self.__list) == 0
+
     def __len__(self):
         return len(self.__list)
+
 
 class Queue:
     # FIFO queue
     # interface is intentionally identical to Stack (LIFO)
     def __init__(self):
         self.__list = []
+
     def push(self, item):
         self.__list.append(item)
+
     def top(self):
         # return the next item at the front of the queue without popping it off
         return self.__list[0]
+
     def front(self):
         return self.__list[0]
+
     def back(self):
         return self.__list[-1]
+
     def pop(self):
         return self.__list.pop(0)
+
     def clear(self):
         self.__list = []
+
     def isEmpty(self):
         return len(self.__list) == 0
+
     def __len__(self):
         return len(self.__list)
 
@@ -199,9 +218,11 @@ if __debug__:
     def printStack():
         print(StackTrace(start=1).compact())
         return True
+
     def printReverseStack():
         print(StackTrace(start=1).reverseCompact())
         return True
+
     def printVerboseStack():
         print(StackTrace(start=1))
         return True
@@ -245,7 +266,8 @@ if __debug__:
                     r += (v[:2000] + "...")
                 else:
                     r+=v
-            else: r+="*** undefined ***"
+            else:
+                r+="*** undefined ***"
         return r+')'
 
     def traceParentCall():
@@ -260,10 +282,12 @@ if __debug__:
 _POS_LIST = 4
 _KEY_DICT = 8
 
+
 def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
        (isinstance(obj, types.FunctionType)):
         print(obj.__doc__)
+
 
 def adjust(command = None, dim = 1, parent = None, **kw):
     """
@@ -303,12 +327,15 @@ def adjust(command = None, dim = 1, parent = None, **kw):
         vg.pack(expand = 1, fill = 'x')
     return vg
 
+
 def difference(a, b):
     """
     difference(list, list):
     """
-    if not a: return b
-    if not b: return a
+    if not a:
+        return b
+    if not b:
+        return a
     d = []
     for i in a:
         if (i not in b) and (i not in d):
@@ -317,6 +344,7 @@ def difference(a, b):
         if (i not in a) and (i not in d):
             d.append(i)
     return d
+
 
 def intersection(a, b):
     """
@@ -333,6 +361,7 @@ def intersection(a, b):
             d.append(i)
     return d
 
+
 def union(a, b):
     """
     union(list, list):
@@ -343,6 +372,7 @@ def union(a, b):
         if i not in c:
             c.append(i)
     return c
+
 
 def sameElements(a, b):
     if len(a) != len(b):
@@ -355,6 +385,7 @@ def sameElements(a, b):
             return 0
     return 1
 
+
 def makeList(x):
     """returns x, converted to a list"""
     if isinstance(x, list):
@@ -363,6 +394,7 @@ def makeList(x):
         return list(x)
     else:
         return [x,]
+
 
 def makeTuple(x):
     """returns x, converted to a tuple"""
@@ -373,9 +405,11 @@ def makeTuple(x):
     else:
         return (x,)
 
+
 def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
     return dict([(k, value) for k in L])
+
 
 def listToIndex2item(L):
     """converts list to dict of list index->list item"""
@@ -384,7 +418,9 @@ def listToIndex2item(L):
         d[i] = item
     return d
 
+
 assert listToIndex2item(['a','b']) == {0: 'a', 1: 'b',}
+
 
 def listToItem2index(L):
     """converts list to dict of list item->list index
@@ -394,7 +430,9 @@ def listToItem2index(L):
         d[item] = i
     return d
 
+
 assert listToItem2index(['a','b']) == {'a': 0, 'b': 1,}
+
 
 def invertDict(D, lossy=False):
     """creates a dictionary by 'inverting' D; keys are placed in the new
@@ -412,6 +450,7 @@ def invertDict(D, lossy=False):
         n[value] = key
     return n
 
+
 def invertDictLossless(D):
     """similar to invertDict, but values of new dict are lists of keys from
     old dict. No information is lost.
@@ -426,9 +465,11 @@ def invertDictLossless(D):
         n[value].append(key)
     return n
 
+
 def uniqueElements(L):
     """are all elements of list unique?"""
     return len(L) == len(list2dict(L))
+
 
 def disjoint(L1, L2):
     """returns non-zero if L1 and L2 have no common elements"""
@@ -437,6 +478,7 @@ def disjoint(L1, L2):
         if k in used:
             return 0
     return 1
+
 
 def contains(whole, sub):
     """
@@ -450,6 +492,7 @@ def contains(whole, sub):
             return 0
     # If you got here, whole must contain sub
     return 1
+
 
 def replace(list, old, new, all=0):
     """
@@ -473,16 +516,19 @@ def replace(list, old, new, all=0):
                 list[i] = new
         return numReplaced
 
+
 rad90 = math.pi / 2.
 rad180 = math.pi
 rad270 = 1.5 * math.pi
 rad360 = 2. * math.pi
+
 
 def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value in [-180..180)
     """
     return ((deg + 180.) % 360.) - 180.
+
 
 def fitSrcAngle2Dest(src, dest):
     """
@@ -497,6 +543,7 @@ def fitSrcAngle2Dest(src, dest):
     """
     return dest + reduceAngle(src - dest)
 
+
 def fitDestAngle2Src(src, dest):
     """
     given a src and destination angle, returns an equivalent dest angle
@@ -508,6 +555,7 @@ def fitDestAngle2Src(src, dest):
     fitDestAngle2Src(1, 180) == 180
     """
     return src + (reduceAngle(dest - src))
+
 
 def closestDestAngle2(src, dest):
     # The function above didn't seem to do what I wanted. So I hacked
@@ -524,6 +572,7 @@ def closestDestAngle2(src, dest):
         # otherwise just go to the original destination
         return dest
 
+
 def closestDestAngle(src, dest):
     # The function above didn't seem to do what I wanted. So I hacked
     # this one together. I can't really say I understand it. It's more
@@ -539,12 +588,14 @@ def closestDestAngle(src, dest):
         # otherwise just go to the original destination
         return dest
 
+
 class StdoutCapture:
     # redirects stdout to a string
     def __init__(self):
         self._oldStdout = sys.stdout
         sys.stdout = self
         self._string = ''
+
     def destroy(self):
         sys.stdout = self._oldStdout
         del self._oldStdout
@@ -556,6 +607,7 @@ class StdoutCapture:
     def write(self, string):
         self._string = ''.join([self._string, string])
 
+
 class StdoutPassthrough(StdoutCapture):
     # like StdoutCapture but also allows output to go through to the OS as normal
 
@@ -563,6 +615,7 @@ class StdoutPassthrough(StdoutCapture):
     def write(self, string):
         self._string = ''.join([self._string, string])
         self._oldStdout.write(string)
+
 
 # constant profile defaults
 if __debug__:
@@ -578,7 +631,6 @@ if __debug__:
         # if you called profile with 'log' not set to True,
         # you can call this function to get the results as
         # a string
-        global _ProfileResultStr
         return _ProfileResultStr
 
     def profileFunc(callback, name, terse, log=True):
@@ -603,9 +655,9 @@ if __debug__:
             print(suffix)
         else:
             _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
-        result = globalProfileResult[0]
-        del builtins.__dict__['globalProfileFunc']
-        del builtins.__dict__['globalProfileResult']
+        result = builtins.globalProfileResult[0]
+        del builtins.globalProfileFunc
+        del builtins.globalProfileResult
         return result
 
     def profiled(category=None, terse=False):
@@ -627,7 +679,7 @@ if __debug__:
         # allow profiling in published versions
         #try:
         #    null = not __dev__
-        #except:
+        #except Exception:
         #    null = not __debug__
         #if null:
         #    # if we're not in __dev__, just return the function itself. This
@@ -650,9 +702,9 @@ if __debug__:
         return profileDecorator
 
     # intercept profile-related file operations to avoid disk access
-    movedOpenFuncs = []
-    movedDumpFuncs = []
-    movedLoadFuncs = []
+    movedOpenFuncs: list[Callable] = []
+    movedDumpFuncs: list[Callable] = []
+    movedLoadFuncs: list[Callable] = []
     profileFilenames = set()
     profileFilenameList = Stack()
     profileFilename2file = {}
@@ -730,7 +782,6 @@ if __debug__:
         # don't let marshalled data pile up
         profileFilename2marshalData.pop(filename, None)
 
-
     # call this from the prompt, and break back out to the prompt
     # to stop profiling
     #
@@ -745,6 +796,7 @@ if __debug__:
     #        PythonUtil.startProfile(cmd='func()', filename='profileData')
     #        del builtins.func
     #
+
     def _profileWithoutGarbageLeak(cmd, filename):
         # The profile module isn't necessarily installed on every Python
         # installation, so we import it here, instead of in the module
@@ -819,13 +871,17 @@ if __debug__:
         # restore stdout to what it was before
         sc.destroy()
 
+
 def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
     # getSetterName('color', 'get') -> 'getColor'
     return '%s%s%s' % (prefix, valueName[0].upper(), valueName[1:])
+
+
 def getSetter(targetObj, valueName, prefix='set'):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
+
 
 def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes
@@ -833,12 +889,15 @@ def mostDerivedLast(classList):
 
     class ClassSortKey(object):
         __slots__ = 'classobj',
+
         def __init__(self, classobj):
             self.classobj = classobj
+
         def __lt__(self, other):
             return issubclass(other.classobj, self.classobj)
 
     classList.sort(key=ClassSortKey)
+
 
 def bound(value, bound1, bound2):
     """
@@ -849,7 +908,10 @@ def bound(value, bound1, bound2):
         return min(max(value, bound2), bound1)
     else:
         return min(max(value, bound1), bound2)
+
+
 clamp = bound
+
 
 def lerp(v0, v1, t):
     """
@@ -857,6 +919,7 @@ def lerp(v0, v1, t):
     t == 0 maps to v0, t == 1 maps to v1
     """
     return v0 + ((v1 - v0) * t)
+
 
 def getShortestRotation(start, end):
     """
@@ -873,6 +936,7 @@ def getShortestRotation(start, end):
             start += 360
     return (start, end)
 
+
 def average(*args):
     """ returns simple average of list of values """
     val = 0.
@@ -880,20 +944,26 @@ def average(*args):
         val += arg
     return val / len(args)
 
+
 class Averager:
     def __init__(self, name):
         self._name = name
         self.reset()
+
     def reset(self):
         self._total = 0.
         self._count = 0
+
     def addValue(self, value):
         self._total += value
         self._count += 1
+
     def getAverage(self):
         return self._total / self._count
+
     def getCount(self):
         return self._count
+
 
 def addListsByValue(a, b):
     """
@@ -905,6 +975,7 @@ def addListsByValue(a, b):
         c.append(x + y)
     return c
 
+
 def boolEqual(a, b):
     """
     returns true if a and b are both true or both false.
@@ -912,6 +983,7 @@ def boolEqual(a, b):
     (a.k.a. xnor -- eXclusive Not OR).
     """
     return (a and b) or not (a or b)
+
 
 def lineupPos(i, num, spacing):
     """
@@ -924,6 +996,7 @@ def lineupPos(i, num, spacing):
     assert i >= 0 and i < num
     pos = float(i) * spacing
     return pos - ((float(spacing) * (num-1))/2.)
+
 
 def formatElapsedSeconds(seconds):
     """
@@ -952,6 +1025,7 @@ def formatElapsedSeconds(seconds):
     else:
         return "%s%d:%02d" % (sign, minutes, seconds)
 
+
 def solveQuadratic(a, b, c):
     # quadratic equation: ax^2 + bx + c = 0
     # quadratic formula:  x = [-b +/- sqrt(b^2 - 4ac)] / 2a
@@ -977,6 +1051,7 @@ def solveQuadratic(a, b, c):
         root1 = ((-b) - sqrtD) / twoA
         root2 = ((-b) + sqrtD) / twoA
         return [root1, root2]
+
 
 if __debug__:
     def stackEntryInfo(depth=0, baseFileName=1):
@@ -1007,7 +1082,7 @@ if __debug__:
             finally:
                 del stack
                 del frame
-        except:
+        except Exception:
             result = (None, None, None)
 
         return result
@@ -1053,6 +1128,7 @@ if __debug__:
             return '%s%s%s%s%s' % (fileName, separator, lineNum, separator,
                                    funcName)
 
+
 def findPythonModule(module):
     # Look along the python load path for the indicated filename.
     # Returns the located pathname, or None if the filename is not
@@ -1064,6 +1140,7 @@ def findPythonModule(module):
             return pathname
 
     return None
+
 
 def clampScalar(value, a, b):
     # calling this ought to be faster than calling both min and max
@@ -1081,6 +1158,7 @@ def clampScalar(value, a, b):
             return a
         else:
             return value
+
 
 def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
@@ -1108,11 +1186,13 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     # Return the last item.
     return item
 
+
 def randFloat(a, b=0., rng=random.random):
     """returns a random float in [a, b]
     call with single argument to generate random float between arg and zero
     """
     return lerp(a, b, rng())
+
 
 def normalDistrib(a, b, gauss=random.gauss):
     """
@@ -1147,6 +1227,7 @@ def normalDistrib(a, b, gauss=random.gauss):
         if (r >= a) and (r <= b):
             return r
 
+
 def weightedRand(valDict, rng=random.random):
     """
     pass in a dictionary with a selection -> weight mapping.  E.g.::
@@ -1177,10 +1258,12 @@ def weightedRand(valDict, rng=random.random):
     assert True, "Should never get here"
     return selections[-1]
 
+
 def randUint31(rng=random.random):
     """returns a random integer in [0..2^31).
     rng must return float in [0..1]"""
     return int(rng() * 0x7FFFFFFF)
+
 
 def randInt32(rng=random.random):
     """returns a random integer in [-2147483648..2147483647].
@@ -1191,8 +1274,10 @@ def randInt32(rng=random.random):
         i *= -1
     return i
 
+
 class SerialNumGen:
     """generates serial numbers"""
+
     def __init__(self, start=None):
         if start is None:
             start = 0
@@ -1203,6 +1288,7 @@ class SerialNumGen:
         return self.__counter
 
     __next__ = next
+
 
 class SerialMaskedGen(SerialNumGen):
     def __init__(self, mask, start=None):
@@ -1215,13 +1301,16 @@ class SerialMaskedGen(SerialNumGen):
 
     __next__ = next
 
+
 _serialGen = SerialNumGen()
+
+
 def serialNum():
-    global _serialGen
     return _serialGen.next()
+
+
 def uniqueName(name):
-    global _serialGen
-    return '%s-%s' % (name, _serialGen.next())
+    return f'{name}-{serialNum()}'
 
 
 ############################################################
@@ -1264,13 +1353,16 @@ class Singleton(type):
     def __init__(cls, name, bases, dic):
         super(Singleton, cls).__init__(name, bases, dic)
         cls.instance=None
+
     def __call__(cls, *args, **kw):
         if cls.instance is None:
             cls.instance=super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
+
 class SingletonError(ValueError):
     """ Used to indicate an inappropriate value for a Singleton."""
+
 
 def printListEnumGen(l):
     # log each individual item with a number in front of it
@@ -1284,13 +1376,16 @@ def printListEnumGen(l):
         print(format % (i, l[i]))
         yield None
 
+
 def printListEnum(l):
     for result in printListEnumGen(l):
         pass
 
+
 # base class for all Panda C++ objects
 # libdtoolconfig doesn't seem to have this, grab it off of TypedObject
 dtoolSuperBase = None
+
 
 def _getDtoolSuperBase():
     global dtoolSuperBase
@@ -1298,13 +1393,16 @@ def _getDtoolSuperBase():
     dtoolSuperBase = TypedObject.__bases__[0]
     assert dtoolSuperBase.__name__ == 'DTOOL_SUPER_BASE'
 
+
 safeReprNotify = None
+
 
 def _getSafeReprNotify():
     global safeReprNotify
     from direct.directnotify.DirectNotifyGlobal import directNotify
     safeReprNotify = directNotify.newCategory("safeRepr")
     return safeReprNotify
+
 
 def safeRepr(obj):
     global dtoolSuperBase
@@ -1323,8 +1421,9 @@ def safeRepr(obj):
 
     try:
         return repr(obj)
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
+
 
 def safeReprTypeOnFail(obj):
     global dtoolSuperBase
@@ -1340,9 +1439,8 @@ def safeReprTypeOnFail(obj):
 
     try:
         return repr(obj)
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
-
 
 
 def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
@@ -1402,8 +1500,9 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
             if len(r) > maxLen:
                 r = r[:maxLen]
             return r
-    except:
+    except Exception:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
+
 
 def convertTree(objTree, idList):
     newTree = {}
@@ -1412,6 +1511,7 @@ def convertTree(objTree, idList):
         newTree[obj] = {}
         r_convertTree(objTree[key], newTree[obj], idList)
     return newTree
+
 
 def r_convertTree(oldTree, newTree, idList):
     for key in list(oldTree.keys()):
@@ -1458,14 +1558,17 @@ def appendStr(obj, st):
 
 class ScratchPad:
     """empty class to stick values onto"""
+
     def __init__(self, **kArgs):
         for key, value in kArgs.items():
             setattr(self, key, value)
         self._keys = set(kArgs.keys())
+
     def add(self, **kArgs):
         for key, value in kArgs.items():
             setattr(self, key, value)
         self._keys.update(list(kArgs.keys()))
+
     def destroy(self):
         for key in self._keys:
             delattr(self, key)
@@ -1473,14 +1576,18 @@ class ScratchPad:
     # allow dict [] syntax
     def __getitem__(self, itemName):
         return getattr(self, itemName)
+
     def get(self, itemName, default=None):
         return getattr(self, itemName, default)
     # allow 'in'
+
     def __contains__(self, itemName):
         return itemName in self._keys
 
+
 class Sync:
     _SeriesGen = SerialNumGen()
+
     def __init__(self, name, other=None):
         self._name = name
         if other is None:
@@ -1489,10 +1596,13 @@ class Sync:
         else:
             self._series = other._series
             self._value = other._value
+
     def invalidate(self):
         self._value = None
+
     def change(self):
         self._value += 1
+
     def sync(self, other):
         if (self._series != other._series) or (self._value != other._value):
             self._series = other._series
@@ -1500,12 +1610,15 @@ class Sync:
             return True
         else:
             return False
+
     def isSynced(self, other):
         return ((self._series == other._series) and
                 (self._value == other._value))
+
     def __repr__(self):
         return '%s(%s)<family=%s,value=%s>' % (self.__class__.__name__,
                               self._name, self._series, self._value)
+
 
 def itype(obj):
     # version of type that gives more complete information about instance types
@@ -1518,6 +1631,7 @@ def itype(obj):
     if isinstance(obj, dtoolSuperBase):
         return "<type 'instance' of %s>" % (obj.__class__)
     return t
+
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
     if _visitedIds is None:
@@ -1564,6 +1678,7 @@ def deeptype(obj, maxLen=100, _visitedIds=None):
     else:
         return str(itype(obj))
 
+
 def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     """get a string that has each item of the list on its own line,
     and each item is numbered on the left from zero"""
@@ -1585,6 +1700,7 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         s += format % (i, itype(items[i]), objStr)
     return s
+
 
 def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     """get a string that has each item of the list on its own line,
@@ -1614,6 +1730,7 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
         s += format % (i, itype(items[i]), strs[i])
     return s
 
+
 def printNumberedTyped(items, maxLen=5000):
     """print out each item of the list on its own line,
     with each item numbered on the left from zero"""
@@ -1630,6 +1747,7 @@ def printNumberedTyped(items, maxLen=5000):
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         print(format % (i, itype(items[i]), objStr))
 
+
 def printNumberedTypesGen(items, maxLen=5000):
     digits = 0
     n = len(items)
@@ -1641,14 +1759,17 @@ def printNumberedTypesGen(items, maxLen=5000):
         print(format % (i, itype(items[i])))
         yield None
 
+
 def printNumberedTypes(items, maxLen=5000):
     """print out the type of each item of the list on its own line,
     with each item numbered on the left from zero"""
     for result in printNumberedTypesGen(items, maxLen):
         yield result
 
+
 class DelayedCall:
     """ calls a func after a specified delay """
+
     def __init__(self, func, name=None, delay=None):
         if name is None:
             name = 'anonymous'
@@ -1659,25 +1780,32 @@ class DelayedCall:
         self._delay = delay
         self._finished = False
         self._addDoLater()
+
     def destroy(self):
         self._finished = True
         self._removeDoLater()
+
     def finish(self):
         if not self._finished:
-            self._doCallback()
+            self._doCallback(None)
         self.destroy()
+
     def _addDoLater(self):
         taskMgr.doMethodLater(self._delay, self._doCallback, self._taskName)
+
     def _removeDoLater(self):
         taskMgr.remove(self._taskName)
+
     def _doCallback(self, task):
         self._finished = True
         func = self._func
         del self._func
         func()
 
+
 class FrameDelayedCall:
     """ calls a func after N frames """
+
     def __init__(self, name, callback, frames=None, cancelFunc=None):
         # checkFunc is optional; called every frame, if returns True, FrameDelay is cancelled
         # and callback is not called
@@ -1690,19 +1818,24 @@ class FrameDelayedCall:
         self._taskName = uniqueName('%s-%s' % (self.__class__.__name__, self._name))
         self._finished = False
         self._startTask()
+
     def destroy(self):
         self._finished = True
         self._stopTask()
+
     def finish(self):
         if not self._finished:
             self._finished = True
             self._callback()
         self.destroy()
+
     def _startTask(self):
         taskMgr.add(self._frameTask, self._taskName)
         self._counter = 0
+
     def _stopTask(self):
         taskMgr.remove(self._taskName)
+
     def _frameTask(self, task):
         if self._cancelFunc and self._cancelFunc():
             self.destroy()
@@ -1713,15 +1846,18 @@ class FrameDelayedCall:
             return task.done
         return task.cont
 
+
 class DelayedFunctor:
     """ Waits for this object to be called, then calls supplied functor after a delay.
     Effectively inserts a time delay between the caller and the functor. """
+
     def __init__(self, functor, name=None, delay=None):
         self._functor = functor
         self._name = name
         # FunctionInterval requires __name__
         self.__name__ = self._name
         self._delay = delay
+
     def _callFunctor(self):
         cb = Functor(self._functor, *self._args, **self._kwArgs)
         del self._functor
@@ -1732,14 +1868,17 @@ class DelayedFunctor:
         del self._delayedCall
         del self.__name__
         cb()
+
     def __call__(self, *args, **kwArgs):
         self._args = args
         self._kwArgs = kwArgs
         self._delayedCall = DelayedCall(self._callFunctor, self._name, self._delay)
 
+
 class SubframeCall:
     """Calls a callback at a specific time during the frame using the
     task system"""
+
     def __init__(self, functor, taskPriority, name=None):
         self._functor = functor
         self._name = name
@@ -1747,6 +1886,7 @@ class SubframeCall:
         taskMgr.add(self._doCallback,
                     self._taskName,
                     priority=taskPriority)
+
     def _doCallback(self, task):
         functor = self._functor
         del self._functor
@@ -1754,13 +1894,15 @@ class SubframeCall:
         del self._name
         self._taskName = None
         return task.done
+
     def cleanup(self):
         if self._taskName:
             taskMgr.remove(self._taskName)
             self._taskName = None
 
+
 class PStatScope:
-    collectors = {}
+    collectors: dict = {}
 
     def __init__(self, level = None):
         self.levels = []
@@ -1804,6 +1946,7 @@ class PStatScope:
         # print '  ',self.collectors[label]
         return self.collectors[label]
 
+
 def pstatcollect(scope, level = None):
     def decorator(f):
         return f
@@ -1820,12 +1963,15 @@ def pstatcollect(scope, level = None):
                 scope.stop(pop = True)
                 return val
             return wrap
-    except:
+    except Exception:
         pass
 
     return decorator
 
+
 __report_indent = 0
+
+
 def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
@@ -1877,7 +2023,6 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             config strings resolve to True.
     """
 
-
     def indent(str):
         global __report_indent
         return ' '*__report_indent+str
@@ -1916,7 +2061,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             prefixes = set()
 
         for param in dConfigParamList:
-            prefix = config.GetString('prefix-%s-report' % (param,), '')
+            prefix = ConfigVariableString(f"prefix-{param}-report", "", "DConfig", ConfigFlags.F_dconfig).value
             if prefix:
                 prefixes.add(prefix)
 
@@ -1926,21 +2071,20 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     globalClockDelta = importlib.import_module("direct.distributed.ClockDelta").globalClockDelta
 
     def decorator(f):
-        def wrap(*args,**kwargs):
+        def wrap(*args, **kwargs):
             if args:
                 rArgs = [args[0].__class__.__name__ + ', ']
             else:
                 rArgs = []
 
             if 'args' in types:
-                rArgs += [repr(x)+', ' for x in args[1:]] + \
-                         [ x + ' = ' + '%s, ' % repr(y) for x,y in kwargs.items()]
+                rArgs += [repr(x) + ', ' for x in args[1:]] + \
+                         [x + ' = ' + '%s, ' % repr(y) for x, y in kwargs.items()]
 
             if not rArgs:
                 rArgs = '()'
             else:
-                rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
-
+                rArgs = '(' + functools.reduce(str.__add__, rArgs)[:-2] + ')'
 
             outStr = '%s%s' % (f.__name__, rArgs)
 
@@ -1991,11 +2135,11 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             rVal = None
             try:
                 __report_indent += 1
-                rVal = f(*args,**kwargs)
+                rVal = f(*args, **kwargs)
             finally:
                 __report_indent -= 1
                 if rVal is not None:
-                    print(indent(' -> '+repr(rVal)))
+                    print(indent(' -> ' + repr(rVal)))
             return rVal
 
         wrap.__name__ = f.__name__
@@ -2005,17 +2149,20 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         return wrap
     return decorator
 
+
 def getBase():
     try:
         return base
-    except:
+    except Exception:
         return simbase
+
 
 def getRepository():
     try:
         return base.cr
-    except:
+    except Exception:
         return simbase.air
+
 
 exceptionLoggedNotify = None
 if __debug__:
@@ -2030,7 +2177,7 @@ if __debug__:
         """
         try:
             null = not __dev__
-        except:
+        except Exception:
             null = not __debug__
         if null:
             # if we're not in __dev__, just return the function itself. This
@@ -2045,6 +2192,7 @@ if __debug__:
             if exceptionLoggedNotify is None:
                 from direct.directnotify.DirectNotifyGlobal import directNotify
                 exceptionLoggedNotify = directNotify.newCategory("ExceptionLogged")
+
             def _exceptionLogged(*args, **kArgs):
                 try:
                     return f(*args, **kArgs)
@@ -2062,7 +2210,7 @@ if __debug__:
                             appendStr(e, '\n%s' % s)
                         else:
                             exceptionLoggedNotify.info(s)
-                    except:
+                    except Exception:
                         exceptionLoggedNotify.info(
                             '%s: ERROR IN PRINTING' % f.__name__)
                     raise
@@ -2072,19 +2220,24 @@ if __debug__:
 
 # http://en.wikipedia.org/wiki/Golden_ratio
 GoldenRatio = (1. + math.sqrt(5.)) / 2.
+
+
 class GoldenRectangle:
     @staticmethod
     def getLongerEdge(shorter):
         return shorter * GoldenRatio
+
     @staticmethod
     def getShorterEdge(longer):
         return longer / GoldenRatio
+
 
 def nullGen():
     # generator that ends immediately
     if False:
         # yield that never runs but still exists, making this func a generator
         yield None
+
 
 def loopGen(l):
     # generator that yields the items of an iterable object forever
@@ -2096,6 +2249,7 @@ def loopGen(l):
     # don't leak
     _gen = None
     return gen
+
 
 def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
     # iterates and finally yields a flywheel generator object
@@ -2134,6 +2288,7 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
     # create the flywheel generator
     yield flywheel(index2objectAndCount)
 
+
 def flywheel(*args, **kArgs):
     # create a flywheel generator
     # see arguments and comments in flywheelGen above
@@ -2152,9 +2307,11 @@ def flywheel(*args, **kArgs):
 if __debug__:
     def quickProfile(name="unnamed"):
         import pstats
+
         def profileDecorator(f):
             if not ConfigVariableBool("use-profiler", False):
                 return f
+
             def _profiled(*args, **kArgs):
                 # must do this in here because we don't have base/simbase
                 # at the time that PythonUtil is loaded
@@ -2166,7 +2323,7 @@ if __debug__:
                     s = clock.getRealTime() - st
                     print("Function %s.%s took %s seconds"%(f.__module__, f.__name__,s))
                 else:
-                    import profile as prof, pstats
+                    import profile as prof
 
                     #detailed profile, stored in base.stats under (
                     if not hasattr(base, "stats"):
@@ -2187,12 +2344,14 @@ if __debug__:
             return _profiled
         return profileDecorator
 
+
 def getTotalAnnounceTime():
     td=0
     for objs in base.stats.values():
         for stat in objs:
             td+=getAnnounceGenerateTime(stat)
     return td
+
 
 def getAnnounceGenerateTime(stat):
     val=0
@@ -2216,13 +2375,13 @@ class MiniLog:
                ('*'*50, self.name, '-'*50, '\n'.join(self.lines), '*'*50)
 
     def enterFunction(self, funcName, *args, **kw):
-        rArgs = [repr(x)+', ' for x in args] + \
-                [ x + ' = ' + '%s, ' % repr(y) for x,y in kw.items()]
+        rArgs = [repr(x) + ', ' for x in args] + \
+                [x + ' = ' + '%s, ' % repr(y) for x, y in kw.items()]
 
         if not rArgs:
             rArgs = '()'
         else:
-            rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
+            rArgs = '(' + functools.reduce(str.__add__, rArgs)[:-2] + ')'
 
         line = '%s%s' % (funcName, rArgs)
         self.appendFunctionCall(line)
@@ -2248,6 +2407,7 @@ class MiniLog:
         self.lines = []
         return outStr
 
+
 class MiniLogSentry:
     def __init__(self, log, funcName, *args, **kw):
         self.log = log
@@ -2259,13 +2419,16 @@ class MiniLogSentry:
             self.log.exitFunction()
         del self.log
 
+
 def logBlock(id, msg):
     print('<< LOGBLOCK(%03d)' % id)
     print(str(msg))
     print('/LOGBLOCK(%03d) >>' % id)
 
+
 class HierarchyException(Exception):
     JOSWILSO = 0
+
     def __init__(self, owner, description):
         self.owner = owner
         self.desc = description
@@ -2275,6 +2438,7 @@ class HierarchyException(Exception):
 
     def __repr__(self):
         return 'HierarchyException(%s)' % (self.owner, )
+
 
 def formatTimeCompact(seconds):
     # returns string in format '1d3h22m43s'
@@ -2296,16 +2460,6 @@ def formatTimeCompact(seconds):
     result += '%ss' % seconds
     return result
 
-if __debug__ and __name__ == '__main__':
-    ftc = formatTimeCompact
-    assert ftc(0) == '0s'
-    assert ftc(1) == '1s'
-    assert ftc(60) == '1m0s'
-    assert ftc(64) == '1m4s'
-    assert ftc(60*60) == '1h0m0s'
-    assert ftc(24*60*60) == '1d0h0m0s'
-    assert ftc(24*60*60 + 2*60*60 + 34*60 + 12) == '1d2h34m12s'
-    del ftc
 
 def formatTimeExact(seconds):
     # like formatTimeCompact but leaves off '0 seconds', '0 minutes' etc. for
@@ -2332,17 +2486,6 @@ def formatTimeExact(seconds):
         result += '%ss' % seconds
     return result
 
-if __debug__ and __name__ == '__main__':
-    fte = formatTimeExact
-    assert fte(0) == '0s'
-    assert fte(1) == '1s'
-    assert fte(2) == '2s'
-    assert fte(61) == '1m1s'
-    assert fte(60) == '1m'
-    assert fte(60*60) == '1h'
-    assert fte(24*60*60) == '1d'
-    assert fte((24*60*60) + (2 * 60)) == '1d0h2m'
-    del fte
 
 class AlphabetCounter:
     # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
@@ -2374,74 +2517,18 @@ class AlphabetCounter:
 
     __next__ = next
 
-if __debug__ and __name__ == '__main__':
-    def testAlphabetCounter():
-        tempList = []
-        ac = AlphabetCounter()
-        for i in range(26*3):
-            tempList.append(ac.next())
-        assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                            'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
-                            'BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU','BV','BW','BX','BY','BZ',]
-        ac = AlphabetCounter()
-        num  = 26 # A-Z
-        num += (26*26) # AA-ZZ
-        num += 26 # AAZ
-        num += 1 # ABA
-        num += 2 # ABC
-        for i in range(num):
-            x = ac.next()
-        assert x == 'ABC'
-    testAlphabetCounter()
-    del testAlphabetCounter
-
 
 class Default:
     # represents 'use the default value'
     # useful for keyword arguments to virtual methods
     pass
 
-superLogFile = None
-def startSuperLog(customFunction = None):
-    global superLogFile
-
-    if not superLogFile:
-        superLogFile = open("c:\\temp\\superLog.txt", "w")
-        def trace_dispatch(a,b,c):
-            if b == 'call' and a.f_code.co_name != '?' and a.f_code.co_name.find("safeRepr") < 0:
-                vars = dict(a.f_locals)
-                if 'self' in vars:
-                    del vars['self']
-                if '__builtins__' in vars:
-                    del vars['__builtins__']
-                for i in vars:
-                    vars[i] = safeReprTypeOnFail(vars[i])
-
-                if customFunction:
-                    superLogFile.write( "before = %s\n"%customFunction())
-
-                superLogFile.write( "%s(%s):%s:%s\n"%(a.f_code.co_filename.split("\\")[-1],a.f_code.co_firstlineno, a.f_code.co_name, vars))
-
-                if customFunction:
-                    superLogFile.write( "after = %s\n"%customFunction())
-
-
-
-                return trace_dispatch
-        sys.settrace(trace_dispatch)
-
-def endSuperLog():
-    global superLogFile
-    if superLogFile:
-        sys.settrace(None)
-        superLogFile.close()
-        superLogFile = None
 
 def configIsToday(configName):
     # TODO: replace usage of strptime with something else
     # returns true if config string is a valid representation of today's date
     today = time.localtime()
-    confStr = config.GetString(configName, '')
+    confStr = ConfigVariableString(configName, "", "DConfig", ConfigFlags.F_dconfig).value
     for format in ('%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y'):
         try:
             confDate = time.strptime(confStr, format)
@@ -2454,22 +2541,25 @@ def configIsToday(configName):
                 return True
     return False
 
+
 def typeName(o):
     if hasattr(o, '__class__'):
         return o.__class__.__name__
     else:
         return o.__name__
 
+
 def safeTypeName(o):
     try:
         return typeName(o)
-    except:
+    except Exception:
         pass
     try:
         return type(o)
-    except:
+    except Exception:
         pass
     return '<failed safeTypeName()>'
+
 
 def histogramDict(l):
     d = {}
@@ -2477,6 +2567,7 @@ def histogramDict(l):
         d.setdefault(e, 0)
         d[e] += 1
     return d
+
 
 def unescapeHtmlString(s):
     # converts %## to corresponding character
@@ -2496,8 +2587,10 @@ def unescapeHtmlString(s):
         result += char
     return result
 
+
 class PriorityCallbacks:
     """ manage a set of prioritized callbacks, and allow them to be invoked in order of priority """
+
     def __init__(self):
         self._callbacks = []
 
@@ -2527,52 +2620,53 @@ class PriorityCallbacks:
         for priority, callback in self._callbacks:
             callback()
 
-builtins.Functor = Functor
-builtins.Stack = Stack
-builtins.Queue = Queue
-builtins.SerialNumGen = SerialNumGen
-builtins.SerialMaskedGen = SerialMaskedGen
-builtins.ScratchPad = ScratchPad
-builtins.uniqueName = uniqueName
-builtins.serialNum = serialNum
+
+builtins.Functor = Functor  # type: ignore[attr-defined]
+builtins.Stack = Stack  # type: ignore[attr-defined]
+builtins.Queue = Queue  # type: ignore[attr-defined]
+builtins.SerialNumGen = SerialNumGen  # type: ignore[attr-defined]
+builtins.SerialMaskedGen = SerialMaskedGen  # type: ignore[attr-defined]
+builtins.ScratchPad = ScratchPad  # type: ignore[attr-defined]
+builtins.uniqueName = uniqueName  # type: ignore[attr-defined]
+builtins.serialNum = serialNum  # type: ignore[attr-defined]
 if __debug__:
-    builtins.profiled = profiled
-    builtins.exceptionLogged = exceptionLogged
-builtins.itype = itype
-builtins.appendStr = appendStr
-builtins.bound = bound
-builtins.clamp = clamp
-builtins.lerp = lerp
-builtins.makeList = makeList
-builtins.makeTuple = makeTuple
+    builtins.profiled = profiled  # type: ignore[attr-defined]
+    builtins.exceptionLogged = exceptionLogged  # type: ignore[attr-defined]
+builtins.itype = itype  # type: ignore[attr-defined]
+builtins.appendStr = appendStr  # type: ignore[attr-defined]
+builtins.bound = bound  # type: ignore[attr-defined]
+builtins.clamp = clamp  # type: ignore[attr-defined]
+builtins.lerp = lerp  # type: ignore[attr-defined]
+builtins.makeList = makeList  # type: ignore[attr-defined]
+builtins.makeTuple = makeTuple  # type: ignore[attr-defined]
 if __debug__:
-    builtins.printStack = printStack
-    builtins.printReverseStack = printReverseStack
-    builtins.printVerboseStack = printVerboseStack
-builtins.DelayedCall = DelayedCall
-builtins.DelayedFunctor = DelayedFunctor
-builtins.FrameDelayedCall = FrameDelayedCall
-builtins.SubframeCall = SubframeCall
-builtins.invertDict = invertDict
-builtins.invertDictLossless = invertDictLossless
-builtins.getBase = getBase
-builtins.getRepository = getRepository
-builtins.safeRepr = safeRepr
-builtins.fastRepr = fastRepr
-builtins.nullGen = nullGen
-builtins.flywheel = flywheel
-builtins.loopGen = loopGen
+    builtins.printStack = printStack  # type: ignore[attr-defined]
+    builtins.printReverseStack = printReverseStack  # type: ignore[attr-defined]
+    builtins.printVerboseStack = printVerboseStack  # type: ignore[attr-defined]
+builtins.DelayedCall = DelayedCall  # type: ignore[attr-defined]
+builtins.DelayedFunctor = DelayedFunctor  # type: ignore[attr-defined]
+builtins.FrameDelayedCall = FrameDelayedCall  # type: ignore[attr-defined]
+builtins.SubframeCall = SubframeCall  # type: ignore[attr-defined]
+builtins.invertDict = invertDict  # type: ignore[attr-defined]
+builtins.invertDictLossless = invertDictLossless  # type: ignore[attr-defined]
+builtins.getBase = getBase  # type: ignore[attr-defined]
+builtins.getRepository = getRepository  # type: ignore[attr-defined]
+builtins.safeRepr = safeRepr  # type: ignore[attr-defined]
+builtins.fastRepr = fastRepr  # type: ignore[attr-defined]
+builtins.nullGen = nullGen  # type: ignore[attr-defined]
+builtins.flywheel = flywheel  # type: ignore[attr-defined]
+builtins.loopGen = loopGen  # type: ignore[attr-defined]
 if __debug__:
-    builtins.StackTrace = StackTrace
-builtins.report = report
-builtins.pstatcollect = pstatcollect
-builtins.MiniLog = MiniLog
-builtins.MiniLogSentry = MiniLogSentry
-builtins.logBlock = logBlock
-builtins.HierarchyException = HierarchyException
-builtins.deeptype = deeptype
-builtins.Default = Default
-builtins.configIsToday = configIsToday
-builtins.typeName = typeName
-builtins.safeTypeName = safeTypeName
-builtins.histogramDict = histogramDict
+    builtins.StackTrace = StackTrace  # type: ignore[attr-defined]
+builtins.report = report  # type: ignore[attr-defined]
+builtins.pstatcollect = pstatcollect  # type: ignore[attr-defined]
+builtins.MiniLog = MiniLog  # type: ignore[attr-defined]
+builtins.MiniLogSentry = MiniLogSentry  # type: ignore[attr-defined]
+builtins.logBlock = logBlock  # type: ignore[attr-defined]
+builtins.HierarchyException = HierarchyException  # type: ignore[attr-defined]
+builtins.deeptype = deeptype  # type: ignore[attr-defined]
+builtins.Default = Default  # type: ignore[attr-defined]
+builtins.configIsToday = configIsToday  # type: ignore[attr-defined]
+builtins.typeName = typeName  # type: ignore[attr-defined]
+builtins.safeTypeName = safeTypeName  # type: ignore[attr-defined]
+builtins.histogramDict = histogramDict  # type: ignore[attr-defined]

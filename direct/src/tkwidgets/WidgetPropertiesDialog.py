@@ -2,12 +2,13 @@
 
 __all__ = ['WidgetPropertiesDialog']
 
-from direct.showbase.TkGlobal import *
 import Pmw
+import tkinter as tk
 
 
-class WidgetPropertiesDialog(Toplevel):
+class WidgetPropertiesDialog(tk.Toplevel):
     """Class to open dialogs to adjust widget properties."""
+
     def __init__(self, propertyDict, propertyList = None, parent = None,
                  title = 'Widget Properties'):
         """Initialize a dialog.
@@ -20,14 +21,12 @@ class WidgetPropertiesDialog(Toplevel):
         self.propertyDict = propertyDict
         self.propertyList = propertyList
         if self.propertyList is None:
-            self.propertyList = list(self.propertyDict.keys())
-            self.propertyList.sort()
+            self.propertyList = sorted(self.propertyDict)
         # Use default parent if none specified
         if not parent:
-            import tkinter
-            parent = tkinter._default_root
+            parent = tk._default_root
         # Create toplevel window
-        Toplevel.__init__(self, parent)
+        tk.Toplevel.__init__(self, parent)
         self.transient(parent)
         # Set title
         if title:
@@ -37,7 +36,7 @@ class WidgetPropertiesDialog(Toplevel):
         # Initialize modifications
         self.modifiedDict = {}
         # Create body
-        body = Frame(self)
+        body = tk.Frame(self)
         self.initial_focus = self.body(body)
         body.pack(padx=5, pady=5)
         # Create OK Cancel button
@@ -45,8 +44,8 @@ class WidgetPropertiesDialog(Toplevel):
         # Initialize window state
         self.grab_set()
         self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
         self.initial_focus.focus_set()
         self.wait_window(self)
 
@@ -57,7 +56,7 @@ class WidgetPropertiesDialog(Toplevel):
         # Clean up balloons!
         for balloon in self.balloonList:
             balloon.withdraw()
-        Toplevel.destroy(self)
+        tk.Toplevel.destroy(self)
 
     #
     # construction hooks
@@ -83,19 +82,19 @@ class WidgetPropertiesDialog(Toplevel):
             # Help string specified?
             helpString = propertySet.get('help', None)
             # Create label
-            label = Label(master, text=property, justify=LEFT)
-            label.grid(row=count, column = 0, padx=5, sticky=W)
+            label = tk.Label(master, text=property, justify=tk.LEFT)
+            label.grid(row=count, column=0, padx=5, sticky=tk.W)
 
             # Create entry
-            entry = Pmw.EntryField(master, entry_justify = 'right')
-            entry.grid(row=count, column = 1, padx=5, sticky=W+E)
+            entry = Pmw.EntryField(master, entry_justify=tk.RIGHT)
+            entry.grid(row=count, column=1, padx=5, sticky=tk.W + tk.E)
             if initialvalue is None:
                 entry.insert(0, 'None')
             else:
                 entry.insert(0, initialvalue)
 
             # Create balloon for help
-            balloon = Pmw.Balloon(state = 'balloon')
+            balloon = Pmw.Balloon(state='balloon')
             self.balloonList.append(balloon)
             # extra info if None is allowed value
             if helpString is None:
@@ -107,23 +106,23 @@ class WidgetPropertiesDialog(Toplevel):
             if entryType == 'real':
                 # Only allow real numbers
                 if fAllowNone:
-                    entry['validate'] = { 'validator': self.realOrNone }
+                    entry['validate'] = {'validator': self.realOrNone}
                 else:
-                    entry['validate'] = { 'validator': 'real' }
+                    entry['validate'] = {'validator': 'real'}
                 if helpString is None:
                     helpString = 'Enter a floating point number' + extra + '.'
             elif entryType == 'integer':
                 # Only allow integer values
                 if fAllowNone:
-                    entry['validate'] = { 'validator': self.intOrNone }
+                    entry['validate'] = {'validator': self.intOrNone}
                 else:
-                    entry['validate'] = { 'validator': 'integer' }
+                    entry['validate'] = {'validator': 'integer'}
                 if helpString is None:
-                    helpString = 'Enter an integer' + extra + '.'
+                    helpString = f'Enter an integer{extra}.'
             else:
                 # Anything goes with a string widget
                 if helpString is None:
-                    helpString = 'Enter a string' + extra + '.'
+                    helpString = f'Enter a string{extra}.'
             # Bind balloon with help string to entry
             balloon.bind(entry, helpString)
             # Create callback to execute whenever a value is changed
@@ -134,10 +133,11 @@ class WidgetPropertiesDialog(Toplevel):
             # Keep track of the entrys
             entryList.append(entry)
             count += 1
+
         # Set initial focus
         if len(entryList) > 0:
             entry = entryList[0]
-            entry.select_range(0, END)
+            entry.select_range(0, tk.END)
             # Set initial focus to first entry in the list
             return entryList[0]
         else:
@@ -150,13 +150,13 @@ class WidgetPropertiesDialog(Toplevel):
     def buttonbox(self):
         """add standard button box buttons.
         """
-        box = Frame(self)
+        box = tk.Frame(self)
         # Create buttons
-        w = Button(box, text="OK", width=10, command=self.ok)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w = tk.Button(box, text="OK", width=10, command=self.ok)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
         # Create buttons
-        w = Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w = tk.Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
         # Bind commands
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)

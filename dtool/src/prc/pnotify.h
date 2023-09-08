@@ -156,6 +156,36 @@ private:
 
 #define nassert_raise(message) Notify::write_string(message)
 
+#elif defined(__clang_analyzer__)
+
+// We define these so that clang-tidy can generally assume that assertions will
+// not occur, since we don't really care about things like minor memory leaks
+// on assertion failure.
+
+#define nassertr(condition, return_value) \
+  { \
+    if (!(condition)) { \
+      abort(); \
+      return return_value; \
+    } \
+  }
+
+#define nassertv(condition) \
+  { \
+    if (!(condition)) { \
+      abort(); \
+      return; \
+    } \
+  }
+
+#define nassertd(condition) \
+  if (!(condition))
+
+#define nassertr_always(condition, return_value) nassertr(condition, return_value)
+#define nassertv_always(condition) nassertv(condition)
+
+#define nassert_raise(message) abort()
+
 #else   // NDEBUG
 
 #define nassertr(condition, return_value) \

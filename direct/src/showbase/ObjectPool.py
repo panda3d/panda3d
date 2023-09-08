@@ -43,7 +43,7 @@ class ObjectPool:
             self._type2objs[typ].append(obj)
             try:
                 self._len2obj[len(obj)] = obj
-            except:
+            except Exception:
                 pass
         self._count2types = invertDictLossless(type2count)
 
@@ -90,10 +90,7 @@ class ObjectPool:
     def typeFreqStr(self):
         s  =   'Object Pool: Type Frequencies'
         s += '\n============================='
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types, reverse=True):
             types = makeList(self._count2types[count])
             for typ in types:
                 s += '\n%s\t%s' % (count, typ)
@@ -102,12 +99,10 @@ class ObjectPool:
     def printObjsByType(self):
         print('Object Pool: Objects By Type')
         print('\n============================')
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
         # print types with the smallest number of instances first, in case
         # there's a large group that waits a long time before printing
         #counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types):
             types = makeList(self._count2types[count])
             for typ in types:
                 print('TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ])))
@@ -115,10 +110,7 @@ class ObjectPool:
 
     def printReferrers(self, numEach=3):
         """referrers of the first few of each type of object"""
-        counts = list(set(self._count2types.keys()))
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(self._count2types, reverse=True):
             types = makeList(self._count2types[count])
             for typ in types:
                 print('\n\nTYPE: %s' % repr(typ))

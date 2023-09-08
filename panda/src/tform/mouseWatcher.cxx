@@ -16,7 +16,7 @@
 #include "dataGraphTraverser.h"
 #include "mouseWatcherParameter.h"
 #include "mouseAndKeyboard.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "buttonEventList.h"
 #include "mouseButton.h"
 #include "throw_event.h"
@@ -575,7 +575,7 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
   // Now sort the regions by pointer.  By convention, the Regions vectors are
   // always kept in order by pointer, so we can do easy linear comparison and
   // intersection operations.
-  sort(regions.begin(), regions.end());
+  std::sort(regions.begin(), regions.end());
 }
 
 /**

@@ -8,36 +8,47 @@ from direct.showbase.MessengerGlobal import messenger
 class InputStateToken:
     _SerialGen = SerialNumGen()
     Inval = 'invalidatedToken'
+
     def __init__(self, inputState):
         self._id = InputStateToken._SerialGen.next()
         self._hash = self._id
         self._inputState = inputState
+
     def release(self):
         # subclasses will override
         assert False
+
     def isValid(self):
         return self._id != InputStateToken.Inval
+
     def invalidate(self):
         self._id = InputStateToken.Inval
+
     def __hash__(self):
         return self._hash
 
     #snake_case alias:
     is_valid = isValid
 
+
 class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
     def release(self):
         self._inputState._ignore(self)
         self.ignoreAll()
+
+
 class InputStateForceToken(InputStateToken):
     def release(self):
         self._inputState._unforce(self)
 
+
 class InputStateTokenGroup:
     def __init__(self):
         self._tokens = []
+
     def addToken(self, token):
         self._tokens.append(token)
+
     def release(self):
         for token in self._tokens:
             token.release()
@@ -45,6 +56,7 @@ class InputStateTokenGroup:
 
     #snake_case alias:
     add_token = addToken
+
 
 class InputState(DirectObject.DirectObject):
     """
@@ -190,7 +202,6 @@ class InputState(DirectObject.DirectObject):
         # input state simply because we're not looking at it anymore.
         # self.set(name, False, inputSource)
 
-
     def force(self, name, value, inputSource):
         """
         Force isSet(name) to return 'value'.
@@ -213,7 +224,7 @@ class InputState(DirectObject.DirectObject):
                 self.notify.error(
                     "%s is trying to force '%s' to ON, but '%s' is already being forced OFF by %s" %
                     (inputSource, name, name, self._forcingOff[name])
-                    )
+                )
             self._forcingOn.setdefault(name, set())
             self._forcingOn[name].add(inputSource)
         else:
@@ -221,7 +232,7 @@ class InputState(DirectObject.DirectObject):
                 self.notify.error(
                     "%s is trying to force '%s' to OFF, but '%s' is already being forced ON by %s" %
                     (inputSource, name, name, self._forcingOn[name])
-                    )
+                )
             self._forcingOff.setdefault(name, set())
             self._forcingOff[name].add(inputSource)
         return token

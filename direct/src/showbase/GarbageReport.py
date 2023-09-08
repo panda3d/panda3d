@@ -17,9 +17,11 @@ GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
 class FakeObject:
     pass
 
+
 class FakeDelObject:
     def __del__(self):
         pass
+
 
 def _createGarbage(num=1):
     for i in range(num):
@@ -31,6 +33,7 @@ def _createGarbage(num=1):
         b = FakeDelObject()
         a.other = b
         b.other = a
+
 
 class GarbageReport(Job):
     """Detects leaked Python objects (via gc.collect()) and reports on garbage
@@ -252,7 +255,7 @@ class GarbageReport(Job):
                             brackets = {
                                 tuple: '()',
                                 list: '[]',
-                                }[type(obj)]
+                            }[type(obj)]
                             # get object being referenced by container
                             nextObj = objs[index+1]
                             cycleBySyntax += brackets[0]
@@ -291,8 +294,7 @@ class GarbageReport(Job):
             if self._args.fullReport:
                 garbageIndices = range(self.numGarbage)
             else:
-                garbageIndices = list(self.cycleIds)
-                garbageIndices.sort()
+                garbageIndices = sorted(self.cycleIds)
             numGarbage = len(garbageIndices)
 
             # log each individual item with a number in front of it
@@ -307,7 +309,6 @@ class GarbageReport(Job):
                 yield None
                 digits += 1
                 n = n // 10
-            digits = digits
             format = '%0' + '%s' % digits + 'i:%s \t%s'
 
             for i in range(numGarbage):
@@ -545,18 +546,22 @@ class GarbageReport(Job):
                     break
         yield cycles
 
+
 class GarbageLogger(GarbageReport):
     """If you just want to log the current garbage to the log file, make
     one of these. It automatically destroys itself after logging"""
+
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
         kArgs['autoDestroy'] = True
         GarbageReport.__init__(self, name, *args, **kArgs)
 
+
 class _CFGLGlobals:
     # for checkForGarbageLeaks
     LastNumGarbage = 0
     LastNumCycles = 0
+
 
 def checkForGarbageLeaks():
     gc.collect()
@@ -578,6 +583,7 @@ def checkForGarbageLeaks():
         func('%s garbage cycles found, see info above' % _CFGLGlobals.LastNumCycles)
     return numGarbage
 
+
 def b_checkForGarbageLeaks(wantReply=False):
     if not __dev__:
         return 0
@@ -587,7 +593,7 @@ def b_checkForGarbageLeaks(wantReply=False):
     try:
         # if this is the client, tell the AI to check for leaks too
         base.cr.timeManager
-    except:
+    except Exception:
         pass
     else:
         if base.cr.timeManager:

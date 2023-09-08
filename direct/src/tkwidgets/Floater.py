@@ -5,22 +5,24 @@ Floater Class: Velocity style controller for floating point values with
 
 __all__ = ['Floater', 'FloaterWidget', 'FloaterGroup']
 
-from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import ClockObject
 import math
 import Pmw
+import tkinter as tk
 
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
+
 
 class Floater(Valuator):
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('style',  VALUATOR_MINI,   INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass
         Valuator.__init__(self, parent)
@@ -39,8 +41,8 @@ class Floater(Valuator):
     def packValuator(self):
         # Position components
         if self._label:
-            self._label.grid(row=0, column=0, sticky = EW)
-        self._entry.grid(row=0, column=1, sticky = EW)
+            self._label.grid(row=0, column=0, sticky = tk.EW)
+        self._entry.grid(row=0, column=1, sticky = tk.EW)
         self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
         self.interior().columnconfigure(0, weight = 1)
 
@@ -53,7 +55,7 @@ class FloaterWidget(Pmw.MegaWidget):
             # Appearance
             ('width',           FLOATER_WIDTH,      INITOPT),
             ('height',          FLOATER_HEIGHT,     INITOPT),
-            ('relief',          RAISED,             self.setRelief),
+            ('relief',          tk.RAISED,          self.setRelief),
             ('borderwidth',     2,                  self.setBorderwidth),
             ('background',      'grey75',           self.setBackground),
             # Behavior
@@ -69,7 +71,7 @@ class FloaterWidget(Pmw.MegaWidget):
             ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass
@@ -86,7 +88,7 @@ class FloaterWidget(Pmw.MegaWidget):
         width = self['width']
         height = self['height']
         self._widget = self.createcomponent('canvas', (), None,
-                                            Canvas, (interior,),
+                                            tk.Canvas, (interior,),
                                             width = width,
                                             height = height,
                                             background = self['background'],
@@ -95,7 +97,7 @@ class FloaterWidget(Pmw.MegaWidget):
                                                             -height/2.0,
                                                             width/2.0,
                                                             height/2.0))
-        self._widget.pack(expand = 1, fill = BOTH)
+        self._widget.pack(expand = 1, fill = tk.BOTH)
 
         # The floater icon
         self._widget.create_polygon(-width/2.0, 0, -2.0, -height/2.0,
@@ -144,7 +146,7 @@ class FloaterWidget(Pmw.MegaWidget):
     def mouseDown(self, event):
         """ Begin mouse interaction """
         # Exectute user redefinable callback function (if any)
-        self['relief'] = SUNKEN
+        self['relief'] = tk.SUNKEN
         if self['preCallback']:
             self['preCallback'](*self['callbackData'])
         self.velocitySF = 0.0
@@ -185,7 +187,7 @@ class FloaterWidget(Pmw.MegaWidget):
         # Execute user redefinable callback function (if any)
         if self['postCallback']:
             self['postCallback'](*self['callbackData'])
-        self['relief'] = RAISED
+        self['relief'] = tk.RAISED
 
     def setNumDigits(self):
         """
@@ -225,7 +227,7 @@ class FloaterGroup(Pmw.MegaToplevel):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('dim',             DEFAULT_DIM,            INITOPT),
-            ('side',            TOP,                    INITOPT),
+            ('side',            tk.TOP,                 INITOPT),
             ('title',           'Floater Group',        None),
             # A tuple of initial values, one for each floater
             ('value',    DEFAULT_VALUE,          INITOPT),
@@ -233,7 +235,7 @@ class FloaterGroup(Pmw.MegaToplevel):
             ('command',         None,                   None),
             # A tuple of labels, one for each floater
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget
@@ -249,7 +251,7 @@ class FloaterGroup(Pmw.MegaToplevel):
         menubar = self.createcomponent('menubar', (), None,
                                        Pmw.MenuBar, (interior,),
                                        balloon = self.balloon)
-        menubar.pack(fill=X)
+        menubar.pack(fill=tk.X)
 
         # FloaterGroup Menu
         menubar.addmenu('Floater Group', 'Floater Group Operations')
@@ -262,7 +264,7 @@ class FloaterGroup(Pmw.MegaToplevel):
             label = 'Dismiss', command = self.withdraw)
 
         menubar.addmenu('Help', 'Floater Group Help Operations')
-        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar = tk.IntVar()
         self.toggleBalloonVar.set(0)
         menubar.addmenuitem('Help', 'checkbutton',
                             'Toggle balloon help',
@@ -280,7 +282,7 @@ class FloaterGroup(Pmw.MegaToplevel):
                 text = self['labels'][index])
             # Do this separately so command doesn't get executed during construction
             f['command'] = lambda val, s=self, i=index: s._floaterSetAt(i, val)
-            f.pack(side = self['side'], expand = 1, fill = X)
+            f.pack(side = self['side'], expand = 1, fill = tk.X)
             self.floaterList.append(f)
 
         # Make sure floaters are initialized
@@ -327,44 +329,3 @@ class FloaterGroup(Pmw.MegaToplevel):
 
     def reset(self):
         self.set(self['value'])
-
-
-## SAMPLE CODE
-if __name__ == '__main__':
-    # Initialise Tkinter and Pmw.
-    root = Toplevel()
-    root.title('Pmw Floater demonstration')
-
-    # Dummy command
-    def printVal(val):
-        print(val)
-
-    # Create and pack a Floater megawidget.
-    mega1 = Floater(root, command = printVal)
-    mega1.pack(side = 'left', expand = 1, fill = 'x')
-
-    """
-    # These are things you can set/configure
-    # Starting value for floater
-    mega1['value'] = 123.456
-    mega1['text'] = 'Drive delta X'
-    # To change the color of the label:
-    mega1.label['foreground'] = 'Red'
-    # Max change/update, default is 100
-    # To have really fine control, for example
-    # mega1['maxVelocity'] = 0.1
-    # Number of digits to the right of the decimal point, default = 2
-    # mega1['numDigits'] = 5
-    """
-
-    # To create a floater group to set an RGBA value:
-    group1 = FloaterGroup(root, dim = 4,
-                          title = 'Simple RGBA Panel',
-                          labels = ('R', 'G', 'B', 'A'),
-                          Valuator_min = 0.0,
-                          Valuator_max = 255.0,
-                          Valuator_resolution = 1.0,
-                          command = printVal)
-
-    # Uncomment this if you aren't running in IDLE
-    #root.mainloop()

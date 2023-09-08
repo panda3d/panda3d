@@ -48,6 +48,9 @@ namespace std {
   struct is_trivial : integral_constant<bool, __is_trivial(T)> {};
 
   template<class T>
+  struct is_trivially_copyable : integral_constant<bool, __is_trivially_copyable(T)> {};
+
+  template<class T>
   struct is_standard_layout : integral_constant<bool, __is_standard_layout(T)> {};
 
   template<class T>

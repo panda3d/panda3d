@@ -31,6 +31,14 @@ TinyTextureContext::
   } else {
     nassertv(gltex->num_levels == 0);
   }
+  if (gltex->views != nullptr) {
+    nassertv(gltex->num_views != 0);
+    get_class_type().deallocate_array(gltex->views);
+    gltex->views = nullptr;
+    gltex->num_views = 0;
+  } else {
+    nassertv(gltex->num_views == 0);
+  }
 }
 
 /**

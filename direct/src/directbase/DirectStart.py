@@ -15,7 +15,7 @@ to and may be replaced by the following code:
    base = ShowBase()
 """
 
-__all__ = []
+__all__ = ()
 
 if __debug__:
     print('Using deprecated DirectStart interface.')

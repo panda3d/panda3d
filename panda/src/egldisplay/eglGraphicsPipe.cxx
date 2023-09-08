@@ -241,8 +241,8 @@ make_output(const std::string &name,
     return nullptr;
   }
 
-  eglGraphicsStateGuardian *eglgsg = 0;
-  if (gsg != 0) {
+  eglGraphicsStateGuardian *eglgsg = nullptr;
+  if (gsg != nullptr) {
     DCAST_INTO_R(eglgsg, gsg, nullptr);
   }
 
@@ -282,7 +282,7 @@ make_output(const std::string &name,
 
   // Second thing to try: a GL(ES(2))GraphicsBuffer
   if (retry == 1) {
-    if ((host==0)||
+    if (host == nullptr ||
   // (!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
@@ -290,7 +290,7 @@ make_output(const std::string &name,
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
-    if ((flags & BF_fb_props_optional)==0) {
+    if ((flags & BF_fb_props_optional) == 0) {
       if (fb_prop.get_indexed_color() > 0 ||
           fb_prop.get_back_buffers() > 0 ||
           fb_prop.get_accum_bits() > 0) {
@@ -299,12 +299,12 @@ make_output(const std::string &name,
     }
     // Early success - if we are sure that this buffer WILL meet specs, we can
     // precertify it.
-    if ((eglgsg != 0) &&
-        (eglgsg->is_valid()) &&
-        (!eglgsg->needs_reset()) &&
-        (eglgsg->_supports_framebuffer_object) &&
-        (eglgsg->_glDrawBuffers != 0)&&
-        (fb_prop.is_basic())) {
+    if (eglgsg != nullptr &&
+        eglgsg->is_valid() &&
+        !eglgsg->needs_reset() &&
+        eglgsg->_supports_framebuffer_object &&
+        eglgsg->_glDrawBuffers != nullptr &&
+        fb_prop.is_basic()) {
       precertify = true;
     }
 #ifdef OPENGLES_2
@@ -323,7 +323,6 @@ make_output(const std::string &name,
   if (retry == 2) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)) {
       return nullptr;
     }

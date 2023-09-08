@@ -785,9 +785,11 @@ main(int argc, char **argv) {
   // argument if there is not one already.
   if (argc >= 2) {
     if (*argv[1] != '-' && *argv[1] != '\0') {
-      char *new_arg = (char *)PANDA_MALLOC_ARRAY(strlen(argv[1]) + 2);
+      size_t len = strlen(argv[1]);
+      char *new_arg = (char *)PANDA_MALLOC_ARRAY(len + 2);
       new_arg[0] = '-';
-      strcpy(new_arg + 1, argv[1]);
+      memcpy(new_arg + 1, argv[1], len);
+      new_arg[len + 1] = 0;
       argv[1] = new_arg;
     }
   }

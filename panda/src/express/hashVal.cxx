@@ -15,17 +15,11 @@
 #include "virtualFileSystem.h"
 #include <ctype.h>
 
-#ifdef HAVE_OPENSSL
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include <openssl/md5.h>
-#endif  // HAVE_OPENSSL
-
 using std::istream;
 using std::istringstream;
 using std::ostream;
 using std::ostringstream;
 using std::string;
-
 
 /**
  * Outputs the HashVal as a 32-digit hexadecimal number.
@@ -169,11 +163,9 @@ set_from_bin(const vector_uchar &text) {
   return true;
 }
 
-#ifdef HAVE_OPENSSL
 /**
  * Generates the hash value from the indicated file.  Returns true on success,
- * false if the file cannot be read.  This method is only defined if we have
- * the OpenSSL library (which provides md5 functionality) available.
+ * false if the file cannot be read.
  */
 bool HashVal::
 hash_file(const Filename &filename) {
@@ -190,74 +182,74 @@ hash_file(const Filename &filename) {
 
   return result;
 }
-#endif  // HAVE_OPENSSL
 
-#ifdef HAVE_OPENSSL
 /**
  * Generates the hash value from the indicated file.  Returns true on success,
- * false if the file cannot be read.  This method is only defined if we have
- * the OpenSSL library (which provides md5 functionality) available.
+ * false if the file cannot be read.
  */
 bool HashVal::
 hash_stream(istream &stream) {
-  unsigned char md[16];
+  static const size_t buffer_size = 1024; // must be multiple of 64
+  unsigned char buffer[buffer_size];
+  unsigned char *ptr = buffer;
+  uint64_t total_count = 0;
 
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
-
-  static const int buffer_size = 1024;
-  char buffer[buffer_size];
+  md5_init();
 
   // Seek the stream to the beginning in case it wasn't there already.
   stream.seekg(0, std::ios::beg);
 
-  stream.read(buffer, buffer_size);
+  stream.read((char *)buffer, buffer_size);
   size_t count = stream.gcount();
   while (count != 0) {
-    MD5_Update(&ctx, buffer, count);
-    stream.read(buffer, buffer_size);
+    total_count += (uint64_t)count;
+
+    // Feed the data to the MD5 algorithm 64 bytes at a time.
+    while (count >= 64) {
+      md5_update(ptr);
+      ptr += 64;
+      count -= 64;
+    }
+    if (count > 0) {
+      break;
+    }
+
+    stream.read((char *)buffer, buffer_size);
+    ptr = buffer;
     count = stream.gcount();
   }
+
+  md5_final(ptr, count, total_count);
 
   // Clear the fail bit so the caller can still read the stream (if it wants
   // to).
   stream.clear();
 
-  MD5_Final(md, &ctx);
-
-  // Store the individual bytes as big-endian ints, from historical
-  // convention.
-  _hv[0] = (md[0] << 24) | (md[1] << 16) | (md[2] << 8) | (md[3]);
-  _hv[1] = (md[4] << 24) | (md[5] << 16) | (md[6] << 8) | (md[7]);
-  _hv[2] = (md[8] << 24) | (md[9] << 16) | (md[10] << 8) | (md[11]);
-  _hv[3] = (md[12] << 24) | (md[13] << 16) | (md[14] << 8) | (md[15]);
-
   return true;
 }
-#endif  // HAVE_OPENSSL
 
-
-#ifdef HAVE_OPENSSL
 /**
- * Generates the hash value by hashing the indicated data.  This method is
- * only defined if we have the OpenSSL library (which provides md5
- * functionality) available.
+ * Generates the hash value by hashing the indicated data.
  */
 void HashVal::
-hash_buffer(const char *buffer, int length) {
-  unsigned char md[16];
-  MD5((const unsigned char *)buffer, length, md);
+hash_buffer(const char *buffer, size_t length) {
+  md5_init();
 
-  // Store the individual bytes as big-endian ints, from historical
-  // convention.
-  _hv[0] = (md[0] << 24) | (md[1] << 16) | (md[2] << 8) | (md[3]);
-  _hv[1] = (md[4] << 24) | (md[5] << 16) | (md[6] << 8) | (md[7]);
-  _hv[2] = (md[8] << 24) | (md[9] << 16) | (md[10] << 8) | (md[11]);
-  _hv[3] = (md[12] << 24) | (md[13] << 16) | (md[14] << 8) | (md[15]);
+  // Feed the data to the MD5 algorithm 64 bytes at a time.
+  const unsigned char *ptr = (const unsigned char *)buffer;
+  size_t remaining = length;
+  while (remaining >= 64) {
+    md5_update(ptr);
+    ptr += 64;
+    remaining -= 64;
+  }
+
+  // md5_final needs a mutable buffer that is at least 64 bytes in size, since
+  // it needs to append extra padding data to the end.
+  unsigned char final_buffer[64];
+  memcpy(final_buffer, ptr, remaining);
+  md5_final(final_buffer, remaining, length);
 }
-
-#endif  // HAVE_OPENSSL
-
 
 /**
  * Encodes the indicated unsigned int into an eight-digit hex string, stored
@@ -293,4 +285,164 @@ decode_hex(const char *buffer, uint32_t &val) {
          (bytes[5] << 8) |
          (bytes[6] << 4) |
          (bytes[7]));
+}
+
+/**
+ * Core of the MD5 algorithm.  Hashes a 64-byte block.  This should be called
+ * repeatedly to add more data, followed with a single call to md5_final().
+ * Taken from a public domain implementation written by Brad Conte.
+ */
+void HashVal::
+md5_update(const unsigned char *buffer) {
+#define ROT(a, b) ((a << b) | (a >> (32 - b)))
+
+#define F(x, y, z) ((x & y) | (~x & z))
+#define G(x, y, z) ((x & z) | (y & ~z))
+#define H(x, y, z) (x ^ y ^ z)
+#define I(x, y, z) (y ^ (x | ~z))
+
+#define FF(a, b, c, d, m, s, t) { a += F(b, c, d) + m + t; a = b + ROT(a, s); }
+#define GG(a, b, c, d, m, s, t) { a += G(b, c, d) + m + t; a = b + ROT(a, s); }
+#define HH(a, b, c, d, m, s, t) { a += H(b, c, d) + m + t; a = b + ROT(a, s); }
+#define II(a, b, c, d, m, s, t) { a += I(b, c, d) + m + t; a = b + ROT(a, s); }
+
+  // MD5 specifies big endian byte order, so reverse all the bytes upon input,
+  // and re-reverse them on output.
+  uint32_t m[16];
+  for (size_t i = 0, j = 0; i < 16; ++i, j += 4) {
+#ifdef WORDS_BIGENDIAN
+    m[i] = (buffer[j] << 24u) + (buffer[j + 1] << 16u) + (buffer[j + 2] << 8u) + (buffer[j + 3]);
+#else
+    m[i] = (buffer[j]) + (buffer[j + 1] << 8u) + (buffer[j + 2] << 16u) + (buffer[j + 3] << 24u);
+#endif
+  }
+
+  uint32_t a = _hv[0];
+  uint32_t b = _hv[1];
+  uint32_t c = _hv[2];
+  uint32_t d = _hv[3];
+
+  FF(a, b, c, d, m[0],   7, 0xd76aa478);
+  FF(d, a, b, c, m[1],  12, 0xe8c7b756);
+  FF(c, d, a, b, m[2],  17, 0x242070db);
+  FF(b, c, d, a, m[3],  22, 0xc1bdceee);
+  FF(a, b, c, d, m[4],   7, 0xf57c0faf);
+  FF(d, a, b, c, m[5],  12, 0x4787c62a);
+  FF(c, d, a, b, m[6],  17, 0xa8304613);
+  FF(b, c, d, a, m[7],  22, 0xfd469501);
+  FF(a, b, c, d, m[8],   7, 0x698098d8);
+  FF(d, a, b, c, m[9],  12, 0x8b44f7af);
+  FF(c, d, a, b, m[10], 17, 0xffff5bb1);
+  FF(b, c, d, a, m[11], 22, 0x895cd7be);
+  FF(a, b, c, d, m[12],  7, 0x6b901122);
+  FF(d, a, b, c, m[13], 12, 0xfd987193);
+  FF(c, d, a, b, m[14], 17, 0xa679438e);
+  FF(b, c, d, a, m[15], 22, 0x49b40821);
+
+  GG(a, b, c, d, m[1],   5, 0xf61e2562);
+  GG(d, a, b, c, m[6],   9, 0xc040b340);
+  GG(c, d, a, b, m[11], 14, 0x265e5a51);
+  GG(b, c, d, a, m[0],  20, 0xe9b6c7aa);
+  GG(a, b, c, d, m[5],   5, 0xd62f105d);
+  GG(d, a, b, c, m[10],  9, 0x02441453);
+  GG(c, d, a, b, m[15], 14, 0xd8a1e681);
+  GG(b, c, d, a, m[4],  20, 0xe7d3fbc8);
+  GG(a, b, c, d, m[9],   5, 0x21e1cde6);
+  GG(d, a, b, c, m[14],  9, 0xc33707d6);
+  GG(c, d, a, b, m[3],  14, 0xf4d50d87);
+  GG(b, c, d, a, m[8],  20, 0x455a14ed);
+  GG(a, b, c, d, m[13],  5, 0xa9e3e905);
+  GG(d, a, b, c, m[2],   9, 0xfcefa3f8);
+  GG(c, d, a, b, m[7],  14, 0x676f02d9);
+  GG(b, c, d, a, m[12], 20, 0x8d2a4c8a);
+
+  HH(a, b, c, d, m[5],   4, 0xfffa3942);
+  HH(d, a, b, c, m[8],  11, 0x8771f681);
+  HH(c, d, a, b, m[11], 16, 0x6d9d6122);
+  HH(b, c, d, a, m[14], 23, 0xfde5380c);
+  HH(a, b, c, d, m[1],   4, 0xa4beea44);
+  HH(d, a, b, c, m[4],  11, 0x4bdecfa9);
+  HH(c, d, a, b, m[7],  16, 0xf6bb4b60);
+  HH(b, c, d, a, m[10], 23, 0xbebfbc70);
+  HH(a, b, c, d, m[13],  4, 0x289b7ec6);
+  HH(d, a, b, c, m[0],  11, 0xeaa127fa);
+  HH(c, d, a, b, m[3],  16, 0xd4ef3085);
+  HH(b, c, d, a, m[6],  23, 0x04881d05);
+  HH(a, b, c, d, m[9],   4, 0xd9d4d039);
+  HH(d, a, b, c, m[12], 11, 0xe6db99e5);
+  HH(c, d, a, b, m[15], 16, 0x1fa27cf8);
+  HH(b, c, d, a, m[2],  23, 0xc4ac5665);
+
+  II(a, b, c, d, m[0],   6, 0xf4292244);
+  II(d, a, b, c, m[7],  10, 0x432aff97);
+  II(c, d, a, b, m[14], 15, 0xab9423a7);
+  II(b, c, d, a, m[5],  21, 0xfc93a039);
+  II(a, b, c, d, m[12],  6, 0x655b59c3);
+  II(d, a, b, c, m[3],  10, 0x8f0ccc92);
+  II(c, d, a, b, m[10], 15, 0xffeff47d);
+  II(b, c, d, a, m[1],  21, 0x85845dd1);
+  II(a, b, c, d, m[8],   6, 0x6fa87e4f);
+  II(d, a, b, c, m[15], 10, 0xfe2ce6e0);
+  II(c, d, a, b, m[6],  15, 0xa3014314);
+  II(b, c, d, a, m[13], 21, 0x4e0811a1);
+  II(a, b, c, d, m[4],   6, 0xf7537e82);
+  II(d, a, b, c, m[11], 10, 0xbd3af235);
+  II(c, d, a, b, m[2],  15, 0x2ad7d2bb);
+  II(b, c, d, a, m[9],  21, 0xeb86d391);
+
+  _hv[0] += a;
+  _hv[1] += b;
+  _hv[2] += c;
+  _hv[3] += d;
+
+#undef ROT
+#undef F
+#undef G
+#undef H
+#undef I
+#undef FF
+#undef GG
+#undef HH
+#undef II
+}
+
+/**
+ * Finalize the MD5 algorithm.  The buffer parameter must contain the remaining
+ * bytes (counted by size, which must be < 64), and must be able to hold at
+ * least 64 bytes.  The total_length parameter indicates the total number of
+ * bytes of the input string.
+ */
+void HashVal::
+md5_final(unsigned char *buffer, size_t size, uint64_t total_length) {
+  nassertv(size < 64);
+
+  if (size < 56) {
+    buffer[size++] = 0x80;
+    memset(buffer + size, 0, 56 - size);
+  } else {
+    buffer[size++] = 0x80;
+    memset(buffer + size, 0, 64 - size);
+    md5_update(buffer);
+    memset(buffer, 0, 56);
+  }
+
+  // Append to the padding the total message's length in bits and update.
+  uint64_t bitlen = (uint64_t)total_length << 3;
+  buffer[56] = (unsigned char)(bitlen);
+  buffer[57] = (unsigned char)(bitlen >> 8);
+  buffer[58] = (unsigned char)(bitlen >> 16);
+  buffer[59] = (unsigned char)(bitlen >> 24);
+  buffer[60] = (unsigned char)(bitlen >> 32);
+  buffer[61] = (unsigned char)(bitlen >> 40);
+  buffer[62] = (unsigned char)(bitlen >> 48);
+  buffer[63] = (unsigned char)(bitlen >> 56);
+  md5_update(buffer);
+
+#ifndef WORDS_BIGENDIAN
+  // Swap endianness of _hv.
+  for (uint32_t &v : _hv) {
+    v = ((v << 8) & 0xff00ff00) | ((v >> 8) & 0x00ff00ff);
+    v = (v << 16) | (v >> 16);
+  }
+#endif
 }

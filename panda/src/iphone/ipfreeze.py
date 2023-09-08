@@ -17,8 +17,8 @@ import os
 from direct.dist import FreezeTool
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
-    print >> sys.stderr, msg
+    print(__doc__, file=sys.stderr)
+    print(msg, file=sys.stderr)
     sys.exit(code)
 
 if __name__ == '__main__':
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:

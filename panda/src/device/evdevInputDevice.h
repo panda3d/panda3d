@@ -70,7 +70,7 @@ private:
 
 public:
   static ButtonHandle map_button(int code,
-                                 DeviceClass device_class = DeviceClass::unknown,
+                                 DeviceClass device_class = DeviceClass::UNKNOWN,
                                  int quirks = 0);
 
 public:

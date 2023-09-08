@@ -5,22 +5,24 @@ Slider Class: Velocity style controller for floating point values with
 
 __all__ = ['Slider', 'SliderWidget', 'rgbPanel']
 
-from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
 import Pmw
+import tkinter as tk
+
 
 class Slider(Valuator):
     """
     Valuator widget which includes an min/max slider and an entry for setting
     floating point values in a range
     """
+
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('min',        0.0,           self.setMin),
             ('max',        100.0,         self.setMax),
             ('style',      VALUATOR_MINI,   INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         Valuator.__init__(self, parent)
         # Can not enter None for min or max, update propertyDict to reflect
@@ -56,15 +58,15 @@ class Slider(Valuator):
     def packValuator(self):
         if self['style'] == VALUATOR_FULL:
             if self._label:
-                self._label.grid(row = 0, column = 0, sticky = EW)
-            self._entry.grid(row = 0, column = 1, sticky = EW)
+                self._label.grid(row = 0, column = 0, sticky = tk.EW)
+            self._entry.grid(row = 0, column = 1, sticky = tk.EW)
             self._valuator.grid(row = 1, columnspan = 2,
                                 padx = 2, pady = 2, sticky = 'ew')
             self.interior().columnconfigure(0, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0, column=0, sticky = EW)
-            self._entry.grid(row=0, column=1, sticky = EW)
+                self._label.grid(row=0, column=0, sticky = tk.EW)
+            self._entry.grid(row=0, column=1, sticky = tk.EW)
             self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
@@ -86,7 +88,7 @@ class SliderWidget(Pmw.MegaWidget):
         optiondefs = (
             # Appearance
             ('style',           VALUATOR_MINI,      INITOPT),
-            ('relief',          RAISED,             self.setRelief),
+            ('relief',          tk.RAISED,          self.setRelief),
             ('borderwidth',     2,                  self.setBorderwidth),
             ('background',      'grey75',           self.setBackground),
             ('fliparrow',       0,                  INITOPT),
@@ -140,17 +142,17 @@ class SliderWidget(Pmw.MegaWidget):
         def createSlider(parent):
             # Create the slider inside the dropdown window.
             # Min label
-            self._minLabel = Label(parent, text = self['min'], width = 8,
-                                   anchor = W)
-            self._minLabel.pack(side = LEFT)
+            self._minLabel = tk.Label(parent, text = self['min'], width = 8,
+                                      anchor = tk.W)
+            self._minLabel.pack(side = tk.LEFT)
             # Slider widget
             if self['style'] == VALUATOR_FULL:
                 # Use a scale slider
-                self._widgetVar = DoubleVar()
+                self._widgetVar = tk.DoubleVar()
                 self._widgetVar.set(self['value'])
                 self._widget = self.createcomponent(
                     'slider', (), None,
-                    Scale, (interior,),
+                    tk.Scale, (interior,),
                     variable = self._widgetVar,
                     from_ = self['min'], to = self['max'],
                     resolution = 0.0,
@@ -158,13 +160,13 @@ class SliderWidget(Pmw.MegaWidget):
                     orient = 'horizontal',
                     showvalue = 0,
                     length = sliderWidth,
-                    relief = FLAT, bd = 2,
+                    relief = tk.FLAT, bd = 2,
                     highlightthickness = 0)
             else:
                 # Use a canvas slider
                 self._widget = self.createcomponent(
                     'slider', (), None,
-                    Canvas, (parent,),
+                    tk.Canvas, (parent,),
                     width = sliderWidth,
                     height = height,
                     bd = 2,
@@ -191,12 +193,12 @@ class SliderWidget(Pmw.MegaWidget):
                                          width = 2,
                                          tags = ('line',))
 
-            self._widget.pack(side = LEFT, expand=1, fill=X)
+            self._widget.pack(side = tk.LEFT, expand=1, fill=tk.X)
 
             # Max label
-            self._maxLabel = Label(parent, text = self['max'], width = 8,
-                                   anchor = W)
-            self._maxLabel.pack(side = LEFT)
+            self._maxLabel = tk.Label(parent, text = self['max'], width = 8,
+                                      anchor = tk.W)
+            self._maxLabel.pack(side = tk.LEFT)
 
         # Create slider
         if self['style'] == VALUATOR_MINI:
@@ -205,10 +207,10 @@ class SliderWidget(Pmw.MegaWidget):
             self._arrowBtn = self.createcomponent(
                 'arrowbutton',
                 (), None,
-                Canvas, (interior,), borderwidth = 0,
-                relief = FLAT, width = 14, height = 14,
+                tk.Canvas, (interior,), borderwidth = 0,
+                relief = tk.FLAT, width = 14, height = 14,
                 scrollregion = (-7, -7, 7, 7))
-            self._arrowBtn.pack(expand = 1, fill = BOTH)
+            self._arrowBtn.pack(expand = 1, fill = tk.BOTH)
             self._arrowBtn.create_polygon(-5, -5, 5, -5, 0, 5,
                                           fill = 'grey50',
                                           tags = 'arrow')
@@ -219,8 +221,8 @@ class SliderWidget(Pmw.MegaWidget):
             self._popup = self.createcomponent(
                 'popup',
                 (), None,
-                Toplevel, (interior,),
-                relief = RAISED, borderwidth = 2)
+                tk.Toplevel, (interior,),
+                relief = tk.RAISED, borderwidth = 2)
             self._popup.withdraw()
             self._popup.overrideredirect(1)
 
@@ -260,7 +262,7 @@ class SliderWidget(Pmw.MegaWidget):
         # Adjust relief
         if 'relief' not in kw:
             if self['style'] == VALUATOR_FULL:
-                self['relief'] = FLAT
+                self['relief'] = tk.FLAT
 
         self.updateIndicator(self['value'])
 
@@ -313,7 +315,7 @@ class SliderWidget(Pmw.MegaWidget):
         self._fUpdate = 0
 
         # Make sure that the arrow is displayed sunken.
-        self.interior()['relief'] = SUNKEN
+        self.interior()['relief'] = tk.SUNKEN
         self.update_idletasks()
         # Position popup so that marker is immediately below center of
         # Arrow button
@@ -437,18 +439,23 @@ class SliderWidget(Pmw.MegaWidget):
         self._isPosted = 0
 
         # Raise up arrow button
-        self.interior()['relief'] = RAISED
+        self.interior()['relief'] = tk.RAISED
 
     def _incrementValue(self, event):
         self.set(self.value + self.increment)
+
     def _bigIncrementValue(self, event):
         self.set(self.value + self.increment * 10.0)
+
     def _decrementValue(self, event):
         self.set(self.value - self.increment)
+
     def _bigDecrementValue(self, event):
         self.set(self.value - self.increment * 10.0)
+
     def _goToMin(self, event):
         self.set(self['min'])
+
     def _goToMax(self, event):
         self.set(self['max'])
 

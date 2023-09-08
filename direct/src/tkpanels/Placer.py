@@ -3,18 +3,18 @@
 __all__ = ['Placer', 'place']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from panda3d.core import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets.AppShell import *
+from panda3d.core import NodePath, Vec3
+from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.directtools.DirectGlobals import ZERO_VEC, UNIT_VEC
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
 import Pmw
+import tkinter as tk
 
-"""
-TODO:
-Task to monitor pose
-"""
+#TODO: Task to monitor pose
+
 
 class Placer(AppShell):
     # Override class variables here
@@ -29,7 +29,7 @@ class Placer(AppShell):
         optiondefs = (
             ('title',       self.appname,       None),
             ('nodePath',    base.direct.camera,      None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Call superclass initialization function
@@ -84,7 +84,7 @@ class Placer(AppShell):
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
-        interior['relief'] = FLAT
+        interior['relief'] = tk.FLAT
         # Add placer commands to menubar
         self.menuBar.addmenu('Placer', 'Placer Panel Operations')
         self.menuBar.addmenuitem('Placer', 'command',
@@ -113,7 +113,7 @@ class Placer(AppShell):
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
         self.nodePathMenu = Pmw.ComboBox(
-            menuFrame, labelpos = W, label_text = 'Node Path:',
+            menuFrame, labelpos = tk.W, label_text = 'Node Path:',
             entry_width = 20,
             selectioncommand = self.selectNodePathNamed,
             scrolledlist_items = self.nodePathNames)
@@ -144,8 +144,8 @@ class Placer(AppShell):
         self.refNodePathMenu.pack(side = 'left', fill = 'x', expand = 1)
         self.bind(self.refNodePathMenu, 'Select relative node path')
 
-        self.undoButton = Button(menuFrame, text = 'Undo',
-                                 command = base.direct.undo)
+        self.undoButton = tk.Button(menuFrame, text = 'Undo',
+                                    command = base.direct.undo)
         if base.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
@@ -153,8 +153,8 @@ class Placer(AppShell):
         self.undoButton.pack(side = 'left', expand = 0)
         self.bind(self.undoButton, 'Undo last operation')
 
-        self.redoButton = Button(menuFrame, text = 'Redo',
-                                 command = base.direct.redo)
+        self.redoButton = tk.Button(menuFrame, text = 'Redo',
+                                    command = base.direct.redo)
         if base.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
@@ -164,14 +164,14 @@ class Placer(AppShell):
 
         # Create and pack the Pos Controls
         posGroup = Pmw.Group(interior,
-                             tag_pyclass = Menubutton,
+                             tag_pyclass = tk.Menubutton,
                              tag_text = 'Position',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = RIDGE)
+                             ring_relief = tk.RIDGE)
         posMenubutton = posGroup.component('tag')
         self.bind(posMenubutton, 'Position menu operations')
-        posMenu = Menu(posMenubutton, tearoff = 0)
+        posMenu = tk.Menu(posMenubutton, tearoff = 0)
         posMenu.add_command(label = 'Set to zero', command = self.zeroPos)
         posMenu.add_command(label = 'Reset initial',
                             command = self.resetPos)
@@ -182,7 +182,7 @@ class Placer(AppShell):
         # Create the dials
         self.posX = self.createcomponent('posX', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'X', relief = FLAT,
+                                         text = 'X', relief = tk.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Red')
         self.posX['commandData'] = ['x']
@@ -193,7 +193,7 @@ class Placer(AppShell):
 
         self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'Y', relief = FLAT,
+                                         text = 'Y', relief = tk.FLAT,
                                          value = 0.0,
                                          label_foreground = '#00A000')
         self.posY['commandData'] = ['y']
@@ -204,7 +204,7 @@ class Placer(AppShell):
 
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
-                                         text = 'Z', relief = FLAT,
+                                         text = 'Z', relief = tk.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Blue')
         self.posZ['commandData'] = ['z']
@@ -215,14 +215,14 @@ class Placer(AppShell):
 
         # Create and pack the Hpr Controls
         hprGroup = Pmw.Group(interior,
-                             tag_pyclass = Menubutton,
+                             tag_pyclass = tk.Menubutton,
                              tag_text = 'Orientation',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = RIDGE)
+                             ring_relief = tk.RIDGE)
         hprMenubutton = hprGroup.component('tag')
         self.bind(hprMenubutton, 'Orientation menu operations')
-        hprMenu = Menu(hprMenubutton, tearoff = 0)
+        hprMenu = tk.Menu(hprMenubutton, tearoff = 0)
         hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
         hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
         hprMenubutton['menu'] = hprMenu
@@ -234,7 +234,7 @@ class Placer(AppShell):
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'H', value = 0.0,
-                                         relief = FLAT,
+                                         relief = tk.FLAT,
                                          label_foreground = 'blue')
         self.hprH['commandData'] = ['h']
         self.hprH['preCallback'] = self.xformStart
@@ -246,7 +246,7 @@ class Placer(AppShell):
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'P', value = 0.0,
-                                         relief = FLAT,
+                                         relief = tk.FLAT,
                                          label_foreground = 'red')
         self.hprP['commandData'] = ['p']
         self.hprP['preCallback'] = self.xformStart
@@ -258,7 +258,7 @@ class Placer(AppShell):
                                          Dial.AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'R', value = 0.0,
-                                         relief = FLAT,
+                                         relief = tk.FLAT,
                                          label_foreground = '#00A000')
         self.hprR['commandData'] = ['r']
         self.hprR['preCallback'] = self.xformStart
@@ -268,21 +268,21 @@ class Placer(AppShell):
 
         # Create and pack the Scale Controls
         # The available scaling modes
-        self.scalingMode = StringVar()
+        self.scalingMode = tk.StringVar()
         self.scalingMode.set('Scale Uniform')
         # The scaling widgets
         scaleGroup = Pmw.Group(interior,
                                tag_text = 'Scale Uniform',
-                               tag_pyclass = Menubutton,
+                               tag_pyclass = tk.Menubutton,
                                tag_font=('MSSansSerif', 14),
                                tag_activebackground = '#909090',
-                               ring_relief = RIDGE)
+                               ring_relief = tk.RIDGE)
         self.scaleMenubutton = scaleGroup.component('tag')
         self.bind(self.scaleMenubutton, 'Scale menu operations')
         self.scaleMenubutton['textvariable'] = self.scalingMode
 
         # Scaling menu
-        scaleMenu = Menu(self.scaleMenubutton, tearoff = 0)
+        scaleMenu = tk.Menu(self.scaleMenubutton, tearoff = 0)
         scaleMenu.add_command(label = 'Set to unity',
                               command = self.unitScale)
         scaleMenu.add_command(label = 'Reset initial',
@@ -302,7 +302,7 @@ class Placer(AppShell):
         self.scaleX = self.createcomponent('scaleX', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'X Scale',
-                                           relief = FLAT,
+                                           relief = tk.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Red')
@@ -315,7 +315,7 @@ class Placer(AppShell):
         self.scaleY = self.createcomponent('scaleY', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'Y Scale',
-                                           relief = FLAT,
+                                           relief = tk.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = '#00A000')
@@ -328,7 +328,7 @@ class Placer(AppShell):
         self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Floater.Floater, (scaleInterior,),
                                            text = 'Z Scale',
-                                           relief = FLAT,
+                                           relief = tk.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Blue')
@@ -356,8 +356,8 @@ class Placer(AppShell):
         self.scaleY['command'] = self.xform
         self.scaleZ['command'] = self.xform
 
-
     ### WIDGET OPERATIONS ###
+
     def setMovementMode(self, movementMode):
         # Set prefix
         namePrefix = ''
@@ -408,7 +408,7 @@ class Placer(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -465,7 +465,7 @@ class Placer(AppShell):
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
-                except:
+                except Exception:
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
@@ -783,12 +783,6 @@ class Placer(AppShell):
         self.orbitFromCS.removeNode()
         self.orbitToCS.removeNode()
 
+
 def place(nodePath):
     return Placer(nodePath = nodePath)
-
-######################################################################
-
-# Create demo in root window for testing.
-if __name__ == '__main__':
-    root = Pmw.initialise()
-    widget = Placer()

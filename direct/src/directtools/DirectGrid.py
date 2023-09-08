@@ -1,8 +1,8 @@
-
-from panda3d.core import *
+import math
+from panda3d.core import NodePath, Point3, VBase4
 from direct.showbase.DirectObject import DirectObject
-from .DirectUtil import *
-from .DirectGeometry import *
+from .DirectUtil import ROUND_TO, useDirectRenderStyle
+from .DirectGeometry import LineNodePath
 
 
 class DirectGrid(NodePath, DirectObject):

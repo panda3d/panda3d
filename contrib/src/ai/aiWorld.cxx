@@ -99,8 +99,9 @@ Flock AIWorld::get_flock(unsigned int flock_id) {
       return *_flock_pool[i];
     }
   }
-  Flock *null_flock = nullptr;
-  return *null_flock;
+  static Flock null_flock(0, 0.0, 0.0, 0, 0, 0);
+  nassertr(false, null_flock);
+  return null_flock;
 }
 
 /**

@@ -24,8 +24,9 @@ has_mipmaps() const {
  * texture it is.
  */
 INLINE IDirect3DBaseTexture9 *DXTextureContext9::
-get_d3d_texture() const {
-  return _d3d_texture;
+get_d3d_texture(int view) const {
+  view = (std::max)((std::min)(view, (int)_d3d_textures.size() - 1), 0);
+  return _d3d_textures[view];
 }
 
 /**
@@ -33,8 +34,8 @@ get_d3d_texture() const {
  * 1-d or 2-d texture.
  */
 INLINE IDirect3DTexture9 *DXTextureContext9::
-get_d3d_2d_texture() const {
-  return _d3d_2d_texture;
+get_d3d_2d_texture(int view) const {
+  return (IDirect3DTexture9 *)get_d3d_texture(view);
 }
 
 /**
@@ -42,8 +43,8 @@ get_d3d_2d_texture() const {
  * 3-d texture.
  */
 INLINE IDirect3DVolumeTexture9 *DXTextureContext9::
-get_d3d_volume_texture() const {
-  return _d3d_volume_texture;
+get_d3d_volume_texture(int view) const {
+  return (IDirect3DVolumeTexture9 *)get_d3d_texture(view);
 }
 
 /**
@@ -51,6 +52,6 @@ get_d3d_volume_texture() const {
  * cube map texture.
  */
 INLINE IDirect3DCubeTexture9 *DXTextureContext9::
-get_d3d_cube_texture() const {
-  return _d3d_cube_texture;
+get_d3d_cube_texture(int view) const {
+  return (IDirect3DCubeTexture9 *)get_d3d_texture(view);
 }

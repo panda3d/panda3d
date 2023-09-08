@@ -16,7 +16,7 @@
 #include "buttonEventList.h"
 #include "dataNodeTransmit.h"
 #include "compose_matrix.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "modifierButtons.h"
 #include "linmath_events.h"
 #include "mouseButton.h"

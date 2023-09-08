@@ -85,7 +85,9 @@ bool PiecewiseCurve::
 get_tangent(PN_stdfloat t, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
-
+  if (curve == nullptr){
+    return false;
+  }
   // We use | instead of || so we won't short-circuit this calculation.
   return result | curve->get_tangent(t, tangent);
 }
@@ -98,7 +100,9 @@ bool PiecewiseCurve::
 get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
-
+  if (curve == nullptr){
+    return false;
+  }
   // We use | instead of || so we won't short-circuit this calculation.
   return result | curve->get_2ndtangent(t, tangent2);
 }
@@ -185,7 +189,9 @@ bool PiecewiseCurve::
 get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
-
+  if (curve == nullptr){
+    return false;
+  }
   // We use | instead of || so we won't short-circuit this calculation.
   return result | curve->get_pt(t, point, tangent);
 }

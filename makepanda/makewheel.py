@@ -24,20 +24,7 @@ def get_abi_tag():
     elif soabi:
         return soabi.replace('.', '_').replace('-', '_')
 
-    soabi = 'cp%d%d' % (sys.version_info[:2])
-
-    if sys.version_info >= (3, 8):
-        return soabi
-
-    debug_flag = get_config_var('Py_DEBUG')
-    if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
-        soabi += 'd'
-
-    malloc_flag = get_config_var('WITH_PYMALLOC')
-    if malloc_flag is None or malloc_flag:
-        soabi += 'm'
-
-    return soabi
+    return 'cp%d%d' % (sys.version_info[:2])
 
 
 def is_exe_file(path):
@@ -635,8 +622,8 @@ def makewheel(version, output_dir, platform=None):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
 
-    if sys.version_info < (3, 6):
-        raise Exception("Python 3.6 or higher is required to produce a wheel.")
+    if sys.version_info < (3, 8):
+        raise Exception("Python 3.8 or higher is required to produce a wheel.")
 
     if platform is None:
         # Determine the platform from the build.

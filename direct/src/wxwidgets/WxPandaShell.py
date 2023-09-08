@@ -1,13 +1,13 @@
 import wx
 from wx.lib.agw import fourwaysplitter as FWS
 
-from panda3d.core import *
-from direct.showbase.ShowBase import *
+from direct.showbase.ShowBase import ShowBase
 from direct.showbase import ShowBaseGlobal
-from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectGlobals import SKIP_UNPICKABLE
+from direct.task.TaskManagerGlobal import taskMgr
 
-from .WxAppShell import *
-from .ViewPort import *
+from .WxAppShell import WxAppShell
+from .ViewPort import Viewport, ViewportManager
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402
@@ -26,12 +26,12 @@ class WxPandaShell(WxAppShell):
                        '\nAll Rights Reserved.')
 
     MENU_TEXTS = {
-        ID_FOUR_VIEW : ("Four Views", None),
-        ID_TOP_VIEW : ("Top View", None),
-        ID_FRONT_VIEW : ("Front View", None),
-        ID_LEFT_VIEW : ("Left View", None),
-        ID_PERSP_VIEW : ("Persp View", None),
-        }
+        ID_FOUR_VIEW: ("Four Views", None),
+        ID_TOP_VIEW: ("Top View", None),
+        ID_FRONT_VIEW: ("Front View", None),
+        ID_LEFT_VIEW: ("Left View", None),
+        ID_PERSP_VIEW: ("Persp View", None),
+    }
 
     def __init__(self, fStartDirect = False):
         base = getattr(ShowBaseGlobal, 'base', None)
@@ -119,7 +119,7 @@ class WxPandaShell(WxAppShell):
             base.trackball.node().setHpr(0, 15, 0)
 
         # to make persp view as default
-        self.perspViewMenuItem.Toggle()
+        self.perspViewMenuItem.Check()
         self.onViewChange(None, 3)
 
         # initializing direct

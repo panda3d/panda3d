@@ -27,7 +27,7 @@ class GtkStatsMonitor;
 /**
  * A window that draws a strip chart, given a view.
  */
-class GtkStatsStripChart : public PStatStripChart, public GtkStatsGraph {
+class GtkStatsStripChart final : public PStatStripChart, public GtkStatsGraph {
 public:
   GtkStatsStripChart(GtkStatsMonitor *monitor,
                      int thread_index, int collector_index, bool show_level);

@@ -4,9 +4,9 @@ global eventMgr instance."""
 __all__ = ['EventManager']
 
 
-from .MessengerGlobal import *
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.MessengerGlobal import messenger
 from panda3d.core import PStatCollector, EventQueue, EventHandler
 from panda3d.core import ConfigVariableBool
 

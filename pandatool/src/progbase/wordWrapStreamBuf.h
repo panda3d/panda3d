@@ -25,7 +25,7 @@ class WordWrapStream;
  * Used by WordWrapStream to implement an ostream that flushes its output to
  * ProgramBase::show_text().
  */
-class WordWrapStreamBuf : public std::streambuf {
+class WordWrapStreamBuf final : public std::streambuf {
 public:
   WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program);
   virtual ~WordWrapStreamBuf();

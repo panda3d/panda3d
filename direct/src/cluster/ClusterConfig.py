@@ -1,5 +1,5 @@
 
-from .ClusterClient import *
+from panda3d.core import Vec3
 
 #: A dictionary of information for various cluster configurations.
 #: Dictionary is keyed on cluster-config string
@@ -26,7 +26,7 @@ ClientConfigs = {
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0)}
-                             ],
+                            ],
     'two-server':          [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
@@ -35,7 +35,7 @@ ClientConfigs = {
                               'pos': Vec3(0),
                               'hpr': Vec3(0)
                               }
-                             ],
+                            ],
     'three-server':          [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
@@ -48,14 +48,14 @@ ClientConfigs = {
                               'pos': Vec3(0),
                               'hpr': Vec3(0)
                               }
-                             ],
+                              ],
     'mono-cave':   [{'display name': 'la',
                       'pos': Vec3(-0.105, -0.020, 5.000),
                       'hpr': Vec3(51.213, 0.000, 0.000),
                       'focal length': 0.809,
                       'film size': (1.000, 0.831),
                       'film offset': (0.000, 0.173),
-                      },
+                     },
                      {'display name': 'lb',
                       'display mode': 'client',
                       'pos': Vec3(-0.105, -0.020, 5.000),
@@ -71,7 +71,7 @@ ClientConfigs = {
                       'film size': (1.000, 0.830),
                       'film offset': (-0.000, 0.173),
                       },
-                     ],
+                    ],
     'seamless-cave':   [{'display name': 'master',
                           'display mode': 'client',
                           'pos': Vec3(-0.105, -0.020, 5.000),
@@ -79,7 +79,7 @@ ClientConfigs = {
                           'focal length': 0.815,
                           'film size': (1.000, 0.831),
                           'film offset': (0.000, 0.173),
-                          },
+                         },
                          {'display name': 'la',
                           'pos': Vec3(-0.105, -0.020, 5.000),
                           'hpr': Vec3(51.213, 0.000, 0.000),
@@ -122,12 +122,12 @@ ClientConfigs = {
                           'film size': (1.000, 0.831),
                           'film offset': (-0.000, 0.173),
                           },
-                         ],
+                        ],
     'ursula':              [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
                               'hpr': Vec3(0),
-                              },
+                             },
                              {'display name': 'l',
                               'pos': Vec3(-.105, 0, 0),
                               'hpr': Vec3(0, 0, 0),
@@ -144,11 +144,11 @@ ClientConfigs = {
                               #'film offset': (-0.105, -2),
                               'film offset': (-0.105, -1),
                               }
-                             ],
+                            ],
     'composite':           [{'display name': 'master',
                               'display mode': 'client',
                               'pos': Vec3(0),
-                              },
+                             },
                              {'display name': 'left',
                               'pos': Vec3(-0.105, -0.020, 5.000),
                               'hpr': Vec3(-0.370, 0.000, 0.000),
@@ -163,5 +163,5 @@ ClientConfigs = {
                               'film size': (1.000, 0.831),
                               'film offset': (0.000, 0.173),
                               }
-                             ],
-    }
+                            ],
+}

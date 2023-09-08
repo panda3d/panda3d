@@ -379,7 +379,8 @@ run() {
 
   EggVertex *v1, *v2, *v3, *v4;
 
-  if (!_got_pixel_scale) {
+  bool got_pixel_scale = _got_pixel_scale;
+  if (!got_pixel_scale) {
     // If we don't have a per-texture pixel scale, all the polygons will be
     // the same size, and hence may all share the same four vertices.
     make_vertices(_polygon_geometry, vpool, v1, v2, v3, v4);
@@ -410,7 +411,7 @@ run() {
       all_ok = false;
     }
 
-    if (_got_pixel_scale) {
+    if (got_pixel_scale) {
       if (texture_ok) {
         make_vertices(geometry, vpool, v1, v2, v3, v4);
       } else {

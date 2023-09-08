@@ -518,7 +518,9 @@ package_status(OPUS "Opus")
 #
 
 # FMOD Ex
-find_package(FMODEx QUIET)
+if(NOT APPLE)
+  find_package(FMODEx QUIET)
+endif()
 
 package_option(FMODEx
   "This enables support for the FMOD Ex sound library,

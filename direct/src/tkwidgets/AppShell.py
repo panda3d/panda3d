@@ -8,32 +8,33 @@ created by Doug Hellmann (doughellmann@mindspring.com).
 __all__ = ['AppShell']
 
 from direct.showbase.DirectObject import DirectObject
-from direct.showbase.TkGlobal import *
 from . import Dial
 from . import Floater
 from . import Slider
 from . import EntryScale
 from . import VectorWidgets
 from . import ProgressBar
-from tkinter.filedialog import *
 import Pmw
+import tkinter as tk
+import builtins
 
 
 # Create toplevel widget dictionary
-try:
-    __builtins__["widgetDict"]
-except KeyError:
-    __builtins__["widgetDict"] = {}
+if not hasattr(builtins, "widgetDict"):
+    builtins.widgetDict = {}  # type: ignore[attr-defined]
+
 # Create toplevel variable dictionary
-try:
-    __builtins__["variableDict"]
-except KeyError:
-    __builtins__["variableDict"] = {}
+if not hasattr(builtins, "variableDict"):
+    builtins.variableDict = {}  # type: ignore[attr-defined]
+
 
 def resetWidgetDict():
-    __builtins__["widgetDict"] = {}
+    builtins.widgetDict = {}
+
+
 def resetVariableDict():
-    __builtins__["variableDict"] = {}
+    builtins.variableDict = {}
+
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
 # to use as a container if you wish.  If no toplevel passed in, create one
@@ -64,11 +65,11 @@ class AppShell(Pmw.MegaWidget, DirectObject):
             ('frameheight',    self.frameHeight,    Pmw.INITOPT),
             ('usecommandarea', self.usecommandarea, Pmw.INITOPT),
             ('usestatusarea',  self.usestatusarea,  Pmw.INITOPT),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # If no toplevel passed in, create one
         if parent is None:
-            self.parent = Toplevel()
+            self.parent = tk.Toplevel()
         else:
             self.parent = parent
         # Initialize the base class
@@ -80,9 +81,9 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         AppShell.panelCount += 1
         self.id = self.appname + '-' + repr(AppShell.panelCount)
         # Create a dictionary in the widgetDict to hold this panel's widgets
-        self.widgetDict = widgetDict[self.id] = {}
+        self.widgetDict = builtins.widgetDict[self.id] = {}
         # And one to hold this panel's variables
-        self.variableDict = variableDict[self.id] = {}
+        self.variableDict = builtins.variableDict[self.id] = {}
         # Get handle to the toplevels hull
         self._hull = self.component('hull')
         # Initialize the application
@@ -94,7 +95,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # initialize our options
         self.initialiseoptions(AppShell)
 
-        self.pack(fill = BOTH, expand = 1)
+        self.pack(fill = tk.BOTH, expand = 1)
 
     def __createInterface(self):
         self.__createBalloon()
@@ -120,78 +121,77 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.__balloon.configure(state = self.balloonState)
 
     def __createMenuBar(self):
-        self.menuFrame = Frame(self._hull)
+        self.menuFrame = tk.Frame(self._hull)
         self.menuBar = self.createcomponent('menubar', (), None,
                                             Pmw.MenuBar,
                                             (self.menuFrame,),
-                                            hull_relief=FLAT,
+                                            hull_relief=tk.FLAT,
                                             hull_borderwidth=0,
                                             balloon=self.balloon())
 
         self.menuBar.addmenu('Help', 'About %s' % self.appname, side = 'right')
         self.menuBar.addmenu('File', 'File commands and Quit')
-        self.menuBar.pack(fill=X, side = LEFT)
+        self.menuBar.pack(fill=tk.X, side = tk.LEFT)
 
         # Force some space between pull down menus and other widgets
-        spacer = Label(self.menuFrame, text = '   ')
-        spacer.pack(side = LEFT, expand = 0)
+        spacer = tk.Label(self.menuFrame, text = '   ')
+        spacer.pack(side = tk.LEFT, expand = 0)
 
-        self.menuFrame.pack(fill = X)
+        self.menuFrame.pack(fill = tk.X)
 
     def __createDataArea(self):
         # Create data area where data entry widgets are placed.
         self.dataArea = self.createcomponent('dataarea',
                                              (), None,
-                                             Frame, (self._hull,),
-                                             relief=GROOVE,
+                                             tk.Frame, (self._hull,),
+                                             relief=tk.GROOVE,
                                              bd=1)
-        self.dataArea.pack(side=TOP, fill=BOTH, expand=YES,
+        self.dataArea.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES,
                            padx=self['padx'], pady=self['pady'])
 
     def __createCommandArea(self):
         # Create a command area for application-wide buttons.
         self.__commandFrame = self.createcomponent('commandframe', (), None,
-                                                   Frame,
+                                                   tk.Frame,
                                                    (self._hull,),
-                                                   relief=SUNKEN,
+                                                   relief=tk.SUNKEN,
                                                    bd=1)
         self.__buttonBox = self.createcomponent('buttonbox', (), None,
                                                 Pmw.ButtonBox,
                                                 (self.__commandFrame,),
                                                 padx=0, pady=0)
-        self.__buttonBox.pack(side=TOP, expand=NO, fill=X)
+        self.__buttonBox.pack(side=tk.TOP, expand=tk.NO, fill=tk.X)
         if self['usecommandarea']:
-            self.__commandFrame.pack(side=TOP,
-                                     expand=NO,
-                                     fill=X,
+            self.__commandFrame.pack(side=tk.TOP,
+                                     expand=tk.NO,
+                                     fill=tk.X,
                                      padx=self['padx'],
                                      pady=self['pady'])
-
 
     def __createMessageBar(self):
         # Create the message bar area for help and status messages.
         frame = self.createcomponent('bottomtray', (), None,
-                                     Frame, (self._hull,), relief=SUNKEN)
+                                     tk.Frame, (self._hull,), relief=tk.SUNKEN)
         self.__messageBar = self.createcomponent('messagebar',
                                                   (), None,
                                                  Pmw.MessageBar,
                                                  (frame,),
                                                  #entry_width = 40,
-                                                 entry_relief=SUNKEN,
+                                                 entry_relief=tk.SUNKEN,
                                                  entry_bd=1,
                                                  labelpos=None)
-        self.__messageBar.pack(side=LEFT, expand=YES, fill=X)
+        self.__messageBar.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
 
         self.__progressBar = ProgressBar.ProgressBar(
             frame,
             fillColor='slateblue',
             doLabel=1,
             width=150)
-        self.__progressBar.frame.pack(side=LEFT, expand=NO, fill=NONE)
+        self.__progressBar.frame.pack(side=tk.LEFT, expand=tk.NO, fill=tk.NONE)
 
         self.updateProgress(0)
         if self['usestatusarea']:
-            frame.pack(side=BOTTOM, expand=NO, fill=X)
+            frame.pack(side=tk.BOTTOM, expand=tk.NO, fill=tk.X)
 
         self.__balloon.configure(statuscommand = \
                                  self.__messageBar.helpmessage)
@@ -200,9 +200,8 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         Pmw.aboutversion(self.appversion)
         Pmw.aboutcopyright(self.copyright)
         Pmw.aboutcontact(
-          'For more information, contact:\n %s\n Phone: %s\n Email: %s' %\
-                      (self.contactname, self.contactphone,
-                       self.contactemail))
+            'For more information, contact:\n %s\n Phone: %s\n Email: %s' % \
+            (self.contactname, self.contactphone, self.contactemail))
         self.about = Pmw.AboutDialog(self._hull,
                                      applicationname=self.appname)
         self.about.withdraw()
@@ -241,7 +240,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         self.menuBar.addmenuitem('Help', 'command',
                                  'Get information on application',
                                  label='About...', command=self.showAbout)
-        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar = tk.IntVar()
         if self.balloonState == 'none':
             self.toggleBalloonVar.set(0)
         else:
@@ -326,19 +325,19 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateLabeledEntry(self, parent, category, text, help = '',
                               command = None, value = '',
-                              width = 12, relief = SUNKEN,
-                              side = LEFT, fill = X, expand = 0):
+                              width = 12, relief = tk.SUNKEN,
+                              side = tk.LEFT, fill = tk.X, expand = 0):
         """ createLabeledEntry(parent, category, text, [options]) """
         # Create labeled entry
-        frame = Frame(parent)
-        variable = StringVar()
+        frame = tk.Frame(parent)
+        variable = tk.StringVar()
         variable.set(value)
-        label = Label(frame, text = text)
-        label.pack(side = LEFT, fill = X, expand = 0)
-        entry = Entry(frame, width = width, relief = relief,
-                      textvariable = variable)
-        entry.pack(side = LEFT, fill = X, expand = 1)
-        frame.pack(side = side, fill = X, expand = expand)
+        label = tk.Label(frame, text = text)
+        label.pack(side = tk.LEFT, fill = tk.X, expand = 0)
+        entry = tk.Entry(frame, width = width, relief = relief,
+                         textvariable = variable)
+        entry.pack(side = tk.LEFT, fill = tk.X, expand = 1)
+        frame.pack(side = side, fill = tk.X, expand = expand)
         if command:
             entry.bind('<Return>', command)
         # Add balloon help
@@ -352,37 +351,37 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateButton(self, parent, category, text,
                         help = '', command = None,
-                        side = LEFT, fill = X, expand = 0, **kw):
+                        side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         """ createButton(parent, category, text, [options]) """
         # Create the widget
-        widget = self.createWidget(parent, category, text, Button,
+        widget = self.createWidget(parent, category, text, tk.Button,
                                    help, command, side, fill, expand, kw)
         return widget
 
     def newCreateCheckbutton(self, parent, category, text,
                              help = '', command = None,
-                             initialState = 0, anchor = W,
-                             side = LEFT, fill = X, expand = 0, **kw):
+                             initialState = 0, anchor = tk.W,
+                             side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         """ createCheckbutton(parent, category, text, [options]) """
         # Create the widget
-        widget = self.createWidget(parent, category, text, Checkbutton,
+        widget = self.createWidget(parent, category, text, tk.Checkbutton,
                                    help, command, side, fill, expand, kw)
         # Perform extra customization
         widget['anchor'] = anchor
-        variable = BooleanVar()
+        variable = tk.BooleanVar()
         variable.set(initialState)
         self.addVariable(category, text, variable)
         widget['variable'] = variable
         return widget
 
     def newCreateRadiobutton(self, parent, category, text, variable, value,
-                             command = None, help = '', anchor = W,
-                             side = LEFT, fill = X, expand = 0, **kw):
+                             command = None, help = '', anchor = tk.W,
+                             side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         """
         createRadiobutton(parent, category, text, variable, value, [options])
         """
         # Create the widget
-        widget = self.createWidget(parent, category, text, Radiobutton,
+        widget = self.createWidget(parent, category, text, tk.Radiobutton,
                                    help, command, side, fill, expand, kw)
         # Perform extra customization
         widget['anchor'] = anchor
@@ -392,7 +391,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateFloater(self, parent, category, text,
                          help = '', command = None,
-                         side = LEFT, fill = X, expand = 0, **kw):
+                         side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    Floater.Floater,
@@ -401,7 +400,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateDial(self, parent, category, text,
                       help = '', command = None,
-                      side = LEFT, fill = X, expand = 0, **kw):
+                      side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    Dial.Dial,
@@ -410,7 +409,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateSider(self, parent, category, text,
                        help = '', command = None,
-                       side = LEFT, fill = X, expand = 0, **kw):
+                       side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    Slider.Slider,
@@ -419,7 +418,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateEntryScale(self, parent, category, text,
                             help = '', command = None,
-                            side = LEFT, fill = X, expand = 0, **kw):
+                            side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    EntryScale.EntryScale,
@@ -428,7 +427,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateVector2Entry(self, parent, category, text,
                               help = '', command = None,
-                              side = LEFT, fill = X, expand = 0, **kw):
+                              side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    VectorWidgets.Vector2Entry,
@@ -436,7 +435,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateVector3Entry(self, parent, category, text,
                               help = '', command = None,
-                              side = LEFT, fill = X, expand = 0, **kw):
+                              side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    VectorWidgets.Vector3Entry,
@@ -445,7 +444,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateColorEntry(self, parent, category, text,
                             help = '', command = None,
-                            side = LEFT, fill = X, expand = 0, **kw):
+                            side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    VectorWidgets.ColorEntry,
@@ -454,11 +453,11 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateOptionMenu(self, parent, category, text,
                             help = '', command = None, items = [],
-                            labelpos = W, label_anchor = W,
+                            labelpos = tk.W, label_anchor = tk.W,
                             label_width = 16, menu_tearoff = 1,
-                            side = LEFT, fill = X, expand = 0, **kw):
+                            side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Create variable
-        variable = StringVar()
+        variable = tk.StringVar()
         if len(items) > 0:
             variable.set(items[0])
         # Update kw to reflect user inputs
@@ -484,10 +483,10 @@ class AppShell(Pmw.MegaWidget, DirectObject):
 
     def newCreateComboBox(self, parent, category, text,
                           help = '', command = None,
-                          items = [], state = DISABLED, history = 0,
-                          labelpos = W, label_anchor = W,
+                          items = [], state = tk.DISABLED, history = 0,
+                          labelpos = tk.W, label_anchor = tk.W,
                           label_width = 16, entry_width = 16,
-                          side = LEFT, fill = X, expand = 0, **kw):
+                          side = tk.LEFT, fill = tk.X, expand = 0, **kw):
         # Update kw to reflect user inputs
         kw['label_text'] = text
         kw['labelpos'] = labelpos
@@ -510,6 +509,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # Record widget
         self.addWidget(category, text, widget)
         return widget
+
     def transformRGB(self, rgb, max = 1.0):
         retval = '#'
         for v in [rgb[0], rgb[1], rgb[2]]:
@@ -520,6 +520,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
                 v = 0
             retval = "%s%02x" % (retval, int(v))
         return retval
+
 
 class TestAppShell(AppShell):
     # Override class variables here
@@ -540,7 +541,7 @@ class TestAppShell(AppShell):
 
     def createMain(self):
         self.label = self.createcomponent('label', (), None,
-                                          Label,
+                                          tk.Label,
                                           (self.interior(),),
                                           text='Data Area')
         self.label.pack()
@@ -549,6 +550,3 @@ class TestAppShell(AppShell):
     def createInterface(self):
         self.createButtons()
         self.createMain()
-
-if __name__ == '__main__':
-    test = TestAppShell(balloon_state='none')

@@ -115,7 +115,7 @@ class FourState:
                            self.enterState4,
                            self.exitState4,
                            [names[1]]),
-            }
+        }
         self.fsm = ClassicFSM.ClassicFSM('FourState',
                            list(self.states.values()),
                            # Initial State

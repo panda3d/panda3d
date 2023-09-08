@@ -6,7 +6,29 @@ to learn more about loading animated models.
 
 __all__ = ['Actor']
 
-from panda3d.core import *
+from panda3d.core import (
+    AnimBundleNode,
+    AnimControlCollection,
+    Character,
+    ConfigVariableBool,
+    DecalEffect,
+    Filename,
+    GlobPattern,
+    LineStream,
+    LoaderOptions,
+    LODNode,
+    ModelNode,
+    MovingPartBase,
+    MovingPartMatrix,
+    NodePath,
+    PandaNode,
+    PartBundle,
+    PartSubset,
+    Point3,
+    TransformState,
+    Vec3,
+    autoBind,
+)
 from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Loader import Loader
@@ -258,9 +280,7 @@ class Actor(DirectObject, NodePath):
                         self.setLODNode(node = lodNode)
                         # preserve numerical order for lod's
                         # this will make it easier to set ranges
-                        sortedKeys = list(models.keys())
-                        sortedKeys.sort()
-                        for lodName in sortedKeys:
+                        for lodName in sorted(models):
                             # make a node under the LOD switch
                             # for each lod (just because!)
                             self.addLOD(str(lodName))
@@ -280,9 +300,7 @@ class Actor(DirectObject, NodePath):
                         # it is a single part actor w/LOD
                         self.setLODNode(node = lodNode)
                         # preserve order of LOD's
-                        sortedKeys = list(models.keys())
-                        sortedKeys.sort()
-                        for lodName in sortedKeys:
+                        for lodName in sorted(models):
                             self.addLOD(str(lodName))
                             # pass in dictionary of parts
                             self.loadModel(models[lodName], lodName=lodName,
@@ -301,9 +319,7 @@ class Actor(DirectObject, NodePath):
                         if isinstance(models, dict):
                             if isinstance(models[next(iter(models))], dict):
                                 # then we have a multi-part w/ LOD
-                                sortedKeys = list(models.keys())
-                                sortedKeys.sort()
-                                for lodName in sortedKeys:
+                                for lodName in sorted(models):
                                     # iterate over both dicts
                                     for partName in anims:
                                         self.loadAnims(
@@ -314,9 +330,7 @@ class Actor(DirectObject, NodePath):
                                     self.loadAnims(anims[partName], partName)
                     elif isinstance(models, dict):
                         # then we have single-part w/ LOD
-                        sortedKeys = list(models.keys())
-                        sortedKeys.sort()
-                        for lodName in sortedKeys:
+                        for lodName in sorted(models):
                             self.loadAnims(anims, lodName=lodName)
                     else:
                         # else it is single-part w/o LOD
@@ -581,9 +595,6 @@ class Actor(DirectObject, NodePath):
         return bundles
 
     def __updateSortedLODNames(self):
-        # Cache the sorted LOD names so we don't have to grab them
-        # and sort them every time somebody asks for the list
-        self.__sortedLODNames = list(self.__partBundleDict.keys())
         # Reverse sort the doing a string->int
         def sortKey(x):
             if not str(x).isdigit():
@@ -600,7 +611,9 @@ class Actor(DirectObject, NodePath):
             else:
                 return int(x)
 
-        self.__sortedLODNames.sort(key=sortKey, reverse=True)
+        # Cache the sorted LOD names so we don't have to grab them
+        # and sort them every time somebody asks for the list
+        self.__sortedLODNames = sorted(self.__partBundleDict, key=sortKey, reverse=True)
 
     def getLODNames(self):
         """

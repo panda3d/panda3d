@@ -75,7 +75,6 @@
 #include "weakNodePath.h"
 
 using std::max;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -3384,11 +3383,11 @@ set_shader_input(ShaderInput &&inp) {
     pnode->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != nullptr) {
     const ShaderAttrib *sa = (const ShaderAttrib *)attrib;
-    pnode->set_attrib(sa->set_shader_input(move(inp)));
+    pnode->set_attrib(sa->set_shader_input(std::move(inp)));
   } else {
     // Create a new ShaderAttrib for this node.
     CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
-    pnode->set_attrib(sa->set_shader_input(move(inp)));
+    pnode->set_attrib(sa->set_shader_input(std::move(inp)));
   }
 }
 
@@ -5563,7 +5562,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            move(transform), current_thread);
+                            std::move(transform), current_thread);
 
   return found_any;
 }
@@ -5863,7 +5862,7 @@ NodePath NodePath::
 decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   NodePath result;
 
-  DatagramBuffer buffer(move(data));
+  DatagramBuffer buffer(std::move(data));
 
   BamReader local_reader;
   if (reader == nullptr) {

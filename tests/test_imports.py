@@ -9,32 +9,35 @@ import pytest
 
 
 def test_imports_panda3d():
-    import importlib, os
+    import importlib, os, sys
     import panda3d
-    dir = os.path.dirname(panda3d.__file__)
 
-    # Iterate over the things in the panda3d package that look like modules.
-    extensions = set(importlib.machinery.all_suffixes())
+    # Look for panda3d.* modules in builtins - pfreeze might put them there.
+    for mod in sys.builtin_module_names:
+        if mod.startswith('panda3d.'):
+            importlib.import_module(mod)
 
-    for basename in os.listdir(dir):
-        if basename.startswith('lib'):
-            # This not a Python module.
-            continue
+    if panda3d.__spec__.origin != 'frozen':
+        dir = os.path.dirname(panda3d.__file__)
 
-        module = basename.split('.', 1)[0]
-        ext = basename[len(module):]
+        # Iterate over the things in the panda3d package that look like modules.
+        extensions = set(importlib.machinery.all_suffixes())
 
-        if ext in extensions:
-            importlib.import_module('panda3d.%s' % (module))
+        for basename in os.listdir(dir):
+            if basename.startswith('lib'):
+                # This not a Python module.
+                continue
+
+            module = basename.split('.', 1)[0]
+            ext = basename[len(module):]
+
+            if ext in extensions:
+                importlib.import_module('panda3d.%s' % (module))
 
 
 def test_imports_direct():
     import direct.actor.Actor
     import direct.actor.DistributedActor
-    import direct.cluster.ClusterClient
-    import direct.cluster.ClusterConfig
-    import direct.cluster.ClusterMsgs
-    import direct.cluster.ClusterServer
     import direct.controls.BattleWalker
     import direct.controls.ControlManager
     import direct.controls.DevWalker
@@ -43,7 +46,6 @@ def test_imports_direct():
     import direct.controls.InputState
     import direct.controls.NonPhysicsWalker
     import direct.controls.ObserverWalker
-    import direct.controls.PhysicsWalker
     import direct.controls.SwimWalker
     import direct.controls.TwoDWalker
     import direct.directnotify.DirectNotify
@@ -70,6 +72,142 @@ def test_imports_direct():
     import direct.dist.FreezeTool
     import direct.dist.icon
     import direct.dist.commands
+    import direct.extensions_native.extension_native_helpers
+    import direct.filter.CommonFilters
+    import direct.filter.FilterManager
+    import direct.fsm.ClassicFSM
+    import direct.fsm.FSM
+    import direct.fsm.FourState
+    import direct.fsm.FourStateAI
+    import direct.fsm.SampleFSM
+    import direct.fsm.State
+    import direct.fsm.StateData
+    import direct.fsm.StatePush
+    import direct.gui.DirectButton
+    import direct.gui.DirectCheckBox
+    import direct.gui.DirectCheckButton
+    import direct.gui.DirectDialog
+    import direct.gui.DirectEntry
+    import direct.gui.DirectEntryScroll
+    import direct.gui.DirectFrame
+    import direct.gui.DirectGui
+    import direct.gui.DirectGuiBase
+    import direct.gui.DirectGuiGlobals
+    import direct.gui.DirectLabel
+    import direct.gui.DirectOptionMenu
+    import direct.gui.DirectRadioButton
+    import direct.gui.DirectScrollBar
+    import direct.gui.DirectScrolledFrame
+    import direct.gui.DirectScrolledList
+    import direct.gui.DirectSlider
+    import direct.gui.DirectWaitBar
+    import direct.gui.OnscreenGeom
+    import direct.gui.OnscreenImage
+    import direct.gui.OnscreenText
+    import direct.interval.ActorInterval
+    import direct.interval.AnimControlInterval
+    import direct.interval.FunctionInterval
+    import direct.interval.IndirectInterval
+    import direct.interval.Interval
+    import direct.interval.IntervalGlobal
+    import direct.interval.IntervalManager
+    import direct.interval.LerpBlendHelpers
+    import direct.interval.LerpInterval
+    import direct.interval.MetaInterval
+    import direct.interval.MopathInterval
+    import direct.interval.ParticleInterval
+    import direct.interval.ProjectileInterval
+    import direct.interval.ProjectileIntervalTest
+    import direct.interval.SoundInterval
+    import direct.interval.TestInterval
+    import direct.motiontrail.MotionTrail
+    import direct.showbase.Audio3DManager
+    import direct.showbase.BufferViewer
+    import direct.showbase.BulletinBoard
+    import direct.showbase.BulletinBoardGlobal
+    import direct.showbase.BulletinBoardWatcher
+    import direct.showbase.ContainerLeakDetector
+    import direct.showbase.ContainerReport
+    import direct.showbase.CountedResource
+    import direct.showbase.DirectObject
+    import direct.showbase.DistancePhasedNode
+    import direct.showbase.EventGroup
+    import direct.showbase.EventManager
+    import direct.showbase.EventManagerGlobal
+    import direct.showbase.ExceptionVarDump
+    import direct.showbase.Factory
+    import direct.showbase.Finder
+    import direct.showbase.GarbageReport
+    import direct.showbase.GarbageReportScheduler
+    import direct.showbase.InputStateGlobal
+    import direct.showbase.Job
+    import direct.showbase.JobManager
+    import direct.showbase.JobManagerGlobal
+    import direct.showbase.LeakDetectors
+    import direct.showbase.Loader
+    import direct.showbase.Messenger
+    import direct.showbase.MessengerGlobal
+    import direct.showbase.MessengerLeakDetector
+    import direct.showbase.MirrorDemo
+    import direct.showbase.ObjectPool
+    import direct.showbase.ObjectReport
+    import direct.showbase.OnScreenDebug
+    import direct.showbase.PhasedObject
+    import direct.showbase.Pool
+    import direct.showbase.ProfileSession
+    import direct.showbase.PythonUtil
+    import direct.showbase.RandomNumGen
+    import direct.showbase.ReferrerSearch
+    import direct.showbase.SfxPlayer
+    import direct.showbase.ShadowDemo
+    import direct.showbase.ShadowPlacer
+    import direct.showbase.ShowBase
+    import direct.showbase.TaskThreaded
+    import direct.showbase.ThreeUpShow
+    import direct.showbase.Transitions
+    import direct.showbase.VFSImporter
+    import direct.showbase.WxGlobal
+    import direct.showutil.BuildGeometry
+    import direct.showutil.Effects
+    import direct.showutil.Rope
+    import direct.showutil.TexMemWatcher
+    import direct.showutil.TexViewer
+    import direct.stdpy.file
+    import direct.stdpy.glob
+    import direct.stdpy.pickle
+    import direct.stdpy.thread
+    import direct.stdpy.threading
+    import direct.stdpy.threading2
+    import direct.task.FrameProfiler
+    import direct.task.MiniTask
+    import direct.task.Task
+    import direct.task.TaskManagerGlobal
+    import direct.task.TaskProfiler
+    import direct.task.Timer
+
+
+def test_imports_direct_physics():
+    pytest.importorskip("panda3d.physics")
+
+    import direct.controls.PhysicsWalker
+    import direct.particles.ForceGroup
+    import direct.particles.GlobalForceGroup
+    import direct.particles.ParticleEffect
+    import direct.particles.ParticleManagerGlobal
+    import direct.particles.Particles
+    import direct.particles.SpriteParticleRendererExt
+    import direct.showbase.PhysicsManagerGlobal
+
+
+def test_imports_direct_net():
+    from panda3d import core
+    if not hasattr(core, 'ConnectionWriter'):
+        pytest.skip("Build without HAVE_NET")
+
+    import direct.cluster.ClusterClient
+    import direct.cluster.ClusterConfig
+    import direct.cluster.ClusterMsgs
+    import direct.cluster.ClusterServer
     import direct.distributed.AsyncRequest
     import direct.distributed.CRCache
     import direct.distributed.CRDataCache
@@ -115,132 +253,6 @@ def test_imports_direct():
     import direct.distributed.StagedObject
     import direct.distributed.TimeManager
     import direct.distributed.TimeManagerAI
-    import direct.extensions_native.extension_native_helpers
-    import direct.filter.CommonFilters
-    import direct.filter.FilterManager
-    import direct.fsm.ClassicFSM
-    import direct.fsm.FSM
-    import direct.fsm.FourState
-    import direct.fsm.FourStateAI
-    import direct.fsm.SampleFSM
-    import direct.fsm.State
-    import direct.fsm.StateData
-    import direct.fsm.StatePush
-    import direct.gui.DirectButton
-    import direct.gui.DirectCheckBox
-    import direct.gui.DirectCheckButton
-    import direct.gui.DirectDialog
-    import direct.gui.DirectEntry
-    import direct.gui.DirectEntryScroll
-    import direct.gui.DirectFrame
-    import direct.gui.DirectGui
-    import direct.gui.DirectGuiBase
-    import direct.gui.DirectGuiGlobals
-    import direct.gui.DirectGuiTest
-    import direct.gui.DirectLabel
-    import direct.gui.DirectOptionMenu
-    import direct.gui.DirectRadioButton
-    import direct.gui.DirectScrollBar
-    import direct.gui.DirectScrolledFrame
-    import direct.gui.DirectScrolledList
-    import direct.gui.DirectSlider
-    import direct.gui.DirectWaitBar
-    import direct.gui.OnscreenGeom
-    import direct.gui.OnscreenImage
-    import direct.gui.OnscreenText
-    import direct.interval.ActorInterval
-    import direct.interval.AnimControlInterval
-    import direct.interval.FunctionInterval
-    import direct.interval.IndirectInterval
-    import direct.interval.Interval
-    import direct.interval.IntervalGlobal
-    import direct.interval.IntervalManager
-    import direct.interval.IntervalTest
-    import direct.interval.LerpBlendHelpers
-    import direct.interval.LerpInterval
-    import direct.interval.MetaInterval
-    import direct.interval.MopathInterval
-    import direct.interval.ParticleInterval
-    import direct.interval.ProjectileInterval
-    import direct.interval.ProjectileIntervalTest
-    import direct.interval.SoundInterval
-    import direct.interval.TestInterval
-    import direct.motiontrail.MotionTrail
-    import direct.particles.ForceGroup
-    import direct.particles.GlobalForceGroup
-    import direct.particles.ParticleEffect
-    import direct.particles.ParticleFloorTest
-    import direct.particles.ParticleManagerGlobal
-    import direct.particles.ParticleTest
-    import direct.particles.Particles
-    import direct.particles.SpriteParticleRendererExt
-    import direct.physics.FallTest
-    import direct.physics.RotationTest
-    import direct.showbase.Audio3DManager
-    import direct.showbase.BufferViewer
-    import direct.showbase.BulletinBoard
-    import direct.showbase.BulletinBoardGlobal
-    import direct.showbase.BulletinBoardWatcher
-    import direct.showbase.ContainerLeakDetector
-    import direct.showbase.ContainerReport
-    import direct.showbase.CountedResource
-    import direct.showbase.DirectObject
-    import direct.showbase.DistancePhasedNode
-    import direct.showbase.EventGroup
-    import direct.showbase.EventManager
-    import direct.showbase.EventManagerGlobal
-    import direct.showbase.ExceptionVarDump
-    import direct.showbase.Factory
-    import direct.showbase.Finder
-    import direct.showbase.GarbageReport
-    import direct.showbase.GarbageReportScheduler
-    import direct.showbase.InputStateGlobal
-    import direct.showbase.Job
-    import direct.showbase.JobManager
-    import direct.showbase.JobManagerGlobal
-    import direct.showbase.LeakDetectors
-    import direct.showbase.Loader
-    import direct.showbase.Messenger
-    import direct.showbase.MessengerGlobal
-    import direct.showbase.MessengerLeakDetector
-    import direct.showbase.MirrorDemo
-    import direct.showbase.ObjectPool
-    import direct.showbase.ObjectReport
-    import direct.showbase.OnScreenDebug
-    import direct.showbase.PhasedObject
-    import direct.showbase.PhysicsManagerGlobal
-    import direct.showbase.Pool
-    import direct.showbase.ProfileSession
-    import direct.showbase.PythonUtil
-    import direct.showbase.RandomNumGen
-    import direct.showbase.ReferrerSearch
-    import direct.showbase.SfxPlayer
-    import direct.showbase.ShadowDemo
-    import direct.showbase.ShadowPlacer
-    import direct.showbase.ShowBase
-    import direct.showbase.TaskThreaded
-    import direct.showbase.ThreeUpShow
-    import direct.showbase.Transitions
-    import direct.showbase.VFSImporter
-    import direct.showbase.WxGlobal
-    import direct.showutil.BuildGeometry
-    import direct.showutil.Effects
-    import direct.showutil.Rope
-    import direct.showutil.TexMemWatcher
-    import direct.showutil.TexViewer
-    import direct.stdpy.file
-    import direct.stdpy.glob
-    import direct.stdpy.pickle
-    import direct.stdpy.thread
-    import direct.stdpy.threading
-    import direct.stdpy.threading2
-    import direct.task.FrameProfiler
-    import direct.task.MiniTask
-    import direct.task.Task
-    import direct.task.TaskManagerGlobal
-    import direct.task.TaskProfiler
-    import direct.task.TaskTester
-    import direct.task.Timer
 
 
 def test_imports_tk():

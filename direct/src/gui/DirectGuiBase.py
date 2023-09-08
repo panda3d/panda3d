@@ -84,17 +84,26 @@ Code overview:
     see if any keywords are left unused.  If so, an error is raised.
 """
 
+from __future__ import annotations
+
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
-from panda3d.core import *
+from panda3d.core import (
+    ConfigVariableBool,
+    KeyboardButton,
+    MouseWatcherRegion,
+    NodePath,
+    PGFrameStyle,
+    PGItem,
+    Point3,
+    Texture,
+    Vec3,
+)
 from direct.showbase import ShowBaseGlobal
 from direct.showbase.ShowBase import ShowBase
 from direct.showbase.MessengerGlobal import messenger
 from . import DirectGuiGlobals as DGG
-from .OnscreenText import *
-from .OnscreenGeom import *
-from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
@@ -609,9 +618,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
     def components(self):
         # Return a list of all components.
-        names = list(self.__componentInfo.keys())
-        names.sort()
-        return names
+        return sorted(self.__componentInfo)
 
     def hascomponent(self, component):
         return component in self.__componentInfo
@@ -652,8 +659,10 @@ class DirectGuiBase(DirectObject.DirectObject):
         gEvent = event + self.guiId
         self.ignore(gEvent)
 
+
 def toggleGuiGridSnap():
     DirectGuiWidget.snapToGrid = 1 - DirectGuiWidget.snapToGrid
+
 
 def setGuiGridSpacing(spacing):
     DirectGuiWidget.gridSpacing = spacing
@@ -673,7 +682,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     else:
         inactiveInitState = DGG.DISABLED
 
-    guiDict = {}
+    guiDict: dict[str, DirectGuiWidget] = {}
 
     def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths
@@ -715,7 +724,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('suppressMouse',  1,            DGG.INITOPT),
             ('suppressKeys',   0,            DGG.INITOPT),
             ('enableEdit',     1,            DGG.INITOPT),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
 
@@ -822,7 +831,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         vMouse2render2d = Point3(event.getMouse()[0], 0, event.getMouse()[1])
         editVec = Vec3(vWidget2render2d - vMouse2render2d)
         if base.mouseWatcherNode.getModifierButtons().isDown(
-            KeyboardButton.control()):
+                KeyboardButton.control()):
             t = taskMgr.add(self.guiScaleTask, 'guiEditTask')
             t.refPos = vWidget2render2d
             t.editVecLen = editVec.length()
@@ -903,7 +912,6 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.bounds[1] + bw[0],
             self.bounds[2] - bw[1],
             self.bounds[3] + bw[1])
-
 
     def getBounds(self, state = 0):
         self.stateNodePath[state].calcTightBounds(self.ll, self.ur)

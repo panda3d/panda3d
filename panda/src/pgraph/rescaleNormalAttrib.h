@@ -23,7 +23,7 @@ class FactoryParams;
 /**
  * Specifies how polygons are to be drawn.
  */
-class EXPCL_PANDA_PGRAPH RescaleNormalAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH RescaleNormalAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     // No adjustments are made to normals.

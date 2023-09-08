@@ -25,7 +25,7 @@ class EXPCL_PANDA_DOWNLOADER HTTPEntityTag {
 PUBLISHED:
   INLINE HTTPEntityTag();
   HTTPEntityTag(const std::string &text);
-  INLINE HTTPEntityTag(bool weak, const std::string &tag);
+  INLINE explicit HTTPEntityTag(bool weak, const std::string &tag);
   INLINE HTTPEntityTag(const HTTPEntityTag &copy);
   INLINE void operator = (const HTTPEntityTag &copy);
 

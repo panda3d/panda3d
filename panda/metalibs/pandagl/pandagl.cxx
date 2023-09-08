@@ -13,9 +13,9 @@
 #include "wglGraphicsPipe.h"
 #endif
 
-#if defined(HAVE_COCOA)
-#include "config_cocoadisplay.h"
-#include "cocoaGraphicsPipe.h"
+#ifdef HAVE_COCOA
+#include "config_cocoagldisplay.h"
+#include "cocoaGLGraphicsPipe.h"
 #endif
 
 #ifdef HAVE_GLX
@@ -46,8 +46,8 @@ init_libpandagl() {
   init_libwgldisplay();
 #endif  // HAVE_GL
 
-#if defined(HAVE_COCOA)
-  init_libcocoadisplay();
+#ifdef HAVE_COCOA
+  init_libcocoagldisplay();
 #endif
 
 #ifdef HAVE_GLX
@@ -69,8 +69,8 @@ get_pipe_type_pandagl() {
   return wglGraphicsPipe::get_class_type().get_index();
 #endif
 
-#if defined(HAVE_COCOA)
-  return CocoaGraphicsPipe::get_class_type().get_index();
+#ifdef HAVE_COCOA
+  return CocoaGLGraphicsPipe::get_class_type().get_index();
 #endif
 
 #ifdef HAVE_GLX

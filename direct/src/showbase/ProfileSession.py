@@ -28,7 +28,7 @@ class PercentStats(pstats.Stats):
             print()
         indent = ' ' * 8
         for func in self.top_level:
-            print(indent, func_get_function_name(func))
+            print(indent, pstats.func_get_function_name(func))
 
         print(indent, self.total_calls, "function calls", end=' ')
         if self.total_calls != self.prim_calls:
@@ -207,9 +207,9 @@ class ProfileSession:
             _removeProfileCustomFuncs(filename)
 
             # clean up the globals
-            result = globalProfileSessionResult[0]
-            del builtins.__dict__['globalProfileSessionFunc']
-            del builtins.__dict__['globalProfileSessionResult']
+            result = builtins.globalProfileSessionResult[0]
+            del builtins.globalProfileSessionFunc
+            del builtins.globalProfileSessionResult
 
             self._successfulProfiles += 1
 

@@ -2,11 +2,7 @@ from panda3d import core
 import pytest
 import time
 import sys
-
-if sys.version_info >= (3, 8):
-    from asyncio.exceptions import TimeoutError, CancelledError
-else:
-    from concurrent.futures._base import TimeoutError, CancelledError
+from asyncio.exceptions import TimeoutError, CancelledError
 
 
 class MockFuture:
@@ -174,6 +170,8 @@ def test_task_cancel_during_run():
         task.result()
 
 
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
 def test_task_cancel_waiting():
     # Calling result() in a threaded task chain should cancel the future being
     # waited on if the surrounding task is cancelled.

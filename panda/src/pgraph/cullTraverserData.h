@@ -93,7 +93,7 @@ private:
   // We store a chain leading all the way to the root, so that we can compose
   // a NodePath.  We may be able to eliminate this requirement in the future.
   const CullTraverserData *_next;
-  NodePathComponent *_start;
+  NodePathComponent *_start; // NOLINT(*.UninitializedObject)
 
 public:
   PandaNodePipelineReader _node_reader;

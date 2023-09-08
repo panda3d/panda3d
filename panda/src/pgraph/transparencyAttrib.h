@@ -28,7 +28,7 @@ class FactoryParams;
  * effect unless you actually want it to be at least partially transparent
  * (and it has alpha components less than 1).
  */
-class EXPCL_PANDA_PGRAPH TransparencyAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH TransparencyAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     // The first two should be specifically 0 and 1, for historical reasons

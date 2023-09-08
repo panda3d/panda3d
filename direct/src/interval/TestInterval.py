@@ -4,8 +4,7 @@ Contains the TestInterval class
 
 __all__ = ['TestInterval']
 
-from panda3d.core import *
-from panda3d.direct import *
+from panda3d.direct import CInterval
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from .Interval import Interval
 

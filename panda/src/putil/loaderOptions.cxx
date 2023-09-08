@@ -24,6 +24,9 @@ LoaderOptions::
 LoaderOptions(int flags) :
   _flags(flags),
   _texture_flags(0),
+  _texture_format(0),
+  _texture_compress(0),
+  _texture_quality(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {

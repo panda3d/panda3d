@@ -6,13 +6,23 @@ Modified by gjeon.
 Modified by Summer 2010 Carnegie Mellon University ETC PandaLE team: fixed a bug in Viewport.Close
 """
 
+from __future__ import annotations
+
 __all__ = ["Viewport", "ViewportManager"]
 
-from panda3d.core import OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
+from panda3d.core import (
+    BitMask32,
+    CollisionNode,
+    CollisionPlane,
+    NodePath,
+    OrthographicLens,
+    Plane,
+    Point3,
+)
 from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
-from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectGlobals import LE_CAM_MASKS, LE_showInOneCam
 from .WxPandaWindow import WxPandaWindow
 import wx
 
@@ -28,7 +38,7 @@ VPPERSPECTIVE = 13
 
 class ViewportManager:
     """Manages the global viewport stuff."""
-    viewports = []
+    viewports: list[Viewport] = []
     gsg = None
 
     @staticmethod
@@ -50,7 +60,7 @@ class ViewportManager:
             v.Layout(*args, **kwargs)
 
 
-class Viewport(WxPandaWindow, DirectObject):
+class Viewport(WxPandaWindow, DirectObject):  # type: ignore[misc, valid-type]
     """Class representing a 3D Viewport."""
     CREATENEW  = CREATENEW
     VPLEFT     = VPLEFT
