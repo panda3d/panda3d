@@ -11,7 +11,7 @@ from direct.showbase import PythonUtil
 from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notify
 import time
 import sys
-from typing import NoReturn, SupportsInt, SupportsRound
+from typing import NoReturn
 
 
 class NotifierException(Exception):
@@ -52,7 +52,7 @@ class Notifier:
         self.__debug = False
         self.__logging = False
 
-    def setServerDelta(self, delta: SupportsRound[SupportsInt], timezone: int) -> None:
+    def setServerDelta(self, delta: float, timezone: int) -> None:
         """
         Call this method on any Notify object to globally change the
         timestamp printed for each line of all Notify objects.
