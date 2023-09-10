@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleIdentifier</key>
+        <string>org.panda3d.pstats</string>
+        <key>CFBundleExecutable</key>
+        <string>pstats</string>
+        <key>CFBundleName</key>
+        <string>PStats</string>
+        <key>CFBundleDisplayName</key>
+        <string>PStats</string>
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>LSHasLocalizedDisplayName</key>
+        <false/>
+        <key>NSAppleScriptEnabled</key>
+        <false/>
+        <key>NSPrincipalClass</key>
+        <string>NSApplication</string>
+        <key>CFBundleDocumentTypes</key>
+        <array>
+                <dict>
+                        <key>CFBundleTypeName</key>
+                        <string>PStats session file</string>
+                        <key>CFBundleTypeRole</key>
+                        <string>Editor</string>
+                        <key>LSHandlerRank</key>
+                        <string>Owner</string>
+                        <key>LSTypeIsPackage</key>
+                        <false/>
+                        <key>CFBundleTypeExtensions</key>
+                        <array>
+                                <string>pstats</string>
+                        </array>
+                        <key>CFBundleTypeMIMETypes</key>
+                        <array>
+                                <string>application/vnd.panda3d.pstats</string>
+                        </array>
+                </dict>
+        </array>
+</dict>
+</plist>

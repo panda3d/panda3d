@@ -963,8 +963,8 @@ find_display_modes(int width, int height) {
   // handled. CGDisplayCopyAllDisplayModes() does not return upscaled display
   // mode unless explicitly asked with kCGDisplayShowDuplicateLowResolutionModes
   // (which is undocumented...).
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
-  if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_14) {
+  bool macos_10_15_or_higher = false;
+  if (@available(macOS 10.15, *)) {
     const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
     const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
     options = CFDictionaryCreate(NULL,
@@ -973,8 +973,8 @@ find_display_modes(int width, int height) {
                                  1,
                                  &kCFCopyStringDictionaryKeyCallBacks,
                                  &kCFTypeDictionaryValueCallBacks);
+    macos_10_15_or_higher = true;
   }
-#endif
   CFMutableArrayRef valid_modes;
   valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
 
@@ -994,7 +994,7 @@ find_display_modes(int width, int height) {
   // First check if the current mode is adequate.
   // This test not done for macOS 10.15 and above as the mode resolution is
   // not enough to identify a mode.
-  if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
+  if (!macos_10_15_or_higher &&
       CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
     CFArrayAppendValue(valid_modes, mode);
@@ -1004,12 +1004,10 @@ find_display_modes(int width, int height) {
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
   // Calculate the pixel width and height of the fullscreen mode we want using
   // the currentdisplay mode dimensions and pixel dimensions.
   size_t expected_pixel_width = (size_t(width) * CGDisplayModeGetPixelWidth(mode)) / CGDisplayModeGetWidth(mode);
   size_t expected_pixel_height = (size_t(height) * CGDisplayModeGetPixelHeight(mode)) / CGDisplayModeGetHeight(mode);
-#endif
   CGDisplayModeRelease(mode);
 
   for (size_t i = 0; i < num_modes; ++i) {
@@ -1023,11 +1021,9 @@ find_display_modes(int width, int height) {
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
         (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
-        (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
+        (!macos_10_15_or_higher ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
          CGDisplayModeGetPixelHeight(mode) == expected_pixel_height)) &&
-#endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
       if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
