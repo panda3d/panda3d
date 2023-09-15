@@ -2525,6 +2525,9 @@ begin_frame(Thread *current_thread) {
     // Now begin the main (ie. graphics) command buffer.
     err = vkBeginCommandBuffer(_frame_data->_cmd, &begin_info);
     if (!err) {
+      // Bind the "null" vertex buffer.
+      const VkDeviceSize offset = 0;
+      _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, 1, &_null_vertex_buffer, &offset);
       return true;
     }
     vulkan_error(err, "Can't begin command buffer");
@@ -2813,8 +2816,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   // Prepare and bind the vertex buffers.
   size_t num_arrays = data_reader->get_num_arrays();
-  VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * (num_arrays + 2));
-  VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * (num_arrays + 2));
+  size_t num_buffers = num_arrays + _current_shader->_uses_vertex_color;
+  VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * num_buffers);
+  VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * num_buffers);
 
   size_t i;
   for (i = 0; i < num_arrays; ++i) {
@@ -2836,11 +2840,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     ++i;
   }
 
-  buffers[i] = _null_vertex_buffer;
-  offsets[i] = 0;
-  ++i;
+  nassertr(i == num_buffers, false);
 
-  _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, i, buffers, offsets);
+  _vkCmdBindVertexBuffers(_frame_data->_cmd, 1, num_buffers, buffers, offsets);
 
   _format = data_reader->get_format();
   return true;
@@ -3411,70 +3413,77 @@ make_pipeline(VulkanShaderContext *sc,
 
   // Describe each vertex input binding (ie. GeomVertexArray).  Leave two extra
   // slots for the "color" and "null" bindings, see below.
-  int num_bindings = key._format->get_num_arrays();
-  VkVertexInputBindingDescription *binding_desc = (VkVertexInputBindingDescription *)
-    alloca(sizeof(VkVertexInputBindingDescription) * (num_bindings + 2));
+  size_t num_arrays = key._format->get_num_arrays();
+  VkVertexInputBindingDescription *binding_descs = (VkVertexInputBindingDescription *)
+    alloca(sizeof(VkVertexInputBindingDescription) * (num_arrays + 2));
 
   VkVertexInputBindingDivisorDescriptionEXT *divisors;
   int num_divisors = 0;
   if (_supports_vertex_attrib_divisor) {
     divisors = (VkVertexInputBindingDivisorDescriptionEXT *)
-      alloca(sizeof(VkVertexInputBindingDivisorDescriptionEXT) * (num_bindings + 2));
+      alloca(sizeof(VkVertexInputBindingDivisorDescriptionEXT) * (num_arrays + 2));
   }
 
-  int i = 0;
-  for (i = 0; i < num_bindings; ++i) {
-    const GeomVertexArrayFormat *array = key._format->get_array(i);
-    binding_desc[i].binding = i;
-    binding_desc[i].stride = array->get_stride();
-    if (array->get_divisor() == 0) {
-      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  int num_bindings = 0;
+
+  // Always create a "null binding" for missing vertex attributes.
+  int null_binding = num_bindings;
+  {
+    VkVertexInputBindingDescription &binding_desc = binding_descs[num_bindings];
+    binding_desc.binding = num_bindings;
+    binding_desc.stride = 0;
+    if (_supports_vertex_attrib_zero_divisor) {
+      binding_desc.stride = 4;
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+      divisors[num_divisors].binding = binding_desc.binding;
+      divisors[num_divisors].divisor = 0;
+      ++num_divisors;
     } else {
-      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+      binding_desc.stride = 0;
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    }
+    ++num_bindings;
+  }
+
+  for (size_t i = 0; i < num_arrays; ++i) {
+    const GeomVertexArrayFormat *array = key._format->get_array(i);
+    VkVertexInputBindingDescription &binding_desc = binding_descs[num_bindings];
+    binding_desc.binding = num_bindings;
+    binding_desc.stride = array->get_stride();
+    if (array->get_divisor() == 0) {
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    } else {
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
       if (_supports_vertex_attrib_divisor) {
-        divisors[num_divisors].binding = i;
+        divisors[num_divisors].binding = binding_desc.binding;
         divisors[num_divisors].divisor = array->get_divisor();
         ++num_divisors;
       }
     }
+    ++num_bindings;
   }
 
-  // Prepare "dummy" bindings, in case we need it, which are bound to missing
-  // vertex attributes.  It contains only a single value, set to stride=0.
+  // Create an extra binding for flat vertex colors.
   int color_binding = -1;
   if (sc->_uses_vertex_color) {
-    color_binding = i;
-    binding_desc[i].binding = i;
+    color_binding = num_bindings;
+    VkVertexInputBindingDescription &binding_desc = binding_descs[num_bindings];
+    binding_desc.binding = num_bindings;
 
     if (_supports_vertex_attrib_zero_divisor) {
       // MoltenVK uses portability subset, which doesn't allow zero stride,
       // but it does support zero divisor.
-      binding_desc[i].stride = 16;
-      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-      divisors[num_divisors].binding = i;
+      binding_desc.stride = 16;
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+      divisors[num_divisors].binding = binding_desc.binding;
       divisors[num_divisors].divisor = 0;
       ++num_divisors;
     } else {
-      binding_desc[i].stride = 0;
-      binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+      binding_desc.stride = 0;
+      binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     }
-    ++i;
     ++num_bindings;
   }
-
-  int null_binding = -1;
-  binding_desc[i].binding = i;
-  binding_desc[i].stride = 0;
-  if (_supports_vertex_attrib_zero_divisor) {
-    binding_desc[i].stride = 4;
-    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-    divisors[num_divisors].binding = i;
-    divisors[num_divisors].divisor = 0;
-  } else {
-    binding_desc[i].stride = 0;
-    binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-  }
-  ++i;
 
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = sc->get_shader();
@@ -3484,7 +3493,7 @@ make_pipeline(VulkanShaderContext *sc,
   VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
     alloca(sizeof(VkVertexInputAttributeDescription) * shader->_var_spec.size());
 
-  i = 0;
+  uint32_t i = 0;
   for (it = shader->_var_spec.begin(); it != shader->_var_spec.end(); ++it) {
     const Shader::ShaderVarSpec &spec = *it;
     int array_index;
@@ -3505,13 +3514,6 @@ make_pipeline(VulkanShaderContext *sc,
         attrib_desc[i].format = VK_FORMAT_R32G32B32A32_SFLOAT;
       }
       else {
-        if (null_binding == -1) {
-          null_binding = num_bindings++;
-          if (_supports_vertex_attrib_zero_divisor) {
-            ++num_divisors;
-          }
-        }
-
         attrib_desc[i].binding = null_binding;
         attrib_desc[i].offset = 0;
         attrib_desc[i].format = VK_FORMAT_R32_SFLOAT;
@@ -3520,7 +3522,7 @@ make_pipeline(VulkanShaderContext *sc,
       continue;
     }
 
-    attrib_desc[i].binding = array_index;
+    attrib_desc[i].binding = array_index + 1;
     attrib_desc[i].offset = column->get_start();
     assert(attrib_desc[i].offset < 2048);
 
@@ -3603,7 +3605,7 @@ make_pipeline(VulkanShaderContext *sc,
   vertex_info.pNext = nullptr;
   vertex_info.flags = 0;
   vertex_info.vertexBindingDescriptionCount = num_bindings;
-  vertex_info.pVertexBindingDescriptions = binding_desc;
+  vertex_info.pVertexBindingDescriptions = binding_descs;
   vertex_info.vertexAttributeDescriptionCount = i;
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
 
