@@ -219,6 +219,7 @@ public:
     void assign_locations(Stage stage);
     void bind_descriptor_set(uint32_t set, const vector_int &locations);
     void remove_unused_variables();
+    void strip_uniform_locations();
 
     void flatten_struct(uint32_t type_id);
     uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,

@@ -1188,6 +1188,28 @@ remove_unused_variables() {
 }
 
 /**
+ * Removes location decorations from uniforms.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+strip_uniform_locations() {
+  InstructionIterator it = _instructions.begin();
+  while (it != _instructions.end()) {
+    Instruction op = *it;
+
+    if (op.opcode == spv::OpDecorate && op.args[1] == spv::DecorationLocation) {
+      Definition &def = modify_definition(op.args[0]);
+      if (def._storage_class == spv::StorageClassUniformConstant) {
+        it = _instructions.erase(it);
+        def._location = -1;
+        continue;
+      }
+    }
+
+    ++it;
+  }
+}
+
+/**
  * Converts the members of the struct type with the given ID to regular
  * variables.  Useful for unwrapping uniform blocks.
  */

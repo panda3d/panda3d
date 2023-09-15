@@ -164,6 +164,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       writer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, tex_input_set_locations);
     }
 
+    // These are not used in Vulkan, no longer needed by the code above, and
+    // the validation layers trip over them.
+    writer.strip_uniform_locations();
+
     // Change OpenGL conventions to Vulkan conventions.
     for (ShaderModuleSpirV::Instruction op : instructions) {
       if (op.opcode == spv::OpExecutionMode) {
