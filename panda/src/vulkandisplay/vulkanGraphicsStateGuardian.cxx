@@ -3492,30 +3492,30 @@ make_pipeline(VulkanShaderContext *sc,
 
     attrib_desc[i].location = spec._id._location;
 
-    if (spec._name == InternalName::get_color() &&
-        key._color_type != ColorAttrib::T_vertex) {
-      // The shader references vertex colors, but they are disabled.
-      assert(color_binding >= 0);
-      attrib_desc[i].binding = color_binding;
-      attrib_desc[i].offset = 0;
-      attrib_desc[i].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-      ++i;
-      continue;
-    }
-    else if (!key._format->get_array_info(spec._name, array_index, column)) {
+    if ((key._color_type != ColorAttrib::T_vertex && spec._name == InternalName::get_color()) ||
+        !key._format->get_array_info(spec._name, array_index, column)) {
       // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "null" vertex buffer
       // containing a fixed value with a stride of 0.
-      if (null_binding == -1) {
-        null_binding = num_bindings++;
-        if (_supports_vertex_attrib_zero_divisor) {
-          ++num_divisors;
-        }
+      if (spec._name == InternalName::get_color()) {
+        // Except for vertex colors, which get a flat color applied.
+        assert(color_binding >= 0);
+        attrib_desc[i].binding = color_binding;
+        attrib_desc[i].offset = 0;
+        attrib_desc[i].format = VK_FORMAT_R32G32B32A32_SFLOAT;
       }
+      else {
+        if (null_binding == -1) {
+          null_binding = num_bindings++;
+          if (_supports_vertex_attrib_zero_divisor) {
+            ++num_divisors;
+          }
+        }
 
-      attrib_desc[i].binding = null_binding;
-      attrib_desc[i].offset = 0;
-      attrib_desc[i].format = VK_FORMAT_R32_SFLOAT;
+        attrib_desc[i].binding = null_binding;
+        attrib_desc[i].offset = 0;
+        attrib_desc[i].format = VK_FORMAT_R32_SFLOAT;
+      }
       ++i;
       continue;
     }
