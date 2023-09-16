@@ -98,7 +98,7 @@ public:
   virtual const SampledImage *as_sampled_image() const { return nullptr; }
 
   static void register_with_read_factory();
-  virtual bool require_fully_complete() const;
+  virtual bool require_fully_complete() const override;
   static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
 
 public:
@@ -308,7 +308,7 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
@@ -364,7 +364,7 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:

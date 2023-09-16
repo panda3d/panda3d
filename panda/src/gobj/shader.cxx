@@ -50,9 +50,9 @@ static bool has_cg_header(const std::string &shader_text) {
  */
 Shader::
 Shader(ShaderLanguage lang) :
+  _mat_deps(0),
   _error_flag(false),
   _language(lang),
-  _mat_deps(0),
   _cache_compiled_shader(false)
 {
 }
@@ -2043,7 +2043,7 @@ bind_parameter(const Parameter &param) {
   }
 
   // Other Cg-specific inputs.
-  bool k_prefix = false;
+  //bool k_prefix = false;
   if (_language == SL_Cg) {
     if (name_str.size() >= 2 && name_str.substr(0, 2) == "__") {
       return true;
@@ -2562,7 +2562,7 @@ bind_parameter(const Parameter &param) {
     // Previously, custom shader inputs needed the k_ prefix, so we have to
     // strip it now.
     if (pieces[0] == "k") {
-      k_prefix = true;
+      //k_prefix = true;
       name_str = name_str.substr(2);
       name = InternalName::make(name_str);
     }

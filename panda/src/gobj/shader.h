@@ -587,7 +587,7 @@ public:
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  void fillin(DatagramIterator &scan, BamReader *manager);
+  virtual void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 public:
   static TypeHandle get_class_type() {
@@ -598,10 +598,10 @@ public:
     register_type(_type_handle, "Shader",
                   TypedWritableReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;
