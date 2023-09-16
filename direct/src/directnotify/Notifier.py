@@ -248,12 +248,8 @@ class Notifier:
         else:
             sys.stderr.write(string + '\n')
 
-    def debugStateCall(
-        self,
-        obj: object = None,
-        fsmMemberName: str = 'fsm',
-        secondaryFsm: str = 'secondaryFSM',
-    ) -> int:
+    def debugStateCall(self, obj=None, fsmMemberName='fsm',
+            secondaryFsm='secondaryFSM'):
         """
         If this notify is in debug mode, print the time of the
         call followed by the [fsm state] notifier category and

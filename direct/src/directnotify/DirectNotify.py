@@ -120,7 +120,7 @@ class DirectNotify:
             category.setInfo(True)
             category.setDebug(True)
 
-    def popupControls(self, tl = None) -> None:
+    def popupControls(self, tl = None):
         # Don't use a regular import, to prevent ModuleFinder from picking
         # it up as a dependency when building a .p3d package.
         import importlib
