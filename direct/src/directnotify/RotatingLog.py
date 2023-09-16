@@ -125,17 +125,17 @@ class RotatingLog:
     def isatty(self) -> bool:
         return self.file.isatty()
 
-    def __next__(self) -> str:
+    def __next__(self):
         return next(self.file)
     next = __next__
 
-    def read(self, size: int | None) -> str:
+    def read(self, size):
         return self.file.read(size)
 
-    def readline(self, size: int) -> str:
+    def readline(self, size):
         return self.file.readline(size)
 
-    def readlines(self, sizehint: int) -> list[str]:
+    def readlines(self, sizehint):
         return self.file.readlines(sizehint)
 
     def xreadlines(self):
