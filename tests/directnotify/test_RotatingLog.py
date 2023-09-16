@@ -23,9 +23,8 @@ def test_rotation(rotating_log, log_dir):
     rotating_log.sizeLimit = -1
     rotating_log.write('1')
     rotating_log.write('2')
-    first, second = log_dir.iterdir()
-    assert first.read_text() == '1'
-    assert second.read_text() == '2'
+    written = [f.read_text() for f in log_dir.iterdir()]
+    assert written == ['1', '2'] or written == ['2', '1']
 
 
 def test_wrapper_methods(rotating_log, log_dir):
