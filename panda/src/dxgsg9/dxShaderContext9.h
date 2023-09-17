@@ -87,7 +87,7 @@ private:
   pvector <CGparameter> _cg_parameter_map;
 #endif
 
-  LMatrix4 *_mat_part_cache = nullptr;
+  LVecBase4f *_mat_part_cache = nullptr;
 
 private:
   void release_resources(void);

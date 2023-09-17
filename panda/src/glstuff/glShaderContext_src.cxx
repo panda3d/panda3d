@@ -152,30 +152,54 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
 
     // Decide whether this is a matrix or vector.
     if (param_type == GL_FLOAT_MAT4) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_whole;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose;
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_mat4_whole;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_mat4_transpose;
       else {
         GLCAT.error() << basename << " should be vec4, not mat3\n";
         return false;
       }
     } else if (param_type == GL_FLOAT_MAT3) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_upper3x3;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose3x3;
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_mat4_upper3x3;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_mat4_transpose3x3;
       else {
         GLCAT.error() << basename << " should be vec4, not mat3\n";
         return false;
       }
     } else if (param_type == GL_FLOAT_VEC4) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_col0;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_row0;
-      else if (pieces[0] == "row0")  bind._piece = Shader::SMP_row0;
-      else if (pieces[0] == "row1")  bind._piece = Shader::SMP_row1;
-      else if (pieces[0] == "row2")  bind._piece = Shader::SMP_row2;
-      else if (pieces[0] == "row3")  bind._piece = Shader::SMP_row3;
-      else if (pieces[0] == "col0")  bind._piece = Shader::SMP_col0;
-      else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
-      else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
-      else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
+      if      (pieces[0] == "trans") bind._piece = Shader::SMP_mat4_column;
+      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_vec4;
+      else if (pieces[0] == "row0") {
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 0;
+      }
+      else if (pieces[0] == "row1") {
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 4;
+      }
+      else if (pieces[0] == "row2") {
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 8;
+      }
+      else if (pieces[0] == "row3") {
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 12;
+      }
+      else if (pieces[0] == "col0") {
+        bind._piece = Shader::SMP_mat4_column;
+        bind._offset = 0;
+      }
+      else if (pieces[0] == "col1") {
+        bind._piece = Shader::SMP_mat4_column;
+        bind._offset = 1;
+      }
+      else if (pieces[0] == "col2") {
+        bind._piece = Shader::SMP_mat4_column;
+        bind._offset = 2;
+      }
+      else if (pieces[0] == "col3") {
+        bind._piece = Shader::SMP_mat4_column;
+        bind._offset = 3;
+      }
       else {
         GLCAT.error() << basename << " should be mat4, not vec4\n";
         return false;
@@ -184,13 +208,13 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
       // We'll permit this too, simply because we can support it.
       switch (param_type) {
       case GL_FLOAT:
-        bind._piece = Shader::SMP_row3x1;
+        bind._piece = Shader::SMP_float;
         break;
       case GL_FLOAT_VEC2:
-        bind._piece = Shader::SMP_row3x2;
+        bind._piece = Shader::SMP_vec2;
         break;
       case GL_FLOAT_VEC3:
-        bind._piece = Shader::SMP_row3x3;
+        bind._piece = Shader::SMP_vec3;
         break;
       default:
         GLCAT.error() << basename << " should be vec4\n";
@@ -234,7 +258,7 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
     if (param_size > 1) {
       // We support arrays of rows and arrays of columns, so we can run the
       // GLSL shaders that cgc spits out.
-      if (bind._piece == Shader::SMP_row0 || bind._piece == Shader::SMP_col0) {
+      if (bind._piece == Shader::SMP_vec4 || bind._piece == Shader::SMP_mat4_column) {
         if (param_size > 4) {
           GLCAT.warning() << basename << "[" << param_size << "] is too large, only the first four elements will be defined\n";
           param_size = 4;
@@ -396,7 +420,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     _glgsg->_current_shader_context->bind();
   }
 
-  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+  _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
 }
 
 /**
@@ -827,15 +851,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._func = Shader::SMF_compose;
       if (param_type == GL_FLOAT_MAT3) {
         if (transpose) {
-          bind._piece = Shader::SMP_upper3x3;
+          bind._piece = Shader::SMP_mat4_upper3x3;
         } else {
-          bind._piece = Shader::SMP_transpose3x3;
+          bind._piece = Shader::SMP_mat4_transpose3x3;
         }
       } else if (param_type == GL_FLOAT_MAT4) {
         if (transpose) {
-          bind._piece = Shader::SMP_transpose;
+          bind._piece = Shader::SMP_mat4_transpose;
         } else {
-          bind._piece = Shader::SMP_whole;
+          bind._piece = Shader::SMP_mat4_whole;
         }
       } else {
         GLCAT.error()
@@ -941,13 +965,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         // A matrix member of a p3d_LightSource struct.
         if (strncmp(name_buffer, "shadowViewMatrix", 127) == 0) {
           if (inverse) {
-            // Tack inverse back onto the end.
-            strcpy(name_buffer + strlen(name_buffer), "Inverse");
+            GLCAT.error()
+              << "p3d_LightSource struct does not provide a matrix named "
+              << name_buffer << "Inverse!\n";
+            return;
           }
 
           bind._func = Shader::SMF_first;
-          bind._part[0] = Shader::SMO_light_source_i_attrib;
-          bind._arg[0] = InternalName::make(name_buffer);
+          bind._part[0] = Shader::SMO_apiview_to_apiclip_light_source_i;
+          bind._arg[0] = nullptr;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = nullptr;
 
@@ -957,8 +983,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._func = Shader::SMF_compose;
           bind._part[0] = Shader::SMO_model_to_apiview;
           bind._arg[0] = nullptr;
-          bind._part[1] = Shader::SMO_light_source_i_attrib;
-          bind._arg[1] = InternalName::make("shadowViewMatrix");
+          bind._part[1] = Shader::SMO_apiview_to_apiclip_light_source_i;
+          bind._arg[1] = nullptr;
 
           static bool warned = false;
           if (!warned) {
@@ -1061,7 +1087,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Material.baseColor should be vec4\n";
         }
         bind._part[0] = Shader::SMO_attr_material2;
-        bind._piece = Shader::SMP_row0;
+        bind._piece = Shader::SMP_vec4;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1070,7 +1096,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.ambient should be vec4\n";
         }
-        bind._piece = Shader::SMP_row0;
+        bind._piece = Shader::SMP_vec4;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1079,7 +1105,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.diffuse should be vec4\n";
         }
-        bind._piece = Shader::SMP_row1;
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 4;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1088,7 +1115,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.emission should be vec4\n";
         }
-        bind._piece = Shader::SMP_row2;
+        bind._piece = Shader::SMP_vec4;
+        bind._offset = 8;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1097,7 +1125,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.specular should be vec3\n";
         }
-        bind._piece = Shader::SMP_row3x3;
+        bind._piece = Shader::SMP_vec3;
+        bind._offset = 12;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1106,7 +1135,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.shininess should be float\n";
         }
-        bind._piece = Shader::SMP_cell15;
+        bind._piece = Shader::SMP_float;
+        bind._offset = 15;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1116,7 +1146,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Material.roughness should be float\n";
         }
         bind._part[0] = Shader::SMO_attr_material2;
-        bind._piece = Shader::SMP_cell15;
+        bind._piece = Shader::SMP_float;
+        bind._offset = 7;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1126,7 +1157,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Material.metallic should be bool or float\n";
         }
         bind._part[0] = Shader::SMO_attr_material2;
-        bind._piece = Shader::SMP_row3x1;
+        bind._piece = Shader::SMP_float;
+        bind._offset = 4;
         _shader->cp_add_mat_spec(bind);
         return;
 
@@ -1136,7 +1168,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Material.refractiveIndex should be float\n";
         }
         bind._part[0] = Shader::SMO_attr_material2;
-        bind._piece = Shader::SMP_cell13;
+        bind._piece = Shader::SMP_float;
+        bind._offset = 5;
         _shader->cp_add_mat_spec(bind);
         return;
       }
@@ -1151,9 +1184,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[1] = nullptr;
 
       if (param_type == GL_FLOAT_VEC3) {
-        bind._piece = Shader::SMP_row3x3;
+        bind._piece = Shader::SMP_vec3;
       } else if (param_type == GL_FLOAT_VEC4) {
-        bind._piece = Shader::SMP_row3;
+        bind._piece = Shader::SMP_vec4;
       } else {
         GLCAT.error()
           << "p3d_ColorScale should be vec3 or vec4\n";
@@ -1172,9 +1205,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[1] = nullptr;
 
       if (param_type == GL_FLOAT_VEC3) {
-        bind._piece = Shader::SMP_row3x3;
+        bind._piece = Shader::SMP_vec3;
       } else if (param_type == GL_FLOAT_VEC4) {
-        bind._piece = Shader::SMP_row3;
+        bind._piece = Shader::SMP_vec3;
       } else {
         GLCAT.error()
           << "p3d_Color should be vec3 or vec4\n";
@@ -1193,7 +1226,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         Shader::ShaderMatSpec bind;
         bind._id = arg_id;
         bind._id._seqno = p + i;
-        bind._piece = Shader::SMP_row3;
+        bind._piece = Shader::SMP_vec4;
         bind._func = Shader::SMF_first;
         bind._index = i;
         bind._part[0] = Shader::SMO_apiview_clipplane_i;
@@ -1216,9 +1249,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fogcolor;
 
         if (param_type == GL_FLOAT_VEC3) {
-          bind._piece = Shader::SMP_row3x3;
+          bind._piece = Shader::SMP_vec4;
         } else if (param_type == GL_FLOAT_VEC4) {
-          bind._piece = Shader::SMP_row3;
+          bind._piece = Shader::SMP_vec4;
         } else {
           GLCAT.error()
             << "p3d_Fog.color should be vec3 or vec4\n";
@@ -1229,7 +1262,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
-          bind._piece = Shader::SMP_row3x1;
+          bind._piece = Shader::SMP_float;
         } else {
           GLCAT.error()
             << "p3d_Fog.density should be float\n";
@@ -1240,7 +1273,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
-          bind._piece = Shader::SMP_cell13;
+          bind._piece = Shader::SMP_float;
+          bind._offset = 13;
         } else {
           GLCAT.error()
             << "p3d_Fog.start should be float\n";
@@ -1251,7 +1285,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
-          bind._piece = Shader::SMP_cell14;
+          bind._piece = Shader::SMP_float;
+          bind._offset = 14;
         } else {
           GLCAT.error()
             << "p3d_Fog.end should be float\n";
@@ -1262,7 +1297,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
-          bind._piece = Shader::SMP_cell15;
+          bind._piece = Shader::SMP_float;
+          bind._offset = 15;
         } else {
           GLCAT.error()
             << "p3d_Fog.scale should be float\n";
@@ -1283,9 +1319,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[1] = nullptr;
 
       if (param_type == GL_FLOAT_VEC3) {
-        bind._piece = Shader::SMP_row3x3;
+        bind._piece = Shader::SMP_vec3;
       } else if (param_type == GL_FLOAT_VEC4) {
-        bind._piece = Shader::SMP_row3;
+        bind._piece = Shader::SMP_vec4;
       } else {
         GLCAT.error()
           << "p3d_LightModel.ambient should be vec3 or vec4\n";
@@ -1329,26 +1365,26 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._id = arg_id;
           bind._func = Shader::SMF_first;
           bind._index = index;
-          bind._part[0] = Shader::SMO_light_source_i_attrib;
+          bind._part[0] = Shader::SMO_light_source_i_vec_attrib;
           bind._arg[0] = InternalName::make(member_name);
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = nullptr;
 
           switch (param_type) {
           case GL_FLOAT:
-            bind._piece = Shader::SMP_row3x1;
+            bind._piece = Shader::SMP_float;
             break;
 
           case GL_FLOAT_VEC2:
-            bind._piece = Shader::SMP_row3x2;
+            bind._piece = Shader::SMP_vec2;
             break;
 
           case GL_FLOAT_VEC3:
-            bind._piece = Shader::SMP_row3x3;
+            bind._piece = Shader::SMP_vec3;
             break;
 
           case GL_FLOAT_VEC4:
-            bind._piece = Shader::SMP_row3;
+            bind._piece = Shader::SMP_vec4;
             break;
 
           default:
@@ -1390,7 +1426,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[0] = nullptr;
       bind._part[1] = Shader::SMO_identity;
       bind._arg[1] = nullptr;
-      bind._piece = Shader::SMP_row3;
+      bind._piece = Shader::SMP_vec4;
       _shader->cp_add_mat_spec(bind);
       return;
     }
@@ -1408,7 +1444,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     bind._arg[1] = nullptr;
 
     if (noprefix == "ViewMatrix") {
-      bind._piece = Shader::SMP_whole;
+      bind._piece = Shader::SMP_mat4_whole;
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_world_to_view;
       bind._part[1] = Shader::SMO_view_to_apiview;
@@ -1416,7 +1452,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       return;
 
     } else if (noprefix == "InverseViewMatrix" || noprefix == "ViewMatrixInverse") {
-      bind._piece = Shader::SMP_whole;
+      bind._piece = Shader::SMP_mat4_whole;
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_apiview_to_view;
       bind._part[1] = Shader::SMO_view_to_world;
@@ -1424,7 +1460,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       return;
 
     } else if (noprefix == "FrameTime") {
-      bind._piece = Shader::SMP_row3x1;
+      bind._piece = Shader::SMP_float;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_frame_time;
       bind._part[1] = Shader::SMO_identity;
@@ -1432,7 +1468,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       return;
 
     } else if (noprefix == "DeltaFrameTime") {
-      bind._piece = Shader::SMP_row3x1;
+      bind._piece = Shader::SMP_float;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_frame_delta;
       bind._part[1] = Shader::SMO_identity;
@@ -1516,7 +1552,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_FLOAT_MAT3: {
         Shader::ShaderMatSpec bind;
         bind._id = arg_id;
-        bind._piece = Shader::SMP_upper3x3;
+        bind._piece = Shader::SMP_mat4_upper3x3;
         bind._func = Shader::SMF_first;
         bind._part[0] = Shader::SMO_mat_constant_x;
         bind._arg[0] = InternalName::make(param_name);
@@ -1528,7 +1564,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_FLOAT_MAT4: {
         Shader::ShaderMatSpec bind;
         bind._id = arg_id;
-        bind._piece = Shader::SMP_whole;
+        bind._piece = Shader::SMP_mat4_whole;
         bind._func = Shader::SMF_first;
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = nullptr;
@@ -1552,8 +1588,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             bind._func = Shader::SMF_compose;
             bind._part[0] = Shader::SMO_model_to_apiview;
             bind._arg[0] = nullptr;
-            bind._part[1] = Shader::SMO_mat_constant_x_attrib;
-            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
+            bind._part[1] = Shader::SMO_apiview_to_apiclip_light_source_i;
+            bind._arg[1] = nullptr;
           } else {
             bind._part[0] = Shader::SMO_mat_constant_x_attrib;
             bind._arg[0] = InternalName::make(param_name);
@@ -1578,16 +1614,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._id = arg_id;
           switch (param_type) {
           case GL_FLOAT:
-            bind._piece = Shader::SMP_row3x1;
+            bind._piece = Shader::SMP_float;
             break;
           case GL_FLOAT_VEC2:
-            bind._piece = Shader::SMP_row3x2;
+            bind._piece = Shader::SMP_vec2;
             break;
           case GL_FLOAT_VEC3:
-            bind._piece = Shader::SMP_row3x3;
+            bind._piece = Shader::SMP_vec3;
             break;
           default:
-            bind._piece = Shader::SMP_row3;
+            bind._piece = Shader::SMP_vec4;
           }
           bind._func = Shader::SMF_first;
           bind._part[0] = Shader::SMO_vec_constant_x_attrib;
@@ -2263,61 +2299,36 @@ issue_parameters(int altered) {
         continue;
       }
 
-      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
-#else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
-#endif
+      const float *data = val->get_data();
+      data += spec._offset;
 
       GLint p = spec._id._seqno;
       switch (spec._piece) {
-      case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
-      case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
-      case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
-      case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
-      case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
-      case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
-      case Shader::SMP_row0: _glgsg->_glUniform4fv(p, 1, data+ 0); continue;
-      case Shader::SMP_row1: _glgsg->_glUniform4fv(p, 1, data+ 4); continue;
-      case Shader::SMP_row2: _glgsg->_glUniform4fv(p, 1, data+ 8); continue;
-      case Shader::SMP_row3: _glgsg->_glUniform4fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x1: _glgsg->_glUniform1fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x2: _glgsg->_glUniform2fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
-      case Shader::SMP_upper3x3:
+      case Shader::SMP_float: _glgsg->_glUniform1fv(p, 1, data); continue;
+      case Shader::SMP_vec2: _glgsg->_glUniform2fv(p, 1, data); continue;
+      case Shader::SMP_vec3: _glgsg->_glUniform3fv(p, 1, data); continue;
+      case Shader::SMP_vec4: _glgsg->_glUniform4fv(p, 1, data); continue;
+      case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
+      case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
+      case Shader::SMP_mat4_column: _glgsg->_glUniform4f(p, data[0], data[4], data[8], data[12]); continue;
+      case Shader::SMP_mat4_upper3x3:
         {
-#ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
-#else
-          LMatrix3f upper3 = valf.get_upper_3();
-#endif
+          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
           _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
           continue;
         }
-      case Shader::SMP_transpose3x3:
+      case Shader::SMP_mat4_transpose3x3:
         {
-#ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
-#else
-          LMatrix3f upper3 = valf.get_upper_3();
-#endif
+          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
           _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
           continue;
         }
-      case Shader::SMP_cell15:
-        _glgsg->_glUniform1fv(p, 1, data+15);
-        continue;
-      case Shader::SMP_cell14:
-        _glgsg->_glUniform1fv(p, 1, data+14);
-        continue;
-      case Shader::SMP_cell13:
-        _glgsg->_glUniform1fv(p, 1, data+13);
-        continue;
+        case Shader::SMP_int: _glgsg->_glUniform1i(p, ((int *)data)[0]);
+        case Shader::SMP_ivec2: _glgsg->_glUniform2iv(p, 1, (int *)data);
+        case Shader::SMP_ivec3: _glgsg->_glUniform3iv(p, 1, (int *)data);
+        case Shader::SMP_ivec4: _glgsg->_glUniform4iv(p, 1, (int *)data);
       }
     }
   }
