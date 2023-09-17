@@ -937,27 +937,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           return;
         }
 
+        bind._piece = Shader::SMP_mat4_array;
         bind._func = Shader::SMF_first;
         bind._part[0] = inverse ? Shader::SMO_inv_texmat_i
                                 : Shader::SMO_texmat_i;
         bind._part[1] = Shader::SMO_identity;
-
-        // Add it once for each index.
-        for (bind._index = 0; bind._index < param_size; ++bind._index) {
-          // It was discovered in #846, that GLSL 4.10 and lower don't seem to
-          // guarantee that matrices occupy successive locations, and on macOS
-          // they indeed occupy four locations per element.
-          // As a big fat hack, we multiply by four on macOS, because this is
-          // hard to fix on the 1.10 branch.  We'll have a proper fix on the
-          // master branch.
-#ifdef __APPLE__
-          bind._id._seqno = p + bind._index * 4;
-#else
-          bind._id._seqno = p + bind._index;
-#endif
-          _shader->cp_add_mat_spec(bind);
-        }
-        return;
+        bind._array_count = param_size;
 
       } else if (matrix_name.size() > 15 &&
                  matrix_name.substr(0, 12) == "LightSource[" &&
@@ -1222,19 +1207,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           << "p3d_ClipPlane should be vec4 or vec4[]\n";
         return;
       }
-      for (int i = 0; i < param_size; ++i) {
-        Shader::ShaderMatSpec bind;
-        bind._id = arg_id;
-        bind._id._seqno = p + i;
-        bind._piece = Shader::SMP_vec4;
-        bind._func = Shader::SMF_first;
-        bind._index = i;
-        bind._part[0] = Shader::SMO_apiview_clipplane_i;
-        bind._arg[0] = nullptr;
-        bind._part[1] = Shader::SMO_identity;
-        bind._arg[1] = nullptr;
-        _shader->cp_add_mat_spec(bind);
-      }
+      Shader::ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = Shader::SMP_vec4_array;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_apiview_clipplane_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._array_count = param_size;
+      _shader->cp_add_mat_spec(bind);
       return;
     }
     if (size > 4 && noprefix.substr(0, 4) == "Fog.") {
@@ -2310,7 +2292,9 @@ issue_parameters(int altered) {
       case Shader::SMP_vec2: _glgsg->_glUniform2fv(p, 1, data); continue;
       case Shader::SMP_vec3: _glgsg->_glUniform3fv(p, 1, data); continue;
       case Shader::SMP_vec4: _glgsg->_glUniform4fv(p, 1, data); continue;
+      case Shader::SMP_vec4_array: _glgsg->_glUniform4fv(p, spec._array_count, data); continue;
       case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
+      case Shader::SMP_mat4_array: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_FALSE, data); continue;
       case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
       case Shader::SMP_mat4_column: _glgsg->_glUniform4f(p, data[0], data[4], data[8], data[12]); continue;
       case Shader::SMP_mat4_upper3x3:

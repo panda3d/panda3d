@@ -296,7 +296,9 @@ public:
     SMP_vec2,
     SMP_vec3,
     SMP_vec4,
+    SMP_vec4_array,
     SMP_mat4_whole,
+    SMP_mat4_array,
     SMP_mat4_transpose,
     SMP_mat4_column,
     SMP_mat4_upper3x3,
@@ -441,6 +443,7 @@ public:
     int               _index = 0;
     ShaderMatPiece    _piece;
     int               _offset = 0;
+    int               _array_count = 1;
   };
 
   struct ShaderTexSpec {

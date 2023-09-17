@@ -710,7 +710,9 @@ issue_parameters(int altered) {
       case Shader::SMP_vec2: cgGLSetParameter2fv(p, data); continue;
       case Shader::SMP_vec3: cgGLSetParameter3fv(p, data); continue;
       case Shader::SMP_vec4: cgGLSetParameter4fv(p, data); continue;
+      case Shader::SMP_vec4_array: cgGLSetParameterArray4f(p, 0, spec._array_count, data); continue;
       case Shader::SMP_mat4_whole: cgGLSetMatrixParameterfc(p, data); continue;
+      case Shader::SMP_mat4_array: cgGLSetMatrixParameterArrayfc(p, 0, spec._array_count, data); continue;
       case Shader::SMP_mat4_transpose: cgGLSetMatrixParameterfr(p, data); continue;
       case Shader::SMP_mat4_column: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
       case Shader::SMP_mat4_upper3x3:

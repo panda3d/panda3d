@@ -577,7 +577,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
   // index refer to.  (It can't be the case that both parts are arrays.)
   int begin[2] = {0, 0};
   int end[2] = {1, 1};
-  if (spec._index > 0) {
+  if (spec._index > 0 || spec._array_count > 1) {
     for (int i = 0; i < 2; ++i) {
       if (spec._part[i] == SMO_texmat_i ||
           spec._part[i] == SMO_inv_texmat_i ||
@@ -592,7 +592,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
           spec._part[i] == SMO_texscale_i ||
           spec._part[i] == SMO_texcolor_i) {
         begin[i] = spec._index;
-        end[i] = spec._index + 1;
+        end[i] = spec._index + spec._array_count;
       }
     }
     nassertv(end[0] == 1 || end[1] == 1);
