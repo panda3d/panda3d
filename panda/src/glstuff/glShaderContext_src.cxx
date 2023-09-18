@@ -2309,10 +2309,10 @@ issue_parameters(int altered) {
           _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
           continue;
         }
-        case Shader::SMP_int: _glgsg->_glUniform1i(p, ((int *)data)[0]);
-        case Shader::SMP_ivec2: _glgsg->_glUniform2iv(p, 1, (int *)data);
-        case Shader::SMP_ivec3: _glgsg->_glUniform3iv(p, 1, (int *)data);
-        case Shader::SMP_ivec4: _glgsg->_glUniform4iv(p, 1, (int *)data);
+      case Shader::SMP_int: _glgsg->_glUniform1i(p, ((int *)data)[0]); continue;
+      case Shader::SMP_ivec2: _glgsg->_glUniform2iv(p, 1, (int *)data); continue;
+      case Shader::SMP_ivec3: _glgsg->_glUniform3iv(p, 1, (int *)data); continue;
+      case Shader::SMP_ivec4: _glgsg->_glUniform4iv(p, 1, (int *)data); continue;
       }
     }
   }
