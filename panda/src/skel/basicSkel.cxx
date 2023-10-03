@@ -27,6 +27,6 @@ set_value_alt(int n) {
  * get_value, except that this isn't an inline function.
  */
 int BasicSkel::
-get_value_alt() {
+get_value_alt() const {
   return _value;
 }

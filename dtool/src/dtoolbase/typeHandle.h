@@ -97,7 +97,9 @@ PUBLISHED:
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
 
+#ifdef HAVE_PYTHON
   EXTENSION(static TypeHandle make(PyTypeObject *classobj));
+#endif
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;
@@ -137,13 +139,15 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(parent_classes, get_num_parent_classes, get_parent_class);
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
+#ifdef HAVE_PYTHON
   EXTENSION(PyObject *__reduce__() const);
   EXTENSION(void __setstate__(PyObject *));
+#endif // HAVE_PYTHON
 
 public:
 #ifdef HAVE_PYTHON
   PyObject *get_python_type() const;
-#endif
+#endif // HAVE_PYTHON
 
   void *allocate_array(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);

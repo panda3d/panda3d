@@ -143,7 +143,7 @@ PUBLISHED:
 public:
   BulletWheel(btWheelInfo &info);
 
-  INLINE static BulletWheel empty();
+  static BulletWheel empty();
 
 private:
   btWheelInfo &_info;

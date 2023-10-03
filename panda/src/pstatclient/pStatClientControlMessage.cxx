@@ -61,6 +61,10 @@ encode(Datagram &datagram) const {
     }
     break;
 
+  case T_expire_thread:
+    datagram.add_uint16(_first_thread_index);
+    break;
+
   default:
     pstats_cat.error()
       << "Invalid PStatClientControlMessage::Type " << (int)_type << "\n";
@@ -115,6 +119,10 @@ decode(const Datagram &datagram, PStatClientVersion *version) {
         _names.push_back(source.get_string());
       }
     }
+    break;
+
+  case T_expire_thread:
+    _first_thread_index = source.get_uint16();
     break;
 
   case T_datagram:

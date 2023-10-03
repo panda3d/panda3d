@@ -35,14 +35,19 @@ class PStatReader;
  */
 class PStatClientData : public PStatClientVersion {
 public:
+  PStatClientData() = default;
   PStatClientData(PStatReader *reader);
   ~PStatClientData();
+
+  void clear_dirty() const;
+  bool is_dirty() const;
 
   bool is_alive() const;
   void close();
 
   int get_num_collectors() const;
   bool has_collector(int index) const;
+  int find_collector(const std::string &fullname) const;
   const PStatCollectorDef &get_collector_def(int index) const;
   std::string get_collector_name(int index) const;
   std::string get_collector_fullname(int index) const;
@@ -54,6 +59,7 @@ public:
 
   int get_num_threads() const;
   bool has_thread(int index) const;
+  int find_thread(const std::string &name) const;
   std::string get_thread_name(int index) const;
   const PStatThreadData *get_thread_data(int index) const;
 
@@ -65,13 +71,19 @@ public:
 
   void record_new_frame(int thread_index, int frame_number,
                         PStatFrameData *frame_data);
+
+  void write_json(std::ostream &out, int pid = 0) const;
+  void write_datagram(Datagram &dg) const;
+  void read_datagram(DatagramIterator &scan);
+
 private:
   void slot_collector(int collector_index);
   void update_toplevel_collectors();
 
 private:
-  bool _is_alive;
-  PStatReader *_reader;
+  bool _is_alive = false;
+  mutable bool _is_dirty = false;
+  PStatReader *_reader = nullptr;
 
   class Collector {
   public:

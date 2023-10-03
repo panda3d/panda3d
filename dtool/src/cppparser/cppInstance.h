@@ -19,6 +19,7 @@
 #include "cppDeclaration.h"
 #include "cppType.h"
 #include "cppTemplateParameterList.h"
+#include "cppAttributeList.h"
 
 class CPPInstanceIdentifier;
 class CPPIdentifier;
@@ -127,7 +128,6 @@ public:
   CPPExpression *_initializer;
 
   int _storage_class;
-  CPPExpression *_alignment;
   int _bit_width;
 
 private:

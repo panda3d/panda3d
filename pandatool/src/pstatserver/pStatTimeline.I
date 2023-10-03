@@ -137,3 +137,15 @@ INLINE double PStatTimeline::
 pixel_to_height(int x) const {
   return _time_scale * (double)x;
 }
+
+/**
+ * Returns the total number of rows.
+ */
+INLINE int PStatTimeline::
+get_num_rows() const {
+  if (_threads.empty()) {
+    return 0;
+  } else {
+    return _threads.back()._row_offset + _threads.back()._rows.size();
+  }
+}

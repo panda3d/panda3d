@@ -18,8 +18,9 @@
  *
  */
 CPPDeclaration::
-CPPDeclaration(const CPPFile &file) :
-  _file(file)
+CPPDeclaration(const CPPFile &file, CPPAttributeList attr) :
+  _file(file),
+  _attributes(std::move(attr))
 {
   _vis = V_unknown;
   _template_scope = nullptr;
@@ -34,7 +35,8 @@ CPPDeclaration(const CPPDeclaration &copy) :
   _vis(copy._vis),
   _template_scope(copy._template_scope),
   _file(copy._file),
-  _leading_comment(copy._leading_comment)
+  _leading_comment(copy._leading_comment),
+  _attributes(copy._attributes)
 {
 }
 
@@ -47,6 +49,7 @@ operator = (const CPPDeclaration &copy) {
   _template_scope = copy._template_scope;
   _file = copy._file;
   _leading_comment = copy._leading_comment;
+  _attributes = copy._attributes;
   return *this;
 }
 
@@ -133,6 +136,22 @@ substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
     return (*si).second;
   }
   return this;
+}
+
+/**
+ *
+ */
+void CPPDeclaration::
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  out << _attributes;
+}
+
+/**
+ *
+ */
+CPPDeclaration::SubType CPPDeclaration::
+get_subtype() const {
+  return ST_empty;
 }
 
 /**

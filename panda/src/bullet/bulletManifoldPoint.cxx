@@ -27,25 +27,6 @@ BulletManifoldPoint(btManifoldPoint &pt)
 /**
  *
  */
-BulletManifoldPoint::
-BulletManifoldPoint(const BulletManifoldPoint &other)
- : _pt(other._pt) {
-
-}
-
-/**
- *
- */
-BulletManifoldPoint& BulletManifoldPoint::
-operator=(const BulletManifoldPoint& other) {
-
-  this->_pt = other._pt;
-  return *this;
-}
-
-/**
- *
- */
 int BulletManifoldPoint::
 get_life_time() const {
   LightMutexHolder holder(BulletWorld::get_global_lock());

@@ -228,13 +228,16 @@ output_instance(std::ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const std::string &prename,
                 const std::string &name) const {
 
-  if (_value_category == VC_rvalue) {
-    _pointing_at->output_instance(out, indent_level, scope, complete,
-                                  "&&" + prename, name);
-  } else {
-    _pointing_at->output_instance(out, indent_level, scope, complete,
-                                  "&" + prename, name);
+  std::string prefix((_value_category == VC_rvalue) ? "&&" : "&");
+
+  if (!_attributes.is_empty()) {
+    std::ostringstream strm;
+    strm << prefix << _attributes << " ";
+    prefix = strm.str();
   }
+
+  _pointing_at->output_instance(out, indent_level, scope, complete,
+                                prefix + prename, name);
 }
 
 /**

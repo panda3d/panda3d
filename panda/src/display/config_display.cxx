@@ -29,6 +29,7 @@
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
+#include "screenshotRequest.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
 #include "windowHandle.h"
@@ -475,6 +476,12 @@ ConfigVariableInt shadow_depth_bits
  PRC_DESC("The minimum number of depth buffer bits requested when rendering "
           "shadow maps.  Set this to 32 for more depth resolution in shadow "
           "maps."));
+ConfigVariableBool shadow_cube_map_filter
+("shadow-cube-map-filter", false,
+ PRC_DESC("If true, Panda enables hardware depth map comparison mode for "
+          "point lights, if supported.  If false, does not.  Keep this set to "
+          "false if you want the shader generator to work correctly for point "
+          "light shadows."));
 
 ConfigVariableColor background_color
 ("background-color", "0.41 0.41 0.41 0.0",
@@ -528,6 +535,7 @@ init_libdisplay() {
   MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
+  ScreenshotRequest::init_type();
   StandardMunger::init_type();
   StereoDisplayRegion::init_type();
 #ifdef SUPPORT_SUBPROCESS_WINDOW

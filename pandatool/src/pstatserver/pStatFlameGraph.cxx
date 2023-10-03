@@ -34,14 +34,21 @@ PStatFlameGraph(PStatMonitor *monitor,
 {
   _average_mode = true;
   _average_cursor = 0;
-
-  _time_width = 1.0 / pstats_target_frame_rate;
   _current_frame = -1;
 
   _title_unknown = true;
 
+  // NB. This won't call force_redraw() (which we can't do yet) because average
+  // mode is true
+  update();
+  _time_width = _stack.get_net_value(false);
+  if (_time_width == 0.0) {
+    _time_width = 1.0 / pstats_target_frame_rate;
+  }
+
   _guide_bar_units = GBU_ms | GBU_hz | GBU_show_units;
-  normal_guide_bars();
+
+  monitor->_flame_graphs.insert(this);
 }
 
 /**
@@ -49,6 +56,7 @@ PStatFlameGraph(PStatMonitor *monitor,
  */
 PStatFlameGraph::
 ~PStatFlameGraph() {
+  _monitor->_flame_graphs.erase(this);
 }
 
 /**
@@ -97,6 +105,15 @@ set_collector_index(int collector_index) {
     _title_unknown = true;
     _stack.clear();
     update_data();
+
+    if (_average_mode) {
+      _stack.update_averages(_average_cursor);
+      _time_width = _stack.get_net_value(true);
+      if (_time_width == 0.0) {
+        _time_width = 1.0 / pstats_target_frame_rate;
+      }
+      normal_guide_bars();
+    }
   }
 }
 
@@ -148,7 +165,11 @@ get_bar_tooltip(int depth, int x) const {
     if (client_data != nullptr && client_data->has_collector(level->_collector_index)) {
       std::ostringstream text;
       text << client_data->get_collector_fullname(level->_collector_index);
-      text << " (" << format_number(level->get_net_value(_average_mode), GBU_show_units | GBU_ms) << ")";
+      text << " (" << format_number(level->get_net_value(_average_mode), GBU_show_units | GBU_ms);
+      if (level->_count > 1) {
+        text << " / " << level->_count << "x";
+      }
+      text << ")";
       return text.str();
     }
   }
@@ -165,6 +186,42 @@ get_bar_collector(int depth, int x) const {
     return level->_collector_index;
   }
   return -1;
+}
+
+/**
+ * Writes the graph state to a datagram.
+ */
+void PStatFlameGraph::
+write_datagram(Datagram &dg) const {
+  dg.add_int16(_orig_collector_index);
+  dg.add_float64(_time_width);
+  dg.add_bool(_average_mode);
+
+  PStatGraph::write_datagram(dg);
+}
+
+/**
+ * Restores the graph state from a datagram.
+ */
+void PStatFlameGraph::
+read_datagram(DatagramIterator &scan) {
+  _orig_collector_index = scan.get_int16();
+  _time_width = scan.get_float64();
+  _average_mode = scan.get_bool();
+
+  PStatGraph::read_datagram(scan);
+
+  _current_frame = -1;
+  _stack.clear();
+  update();
+  if (_average_mode) {
+    _time_width = _stack.get_net_value(false);
+    if (_time_width == 0.0) {
+      _time_width = 1.0 / pstats_target_frame_rate;
+    }
+    normal_guide_bars();
+    force_redraw();
+  }
 }
 
 /**
@@ -301,7 +358,7 @@ begin_draw() {
  * indicated location.
  */
 void PStatFlameGraph::
-draw_bar(int depth, int from_x, int to_x, int collector_index) {
+draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index) {
 }
 
 /**
@@ -336,8 +393,10 @@ animate(double time, double dt) {
       _time_width = 1.0 / pstats_target_frame_rate;
     }
     normal_guide_bars();
-    force_redraw();
   }
+
+  // Always use force_redraw, since the mouse position may have changed.
+  force_redraw();
 
   // Cycle through the ring buffers.
   _average_cursor = (_average_cursor + 1) % _num_average_frames;
@@ -351,6 +410,7 @@ void PStatFlameGraph::StackLevel::
 reset() {
   _start_time = 0.0;
   _net_value = 0.0;
+  _count = 0;
   _started = false;
 
   for (auto &item : _children) {
@@ -368,6 +428,7 @@ start(int collector_index, double time) {
   child._parent = this;
   child._collector_index = collector_index;
   child._start_time = std::max(_start_time, time);
+  child._count++;
   child._started = true;
   return &child;
 }
@@ -481,6 +542,7 @@ locate(int depth, double time, bool average) const {
 void PStatFlameGraph::StackLevel::
 clear() {
   _children.clear();
+  _count = 0;
   _net_value = 0.0;
 }
 
@@ -524,7 +586,7 @@ r_draw_level(const StackLevel &level, int depth, double offset) {
 
     // No need to recurse if the bars have become smaller than a pixel.
     if (to_x > from_x) {
-      draw_bar(depth, from_x, to_x, child._collector_index);
+      draw_bar(depth, from_x, to_x, child._collector_index, level._collector_index);
       r_draw_level(child, depth + 1, offset);
     }
 

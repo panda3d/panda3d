@@ -185,6 +185,7 @@ private:
 
   INLINE void mark_internal_bounds_stale(CData *cdata);
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
+  void compute_nested_vertices(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                             PN_stdfloat &sq_center_dist, bool &found_any,
@@ -327,6 +328,7 @@ private:
 
     CPT(BoundingVolume) _internal_bounds;
     int _nested_vertices;
+    bool _nested_vertices_stale;
     bool _internal_bounds_stale;
     BoundingVolume::BoundsType _bounds_type;
     CPT(BoundingVolume) _user_bounds;

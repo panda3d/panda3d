@@ -14,6 +14,7 @@
 #include "winStatsGraph.h"
 #include "winStatsMonitor.h"
 #include "winStatsLabelStack.h"
+#include "winStatsServer.h"
 #include "trueClock.h"
 #include "convert_srgb.h"
 
@@ -45,6 +46,14 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _bitmap_ysize = 0;
 
   _pixel_scale = monitor->get_pixel_scale();
+
+  // Default margins.
+  int margin = _pixel_scale * 2;
+  _left_margin = margin;
+  _right_margin = margin;
+  _top_margin = margin;
+  _bottom_margin = margin;
+  _top_label_stack_margin = margin;
 
   _dark_color = RGB(51, 51, 51);
   _light_color = RGB(154, 154, 154);
@@ -252,10 +261,10 @@ move_label_stack() {
 
     rect.left += _pixel_scale * 2;
     rect.right = _left_margin - _pixel_scale * 2;
-    rect.bottom -= _bottom_margin;
 
     _label_stack.set_pos(rect.left, rect.top,
-                         rect.right - rect.left, rect.bottom - rect.top);
+                         rect.right - rect.left, rect.bottom - rect.top,
+                         _top_label_stack_margin, _bottom_margin);
   }
 }
 
@@ -279,6 +288,57 @@ start_animation() {
 bool WinStatsGraph::
 animate(double time, double dt) {
   return false;
+}
+
+/**
+ * Returns the current window dimensions.
+ */
+void WinStatsGraph::
+get_window_state(int &x, int &y, int &width, int &height,
+                 bool &maximized, bool &minimized) const {
+  WinStatsServer *server = (WinStatsServer *)_monitor->get_server();
+  POINT client_origin = server->get_client_origin();
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(WINDOWPLACEMENT);
+  GetWindowPlacement(_window, &wp);
+  x = wp.rcNormalPosition.left - client_origin.x;
+  y = wp.rcNormalPosition.top - client_origin.y;
+  width = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+  height = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
+  maximized = (wp.showCmd == SW_SHOWMAXIMIZED || (wp.flags & WPF_RESTORETOMAXIMIZED) != 0);
+  minimized = (wp.showCmd == SW_SHOWMINIMIZED);
+}
+
+/**
+ * Called to restore the graph window to its previous dimensions.
+ */
+void WinStatsGraph::
+set_window_state(int x, int y, int width, int height,
+                 bool maximized, bool minimized) {
+  WinStatsServer *server = (WinStatsServer *)_monitor->get_server();
+  POINT client_origin = server->get_client_origin();
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(WINDOWPLACEMENT);
+  wp.flags = maximized ? WPF_RESTORETOMAXIMIZED : 0;
+  wp.showCmd = minimized ? SW_SHOWMINIMIZED : (maximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+  wp.ptMinPosition.x = -1;
+  wp.ptMinPosition.y = -1;
+  wp.ptMaxPosition.x = -1;
+  wp.ptMaxPosition.y = -1;
+  wp.rcNormalPosition.left = client_origin.x + x;
+  wp.rcNormalPosition.top = client_origin.y + y;
+  wp.rcNormalPosition.right = wp.rcNormalPosition.left + width;
+  wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + height;
+
+  if (minimized) {
+    int x, y;
+    _monitor->calc_iconic_graph_window_pos(this, x, y);
+    wp.ptMinPosition.x = x;
+    wp.ptMinPosition.y = y;
+    wp.flags |= WPF_SETMINPOSITION;
+  }
+
+  SetWindowPlacement(_window, &wp);
 }
 
 /**
@@ -332,6 +392,17 @@ get_collector_text_color(int collector_index, bool highlight) {
 }
 
 /**
+ * Called when the given collector has changed colors.
+ */
+void WinStatsGraph::
+reset_collector_color(int collector_index) {
+  _brushes.erase(collector_index);
+  _text_colors.erase(collector_index);
+  force_redraw();
+  _label_stack.update_label_color(collector_index);
+}
+
+/**
  * This window_proc should be called up to by the derived classes for any
  * messages that are not specifically handled by the derived class.
  */
@@ -347,14 +418,44 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       WINDOWINFO winfo;
       GetWindowInfo(hwnd, &winfo);
       MINMAXINFO &minmax = *(MINMAXINFO *)lparam;
+      int vminheight = _bottom_margin + _top_margin;
+      if (_label_stack.get_num_labels() > 0) {
+        // If we have a label, make sure at least one can be shown.
+        vminheight = (std::max)(vminheight, _top_label_stack_margin + _label_stack.get_label_height(0) + _bottom_margin);
+      }
       minmax.ptMinTrackSize.x = (winfo.rcClient.left - winfo.rcWindow.left)
                               + (winfo.rcWindow.right - winfo.rcClient.right)
                               + (_right_margin + _left_margin);
       minmax.ptMinTrackSize.y = (winfo.rcClient.top - winfo.rcWindow.top)
                               + (winfo.rcWindow.bottom - winfo.rcClient.bottom)
-                              + (_bottom_margin + _top_margin);
+                              + vminheight;
       return 0;
     }
+
+  case WM_WINDOWPOSCHANGING:
+    {
+      WINDOWPOS &pos = *(WINDOWPOS *)lparam;
+      if ((pos.flags & (SWP_NOMOVE | SWP_NOSIZE)) == 0 && IsIconic(hwnd)) {
+        _monitor->calc_iconic_graph_window_pos(this, pos.x, pos.y);
+      }
+    }
+    break;
+
+  case WM_SYSCOMMAND:
+    if (wparam == SC_MINIMIZE) {
+      WINDOWPLACEMENT wp;
+      if (GetWindowPlacement(hwnd, &wp)) {
+        int x, y;
+        _monitor->calc_iconic_graph_window_pos(this, x, y);
+        wp.showCmd = SW_SHOWMINIMIZED;
+        wp.flags |= WPF_SETMINPOSITION;
+        wp.ptMinPosition.x = x;
+        wp.ptMinPosition.y = y;
+        SetWindowPlacement(hwnd, &wp);
+      }
+      return 0;
+    }
+    break;
 
   case WM_SIZE:
     move_label_stack();

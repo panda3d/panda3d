@@ -72,9 +72,9 @@ GeomTransformer::
  * purpose of later removing unused vertices.
  */
 void GeomTransformer::
-register_vertices(Geom *geom, bool might_have_unused) {
+register_vertices(PT(Geom) geom, bool might_have_unused) {
   VertexDataAssoc &assoc = _vdata_assoc[geom->get_vertex_data()];
-  assoc._geoms.push_back(geom);
+  assoc._geoms.push_back(std::move(geom));
   if (might_have_unused) {
     assoc._might_have_unused = true;
   }
@@ -89,12 +89,8 @@ register_vertices(GeomNode *node, bool might_have_unused) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
-    GeomNode::GeomList::iterator gi;
-    PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
-    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
-      GeomNode::GeomEntry &entry = (*gi);
-      PT(Geom) geom = entry._geom.get_write_pointer();
-      register_vertices(geom, might_have_unused);
+    for (GeomNode::GeomEntry &entry : *cdata->modify_geoms()) {
+      register_vertices(entry._geom.get_write_pointer(), might_have_unused);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);

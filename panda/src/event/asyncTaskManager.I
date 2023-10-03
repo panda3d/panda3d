@@ -47,21 +47,10 @@ get_clock() {
  */
 template<class Callable>
 INLINE AsyncTask *AsyncTaskManager::
-add(const std::string &name, Callable callable) {
-  class InlineTask final : public AsyncTask {
-  public:
-    InlineTask(Callable callable) : _callable(std::move(callable)) {}
-
-  private:
-    virtual DoneStatus do_task() override final {
-      return _callable(this);
-    }
-
-    Callable _callable;
-  };
-  AsyncTask *task = new InlineTask(std::move(callable));
-  add(task);
-  return task;
+add(Callable callable, const std::string &name, int sort, int priority) {
+  AsyncTaskChain *chain = make_task_chain("default");
+  nassertr(chain != nullptr, nullptr);
+  return chain->add(std::move(callable), name, sort, priority);
 }
 #endif
 

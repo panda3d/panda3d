@@ -17,7 +17,7 @@ These filters are written in the Cg shading language.
 # clunky approach.  - Josh
 
 from panda3d.core import LVecBase4, LPoint2
-from panda3d.core import AuxBitplaneAttrib
+from panda3d.core import AuxBitplaneAttrib, AntialiasAttrib
 from panda3d.core import Texture, Shader, ATSNone
 from panda3d.core import FrameBufferProperties
 from panda3d.core import getDefaultCoordinateSystem, CS_zup_right, CS_zup_left
@@ -189,10 +189,21 @@ class CommonFilters:
                 fbprops.setSrgbColor(False)
                 clamping = False
 
+            if "MSAA" in configuration:
+                if fbprops is None:
+                    fbprops = FrameBufferProperties()
+                fbprops.setMultisamples(configuration["MSAA"].samples)
+
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits, fbprops=fbprops, clamping=clamping)
             if self.finalQuad is None:
                 self.cleanup()
                 return False
+
+            if "MSAA" in configuration:
+                camNode = self.manager.camera.node()
+                state = camNode.getInitialState()
+                state.setAttrib(AntialiasAttrib.make(AntialiasAttrib.M_multisample))
+                camNode.setInitialState(state)
 
             if "BlurSharpen" in configuration:
                 blur0 = self.textures["blur0"]
@@ -454,6 +465,26 @@ class CommonFilters:
         if task is not None:
             return task.cont
 
+    def setMSAA(self, samples):
+        """Enables multisample anti-aliasing on the render-to-texture buffer.
+        If you enable this, it is recommended to leave any multisample request
+        on the main framebuffer OFF (ie. don't set framebuffer-multisample true
+        in Config.prc), since it would be a waste of resources otherwise.
+
+        .. versionadded:: 1.10.13
+        """
+        fullrebuild = "MSAA" not in self.configuration or self.configuration["MSAA"].samples != samples
+        newconfig = FilterConfig()
+        newconfig.samples = samples
+        self.configuration["MSAA"] = newconfig
+        return self.reconfigure(fullrebuild, "MSAA")
+
+    def delMSAA(self):
+        if "MSAA" in self.configuration:
+            del self.configuration["MSAA"]
+            return self.reconfigure(True, "MSAA")
+        return True
+
     def setCartoonInk(self, separation=1, color=(0, 0, 0, 1)):
         fullrebuild = ("CartoonInk" not in self.configuration)
         newconfig = FilterConfig()
@@ -679,6 +710,8 @@ class CommonFilters:
         return True
 
     #snake_case alias:
+    set_msaa = setMSAA
+    del_msaa = delMSAA
     del_cartoon_ink = delCartoonInk
     set_half_pixel_shift = setHalfPixelShift
     del_half_pixel_shift = delHalfPixelShift

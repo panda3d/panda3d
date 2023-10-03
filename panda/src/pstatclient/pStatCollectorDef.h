@@ -33,7 +33,8 @@ public:
   void set_parent(const PStatCollectorDef &parent);
 
   void write_datagram(Datagram &destination) const;
-  void read_datagram(DatagramIterator &source, PStatClientVersion *version);
+  void read_datagram(DatagramIterator &source,
+                     PStatClientVersion *version = nullptr);
 
   struct ColorDef {
     float r, g, b;

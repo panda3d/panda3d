@@ -52,6 +52,11 @@ protected:
 
   virtual bool animate(double time, double dt);
 
+  virtual bool get_window_state(int &x, int &y, int &width, int &height,
+                                bool &maximized, bool &minimized) const;
+  virtual void set_window_state(int x, int y, int width, int height,
+                                bool maximized, bool minimized);
+
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
@@ -70,10 +75,10 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int row_to_pixel(int y) const {
-    return y * _pixel_scale * 5 + _pixel_scale;
+    return y * _pixel_scale * 5 + _pixel_scale - _scroll;
   }
   int pixel_to_row(int y) const {
-    return (y - _pixel_scale) / (_pixel_scale * 5);
+    return (y + _scroll - _pixel_scale) / (_pixel_scale * 5);
   }
 
   static bool _window_class_registered;
@@ -83,6 +88,7 @@ private:
 
   int _highlighted_row = -1;
   int _highlighted_x = 0;
+  int _scroll = 0;
   ColorBar _popup_bar;
 };
 

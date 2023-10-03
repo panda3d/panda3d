@@ -208,6 +208,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   bool intersect;
   LPlane plane;
   LVector3 normal;
+  bool fully_inside = true;
 
   for(ip = 0, intersect = false; ip < 6 && !intersect; ip++) {
     plane = get_plane(ip);
@@ -224,6 +225,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // moving in the same direction as the plane's normal.
       PN_stdfloat dot = delta.dot(plane.get_normal());
       if (dot > 0.1f) {
+        fully_inside = false;
         continue; // no intersection
       }
 
@@ -280,13 +282,19 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     if (!plane.intersects_line(dist, from_center, -(plane.get_normal()))) {
       // No intersection with plane?  This means the plane's effective normal
       // was within the plane itself.  A useless polygon.
+      fully_inside = false;
       continue;
     }
 
-    if (dist > from_radius || dist < -from_radius) {
-      // No intersection with the plane.
+    if (dist > from_radius) {
+      // Fully outside this plane, there can not be an intersection.
+      return nullptr;
+    }
+    if (dist < -from_radius) {
+      // Fully inside this plane.
       continue;
     }
+    fully_inside = false;
 
     LPoint2 p = to_2d(from_center - dist * plane.get_normal(), ip);
     PN_stdfloat edge_dist = 0.0f;
@@ -342,8 +350,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     }
     intersect = true;
   }
-  if( !intersect )
+  if (!fully_inside && !intersect) {
     return nullptr;
+  }
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()

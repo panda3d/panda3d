@@ -86,7 +86,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == nullptr) {
     return false;
   }
-  if (_awaiting_configure) {
+  if (_awaiting_configure_since != -1) {
     // Don't attempt to draw while we have just reconfigured the window and we
     // haven't got the notification back yet.
     return false;
@@ -187,186 +187,17 @@ supports_pixel_zoom() const {
  */
 void TinyXGraphicsWindow::
 process_events() {
-  LightReMutexHolder holder(TinyXGraphicsPipe::_x_mutex);
+  x11GraphicsWindow::process_events();
 
-  GraphicsWindow::process_events();
+  int xsize = (_properties.get_x_size() + 3) & ~3;
+  int ysize = _properties.get_y_size();
 
-  if (_xwindow == (X11_Window)0) {
-    return;
-  }
-
-  XEvent event;
-  XKeyEvent keyrelease_event;
-  bool got_keyrelease_event = false;
-
-  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
-    if (XFilterEvent(&event, None)) {
-      continue;
-    }
-
-    if (got_keyrelease_event) {
-      // If a keyrelease event is immediately followed by a matching keypress
-      // event, that's just key repeat and we should treat the two events
-      // accordingly.  It would be nice if X provided a way to differentiate
-      // between keyrepeat and explicit keypresses more generally.
-      got_keyrelease_event = false;
-
-      if (event.type == KeyPress &&
-          event.xkey.keycode == keyrelease_event.keycode &&
-          (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the repeated
-        // keys, not down-and-up messages.
-        handle_keystroke(event.xkey);
-
-        // We thought about not generating the keypress event, but we need
-        // that repeat for backspace.  Rethink later.
-        handle_keypress(event.xkey);
-        continue;
-
-      } else {
-        // This keyrelease event is not immediately followed by a matching
-        // keypress event, so it's a genuine release.
-        handle_keyrelease(keyrelease_event);
-      }
-    }
-
-    WindowProperties properties;
-    ButtonHandle button;
-
-    switch (event.type) {
-    case ReparentNotify:
-      break;
-
-    case ConfigureNotify:
-      _awaiting_configure = false;
-      if (_properties.get_fixed_size()) {
-        // If the window properties indicate a fixed size only, undo any
-        // attempt by the user to change them.  In X, there doesn't appear to
-        // be a way to universally disallow this directly (although we do set
-        // the min_size and max_size to the same value, which seems to work
-        // for most window managers.)
-        WindowProperties current_props = get_properties();
-        if (event.xconfigure.width != current_props.get_x_size() ||
-            event.xconfigure.height != current_props.get_y_size()) {
-          XWindowChanges changes;
-          changes.width = current_props.get_x_size();
-          changes.height = current_props.get_y_size();
-          int value_mask = (CWWidth | CWHeight);
-          XConfigureWindow(_display, _xwindow, value_mask, &changes);
-        }
-
-      } else {
-        // A normal window may be resized by the user at will.
-        properties.set_size(event.xconfigure.width, event.xconfigure.height);
-        system_changed_properties(properties);
-        ZB_resize(_full_frame_buffer, nullptr, _properties.get_x_size(), _properties.get_y_size());
-        _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
-        create_reduced_frame_buffer();
-        create_ximage();
-      }
-      break;
-
-    case ButtonPress:
-      // This refers to the mouse buttons.
-      button = get_mouse_button(event.xbutton);
-      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input->button_down(button);
-      break;
-
-    case ButtonRelease:
-      button = get_mouse_button(event.xbutton);
-      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input->button_up(button);
-      break;
-
-    case MotionNotify:
-      _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
-      break;
-
-    case KeyPress:
-      handle_keystroke(event.xkey);
-      handle_keypress(event.xkey);
-      break;
-
-    case KeyRelease:
-      // The KeyRelease can't be processed immediately, because we have to
-      // check first if it's immediately followed by a matching KeyPress
-      // event.
-      keyrelease_event = event.xkey;
-      got_keyrelease_event = true;
-      break;
-
-    case EnterNotify:
-      _input->set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
-      break;
-
-    case LeaveNotify:
-      _input->set_pointer_out_of_window();
-      break;
-
-    case FocusIn:
-      properties.set_foreground(true);
-      system_changed_properties(properties);
-      break;
-
-    case FocusOut:
-      _input->focus_lost();
-      properties.set_foreground(false);
-      system_changed_properties(properties);
-      break;
-
-    case UnmapNotify:
-      properties.set_minimized(true);
-      system_changed_properties(properties);
-      break;
-
-    case MapNotify:
-      properties.set_minimized(false);
-      system_changed_properties(properties);
-
-      // Auto-focus the window when it is mapped.
-      XSetInputFocus(_display, _xwindow, RevertToPointerRoot, CurrentTime);
-      break;
-
-    case ClientMessage:
-      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
-        // This is a message from the window manager indicating that the user
-        // has requested to close the window.
-        std::string close_request_event = get_close_request_event();
-        if (!close_request_event.empty()) {
-          // In this case, the app has indicated a desire to intercept the
-          // request and process it directly.
-          throw_event(close_request_event);
-
-        } else {
-          // In this case, the default case, the app does not intend to
-          // service the request, so we do by closing the window.
-
-          // TODO: don't release the gsg in the window thread.
-          close_window();
-          properties.set_open(false);
-          system_changed_properties(properties);
-        }
-      }
-      break;
-
-    case DestroyNotify:
-      // Apparently, we never get a DestroyNotify on a toplevel window.
-      // Instead, we rely on hints from the window manager (see above).
-      tinydisplay_cat.info()
-        << "DestroyNotify\n";
-      break;
-
-    default:
-      tinydisplay_cat.error()
-        << "unhandled X event type " << event.type << "\n";
-    }
-  }
-
-  if (got_keyrelease_event) {
-    // This keyrelease event is not immediately followed by a matching
-    // keypress event, so it's a genuine release.
-    handle_keyrelease(keyrelease_event);
+  if (xsize != _full_frame_buffer->xsize ||
+      ysize != _full_frame_buffer->ysize) {
+    ZB_resize(_full_frame_buffer, nullptr, xsize, ysize);
+    _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
+    create_reduced_frame_buffer();
+    create_ximage();
   }
 }
 

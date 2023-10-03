@@ -132,6 +132,17 @@ make_task_chain(const string &name) {
 }
 
 /**
+ * Creates a new threaded AsyncTaskChain of the indicated name and stores it
+ * within the AsyncTaskManager.  If a task chain with this name already exists,
+ * returns it instead.
+ */
+AsyncTaskChain *AsyncTaskManager::
+make_task_chain(const string &name, int num_threads, ThreadPriority thread_priority) {
+  MutexHolder holder(_lock);
+  return do_make_task_chain(name, num_threads, thread_priority);
+}
+
+/**
  * Searches a new AsyncTaskChain of the indicated name and returns it if it
  * exists, or NULL otherwise.
  */
@@ -562,8 +573,8 @@ write(std::ostream &out, int indent_level) const {
  * Assumes the lock is held.
  */
 AsyncTaskChain *AsyncTaskManager::
-do_make_task_chain(const string &name) {
-  PT(AsyncTaskChain) chain = new AsyncTaskChain(this, name);
+do_make_task_chain(const string &name, int num_threads, ThreadPriority thread_priority) {
+  PT(AsyncTaskChain) chain = new AsyncTaskChain(this, name, num_threads, thread_priority);
 
   TaskChains::const_iterator tci = _task_chains.insert(chain).first;
   return (*tci);
@@ -649,7 +660,6 @@ void AsyncTaskManager::
 make_global_ptr() {
   nassertv(_global_ptr == nullptr);
 
-  init_memory_hook();
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();
 }

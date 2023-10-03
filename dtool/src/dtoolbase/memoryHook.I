@@ -18,7 +18,7 @@
 INLINE void MemoryHook::
 inc_heap(size_t size) {
 #ifdef DO_MEMORY_USAGE
-  AtomicAdjust::add(_requested_heap_size, (AtomicAdjust::Integer)size);
+  _requested_heap_size.fetch_add(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 }
 
@@ -30,7 +30,7 @@ INLINE void MemoryHook::
 dec_heap(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // assert((int)size <= _requested_heap_size);
-  AtomicAdjust::add(_requested_heap_size, -(AtomicAdjust::Integer)size);
+  _requested_heap_size.fetch_sub(size, std::memory_order_relaxed);
 #endif  // DO_MEMORY_USAGE
 }
 
@@ -40,6 +40,9 @@ dec_heap(size_t size) {
  */
 INLINE size_t MemoryHook::
 get_page_size() const {
+  if (_page_size == 0) {
+    determine_page_size();
+  }
   return _page_size;
 }
 
@@ -49,6 +52,9 @@ get_page_size() const {
  */
 INLINE size_t MemoryHook::
 round_up_to_page_size(size_t size) const {
+  if (_page_size == 0) {
+    determine_page_size();
+  }
   return  ((size + _page_size - 1) / _page_size) * _page_size;
 }
 

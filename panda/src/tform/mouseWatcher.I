@@ -34,12 +34,9 @@ is_mouse_open() const {
  * It is only valid to call this if has_mouse() returns true.  If so, this
  * returns the current position of the mouse within the window.
  */
-INLINE const LPoint2 &MouseWatcher::
+INLINE LPoint2 MouseWatcher::
 get_mouse() const {
-#ifndef NDEBUG
-  static LPoint2 bogus_mouse(0.0f, 0.0f);
-  nassertr(_has_mouse, bogus_mouse);
-#endif
+  nassertr(_has_mouse, LPoint2(0, 0));
   return _mouse;
 }
 
@@ -145,6 +142,17 @@ get_over_region(PN_stdfloat x, PN_stdfloat y) const {
 INLINE bool MouseWatcher::
 is_button_down(ButtonHandle button) const {
   return _inactivity_state != IS_inactive && _current_buttons_down.get_bit(button.get_index());
+}
+
+/**
+ * Similar to is_button_down(), but uses the raw button handle as reported by
+ * the raw- prefixed events, and is not subject to the inactivity timer.
+ *
+ * @since 1.11.0
+ */
+INLINE bool MouseWatcher::
+is_raw_button_down(ButtonHandle button) const {
+  return _current_raw_buttons_down.get_bit(button.get_index());
 }
 
 /**

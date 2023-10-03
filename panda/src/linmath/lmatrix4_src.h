@@ -72,7 +72,9 @@ PUBLISHED:
                                      const FLOATNAME(LVecBase4) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
+#ifdef HAVE_PYTHON
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
+#endif // HAVE_PYTHON
 
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
@@ -105,8 +107,8 @@ PUBLISHED:
   MAKE_SEQ(get_rows, size, get_row);
   MAKE_SEQ(get_cols, size, get_col);
   MAKE_SEQ(get_row3s, size, get_row3);
-  MAKE_SEQ_PROPERTY(rows, size, get_row);
-  MAKE_SEQ_PROPERTY(cols, size, get_col);
+  MAKE_SEQ_PROPERTY(rows, size, get_row, set_row);
+  MAKE_SEQ_PROPERTY(cols, size, get_col, set_col);
 
   // these versions inline better
   INLINE_LINMATH void get_row(FLOATNAME(LVecBase4) &result_vec, int row) const;

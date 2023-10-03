@@ -37,14 +37,15 @@ PStatCollector AsyncTaskChain::_wait_pcollector("Wait");
  *
  */
 AsyncTaskChain::
-AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
+AsyncTaskChain(AsyncTaskManager *manager, const string &name, int num_threads,
+               ThreadPriority thread_priority) :
   Namable(name),
   _manager(manager),
   _cvar(manager->_lock),
   _tick_clock(false),
   _timeslice_priority(false),
-  _num_threads(0),
-  _thread_priority(TP_normal),
+  _num_threads(num_threads),
+  _thread_priority(thread_priority),
   _frame_budget(-1.0),
   _frame_sync(false),
   _num_busy_threads(0),
@@ -286,6 +287,27 @@ start_threads() {
     MutexHolder holder(_manager->_lock);
     do_start_threads();
   }
+}
+
+/**
+ * Adds the indicated task to the active queue.  The task must be inactive, and
+ * may not have been added to any queue (including the current one).
+ */
+void AsyncTaskChain::
+add(AsyncTask *task) {
+  nassertv(task->_manager == nullptr && task->_state == AsyncTask::S_inactive);
+  nassertv(task->is_runnable());
+
+  task->_chain_name = get_name();
+  task->upon_birth(_manager);
+
+  if (task_cat.is_debug()) {
+    task_cat.debug()
+      << "Adding " << *task << "\n";
+  }
+
+  MutexHolder holder(_manager->_lock);
+  do_add(task);
 }
 
 /**

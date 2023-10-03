@@ -908,11 +908,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                             stride, client_pointer);
           }
 
-          if (divisor > 0) {
-            _glgsg->set_vertex_attrib_divisor(p, divisor);
-          }
-
-        } else {
+          _glgsg->set_vertex_attrib_divisor(p, divisor);
+        }
+        else {
           // It's a conventional vertex attribute.  Ugh.
 #ifdef SUPPORT_FIXED_FUNCTION
           switch (p) {

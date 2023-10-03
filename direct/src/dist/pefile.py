@@ -600,6 +600,36 @@ class PEFile(object):
         if self.res_rva.addr and self.res_rva.size:
             self.resources.unpack_from(self.vmem, self.res_rva.addr)
 
+    def _mark_address_modified(self, rva):
+        for section in self.sections:
+            if rva >= section.vaddr and rva - section.vaddr <= section.size:
+                section.modified = True
+
+    def rename_export(self, old_name, new_name):
+        """ Renames a symbol in the export table. """
+
+        assert len(new_name) <= len(old_name)
+
+        new_name = new_name.ljust(len(old_name) + 1, '\0').encode('ascii')
+
+        start = self.exp_rva.addr
+        expdir = expdirtab(*unpack('<IIHHIIIIIII', self.vmem[start:start+40]))
+        if expdir.nnames == 0 or expdir.ordinals == 0 or expdir.names == 0:
+            return False
+
+        nptr = expdir.names
+        for i in range(expdir.nnames):
+            name_rva, = unpack('<I', self.vmem[nptr:nptr+4])
+            if name_rva != 0:
+                name = _unpack_zstring(self.vmem, name_rva)
+                if name == old_name:
+                    self.vmem[name_rva:name_rva+len(new_name)] = new_name
+                    self._mark_address_modified(name_rva)
+                    return True
+            nptr += 4
+
+        return False
+
     def get_export_address(self, symbol_name):
         """ Finds the virtual address for a named export symbol. """
 

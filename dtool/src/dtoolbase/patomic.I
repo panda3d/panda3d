@@ -63,6 +63,7 @@ template<class T>
 ALWAYS_INLINE T patomic<T>::
 operator=(T desired) noexcept {
   _value = desired;
+  return desired;
 }
 
 /**

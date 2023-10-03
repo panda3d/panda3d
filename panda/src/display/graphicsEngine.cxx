@@ -1419,6 +1419,8 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
+        win->copy_async_screenshot();
+
         if (win->is_any_clear_active()) {
           GraphicsStateGuardian *gsg = win->get_gsg();
           PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
@@ -1720,6 +1722,9 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // a current context for PStatGPUTimer to work.
         {
           PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
+
+          win->copy_async_screenshot();
+
           if (win->is_any_clear_active()) {
             PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
             win->get_gsg()->push_group_marker("Clear");

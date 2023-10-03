@@ -144,6 +144,9 @@ public:
 
   INLINE X11_Cursor get_hidden_cursor();
 
+  INLINE const std::string &get_startup_id() const;
+  void send_startup_notification();
+
   INLINE bool supports_relative_mouse() const;
   INLINE bool enable_dga_mouse();
   INLINE void disable_dga_mouse();
@@ -165,20 +168,25 @@ public:
 
 public:
   // Atom specifications.
+  Atom _utf8_string;
   Atom _wm_delete_window;
-  Atom _net_wm_pid;
-  Atom _net_wm_window_type;
-  Atom _net_wm_window_type_splash;
-  Atom _net_wm_window_type_fullscreen;
-  Atom _net_wm_state;
-  Atom _net_wm_state_fullscreen;
-  Atom _net_wm_state_above;
-  Atom _net_wm_state_below;
-  Atom _net_wm_state_add;
-  Atom _net_wm_state_remove;
+  Atom _net_startup_id;
+  Atom _net_startup_info;
+  Atom _net_startup_info_begin;
   Atom _net_wm_bypass_compositor;
-  Atom _net_wm_state_maximized_vert;
+  Atom _net_wm_pid;
+  Atom _net_wm_ping;
+  Atom _net_wm_state;
+  Atom _net_wm_state_above;
+  Atom _net_wm_state_add;
+  Atom _net_wm_state_below;
+  Atom _net_wm_state_fullscreen;
   Atom _net_wm_state_maximized_horz;
+  Atom _net_wm_state_maximized_vert;
+  Atom _net_wm_state_remove;
+  Atom _net_wm_window_type;
+  Atom _net_wm_window_type_fullscreen;
+  Atom _net_wm_window_type_splash;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);
@@ -222,6 +230,9 @@ protected:
   XIM _im;
 
   X11_Cursor _hidden_cursor;
+
+  std::string _startup_id;
+  bool _sent_startup_notification = false;
 
   typedef Bool (*pfn_XF86DGAQueryVersion)(X11_Display *, int*, int*);
   typedef Status (*pfn_XF86DGADirectVideo)(X11_Display *, int, int);

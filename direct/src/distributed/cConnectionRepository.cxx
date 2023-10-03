@@ -35,7 +35,7 @@ using std::string;
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 #ifndef CPPPARSER
-PStatCollector CConnectionRepository::_update_pcollector("App:Show code:readerPollTask:Update");
+PStatCollector CConnectionRepository::_update_pcollector("App:Tasks:readerPollTask:Update");
 #endif  // CPPPARSER
 
 /**
