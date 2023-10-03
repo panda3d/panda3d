@@ -35,6 +35,10 @@
 #include "emscriptenLogStream.h"
 #endif
 
+#ifdef __wasi__
+#include "wasiLogStream.h"
+#endif
+
 using std::cerr;
 using std::cout;
 using std::ostream;
@@ -265,7 +269,7 @@ get_category(const string &fullname) {
  */
 ostream &Notify::
 out(NotifySeverity severity) {
-#if defined(ANDROID) || defined(__EMSCRIPTEN__)
+#if defined(ANDROID) || defined(__EMSCRIPTEN__) || defined(__wasi__)
   // Android and JavaScript have dedicated log systems.
   return *(ptr()->_log_streams[severity]);
 #else
@@ -474,6 +478,20 @@ config_initialized() {
     }
     ptr->_log_streams[i] = new AndroidLogStream(priority);
   }
+
+#elif defined(__wasi__)
+  WasiLogStream *error_stream = new WasiLogStream(0);
+  WasiLogStream *warn_stream = new WasiLogStream(0);
+  WasiLogStream *info_stream = new WasiLogStream(0);
+
+  Notify *ptr = Notify::ptr();
+  ptr->_log_streams[NS_unspecified] = info_stream;
+  ptr->_log_streams[NS_spam] = info_stream;
+  ptr->_log_streams[NS_debug] = info_stream;
+  ptr->_log_streams[NS_info] = info_stream;
+  ptr->_log_streams[NS_warning] = warn_stream;
+  ptr->_log_streams[NS_error] = error_stream;
+  ptr->_log_streams[NS_fatal] = error_stream;
 
 #elif defined(__EMSCRIPTEN__)
   // We have no writable filesystem in JavaScript.  Instead, we set up a

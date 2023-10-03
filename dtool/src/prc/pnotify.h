@@ -25,6 +25,7 @@
 class NotifyCategory;
 class AndroidLogStream;
 class EmscriptenLogStream;
+class WasiLogStream;
 
 /**
  * An object that handles general error reporting to the user.  It contains a
@@ -101,6 +102,8 @@ private:
 
 #if defined(ANDROID)
   AndroidLogStream *_log_streams[NS_fatal + 1];
+#elif defined(__wasi__)
+  WasiLogStream *_log_streams[NS_fatal + 1];
 #elif defined(__EMSCRIPTEN__)
   EmscriptenLogStream *_log_streams[NS_fatal + 1];
 #endif
