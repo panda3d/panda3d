@@ -83,7 +83,7 @@ class DirectNotify:
             level = 'error'
 
         category = self.getCategory(categoryName)
-        assert category is not None
+        assert category is not None, f'failed to find category: {categoryName!r}'
         # Note - this print statement is making it difficult to
         # achieve "no output unless there's an error" operation - Josh
         # print ("Setting DirectNotify category: " + categoryName +
