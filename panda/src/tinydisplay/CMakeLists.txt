@@ -11,6 +11,7 @@ set(P3TINYDISPLAY_HEADERS
   tinyXGraphicsPipe.I tinyXGraphicsPipe.h
   tinyXGraphicsWindow.I tinyXGraphicsWindow.h
   tinyOffscreenGraphicsPipe.I tinyOffscreenGraphicsPipe.h
+  srgb_tables.h
   zbuffer.h
   zfeatures.h
   zgl.h
@@ -51,6 +52,12 @@ set(P3TINYDISPLAY_SOURCES
   tinyXGraphicsPipe.cxx
   tinyXGraphicsWindow.cxx
   vertex.cxx
+  ztriangle_table.cxx
+  ztriangle_1.cxx
+  ztriangle_2.cxx
+  ztriangle_3.cxx
+  ztriangle_4.cxx
+  srgb_tables.cxx
   zbuffer.cxx
   zdither.cxx
   zline.cxx
@@ -59,7 +66,8 @@ set(P3TINYDISPLAY_SOURCES
 
 composite_sources(p3tinydisplay P3TINYDISPLAY_SOURCES)
 add_component_library(p3tinydisplay SYMBOL BUILDING_TINYDISPLAY ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES})
-target_link_libraries(p3tinydisplay panda p3windisplay)
+target_link_libraries(p3tinydisplay panda)
+# p3gsgbase p3gobj  p3glgsg  p3putil p3linmath p3mathutil p3pnmimage  p3display
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3tinydisplay

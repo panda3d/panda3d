@@ -75,17 +75,17 @@ typedef unsigned int ZPOINT;
   ((((unsigned int)(a) << 24) & 0xff000000) | (((unsigned int)(r) << 16) & 0xff0000) | (((unsigned int)(g) << 8) & 0xff00) | (unsigned int)(b))
 
 #define SRGB_TO_PIXEL(r,g,b) \
-  ((encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
+  ((encode_sRGB_table[(unsigned int)(r) >> 4] << 16) | (encode_sRGB_table[(unsigned int)(g) >> 4] << 8) | (encode_sRGB_table[(unsigned int)(b) >> 4]))
 #define SRGBA_TO_PIXEL(r,g,b,a) \
-  ((((unsigned int)(a) << 16) & 0xff000000) | (encode_sRGB[(unsigned int)(r) >> 4] << 16) | (encode_sRGB[(unsigned int)(g) >> 4] << 8) | (encode_sRGB[(unsigned int)(b) >> 4]))
+  ((((unsigned int)(a) << 16) & 0xff000000) | (encode_sRGB_table[(unsigned int)(r) >> 4] << 16) | (encode_sRGB_table[(unsigned int)(g) >> 4] << 8) | (encode_sRGB_table[(unsigned int)(b) >> 4]))
 
 #define PIXEL_R(p) (((unsigned int)(p) & 0xff0000) >> 8)
 #define PIXEL_G(p) ((unsigned int)(p) & 0xff00)
 #define PIXEL_B(p) (((unsigned int)(p) & 0x00ff) << 8)
 #define PIXEL_A(p) (((unsigned int)(p) & 0xff000000) >> 16)
-#define PIXEL_SR(p) (decode_sRGB[((unsigned int)(p) & 0xff0000) >> 16])
-#define PIXEL_SG(p) (decode_sRGB[((unsigned int)(p) & 0xff00) >> 8])
-#define PIXEL_SB(p) (decode_sRGB[((unsigned int)(p) & 0x00ff)])
+#define PIXEL_SR(p) (decode_sRGB_table[((unsigned int)(p) & 0xff0000) >> 16])
+#define PIXEL_SG(p) (decode_sRGB_table[((unsigned int)(p) & 0xff00) >> 8])
+#define PIXEL_SB(p) (decode_sRGB_table[((unsigned int)(p) & 0x00ff)])
 typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5
@@ -252,7 +252,7 @@ int texcoord_mirror_once(int coord, int max_coord);
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(const ZBuffer *zb,void *buf,int linesize);
 void ZB_copyFrameBufferNoAlpha(const ZBuffer *zb,void *buf,int linesize);
-void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, 
+void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin,
                         int dest_xsize, int dest_ysize,
                         const ZBuffer *source, int source_xmin, int source_ymin,
                         int source_xsize, int source_ysize);

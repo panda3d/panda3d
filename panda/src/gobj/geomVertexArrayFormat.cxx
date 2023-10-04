@@ -56,7 +56,7 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
 }
 
 /**
@@ -76,8 +76,8 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
 }
 
 /**
@@ -100,9 +100,9 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
-  add_column(move(name2), num_components2, numeric_type2, contents2);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name2), num_components2, numeric_type2, contents2);
 }
 
 /**
@@ -128,10 +128,10 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(move(name0), num_components0, numeric_type0, contents0);
-  add_column(move(name1), num_components1, numeric_type1, contents1);
-  add_column(move(name2), num_components2, numeric_type2, contents2);
-  add_column(move(name3), num_components3, numeric_type3, contents3);
+  add_column(std::move(name0), num_components0, numeric_type0, contents0);
+  add_column(std::move(name1), num_components1, numeric_type1, contents1);
+  add_column(std::move(name2), num_components2, numeric_type2, contents2);
+  add_column(std::move(name3), num_components3, numeric_type3, contents3);
 }
 
 /**
@@ -223,7 +223,7 @@ add_column(CPT_InternalName name, int num_components,
     start = _total_bytes;
   }
 
-  return add_column(GeomVertexColumn(move(name), num_components, numeric_type, contents,
+  return add_column(GeomVertexColumn(std::move(name), num_components, numeric_type, contents,
                                      start, column_alignment));
 }
 
