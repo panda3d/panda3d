@@ -5,13 +5,14 @@ Dial Class: Velocity style controller for floating point values with
 
 __all__ = ['Dial', 'AngleDial', 'DialWidget']
 
-from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import ClockObject
 import math
 import operator
 import Pmw
+import tkinter as tk
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi
@@ -21,11 +22,13 @@ INNER_SF = 0.2
 DIAL_FULL_SIZE = 45
 DIAL_MINI_SIZE = 30
 
+
 class Dial(Valuator):
     """
     Valuator widget which includes an angle dial and an entry for setting
     floating point values
     """
+
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
@@ -34,7 +37,7 @@ class Dial(Valuator):
             ('delta',             1.0,            self.setDelta),
             ('fSnap',             0,              self.setSnap),
             ('fRollover',         1,              self.setRollover),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         Valuator.__init__(self, parent)
         self.initialiseoptions(Dial)
@@ -56,41 +59,41 @@ class Dial(Valuator):
             self._valuator.grid(rowspan = 2, columnspan = 2,
                                 padx = 2, pady = 2)
             if self._label:
-                self._label.grid(row = 0, column = 2, sticky = EW)
-            self._entry.grid(row = 1, column = 2, sticky = EW)
+                self._label.grid(row = 0, column = 2, sticky = tk.EW)
+            self._entry.grid(row = 1, column = 2, sticky = tk.EW)
             self.interior().columnconfigure(2, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0, column=0, sticky = EW)
-            self._entry.grid(row=0, column=1, sticky = EW)
+                self._label.grid(row=0, column=0, sticky = tk.EW)
+            self._entry.grid(row=0, column=1, sticky = tk.EW)
             self._valuator.grid(row=0, column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
     def addValuatorPropertiesToDialog(self):
         self.addPropertyToDialog(
             'base',
-            { 'widget': self._valuator,
-              'type': 'real',
-              'help': 'Dial value = base + delta * numRevs'})
+            {'widget': self._valuator,
+             'type': 'real',
+             'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'delta',
-            { 'widget': self._valuator,
-              'type': 'real',
-              'help': 'Dial value = base + delta * numRevs'})
+            {'widget': self._valuator,
+             'type': 'real',
+             'help': 'Dial value = base + delta * numRevs'})
         self.addPropertyToDialog(
             'numSegments',
-            { 'widget': self._valuator,
-              'type': 'integer',
-              'help': 'Number of segments to divide dial into.'})
+            {'widget': self._valuator,
+             'type': 'integer',
+             'help': 'Number of segments to divide dial into.'})
 
     def addValuatorMenuEntries(self):
         # The popup menu
-        self._fSnap = IntVar()
+        self._fSnap = tk.IntVar()
         self._fSnap.set(self['fSnap'])
         self._popupMenu.add_checkbutton(label = 'Snap',
                                         variable = self._fSnap,
                                         command = self._setSnap)
-        self._fRollover = IntVar()
+        self._fRollover = tk.IntVar()
         self._fRollover.set(self['fRollover'])
         if self['fAdjustable']:
             self._popupMenu.add_checkbutton(label = 'Rollover',
@@ -136,7 +139,7 @@ class AngleDial(Dial):
             ('delta',             360.0,          None),
             ('fRollover',         0,              None),
             ('dial_numSegments',  12,             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass
         Dial.__init__(self, parent)
@@ -153,7 +156,7 @@ class DialWidget(Pmw.MegaWidget):
             # Appearance
             ('style',           VALUATOR_FULL,      INITOPT),
             ('size',            None,           INITOPT),
-            ('relief',          SUNKEN,         self.setRelief),
+            ('relief',          tk.SUNKEN,      self.setRelief),
             ('borderwidth',     2,              self.setBorderwidth),
             ('background',      'white',        self.setBackground),
             # Number of segments the dial is divided into
@@ -178,7 +181,7 @@ class DialWidget(Pmw.MegaWidget):
             ('postCallback',    None,           None),
             # Extra data to be passed to callback function, needs to be a list
             ('callbackData',    [],             None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the superclass
@@ -210,13 +213,13 @@ class DialWidget(Pmw.MegaWidget):
 
         # The canvas
         self._widget = self.createcomponent('canvas', (), None,
-                                            Canvas, (interior,),
+                                            tk.Canvas, (interior,),
                                             width = size, height = size,
                                             background = self['background'],
                                             highlightthickness = 0,
                                             scrollregion = (-radius, -radius,
                                                             radius, radius))
-        self._widget.pack(expand = 1, fill = BOTH)
+        self._widget.pack(expand = 1, fill = tk.BOTH)
 
         # The dial face (no outline/fill, primarily for binding mouse events)
         self._widget.create_oval(-radius, -radius, radius, radius,
@@ -419,18 +422,3 @@ class DialWidget(Pmw.MegaWidget):
         """ User redefinable callback executed on button release """
         if self['postCallback']:
             self['postCallback'](*self['callbackData'])
-
-
-if __name__ == '__main__':
-    tl = Toplevel()
-    d = Dial(tl)
-    d2 = Dial(tl, dial_numSegments = 12, max = 360,
-              dial_fRollover = 0, value = 180)
-    d3 = Dial(tl, dial_numSegments = 12, max = 90, min = -90,
-              dial_fRollover = 0)
-    d4 = Dial(tl, dial_numSegments = 16, max = 256,
-              dial_fRollover = 0)
-    d.pack(expand = 1, fill = X)
-    d2.pack(expand = 1, fill = X)
-    d3.pack(expand = 1, fill = X)
-    d4.pack(expand = 1, fill = X)

@@ -81,6 +81,14 @@ is_trivial() const {
 }
 
 /**
+ * Returns true if the type can be safely copied by memcpy or memmove.
+ */
+bool CPPArrayType::
+is_trivially_copyable() const {
+  return _element_type->is_trivially_copyable();
+}
+
+/**
  * Returns true if the type is default-constructible.
  */
 bool CPPArrayType::

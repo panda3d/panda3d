@@ -6,10 +6,10 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectScrolledFrame']
 
-from panda3d.core import *
+from panda3d.core import NodePath, PGScrollFrame
 from . import DirectGuiGlobals as DGG
-from .DirectFrame import *
-from .DirectScrollBar import *
+from .DirectFrame import DirectFrame
+from .DirectScrollBar import DirectScrollBar
 
 
 class DirectScrolledFrame(DirectFrame):
@@ -24,6 +24,7 @@ class DirectScrolledFrame(DirectFrame):
     0 and explicitly position and hide or show the scroll bars
     yourself.
     """
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -35,7 +36,7 @@ class DirectScrolledFrame(DirectFrame):
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
             ('scrollBarWidth', 0.08,               self.setScrollBarWidth),
             ('borderWidth',    (0.01, 0.01),       self.setBorderWidth),
-            )
+        )
 
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

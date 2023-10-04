@@ -1074,7 +1074,7 @@ write_data(xel *array, xelval *alpha) {
     break;
   }
 
-  buf = (unsigned char*) malloc( bytesperrow );
+  buf = (unsigned char*) alloca( bytesperrow );
   if ( buf == nullptr ) {
     pnmimage_tiff_cat.error()
       << "Can't allocate memory for row buffer\n";
@@ -1145,6 +1145,9 @@ write_data(xel *array, xelval *alpha) {
             pnmimage_tiff_cat.error()
               << "Internal error: color not found?!?  row=" << row
               << " col=" << col << "\n";
+            if (cht != nullptr) {
+              ppm_freecolorhash(cht);
+            }
             return 0;
           }
           *tP++ = (unsigned char) s;
@@ -1187,6 +1190,10 @@ write_data(xel *array, xelval *alpha) {
   }
   TIFFFlushData( tif );
   TIFFClose( tif );
+
+  if (cht != nullptr) {
+    ppm_freecolorhash(cht);
+  }
 
   return _y_size;
 }

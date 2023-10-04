@@ -310,6 +310,7 @@ pop_struct() {
 %token KW_IS_POLYMORPHIC
 %token KW_IS_STANDARD_LAYOUT
 %token KW_IS_TRIVIAL
+%token KW_IS_TRIVIALLY_COPYABLE
 %token KW_IS_UNION
 %token KW_LONG
 %token KW_MAKE_MAP_KEYS_SEQ
@@ -2970,8 +2971,17 @@ base_specification:
         ;
 
 enum:
-        enum_decl '{' enum_body '}'
+        enum_decl
 {
+  if (current_enum->_scope != nullptr) {
+    push_scope(current_enum->_scope);
+  }
+}
+        '{' enum_body '}'
+{
+  if (current_enum->_scope != nullptr) {
+    pop_scope();
+  }
   $$ = current_enum;
   current_enum = nullptr;
 }
@@ -3939,6 +3949,10 @@ const_operand:
         | KW_IS_TRIVIAL '(' full_type ')'
 {
   $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_TRIVIAL, $3));
+}
+        | KW_IS_TRIVIALLY_COPYABLE '(' full_type ')'
+{
+  $$ = new CPPExpression(CPPExpression::type_trait(KW_IS_TRIVIALLY_COPYABLE, $3));
 }
         | KW_IS_UNION '(' full_type ')'
 {

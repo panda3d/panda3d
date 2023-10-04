@@ -33,8 +33,8 @@ public:
   OdeBallJoint(dJointID id);
 
 PUBLISHED:
-  OdeBallJoint(OdeWorld &world);
-  OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeBallJoint(OdeWorld &world);
+  explicit OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeBallJoint();
 
   INLINE void set_anchor(dReal x, dReal y, dReal z);

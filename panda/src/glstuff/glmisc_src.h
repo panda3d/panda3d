@@ -24,16 +24,8 @@
 
 #ifndef STDFLOAT_DOUBLE
 #define GLf(name) name ## f
-#define GLfv(name) name ## fv
-#define GLfc(name) name ## fc
-#define GLfr(name) name ## fr
-#define GLf_str "f"
 #else  // STDFLOAT_DOUBLE
 #define GLf(name) name ## d
-#define GLfv(name) name ## dv
-#define GLfc(name) name ## dc
-#define GLfr(name) name ## dr
-#define GLf_str "d"
 #endif  // STDFLOAT_DOUBLE
 
 #endif  // GLf
@@ -74,7 +66,6 @@ extern ConfigVariableBool gl_cube_map_seamless;
 extern ConfigVariableBool gl_dump_compiled_shaders;
 extern ConfigVariableBool gl_validate_shaders;
 extern ConfigVariableBool gl_immutable_texture_storage;
-extern ConfigVariableBool gl_use_bindless_texture;
 extern ConfigVariableBool gl_enable_memory_barriers;
 extern ConfigVariableBool gl_vertex_array_objects;
 extern ConfigVariableBool gl_fixed_vertex_attrib_locations;

@@ -1,8 +1,6 @@
 """
    This is the GUI for the Animation Control Panel
 """
-from direct.interval.IntervalGlobal import *
-from direct.actor.Actor import *
 from . import ObjectGlobals as OG
 
 import os
@@ -244,7 +242,7 @@ class TimeSlider(wx.Window):
 
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
         self.unitWidth = self.w/float(self.frameNum)
 
@@ -386,7 +384,7 @@ class TimeSlider(wx.Window):
     def DrawNumber(self, dc):
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        dc.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
         i = self.curFrame-self.sliderStartFrame
         st = str(self.curFrame)

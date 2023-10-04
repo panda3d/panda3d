@@ -364,7 +364,7 @@ rebuild_bitplanes() {
 // color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext9,
-            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
+            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
 
     if (color_ctx) {
       if (!color_ctx->create_texture(*_dxgsg->_screen)) {
@@ -373,7 +373,7 @@ rebuild_bitplanes() {
         return false;
       }
       if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
-        color_d3d_tex = color_ctx->_d3d_2d_texture;
+        color_d3d_tex = color_ctx->get_d3d_2d_texture(0);
         nassertr(color_d3d_tex != 0, false);
         hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
         if (!SUCCEEDED(hr)) {
@@ -381,7 +381,7 @@ rebuild_bitplanes() {
         }
       }
       if (color_tex->get_texture_type() == Texture::TT_cube_map) {
-        color_cube = color_ctx->_d3d_cube_texture;
+        color_cube = color_ctx->get_d3d_cube_texture(0);
         nassertr(color_cube != 0, false);
 
         if (_cube_map_index >= 0 && _cube_map_index < 6) {
@@ -443,7 +443,7 @@ rebuild_bitplanes() {
     depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext9,
-            depth_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
+            depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
     if (depth_ctx) {
       if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
         dxgsg9_cat.error()
@@ -451,7 +451,7 @@ rebuild_bitplanes() {
         return false;
       }
       if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
-        depth_d3d_tex = depth_ctx->_d3d_2d_texture;
+        depth_d3d_tex = depth_ctx->get_d3d_2d_texture(0);
         nassertr(depth_d3d_tex != 0, false);
         hr = depth_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
         if (!SUCCEEDED(hr)) {
@@ -459,7 +459,7 @@ rebuild_bitplanes() {
         }
       }
       if (depth_tex->get_texture_type() == Texture::TT_cube_map) {
-        depth_cube = depth_ctx->_d3d_cube_texture;
+        depth_cube = depth_ctx->get_d3d_cube_texture(0);
         nassertr(depth_cube != 0, false);
         hr = depth_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &depth_surf);
         if (!SUCCEEDED(hr)) {
@@ -518,7 +518,7 @@ rebuild_bitplanes() {
           IDirect3DSurface9 *color_surf = 0;
           IDirect3DCubeTexture9 *color_cube = 0;
 
-          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
           if (color_ctx) {
             if (!color_ctx->create_texture(*_dxgsg->_screen)) {
               dxgsg9_cat.error()
@@ -526,7 +526,7 @@ rebuild_bitplanes() {
               return false;
             }
             if (tex->get_texture_type() == Texture::TT_2d_texture) {
-              color_d3d_tex = color_ctx->_d3d_2d_texture;
+              color_d3d_tex = color_ctx->get_d3d_2d_texture(0);
               nassertr(color_d3d_tex != 0, false);
 
               hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
@@ -613,8 +613,8 @@ select_target_tex_page(int page) {
   if (color_tex) {
     color_ctx =
       DCAST(DXTextureContext9,
-            color_tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
-    color_cube = color_ctx->_d3d_cube_texture;
+            color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+    color_cube = color_ctx->get_d3d_cube_texture(0);
     if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
       hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
       if (!SUCCEEDED(hr)) {
@@ -657,7 +657,7 @@ select_target_tex_page(int page) {
           IDirect3DSurface9 *color_surf = 0;
           IDirect3DCubeTexture9 *color_cube = 0;
 
-          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg));
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
           if (color_ctx) {
             if (tex->get_texture_type() == Texture::TT_cube_map) {
 
@@ -665,7 +665,7 @@ select_target_tex_page(int page) {
                 printf ("CUBEMAP i = %d, RenderTexturePlane = %d, _cube_map_index %d \n", i, plane, _cube_map_index);
               }
 
-              color_cube = color_ctx->_d3d_cube_texture;
+              color_cube = color_ctx->get_d3d_cube_texture(0);
               if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
                 hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
                 if (!SUCCEEDED(hr)) {

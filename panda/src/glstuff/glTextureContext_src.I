@@ -16,26 +16,46 @@
  */
 INLINE CLP(TextureContext)::
 CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
-  PreparedGraphicsObjects *pgo, Texture *tex, int view) :
-  TextureContext(pgo, tex, view)
+  PreparedGraphicsObjects *pgo, Texture *tex) :
+  TextureContext(pgo, tex),
+  _num_views(0)
 {
   _glgsg = glgsg;
 
-  glGenTextures(1, &_index);
-  _buffer = 0;
+  _index = 0;
+  _indices = &_index;
 
-#ifndef OPENGLES
-  _handle = 0;
-  _handle_resident = false;
-#endif
+  _buffer = 0;
+  _buffers = nullptr;
+
   _has_storage = false;
-  _simple_loaded = false;
   _immutable = false;
-  _uses_mipmaps = false;
+  _may_reload_with_mipmaps = false;
   _generate_mipmaps = false;
   _internal_format = 0;
   _width = 0;
   _height = 0;
   _depth = 0;
+  _num_levels = 0;
   _target = GL_NONE;
+}
+
+/**
+ * Returns the index for the given view of the texture.
+ */
+INLINE GLuint CLP(TextureContext)::
+get_view_index(int view) const {
+  return _indices[std::min(std::max(view, 0), _num_views - 1)];
+}
+
+/**
+ * Returns the buffer index for the given view of the texture.
+ */
+INLINE GLuint CLP(TextureContext)::
+get_view_buffer(int view) const {
+  if (_buffers != nullptr) {
+    return _buffers[std::min(std::max(view, 0), _num_views - 1)];
+  } else {
+    return 0;
+  }
 }

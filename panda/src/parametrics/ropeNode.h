@@ -15,6 +15,7 @@
 #define ROPENODE_H
 
 #include "pandabase.h"
+#include "memoryBase.h"
 #include "nurbsCurveEvaluator.h"
 #include "pandaNode.h"
 #include "pStatCollector.h"
@@ -173,7 +174,7 @@ private:
   void render_tube(CullTraverser *trav, CullTraverserData &data,
                    NurbsCurveResult *result) const;
 
-  class CurveVertex {
+  class CurveVertex : public MemoryBase {
   public:
     LPoint3 _p;
     UnalignedLVecBase4 _c;

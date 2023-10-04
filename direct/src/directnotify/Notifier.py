@@ -9,6 +9,10 @@ import time
 import sys
 
 
+class NotifierException(Exception):
+    pass
+
+
 class Notifier:
     serverDelta = 0
 
@@ -116,16 +120,16 @@ class Notifier:
             return NSError
 
     # error funcs
-    def error(self, errorString, exception=Exception):
+    def error(self, errorString, exception=NotifierException):
         """
         Raise an exception with given string and optional type:
         Exception: error
         """
         message = str(errorString)
-        if Notifier.showTime.getValue():
-            string = (self.getTime() + str(exception) + ": " + self.__name + "(error): " + message)
+        if Notifier.showTime:
+            string = f'{self.getTime()}{exception!s}: {self.__name}(error): {message}'
         else:
-            string = (str(exception) + ": " + self.__name + "(error): " + message)
+            string = f'{exception!s}: {self.__name}(error): {message}'
         self.__log(string)
         raise exception(errorString)
 
@@ -136,10 +140,10 @@ class Notifier:
         """
         if self.__warning:
             message = str(warningString)
-            if Notifier.showTime.getValue():
-                string = (self.getTime() + self.__name + '(warning): ' + message)
+            if Notifier.showTime:
+                string = f'{self.getTime()}{self.__name}(warning): {message}'
             else:
-                string = (":" + self.__name + '(warning): ' + message)
+                string = f':{self.__name}(warning): {message}'
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.warning("blah")
@@ -163,10 +167,10 @@ class Notifier:
         """
         if self.__debug:
             message = str(debugString)
-            if Notifier.showTime.getValue():
-                string = (self.getTime() + self.__name + '(debug): ' + message)
+            if Notifier.showTime:
+                string = f'{self.getTime()}{self.__name}(debug): {message}'
             else:
-                string = (':' + self.__name + '(debug): ' + message)
+                string = f':{self.__name}(debug): {message}'
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.debug("blah")
@@ -190,10 +194,10 @@ class Notifier:
         """
         if self.__info:
             message = str(infoString)
-            if Notifier.showTime.getValue():
-                string = (self.getTime() + self.__name + ': ' + message)
+            if Notifier.showTime:
+                string = f'{self.getTime()}{self.__name}: {message}'
             else:
-                string = (':' + self.__name + ': ' + message)
+                string = f':{self.__name}: {message}'
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.info("blah")
@@ -267,7 +271,7 @@ class Notifier:
                         state = "%s, %s"%(state, stateObj.getName())
 
                 if hasattr(obj, 'doId'):
-                    doId = " doId:%s"%(obj.doId,)
+                    doId = f" doId:{obj.doId}"
             #if type(obj) == types.ClassType:
             #    name = "%s."%(obj.__class__.__name__,)
             string = ":%s:%s [%-7s] id(%s)%s %s"%(

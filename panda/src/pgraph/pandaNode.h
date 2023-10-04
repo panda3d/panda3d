@@ -46,6 +46,7 @@
 #include "extension.h"
 #include "simpleHashMap.h"
 #include "geometricBoundingVolume.h"
+#include "small_vector.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -106,10 +107,8 @@ PUBLISHED:
   virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
-#ifdef HAVE_PYTHON
   EXTENSION(PT(PandaNode) __copy__() const);
-  EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
 
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
@@ -206,19 +205,17 @@ PUBLISHED:
   MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
   MAKE_MAP_KEYS_SEQ(tags, get_num_tags, get_tag_key);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *get_tag_keys() const);
+  PY_EXTENSION(PyObject *get_tag_keys() const);
 
-  EXTENSION(PyObject *get_python_tags());
-  EXTENSION(void set_python_tag(PyObject *key, PyObject *value));
-  EXTENSION(PyObject *get_python_tag(PyObject *key) const);
-  EXTENSION(bool has_python_tag(PyObject *key) const);
-  EXTENSION(void clear_python_tag(PyObject *key));
-  EXTENSION(PyObject *get_python_tag_keys() const);
-  MAKE_PROPERTY(python_tags, get_python_tags);
+  PY_EXTENSION(PyObject *get_python_tags());
+  PY_EXTENSION(void set_python_tag(PyObject *key, PyObject *value));
+  PY_EXTENSION(PyObject *get_python_tag(PyObject *key) const);
+  PY_EXTENSION(bool has_python_tag(PyObject *key) const);
+  PY_EXTENSION(void clear_python_tag(PyObject *key));
+  PY_EXTENSION(PyObject *get_python_tag_keys() const);
+  PY_MAKE_PROPERTY(python_tags, get_python_tags);
 
-  EXTENSION(int __traverse__(visitproc visit, void *arg));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
@@ -524,7 +521,7 @@ private:
     // children do not circularly reference each other.
     PandaNode *_parent;
   };
-  typedef ov_set<UpConnection> UpList;
+  typedef ov_set<UpConnection, std::less<UpConnection>, small_vector<UpConnection> > UpList;
   typedef CopyOnWriteObj1< UpList, TypeHandle > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This

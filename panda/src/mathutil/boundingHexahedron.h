@@ -34,12 +34,12 @@ public:
   INLINE_MATHUTIL BoundingHexahedron();
 
 PUBLISHED:
-  BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
-                     CoordinateSystem cs = CS_default);
-  BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
-                     const LPoint3 &fur, const LPoint3 &ful,
-                     const LPoint3 &nll, const LPoint3 &nlr,
-                     const LPoint3 &nur, const LPoint3 &nul);
+  explicit BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
+                              CoordinateSystem cs = CS_default);
+  explicit BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
+                              const LPoint3 &fur, const LPoint3 &ful,
+                              const LPoint3 &nll, const LPoint3 &nlr,
+                              const LPoint3 &nur, const LPoint3 &nul);
 
 public:
   ALLOC_DELETED_CHAIN(BoundingHexahedron);
@@ -49,7 +49,7 @@ public:
   virtual LPoint3 get_max() const;
 
   virtual LPoint3 get_approx_center() const;
-  virtual void xform(const LMatrix4 &mat);
+  virtual void xform(const LMatrix4 &mat) final;
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent_level = 0) const;

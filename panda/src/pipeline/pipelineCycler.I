@@ -198,8 +198,8 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(CycleDataType &&initial_data, Pipeline *pipeline) :
-  _typed_data(std::move(initial_data)),
-  PipelineCyclerBase(&_typed_data, pipeline)
+  PipelineCyclerBase(&_typed_data, pipeline),
+  _typed_data(std::move(initial_data))
 {
 }
 

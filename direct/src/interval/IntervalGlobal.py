@@ -15,8 +15,8 @@ from .IndirectInterval import *
 from .MopathInterval import *
 try:
     import panda3d.physics
-    ##Some people may have the particle system compiled out
-    if hasattr( panda3d.physics, 'ParticleSystem' ):
+    # Some people may have the particle system compiled out
+    if hasattr(panda3d.physics, 'ParticleSystem'):
         from .ParticleInterval import *
         if __debug__:
             from .TestInterval import *

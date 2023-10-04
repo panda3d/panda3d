@@ -27,7 +27,7 @@
  * geometry at this level and below.  A LightAttrib can either add lights or
  * remove lights from the total set of "on" lights.
  */
-class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH LightAttrib final : public RenderAttrib {
 protected:
   INLINE LightAttrib();
   LightAttrib(const LightAttrib &copy);

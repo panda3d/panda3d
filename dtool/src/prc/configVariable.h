@@ -44,9 +44,7 @@ PUBLISHED:
 
   INLINE size_t get_num_words() const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 protected:
   INLINE const ConfigDeclaration *get_default_value() const;

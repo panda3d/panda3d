@@ -20,3 +20,10 @@ class CachedDOData:
         # override and destroy the cached data
         # cached data is typically created by the DistributedObject and destroyed here
         pass
+
+    # These next two methods tell mypy to allow arbitrary attributes.
+    def __getattribute__(self, name: str):
+        return object.__getattribute__(self, name)
+
+    def __setattr__(self, name: str, value) -> None:
+        object.__setattr__(self, name, value)

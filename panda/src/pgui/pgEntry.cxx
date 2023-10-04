@@ -698,10 +698,8 @@ get_text_def(int state) const {
     // If we don't have a definition, use the global one.
     return get_text_node();
   }
-  if (_text_defs[state] == nullptr) {
-    return get_text_node();
-  }
-  return _text_defs[state];
+  TextNode *text_def = _text_defs[state];
+  return text_def ? text_def : get_text_node();
 }
 
 /**
@@ -750,8 +748,8 @@ is_wtext() const {
  */
 void PGEntry::
 slot_text_def(int state) {
-  while (state >= (int)_text_defs.size()) {
-    _text_defs.push_back(nullptr);
+  if (state >= (int)_text_defs.size()) {
+    _text_defs.resize(state + 1, nullptr);
   }
 }
 

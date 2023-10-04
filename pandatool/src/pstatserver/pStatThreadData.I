@@ -18,3 +18,11 @@ INLINE const PStatClientData *PStatThreadData::
 get_client_data() const {
   return _client_data;
 }
+
+/**
+ * Returns true if the structure contains no frames, false otherwise.
+ */
+INLINE bool PStatThreadData::
+is_empty() const {
+  return _frames.empty();
+}

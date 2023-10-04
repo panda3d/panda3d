@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
-  Spotlight(const std::string &name);
+  explicit Spotlight(const std::string &name);
 
 protected:
   Spotlight(const Spotlight &copy);

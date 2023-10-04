@@ -32,8 +32,8 @@ public:
   OdePlane2dJoint(dJointID id);
 
 PUBLISHED:
-  OdePlane2dJoint(OdeWorld &world);
-  OdePlane2dJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdePlane2dJoint(OdeWorld &world);
+  explicit OdePlane2dJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdePlane2dJoint();
 
   INLINE void set_x_param(int parameter, dReal value);

@@ -8,12 +8,11 @@ __all__ = [
     'open', 'listdir', 'walk', 'join',
     'isfile', 'isdir', 'exists', 'lexists', 'getmtime', 'getsize',
     'execfile',
-    ]
+]
 
 from panda3d import core
 import os
 import io
-import encodings
 from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
@@ -294,6 +293,7 @@ def listdir(path):
         files.append(file.getFilename().getBasename())
     return files
 
+
 def walk(top, topdown = True, onerror = None, followlinks = True):
     """ Implements os.walk over vfs.
 
@@ -322,17 +322,22 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
     if not topdown:
         yield (top, dirnames, filenames)
 
+
 def isfile(path):
     return _vfs.isRegularFile(core.Filename.fromOsSpecific(path))
+
 
 def isdir(path):
     return _vfs.isDirectory(core.Filename.fromOsSpecific(path))
 
+
 def exists(path):
     return _vfs.exists(core.Filename.fromOsSpecific(path))
 
+
 def lexists(path):
     return _vfs.exists(core.Filename.fromOsSpecific(path))
+
 
 def getmtime(path):
     file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)
@@ -340,11 +345,13 @@ def getmtime(path):
         raise os.error
     return file.getTimestamp()
 
+
 def getsize(path):
     file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)
     if not file:
         raise os.error
     return file.getFileSize()
+
 
 def execfile(path, globals=None, locals=None):
     file = _vfs.getFile(core.Filename.fromOsSpecific(path), True)

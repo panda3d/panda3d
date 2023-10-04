@@ -50,43 +50,43 @@ static const struct DeviceMapping {
 } mapping_presets[] = {
   // SNES-style USB gamepad, or cheap unbranded USB gamepad with no sticks
   // ABXY are mapped based on their position, not based on their label.
-  {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
+  {0x0810, 0xe501, InputDevice::DeviceClass::GAMEPAD, QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start"}
   },
   // Unbranded generic cheap USB gamepad
-  {0x0810, 0x0001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers | QB_right_axes_swapped,
+  {0x0810, 0x0001, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z | QB_no_analog_triggers | QB_right_axes_swapped,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
   // Trust GXT 24 / SPEED Link SL-6535-SBK-01
-  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
+  {0x0079, 0x0006, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z | QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
   // T.Flight Hotas X
-  {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle,
+  {0x044f, 0xb108, InputDevice::DeviceClass::FLIGHT_STICK, QB_centered_throttle | QB_reversed_throttle,
     {0}
   },
   // NVIDIA Shield Controller
-  {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
+  {0x0955, 0x7214, InputDevice::DeviceClass::GAMEPAD, 0,
     {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
   },
   // Dualshock (PS4)
-  {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+  {0x054c, 0x05c4, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z,
     {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 Slim)
-  {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+  {0x054c, 0x09cc, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z,
     {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 wireless adapter)
-  {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+  {0x054c, 0x0ba0, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z,
     {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   // PS2 controller connected through a USB adapter
-  {0x2563, 0x0523, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
+  {0x2563, 0x0523, InputDevice::DeviceClass::GAMEPAD, QB_rstick_from_z | QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
   // FrSky Simulator
-  {0x0483, 0x5720, InputDevice::DeviceClass::flight_stick, 0,
+  {0x0483, 0x5720, InputDevice::DeviceClass::FLIGHT_STICK, 0,
     {0}
   },
   {0},
@@ -183,11 +183,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   switch (info.dwType) {
   case RIM_TYPEMOUSE:
-    _device_class = DeviceClass::mouse;
+    _device_class = DeviceClass::MOUSE;
     break;
 
   case RIM_TYPEKEYBOARD:
-    _device_class = DeviceClass::keyboard;
+    _device_class = DeviceClass::KEYBOARD;
     break;
 
   case RIM_TYPEHID:
@@ -197,32 +197,32 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     // Gamepads
     if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
         info.hid.usUsage == HID_USAGE_GENERIC_GAMEPAD) {
-      _device_class = DeviceClass::gamepad;
+      _device_class = DeviceClass::GAMEPAD;
 
     // Various game controllers, incl. flight sticks and some gamepads
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_JOYSTICK) {
-      _device_class = DeviceClass::flight_stick;
+      _device_class = DeviceClass::FLIGHT_STICK;
 
       if (_name == "usb gamepad") {
         // Well, it claims to be a gamepad...
-        _device_class = DeviceClass::gamepad;
+        _device_class = DeviceClass::GAMEPAD;
       }
 
     // Mice
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_MOUSE) {
-      _device_class = DeviceClass::mouse;
+      _device_class = DeviceClass::MOUSE;
 
     // Keyboards
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_KEYBOARD) {
-      _device_class = DeviceClass::keyboard;
+      _device_class = DeviceClass::KEYBOARD;
 
     // Digitizers
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_DIGITIZER &&
                info.hid.usUsage == 1) {
-      _device_class = DeviceClass::digitizer;
+      _device_class = DeviceClass::DIGITIZER;
 
     // 3Dconnexion SpaceNavigator and friends.
     } else if (_vendor_id == 0x046d &&
@@ -233,7 +233,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
          _product_id == 0xc628 ||
          _product_id == 0xc629 ||
          _product_id == 0xc62b)) {
-      _device_class = DeviceClass::spatial_mouse;
+      _device_class = DeviceClass::SPATIAL_MOUSE;
     }
     break;
 
@@ -241,8 +241,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     return false;
   }
 
-  if (_device_class == DeviceClass::gamepad ||
-      _device_class == DeviceClass::flight_stick) {
+  if (_device_class == DeviceClass::GAMEPAD ||
+      _device_class == DeviceClass::FLIGHT_STICK) {
     // Do we have a built-in mapping?
     const DeviceMapping *mapping = mapping_presets;
     while (mapping->vendor != 0) {
@@ -354,17 +354,17 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       ButtonHandle handle = ButtonHandle::none();
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_BUTTON:
-        if (_device_class == DeviceClass::gamepad) {
+        if (_device_class == DeviceClass::GAMEPAD) {
           if (usage > 0 && usage - 1 < _countof(default_gamepad_mapping)) {
             if (gamepad_buttons[usage - 1] != nullptr) {
               handle = registry->find_button(gamepad_buttons[usage - 1]);
             }
           }
-        } else if (_device_class == DeviceClass::flight_stick) {
+        } else if (_device_class == DeviceClass::FLIGHT_STICK) {
           if (usage > 0) {
             handle = GamepadButton::joystick(usage - 1);
           }
-        } else if (_device_class == DeviceClass::mouse) {
+        } else if (_device_class == DeviceClass::MOUSE) {
           // In Panda, wheel and right button are flipped around...
           int button = (usage == 2 || usage == 3) ? (4 - usage) : (usage - 1);
           handle = MouseButton::button(button);
@@ -434,44 +434,44 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         is_signed = false;
       }
 
-      Axis axis = Axis::none;
+      Axis axis = Axis::NONE;
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_GENERIC:
         switch (usage) {
           case HID_USAGE_GENERIC_X:
-          if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_x;
-          } else if (_device_class == DeviceClass::flight_stick) {
-            axis = Axis::roll;
+          if (_device_class == DeviceClass::GAMEPAD) {
+            axis = Axis::LEFT_X;
+          } else if (_device_class == DeviceClass::FLIGHT_STICK) {
+            axis = Axis::ROLL;
           } else {
-            axis = Axis::x;
+            axis = Axis::X;
           }
           break;
         case HID_USAGE_GENERIC_Y:
-          if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_y;
+          if (_device_class == DeviceClass::GAMEPAD) {
+            axis = Axis::LEFT_Y;
             swap(cap.LogicalMin, cap.LogicalMax);
-          } else if (_device_class == DeviceClass::flight_stick) {
-            axis = Axis::pitch;
+          } else if (_device_class == DeviceClass::FLIGHT_STICK) {
+            axis = Axis::PITCH;
           } else {
-            axis = Axis::y;
+            axis = Axis::Y;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_Z:
-          if (_device_class == DeviceClass::gamepad) {
+          if (_device_class == DeviceClass::GAMEPAD) {
             if (quirks & QB_rstick_from_z) {
               if (quirks & QB_right_axes_swapped) {
-                axis = InputDevice::Axis::right_y;
+                axis = InputDevice::Axis::RIGHT_Y;
                 swap(cap.LogicalMin, cap.LogicalMax);
               } else {
-                axis = InputDevice::Axis::right_x;
+                axis = InputDevice::Axis::RIGHT_X;
               }
             } else if ((quirks & QB_no_analog_triggers) == 0) {
-              axis = Axis::left_trigger;
+              axis = Axis::LEFT_TRIGGER;
             }
-          } else if (_device_class == DeviceClass::flight_stick) {
-            axis = Axis::throttle;
+          } else if (_device_class == DeviceClass::FLIGHT_STICK) {
+            axis = Axis::THROTTLE;
             if ((quirks & QB_reversed_throttle) != 0) {
               std::swap(cap.LogicalMin, cap.LogicalMax);
             }
@@ -479,63 +479,63 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               is_signed = false;
             }
           } else {
-            axis = Axis::z;
+            axis = Axis::Z;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_RX:
-          if (_device_class == DeviceClass::gamepad) {
+          if (_device_class == DeviceClass::GAMEPAD) {
             if (quirks & QB_rstick_from_z) {
               if ((quirks & QB_no_analog_triggers) == 0) {
-                axis = Axis::left_trigger;
+                axis = Axis::LEFT_TRIGGER;
               }
             } else {
-              axis = Axis::right_x;
+              axis = Axis::RIGHT_X;
             }
           } else {
-            axis = Axis::pitch;
+            axis = Axis::PITCH;
           }
           break;
         case HID_USAGE_GENERIC_RY:
-          if (_device_class == DeviceClass::gamepad) {
+          if (_device_class == DeviceClass::GAMEPAD) {
             if (quirks & QB_rstick_from_z) {
               if ((quirks & QB_no_analog_triggers) == 0) {
-                axis = Axis::right_trigger;
+                axis = Axis::RIGHT_TRIGGER;
               }
             } else {
-              axis = Axis::right_y;
+              axis = Axis::RIGHT_Y;
               swap(cap.LogicalMin, cap.LogicalMax);
             }
           } else {
-            axis = Axis::roll;
+            axis = Axis::ROLL;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_RZ:
-          if (_device_class == DeviceClass::gamepad) {
+          if (_device_class == DeviceClass::GAMEPAD) {
             if (quirks & QB_rstick_from_z) {
               if (quirks & QB_right_axes_swapped) {
-                axis = InputDevice::Axis::right_x;
+                axis = InputDevice::Axis::RIGHT_X;
               } else {
-                axis = InputDevice::Axis::right_y;
+                axis = InputDevice::Axis::RIGHT_Y;
                 swap(cap.LogicalMin, cap.LogicalMax);
               }
             } else if ((quirks & QB_no_analog_triggers) == 0) {
-              axis = Axis::right_trigger;
+              axis = Axis::RIGHT_TRIGGER;
             }
           } else {
             // Flip to match Panda's convention for heading.
-            axis = Axis::yaw;
+            axis = Axis::YAW;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_SLIDER:
           // Flip to match Panda's convention for heading.
-          axis = Axis::rudder;
+          axis = Axis::RUDDER;
           swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_WHEEL:
-          axis = Axis::wheel;
+          axis = Axis::WHEEL;
           break;
         case HID_USAGE_GENERIC_HATSWITCH:
           // This is handled specially.
@@ -548,7 +548,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       case HID_USAGE_PAGE_DIGITIZER:
         switch (usage) {
         case 0x30:
-          axis = Axis::pressure;
+          axis = Axis::PRESSURE;
           break;
         }
         break;
@@ -559,7 +559,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       // have a weird extra Z axis with DataIndex 2 that should be ignored.
       for (size_t i = 0; i < _axes.size(); ++i) {
         if (_axes[i].axis == axis) {
-          axis = Axis::none;
+          axis = Axis::NONE;
           break;
         }
       }
@@ -589,7 +589,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   // Do we need to emulate a hat switch or directional pad?
   if (_hat_data_index != -1) {
     _hat_left_button = (int)_buttons.size();
-    if (_device_class == DeviceClass::gamepad) {
+    if (_device_class == DeviceClass::GAMEPAD) {
       _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
       _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
       _buttons.push_back(ButtonState(GamepadButton::dpad_down()));

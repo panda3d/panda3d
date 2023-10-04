@@ -2,10 +2,10 @@
 
 __all__ = ['TaskManagerPanel', 'TaskManagerWidget']
 
-from direct.tkwidgets.AppShell import *
+from direct.tkwidgets.AppShell import AppShell
 from direct.showbase.DirectObject import DirectObject
 import Pmw
-from tkinter import *
+import tkinter as tk
 from tkinter.messagebox import askokcancel
 
 
@@ -21,7 +21,7 @@ class TaskManagerPanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         self.taskMgr = taskMgr
@@ -38,9 +38,9 @@ class TaskManagerPanel(AppShell):
         self.taskMgrWidget = TaskManagerWidget(
             self.interior(), self.taskMgr)
 
-
     def onDestroy(self, event):
         self.taskMgrWidget.onDestroy()
+
 
 class TaskManagerWidget(DirectObject):
     """
@@ -53,8 +53,6 @@ class TaskManagerWidget(DirectObject):
         TaskManagerWidget class pops up a control panel to view/delete
         tasks managed by the taskManager.
         """
-        # Make sure TK mainloop is running
-        from direct.showbase import TkGlobal
         # Record parent (used by ok cancel dialog boxes)
         self.parent = parent
         # Record taskManager
@@ -67,15 +65,15 @@ class TaskManagerWidget(DirectObject):
         # Create a listbox
         self.taskListBox = Pmw.ScrolledListBox(
             parent,
-            labelpos = NW, label_text = 'Tasks:',
+            labelpos = tk.NW, label_text = 'Tasks:',
             label_font=('MSSansSerif', 10, 'bold'),
             listbox_takefocus = 1,
             items = [],
             selectioncommand = self.setCurrentTask)
-        self.taskListBox.pack(expand = 1, fill = BOTH)
+        self.taskListBox.pack(expand = 1, fill = tk.BOTH)
 
-        self._popupMenu = Menu(self.taskListBox.component('listbox'),
-                               tearoff = 0)
+        self._popupMenu = tk.Menu(self.taskListBox.component('listbox'),
+                                  tearoff = 0)
         self._popupMenu.add_command(
             label = 'Remove Task',
             command = self.removeCurrentTask)
@@ -84,34 +82,34 @@ class TaskManagerWidget(DirectObject):
             command = self.removeMatchingTasks)
 
         # Controls Frame
-        controlsFrame = Frame(parent)
-        self.removeButton = Button(controlsFrame, text = 'Remove Task',
-                                   command = self.removeCurrentTask)
-        #self.removeButton.pack(expand = 1, fill = X, side = LEFT)
-        self.removeButton.grid(row = 0, column = 0, sticky = EW)
-        self.removeMatchingButton = Button(controlsFrame,
-                                           text = 'Remove Matching Tasks',
-                                           command = self.removeMatchingTasks)
-        #self.removeMatchingButton.pack(expand = 1, fill = X, side = LEFT)
-        self.removeMatchingButton.grid(row = 0, column = 1, sticky = EW)
+        controlsFrame = tk.Frame(parent)
+        self.removeButton = tk.Button(controlsFrame, text = 'Remove Task',
+                                      command = self.removeCurrentTask)
+        #self.removeButton.pack(expand = 1, fill = tk.X, side = LEFT)
+        self.removeButton.grid(row = 0, column = 0, sticky = tk.EW)
+        self.removeMatchingButton = tk.Button(controlsFrame,
+                                              text = 'Remove Matching Tasks',
+                                              command = self.removeMatchingTasks)
+        #self.removeMatchingButton.pack(expand = 1, fill = tk.X, side = LEFT)
+        self.removeMatchingButton.grid(row = 0, column = 1, sticky = tk.EW)
 
-        self.taskMgrVerbose = IntVar()
+        self.taskMgrVerbose = tk.IntVar()
         self.taskMgrVerbose.set(0)
-        self.update = Button(
+        self.update = tk.Button(
             controlsFrame,
             text = 'Update',
             command = self.updateTaskListBox)
-        #self.update.pack(expand = 1, fill = X, side = LEFT)
-        self.update.grid(row = 1, column = 0, sticky = EW)
-        self.dynamicUpdate = Checkbutton(
+        #self.update.pack(expand = 1, fill = tk.X, side = LEFT)
+        self.update.grid(row = 1, column = 0, sticky = tk.EW)
+        self.dynamicUpdate = tk.Checkbutton(
             controlsFrame,
             text = 'Dynamic Update',
             variable = self.taskMgrVerbose,
             command = self.toggleTaskMgrVerbose)
-        #self.dynamicUpdate.pack(expand = 1, fill = X, side = LEFT)
-        self.dynamicUpdate.grid(row = 1, column = 1, sticky = EW)
+        #self.dynamicUpdate.pack(expand = 1, fill = tk.X, side = LEFT)
+        self.dynamicUpdate.grid(row = 1, column = 1, sticky = tk.EW)
         # Pack frames
-        controlsFrame.pack(fill = X)
+        controlsFrame.pack(fill = tk.X)
         controlsFrame.grid_columnconfigure(0, weight = 1)
         controlsFrame.grid_columnconfigure(1, weight = 1)
 
@@ -153,10 +151,8 @@ class TaskManagerWidget(DirectObject):
         # Get a list of task names
         taskNames = []
         self.__taskDict = {}
-        tasks = self.taskMgr.getTasks()
-        tasks.sort(key = lambda t: t.getName())
         count = 0
-        for task in tasks:
+        for task in sorted(self.taskMgr.getTasks(), key=lambda t: t.getName()):
             taskNames.append(task.getName())
             self.__taskDict[count] = task
             count += 1

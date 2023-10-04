@@ -9,8 +9,8 @@
 ########################################################################
 
 import sys
-if sys.version_info < (3, 6):
-    print("This version of Python is not supported, use version 3.6 or higher.")
+if sys.version_info < (3, 8):
+    print("This version of Python is not supported, use version 3.8 or higher.")
     exit(1)
 
 try:
@@ -1106,6 +1106,9 @@ if (COMPILER=="GCC"):
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+        # When using pre-11.0 SDKs, for PStats
+        if os.path.basename(SDK["MACOSX"]).startswith("MacOSX10."):
+            LibName("COCOA", "-Wl,-U,_OBJC_CLASS_$_NSTrackingSeparatorToolbarItem")
 
         # Temporary exceptions to removal of this flag
         if not PkgSkip("FFMPEG"):
@@ -2230,7 +2233,7 @@ def CompileBundle(target, inputs, opts):
     # Now link the object files to form the bundle.
     if plist is None:
         exit("One plist file must be used when creating a bundle!")
-    bundleName = plistlib.load(plist)["CFBundleExecutable"]
+    bundleName = plistlib.load(open(plist, 'rb'))["CFBundleExecutable"]
 
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
@@ -3383,6 +3386,8 @@ if GetTarget() == 'windows':
     CopyAllHeaders('panda/src/wgldisplay')
 elif GetTarget() == 'darwin':
     CopyAllHeaders('panda/src/cocoadisplay')
+    if not PkgSkip('GL'):
+        CopyAllHeaders('panda/src/cocoagldisplay')
 elif GetTarget() == 'android':
     CopyAllHeaders('panda/src/android')
     CopyAllHeaders('panda/src/androiddisplay')
@@ -3804,7 +3809,6 @@ TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
 OPTS=['DIR:panda/src/putil', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
 IGATEFILES.remove("test_bam.h")
-IGATEFILES.remove("config_util.h")
 TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3putil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
 PyTargetAdd('p3putil_ext_composite.obj', opts=OPTS, input='p3putil_ext_composite.cxx')
@@ -3919,7 +3923,6 @@ TargetAdd('p3pstatclient_composite2.obj', opts=OPTS, input='p3pstatclient_compos
 
 OPTS=['DIR:panda/src/pstatclient']
 IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite*.cxx"])
-IGATEFILES.remove("config_pstats.h")
 TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
 PyTargetAdd('p3pstatclient_pStatClient_ext.obj', opts=OPTS, input='pStatClient_ext.cxx')
@@ -4753,15 +4756,24 @@ if GetTarget() not in ['windows', 'darwin', 'emscripten'] and not PkgSkip("GL") 
 # DIRECTORY: panda/src/cocoadisplay/
 #
 
-if GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and not PkgSkip("GL"):
-    OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+if GetTarget() == 'darwin' and not PkgSkip("COCOA"):
+    OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'COCOA']
     TargetAdd('p3cocoadisplay_composite1.obj', opts=OPTS, input='p3cocoadisplay_composite1.mm')
+
+#
+# DIRECTORY: panda/src/cocoagldisplay/
+#
+
+if GetTarget() == 'darwin' and not PkgSkip("COCOA") and not PkgSkip("GL"):
+    OPTS=['DIR:panda/src/cocoagldisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+    TargetAdd('p3cocoagldisplay_composite1.obj', opts=OPTS, input='p3cocoagldisplay_composite1.mm')
     OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
     TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
     TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
     TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
     TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
     TargetAdd('libpandagl.dll', input='p3cocoadisplay_composite1.obj')
+    TargetAdd('libpandagl.dll', input='p3cocoagldisplay_composite1.obj')
     if not PkgSkip('PANDAFX'):
         TargetAdd('libpandagl.dll', input='libpandafx.dll')
     TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
@@ -5145,6 +5157,8 @@ if not PkgSkip("TINYDISPLAY"):
     OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY', 'X11']
     if not PkgSkip("X11"):
         OPTS += ['X11']
+    if not PkgSkip("COCOA"):
+        OPTS += ['COCOA']
     TargetAdd('p3tinydisplay_composite1.obj', opts=OPTS, input='p3tinydisplay_composite1.cxx')
     TargetAdd('p3tinydisplay_composite2.obj', opts=OPTS, input='p3tinydisplay_composite2.cxx')
     TargetAdd('p3tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
@@ -5155,7 +5169,13 @@ if not PkgSkip("TINYDISPLAY"):
     if GetTarget() == 'windows':
         TargetAdd('libp3tinydisplay.dll', input='libp3windisplay.dll')
         TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
-    elif GetTarget() != 'darwin' and not PkgSkip("X11"):
+    elif GetTarget() == 'darwin':
+        if not PkgSkip("COCOA"):
+            TargetAdd('libp3tinydisplay_tinyCocoaGraphicsWindow.obj', opts=OPTS, input='tinyCocoaGraphicsWindow.mm')
+            TargetAdd('libp3tinydisplay.dll', input='libp3tinydisplay_tinyCocoaGraphicsWindow.obj')
+            TargetAdd('libp3tinydisplay.dll', input='p3cocoadisplay_composite1.obj')
+            TargetAdd('libp3tinydisplay.dll', opts=['COCOA', 'CARBON', 'QUARTZ'])
+    elif not PkgSkip("X11"):
         TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
         TargetAdd('libp3tinydisplay.dll', opts=['X11'])
     TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')
@@ -6020,10 +6040,13 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
+if not PkgSkip("PANDATOOL") and (GetTarget() in ('windows', 'darwin') or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
+    elif GetTarget() == 'darwin':
+        OPTS=['DIR:pandatool/src/mac-stats']
+        TargetAdd('pstats_composite1.obj', opts=OPTS, input='macstats_composite1.mm')
     else:
         OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
@@ -6032,7 +6055,7 @@ if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/
@@ -6243,6 +6266,8 @@ if PkgSkip("PYTHON") == 0:
         LibName('DEPLOYSTUB', "-Wl,--disable-new-dtags,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
+    elif GetTarget() == 'darwin':
+        LibName('DEPLOYSTUB', "-Wl,-sectcreate,__PANDA,__panda,/dev/null")
 
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':

@@ -9,10 +9,11 @@ in-depth explanation and an example of how to use this class.
 
 __all__ = ['DirectRadioButton']
 
-from panda3d.core import *
+from panda3d.core import PGFrameStyle, VBase4
 from . import DirectGuiGlobals as DGG
-from .DirectButton import *
-from .DirectLabel import *
+from .DirectButton import DirectButton
+from .DirectLabel import DirectLabel
+
 
 class DirectRadioButton(DirectButton):
     """
@@ -20,6 +21,7 @@ class DirectRadioButton(DirectButton):
     to mouse clicks by setting given value to given variable and
     execute a callback function (passing that state through) if defined
     """
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         # A Direct Frame can have:
@@ -54,7 +56,7 @@ class DirectRadioButton(DirectButton):
             ('boxImageScale', 1.0, None),
             ('boxImageColor', VBase4(1, 1, 1, 1), None),
             ('boxRelief', None, None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
@@ -193,7 +195,6 @@ class DirectRadioButton(DirectButton):
                 newpos[2] += bbounds[2]-lbounds[2] + self['boxBorder'] + ibw[1]
 
             self.indicator.setPos(newpos[0], newpos[1], newpos[2])
-
 
     def commandFunc(self, event):
         if len(self['value']) == len(self['variable']) != 0:

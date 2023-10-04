@@ -26,6 +26,11 @@
   return self;
 }
 
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
+  // Squelches an annoying warning.
+  return YES;
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
   // This only seems to work when called here.
   [NSApp activateIgnoringOtherApps:YES];

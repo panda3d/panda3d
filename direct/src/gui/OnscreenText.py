@@ -6,7 +6,7 @@ this class.
 
 __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
-from panda3d.core import *
+from panda3d.core import LColor, Mat4, NodePath, Point3, TextNode, TextProperties, Vec3
 from . import DirectGuiGlobals as DGG
 import warnings
 
@@ -19,6 +19,7 @@ ScreenTitle = 2
 ScreenPrompt = 3
 NameConfirm = 4
 BlackOnWhite = 5
+
 
 class OnscreenText(NodePath):
 
@@ -465,7 +466,7 @@ class OnscreenText(NodePath):
             Mat4.scaleMat(Vec3.rfu(self.__scale[0], 1, self.__scale[1])) *
             Mat4.rotateMat(self.__roll, Vec3.back()) *
             Mat4.translateMat(Point3.rfu(self.__pos[0], 0, self.__pos[1]))
-            )
+        )
         self.textNode.setTransform(mat)
 
     def setWordwrap(self, wordwrap):

@@ -9,7 +9,7 @@ import imp
 import platform
 import struct
 import io
-import distutils.sysconfig as sysconf
+import sysconfig
 import zipfile
 import importlib
 import warnings
@@ -22,7 +22,7 @@ try:
 except ImportError:
     p3extend_frozen = None
 
-from panda3d.core import *
+from panda3d.core import Filename, Multifile, PandaSystem, StringStream
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -83,10 +83,14 @@ defaultHiddenImports = {
     'plyer': ['plyer.platforms'],
     'scipy.linalg': ['scipy.linalg.cython_blas', 'scipy.linalg.cython_lapack'],
     'scipy.sparse.csgraph': ['scipy.sparse.csgraph._validation'],
+    'scipy.spatial.qhull': ['scipy._lib.messagestream'],
     'scipy.spatial._qhull': ['scipy._lib.messagestream'],
+    'scipy.spatial.transform.rotation': ['scipy.spatial.transform._rotation_groups'],
     'scipy.spatial.transform._rotation': ['scipy.spatial.transform._rotation_groups'],
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
+    'setuptools.monkey': ['setuptools.msvc'],
+    'shapely._geometry_helpers': ['shapely._geos'],
 }
 
 
@@ -139,6 +143,11 @@ def updatecache(filename, module_globals=None):
 def lazycache(filename, module_globals):
     pass
 """,
+
+    # Used by setuptools to redirect distutils to setuptools' vendored copy.
+    # This causes problems because it makes assumptions about __file__, so we
+    # simply implement the logic ourselves.
+    '_distutils_hack.override': '',
 }
 
 # These are missing modules that we've reported already this session.
@@ -168,8 +177,8 @@ class CompilationEnvironment:
 
         # Paths to Python stuff.
         self.Python = None
-        self.PythonIPath = sysconf.get_python_inc()
-        self.PythonVersion = sysconf.get_config_var("LDVERSION") or sysconf.get_python_version()
+        self.PythonIPath = sysconfig.get_path('include')
+        self.PythonVersion = sysconfig.get_config_var("LDVERSION") or sysconfig.get_python_version()
 
         # The VC directory of Microsoft Visual Studio (if relevant)
         self.MSVC = None
@@ -273,32 +282,32 @@ class CompilationEnvironment:
 
     def compileExe(self, filename, basename, extraLink=[]):
         compile = self.compileObjExe % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'MD' : self.MD,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'MD': self.MD,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
         link = self.linkExe % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
@@ -306,37 +315,38 @@ class CompilationEnvironment:
 
     def compileDll(self, filename, basename, extraLink=[]):
         compile = self.compileObjDll % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'MD' : self.MD,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'MD': self.MD,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+        }, **sysconf.get_config_vars())
         sys.stderr.write(compile + '\n')
         if os.system(compile) != 0:
             raise Exception('failed to compile %s.' % basename)
 
         link = self.linkDll % dict({
-            'python' : self.Python,
-            'MSVC' : self.MSVC,
-            'PSDK' : self.PSDK,
-            'suffix64' : self.suffix64,
-            'pythonIPath' : self.PythonIPath,
-            'pythonVersion' : self.PythonVersion,
-            'arch' : self.arch,
-            'filename' : filename,
-            'basename' : basename,
-            'dllext' : self.dllext,
-            }, **sysconf.get_config_vars())
+            'python': self.Python,
+            'MSVC': self.MSVC,
+            'PSDK': self.PSDK,
+            'suffix64': self.suffix64,
+            'pythonIPath': self.PythonIPath,
+            'pythonVersion': self.PythonVersion,
+            'arch': self.arch,
+            'filename': filename,
+            'basename': basename,
+            'dllext': self.dllext,
+        }, **sysconf.get_config_vars())
         link += ' ' + ' '.join(extraLink)
         sys.stderr.write(link + '\n')
         if os.system(link) != 0:
             raise Exception('failed to link %s.' % basename)
+
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -360,6 +370,8 @@ extern PyAPI_FUNC(int) PyImport_ExtendInittab(struct _inittab *newtab);
 #endif
 
 /* Main program */
+
+EXTRA_INIT_FUNC_DECLS
 
 int
 Py_FrozenMain(int argc, char **argv)
@@ -439,6 +451,8 @@ Py_FrozenMain(int argc, char **argv)
 #else
     PySys_SetArgv(argc, argv);
 #endif
+
+EXTRA_INIT_FUNC_CALLS
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -673,7 +687,7 @@ okMissing = [
     'direct.extensions_native.extensions_darwin', '_manylinux',
     'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
     'collections.Sequence', 'numpy_distutils', '_winapi',
-    ]
+]
 
 # Since around macOS 10.15, Apple's codesigning process has become more strict.
 # Appending data to the end of a Mach-O binary is now explicitly forbidden. The
@@ -719,6 +733,7 @@ lc_indices_to_slide = {
     LC_FUNCTION_STARTS: [2],
     LC_DATA_IN_CODE: [2],
 }
+
 
 class Freezer:
     class ModuleDef:
@@ -828,6 +843,12 @@ class Freezer:
         # (moduleName, filename).  filename will be None for built-in
         # modules.
         self.extras = []
+
+        # This is a list of init functions that must be called after
+        # Py_Initialize(), but before importing __main__.  This is a
+        # tuple of (return type, name).  They should use C calling
+        # convention.
+        self.extraInitFuncs = []
 
         # Set this to true if extension modules should be linked in to
         # the resulting executable.
@@ -1125,21 +1146,18 @@ class Freezer:
 
         # Walk through the list in sorted order, so we reach parents
         # before children.
-        names = list(self.modules.items())
-        names.sort()
-
         excludeDict = {}
         implicitParentDict = {}
         includes = []
         autoIncludes = []
         origToNewName = {}
-        for newName, mdef in names:
+        for newName, mdef in sorted(self.modules.items()):
             moduleName = mdef.moduleName
             origToNewName[moduleName] = newName
             if mdef.implicit and '.' in newName:
                 # For implicit modules, check if the parent is excluded.
                 parentName, baseName = newName.rsplit('.', 1)
-                if parentName in excludeDict :
+                if parentName in excludeDict:
                     mdef = excludeDict[parentName]
 
             if mdef.exclude:
@@ -1180,7 +1198,7 @@ class Freezer:
                 self.__loadModule(mdef)
                 # Since it successfully loaded, it's no longer a guess.
                 mdef.guess = False
-            except:
+            except Exception:
                 # Something went wrong, guess it's not an importable
                 # module.
                 pass
@@ -1197,13 +1215,16 @@ class Freezer:
                         except ImportError:
                             pass
                 else:
-                    self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    try:
+                        self.__loadModule(self.ModuleDef(modname, implicit = True))
+                    except ImportError:
+                        pass
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
         missing = []
         if 'sysconfig' in self.mf.modules and \
-           ('linux' in self.platform or 'mac' in self.platform):
+           ('linux' in self.platform or 'mac' in self.platform or 'emscripten' in self.platform):
             modname = '_sysconfigdata'
             if sys.version_info >= (3, 6):
                 modname += '_'
@@ -1215,10 +1236,16 @@ class Freezer:
                     modname += '_linux_' + arch + '-linux-gnu'
                 elif 'mac' in self.platform:
                     modname += '_darwin_darwin'
+                elif 'emscripten' in self.platform:
+                    if '_' in self.platform:
+                        arch = self.platform.split('_', 1)[1]
+                    else:
+                        arch = 'wasm32'
+                    modname += '_emscripten_' + arch + '-emscripten'
 
             try:
                 self.__loadModule(self.ModuleDef(modname, implicit=True))
-            except:
+            except Exception:
                 missing.append(modname)
 
         # Now, any new modules we found get added to the export list.
@@ -1594,7 +1621,7 @@ class Freezer:
         text = programFile % {
             'moduleDefs': '\n'.join(moduleDefs),
             'moduleList': '\n'.join(moduleList),
-            }
+        }
 
         if self.linkExtensionModules and self.extras:
             # Should we link in extension modules?  If so, we write out a new
@@ -1692,14 +1719,26 @@ class Freezer:
 
         if compileToExe:
             code = self.frozenMainCode
+
+            decls = ''
+            calls = ''
+            for func in self.extraInitFuncs:
+                if isinstance(func, str):
+                    func = ('void', func)
+                decls += f'extern {func[0]} {func[1]}();\n'
+                calls += f'    {func[1]}();\n';
+
+            code = code.replace('EXTRA_INIT_FUNC_DECLS', decls)
+            code = code.replace('EXTRA_INIT_FUNC_CALLS', calls)
+
             if self.platform.startswith('win'):
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
-                'frozenMainCode' : code,
-                'programName' : os.path.basename(basename),
-                'dllexport' : dllexport,
-                'dllimport' : dllimport,
-                }
+                'frozenMainCode': code,
+                'programName': os.path.basename(basename),
+                'dllexport': dllexport,
+                'dllimport': dllimport,
+            }
             if self.platform.startswith('win'):
                 target = basename + '.exe'
             else:
@@ -1714,10 +1753,10 @@ class Freezer:
                 target = basename + '.so'
 
             initCode = dllInitCode % {
-                'moduleName' : os.path.basename(basename),
-                'dllexport' : dllexport,
-                'dllimport' : dllimport,
-                }
+                'moduleName': os.path.basename(basename),
+                'dllexport': dllexport,
+                'dllimport': dllimport,
+            }
             compileFunc = self.cenv.compileDll
 
         self.writeCode(filename, initCode=initCode)
@@ -2333,17 +2372,8 @@ class Freezer:
         return blob_offset
 
     def makeModuleDef(self, mangledName, code):
-        result = ''
-        result += 'static unsigned char %s[] = {' % (mangledName)
-        for i in range(0, len(code), 16):
-            result += '\n  '
-            for c in code[i:i+16]:
-                if isinstance(c, int): # Python 3
-                    result += ('%d,' % c)
-                else: # Python 2
-                    result += ('%d,' % ord(c))
-        result += '\n};\n'
-        return result
+        lines = ',\n  '.join(','.join(map(str, code[i:i+16])) for i in range(0, len(code), 16))
+        return f'static unsigned char {mangledName}[] = {{\n  {lines}\n}};\n'
 
     def makeModuleListEntry(self, mangledName, code, moduleName, module):
         size = len(code)
@@ -2354,7 +2384,6 @@ class Freezer:
 
     def makeForbiddenModuleListEntry(self, moduleName):
         return '  {"%s", NULL, 0},' % (moduleName)
-
 
     def __writingModule(self, moduleName):
         """ Returns true if we are outputting the named module in this
@@ -2383,6 +2412,8 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         :param excludes: a list of modules to exclude
         :param debug: an integer indicating the level of verbosity
         """
+
+        self.builtin_module_names = kw.pop('builtin_module_names', sys.builtin_module_names)
 
         self.suffixes = kw.pop('suffixes', imp.get_suffixes())
         self.optimize = kw.pop('optimize', -1)
@@ -2550,6 +2581,21 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             else:
                 code = fp.read()
 
+            # Strip out delvewheel patch (see GitHub issue #1492)
+            if isinstance(code, bytes):
+                # Don't look for \n at the end, it may also be \r\n
+                start_marker = b'# start delvewheel patch'
+                end_marker = b'# end delvewheel patch'
+            else:
+                start_marker = '# start delvewheel patch'
+                end_marker = '# end delvewheel patch'
+
+            start = code.find(start_marker)
+            while start >= 0:
+                end = code.find(end_marker, start) + len(end_marker)
+                code = code[:start] + code[end:]
+                start = code.find(start_marker)
+
             code += b'\n' if isinstance(code, bytes) else '\n'
             co = compile(code, pathname, 'exec', optimize=self.optimize)
         elif type == imp.PY_COMPILED:
@@ -2708,11 +2754,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if fullname in overrideModules:
             return (None, '', ('.py', 'r', imp.PY_SOURCE))
 
+        # It's built into the interpreter.
+        if fullname in self.builtin_module_names:
+            return (None, None, ('', '', imp.C_BUILTIN))
+
         # If no search path is given, look for a built-in module.
         if path is None:
-            if name in sys.builtin_module_names:
-                return (None, None, ('', '', imp.C_BUILTIN))
-
             path = self.path
 
             if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
@@ -2725,6 +2772,22 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                         path = [os.path.dirname(fn)] + path
                 except ImportError:
                     pass
+
+            elif (fullname == 'distutils' and 'setuptools' in self.modules and
+                  '_distutils_hack.override' in self.modules):
+                # Redirect to setuptools' vendored copy.
+                setuptools = self.modules['setuptools']
+                return self.find_module('_distutils', setuptools.__path__, parent=setuptools)
+
+        elif parent is not None and parent.__name__ in ('setuptools.extern', 'pkg_resources.extern'):
+            # Look for vendored versions of these libraries.
+            root = self.modules[parent.__name__.split('.', 1)[0]]
+            try:
+                fp, fn, stuff = self.find_module('_vendor', root.__path__, parent=root)
+                vendor = self.load_module(root.__name__ + '._vendor', fp, fn, stuff)
+                return self.find_module(name, vendor.__path__, parent=vendor)
+            except ImportError:
+                pass
 
         # Look for the module on the search path.
         ns_dirs = []

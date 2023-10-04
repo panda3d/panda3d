@@ -84,7 +84,8 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
 
   clear_region();
 
-  update();
+  // Update window title and total label.
+  new_data(0, 0);
 }
 
 /**
@@ -204,6 +205,9 @@ on_click_label(int collector_index) {
     // Clicking on any other label means to focus on that.
     set_collector_index(collector_index);
   }
+
+  // Update window title and total label.
+  new_data(0, 0);
 }
 
 /**

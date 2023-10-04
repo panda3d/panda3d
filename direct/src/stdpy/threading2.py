@@ -65,7 +65,7 @@ if __debug__:
 
 else:
     # Disable this when using "python -O"
-    class _Verbose(object):
+    class _Verbose(object):  # type: ignore[no-redef]
         def __init__(self, verbose=None):
             pass
         def _note(self, *args):
@@ -202,13 +202,13 @@ class _Condition(_Verbose):
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
-    def _release_save(self):
+    def _release_save(self): # pylint: disable=method-hidden
         self.__lock.release()           # No state to save
 
-    def _acquire_restore(self, x):
+    def _acquire_restore(self, x): # pylint: disable=method-hidden
         self.__lock.acquire()           # Ignore saved state
 
-    def _is_owned(self):
+    def _is_owned(self): # pylint: disable=method-hidden
         # Return True if lock is owned by currentThread.
         # This method is called only if __lock doesn't have _is_owned().
         if self.__lock.acquire(0):
@@ -762,92 +762,3 @@ def main_thread():
 ##     from thread import _local as local
 ## except ImportError:
 ##     from _threading_local import local
-
-
-# Self-test code
-if __debug__:
-    def _test():
-        from collections import deque
-
-        class BoundedQueue(_Verbose):
-
-            def __init__(self, limit):
-                _Verbose.__init__(self)
-                self.mon = RLock()
-                self.rc = Condition(self.mon)
-                self.wc = Condition(self.mon)
-                self.limit = limit
-                self.queue = deque()
-
-            def put(self, item):
-                self.mon.acquire()
-                while len(self.queue) >= self.limit:
-                    self._note("put(%s): queue full", item)
-                    self.wc.wait()
-                self.queue.append(item)
-                self._note("put(%s): appended, length now %d",
-                           item, len(self.queue))
-                self.rc.notify()
-                self.mon.release()
-
-            def get(self):
-                self.mon.acquire()
-                while not self.queue:
-                    self._note("get(): queue empty")
-                    self.rc.wait()
-                item = self.queue.popleft()
-                self._note("get(): got %s, %d left", item, len(self.queue))
-                self.wc.notify()
-                self.mon.release()
-                return item
-
-        class ProducerThread(Thread):
-
-            def __init__(self, queue, quota):
-                Thread.__init__(self, name="Producer")
-                self.queue = queue
-                self.quota = quota
-
-            def run(self):
-                from random import random
-                counter = 0
-                while counter < self.quota:
-                    counter = counter + 1
-                    self.queue.put("%s.%d" % (self.getName(), counter))
-                    _sleep(random() * 0.00001)
-
-
-        class ConsumerThread(Thread):
-
-            def __init__(self, queue, count):
-                Thread.__init__(self, name="Consumer")
-                self.queue = queue
-                self.count = count
-
-            def run(self):
-                while self.count > 0:
-                    item = self.queue.get()
-                    print(item)
-                    self.count = self.count - 1
-
-        NP = 3
-        QL = 4
-        NI = 5
-
-        Q = BoundedQueue(QL)
-        P = []
-        for i in range(NP):
-            t = ProducerThread(Q, NI)
-            t.setName("Producer-%d" % (i+1))
-            P.append(t)
-        C = ConsumerThread(Q, NI*NP)
-        for t in P:
-            t.start()
-            _sleep(0.000001)
-        C.start()
-        for t in P:
-            t.join()
-        C.join()
-
-    if __name__ == '__main__':
-        _test()

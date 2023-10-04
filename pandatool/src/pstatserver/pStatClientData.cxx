@@ -81,6 +81,22 @@ close() {
 }
 
 /**
+ * Returns the timestamp (in seconds elapsed since connection) of the latest
+ * available frame.
+ */
+double PStatClientData::
+get_latest_time() const {
+  double time = 0.0;
+  for (const Thread &thread : _threads) {
+    if (thread._data != nullptr && !thread._data->is_empty()) {
+      time = std::max(time, thread._data->get_latest_time());
+    }
+  }
+
+  return time;
+}
+
+/**
  * Returns the total number of collectors the Data knows about.
  */
 int PStatClientData::
@@ -244,7 +260,7 @@ get_num_threads() const {
  */
 bool PStatClientData::
 has_thread(int index) const {
-  return (index >= 0 && index < (int)_threads.size() &&
+  return (index >= 0 && (size_t)index < _threads.size() &&
           !_threads[index]._name.empty());
 }
 
@@ -281,8 +297,16 @@ get_thread_name(int index) const {
 const PStatThreadData *PStatClientData::
 get_thread_data(int index) const {
   ((PStatClientData *)this)->define_thread(index);
-  nassertr(index >= 0 && index < (int)_threads.size(), nullptr);
+  nassertr(index >= 0 && (size_t)index < _threads.size(), nullptr);
   return _threads[index]._data;
+}
+
+/**
+ * Returns true if the given thread is still alive.
+ */
+bool PStatClientData::
+is_thread_alive(int index) const {
+  return (index >= 0 && (size_t)index < _threads.size() && _threads[index]._is_alive);
 }
 
 /**
@@ -346,13 +370,17 @@ add_collector(PStatCollectorDef *def) {
  * information just arrived from the client.
  */
 void PStatClientData::
-define_thread(int thread_index, const string &name) {
+define_thread(int thread_index, const string &name, bool mark_alive) {
   // A sanity check on the index number.
   nassertv(thread_index < 1000);
 
   // Make sure we have enough slots allocated.
   while ((int)_threads.size() <= thread_index) {
     _threads.push_back(Thread());
+  }
+
+  if (mark_alive) {
+    _threads[thread_index]._is_alive = true;
   }
 
   if (!name.empty()) {
@@ -364,6 +392,29 @@ define_thread(int thread_index, const string &name) {
   }
 
   _is_dirty = true;
+}
+
+/**
+ * Indicates that the given thread has expired.  Presumably this is information
+ * just arrived from the client.
+ */
+void PStatClientData::
+expire_thread(int thread_index) {
+  if (thread_index >= 0 && (size_t)thread_index < _threads.size()) {
+    _threads[thread_index]._is_alive = false;
+  }
+}
+
+/**
+ * Removes the given thread data entirely.
+ */
+void PStatClientData::
+remove_thread(int thread_index) {
+  if (thread_index >= 0 && (size_t)thread_index < _threads.size()) {
+    _threads[thread_index]._name.clear();
+    _threads[thread_index]._data.clear();
+    _threads[thread_index]._is_alive = false;
+  }
 }
 
 /**
@@ -469,7 +520,7 @@ read_datagram(DatagramIterator &scan) {
   int thread_index;
   while ((thread_index = scan.get_int16()) != -1) {
     std::string name = scan.get_string();
-    define_thread(thread_index, name);
+    define_thread(thread_index, name, true);
 
     _threads[thread_index]._data->read_datagram(scan, this);
   }

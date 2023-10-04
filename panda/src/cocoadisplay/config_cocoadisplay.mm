@@ -12,11 +12,8 @@
  */
 
 #include "config_cocoadisplay.h"
-#include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsPipe.h"
-#include "cocoaGraphicsStateGuardian.h"
 #include "cocoaGraphicsWindow.h"
-#include "graphicsPipeSelection.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
 
@@ -50,15 +47,6 @@ init_libcocoadisplay() {
   }
   initialized = true;
 
-  CocoaGraphicsBuffer::init_type();
   CocoaGraphicsPipe::init_type();
-  CocoaGraphicsStateGuardian::init_type();
   CocoaGraphicsWindow::init_type();
-
-  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->add_pipe_type(CocoaGraphicsPipe::get_class_type(),
-                           CocoaGraphicsPipe::pipe_constructor);
-
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->set_system_tag("OpenGL", "window_system", "Cocoa");
 }

@@ -41,13 +41,14 @@ __all__ = [
     'enumerate', 'active_count',
     'settrace', 'setprofile', 'stack_size',
     'TIMEOUT_MAX',
-    ]
+]
 
 TIMEOUT_MAX = _thread.TIMEOUT_MAX
 
 local = _thread._local
 _newname = _thread._newname
 ThreadError = _thread.error
+
 
 class ThreadBase:
     """ A base class for both Thread and ExternalThread in this
@@ -78,11 +79,13 @@ class ThreadBase:
         else:
             self.__dict__[key] = value
 
+
 # Copy these static methods from Panda's Thread object.  These are
 # useful if you may be running in Panda's SIMPLE_THREADS compilation
 # mode.
-ThreadBase.forceYield = core.Thread.forceYield
-ThreadBase.considerYield = core.Thread.considerYield
+ThreadBase.forceYield = core.Thread.forceYield  # type: ignore[attr-defined]
+ThreadBase.considerYield = core.Thread.considerYield  # type: ignore[attr-defined]
+
 
 class Thread(ThreadBase):
     """ This class provides a wrapper around Panda's PythonThread
@@ -120,10 +123,7 @@ class Thread(ThreadBase):
         self.__dict__['ident'] = threadId
 
     def __del__(self):
-        # On interpreter shutdown, the _thread module might have
-        # already been cleaned up.
-        if _thread and _thread._remove_thread_id:
-            _thread._remove_thread_id(self.ident)
+        _thread._remove_thread_id(self.ident)
 
     def is_alive(self):
         thread = self.__thread
@@ -161,6 +161,7 @@ class Thread(ThreadBase):
         self.__dict__['name'] = name
         self.__thread.setName(name)
 
+
 class ExternalThread(ThreadBase):
     """ Returned for a Thread object that wasn't created by this
     interface. """
@@ -191,12 +192,14 @@ class ExternalThread(ThreadBase):
     def setDaemon(self, daemon):
         raise RuntimeError
 
+
 class MainThread(ExternalThread):
     """ Returned for the MainThread object. """
 
     def __init__(self, extThread, threadId):
         ExternalThread.__init__(self, extThread, threadId)
         self.__dict__['daemon'] = False
+
 
 class Lock(core.Mutex):
     """ This class provides a wrapper around Panda's Mutex object.
@@ -254,6 +257,7 @@ class Condition(core.ConditionVar):
     def __exit__(self, t, v, tb):
         self.release()
 
+
 class Semaphore(core.Semaphore):
     """ This class provides a wrapper around Panda's Semaphore
     object.  The wrapper is designed to emulate Python's own
@@ -274,6 +278,7 @@ class Semaphore(core.Semaphore):
     def __exit__(self, t, v, tb):
         self.release()
 
+
 class BoundedSemaphore(Semaphore):
     """ This class provides a wrapper around Panda's Semaphore
     object.  The wrapper is designed to emulate Python's own
@@ -288,6 +293,7 @@ class BoundedSemaphore(Semaphore):
             raise ValueError
 
         Semaphore.release(self)
+
 
 class Event:
     """ This class is designed to emulate Python's own threading.Event
@@ -339,6 +345,7 @@ class Event:
         finally:
             self.__lock.release()
 
+
 class Timer(Thread):
     """Call a function after a specified number of seconds:
 
@@ -365,6 +372,7 @@ class Timer(Thread):
             self.function(*self.args, **self.kwargs)
         self.finished.set()
 
+
 def _create_thread_wrapper(t, threadId):
     """ Creates a thread wrapper for the indicated external thread. """
     if isinstance(t, core.MainThread):
@@ -374,15 +382,19 @@ def _create_thread_wrapper(t, threadId):
 
     return pyt
 
+
 def current_thread():
     t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
+
 
 def main_thread():
     t = core.Thread.getMainThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
+
 currentThread = current_thread
+
 
 def enumerate():
     tlist = []
@@ -395,125 +407,28 @@ def enumerate():
     finally:
         _thread._threadsLock.release()
 
+
 def active_count():
     return len(enumerate())
+
 
 activeCount = active_count
 
 _settrace_func = None
+
+
 def settrace(func):
     global _settrace_func
     _settrace_func = func
 
+
 _setprofile_func = None
+
+
 def setprofile(func):
     global _setprofile_func
     _setprofile_func = func
 
+
 def stack_size(size = None):
     raise ThreadError
-
-if __debug__:
-    def _test():
-        from collections import deque
-
-        _sleep = core.Thread.sleep
-
-        _VERBOSE = False
-
-        class _Verbose(object):
-
-            def __init__(self, verbose=None):
-                if verbose is None:
-                    verbose = _VERBOSE
-                self.__verbose = verbose
-
-            def _note(self, format, *args):
-                if self.__verbose:
-                    format = format % args
-                    format = "%s: %s\n" % (
-                        currentThread().getName(), format)
-                    _sys.stderr.write(format)
-
-        class BoundedQueue(_Verbose):
-
-            def __init__(self, limit):
-                _Verbose.__init__(self)
-                self.mon = Lock(name = "BoundedQueue.mon")
-                self.rc = Condition(self.mon)
-                self.wc = Condition(self.mon)
-                self.limit = limit
-                self.queue = deque()
-
-            def put(self, item):
-                self.mon.acquire()
-                while len(self.queue) >= self.limit:
-                    self._note("put(%s): queue full", item)
-                    self.wc.wait()
-                self.queue.append(item)
-                self._note("put(%s): appended, length now %d",
-                           item, len(self.queue))
-                self.rc.notify()
-                self.mon.release()
-
-            def get(self):
-                self.mon.acquire()
-                while not self.queue:
-                    self._note("get(): queue empty")
-                    self.rc.wait()
-                item = self.queue.popleft()
-                self._note("get(): got %s, %d left", item, len(self.queue))
-                self.wc.notify()
-                self.mon.release()
-                return item
-
-        class ProducerThread(Thread):
-
-            def __init__(self, queue, quota):
-                Thread.__init__(self, name="Producer")
-                self.queue = queue
-                self.quota = quota
-
-            def run(self):
-                from random import random
-                counter = 0
-                while counter < self.quota:
-                    counter = counter + 1
-                    self.queue.put("%s.%d" % (self.getName(), counter))
-                    _sleep(random() * 0.00001)
-
-
-        class ConsumerThread(Thread):
-
-            def __init__(self, queue, count):
-                Thread.__init__(self, name="Consumer")
-                self.queue = queue
-                self.count = count
-
-            def run(self):
-                while self.count > 0:
-                    item = self.queue.get()
-                    print(item)
-                    self.count = self.count - 1
-
-        NP = 3
-        QL = 4
-        NI = 5
-
-        Q = BoundedQueue(QL)
-        P = []
-        for i in range(NP):
-            t = ProducerThread(Q, NI)
-            t.setName("Producer-%d" % (i+1))
-            P.append(t)
-        C = ConsumerThread(Q, NI*NP)
-        for t in P:
-            t.start()
-            _sleep(0.000001)
-        C.start()
-        for t in P:
-            t.join()
-        C.join()
-
-    if __name__ == '__main__':
-        _test()

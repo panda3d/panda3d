@@ -16,8 +16,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
-
 #include "pnotify.h"
 #include "filename.h"
 #include "plist.h"
@@ -30,7 +28,6 @@
 #include "streamWrapper.h"
 
 #include <algorithm>
-
 
 /**
  *
@@ -169,7 +166,5 @@ private:
 };
 
 #include "patchfile.I"
-
-#endif // HAVE_OPENSSL
 
 #endif

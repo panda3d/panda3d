@@ -23,11 +23,18 @@ BEGIN_PUBLISH
  * Contains the types of pointer device.
  */
 enum class PointerType {
-  unknown,
-  mouse,
-  finger,
-  stylus,
-  eraser,
+  UNKNOWN,
+  MOUSE,
+  FINGER,
+  STYLUS,
+  ERASER,
+
+  // deprecated aliases
+  unknown = UNKNOWN,
+  mouse = MOUSE,
+  finger = FINGER,
+  stylus = STYLUS,
+  eraser = ERASER,
 };
 END_PUBLISH
 
@@ -61,7 +68,7 @@ public:
   double _xpos = 0.0;
   double _ypos = 0.0;
   double _pressure = 0.0;
-  PointerType _type = PointerType::unknown;
+  PointerType _type = PointerType::UNKNOWN;
   int _id = 0;
 };
 

@@ -322,7 +322,8 @@ private:
   // This lock protects the next two fields.
   Mutex _new_windows_lock;
   unsigned int _window_sort_index;
-  pvector<PT(GraphicsOutput)> _new_windows;
+  typedef small_vector<PT(GraphicsOutput)> NewWindows;
+  NewWindows _new_windows;
 
   WindowRenderer _app;
   typedef pmap<std::string, PT(RenderThread) > Threads;

@@ -9,9 +9,10 @@ import wx
 
 
 class WxSlider(wx.Slider):
-    def __init__(self, parent, id, value, minValue, maxValue,\
-                 pos=wx.DefaultPosition, size=wx.DefaultSize,\
-                 style=wx.SL_HORIZONTAL, validator=wx.DefaultValidator, name="slider", textSize=(40,20)):
+    def __init__(self, parent, id, value, minValue, maxValue,
+                 pos=wx.DefaultPosition, size=wx.DefaultSize,
+                 style=wx.SL_HORIZONTAL, validator=wx.DefaultValidator,
+                 name="slider", textSize=(40, 20)):
 
         self.maxValue = maxValue
         self.minValue = minValue
@@ -25,13 +26,13 @@ class WxSlider(wx.Slider):
         if style & wx.SL_HORIZONTAL:
             newStyle = wx.SL_HORIZONTAL
             if style & wx.SL_LABELS:
-                wx.StaticText(parent, -1, "%.2f"%minValue, (pos[0], pos[1]))
-                strMaxValue = "%.2f"%maxValue
-                wx.StaticText(parent, -1, strMaxValue, (pos[0] + size[0] - len(strMaxValue) * 8 , pos[1]))
-                strValue = "%.2f"%value
-                self.textValue = wx.TextCtrl(parent, -1, strValue,\
-                                             (pos[0] + size[0] /2 - textSize[0]/2, pos[1]), textSize,\
-                                             wx.TE_CENTER | wx.TE_PROCESS_ENTER)
+                wx.StaticText(parent, -1, "%.2f" % minValue, (pos[0], pos[1]))
+                strMaxValue = "%.2f" % maxValue
+                wx.StaticText(parent, -1, strMaxValue, (pos[0] + size[0] - len(strMaxValue) * 8, pos[1]))
+                strValue = "%.2f" % value
+                self.textValue = wx.TextCtrl(parent, -1, strValue,
+                                             (pos[0] + size[0] / 2 - textSize[0] / 2, pos[1]),
+                                             textSize, wx.TE_CENTER | wx.TE_PROCESS_ENTER)
 
                 self.textValue.Disable()
                 newPos = (pos[0], pos[1] + 20)
@@ -52,7 +53,7 @@ class WxSlider(wx.Slider):
 
     def SetValue(self, value):
         # overriding wx.Slider.SetValue()
-        self.textValue.SetValue("%.2f"%value)
+        self.textValue.SetValue("%.2f" % value)
         intVal = 100.0 / (self.maxValue - self.minValue) * (value - self.minValue)
         wx.Slider.SetValue(self, intVal)
 
@@ -60,7 +61,7 @@ class WxSlider(wx.Slider):
         # update textValue from slider
         self.textValue.Clear()
         floatVal = wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue
-        self.textValue.WriteText("%.2f"%floatVal)
+        self.textValue.WriteText("%.2f" % floatVal)
         if self.updateCB: # callback function sould receive event as the argument
             self.updateCB(event)
         event.Skip()

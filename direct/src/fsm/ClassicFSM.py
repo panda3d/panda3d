@@ -5,6 +5,8 @@ Note:
     existing code.  New code should use the :mod:`.FSM` module instead.
 """
 
+from __future__ import annotations
+
 __all__ = ['ClassicFSM']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -13,10 +15,9 @@ from direct.showbase.MessengerGlobal import messenger
 import weakref
 
 if __debug__:
-    _debugFsms = {}
+    _debugFsms: dict[str, weakref.ref] = {}
 
     def printDebugFsmList():
-        global _debugFsms
         for k in sorted(_debugFsms.keys()):
             print("%s %s" % (k, _debugFsms[k]()))
     __builtins__['debugFsmList'] = printDebugFsmList
@@ -83,7 +84,6 @@ class ClassicFSM(DirectObject):
         # doing this.
         self.__internalStateInFlux = 0
         if __debug__:
-            global _debugFsms
             _debugFsms[name] = weakref.ref(self)
 
     # I know this isn't how __repr__ is supposed to be used, but it
@@ -95,12 +95,12 @@ class ClassicFSM(DirectObject):
         """
         Print out something useful about the fsm
         """
+        name = self.getName()
         currentState = self.getCurrentState()
         if currentState:
-            str = ("ClassicFSM " + self.getName() + ' in state "' +
-                   currentState.getName() + '"')
+            str = f'ClassicFSM {name} in state "{currentState.getName()}"'
         else:
-            str = ("ClassicFSM " + self.getName() + ' not in any state')
+            str = f'ClassicFSM {name} not in any state'
         return str
 
     def enterInitialState(self, argList=[]):
@@ -151,7 +151,6 @@ class ClassicFSM(DirectObject):
 
     def getCurrentState(self):
         return self.__currentState
-
 
     # lookup funcs
 
@@ -317,7 +316,6 @@ class ClassicFSM(DirectObject):
                 ClassicFSM.notify.warning(msg)
             return 0
 
-
     def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
         """
         force a transition -- for debugging ONLY
@@ -357,7 +355,7 @@ class ClassicFSM(DirectObject):
             self.__currentState.isTransitionDefined(aStateName) or
             aStateName in [self.__currentState.getName(),
                            self.__finalState.getName()]
-            )
+        )
 
         if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)

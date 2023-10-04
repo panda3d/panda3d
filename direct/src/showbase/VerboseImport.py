@@ -3,7 +3,7 @@ This module hooks into Python's import mechanism to print out all imports to
 the standard output as they happen.
 """
 
-__all__ = []
+__all__ = ()
 
 
 import sys

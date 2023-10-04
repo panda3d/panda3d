@@ -21,7 +21,7 @@
 #include "graphicsWindowProc.h"
 #include "graphicsWindowProcCallbackData.h"
 #include "windowProperties.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
 #include "keyboardButton.h"
@@ -56,9 +56,7 @@ PUBLISHED:
   void clear_rejected_properties();
   WindowProperties get_rejected_properties() const;
 
-#ifdef HAVE_PYTHON
-  EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
 
   INLINE bool is_closed() const;
   virtual bool is_active() const;
@@ -99,7 +97,7 @@ PUBLISHED:
   /*void enable_pointer_mode(int device, double speed);
   void disable_pointer_mode(int device);*/
 
-  virtual MouseData get_pointer(int device) const;
+  virtual PointerData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 

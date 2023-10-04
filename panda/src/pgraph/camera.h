@@ -24,6 +24,7 @@
 #include "renderState.h"
 #include "pointerTo.h"
 #include "pmap.h"
+#include "small_vector.h"
 #include "auxSceneData.h"
 
 class DisplayRegion;
@@ -115,7 +116,7 @@ private:
   DrawMask _camera_mask;
   PN_stdfloat _lod_scale;
 
-  typedef pvector<DisplayRegion *> DisplayRegions;
+  typedef small_vector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
 
   CPT(RenderState) _initial_state;

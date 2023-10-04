@@ -44,7 +44,7 @@ write_datagram(Datagram &destination, PStatClient *client) const {
 
 #if !defined(WORDS_BIGENDIAN) || defined(__GNUC__)
   // Hand-roll this, significantly more efficient for many data points
-  size_t size = (_time_data.size() + _level_data.size()) * 6 + 4;
+  size_t size = (_time_data.size() + _level_data.size()) * 6 + 8;
   PTA_uchar array = destination.modify_array();
   size_t offset = array.size();
   array.resize(offset + size);
@@ -53,7 +53,8 @@ write_datagram(Datagram &destination, PStatClient *client) const {
   uint16_t *ptr = (uint16_t *)data;
 
 #ifdef WORDS_BIGENDIAN
-  *ptr++ = __builtin_bswap16(_time_data.size());
+  *(uint32_t *)ptr = __builtin_bswap32(_time_data.size());
+  ptr += 2;
 
   for (const DataPoint &dp : _time_data) {
     *ptr++ = __builtin_bswap16(dp._index);
@@ -62,7 +63,9 @@ write_datagram(Datagram &destination, PStatClient *client) const {
     ptr += 2;
   }
 
-  *ptr++ = __builtin_bswap16(_level_data.size());
+  *(uint32_t *)ptr = __builtin_bswap16(_level_data.size());
+  ptr += 2;
+
   for (const DataPoint &dp : _level_data) {
     *ptr++ = __builtin_bswap16(dp._index);
     PN_float32 v = (PN_float32)dp._value;
@@ -70,7 +73,8 @@ write_datagram(Datagram &destination, PStatClient *client) const {
     ptr += 2;
   }
 #else
-  *ptr++ = _time_data.size();
+  *(uint32_t *)ptr = _time_data.size();
+  ptr += 2;
 
   for (const DataPoint &dp : _time_data) {
     *ptr++ = dp._index;
@@ -78,7 +82,9 @@ write_datagram(Datagram &destination, PStatClient *client) const {
     ptr += 2;
   }
 
-  *ptr++ = _level_data.size();
+  *(uint32_t *)ptr = _level_data.size();
+  ptr += 2;
+
   for (const DataPoint &dp : _level_data) {
     *ptr++ = dp._index;
     *(PN_float32 *)ptr = dp._value;
@@ -87,12 +93,12 @@ write_datagram(Datagram &destination, PStatClient *client) const {
 #endif
 
 #else
-  destination.add_uint16(_time_data.size());
+  destination.add_uint32(_time_data.size());
   for (const DataPoint &dp : _time_data) {
     destination.add_uint16(dp._index);
     destination.add_float32(dp._value);
   }
-  destination.add_uint16(_level_data.size());
+  destination.add_uint32(_level_data.size());
   for (const DataPoint &dp : _level_data) {
     destination.add_uint16(dp._index);
     destination.add_float32(dp._value);

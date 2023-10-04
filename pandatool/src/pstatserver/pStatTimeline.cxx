@@ -47,6 +47,11 @@ PStatTimeline(PStatMonitor *monitor, int xsize, int ysize) :
       ThreadRow &thread_row = _threads.back();
       thread_row._row_offset = row_offset;
 
+      if (!client_data->has_thread(thread_index)) {
+        continue;
+      }
+      thread_row._visible = true;
+
       const PStatThreadData *thread_data = client_data->get_thread_data(thread_index);
       if (thread_data != nullptr) {
         _threads_changed = true;
@@ -135,8 +140,11 @@ new_data(int thread_index, int frame_number) {
         } else {
           _threads.resize(_threads.size() + 1);
           _threads[_threads.size() - 1]._row_offset =
-            _threads[_threads.size() - 2]._row_offset +
-            _threads[_threads.size() - 2]._rows.size() + 1;
+            _threads[_threads.size() - 2]._row_offset;
+          if (_threads[_threads.size() - 2]._visible) {
+            _threads[_threads.size() - 1]._row_offset +=
+              _threads[_threads.size() - 2]._rows.size() + 1;
+          }
         }
       }
 
@@ -147,7 +155,9 @@ new_data(int thread_index, int frame_number) {
         size_t offset = thread_row._row_offset + thread_row._rows.size() + 1;
         for (size_t ti = (size_t)(thread_index + 1); ti < _threads.size(); ++ti) {
           _threads[ti]._row_offset = offset;
-          offset += _threads[ti]._rows.size() + 1;
+          if (_threads[ti]._visible) {
+            offset += _threads[ti]._rows.size() + 1;
+          }
         }
         _threads_changed = true;
         normal_guide_bars();
@@ -178,6 +188,11 @@ update_bars(int thread_index, int frame_number) {
   ThreadRow &thread_row = _threads[thread_index];
   thread_row._label = client_data->get_thread_name(thread_index);
   bool changed_num_rows = false;
+
+  if (!thread_row._visible) {
+    thread_row._visible = true;
+    changed_num_rows = true;
+  }
 
   // pair<int collector_index, double start_time>
   pvector<std::pair<int, double> > stack;
@@ -480,11 +495,13 @@ force_redraw() {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     ThreadRow &thread_row = _threads[ti];
-    for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
-      draw_row((int)ti, (int)ri, start_time, end_time);
-      ++num_rows;
+    if (thread_row._visible) {
+      for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
+        draw_row((int)ti, (int)ri, start_time, end_time);
+        ++num_rows;
+      }
+      draw_separator(num_rows++);
     }
-    draw_separator(num_rows++);
   }
 
   end_draw();
@@ -503,7 +520,7 @@ force_redraw(int row, int from_x, int to_x) {
 
   for (size_t ti = 0; ti < _threads.size(); ++ti) {
     ThreadRow &thread_row = _threads[ti];
-    if ((int)thread_row._row_offset > row) {
+    if (!thread_row._visible || (int)thread_row._row_offset > row) {
       break;
     }
 
@@ -654,8 +671,10 @@ draw_thread(int thread_index, double start_time, double end_time) {
   }
 
   ThreadRow &thread_row = _threads[(size_t)thread_index];
-  for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
-    draw_row(thread_index, (int)ri, start_time, end_time);
+  if (thread_row._visible) {
+    for (size_t ri = 0; ri < thread_row._rows.size(); ++ri) {
+      draw_row(thread_index, (int)ri, start_time, end_time);
+    }
   }
 }
 

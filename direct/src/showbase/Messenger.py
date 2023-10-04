@@ -6,7 +6,7 @@ __all__ = ['Messenger']
 
 from direct.stdpy.threading import Lock
 from direct.directnotify import DirectNotifyGlobal
-from .PythonUtil import *
+from .PythonUtil import safeRepr
 import types
 
 
@@ -417,7 +417,7 @@ class Messenger:
                 # Release the lock temporarily while we call the method.
                 self.lock.release()
                 try:
-                    result = method (*(extraArgs + sentArgs))
+                    result = method(*(extraArgs + sentArgs))
                 finally:
                     self.lock.acquire()
 
@@ -540,9 +540,7 @@ class Messenger:
         return a matching event (needle) if found (in haystack).
         This is primarily a debugging tool.
         """
-        keys = list(self.__callbacks.keys())
-        keys.sort()
-        for event in keys:
+        for event in sorted(self.__callbacks):
             if repr(event).find(needle) >= 0:
                 return {event: self.__callbacks[event]}
 
@@ -553,9 +551,7 @@ class Messenger:
         This is primarily a debugging tool.
         """
         matches = {}
-        keys = list(self.__callbacks.keys())
-        keys.sort()
-        for event in keys:
+        for event in sorted(self.__callbacks):
             if repr(event).find(needle) >= 0:
                 matches[event] = self.__callbacks[event]
                 # if the limit is not None, decrement and
@@ -596,9 +592,7 @@ class Messenger:
         Compact version of event, acceptor pairs
         """
         str = "The messenger is currently handling:\n" + "="*64 + "\n"
-        keys = list(self.__callbacks.keys())
-        keys.sort()
-        for event in keys:
+        for event in sorted(self.__callbacks):
             str += self.__eventRepr(event)
         # Print out the object: event dictionary too
         str += "="*64 + "\n"
@@ -617,9 +611,7 @@ class Messenger:
         """
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
-        keys = list(self.__callbacks.keys())
-        keys.sort()
-        for event in keys:
+        for event in sorted(self.__callbacks):
             acceptorDict = self.__callbacks[event]
             str = str + 'Event: ' + event + '\n'
             for key in list(acceptorDict.keys()):

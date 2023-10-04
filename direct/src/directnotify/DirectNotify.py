@@ -5,6 +5,7 @@ DirectNotify module: this module contains the DirectNotify class
 from . import Notifier
 from . import Logger
 
+
 class DirectNotify:
     """
     DirectNotify class: this class contains methods for creating
@@ -15,7 +16,7 @@ class DirectNotify:
         """
         DirectNotify class keeps a dictionary of Notfiers
         """
-        self.__categories = { }
+        self.__categories = {}
         # create a default log file
         self.logger = Logger.Logger()
 
@@ -99,7 +100,6 @@ class DirectNotify:
         else:
             print("DirectNotify: unknown notify level: " + str(level)
                    + " for category: " + str(categoryName))
-
 
     def setDconfigLevels(self):
         for categoryName in self.getCategories():

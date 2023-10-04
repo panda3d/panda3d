@@ -13,9 +13,17 @@ try:
 except ImportError:
     wxgl = None
 
-from panda3d.core import *
+from panda3d.core import (
+    CallbackGraphicsWindow,
+    ConfigVariableBool,
+    FrameBufferProperties,
+    KeyboardButton,
+    MouseButton,
+    WindowProperties,
+)
 
 __all__ = ['WxPandaWindow']
+
 
 class EmbeddedPandaWindow(wx.Window):
     """ This class implements a Panda3D window that is directly
@@ -69,10 +77,11 @@ class EmbeddedPandaWindow(wx.Window):
             self.win.requestProperties(wp)
         event.Skip()
 
+
 if not hasattr(wxgl, 'GLCanvas'):
     OpenGLPandaWindow = None
 else:
-    class OpenGLPandaWindow(wxgl.GLCanvas):
+    class OpenGLPandaWindow(wxgl.GLCanvas):  # type: ignore[no-redef]
         """ This class implements a Panda3D "window" that actually draws
         within the wx GLCanvas object.  It is supported whenever OpenGL is
         Panda's rendering engine, and GLCanvas is available in wx. """
@@ -80,42 +89,42 @@ else:
         removeCallbackWindow = ConfigVariableBool('remove-callback-window', True)
 
         Keymap = {
-            wx.WXK_BACK : KeyboardButton.backspace(),
-            wx.WXK_TAB : KeyboardButton.tab(),
-            wx.WXK_RETURN : KeyboardButton.enter(),
-            wx.WXK_ESCAPE : KeyboardButton.escape(),
-            wx.WXK_DELETE : KeyboardButton._del(),  # del is a Python keyword
-            wx.WXK_SHIFT : KeyboardButton.shift(),
-            wx.WXK_ALT : KeyboardButton.alt(),
-            wx.WXK_CONTROL : KeyboardButton.control(),
-            wx.WXK_MENU : KeyboardButton.meta(),
-            wx.WXK_PAUSE : KeyboardButton.pause(),
-            wx.WXK_END : KeyboardButton.end(),
-            wx.WXK_HOME : KeyboardButton.home(),
-            wx.WXK_LEFT : KeyboardButton.left(),
-            wx.WXK_UP : KeyboardButton.up(),
-            wx.WXK_RIGHT : KeyboardButton.right(),
-            wx.WXK_DOWN : KeyboardButton.down(),
-            wx.WXK_PRINT : KeyboardButton.printScreen(),
-            wx.WXK_INSERT : KeyboardButton.insert(),
-            wx.WXK_F1 : KeyboardButton.f1(),
-            wx.WXK_F2 : KeyboardButton.f2(),
-            wx.WXK_F3 : KeyboardButton.f3(),
-            wx.WXK_F4 : KeyboardButton.f4(),
-            wx.WXK_F5 : KeyboardButton.f5(),
-            wx.WXK_F6 : KeyboardButton.f6(),
-            wx.WXK_F7 : KeyboardButton.f7(),
-            wx.WXK_F8 : KeyboardButton.f8(),
-            wx.WXK_F9 : KeyboardButton.f9(),
-            wx.WXK_F10 : KeyboardButton.f10(),
-            wx.WXK_F11 : KeyboardButton.f11(),
-            wx.WXK_F12 : KeyboardButton.f12(),
-            wx.WXK_NUMLOCK : KeyboardButton.numLock(),
-            wx.WXK_SCROLL : KeyboardButton.scrollLock(),
-            wx.WXK_PAGEUP : KeyboardButton.pageUp(),
-            wx.WXK_PAGEDOWN : KeyboardButton.pageDown(),
-            wx.WXK_COMMAND : KeyboardButton.meta(),
-            }
+            wx.WXK_BACK: KeyboardButton.backspace(),
+            wx.WXK_TAB: KeyboardButton.tab(),
+            wx.WXK_RETURN: KeyboardButton.enter(),
+            wx.WXK_ESCAPE: KeyboardButton.escape(),
+            wx.WXK_DELETE: KeyboardButton._del(),  # del is a Python keyword
+            wx.WXK_SHIFT: KeyboardButton.shift(),
+            wx.WXK_ALT: KeyboardButton.alt(),
+            wx.WXK_CONTROL: KeyboardButton.control(),
+            wx.WXK_MENU: KeyboardButton.meta(),
+            wx.WXK_PAUSE: KeyboardButton.pause(),
+            wx.WXK_END: KeyboardButton.end(),
+            wx.WXK_HOME: KeyboardButton.home(),
+            wx.WXK_LEFT: KeyboardButton.left(),
+            wx.WXK_UP: KeyboardButton.up(),
+            wx.WXK_RIGHT: KeyboardButton.right(),
+            wx.WXK_DOWN: KeyboardButton.down(),
+            wx.WXK_PRINT: KeyboardButton.printScreen(),
+            wx.WXK_INSERT: KeyboardButton.insert(),
+            wx.WXK_F1: KeyboardButton.f1(),
+            wx.WXK_F2: KeyboardButton.f2(),
+            wx.WXK_F3: KeyboardButton.f3(),
+            wx.WXK_F4: KeyboardButton.f4(),
+            wx.WXK_F5: KeyboardButton.f5(),
+            wx.WXK_F6: KeyboardButton.f6(),
+            wx.WXK_F7: KeyboardButton.f7(),
+            wx.WXK_F8: KeyboardButton.f8(),
+            wx.WXK_F9: KeyboardButton.f9(),
+            wx.WXK_F10: KeyboardButton.f10(),
+            wx.WXK_F11: KeyboardButton.f11(),
+            wx.WXK_F12: KeyboardButton.f12(),
+            wx.WXK_NUMLOCK: KeyboardButton.numLock(),
+            wx.WXK_SCROLL: KeyboardButton.scrollLock(),
+            wx.WXK_PAGEUP: KeyboardButton.pageUp(),
+            wx.WXK_PAGEDOWN: KeyboardButton.pageDown(),
+            wx.WXK_COMMAND: KeyboardButton.meta(),
+        }
 
         def __init__(self, *args, **kw):
             gsg = None
@@ -132,7 +141,7 @@ else:
                 attribList = [
                     wxgl.WX_GL_RGBA, True,
                     wxgl.WX_GL_LEVEL, 0,
-                    ]
+                ]
                 if not fbprops.isSingleBuffered():
                     attribList.append(wxgl.WX_GL_DOUBLEBUFFER)
                     attribList.append(True)
@@ -156,10 +165,10 @@ else:
             gsg = None
 
             callbackWindowDict = {
-                'Events' : self.__eventsCallback,
-                'Properties' : self.__propertiesCallback,
-                'Render' : self.__renderCallback,
-                }
+                'Events': self.__eventsCallback,
+                'Properties': self.__propertiesCallback,
+                'Render': self.__renderCallback,
+            }
 
             # Make sure we have an OpenGL GraphicsPipe.
             if not base.pipe:

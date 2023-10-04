@@ -271,7 +271,7 @@ def create_aab(command, basename, build_dir):
     bundle.add_subfile('base/manifest/AndroidManifest.xml', p3d.StringStream(axml.dumps()), 9)
 
     # Add the classes.dex.
-    bundle.add_subfile(f'base/dex/classes.dex', build_dir_fn / 'classes.dex', 9)
+    bundle.add_subfile('base/dex/classes.dex', build_dir_fn / 'classes.dex', 9)
 
     # Add libraries, compressed.
     for abi in os.listdir(os.path.join(build_dir, 'lib')):
@@ -302,7 +302,7 @@ def create_aab(command, basename, build_dir):
             # It appears to be encrypted, and we don't have a passphrase, so we
             # must request it on the command-line.
             from getpass import getpass
-            password = getpass(f'Enter pass phrase for private key: ')
+            password = getpass('Enter pass phrase for private key: ')
 
         if not bundle.add_jar_signature(
                 p3d.Filename.from_os_specific(command.signing_certificate),

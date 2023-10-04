@@ -1,5 +1,24 @@
-from panda3d.core import *
-from panda3d.direct import *
+from __future__ import annotations
+
+from panda3d.core import (
+    BoundingVolume,
+    ColorBlendAttrib,
+    ColorWriteAttrib,
+    ConfigVariableBool,
+    Geom,
+    GeomNode,
+    GeomTriangles,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    Mat4,
+    NodePath,
+    NurbsCurveEvaluator,
+    Vec2,
+    Vec3,
+    Vec4,
+)
+from panda3d.direct import CMotionTrail
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.DirectObject import DirectObject
@@ -75,7 +94,7 @@ class MotionTrail(NodePath, DirectObject):
     notify = directNotify.newCategory("MotionTrail")
 
     task_added = False
-    motion_trail_list = []
+    motion_trail_list: list[MotionTrail] = []
     motion_trail_task_name = "motion_trail_task"
 
     global_enable = True
@@ -212,7 +231,7 @@ class MotionTrail(NodePath, DirectObject):
 
         index = 0
         while index < total_motion_trails:
-            motion_trail = MotionTrail.motion_trail_list [index]
+            motion_trail = MotionTrail.motion_trail_list[index]
 
             if MotionTrail.global_enable:
                 if motion_trail.use_python_version:
@@ -560,7 +579,7 @@ class MotionTrail(NodePath, DirectObject):
                         v0 = start_transform.xform(motion_trail_vertex_start.vertex)
                         v2 = end_transform.xform(motion_trail_vertex_start.vertex)
 
-                        nurbs_curve_evaluator = nurbs_curve_evaluator_list [vertex_segment_index]
+                        nurbs_curve_evaluator = nurbs_curve_evaluator_list[vertex_segment_index]
 
                         nurbs_curve_evaluator.setVertex(segment_index, v0)
 
@@ -572,7 +591,7 @@ class MotionTrail(NodePath, DirectObject):
                             v1 = start_transform.xform(motion_trail_vertex_end.vertex)
                             v3 = end_transform.xform(motion_trail_vertex_end.vertex)
 
-                            nurbs_curve_evaluator = nurbs_curve_evaluator_list [vertex_segment_index + 1]
+                            nurbs_curve_evaluator = nurbs_curve_evaluator_list[vertex_segment_index + 1]
 
                             nurbs_curve_evaluator.setVertex(segment_index, v1)
 
@@ -590,7 +609,7 @@ class MotionTrail(NodePath, DirectObject):
                     index = 0
                     nurbs_curve_result_list = []
                     while index < self.total_vertices:
-                        nurbs_curve_evaluator = nurbs_curve_evaluator_list [index]
+                        nurbs_curve_evaluator = nurbs_curve_evaluator_list[index]
                         nurbs_curve_result = nurbs_curve_evaluator.evaluate()
                         nurbs_curve_result_list = nurbs_curve_result_list + [nurbs_curve_result]
 
@@ -648,16 +667,16 @@ class MotionTrail(NodePath, DirectObject):
                             motion_trail_vertex_start = self.vertex_list[vertex_segment_index]
                             motion_trail_vertex_end = self.vertex_list[vertex_segment_index + 1]
 
-                            start_nurbs_curve_result = nurbs_curve_result_list [vertex_segment_index]
-                            end_nurbs_curve_result = nurbs_curve_result_list [vertex_segment_index + 1]
+                            start_nurbs_curve_result = nurbs_curve_result_list[vertex_segment_index]
+                            end_nurbs_curve_result = nurbs_curve_result_list[vertex_segment_index + 1]
 
                             start_nurbs_start_t = start_nurbs_curve_result.getStartT()
                             start_nurbs_end_t = start_nurbs_curve_result.getEndT()
                             end_nurbs_start_t = end_nurbs_curve_result.getStartT()
                             end_nurbs_end_t = end_nurbs_curve_result.getEndT()
 
-                            start_delta_t = (start_nurbs_end_t - start_nurbs_start_t)
-                            end_delta_t = (end_nurbs_end_t - end_nurbs_start_t)
+                            start_delta_t = start_nurbs_end_t - start_nurbs_start_t
+                            end_delta_t = end_nurbs_end_t - end_nurbs_start_t
 
                             start_nurbs_curve_result.evalPoint(start_nurbs_start_t + (start_delta_t * st), v0)
                             end_nurbs_curve_result.evalPoint(end_nurbs_start_t + (end_delta_t * st), v1)

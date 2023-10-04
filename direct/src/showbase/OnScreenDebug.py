@@ -2,7 +2,13 @@
 
 __all__ = ['OnScreenDebug']
 
-from panda3d.core import *
+from panda3d.core import (
+    ConfigVariableBool,
+    ConfigVariableDouble,
+    ConfigVariableString,
+    TextNode,
+    Vec4,
+)
 
 from direct.gui import OnscreenText
 from direct.directtools import DirectUtil
@@ -28,7 +34,7 @@ class OnScreenDebug:
         color = {
             "black": Vec4(0, 0, 0, 1),
             "white": Vec4(1, 1, 1, 1),
-            }
+        }
         fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").value]
         bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").value]
         fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
@@ -51,9 +57,7 @@ class OnScreenDebug:
         if not self.onScreenText:
             self.load()
         self.onScreenText.clearText()
-        entries = list(self.data.items())
-        entries.sort()
-        for k, v in entries:
+        for k, v in sorted(self.data.items()):
             if v[0] == self.frame:
                 # It was updated this frame (key equals value):
                 #isNew = " is"

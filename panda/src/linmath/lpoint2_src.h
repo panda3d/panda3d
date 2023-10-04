@@ -22,10 +22,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y);
 
-#ifdef HAVE_PYTHON
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
-#endif // HAVE_PYTHON
+  PY_EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  PY_EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LPoint2) &zero();
   INLINE_LINMATH static const FLOATNAME(LPoint2) &unit_x();

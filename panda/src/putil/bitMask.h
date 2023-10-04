@@ -126,10 +126,8 @@ PUBLISHED:
   INLINE int get_key() const;
 
   EXTENSION(bool __bool__() const);
-#ifdef HAVE_PYTHON
-  EXTENSION(PyObject *__int__() const);
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(PyObject *__int__() const);
+  PY_EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;

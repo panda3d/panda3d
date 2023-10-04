@@ -32,8 +32,8 @@ public:
   OdeLMotorJoint(dJointID id);
 
 PUBLISHED:
-  OdeLMotorJoint(OdeWorld &world);
-  OdeLMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeLMotorJoint(OdeWorld &world);
+  explicit OdeLMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeLMotorJoint();
 
   INLINE void set_num_axes(int num);

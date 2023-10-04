@@ -104,12 +104,12 @@ avoid the problem for me::
 
 __all__ = ['FSMInspector', 'StateInspector']
 
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import AppShell
 from tkinter.simpledialog import askstring
 import Pmw
 import math
 import operator
+import tkinter as tk
 
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
@@ -128,7 +128,7 @@ class FSMInspector(AppShell):
         optiondefs = (
             ('title', fsm.getName(), None),
             ('gridSize', '0.25i', self._setGridSize),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         self.fsm = fsm
@@ -158,7 +158,7 @@ class FSMInspector(AppShell):
                                   label = 'Grid spacing...',
                                   command = self.popupGridDialog)
         # Create the checkbutton variable
-        self._fGridSnap = IntVar()
+        self._fGridSnap = tk.IntVar()
         self._fGridSnap.set(1)
         menuBar.addmenuitem('ClassicFSM', 'checkbutton',
                                   'Enable/disable grid',
@@ -196,7 +196,7 @@ class FSMInspector(AppShell):
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('-2i', '-2i', '2i', '2i')
         self._scrolledCanvas.resizescrollregion()
-        self._scrolledCanvas.pack(padx = 5, pady = 5, expand=1, fill = BOTH)
+        self._scrolledCanvas.pack(padx = 5, pady = 5, expand=1, fill = tk.BOTH)
 
         # Update lines
         self._canvas.bind('<B1-Motion>', self.drawConnections)
@@ -358,8 +358,7 @@ class FSMInspector(AppShell):
 
     def printLayout(self):
         dict = self.stateInspectorDict
-        keys = list(dict.keys())
-        keys.sort()
+        keys = sorted(dict)
         print("ClassicFSM.ClassicFSM('%s', [" % self.name)
         for key in keys[:-1]:
             si = dict[key]
@@ -393,6 +392,7 @@ class FSMInspector(AppShell):
             self.ignore(self.name + '_' + si.getName() + '_entered')
             self.ignore(self.name + '_' + si.getName() + '_exited')
 
+
 class StateInspector(Pmw.MegaArchetype):
     def __init__(self, inspector, state, **kw):
 
@@ -412,7 +412,7 @@ class StateInspector(Pmw.MegaArchetype):
         optiondefs = (
             ('radius', '0.375i', self._setRadius),
             ('gridSize', '0.25i', self._setGridSize),
-            )
+        )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the parent class
@@ -429,7 +429,7 @@ class StateInspector(Pmw.MegaArchetype):
                                               fill = 'CornflowerBlue',
                                               tags = (self.tag,'markers'))
         self.text = self._canvas.create_text(0, 0, text = state.getName(),
-                                           justify = CENTER,
+                                           justify = tk.CENTER,
                                            tags = (self.tag,'labels'))
         # Is this state contain a sub machine?
         if state.hasChildren():
@@ -439,9 +439,8 @@ class StateInspector(Pmw.MegaArchetype):
                                                      half, half,
                                                      tags = (self.tag,))
 
-
         # The Popup State Menu
-        self._popupMenu = Menu(self._canvas, tearoff = 0)
+        self._popupMenu = tk.Menu(self._canvas, tearoff = 0)
         self._popupMenu.add_command(label = 'Request transition to ' +
                                     state.getName(),
                                     command = self.transitionTo)

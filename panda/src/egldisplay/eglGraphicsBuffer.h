@@ -36,6 +36,8 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
+  virtual void set_size(int x, int y);
+
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();

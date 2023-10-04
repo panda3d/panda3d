@@ -1,6 +1,9 @@
 from panda3d import core
 
+import pytest
 
+
+@pytest.mark.skipif(not hasattr(core, 'encrypt_string'), reason="Requires OpenSSL")
 def test_encrypt_string():
     # Test encrypt and then decrypt cycle
     for algorithm in ('', 'bf-cbc', 'aes-256-cbc'):

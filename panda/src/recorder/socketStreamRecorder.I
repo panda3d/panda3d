@@ -135,7 +135,8 @@ consider_flush() {
 INLINE bool SocketStreamRecorder::
 flush() {
   if (_stream != nullptr) {
-    return _stream->flush();
+    _stream->flush();
+    return !_stream->is_closed();
   }
   return true;
 }

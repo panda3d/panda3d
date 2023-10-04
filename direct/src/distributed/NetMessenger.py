@@ -20,9 +20,9 @@ MESSAGE_TYPES=(
 
 # This is the reverse look up for the recipient of the
 # datagram:
-MESSAGE_STRINGS={}
-for i in zip(MESSAGE_TYPES, range(1, len(MESSAGE_TYPES)+1)):
-    MESSAGE_STRINGS[i[0]]=i[1]
+MESSAGE_STRINGS = {}
+for i in zip(MESSAGE_TYPES, range(1, len(MESSAGE_TYPES) + 1)):
+    MESSAGE_STRINGS[i[0]] = i[1]
 
 
 class NetMessenger(Messenger):

@@ -22,6 +22,7 @@
 
 #include "pset.h"
 #include "pmap.h"
+#include "pvector.h"
 
 #ifndef CPPPARSER
 #include <functional>

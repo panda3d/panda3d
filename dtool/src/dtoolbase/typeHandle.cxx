@@ -155,7 +155,7 @@ deallocate_array(void *ptr) {
 /**
  * Returns the internal void pointer that is stored for interrogate's benefit.
  */
-PyObject *TypeHandle::
+PyTypeObject *TypeHandle::
 get_python_type() const {
   TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
   if (rnode != nullptr) {
@@ -164,26 +164,23 @@ get_python_type() const {
     return nullptr;
   }
 }
-#endif
 
 /**
- * Return the Index of the BEst fit Classs from a set
+ * Returns a Python wrapper object corresponding to the given C++ pointer.
  */
-int TypeHandle::
-get_best_parent_from_Set(const std::set< int > &legal_vals) const {
-  if (legal_vals.find(_index) != legal_vals.end()) {
-    return _index;
+PyObject *TypeHandle::
+wrap_python(void *ptr, PyTypeObject *cast_from) const {
+  if (ptr == nullptr) {
+    return nullptr;
   }
-
-  for (int pi = 0; pi < get_num_parent_classes(); ++pi) {
-    TypeHandle ph = get_parent_class(pi);
-    int val = ph.get_best_parent_from_Set(legal_vals);
-    if (val > 0) {
-      return val;
-    }
+  TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
+  if (rnode != nullptr) {
+    return rnode->wrap_python(ptr, cast_from);
+  } else {
+    return nullptr;
   }
-  return -1;
 }
+#endif
 
 std::ostream &
 operator << (std::ostream &out, TypeHandle::MemoryClass mem_class) {

@@ -36,7 +36,7 @@
 /**
  *
  */
-class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ShaderAttrib final : public RenderAttrib {
 private:
   INLINE ShaderAttrib();
   INLINE ShaderAttrib(const ShaderAttrib &copy);
@@ -96,10 +96,8 @@ public:
   CPT(RenderAttrib) set_shader_inputs(const pvector<ShaderInput> &inputs) const;
 
 PUBLISHED:
-#ifdef HAVE_PYTHON
-  EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
-  EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
-#endif // HAVE_PYTHON
+  PY_EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
+  PY_EXTENSION(CPT(RenderAttrib) set_shader_inputs(PyObject *args, PyObject *kwargs) const);
 
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
 

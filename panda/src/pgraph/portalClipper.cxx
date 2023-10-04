@@ -208,6 +208,7 @@ prepare_portal(const NodePath &node_path)
   if (node->is_of_type(PortalNode::get_class_type())) {
     _portal_node = DCAST(PortalNode, node);
   }
+  nassertr(_portal_node != nullptr, false);
 
   // Get the geometry from the portal
   if (portal_cat.is_spam()) {

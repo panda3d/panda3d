@@ -82,6 +82,16 @@ static struct _inittab extensions[] = {
 static wchar_t *log_pathw = NULL;
 #endif
 
+#if PY_VERSION_HEX >= 0x030b0000
+typedef struct {
+  const char *name;
+  const unsigned char *code;
+  int size;
+} ModuleDef;
+#else
+typedef struct _frozen ModuleDef;
+#endif
+
 /**
  * Sets the main_dir field of the blobinfo structure, but only if it wasn't
  * already set.
@@ -627,7 +637,7 @@ int wmain(int argc, wchar_t *argv[]) {
 int main(int argc, char *argv[]) {
 #endif
   int retval;
-  struct _frozen *moddef;
+  ModuleDef *moddef;
   const char *log_filename;
   void *blob = NULL;
   log_filename = NULL;
@@ -677,6 +687,9 @@ int main(int argc, char *argv[]) {
 
     // Offset the pointers in the module table using the base mmap address.
     moddef = blobinfo.pointers[0];
+#if PY_VERSION_HEX < 0x030b0000
+    PyImport_FrozenModules = moddef;
+#endif
     while (moddef->name) {
       moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
       if (moddef->code != 0) {
@@ -685,6 +698,24 @@ int main(int argc, char *argv[]) {
       //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
       moddef++;
     }
+
+    // In Python 3.11, we need to convert this to the new structure format.
+#if PY_VERSION_HEX >= 0x030b0000
+    ModuleDef *moddef_end = moddef;
+    ptrdiff_t num_modules = moddef - (ModuleDef *)blobinfo.pointers[0];
+    struct _frozen *new_moddef = (struct _frozen *)calloc(num_modules + 1, sizeof(struct _frozen));
+    PyImport_FrozenModules = new_moddef;
+    for (moddef = blobinfo.pointers[0]; moddef < moddef_end; ++moddef) {
+      new_moddef->name = moddef->name;
+      new_moddef->code = moddef->code;
+      new_moddef->size = moddef->size < 0 ? -(moddef->size) : moddef->size;
+      new_moddef->is_package = moddef->size < 0;
+      new_moddef->get_code = NULL;
+      new_moddef++;
+    }
+#endif
+  } else {
+    PyImport_FrozenModules = blobinfo.pointers[0];
   }
 
   if (log_filename != NULL) {
@@ -707,11 +738,15 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Run frozen application
-  PyImport_FrozenModules = blobinfo.pointers[0];
   retval = Py_FrozenMain(argc, argv);
 
   fflush(stdout);
   fflush(stderr);
+
+#if PY_VERSION_HEX >= 0x030b0000
+  free((void *)PyImport_FrozenModules);
+  PyImport_FrozenModules = NULL;
+#endif
 
   unmap_blob(blob);
   return retval;

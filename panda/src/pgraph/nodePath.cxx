@@ -75,7 +75,6 @@
 #include "weakNodePath.h"
 
 using std::max;
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;

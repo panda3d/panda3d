@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public AdaptiveLruPage {
 public:
-  INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
+  INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
 
 PUBLISHED:
   INLINE Texture *get_texture() const;
@@ -49,6 +49,7 @@ PUBLISHED:
   INLINE UpdateSeq get_image_modified() const;
 
   INLINE SparseArray get_image_modified_pages(int n = 0) const;
+  INLINE SparseArray get_view_modified_pages(int view, int n = 0) const;
 
 public:
   INLINE void update_data_size_bytes(size_t new_data_size_bytes);
@@ -60,7 +61,6 @@ public:
   virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  int _view;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
 

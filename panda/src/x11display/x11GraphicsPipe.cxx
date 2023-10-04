@@ -437,7 +437,7 @@ send_startup_notification() {
 
   // Allocate enough room for the message, with room for escape characters.
   char *message = (char *)alloca(_startup_id.size() * 2 + 14);
-  strcpy(message, "remove: ID=\"");
+  memcpy(message, "remove: ID=\"", 12);
 
   char *p = message + 12;
   for (char c : _startup_id) {

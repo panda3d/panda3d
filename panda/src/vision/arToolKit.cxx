@@ -475,7 +475,7 @@ analyze(Texture *tex, bool do_flip_texture) {
     }
   }
 
-  delete data;
+  delete[] data;
 }
 
 #endif // HAVE_ARTOOLKIT

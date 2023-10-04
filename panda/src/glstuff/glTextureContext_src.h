@@ -25,21 +25,20 @@ class CLP(SamplerContext);
 class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
   INLINE CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
-                             PreparedGraphicsObjects *pgo,
-                             Texture *tex, int view);
+                             PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(CLP(TextureContext));
 
   virtual ~CLP(TextureContext)();
   virtual void evict_lru();
-  void reset_data();
+  void reset_data(GLenum target, int num_views = 1);
 
   virtual uint64_t get_native_id() const;
   virtual uint64_t get_native_buffer_id() const;
 
-#ifndef OPENGLES
-  void make_handle_resident();
-  GLuint64 get_handle();
-#endif
+  void set_num_views(int num_views);
+
+  INLINE GLuint get_view_index(int view) const;
+  INLINE GLuint get_view_buffer(int view) const;
 
 #ifdef OPENGLES_1
   static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
@@ -48,30 +47,32 @@ public:
   void mark_incoherent(bool wrote);
 #endif
 
+private:
   // This is the GL "name" of the texture object.
   GLuint _index;
 
   // This is only used for buffer textures.
   GLuint _buffer;
 
-#ifndef OPENGLES
-  // This is the bindless "handle" to the texture object.
-  GLuint64 _handle;
-  bool _handle_resident;
-#endif
+public:
+  // Multiview textures have multiple of the above.  For a single-view texture,
+  // these are simply pointers to the above fields.
+  int _num_views;
+  GLuint *_indices;
+  GLuint *_buffers;
 
   // These are the parameters that we specified with the last glTexImage2D()
   // or glTexStorage2D() call.  If none of these have changed, we can reload
   // the texture image with a glTexSubImage2D().
   bool _has_storage;
-  bool _simple_loaded;
   bool _immutable;
-  bool _uses_mipmaps;
+  bool _may_reload_with_mipmaps;
   bool _generate_mipmaps;
   GLint _internal_format;
   GLsizei _width;
   GLsizei _height;
   GLsizei _depth;
+  int _num_levels;
   GLenum _target;
   SamplerState _active_sampler;
 

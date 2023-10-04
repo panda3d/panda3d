@@ -26,7 +26,7 @@
 class EXPCL_PANDABULLET BulletTickCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletTickCallbackData(btScalar timestep);
+  INLINE explicit BulletTickCallbackData(btScalar timestep);
 
   INLINE PN_stdfloat get_timestep() const;
 

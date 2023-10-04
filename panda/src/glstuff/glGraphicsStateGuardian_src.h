@@ -143,6 +143,7 @@ typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 typedef void (APIENTRYP PFNGLBLENDEQUATIONSEPARATEPROC) (GLenum modeRGB, GLenum modeAlpha);
 typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
+typedef void (APIENTRYP PFNGLTEXBUFFERPROC) (GLenum target, GLenum internalformat, GLuint buffer);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -343,7 +344,7 @@ public:
   void issue_memory_barrier(GLbitfield barrier);
 #endif
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view);
+  virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
@@ -450,6 +451,8 @@ public:
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
   INLINE bool has_fixed_function_pipeline() const;
+
+  INLINE int get_max_vertex_attrib_stride() const;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -630,12 +633,12 @@ protected:
 #endif  // NDEBUG
 
   bool specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler);
-  bool apply_texture(CLP(TextureContext) *gtc);
-  bool apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc);
+  bool apply_texture(CLP(TextureContext) *gtc, int view);
+  bool apply_sampler(GLuint unit, const SamplerState &sampler,
+                     CLP(TextureContext) *gtc, int view);
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
-  bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
-                            bool uses_mipmaps, int mipmap_bias,
-                            GLenum texture_target,
+  bool upload_texture_image(CLP(TextureContext) *gtc, int view,
+                            bool needs_reload, int mipmap_bias, int num_levels,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
                             Texture::CompressionMode image_compression);
@@ -644,7 +647,7 @@ protected:
 
   size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
-  bool do_extract_texture_data(CLP(TextureContext) *gtc);
+  bool do_extract_texture_data(CLP(TextureContext) *gtc, int view);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
            Texture *tex, GLenum target, GLenum page_target,
            Texture::ComponentType type,
@@ -721,7 +724,7 @@ protected:
 #if defined(HAVE_CG) && !defined(OPENGLES)
   CGcontext _cg_context;
   static AtomicAdjust::Integer _num_gsgs_with_cg_contexts;
-  static pvector<CGcontext> _destroyed_cg_contexts;
+  static small_vector<CGcontext> _destroyed_cg_contexts;
 #endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -751,6 +754,11 @@ protected:
   bool _use_vertex_attrib_binding;
   CPT(GeomVertexFormat) _current_vertex_format;
   const GeomVertexColumn *_vertex_attrib_columns[32];
+#ifdef __EMSCRIPTEN__
+  static const int _max_vertex_attrib_stride = 255;
+#else
+  int _max_vertex_attrib_stride = INT_MAX;
+#endif
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;
@@ -829,7 +837,7 @@ public:
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   PFNGLTEXBUFFERPROC _glTexBuffer;
 #endif
 
@@ -963,7 +971,12 @@ public:
 
 #ifndef OPENGLES
   bool _supports_dsa;
+  PFNGLCREATETEXTURESPROC _glCreateTextures;
+  PFNGLTEXTURESTORAGE2DPROC _glTextureStorage2D;
+  PFNGLTEXTURESUBIMAGE2DPROC _glTextureSubImage2D;
+  PFNGLTEXTUREPARAMETERIPROC _glTextureParameteri;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+  PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
 #endif
 
 #ifndef OPENGLES_1
@@ -1197,7 +1210,7 @@ public:
     GLint64 _gpu_sync_time;
     double _cpu_sync_time;
     pvector<std::pair<GLuint, int> > _queries;
-    pvector<GLint64> _latency_refs;
+    small_vector<GLint64> _latency_refs;
   };
   pdeque<FrameTiming> _frame_timings;
   FrameTiming *_current_frame_timing = nullptr;

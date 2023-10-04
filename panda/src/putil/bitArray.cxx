@@ -103,7 +103,7 @@ has_any_of(int low_bit, int size) const {
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
-    return get_word(w).has_any_of(b, size);
+    return get_word_internal(w).has_any_of(b, size);
   }
 
   int num_high_bits = num_bits_per_word - b;
@@ -156,7 +156,7 @@ has_all_of(int low_bit, int size) const {
   }
   if (b + size <= num_bits_per_word) {
     // The whole thing fits within one word of the array.
-    return get_word(w).has_all_of(b, size);
+    return get_word_internal(w).has_all_of(b, size);
   }
 
   int num_high_bits = num_bits_per_word - b;
@@ -588,7 +588,7 @@ compare_to(const BitArray &other) const {
 
   // Compare from highest-order to lowest-order word.
   for (int i = num_words - 1; i >= 0; --i) {
-    int compare = get_word(i).compare_to(other.get_word(i));
+    int compare = get_word_internal(i).compare_to(other.get_word_internal(i));
     if (compare != 0) {
       return compare;
     }

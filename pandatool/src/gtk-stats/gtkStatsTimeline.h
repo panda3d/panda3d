@@ -26,7 +26,7 @@ class GtkStatsMonitor;
  * horizontal scrolling timeline, with concurrent start/stop pairs stacked
  * underneath each other.
  */
-class GtkStatsTimeline : public PStatTimeline, public GtkStatsGraph {
+class GtkStatsTimeline final : public PStatTimeline, public GtkStatsGraph {
 public:
   GtkStatsTimeline(GtkStatsMonitor *monitor);
   virtual ~GtkStatsTimeline();
