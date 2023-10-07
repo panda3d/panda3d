@@ -11,7 +11,7 @@ add_magnification_event(double magnification, GesturePhase phase, int seq, doubl
   me._sequence = seq;
   me._time = time;
 
-  me._magnification = magnification;
+  me._gestureData.magnification = magnification;
   _events.push_back(me);
 }
 

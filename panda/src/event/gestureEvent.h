@@ -29,8 +29,18 @@ public:
 
   virtual ~GestureEvent() {}
 
-  // Only valid if _type == MAGNIFICATION
-  double _magnification = 0.0;
+  // Which one of these union values is valid depends on _type
+  union {
+    // Only valid if _type == MAGNIFICATION
+    double magnification;
+    // Only valid if _type == ROTATION
+    double rotation;
+    // Only valid if _type == SWIPE
+    struct {
+      double deltaX;
+      double deltaY;
+    } swipe;
+  } _gestureData;
 
 /**
  * TypedObject implementation

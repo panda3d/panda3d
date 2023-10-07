@@ -32,6 +32,7 @@
 #include "clockObject.h"
 #include "pvector.h"
 #include "displayRegion.h"
+#include "gestureEvent.h"
 
 class MouseWatcherParameter;
 class DisplayRegion;
@@ -175,6 +176,8 @@ protected:
   void throw_event_pattern(const std::string &pattern,
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
+
+  void throw_gesture_event(const GestureEvent &ge);
 
   void move();
   void press(ButtonHandle button, bool keyrepeat);
