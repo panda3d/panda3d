@@ -199,3 +199,11 @@ set_pointer_out_of_window(double time) {
                                seq, time);
   }
 }
+
+void GraphicsWindowInputDevice::
+magnify_gesture(double magnification, GesturePhase phase, double time) {
+  LightMutexHolder holder(_lock);
+  int seq = _event_sequence++;
+  _gesture_events->add_magnification_event(magnification, phase, seq, time);
+}
+

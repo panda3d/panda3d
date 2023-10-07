@@ -34,6 +34,7 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
   _pointer_events_output = define_output("pointer_events", PointerEventList::get_class_type());
+  _gesture_events_output = define_output("gesture_events", GestureEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
@@ -75,6 +76,10 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
   if (device->has_pointer_event()) {
     PT(PointerEventList) pel = device->get_pointer_events();
     output.set_data(_pointer_events_output, EventParameter(pel));
+  }
+  if (device->has_gesture_event()) {
+    PT(GestureEventList) gel = device->get_gesture_events();
+    output.set_data(_gesture_events_output, EventParameter(gel));
   }
 
   // Get the window size.

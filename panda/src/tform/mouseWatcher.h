@@ -277,6 +277,7 @@ private:
   int _xy_input;
   int _button_events_input;
   int _pointer_events_input;
+  int _gesture_events_input;
 
   // outputs
   int _pixel_xy_output;

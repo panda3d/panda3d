@@ -1788,6 +1788,26 @@ handle_wheel_event(double x, double y) {
   }
 }
 
+void CocoaGraphicsWindow::
+handle_magnify(double magnification, NSEventPhase eventPhase) {
+  GesturePhase phase = GesturePhase::UNKNOWN;
+  switch (eventPhase) {
+  case NSEventPhaseBegan:
+    phase = GesturePhase::BEGAN; break;
+  case NSEventPhaseChanged:
+  case NSEventPhaseStationary:
+    phase = GesturePhase::CHANGED; break;
+  case NSEventPhaseEnded:
+    phase = GesturePhase::ENDED; break;
+  case NSEventPhaseCancelled:
+    phase = GesturePhase::CANCELLED; break;
+  default:
+    break;
+  }
+
+  _input->magnify_gesture(magnification, phase);
+}
+
 /**
  * Returns a ButtonMap containing the association between raw buttons and
  * virtual buttons.

@@ -51,6 +51,7 @@ MouseWatcher(const string &name) :
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
   _pointer_events_input = define_input("pointer_events", PointerEventList::get_class_type());
+  _gesture_events_input = define_input("gesture_events", GestureEventList::get_class_type());
 
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
@@ -1440,6 +1441,24 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     // released a button (particularly likely with a touchscreen input that's
     // emulating a mouse).
     set_no_mouse();
+  }
+
+  if (input.has_data(_gesture_events_input)) {
+    tform_cat.info() << "Gesture event input!\n";
+    const GestureEventList *this_gesture_events;
+    DCAST_INTO_V(this_gesture_events, input.get_data(_gesture_events_input).get_ptr());
+
+    int num_events = this_gesture_events->get_num_events();
+    for (int i = 0; i < num_events; i++) {
+      const GestureEvent &ge = this_gesture_events->get_event(i);
+
+      if (ge._type == GestureType::MAGNIFICATION) {
+        tform_cat.info() << "Magnification gesture!\n";
+      } else {
+        tform_cat.info() << "um no something else what!\n";
+      }
+    }
+
   }
 
   // Now check the inactivity timer.
