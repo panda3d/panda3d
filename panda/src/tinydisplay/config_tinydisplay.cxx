@@ -21,6 +21,7 @@
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
 #include "tinyOffscreenGraphicsPipe.h"
+#include "tinyOffscreenGraphicsWindow.h"
 #include "tinyGraphicsBuffer.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
@@ -114,6 +115,7 @@ init_libtinydisplay() {
 #endif
 
   TinyOffscreenGraphicsPipe::init_type();
+  TinyOffscreenGraphicsWindow::init_type();
   selection->add_pipe_type(TinyOffscreenGraphicsPipe::get_class_type(),
                            TinyOffscreenGraphicsPipe::pipe_constructor);
   ps->set_system_tag("TinyPanda", "", "");
