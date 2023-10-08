@@ -28,6 +28,7 @@
 #include "asyncTaskManager.h"
 #include "asyncTask.h"
 #include "boundingSphere.h"
+#include "load_prc_file.h"
 
 using std::cerr;
 using std::endl;
@@ -198,7 +199,10 @@ help() {
     "  -i\n"
     "      Ignore bundle/group names.  Normally, the <group> name must match\n"
     "      the <bundle> name, or the animation will not be used.\n\n"
-
+    
+    "  -o\n"
+    "      Use window-type offscreen\n\n"
+    
     "  -s filename\n"
     "      After displaying the models, immediately take a screenshot and\n"
     "      exit.\n\n"
@@ -375,6 +379,10 @@ main(int argc, char **argv) {
 
     case 'i':
       hierarchy_match_flags |= PartGroup::HMF_ok_wrong_root_name;
+      break;
+      
+    case 'o':
+      load_prc_file_data("", "window-type offscreen");
       break;
 
     case 's':
