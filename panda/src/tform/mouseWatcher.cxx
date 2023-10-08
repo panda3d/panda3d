@@ -1485,13 +1485,6 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     int num_events = this_gesture_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const GestureEvent &ge = this_gesture_events->get_event(i);
-
-      if (ge._type == GestureType::MAGNIFICATION) {
-        tform_cat.info() << "Magnification gesture!\n";
-      } else {
-        tform_cat.info() << "um no something else what!\n";
-      }
-
       throw_gesture_event(ge);
     }
 

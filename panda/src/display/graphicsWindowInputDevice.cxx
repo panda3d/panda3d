@@ -207,3 +207,10 @@ magnify_gesture(double magnification, GesturePhase phase, double time) {
   _gesture_events->add_magnification_event(magnification, phase, seq, time);
 }
 
+void GraphicsWindowInputDevice::
+rotate_gesture(double rotation, GesturePhase phase, double time) {
+  LightMutexHolder holder(_lock);
+  int seq = _event_sequence++;
+  _gesture_events->add_rotation_event(rotation, phase, seq, time);
+}
+

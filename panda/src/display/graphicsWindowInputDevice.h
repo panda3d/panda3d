@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE void remove_pointer(int id);
 
   void magnify_gesture(double magnification, GesturePhase phase, double time = ClockObject::get_global_clock()->get_frame_time());
+  void rotate_gesture(double rotation, GesturePhase phase, double time = ClockObject::get_global_clock()->get_frame_time());
 
 private:
   typedef pset<ButtonHandle> ButtonsHeld;

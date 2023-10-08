@@ -165,6 +165,10 @@
   _graphicsWindow->handle_magnify([event magnification], [event phase]);
 }
 
+- (void)rotateWithEvent:(NSEvent*)event {
+  _graphicsWindow->handle_rotate([event rotation], [event phase]);
+}
+
 - (BOOL) isOpaque {
   return YES;
 }

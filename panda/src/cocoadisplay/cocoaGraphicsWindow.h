@@ -71,6 +71,7 @@ public:
   void handle_mouse_moved_event(bool in_window, double x, double y, bool absolute);
   void handle_wheel_event(double x, double y);
   void handle_magnify(double magnification, NSEventPhase eventPhase);
+  void handle_rotate(double rotation, NSEventPhase eventPhase);
   virtual ButtonMap *get_keyboard_map() const;
 
   INLINE NSWindow *get_nswindow() const;

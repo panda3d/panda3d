@@ -16,6 +16,18 @@ add_magnification_event(double magnification, GesturePhase phase, int seq, doubl
 }
 
 void GestureEventList::
+add_rotation_event(double rotation, GesturePhase phase, int seq, double time) {
+  GestureEvent re;
+  re._type = GestureType::ROTATION;
+  re._phase = phase;
+  re._sequence = seq;
+  re._time = time;
+
+  re._gestureData.rotation = rotation;
+  _events.push_back(re);
+}
+
+void GestureEventList::
 output(std::ostream &out) const {
   if (_events.empty()) {
     out << "(no pointers)";

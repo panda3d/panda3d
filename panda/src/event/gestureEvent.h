@@ -74,6 +74,7 @@ public:
   virtual void output(std::ostream &out) const;
 
   void add_magnification_event(double magnification, GesturePhase phase, int seq, double time);
+  void add_rotation_event(double rotation, GesturePhase phase, int seq, double time);
 
 private:
   typedef pdeque<GestureEvent> Events;
