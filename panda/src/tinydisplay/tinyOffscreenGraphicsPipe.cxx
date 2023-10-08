@@ -18,6 +18,7 @@
 #include "tinyGraphicsBuffer.h"
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
+#include "tinyOffscreenGraphicsWindow.h"
 
 TypeHandle TinyOffscreenGraphicsPipe::_type_handle;
 
