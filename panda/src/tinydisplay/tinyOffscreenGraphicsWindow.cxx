@@ -188,7 +188,7 @@ open_window() {
 
   // GSG CreationInitialization
   TinyGraphicsStateGuardian *tinygsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, nullptr);
     _gsg = tinygsg;
@@ -196,21 +196,6 @@ open_window() {
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
   }
-/*
-  _flags = Offscreen_SWSURFACE;
-  if (_properties.get_fullscreen()) {
-    _flags |= Offscreen_WINDOW_FULLSCREEN;
-  }
-
-  Offscreen_Window *win = Offscreen_CreateWindow("Panda3D", 0, 0, _properties.get_x_size(), _properties.get_y_size(), _flags);
-    _screen = Offscreen_GetWindowSurface(win);
-
-  if (_screen == nullptr) {
-    tinydisplay_cat.error()
-      << "Video mode set failed.\n";
-    return false;
-  }
-*/
 
   create_frame_buffer();
   if (_frame_buffer == nullptr) {
