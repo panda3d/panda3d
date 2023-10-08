@@ -59,7 +59,7 @@ class RotatingLog:
         for i in range(26):
             limit = self.sizeLimit
             path = "%s_%s_%s.log" % (self.path, dateString, chr(i+97))
-            if limit is None not os.path.exists(path) or os.stat(path)[6] < limit:
+            if limit is None or not os.path.exists(path) or os.stat(path)[6] < limit:
                 return path
         # Hmm, 26 files are full?  throw the rest in z:
         # Maybe we should clear the self.sizeLimit here... maybe.
