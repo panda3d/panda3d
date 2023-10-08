@@ -2,11 +2,7 @@ from panda3d import core
 import pytest
 import time
 import sys
-
-if sys.version_info >= (3, 8):
-    from asyncio.exceptions import TimeoutError, CancelledError
-else:
-    from concurrent.futures._base import TimeoutError, CancelledError
+from asyncio.exceptions import TimeoutError, CancelledError
 
 
 class MockFuture:

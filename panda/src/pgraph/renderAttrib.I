@@ -79,7 +79,11 @@ get_hash() const {
  */
 INLINE CPT(RenderAttrib) RenderAttrib::
 get_unique() const {
-  return return_unique((RenderAttrib *)this);
+  if (state_cache) {
+    return do_uniquify(this);
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -91,6 +95,47 @@ calc_hash() {
 
   // The type is also added to the hash.
   _hash = int_hash::add_hash(hash, get_type().get_index());
+}
+
+/**
+ * This function is used by derived RenderAttrib types to share a common
+ * RenderAttrib pointer for all equivalent RenderAttrib objects.
+ *
+ * This is different from return_unique() in that it does not actually
+ * guarantee a unique pointer, unless uniquify-attribs is set.
+ */
+INLINE CPT(RenderAttrib) RenderAttrib::
+return_new(RenderAttrib *attrib) {
+  nassertr(attrib != nullptr, attrib);
+  attrib->calc_hash();
+
+  if (_uniquify_attribs) {
+    return do_uniquify(attrib);
+  } else {
+    return attrib;
+  }
+}
+
+/**
+ * This function is used by derived RenderAttrib types to share a common
+ * RenderAttrib pointer for all equivalent RenderAttrib objects.
+ *
+ * The make() function of the derived type should create a new RenderAttrib
+ * and pass it through return_new(), which will either save the pointer and
+ * return it unchanged (if this is the first similar such object) or delete it
+ * and return an equivalent pointer (if there was already a similar object
+ * saved).
+ */
+INLINE CPT(RenderAttrib) RenderAttrib::
+return_unique(RenderAttrib *attrib) {
+  nassertr(attrib != nullptr, attrib);
+  attrib->calc_hash();
+
+  if (state_cache) {
+    return do_uniquify(attrib);
+  } else {
+    return attrib;
+  }
 }
 
 /**

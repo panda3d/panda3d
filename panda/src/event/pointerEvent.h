@@ -39,7 +39,7 @@ public:
 public:
   bool _in_window = false;
   int _id = 0;
-  PointerType _type = PointerType::unknown;
+  PointerType _type = PointerType::UNKNOWN;
   double _xpos = 0.0;
   double _ypos = 0.0;
   double _dx = 0.0;

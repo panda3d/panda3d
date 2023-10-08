@@ -16,7 +16,7 @@
 
 #include "compose_matrix.h"
 #include "mouseAndKeyboard.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "clockObject.h"
 #include "modifierButtons.h"
 #include "keyboardButton.h"

@@ -120,7 +120,7 @@ from direct.extensions_native import NodePath_extensions # pylint: disable=unuse
 # This needs to be available early for DirectGUI imports
 import sys
 import builtins
-builtins.config = DConfig
+builtins.config = DConfig  # type: ignore[attr-defined]
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from .MessengerGlobal import messenger
@@ -691,6 +691,7 @@ class ShowBase(DirectObject.DirectObject):
             allowAccessibilityShortcutKeys(True)
             self.__disabledStickyKeys = False
 
+        self.__directObject.ignoreAll()
         self.ignoreAll()
         self.shutdown()
 
@@ -3314,8 +3315,9 @@ class ShowBase(DirectObject.DirectObject):
         init_app_for_gui()
 
         # Disable the Windows message loop, since Tcl wants to handle this all
-        # on its own.
-        ConfigVariableBool('disable-message-loop', False).value = True
+        # on its own, except if the Panda window is on a separate thread.
+        if self.graphicsEngine.getThreadingModel().getDrawStage() == 0:
+            ConfigVariableBool('disable-message-loop', False).value = True
 
         if ConfigVariableBool('tk-main-loop', True):
             # Put Tkinter in charge of the main loop.  It really

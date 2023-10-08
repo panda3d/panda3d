@@ -454,15 +454,11 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // IF the class is possibly a run time typed object
   if (type_index > 0) {
     // get best fit class...
-    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
-    if (target_class != nullptr) {
-      // cast to the type...
-      Dtool_PyInstDef *self = target_class->_Dtool_WrapInterface(local_this_in, &known_class_type);
-      if (self != nullptr) {
-        self->_memory_rules = memory_rules;
-        self->_is_const = is_const;
-        return (PyObject *)self;
-      }
+    Dtool_PyInstDef *self = (Dtool_PyInstDef *)TypeHandle::from_index(type_index).wrap_python(local_this_in, &known_class_type._PyType);
+    if (self != nullptr) {
+      self->_memory_rules = memory_rules;
+      self->_is_const = is_const;
+      return (PyObject *)self;
     }
   }
 
@@ -627,7 +623,7 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
       if (main_module == NULL) {
         interrogatedb_cat.warning() << "Unable to import __main__\n";
       }
-      
+
       // Extract the __file__ attribute, if present.
       Filename main_dir;
       PyObject *file_attr = nullptr;
@@ -788,9 +784,7 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
         PyDict_Next(kwds, &ppos, &key, result)) {
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03060000
-      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
-#elif PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
 #else
       return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;

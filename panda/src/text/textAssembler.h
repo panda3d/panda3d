@@ -25,7 +25,7 @@
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
 #include "geomVertexRewriter.h"
-
+#include "epvector.h"
 #include "pmap.h"
 
 typedef struct hb_buffer_t hb_buffer_t;

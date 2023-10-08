@@ -33,8 +33,8 @@ public:
   OdeAMotorJoint(dJointID id);
 
 PUBLISHED:
-  OdeAMotorJoint(OdeWorld &world);
-  OdeAMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeAMotorJoint(OdeWorld &world);
+  explicit OdeAMotorJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeAMotorJoint();
 
   INLINE void set_num_axes(int num);

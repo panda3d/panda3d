@@ -31,7 +31,7 @@ public:
 
 PUBLISHED:
   OdeSphereGeom(dReal radius);
-  OdeSphereGeom(OdeSpace &space, dReal radius);
+  explicit OdeSphereGeom(OdeSpace &space, dReal radius);
   OdeSphereGeom(OdeGeom &geom);
   virtual ~OdeSphereGeom();
 

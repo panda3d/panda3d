@@ -90,6 +90,7 @@ defaultHiddenImports = {
     'scipy.special._ufuncs': ['scipy.special._ufuncs_cxx'],
     'scipy.stats._stats': ['scipy.special.cython_special'],
     'setuptools.monkey': ['setuptools.msvc'],
+    'shapely._geometry_helpers': ['shapely._geos'],
 }
 
 
@@ -370,6 +371,8 @@ extern PyAPI_FUNC(int) PyImport_ExtendInittab(struct _inittab *newtab);
 
 /* Main program */
 
+EXTRA_INIT_FUNC_DECLS
+
 int
 Py_FrozenMain(int argc, char **argv)
 {
@@ -448,6 +451,8 @@ Py_FrozenMain(int argc, char **argv)
 #else
     PySys_SetArgv(argc, argv);
 #endif
+
+EXTRA_INIT_FUNC_CALLS
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -839,6 +844,12 @@ class Freezer:
         # modules.
         self.extras = []
 
+        # This is a list of init functions that must be called after
+        # Py_Initialize(), but before importing __main__.  This is a
+        # tuple of (return type, name).  They should use C calling
+        # convention.
+        self.extraInitFuncs = []
+
         # Set this to true if extension modules should be linked in to
         # the resulting executable.
         self.linkExtensionModules = False
@@ -1135,15 +1146,12 @@ class Freezer:
 
         # Walk through the list in sorted order, so we reach parents
         # before children.
-        names = list(self.modules.items())
-        names.sort()
-
         excludeDict = {}
         implicitParentDict = {}
         includes = []
         autoIncludes = []
         origToNewName = {}
-        for newName, mdef in names:
+        for newName, mdef in sorted(self.modules.items()):
             moduleName = mdef.moduleName
             origToNewName[moduleName] = newName
             if mdef.implicit and '.' in newName:
@@ -1711,6 +1719,18 @@ class Freezer:
 
         if compileToExe:
             code = self.frozenMainCode
+
+            decls = ''
+            calls = ''
+            for func in self.extraInitFuncs:
+                if isinstance(func, str):
+                    func = ('void', func)
+                decls += f'extern {func[0]} {func[1]}();\n'
+                calls += f'    {func[1]}();\n';
+
+            code = code.replace('EXTRA_INIT_FUNC_DECLS', decls)
+            code = code.replace('EXTRA_INIT_FUNC_CALLS', calls)
+
             if self.platform.startswith('win'):
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
@@ -2560,6 +2580,21 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 code = overrideModules[fqname]
             else:
                 code = fp.read()
+
+            # Strip out delvewheel patch (see GitHub issue #1492)
+            if isinstance(code, bytes):
+                # Don't look for \n at the end, it may also be \r\n
+                start_marker = b'# start delvewheel patch'
+                end_marker = b'# end delvewheel patch'
+            else:
+                start_marker = '# start delvewheel patch'
+                end_marker = '# end delvewheel patch'
+
+            start = code.find(start_marker)
+            while start >= 0:
+                end = code.find(end_marker, start) + len(end_marker)
+                code = code[:start] + code[end:]
+                start = code.find(start_marker)
 
             code += b'\n' if isinstance(code, bytes) else '\n'
             co = compile(code, pathname, 'exec', optimize=self.optimize)

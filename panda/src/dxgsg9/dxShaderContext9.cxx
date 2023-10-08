@@ -75,7 +75,7 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
   }
 #endif
 
-  _mat_part_cache = new LMatrix4[s->cp_get_mat_cache_size()];
+  _mat_part_cache = new LVecBase4f[s->cp_get_mat_cache_size()];
 }
 
 /**
@@ -184,14 +184,6 @@ unbind(GSG *gsg) {
  * the parameters were issued, no part of the render state has changed except
  * the external and internal transforms.
  */
-
-#if DEBUG_SHADER
-PN_stdfloat *global_data = 0;
-ShaderContext::ShaderMatSpec *global_shader_mat_spec = 0;
-InternalName *global_internal_name_0 = 0;
-InternalName *global_internal_name_1 = 0;
-#endif
-
 void DXShaderContext9::
 issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
@@ -249,106 +241,42 @@ issue_parameters(GSG *gsg, int altered) {
           continue;
         }
 
-        const LMatrix4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
+        const LVecBase4f *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
         if (val) {
-          HRESULT hr;
-          PN_stdfloat v [4];
-          LMatrix4f temp_matrix = LCAST(float, *val);
+          const float *data = (const float *)val + spec._offset;
+          LVecBase4f v;
+          LMatrix4f temp_matrix;
           LMatrix3f temp_matrix3;
 
-          hr = D3D_OK;
-
-          const float *data;
-          data = temp_matrix.get_data();
-
-#if DEBUG_SHADER
-          // DEBUG
-          global_data = (PN_stdfloat *)data;
-          global_shader_mat_spec = &spec;
-          global_internal_name_0 = global_shader_mat_spec->_arg[0];
-          global_internal_name_1 = global_shader_mat_spec->_arg[1];
-#endif
-
           switch (spec._piece) {
-          case Shader::SMP_whole:
+          case Shader::SMP_mat4_whole:
             // TRANSPOSE REQUIRED
-            temp_matrix.transpose_in_place();
+            temp_matrix.transpose_from(*(const LMatrix4f *)data);
             data = temp_matrix.get_data();
-
-            hr = cgD3D9SetUniform(p, data);
             break;
 
-          case Shader::SMP_transpose:
-            // NO TRANSPOSE REQUIRED
-            hr = cgD3D9SetUniform(p, data);
+          case Shader::SMP_mat4_column:
+            v.set(data[0], data[4], data[8], data[12]);
+            data = v.get_data();
             break;
 
-          case Shader::SMP_row0:
-            hr = cgD3D9SetUniform(p, data + 0);
-            break;
-          case Shader::SMP_row1:
-            hr = cgD3D9SetUniform(p, data + 4);
-            break;
-          case Shader::SMP_row2:
-            hr = cgD3D9SetUniform(p, data + 8);
-            break;
-          case Shader::SMP_row3x1:
-          case Shader::SMP_row3x2:
-          case Shader::SMP_row3x3:
-          case Shader::SMP_row3:
-            hr = cgD3D9SetUniform(p, data + 12);
-            break;
-
-          case Shader::SMP_col0:
-            v[0] = data[0]; v[1] = data[4]; v[2] = data[8]; v[3] = data[12];
-            hr = cgD3D9SetUniform(p, v);
-            break;
-          case Shader::SMP_col1:
-            v[0] = data[1]; v[1] = data[5]; v[2] = data[9]; v[3] = data[13];
-            hr = cgD3D9SetUniform(p, v);
-            break;
-          case Shader::SMP_col2:
-            v[0] = data[2]; v[1] = data[6]; v[2] = data[10]; v[3] = data[14];
-            hr = cgD3D9SetUniform(p, v);
-            break;
-          case Shader::SMP_col3:
-            v[0] = data[3]; v[1] = data[7]; v[2] = data[11]; v[3] = data[15];
-            hr = cgD3D9SetUniform(p, v);
-            break;
-
-          case Shader::SMP_upper3x3:
+          case Shader::SMP_mat4_upper3x3:
             // TRANSPOSE REQUIRED
-            temp_matrix3 = temp_matrix.get_upper_3();
-            temp_matrix3.transpose_in_place();
+            temp_matrix3.set(data[0], data[4], data[8], data[1], data[5], data[9], data[2], data[6], data[10]);
             data = temp_matrix3.get_data();
-
-            hr = cgD3D9SetUniform(p, data);
             break;
 
-          case Shader::SMP_transpose3x3:
+          case Shader::SMP_mat4_transpose3x3:
             // NO TRANSPOSE REQUIRED
-            temp_matrix3 = temp_matrix.get_upper_3();
+            temp_matrix3.set(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
             data = temp_matrix3.get_data();
-
-            hr = cgD3D9SetUniform(p, data);
             break;
-
-          case Shader::SMP_cell15:
-            hr = cgD3D9SetUniform(p, data + 15);
-            continue;
-          case Shader::SMP_cell14:
-            hr = cgD3D9SetUniform(p, data + 14);
-            continue;
-          case Shader::SMP_cell13:
-            hr = cgD3D9SetUniform(p, data + 13);
-            continue;
 
           default:
-            dxgsg9_cat.error()
-              << "issue_parameters () SMP parameter type not implemented " << spec._piece << "\n";
             break;
           }
 
+          HRESULT hr = cgD3D9SetUniform(p, data);
           if (FAILED(hr)) {
             std::string name = "unnamed";
 
@@ -730,13 +658,13 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
         continue;
       }
 
-      TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
+      TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
       if (tc == nullptr) {
         continue;
       }
 
       int texunit = cgGetParameterResourceIndex(p);
-      gsg->apply_texture(texunit, tc, sampler);
+      gsg->apply_texture(texunit, tc, view, sampler);
     }
   }
 #endif

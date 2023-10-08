@@ -82,6 +82,7 @@ private:
     WT_traverse,
     WT_compare,
     WT_hash,
+    WT_new,
   };
 
   // This enum is passed to the wrapper generation functions to indicate what

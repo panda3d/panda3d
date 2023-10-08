@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import direct.showbase.DConfig as config
 from direct.showbase.PythonUtil import makeFlywheelGen, flywheel
@@ -11,7 +13,6 @@ import types
 import weakref
 import random
 import builtins
-import sys
 
 
 deadEndTypes = frozenset((
@@ -566,7 +567,7 @@ class FindContainers(Job):
                 curObjRef = None
 
                 # types.CellType was added in Python 3.8
-                if sys.version_info >= (3, 8) and type(curObj) is types.CellType:
+                if type(curObj) is types.CellType:
                     child = curObj.cell_contents
                     hasLength = self._hasLength(child)
                     notDeadEnd = not self._isDeadEnd(child)
@@ -983,7 +984,7 @@ class ContainerLeakDetector(Job):
     """
     notify = directNotify.newCategory("ContainerLeakDetector")
     # set of containers that should not be examined
-    PrivateIds = set()
+    PrivateIds: set[int] = set()
 
     def __init__(self, name, firstCheckDelay = None):
         Job.__init__(self, name)

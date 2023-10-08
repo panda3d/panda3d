@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
@@ -5,14 +7,13 @@ from direct.showbase.Job import Job
 from direct.showbase.JobManagerGlobal import jobMgr
 from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
-import sys
 import io
 
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
     # set of containers that should not be included in the report
-    PrivateIds = set()
+    PrivateIds: set[int] = set()
 
     def __init__(self, name, log=False, limit=None, threaded=False):
         Job.__init__(self, name)
@@ -122,7 +123,7 @@ class ContainerReport(Job):
                 continue
 
             # types.CellType was added in Python 3.8
-            if sys.version_info >= (3, 8) and type(parentObj) is types.CellType:
+            if type(parentObj) is types.CellType:
                 child = parentObj.cell_contents
                 if self._examine(child):
                     assert (self._queue.back() is child)
@@ -228,14 +229,11 @@ class ContainerReport(Job):
         if type not in self._type2id2len:
             return
         len2ids = invertDictLossless(self._type2id2len[type])
-        lengths = list(len2ids.keys())
-        lengths.sort()
-        lengths.reverse()
         print('=====')
         print('===== %s' % type)
         count = 0
         stop = False
-        for l in lengths:
+        for l in sorted(len2ids, reverse=True):
             #len2ids[l].sort()
             pathStrList = list()
             for id in len2ids[l]:
@@ -257,9 +255,8 @@ class ContainerReport(Job):
         for type in initialTypes:
             for i in self._outputType(type, **kArgs):
                 yield None
-        otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
-        otherTypes.sort(key=lambda obj: obj.__name__)
-        for type in otherTypes:
+        otherTypes = set(self._type2id2len).difference(initialTypes)
+        for type in sorted(otherTypes, key=lambda obj: obj.__name__):
             for i in self._outputType(type, **kArgs):
                 yield None
 

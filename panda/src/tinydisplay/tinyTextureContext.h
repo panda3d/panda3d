@@ -24,7 +24,7 @@
  */
 class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext {
 public:
-  INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
+  INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(TinyTextureContext);
 
   ~TinyTextureContext();

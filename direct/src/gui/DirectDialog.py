@@ -4,6 +4,8 @@ See the :ref:`directdialog` page in the programming manual for a more
 in-depth explanation and an example of how to use this class.
 """
 
+from __future__ import annotations
+
 __all__ = [
     'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',
     'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
@@ -45,7 +47,7 @@ def cleanupDialog(uniqueName):
 
 class DirectDialog(DirectFrame):
 
-    AllDialogs = {}
+    AllDialogs: dict[str, DirectDialog] = {}
     PanelIndex = 0
 
     def __init__(self, parent=None, **kw):

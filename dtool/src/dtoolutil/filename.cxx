@@ -1289,9 +1289,12 @@ to_os_long_name() const {
 }
 
 /**
- * Returns true if the filename exists on the disk, false otherwise.  If the
- * type is indicated to be executable, this also tests that the file has
+ * Returns true if the filename exists on the physical disk, false otherwise.
+ * If the type is indicated to be executable, this also tests that the file has
  * execute permission.
+ *
+ * @see VirtualFileSystem::exists() for checking whether the filename exists in
+ * the virtual file system.
  */
 bool Filename::
 exists() const {
@@ -1320,8 +1323,11 @@ exists() const {
 }
 
 /**
- * Returns true if the filename exists and is the name of a regular file (i.e.
- * not a directory or device), false otherwise.
+ * Returns true if the filename exists on the physical disk and is the name of
+ * a regular file (i.e. not a directory or device), false otherwise.
+ *
+ * @see VirtualFileSystem::is_regular_file() for checking whether the filename
+ * exists and is a regular file in the virtual file system.
  */
 bool Filename::
 is_regular_file() const {
@@ -1350,8 +1356,8 @@ is_regular_file() const {
 }
 
 /**
- * Returns true if the filename exists and is either a directory or a regular
- * file that can be written to, or false otherwise.
+ * Returns true if the filename exists on the physical disk and is either a
+ * directory or a regular file that can be written to, or false otherwise.
  */
 bool Filename::
 is_writable() const {
@@ -1382,8 +1388,11 @@ is_writable() const {
 }
 
 /**
- * Returns true if the filename exists and is a directory name, false
- * otherwise.
+ * Returns true if the filename exists on the physical disk and is a directory
+ * name, false otherwise.
+ *
+ * @see VirtualFileSystem::is_directory() for checking whether the filename
+ * exists as a directory in the virtual file system.
  */
 bool Filename::
 is_directory() const {

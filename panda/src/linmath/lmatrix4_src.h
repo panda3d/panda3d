@@ -72,7 +72,8 @@ PUBLISHED:
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3);
-  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,const FLOATNAME(LVecBase3) &trans);
+  INLINE_LINMATH explicit FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
+                                              const FLOATNAME(LVecBase3) &trans);
 
   INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,

@@ -18,4 +18,4 @@
 
 void init_palettizer();
 
-#endif /* __CONFIG_UTIL_H__ */
+#endif /* CONFIG_PALETTIZER_H */

@@ -428,7 +428,16 @@ main(int argc, char **argv) {
   argc -= (optind - 1);
   argv += (optind - 1);
 
-  WindowFramework *window = framework.open_window(pipe, nullptr);
+  WindowProperties props(WindowProperties::get_default());
+  props.set_title("Panda Viewer");
+
+  // Don't require a window in screenshot mode
+  int flags = 0;
+  if (!auto_screenshot) {
+    flags |= GraphicsPipe::BF_require_window;
+  }
+
+  WindowFramework *window = framework.open_window(props, flags, pipe, nullptr);
   if (window != nullptr) {
     // We've successfully opened a window.
 

@@ -3,13 +3,11 @@ import sys, os
 import pytest
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python 3.6")
 def test_filename_fspath():
     fn = Filename.from_os_specific(__file__)
     assert os.fspath(fn) == fn.to_os_specific_w()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python 3.6")
 def test_filename_open():
     fn = Filename.from_os_specific(__file__)
     open(fn, 'rb')

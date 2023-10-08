@@ -494,6 +494,10 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << separator << "self";
       separator = ", ";
     }
+    if (_flags & F_explicit_cls) {
+      call << separator << "cls";
+      separator = ", ";
+    }
 
     size_t pn;
     size_t num_parameters = pexprs.size();
@@ -781,14 +785,20 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     first_param = 1;
   }
 
-  if (_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
+  if (_parameters.size() > first_param &&
       TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
     // Here's a special case.  If the first parameter of a nonstatic method
     // is a PyObject * called "self", then we will automatically fill it in
-    // from the this pointer, and remove it from the generated parameter
-    // list.
-    _parameters.erase(_parameters.begin() + first_param);
-    _flags |= F_explicit_self;
+    // from the this pointer, and remove it from the generated parameter list.
+    // For static methods, we offer "cls" instead, containing the type object.
+    if (_parameters[first_param]._name == "self") {
+      _parameters.erase(_parameters.begin() + first_param);
+      _flags |= F_explicit_self;
+    }
+    else if (!_has_this && _parameters[first_param]._name == "cls") {
+      _parameters.erase(_parameters.begin() + first_param);
+      _flags |= F_explicit_cls;
+    }
   }
 
   if (_parameters.size() == first_param) {

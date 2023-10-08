@@ -128,12 +128,12 @@ class NotifyPanel:
         topCategory = Notify.ptr().getTopCategory()
         return self._getPandaCategories(topCategory)
 
-    def _getPandaCategoriesAsList(self, pc, list):
+    def _getPandaCategoriesAsList(self, pc, catList):
         for item in pc:
             if isinstance(item, list):
-                self._getPandaCategoriesAsList(item, list)
+                self._getPandaCategoriesAsList(item, catList)
             else:
-                list.append(item)
+                catList.append(item)
 
     def getPandaCategoriesAsList(self):
         pc = self.getPandaCategories()

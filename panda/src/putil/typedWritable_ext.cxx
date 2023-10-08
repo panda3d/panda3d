@@ -16,10 +16,215 @@
 #ifdef HAVE_PYTHON
 
 #include "bamWriter.h"
+#include "config_putil.h"
 
 #ifndef CPPPARSER
+extern Dtool_PyTypedObject Dtool_BamReader;
 extern Dtool_PyTypedObject Dtool_BamWriter;
+extern Dtool_PyTypedObject Dtool_Datagram;
+extern Dtool_PyTypedObject Dtool_DatagramIterator;
+extern Dtool_PyTypedObject Dtool_TypedObject;
+extern Dtool_PyTypedObject Dtool_TypedWritable;
+extern Dtool_PyTypedObject Dtool_TypeHandle;
 #endif  // CPPPARSER
+
+/**
+ * Class that upcalls to the parent class when write_datagram is called.
+ */
+class TypedWritableProxy : public TypedWritable {
+public:
+  ~TypedWritableProxy() {
+  }
+
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override {
+    // The derived method may call back to the TypedWritable implementation,
+    // which would end up back here.  Detect and prevent this.
+    thread_local TypedWritableProxy *recursion_protect = nullptr;
+    if (recursion_protect == this) {
+      TypedWritable::write_datagram(manager, dg);
+      return;
+    }
+
+    // We don't know where this might be invoked, so we have to be on the safe
+    // side and ensure that the GIL is being held.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_STATE gstate = PyGILState_Ensure();
+#endif
+
+    TypedWritableProxy *prev_recursion_protect = this;
+    std::swap(recursion_protect, prev_recursion_protect);
+
+    PyObject *py_manager = DTool_CreatePyInstance(manager, Dtool_BamWriter, false, false);
+    PyObject *py_dg = DTool_CreatePyInstance(&dg, Dtool_Datagram, false, false);
+
+    PyObject *result = PyObject_CallMethod(_self, "write_datagram", "NN", py_manager, py_dg);
+    if (result != nullptr) {
+      Py_DECREF(result);
+    } else {
+      util_cat.error()
+        << "Exception occurred in Python write_datagram function:\n";
+      PyErr_Print();
+    }
+
+    std::swap(recursion_protect, prev_recursion_protect);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_Release(gstate);
+#endif
+  }
+
+  virtual void fillin(DatagramIterator &scan, BamReader *manager) override {
+    // The derived method may call back to the TypedWritable implementation,
+    // which would end up back here.  Detect and prevent this.
+    thread_local TypedWritableProxy *recursion_protect = nullptr;
+    if (recursion_protect == this) {
+      TypedWritable::fillin(scan, manager);
+      return;
+    }
+
+    // We don't know where this might be invoked, so we have to be on the safe
+    // side and ensure that the GIL is being held.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_STATE gstate = PyGILState_Ensure();
+#endif
+
+    TypedWritableProxy *prev_recursion_protect = this;
+    std::swap(recursion_protect, prev_recursion_protect);
+
+    PyObject *py_scan = DTool_CreatePyInstance(&scan, Dtool_DatagramIterator, false, false);
+    PyObject *py_manager = DTool_CreatePyInstance(manager, Dtool_BamReader, false, false);
+
+    PyObject *result = PyObject_CallMethod(_self, "fillin", "NN", py_scan, py_manager);
+    if (result != nullptr) {
+      Py_DECREF(result);
+    } else {
+      util_cat.error()
+        << "Exception occurred in Python fillin function:\n";
+      PyErr_Print();
+    }
+
+    std::swap(recursion_protect, prev_recursion_protect);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_Release(gstate);
+#endif
+  }
+
+  virtual void finalize(BamReader *manager) override {
+    // If nobody stored the object after calling read_object(), this will cause
+    // this object to be deleted.
+    Py_DECREF(_self);
+  }
+
+  virtual TypeHandle get_type() const override {
+    return _type;
+  }
+
+  virtual TypeHandle force_init_type() override {
+    return _type;
+  }
+
+public:
+  PyObject *_self;
+  TypeHandle _type;
+};
+
+/**
+ * Returns a wrapper object for a TypedWritable subclass.
+ */
+static PyObject *
+wrap_typed_writable(void *from_this, PyTypeObject *from_type) {
+  nassertr(from_this != nullptr, nullptr);
+  nassertr(from_type != nullptr, nullptr);
+
+  TypedWritableProxy *to_this;
+  if (from_type == &Dtool_TypedWritable._PyType) {
+    to_this = (TypedWritableProxy *)(TypedWritable *)from_this;
+  }
+  else if (from_type == (PyTypeObject *)&Dtool_TypedObject._PyType) {
+    to_this = (TypedWritableProxy *)(TypedObject *)from_this;
+  }
+  else {
+    return nullptr;
+  }
+
+  nassertr(to_this->_self != nullptr, nullptr);
+  Py_INCREF(to_this->_self);
+  return to_this->_self;
+}
+
+/**
+ * Registers a Python type recursively, towards the TypedWritable base.
+ * Returns a TypeHandle if it inherited from TypedWritable, 0 otherwise.
+ */
+static TypeHandle
+register_python_type(TypeRegistry *registry, PyTypeObject *cls) {
+  TypeHandle handle = TypeHandle::none();
+
+  if (cls->tp_bases != nullptr) {
+    Py_ssize_t count = PyTuple_GET_SIZE(cls->tp_bases);
+    for (Py_ssize_t i = 0; i < count; ++i) {
+      PyObject *base = PyTuple_GET_ITEM(cls->tp_bases, count);
+      TypeHandle base_handle = register_python_type(registry, (PyTypeObject *)base);
+      if (base_handle != TypeHandle::none()) {
+        if (handle == TypeHandle::none()) {
+          handle = registry->register_dynamic_type(cls->tp_name);
+        }
+        registry->record_derivation(handle, base_handle);
+        return handle;
+      }
+    }
+  }
+
+  return handle;
+}
+
+/**
+ * This is called when a TypedWritable is instantiated directly.
+ */
+PyObject *Extension<TypedWritable>::
+__new__(PyTypeObject *cls) {
+  if (cls == (PyTypeObject *)&Dtool_TypedWritable) {
+    return Dtool_Raise_TypeError("cannot init abstract class");
+  }
+
+  PyObject *self = cls->tp_alloc(cls, 0);
+  ((Dtool_PyInstDef *)self)->_signature = PY_PANDA_SIGNATURE;
+  ((Dtool_PyInstDef *)self)->_My_Type = &Dtool_TypedWritable;
+
+  // We expect the user to override this method.
+  PyObject *class_type = PyObject_CallMethod((PyObject *)cls, "get_class_type", nullptr);
+  if (class_type == nullptr) {
+    return nullptr;
+  }
+
+  // Check that it returned a TypeHandle, and that it is actually different
+  // from the one on the base class (which might mean that the user didn't
+  // actually define a custom get_class_type() method).
+  TypeHandle *handle = nullptr;
+  if (!DtoolInstance_GetPointer(class_type, handle, Dtool_TypeHandle) ||
+      *handle == TypedWritable::get_class_type() ||
+      *handle == TypedObject::get_class_type() ||
+      !handle->is_derived_from(TypedWritable::get_class_type())) {
+    Dtool_Raise_TypeError("get_class_type() must be overridden to return a unique TypeHandle that indicates derivation from TypedWritable");
+    return nullptr;
+  }
+
+  // Make sure that the bindings know how to obtain a wrapper for this type.
+  TypeRegistry *registry = TypeRegistry::ptr();
+  registry->record_python_type(*handle, cls, &wrap_typed_writable);
+  Py_INCREF(cls);
+
+  // Note that we don't increment the reference count here, because that would
+  // create a memory leak.  The TypedWritableProxy gets deleted when the Python
+  // object reaches a reference count of 0.
+  TypedWritableProxy *proxy = new TypedWritableProxy;
+  proxy->_self = self;
+  proxy->_type = *handle;
+
+  DTool_PyInit_Finalize(self, (void *)proxy, &Dtool_TypedWritable, true, false);
+  return self;
+}
 
 /**
  * This special Python method is implement to provide support for the pickle

@@ -634,7 +634,20 @@ class build_apps(setuptools.Command):
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
 
-        subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        except:
+            # Display a more helpful message for these common issues.
+            if platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
+                new_platform = platform.replace('manylinux2010_', 'manylinux2014_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.11.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('manylinux1_') and sys.version_info >= (3, 10):
+                new_platform = platform.replace('manylinux1_', 'manylinux2014_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.10.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('macosx_10_6_') and sys.version_info >= (3, 8):
+                new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.8.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            raise
 
         # Return a list of paths to the downloaded whls
         return [
@@ -846,16 +859,12 @@ class build_apps(setuptools.Command):
             libdir = os.path.dirname(dtool_fn.to_os_specific())
             etcdir = os.path.join(libdir, '..', 'etc')
 
-            etcfiles = os.listdir(etcdir)
-            etcfiles.sort(reverse=True)
-            for fn in etcfiles:
+            for fn in sorted(os.listdir(etcdir), reverse=True):
                 if fn.lower().endswith('.prc'):
                     with open(os.path.join(etcdir, fn)) as f:
                         prcstring += f.read()
         else:
-            etcfiles = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
-            etcfiles.sort(reverse=True)
-            for fn in etcfiles:
+            for fn in sorted((i for i in p3dwhl.namelist() if i.endswith('.prc')), reverse=True):
                 with p3dwhl.open(fn) as f:
                     prcstring += f.read().decode('utf8')
 
@@ -1689,6 +1698,8 @@ class bdist_apps(setuptools.Command):
             setattr(self, opt, None)
 
     def finalize_options(self):
+        import pkg_resources
+
         # We need to massage the inputs a bit in case they came from a
         # setup.cfg file.
         self.installers = {

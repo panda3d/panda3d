@@ -15,7 +15,7 @@
 #include "buttonEvent.h"
 #include "buttonEventList.h"
 #include "dataNodeTransmit.h"
-#include "mouseData.h"
+#include "pointerData.h"
 
 TypeHandle MouseInterfaceNode::_type_handle;
 

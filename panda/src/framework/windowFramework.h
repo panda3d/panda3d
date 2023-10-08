@@ -84,6 +84,15 @@ public:
   NodePath get_mouse();
   NodePath get_button_thrower();
 
+  INLINE NodePath get_a2d_top_center();
+  INLINE NodePath get_a2d_bottom_center();
+  INLINE NodePath get_a2d_left_center();
+  INLINE NodePath get_a2d_right_center();
+  INLINE NodePath get_a2d_top_left();
+  INLINE NodePath get_a2d_top_right();
+  INLINE NodePath get_a2d_bottom_left();
+  INLINE NodePath get_a2d_bottom_right();
+
   void enable_keyboard();
   void setup_trackball();
   void center_trackball(const NodePath &object);
@@ -174,6 +183,15 @@ private:
   NodePath _render_2d;
   NodePath _aspect_2d;
   NodePath _pixel_2d;
+
+  NodePath _a2d_top_center;
+  NodePath _a2d_bottom_center;
+  NodePath _a2d_left_center;
+  NodePath _a2d_right_center;
+  NodePath _a2d_top_left;
+  NodePath _a2d_top_right;
+  NodePath _a2d_bottom_left;
+  NodePath _a2d_bottom_right;
 
   AnimControlCollection _anim_controls;
   bool _anim_controls_enabled;

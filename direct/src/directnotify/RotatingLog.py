@@ -55,10 +55,11 @@ class RotatingLog:
         return 0
 
     def filePath(self):
-        dateString=time.strftime("%Y_%m_%d_%H", time.localtime())
+        dateString = time.strftime("%Y_%m_%d_%H", time.localtime())
         for i in range(26):
-            path="%s_%s_%s.log"%(self.path, dateString, chr(i+97))
-            if not os.path.exists(path) or os.stat(path)[6] < self.sizeLimit:
+            limit = self.sizeLimit
+            path = "%s_%s_%s.log" % (self.path, dateString, chr(i+97))
+            if limit is None or not os.path.exists(path) or os.stat(path)[6] < limit:
                 return path
         # Hmm, 26 files are full?  throw the rest in z:
         # Maybe we should clear the self.sizeLimit here... maybe.
@@ -83,7 +84,6 @@ class RotatingLog:
             self.closed = self.file.closed
             self.mode = self.file.mode
             self.name = self.file.name
-            self.softspace = self.file.softspace
             #self.encoding = self.file.encoding # Python 2.3
             #self.newlines = self.file.newlines # Python 2.3, maybe
 

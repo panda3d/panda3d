@@ -214,7 +214,7 @@ ConfigVariableBool transform_cache
           "transforms, but imposes some overhead for maintaining the "
           "cache itself."));
 
-ConfigVariableBool state_cache
+ALIGN_16BYTE ConfigVariableBool state_cache
 ("state-cache", true,
  PRC_DESC("Set this true to enable the cache of RenderState objects, "
           "similar to the TransformState cache controlled via "
@@ -236,7 +236,7 @@ ConfigVariableBool uniquify_states
           "including the need to check for a composition cycle in "
           "the cache.  It is highly recommended to keep this on."));
 
-ConfigVariableBool uniquify_attribs
+ALIGN_16BYTE ConfigVariableBool uniquify_attribs
 ("uniquify-attribs", true,
  PRC_DESC("Set this true to ensure that equivalent RenderAttribs "
           "are pointerwise equal.  This may improve caching performance, "

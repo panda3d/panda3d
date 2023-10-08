@@ -329,7 +329,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     }
   }
 
-  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+  _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
 
   _glgsg->report_my_gl_errors();
 }
@@ -699,46 +699,38 @@ issue_parameters(int altered) {
         continue;
       }
 
-      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
-      const PN_stdfloat *data = val->get_data();
+      const float *data = val->get_data();
+      data += spec._offset;
 
       CGparameter p = _cg_parameter_map[spec._id._seqno];
       switch (spec._piece) {
-      case Shader::SMP_whole: GLfc(cgGLSetMatrixParameter)(p, data); continue;
-      case Shader::SMP_transpose: GLfr(cgGLSetMatrixParameter)(p, data); continue;
-      case Shader::SMP_col0: GLf(cgGLSetParameter4)(p, data[0], data[4], data[ 8], data[12]); continue;
-      case Shader::SMP_col1: GLf(cgGLSetParameter4)(p, data[1], data[5], data[ 9], data[13]); continue;
-      case Shader::SMP_col2: GLf(cgGLSetParameter4)(p, data[2], data[6], data[10], data[14]); continue;
-      case Shader::SMP_col3: GLf(cgGLSetParameter4)(p, data[3], data[7], data[11], data[15]); continue;
-      case Shader::SMP_row0: GLfv(cgGLSetParameter4)(p, data+ 0); continue;
-      case Shader::SMP_row1: GLfv(cgGLSetParameter4)(p, data+ 4); continue;
-      case Shader::SMP_row2: GLfv(cgGLSetParameter4)(p, data+ 8); continue;
-      case Shader::SMP_row3: GLfv(cgGLSetParameter4)(p, data+12); continue;
-      case Shader::SMP_row3x1: GLfv(cgGLSetParameter1)(p, data+12); continue;
-      case Shader::SMP_row3x2: GLfv(cgGLSetParameter2)(p, data+12); continue;
-      case Shader::SMP_row3x3: GLfv(cgGLSetParameter3)(p, data+12); continue;
-      case Shader::SMP_upper3x3:
+      case Shader::SMP_float: cgGLSetParameter1f(p, data[0]); continue;
+      case Shader::SMP_vec2: cgGLSetParameter2fv(p, data); continue;
+      case Shader::SMP_vec3: cgGLSetParameter3fv(p, data); continue;
+      case Shader::SMP_vec4: cgGLSetParameter4fv(p, data); continue;
+      case Shader::SMP_vec4_array: cgGLSetParameterArray4f(p, 0, spec._array_count, data); continue;
+      case Shader::SMP_mat4_whole: cgGLSetMatrixParameterfc(p, data); continue;
+      case Shader::SMP_mat4_array: cgGLSetMatrixParameterArrayfc(p, 0, spec._array_count, data); continue;
+      case Shader::SMP_mat4_transpose: cgGLSetMatrixParameterfr(p, data); continue;
+      case Shader::SMP_mat4_column: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
+      case Shader::SMP_mat4_upper3x3:
         {
-          LMatrix3 upper3 = val->get_upper_3();
-          GLfc(cgGLSetMatrixParameter)(p, upper3.get_data());
+          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
+          cgGLSetMatrixParameterfc(p, upper3.get_data());
           continue;
         }
-      case Shader::SMP_transpose3x3:
+      case Shader::SMP_mat4_transpose3x3:
         {
-          LMatrix3 upper3 = val->get_upper_3();
-          GLfr(cgGLSetMatrixParameter)(p, upper3.get_data());
+          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
+          cgGLSetMatrixParameterfr(p, upper3.get_data());
           continue;
         }
-      case Shader::SMP_cell15:
-        GLf(cgGLSetParameter1)(p, data[15]);
-        continue;
-      case Shader::SMP_cell14:
-        GLf(cgGLSetParameter1)(p, data[14]);
-        continue;
-      case Shader::SMP_cell13:
-        GLf(cgGLSetParameter1)(p, data[13]);
-        continue;
+      case Shader::SMP_int: cgSetParameter1i(p, ((const int *)data)[0]); continue;
+      case Shader::SMP_ivec2: cgSetParameter2iv(p, (const int *)data); continue;
+      case Shader::SMP_ivec3: cgSetParameter3iv(p, (const int *)data); continue;
+      case Shader::SMP_ivec4: cgSetParameter4iv(p, (const int *)data); continue;
       }
     }
   }
@@ -1054,26 +1046,38 @@ disable_shader_texture_bindings() {
     return;
   }
 
-  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) continue;
+  if (_glgsg->_supports_dsa) {
+    // The DSA extension has a single call for unbinding all targets for a
+    // given texture unit.
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    int texunit = cgGetParameterResourceIndex(p);
-    _glgsg->set_active_texture_stage(texunit);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->_glBindTextureUnit(texunit, 0);
+    }
+  } else {
+    for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
 
-    glBindTexture(GL_TEXTURE_1D, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    if (_glgsg->_supports_3d_texture) {
-      glBindTexture(GL_TEXTURE_3D, 0);
+      int texunit = cgGetParameterResourceIndex(p);
+      _glgsg->set_active_texture_stage(texunit);
+
+      glBindTexture(GL_TEXTURE_1D, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      if (_glgsg->_supports_3d_texture) {
+        glBindTexture(GL_TEXTURE_3D, 0);
+      }
+      if (_glgsg->_supports_2d_texture_array) {
+        glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
+      }
+      if (_glgsg->_supports_cube_map) {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      }
+      // This is probably faster - but maybe not as safe?
+      // cgGLDisableTextureParameter(p);
     }
-    if (_glgsg->_supports_2d_texture_array) {
-      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
-    }
-    if (_glgsg->_supports_cube_map) {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
-    // This is probably faster - but maybe not as safe?
-    // cgGLDisableTextureParameter(p);
   }
 
   cg_report_errors();
@@ -1132,7 +1136,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     _glgsg->set_active_texture_stage(texunit);
 
-    TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
+    TextureContext *tc = tex->prepare_now(_glgsg->_prepared_objects, _glgsg);
     if (tc == nullptr) {
       continue;
     }
@@ -1148,8 +1152,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     CLP(TextureContext) *gtc = (CLP(TextureContext) *)tc;
-    _glgsg->apply_texture(gtc);
-    _glgsg->apply_sampler(texunit, sampler, gtc);
+    _glgsg->apply_texture(gtc, view);
+    _glgsg->apply_sampler(texunit, sampler, gtc, view);
   }
 
   cg_report_errors();

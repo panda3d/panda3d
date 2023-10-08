@@ -40,7 +40,7 @@ class FactoryParams;
  *
  * @since 1.11.0
  */
-class EXPCL_PANDA_PGRAPH DepthBiasAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthBiasAttrib final : public RenderAttrib {
 private:
   INLINE DepthBiasAttrib(PN_stdfloat slope_factor, PN_stdfloat constant_factor,
                          PN_stdfloat clamp = 0);

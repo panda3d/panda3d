@@ -93,9 +93,6 @@ private:
   GLsizei _slider_table_size;
   GLint _frame_number_loc;
   GLint _frame_number;
-#ifndef OPENGLES
-  pmap<GLint, GLuint64> _glsl_uniform_handles;
-#endif
 
 #ifndef OPENGLES
   struct StorageBlock {
@@ -115,7 +112,7 @@ private:
   };
   pvector<ImageInput> _glsl_img_inputs;
 
-  LMatrix4 *_mat_part_cache = nullptr;
+  LVecBase4f *_mat_part_cache = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

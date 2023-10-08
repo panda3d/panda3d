@@ -786,11 +786,3 @@ class Placer(AppShell):
 
 def place(nodePath):
     return Placer(nodePath = nodePath)
-
-######################################################################
-
-
-# Create demo in root window for testing.
-if __name__ == '__main__':
-    root = Pmw.initialise()
-    widget = Placer()

@@ -16,6 +16,7 @@ if(MSVC)
 else()
   set(CMAKE_C_FLAGS_STANDARD "-O3")
   set(CMAKE_CXX_FLAGS_STANDARD "-O3")
+  set(CMAKE_OBJCXX_FLAGS_STANDARD "-O3")
 endif()
 set(CMAKE_SHARED_LINKER_FLAGS_STANDARD "")
 set(CMAKE_MODULE_LINKER_FLAGS_STANDARD "")
@@ -27,6 +28,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang)")
     "${CMAKE_C_FLAGS_DEBUG} -fprofile-instr-generate -fcoverage-mapping")
   set(CMAKE_CXX_FLAGS_COVERAGE
     "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-instr-generate -fcoverage-mapping")
+  set(CMAKE_OBJCXX_FLAGS_COVERAGE
+    "${CMAKE_OBJCXX_FLAGS_DEBUG} -fprofile-instr-generate -fcoverage-mapping")
 
   set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
     "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fprofile-instr-generate")
@@ -101,11 +104,14 @@ endif()
 # Set warning levels
 if(MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W3")
-  set(CMAKE_CCXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 
 else()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  if(APPLE)
+    set(CMAKE_OBJCXX_FLAGS "${CMAKE_OBJCXX_FLAGS} -Wall")
+  endif()
 
 endif()
 
@@ -133,6 +139,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${release_flags}")
   set(CMAKE_CXX_FLAGS_STANDARD "${CMAKE_CXX_FLAGS_STANDARD} ${standard_flags}")
 
+  if(APPLE)
+    set(CMAKE_OBJCXX_FLAGS "${CMAKE_OBJCXX_FLAGS} ${global_flags}")
+    set(CMAKE_OBJCXX_FLAGS_RELEASE "${CMAKE_OBJCXX_FLAGS_RELEASE} ${global_flags}")
+    set(CMAKE_OBJCXX_FLAGS_RELWITHDEBINFO "${CMAKE_OBJCXX_FLAGS_RELWITHDEBINFO} ${global_flags}")
+    set(CMAKE_OBJCXX_FLAGS_MINSIZEREL "${CMAKE_OBJCXX_FLAGS_MINSIZEREL} ${global_flags}")
+    set(CMAKE_OBJCXX_FLAGS_STANDARD "${CMAKE_OBJCXX_FLAGS_STANDARD} ${global_flags}")
+  endif()
+
   if(MSVC)
     # Clang behaving as MSVC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-command-line-argument")
@@ -151,6 +165,7 @@ endif()
 # and stops us from identifying cases where ENABLE_EXPORTS is needed.
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_OBJCXX_FLAGS "")
 
 # As long as we're figuring out compiler flags, figure out the flags for
 # turning C++ exception support on and off

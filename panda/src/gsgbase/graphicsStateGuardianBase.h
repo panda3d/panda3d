@@ -147,7 +147,7 @@ public:
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 #endif
 
-  virtual TextureContext *prepare_texture(Texture *tex, int view)=0;
+  virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
   virtual void release_textures(const pvector<TextureContext *> &contexts)=0;

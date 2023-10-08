@@ -23,7 +23,7 @@ class FactoryParams;
 /**
  * Indicates which faces should be culled based on their vertex ordering.
  */
-class EXPCL_PANDA_PGRAPH CullFaceAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH CullFaceAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_cull_none,                // Cull no polygons

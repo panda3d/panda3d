@@ -32,8 +32,8 @@ public:
   OdeSliderJoint(dJointID id);
 
 PUBLISHED:
-  OdeSliderJoint(OdeWorld &world);
-  OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group);
+  explicit OdeSliderJoint(OdeWorld &world);
+  explicit OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group);
   virtual ~OdeSliderJoint();
 
   INLINE void set_axis(dReal x, dReal y, dReal z);

@@ -428,7 +428,34 @@ project(const FLOATNAME(LVecBase4) &onto) const {
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 operator < (const FLOATNAME(LVecBase4) &other) const {
   TAU_PROFILE("bool LVecBase4::operator <(const LVecBase4 &)", " ", TAU_USER);
-  return (compare_to(other) < 0);
+#ifdef FLOATTYPE_IS_INT
+  if (_v(0) != other._v(0)) {
+    return _v(0) < other._v(0);
+  }
+  if (_v(1) != other._v(1)) {
+    return _v(1) < other._v(1);
+  }
+  if (_v(2) != other._v(2)) {
+    return _v(2) < other._v(2);
+  }
+  if (_v(3) != other._v(3)) {
+    return _v(3) < other._v(3);
+  }
+#else
+  if (!IS_THRESHOLD_COMPEQ(_v(0), other._v(0), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(0) < other._v(0);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(1), other._v(1), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(1) < other._v(1);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(2), other._v(2), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(2) < other._v(2);
+  }
+  if (!IS_THRESHOLD_COMPEQ(_v(3), other._v(3), NEARLY_ZERO(FLOATTYPE))) {
+    return _v(3) < other._v(3);
+  }
+#endif
+  return false;
 }
 
 /**
