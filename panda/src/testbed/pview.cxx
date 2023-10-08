@@ -359,7 +359,7 @@ main(int argc, char **argv) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "acls:DVhiLP:S";
+  static const char *optflags = "aclos:DVhiLP:S";
   int flag = getopt(argc, argv, optflags);
 
   while (flag != EOF) {
