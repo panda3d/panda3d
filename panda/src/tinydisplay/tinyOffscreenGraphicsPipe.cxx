@@ -76,7 +76,7 @@ make_output(const std::string &name,
   }
 
   TinyGraphicsStateGuardian *tinygsg = nullptr;
-  if (gsg != 0) {
+  if (gsg != nullptr) {
     DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
