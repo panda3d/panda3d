@@ -468,19 +468,23 @@ setup_trackball() {
     return;
   }
 
+  _trackball = new Trackball("trackball");
+  _trackball->set_pos(LVector3::forward() * 50.0);
+
   if (_window->is_of_type(GraphicsWindow::get_class_type()) &&
       DCAST(GraphicsWindow, _window)->get_num_input_devices() > 0) {
     NodePath mouse = get_mouse();
-    NodePath camera = get_camera_group();
-
-    _trackball = new Trackball("trackball");
-    _trackball->set_pos(LVector3::forward() * 50.0);
     mouse.attach_new_node(_trackball);
-
-    PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
-    tball2cam->set_node(camera.node());
-    _trackball->add_child(tball2cam);
+  } else {
+    // Still need to have a Trackball so that the camera positioning works the
+    // same way when we're rendering offscreen.
+    _panda_framework->get_data_root().attach_new_node(_trackball);
   }
+
+  NodePath camera = get_camera_group();
+  PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
+  tball2cam->set_node(camera.node());
+  _trackball->add_child(tball2cam);
 
   _got_trackball = true;
 }

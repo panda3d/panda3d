@@ -52,9 +52,10 @@ cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
 
-# Windows
+# Operating system
 Thumbs.db
 ehthumbs.db
+.DS_Store
 
 # macOS
 .DS_Store
