@@ -15,6 +15,7 @@ set(P3FRAMEWORK_LINK_TARGETS panda)
 if(NOT BUILD_SHARED_LIBS)
   # If we're statically linking, we need to explicitly link with
   # at least one of the available renderers.
+
   if(HAVE_GL)
     list(APPEND P3FRAMEWORK_LINK_TARGETS pandagl)
   elseif(HAVE_DX9)

@@ -66,8 +66,17 @@ set(P3TINYDISPLAY_SOURCES
 
 composite_sources(p3tinydisplay P3TINYDISPLAY_SOURCES)
 add_component_library(p3tinydisplay SYMBOL BUILDING_TINYDISPLAY ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES})
-target_link_libraries(p3tinydisplay panda)
-# p3gsgbase p3gobj  p3glgsg  p3putil p3linmath p3mathutil p3pnmimage  p3display
+if (HAVE_X11)
+    target_link_libraries(p3tinydisplay panda p3x11display)
+# p3windisplay
+# p3cocoadisplay
+elseif (WASI OR EMSCRIPTEN)
+    target_link_libraries(p3tinydisplay panda )
+else()
+    message(WARNING "no display and not headless build")
+    target_link_libraries(p3tinydisplay panda )
+endif()
+
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3tinydisplay
