@@ -421,6 +421,12 @@ if VERSION is None:
     else:
         # Take the value from the setup.cfg file.
         VERSION = GetMetadataValue('version')
+        match = re.match(r'^\d+\.\d+(\.\d+)+', VERSION)
+        if not match:
+            exit("Invalid version %s in setup.cfg, three digits are required" % (VERSION))
+        if WHLVERSION is None:
+            WHLVERSION = VERSION
+        VERSION = match.group()
 
 if WHLVERSION is None:
     WHLVERSION = VERSION
