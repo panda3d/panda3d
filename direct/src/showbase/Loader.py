@@ -5,7 +5,6 @@ sound, music, shaders and fonts from disk.
 __all__ = ['Loader']
 
 from panda3d.core import (
-    AudioLoadRequest,
     ConfigVariableBool,
     Filename,
     FontPool,
@@ -976,6 +975,8 @@ class Loader(DirectObject):
         callback is specified, the loading happens in the background,
         just as in loadModel(); otherwise, the loading happens before
         loadSound() returns."""
+
+        from panda3d.core import AudioLoadRequest
 
         if not isinstance(soundPath, (tuple, list, set)):
             # We were given a single sound pathname or a MovieAudio instance.
