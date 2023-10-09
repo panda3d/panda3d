@@ -64,6 +64,11 @@
 
 using std::string;
 
+static const LMatrix4 shadow_bias_mat(0.5f, 0.0f, 0.0f, 0.0f,
+                                      0.0f, 0.5f, 0.0f, 0.0f,
+                                      0.0f, 0.0f, 0.5f, 0.0f,
+                                      0.5f, 0.5f, 0.5f, 1.0f);
+
 //PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
 //PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
 //PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");
@@ -1543,9 +1548,30 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
 
     const NodePath &np = _target_shader->get_shader_input_nodepath(name->get_parent());
-    nassertv(!np.is_empty());
+    const PandaNode *node = np.node();
 
-    fetch_specified_member(np, name->get_basename(), into[0]);
+    // This is the only matrix member we support from NodePath inputs.
+    if (node != nullptr && node->is_of_type(LensNode::get_class_type()) &&
+        name->get_basename() == "shadowViewMatrix") {
+      const LensNode *lnode = (const LensNode *)node;
+      const Lens *lens = lnode->get_lens();
+
+      LMatrix4 t = _inv_cs_transform->get_mat() *
+        _scene_setup->get_camera_transform()->get_mat() *
+        np.get_net_transform()->get_inverse()->get_mat() *
+        LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
+
+      if (!lnode->is_of_type(PointLight::get_class_type())) {
+        t *= lens->get_projection_mat() * shadow_bias_mat;
+      }
+      *(LMatrix4f *)into = LCAST(float, t);
+    }
+    else {
+      display_cat.error()
+        << "Shader input " << *name << " requests invalid attribute "
+        << name->get_basename() << " from node " << np << "\n";
+      *(LMatrix4f *)into = LMatrix4f::ident_mat();
+    }
     return;
   }
   case Shader::SMO_vec_constant_x_attrib: {
@@ -1588,12 +1614,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
     return;
   }
-  case Shader::SMO_apiview_to_apiclip_light_source_i: {
-    static const LMatrix4 biasmat(0.5f, 0.0f, 0.0f, 0.0f,
-                                  0.0f, 0.5f, 0.0f, 0.0f,
-                                  0.0f, 0.0f, 0.5f, 0.0f,
-                                  0.5f, 0.5f, 0.5f, 1.0f);
-
+  case Shader::SMO_apiview_to_apiclip_light_source_i: { // shadowViewMatrix
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
@@ -1616,14 +1637,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
         LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
       if (!lnode->is_of_type(PointLight::get_class_type())) {
-        t *= lens->get_projection_mat() * biasmat;
+        t *= lens->get_projection_mat() * shadow_bias_mat;
       }
       ((LMatrix4f *)into)[i] = LCAST(float, t);
     }
 
     // Apply just the bias matrix otherwise.
     for (; i < (size_t)count; ++i) {
-      ((LMatrix4f *)into)[i] = LCAST(float, biasmat);
+      ((LMatrix4f *)into)[i] = LCAST(float, shadow_bias_mat);
     }
     return;
   }
