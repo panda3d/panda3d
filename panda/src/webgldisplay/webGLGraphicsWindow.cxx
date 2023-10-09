@@ -17,7 +17,7 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "throw_event.h"
-
+#include "pointerData.h"
 #include <emscripten.h>
 
 TypeHandle WebGLGraphicsWindow::_type_handle;
@@ -568,7 +568,7 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
       emscripten_get_pointerlock_status(&ev);
 
       if (ev.isActive) {
-        MouseData md = device->get_pointer();
+        PointerData md = device->get_pointer();
         device->set_pointer_in_window(md.get_x() + event->movementX,
                                       md.get_y() + event->movementY);
       } else {
