@@ -59,6 +59,7 @@ add_subdirectory(src/vrpn)
 add_subdirectory(src/wgldisplay)
 add_subdirectory(src/windisplay)
 add_subdirectory(src/x11display)
+add_subdirectory(src/tinydisplay)
 
 # For other components
 # bullet

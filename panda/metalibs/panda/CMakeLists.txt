@@ -5,6 +5,10 @@ set(PANDA_LINK_TARGETS
   p3pnmimage p3pnmimagetypes p3pstatclient p3putil p3recorder p3text p3tform
 )
 
+if(HAVE_TINYDISPLAY)
+  list(APPEND PANDA_LINK_TARGETS p3tinydisplay)
+endif()
+
 if(WANT_NATIVE_NET)
   list(APPEND PANDA_LINK_TARGETS p3nativenet)
   if(HAVE_NET)
