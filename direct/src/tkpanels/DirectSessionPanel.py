@@ -20,6 +20,7 @@ from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import SceneGraphExplorer
 from direct.tkwidgets import MemoryExplorer
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase import ShowBaseGlobal
 from .TaskManagerPanel import TaskManagerWidget
 import Pmw
 import tkinter as tk
@@ -44,8 +45,8 @@ class DirectSessionPanel(AppShell):
         AppShell.__init__(self, parent)
 
         # Active light
-        if len(base.direct.lights) > 0:
-            name = base.direct.lights.getNameList()[0]
+        if len(ShowBaseGlobal.direct.lights) > 0:
+            name = ShowBaseGlobal.direct.lights.getNameList()[0]
             self.lightMenu.selectitem(name)
             self.selectLightNamed(name)
         else:
@@ -62,14 +63,14 @@ class DirectSessionPanel(AppShell):
         # Initialize state
         # Dictionary keeping track of all node paths selected so far
         self.nodePathDict = {}
-        self.nodePathDict['widget'] = base.direct.widget
+        self.nodePathDict['widget'] = ShowBaseGlobal.direct.widget
         self.nodePathNames = ['widget']
 
         # Dictionary keeping track of all jb node paths selected so far
         self.jbNodePathDict = {}
         self.jbNodePathDict['none'] = 'No Node Path'
-        self.jbNodePathDict['widget'] = base.direct.widget
-        self.jbNodePathDict['camera'] = base.direct.camera
+        self.jbNodePathDict['widget'] = ShowBaseGlobal.direct.widget
+        self.jbNodePathDict['camera'] = ShowBaseGlobal.direct.camera
         self.jbNodePathNames = ['camera', 'selected', 'none']
 
         # Set up event hooks
@@ -93,7 +94,7 @@ class DirectSessionPanel(AppShell):
         self.menuBar.addmenu('DIRECT', 'Direct Session Panel Operations')
 
         self.directEnabled = tk.BooleanVar()
-        self.directEnabled.set(1)
+        self.directEnabled.set(True)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Enabled',
                                  label = 'Enable',
@@ -101,7 +102,7 @@ class DirectSessionPanel(AppShell):
                                  command = self.toggleDirect)
 
         self.directGridEnabled = tk.BooleanVar()
-        self.directGridEnabled.set(base.direct.grid.isEnabled())
+        self.directGridEnabled.set(ShowBaseGlobal.direct.grid.isEnabled())
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Grid Enabled',
                                  label = 'Enable Grid',
@@ -111,16 +112,16 @@ class DirectSessionPanel(AppShell):
         self.menuBar.addmenuitem('DIRECT', 'command',
                                  'Toggle Object Handles Visability',
                                  label = 'Toggle Widget Viz',
-                                 command = base.direct.toggleWidgetVis)
+                                 command = ShowBaseGlobal.direct.toggleWidgetVis)
 
         self.menuBar.addmenuitem(
             'DIRECT', 'command',
             'Toggle Widget Move/COA Mode',
             label = 'Toggle Widget Mode',
-            command = base.direct.manipulationControl.toggleObjectHandlesMode)
+            command = ShowBaseGlobal.direct.manipulationControl.toggleObjectHandlesMode)
 
         self.directWidgetOnTop = tk.BooleanVar()
-        self.directWidgetOnTop.set(0)
+        self.directWidgetOnTop.set(False)
         self.menuBar.addmenuitem('DIRECT', 'checkbutton',
                                  'DIRECT Widget On Top',
                                  label = 'Widget On Top',
@@ -130,7 +131,7 @@ class DirectSessionPanel(AppShell):
         self.menuBar.addmenuitem('DIRECT', 'command',
                                  'Deselect All',
                                  label = 'Deselect All',
-                                 command = base.direct.deselectAll)
+                                 command = ShowBaseGlobal.direct.deselectAll)
 
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
@@ -150,8 +151,8 @@ class DirectSessionPanel(AppShell):
         self.bind(self.nodePathMenu, 'Select node path to manipulate')
 
         self.undoButton = tk.Button(menuFrame, text = 'Undo',
-                                    command = base.direct.undo)
-        if base.direct.undoList:
+                                    command = ShowBaseGlobal.direct.undo)
+        if ShowBaseGlobal.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
             self.undoButton['state'] = 'disabled'
@@ -159,8 +160,8 @@ class DirectSessionPanel(AppShell):
         self.bind(self.undoButton, 'Undo last operation')
 
         self.redoButton = tk.Button(menuFrame, text = 'Redo',
-                                    command = base.direct.redo)
-        if base.direct.redoList:
+                                    command = ShowBaseGlobal.direct.redo)
+        if ShowBaseGlobal.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
             self.redoButton['state'] = 'disabled'
@@ -177,7 +178,7 @@ class DirectSessionPanel(AppShell):
 
         # Scene Graph Explorer
         self.SGE = SceneGraphExplorer.SceneGraphExplorer(
-            sgeFrame, nodePath = render,
+            sgeFrame, nodePath = ShowBaseGlobal.base.render,
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 300)
         self.SGE.pack(fill = tk.BOTH, expand = 1)
@@ -218,7 +219,7 @@ class DirectSessionPanel(AppShell):
         tk.Label(drFrame, text = 'Display Region',
                  font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
-        nameList = ['Display Region ' + repr(x) for x in range(len(base.direct.drList))]
+        nameList = ['Display Region ' + repr(x) for x in range(len(ShowBaseGlobal.direct.drList))]
         self.drMenu = Pmw.ComboBox(
             drFrame, labelpos = tk.W, label_text = 'Display Region:',
             entry_width = 20,
@@ -264,7 +265,7 @@ class DirectSessionPanel(AppShell):
 
         frame = tk.Frame(fovFrame)
         self.lockedFov = tk.BooleanVar()
-        self.lockedFov.set(1)
+        self.lockedFov.set(True)
         self.lockedFovButton = tk.Checkbutton(
             frame,
             text = 'Locked',
@@ -289,25 +290,25 @@ class DirectSessionPanel(AppShell):
         self.toggleBackfaceButton = tk.Button(
             toggleFrame,
             text = 'Backface',
-            command = base.toggleBackface)
+            command = ShowBaseGlobal.base.toggleBackface)
         self.toggleBackfaceButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
         self.toggleLightsButton = tk.Button(
             toggleFrame,
             text = 'Lights',
-            command = base.direct.lights.toggle)
+            command = ShowBaseGlobal.direct.lights.toggle)
         self.toggleLightsButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
         self.toggleTextureButton = tk.Button(
             toggleFrame,
             text = 'Texture',
-            command = base.toggleTexture)
+            command = ShowBaseGlobal.base.toggleTexture)
         self.toggleTextureButton.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
         self.toggleWireframeButton = tk.Button(
             toggleFrame,
             text = 'Wireframe',
-            command = base.toggleWireframe)
+            command = ShowBaseGlobal.base.toggleWireframe)
         self.toggleWireframeButton.pack(fill = tk.X, expand = 1)
         toggleFrame.pack(side = tk.LEFT, fill = tk.X, expand = 1)
 
@@ -354,7 +355,7 @@ class DirectSessionPanel(AppShell):
         mainSwitchFrame.pack(fill = tk.X, expand = 0)
 
         # Widget to select a light to configure
-        nameList = base.direct.lights.getNameList()
+        nameList = ShowBaseGlobal.direct.lights.getNameList()
         lightMenuFrame = tk.Frame(lightFrame)
 
         self.lightMenu = Pmw.ComboBox(
@@ -510,36 +511,36 @@ class DirectSessionPanel(AppShell):
             gridPage,
             text = 'Grid Spacing',
             min = 0.1,
-            value = base.direct.grid.getGridSpacing())
-        self.gridSpacing['command'] = base.direct.grid.setGridSpacing
+            value = ShowBaseGlobal.direct.grid.getGridSpacing())
+        self.gridSpacing['command'] = ShowBaseGlobal.direct.grid.setGridSpacing
         self.gridSpacing.pack(fill = tk.X, expand = 0)
 
         self.gridSize = Floater.Floater(
             gridPage,
             text = 'Grid Size',
             min = 1.0,
-            value = base.direct.grid.getGridSize())
-        self.gridSize['command'] = base.direct.grid.setGridSize
+            value = ShowBaseGlobal.direct.grid.getGridSize())
+        self.gridSize['command'] = ShowBaseGlobal.direct.grid.setGridSize
         self.gridSize.pack(fill = tk.X, expand = 0)
 
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
             style = 'mini',
-            value = base.direct.grid.getSnapAngle())
-        self.gridSnapAngle['command'] = base.direct.grid.setSnapAngle
+            value = ShowBaseGlobal.direct.grid.getSnapAngle())
+        self.gridSnapAngle['command'] = ShowBaseGlobal.direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = tk.X, expand = 0)
 
     def createDevicePage(self, devicePage):
         tk.Label(devicePage, text = 'DEVICES',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
-        if base.direct.joybox is not None:
+        if ShowBaseGlobal.direct.joybox is not None:
             joyboxFrame = tk.Frame(devicePage, borderwidth = 2, relief = 'sunken')
             tk.Label(joyboxFrame, text = 'Joybox',
                      font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
             self.enableJoybox = tk.BooleanVar()
-            self.enableJoybox.set(1)
+            self.enableJoybox.set(True)
             self.enableJoyboxButton = tk.Checkbutton(
                 joyboxFrame,
                 text = 'Enabled/Disabled',
@@ -581,7 +582,7 @@ class DirectSessionPanel(AppShell):
                 hull_relief = tk.RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbXyzSF['command'] = (
-                lambda v: base.direct.joybox.setXyzMultiplier(v))
+                lambda v: ShowBaseGlobal.direct.joybox.setXyzMultiplier(v))
             self.jbXyzSF.pack(fill = tk.X, expand = 0)
             self.bind(self.jbXyzSF, 'Set joybox XYZ speed multiplier')
 
@@ -592,7 +593,7 @@ class DirectSessionPanel(AppShell):
                 hull_relief = tk.RIDGE, hull_borderwidth = 2,
                 min = 1.0, max = 100.0)
             self.jbHprSF['command'] = (
-                lambda v: base.direct.joybox.setHprMultiplier(v))
+                lambda v: ShowBaseGlobal.direct.joybox.setHprMultiplier(v))
             self.jbHprSF.pack(fill = tk.X, expand = 0)
             self.bind(self.jbHprSF, 'Set joybox HPR speed multiplier')
 
@@ -604,30 +605,30 @@ class DirectSessionPanel(AppShell):
 
     def createMemPage(self, memPage):
         self.MemExp = MemoryExplorer.MemoryExplorer(
-            memPage, nodePath = render,
+            memPage, nodePath = ShowBaseGlobal.base.render,
             scrolledCanvas_hull_width = 250,
             scrolledCanvas_hull_height = 250)
         self.MemExp.pack(fill = tk.BOTH, expand = 1)
 
     def toggleDirect(self):
         if self.directEnabled.get():
-            base.direct.enable()
+            ShowBaseGlobal.direct.enable()
         else:
-            base.direct.disable()
+            ShowBaseGlobal.direct.disable()
 
     def toggleDirectGrid(self):
         if self.directGridEnabled.get():
-            base.direct.grid.enable()
+            ShowBaseGlobal.direct.grid.enable()
         else:
-            base.direct.grid.disable()
+            ShowBaseGlobal.direct.grid.disable()
 
     def toggleWidgetOnTop(self):
         if self.directWidgetOnTop.get():
-            base.direct.widget.setBin('gui-popup', 0)
-            base.direct.widget.setDepthTest(0)
+            ShowBaseGlobal.direct.widget.setBin('gui-popup', 0)
+            ShowBaseGlobal.direct.widget.setDepthTest(0)
         else:
-            base.direct.widget.clearBin()
-            base.direct.widget.setDepthTest(1)
+            ShowBaseGlobal.direct.widget.clearBin()
+            ShowBaseGlobal.direct.widget.setDepthTest(1)
 
     def selectedNodePathHook(self, nodePath):
         # Make sure node path is in nodePathDict
@@ -657,7 +658,7 @@ class DirectSessionPanel(AppShell):
         # Did we finally get something?
         if nodePath is not None:
             # Yes, select it!
-            base.direct.select(nodePath)
+            ShowBaseGlobal.direct.select(nodePath)
 
     def addNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.nodePathNames,
@@ -665,25 +666,25 @@ class DirectSessionPanel(AppShell):
 
     def selectJBModeNamed(self, name):
         if name == 'Joe Mode':
-            base.direct.joybox.joeMode()
+            ShowBaseGlobal.direct.joybox.joeMode()
         elif name == 'Drive Mode':
-            base.direct.joybox.driveMode()
+            ShowBaseGlobal.direct.joybox.driveMode()
         elif name == 'Orbit Mode':
-            base.direct.joybox.orbitMode()
+            ShowBaseGlobal.direct.joybox.orbitMode()
         elif name == 'Look At Mode':
-            base.direct.joybox.lookAtMode()
+            ShowBaseGlobal.direct.joybox.lookAtMode()
         elif name == 'Look Around Mode':
-            base.direct.joybox.lookAroundMode()
+            ShowBaseGlobal.direct.joybox.lookAroundMode()
         elif name == 'Walkthru Mode':
-            base.direct.joybox.walkthruMode()
+            ShowBaseGlobal.direct.joybox.walkthruMode()
         elif name == 'Demo Mode':
-            base.direct.joybox.demoMode()
+            ShowBaseGlobal.direct.joybox.demoMode()
         elif name == 'HPRXYZ Mode':
-            base.direct.joybox.hprXyzMode()
+            ShowBaseGlobal.direct.joybox.hprXyzMode()
 
     def selectJBNodePathNamed(self, name):
         if name == 'selected':
-            nodePath = base.direct.selected.last
+            nodePath = ShowBaseGlobal.direct.selected.last
             # Add Combo box entry for this selected object
             self.addJBNodePath(nodePath)
         else:
@@ -708,9 +709,9 @@ class DirectSessionPanel(AppShell):
         if nodePath is not None:
             # Yes, select it!
             if nodePath == 'No Node Path':
-                base.direct.joybox.setNodePath(None)
+                ShowBaseGlobal.direct.joybox.setNodePath(None)
             else:
-                base.direct.joybox.setNodePath(nodePath)
+                ShowBaseGlobal.direct.joybox.setNodePath(nodePath)
 
     def addJBNodePath(self, nodePath):
         self.addNodePathToDict(nodePath, self.jbNodePathNames,
@@ -741,14 +742,13 @@ class DirectSessionPanel(AppShell):
         self.setBackgroundColorVec((r, g, b))
 
     def setBackgroundColorVec(self, color):
-        base.setBackgroundColor(color[0]/255.0,
-                                color[1]/255.0,
-                                color[2]/255.0)
+        ShowBaseGlobal.base.setBackgroundColor(
+            color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
 
     def selectDisplayRegionNamed(self, name):
         if name.find('Display Region ') >= 0:
             drIndex = int(name[-1:])
-            self.activeDisplayRegion = base.direct.drList[drIndex]
+            self.activeDisplayRegion = ShowBaseGlobal.direct.drList[drIndex]
         else:
             self.activeDisplayRegion = None
         # Make sure info is current
@@ -758,13 +758,13 @@ class DirectSessionPanel(AppShell):
         dr = self.activeDisplayRegion
         if dr:
             dr.camLens.setNear(near)
-            cluster('base.camLens.setNear(%f)' % near, 0)
+            ShowBaseGlobal.direct.cluster('base.camLens.setNear(%f)' % near, 0)
 
     def setFar(self, far):
         dr = self.activeDisplayRegion
         if dr:
             dr.camLens.setFar(far)
-            cluster('base.camLens.setFar(%f)' % far, 0)
+            ShowBaseGlobal.direct.cluster('base.camLens.setFar(%f)' % far, 0)
 
     def setHFov(self, hFov):
         dr = self.activeDisplayRegion
@@ -802,10 +802,10 @@ class DirectSessionPanel(AppShell):
     # Lights #
     def selectLightNamed(self, name):
         # See if light exists
-        self.activeLight = base.direct.lights[name]
+        self.activeLight = ShowBaseGlobal.direct.lights[name]
         # If not...create new one
         if self.activeLight is None:
-            self.activeLight = base.direct.lights.create(name)
+            self.activeLight = ShowBaseGlobal.direct.lights.create(name)
         # Do we have a valid light at this point?
         if self.activeLight:
             light = self.activeLight.getLight()
@@ -820,28 +820,28 @@ class DirectSessionPanel(AppShell):
         else:
             # Restore valid data
             listbox = self.lightMenu.component('scrolledlist')
-            listbox.setlist(base.direct.lights.getNameList())
-            if len(base.direct.lights) > 0:
-                self.lightMenu.selectitem(base.direct.lights.getNameList()[0])
+            listbox.setlist(ShowBaseGlobal.direct.lights.getNameList())
+            if len(ShowBaseGlobal.direct.lights) > 0:
+                self.lightMenu.selectitem(ShowBaseGlobal.direct.lights.getNameList()[0])
         # Make sure info is current
         self.updateLightInfo()
 
     def addAmbient(self):
-        return base.direct.lights.create('ambient')
+        return ShowBaseGlobal.direct.lights.create('ambient')
 
     def addDirectional(self):
-        return base.direct.lights.create('directional')
+        return ShowBaseGlobal.direct.lights.create('directional')
 
     def addPoint(self):
-        return base.direct.lights.create('point')
+        return ShowBaseGlobal.direct.lights.create('point')
 
     def addSpot(self):
-        return base.direct.lights.create('spot')
+        return ShowBaseGlobal.direct.lights.create('spot')
 
     def addLight(self, light):
         # Make list reflect current list of lights
         listbox = self.lightMenu.component('scrolledlist')
-        listbox.setlist(base.direct.lights.getNameList())
+        listbox.setlist(ShowBaseGlobal.direct.lights.getNameList())
         # Select the newly added light
         self.lightMenu.selectitem(light.getName())
         # And show corresponding page
@@ -849,16 +849,16 @@ class DirectSessionPanel(AppShell):
 
     def toggleLights(self):
         if self.enableLights.get():
-            base.direct.lights.allOn()
+            ShowBaseGlobal.direct.lights.allOn()
         else:
-            base.direct.lights.allOff()
+            ShowBaseGlobal.direct.lights.allOff()
 
     def toggleActiveLight(self):
         if self.activeLight:
             if self.lightActive.get():
-                base.direct.lights.setOn(self.activeLight)
+                ShowBaseGlobal.direct.lights.setOn(self.activeLight)
             else:
-                base.direct.lights.setOff(self.activeLight)
+                ShowBaseGlobal.direct.lights.setOff(self.activeLight)
 
     def setLightColor(self, color):
         if self.activeLight:
@@ -893,22 +893,22 @@ class DirectSessionPanel(AppShell):
     ## GRID CONTROLS ##
     def toggleGrid(self):
         if self.enableGrid.get():
-            base.direct.grid.enable()
+            ShowBaseGlobal.direct.grid.enable()
         else:
-            base.direct.grid.disable()
+            ShowBaseGlobal.direct.grid.disable()
 
     def toggleXyzSnap(self):
-        base.direct.grid.setXyzSnap(self.xyzSnap.get())
+        ShowBaseGlobal.direct.grid.setXyzSnap(self.xyzSnap.get())
 
     def toggleHprSnap(self):
-        base.direct.grid.setHprSnap(self.hprSnap.get())
+        ShowBaseGlobal.direct.grid.setHprSnap(self.hprSnap.get())
 
     ## DEVICE CONTROLS
     def toggleJoybox(self):
         if self.enableJoybox.get():
-            base.direct.joybox.enable()
+            ShowBaseGlobal.direct.joybox.enable()
         else:
-            base.direct.joybox.disable()
+            ShowBaseGlobal.direct.joybox.disable()
 
     ## UPDATE INFO ##
     def updateInfo(self, page = 'Environment'):
@@ -920,7 +920,7 @@ class DirectSessionPanel(AppShell):
             self.updateGridInfo()
 
     def updateEnvironmentInfo(self):
-        bkgrdColor = base.getBackgroundColor() * 255.0
+        bkgrdColor = ShowBaseGlobal.base.getBackgroundColor() * 255.0
         self.backgroundColor.set([bkgrdColor[0],
                                   bkgrdColor[1],
                                   bkgrdColor[2],
@@ -936,6 +936,7 @@ class DirectSessionPanel(AppShell):
 
     def updateLightInfo(self, page = None):
         # Set main lighting button
+        render = ShowBaseGlobal.base.render
         self.enableLights.set(
             render.node().hasAttrib(LightAttrib.getClassType()))
 
@@ -974,16 +975,16 @@ class DirectSessionPanel(AppShell):
                 self.pQuadraticAttenuation.set(att[2], 0)
 
     def updateGridInfo(self):
-        self.enableGrid.set(base.direct.grid.isEnabled())
-        self.xyzSnap.set(base.direct.grid.getXyzSnap())
-        self.hprSnap.set(base.direct.grid.getHprSnap())
-        self.gridSpacing.set(base.direct.grid.getGridSpacing(), 0)
-        self.gridSize.set(base.direct.grid.getGridSize(), 0)
-        self.gridSnapAngle.set(base.direct.grid.getSnapAngle(), 0)
+        self.enableGrid.set(ShowBaseGlobal.direct.grid.isEnabled())
+        self.xyzSnap.set(ShowBaseGlobal.direct.grid.getXyzSnap())
+        self.hprSnap.set(ShowBaseGlobal.direct.grid.getHprSnap())
+        self.gridSpacing.set(ShowBaseGlobal.direct.grid.getGridSpacing(), 0)
+        self.gridSize.set(ShowBaseGlobal.direct.grid.getGridSize(), 0)
+        self.gridSnapAngle.set(ShowBaseGlobal.direct.grid.getSnapAngle(), 0)
 
     # UNDO/REDO
     def pushUndo(self, fResetRedo = 1):
-        base.direct.pushUndo([self['nodePath']])
+        ShowBaseGlobal.direct.pushUndo([self['nodePath']])
 
     def undoHook(self, nodePathList = []):
         pass
@@ -997,7 +998,7 @@ class DirectSessionPanel(AppShell):
         self.undoButton.configure(state = 'disabled')
 
     def pushRedo(self):
-        base.direct.pushRedo([self['nodePath']])
+        ShowBaseGlobal.direct.pushRedo([self['nodePath']])
 
     def redoHook(self, nodePathList = []):
         pass

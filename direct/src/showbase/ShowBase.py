@@ -141,7 +141,7 @@ import importlib
 from direct.showbase import ExceptionVarDump
 from . import DirectObject
 from . import SfxPlayer
-from typing import ClassVar
+from typing import ClassVar, Optional
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
@@ -165,6 +165,10 @@ class ShowBase(DirectObject.DirectObject):
     config: ClassVar = DConfig
     notify: ClassVar[Notifier] = directNotify.newCategory("ShowBase")
     guiItems: ClassVar[dict]
+
+    render2d: NodePath
+    aspect2d: NodePath
+    pixel2d: NodePath
 
     def __init__(self, fStartDirect=True, windowType=None):
         """Opens a window, sets up a 3-D and several 2-D scene graphs, and

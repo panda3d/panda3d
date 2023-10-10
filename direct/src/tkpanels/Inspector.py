@@ -31,6 +31,8 @@ def inspect(anObject):
 
 ### private
 
+_InspectorMap: dict[str, str]
+
 
 def inspectorFor(anObject):
     typeName = type(anObject).__name__.capitalize() + 'Type'
@@ -396,7 +398,8 @@ class InspectorWindow:
         self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
-        help = tk.Toplevel(base.tkRoot)
+        from direct.showbase import ShowBaseGlobal
+        help = tk.Toplevel(ShowBaseGlobal.base.tkRoot)
         help.title("Inspector Help")
         frame = tk.Frame(help)
         frame.pack()
