@@ -21,7 +21,7 @@ from panda3d.core import NodePath, PGTop
 from . import DConfig as config # pylint: disable=unused-import
 import warnings
 
-__dev__ = ConfigVariableBool('want-dev', __debug__).value
+__dev__: bool = ConfigVariableBool('want-dev', __debug__).value
 
 base: ShowBase
 

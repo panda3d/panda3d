@@ -256,7 +256,7 @@ class Notifier:
         the function call (with parameters).
         """
         #f.f_locals['self'].__init__.im_class.__name__
-        if self.__debug:
+        if __debug__ and self.__debug:
             state = ''
             doId = ''
             if obj is not None:
@@ -296,7 +296,7 @@ class Notifier:
         call followed by the notifier category and
         the function call (with parameters).
         """
-        if self.__debug:
+        if __debug__ and self.__debug:
             message = str(debugString)
             string = ":%s:%s \"%s\" %s"%(
                 self.getOnlyTime(),

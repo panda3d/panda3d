@@ -123,6 +123,7 @@ import builtins
 builtins.config = DConfig  # type: ignore[attr-defined]
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
+from direct.directnotify.Notifier import Notifier
 from .MessengerGlobal import messenger
 from .BulletinBoardGlobal import bulletinBoard
 from direct.task.TaskManagerGlobal import taskMgr
@@ -140,6 +141,7 @@ import importlib
 from direct.showbase import ExceptionVarDump
 from . import DirectObject
 from . import SfxPlayer
+from typing import ClassVar
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
@@ -160,8 +162,9 @@ def exitfunc():
 class ShowBase(DirectObject.DirectObject):
 
     #: The deprecated `.DConfig` interface for accessing config variables.
-    config = DConfig
-    notify = directNotify.newCategory("ShowBase")
+    config: ClassVar = DConfig
+    notify: ClassVar[Notifier] = directNotify.newCategory("ShowBase")
+    guiItems: ClassVar[dict]
 
     def __init__(self, fStartDirect=True, windowType=None):
         """Opens a window, sets up a 3-D and several 2-D scene graphs, and
@@ -337,10 +340,10 @@ class ShowBase(DirectObject.DirectObject):
         self.tkRootCreated = False
 
         # This is used for syncing multiple PCs in a distributed cluster
-        try:
+        if hasattr(builtins, 'clusterSyncFlag'):
             # Has the cluster sync variable been set externally?
-            self.clusterSyncFlag = clusterSyncFlag
-        except NameError:
+            self.clusterSyncFlag = builtins.clusterSyncFlag
+        else:
             # Has the clusterSyncFlag been set via a config variable
             self.clusterSyncFlag = ConfigVariableBool('cluster-sync', False)
 
@@ -712,10 +715,9 @@ class ShowBase(DirectObject.DirectObject):
         except Exception:
             pass
 
-        if hasattr(self, 'win'):
-            del self.win
-            del self.winList
-            del self.pipe
+        self.win = None
+        self.winList.clear()
+        self.pipe = None
 
     def makeDefaultPipe(self, printPipeTypes = None):
         """
@@ -728,7 +730,7 @@ class ShowBase(DirectObject.DirectObject):
             # When the user didn't specify an explicit setting, take the value
             # from the config variable. We could just omit the parameter, however
             # this way we can keep backward compatibility.
-            printPipeTypes = ConfigVariableBool("print-pipe-types", True)
+            printPipeTypes = ConfigVariableBool("print-pipe-types", True).value
 
         selection = GraphicsPipeSelection.getGlobalPtr()
         if printPipeTypes:

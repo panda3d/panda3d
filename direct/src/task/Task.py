@@ -13,6 +13,7 @@ __all__ = ['Task', 'TaskManager',
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Functor, ScratchPad
 from direct.showbase.MessengerGlobal import messenger
+from typing import Any, Optional
 import types
 import random
 import importlib
@@ -20,6 +21,7 @@ import sys
 
 # On Android, there's no use handling SIGINT, and in fact we can't, since we
 # run the application in a separate thread from the main thread.
+signal: Optional[types.ModuleType]
 if hasattr(sys, 'getandroidapilevel'):
     signal = None
 else:
@@ -140,6 +142,8 @@ class TaskManager:
 
     MaxEpochSpeed = 1.0/30.0
 
+    __prevHandler: Any
+
     def __init__(self):
         self.mgr = AsyncTaskManager.getGlobalPtr()
 
@@ -183,11 +187,14 @@ class TaskManager:
         self._frameProfileQueue.clear()
         self.mgr.cleanup()
 
+    def __getClock(self):
+        return self.mgr.getClock()
+
     def setClock(self, clockObject):
         self.mgr.setClock(clockObject)
         self.globalClock = clockObject
 
-    clock = property(lambda self: self.mgr.getClock(), setClock)
+    clock = property(__getClock, setClock)
 
     def invokeDefaultHandler(self, signalNumber, stackFrame):
         print('*** allowing mid-frame keyboard interrupt.')
