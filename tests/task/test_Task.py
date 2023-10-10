@@ -3,6 +3,14 @@ from panda3d import core
 from direct.task import Task
 
 
+TASK_NAME = 'Arbitrary task name'
+TASK_CHAIN_NAME = 'Arbitrary task chain name'
+
+
+def DUMMY_FUNCTION(*_):
+    pass
+
+
 @pytest.fixture
 def task_manager():
     manager = Task.TaskManager()
@@ -12,6 +20,58 @@ def task_manager():
     manager.finalInit()
     yield manager
     manager.destroy()
+
+
+def test_sequence(task_manager):
+    numbers = []
+
+    def append_1(task):
+        numbers.append(1)
+
+    def append_2(task):
+        numbers.append(2)
+
+    sequence = Task.sequence(core.PythonTask(append_1), core.PythonTask(append_2))
+    task_manager.add(sequence)
+    for _ in range(3):
+        task_manager.step()
+    assert not task_manager.getTasks()
+    assert numbers == [1, 2]
+
+
+def test_loop(task_manager):
+    numbers = []
+
+    def append_1(task):
+        numbers.append(1)
+
+    def append_2(task):
+        numbers.append(2)
+
+    loop = Task.loop(core.PythonTask(append_1), core.PythonTask(append_2))
+    task_manager.add(loop)
+    for _ in range(5):
+        task_manager.step()
+    assert numbers == [1, 2, 1, 2]
+
+
+def test_get_current_task(task_manager):
+    def check_current_task(task):
+        assert task_manager.getCurrentTask().name == TASK_NAME
+
+    task_manager.add(check_current_task, TASK_NAME)
+    assert len(task_manager.getTasks()) == 1
+    assert task_manager.getCurrentTask() is None
+
+    task_manager.step()
+    assert len(task_manager.getTasks()) == 0
+    assert task_manager.getCurrentTask() is None
+
+
+def test_has_task_chain(task_manager):
+    assert not task_manager.hasTaskChain(TASK_CHAIN_NAME)
+    task_manager.setupTaskChain(TASK_CHAIN_NAME)
+    assert task_manager.hasTaskChain(TASK_CHAIN_NAME)
 
 
 def test_done(task_manager):
@@ -379,6 +439,14 @@ def test_get_do_laters(task_manager):
     assert len(tm.getDoLaters()) == 0
 
 
+def test_get_all_tasks(task_manager):
+    active_task = task_manager.add(DUMMY_FUNCTION, delay=None)
+    sleeping_task = task_manager.add(DUMMY_FUNCTION, delay=1)
+    assert task_manager.getTasks() == [active_task]
+    assert task_manager.getDoLaters() == [sleeping_task]
+    assert task_manager.getAllTasks() in ([active_task, sleeping_task], [sleeping_task, active_task])
+
+
 def test_duplicate_named_do_laters(task_manager):
     tm = task_manager
     # duplicate named doLaters removed via taskMgr.remove
@@ -423,6 +491,16 @@ def test_get_tasks_named(task_manager):
     assert len(tm.getTasksNamed('testGetTasksNamed')) == 0
     _testGetTasksNamed = None
     tm._checkMemLeaks()
+
+
+def test_get_tasks_matching(task_manager):
+    task_manager.add(DUMMY_FUNCTION, 'task_1')
+    task_manager.add(DUMMY_FUNCTION, 'task_2')
+    task_manager.add(DUMMY_FUNCTION, 'another_task')
+
+    assert len(task_manager.getTasksMatching('task_?')) == 2
+    assert len(task_manager.getTasksMatching('*_task')) == 1
+    assert len(task_manager.getTasksMatching('*task*')) == 3
 
 
 def test_remove_tasks_matching(task_manager):
