@@ -10,12 +10,6 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from . import Interval
 
 
-#############################################################
-###                                                       ###
-### See examples of function intervals in IntervalTest.py ###
-###                                                       ###
-#############################################################
-
 class FunctionInterval(Interval.Interval):
     # Name counter
     functionIntervalNum = 1
