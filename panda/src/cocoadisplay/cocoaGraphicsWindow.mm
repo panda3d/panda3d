@@ -132,13 +132,20 @@ move_pointer(int device, int x, int y) {
     return true;
   }
 
+  // Mouse position is expressed in screen points and not pixels, but in Panda3D
+  // we are using pixel coordinates.
+  // Instead of using convertPointFromBacking and have complex logic to cope with
+  // the change of coordinate system, we cheat and directly use the contents scale
+  // of the view layer to convert pixel coordinates into screen point coordinates.
+  CGFloat contents_scale = _view.layer.contentsScale;
   if (device == 0) {
     CGPoint point;
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(x, y);
+      point = CGPointMake(float(x) / contents_scale,
+                          float(y) / contents_scale);
     } else {
-      point = CGPointMake(x + _properties.get_x_origin(),
-                          y + _properties.get_y_origin());
+      point = CGPointMake((float(x) + _properties.get_x_origin()) / contents_scale,
+                          (float(y) + _properties.get_y_origin()) / contents_scale);
     }
 
     if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
@@ -302,35 +309,89 @@ open_window() {
     }
   }
 
+  // Configure the origin and the size of the window.
+  // On macOS, screen coordinates are expressed in "points" which are independant
+  // of the pixel density of the screen. Panda3D however, expresses the size and
+  // origin of a window in pixels.
+  // So, when opening a window, we need to convert the origin and size from pixel
+  // units into point units. However, this conversion depends on the pixel density
+  // of the screen, the backing scale factor.
+  // As the origin and size of a window depends on the size of the screen of the
+  // parent view, their size must be converted first from points to pixels.
+  // If a window (or a view) is not configured to support high-dpi screen, macOS
+  // will upscale the window (or view) when displayed on a high-dpi screen.
+  // Therefore its backing scale factor will always be 1.0
+  // In a Panda3D application, windows are always configured as high resolution
+  // capable, but the view is only configured as high resolution if the dpi-aware
+  // configuration flag is set.
+  // If the app is not dpi-aware, we must upscale its size and origin from points
+  // into pixels as the window is always high resolution capable.
+
   // Center the window if coordinates were set to -1 or -2 TODO: perhaps in
   // future, in the case of -1, it should use the origin used in a previous
   // run of Panda
+
+  // Size of the requested window
+  NSSize size = NSMakeSize(_properties.get_x_size(), _properties.get_y_size());
   NSRect container;
+  CGFloat backing_scale_factor = screen.backingScaleFactor;
   if (parent_nsview != NULL) {
-    container = [parent_nsview bounds];
+    // Convert parent view bounds into pixel units.
+    container = [parent_nsview convertRectToBacking:[parent_nsview bounds]];
+    // If the app is not dpi-aware, we must convert its size from points into
+    // pixels as the window is always high resolution capable
+    if (!dpi_aware) {
+      size = [parent_nsview convertSizeToBacking:size];
+    }
   } else {
     container = [screen frame];
     container.origin = NSMakePoint(0, 0);
+    container = [screen convertRectToBacking:container];
+    if (!dpi_aware) {
+      // Weirdly NSScreen does not respond to convertSizeToBacking, so we have to
+      // create a dummy rect just for converting the window size.
+      NSRect rect;
+      rect.origin = NSMakePoint(0, 0);
+      rect.size = size;
+      rect = [screen convertRectToBacking:rect];
+      size = rect.size;
+    }
   }
   int x = _properties.get_x_origin();
   int y = _properties.get_y_origin();
 
+  // As we are converting a single value and the view is not created yet, it's
+  // easier to simply use the backing  scale factor and don't bother with
+  // coordinate system transformations.
   if (x < 0) {
-    x = floor(container.size.width / 2 - _properties.get_x_size() / 2);
+    x = floor(container.size.width / 2 - size.width / 2);
+  } else if (!dpi_aware) {
+    x *= backing_scale_factor;
   }
   if (y < 0) {
-    y = floor(container.size.height / 2 - _properties.get_y_size() / 2);
+    y = floor(container.size.height / 2 - size.height / 2);
+  } else if (!dpi_aware) {
+    y *= backing_scale_factor;
   }
-  _properties.set_origin(x, y);
+  if (dpi_aware) {
+    _properties.set_origin(x, y);
+  } else {
+    _properties.set_origin(x / backing_scale_factor, y / backing_scale_factor);
+  }
 
   if (_parent_window_handle == (WindowHandle *)NULL) {
     // Content rectangle
     NSRect rect;
     if (_properties.get_fullscreen()) {
-      rect = container;
+      rect = [screen convertRectFromBacking:container];
     } else {
-      rect = NSMakeRect(x, container.size.height - _properties.get_y_size() - y,
-                        _properties.get_x_size(), _properties.get_y_size());
+      rect = NSMakeRect(x, container.size.height - size.height - y,
+                        size.width, size.height);
+      if (parent_nsview != NULL) {
+        rect = [parent_nsview convertRectFromBacking:rect];
+      } else {
+        rect = [screen convertRectFromBacking:rect];
+      }
     }
 
     // Configure the window decorations
@@ -388,8 +449,10 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
-  // Always disable application HiDPI support, Cocoa will do the eventual upscaling for us.
-  [_view setWantsBestResolutionOpenGLSurface:NO];
+  // Configure the view to be high resolution capable using the dpi-aware
+  // configuration flag. If dpi-aware is false, macOS will upscale the view
+  // for us.
+  [_view setWantsBestResolutionOpenGLSurface:dpi_aware];
   if (_properties.has_icon_filename()) {
     NSImage *image = load_image(_properties.get_icon_filename());
     if (image != nil) {
@@ -596,22 +659,6 @@ set_properties_now(WindowProperties &properties) {
           }
 
           if (switched) {
-            if (_window != nil) {
-              // For some reason, setting the style mask makes it give up its
-              // first-responder status.  And for some reason, we need to first
-              // restore the window to normal level before we switch fullscreen,
-              // otherwise we may get a black bar if we're currently on Z_top.
-              if (_properties.get_z_order() != WindowProperties::Z_normal) {
-                [_window setLevel: NSNormalWindowLevel];
-              }
-              if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-                [_window setStyleMask:NSBorderlessWindowMask];
-              }
-              [_window makeFirstResponder:_view];
-              [_window setLevel:CGShieldingWindowLevel()];
-              [_window makeKeyAndOrderFront:nil];
-            }
-
             // We've already set the size property this way; clear it.
             properties.clear_size();
             _properties.set_size(width, height);
@@ -684,6 +731,9 @@ set_properties_now(WindowProperties &properties) {
                                 NSMiniaturizableWindowMask | NSResizableWindowMask ];
         }
         [_window makeFirstResponder:_view];
+        // Resize event fired by makeFirstResponder has an invalid backing scale factor
+        // The actual size must be reset afterward
+        handle_resize_event();
       }
     }
 
@@ -705,6 +755,9 @@ set_properties_now(WindowProperties &properties) {
                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
       }
       [_window makeFirstResponder:_view];
+      // Resize event fired by makeFirstResponder has an invalid backing scale factor
+      // The actual size must be reset afterward
+      handle_resize_event();
     }
 
     properties.clear_undecorated();
@@ -715,10 +768,13 @@ set_properties_now(WindowProperties &properties) {
     int height = properties.get_y_size();
 
     if (!_properties.get_fullscreen()) {
+      // We use the view, not the window, to convert the frame size, expressed
+      // in pixels, into points as the "dpi awareness" is managed by the view.
+      NSSize size = [_view convertSizeFromBacking:NSMakeSize(width, height)];
       if (_window != nil) {
-        [_window setContentSize:NSMakeSize(width, height)];
+        [_window setContentSize:size];
       }
-      [_view setFrameSize:NSMakeSize(width, height)];
+      [_view setFrameSize:size];
 
       if (cocoadisplay_cat.is_debug()) {
         cocoadisplay_cat.debug()
@@ -768,12 +824,14 @@ set_properties_now(WindowProperties &properties) {
     // Get the frame for the screen
     NSRect frame;
     NSRect container;
+    // Note again that we are using the view to convert the frame and container
+    // size from points into pixels.
     if (_window != nil) {
       NSRect window_frame = [_window frame];
-      frame = [_window contentRectForFrameRect:window_frame];
+      frame = [_view convertRectToBacking:[_window contentRectForFrameRect:window_frame]];
       NSScreen *screen = [_window screen];
       nassertv(screen != nil);
-      container = [screen frame];
+      container = [_view convertRectToBacking:[screen frame]];
 
       // Prevent the centering from overlapping the Dock
       if (y < 0) {
@@ -783,8 +841,8 @@ set_properties_now(WindowProperties &properties) {
         }
       }
     } else {
-      frame = [_view frame];
-      container = [[_view superview] frame];
+      frame = [_view convertRectToBacking:[_view frame]];
+      container = [[_view superview] convertRectToBacking:[[_view superview] frame]];
     }
 
     if (x < 0) {
@@ -795,22 +853,22 @@ set_properties_now(WindowProperties &properties) {
     }
     _properties.set_origin(x, y);
 
-    if (!_properties.get_fullscreen()) {
-      // Remember, Mac OS X coordinates are flipped in the vertical axis.
-      frame.origin.x = x;
-      frame.origin.y = container.size.height - y - frame.size.height;
+    frame.origin.x = x;
+    // Y coordinate in backing store is not flipped, but origin is still at the bottom left
+    frame.origin.y = y - container.size.height;
 
-      if (cocoadisplay_cat.is_debug()) {
-        cocoadisplay_cat.debug()
-          << "Setting window content origin to "
-          << frame.origin.x << ", " << frame.origin.y << "\n";
-      }
+    if (cocoadisplay_cat.is_debug()) {
+      cocoadisplay_cat.debug()
+        << "Setting window content origin to "
+        << frame.origin.x << ", " << frame.origin.y << "\n";
+    }
 
-      if (_window != nil) {
-        [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
-      } else {
-        [_view setFrame:frame];
-      }
+    if (_window != nil) {
+      frame = [_view convertRectFromBacking:frame];
+      [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
+    } else {
+      frame = [_view convertRectFromBacking:frame];
+      [_view setFrame:frame];
     }
     properties.clear_origin();
   }
@@ -957,24 +1015,20 @@ unbind_context() {
 CFMutableArrayRef CocoaGraphicsWindow::
 find_display_modes(int width, int height) {
   CFDictionaryRef options = NULL;
-  // On macOS 10.15+ (Catalina), we want to select the display mode with the
-  // samescaling factor as the current view to avoid cropping or scaling issues.
-  // This is a workaround until HiDPI display or scaling factor is properly
-  // handled. CGDisplayCopyAllDisplayModes() does not return upscaled display
-  // mode unless explicitly asked with kCGDisplayShowDuplicateLowResolutionModes
+  // We want to select the display mode with the same scaling factor as the
+  // current view to avoid cropping or scaling issues.
+  // CGDisplayCopyAllDisplayModes() does not return upscaled display modes
+  // nor the current mode, unless explicitly asked with
+  // kCGDisplayShowDuplicateLowResolutionModes
   // (which is undocumented...).
-  bool macos_10_15_or_higher = false;
-  if (@available(macOS 10.15, *)) {
-    const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
-    const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
-    options = CFDictionaryCreate(NULL,
-                                 (const void **)dictkeys,
-                                 (const void **)dictvalues,
-                                 1,
-                                 &kCFCopyStringDictionaryKeyCallBacks,
-                                 &kCFTypeDictionaryValueCallBacks);
-    macos_10_15_or_higher = true;
-  }
+  const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
+  const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
+  options = CFDictionaryCreate(NULL,
+                               (const void **)dictkeys,
+                               (const void **)dictvalues,
+                               1,
+                               &kCFCopyStringDictionaryKeyCallBacks,
+                               &kCFTypeDictionaryValueCallBacks);
   CFMutableArrayRef valid_modes;
   valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
 
@@ -985,29 +1039,39 @@ find_display_modes(int width, int height) {
 
   size_t num_modes = CFArrayGetCount(modes);
   CGDisplayModeRef mode;
-
-  // Get the current refresh rate and pixel encoding.
-  CFStringRef current_pixel_encoding;
-  double refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
+  // Calculate requested display size and pixel size
+  CGSize display_size;
+  CGSize pixel_size;
+  if (dpi_aware) {
+    pixel_size = NSMakeSize(width, height);
+    display_size = [_view convertSizeFromBacking:pixel_size];
+  } else {
+    display_size = NSMakeSize(width, height);
+    // Calculate the pixel width and height of the fullscreen mode we want using
+    // the current display mode dimensions and pixel dimensions.
+    size_t pixel_width = (size_t(width) * CGDisplayModeGetPixelWidth(mode)) / CGDisplayModeGetWidth(mode);
+    size_t pixel_height = (size_t(height) * CGDisplayModeGetPixelHeight(mode)) / CGDisplayModeGetHeight(mode);
+    pixel_size = NSMakeSize(pixel_width, pixel_height);
+  }
+
   // First check if the current mode is adequate.
-  // This test not done for macOS 10.15 and above as the mode resolution is
-  // not enough to identify a mode.
-  if (!macos_10_15_or_higher &&
-      CGDisplayModeGetWidth(mode) == width &&
-      CGDisplayModeGetHeight(mode) == height) {
+  if (CGDisplayModeGetWidth(mode) == display_size.width &&
+      CGDisplayModeGetHeight(mode) == display_size.height &&
+      CGDisplayModeGetPixelWidth(mode) == pixel_size.width &&
+      CGDisplayModeGetPixelHeight(mode) == pixel_size.height) {
     CFArrayAppendValue(valid_modes, mode);
     CGDisplayModeRelease(mode);
     return valid_modes;
   }
 
+  // Get the current refresh rate and pixel encoding.
+  CFStringRef current_pixel_encoding;
+  double refresh_rate;
+
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
-  // Calculate the pixel width and height of the fullscreen mode we want using
-  // the currentdisplay mode dimensions and pixel dimensions.
-  size_t expected_pixel_width = (size_t(width) * CGDisplayModeGetPixelWidth(mode)) / CGDisplayModeGetWidth(mode);
-  size_t expected_pixel_height = (size_t(height) * CGDisplayModeGetPixelHeight(mode)) / CGDisplayModeGetHeight(mode);
   CGDisplayModeRelease(mode);
 
   for (size_t i = 0; i < num_modes; ++i) {
@@ -1015,17 +1079,15 @@ find_display_modes(int width, int height) {
 
     CFStringRef pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
 
-    // As explained above, we want to select the fullscreen display mode using
-    // the same scaling factor, but only for MacOS 10.15+ To do this we check
-    // the mode width and height but also actual pixel widh and height.
-    if (CGDisplayModeGetWidth(mode) == width &&
-        CGDisplayModeGetHeight(mode) == height &&
+    // We select the fullscreen display mode using he same scaling factor
+    // To do this we check the mode width and height but also actual pixel widh
+    // and height.
+    if (CGDisplayModeGetWidth(mode) == display_size.width &&
+        CGDisplayModeGetHeight(mode) == display_size.height &&
         (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
-        (!macos_10_15_or_higher ||
-        (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
-         CGDisplayModeGetPixelHeight(mode) == expected_pixel_height)) &&
+        CGDisplayModeGetPixelWidth(mode) == pixel_size.width &&
+        CGDisplayModeGetPixelHeight(mode) == pixel_size.height &&
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
-
       if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
         // Exact match for refresh rate, prioritize this.
         CFArrayInsertValueAtIndex(valid_modes, 0, mode);
@@ -1103,14 +1165,25 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
 
     NSRect frame = [[[_view window] screen] frame];
     if (cocoadisplay_cat.is_debug()) {
-      NSString *str = NSStringFromRect(frame);
+      NSString *str = NSStringFromSize([_view convertSizeToBacking:frame.size]);
       cocoadisplay_cat.debug()
-        << "Switched to fullscreen, screen rect is now " << [str UTF8String] << "\n";
+        << "Switched to fullscreen, screen size is now " << [str UTF8String] << "\n";
     }
 
     if (_window != nil) {
+      // For some reason, setting the style mask makes it give up its
+      // first-responder status.
+      if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+        [_window setStyleMask:NSBorderlessWindowMask];
+      }
+      [_window makeFirstResponder:_view];
+      [_window setLevel:CGShieldingWindowLevel()];
+      [_window makeKeyAndOrderFront:nil];
+
+      // Window and view frame must be updated *after* the window reconfiguration
+      // or the size is not set properly !
       [_window setFrame:frame display:YES];
-      [_view setFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
+      [_view setFrame:frame];
       [_window update];
     }
   }
@@ -1252,18 +1325,24 @@ load_cursor(const Filename &filename) {
  */
 void CocoaGraphicsWindow::
 handle_move_event() {
-  // Remember, Mac OS X uses flipped coordinates
   NSRect frame;
+  NSRect container;
   int x, y;
+  // Again, we are using the view to convert the frame and container size from
+  // points to pixels.
   if (_window == nil) {
-    frame = [_view frame];
-    x = frame.origin.x;
-    y = [[_view superview] bounds].size.height - frame.origin.y - frame.size.height;
+    frame = [_view convertRectToBacking:[_view frame]];
+    container = [_view convertRectToBacking:[[_view superview] frame]];
   } else {
-    frame = [_window contentRectForFrameRect:[_window frame]];
-    x = frame.origin.x;
-    y = [[_window screen] frame].size.height - frame.origin.y - frame.size.height;
+    frame = [_view convertRectToBacking:[_window contentRectForFrameRect:[_window frame]]];
+    NSScreen *screen = [_window screen];
+    nassertv(screen != nil);
+    container = [_view convertRectToBacking:[screen frame]];
   }
+
+  // Y coordinate in backing store is not flipped, but origin is still at the bottom left
+  x = frame.origin.x;
+  y = container.size.height + frame.origin.y;
 
   if (x != _properties.get_x_origin() ||
       y != _properties.get_y_origin()) {
@@ -1290,7 +1369,7 @@ handle_resize_event() {
     [_view setFrameSize:contentRect.size];
   }
 
-  NSRect frame = [_view convertRect:[_view bounds] toView:nil];
+  NSRect frame = [_view convertRectToBacking:[_view bounds]];
 
   WindowProperties properties;
   bool changed = false;
@@ -1402,6 +1481,22 @@ handle_foreground_event(bool foreground) {
     handle_mouse_moved_event(inside, loc.x, loc.y, true);
   }
 }
+
+
+/**
+ * Called by the window delegate when the properties of backing store of the
+ * window have changed.
+ */
+void CocoaGraphicsWindow::
+handle_backing_change_event() {
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug() << "Backing store properties have changed\n";
+  }
+  // Trigger a resize event to update the window size in case the backing scale
+  // factor did change.
+  handle_resize_event();
+}
+
 
 /**
  * Called by the window delegate when the user requests to close the window.
@@ -1693,6 +1788,13 @@ void CocoaGraphicsWindow::
 handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
   double nx, ny;
 
+  // Mouse position is received in screen points and not pixels, but in Panda3D
+  // we want to have the coordinates expressed in pixels.
+  // Instead of using convertPointFrom/toBackingStore and have complex logic to
+  // cope with the change of coordinate system, we cheat and directly use the
+  // contents scale of the view layer to convert screen point into pixels and
+  // vice-versa.
+  CGFloat contents_scale = _view.layer.contentsScale;
   if (absolute) {
     if (cocoadisplay_cat.is_spam()) {
       if (in_window != _input->get_pointer().get_in_window()) {
@@ -1704,14 +1806,14 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
       }
     }
 
-    nx = x;
-    ny = y;
+    nx = x * contents_scale;
+    ny = y * contents_scale;
 
   } else {
     // We received deltas, so add it to the current mouse position.
     PointerData md = _input->get_pointer();
-    nx = md.get_x() + x;
-    ny = md.get_y() + y;
+    nx = md.get_x() + x * contents_scale;
+    ny = md.get_y() + y * contents_scale;
   }
 
   if (_properties.get_mouse_mode() == WindowProperties::M_confined
@@ -1721,11 +1823,13 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     nx = std::max(0., std::min((double) get_x_size() - 1, nx));
     ny = std::max(0., std::min((double) get_y_size() - 1, ny));
 
+    // Convert back mouse position to screen space using point units
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(nx, ny);
+      point = CGPointMake(nx / contents_scale,
+                          ny / contents_scale);
     } else {
-      point = CGPointMake(nx + _properties.get_x_origin(),
-                          ny + _properties.get_y_origin());
+      point = CGPointMake((nx + _properties.get_x_origin()) / contents_scale,
+                          (ny + _properties.get_y_origin()) / contents_scale);
     }
 
     if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
