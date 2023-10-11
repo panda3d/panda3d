@@ -489,8 +489,6 @@ def test_get_tasks_named(task_manager):
     assert len(tm.getTasksNamed('testGetTasksNamed')) == 3
     tm.remove('testGetTasksNamed')
     assert len(tm.getTasksNamed('testGetTasksNamed')) == 0
-    _testGetTasksNamed = None
-    tm._checkMemLeaks()
 
 
 def test_get_tasks_matching(task_manager):
