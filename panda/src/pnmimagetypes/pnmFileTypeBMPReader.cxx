@@ -177,6 +177,7 @@ BMPreadinfoheader(
         unsigned long  *pcx,
         unsigned long  *pcy,
         unsigned short *pcBitCount,
+        unsigned short *pcCompression,
         int            *pclassv)
 {
         unsigned long   cbFix;
@@ -185,6 +186,7 @@ BMPreadinfoheader(
         unsigned long   cx = 0;
         unsigned long   cy = 0;
         unsigned short  cBitCount = 0;
+        unsigned long   cCompression = 0;
         int             classv = 0;
 
         cbFix = GetLong(fp);
@@ -229,7 +231,9 @@ BMPreadinfoheader(
          * for the required total.
          */
         if (classv != C_OS2) {
-            for (int i = 0; i < (int)cbFix - 16; i += 4) {
+            cCompression = GetLong(fp);
+
+            for (int i = 0; i < (int)cbFix - 20; i += 4) {
                 GetLong(fp);
             }
         }
@@ -273,11 +277,13 @@ BMPreadinfoheader(
         pm_message("cy: %d", cy);
         pm_message("cPlanes: %d", cPlanes);
         pm_message("cBitCount: %d", cBitCount);
+        pm_message("cCompression: %d", cCompression);
 #endif
 
         *pcx = cx;
         *pcy = cy;
         *pcBitCount = cBitCount;
+        *pcCompression = cCompression;
         *pclassv = classv;
 
         *ppos += cbFix;
@@ -401,45 +407,84 @@ BMPreadbits(xel *array, xelval *alpha_array,
         unsigned long   cx,
         unsigned long   cy,
         unsigned short  cBitCount,
-        int             /* classv */,
+        unsigned long   cCompression,
         int             indexed,
         pixval         *R,
         pixval         *G,
         pixval         *B)
 {
-        long            y;
+  long y;
 
-        readto(fp, ppos, offBits);
+  readto(fp, ppos, offBits);
 
-        if(cBitCount > 24 && cBitCount != 32)
-        {
-                pm_error("%s: cannot handle cBitCount: %d"
-                         ,ifname
-                         ,cBitCount);
+  if (cBitCount > 24 && cBitCount != 32) {
+    pm_error("%s: cannot handle cBitCount: %d", ifname, cBitCount);
+  }
+
+  if (cCompression == 1) {
+    // RLE8 compression
+    xel *row = array + (cy - 1) * cx;
+    xel *p = row;
+    unsigned long nbyte = 0;
+    while (true) {
+      int first = GetByte(fp);
+      int second = GetByte(fp);
+      nbyte += 2;
+
+      if (first != 0) {
+        // Repeated index.
+        for (int i = 0; i < first; ++i) {
+          PPM_ASSIGN(*p, R[second], G[second], B[second]);
+          ++p;
         }
-
-        /*
-         * The picture is stored bottom line first, top line last
-         */
-
-        for (y = (long)cy - 1; y >= 0; y--)
-        {
-                int rc;
-                rc = BMPreadrow(fp, ppos, array + y*cx, alpha_array + y*cx, cx, cBitCount, indexed, R, G, B);
-                if(rc == -1)
-                {
-                        pm_error("%s: couldn't read row %d"
-                                 ,ifname
-                                 ,y);
-                }
-                if(rc%4)
-                {
-                        pm_error("%s: row had bad number of bytes: %d"
-                                 ,ifname
-                                 ,rc);
-                }
+      }
+      else if (second == 0) {
+        // End of line.
+        row -= cx;
+        p = row;
+      }
+      else if (second == 1) {
+        // End of image.
+        break;
+      }
+      else if (second == 2) {
+        // Delta.
+        int xoffset = GetByte(fp);
+        int yoffset = GetByte(fp);
+        nbyte += 2;
+        row -= cx * yoffset;
+        p += xoffset - cx * yoffset;
+      }
+      else {
+        // Absolute run.
+        for (int i = 0; i < second; ++i) {
+          int v = GetByte(fp);
+          ++nbyte;
+          PPM_ASSIGN(*p, R[v], G[v], B[v]);
+          ++p;
         }
-
+        nbyte += second;
+        if (second % 2) {
+          // Pad to 16-bit boundary.
+          GetByte(fp);
+          ++nbyte;
+        }
+      }
+    }
+    *ppos += nbyte;
+  }
+  else {
+    // The picture is stored bottom line first, top line last
+    for (y = (long)cy - 1; y >= 0; y--) {
+      int rc = BMPreadrow(fp, ppos, array + y*cx, alpha_array + y*cx, cx, cBitCount, indexed, R, G, B);
+      if (rc == -1) {
+        pm_error("%s: couldn't read row %d", ifname, y);
+      }
+      if (rc % 4) {
+        pm_error("%s: row had bad number of bytes: %d", ifname, rc);
+      }
+    }
+  }
 }
 
 /**
@@ -474,7 +519,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   pos = 0;
 
   BMPreadfileheader(file, &pos, &offBits);
-  BMPreadinfoheader(file, &pos, &cx, &cy, &cBitCount, &classv);
+  BMPreadinfoheader(file, &pos, &cx, &cy, &cBitCount, &cCompression, &classv);
 
   if (offBits != BMPoffbits(classv, cBitCount)) {
     pnmimage_bmp_cat.warning()
@@ -523,9 +568,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 int PNMFileTypeBMP::Reader::
 read_data(xel *array, xelval *alpha_array) {
   BMPreadbits(array, alpha_array, _file, &pos, offBits, _x_size, _y_size,
-              cBitCount, classv, indexed, R, G, B);
+              cBitCount, cCompression, indexed, R, G, B);
 
-  if (pos != BMPlenfile(classv, cBitCount, _x_size, _y_size)) {
+  if (cCompression != 1 &&
+      pos != BMPlenfile(classv, cBitCount, _x_size, _y_size)) {
     pnmimage_bmp_cat.warning()
       << "Read " << pos << " bytes, expected to read "
       << BMPlenfile(classv, cBitCount, _x_size, _y_size) << " bytes\n";
