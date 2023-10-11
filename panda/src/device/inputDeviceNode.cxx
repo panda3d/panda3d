@@ -24,6 +24,8 @@ InputDeviceNode(InputDevice *device, const std::string &name) :
   _device(device)
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
+  _axis_values_output = define_output("axis_events", AxisEventList::get_class_type());
+  _axis_values = new AxisEventList;
 }
 
 /**
@@ -75,5 +77,12 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     }
 
     output.set_data(_button_events_output, EventParameter(bel));
+  }
+
+  // get all axis values of the device and forward them to the data graph
+  if (_device->has_axis_event()) {
+    PT(AxisEventList) ael = _device->get_axis_events();
+
+    output.set_data(_axis_values_output, EventParameter(ael));
   }
 }

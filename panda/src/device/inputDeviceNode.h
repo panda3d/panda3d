@@ -19,6 +19,7 @@
 #include "dataNode.h"
 #include "inputDeviceManager.h"
 #include "linmath_events.h"
+#include "axisEventList.h"
 
 /**
  * Reads the controller data sent from the InputDeviceManager, and transmits
@@ -49,8 +50,10 @@ private:
 
   // outputs
   int _button_events_output;
+  int _axis_values_output;
 
   PT(InputDevice) _device;
+  PT(AxisEventList) _axis_values;
 
 public:
   static TypeHandle get_class_type() {
