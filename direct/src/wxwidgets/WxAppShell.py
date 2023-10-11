@@ -79,12 +79,11 @@ class WxAppShell(wx.Frame):
         self.onDestroy(event)
 
         # to close Panda
-        try:
-            base
-        except NameError:
+        from direct.showbase import ShowBaseGlobal
+        if hasattr(ShowBaseGlobal, 'base'):
+            ShowBaseGlobal.base.userExit()
+        else:
             sys.exit()
-
-        base.userExit()
 
     ### USER METHODS ###
     # To be overridden

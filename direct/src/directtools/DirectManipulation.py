@@ -1113,7 +1113,7 @@ class ObjectHandles(NodePath, DirectObject):
         NodePath.__init__(self)
 
         # Load up object handles model and assign it to self
-        self.assign(ShowBaseGlobal.base.loader.loadModel('models/misc/objectHandles'))
+        self.assign(ShowBaseGlobal.loader.loadModel('models/misc/objectHandles'))
         self.setName(name)
         self.scalingNode = NodePath(self)
         self.scalingNode.setName('ohScalingNode')

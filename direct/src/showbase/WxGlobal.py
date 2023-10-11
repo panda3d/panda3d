@@ -3,4 +3,5 @@
 
 def spawnWxLoop():
     """Alias for :meth:`base.spawnWxLoop() <.ShowBase.spawnWxLoop>`."""
-    base.spawnWxLoop()
+    from direct.showbase import ShowBaseGlobal
+    ShowBaseGlobal.base.spawnWxLoop()
