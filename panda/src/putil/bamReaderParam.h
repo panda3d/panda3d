@@ -27,15 +27,15 @@ class DatagramIterator;
  */
 class EXPCL_PANDA_PUTIL BamReaderParam : public FactoryParam {
 public:
-  INLINE const DatagramIterator &get_iterator();
+  INLINE DatagramIterator &get_iterator();
   INLINE BamReader *get_manager();
 
 private:
-  const DatagramIterator &_iterator;
+  DatagramIterator &_iterator;
   BamReader *_manager;
 
 public:
-  INLINE BamReaderParam(const DatagramIterator &dgi, BamReader *manager);
+  INLINE BamReaderParam(DatagramIterator &dgi, BamReader *manager);
   INLINE ~BamReaderParam();
 
 public:

@@ -1,5 +1,6 @@
 set(P3RECORDER_HEADERS
   config_recorder.h
+  inputDeviceNodeRecorder.h
   mouseRecorder.h
   recorderBase.h recorderBase.I
   recorderController.h recorderController.I
@@ -11,6 +12,7 @@ set(P3RECORDER_HEADERS
 
 set(P3RECORDER_SOURCES
   config_recorder.cxx
+  inputDeviceNodeRecorder.cxx
   mouseRecorder.cxx
   recorderBase.cxx recorderController.cxx
   recorderFrame.cxx recorderHeader.cxx recorderTable.cxx
