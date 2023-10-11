@@ -31,7 +31,7 @@ def inspect(anObject):
 
 ### private
 
-_InspectorMap: dict[str, str]
+_InspectorMap: "dict[str, str]"
 
 
 def inspectorFor(anObject):
