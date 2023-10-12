@@ -23,10 +23,11 @@ except:
     exit(1)
 
 from makepandacore import *
-from distutils.util import get_platform
 import time
 import os
 import sys
+
+from sysconfig import get_platform
 
 ########################################################################
 ##
