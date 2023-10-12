@@ -9,9 +9,9 @@
 ########################################################################
 
 import os, sys, platform
-from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
+from locations import get_python_lib
 
 
 MIME_INFO = (

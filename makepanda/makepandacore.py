@@ -7,7 +7,7 @@
 
 import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
 import subprocess
-from distutils import sysconfig
+import locations
 
 if sys.version_info >= (3, 0):
     import pickle
@@ -2250,7 +2250,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         # On macOS, search for the Python framework directory matching the
         # version number of our current Python version.
         sysroot = SDK.get("MACOSX", "")
-        version = sysconfig.get_python_version()
+        version = locations.get_python_version()
 
         py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
 
@@ -2275,19 +2275,19 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
-    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
-    #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+    #    SDK["PYTHON"] = os.path.dirname(locations.get_python_inc())
+    #    SDK["PYTHONVERSION"] = "python" + locations.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
-        SDK["PYTHON"] = sysconfig.get_python_inc()
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
+        SDK["PYTHON"] = locations.get_python_inc()
+        SDK["PYTHONVERSION"] = "python" + locations.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
         # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
-        host_version = "python" + sysconfig.get_python_version() + abiflags
+        host_version = "python" + locations.get_python_version() + abiflags
         if SDK["PYTHONVERSION"] != host_version:
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
@@ -3514,7 +3514,7 @@ def GetExtensionSuffix():
         return '.so'
 
 def GetPythonABI():
-    soabi = sysconfig.get_config_var('SOABI')
+    soabi = locations.get_config_var('SOABI')
     if soabi:
         return soabi
 
@@ -3523,16 +3523,16 @@ def GetPythonABI():
     if sys.version_info >= (3, 8):
         return soabi
 
-    debug_flag = sysconfig.get_config_var('Py_DEBUG')
+    debug_flag = locations.get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
         soabi += 'd'
 
-    malloc_flag = sysconfig.get_config_var('WITH_PYMALLOC')
+    malloc_flag = locations.get_config_var('WITH_PYMALLOC')
     if malloc_flag is None or malloc_flag:
         soabi += 'm'
 
     if sys.version_info < (3, 3):
-        usize = sysconfig.get_config_var('Py_UNICODE_SIZE')
+        usize = locations.get_config_var('Py_UNICODE_SIZE')
         if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
             soabi += 'u'
 
@@ -3648,14 +3648,13 @@ def GetCurrentPythonVersionInfo():
     if PkgSkip("PYTHON"):
         return
 
-    from distutils.sysconfig import get_python_lib
     return {
         "version": SDK["PYTHONVERSION"][6:].rstrip('dmu'),
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
-        "purelib": get_python_lib(False),
-        "platlib": get_python_lib(True),
+        "purelib": locations.get_python_lib(False),
+        "platlib": locations.get_python_lib(True),
     }
 
 
