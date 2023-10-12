@@ -32,7 +32,7 @@ __init__(PyObject *init_value) {
   }
 #endif
 
-  if (!PyLong_Check(init_value) || Py_SIZE(init_value) < 0) {
+  if (!PyLong_Check(init_value) || !PyLong_IsNonNegative(init_value)) {
     PyErr_SetString(PyExc_ValueError, "BitArray constructor requires a positive integer");
     return;
   }
@@ -88,7 +88,7 @@ __getstate__() const {
  */
 void Extension<BitArray>::
 __setstate__(PyObject *state) {
-  if (Py_SIZE(state) >= 0) {
+  if (PyLong_IsNonNegative(state)) {
     __init__(state);
   } else {
     PyObject *inverted = PyNumber_Invert(state);

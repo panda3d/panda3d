@@ -28,8 +28,7 @@ __init__(PyObject *init_value) {
     return;
   }
 #endif
-
-  if (!PyLong_Check(init_value) || Py_SIZE(init_value) < 0) {
+  if (!PyLong_Check(init_value) || !PyLong_IsNonNegative(init_value)) {
     PyErr_SetString(PyExc_ValueError, "DoubleBitMask constructor requires a positive integer");
     return;
   }

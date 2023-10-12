@@ -32,6 +32,9 @@ def test_bitarray_pickle():
     ba = BitArray(123)
     assert ba == pickle.loads(pickle.dumps(ba, -1))
 
+    ba = BitArray(1 << 128)
+    assert ba == pickle.loads(pickle.dumps(ba, -1))
+
 
 def test_bitarray_has_any_of():
     ba = BitArray()
