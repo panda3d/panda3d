@@ -243,6 +243,22 @@ INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObje
 }
 #endif
 
+/* Python 3.12 */
+INLINE bool PyObject_IsPositiveInteger(PyObject *value) {
+  if (!PyLong_Check(value)) {
+    return false;
+  }
+
+  int overflow = 0;
+  long longval = PyLong_AsLongAndOverflow(value, &overflow);
+
+  if (overflow == -1) {
+    return false;
+  }
+
+  return overflow == 1 || longval >= 0; // let's call zero "positive"
+}
+
 /* Other Python implementations */
 
 // _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.
