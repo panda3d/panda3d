@@ -45,6 +45,8 @@ from panda3d.core import (
 )
 from direct.extensions_native import HTTPChannel_extensions # pylint: disable=unused-import
 
+# The following variables are typing constructs used in annotations
+# to succinctly express all the types that can be converted into tasks.
 _T = TypeVar('_T', covariant=True)
 _TaskCoroutine = Union[Coroutine[Any, None, _T], Generator[Any, None, _T]]
 _TaskFunction = Callable[..., Union[int, _TaskCoroutine[Union[int, None]], None]]
