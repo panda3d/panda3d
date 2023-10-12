@@ -15,7 +15,7 @@ __all__ = ['Task', 'TaskManager',
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Functor, ScratchPad
 from direct.showbase.MessengerGlobal import messenger
-from typing import Any, Callable, Coroutine, Final, Generator, Optional, Sequence, TypeVar, Union
+from typing import Any, Callable, Coroutine, Final, Generator, Sequence, TypeVar, Union
 import types
 import random
 import importlib
@@ -23,7 +23,7 @@ import sys
 
 # On Android, there's no use handling SIGINT, and in fact we can't, since we
 # run the application in a separate thread from the main thread.
-signal: Optional[types.ModuleType]
+signal: types.ModuleType | None
 if hasattr(sys, 'getandroidapilevel'):
     signal = None
 else:
