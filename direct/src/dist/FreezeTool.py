@@ -333,10 +333,15 @@ class CompilationEnvironment:
                 self.arch = '-arch x86_64'
             elif proc in ('arm64', 'aarch64'):
                 self.arch = '-arch arm64'
-            self.compileObjExe = "gcc -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
-            self.compileObjDll = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
-            self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
-            self.linkDll = "gcc %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
+            self.compileObjExe = "clang -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.compileObjDll = "clang -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
+            self.linkExe = "clang %(arch)s -o %(basename)s %(basename)s.o"
+            if '/Python.framework/' in self.PythonIPath:
+                framework_dir = self.PythonIPath.split("/Python.framework/", 1)[0]
+                if framework_dir != "/System/Library/Frameworks":
+                    self.linkExe += " -F " + framework_dir
+            self.linkExe += " -framework Python"
+            self.linkDll = "clang %(arch)s -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
 
         else:
             # Unix
