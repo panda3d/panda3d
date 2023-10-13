@@ -32,6 +32,20 @@ jobs:
         rmdir panda3d-1.10.13
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Build Python 3.12
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+    - name: Test Python 3.12
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
@@ -83,20 +97,6 @@ jobs:
       run: |
         python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
     - name: Test Python 3.8
-      shell: bash
-      run: |
-        python -m pip install pytest
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
-
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.7'
-    - name: Build Python 3.7
-      shell: bash
-      run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
-    - name: Test Python 3.7
       shell: bash
       run: |
         python -m pip install pytest
