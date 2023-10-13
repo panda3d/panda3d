@@ -30,11 +30,9 @@ except:
     print("Please install the development package of Python and try again.")
     exit(1)
 
-if sys.version_info >= (3, 10):
-    from sysconfig import get_platform
-else:
-    from distutils.util import get_platform
 from makepandacore import *
+
+from sysconfig import get_platform
 
 try:
     import zlib

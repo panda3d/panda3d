@@ -241,6 +241,18 @@ INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObje
 }
 #endif
 
+/* Python 3.12 */
+
+#if PY_VERSION_HEX < 0x030C0000
+#  define PyLong_IsNonNegative(value) (Py_SIZE((value)) >= 0)
+#else
+INLINE bool PyLong_IsNonNegative(PyObject *value) {
+  int overflow = 0;
+  long longval = PyLong_AsLongAndOverflow(value, &overflow);
+  return overflow == 1 || longval >= 0;
+}
+#endif
+
 /* Other Python implementations */
 
 #endif  // HAVE_PYTHON

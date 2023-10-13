@@ -942,8 +942,7 @@ def MakeInstallerAndroid(version, **kwargs):
                     shutil.copy(os.path.join(source_dir, base), target)
 
     # Copy the Python standard library to the .apk as well.
-    # DO NOT CHANGE TO sysconfig - see #1230
-    from distutils.sysconfig import get_python_lib
+    from locations import get_python_lib
     stdlib_source = get_python_lib(False, True)
     stdlib_target = os.path.join("apkroot", "lib", "python{0}.{1}".format(*sys.version_info))
     copy_python_tree(stdlib_source, stdlib_target)
