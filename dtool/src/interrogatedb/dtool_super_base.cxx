@@ -21,7 +21,7 @@ static PyMemberDef standard_type_members[] = {
   {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
 // {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
 // READONLY, (char *)"A type check signature"},
-  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
+  {(char *)"this_metatype", T_OBJECT_EX, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
   {nullptr}  /* Sentinel */
 };
 
