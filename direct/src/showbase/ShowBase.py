@@ -3421,7 +3421,7 @@ class ShowBase(DirectObject.DirectObject):
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
-    def run(self): # pylint: disable=method-hidden
+    def run(self) -> None: # pylint: disable=method-hidden
         """This method runs the :class:`~direct.task.Task.TaskManager`
         when ``self.appRunner is None``, which is to say, when we are
         not running from within a p3d file.  When we *are* within a p3d
