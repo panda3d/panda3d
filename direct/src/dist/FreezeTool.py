@@ -5,7 +5,6 @@ import modulefinder
 import sys
 import os
 import marshal
-import imp
 import platform
 import struct
 import io
@@ -18,6 +17,12 @@ import importlib
 
 from . import pefile
 
+if sys.version_info >= (3, 4):
+    import _imp
+    from importlib import machinery
+else:
+    import imp
+
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
     import p3extend_frozen
@@ -25,6 +30,16 @@ except ImportError:
     p3extend_frozen = None
 
 from panda3d.core import *
+
+# Old imp constants.
+_PY_SOURCE = 1
+_PY_COMPILED = 2
+_C_EXTENSION = 3
+_PKG_DIRECTORY = 5
+_C_BUILTIN = 6
+_PY_FROZEN = 7
+
+_PKG_NAMESPACE_DIRECTORY = object()
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -39,8 +54,11 @@ isDebugBuild = (python.lower().endswith('_d'))
 # NB. if encodings are removed, be sure to remove them from the shortcut in
 # deploy-stub.c.
 startupModules = [
-    'imp', 'encodings', 'encodings.*',
+    'encodings', 'encodings.*',
 ]
+if sys.version_info < (3, 12):
+    startupModules.insert(0, 'imp')
+
 if sys.version_info >= (3, 0):
     # Modules specific to Python 3
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
@@ -885,12 +903,19 @@ class Freezer:
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
-            self.moduleSuffixes = imp.get_suffixes()
+            if sys.version_info >= (3, 4):
+                self.moduleSuffixes = (
+                    [(s, 'rb', _C_EXTENSION) for s in machinery.EXTENSION_SUFFIXES] +
+                    [(s, 'rb', _PY_SOURCE) for s in machinery.SOURCE_SUFFIXES] +
+                    [(s, 'rb', _PY_COMPILED) for s in machinery.BYTECODE_SUFFIXES]
+                )
+            else:
+                self.moduleSuffixes = imp.get_suffixes()
 
-            # Set extension for Python files to binary mode
-            for i, suffix in enumerate(self.moduleSuffixes):
-                if suffix[2] == imp.PY_SOURCE:
-                    self.moduleSuffixes[i] = (suffix[0], 'rb', imp.PY_SOURCE)
+                # Set extension for Python files to binary mode
+                for i, suffix in enumerate(self.moduleSuffixes):
+                    if suffix[2] == _PY_SOURCE:
+                        self.moduleSuffixes[i] = (suffix[0], 'rb', _PY_SOURCE)
         else:
             self.moduleSuffixes = [('.py', 'rb', 1), ('.pyc', 'rb', 2)]
 
@@ -990,21 +1015,45 @@ class Freezer:
         # whatever--then just look for file on disk.  That's usually
         # good enough.
         path = None
-        baseName = moduleName
-        if '.' in baseName:
-            parentName, baseName = moduleName.rsplit('.', 1)
+        name = moduleName
+        if '.' in name:
+            parentName, name = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
             if path is None:
                 return None
 
-        try:
-            file, pathname, description = imp.find_module(baseName, path)
-        except ImportError:
-            return None
+        if sys.version_info < (3, 4):
+            try:
+                file, pathname, description = imp.find_module(name, path)
+            except ImportError:
+                return None
 
-        if not os.path.isdir(pathname):
-            return None
-        return [pathname]
+            if not os.path.isdir(pathname):
+                return None
+            return [pathname]
+
+        if path is None:
+            if _imp.is_builtin(name) or _imp.is_frozen(name):
+                return None
+
+            path = sys.path
+
+        for entry in path:
+            package_directory = os.path.join(entry, name)
+            for suffix in ('.py', machinery.BYTECODE_SUFFIXES[0]):
+                package_file_name = '__init__' + suffix
+                file_path = os.path.join(package_directory, package_file_name)
+                if os.path.isfile(file_path):
+                    return [package_directory]
+
+            for suffix in machinery.EXTENSION_SUFFIXES + machinery.SOURCE_SUFFIXES + machinery.BYTECODE_SUFFIXES:
+                file_name = name + suffix
+                file_path = os.path.join(entry, file_name)
+                if os.path.isfile(file_path):
+                    # Not a package.
+                    return None
+
+        return None
 
     def getModuleStar(self, moduleName):
         """ Looks for the indicated directory module and returns the
@@ -1027,20 +1076,49 @@ class Freezer:
         # If it didn't work, just open the directory and scan for *.py
         # files.
         path = None
-        baseName = moduleName
-        if '.' in baseName:
-            parentName, baseName = moduleName.rsplit('.', 1)
+        name = moduleName
+        if '.' in name:
+            parentName, name = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
             if path is None:
                 return None
 
-        try:
-            file, pathname, description = imp.find_module(baseName, path)
-        except ImportError:
-            return None
+        if sys.version_info < (3, 4):
+            try:
+                file, pathname, description = imp.find_module(name, path)
+            except ImportError:
+                return None
 
-        if not os.path.isdir(pathname):
-            return None
+            if not os.path.isdir(pathname):
+                return None
+        else:
+            if path is None:
+                if _imp.is_builtin(name) or _imp.is_frozen(name):
+                    return None
+
+                path = sys.path
+
+            for entry in path:
+                package_directory = os.path.join(entry, name)
+                for suffix in ('.py', machinery.BYTECODE_SUFFIXES[0]):
+                    package_file_name = '__init__' + suffix
+                    file_path = os.path.join(package_directory, package_file_name)
+                    if os.path.isfile(file_path):
+                        pathname = package_directory
+                        break
+                else:
+                    for suffix in machinery.EXTENSION_SUFFIXES + machinery.SOURCE_SUFFIXES + machinery.BYTECODE_SUFFIXES:
+                        file_name = name + suffix
+                        file_path = os.path.join(entry, file_name)
+                        if os.path.isfile(file_path):
+                            # Not a package.
+                            return None
+                    else:
+                        continue
+
+                break  # Break out of outer loop when breaking out of inner loop.
+            else:
+                return None
 
         # Scan the directory, looking for .py files.
         modules = []
@@ -1335,10 +1413,10 @@ class Freezer:
             ext = mdef.filename.getExtension()
             if ext == 'pyc' or ext == 'pyo':
                 fp = open(pathname, 'rb')
-                stuff = ("", "rb", imp.PY_COMPILED)
+                stuff = ("", "rb", _PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
-                stuff = ("", "rb", imp.PY_SOURCE)
+                stuff = ("", "rb", _PY_SOURCE)
                 if mdef.text:
                     fp = io.StringIO(mdef.text)
                 else:
@@ -1434,10 +1512,10 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + b'\0\0\0\0'
-
-            if sys.version_info >= (3, 0):
-                data += b'\0\0\0\0'
+            if sys.version_info >= (3, 4):
+                data = importlib.util.MAGIC_NUMBER + b'\0\0\0\0\0\0\0\0'
+            else:
+                data = imp.get_magic() + b'\0\0\0\0'
 
             data += marshal.dumps(code)
 
@@ -1634,7 +1712,11 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it as builtin.
             if '.' in moduleName and self.linkExtensionModules:
-                if sys.version_info >= (3, 2):
+                if sys.version_info >= (3, 5):
+                    code = compile('import sys;del sys.modules["%s"];from importlib._bootstrap import _builtin_from_name;_builtin_from_name("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=self.optimize)
+                elif sys.version_info >= (3, 4):
+                    code = compile('import sys;del sys.modules["%s"];import _imp;_imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=self.optimize)
+                elif sys.version_info >= (3, 2):
                     code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec', optimize=self.optimize)
                 else:
                     code = compile('import sys;del sys.modules["%s"];import imp;imp.init_builtin("%s")' % (moduleName, moduleName), moduleName, 'exec')
@@ -1910,9 +1992,25 @@ class Freezer:
             if '.' in moduleName:
                 if self.platform.startswith("macosx") and not use_console:
                     # We write the Frameworks directory to sys.path[0].
-                    code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
+                    direxpr = 'sys.path[0]'
                 else:
-                    code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
+                    direxpr = 'os.path.dirname(sys.executable)'
+
+                if sys.version_info >= (3, 5):
+                    code = \
+                        'import sys;' \
+                        'del sys.modules["{name}"];' \
+                        'import sys,os;' \
+                        'from importlib.machinery import ExtensionFileLoader,ModuleSpec;' \
+                        'from importlib._bootstrap import _load;' \
+                        'path=os.path.join({direxpr}, "{name}{ext}");' \
+                        '_load(ModuleSpec(name="{name}", loader=ExtensionFileLoader("{name}", path), origin=path))' \
+                        ''.format(name=moduleName, ext=modext, direxpr=direxpr)
+                elif sys.version_info >= (3, 4):
+                    code = 'import sys;del sys.modules["%s"];import sys,os,_imp;_imp.load_dynamic("%s",os.path.join(%s, "%s%s"))' % (moduleName, moduleName, direxpr, moduleName, modext)
+                else:
+                    code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(%s, "%s%s"))' % (moduleName, moduleName, direxpr, moduleName, modext)
+
                 if sys.version_info >= (3, 2):
                     code = compile(code, moduleName, 'exec', optimize=self.optimize)
                 else:
@@ -2362,9 +2460,6 @@ class Freezer:
         return True
 
 
-_PKG_NAMESPACE_DIRECTORY = object()
-
-
 class PandaModuleFinder(modulefinder.ModuleFinder):
 
     def __init__(self, *args, **kw):
@@ -2375,7 +2470,17 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         :param debug: an integer indicating the level of verbosity
         """
 
-        self.suffixes = kw.pop('suffixes', imp.get_suffixes())
+        if 'suffixes' in kw:
+            self.suffixes = kw.pop('suffixes')
+        elif sys.version_info >= (3, 4):
+            self.suffixes = (
+                [(s, 'rb', _C_EXTENSION) for s in machinery.EXTENSION_SUFFIXES] +
+                [(s, 'r', _PY_SOURCE) for s in machinery.SOURCE_SUFFIXES] +
+                [(s, 'rb', _PY_COMPILED) for s in machinery.BYTECODE_SUFFIXES]
+            )
+        else:
+            self.suffixes = imp.get_suffixes()
+
         self.optimize = kw.pop('optimize', -1)
 
         modulefinder.ModuleFinder.__init__(self, *args, **kw)
@@ -2475,7 +2580,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         suffix, mode, type = file_info
         self.msgin(2, "load_module", fqname, fp and "fp", pathname)
-        if type == imp.PKG_DIRECTORY:
+        if type == _PKG_DIRECTORY:
             m = self.load_package(fqname, pathname)
             self.msgout(2, "load_module ->", m)
             return m
@@ -2489,7 +2594,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             m.__path__ = pathname
             return m
 
-        if type == imp.PY_SOURCE:
+        if type == _PY_SOURCE:
             if fqname in overrideModules:
                 # This module has a custom override.
                 code = overrideModules[fqname]
@@ -2516,7 +2621,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 co = compile(code, pathname, 'exec', optimize=self.optimize)
             else:
                 co = compile(code, pathname, 'exec')
-        elif type == imp.PY_COMPILED:
+        elif type == _PY_COMPILED:
             if sys.version_info >= (3, 7):
                 try:
                     data = fp.read()
@@ -2681,12 +2786,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         # If we have a custom override for this module, we know we have it.
         if fullname in overrideModules:
-            return (None, '', ('.py', 'r', imp.PY_SOURCE))
+            return (None, '', ('.py', 'r', _PY_SOURCE))
 
         # If no search path is given, look for a built-in module.
         if path is None:
             if name in sys.builtin_module_names:
-                return (None, None, ('', '', imp.C_BUILTIN))
+                return (None, None, ('', '', _C_BUILTIN))
 
             path = self.path
 
@@ -2718,7 +2823,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             for suffix, mode, _ in self.suffixes:
                 init = os.path.join(basename, '__init__' + suffix)
                 if self._open_file(init, mode):
-                    return (None, basename, ('', '', imp.PKG_DIRECTORY))
+                    return (None, basename, ('', '', _PKG_DIRECTORY))
 
             # This may be a namespace package.
             if self._dir_exists(basename):
@@ -2730,7 +2835,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             # Only if we're not looking on a particular path, though.
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
-                return (None, name, ('', '', imp.PY_FROZEN))
+                return (None, name, ('', '', _PY_FROZEN))
 
         # If we found folders on the path with this module name without an
         # __init__.py file, we should consider this a namespace package.

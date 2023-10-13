@@ -15,7 +15,6 @@ import re
 import shutil
 import stat
 import struct
-import imp
 import string
 import time
 import tempfile
@@ -25,7 +24,7 @@ import distutils.log
 
 from . import FreezeTool
 from . import pefile
-from direct.p3d.DeploymentTools import Icon
+from .icon import Icon
 import panda3d.core as p3d
 
 
@@ -912,7 +911,7 @@ class build_apps(setuptools.Command):
                 for mod in freezer.getModuleDefs() if mod[1].filename
             })
             for suffix in freezer.moduleSuffixes:
-                if suffix[2] == imp.C_EXTENSION:
+                if suffix[2] == 3: # imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
 
         for appname, scriptname in self.gui_apps.items():

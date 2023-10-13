@@ -6,14 +6,18 @@ import os, importlib
 # This will print out imports on the command line.
 import direct.showbase.VerboseImport
 
+import sys
+if sys.version_info >= (3, 4):
+    from importlib import machinery
+    extensions = machinery.EXTENSION_SUFFIXES + machinery.SOURCE_SUFFIXES + machinery.BYTECODE_SUFFIXES
+else:
+    import imp
+    extensions = set()
+    for suffix in imp.get_suffixes():
+        extensions.add(suffix[0])
 
-import imp
 import panda3d
 dir = os.path.dirname(panda3d.__file__)
-
-extensions = set()
-for suffix in imp.get_suffixes():
-    extensions.add(suffix[0])
 
 for basename in os.listdir(dir):
     module = basename.split('.', 1)[0]
@@ -159,18 +163,19 @@ import direct.interval.ProjectileIntervalTest
 import direct.interval.SoundInterval
 import direct.interval.TestInterval
 import direct.motiontrail.MotionTrail
-import direct.p3d.AppRunner
-import direct.p3d.DWBPackageInstaller
-import direct.p3d.DeploymentTools
+if sys.version_info < (3, 12):
+    import direct.p3d.AppRunner
+    import direct.p3d.DWBPackageInstaller
+    import direct.p3d.DeploymentTools
+    import direct.p3d.HostInfo
+    import direct.p3d.JavaScript
+    import direct.p3d.PackageInfo
+    import direct.p3d.PackageInstaller
+    import direct.p3d.PackageMerger
+    import direct.p3d.Packager
 import direct.p3d.FileSpec
-import direct.p3d.HostInfo
 import direct.p3d.InstalledHostData
 import direct.p3d.InstalledPackageData
-import direct.p3d.JavaScript
-import direct.p3d.PackageInfo
-import direct.p3d.PackageInstaller
-import direct.p3d.PackageMerger
-import direct.p3d.Packager
 import direct.p3d.PatchMaker
 import direct.p3d.ScanDirectoryNode
 import direct.p3d.SeqValue
@@ -231,7 +236,8 @@ import direct.showbase.ShowBase
 import direct.showbase.TaskThreaded
 import direct.showbase.ThreeUpShow
 import direct.showbase.Transitions
-import direct.showbase.VFSImporter
+if sys.version_info < (3, 12):
+    import direct.showbase.VFSImporter
 import direct.showbase.WxGlobal
 import direct.showutil.BuildGeometry
 import direct.showutil.Effects
