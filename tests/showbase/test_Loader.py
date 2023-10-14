@@ -153,7 +153,7 @@ fnrgl = fnargle:FnargleLoader
         # Now try loading a fnargle file
         model_fn = Filename(model_path)
         model_fn.make_true_case()
-        model = loader.load_model(model_fn)
+        model = loader.load_model(model_fn, noCache=True)
         assert model is not None
         assert model.name == "fnargle"
 
