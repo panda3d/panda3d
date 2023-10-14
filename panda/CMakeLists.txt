@@ -60,6 +60,9 @@ add_subdirectory(src/wgldisplay)
 add_subdirectory(src/windisplay)
 add_subdirectory(src/x11display)
 
+# Creates a metalib, so should go after
+add_subdirectory(src/tinydisplay)
+
 # For other components
 # bullet
 add_subdirectory(src/bullet)
