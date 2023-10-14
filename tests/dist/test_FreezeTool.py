@@ -1,5 +1,9 @@
 from direct.dist.FreezeTool import Freezer, PandaModuleFinder
+import pytest
+import os
 import sys
+import subprocess
+import platform
 
 
 def test_Freezer_moduleSuffixes():
@@ -56,3 +60,47 @@ def test_Freezer_getModulePath_getModuleStar(tmp_path):
         assert freezer.getModuleStar("module2") == None
     finally:
         sys.path = backup
+
+
+@pytest.mark.parametrize("use_console", (False, True))
+def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
+    try:
+        # If installed as a wheel
+        import panda3d_tools
+        bin_dir = os.path.dirname(panda3d_tools.__file__)
+    except:
+        import panda3d
+        bin_dir = os.path.join(os.path.dirname(os.path.dirname(panda3d.__file__)), 'bin')
+
+    if sys.platform == 'win32':
+        suffix = '.exe'
+    else:
+        suffix = ''
+
+    if not use_console:
+        stub_file = os.path.join(bin_dir, 'deploy-stubw' + suffix)
+
+    if use_console or not os.path.isfile(stub_file):
+        stub_file = os.path.join(bin_dir, 'deploy-stub' + suffix)
+
+    if not os.path.isfile(stub_file):
+        pytest.skip("Unable to find deploy-stub executable")
+
+    target = str(tmp_path / ('stubtest' + suffix))
+
+    freezer = Freezer()
+    freezer.addModule('module2', filename='module2.py', text='print("Module imported")')
+    freezer.addModule('__main__', filename='main.py', text='import module2\nprint("Hello world")')
+    assert '__main__' in freezer.modules
+
+    freezer.done(addStartupModules=True)
+    assert '__main__' in dict(freezer.getModuleDefs())
+
+    freezer.generateRuntimeFromStub(target, open(stub_file, 'rb'), use_console)
+
+    if sys.platform == 'darwin' and platform.machine().lower() == 'arm64':
+        # Not supported; see #1348
+        return
+
+    output = subprocess.check_output(target)
+    assert output.replace(b'\r\n', b'\n') == b'Module imported\nHello world\n'

@@ -151,16 +151,17 @@ class Loader(DirectObject):
         if not ConfigVariableBool('loader-support-entry-points', True):
             return
 
-        import importlib
-        try:
-            pkg_resources = importlib.import_module('pkg_resources')
-        except ImportError:
-            pkg_resources = None
+        from importlib.metadata import entry_points
+        eps = entry_points()
+        if isinstance(eps, dict): # Python 3.8 and 3.9
+            loaders = eps.get('panda3d.loaders', ())
+        else:
+            loaders = entry_points().select(group='panda3d.loaders')
 
-        if pkg_resources:
+        if loaders:
             registry = LoaderFileTypeRegistry.getGlobalPtr()
 
-            for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+            for entry_point in loaders:
                 registry.register_deferred_type(entry_point)
 
             cls._loadedPythonFileTypes = True
