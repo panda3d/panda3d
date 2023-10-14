@@ -94,6 +94,18 @@ def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
     target = str(tmp_path / ('stubtest' + suffix))
 
     freezer = Freezer()
-    freezer.addModule('__main__', 'main.py', text='print("Hello world")')
+    freezer.addModule('module2', filename='module2.py', text='print("Module imported")')
+    freezer.addModule('__main__', filename='main.py', text='import module2\nprint("Hello world")')
+    assert '__main__' in freezer.modules
+
     freezer.done(addStartupModules=True)
+    assert '__main__' in dict(freezer.getModuleDefs())
+
     freezer.generateRuntimeFromStub(target, open(stub_file, 'rb'), use_console)
+
+    if sys.platform == 'darwin' and platform.machine().lower() == 'arm64':
+        # Not supported; see #1348
+        return
+
+    output = subprocess.check_output(target)
+    assert output.replace(b'\r\n', b'\n') == b'Module imported\nHello world\n'
