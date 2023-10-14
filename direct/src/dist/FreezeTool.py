@@ -1420,6 +1420,10 @@ class Freezer:
                 fp = open(pathname, 'rb')
                 stuff = ("", "rb", _PY_COMPILED)
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
+            elif isinstance(mdef.text, bytes):
+                stuff = ("", "rb", _PY_SOURCE)
+                fp = io.BytesIO(mdef.text)
+                self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
                 stuff = ("", "rb", _PY_SOURCE)
                 if mdef.text:

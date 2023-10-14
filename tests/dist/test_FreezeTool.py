@@ -2,6 +2,8 @@ from direct.dist.FreezeTool import Freezer, PandaModuleFinder
 import pytest
 import os
 import sys
+import subprocess
+import platform
 
 
 def test_Freezer_moduleSuffixes():
@@ -16,24 +18,23 @@ def test_Freezer_getModulePath_getModuleStar(tmp_path):
     # Package 1 can be imported
     package1 = tmp_path / "package1"
     package1.mkdir()
-    (package1 / "submodule1.py").write_text("")
-    (package1 / "__init__.py").write_text("")
+    (package1 / "submodule1.py").write_text(u"")
+    (package1 / "__init__.py").write_text(u"")
 
     # Package 2 can not be imported
     package2 = tmp_path / "package2"
     package2.mkdir()
-    (package2 / "submodule2.py").write_text("")
-    (package2 / "__init__.py").write_text("raise ImportError\n")
+    (package2 / "submodule2.py").write_text(u"")
+    (package2 / "__init__.py").write_text(u"raise ImportError\n")
 
     # Module 1 can be imported
-    (tmp_path / "module1.py").write_text("")
+    (tmp_path / "module1.py").write_text(u"")
 
     # Module 2 can not be imported
-    (tmp_path / "module2.py").write_text("raise ImportError\n")
+    (tmp_path / "module2.py").write_text(u"raise ImportError\n")
 
     # Module 3 has a custom __path__ and __all__
-    (tmp_path / "module3.py").write_text("__path__ = ['foobar']\n"
-                                         "__all__ = ['test']\n")
+    (tmp_path / "module3.py").write_text(u"__path__ = ['foobar']\n__all__ = ['test']\n")
 
     backup = sys.path
     try:
@@ -90,7 +91,7 @@ def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
     if not os.path.isfile(stub_file):
         pytest.skip("Unable to find deploy-stub executable")
 
-    target = str(tmp_path / 'stubtest')
+    target = str(tmp_path / ('stubtest' + suffix))
 
     freezer = Freezer()
     freezer.addModule('__main__', 'main.py', text='print("Hello world")')
