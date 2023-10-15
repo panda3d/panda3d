@@ -174,7 +174,7 @@ class Loader(DirectObject):
             if isinstance(eps, dict): # Python 3.8 and 3.9
                 loaders = eps.get('panda3d.loaders', ())
             else:
-                loaders = entry_points().select(group='panda3d.loaders')
+                loaders = eps.select(group='panda3d.loaders')
         else:
             import importlib
             try:
