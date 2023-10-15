@@ -41,7 +41,7 @@ def test_wheel(wheel, verbose=False):
     if sys.version_info >= (3, 10):
         packages += ["pytest>=6.2.4"]
     else:
-        packages += ["pytest"]
+        packages += ["pytest>=3.9.0"]
 
     if sys.version_info[0:2] == (3, 4):
         if sys.platform == "win32":
@@ -49,6 +49,9 @@ def test_wheel(wheel, verbose=False):
 
         # See https://github.com/python-attrs/attrs/pull/807
         packages += ["attrs<21"]
+
+    if sys.version_info >= (3, 12):
+        packages += ["setuptools"]
 
     if subprocess.call([python, "-m", "pip", "install"] + packages) != 0:
         shutil.rmtree(envdir)
