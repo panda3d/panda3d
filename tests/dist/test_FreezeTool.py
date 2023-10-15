@@ -94,6 +94,7 @@ def test_Freezer_generateRuntimeFromStub(tmpdir, use_console):
     target = str(tmpdir.join('stubtest' + suffix))
 
     freezer = Freezer()
+    freezer.addModule('site', filename='site.py', text='import sys\nsys.frozen=True')
     freezer.addModule('module2', filename='module2.py', text='print("Module imported")')
     freezer.addModule('__main__', filename='main.py', text='import module2\nprint("Hello world")')
     assert '__main__' in freezer.modules
