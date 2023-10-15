@@ -1334,7 +1334,7 @@ class Freezer:
                 self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
             else:
                 stuff = ("", "rb", _PY_SOURCE)
-                if mdef.text:
+                if mdef.text is not None:
                     fp = io.StringIO(mdef.text)
                 else:
                     fp = open(pathname, 'rb')
