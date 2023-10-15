@@ -14,32 +14,32 @@ def test_Freezer_moduleSuffixes():
             assert mode == 'rb'
 
 
-def test_Freezer_getModulePath_getModuleStar(tmp_path):
+def test_Freezer_getModulePath_getModuleStar(tmpdir):
     # Package 1 can be imported
-    package1 = tmp_path / "package1"
+    package1 = tmpdir.join("package1")
     package1.mkdir()
-    (package1 / "submodule1.py").write_text(u"")
-    (package1 / "__init__.py").write_text(u"")
+    package1.join("submodule1.py").write("")
+    package1.join("__init__.py").write("")
 
     # Package 2 can not be imported
-    package2 = tmp_path / "package2"
+    package2 = tmpdir.join("package2")
     package2.mkdir()
-    (package2 / "submodule2.py").write_text(u"")
-    (package2 / "__init__.py").write_text(u"raise ImportError\n")
+    package2.join("submodule2.py").write("")
+    package2.join("__init__.py").write("raise ImportError\n")
 
     # Module 1 can be imported
-    (tmp_path / "module1.py").write_text(u"")
+    tmpdir.join("module1.py").write("")
 
     # Module 2 can not be imported
-    (tmp_path / "module2.py").write_text(u"raise ImportError\n")
+    tmpdir.join("module2.py").write("raise ImportError\n")
 
     # Module 3 has a custom __path__ and __all__
-    (tmp_path / "module3.py").write_text(u"__path__ = ['foobar']\n__all__ = ['test']\n")
+    tmpdir.join("module3.py").write("__path__ = ['foobar']\n__all__ = ['test']\n")
 
     backup = sys.path
     try:
         # Don't fail if first item on path does not exist
-        sys.path = [str(tmp_path / "nonexistent"), str(tmp_path)]
+        sys.path = [str(tmpdir.join("nonexistent")), str(tmpdir)]
 
         freezer = Freezer()
         assert freezer.getModulePath("nonexist") == None
@@ -68,7 +68,7 @@ def test_Freezer_getModulePath_getModuleStar(tmp_path):
 
 
 @pytest.mark.parametrize("use_console", (False, True))
-def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
+def test_Freezer_generateRuntimeFromStub(tmpdir, use_console):
     try:
         # If installed as a wheel
         import panda3d_tools
@@ -91,7 +91,7 @@ def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
     if not os.path.isfile(stub_file):
         pytest.skip("Unable to find deploy-stub executable")
 
-    target = str(tmp_path / ('stubtest' + suffix))
+    target = str(tmpdir.join('stubtest' + suffix))
 
     freezer = Freezer()
     freezer.addModule('module2', filename='module2.py', text='print("Module imported")')

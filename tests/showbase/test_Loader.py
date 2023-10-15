@@ -71,9 +71,9 @@ def test_load_model_okmissing(loader):
     assert model is None
 
 
-def test_loader_entry_points(tmp_path):
+def test_loader_entry_points(tmpdir):
     # A dummy loader for .fnrgl files.
-    (tmp_path / "fnargle.py").write_text(u"""
+    tmpdir.join("fnargle.py").write("""
 from panda3d.core import ModelRoot
 import sys
 
@@ -88,19 +88,19 @@ class FnargleLoader:
     def load_file(path, options, record=None):
         return ModelRoot("fnargle")
 """)
-    (tmp_path / "fnargle.dist-info").mkdir()
-    (tmp_path / "fnargle.dist-info" / "METADATA").write_text(u"""
+    tmpdir.join("fnargle.dist-info").mkdir()
+    tmpdir.join("fnargle.dist-info", "METADATA").write("""
 Metadata-Version: 2.0
 Name: fnargle
 Version: 1.0.0
 """)
-    (tmp_path / "fnargle.dist-info" / "entry_points.txt").write_text(u"""
+    tmpdir.join("fnargle.dist-info", "entry_points.txt").write("""
 [panda3d.loaders]
 fnrgl = fnargle:FnargleLoader
 """)
 
-    model_path = tmp_path / "test.fnrgl"
-    model_path.write_text(u"")
+    model_path = tmpdir.join("test.fnrgl")
+    model_path.write("")
 
     if sys.version_info >= (3, 11):
         import sysconfig
@@ -126,7 +126,7 @@ fnrgl = fnargle:FnargleLoader
     file_type = None
     try:
         # We do this so we don't re-register thirdparty loaders
-        sys.path = [str(tmp_path), platstdlib, stdlib]
+        sys.path = [str(tmpdir), platstdlib, stdlib]
         if sys.version_info < (3, 8):
             pkg_resources._initialize_master_working_set()
 
@@ -151,7 +151,7 @@ fnrgl = fnargle:FnargleLoader
         assert 'fnargle' in sys.modules
 
         # Now try loading a fnargle file
-        model_fn = Filename(model_path)
+        model_fn = Filename.from_os_specific(str(model_path))
         model_fn.make_true_case()
         model = loader.load_model(model_fn, noCache=True)
         assert model is not None
