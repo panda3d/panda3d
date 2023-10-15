@@ -136,6 +136,10 @@ fnrgl = fnargle:FnargleLoader
         loader = Loader(None)
         assert Loader._loadedPythonFileTypes
 
+        if sys.version_info < (3, 8):
+            # pkg_resources relies on things in site-packages (_markerlib)
+            sys.path += [sysconfig.get_python_lib(True, False), sysconfig.get_python_lib(False, False)]
+
         # Should be registered, not yet loaded
         file_type = registry.get_type_from_extension('fnrgl')
         assert file_type is not None
