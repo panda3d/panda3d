@@ -71,7 +71,22 @@ def test_wheel(wheel, verbose=False):
     if verbose:
         test_cmd.append("--verbose")
 
-    exit_code = subprocess.call(test_cmd)
+    # Put the location of the python DLL on the path, for deploy-stub test
+    # This is needed because venv does not install a copy of the python DLL
+    env = None
+    if sys.platform == "win32":
+        deploy_libs = os.path.join(envdir, "Lib", "site-packages", "deploy_libs")
+        if os.path.isdir(deploy_libs):
+            # We have to do this dance because os.environ is case insensitive
+            env = dict(os.environ)
+            for key, value in env.items():
+                if key.upper() == "PATH":
+                    env[key] = deploy_libs + ";" + value
+                    break
+            else:
+                env["PATH"] = deploy_libs
+
+    exit_code = subprocess.call(test_cmd, env=env)
     shutil.rmtree(envdir)
 
     if exit_code != 0:
