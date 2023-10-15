@@ -171,7 +171,7 @@ class Loader(DirectObject):
         if sys.version_info >= (3, 8):
             from importlib.metadata import entry_points
             eps = entry_points()
-            if isinstance(eps, dict): # Python 3.8 and 3.9
+            if sys.version_info < (3, 10):
                 loaders = eps.get('panda3d.loaders', ())
             else:
                 loaders = eps.select(group='panda3d.loaders')
