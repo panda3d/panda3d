@@ -69,11 +69,19 @@ load_display_information() {
   // Display modes
   size_t num_modes = 0;
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+  int32_t current_mode_id = -1;
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
   if (modes != NULL) {
     num_modes = CFArrayGetCount(modes);
     _display_information->_total_display_modes = num_modes;
     _display_information->_display_mode_array = new DisplayMode[num_modes];
+
+    // Get information about the current mode.
+    CGDisplayModeRef mode = CGDisplayCopyDisplayMode(_display);
+    if (mode) {
+      current_mode_id = CGDisplayModeGetIODisplayModeID(mode);
+      CGDisplayModeRelease(mode);
+    }
   }
 
   for (size_t i = 0; i < num_modes; ++i) {
@@ -109,6 +117,14 @@ load_display_information() {
       // pixel can be deduced from the string length.  Nifty!
       _display_information->_display_mode_array[i].bits_per_pixel = CFStringGetLength(encoding);
     }
+
+    if (current_mode_id >= 0 && current_mode_id == CGDisplayModeGetIODisplayModeID(mode)) {
+      _display_information->_current_display_mode_index = i;
+
+      // Stop checking
+      current_mode_id = -1;
+    }
+
     CFRelease(encoding);
   }
   if (modes != NULL) {

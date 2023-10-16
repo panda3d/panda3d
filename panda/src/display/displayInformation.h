@@ -57,6 +57,8 @@ PUBLISHED:
   const DisplayMode &get_display_mode(int display_index);
   MAKE_SEQ(get_display_modes, get_total_display_modes, get_display_mode);
 
+  int get_current_display_mode_index() const;
+
   // Older interface for display modes.
   int get_display_mode_width(int display_index);
   int get_display_mode_height(int display_index);
@@ -116,7 +118,7 @@ PUBLISHED:
 
 public:
   DetectionState _state;
-  int _get_adapter_display_mode_state;
+  int _current_display_mode_index;
   int _get_device_caps_state;
   int _maximum_window_width;
   int _maximum_window_height;
