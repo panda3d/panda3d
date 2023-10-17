@@ -65,6 +65,9 @@
 #define DTOOL_PLATFORM "android_i386"
 #endif
 
+#elif defined(__wasi__)
+#define DTOOL_PLATFORM "wasi"
+
 #elif defined(__EMSCRIPTEN__)
 #if defined(__wasm64__)
 #define DTOOL_PLATFORM "emscripten_wasm64"

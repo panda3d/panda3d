@@ -68,6 +68,12 @@ if(THIRDPARTY_DIRECTORY)
   elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
 
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "WASI")
+    set(_package_dir ${THIRDPARTY_DIRECTORY})
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(_package_dir ${THIRDPARTY_DIRECTORY})
+
   else()
     message(FATAL_ERROR
       "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
@@ -75,6 +81,7 @@ if(THIRDPARTY_DIRECTORY)
   endif()
 
   if(NOT EXISTS "${_package_dir}")
+    message(WARNING "${_package_dir} missing")
     message(FATAL_ERROR
       "Either your THIRDPARTY_DIRECTORY path does not exist, or it is for the wrong platform.")
 

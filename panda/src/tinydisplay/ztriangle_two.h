@@ -17,7 +17,7 @@ FNAME(white_untextured) (ZBuffer *zb,
 #define DRAW_INIT()                             \
   {                                             \
   }
- 
+
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
@@ -57,7 +57,7 @@ FNAME(flat_untextured) (ZBuffer *zb,
     oa0 = p2->a;                                \
     color=RGBA_TO_PIXEL(or0, og0, ob0, oa0);    \
   }
- 
+
 #define PUT_PIXEL(_a)                                   \
   {                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                       \
@@ -97,7 +97,7 @@ FNAME(smooth_untextured) (ZBuffer *zb,
       return;                                           \
     }                                                   \
   }
-  
+
 #define DRAW_INIT()                             \
   {                                             \
   }
@@ -389,7 +389,7 @@ FNAME(white_perspective) (ZBuffer *zb,
       n-=1;                                                     \
     }                                                           \
   }
-  
+
 #define PIXEL_COUNT pixel_count_white_perspective
 
 #include "ztriangle.h"
@@ -893,6 +893,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     ZPOINT *pz;                                                         \
     PIXEL *pp;                                                          \
     int s,t,sa,ta,sb,tb,z,zz;                                           \
+(void)zz;(void)pz;\
     int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                            \
     UNUSED int or1,og1,ob1,oa1;                                         \
     PN_stdfloat sz,tz,sza,tza,szb,tzb,fz,zinv;                          \

@@ -68,18 +68,67 @@ set(P3TINYDISPLAY_SOURCES
   zmath.cxx
 )
 
-add_compile_options(-Wno-unused-but-set-variable)
-composite_sources(p3tinydisplay P3TINYDISPLAY_SOURCES)
-add_component_library(p3tinydisplay SYMBOL BUILDING_TINYDISPLAY ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES})
-target_link_libraries(p3tinydisplay p3putil p3display)
-if(NOT BUILD_METALIBS)
-  install(TARGETS p3tinydisplay
-    EXPORT Core COMPONENT Core
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
-    ARCHIVE COMPONENT CoreDevel)
+
+set(P3TINYDISPLAY_ZTRIANGLE_SOURCES
+  ztriangle_1.cxx
+  ztriangle_2.cxx
+  ztriangle_3.cxx
+  ztriangle_4.cxx
+  ztriangle_table.cxx
+)
+
+set_source_files_properties(${P3TINYDISPLAY_ZTRIANGLE_SOURCES}
+  PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
+
+if(NOT MSVC)
+  set_source_files_properties(${P3TINYDISPLAY_ZTRIANGLE_SOURCES}
+    PROPERTIES COMPILE_FLAGS "-Wno-unused-but-set-variable")
 endif()
 
-install(FILES ${P3TINYDISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+if(HAVE_COCOA)
+  set(P3TINYDISPLAY_HEADERS ${P3TINYDISPLAY_HEADERS}
+    tinyCocoaGraphicsPipe.I tinyCocoaGraphicsPipe.h
+    tinyCocoaGraphicsWindow.I tinyCocoaGraphicsWindow.h)
+
+  set(P3TINYDISPLAY_SOURCES ${P3TINYDISPLAY_SOURCES}
+    tinyCocoaGraphicsPipe.cxx
+    tinyCocoaGraphicsWindow.mm)
+
+  set_source_files_properties(tinyCocoaGraphicsWindow.mm
+    PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
+
+  add_compile_definitions(HAVE_COCOA)
+endif()
+
+composite_sources(p3tinydisplay P3TINYDISPLAY_SOURCES)
+
+# Determine the additional components to link in.
+set(COCOADISPLAY_LINK_TARGETS)
+
+if(WIN32)
+  list(APPEND COCOADISPLAY_LINK_TARGETS p3windisplay)
+endif()
+
+if(HAVE_X11)
+  list(APPEND COCOADISPLAY_LINK_TARGETS p3x11display)
+endif()
+
+if(HAVE_COCOA)
+  list(APPEND COCOADISPLAY_LINK_TARGETS p3cocoadisplay)
+endif()
+
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "TinyDisplay")
+add_metalib(p3tinydisplay ${MODULE_TYPE}
+  ${P3TINYDISPLAY_HEADERS} ${P3TINYDISPLAY_SOURCES} ${P3TINYDISPLAY_ZTRIANGLE_SOURCES}
+  COMPONENTS ${COCOADISPLAY_LINK_TARGETS})
+unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
+
+set_target_properties(p3tinydisplay PROPERTIES DEFINE_SYMBOL BUILDING_TINYDISPLAY)
+
+install(TARGETS p3tinydisplay
+  EXPORT TinyDisplay COMPONENT TinyDisplay
+  DESTINATION ${MODULE_DESTINATION}
+  ARCHIVE COMPONENT TinyDisplayDevel)
+
+export_targets(TinyDisplay NAMESPACE "Panda3D::TinyDisplay::" COMPONENT TinyDisplayDevel)
 

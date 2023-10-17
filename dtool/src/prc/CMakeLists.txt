@@ -74,6 +74,12 @@ if(EMSCRIPTEN)
     emscriptenLogStream.cxx)
 endif()
 
+if(WASI)
+  set(P3PRC_SOURCES ${P3PRC_SOURCES}
+    wasiLogStream.cxx)
+endif()
+
+
 if(HAVE_OPENSSL)
   list(APPEND P3PRC_SOURCES encryptStreamBuf.cxx encryptStream.cxx)
 endif()

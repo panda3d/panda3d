@@ -73,7 +73,7 @@
   }
 
   /* we compute dXdx and dXdy for all interpolated values */
-  
+
   fdx1 = (PN_stdfloat) (p1->x - p0->x);
   fdy1 = (PN_stdfloat) (p1->y - p0->y);
 
@@ -119,13 +119,13 @@
   dady = (int) (fdx1 * d2 - fdx2 * d1);
 
 #endif
-  
+
 #ifdef INTERP_ST
   d1 = (PN_stdfloat) (p1->s - p0->s);
   d2 = (PN_stdfloat) (p2->s - p0->s);
   dsdx = (int) (fdy2 * d1 - fdy1 * d2);
   dsdy = (int) (fdx1 * d2 - fdx2 * d1);
-  
+
   d1 = (PN_stdfloat) (p1->t - p0->t);
   d2 = (PN_stdfloat) (p2->t - p0->t);
   dtdx = (int) (fdy2 * d1 - fdy1 * d2);
@@ -151,7 +151,7 @@
     d2 = p2->sz - p0->sz;
     dszdx = (fdy2 * d1 - fdy1 * d2);
     dszdy = (fdx1 * d2 - fdx2 * d1);
-    
+
     d1 = p1->tz - p0->tz;
     d2 = p2->tz - p0->tz;
     dtzdx = (fdy2 * d1 - fdy1 * d2);
@@ -176,7 +176,7 @@
     d2 = p2->sza - p0->sza;
     dszadx = (fdy2 * d1 - fdy1 * d2);
     dszady = (fdx1 * d2 - fdx2 * d1);
-    
+
     d1 = p1->tza - p0->tza;
     d2 = p2->tza - p0->tza;
     dtzadx = (fdy2 * d1 - fdy1 * d2);
@@ -201,7 +201,7 @@
     d2 = p2->szb - p0->szb;
     dszbdx = (fdy2 * d1 - fdy1 * d2);
     dszbdy = (fdx1 * d2 - fdx2 * d1);
-    
+
     d1 = p1->tzb - p0->tzb;
     d2 = p2->tzb - p0->tzb;
     dtzbdx = (fdy2 * d1 - fdy1 * d2);
@@ -244,7 +244,7 @@
       } else {
         update_left=1;
         update_right=0;
-        l1=p1; 
+        l1=p1;
         l2=p2;
       }
       nb_lines = p2->y - p1->y + 1;
@@ -255,7 +255,7 @@
     if (update_left) {
       dy1 = l2->y - l1->y;
       dx1 = l2->x - l1->x;
-      if (dy1 > 0) 
+      if (dy1 > 0)
         tmp = (dx1 << 16) / dy1;
       else
         tmp = 0;
@@ -264,25 +264,25 @@
       derror = tmp & 0x0000ffff;
       dxdy_min = tmp >> 16;
       dxdy_max = dxdy_min + 1;
-      
+
 #ifdef INTERP_Z
       z1=l1->z;
-      dzdl_min=(dzdy + dzdx * dxdy_min); 
+      dzdl_min=(dzdy + dzdx * dxdy_min);
       dzdl_max=dzdl_min + dzdx;
 #endif
 #ifdef INTERP_RGB
       r1=l1->r;
       drdl_min=(drdy + drdx * dxdy_min);
       drdl_max=drdl_min + drdx;
-      
+
       g1=l1->g;
       dgdl_min=(dgdy + dgdx * dxdy_min);
       dgdl_max=dgdl_min + dgdx;
-      
+
       b1=l1->b;
       dbdl_min=(dbdy + dbdx * dxdy_min);
       dbdl_max=dbdl_min + dbdx;
-      
+
       a1=l1->a;
       dadl_min=(dady + dadx * dxdy_min);
       dadl_max=dadl_min + dadx;
@@ -291,7 +291,7 @@
       s1=l1->s;
       dsdl_min=(dsdy + dsdx * dxdy_min);
       dsdl_max=dsdl_min + dsdx;
-      
+
       t1=l1->t;
       dtdl_min=(dtdy + dtdx * dxdy_min);
       dtdl_max=dtdl_min + dtdx;
@@ -300,7 +300,7 @@
       sz1=l1->sz;
       dszdl_min=(dszdy + dszdx * dxdy_min);
       dszdl_max=dszdl_min + dszdx;
-      
+
       tz1=l1->tz;
       dtzdl_min=(dtzdy + dtzdx * dxdy_min);
       dtzdl_max=dtzdl_min + dtzdx;
@@ -309,7 +309,7 @@
       sza1=l1->sza;
       dszadl_min=(dszady + dszadx * dxdy_min);
       dszadl_max=dszadl_min + dszadx;
-      
+
       tza1=l1->tza;
       dtzadl_min=(dtzady + dtzadx * dxdy_min);
       dtzadl_max=dtzadl_min + dtzadx;
@@ -318,7 +318,7 @@
       szb1=l1->szb;
       dszbdl_min=(dszbdy + dszbdx * dxdy_min);
       dszbdl_max=dszbdl_min + dszbdx;
-      
+
       tzb1=l1->tzb;
       dtzbdl_min=(dtzbdy + dtzbdx * dxdy_min);
       dtzbdl_max=dtzbdl_min + dtzbdx;
@@ -330,7 +330,7 @@
     if (update_right) {
       dx2 = (pr2->x - pr1->x);
       dy2 = (pr2->y - pr1->y);
-      if (dy2>0) 
+      if (dy2>0)
         dx2dy2 = ( dx2 << 16) / dy2;
       else
         dx2dy2 = 0;
@@ -349,6 +349,7 @@
 #ifdef INTERP_Z
         ZPOINT *pz;
         unsigned int z,zz;
+(void)zz;(void)pz;
 #endif
 #ifdef INTERP_RGB
         UNUSED unsigned int or1,og1,ob1,oa1;
@@ -417,7 +418,7 @@
 #else
       DRAW_LINE();
 #endif
-      
+
       /* left edge */
       error+=derror;
       if (error > 0) {
@@ -425,7 +426,7 @@
         x1+=dxdy_max;
 #ifdef INTERP_Z
         z1+=dzdl_max;
-#endif      
+#endif
 #ifdef INTERP_RGB
         r1+=drdl_max;
         g1+=dgdl_max;
@@ -452,7 +453,7 @@
         x1+=dxdy_min;
 #ifdef INTERP_Z
         z1+=dzdl_min;
-#endif      
+#endif
 #ifdef INTERP_RGB
         r1+=drdl_min;
         g1+=dgdl_min;
@@ -475,8 +476,8 @@
         szb1+=dszbdl_min;
         tzb1+=dtzbdl_min;
 #endif
-      } 
-      
+      }
+
       /* right edge */
       x2+=dx2dy2;
 
@@ -497,6 +498,6 @@
 #undef EARLY_OUT
 #undef EARLY_OUT_FZ
 #undef DRAW_INIT
-#undef DRAW_LINE  
+#undef DRAW_LINE
 #undef PUT_PIXEL
 #undef PIXEL_COUNT

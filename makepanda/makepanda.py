@@ -79,6 +79,8 @@ OPENCV_VER_23 = False
 PLATFORM = None
 COPY_PYTHON = True
 
+WASM_TARGETS = ("emscripten","wasi")
+
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "EGL",                                               # OpenGL (ES) integration
@@ -278,6 +280,11 @@ def parseopts(args):
         usage("You should specify a list of packages to use or --everything to enable all packages.")
 
     if (optimize==""): optimize = "3"
+
+    if GetHost() == 'emscripten':
+        target = 'emscripten'
+    elif GetHost() == 'wasi':
+        target = 'wasi'
 
     if target is not None or target_archs:
         SetTarget(target, target_archs[-1] if target_archs else None)
@@ -1982,10 +1989,14 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            if cmd.find('bin/deploy-stub.js ')>0:
+                return
+            cmd += " -sWARN_ON_UNDEFINED_SYMBOLS"
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
-                cmd += " -s EXIT_RUNTIME=1"
+                cmd += " -sEXIT_RUNTIME -sNODERAWFS -sASSERTIONS -sTOTAL_STACK=4MB -sALLOW_MEMORY_GROWTH"
+        elif GetTarget() == 'wasi':
+            return
 
         else:
             cmd += " -pthread"
@@ -2019,9 +2030,12 @@ def CompileLink(dll, obj, opts):
 
         if GetTarget() == 'emscripten':
             optlevel = GetOptimizeOption(opts)
-            if optlevel == 2: cmd += " -O1"
-            if optlevel == 3: cmd += " -O2"
-            if optlevel == 4: cmd += " -O3"
+            if GetOrigExt(dll) == ".exe":
+                cmd += " -O0 -g3"
+            elif optlevel>3:
+                cmd += f" -Os -g0"
+            elif optlevel>1:
+                cmd += f" -O{optlevel-1} -g3"
 
         oscmd(cmd)
 
@@ -2621,7 +2635,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
 
-    if (GetTarget() == "emscripten"):
+    if (GetTarget() == "emscripten") or (GetTarget() == "wasi"):
         # There are no threads in JavaScript, so don't bother using them.
         dtool_config["HAVE_THREADS"] = 'UNDEF'
         dtool_config["DO_PIPELINING"] = 'UNDEF'
@@ -3873,7 +3887,7 @@ OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'ZLIB']
 TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
 TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
 
-if GetTarget() != "emscripten":
+if GetTarget() not in WASM_TARGETS:
   TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
 OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
@@ -3886,7 +3900,7 @@ PyTargetAdd('p3pnmimage_pfmFile_ext.obj', opts=OPTS, input='pfmFile_ext.cxx')
 # DIRECTORY: panda/src/nativenet/
 #
 
-if GetTarget() != 'emscripten':
+if GetTarget() not in WASM_TARGETS:
   OPTS=['DIR:panda/src/nativenet', 'BUILDING:PANDA']
   TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
 
@@ -3899,7 +3913,7 @@ TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.core', 'ILIB:libp3nativenet',
 # DIRECTORY: panda/src/net/
 #
 
-if GetTarget() != 'emscripten':
+if GetTarget() not in WASM_TARGETS:
   OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
   TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
   TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
@@ -4254,7 +4268,7 @@ TargetAdd('libpanda.dll', input='libpandaexpress.dll')
 TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
 TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
-if GetTarget() != "emscripten":
+if GetTarget() not in WASM_TARGETS:
   TargetAdd('libpanda.dll', input='p3net_composite1.obj')
   TargetAdd('libpanda.dll', input='p3net_composite2.obj')
   TargetAdd('libpanda.dll', input='p3nativenet_composite1.obj')

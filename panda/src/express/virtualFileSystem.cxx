@@ -29,7 +29,11 @@
 #include "pset.h"
 
 #ifdef __EMSCRIPTEN__
-#include "virtualFileMountHTTP.h"
+#undef __EMSCRIPTEN__
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include "/data/git/panda3d-pmpp/panda/src/downloader/virtualFileMountHTTP.h"
 #endif
 
 using std::iostream;

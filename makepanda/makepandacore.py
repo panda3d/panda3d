@@ -320,6 +320,11 @@ def Error(msg, extra=None):
 
 def GetHost():
     """Returns the host platform, ie. the one we're compiling on."""
+    host = sysconfig.get_config_var('HOST_GNU_TYPE') or ''
+    if host and host.endswith('-emscripten'):
+        return 'emscripten'
+    if host and host.endswith('-wasi'):
+        return 'wasi'
     if sys.platform == 'win32' or sys.platform == 'cygwin':
         # sys.platform is win32 on 64-bits Windows as well.
         return 'windows'
@@ -464,6 +469,14 @@ def SetTarget(target, arch=None):
         DEFAULT_CXX = "em++"
         DEFAULT_AR = "emar"
         DEFAULT_RANLIB = "emranlib"
+
+        arch = "wasm32"
+
+    elif target == 'wasi':
+        DEFAULT_CC = "clang"
+        DEFAULT_CXX = "clang++"
+        DEFAULT_AR = "llvm-ar"
+        DEFAULT_RANLIB = "llvm-ranlib"
 
         arch = "wasm32"
 
@@ -1416,6 +1429,9 @@ def GetThirdpartyDir():
     elif (target == 'emscripten'):
         THIRDPARTYDIR = base + "/emscripten-libs/"
 
+    elif (target == 'wasi'):
+        THIRDPARTYDIR = base
+
     else:
         Warn("Unsupported platform:", target)
         return
@@ -2247,6 +2263,17 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
+    elif GetTarget() == 'emscripten':
+        incdir = sysconfig.get_python_inc()
+        SDK["PYTHON"] = incdir.replace(f'/include/python{sysconfig.get_python_version()}', "")
+
+        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
+        SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+
+        IncDirectory("PYTHON", incdir.replace(f'/python{sysconfig.get_python_version()}', "") )
+        libdir = incdir.replace(f'include/python{sysconfig.get_python_version()}', "lib")
+        LibDirectory("PYTHON", libdir)
+
     else:
         SDK["PYTHON"] = sysconfig.get_python_inc()
         SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
@@ -3073,6 +3100,23 @@ def SetupBuildEnvironment(compiler):
                 SYS_INC_DIRS.append(pcbsd_inc)
 
         null.close()
+
+        # emscripten should have nothing to do with /usr
+        # and it should not be installed there
+        if GetHost() == 'emscripten':
+            keep = []
+            for dir in SYS_INC_DIRS:
+                if not dir.startswith('/usr'):
+                    keep.append(dir)
+            SYS_INC_DIRS.clear()
+            SYS_INC_DIRS.extend(keep)
+
+            keep.clear()
+            for dir in SYS_LIB_DIRS:
+                if not dir.startswith('/usr'):
+                    keep.append(dir)
+            SYS_LIB_DIRS.clear()
+            SYS_LIB_DIRS.extend(keep)
 
         # Print out the search paths
         if GetVerbose():

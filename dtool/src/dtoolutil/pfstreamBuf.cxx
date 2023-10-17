@@ -14,7 +14,7 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) || defined(__wasi__)
 
 using std::cerr;
 using std::endl;
@@ -198,7 +198,11 @@ eof_pipe() const {
 bool PipeStreamBuf::
 open_pipe(const string &cmd) {
   const char *typ = (_dir == Output)?"w":"r";
+#if !defined(__wasi__)
   _pipe = popen(cmd.c_str(), typ);
+#else
+    return false;
+#endif
   return (_pipe != nullptr);
 }
 
@@ -407,4 +411,8 @@ read_pipe(char *data, size_t len) {
 
 #endif  // WIN_PIPE_CALLS
 
-#endif  // __EMSCRIPTEN__
+#else
+
+#   pragma message "================ PipeStreamBuf ?????"
+
+#endif  // __EMSCRIPTEN__ __wasi__
