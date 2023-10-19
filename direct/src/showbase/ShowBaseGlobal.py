@@ -11,10 +11,13 @@ Note that you cannot directly import :data:`~builtins.base` from this module
 since ShowBase may not have been created yet; instead, ShowBase dynamically
 adds itself to this module's scope when instantiated."""
 
+from __future__ import annotations
+
 __all__ = ()
 
 from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # pylint: disable=unused-import
+from direct.directtools import DirectSession
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager, ConfigVariableBool
 from panda3d.core import NodePath, PGTop
@@ -64,7 +67,7 @@ hidden = NodePath("hidden")
 
 loader: Loader
 
-direct: "DirectSession"
+direct: DirectSession.DirectSession
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
