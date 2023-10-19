@@ -14,9 +14,9 @@ def main():
         shutil.copytree(direct_src, direct_copy)
         command = [
             'mypy',
-            str(direct_copy),
+            str(direct_copy.resolve()),
             '--config-file',
-            str(mypy_config),
+            str(mypy_config.resolve()),
         ]
         result = subprocess.run(command, cwd=temp_dir)
     sys.exit(result.returncode)
