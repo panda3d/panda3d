@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import wx
 from wx.lib.agw import fourwaysplitter as FWS
 
@@ -8,8 +10,6 @@ from direct.task.TaskManagerGlobal import taskMgr
 
 from .WxAppShell import WxAppShell
 from .ViewPort import Viewport, ViewportManager
-
-from typing import Optional
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402
@@ -27,7 +27,7 @@ class WxPandaShell(WxAppShell):
     copyright       = ('Copyright 2010 Disney Online Studios.' +
                        '\nAll Rights Reserved.')
 
-    MENU_TEXTS: dict[int, tuple[str, Optional[str]]] = {
+    MENU_TEXTS: dict[int, tuple[str, str | None]] = {
         ID_FOUR_VIEW: ("Four Views", None),
         ID_TOP_VIEW: ("Top View", None),
         ID_FRONT_VIEW: ("Front View", None),

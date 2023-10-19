@@ -11,6 +11,7 @@ so that I can just type: ``inspect(anObject)`` any time.
 See :ref:`inspection-utilities` for more information.
 """
 
+from __future__ import annotations
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
@@ -31,7 +32,7 @@ def inspect(anObject):
 
 ### private
 
-_InspectorMap: "dict[str, str]"
+_InspectorMap: dict[str, str]
 
 
 def inspectorFor(anObject):
