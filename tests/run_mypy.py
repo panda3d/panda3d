@@ -2,6 +2,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+import sys
 import tempfile
 
 
@@ -13,12 +14,13 @@ def main():
         os.environ['MYPYPATH'] = temp_dir
         direct_copy = pathlib.Path(temp_dir, 'direct')
         shutil.copytree(direct_src, direct_copy)
-        subprocess.run([
+        result = subprocess.run([
             'mypy',
             str(direct_copy),
             '--config-file',
             str(mypy_config),
         ])
+        sys.exit(result.returncode)
 
 
 if __name__ == '__main__':
