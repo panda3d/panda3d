@@ -14,7 +14,6 @@ from panda3d.core import (
 )
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.MessengerGlobal import messenger
-from direct.showbase.ShowBaseGlobal import hidden
 from direct.showbase import ShowBaseGlobal
 from . import DirectGlobals as DG
 from .DirectUtil import useDirectRenderStyle
@@ -1241,7 +1240,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.fActive = 1
 
     def deactivate(self):
-        self.scalingNode.reparentTo(hidden)
+        self.scalingNode.reparentTo(ShowBaseGlobal.hidden)
         self.fActive = 0
 
     def showWidgetIfActive(self):
@@ -1252,7 +1251,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.reparentTo(ShowBaseGlobal.direct.group)
 
     def hideWidget(self):
-        self.reparentTo(hidden)
+        self.reparentTo(ShowBaseGlobal.hidden)
 
     def enableHandles(self, handles):
         if isinstance(handles, list):
@@ -1327,6 +1326,7 @@ class ObjectHandles(NodePath, DirectObject):
                                  'z-post','z-ring','z-disc','z-scale'])
 
     def disableHandle(self, handle):
+        hidden = ShowBaseGlobal.hidden
         if handle == 'x-post':
             self.xPostGroup.reparentTo(hidden)
         elif handle == 'x-ring':
