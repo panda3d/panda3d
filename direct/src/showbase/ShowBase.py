@@ -1190,7 +1190,7 @@ class ShowBase(DirectObject.DirectObject):
             self.setSceneGraphAnalyzerMeter(flag.value)
         return success
 
-    def setSleep(self, amount):
+    def setSleep(self, amount: float) -> None:
         """
         Sets up a task that calls python 'sleep' every frame.  This is a simple
         way to reduce the CPU usage (and frame rate) of a panda program.
@@ -1210,7 +1210,7 @@ class ShowBase(DirectObject.DirectObject):
         #time.sleep(self.clientSleep)
         return Task.cont
 
-    def setFrameRateMeter(self, flag):
+    def setFrameRateMeter(self, flag: bool) -> None:
         """
         Turns on or off (according to flag) a standard frame rate
         meter in the upper-right corner of the main window.
@@ -1224,7 +1224,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
-    def setSceneGraphAnalyzerMeter(self, flag):
+    def setSceneGraphAnalyzerMeter(self, flag: bool) -> None:
         """
         Turns on or off (according to flag) a standard frame rate
         meter in the upper-right corner of the main window.
@@ -1247,7 +1247,7 @@ class ShowBase(DirectObject.DirectObject):
                 mouseKeyboard = self.dataRoot.find("**/*"))
         self.winControls.append(winCtrl)
 
-    def setupRender(self):
+    def setupRender(self) -> None:
         """
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
@@ -1257,11 +1257,11 @@ class ShowBase(DirectObject.DirectObject):
         self.render.setAttrib(RescaleNormalAttrib.makeDefault())
 
         self.render.setTwoSided(0)
-        self.backfaceCullingEnabled = 1
-        self.textureEnabled = 1
-        self.wireframeEnabled = 0
+        self.backfaceCullingEnabled = True
+        self.textureEnabled = True
+        self.wireframeEnabled = False
 
-    def setupRender2d(self):
+    def setupRender2d(self) -> None:
         """
         Creates the render2d scene graph, the primary scene graph for
         2-d objects and gui elements that are superimposed over the
@@ -1360,7 +1360,7 @@ class ShowBase(DirectObject.DirectObject):
         if xsize > 0 and ysize > 0:
             self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
-    def setupRender2dp(self):
+    def setupRender2dp(self) -> None:
         """
         Creates a render2d scene graph, the secondary scene graph for
         2-d objects and gui elements that are superimposed over the
@@ -1682,7 +1682,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return camera2dp
 
-    def setupDataGraph(self):
+    def setupDataGraph(self) -> None:
         """
         Creates the data graph and populates it with the basic input
         devices.
@@ -2011,7 +2011,7 @@ class ShowBase(DirectObject.DirectObject):
             self.physicsMgr.doPhysics(dt)
         return Task.cont
 
-    def createStats(self, hostname=None, port=None):
+    def createStats(self, hostname: str | None = None, port: int | None = None) -> bool:
         """
         If want-pstats is set in Config.prc, or the `wantStats` member is
         otherwise set to True, connects to the PStats server.
@@ -2328,7 +2328,7 @@ class ShowBase(DirectObject.DirectObject):
         throw_new_frame()
         return Task.cont
 
-    def restart(self, clusterSync=False, cluster=None):
+    def restart(self, clusterSync: bool = False, cluster=None) -> None:
         self.shutdown()
         # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
