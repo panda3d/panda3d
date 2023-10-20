@@ -11,8 +11,6 @@ Note that you cannot directly import :data:`~builtins.base` from this module
 since ShowBase may not have been created yet; instead, ShowBase dynamically
 adds itself to this module's scope when instantiated."""
 
-from __future__ import annotations
-
 __all__ = ()
 
 from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import

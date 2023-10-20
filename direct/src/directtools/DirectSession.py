@@ -37,7 +37,7 @@ from direct.interval.IntervalGlobal import Func, Sequence
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import ShowBaseGlobal
-from direct.showbase.ShowBase import ShowBase
+from direct.showbase.ShowBaseGlobal import ShowBase, hidden
 
 import builtins
 
@@ -104,7 +104,7 @@ class DirectSession(DirectObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
-        self.selectedNPReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.selectedNPReadout.reparentTo(hidden)
 
         self.activeParentReadout = OnscreenText.OnscreenText(
             pos = (0.1, 0.16), bg=Vec4(0, 0, 0, .2), style = 3,
@@ -112,7 +112,7 @@ class DirectSession(DirectObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
-        self.activeParentReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.activeParentReadout.reparentTo(hidden)
 
         self.directMessageReadout = OnscreenText.OnscreenText(
             pos = (0.1, -0.1), bg=Vec4(0, 0, 0, .2), style = 3,
@@ -120,7 +120,7 @@ class DirectSession(DirectObject):
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.directMessageReadout)
-        self.directMessageReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.directMessageReadout.reparentTo(hidden)
 
         # Create a vrpn client vrpn-server or default
         self.deviceManager = None
@@ -422,7 +422,7 @@ class DirectSession(DirectObject):
         if not hasattr(self, 'oobeMode'):
             self.oobeMode = 0
 
-            self.oobeCamera = ShowBaseGlobal.hidden.attachNewNode('oobeCamera')
+            self.oobeCamera = hidden.attachNewNode('oobeCamera')
 
             self.oobeVis = base.loader.loadModel('models/misc/camera')
             if self.oobeVis:
@@ -473,8 +473,8 @@ class DirectSession(DirectObject):
         self.cam.reparentTo(self.trueCamera)
         self.camera = self.trueCamera
         # Get rid of ancillary node paths
-        self.oobeVis.reparentTo(ShowBaseGlobal.hidden)
-        self.oobeCamera.reparentTo(ShowBaseGlobal.hidden)
+        self.oobeVis.reparentTo(hidden)
+        self.oobeCamera.reparentTo(hidden)
         self.oobeMode = 0
 
     def destroy(self):
@@ -787,7 +787,7 @@ class DirectSession(DirectObject):
                     widget.hideWidget()
             else:
                 self.widget.hideWidget()
-            self.selectedNPReadout.reparentTo(ShowBaseGlobal.hidden)
+            self.selectedNPReadout.reparentTo(hidden)
             self.selectedNPReadout.setText(' ')
             taskMgr.remove('followSelectedNodePath')
             self.ancestry = []
@@ -805,7 +805,7 @@ class DirectSession(DirectObject):
                 widget.hideWidget()
         else:
             self.widget.hideWidget()
-        self.selectedNPReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.selectedNPReadout.reparentTo(hidden)
         self.selectedNPReadout.setText(' ')
         taskMgr.remove('followSelectedNodePath')
         messenger.send('DIRECT_deselectAll')
@@ -1072,7 +1072,7 @@ class DirectSession(DirectObject):
         taskMgr.doMethodLater(3.0, self.hideDirectMessage, 'hideDirectMessage')
 
     def hideDirectMessage(self, state):
-        self.directMessageReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.directMessageReadout.reparentTo(hidden)
         return Task.done
 
     def useObjectHandles(self):
@@ -1080,10 +1080,10 @@ class DirectSession(DirectObject):
         self.widget.reparentTo(self.group)
 
     def hideSelectedNPReadout(self):
-        self.selectedNPReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.selectedNPReadout.reparentTo(hidden)
 
     def hideActiveParentReadout(self):
-        self.activeParentReadout.reparentTo(ShowBaseGlobal.hidden)
+        self.activeParentReadout.reparentTo(hidden)
 
     def toggleWidgetVis(self):
         self.widget.toggleWidget()
