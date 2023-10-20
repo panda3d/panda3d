@@ -17,7 +17,6 @@ __all__ = ()
 
 from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # pylint: disable=unused-import
-from direct.directtools import DirectSession
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager, ConfigVariableBool
 from panda3d.core import NodePath, PGTop
@@ -66,8 +65,6 @@ aspect2d = render2d.attachNewNode(PGTop("aspect2d"))
 hidden = NodePath("hidden")
 
 loader: Loader
-
-direct: DirectSession.DirectSession
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
