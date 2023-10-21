@@ -146,7 +146,7 @@ import importlib
 from direct.showbase import ExceptionVarDump
 from . import DirectObject
 from . import SfxPlayer
-from typing import Any, Callable, ClassVar, Literal
+from typing import Any, Callable, ClassVar, Literal, NoReturn
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
@@ -155,9 +155,10 @@ if __debug__:
 
 
 @atexit.register
-def exitfunc():
-    if getattr(builtins, 'base', None) is not None:
-        builtins.base.destroy()
+def exitfunc() -> None:
+    base = getattr(builtins, 'base', None)
+    if base is not None:
+        base.destroy()
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
@@ -663,7 +664,7 @@ class ShowBase(DirectObject.DirectObject):
             #print getDnaPath()
             print("}")
 
-    def destroy(self):
+    def destroy(self) -> None:
         """ Call this function to destroy the ShowBase and stop all
         its tasks, freeing all of the Panda resources.  Normally, you
         should not need to call it explicitly, as it is bound to the
@@ -687,10 +688,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # Remove the built-in base reference
         if getattr(builtins, 'base', None) is self:
-            del builtins.run
-            del builtins.base
-            del builtins.loader
-            del builtins.taskMgr
+            del builtins.run  # type: ignore[attr-defined]
+            del builtins.base  # type: ignore[attr-defined]
+            del builtins.loader  # type: ignore[attr-defined]
+            del builtins.taskMgr  # type: ignore[attr-defined]
             ShowBaseGlobal = sys.modules.get('direct.showbase.ShowBaseGlobal', None)
             if ShowBaseGlobal:
                 del ShowBaseGlobal.base
@@ -709,6 +710,7 @@ class ShowBase(DirectObject.DirectObject):
         self.shutdown()
 
         if getattr(self, 'musicManager', None):
+            assert self.musicManager is not None
             self.musicManager.shutdown()
             self.musicManager = None
             for sfxManager in self.sfxManagerList:
@@ -716,12 +718,12 @@ class ShowBase(DirectObject.DirectObject):
             self.sfxManagerList = []
         if getattr(self, 'loader', None):
             self.loader.destroy()
-            self.loader = None
+            del self.loader
         if getattr(self, 'graphicsEngine', None):
             self.graphicsEngine.removeAllWindows()
 
         try:
-            self.direct.panel.destroy()
+            self.direct.panel.destroy()  # type: ignore[attr-defined]
         except Exception:
             pass
 
@@ -2359,7 +2361,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.add(self.__audioLoop, 'audioLoop', sort = 60)
         self.eventMgr.restart()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         self.taskMgr.remove('audioLoop')
         self.taskMgr.remove('igLoop')
         self.taskMgr.remove('shadowCollisionLoop')
@@ -3200,14 +3202,14 @@ class ShowBase(DirectObject.DirectObject):
             # If anybody needs to update their GUI, put a callback on this event
             messenger.send("aspectRatioChanged")
 
-    def userExit(self):
+    def userExit(self) -> NoReturn:
         # The user has requested we exit the program.  Deal with this.
         if self.exitFunc:
             self.exitFunc()
         self.notify.info("Exiting ShowBase.")
         self.finalizeExit()
 
-    def finalizeExit(self):
+    def finalizeExit(self) -> NoReturn:
         """
         Called by `userExit()` to quit the application.  The default
         implementation just calls `sys.exit()`.
