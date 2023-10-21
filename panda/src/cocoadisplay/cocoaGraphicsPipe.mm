@@ -76,6 +76,13 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
     cocoadisplay_cat.debug()
       << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
   }
+
+  // It takes a while to fire up the display link, so let's fire it up now if
+  // we expect to need VSync.
+  if (sync_video) {
+    uint32_t counter;
+    init_vsync(counter);
+  }
 }
 
 /**
@@ -171,6 +178,14 @@ load_display_information() {
  */
 CocoaGraphicsPipe::
 ~CocoaGraphicsPipe() {
+  if (_display_link != nil) {
+    CVDisplayLinkRelease(_display_link);
+    _display_link = nil;
+
+    // Unblock any threads that may be waiting on the VSync counter.
+    __atomic_fetch_add(&_vsync_counter, 1u, __ATOMIC_SEQ_CST);
+    patomic_notify_all(&_vsync_counter);
+  }
 }
 
 /**
@@ -183,4 +198,113 @@ CocoaGraphicsPipe::get_preferred_window_thread() const {
   // The NSView and NSWindow classes are not completely thread-safe, they can
   // only be called from the main thread!
   return PWT_app;
+}
+
+/**
+ * Ensures a CVDisplayLink is created, which tells us when the display will
+ * want a frame, to avoid tearing (vertical blanking interval).
+ * Initializes the counter with the value that can be passed to wait_vsync
+ * to wait for the next interval.
+ */
+bool CocoaGraphicsPipe::
+init_vsync(uint32_t &counter) {
+  if (_display_link != nil) {
+    // Already set up.
+    __atomic_load(&_vsync_counter, &counter, __ATOMIC_SEQ_CST);
+    return true;
+  }
+
+  counter = 0;
+  _vsync_counter = 0;
+
+  CVDisplayLinkRef display_link;
+  CVReturn result = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.\n";
+    display_link = nil;
+    return false;
+  }
+
+  result = CVDisplayLinkSetCurrentCGDisplay(display_link, _display);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink's current display.\n";
+    CVDisplayLinkRelease(display_link);
+    display_link = nil;
+    return false;
+  }
+
+  result = CVDisplayLinkSetOutputCallback(display_link, &display_link_cb, this);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.\n";
+    CVDisplayLinkRelease(display_link);
+    display_link = nil;
+    return false;
+  }
+
+  result = CVDisplayLinkStart(display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.\n";
+    CVDisplayLinkRelease(display_link);
+    display_link = nil;
+    return false;
+  }
+
+  _display_link = display_link;
+  return true;
+}
+
+/**
+ * The first time this method is called in a frame, waits for the vertical
+ * blanking interval.  If init_vsync has not first been called, does nothing.
+ *
+ * The given counter will be updated with the vblank counter.  If adaptive is
+ * true and the value differs from the current, no wait will occur.
+ */
+void CocoaGraphicsPipe::
+wait_vsync(uint32_t &counter, bool adaptive) {
+  if (_display_link == nil) {
+    return;
+  }
+
+  // Use direct atomic operations since we need this to be thread-safe even
+  // when compiling without thread support.
+  uint32_t current_count = __atomic_load_n(&_vsync_counter, __ATOMIC_SEQ_CST);
+  uint32_t diff = current_count - counter;
+  if (diff > 0) {
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Missed vertical blanking interval by " << diff << " frames.\n";
+    }
+    if (adaptive) {
+      counter = current_count;
+      return;
+    }
+  }
+
+  // We only wait for the first window that gets flipped in a single frame,
+  // otherwise we end up halving our FPS when we have multiple windows!
+  int cur_frame = ClockObject::get_global_clock()->get_frame_count();
+  if (_last_wait_frame.exchange(cur_frame) == cur_frame) {
+    counter = current_count;
+    return;
+  }
+
+  patomic_wait(&_vsync_counter, current_count);
+  __atomic_load(&_vsync_counter, &counter, __ATOMIC_SEQ_CST);
+}
+
+/**
+ * Called whenever a display wants a frame.  The context argument contains the
+ * applicable CocoaGraphicsPipe.
+ */
+CVReturn CocoaGraphicsPipe::
+display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
+                const CVTimeStamp *output_time, CVOptionFlags flags_in,
+                CVOptionFlags *flags_out, void *context) {
+
+  CocoaGraphicsPipe *pipe = (CocoaGraphicsPipe *)context;
+  __atomic_fetch_add(&pipe->_vsync_counter, 1u, __ATOMIC_SEQ_CST);
+  patomic_notify_all(&pipe->_vsync_counter);
+
+  return kCVReturnSuccess;
 }
