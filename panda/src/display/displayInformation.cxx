@@ -210,7 +210,7 @@ get_display_mode(int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_width (int display_index) {
@@ -225,7 +225,7 @@ get_display_mode_width (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_height (int display_index) {
@@ -240,7 +240,7 @@ get_display_mode_height (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_bits_per_pixel (int display_index) {
@@ -255,9 +255,9 @@ get_display_mode_bits_per_pixel (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
-int DisplayInformation::
+double DisplayInformation::
 get_display_mode_refresh_rate (int display_index) {
   int value;
 
@@ -270,7 +270,7 @@ get_display_mode_refresh_rate (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_fullscreen_only (int display_index) {
