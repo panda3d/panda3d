@@ -13,6 +13,8 @@ def main():
         direct_copy = pathlib.Path(temp_dir, 'direct')
         shutil.copytree(direct_src, direct_copy)
         command = [
+            sys.executable,
+            '-m',
             'mypy',
             str(direct_copy.resolve()),
             '--config-file',
