@@ -328,9 +328,21 @@ WinGraphicsPipe() {
     if (windisplay_cat.is_debug()) {
       windisplay_cat.debug() << "Using EnumDisplaySettings to fetch display information.\n";
     }
+
     pvector<DisplayMode> display_modes;
+    DisplayMode current_mode = {0};
+    int current_mode_index = -1;
     DEVMODE dm{};
     dm.dmSize = sizeof(dm);
+
+    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dm) != 0) {
+      current_mode.width = dm.dmPelsWidth;
+      current_mode.height = dm.dmPelsHeight;
+      current_mode.bits_per_pixel = dm.dmBitsPerPel;
+      current_mode.refresh_rate = dm.dmDisplayFrequency;
+      current_mode.fullscreen_only = 0;
+    }
+
     for (int i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
       DisplayMode mode;
       mode.width = dm.dmPelsWidth;
@@ -339,6 +351,9 @@ WinGraphicsPipe() {
       mode.refresh_rate = dm.dmDisplayFrequency;
       mode.fullscreen_only = 0;
       if (i == 0 || mode != display_modes.back()) {
+        if (current_mode_index < 0 && mode == current_mode) {
+          current_mode_index = (int)display_modes.size();
+        }
         display_modes.push_back(mode);
       }
     }
@@ -346,6 +361,7 @@ WinGraphicsPipe() {
     // Copy this information to the DisplayInformation object.
     _display_information->_total_display_modes = display_modes.size();
     if (!display_modes.empty()) {
+      _display_information->_current_display_mode_index = current_mode_index;
       _display_information->_display_mode_array = new DisplayMode[display_modes.size()];
       std::copy(display_modes.begin(), display_modes.end(),
                 _display_information->_display_mode_array);
