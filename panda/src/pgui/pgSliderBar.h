@@ -92,17 +92,23 @@ PUBLISHED:
   INLINE void set_thumb_button(PGButton *thumb_button);
   INLINE void clear_thumb_button();
   INLINE PGButton *get_thumb_button() const;
-  MAKE_PROPERTY(thumb_button, get_thumb_button, set_thumb_button);
+  MAKE_PROPERTY2(thumb_button,
+                 get_thumb_button, get_thumb_button,
+                 set_thumb_button, clear_thumb_button);
 
   INLINE void set_left_button(PGButton *left_button);
   INLINE void clear_left_button();
   INLINE PGButton *get_left_button() const;
-  MAKE_PROPERTY(left_button, get_left_button, set_left_button);
+  MAKE_PROPERTY2(left_button,
+                 get_left_button, get_left_button,
+                 set_left_button, clear_left_button);
 
   INLINE void set_right_button(PGButton *right_button);
   INLINE void clear_right_button();
   INLINE PGButton *get_right_button() const;
-  MAKE_PROPERTY(right_button, get_right_button, set_right_button);
+  MAKE_PROPERTY2(right_button,
+                 get_right_button, get_right_button,
+                 set_right_button, clear_right_button);
 
   INLINE static std::string get_adjust_prefix();
   INLINE std::string get_adjust_event() const;

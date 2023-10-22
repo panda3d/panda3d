@@ -71,12 +71,16 @@ PUBLISHED:
   INLINE void set_horizontal_slider(PGSliderBar *horizontal_slider);
   INLINE void clear_horizontal_slider();
   INLINE PGSliderBar *get_horizontal_slider() const;
-  MAKE_PROPERTY(horizontal_slider, get_horizontal_slider, set_horizontal_slider);
+  MAKE_PROPERTY2(horizontal_slider,
+                 get_horizontal_slider, get_horizontal_slider,
+                 set_horizontal_slider, clear_horizontal_slider);
 
   INLINE void set_vertical_slider(PGSliderBar *vertical_slider);
   INLINE void clear_vertical_slider();
   INLINE PGSliderBar *get_vertical_slider() const;
-  MAKE_PROPERTY(vertical_slider, get_vertical_slider, set_vertical_slider);
+  MAKE_PROPERTY2(vertical_slider,
+                 get_vertical_slider, get_vertical_slider,
+                 set_vertical_slider, clear_vertical_slider);
 
   void remanage();
   INLINE void recompute();
