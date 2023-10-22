@@ -59,7 +59,7 @@ string LoaderFileTypeAssimp::
 get_additional_extensions() const {
   // This may be called at static init time, so ensure it is constructed now.
   static ConfigVariableString assimp_disable_extensions
-  ("assimp-disable-extensions", "",
+  ("assimp-disable-extensions", "gltf glb",
    PRC_DESC("A list of extensions (without preceding dot) that should not be "
             "loaded via the Assimp loader, even if Assimp supports these "
             "formats.  It is useful to set this for eg. gltf and glb files "
