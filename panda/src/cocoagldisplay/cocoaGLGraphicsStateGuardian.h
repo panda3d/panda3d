@@ -20,7 +20,6 @@
 
 #import <AppKit/NSOpenGL.h>
 #import <OpenGL/OpenGL.h>
-#import <CoreVideo/CoreVideo.h>
 
 /**
  * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
@@ -39,7 +38,6 @@ public:
                                CocoaGLGraphicsStateGuardian *share_with);
 
   virtual ~CocoaGLGraphicsStateGuardian();
-  bool setup_vsync();
 
   INLINE void lock_context();
   INLINE void unlock_context();
@@ -48,11 +46,6 @@ public:
   NSOpenGLContext *_context;
   NSOpenGLPixelFormat *_format = nullptr;
   FrameBufferProperties _fbprops;
-
-  CVDisplayLinkRef _display_link = nullptr;
-  TrueMutexImpl _swap_lock;
-  TrueConditionVarImpl _swap_condition;
-  AtomicAdjust::Integer _last_wait_frame = 0;
 
 protected:
   virtual void query_gl_version();

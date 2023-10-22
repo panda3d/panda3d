@@ -114,6 +114,21 @@ end_flip() {
   if (_flip_ready) {
     do_present();
     _swap_index = (_swap_index + 1) % _swap_chain.size();
+
+    // We don't really support proper VSync because we just update the backing
+    // store and let the OS update it when needed, but we still need to wait
+    // for VBlank so that the frame rate is appropriately limited.
+    if (sync_video) {
+      CocoaGraphicsPipe *cocoapipe = (CocoaGraphicsPipe *)_pipe.p();
+      if (!_vsync_enabled) {
+        // If this fails, we don't keep trying.
+        cocoapipe->init_vsync(_vsync_counter);
+        _vsync_enabled = true;
+      }
+      cocoapipe->wait_vsync(_vsync_counter);
+    } else {
+      _vsync_enabled = false;
+    }
   }
 
   GraphicsWindow::end_flip();

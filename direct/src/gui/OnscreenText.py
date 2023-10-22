@@ -173,7 +173,7 @@ class OnscreenText(NodePath):
         self.__wordwrap = wordwrap
 
         if decal:
-            textNode.setCardDecal(1)
+            textNode.setCardDecal(True)
 
         if font is None:
             font = DGG.getDefaultFont()

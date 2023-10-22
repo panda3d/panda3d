@@ -652,7 +652,6 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
       case SMO_pixel_size:
       case SMO_texpad_x:
       case SMO_texpix_x:
-      case SMO_attr_material:
       case SMO_attr_color:
       case SMO_attr_colorscale:
       case SMO_satten_x:
@@ -684,6 +683,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
         break;
 
       case SMO_identity:
+      case SMO_attr_material:
       case SMO_alight_x:
       case SMO_dlight_x:
       case SMO_plight_x:

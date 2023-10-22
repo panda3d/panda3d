@@ -2,11 +2,16 @@
 Notifier module: contains methods for handling information output
 for the programmer/user
 """
+
+from __future__ import annotations
+
+from .Logger import Logger
 from .LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
 from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notify
 import time
 import sys
+from typing import NoReturn
 
 
 class NotifierException(Exception):
@@ -20,13 +25,13 @@ class Notifier:
     # messages instead of writing them to the console.  This is
     # particularly useful for integrating the Python notify system
     # with the C++ notify system.
-    streamWriter = None
+    streamWriter: StreamWriter | None = None
     if ConfigVariableBool('notify-integrate', True):
         streamWriter = StreamWriter(Notify.out(), False)
 
     showTime = ConfigVariableBool('notify-timestamp', False)
 
-    def __init__(self, name, logger=None):
+    def __init__(self, name: str, logger: Logger | None = None) -> None:
         """
         Parameters:
             name (str): a string name given to this Notifier instance.
@@ -42,12 +47,12 @@ class Notifier:
             self.__logger = logger
 
         # Global default levels are initialized here
-        self.__info = 1
-        self.__warning = 1
-        self.__debug = 0
-        self.__logging = 0
+        self.__info = True
+        self.__warning = True
+        self.__debug = False
+        self.__logging = False
 
-    def setServerDelta(self, delta, timezone):
+    def setServerDelta(self, delta: float, timezone: int) -> None:
         """
         Call this method on any Notify object to globally change the
         timestamp printed for each line of all Notify objects.
@@ -65,7 +70,7 @@ class Notifier:
 
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
 
-    def getTime(self):
+    def getTime(self) -> str:
         """
         Return the time as a string suitable for printing at the
         head of any notify message
@@ -74,14 +79,14 @@ class Notifier:
         # the task is out of focus on win32.  time.clock doesn't have this problem.
         return time.strftime(":%m-%d-%Y %H:%M:%S ", time.localtime(time.time() + self.serverDelta))
 
-    def getOnlyTime(self):
+    def getOnlyTime(self) -> str:
         """
         Return the time as a string.
         The Only in the name is referring to not showing the date.
         """
         return time.strftime("%H:%M:%S", time.localtime(time.time() + self.serverDelta))
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Print handling routine
         """
@@ -89,26 +94,26 @@ class Notifier:
                (self.__name, self.__info, self.__warning, self.__debug, self.__logging)
 
     # Severity funcs
-    def setSeverity(self, severity):
+    def setSeverity(self, severity: int) -> None:
         from panda3d.core import NSDebug, NSInfo, NSWarning, NSError
         if severity >= NSError:
-            self.setWarning(0)
-            self.setInfo(0)
-            self.setDebug(0)
+            self.setWarning(False)
+            self.setInfo(False)
+            self.setDebug(False)
         elif severity == NSWarning:
-            self.setWarning(1)
-            self.setInfo(0)
-            self.setDebug(0)
+            self.setWarning(True)
+            self.setInfo(False)
+            self.setDebug(False)
         elif severity == NSInfo:
-            self.setWarning(1)
-            self.setInfo(1)
-            self.setDebug(0)
+            self.setWarning(True)
+            self.setInfo(True)
+            self.setDebug(False)
         elif severity <= NSDebug:
-            self.setWarning(1)
-            self.setInfo(1)
-            self.setDebug(1)
+            self.setWarning(True)
+            self.setInfo(True)
+            self.setDebug(True)
 
-    def getSeverity(self):
+    def getSeverity(self) -> int:
         from panda3d.core import NSDebug, NSInfo, NSWarning, NSError
         if self.getDebug():
             return NSDebug
@@ -120,7 +125,7 @@ class Notifier:
             return NSError
 
     # error funcs
-    def error(self, errorString, exception=NotifierException):
+    def error(self, errorString: object, exception: type[Exception] = NotifierException) -> NoReturn:
         """
         Raise an exception with given string and optional type:
         Exception: error
@@ -134,7 +139,7 @@ class Notifier:
         raise exception(errorString)
 
     # warning funcs
-    def warning(self, warningString):
+    def warning(self, warningString: object) -> int:
         """
         Issue the warning message if warn flag is on
         """
@@ -148,20 +153,20 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert myNotify.warning("blah")
 
-    def setWarning(self, enable):
+    def setWarning(self, enable: bool) -> None:
         """
         Enable/Disable the printing of warning messages
         """
         self.__warning = enable
 
-    def getWarning(self):
+    def getWarning(self) -> bool:
         """
         Return whether the printing of warning messages is on or off
         """
         return self.__warning
 
     # debug funcs
-    def debug(self, debugString):
+    def debug(self, debugString: object) -> int:
         """
         Issue the debug message if debug flag is on
         """
@@ -175,20 +180,20 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert myNotify.debug("blah")
 
-    def setDebug(self, enable):
+    def setDebug(self, enable: bool) -> None:
         """
         Enable/Disable the printing of debug messages
         """
         self.__debug = enable
 
-    def getDebug(self):
+    def getDebug(self) -> bool:
         """
         Return whether the printing of debug messages is on or off
         """
         return self.__debug
 
     # info funcs
-    def info(self, infoString):
+    def info(self, infoString: object) -> int:
         """
         Print the given informational string, if info flag is on
         """
@@ -202,39 +207,39 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert myNotify.info("blah")
 
-    def getInfo(self):
+    def getInfo(self) -> bool:
         """
         Return whether the printing of info messages is on or off
         """
         return self.__info
 
-    def setInfo(self, enable):
+    def setInfo(self, enable: bool) -> None:
         """
         Enable/Disable informational message  printing
         """
         self.__info = enable
 
     # log funcs
-    def __log(self, logEntry):
+    def __log(self, logEntry: str) -> None:
         """
         Determine whether to send informational message to the logger
         """
         if self.__logging:
             self.__logger.log(logEntry)
 
-    def getLogging(self):
+    def getLogging(self) -> bool:
         """
         Return 1 if logging enabled, 0 otherwise
         """
         return self.__logging
 
-    def setLogging(self, enable):
+    def setLogging(self, enable: bool) -> None:
         """
         Set the logging flag to int (1=on, 0=off)
         """
         self.__logging = enable
 
-    def __print(self, string):
+    def __print(self, string: str) -> None:
         """
         Prints the string to output followed by a newline.
         """
@@ -251,7 +256,7 @@ class Notifier:
         the function call (with parameters).
         """
         #f.f_locals['self'].__init__.im_class.__name__
-        if self.__debug:
+        if __debug__ and self.__debug:
             state = ''
             doId = ''
             if obj is not None:
@@ -285,13 +290,13 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert self.notify.debugStateCall(self)
 
-    def debugCall(self, debugString=''):
+    def debugCall(self, debugString: object = '') -> int:
         """
         If this notify is in debug mode, print the time of the
         call followed by the notifier category and
         the function call (with parameters).
         """
-        if self.__debug:
+        if __debug__ and self.__debug:
             message = str(debugString)
             string = ":%s:%s \"%s\" %s"%(
                 self.getOnlyTime(),

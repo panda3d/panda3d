@@ -12,6 +12,8 @@ class MiniTask:
     done = 0
     cont = 1
 
+    name: str
+
     def __init__(self, callback):
         self.__call__ = callback
 

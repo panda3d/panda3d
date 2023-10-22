@@ -1,4 +1,5 @@
-pytest
+pytest>=3.9.0
 pytest-cov
 
 Pmw-py3==2.1
+setuptools>=15.2

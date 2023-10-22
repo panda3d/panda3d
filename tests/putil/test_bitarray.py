@@ -118,6 +118,9 @@ def test_bitarray_pickle():
     ba = BitArray(123)
     assert ba == pickle.loads(pickle.dumps(ba, -1))
 
+    ba = BitArray(1 << 128)
+    assert ba == pickle.loads(pickle.dumps(ba, -1))
+
     ba = BitArray(94187049178237918273981729127381723)
     assert ba == pickle.loads(pickle.dumps(ba, -1))
 

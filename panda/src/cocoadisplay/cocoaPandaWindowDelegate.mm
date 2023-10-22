@@ -51,6 +51,10 @@
   _graphicsWindow->handle_foreground_event(false);
 }
 
+- (void) windowDidChangeBackingProperties:(NSNotification *)notification {
+  _graphicsWindow->handle_backing_change_event();
+}
+
 - (BOOL) windowShouldClose:(id)sender {
   if (cocoadisplay_cat.is_debug()) {
     cocoadisplay_cat.debug()

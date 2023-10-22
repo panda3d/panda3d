@@ -16,7 +16,7 @@
  * size.
  */
 constexpr DeletedBufferChain::
-DeletedBufferChain(size_t buffer_size) : _buffer_size(buffer_size) {
+DeletedBufferChain(size_t buffer_size) noexcept : _buffer_size(buffer_size) {
 }
 
 /**
@@ -75,22 +75,6 @@ get_buffer_size() const {
 INLINE bool DeletedBufferChain::
 operator < (const DeletedBufferChain &other) const {
   return _buffer_size < other._buffer_size;
-}
-
-/**
- * Returns a deleted chain of the given size.
- */
-INLINE DeletedBufferChain *DeletedBufferChain::
-get_deleted_chain(size_t buffer_size) {
-  // We must allocate at least this much space for bookkeeping reasons.
-  buffer_size = (std::max)(buffer_size, sizeof(ObjectNode));
-
-  size_t index = ((buffer_size + sizeof(void *) - 1) / sizeof(void *)) - 1;
-  if (index < num_small_deleted_chains) {
-    return &_small_deleted_chains[index];
-  } else {
-    return get_large_deleted_chain((index + 1) * sizeof(void *));
-  }
 }
 
 /**

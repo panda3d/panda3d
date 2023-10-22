@@ -18,7 +18,7 @@ class TexViewer(DirectObject):
 
         # We'll put the full-resolution texture on the left.
         cm = CardMaker('left')
-        l, r, b, t = (-1, -0.1, 0, 0.9)
+        l, r, b, t = (-1.0, -0.1, 0.0, 0.9)
         cm.setFrame(l, r, b, t)
         left = cards.attachNewNode(cm.generate())
         left.setTexture(self.tex)

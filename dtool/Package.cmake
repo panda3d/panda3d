@@ -257,16 +257,32 @@ if(HAVE_PYTHON)
     set(_ARCH_DIR ".")
 
   elseif(PYTHON_EXECUTABLE)
-    execute_process(
-      COMMAND ${PYTHON_EXECUTABLE}
-        -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
-      OUTPUT_VARIABLE _LIB_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(
-      COMMAND ${PYTHON_EXECUTABLE}
-        -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
-      OUTPUT_VARIABLE _ARCH_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # Python 3.12 drops the distutils module, so we have to use the newer
+    # sysconfig module instead.  Earlier versions of Python had the newer
+    # module too, but it was broken in Debian/Ubuntu, see #1230
+    if(PYTHON_VERSION_STRING VERSION_LESS "3.12")
+      execute_process(
+        COMMAND ${PYTHON_EXECUTABLE}
+          -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
+        OUTPUT_VARIABLE _LIB_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      execute_process(
+        COMMAND ${PYTHON_EXECUTABLE}
+          -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
+        OUTPUT_VARIABLE _ARCH_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    else()
+      execute_process(
+        COMMAND ${PYTHON_EXECUTABLE}
+          -c "import sysconfig; print(sysconfig.get_path('purelib'))"
+        OUTPUT_VARIABLE _LIB_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      execute_process(
+        COMMAND ${PYTHON_EXECUTABLE}
+          -c "import sysconfig; print(sysconfig.get_path('platlib'))"
+        OUTPUT_VARIABLE _ARCH_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
 
   else()
     set(_LIB_DIR "")

@@ -11,6 +11,7 @@ so that I can just type: ``inspect(anObject)`` any time.
 See :ref:`inspection-utilities` for more information.
 """
 
+from __future__ import annotations
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
@@ -30,6 +31,8 @@ def inspect(anObject):
     return inspectorWindow
 
 ### private
+
+_InspectorMap: dict[str, str]
 
 
 def inspectorFor(anObject):
@@ -396,7 +399,8 @@ class InspectorWindow:
         self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
-        help = tk.Toplevel(base.tkRoot)
+        from direct.showbase import ShowBaseGlobal
+        help = tk.Toplevel(ShowBaseGlobal.base.tkRoot)
         help.title("Inspector Help")
         frame = tk.Frame(help)
         frame.pack()

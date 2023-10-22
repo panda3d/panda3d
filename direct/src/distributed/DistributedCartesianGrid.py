@@ -23,7 +23,7 @@ GRID_Z_OFFSET = 0.0
 
 class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     notify = directNotify.newCategory("DistributedCartesianGrid")
-    notify.setDebug(0)
+    notify.setDebug(False)
 
     VisualizeGrid = ConfigVariableBool("visualize-cartesian-grid", False)
 

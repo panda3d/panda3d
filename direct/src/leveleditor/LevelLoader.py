@@ -25,6 +25,9 @@ class LevelLoader(LevelLoaderBase):
 
     def initLoader(self):
         self.defaultPath = os.path.dirname(__file__)
+
+        from direct.showbase import ShowBaseGlobal
+        base = ShowBaseGlobal.base
         base.objectPalette = ObjectPalette()
         base.protoPalette = ProtoPalette()
         base.objectHandler = ObjectHandler(None)
