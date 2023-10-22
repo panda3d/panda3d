@@ -64,8 +64,6 @@ hidden = NodePath("hidden")
 
 loader: Loader
 
-direct: "DirectSession"
-
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
 
