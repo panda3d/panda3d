@@ -118,6 +118,7 @@ add_metalib(p3tinydisplay ${MODULE_TYPE}
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
 set_target_properties(p3tinydisplay PROPERTIES DEFINE_SYMBOL BUILDING_TINYDISPLAY)
+target_link_libraries(p3tinydisplay panda)
 
 install(TARGETS p3tinydisplay
   EXPORT TinyDisplay COMPONENT TinyDisplay
