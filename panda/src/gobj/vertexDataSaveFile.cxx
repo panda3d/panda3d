@@ -23,7 +23,7 @@
 #include <errno.h>
 #endif  // _WIN32
 
-#if (defined(__ANDROID__) || defined(__wasi__)) && !defined(PHAVE_LOCKF)
+#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
