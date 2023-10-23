@@ -918,7 +918,7 @@ read_args() {
   }
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__wasi__)
   // Try to use realpath to get cleaner paths.
 
   if (!_binary_name.empty()) {
@@ -934,7 +934,7 @@ read_args() {
       _dtool_name = newpath;
     }
   }
-#endif  // _WIN32
+#endif
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;
