@@ -6,9 +6,9 @@
 #include "globPattern.cxx"
 #include "lineStream.cxx"
 #include "lineStreamBuf.cxx"
-#if !defined(__wasi__)
+//#if !defined(__wasi__)
 #include "load_dso.cxx"
-#endif
+//#endif
 #include "pandaSystem.cxx"
 
 
