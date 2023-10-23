@@ -50,7 +50,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
+#if (defined(__ANDROID__) || defined(__wasi__)) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
@@ -1049,7 +1049,7 @@ make_canonical() {
     return true;
   }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__wasi__)
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != nullptr) {
