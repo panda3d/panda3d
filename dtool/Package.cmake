@@ -68,6 +68,9 @@ if(THIRDPARTY_DIRECTORY)
   elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
 
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "WASI")
+    set(_package_dir ${THIRDPARTY_DIRECTORY})
+
   else()
     message(FATAL_ERROR
       "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")

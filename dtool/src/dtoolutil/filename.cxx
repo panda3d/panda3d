@@ -50,10 +50,11 @@
 #include <unistd.h>
 #endif
 
-#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
+#if (defined(__ANDROID__) || defined(__wasi__)) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
+
 
 using std::cerr;
 using std::ios;
@@ -436,7 +437,7 @@ Filename Filename::
 temporary(const string &dirname, const string &prefix, const string &suffix,
           Type type) {
   Filename fdirname = dirname;
-#if defined(_WIN32) || defined(ANDROID)
+#if defined(_WIN32) || defined(ANDROID) || defined(__wasi__)
   // The Windows tempnam() function doesn't do a good job of choosing a
   // temporary directory.  Choose one ourselves.
   if (fdirname.empty()) {
@@ -1049,7 +1050,7 @@ make_canonical() {
     return true;
   }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__wasi__)
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != nullptr) {
@@ -1057,7 +1058,7 @@ make_canonical() {
     newpath_fn._flags = _flags;
     (*this) = newpath_fn;
   }
-#endif
+#endif  // _WIN32 __wasi__
 
   Filename cwd = ExecutionEnvironment::get_cwd();
   if (!r_make_canonical(cwd)) {

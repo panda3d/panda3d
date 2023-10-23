@@ -119,6 +119,10 @@ unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
 set_target_properties(p3tinydisplay PROPERTIES DEFINE_SYMBOL BUILDING_TINYDISPLAY)
 
+if (NOT (WIN32 OR ANDROID OR HAVE_X11 OR HAVE_COCOA))
+  target_link_libraries(p3tinydisplay panda)
+endif()
+
 install(TARGETS p3tinydisplay
   EXPORT TinyDisplay COMPONENT TinyDisplay
   DESTINATION ${MODULE_DESTINATION}
