@@ -449,6 +449,11 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
+  if (_fb_properties.get_float_color() &&
+      [_view respondsToSelector:@selector(setWantsExtendedDynamicRangeOpenGLSurface:)]) {
+    [_view setWantsExtendedDynamicRangeOpenGLSurface:YES];
+  }
+
   // Configure the view to be high resolution capable using the dpi-aware
   // configuration flag. If dpi-aware is false, macOS will upscale the view
   // for us.
