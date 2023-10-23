@@ -1,8 +1,6 @@
 #include "patomic.cxx"
-#if HAVE_THREADS != UNDEF
 #include "mutexPosixImpl.cxx"
 #include "mutexWin32Impl.cxx"
-#endif
 #include "mutexSpinlockImpl.cxx"
 #include "neverFreeMemory.cxx"
 #include "pdtoa.cxx"
