@@ -56,20 +56,31 @@ PUBLISHED:
   INLINE const LVecBase4 &get_virtual_frame() const;
   INLINE bool has_virtual_frame() const;
   INLINE void clear_virtual_frame();
+  MAKE_PROPERTY2(virtual_frame,
+                 has_virtual_frame, get_virtual_frame,
+                 set_virtual_frame, clear_virtual_frame);
 
   INLINE void set_manage_pieces(bool manage_pieces);
   INLINE bool get_manage_pieces() const;
+  MAKE_PROPERTY(manage_pieces, get_manage_pieces, set_manage_pieces);
 
   INLINE void set_auto_hide(bool auto_hide);
   INLINE bool get_auto_hide() const;
+  MAKE_PROPERTY(auto_hide, get_auto_hide, set_auto_hide);
 
   INLINE void set_horizontal_slider(PGSliderBar *horizontal_slider);
   INLINE void clear_horizontal_slider();
   INLINE PGSliderBar *get_horizontal_slider() const;
+  MAKE_PROPERTY2(horizontal_slider,
+                 get_horizontal_slider, get_horizontal_slider,
+                 set_horizontal_slider, clear_horizontal_slider);
 
   INLINE void set_vertical_slider(PGSliderBar *vertical_slider);
   INLINE void clear_vertical_slider();
   INLINE PGSliderBar *get_vertical_slider() const;
+  MAKE_PROPERTY2(vertical_slider,
+                 get_vertical_slider, get_vertical_slider,
+                 set_vertical_slider, clear_vertical_slider);
 
   void remanage();
   INLINE void recompute();
