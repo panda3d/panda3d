@@ -102,7 +102,6 @@ from panda3d.core import (
     RescaleNormalAttrib,
     SceneGraphAnalyzerMeter,
     TexGenAttrib,
-    TexMemWatcher,
     Texture,
     TextureStage,
     Thread,
@@ -309,7 +308,7 @@ class ShowBase(DirectObject.DirectObject):
         self.mouseInterface: NodePath | None = None
         self.drive: NodePath | None = None
         self.trackball: NodePath | None = None
-        self.texmem: TexMemWatcher | None = None
+        self.texmem: Any | None = None
         self.showVertices: NodePath | None = None
         self.deviceButtonThrowers: list[NodePath] = []
 
