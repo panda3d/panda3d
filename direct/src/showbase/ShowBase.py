@@ -380,7 +380,7 @@ class ShowBase(DirectObject.DirectObject):
         self.shadowTrav: CollisionTraverser | Literal[0] = 0
         self.cTravStack = Stack()
         # Ditto for an AppTraverser.
-        self.appTrav: CollisionTraverser | Literal[0] = 0
+        self.appTrav: Any | Literal[0] = 0
 
         # This is the DataGraph traverser, which we might as well
         # create now.
