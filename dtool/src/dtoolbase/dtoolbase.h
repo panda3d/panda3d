@@ -152,11 +152,11 @@ typedef struct _typeobject PyTypeObject;
 #ifdef PHAVE_TYPES_H
 #include <types.h>
 #endif // PHAVE_TYPES_H
-#if !defined(__wasi__)
+
 #ifdef PHAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif // PHAVE_SYS_TYPES_H
-#endif
+
 #ifdef PHAVE_MALLOC_H
 #include <malloc.h>
 #endif // PHAVE_MALLOC_H
