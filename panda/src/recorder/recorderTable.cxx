@@ -225,6 +225,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     } else {
       recorder->ref();
+      // Advance _current_index to reflect the read from make_instance_more_general()
+      scan.get_string();
+
       bool inserted =
         _recorders.insert(Recorders::value_type(name, recorder)).second;
       nassertv(inserted);
