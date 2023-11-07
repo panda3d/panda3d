@@ -228,11 +228,12 @@ make_from_bam(const FactoryParams &params) {
 RecorderBase *MouseRecorder::
 make_recorder(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
-  DatagramIterator scan;
-  BamReader *manager;
+  //DatagramIterator scan;
+  //BamReader *manager;
+  PT(RecorderTable::RecorderParam) rec_param = DCAST(RecorderTable::RecorderParam, params.get_param(0));
 
-  parse_params(params, scan, manager);
-  node->fillin_recorder(scan, manager);
+  node->set_name(rec_param->_node_name);
+  //node->fillin_recorder(scan, manager);
 
   return node;
 }
