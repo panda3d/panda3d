@@ -3672,6 +3672,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 void PandaNode::
 fillin_recorder(DatagramIterator &scan, BamReader *) {
+  string name = scan.get_string();
+  set_name(name);
 }
 
 /**

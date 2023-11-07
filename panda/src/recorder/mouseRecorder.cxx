@@ -232,8 +232,6 @@ make_recorder(const FactoryParams &params) {
   BamReader *manager;
 
   parse_params(params, scan, manager);
-  PT(RecorderTable::BamAuxData) aux_data = (RecorderTable::BamAuxData*)manager->get_aux_data(nullptr, "recorder_data");
-  node->set_name(aux_data->_node_name);
   node->fillin_recorder(scan, manager);
 
   return node;

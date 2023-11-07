@@ -213,16 +213,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     TypeHandle type = manager->read_handle(scan);
 
     // Use the Factory to create a new recorder of the indicated type.
-    PT(BamAuxData) aux_data = new BamAuxData;
-    aux_data->_node_name = scan.get_string();
-    manager->set_aux_data(nullptr, "recorder_data", aux_data);
     FactoryParams fparams;
     fparams.add_param(new BamReaderParam(scan, manager));
 
     RecorderBase *recorder =
       RecorderController::get_factory()->make_instance_more_general(type, fparams);
-    manager->set_aux_data(nullptr, "recorder_data", nullptr);
-
     if (recorder == nullptr) {
       recorder_cat.error()
         << "Unable to create Recorder of type " << type << "\n";
