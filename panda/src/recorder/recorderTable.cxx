@@ -225,6 +225,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     } else {
       recorder->ref();
+      scan.skip_bytes(recorder->_dg_bytes_read);
       bool inserted =
         _recorders.insert(Recorders::value_type(name, recorder)).second;
       nassertv(inserted);

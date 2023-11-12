@@ -87,6 +87,7 @@ public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
+  size_t _dg_bytes_read;
 
 private:
   static TypeHandle _type_handle;

@@ -21,6 +21,7 @@ TypeHandle RecorderBase::_type_handle;
 RecorderBase::
 RecorderBase() {
   _flags = 0;
+  _dg_bytes_read = -1;
 }
 
 /**
