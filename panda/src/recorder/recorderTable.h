@@ -19,7 +19,6 @@
 #include "pointerTo.h"
 #include "pmap.h"
 #include "typedWritable.h"
-#include "factoryParam.h"
 
 class BamWriter;
 class BamReader;
@@ -79,10 +78,6 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  class RecorderParam : public FactoryParam {
-  public:
-    std::string _node_name;
-  };
 
 private:
   static TypeHandle _type_handle;

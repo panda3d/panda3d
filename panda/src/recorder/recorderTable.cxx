@@ -211,12 +211,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_recorders; i++) {
     string name = scan.get_string();
     TypeHandle type = manager->read_handle(scan);
-    PT(RecorderParam) rec_param = new RecorderParam;
 
     // Use the Factory to create a new recorder of the indicated type.
-    rec_param->_node_name = scan.get_string();
     FactoryParams fparams;
-    fparams.add_param(rec_param);
+    fparams.add_param(new BamReaderParam(scan, manager));
 
     RecorderBase *recorder =
       RecorderController::get_factory()->make_instance_more_general(type, fparams);
