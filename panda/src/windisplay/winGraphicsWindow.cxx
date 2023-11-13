@@ -666,7 +666,7 @@ initialize_input_devices() {
 
   // Allocate the array to hold the DeviceList
   pRawInputDeviceList = (PRAWINPUTDEVICELIST)alloca(sizeof(RAWINPUTDEVICELIST) * nInputDevices);
-  if (pRawInputDeviceList==0) {
+  if (pRawInputDeviceList == nullptr) {
     return;
   }
 
@@ -680,13 +680,13 @@ initialize_input_devices() {
     if (pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE) {
       // Fetch information about specified mouse device.
       UINT nSize;
-      if ((int)GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)0, &nSize) != 0) {
-        return;
+      if ((int)GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)nullptr, &nSize) != 0) {
+        continue;
       }
       char *psName = (char*)alloca(sizeof(TCHAR) * nSize);
-      if (psName == 0) return;
+      if (psName == nullptr) continue;
       if ((int)GetRawInputDeviceInfoA(pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, (LPVOID)psName, &nSize) < 0) {
-        return;
+        continue;
       }
 
       // If it's not an RDP mouse, add it to the list of raw mice.
