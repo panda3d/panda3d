@@ -228,7 +228,7 @@ make_from_bam(const FactoryParams &params) {
 RecorderBase *MouseRecorder::
 make_recorder(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
-  BamReaderParam* param = DCAST(BamReaderParam, params.get_param(0));
+  BamReaderParam *param = DCAST(BamReaderParam, params.get_param(0));
   
   node->fillin_recorder(param->get_iterator(), param->get_manager());
 
