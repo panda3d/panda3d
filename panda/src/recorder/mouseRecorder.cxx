@@ -230,15 +230,9 @@ make_recorder(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
   DatagramIterator scan;
   BamReader *manager;
-  size_t cur_index, bytes_read;
 
   parse_params(params, scan, manager);
-  cur_index = scan.get_current_index();
   node->fillin_recorder(scan, manager);
-
-  bytes_read = scan.get_current_index() - cur_index;
-  nassertr(bytes_read >= 0, nullptr);
-  node->_dg_bytes_read = bytes_read;
 
   return node;
 }
