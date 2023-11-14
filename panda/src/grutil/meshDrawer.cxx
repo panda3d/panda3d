@@ -416,6 +416,11 @@ void MeshDrawer::geometry(NodePath draw_node) {
 /**
  * Stars or continues linked segment.  Control position, frame, thickness and
  * color with parameters.  Frame contains u,v,u-size,v-size quadruple.
+ * Note that for the first two calls to this method, the "frame" parameter is
+ * ignored; it first takes effect as of the third call.
+ * Similarly, note that in the second call to this method, the "color" parameter
+ * is ignored; it only has effect in the first call and calls from the third
+ * onwards.
  */
 void MeshDrawer::
 link_segment(const LVector3 &pos, const LVector4 &frame,
