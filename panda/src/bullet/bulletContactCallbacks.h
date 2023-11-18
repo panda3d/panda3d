@@ -88,7 +88,12 @@ contact_added_callback(btManifoldPoint &cp,
       BulletManifoldPoint mp(cp);
       BulletContactCallbackData cbdata(mp, node0, node1, id0, id1, index0, index1);
 
+      // Release the world mutex object so that bullet methods can be called from the callback.
+      LightMutex &mutex = BulletWorld::get_global_lock();
+
+      mutex.release();
       bullet_contact_added_callback->do_callback(&cbdata);
+      mutex.acquire();
     }
   }
 
