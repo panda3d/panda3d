@@ -21,7 +21,7 @@ PUBLISHED:
   int width;
   int height;
   int bits_per_pixel;
-  int refresh_rate;
+  double refresh_rate;
   int fullscreen_only;
 
   bool operator == (const DisplayMode &other) const;
@@ -56,11 +56,13 @@ PUBLISHED:
   const DisplayMode &get_display_mode(int display_index);
   MAKE_SEQ(get_display_modes, get_total_display_modes, get_display_mode);
 
+  int get_current_display_mode_index() const;
+
   // Older interface for display modes.
   int get_display_mode_width(int display_index);
   int get_display_mode_height(int display_index);
   int get_display_mode_bits_per_pixel(int display_index);
-  int get_display_mode_refresh_rate(int display_index);
+  double get_display_mode_refresh_rate(int display_index);
   int get_display_mode_fullscreen_only(int display_index);
 
   GraphicsStateGuardian::ShaderModel get_shader_model();
@@ -115,7 +117,7 @@ PUBLISHED:
 
 public:
   DetectionState _state;
-  int _get_adapter_display_mode_state;
+  int _current_display_mode_index;
   int _get_device_caps_state;
   int _maximum_window_width;
   int _maximum_window_height;

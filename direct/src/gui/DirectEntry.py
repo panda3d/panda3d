@@ -28,7 +28,7 @@ class DirectEntry(DirectFrame):
     to keyboard buttons
     """
 
-    directWtext = ConfigVariableBool('direct-wtext', 1)
+    directWtext = ConfigVariableBool('direct-wtext', True)
 
     AllowCapNamePrefixes = ("Al", "Ap", "Ben", "De", "Del", "Della", "Delle", "Der", "Di", "Du",
                             "El", "Fitz", "La", "Las", "Le", "Les", "Lo", "Los",

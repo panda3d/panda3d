@@ -25,6 +25,7 @@ from panda3d.core import Loader as PandaLoader
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 import warnings
+import sys
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
@@ -151,16 +152,17 @@ class Loader(DirectObject):
         if not ConfigVariableBool('loader-support-entry-points', True):
             return
 
-        import importlib
-        try:
-            pkg_resources = importlib.import_module('pkg_resources')
-        except ImportError:
-            pkg_resources = None
+        from importlib.metadata import entry_points
+        eps = entry_points()
+        if sys.version_info < (3, 10):
+            loaders = eps.get('panda3d.loaders', ())
+        else:
+            loaders = eps.select(group='panda3d.loaders')
 
-        if pkg_resources:
+        if loaders:
             registry = LoaderFileTypeRegistry.getGlobalPtr()
 
-            for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+            for entry_point in loaders:
                 registry.register_deferred_type(entry_point)
 
             cls._loadedPythonFileTypes = True

@@ -6,7 +6,6 @@
 ########################################################################
 
 import configparser
-from distutils import sysconfig # DO NOT CHANGE to sysconfig - see #1230
 import fnmatch
 import getpass
 import glob
@@ -21,6 +20,7 @@ import sys
 import threading
 import _thread as thread
 import time
+import locations
 
 SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -2195,7 +2195,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         # On macOS, search for the Python framework directory matching the
         # version number of our current Python version.
         sysroot = SDK.get("MACOSX", "")
-        version = sysconfig.get_python_version()
+        version = locations.get_python_version()
 
         py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
 
@@ -2220,19 +2220,19 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
-    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
-    #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+    #    SDK["PYTHON"] = os.path.dirname(locations.get_python_inc())
+    #    SDK["PYTHONVERSION"] = "python" + locations.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
-        SDK["PYTHON"] = sysconfig.get_python_inc()
-        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
+        SDK["PYTHON"] = locations.get_python_inc()
+        SDK["PYTHONVERSION"] = "python" + locations.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
     if CrossCompiling():
         # We need a version of Python we can run.
         SDK["PYTHONEXEC"] = sys.executable
-        host_version = "python" + sysconfig.get_python_version() + abiflags
+        host_version = "python" + locations.get_python_version() + abiflags
         if SDK["PYTHONVERSION"] != host_version:
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
@@ -3386,7 +3386,7 @@ def GetExtensionSuffix():
 
 def GetPythonABI():
     if not CrossCompiling():
-        soabi = sysconfig.get_config_var('SOABI')
+        soabi = locations.get_config_var('SOABI')
         if soabi:
             return soabi
 
@@ -3507,8 +3507,8 @@ def GetCurrentPythonVersionInfo():
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
-        "purelib": sysconfig.get_python_lib(False),
-        "platlib": sysconfig.get_python_lib(True),
+        "purelib": locations.get_python_lib(False),
+        "platlib": locations.get_python_lib(True),
     }
 
 

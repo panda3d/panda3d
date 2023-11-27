@@ -1,22 +1,82 @@
+import pytest
 from panda3d import core
 from direct.task import Task
 
 
-def test_TaskManager():
-    tm = Task.TaskManager()
-    tm.mgr = core.AsyncTaskManager("Test manager")
-    tm.setClock(core.ClockObject())
-    tm.setupTaskChain("default", tickClock = True)
+TASK_NAME = 'Arbitrary task name'
+TASK_CHAIN_NAME = 'Arbitrary task chain name'
 
-    tm._startTrackingMemLeaks = lambda: None
-    tm._stopTrackingMemLeaks = lambda: None
-    tm._checkMemLeaks = lambda: None
 
-    # check for memory leaks after every test
-    tm._startTrackingMemLeaks()
-    tm._checkMemLeaks()
+def DUMMY_FUNCTION(*_):
+    pass
 
+
+@pytest.fixture
+def task_manager():
+    manager = Task.TaskManager()
+    manager.mgr = core.AsyncTaskManager('Test manager')
+    manager.clock = core.ClockObject()
+    manager.setupTaskChain('default', tickClock=True)
+    manager.finalInit()
+    yield manager
+    manager.destroy()
+
+
+def test_sequence(task_manager):
+    numbers = []
+
+    def append_1(task):
+        numbers.append(1)
+
+    def append_2(task):
+        numbers.append(2)
+
+    sequence = Task.sequence(core.PythonTask(append_1), core.PythonTask(append_2))
+    task_manager.add(sequence)
+    for _ in range(3):
+        task_manager.step()
+    assert not task_manager.getTasks()
+    assert numbers == [1, 2]
+
+
+def test_loop(task_manager):
+    numbers = []
+
+    def append_1(task):
+        numbers.append(1)
+
+    def append_2(task):
+        numbers.append(2)
+
+    loop = Task.loop(core.PythonTask(append_1), core.PythonTask(append_2))
+    task_manager.add(loop)
+    for _ in range(5):
+        task_manager.step()
+    assert numbers == [1, 2, 1, 2]
+
+
+def test_get_current_task(task_manager):
+    def check_current_task(task):
+        assert task_manager.getCurrentTask().name == TASK_NAME
+
+    task_manager.add(check_current_task, TASK_NAME)
+    assert len(task_manager.getTasks()) == 1
+    assert task_manager.getCurrentTask() is None
+
+    task_manager.step()
+    assert len(task_manager.getTasks()) == 0
+    assert task_manager.getCurrentTask() is None
+
+
+def test_has_task_chain(task_manager):
+    assert not task_manager.hasTaskChain(TASK_CHAIN_NAME)
+    task_manager.setupTaskChain(TASK_CHAIN_NAME)
+    assert task_manager.hasTaskChain(TASK_CHAIN_NAME)
+
+
+def test_done(task_manager):
     # run-once task
+    tm = task_manager
     l = []
 
     def _testDone(task, l=l):
@@ -27,28 +87,31 @@ def test_TaskManager():
     assert len(l) == 1
     tm.step()
     assert len(l) == 1
-    _testDone = None
-    tm._checkMemLeaks()
 
+
+def test_remove_by_name(task_manager):
     # remove by name
+    tm = task_manager
     def _testRemoveByName(task):
         return task.done
     tm.add(_testRemoveByName, 'testRemoveByName')
     assert tm.remove('testRemoveByName') == 1
     assert tm.remove('testRemoveByName') == 0
-    _testRemoveByName = None
-    tm._checkMemLeaks()
 
+
+def test_duplicate_named_tasks(task_manager):
     # duplicate named tasks
+    tm = task_manager
     def _testDupNamedTasks(task):
         return task.done
     tm.add(_testDupNamedTasks, 'testDupNamedTasks')
     tm.add(_testDupNamedTasks, 'testDupNamedTasks')
     assert tm.remove('testRemoveByName') == 0
-    _testDupNamedTasks = None
-    tm._checkMemLeaks()
 
+
+def test_continued_task(task_manager):
     # continued task
+    tm = task_manager
     l = []
 
     def _testCont(task, l = l):
@@ -60,10 +123,11 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 2
     tm.remove('testCont')
-    _testCont = None
-    tm._checkMemLeaks()
 
+
+def test_continue_until_done(task_manager):
     # continue until done task
+    tm = task_manager
     l = []
 
     def _testContDone(task, l = l):
@@ -80,20 +144,22 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 2
     assert not tm.hasTaskNamed('testContDone')
-    _testContDone = None
-    tm._checkMemLeaks()
 
+
+def test_has_task_named(task_manager):
     # hasTaskNamed
+    tm = task_manager
     def _testHasTaskNamed(task):
         return task.done
     tm.add(_testHasTaskNamed, 'testHasTaskNamed')
     assert tm.hasTaskNamed('testHasTaskNamed')
     tm.step()
     assert not tm.hasTaskNamed('testHasTaskNamed')
-    _testHasTaskNamed = None
-    tm._checkMemLeaks()
 
+
+def test_task_sort(task_manager):
     # task sort
+    tm = task_manager
     l = []
 
     def _testPri1(task, l = l):
@@ -113,11 +179,11 @@ def test_TaskManager():
     assert l == [1, 2, 1, 2,]
     tm.remove('testPri1')
     tm.remove('testPri2')
-    _testPri1 = None
-    _testPri2 = None
-    tm._checkMemLeaks()
 
+
+def test_extra_args(task_manager):
     # task extraArgs
+    tm = task_manager
     l = []
 
     def _testExtraArgs(arg1, arg2, l=l):
@@ -127,10 +193,11 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 2
     assert l == [4, 5,]
-    _testExtraArgs = None
-    tm._checkMemLeaks()
 
+
+def test_append_task(task_manager):
     # task appendTask
+    tm = task_manager
     l = []
 
     def _testAppendTask(arg1, arg2, task, l=l):
@@ -140,10 +207,11 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 2
     assert l == [4, 5,]
-    _testAppendTask = None
-    tm._checkMemLeaks()
 
+
+def test_task_upon_death(task_manager):
     # task uponDeath
+    tm = task_manager
     l = []
 
     def _uponDeathFunc(task, l=l):
@@ -155,11 +223,11 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 1
     assert l == ['testUponDeath']
-    _testUponDeath = None
-    _uponDeathFunc = None
-    tm._checkMemLeaks()
 
+
+def test_task_owner(task_manager):
     # task owner
+    tm = task_manager
     class _TaskOwner:
         def _addTask(self, task):
             self.addedTaskName = task.name
@@ -175,11 +243,10 @@ def test_TaskManager():
     tm.step()
     assert getattr(to, 'addedTaskName', None) == 'testOwner'
     assert getattr(to, 'clearedTaskName', None) == 'testOwner'
-    _testOwner = None
-    del to
-    _TaskOwner = None
-    tm._checkMemLeaks()
 
+
+def test_do_laters(task_manager):
+    tm = task_manager
     doLaterTests = [0,]
 
     # doLater
@@ -205,8 +272,6 @@ def test_TaskManager():
     _testDoLater1 = None
     _testDoLater2 = None
     _monitorDoLater = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # doLater sort
     l = []
@@ -231,8 +296,6 @@ def test_TaskManager():
     _testDoLaterPri1 = None
     _testDoLaterPri2 = None
     _monitorDoLaterPri = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # doLater extraArgs
     l = []
@@ -252,8 +315,6 @@ def test_TaskManager():
     tm.add(_monitorDoLaterExtraArgs, 'monitorDoLaterExtraArgs', sort=10)
     _testDoLaterExtraArgs = None
     _monitorDoLaterExtraArgs = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # doLater appendTask
     l = []
@@ -275,8 +336,6 @@ def test_TaskManager():
     tm.add(_monitorDoLaterAppendTask, 'monitorDoLaterAppendTask', sort=10)
     _testDoLaterAppendTask = None
     _monitorDoLaterAppendTask = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # doLater uponDeath
     l = []
@@ -302,8 +361,6 @@ def test_TaskManager():
     _testUponDeathFunc = None
     _testDoLaterUponDeath = None
     _monitorDoLaterUponDeath = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # doLater owner
     class _DoLaterOwner:
@@ -335,15 +392,15 @@ def test_TaskManager():
     _monitorDoLaterOwner = None
     del doLaterOwner
     _DoLaterOwner = None
-    # don't check until all the doLaters are finished
-    #tm._checkMemLeaks()
 
     # run the doLater tests
     while doLaterTests[0] > 0:
         tm.step()
     del doLaterTests
-    tm._checkMemLeaks()
 
+
+def test_get_tasks(task_manager):
+    tm = task_manager
     # getTasks
     def _testGetTasks(task):
         return task.cont
@@ -361,9 +418,10 @@ def test_TaskManager():
     tm.remove('testGetTasks1')
     tm.remove('testGetTasks3')
     assert len(tm.getTasks()) == 0
-    _testGetTasks = None
-    tm._checkMemLeaks()
 
+
+def test_get_do_laters(task_manager):
+    tm = task_manager
     # getDoLaters
     def _testGetDoLaters():
         pass
@@ -379,9 +437,18 @@ def test_TaskManager():
     tm.remove('testDoLater1')
     tm.remove('testDoLater3')
     assert len(tm.getDoLaters()) == 0
-    _testGetDoLaters = None
-    tm._checkMemLeaks()
 
+
+def test_get_all_tasks(task_manager):
+    active_task = task_manager.add(DUMMY_FUNCTION, delay=None)
+    sleeping_task = task_manager.add(DUMMY_FUNCTION, delay=1)
+    assert task_manager.getTasks() == [active_task]
+    assert task_manager.getDoLaters() == [sleeping_task]
+    assert task_manager.getAllTasks() in ([active_task, sleeping_task], [sleeping_task, active_task])
+
+
+def test_duplicate_named_do_laters(task_manager):
+    tm = task_manager
     # duplicate named doLaters removed via taskMgr.remove
     def _testDupNameDoLaters():
         pass
@@ -391,9 +458,10 @@ def test_TaskManager():
     assert len(tm.getDoLaters()) == 2
     tm.remove('testDupNameDoLater')
     assert len(tm.getDoLaters()) == 0
-    _testDupNameDoLaters = None
-    tm._checkMemLeaks()
 
+
+def test_duplicate_named_do_laters_remove(task_manager):
+    tm = task_manager
     # duplicate named doLaters removed via remove()
     def _testDupNameDoLatersRemove():
         pass
@@ -405,10 +473,10 @@ def test_TaskManager():
     assert len(tm.getDoLaters()) == 1
     dl1.remove()
     assert len(tm.getDoLaters()) == 0
-    _testDupNameDoLatersRemove = None
-    # nameDict etc. isn't cleared out right away with task.remove()
-    tm._checkMemLeaks()
 
+
+def test_get_tasks_named(task_manager):
+    tm = task_manager
     # getTasksNamed
     def _testGetTasksNamed(task):
         return task.cont
@@ -421,9 +489,20 @@ def test_TaskManager():
     assert len(tm.getTasksNamed('testGetTasksNamed')) == 3
     tm.remove('testGetTasksNamed')
     assert len(tm.getTasksNamed('testGetTasksNamed')) == 0
-    _testGetTasksNamed = None
-    tm._checkMemLeaks()
 
+
+def test_get_tasks_matching(task_manager):
+    task_manager.add(DUMMY_FUNCTION, 'task_1')
+    task_manager.add(DUMMY_FUNCTION, 'task_2')
+    task_manager.add(DUMMY_FUNCTION, 'another_task')
+
+    assert len(task_manager.getTasksMatching('task_?')) == 2
+    assert len(task_manager.getTasksMatching('*_task')) == 1
+    assert len(task_manager.getTasksMatching('*task*')) == 3
+
+
+def test_remove_tasks_matching(task_manager):
+    tm = task_manager
     # removeTasksMatching
     def _testRemoveTasksMatching(task):
         return task.cont
@@ -445,9 +524,10 @@ def test_TaskManager():
     tm.removeTasksMatching('testRemoveTasksMatching?a')
     assert len(tm.getTasksNamed('testRemoveTasksMatching1a')) == 0
     assert len(tm.getTasksNamed('testRemoveTasksMatching2a')) == 0
-    _testRemoveTasksMatching = None
-    tm._checkMemLeaks()
 
+
+def test_task_obj(task_manager):
+    tm = task_manager
     # create Task object and add to mgr
     l = []
 
@@ -463,9 +543,10 @@ def test_TaskManager():
     tm.remove('testTaskObj')
     tm.step()
     assert len(l) == 2
-    _testTaskObj = None
-    tm._checkMemLeaks()
 
+
+def test_task_remove(task_manager):
+    tm = task_manager
     # remove Task via task.remove()
     l = []
 
@@ -482,9 +563,10 @@ def test_TaskManager():
     tm.step()
     assert len(l) == 2
     del t
-    _testTaskObjRemove = None
-    tm._checkMemLeaks()
 
+
+def test_task_get_sort(task_manager):
+    tm = task_manager
     # set/get Task sort
     l = []
     def _testTaskObjSort(arg, task, l=l):
@@ -508,11 +590,3 @@ def test_TaskManager():
     t2.remove()
     tm.step()
     assert len(l) == 4
-    del t1
-    del t2
-    _testTaskObjSort = None
-    tm._checkMemLeaks()
-
-    del l
-    tm.destroy()
-    del tm

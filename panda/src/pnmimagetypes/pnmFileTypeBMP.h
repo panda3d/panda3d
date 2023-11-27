@@ -55,6 +55,7 @@ public:
     unsigned long offBits;
 
     unsigned short  cBitCount;
+    unsigned short  cCompression;
     int             indexed;
     int             classv;
 

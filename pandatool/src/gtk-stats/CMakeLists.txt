@@ -34,7 +34,7 @@ target_link_libraries(gtk-stats p3progbase p3pstatserver PKG::GTK3)
 
 # This program is NOT actually called gtk-stats. It's pstats-gtk on Win32 and
 # pstats everywhere else (as the Win32 GUI is not built).
-if(WIN32)
+if(WIN32 OR APPLE)
   set_target_properties(gtk-stats PROPERTIES OUTPUT_NAME "pstats-gtk")
 else()
   set_target_properties(gtk-stats PROPERTIES OUTPUT_NAME "pstats")

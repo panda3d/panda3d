@@ -99,7 +99,6 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
   int success;
   DisplayInformation::DetectionState state;
-  int get_adapter_display_mode_state;
   int get_device_caps_state;
 
   GraphicsStateGuardian::ShaderModel shader_model;
@@ -117,6 +116,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   int window_height;
   int window_bits_per_pixel;
   int total_display_modes;
+  int current_display_mode_index;
   DisplayMode *display_mode_array;
 
   uint64_t physical_memory;
@@ -139,6 +139,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   window_height = 0;
   window_bits_per_pixel = 0;
   total_display_modes = 0;
+  current_display_mode_index = -1;
   display_mode_array = nullptr;
 
   minimum_width = display_search_parameters._minimum_width;
@@ -153,7 +154,6 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   texture_memory = 0;
 
   state = DisplayInformation::DS_unknown;
-  get_adapter_display_mode_state = false;
   get_device_caps_state = false;
 
   physical_memory = 0;
@@ -193,6 +193,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
         device_type = D3DDEVTYPE_HAL;
 
         // windowed mode max res and format
+        bool get_adapter_display_mode_state = false;
         if (direct_3d -> GetAdapterDisplayMode (adapter, &current_d3d_display_mode) == D3D_OK) {
           if (debug) {
             printf ("current mode  w = %d h = %d r = %d f = %d \n",
@@ -428,6 +429,14 @@ static int get_display_information (DisplaySearchParameters &display_search_para
                       display_mode -> refresh_rate = d3d_display_mode.RefreshRate;
                       display_mode -> fullscreen_only = display_format_array [format_index].fullscreen_only;
 
+                      if (get_adapter_display_mode_state &&
+                          d3d_display_mode.Width == current_d3d_display_mode.Width &&
+                          d3d_display_mode.Height == current_d3d_display_mode.Height &&
+                          d3d_display_mode.RefreshRate == current_d3d_display_mode.RefreshRate &&
+                          d3d_display_mode.Format == current_d3d_display_mode.Format) {
+                        current_display_mode_index = total_display_modes;
+                      }
+
                       total_display_modes++;
                     }
                   }
@@ -587,7 +596,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
   if (success) {
     display_information -> _state = state;
-    display_information -> _get_adapter_display_mode_state = get_adapter_display_mode_state;
+    display_information -> _current_display_mode_index = current_display_mode_index;
     display_information -> _get_device_caps_state = get_device_caps_state;
     display_information -> _maximum_window_width = window_width;
     display_information -> _maximum_window_height = window_height;

@@ -32,6 +32,11 @@ ConfigVariableBool cocoa_invert_wheel_x
 ("cocoa-invert-wheel-x", false,
  PRC_DESC("Set this to true to swap the wheel_left and wheel_right mouse "
           "button events, to restore to the pre-1.10.12 behavior."));
+ConfigVariableBool dpi_aware
+("dpi-aware", false,
+ PRC_DESC("The default behavior on macOS is for Panda3D to use upscaling on"
+          "high DPI screen. Set this to true to let the application use the"
+          "actual pixel density of the screen."));
 
 /**
  * Initializes the library.  This must be called at least once before any of

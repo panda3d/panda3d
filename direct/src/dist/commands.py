@@ -13,7 +13,6 @@ import re
 import shutil
 import stat
 import struct
-import imp
 import string
 import tempfile
 
@@ -55,10 +54,16 @@ def _register_python_loaders():
 
     _register_python_loaders.done = True
 
-    registry = p3d.LoaderFileTypeRegistry.getGlobalPtr()
+    from importlib.metadata import entry_points
 
-    import pkg_resources
-    for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+    eps = entry_points()
+    if isinstance(eps, dict): # Python 3.8 and 3.9
+        loaders = eps.get('panda3d.loaders', ())
+    else:
+        loaders = eps.select(group='panda3d.loaders')
+
+    registry = p3d.LoaderFileTypeRegistry.get_global_ptr()
+    for entry_point in loaders:
         registry.register_deferred_type(entry_point)
 
 
@@ -717,6 +722,7 @@ class build_apps(setuptools.Command):
             'CFBundlePackageType': 'APPL',
             'CFBundleSignature': '', #TODO
             'CFBundleExecutable': self.macos_main_app,
+            'NSHighResolutionCapable': 'True',
         }
 
         icon = self.icon_objects.get(
@@ -1067,7 +1073,7 @@ class build_apps(setuptools.Command):
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
             for suffix in freezer.mf.suffixes:
-                if suffix[2] == imp.C_EXTENSION:
+                if suffix[2] == 3: # imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
 
         for appname, scriptname in self.gui_apps.items():
@@ -1698,7 +1704,7 @@ class bdist_apps(setuptools.Command):
             setattr(self, opt, None)
 
     def finalize_options(self):
-        import pkg_resources
+        from importlib.metadata import entry_points
 
         # We need to massage the inputs a bit in case they came from a
         # setup.cfg file.
@@ -1712,11 +1718,17 @@ class bdist_apps(setuptools.Command):
             self.signing_certificate = os.path.abspath(self.signing_certificate)
             self.signing_private_key = os.path.abspath(self.signing_private_key)
 
+        eps = entry_points()
+        if isinstance(eps, dict): # Python 3.8 and 3.9
+            installer_eps = eps.get('panda3d.bdist_apps.installers', ())
+        else:
+            installer_eps = eps.select(group='panda3d.bdist_apps.installers')
+
         tmp = self.DEFAULT_INSTALLER_FUNCS.copy()
         tmp.update(self.installer_functions)
         tmp.update({
             entrypoint.name: entrypoint.load()
-            for entrypoint in pkg_resources.iter_entry_points('panda3d.bdist_apps.installers')
+            for entrypoint in installer_eps
         })
         self.installer_functions = tmp
 

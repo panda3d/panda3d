@@ -92,19 +92,7 @@ BMPlenrgbtable(int classv, unsigned long bitcount)
                 pm_error(er_internal, "BMPlenrgbtable");
                 return 0;
         }
-        switch (classv)
-        {
-        case C_WIN:
-                lenrgb = 4;
-                break;
-        case C_OS2:
-                lenrgb = 3;
-                break;
-        default:
-                pm_error(er_internal, "BMPlenrgbtable");
-                return 0;
-        }
-
+        lenrgb = (classv == C_OS2) ? 3 : 4;
         return (1 << bitcount) * lenrgb;
 }
 

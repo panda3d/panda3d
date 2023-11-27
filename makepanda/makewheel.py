@@ -11,10 +11,11 @@ import tempfile
 import subprocess
 import time
 import struct
-from sysconfig import get_platform, get_config_var
 from optparse import OptionParser
 from base64 import urlsafe_b64encode
 from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue, CrossCompiling, GetThirdpartyDir, SDK, GetStrip
+from locations import get_config_var
+from sysconfig import get_platform
 
 
 def get_abi_tag():

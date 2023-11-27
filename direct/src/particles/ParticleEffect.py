@@ -97,7 +97,7 @@ class ParticleEffect(NodePath):
     def addForceGroup(self, forceGroup):
         forceGroup.nodePath.reparentTo(self)
         forceGroup.particleEffect = self
-        self.forceGroupDict[forceGroup.getName()] = forceGroup
+        self.forceGroupDict[forceGroup.name] = forceGroup
 
         # Associate the force group with all particles
         for force in forceGroup:

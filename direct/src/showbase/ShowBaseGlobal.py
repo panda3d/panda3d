@@ -19,9 +19,10 @@ from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager, ConfigVariableBool
 from panda3d.core import NodePath, PGTop
 from . import DConfig as config # pylint: disable=unused-import
+from .Loader import Loader
 import warnings
 
-__dev__ = ConfigVariableBool('want-dev', __debug__).value
+__dev__: bool = ConfigVariableBool('want-dev', __debug__).value
 
 base: ShowBase
 
@@ -60,6 +61,8 @@ aspect2d = render2d.attachNewNode(PGTop("aspect2d"))
 
 #: A dummy scene graph that is not being rendered by anything.
 hidden = NodePath("hidden")
+
+loader: Loader
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()

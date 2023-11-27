@@ -120,16 +120,16 @@ jobs:
       uses: actions/cache@v1
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.13-r1
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.14-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.13/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)
@@ -308,6 +308,38 @@ jobs:
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
+    - name: Setup Python (Python 3.12)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Configure (Python 3.12)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.12 -DHAVE_PYTHON=YES
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+    - name: Build (Python 3.12)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.12)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+      # END B
+
     - name: Upload coverage reports
       if: always() && matrix.config == 'Coverage'
       working-directory: build
@@ -343,9 +375,9 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.13/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -354,6 +386,20 @@ jobs:
         mv panda3d-1.10.14/thirdparty thirdparty
         rmdir panda3d-1.10.14
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Build Python 3.12
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+    - name: Test Python 3.12
+      shell: bash
+      run: |
+        python -m pip install -r requirements-test.txt
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
@@ -367,7 +413,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
@@ -381,7 +427,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
@@ -395,7 +441,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v4
@@ -409,7 +455,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Make installer
       run: |

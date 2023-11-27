@@ -232,9 +232,6 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
 
     if ((to_x - from_x) >= scale * 4) {
       // Only bother drawing the text if we've got some space to draw on.
-      const PStatClientData *client_data = monitor->get_client_data();
-      const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
-
       const CFStringRef keys[] = {
         (__bridge CFStringRef)NSForegroundColorAttributeName,
         (__bridge CFStringRef)NSFontAttributeName,
@@ -245,7 +242,7 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
       };
       CFDictionaryRef attribs = CFDictionaryCreate(kCFAllocatorDefault, (const void **)keys, (const void **)values, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
-      CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, def._name.c_str(), kCFStringEncodingUTF8);
+      CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, collector_name.c_str(), kCFStringEncodingUTF8);
       CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
 
       CTLineRef line = CTLineCreateWithAttributedString(astr);
@@ -260,23 +257,43 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
       double text_left = std::max(from_x, 0) + scale / 2.0;
       double text_right = std::min(to_x, get_xsize()) - scale / 2.0;
       double text_top = top + (bottom - top - text_height) / 2.0 + text_height;
-/*
+
       if (text_width >= text_right - text_left) {
         size_t c = collector_name.rfind(':');
         if (text_right - text_left < scale * 6) {
           // It's a really tiny space.  Draw a single letter.
-          const char *ch = collector_name.data() + (c != std::string::npos ? c + 1 : 0);
-          pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-          pango_layout_set_text(layout, ch, 1);
-        } else {
+          UniChar ch = *(collector_name.data() + (c != std::string::npos ? c + 1 : 0));
+
+          CFStringRef str = CFStringCreateWithCharacters(kCFAllocatorDefault, &ch, 1);
+          CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
+
+          CTLineRef new_line = CTLineCreateWithAttributedString((CFAttributedStringRef)astr);
+          bounds = CTLineGetImageBounds(new_line, _ctx);
+          text_width = bounds.size.width;
+
+          CFRelease(line);
+          CFRelease(astr);
+          CFRelease(str);
+          line = new_line;
+        }
+        else {
           // Maybe just use everything after the last colon.
           if (c != std::string::npos) {
-            pango_layout_set_text(layout, collector_name.data() + c + 1,
-                                          collector_name.size() - c - 1);
-            pango_layout_get_pixel_size(layout, &text_width, &text_height);
+            const char *short_name = collector_name.data() + c + 1;
+            CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, short_name, kCFStringEncodingUTF8);
+            CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
+
+            CTLineRef new_line = CTLineCreateWithAttributedString((CFAttributedStringRef)astr);
+            bounds = CTLineGetImageBounds(new_line, _ctx);
+            text_width = bounds.size.width;
+
+            CFRelease(line);
+            CFRelease(astr);
+            CFRelease(str);
+            line = new_line;
           }
         }
-      }*/
+      }
 
       if (text_width >= text_right - text_left) {
         // Have CoreText truncate to the correct length.

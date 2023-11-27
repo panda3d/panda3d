@@ -1570,8 +1570,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             bind._func = Shader::SMF_compose;
             bind._part[0] = Shader::SMO_model_to_apiview;
             bind._arg[0] = nullptr;
-            bind._part[1] = Shader::SMO_apiview_to_apiclip_light_source_i;
-            bind._arg[1] = nullptr;
+            bind._part[1] = Shader::SMO_mat_constant_x_attrib;
+            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
           } else {
             bind._part[0] = Shader::SMO_mat_constant_x_attrib;
             bind._arg[0] = InternalName::make(param_name);

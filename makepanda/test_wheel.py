@@ -41,7 +41,7 @@ def test_wheel(wheel, verbose=False):
     if sys.version_info >= (3, 10):
         packages += ["pytest>=6.2.4"]
     else:
-        packages += ["pytest"]
+        packages += ["pytest>=3.9.0"]
 
     if sys.version_info[0:2] == (3, 4):
         if sys.platform == "win32":
@@ -49,6 +49,9 @@ def test_wheel(wheel, verbose=False):
 
         # See https://github.com/python-attrs/attrs/pull/807
         packages += ["attrs<21"]
+
+    if sys.version_info >= (3, 12):
+        packages += ["setuptools"]
 
     if subprocess.call([python, "-m", "pip", "install"] + packages) != 0:
         shutil.rmtree(envdir)
@@ -59,7 +62,22 @@ def test_wheel(wheel, verbose=False):
     if verbose:
         test_cmd.append("--verbose")
 
-    exit_code = subprocess.call(test_cmd)
+    # Put the location of the python DLL on the path, for deploy-stub test
+    # This is needed because venv does not install a copy of the python DLL
+    env = None
+    if sys.platform == "win32":
+        deploy_libs = os.path.join(envdir, "Lib", "site-packages", "deploy_libs")
+        if os.path.isdir(deploy_libs):
+            # We have to do this dance because os.environ is case insensitive
+            env = dict(os.environ)
+            for key, value in env.items():
+                if key.upper() == "PATH":
+                    env[key] = deploy_libs + ";" + value
+                    break
+            else:
+                env["PATH"] = deploy_libs
+
+    exit_code = subprocess.call(test_cmd, env=env)
     shutil.rmtree(envdir)
 
     if exit_code != 0:

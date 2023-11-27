@@ -28,21 +28,6 @@
 #define NSAppKitVersionNumber10_7 1138
 #endif
 
-/**
- * Called whenever a display wants a frame.  The context argument contains the
- * applicable CocoaGLGraphicsStateGuardian.
- */
-static CVReturn
-display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
-                const CVTimeStamp* output_time, CVOptionFlags flags_in,
-                CVOptionFlags *flags_out, void *context) {
-  CocoaGLGraphicsStateGuardian *gsg = (CocoaGLGraphicsStateGuardian *)context;
-  gsg->_swap_lock.lock();
-  gsg->_swap_condition.notify();
-  gsg->_swap_lock.unlock();
-  return kCVReturnSuccess;
-}
-
 TypeHandle CocoaGLGraphicsStateGuardian::_type_handle;
 
 /**
@@ -51,8 +36,7 @@ TypeHandle CocoaGLGraphicsStateGuardian::_type_handle;
 CocoaGLGraphicsStateGuardian::
 CocoaGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGLGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(engine, pipe),
-  _swap_condition(_swap_lock)
+  GLGraphicsStateGuardian(engine, pipe)
 {
   _share_context = nil;
   _context = nil;
@@ -71,55 +55,10 @@ CocoaGLGraphicsStateGuardian::
   if (_format != nil) {
     [_format release];
   }
-  if (_display_link != nil) {
-    CVDisplayLinkRelease(_display_link);
-    _display_link = nil;
-    _swap_lock.lock();
-    _swap_condition.notify();
-    _swap_lock.unlock();
-  }
   if (_context != nil) {
     [_context clearDrawable];
     [_context release];
   }
-}
-
-/**
- * Creates a CVDisplayLink, which tells us when the display the window is on
- * will want a frame.
- */
-bool CocoaGLGraphicsStateGuardian::
-setup_vsync() {
-  if (_display_link != nil) {
-    // Already set up.
-    return true;
-  }
-
-  CVReturn result = CVDisplayLinkCreateWithActiveCGDisplays(&_display_link);
-  if (result != kCVReturnSuccess) {
-    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.\n";
-    return false;
-  }
-
-  result = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(_display_link, (CGLContextObj)[_context CGLContextObj], (CGLPixelFormatObj)[_format CGLPixelFormatObj]);
-  if (result != kCVReturnSuccess) {
-    cocoadisplay_cat.error() << "Failed to set CVDisplayLink's current display.\n";
-    return false;
-  }
-
-  result = CVDisplayLinkSetOutputCallback(_display_link, &display_link_cb, this);
-  if (result != kCVReturnSuccess) {
-    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.\n";
-    return false;
-  }
-
-  result = CVDisplayLinkStart(_display_link);
-  if (result != kCVReturnSuccess) {
-    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.\n";
-    return false;
-  }
-
-  return true;
 }
 
 /**
@@ -248,6 +187,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(aux_buffers);
   attribs.push_back(NSOpenGLPFAColorSize);
   attribs.push_back(properties.get_color_bits());
+
+  if (properties.get_float_color()) {
+    attribs.push_back(NSOpenGLPFAColorFloat);
+  }
 
   // Set the depth buffer bits to 24 manually when 1 is requested.
   // This prevents getting a depth buffer of only 16 bits when requesting 1.
