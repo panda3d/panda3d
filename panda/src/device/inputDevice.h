@@ -25,7 +25,6 @@
 #include "pointerData.h"
 #include "trackerData.h"
 #include "clockObject.h"
-#include "inputDeviceNodeRecorder.h"
 
 #include "pdeque.h"
 #include "pvector.h"
