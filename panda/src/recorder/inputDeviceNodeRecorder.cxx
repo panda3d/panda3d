@@ -111,7 +111,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     _live_button_events->add_events(*_save_button_events);
     _save_button_events->clear();
 
-    // Disable updates af axis values from the connected InputDevice
+    // Disable updates of axis values from the connected InputDevice
     _device->enable_axis_updates(false);
 
     // Set the recorded axis values on the InputDevice
