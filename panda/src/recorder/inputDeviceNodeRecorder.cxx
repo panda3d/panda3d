@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file InputDeviceNodeRecorder.cxx
+ * @file inputDeviceNodeRecorder.cxx
  * @author jb
  * @date 2023-10-10
  */
