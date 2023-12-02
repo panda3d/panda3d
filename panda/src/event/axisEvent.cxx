@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file AxisEvent.cxx
+ * @file axisEvent.cxx
  * @author jb
  * @date 2023-11-24
  */
