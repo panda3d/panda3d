@@ -408,7 +408,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  bool _axis_update_enabled;
+  bool _axis_update_enabled = true;
 
   friend class InputDeviceNodeRecorder;
 };
