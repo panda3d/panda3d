@@ -109,8 +109,8 @@ private:
 
   struct ImageInput {
     CPT(InternalName) _name;
-    CLP(TextureContext) *_gtc;
-    bool _writable;
+    CLP(TextureContext) *_gtc = nullptr;
+    bool _writable = false;
   };
   pvector<ImageInput> _glsl_img_inputs;
 
