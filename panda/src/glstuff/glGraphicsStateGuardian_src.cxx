@@ -13287,7 +13287,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         GLCAT.debug()
           << "allocating storage for texture " << tex->get_name() << ", " << width
            << " x " << height << " x " << depth << ", mipmaps " << num_levels
-          << ", uses_mipmaps = " << uses_mipmaps << "\n";
+          << ", uses_mipmaps = " << uses_mipmaps << ", internal_format = 0x"
+          << std::hex << internal_format << std::dec << "\n";
       }
 
       switch (texture_type) {
