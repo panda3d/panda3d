@@ -357,6 +357,7 @@ jobs:
   makepanda:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04, windows-2019, macOS-11]
     runs-on: ${{ matrix.os }}
