@@ -230,7 +230,7 @@ make_recorder(const FactoryParams &params) {
   MouseRecorder *node = new MouseRecorder("");
   BamReaderParam *param = DCAST(BamReaderParam, params.get_param(0));
 
-  node->fillin_recorder((DatagramIterator &)param->get_iterator(), param->get_manager());
+  node->fillin_recorder(param->get_iterator(), param->get_manager());
 
   return node;
 }
