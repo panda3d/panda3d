@@ -471,8 +471,10 @@ class build_apps(setuptools.Command):
         if self.bam_model_extensions:
             for ext in self.bam_model_extensions:
                 ext = '.' + ext.lstrip('.')
-                assert ext not in self.file_handlers, \
-                    'Extension {} occurs in both file_handlers and bam_model_extensions!'.format(ext)
+                handler = self.file_handlers.get(ext)
+                if handler != _model_to_bam:
+                    assert handler is None, \
+                        'Extension {} occurs in both file_handlers and bam_model_extensions!'.format(ext)
                 self.file_handlers[ext] = _model_to_bam
 
         tmp = self.default_file_handlers.copy()

@@ -69,7 +69,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
       const ButtonEvent &event = bel->get_event(i);
       if (event._type == ButtonEvent::T_down) {
         _button_states[event._button] = true;
-      } else if (event._type == ButtonEvent::T_down) {
+      } else if (event._type == ButtonEvent::T_up) {
         _button_states[event._button] = false;
       }
     }

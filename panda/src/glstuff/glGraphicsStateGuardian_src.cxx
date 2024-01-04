@@ -3178,7 +3178,7 @@ reset() {
   _max_image_units = 0;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
-  if (is_at_least_gl_version(3, 1)) {
+  if (is_at_least_gles_version(3, 1) && gl_immutable_texture_storage) {
 #else
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
 #endif
@@ -14284,7 +14284,8 @@ upload_texture_image(CLP(TextureContext) *gtc, int view, bool needs_reload,
         GLCAT.debug()
           << "allocating storage for texture " << tex->get_name() << ", "
           << width << " x " << height << " x " << depth << ", mipmaps "
-          << num_levels << "\n";
+          << num_levels << ", internal_format = 0x" << std::hex
+          << internal_format << std::dec << "\n";
       }
 
       switch (texture_type) {
