@@ -2436,13 +2436,13 @@ write_module_class(ostream &out, Object *obj) {
           out << "  if (arg2 != nullptr && arg2 != Py_None) {\n";
           out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
           if (!write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
-                                     true, true, AT_varargs, RF_pyobject | RF_err_null | RF_decref_args, true)) {
+                                     true, true, AT_varargs, return_flags | RF_decref_args, true)) {
             always_returns = false;
           }
           out << "    Py_DECREF(args);\n";
           out << "  } else {\n";
           if (!write_function_forset(out, one_param_remaps, 1, 1, expected_params, 4,
-                                     true, true, AT_single_arg, RF_pyobject | RF_err_null, true)) {
+                                     true, true, AT_single_arg, return_flags, true)) {
             always_returns = false;
           }
           out << "  }\n\n";
@@ -6132,9 +6132,15 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     // The general case; an ordinary constructor or function.
     return_expr = remap->call_function(out, indent_level, true, container, pexprs);
 
-    if (return_flags & RF_self) {
-      // We won't be using the return value, anyway.
-      return_expr.clear();
+    if ((return_flags & RF_self) != 0) {
+      if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
+        // If the function returns a PyObject *, let it override the default
+        // behavior of returning self.
+        return_flags = (return_flags & ~RF_self) | RF_pyobject;
+      } else {
+        // We won't be using the return value, anyway.
+        return_expr.clear();
+      }
     }
 
     if (!return_expr.empty()) {
