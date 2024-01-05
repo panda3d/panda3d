@@ -151,7 +151,7 @@ private:
   int collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
                               int max_required_args);
 
-  void write_function_forset(std::ostream &out,
+  bool write_function_forset(std::ostream &out,
                              const std::set<FunctionRemap*> &remaps,
                              int min_num_args, int max_num_args,
                              std::string &expected_params, int indent_level,
@@ -161,7 +161,7 @@ private:
                              bool verify_const = true,
                              const std::string &first_expr = std::string());
 
-  void write_function_instance(std::ostream &out, FunctionRemap *remap,
+  bool write_function_instance(std::ostream &out, FunctionRemap *remap,
                                int min_num_args, int max_num_args,
                                std::string &expected_params, int indent_level,
                                bool coercion_allowed, bool report_errors,
