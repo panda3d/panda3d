@@ -1932,12 +1932,7 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
           if (!write_function_forset(out, def._remaps, 0, 0, expected_params, 2, true, true,
                                      AT_no_args, return_flags, false)) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    return Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return nullptr;\n";
+            error_bad_args_return(out, 2, return_flags, expected_params);
           }
           out << "}\n\n";
         }
@@ -1973,12 +1968,7 @@ write_module_class(ostream &out, Object *obj) {
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                 AT_single_arg, RF_err_null | RF_pyobject, false, !all_nonconst);
 
-          out << "  if (!PyErr_Occurred()) {\n";
-          out << "    return Dtool_Raise_BadArgumentsError(\n";
-          output_quoted(out, 6, expected_params);
-          out << ");\n";
-          out << "  }\n";
-          out << "  return nullptr;\n";
+          error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
           out << "}\n\n";
         }
         break;
@@ -2089,13 +2079,7 @@ write_module_class(ostream &out, Object *obj) {
             string expected_params;
             if (!write_function_forset(out, setattr_remaps, 2, 2, expected_params, 4,
                                        true, true, AT_varargs, RF_int | RF_decref_args, true)) {
-              out << "    Py_DECREF(args);\n";
-              out << "    if (!PyErr_Occurred()) {\n";
-              out << "      Dtool_Raise_BadArgumentsError(\n";
-              output_quoted(out, 8, expected_params);
-              out << ");\n";
-              out << "    }\n";
-              out << "    return -1;\n\n";
+              error_bad_args_return(out, 4, RF_int | RF_decref_args, expected_params);
             }
           } else {
             out << "    PyErr_Format(PyExc_TypeError,\n";
@@ -2110,12 +2094,7 @@ write_module_class(ostream &out, Object *obj) {
             string expected_params;
             if (!write_function_forset(out, delattr_remaps, 1, 1, expected_params, 4,
                                        true, true, AT_single_arg, RF_int, true)) {
-              out << "    if (!PyErr_Occurred()) {\n";
-              out << "      Dtool_Raise_BadArgumentsError(\n";
-              output_quoted(out, 8, expected_params);
-              out << ");\n";
-              out << "    }\n";
-              out << "    return -1;\n";
+              error_bad_args_return(out, 4, RF_int | RF_decref_args, expected_params);
             }
           } else {
             out << "    PyErr_Format(PyExc_TypeError,\n";
@@ -2194,12 +2173,7 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
           if (!write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                      AT_no_args, RF_pyobject | RF_err_null, false, true, "index")) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    return Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return nullptr;\n";
+            error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
           }
           out << "}\n\n";
         }
@@ -2256,12 +2230,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           if (!always_returns) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return -1;\n";
+            error_bad_args_return(out, 2, RF_int, expected_params);
           }
           out << "}\n\n";
         }
@@ -2335,12 +2304,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           if (!always_returns) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return -1;\n";
+            error_bad_args_return(out, 2, RF_int, expected_params);
           }
           out << "}\n\n";
         }
@@ -2581,12 +2545,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "  }\n\n";
 
           if (!always_returns) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    return Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return nullptr;\n";
+            error_bad_args_return(out, 2, return_flags, expected_params);
           }
           out << "}\n\n";
         }
@@ -2640,12 +2599,7 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
           if (!write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
                                      AT_single_arg, RF_compare, false, true)) {
-            out << "  if (!PyErr_Occurred()) {\n";
-            out << "    Dtool_Raise_BadArgumentsError(\n";
-            output_quoted(out, 6, expected_params);
-            out << ");\n";
-            out << "  }\n";
-            out << "  return -1;\n";
+            error_bad_args_return(out, 2, RF_int, expected_params);
           }
           out << "}\n\n";
         }
@@ -4043,17 +3997,7 @@ write_function_for_name(ostream &out, Object *obj,
     out << "#endif\n";
     indent(out, 2) << "}\n";
 
-    out << "  if (!PyErr_Occurred()) {\n"
-        << "    ";
-    if ((return_flags & ~RF_pyobject) == RF_err_null) {
-      out << "return ";
-    }
-    out << "Dtool_Raise_BadArgumentsError(\n";
-    output_quoted(out, 6, expected_params);
-    out << ");\n"
-        << "  }\n";
-
-    error_return(out, 2, return_flags);
+    error_bad_args_return(out, 2, return_flags, expected_params);
 
   } else {
     mii = map_sets.begin();
@@ -4117,19 +4061,7 @@ write_function_for_name(ostream &out, Object *obj,
     if (!write_function_forset(out, mii->second, min_args, mii->first,
                                expected_params, 2, coercion_allowed, true,
                                args_type, return_flags, true, !all_nonconst)) {
-      if (args_type != AT_no_args) {
-        out << "  if (!PyErr_Occurred()) {\n"
-            << "    ";
-        if ((return_flags & ~RF_pyobject) == RF_err_null) {
-          out << "return ";
-        }
-        out << "Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n"
-            << "  }\n";
-
-        error_return(out, 2, return_flags);
-      }
+      error_bad_args_return(out, 2, return_flags, expected_params);
     }
   }
 
@@ -6699,6 +6631,55 @@ error_return(ostream &out, int indent_level, int return_flags) {
 }
 
 /**
+ * Similar to error_return, except raises a "bad arguments" error before
+ * returning, if the error indicator has not yet been set.
+ */
+void InterfaceMakerPythonNative::
+error_bad_args_return(ostream &out, int indent_level, int return_flags,
+                      const string &expected_params) {
+
+  if (return_flags & RF_decref_args) {
+    indent(out, indent_level) << "Py_DECREF(args);\n";
+  }
+
+  if ((return_flags & RF_err_null) != 0 &&
+      (return_flags & RF_pyobject) != 0) {
+    // It always returns nullptr, so we'll allow the compiler to do a tail
+    // call optimization.
+    indent(out, indent_level) << "return Dtool_Raise_BadArgumentsError(\n";
+    output_quoted(out, indent_level + 2, expected_params);
+    out << ");\n";
+    return;
+  }
+
+  if (return_flags & RF_int) {
+    // Same, but for -1.
+    indent(out, indent_level) << "return Dtool_Raise_BadArgumentsError_Int(\n";
+    output_quoted(out, indent_level + 2, expected_params);
+    out << ");\n";
+    return;
+  }
+
+  indent(out, indent_level) << "Dtool_Raise_BadArgumentsError(\n";
+  output_quoted(out, indent_level + 2, expected_params);
+  out << ");\n";
+
+  if (return_flags & RF_int) {
+    indent(out, indent_level) << "return -1;\n";
+
+  } else if (return_flags & RF_err_notimplemented) {
+    indent(out, indent_level) << "Py_INCREF(Py_NotImplemented);\n";
+    indent(out, indent_level) << "return Py_NotImplemented;\n";
+
+  } else if (return_flags & RF_err_null) {
+    indent(out, indent_level) << "return nullptr;\n";
+
+  } else if (return_flags & RF_err_false) {
+    indent(out, indent_level) << "return false;\n";
+  }
+}
+
+/**
  * Similar to error_return, except raises an exception before returning.  If
  * format_args are not the empty string, uses PyErr_Format instead of
  * PyErr_SetString.
@@ -7030,11 +7011,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     string expected_params;
     if (!write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                                AT_no_args, RF_pyobject | RF_err_null, false, true, "index")) {
-      out << "  if (!PyErr_Occurred()) {\n";
-      out << "    return Dtool_Raise_BadArgumentsError(\n";
-      output_quoted(out, 6, expected_params);
-      out << ");\n";
-      out << "  }\n";
+      error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
     }
     out << "}\n\n";
 
@@ -7103,12 +7080,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       string expected_params;
       if (!write_function_forset(out, remaps, 2, 2, expected_params, 2, true,
                                  true, AT_single_arg, RF_int, false, false, "index")) {
-        out << "  if (!PyErr_Occurred()) {\n";
-        out << "    Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n";
-        out << "  }\n";
-        out << "  return -1;\n";
+        error_bad_args_return(out, 2, RF_int, expected_params);
       }
       out << "}\n\n";
     }
@@ -7132,12 +7104,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       if (!write_function_forset(out, remaps, 2, 2, expected_params, 2, true,
                                  true, AT_single_arg, RF_pyobject | RF_err_null,
                                  false, false, "index")) {
-        out << "  if (!PyErr_Occurred()) {\n";
-        out << "    Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n";
-        out << "  }\n";
-        out << "  return nullptr;\n";
+        error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
       }
       out << "}\n\n";
     }
@@ -7200,12 +7167,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     string expected_params;
     if (!write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                                AT_single_arg, RF_pyobject | RF_err_null, false, true)) {
-      out << "  if (!PyErr_Occurred()) {\n";
-      out << "    return Dtool_Raise_BadArgumentsError(\n";
-      output_quoted(out, 6, expected_params);
-      out << ");\n"
-              "  }\n"
-              "  return nullptr;\n";
+      error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
     }
     out << "}\n\n";
 
@@ -7284,13 +7246,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       if (!write_function_forset(out, remaps, 2, 2,
                                  expected_params, 2, true, true, AT_varargs,
                                  RF_int | RF_decref_args, false, false)) {
-        out << "  if (!PyErr_Occurred()) {\n";
-        out << "    Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n";
-        out << "  }\n";
-        out << "  Py_DECREF(args);\n";
-        out << "  return -1;\n";
+        error_bad_args_return(out, 2, RF_int | RF_decref_args, expected_params);
       }
       out << "}\n\n";
     }
@@ -7338,11 +7294,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       string expected_params;
       if (!write_function_forset(out, remaps, 1, 1, expected_params, 2, true, true,
                                  AT_no_args, RF_pyobject | RF_err_null, false, true, "index")) {
-        out << "  if (!PyErr_Occurred()) {\n";
-        out << "    return Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n"
-                "  }\n";
+        error_bad_args_return(out, 2, RF_pyobject | RF_err_null, expected_params);
       }
       out << "}\n\n";
     }
@@ -7538,12 +7490,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       string expected_params;
       if (!write_function_forset(out, remaps, 1, 1, expected_params, 2, true,
                                  true, AT_single_arg, RF_int, false, false)) {
-        out << "  if (!PyErr_Occurred()) {\n";
-        out << "    Dtool_Raise_BadArgumentsError(\n";
-        output_quoted(out, 6, expected_params);
-        out << ");\n";
-        out << "  }\n";
-        out << "  return -1;\n";
+        error_bad_args_return(out, 2, RF_int, expected_params);
       }
       out << "}\n\n";
     }

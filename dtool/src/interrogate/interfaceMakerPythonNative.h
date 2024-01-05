@@ -174,6 +174,8 @@ private:
                                const std::string &first_pexpr = std::string());
 
   void error_return(std::ostream &out, int indent_level, int return_flags);
+  void error_bad_args_return(std::ostream &out, int indent_level, int return_flags,
+                             const std::string &expected_params);
   void error_raise_return(std::ostream &out, int indent_level, int return_flags,
                           const std::string &exc_type, const std::string &message,
                           const std::string &format_args = "");
