@@ -2192,12 +2192,16 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
           bool always_returns = true;
           out << "  if (arg2 != nullptr) { // __setitem__\n";
-          out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
-          if (!write_function_forset(out, setitem_remaps, 2, 2, expected_params, 4,
-                                     true, true, AT_varargs, RF_int | RF_decref_args, false)) {
+          if (setitem_remaps.empty()) {
             always_returns = false;
+          } else {
+            out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
+            if (!write_function_forset(out, setitem_remaps, 2, 2, expected_params, 4,
+                                       true, true, AT_varargs, RF_int | RF_decref_args, false)) {
+              always_returns = false;
+            }
+            out << "    Py_DECREF(args);\n";
           }
-          out << "    Py_DECREF(args);\n";
           out << "  } else { // __delitem__\n";
           if (!write_function_forset(out, delitem_remaps, 1, 1, expected_params, 4,
                                      true, true, AT_single_arg, RF_int, false)) {
@@ -2434,12 +2438,16 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
           bool always_returns = true;
           out << "  if (arg2 != nullptr && arg2 != Py_None) {\n";
-          out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
-          if (!write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
-                                     true, true, AT_varargs, return_flags | RF_decref_args, true)) {
+          if (two_param_remaps.empty()) {
             always_returns = false;
+          } else {
+            out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
+            if (!write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
+                                       true, true, AT_varargs, return_flags | RF_decref_args, true)) {
+              always_returns = false;
+            }
+            out << "    Py_DECREF(args);\n";
           }
-          out << "    Py_DECREF(args);\n";
           out << "  } else {\n";
           if (!write_function_forset(out, one_param_remaps, 1, 1, expected_params, 4,
                                      true, true, AT_single_arg, return_flags, true)) {
