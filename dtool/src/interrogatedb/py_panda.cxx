@@ -218,11 +218,46 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
  * prints out a generic message, to help reduce the amount of strings in the
  * compiled library.
  *
+ * If there is already an exception set, does nothing.
+ *
  * Always returns NULL so that it can be conveniently used as a return
  * expression for wrapper functions that return a PyObject pointer.
  */
+PyObject *_Dtool_Raise_BadArgumentsError(const char *message) {
+  if (!PyErr_Occurred()) {
+    return PyErr_Format(PyExc_TypeError, "Arguments must match:\n%s", message);
+  }
+  return nullptr;
+}
+
+/**
+ * Overload that prints a generic message instead.
+ */
 PyObject *_Dtool_Raise_BadArgumentsError() {
-  return Dtool_Raise_TypeError("arguments do not match any function overload");
+  if (!PyErr_Occurred()) {
+    PyErr_SetString(PyExc_TypeError, "arguments do not match any function overload");
+  }
+  return nullptr;
+}
+
+/**
+ * Overload that returns -1 instead of nullptr.
+ */
+int _Dtool_Raise_BadArgumentsError_Int(const char *message) {
+  if (!PyErr_Occurred()) {
+    PyErr_Format(PyExc_TypeError, "Arguments must match:\n%s", message);
+  }
+  return -1;
+}
+
+/**
+ * Overload that returns -1 instead of nullptr and prints a generic message.
+ */
+int _Dtool_Raise_BadArgumentsError_Int() {
+  if (!PyErr_Occurred()) {
+    PyErr_SetString(PyExc_TypeError, "arguments do not match any function overload");
+  }
+  return -1;
 }
 
 /**
