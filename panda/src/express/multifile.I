@@ -68,7 +68,7 @@ get_timestamp() const {
 }
 
 /**
- * Changes the overall mudification timestamp of the multifile.  Note that this
+ * Changes the overall modification timestamp of the multifile.  Note that this
  * will be reset to the current time every time you modify a subfile.
  * Only set this if you know what you are doing!
  */

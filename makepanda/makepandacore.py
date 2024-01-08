@@ -3374,10 +3374,15 @@ def SetOrigExt(x, v):
 
 def GetExtensionSuffix():
     if GetTarget() == 'windows':
-        if GetTargetArch() == 'x64':
-            return '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        if GetOptimize() <= 2:
+            dllext = '_d'
         else:
-            return '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+            dllext = ''
+
+        if GetTargetArch() == 'x64':
+            return dllext + '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+        else:
+            return dllext + '.cp%d%d-win32.pyd' % (sys.version_info[:2])
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
