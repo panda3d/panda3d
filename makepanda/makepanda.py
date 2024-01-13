@@ -231,6 +231,7 @@ def gen_config(cmakedir, cli_args):
         '-S', '.',
         '-B', cmakedir,
         f'-DWANT_PYTHON_VERSION={".".join([str(i) for i in sys.version_info[0:2]])}',
+        f'-DCMAKE_BUILD_TYPE={opt_to_config(cli_args.optimize)}',
     ]
 
     if cli_args.arch:
