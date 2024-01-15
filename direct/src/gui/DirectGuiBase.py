@@ -97,6 +97,8 @@ from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
+from collections.abc import MutableSequence, MutableMapping, MutableSet
+from copy import deepcopy
 import sys
 
 if sys.version_info >= (3, 0):
@@ -224,7 +226,10 @@ class DirectGuiBase(DirectObject.DirectObject):
                         del keywords[name]
                     else:
                         # Use optionDefs value
-                        optionInfo[name] = [default, default, function]
+                        value = default
+                        if isinstance(default, (MutableSequence, MutableMapping, MutableSet)):
+                            value = deepcopy(default)
+                        optionInfo[name] = [default, value, function]
                 elif optionInfo[name][FUNCTION] is None:
                     # Only override function if not defined by derived class
                     optionInfo[name][FUNCTION] = function
