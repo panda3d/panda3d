@@ -35,7 +35,7 @@ endif()
 if(UNIX)
   # On Unices, ask the GNUInstallDirs module where /etc is -- and then install
   # ourselves into /etc/panda3d
-  set(prc_install_path "${CMAKE_INSTALL_FULL_SYSCONFDIR}/panda3d")
+  set(prc_install_path "${CMAKE_INSTALL_SYSCONFDIR}/panda3d")
   set(prc_build_path "${PANDA_OUTPUT_DIR}/etc/panda3d")
 else()
   set(prc_install_path "etc")

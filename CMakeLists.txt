@@ -41,13 +41,21 @@ if(APPLE)
   endif()
 endif()
 
+# Add generic modules to cmake module path,
+# and add Panda3D specific modules to cmake module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros/")
+
+# Get variables form setup.cfg metadata
+include(SetupCfgMetadata)
+
 # Figure out the version
-set(_s "[\\t ]*") # CMake doesn't support \s*
-file(STRINGS "setup.cfg" _version REGEX "^version${_s}=${_s}")
-string(REGEX REPLACE "^.*=${_s}" "" _version "${_version}")
-project(Panda3D VERSION ${_version})
+set_from_setup_metadata(_version "version")
+project(Panda3D
+  VERSION ${_version}
+  HOMEPAGE_URL "https://www.panda3d.org"
+)
 unset(_version)
-unset(_s)
 
 if(APPLE)
   # Allows separating out C++ flags from ObjC++ flags
@@ -69,11 +77,6 @@ endif()
 enable_testing()
 
 string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INTDIR}")
-
-# Add generic modules to cmake module path,
-# and add Panda3D specific modules to cmake module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros/")
 
 # When using the Xcode generator, don't append the platform name to the
 # intermediate configuration directory.
@@ -197,3 +200,52 @@ install(FILES "${PROJECT_BINARY_DIR}/Panda3DConfigVersion.cmake"
 if(NOT CMAKE_CROSSCOMPILING)
   export(PACKAGE Panda3D)
 endif()
+
+# Packaging
+include(CMakePrintHelpers)
+set(CPACK_SOURCE_IGNORE_FILES
+  .git
+  .github
+  .cache
+  __pycache__
+  \\.whl$
+  ${PROJECT_BINARY_DIR}
+)
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_THREADS 0)
+set(CPACK_PACKAGE_VENDOR ${PANDA_DISTRIBUTOR})
+set_from_setup_metadata(CPACK_PACKAGE_DESCRIPTION_SUMMARY "description")
+set(CPACK_PACKAGE_DESCRIPTION
+  "Description: Panda3D free 3D engine SDK
+ Panda3D is a game engine which includes graphics, audio, I/O, collision detection,
+ and other abilities relevant to the creation of 3D games. Panda3D is open source and
+ free software under the revised BSD license, and can be used for both free and commercial
+ game development at no financial cost. Panda3D's intended game-development language is
+ Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator
+ to expose the complete functionality of the engine in a Python interface.
+
+ This package contains the SDK for development with Panda3D."
+)
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/doc/LICENSE")
+
+set(CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP "${PROJECT_SOURCE_DIR}/makepanda/panda-install.bmp")
+set(CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP ${CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP})
+
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(debian_provides "panda3d")
+if (INTERROGATE_PYTHON_INTERFACE)
+  set(debian_provides "${debian_provides}, python3-panda3d")
+endif()
+set(CPACK_DEBIAN_PACKAGE_PROVIDES ${debian_provides})
+set(CPACK_DEBIAN_PACKAGE_CONFLICTS ${debian_provides})
+set(CPACK_DEBIAN_PACKAGE_REPLACES ${debian_provides})
+
+set(CPACK_RPM_PACKAGE_LICENSE "BSD License")
+set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+
+set(CPACK_DMG_VOLUME_NAME "Panda3D SDK ${CMAKE_PROJECT_VERSION}")
+set(CPACK_DMG_FORMAT "UDBZ")
+
+set(CPACK_FREEBSD_PACKAGE_ORIGIN "devel/panda3d")
+
+include(CPack)

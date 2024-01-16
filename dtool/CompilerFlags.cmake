@@ -60,9 +60,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
-# Set up the output directory structure, mimicking that of makepanda
-set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
-
 if(CMAKE_CFG_INTDIR STREQUAL ".")
   # Single-configuration generator; output goes straight in the binary dir
   set(PANDA_OUTPUT_DIR "${PROJECT_BINARY_DIR}")
