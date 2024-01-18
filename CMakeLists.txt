@@ -41,21 +41,17 @@ if(APPLE)
   endif()
 endif()
 
-# Enable 'FORCE_ANSI_COLORED_OUTPUT' option when using Ninja.
-# Forces GCC/Clang compilers to enable color diagnostics. Enabled by default.
+# Forces GCC/Clang compilers to enable color diagnostics if using Ninja.
 if(CMAKE_GENERATOR STREQUAL "Ninja")
-  option(FORCE_ANSI_COLORED_OUTPUT "Always produce ANSI-colored output. (GNU/Clang only)" TRUE)
-
-  if(FORCE_ANSI_COLORED_OUTPUT)
-    set(CMAKE_COLOR_DIAGNOSTICS ON)
-    # CMake versions 3.24 and below do not support this option, so we have
-    # to invoke the color diagnostics flags manually.
-    if(CMAKE_VERSION VERSION_LESS "3.24.0")
-      if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        add_compile_options(-fdiagnostics-color=always)
-      elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        add_compile_options(-fcolor-diagnostics)
-      endif()
+  set(CMAKE_COLOR_DIAGNOSTICS ON)
+  
+  # CMake versions 3.24 and below do not support this option, so we have
+  # to invoke the color diagnostics flags manually.
+  if(CMAKE_VERSION VERSION_LESS "3.24.0")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      add_compile_options(-fdiagnostics-color=always)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      add_compile_options(-fcolor-diagnostics)
     endif()
   endif()
 endif()
