@@ -69,6 +69,7 @@ jobs:
           compression-level: 0
   cmake:
     name: CMake Buildsystem
+    needs: build_thirdparty
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
 
     strategy:
@@ -93,6 +94,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: linux-libs-x64
 
         - profile: ubuntu-bionic-coverage-ninja
           os: ubuntu-20.04
@@ -103,6 +105,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: linux-libs-x64
 
         - profile: macos-eigen-coverage-unity-xcode
           os: macOS-11
@@ -113,6 +116,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: YES
+          thirdparty-dir: darwin-libs-a
 
         - profile: macos-nometa-standard-makefile
           os: macOS-11
@@ -123,6 +127,7 @@ jobs:
           metalibs: NO
           python: YES
           eigen: NO
+          thirdparty-dir: darwin-libs-a
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -133,6 +138,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: win-libs-vc14-x64
 
         - profile: windows-nopython-nometa-standard-msvc
           os: windows-2022
@@ -143,28 +149,27 @@ jobs:
           metalibs: NO
           python: NO
           eigen: NO
+          thirdparty-dir: win-libs-vc14-x64
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 10
+    - uses: actions/checkout@v4
 
     - name: Self-destruct makepanda
       run: python3 makepanda/selfdestruct.py --yes
 
-    - name: Install dependencies (macOS)
+    - name: Get thirdparty cache
+      uses: actions/cache@v4
+      id: cache
+      with:
+        fail-on-cache-miss: true
+        path: thirdparty
+        key: ${{matrix.thirdparty-dir}}-${{hashFiles('**/thirdparty-scripts/**')}}
+
+    - name: Install extra dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
-        tar -xf panda3d-1.10.14-tools-mac.tar.gz
-        mv panda3d-1.10.14/thirdparty thirdparty
-        rmdir panda3d-1.10.14
-
-        # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
-        install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
-
         brew install ccache
 
     - name: Install dependencies (Ubuntu)
@@ -180,26 +185,9 @@ jobs:
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
         python3-setuptools python3-tk
 
-    - name: Cache dependencies (Windows)
-      if: runner.os == 'Windows'
-      uses: actions/cache@v1
-      with:
-        path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.14-r1
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
-        }
-
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: ccache
         key: ci-cmake-ccache-${{ matrix.profile }}
@@ -236,6 +224,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D HAVE_CG=${{ runner.os != 'macOS' && 'ON' || 'OFF' }}
         ..
 
     - name: Build (no Python)
