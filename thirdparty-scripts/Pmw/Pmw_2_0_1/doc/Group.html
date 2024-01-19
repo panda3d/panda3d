@@ -1,0 +1,240 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.Group reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.Group</h1>
+    
+<center><IMG SRC=Group.gif ALT="" WIDTH=428 HEIGHT=209></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.Group() - 
+    frame with ring border and tag
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This megawidget consists of an interior frame with an exterior
+    ring border and an identifying tag displayed over the top edge of
+    the ring.  The programmer can create other widgets within the
+    interior frame.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.collapsedheight></a>
+<dl><dt> <strong>collapsedheight
+</strong></dt><dd>
+Initialisation option.  The default is <strong>6</strong>.</p>
+
+
+</dd></dl>
+<a name=option.collapsedsize></a>
+<dl><dt> <strong>collapsedsize
+</strong></dt><dd>
+Initialisation option. The distance from the bottom of the tag to the bottom of the ring
+    when the groupchildsite is collapsed. The default is <strong>6</strong>.</p>
+
+
+</dd></dl>
+<a name=option.collapsedwidth></a>
+<dl><dt> <strong>collapsedwidth
+</strong></dt><dd>
+Initialisation option.  The default is <strong>20</strong>.</p>
+
+
+</dd></dl>
+<a name=option.tagindent></a>
+<dl><dt> <strong>tagindent
+</strong></dt><dd>
+Initialisation option. The distance from the left edge of the ring to the left side of
+    the tag component. The default is <strong>10</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.groupchildsite></a>
+<dl><dt> <strong>groupchildsite
+</strong></dt><dd>
+The frame which can contain other widgets to be grouped. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.ring></a>
+<dl><dt> <strong>ring
+</strong></dt><dd>
+This component acts as the enclosing ring around the
+    <strong>groupchildsite</strong>.  The default <strong>borderwidth</strong> is <strong>2</strong> and the
+    default <strong>relief</strong> is <strong>'groove'</strong>. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.tag></a>
+<dl><dt> <strong>tag
+</strong></dt><dd>
+The identifying tag displayed over the top edge of the enclosing
+    ring.  If the pyclass for this component is <strong>None</strong>, (ie:
+    <code>tag_pyclass = None</code>, then no tag component is created. By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.collapse></a>
+<dl><dt> <strong>collapse</strong>()</dt><dd>
+Do not display the groupchildsite component.</p>
+
+
+</dd></dl>
+<a name=method.expand></a>
+<dl><dt> <strong>expand</strong>()</dt><dd>
+Display the groupchildsite component.</p>
+
+
+</dd></dl>
+<a name=method.interior></a>
+<dl><dt> <strong>interior</strong>()</dt><dd>
+Return the frame within which the programmer may create widgets.
+    This is the same as <code>component('groupchildsite')</code>.</p>
+
+
+</dd></dl>
+<a name=method.toggle></a>
+<dl><dt> <strong>toggle</strong>()</dt><dd>
+Display the groupchildsite component if it is currently hidden and
+    hide it if it is currently displayed.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+
+        # Create and pack the Groups.
+        w = Pmw.Group(parent, tag_text='label')
+        w.pack(fill = 'both', expand = 1, padx = 6, pady = 6)
+        cw = tkinter.Label(w.interior(),
+                text = 'A group with the\ndefault Label tag')
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+
+        w = Pmw.Group(parent, tag_pyclass = None)
+        w.pack(fill = 'both', expand = 1, padx = 6, pady = 6)
+        cw = tkinter.Label(w.interior(), text = 'A group\nwithout a tag')
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+
+        radiogroups = []
+        self.var = tkinter.IntVar()
+        self.var.set(0)
+        radioframe = tkinter.Frame(parent)
+        w = Pmw.Group(radioframe,
+                tag_pyclass = tkinter.Radiobutton,
+                tag_text='radiobutton 1',
+                tag_value = 0,
+                tag_variable = self.var)
+        w.pack(fill = 'both', expand = 1, side='left')
+        cw = tkinter.Frame(w.interior(),width=200,height=20)
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+        radiogroups.append(w)
+
+        w = Pmw.Group(radioframe,
+                tag_pyclass = tkinter.Radiobutton,
+                tag_text='radiobutton 2',
+                tag_font = Pmw.logicalfont('Helvetica', 4),
+                tag_value = 1,
+                tag_variable = self.var)
+        w.pack(fill = 'both', expand = 1, side='left')
+        cw = tkinter.Frame(w.interior(),width=200,height=20)
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+        radiogroups.append(w)
+        radioframe.pack(padx = 6, pady = 6, expand='yes', fill='both')
+        Pmw.aligngrouptags(radiogroups)
+
+        w = Pmw.Group(parent,
+                tag_pyclass = tkinter.Checkbutton,
+                tag_text='checkbutton',
+                tag_foreground='blue')
+        w.pack(fill = 'both', expand = 1, padx = 6, pady = 6)
+        cw = tkinter.Frame(w.interior(),width=150,height=20)
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+
+        w = Pmw.Group(parent,
+                tag_pyclass = tkinter.Button,
+                tag_text='Tkinter.Button')
+        w.configure(tag_command = w.toggle)
+        w.pack(fill = 'both', expand = 1, padx = 6, pady = 6)
+        cw = tkinter.Label(w.interior(),
+                background = 'aliceblue',
+                text = 'A group with\na Button tag!?'
+        )
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+
+        w = Pmw.Group(parent,
+                tag_pyclass = tkinter.Button,
+                tag_text='Show/Hide')
+        w.configure(tag_command = w.toggle)
+        w.pack(fill = 'both', expand = 1, padx = 6, pady = 6)
+        cw = tkinter.Label(w.interior(),
+                background = 'aliceblue',
+                text = 'Now you see me.\nNow you don\'t.'
+        )
+        cw.pack(padx = 2, pady = 2, expand='yes', fill='both')
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 15 November 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

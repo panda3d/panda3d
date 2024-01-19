@@ -1,0 +1,465 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>How to build Pmw megawidgets</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">How to build Pmw megawidgets</h1>
+    
+<center><P ALIGN="CENTER">
+<IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+</p></center>
+
+<dl>
+<dt> <h3>Introduction</h3></dt><dd>
+<p>
+  This document briefly describes how to design and code Pmw
+  megawidgets by inheriting from the Pmw base classes.  It shows step
+  by step how to build a simple example megawidget.  This megawidget
+  allows the user to select one of a range of numbers and it also
+  indicates if the selected number is greater than a given threshold.
+
+</p>
+
+</dd>
+<dt> <h3>Choosing the components</h3></dt><dd>
+
+<p>
+  The megawidget will be built using a Tkinter.Scale widget to allow
+  the user to select a number in a range, and a Tkinter.Frame widget
+  to act as an indicator, displaying red (say) if the selected number
+  exceeds the threshold.  It will look something like this:
+
+</p>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = scale1.gif ALT = "Scale 2" WIDTH=70 HEIGHT=244>
+</p></center>
+  
+<p>
+  The programmer using this megawidget will need access to the scale
+  widget, since they will need to set the scale's range.  Therefore
+  the scale will be made a component of the megawidget.  The
+  programmer will probably not need access to the indicator frame,
+  but, just in case the need arises to change the borderwidth or
+  relief of the indicator, we will make it a component too.  This
+  illustrates a convention about components - for maximum
+  configurability, make all sub-widgets components.
+
+</p>
+
+</dd>
+<dt> <h3>Choosing the options</h3></dt><dd>
+
+<p>
+  Apart from the component options now available through the scale and indicator
+  components, the megawidget will need a few options of its own.  It
+  will need a <strong>threshold</strong> option to set the threshold. 
+  It may also need options to set the colors of the indicator when the
+  selected value is both above and below the threshold.  Other options
+  could be <strong>orient</strong> or <strong>indicatorpos</strong> to
+  specify the relative position of components and
+  <strong>margin</strong>, <strong>padx</strong> or
+  <strong>pady</strong> to specify spacing between and around the
+  components.  For this example, we will define three options -
+  <strong>threshold</strong>, <strong>colors</strong> and
+  <strong>value</strong>.  The <strong>colors</strong> option will be
+  a 2-element sequence specifying two colors (below threshold, above
+  threshold).  The <strong>value</strong> option will be the initial
+  value of the scale.
+
+</p>
+
+</dd>
+<dt> <h3>Coding the megawidget</h3></dt><dd>
+
+<p>
+  The first things to do are to decide on a name for the new
+  megawidget, decide which base class to inherit from and to begin to
+  write the constructor.  Most Pmw megawidgets are derived from either
+  Pmw.MegaWidget, Pmw.MegaToplevel or Pmw.Dialog.  In this case, since
+  the widget is not to be contained within its own toplevel window, we
+  will inherit from Pmw.MegaWidget.  The constructors of megawidgets
+  take one argument (the widget to use as the parent of the
+  megawidget's hull, defaulting to the root window) and any number of
+  keyword arguments.
+
+</p>
+
+<pre>
+class ThresholdScale(Pmw.MegaWidget):
+    """ Megawidget containing a scale and an indicator.
+    """
+ 
+    def __init__(self, parent = None, **kw):
+</pre>
+
+<p>
+  Next, we need to define the options supplied by this megawidget. 
+  Each option is specified by a 3-element sequence.  The first element
+  is the option's name.  The second element is the default value.  The
+  third element is either a callback function,
+  <strong>Pmw.INITOPT</strong> or <strong>None</strong>.  In the first
+  case, the function is called at the end of construction (during the 
+  call to <code>self.inialiseoptions</code>) and also
+  whenever the option is set by a call to
+  <code>configure</code>.  <strong>Pmw.INITOPT</strong> indicates that
+  the option is an initialisation option - it cannot be set by calling
+  <code>configure</code>.  <strong>None</strong> indicates that the
+  option can be set by calling <code>configure</code>, but that there
+  is no callback function.
+
+</p>
+
+<p>
+  The call to <code>self.defineoptions</code> also includes the
+  keyword arguments passed in to the constructor.  The value given to
+  any option specified in the keywords will override the default
+  value.
+
+</p>
+
+<pre>
+        # Define the megawidget options.
+        optiondefs = (
+            ('colors',    ('green', 'red'), None),
+            ('threshold', 50,               None),
+            ('value',     None,             Pmw.INITOPT),
+        )
+        self.defineoptions(kw, optiondefs)
+</pre>
+
+<p>
+  After defining the options, the constructor of the base class should
+  be called.  The options need to be defined first so that a derived
+  class can redefine the default value of an option defined in a base
+  class.  This is because the value specified by the derived class
+  must be made available before the base class constructor is called.
+  The keyword
+  arguments should not be passed into the base class constructor since
+  they have already been dealt with in the previous step.
+
+</p>
+
+<pre>
+        # Initialise base class (after defining options).
+        Pmw.MegaWidget.__init__(self, parent)
+</pre>
+
+<p>
+  Now we should create the components.  The components are created as
+  children (or grandchildren ...) of the megawidget's interior.
+
+</p>
+
+<pre>
+        # Create the components.
+        interior = self.interior()
+</pre>
+
+<p>
+  The first component to create is the indicator.  The
+  <code>createcomponent</code> method creates the sub-widget and
+  registers the widget as a component of this megawidget.  It takes
+  five arguments plus any number of keyword arguments.  The arguments
+  are name, aliases, group, class and constructor arguments.  See the
+  <a href="MegaArchetype.html">Pmw.MegaArchetype reference manual</a>)
+  for full details.
+
+</p>
+
+<pre>
+        # Create the indicator component.
+        self.indicator = self.createcomponent('indicator',
+                (), None,
+                Tkinter.Frame, (interior,),
+                        width = 16,
+                        height = 16,
+                        borderwidth = 2,
+                        relief = 'raised')
+        self.indicator.grid()
+</pre>
+
+<p>
+  The scale component is created in a similar way.  In this case, the
+  initial value of the scale is also set to the value of the
+  <strong>value</strong> initialisation option.
+
+</p>
+
+<pre>
+        # Create the scale component.
+        self.scale = self.createcomponent('scale',
+                (), None,
+                Tkinter.Scale, (interior,),
+                        command = self._doCommand,
+                        tickinterval = 20,
+                        length = 200,
+                        from_ = 100,
+                        to = 0,
+                        showvalue = 0)
+        self.scale.grid()
+ 
+        value = self['value']
+        if value is not None:
+            self.scale.set(value)
+</pre>
+
+<p>
+  At the end of the constructor, the <code>initialiseoptions</code>
+  method is called to check that all keyword arguments have been used
+  (that is, the caller did not specify any unknown or misspelled
+  options) and to call the option callback functions.
+
+</p>
+
+<pre>
+        # Check keywords and initialise options.
+        self.initialiseoptions()
+</pre>
+
+<p>
+  All other methods must now be defined.  In this case, only one
+  method is required - a method called whenever the scale changes and
+  which sets the indicator color according to the threshold.
+
+</p>
+
+<pre>
+    def _doCommand(self, valueStr):
+        if self.scale.get() > self['threshold']:
+            color = self['colors'][1]
+        else:
+            color = self['colors'][0]
+        self.indicator.configure(background = color)
+</pre>
+
+<p>
+  To complete the megawidget, methods from other classes can be
+  copied into this class.  In this case, all Tkinter.Scale methods
+  not already defined by the megawidget are made available as methods
+  of this class and are forwarded to the scale component.  Note that
+  the third argument to <code>Pmw.forwardmethods</code> is the name of
+  the instance variable referring to the Tkinter.Scale widget and not
+  the name of the component.  This function is called outside of and
+  after the class definition.
+
+</p>
+
+<pre>
+Pmw.forwardmethods(ThresholdScale, Tkinter.Scale, 'scale')
+</pre>
+
+<p>
+    <strong>Important note:</strong> If a megawidget defines options
+    using <code>defineoptions()</code>, then this method must be
+    called in the megawidget constructor before the call to the base
+    class constructor and a matching call to
+    <code>initialiseoptions()</code> must made at the end of the
+    constructor.  For example:
+
+</p>
+<pre>
+    def __init__(self, parent = None, **kw):
+	optionDefs = ...
+	self.defineoptions(kw, optionDefs)
+	BaseClass.__init__(self, parent)
+	...
+	self.initialiseoptions()
+</pre>
+
+</dd>
+<dt> <h3>Creating instances of the megawidget</h3></dt><dd>
+
+<p>
+  The code below creates two of our example megawidgets.  The first is
+  created with default values for all options.  The second is created
+  with new values for the options.  It also redefines some of the
+  options of the components.
+
+</p>
+
+<dl>
+<dd>
+<pre>
+# Create and pack two ThresholdScale megawidgets.
+mega1 = ThresholdScale()
+mega1.pack(side = 'left', padx = 10, pady = 10)
+
+mega2 = ThresholdScale(
+        colors = ('green', 'yellow'),
+        threshold = 75,
+        value = 80,
+        indicator_width = 32,
+        scale_width = 25)
+mega2.pack(side = 'left', padx = 10, pady = 10)
+</pre>
+</dd>
+</dl>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = scale2.gif ALT = "Scale 1" WIDTH=150 HEIGHT=244>
+</p></center>
+  
+</dd>
+<dt> <h3>The complete code</h3></dt><dd>
+
+<p>
+  The complete code for this example can be seen
+  <a href="example.py">here</a>.
+
+</p>
+
+</dd>
+<dt> <h3>Exercises</h3></dt><dd>
+
+<p>
+  These exercises build on the example presented so far.
+
+</p>
+
+<ol>
+  <li>
+    Change the call to create <code>mega1</code> so that the scale
+    widget displays the current value next to the slider.  (You may
+    need to look at the Tk scale manual page to find which option to
+    the <strong>scale</strong> component to set.)  You will be able to
+    do this without modifying the ThresholdScale class code.
+
+  </li>
+  <li>
+    Add a Tkinter.Label component between the indicator and scale
+    components.  Modify the <code>_doCommand</code> method so that it
+    displays the current value of the scale in this label.
+
+  </li>
+  <li>
+    Modify the <strong>colors</strong> and <strong>threshold</strong>
+    options so that they both accept a tuple.  Now implement multiple
+    thresholds, so that the indicator displays one of several colors,
+    depending on the value of the scale.
+
+  </li>
+  <li>
+    Add an <strong>orient</strong> initialisation option and lay out
+    the components horizontally or vertically depending on its value.
+
+  </li>
+  <li>
+    Read the description of the <code>createlabel()</code> method in
+    the <a href="MegaArchetype.html">Pmw.MegaArchetype reference
+    manual</a> and add <strong>labelpos</strong> and
+    <strong>labelmargin</strong> initialisation options which allow
+    the creation of a label for the megawidget.
+
+  </li>
+</ol>
+
+<p>
+  An example of how these changes can be made can be seen
+  <a href="exercises.py">here</a>.
+
+</p>
+
+</dd>
+<dt> <h3>Contributing your megawidgets to Pmw</h3></dt><dd>
+
+<p>
+  If you have completed a megawidget that may be useful to others, you
+  may like to consider contributing it to Pmw.  See
+  <a href="starting.html#contributions">Contributions welcome</a> for
+  how to contribute.
+
+</p>
+
+</dd>
+<dt> <h3>Pmw coding conventions</h3></dt><dd>
+
+<p>
+As a final note, the Pmw code makes an attempt to follow these coding
+conventions.
+</p>
+
+<ul>
+  <li>
+    Class names: initial of each word is upper case (including first word).
+
+  </li>
+  <li>
+    Public method and function names: all in lower case.
+
+  </li>
+  <li>
+    Megawidget options: all in lower case.
+
+  </li>
+  <li>
+    Megawidget component names: all in lower case.
+
+  </li>
+  <li>
+    Function arguments: initial of each word is upper case (except first word).
+
+  </li>
+  <li>
+    Private names:  initial of each word is upper case (except first
+    word if not a class)
+
+  </li>
+  <li>
+    Underscores as word separators are only used when overriding
+    Tkinter methods of same name.
+
+  </li>
+  <li>
+    Indent is four spaces.
+
+  </li>
+  <li>
+    Continuation lines are indented by eight spaces, so that they
+    won't be confused with a following nested code block. 
+    Continuation lines should be used when a statement, which would
+    normally be written on one line, is longer than 80 characters. 
+    Examples are "if" statements which contain many conditions and
+    function calls with many arguments.
+
+  </li>
+  <li>
+
+    Surround <code>=</code> with spaces when used with keyword
+    parameters in function calls.
+
+  </li>
+  <li>
+
+    Multi-line function calls should have one keyword parameter per
+    line.
+
+  </li>
+</ul>
+</dd>
+</dl>
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

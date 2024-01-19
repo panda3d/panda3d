@@ -1,0 +1,285 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.MessageBar reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.MessageBar</h1>
+    
+<center><IMG SRC=MessageBar.gif ALT="" WIDTH=398 HEIGHT=44></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.MessageBar() - 
+    information line for displaying short messages
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A message bar contains a single-line message display area.  Messages
+    of several different types may displayed.  Messages are cleared
+    after a period defined for each message type.  Each message type
+    has a priority so that if the application attempts to display more
+    than one message at a time, the message with the highest priority
+    will be displayed.  Messages may be accompanied by a number of
+    audible bells.</p>
+
+<p>    This megawidget can be used for both interactive help messages
+    (when the mouse enters certain widgets) and also for other general
+    messages.</p>
+
+<p>    To perform the help function it can cooperate with the <a href="Balloon.html">Pmw.Balloon</a>
+    megawidget so that the programmer (or user) can choose either
+    balloon help, message bar help, both or neither.</p>
+
+<p>    This megawidget supports a configurable number of message types.
+    The default types include <strong>'state'</strong>, <strong>'help'</strong>, <strong>'usererror'</strong> and
+    <strong>'systemerror'</strong>.  The difference between these are the length of
+    time they are displayed, the number of bells that are rung and the
+    priority of the message.  For example, the <strong>'help'</strong> message type
+    is lower in priority than the <strong>'usererror'</strong>, so that error
+    messages will always be displayed in preference to help messages
+    regardless of the order the messages are created.  The <strong>'state'</strong>
+    message type is lowest in priority but has no timeout, so it
+    should contain messages describing the current state of the
+    application, such as <em>Waiting for database connection</em> or 'Waiting
+    for file to be unlocked'.  Generally this should be set to the
+    empty string when the application is running normally.  By default
+    the help messages (with message type <strong>'help'</strong>) time out after 5
+    seconds, so that if the cursor happens to be left over a widget,
+    the application state will be redisplayed after a short time.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.messagetypes></a>
+<dl><dt> <strong>messagetypes
+</strong></dt><dd>
+Initialisation option. This defines what message types are supported by the message bar
+    and the characteristics of those message types.  It is a
+    dictionary where the key is a string specifying a message type and
+    the value is a tuple of four integers, (<em>priority</em>, <em>showtime</em>,
+    <em>bells</em>, <em>logmessage</em>), where <em>priority</em> is the rank of the
+    message type, <em>showtime</em> is the number of seconds to display
+    messages of this message type, <em>bells</em> is the number of audible
+    bells to ring and <em>logmessage</em> is a boolean
+    specifying whether this message should be logged for retrieval
+    later.  Messages with a higher priority are displayed in
+    preference to those with lower priority.  If a high priority
+    message times out (because it has been displayed for <em>showtime</em>
+    seconds), then a lower priority message may be displayed.  A
+    <em>showtime</em> of <strong>0</strong> means that the message will never time out and
+    is useful for displaying messages describing the current state of
+    the application as opposed to messages describing events.  Logging
+    is not currently implemented.  The default is</p>
+<dl><dd><pre> {
+     'systemerror'  : (5, 10, 2, 1),
+     'usererror'    : (4, 5, 1, 0),
+     'busy'         : (3, 0, 0, 0),
+     'systemevent'  : (2, 5, 0, 0),
+     'userevent'    : (2, 5, 0, 0),
+     'help'         : (1, 5, 0, 0),
+     'state'        : (0, 0, 0, 0),
+ }</pre></dd></dl>
+
+
+
+</dd></dl>
+<a name=option.silent></a>
+<dl><dt> <strong>silent
+</strong></dt><dd>
+If true, no audible bells will sound, regardless of the value for
+    <em>bells</em> defined in the <strong>messagetypes</strong> option. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.entry></a>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+The widget where the messages are displayed.  Long messages may be
+    scrolled horizontally by dragging with the middle mouse button. By default, this component is a Tkinter.Entry.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Entry</strong> class
+are forwarded by this megawidget to the
+<strong>entry</strong> component.
+<p></p>
+<a name=method.helpmessage></a>
+<dl><dt> <strong>helpmessage</strong>(<em>text</em>)</dt><dd>
+A convenience method to display <em>text</em> in the message bar
+    according to the characteristics defined by the <strong>help</strong> message type.
+    Equivalent to <code>message('help', text)</code>.</p>
+
+
+</dd></dl>
+<a name=method.message></a>
+<dl><dt> <strong>message</strong>(<em>type</em>,<em>text</em>)</dt><dd>
+Display <em>text</em> in the message bar according to the characteristics
+    defined by the <em>type</em> message type, as discussed under
+    <strong>messagetypes</strong>.</p>
+
+
+</dd></dl>
+<a name=method.resetmessages></a>
+<dl><dt> <strong>resetmessages</strong>(<em>type</em>)</dt><dd>
+Clear the <em>type</em> message and all message types with a lower
+    priority, except permanent messages, such as <strong>state</strong>.  This is
+    useful to clear the <strong>busy</strong> message and any outstanding event and
+    help messages.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the MessageBar.
+        self._messagebar = Pmw.MessageBar(parent,
+                entry_width = 40,
+                entry_relief='groove',
+                labelpos = 'w',
+                label_text = 'Status:')
+        self._messagebar.pack(side = 'bottom', fill = 'x',
+                expand = 1, padx = 10, pady = 10)
+
+        # Create and pack the ScrolledListBox to change the MessageBar.
+        self.box = Pmw.ScrolledListBox(parent,
+                listbox_selectmode='single',
+                items=('state', 'help', 'userevent', 'systemevent',
+                        'usererror', 'systemerror', 'busy',),
+                label_text='Message type',
+                labelpos='n',
+                selectioncommand=self.selectionCommand)
+        self.box.pack(fill = 'both', expand = 'yes', padx = 10, pady = 10)
+
+        self._index = 0
+        self._stateCounter = 0
+
+    def selectionCommand(self):
+        sels = self.box.getcurselection()
+        if len(sels) &gt; 0:
+            self._index = self._index + 1
+            messagetype = sels[0]
+            if messagetype == 'state':
+                self._stateCounter = (self._stateCounter + 1) % 3
+                text = stateMessages[self._stateCounter]
+                if text != '':
+                    text = text + ' (' + messagetype + ')'
+                self._messagebar.message('state', text)
+            else:
+                text = messages[messagetype]
+                text = text + ' (' + messagetype + ')'
+                self._messagebar.message(messagetype, text)
+                if messagetype == 'busy':
+                    Pmw.showbusycursor()
+                    self.box.after(2000)
+                    Pmw.hidebusycursor()
+                    self._messagebar.resetmessages('busy')
+                    text = 'All files successfully removed'
+                    text = text + ' (userevent)'
+                    self._messagebar.message('userevent', text)
+
+
+messages = {
+    'help': 'Save current file',
+    'userevent': 'Saving file "foo"',
+    'busy': 'Busy deleting all files from file system ...',
+    'systemevent': 'File "foo" saved',
+    'usererror': 'Invalid file name "foo/bar"',
+    'systemerror': 'Failed to save file: file system full',
+}
+
+stateMessages = {
+    0: '',
+    1: 'Database is down',
+    2: 'Waiting for reply from database',
+}
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

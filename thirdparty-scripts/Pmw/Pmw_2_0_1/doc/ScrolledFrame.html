@@ -1,0 +1,462 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ScrolledFrame reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ScrolledFrame</h1>
+    
+<center><IMG SRC=ScrolledFrame.gif ALT="" WIDTH=404 HEIGHT=174></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ScrolledFrame() - 
+    frame with optional scrollbars
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A scrolled frame consists of a scrollable interior frame within a
+    clipping frame.  The programmer can create other widgets within
+    the interior frame.  If the frame becomes larger than the
+    surrounding clipping frame, the user can position the frame using
+    the horizontal and vertical scrollbars.</p>
+
+<p>    The scrollbars can be <em>dynamic</em>, which means that a scrollbar will
+    only be displayed if it is necessary.  That is, if the frame is
+    smaller than the surrounding clipping frame, the scrollbar will be
+    hidden.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+Initialisation option. If true, the <strong>borderframe</strong> component will be created. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.horizflex></a>
+<dl><dt> <strong>horizflex
+</strong></dt><dd>
+Specifies how the width of the scrollable interior frame should be
+    resized relative to the clipping frame.</p>
+<p>    If <strong>'fixed'</strong>, the interior frame is set to the <em>natural</em> width, as
+    requested by the child widgets of the frame.  If <strong>'expand'</strong> and
+    the requested width of the interior frame is less than the width
+    of the clipping frame, the interior frame expands to fill the
+    clipping frame.  If <strong>'shrink'</strong> and the requested width of the
+    interior frame is more than the width of the clipping frame, the
+    interior frame shrinks to the width of the clipping frame.  If
+    <strong>'elastic'</strong>, the width of the interior frame is always set to the
+    width of the clipping frame. The default is <strong>'fixed'</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.horizfraction></a>
+<dl><dt> <strong>horizfraction
+</strong></dt><dd>
+Initialisation option. The fraction of the width of the clipper frame to scroll the
+    interior frame when the user clicks on the horizontal scrollbar
+    arrows. The default is <strong>0.05</strong>.</p>
+
+
+</dd></dl>
+<a name=option.hscrollmode></a>
+<dl><dt> <strong>hscrollmode
+</strong></dt><dd>
+The horizontal scroll mode.  If <strong>'none'</strong>, the horizontal scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.scrollmargin></a>
+<dl><dt> <strong>scrollmargin
+</strong></dt><dd>
+Initialisation option. The distance between the scrollbars and the clipping frame. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.usehullsize></a>
+<dl><dt> <strong>usehullsize
+</strong></dt><dd>
+Initialisation option. If true, the size of the megawidget is determined solely by the
+    width and height options of the <strong>hull</strong> component.</p>
+<p>    Otherwise, the size of the megawidget is determined by the width
+    and height of the <strong>clipper</strong> component, along with the size and/or
+    existence of the other components, such as the label, the
+    scrollbars and the scrollmargin option.  All these affect the
+    overall size of the megawidget. The default is <strong>0</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vertflex></a>
+<dl><dt> <strong>vertflex
+</strong></dt><dd>
+Specifies how the height of the scrollable interior frame should
+    be resized relative to the clipping frame.</p>
+<p>    If <strong>'fixed'</strong>, the interior frame is set to the <em>natural</em> height,
+    as requested by the child widgets of the frame.  If <strong>'expand'</strong> and
+    the requested height of the interior frame is less than the height
+    of the clipping frame, the interior frame expands to fill the
+    clipping frame.  If <strong>'shrink'</strong> and the requested height of the
+    interior frame is more than the height of the clipping frame, the
+    interior frame shrinks to the height of the clipping frame.  If
+    <strong>'elastic'</strong>, the height of the interior frame is always set to the
+    height of the clipping frame. The default is <strong>'fixed'</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vertfraction></a>
+<dl><dt> <strong>vertfraction
+</strong></dt><dd>
+Initialisation option. The fraction of the height of the clipper frame to scroll the
+    interior frame when the user clicks on the vertical scrollbar
+    arrows. The default is <strong>0.05</strong>.</p>
+
+
+</dd></dl>
+<a name=option.vscrollmode></a>
+<dl><dt> <strong>vscrollmode
+</strong></dt><dd>
+The vertical scroll mode.  If <strong>'none'</strong>, the vertical scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+A frame widget which snuggly fits around the clipper, to give the
+    appearance of a border.  It is created with a border so that the
+    clipper, which is created without a border, looks like it has a
+    border. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.clipper></a>
+<dl><dt> <strong>clipper
+</strong></dt><dd>
+The frame which is used to provide a clipped view of the <strong>frame</strong>
+    component.  If the <strong>borderframe</strong> option is true, this is created
+    with a borderwidth of <strong>0</strong> to overcome a known problem with using
+    <code>place</code> to position widgets:  if a widget (in this case the
+    <strong>frame</strong> component) is <code>placed</code> inside a frame (in this case the
+    <strong>clipper</strong> component) and it extends across one of the edges of the
+    frame, then the widget obscures the border of the frame.
+    Therefore, if the clipper has no border, then this overlapping
+    does not occur. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.frame></a>
+<dl><dt> <strong>frame
+</strong></dt><dd>
+The frame within the clipper to contain the widgets to be scrolled. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.horizscrollbar></a>
+<dl><dt> <strong>horizscrollbar
+</strong></dt><dd>
+The horizontal scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.vertscrollbar></a>
+<dl><dt> <strong>vertscrollbar
+</strong></dt><dd>
+The vertical scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.interior></a>
+<dl><dt> <strong>interior</strong>()</dt><dd>
+Return the frame within which the programmer may create widgets to
+    be scrolled.  This is the same as <code>component('frame')</code>.</p>
+
+
+</dd></dl>
+<a name=method.reposition></a>
+<dl><dt> <strong>reposition</strong>()</dt><dd>
+Update the position of the <strong>frame</strong> component in the <strong>clipper</strong> and
+    update the scrollbars.</p>
+<p>    Usually, this method does not need to be called explicitly, since
+    the position of the <strong>frame</strong> component and the scrollbars are
+    automatically updated whenever the size of the <strong>frame</strong> or
+    <strong>clipper</strong> components change or the user clicks in the scrollbars.
+    However, if <strong>horizflex</strong> or <strong>vertflex</strong> is <strong>'expand'</strong>, the
+    megawidget cannot detect when the requested size of the <strong>frame</strong>
+    increases to greater than the size of the <strong>clipper</strong>.  Therefore,
+    this method should be called when a new widget is added to the
+    <strong>frame</strong> (or a widget is increased in size) <em>after</em> the initial
+    megawidget construction.</p>
+
+
+
+</dd></dl>
+<a name=method.xview></a>
+<dl><dt> <strong>xview</strong>(<em>mode</em> = <strong>None</strong>,<em>value</em> = <strong>None</strong>,<em>units</em> = <strong>None</strong>)</dt><dd>
+Query or change the horizontal position of the scrollable interior
+    frame.  If <em>mode</em> is <strong>None</strong>, return a tuple of two numbers, each
+    between 0.0 and 1.0.  The first is the position of the left edge
+    of the visible region of the contents of the scrolled frame,
+    expressed as a fraction of the total width of the contents.  The
+    second is the position of the right edge of the visible region.</p>
+<p>    If <em>mode</em> == <strong>'moveto'</strong>, adjust the view of the interior so that
+    the fraction <em>value</em> of the total width of the contents is
+    off-screen to the left.  The <em>value</em> must be between <em>0.0</em> and
+    <em>1.0</em>.</p>
+
+<p>    If <em>mode</em> == <strong>'scroll'</strong>, adjust the view of the interior left or
+    right by a fixed amount.  If <em>what</em> is <strong>'units'</strong>, move the view in
+    units of <strong>horizfraction</strong>.  If <em>what</em> is <em>pages</em>, move the view in
+    units of the width of the scrolled frame.  If <em>value</em> is positive,
+    move to the right, otherwise move to the left.</p>
+
+
+
+</dd></dl>
+<a name=method.yview></a>
+<dl><dt> <strong>yview</strong>(<em>mode</em> = <strong>None</strong>,<em>value</em> = <strong>None</strong>,<em>units</em> = <strong>None</strong>)</dt><dd>
+Query or change the vertical position of the scrollable interior
+    frame.  If <em>mode</em> is <strong>None</strong>, return a tuple of two numbers, each
+    between 0.0 and 1.0.  The first is the position of the top edge
+    of the visible region of the contents of the scrolled frame,
+    expressed as a fraction of the total height of the contents.  The
+    second is the position of the bottom edge of the visible region.</p>
+<p>    If <em>mode</em> == <strong>'moveto'</strong>, adjust the view of the interior so that
+    the fraction <em>value</em> of the total height of the contents is
+    off-screen to the top.  The <em>value</em> must be between <em>0.0</em> and
+    <em>1.0</em>.</p>
+
+<p>    If <em>mode</em> == <strong>'scroll'</strong>, adjust the view of the interior up or
+    down by a fixed amount.  If <em>what</em> is <strong>'units'</strong>, move the view in
+    units of <strong>vertfraction</strong>.  If <em>what</em> is <em>pages</em>, move the view in
+    units of the height of the scrolled frame.  If <em>value</em> is
+    positive, move to down, otherwise move up.</p>
+
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create the ScrolledFrame.
+        self.sf = Pmw.ScrolledFrame(parent,
+                labelpos = 'n', label_text = 'ScrolledFrame',
+                usehullsize = 1,
+                hull_width = 400,
+                hull_height = 220,
+        )
+
+        # Create a group widget to contain the flex options.
+        w = Pmw.Group(parent, tag_text='Flex')
+        w.pack(side = 'bottom', padx = 5, pady = 3)
+
+        hflex = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Horizontal:',
+                items = ['fixed', 'expand', 'shrink', 'elastic'],
+                command = self.sethflex,
+                menubutton_width = 8,
+        )
+        hflex.pack(side = 'left', padx = 5, pady = 3)
+        hflex.invoke('fixed')
+
+        vflex = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Vertical:',
+                items = ['fixed', 'expand', 'shrink', 'elastic'],
+                command = self.setvflex,
+                menubutton_width = 8,
+        )
+        vflex.pack(side = 'left', padx = 5, pady = 3)
+        vflex.invoke('fixed')
+
+        # Create a group widget to contain the scrollmode options.
+        w = Pmw.Group(parent, tag_text='Scroll mode')
+        w.pack(side = 'bottom', padx = 5, pady = 0)
+
+        hmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Horizontal:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.sethscrollmode,
+                menubutton_width = 8,
+        )
+        hmode.pack(side = 'left', padx = 5, pady = 3)
+        hmode.invoke('dynamic')
+
+        vmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Vertical:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.setvscrollmode,
+                menubutton_width = 8,
+        )
+        vmode.pack(side = 'left', padx = 5, pady = 3)
+        vmode.invoke('dynamic')
+
+        self.radio = Pmw.RadioSelect(parent, selectmode = 'multiple',
+            command = self.radioSelected)
+        self.radio.add('center', text = 'Keep centered vertically')
+        self.radio.pack(side = 'bottom')
+
+        buttonBox = Pmw.ButtonBox(parent)
+        buttonBox.pack(side = 'bottom')
+        buttonBox.add('add', text = 'Add a button', command = self.addButton)
+        buttonBox.add('yview', text = 'Show yview', command = self.showYView)
+        buttonBox.add('scroll', text = 'Page down', command = self.pageDown)
+
+        # Pack this last so that the buttons do not get shrunk when
+        # the window is resized.
+        self.sf.pack(padx = 5, pady = 3, fill = 'both', expand = 1)
+
+        self.frame = self.sf.interior()
+
+        self.row = 0
+        self.col = 0
+
+        for count in range(15):
+            self.addButton()
+
+    def sethscrollmode(self, tag):
+        self.sf.configure(hscrollmode = tag)
+
+    def setvscrollmode(self, tag):
+        self.sf.configure(vscrollmode = tag)
+
+    def sethflex(self, tag):
+        self.sf.configure(horizflex = tag)
+
+    def setvflex(self, tag):
+        self.sf.configure(vertflex = tag)
+
+    def addButton(self):
+        button = tkinter.Button(self.frame,
+            text = '(%d,%d)' % (self.col, self.row))
+        button.grid(row = self.row, column = self.col, sticky = 'nsew')
+
+        self.frame.grid_rowconfigure(self.row, weight = 1)
+        self.frame.grid_columnconfigure(self.col, weight = 1)
+        if self.sf.cget('horizflex') == 'expand' or \
+                self.sf.cget('vertflex') == 'expand':
+            self.sf.reposition()
+
+        if 'center' in self.radio.getcurselection():
+            self.sf.update_idletasks()
+            self.centerPage()
+
+        if self.col == self.row:
+            self.col = 0
+            self.row = self.row + 1
+        else:
+            self.col = self.col + 1
+
+    def showYView(self):
+        print((self.sf.yview()))
+
+    def pageDown(self):
+        self.sf.yview('scroll', 1, 'page')
+
+    def radioSelected(self, name, state):
+        if state:
+            self.centerPage()
+
+    def centerPage(self):
+        # Example of how to use the yview() method of Pmw.ScrolledFrame.
+        top, bottom = self.sf.yview()
+        size = bottom - top
+        middle = 0.5 - size / 2
+        self.sf.yview('moveto', middle)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 18 February 2001
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

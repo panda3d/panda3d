@@ -1,0 +1,719 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>How to use Pmw megawidgets</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">How to use Pmw megawidgets</h1>
+    
+<center><P ALIGN="CENTER">
+<IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+</p></center>
+
+<dl>
+<dt> <h3>Introduction</h3></dt><dd>
+<p>
+  This document briefly describes the features of the Pmw megawidget
+  toolkit and how to use the megawidgets.  Using examples, it
+  describes those features common to all Pmw megawidgets.  For a
+  description of individual Pmw megawidgets see the
+  <a href="refindex.html">reference manuals</a>.
+  For complete information on general Pmw megawidget functionality see the
+  <a href="MegaArchetype.html">Pmw.MegaArchetype reference manual</a>.
+  For a lot more example code, run any of the files in the
+  Pmw <code>demos</code> directory.
+
+</p>
+
+<p>
+  A simple example of a megawidget is a counter.  This widget
+  contains an entry field and two small arrow buttons.  Users may
+  enter a value directly into the entry field or they may use the
+  buttons to increment and decrement the value displayed without
+  having to use the keyboard.  Having this and other megawidgets in
+  your toolbox allows you to choose the best graphical interface for
+  your application.
+
+</p>
+</dd>
+<dt> <h3>Getting started</h3></dt><dd>
+
+<b>Initialisation of Pmw</b>
+<br>
+<p>
+  To run the examples in the tutorial, make sure that the
+  Pmw <code>lib</code> directory is in <code>sys.path</code>.  You
+  should be able to cut and paste the examples into an interactive
+  python session, or you can copy them to a file and run the file with
+  python.
+
+</p>
+<p>
+  The following two lines should be entered before any of the
+  examples.  These import and initialise Pmw.
+  For more information on <code>Pmw.initialise()</code> see the
+  <a href="PmwFunctions.html">Pmw functions reference manual</a>.
+
+</p>
+
+<dl>
+<dd>
+<pre>
+import Pmw
+root = Pmw.initialise()
+</pre>
+</dd>
+</dl>
+
+<p>
+  If necessary, you can have more control over how Tkinter and Pmw are
+  initialised by using this form of initialisation:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+import Tkinter
+root = Tkinter.Tk()
+import Pmw
+Pmw.initialise(root)
+</pre>
+</dd>
+</dl>
+
+</dd>
+<dt> <h3>Megawidget construction</h3></dt><dd>
+
+<b>Creating a counter</b>
+<br>
+<p>
+  Now that you have the formalities out of the way, you can create and
+  pack a counter megawidget (see
+  <a href="Counter.html">Pmw.Counter reference manual</a>) using
+  its default configuration like this:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter1 = Pmw.Counter()
+counter1.pack(padx = 10, pady = 10)
+</pre>
+</dd>
+</dl>
+
+<p>
+  Now enter a number and click on the arrow buttons to see the number
+  increment or decrement.  The result looks something like this:
+
+</p>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = counter1.gif ALT = "Counter 1" WIDTH=220 HEIGHT=46>
+</p></center>
+
+<p>
+  The above example creates the counter as a child of the root window. 
+  If you want to create it as a child of another window (for example,
+  a Tkinter.Frame widget called 'frame'), add the parent as an
+  argument to the constructor:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter1a = Pmw.Counter(frame)
+</pre>
+</dd>
+</dl>
+
+</dd>
+<dt> <h3>Methods</h3></dt><dd>
+<p>
+  Once a megawidget has been created, you can call any of its other
+  methods in a similar way to Tk widgets.  The following sets the value
+  of the counter and then increments it:
+</p>
+
+<dl>
+<dd>
+<pre>
+counter1.setentry(41)
+counter1.increment()
+</pre>
+</dd>
+</dl>
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+<p>
+  Like any widget, a megawidget may have options to allow it to be
+  configured for a particular use.  Options allow the megawidget user
+  to modify the appearance and behaviour of the megawidget.  The
+  counter megawidget has several such options.  One of them,
+  <strong>datatype</strong>, specifies how the counter should count up
+  and down, such as, for example, by integers, reals, times or dates. 
+  The default value is <strong>'numeric'</strong>, which means the
+  counter expects integers to be entered and will support
+  incrementing and decrementing by whole numbers.
+  
+</p>
+  
+<p>
+  Another option is
+  <strong>increment</strong>, which specifies how many units should be
+  added or subtracted when the counter is incremented or decremented. 
+  Using these options, you can create a time counter, supporting the
+  format <strong>HH:MM:SS</strong>, and counting in minutes, like
+  this (note also the call to the <code>setentry</code> method to set
+  the contents of the entry field):
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter2 = Pmw.Counter(
+    datatype = 'time',
+    increment = 60)
+counter2.setentry('00:00:00')
+counter2.pack(padx = 10, pady = 10)
+</pre>
+</dd>
+</dl>
+
+<p>
+  Many megawidget options can be modified using the
+  <code>configure()</code> method.  For example, you can change the
+  value of the <strong>increment</strong> option to 10 minutes like
+  this:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter2.configure(increment = 60 * 10)
+</pre>
+</dd>
+</dl>
+
+<b>Initialisation options</b>
+<br>
+<p>
+  Some megawidget options can only be set when creating the megawidget.
+  These options can not be set by calling the <code>configure()</code>
+  method, but they can be queried in all the usual ways.  For example,
+  the counter has an <strong>orient</strong> initialisation option
+  which specifies whether the arrow buttons should appear to the
+  left and right of the entry field (<strong>'horizontal'</strong>)
+  or above and below (<strong>'vertical'</strong>).  You can create a
+  numeric counter with arrow buttons above and below the entry
+  field like this:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter3 = Pmw.Counter(orient = 'vertical')
+counter3.pack(padx = 10, pady = 10)
+</pre>
+</dd>
+</dl>
+
+<b>Querying options</b>
+<br>
+<p>
+  You can query the value of megawidget options (initialisation or
+  not) in similar ways as for normal Tkinter widgets.  For example,
+  the following code prints the values of some of the counter options.
+
+</p>
+
+<dl>
+<dd>
+<pre>
+print counter3.cget('increment')
+    --> 1
+print counter3.configure('orient')
+    --> ('orient', 'orient', 'Orient', 'horizontal', 'vertical')
+</pre>
+</dd>
+</dl>
+
+<p>
+  When a Tk widget option is queried, its value is always
+  returned as a string, regardless of the type used when setting the
+  option.  However, when a Pmw megawidget option is queried, a
+  reference to the object used when setting the option is returned. 
+  In other words it is not always a string.  For example, the type
+  returned by <code>cget('increment')</code> above was integer.
+
+</p>
+
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+<p>
+  Megawidgets are made up of other widgets, which we call
+  <em>components</em>.  Each component is known by a logical name and
+  may be either a simple Tk widget, or may itself be a megawidget. 
+  Pmw gives the megawidget user access to not only the functionality
+  supported directly by the megawidget through its options and methods,
+  but also to the components of the megawidget and their options and
+  methods.  To access a component directly, use the
+  <code>component()</code> method.  For example, to call method
+  <strong>doit</strong> of component <strong>comp</strong>
+  of megawidget <strong>mega</strong>:
+
+  </p>
+
+<dl>
+<dd>
+<pre>
+mega.component('comp').doit()
+</pre>
+</dd>
+</dl>
+
+<b>Component options</b>
+<br>
+<p>
+  There is a short-hand way to access the options of components, by
+  using the notation <em>component_option</em>.  This allows, for
+  example, a counter megawidget to be configured with different
+  colored backgrounds for each of its arrow button components (these
+  components are called <strong>downarrow</strong> and
+  <strong>uparrow</strong>):
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter2.configure(
+    downarrow_background = 'green',
+    uparrow_background = 'red')
+</pre>
+</dd>
+</dl>
+
+<b>The hull</b>
+<br>
+<p>
+  All megawidgets are enclosed in a containing widget which is created
+  automatically by the Pmw base classes.  For normal megawidgets the
+  container is a Tkinter Frame widget.  For megawidgets which are
+  toplevel windows, the container is a Tkinter Toplevel widget.  The
+  containing widget is accessible as the <strong>hull</strong>
+  component.
+
+</p>
+
+<p>
+  To access options of the containing widget use the form
+  <strong>hull_</strong><em>option</em>.  For example to create a
+  counter megawidget with a wide sunken border around it: 
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter4 = Pmw.Counter(
+    hull_relief = 'sunken',
+    hull_borderwidth = 5 
+)
+</pre>
+</dd>
+</dl>
+
+
+<b>The interior</b>
+<br>
+<p>
+  Some megawidgets, such as Dialog and LabeledWidget, also have a
+  frame into which users can pack other widgets.  This frame may be a
+  component but can also be accessed with the <code>interior()</code>
+  method.  For the Pmw.MegaToplevel and Pmw.MegaWidget classes, the
+  interior widget is the same as the hull widget.  For other
+  megawidgets, the hull is the outer, containing widget and the
+  interior is the empty frame which can be used to extend the
+  megawidget by including extra internal widgets.
+
+</p>
+
+<b>Sub components and aliases</b>
+<br>
+<p>
+  Components may themselves be megawidgets and so their
+  (sub-)components can be referred to using the notation
+  <em>component_sub-component</em>.  For example, the
+  <strong>entryfield</strong> component of the counter is a
+  Pmw.EntryField megawidget (which handles the input validation).  In
+  turn, this has a Tkinter.Entry component named
+  <strong>entry</strong>.  Therefore, you can change the background of
+  the counter's Tkinter.Entry widget with:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter2.configure(entryfield_entry_background = 'yellow')
+</pre>
+</dd>
+</dl>
+
+<p>
+  Most component path names (like <strong>entryfield_entry</strong>)
+  have a shorter <strong>alias</strong> defined for them.  In this
+  case, you can use the equivalent:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter2.configure(entry_background = 'yellow')
+</pre>
+</dd>
+</dl>
+
+<b>Changing the python class of a component</b>
+<br>
+<p>
+  Each megawidget component is an instance of some python class.  The
+  default class of each component is given in the reference manual. 
+  By using the special <strong>pyclass</strong> component option, you
+  can specify a different python class to use when creating the
+  component.  For example, to create a Pmw.Counter megawidget which
+  has a Tkinter.Button as its label, rather than the default
+  Tkinter.Label:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+counter5 = Pmw.Counter(
+        labelpos = 'w',
+        label_text = 'Hello',
+        label_pyclass = Tkinter.Button
+)
+
+</pre>
+</dd>
+</dl>
+
+</dd>
+<dt> <h3>Forwarding methods</h3></dt><dd>
+<p>
+  Since a Pmw megawidget is a normal python class, it both inherits
+  methods from its base classes and also may have other methods
+  defined for it in the usual way.
+  Pmw also supports a third way that a megawidget may gain methods -
+  by 'forwarding' methods to one or more of its subwidgets.  This is 
+  also known as 'delegating'. 
+  For example, a Pmw.Counter megawidget delegates the methods related
+  to its Pmw.EntryField component, <strong>entryfield</strong>, to the
+  component.  It does not have to explicitely define methods which
+  call the component methods.
+  This is why we can call <strong>counter2.setentry()</strong> - since
+  <strong>setentry()</strong> is a method of the Pmw.EntryField
+  component, it is available to the Pmw.Counter.
+
+</p>
+<p>
+  Methods already defined by a class or its base classes take
+  precedence over delegated methods.  For example, Pmw.Counter
+  inherits a <strong>cget</strong> method from Pmw.MegaArchetype. 
+  Therefore, this method is not delegated to the <strong>cget</strong>
+  method of Pmw.EntryField.
+
+</p>
+  
+</dd>
+<dt> <h3>Extending Pmw megawidgets</h3></dt><dd>
+
+<p>
+  There are several ways of extending Pmw megawidgets.  Firstly, the
+  flexibility of the options and components allows the widget's
+  appearance and behaviour to be greatly modified.  Secondly, widgets
+  of the user's choice can be added inside some megawidgets by using
+  the interior() method.  The Pmw classes MegaToplevel, MegaWidget,
+  Dialog and LabeledWidget are particularly designed to be extended in
+  this way.  For example, to create a dialog window containing a
+  counter:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+dialog = Pmw.Dialog(
+        title = 'Counter dialog',
+        buttons = ('OK', 'Cancel'))
+interior = dialog.interior()
+counter = Pmw.Counter(interior)
+counter.pack(padx = 20, pady = 20)
+</pre>
+</dd>
+</dl>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = counter2.gif ALT = "Counter 2" WIDTH=266 HEIGHT=126>
+</p></center>
+
+<p>
+  A third way to extend megawidgets is to inherit from (or subclass)
+  them.  See <a href="howtobuild.html">How to build Pmw
+  megawidgets</a> for information on how to use inheritance to extend
+  a megawidget by adding new options.  For simpler cases, where new
+  methods are to be added to an existing megawidget and/or the default
+  values for some options are to be changed, normal subclassing can be
+  used.  For example, to create new classes based on a Pmw.Counter,
+  one with a new method <code>getminutes()</code> and one with a
+  default datatype of 'time' and a white entry background:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+class MinuteCounter1(Pmw.Counter):
+
+    def getminutes(self):
+	return Pmw.timestringtoseconds(self.getvalue()) / 60
+
+class MinuteCounter2(Pmw.Counter):
+
+    def __init__(self, parent = None, **kw):
+        kw['datatype'] = 'time'
+        kw['entry_background'] = 'white'
+        kw['entryfield_value'] = '00:00:00'
+        kw['increment'] = 60
+	apply(Pmw.Counter.__init__, (self, parent), kw)
+</pre>
+</dd>
+</dl>
+
+</dd>
+<dt> <h2>A quick example</h2></dt><dd>
+<p>
+  The following code is a small example of how to use Pmw megawidgets. 
+  It is a complete program which displays three ways for the user to
+  enter a value -  using an up-down counter, an entry field with
+  validation and a dropdown combobox.
+
+</p>
+<dl>
+<dd>
+<pre>
+import Pmw
+root = Pmw.initialise(fontScheme = 'pmw1')
+
+counter = Pmw.Counter(
+        label_text = 'Counter:',
+        labelpos = 'w',
+        entryfield_value = '00:00:00',
+        entryfield_validate = 'time',
+        datatype='time',
+        increment=5*60,
+)
+counter.pack(fill = 'x', padx = 10, pady = 10)
+
+entry = Pmw.EntryField(
+        label_text = 'Real entry:',
+        labelpos = 'w',
+        value = '+2.9979e+8',
+        validate = 'real',
+)
+entry.pack(fill = 'x', padx = 10, pady = 10)
+
+combo = Pmw.ComboBox(
+        label_text = 'ComboBox:',
+        labelpos = 'w',
+        scrolledlist_items = map(str, range(20))
+)
+combo.pack(fill = 'x', padx = 10, pady = 10)
+
+# Make the labels line up neatly
+Pmw.alignlabels((counter, entry, combo))
+
+root.title('Pmw megawidgets example')
+root.mainloop()
+</pre>
+</dd>
+</dl>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = example1.gif ALT = "Example 1" WIDTH=321 HEIGHT=140>
+</p></center>
+
+</dd>
+<dt> <h3>Another example</h3></dt><dd>
+<p>
+  The following also shows how to use Pmw megawidgets.  It displays a
+  RadioSelect megawidget and an exit button packed into the root
+  window.
+
+</p>
+
+<dl>
+<dd>
+<pre>
+import Tkinter
+import Pmw
+
+def callback(tag):
+    # This is called whenever the user clicks on a
+    # button in the RadioSelect widget.
+    print tag, 'was pressed.'
+
+# Initialise Tkinter and Pmw.
+root = Pmw.initialise(fontScheme = 'pmw1')
+root.title('Pmw RadioSelect demonstration')
+
+# Create and pack a RadioSelect widget.
+radio = Pmw.RadioSelect(
+        command = callback,
+        labelpos = 'w',
+        label_text = 'Food group:')
+radio.pack(padx = 20, pady = 20)
+
+# Add some buttons to the RadioSelect.
+for text in ('Fruit', 'Vegetables', 'Cereals', 'Legumes'):
+    radio.add(text)
+radio.invoke('Vegetables')
+
+# Create an exit button.
+exit = Tkinter.Button(text = 'Exit', command = root.destroy)
+exit.pack(pady = 20)
+
+# Let's go.
+root.mainloop()
+</pre>
+</dd>
+</dl>
+
+<center><P ALIGN="CENTER">
+  <IMG SRC = example2.gif ALT = "Example 2" WIDTH=503 HEIGHT=158>
+</p></center>
+
+</dd>
+<dt> <h3>Using the Tk option database</h3></dt><dd>
+<p>
+  There are several ways to use the Tk option database to customise a
+  Pmw application.  Firstly you can customise all the basic Tk widgets
+  in the usual way.  For example, to set the background of all
+  Tkinter.Label widgets (whether a megawidget component or not):
+
+</p>
+
+<dl>
+<dd>
+<pre>
+root.option_add('*Label.background', 'pink')
+</pre>
+</dd>
+</dl>
+
+<p>
+  To set the background of all Pmw.EntryField <strong>label</strong>
+  components:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+root.option_add('*EntryField.Label.background', 'green')
+</pre>
+</dd>
+</dl>
+
+<p>
+  To set the background of all Pmw.EntryField components, including
+  the <strong>hull</strong> component:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+root.option_add('*EntryField*background', 'blue')
+</pre>
+</dd>
+</dl>
+
+<p>
+  The above option settings affect basic Tk widgets and, since it is
+  built into the Tk widgets, this functionality is always available. 
+  However, to be able to use the Tk option database to set the default
+  values for Pmw megawidget options, <code>Pmw.initialise()</code>
+  must be called with <code>useTkOptionDb = 1</code>.  If this is not
+  done, Pmw does not query the Tk option database for megawidget
+  option defaults.  This is the default behaviour because there is a
+  slight performance penalty for using the Tk option database.
+
+</p>
+
+<p>
+  Assuming <code>useTkOptionDb</code> has been set, the default
+  buttonbox position of all Pmw.Dialog megawidgets can be changed
+  with:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+root.option_add('*Dialog.buttonboxpos', 'e')
+</pre>
+</dd>
+</dl>
+
+<p>
+  To set the label position of all Pmw.EntryField megawidgets, thus giving
+  them a <strong>label</strong> component by default:
+
+</p>
+
+<dl>
+<dd>
+<pre>
+root.option_add('*EntryField.labelpos', 'w')
+</pre>
+</dd>
+</dl>
+
+</dd>
+</dl>
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

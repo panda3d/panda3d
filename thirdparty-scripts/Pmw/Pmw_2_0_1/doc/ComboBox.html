@@ -1,0 +1,346 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ComboBox reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ComboBox</h1>
+    
+<center><IMG SRC=ComboBox.gif ALT="" WIDTH=376 HEIGHT=246></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ComboBox() - 
+    dropdown or simple combination box
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A combobox contains an entry field and an associated scrolled
+    listbox.  When an item in the listbox is selected, it is displayed
+    in the entry field.  Optionally, the user may also edit the entry
+    field directly.</p>
+
+<p>    For a simple combobox, the scrolled listbox is displayed beneath
+    the entry field.  For a dropdown combobox (the default), the
+    scrolled listbox is displayed in a window which pops up beneath
+    the entry field when the user clicks on an arrow button on the
+    right of the entry field.  Either style allows an optional label.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.autoclear></a>
+<dl><dt> <strong>autoclear
+</strong></dt><dd>
+Initialisation option. If both <strong>autoclear</strong> and <strong>history</strong> are true, clear the entry field
+    whenever <strong>&lt;Return&gt;</strong> is pressed, after adding the value to the
+    history list. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.buttonaspect></a>
+<dl><dt> <strong>buttonaspect
+</strong></dt><dd>
+Initialisation option. The width of the arrow button as a proportion of the height.  The
+    height of the arrow button is set to the height of the entry
+    widget. The default is <strong>1.0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.dropdown></a>
+<dl><dt> <strong>dropdown
+</strong></dt><dd>
+Initialisation option. Specifies whether the combobox should be dropdown or simple. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.fliparrow></a>
+<dl><dt> <strong>fliparrow
+</strong></dt><dd>
+Initialisation option. If true, the arrow button is draw upside down when the listbox is
+    being displayed.  Used only in dropdown megawidgets. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.history></a>
+<dl><dt> <strong>history
+</strong></dt><dd>
+Initialisation option. When <strong>&lt;Return&gt;</strong> is pressed in the entry field, the current value
+    of the entry field is appended to the listbox if <strong>history</strong> is
+    true. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.listheight></a>
+<dl><dt> <strong>listheight
+</strong></dt><dd>
+Initialisation option. The height, in pixels, of the dropdown listbox. The default is <strong>200</strong>.</p>
+
+
+</dd></dl>
+<a name=option.selectioncommand></a>
+<dl><dt> <strong>selectioncommand
+</strong></dt><dd>
+The function to call when an item is selected.
+    If this function takes a long time to run, and you want the entry
+    field to be updated quickly, call <code>update_idletasks()</code> at the
+    beginning of the function.  Alternatively, wrap the function using
+    <code>Pmw.busycallback()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.unique></a>
+<dl><dt> <strong>unique
+</strong></dt><dd>
+Initialisation option. If both <strong>unique</strong> and <strong>history</strong> are true, the current value of the
+    entry field is not added to the listbox if it is already in the
+    list. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.arrowbutton></a>
+<dl><dt> <strong>arrowbutton
+</strong></dt><dd>
+In a dropdown combobox, the button to popup the listbox. By default, this component is a Tkinter.Canvas.</p>
+
+
+</dd></dl>
+<a name=component.entryfield></a>
+<dl><dt> <strong>entryfield
+</strong></dt><dd>
+The entry field where the current selection is displayed. By default, this component is a <a href="EntryField.html">Pmw.EntryField</a>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.popup></a>
+<dl><dt> <strong>popup
+</strong></dt><dd>
+In a dropdown combobox, the dropdown window. By default, this component is a Tkinter.Toplevel.</p>
+
+
+</dd></dl>
+<a name=component.scrolledlist></a>
+<dl><dt> <strong>scrolledlist
+</strong></dt><dd>
+The scrolled listbox which displays the items to select. By default, this component is a <a href="ScrolledListBox.html">Pmw.ScrolledListBox</a>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Component aliases</h3></dt><dd>
+Sub-components of components of this megawidget
+may be accessed via the following aliases.<p></p>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+Alias for <strong>entryfield_entry</strong>.
+</dd></dl>
+<dl><dt> <strong>listbox
+</strong></dt><dd>
+Alias for <strong>scrolledlist_listbox</strong>.
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the following classes
+are forwarded by this megawidget.
+Methods from <strong><a href="ScrolledListBox.html#methods">Pmw.ScrolledListBox</a></strong>
+are forwarded to the
+<strong>scrolledlist</strong> component.
+Methods from <strong><a href="EntryField.html#methods">Pmw.EntryField</a></strong>
+are forwarded to the
+<strong>entryfield</strong> component.
+Forwarded methods are searched in the order given.
+<p></p>
+<a name=method.bbox></a>
+<dl><dt> <strong>bbox</strong>(<em>index</em>)</dt><dd>
+This method is explicitly forwarded to the <strong>scrolledlist</strong>
+    component's <code>bbox()</code> method.  Without this explicit forwarding,
+    the <code>bbox()</code> method (aliased to <code>grid_bbox()</code>) of the <strong>hull</strong> would
+    be invoked, which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+<a name=method.clear></a>
+<dl><dt> <strong>clear</strong>()</dt><dd>
+Delete all items from the scrolled listbox and delete all text
+    from the entry widget.</p>
+
+
+</dd></dl>
+<a name=method.get></a>
+<dl><dt> <strong>get</strong>(<em>first</em> = <strong>None</strong>,<em>last</em> = <strong>None</strong>)</dt><dd>
+This is the same as the <code>get()</code> method of the <strong>scrolledlist</strong>
+    component, except that if <em>first</em> is <strong>None</strong> then
+    the value of the entry field is returned.</p>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>()</dt><dd>
+If a dropdown combobox, display the dropdown listbox.  In a simple
+    combobox, select the currently selected item in the listbox,
+    call the <strong>selectioncommand</strong> and return the result.</p>
+
+
+</dd></dl>
+<a name=method.selectitem></a>
+<dl><dt> <strong>selectitem</strong>(<em>index</em>,<em>setentry</em> = <strong>1</strong>)</dt><dd>
+Select the item in the listbox specified by <em>index</em> which may be
+    either one of the items in the listbox or the integer index of one
+    of the items in the listbox.</p>
+<p>    If <em>setentry</em> is true, also set the entry field to the selected
+    item.</p>
+
+
+
+</dd></dl>
+<a name=method.size></a>
+<dl><dt> <strong>size</strong>()</dt><dd>
+This method is explicitly forwarded to the <strong>scrolledlist</strong>
+    component's <code>size()</code> method.  Without this explicit forwarding,
+    the <code>size()</code> method (aliased to <code>grid_size()</code>) of the <strong>hull</strong> would
+    be invoked, which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        parent.configure(background = 'white')
+
+        # Create and pack the widget to be configured.
+        self.target = tkinter.Label(parent,
+                relief = 'sunken',
+                padx = 20,
+                pady = 20,
+        )
+        self.target.pack(fill = 'x', padx = 8, pady = 8)
+
+        # Create and pack the simple ComboBox.
+        words = ('Monti', 'Python', 'ik', 'den', 'Holie', 'Grailen', '(Bok)')
+        simple = Pmw.ComboBox(parent,
+                label_text = 'Simple ComboBox:',
+                labelpos = 'nw',
+                selectioncommand = self.changeText,
+                scrolledlist_items = words,
+                dropdown = 0,
+        )
+        simple.pack(side = 'left', fill = 'both',
+                expand = 1, padx = 8, pady = 8)
+
+        # Display the first text.
+        first = words[0]
+        simple.selectitem(first)
+        self.changeText(first)
+
+        # Create and pack the dropdown ComboBox.
+        colours = ('cornsilk1', 'snow1', 'seashell1', 'antiquewhite1',
+                'bisque1', 'peachpuff1', 'navajowhite1', 'lemonchiffon1',
+                'ivory1', 'honeydew1', 'lavenderblush1', 'mistyrose1')
+        dropdown = Pmw.ComboBox(parent,
+                label_text = 'Dropdown ComboBox:',
+                labelpos = 'nw',
+                selectioncommand = self.changeColour,
+                scrolledlist_items = colours,
+        )
+        dropdown.pack(side = 'left', anchor = 'n',
+                fill = 'x', expand = 1, padx = 8, pady = 8)
+
+        # Display the first colour.
+        first = colours[0]
+        dropdown.selectitem(first)
+        self.changeColour(first)
+
+    def changeColour(self, colour):
+        print(('Colour: ' + colour))
+        self.target.configure(background = colour)
+
+    def changeText(self, text):
+        print(('Text: ' + text))
+        self.target.configure(text = text)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 1 November 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

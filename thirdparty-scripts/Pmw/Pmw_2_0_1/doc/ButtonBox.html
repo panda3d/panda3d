@@ -1,0 +1,289 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ButtonBox reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ButtonBox</h1>
+    
+<center><IMG SRC=ButtonBox.gif ALT="" WIDTH=297 HEIGHT=65></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ButtonBox() - 
+    manager megawidget for buttons
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A button box is a container megawidget which manages a number of
+    buttons.  One of these buttons may be specified as the default and
+    it will be displayed with the platform specific appearance for a
+    default button.  The buttons may be laid out either horizontally
+    or vertically.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.orient></a>
+<dl><dt> <strong>orient
+</strong></dt><dd>
+Initialisation option. Specifies the orientation of the button box.  This may be
+    <strong>'horizontal'</strong> or <strong>'vertical'</strong>. The default is <strong>'horizontal'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.padx></a>
+<dl><dt> <strong>padx
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave between each button in the x
+    direction and also between the buttons and the outer edge of the
+    button box. The default is <strong>3</strong>.</p>
+
+
+</dd></dl>
+<a name=option.pady></a>
+<dl><dt> <strong>pady
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave between each button in the y
+    direction and also between the buttons and the outer edge of the
+    button box. The default is <strong>3</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.frame></a>
+<dl><dt> <strong>frame
+</strong></dt><dd>
+If the <strong>label</strong> component has been created (that is, the <strong>labelpos</strong>
+    option is not <strong>None</strong>), the <strong>frame</strong> component is created to act as
+    the container of the buttons created by the <code>add()</code> and
+    <code>insert()</code> methods.  If there is no <strong>label</strong> component, then no
+    <strong>frame</strong> component is created and the <strong>hull</strong> component acts as the
+    container. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Dynamic components</h3></dt><dd>
+<p>
+        Button components are created dynamically by the <code>add()</code> and
+        <code>insert()</code> methods.  By default, the buttons are of type
+        Tkinter.Button and are created with a component group of
+        <strong>Button</strong>.</p>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.add></a>
+<dl><dt> <strong>add</strong>(<em>componentName</em>,**<em>kw</em>)</dt><dd>
+Add a button to the end of the button box as a component named
+    <em>componentName</em>.  Any keyword arguments present will be passed to the
+    constructor when creating the button.  If the <strong>text</strong> keyword
+    argument is not given, the <strong>text</strong> option of the button defaults to
+    <em>componentName</em>.  The method returns the component widget.</p>
+
+
+</dd></dl>
+<a name=method.alignbuttons></a>
+<dl><dt> <strong>alignbuttons</strong>(<em>when</em> = <strong>'later'</strong>)</dt><dd>
+Set the widths of all the buttons to be the same as the width of
+    the widest button.  If <em>when</em> is <strong>'later'</strong>, this will occur when the
+    interpreter next becomes idle, otherwise the resizing will occur
+    immediately.</p>
+
+
+</dd></dl>
+<a name=method.button></a>
+<dl><dt> <strong>button</strong>(<em>buttonIndex</em>)</dt><dd>
+Return the button specified by <em>buttonIndex</em>, which may have any
+    of the forms accepted by the <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.delete></a>
+<dl><dt> <strong>delete</strong>(<em>index</em>)</dt><dd>
+Delete the button given by <em>index</em> from the button box.  <em>index</em>
+    may have any of the forms accepted by the <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.index></a>
+<dl><dt> <strong>index</strong>(<em>index</em>,<em>forInsert</em> = <strong>0</strong>)</dt><dd>
+Return the numerical index of the button corresponding to <em>index</em>.
+    This may be specified in any of the following forms:</p>
+<dl><dt><em>name</em></dt><dd>Specifies the button named <em>name</em>.<p></p>
+
+</dd>
+<dt><em>number</em></dt><dd>Specifies the button numerically, where <strong>0</strong> corresponds to
+         the left (or top) button.<p></p>
+
+</dd>
+<dt><strong>Pmw.END</strong></dt><dd>Specifies the right (or bottom) button.<p></p>
+
+</dd>
+<dt><strong>Pmw.DEFAULT</strong></dt><dd>Specifies the current default button.<p></p>
+
+</dd></dl>
+<p>    If <em>forInsert</em> is true, <strong>Pmw.END</strong> returns the number of buttons rather
+    than the index of the last button.</p>
+
+
+
+</dd></dl>
+<a name=method.insert></a>
+<dl><dt> <strong>insert</strong>(<em>componentName</em>,<em>beforeComponent</em> = <strong>0</strong>,**<em>kw</em>)</dt><dd>
+Add a button to the button box as a component named
+    <em>componentName</em>.  The button is added just before the button
+    specified by <em>beforeComponent</em>, which may have any of the forms
+    accepted by the <code>index()</code> method.  Any keyword arguments present
+    will be passed to the constructor when creating the button.  If
+    the <strong>text</strong> keyword argument is not given, the <strong>text</strong> option of the
+    button defaults to <em>componentName</em>.  To add a button to the end of
+    the button box, use <code>add()</code>.  The method returns the component
+    widget.</p>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>(<em>index</em> = <strong>Pmw.DEFAULT</strong>,<em>noFlash</em> = <strong>0</strong>)</dt><dd>
+Invoke the callback command associated with the button specified
+    by <em>index</em> and return the value returned by the callback.
+    Unless <em>noFlash</em> is true, flash the button to
+    indicate to the user that something happened.
+    <em>index</em> may have any of the forms accepted by the <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.numbuttons></a>
+<dl><dt> <strong>numbuttons</strong>()</dt><dd>
+Return the number of buttons in the button box.</p>
+
+
+</dd></dl>
+<a name=method.setdefault></a>
+<dl><dt> <strong>setdefault</strong>(<em>index</em>)</dt><dd>
+Set the default button to the button given by <em>index</em>.  This
+    causes the specified button to be displayed with the platform
+    specific appearance for a default button.  If <em>index</em> is <strong>None</strong>,
+    there will be no default button.  <em>index</em> may have any of the
+    forms accepted by the <code>index()</code> method.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the ButtonBox.
+        self.buttonBox = Pmw.ButtonBox(parent,
+                labelpos = 'nw',
+                label_text = 'ButtonBox:',
+                frame_borderwidth = 2,
+                frame_relief = 'groove')
+        self.buttonBox.pack(fill = 'both', expand = 1, padx = 10, pady = 10)
+
+        # Add some buttons to the ButtonBox.
+        self.buttonBox.add('OK', command = self.ok)
+        self.buttonBox.add('Apply', command = self.apply)
+        self.buttonBox.add('Cancel', command = self.cancel)
+
+        # Set the default button (the one executed when &lt;Return&gt; is hit).
+        self.buttonBox.setdefault('OK')
+        parent.bind('&lt;Return&gt;', self._processReturnKey)
+        parent.focus_set()
+
+        # Make all the buttons the same width.
+        self.buttonBox.alignbuttons()
+
+    def _processReturnKey(self, event):
+        self.buttonBox.invoke()
+
+    def ok(self):
+        print('You clicked on OK')
+
+    def apply(self):
+        print('You clicked on Apply')
+
+    def cancel(self):
+        print('You clicked on Cancel')
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 24 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

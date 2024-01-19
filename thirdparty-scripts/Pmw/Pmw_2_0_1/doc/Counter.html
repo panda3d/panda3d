@@ -1,0 +1,438 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.Counter reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.Counter</h1>
+    
+<center><IMG SRC=Counter.gif ALT="" WIDTH=400 HEIGHT=110></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.Counter() - 
+    entry field with up and down arrow buttons
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A counter contains an entry field and two arrow buttons to
+    increment and decrement the value in the entry field.  Standard
+    counting types include numbers, times and dates.  A user defined
+    counting function may also be supplied for specialised counting.
+    Counting can be used in combination with the entry field's
+    validation.  The components may be laid out horizontally or
+    vertically.</p>
+
+<p>    Each time an arrow button is pressed the value displayed in the
+    entry field is incremented or decremented by the value of the
+    <strong>increment</strong> option.  If the new value is invalid (according to the
+    entry field's <strong>validate</strong> option, perhaps due to exceeding minimum
+    or maximum limits), the old value is restored.</p>
+
+<p>    When an arrow button is pressed and the value displayed is not an
+    exact multiple of the <strong>increment</strong>, it is "truncated" up or down to
+    the nearest increment.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.autorepeat></a>
+<dl><dt> <strong>autorepeat
+</strong></dt><dd>
+If true, the counter will continue to count up or down while an
+    arrow button is held pressed down. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.buttonaspect></a>
+<dl><dt> <strong>buttonaspect
+</strong></dt><dd>
+Initialisation option. Specifies the width of the arrow buttons as a proportion of their
+    height.  Values less than <strong>1.0</strong> will produce thin arrow buttons.
+    Values greater than <strong>1.0</strong> will produce fat arrow buttons. The default is <strong>1.0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.datatype></a>
+<dl><dt> <strong>datatype
+</strong></dt><dd>
+Specifies how the counter should count up and down.</p>
+<p>    The most general way to specify the <strong>datatype</strong> option is as a
+    dictionary.  The kind of counting is specified by the <strong>'counter'</strong>
+    dictionary field, which may be either a function or the name of
+    one of the standard counters described below.  If the dictionary
+    does not have a <strong>'counter'</strong> field, the field defaults to
+    <strong>'numeric'</strong>.</p>
+
+<p>    Any other fields in the dictionary are passed on to the <em>counter</em>
+    function as keyword arguments.</p>
+
+<p>    If <strong>datatype</strong> is not a dictionary, then it is equivalent to
+    specifying it as a dictionary with a single <strong>'counter'</strong> field.
+    For example, <code>datatype = 'real'</code> is equivalent to
+    <code>datatype = {'counter' : 'real'}</code>.</p>
+
+<p>    The standard counters are:</p>
+
+<dl><dt><strong>'numeric'</strong></dt><dd>An integer number, as accepted by <code>int()</code>.<p></p>
+
+</dd>
+<dt><strong>'integer'</strong></dt><dd>Same as <strong>'numeric'</strong>.<p></p>
+
+</dd>
+<dt><strong>'real'</strong></dt><dd>A real number, as accepted by <code>float()</code>.  This
+        counter accepts a <strong>'separator'</strong> argument, which specifies
+        the character used to represent the decimal point.  The
+        default <strong>'separator'</strong> is <strong>'.'</strong>.<p></p>
+
+</dd>
+<dt><strong>'time'</strong></dt><dd>A time specification, as accepted by
+        <code>Pmw.timestringtoseconds()</code>.  This counter accepts a
+        <strong>'separator'</strong> argument, which specifies the character used to
+        separate the time fields.  The default separator is <strong>':'</strong>.
+        This counter also accepts a <strong>'time24'</strong> argument.  If this is
+        true, the time value is converted to a value between
+        <strong>'00:00:00'</strong> and <strong>'23:59:59'</strong>.  The default is false.<p></p>
+
+</dd>
+<dt><strong>'date'</strong></dt><dd>A date specification, as accepted by
+        <code>Pmw.datestringtojdn()</code>.  This counter accepts a <strong>'separator'</strong>
+        argument, which specifies the character used to separate the
+        three date fields.  The default is <strong>'/'</strong>.  This counter also
+        accepts a <strong>'format'</strong> argument, which is passed to
+        <code>Pmw.datestringtojdn()</code> to specify the desired ordering of the
+        fields.  The default is <strong>'ymd'</strong>.
+        This counter also accepts a <strong>'yyyy'</strong> argument.  If this is
+        false, the year field will be displayed as the year within the
+        century, otherwise it will be fully displayed.  In both cases
+        it will be displayed with at least 2 digits, using leading
+        zeroes.  The default is false.<p></p>
+
+</dd></dl>
+<p>    If the <strong>'counter'</strong> dictionary field is a function, then it will be
+    called whenever the counter is to be incremented or decremented.
+    The function is called with at least three arguments, the first
+    three being (<em>text</em>, <em>factor</em>, <em>increment</em>), where <em>text</em> is the
+    current contents of the entry field, <em>factor</em> is <strong>1</strong> when
+    incrementing or <strong>-1</strong> when decrementing, and <em>increment</em> is the
+    value of the <strong>increment</strong> megawidget option.</p>
+
+<p>    The other arguments are keyword arguments made up of the fields of
+    the <strong>datatype</strong> dictionary (excluding the <strong>'counter'</strong> field).</p>
+
+<p>    The <em>counter</em> function should return a string representing the
+    incremented or decremented value.  It should raise a
+    <strong>ValueError</strong> exception if the <em>text</em> is invalid.  In this case the
+    bell is rung and the entry text is not changed.</p>
+
+<p>    The default for <strong>datatype</strong> is <strong>numeric</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.increment></a>
+<dl><dt> <strong>increment
+</strong></dt><dd>
+Specifies how many units should be added or subtracted when the
+    counter is incremented or decremented.  If the currently displayed
+    value is not a multiple of <strong>increment</strong>, the value is changed to
+    the next multiple greater or less than the current value.</p>
+<p>    For the number datatypes, the value of <strong>increment</strong> is a number.
+    For the <strong>'time'</strong> datatype, the value is in seconds.  For the
+    <strong>'date'</strong> datatype, the value is in days. The default is <strong>1</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.initwait></a>
+<dl><dt> <strong>initwait
+</strong></dt><dd>
+Specifies the initial delay (in milliseconds) before a depressed
+    arrow button automatically starts to repeat counting. The default is <strong>300</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.orient></a>
+<dl><dt> <strong>orient
+</strong></dt><dd>
+Initialisation option. Specifies whether the arrow buttons should appear to the left and
+    right of the entry field (<strong>'horizontal'</strong>) or above and below
+    (<strong>'vertical'</strong>). The default is <strong>'horizontal'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.padx></a>
+<dl><dt> <strong>padx
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave around the arrow buttons in
+    the x direction. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.pady></a>
+<dl><dt> <strong>pady
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave around the arrow buttons in
+    the y direction. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.repeatrate></a>
+<dl><dt> <strong>repeatrate
+</strong></dt><dd>
+Specifies the delay (in milliseconds) between automatic counts
+    while an arrow button is held pressed down. The default is <strong>50</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.downarrow></a>
+<dl><dt> <strong>downarrow
+</strong></dt><dd>
+The arrow button used for decrementing the counter.  Depending on
+    the value of <strong>orient</strong>, it will appear on the left or below the
+    entry field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.entryfield></a>
+<dl><dt> <strong>entryfield
+</strong></dt><dd>
+The entry field widget where the text is entered, displayed and
+    validated. By default, this component is a <a href="EntryField.html">Pmw.EntryField</a>.</p>
+
+
+</dd></dl>
+<a name=component.frame></a>
+<dl><dt> <strong>frame
+</strong></dt><dd>
+If the <strong>label</strong> component has been created (that is, the <strong>labelpos</strong>
+    option is not <strong>None</strong>), the <strong>frame</strong> component is created to act as
+    the container of the entry field and arrow buttons.  If there is
+    no <strong>label</strong> component, then no <strong>frame</strong> component is created and the
+    <strong>hull</strong> component acts as the container.  In either case the border
+    around the container of the entry field and arrow buttons will be
+    raised (but not around the label). By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.uparrow></a>
+<dl><dt> <strong>uparrow
+</strong></dt><dd>
+The arrow button used for incrementing the counter.  Depending on
+    the value of <strong>orient</strong>, it will appear on the right or above the
+    entry field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Component aliases</h3></dt><dd>
+Sub-components of components of this megawidget
+may be accessed via the following aliases.<p></p>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+Alias for <strong>entryfield_entry</strong>.
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong><a href="EntryField.html#methods">Pmw.EntryField</a></strong> class
+are forwarded by this megawidget to the
+<strong>entryfield</strong> component.
+<p></p>
+<a name=method.decrement></a>
+<dl><dt> <strong>decrement</strong>()</dt><dd>
+Decrement the counter once, as if the down arrow had been pressed.</p>
+
+
+</dd></dl>
+<a name=method.increment></a>
+<dl><dt> <strong>increment</strong>()</dt><dd>
+Increment the counter once, as if the up arrow had been pressed.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Need to use long ints here because on the Macintosh the maximum size
+        # of an integer is smaller than the value returned by time.time().
+        now = (int(time.time()) / 300) * 300
+
+        # Create the Counters.
+        self._date = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'Date (4-digit year):',
+                entryfield_value =
+                        time.strftime('%d/%m/%Y', time.localtime(now)),
+                entryfield_command = self.execute,
+                entryfield_validate = {'validator' : 'date', 'format' : 'dmy'},
+                datatype = {'counter' : 'date', 'format' : 'dmy', 'yyyy' : 1})
+
+        self._isodate = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'ISO-Date (4-digit year):',
+                entryfield_value =
+                        time.strftime('%Y-%m-%d', time.localtime(now)),
+                entryfield_command = self.execute,
+                entryfield_validate = {'validator' : 'date', 'format' : 'ymd',
+                        'separator' : '-' },
+                datatype = {'counter' : 'date', 'format' : 'ymd', 'yyyy' : 1,
+                        'separator' : '-' })
+
+        self._time = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'Time:',
+                entryfield_value =
+                        time.strftime('%H:%M:%S', time.localtime(now)),
+                entryfield_validate = {'validator' : 'time',
+                        'min' : '00:00:00', 'max' : '23:59:59',
+                        'minstrict' : 0, 'maxstrict' : 0},
+                datatype = {'counter' : 'time', 'time24' : 1},
+                increment=5*60)
+        self._real = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'Real (with comma)\nand extra\nlabel lines:',
+                label_justify = 'left',
+                entryfield_value = '1,5',
+                datatype = {'counter' : 'real', 'separator' : ','},
+                entryfield_validate = {'validator' : 'real',
+                        'min' : '-2,0', 'max' : '5,0',
+                        'separator' : ','},
+                increment = 0.1)
+        self._custom = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'Custom:',
+                entryfield_value = specialword[:4],
+                datatype = _custom_counter,
+                entryfield_validate = _custom_validate)
+        self._int = Pmw.Counter(parent,
+                labelpos = 'w',
+                label_text = 'Vertical integer:',
+                orient = 'vertical',
+                entry_width = 2,
+                entryfield_value = 50,
+                entryfield_validate = {'validator' : 'integer',
+                        'min' : 0, 'max' : 99}
+        )
+
+        counters = (self._date, self._isodate, self._time, self._real,
+                self._custom)
+        Pmw.alignlabels(counters)
+
+        # Pack them all.
+        for counter in counters:
+            counter.pack(fill='both', expand=1, padx=10, pady=5)
+        self._int.pack(padx=10, pady=5)
+
+    def execute(self):
+        print(('Return pressed, value is', self._date.get()))
+
+specialword = 'Monti Python ik den Holie Grailen (Bok)'
+
+def _custom_validate(text):
+    if specialword.find(text) == 0:
+        return 1
+    else:
+        return -1
+
+def _custom_counter(text, factor, increment):
+    # increment is ignored here.
+    if specialword.find(text) == 0:
+        length = len(text)
+        if factor == 1:
+            if length &gt;= len(specialword):
+                raise ValueError('maximum length reached')
+            return specialword[:length + 1]
+        else:
+            if length == 0:
+                raise ValueError('empty string')
+            return specialword[:length - 1]
+    else:
+        raise ValueError('bad string ' + text)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 24 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

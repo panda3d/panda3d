@@ -1,0 +1,299 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.CounterDialog reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.CounterDialog</h1>
+    
+<center><IMG SRC=CounterDialog.gif ALT="" WIDTH=268 HEIGHT=198></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.CounterDialog() - 
+    selection dialog displaying a counter
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="Dialog.html">Pmw.Dialog</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A counter dialog is a dialog window which displays a counter
+    which can be used to prompt the user for a value.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.activatecommand></a>
+<dl><dt> <strong>activatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    activated by a call to <code>activate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.borderx></a>
+<dl><dt> <strong>borderx
+</strong></dt><dd>
+Initialisation option. The padding to the left and right of the counter. The default is <strong>20</strong>.</p>
+
+
+</dd></dl>
+<a name=option.bordery></a>
+<dl><dt> <strong>bordery
+</strong></dt><dd>
+Initialisation option. The padding above and below the counter. The default is <strong>20</strong>.</p>
+
+
+</dd></dl>
+<a name=option.buttonboxpos></a>
+<dl><dt> <strong>buttonboxpos
+</strong></dt><dd>
+Initialisation option. Specifies on which side of the dialog window to place the button
+    box.  Must be one of <strong>'n'</strong>, <strong>'s'</strong>, <strong>'e'</strong> or <strong>'w'</strong>. The default is <strong>'s'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.buttons></a>
+<dl><dt> <strong>buttons
+</strong></dt><dd>
+This must be a tuple or a list and specifies the names on the
+    buttons in the button box. The default is <strong>('OK',)</strong>.</p>
+
+
+</dd></dl>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+Specifies a function to call whenever a button in the button box
+    is invoked or the window is deleted by the window manager.  The
+    function is called with a single argument, which is the name of
+    the button which was invoked, or <strong>None</strong> if the window was deleted
+    by the window manager.</p>
+<p>    If the value of <strong>command</strong> is not callable, the default behaviour
+    is to deactivate the window if it is active, or withdraw the
+    window if it is not active.  If it is deactivated, <code>deactivate()</code>
+    is called with the button name or <strong>None</strong> as described above. The default is <strong>None</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.deactivatecommand></a>
+<dl><dt> <strong>deactivatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    deactivated by a call to <code>deactivate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.defaultbutton></a>
+<dl><dt> <strong>defaultbutton
+</strong></dt><dd>
+Specifies the default button in the button box.  If the <strong>&lt;Return&gt;</strong>
+    key is hit when the dialog has focus, the default button will be
+    invoked.  If <strong>defaultbutton</strong> is <strong>None</strong>, there will be no default
+    button and hitting the <strong>&lt;Return&gt;</strong> key will have no effect. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.master></a>
+<dl><dt> <strong>master
+</strong></dt><dd>
+This is used by the <code>activate()</code> method to control whether the
+    window is made <em>transient</em> during modal dialogs.  See the
+    <code>activate()</code> method. The default is <strong>'parent'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.separatorwidth></a>
+<dl><dt> <strong>separatorwidth
+</strong></dt><dd>
+Initialisation option. If this is greater than <strong>0</strong>, a separator line with the specified
+    width will be created between the button box and the child site,
+    as a component named <strong>separator</strong>.  Since the default border of the
+    button box and child site is <strong>raised</strong>, this option does not
+    usually need to be set for there to be a visual separation between
+    the button box and child site. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.title></a>
+<dl><dt> <strong>title
+</strong></dt><dd>
+This is the title that the window manager displays in the title
+    bar of the window. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.buttonbox></a>
+<dl><dt> <strong>buttonbox
+</strong></dt><dd>
+This is the button box containing the buttons for the dialog.  By
+    default it is created with the options
+    <code>(hull_borderwidth = 1, hull_relief = 'raised')</code>. By default, this component is a <a href="ButtonBox.html">Pmw.ButtonBox</a>.</p>
+
+
+</dd></dl>
+<a name=component.counter></a>
+<dl><dt> <strong>counter
+</strong></dt><dd>
+The counter for the user to enter a value. By default, this component is a <a href="Counter.html">Pmw.Counter</a>.</p>
+
+
+</dd></dl>
+<a name=component.dialogchildsite></a>
+<dl><dt> <strong>dialogchildsite
+</strong></dt><dd>
+This is the child site for the dialog, which may be used to
+    specialise the megawidget by creating other widgets within it.  By
+    default it is created with the options
+    <code>(borderwidth = 1, relief = 'raised')</code>. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Toplevel.</p>
+
+
+</dd></dl>
+<a name=component.separator></a>
+<dl><dt> <strong>separator
+</strong></dt><dd>
+If the <strong>separatorwidth</strong> initialisation option is non-zero, the
+    <strong>separator</strong> component is the line dividing the area between the
+    button box and the child site. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Component aliases</h3></dt><dd>
+Sub-components of components of this megawidget
+may be accessed via the following aliases.<p></p>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+Alias for <strong>counter_entryfield_entry</strong>.
+</dd></dl>
+<dl><dt> <strong>entryfield
+</strong></dt><dd>
+Alias for <strong>counter_entryfield</strong>.
+</dd></dl>
+<dl><dt> <strong>label
+</strong></dt><dd>
+Alias for <strong>counter_label</strong>.
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="Dialog.html#methods">Pmw.Dialog</a></strong>.
+In addition, methods from the
+<strong><a href="Counter.html#methods">Pmw.Counter</a></strong> class
+are forwarded by this megawidget to the
+<strong>counter</strong> component.
+<p></p>
+<a name=method.deleteentry></a>
+<dl><dt> <strong>deleteentry</strong>(<em>first</em>,<em>last</em> = <strong>None</strong>)</dt><dd>
+Delete text from the counter's entry widget.  An alias for
+    <code>component('entry').delete()</code>.</p>
+
+
+</dd></dl>
+<a name=method.indexentry></a>
+<dl><dt> <strong>indexentry</strong>(<em>index</em>)</dt><dd>
+An alias for <code>component('entry').index()</code>.</p>
+
+
+</dd></dl>
+<a name=method.insertentry></a>
+<dl><dt> <strong>insertentry</strong>(<em>index</em>,<em>text</em>)</dt><dd>
+Insert text into the counter's entry widget.  An alias for
+    <code>component('entry').insert()</code>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create the dialog to prompt for the number of times to ring the bell.
+        self.dialog = Pmw.CounterDialog(parent,
+            label_text = 'Enter the number of times to\n' + \
+                    'sound the bell (1 to 5)\n',
+            counter_labelpos = 'n',
+            entryfield_value = 2,
+            counter_datatype = 'numeric',
+            entryfield_validate =
+                {'validator' : 'numeric', 'min' : 1, 'max' : 5},
+            buttons = ('OK', 'Cancel'),
+            defaultbutton = 'OK',
+            title = 'Bell ringing',
+            command = self.execute)
+        self.dialog.withdraw()
+
+        # Create button to launch the dialog.
+        w = tkinter.Button(parent, text = 'Show counter dialog',
+                command = self.dialog.activate)
+        w.pack(padx = 8, pady = 8)
+
+    def execute(self, result):
+        if result is None or result == 'Cancel':
+            print('Bell ringing cancelled')
+            self.dialog.deactivate()
+        else:
+            count = self.dialog.get()
+            if not self.dialog.valid():
+                print(('Invalid entry: "' + count + '"'))
+            else:
+                print(('Ringing the bell ' + count + ' times'))
+                for num in range(int(count)):
+                    if num != 0:
+                        self.dialog.after(200)
+                    self.dialog.bell()
+                self.dialog.deactivate()
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 18 May 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

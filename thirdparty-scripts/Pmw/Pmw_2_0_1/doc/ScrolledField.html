@@ -1,0 +1,170 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ScrolledField reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ScrolledField</h1>
+    
+<center><IMG SRC=ScrolledField.gif ALT="" WIDTH=268 HEIGHT=37></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ScrolledField() - 
+    single line scrollable output field
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A scrolled field displays a single line of text.  If the text is
+    too wide to display in the megawidget it can be scrolled to the
+    left and right by the user by dragging with the middle mouse
+    button.  The text is also selectable by clicking or dragging with
+    the left mouse button.</p>
+
+<p>    It can be used instead of a Tkinter.Label widget when displaying
+    text of unknown width such as application status messages.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.text></a>
+<dl><dt> <strong>text
+</strong></dt><dd>
+Specifies the text to display in the scrolled field. The default is <strong>''</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.entry></a>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+This is used to display the text and allows the user to scroll and
+    select the text.  The <strong>state</strong> of this component is set to
+    <strong>'readonly'</strong> (or <strong>'disabled'</strong> in earlier versions of Tcl/Tk which do
+    not support  <strong>'readonly'</strong>), so that the user is unable to modify the text. By default, this component is a Tkinter.Entry.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+This megawidget has no methods of its own.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Entry</strong> class
+are forwarded by this megawidget to the
+<strong>entry</strong> component.
+<p></p>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the ScrolledField.
+        self._field = Pmw.ScrolledField(parent, entry_width = 30,
+                entry_relief='groove', labelpos = 'n',
+                label_text = 'Scroll the field using the\nmiddle mouse button')
+        self._field.pack(fill = 'x', expand = 1, padx = 10, pady = 10)
+
+        # Create and pack a button to change the ScrolledField.
+        self._button = tkinter.Button(parent, text = 'Change field',
+                command = self.execute)
+        self._button.pack(padx = 10, pady = 10)
+
+        self._index = 0
+        self.execute()
+
+    def execute(self):
+        self._field.configure(text = lines[self._index % len(lines)])
+        self._index = self._index + 1
+
+lines = (
+  'Alice was beginning to get very tired of sitting by her sister',
+  'on the bank, and of having nothing to do:  once or twice she had',
+  'peeped into the book her sister was reading, but it had no',
+  'pictures or conversations in it, "and what is the use of a book,"',
+  'thought Alice "without pictures or conversation?"',
+  'Alice\'s Adventures in Wonderland',
+  'Lewis Carroll',
+)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 23 August 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

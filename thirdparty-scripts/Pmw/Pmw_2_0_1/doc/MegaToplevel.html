@@ -1,0 +1,267 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.MegaToplevel reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.MegaToplevel</h1>
+    
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.MegaToplevel() - 
+    base class for megawidgets within a toplevel
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaArchetype.html">Pmw.MegaArchetype</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This class creates a megawidget contained within a toplevel
+    window.  It may be used directly to create a toplevel megawidget
+    or it may be used as a base class for more specialised toplevel
+    megawidgets, such as <a href="Dialog.html">Pmw.Dialog</a>.  It creates a Tkinter.Toplevel
+    component, named <strong>hull</strong>, to act as the container of the megawidget.
+    The window class name for the <strong>hull</strong> widget is set to the
+    most-specific class name for the megawidget.  Derived classes
+    specialise this class by creating other widget components as
+    children of the <strong>hull</strong> widget.</p>
+
+<p>    The megawidget may be used as either a normal toplevel window or
+    as a modal dialog.  Use <code>show()</code> and <code>withdraw()</code> for normal use
+    and <code>activate()</code> and <code>deactivate()</code> for modal dialog use.  If the
+    window is deleted by the window manager while being shown
+    normally, the default behaviour is to destroy the window.  If the
+    window is deleted by the window manager while the window is active
+    (ie:  when used as a modal dialog), the window is deactivated.
+    Use the <code>userdeletefunc()</code> and <code>usermodaldeletefunc()</code> methods to
+    override these behaviours.  Do not call <code>protocol()</code> to set the
+    <strong>WM_DELETE_WINDOW</strong> window manager protocol directly if you want to
+    use this window as a modal dialog.</p>
+
+<p>    The currently active windows form a stack with the most recently
+    activated window at the top of the stack.  All mouse and
+    keyboard events are sent to this top window.  When it
+    deactivates, the next window in the stack will start to receive
+    events.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.activatecommand></a>
+<dl><dt> <strong>activatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    activated by a call to <code>activate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.deactivatecommand></a>
+<dl><dt> <strong>deactivatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    deactivated by a call to <code>deactivate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.master></a>
+<dl><dt> <strong>master
+</strong></dt><dd>
+This is used by the <code>activate()</code> method to control whether the
+    window is made <em>transient</em> during modal dialogs.  See the
+    <code>activate()</code> method. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.title></a>
+<dl><dt> <strong>title
+</strong></dt><dd>
+This is the title that the window manager displays in the title
+    bar of the window. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Toplevel.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaArchetype.html#methods">Pmw.MegaArchetype</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Toplevel</strong> class
+are forwarded by this megawidget to the
+<strong>hull</strong> component.
+<p></p>
+<a name=method.activate></a>
+<dl><dt> <strong>activate</strong>(<em>globalMode</em> = <strong>0</strong>,<em>geometry</em> = <strong>'centerscreenfirst'</strong>)</dt><dd>
+Display the window as a modal dialog.  This means that all mouse
+    and keyboard events go to this window and no other windows can
+    receive any events.  If you do not want to restrict mouse and
+    keyboard events to this window, use the <code>show()</code> method instead.</p>
+<p>    If the BLT extension to Tk is present, a busy cursor will be
+    displayed on other toplevel windows, using <code>Pmw.showbusycursor()</code>.</p>
+
+<p>    The <code>activate()</code> method does not return until the <code>deactivate()</code>
+    method is called, when the window is withdrawn, the grab released
+    and the result returned.</p>
+
+<p>    If <em>globalMode</em> is false, the window will grab control of the
+    pointer and keyboard, preventing any events from being delivered
+    to any other toplevel windows within the application.  If
+    <em>globalMode</em> is true, the grab will prevent events from being
+    delivered to any other toplevel windows regardless of application.
+    Global grabs should be used sparingly, if at all.</p>
+
+<p>    If <em>globalMode</em> is <strong>'nograb'</strong>, then no grab is performed.  If BLT
+    is present, this will allow mouse and keyboard events to be
+    received by other windows whose <strong>exclude</strong> busycursor attribute has
+    been set to true by a call to <code>Pmw.setbusycursorattributes()</code>.
+    Note that if <strong>'nograb'</strong> is used and BLT is not present, then <em>all</em>
+    other windows will receive mouse and keyboard events.  This is
+    because, in plain Tk, there is no way to specify that two windows
+    (only) receive events.  If your application may be used without
+    BLT, then do not use <strong>'nograb'</strong>.</p>
+
+<p>    When the window is displayed, it is positioned on the screen
+    according to <em>geometry</em> which may be one of:</p>
+
+<dl><dt><strong>centerscreenfirst</strong></dt><dd>The window will be centered the first time it is activated.
+        On subsequent activations it will be positioned in the same
+        position as the last time it was displayed, even if it has
+        been moved by the user.<p></p>
+
+</dd>
+<dt><strong>centerscreenalways</strong></dt><dd>The window will be be centered on the screen (halfway across
+        and one third down).<p></p>
+
+</dd>
+<dt><strong>first</strong> + <em>spec</em></dt><dd>It is assumed that the rest of the argument (after <strong>'first'</strong>)
+        is a standard geometry specification.  The window will be
+        positioned using this specification the first time it is
+        activated.  On subsequent activations it will be positioned in
+        the same position as the last time it was displayed, even if
+        it has been moved by the user.  For example,
+        <code>geometry = first+100+100</code> will initially display the window
+        at position (100,100).  Other calls to <code>activate()</code> will not
+        change the previous position of the window.<p></p>
+
+</dd>
+<dt><em>spec</em></dt><dd>This is a standard geometry specification.  The window will be
+        be positioned using this specification.<p></p>
+
+</dd></dl>
+<p>    If the <strong>BLT</strong> Tcl extension library is present, a <strong>clock</strong> cursor
+    will be displayed until the window is deactivated.</p>
+
+<p>    If the <strong>activatecommand</strong> option is callable, it is called just
+    before the window begins to wait for the result.</p>
+
+<p>    If the <strong>master</strong> option is not <strong>None</strong>, the window will become a
+    transient window of <strong>master</strong>, which should be a toplevel window.
+    If <strong>master</strong> has the special value of <strong>'parent'</strong>, the master is the
+    toplevel window of the window's parent.</p>
+
+
+
+</dd></dl>
+<a name=method.active></a>
+<dl><dt> <strong>active</strong>()</dt><dd>
+Return true if the megawidget is currently active (that is,
+    <code>activate()</code> is currently waiting for a result to be passed to it
+    by a call to <code>deactivate()</code>).</p>
+
+
+</dd></dl>
+<a name=method.deactivate></a>
+<dl><dt> <strong>deactivate</strong>(<em>result</em> = <strong>None</strong>)</dt><dd>
+This should be called while a call to <code>activate()</code> is waiting.  It
+    will withdraw the window, release the grab and cause the
+    <code>activate()</code> call to return with the value of <em>result</em>.</p>
+<p>    If the <strong>deactivatecommand</strong> option is callable, it is called just
+    before the <code>deactivate()</code> method returns.</p>
+
+
+
+</dd></dl>
+<a name=method.destroy></a>
+<dl><dt> <strong>destroy</strong>()</dt><dd>
+Destroy the <strong>hull</strong> component widget, including all of its
+    children.  If the megawidget is currently active, deactivate it.</p>
+
+
+</dd></dl>
+<a name=method.show></a>
+<dl><dt> <strong>show</strong>(<em>master</em> = <strong>None</strong>)</dt><dd>
+Make the window visible.  This raises or deiconifies the toplevel
+    window.  If the window has previously been shown it will remain in
+    the same position.  This means that calling <code>withdraw()</code> then
+    <code>show()</code> will not move the window, whereas calling <code>withdraw()</code>
+    then <code>deiconify()</code> may change the window's position.  (This may
+    depend on the behaviour of the window manager.)</p>
+
+
+</dd></dl>
+<a name=method.userdeletefunc></a>
+<dl><dt> <strong>userdeletefunc</strong>(<em>func</em> = <strong>None</strong>)</dt><dd>
+If <em>func</em> is <strong>None</strong>, return the function that will be called
+    when the window is deleted by the window manager while being
+    displayed normally.  If <em>func</em> is not <strong>None</strong>, set this function to
+    <em>func</em>.  By default, the function is <code>self.destroy</code>.</p>
+
+
+</dd></dl>
+<a name=method.usermodaldeletefunc></a>
+<dl><dt> <strong>usermodaldeletefunc</strong>(<em>func</em> = <strong>None</strong>)</dt><dd>
+If <em>func</em> is <strong>None</strong>, return the function that will be called
+    when the window is deleted by the window manager while it is
+    active (ie:  when being used as a modal dialog).  If <em>func</em> is not
+    <strong>None</strong>, set this function to <em>func</em>.  By default, the function is
+    <code>self.deactivate</code>.</p>
+
+
+</dd></dl>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 22 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

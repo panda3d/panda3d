@@ -1,0 +1,467 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.MegaArchetype reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.MegaArchetype</h1>
+    
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.MegaArchetype() - 
+    abstract base class for all Pmw megawidgets
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+Tkinter.object<br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This class is the basis for all Pmw megawidgets.  It provides
+    methods to manage options and component widgets.</p>
+
+<p>    This class is normally used as a base class for other classes.  If
+    the <em>hullClass</em> argument is specified, such as in the <a href="MegaWidget.html">Pmw.MegaWidget</a>
+    and <a href="MegaToplevel.html">Pmw.MegaToplevel</a> classes, a container widget is created to act
+    as the parent of all other component widgets.  Classes derived
+    from these sub classes create other component widgets and options
+    to implement megawidgets that can be used in applications.</p>
+
+<p>    If no <em>hullClass</em> argument is given to the constructor, no
+    container widget is created and only the option configuration
+    functionality is available.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+<p>
+        A megawidget is generally made up of other widgets packed
+        within the megawidget's containing widget.  These sub-widgets
+        are called the <em>components</em> of the megawidget and are given
+        logical names for easy reference.  The component mechanism
+        allows the user of a megawidget to gain controlled access to
+        some of the internals of the megawidget, for example to call a
+        method of a component or to set a component's configuration
+        options.</p>
+
+<p>        <strong>Sub components:</strong> If a component is itself a megawidget containing
+        sub-components, then these sub-components can be referred to
+        using the notation <em>component_subcomponent</em>.  For example,
+        <a href="ComboBox.html">Pmw.ComboBox</a> has a component named <strong>entryfield</strong> which is an
+        instance of <a href="EntryField.html">Pmw.EntryField</a>, which itself has a Tkinter.Entry
+        component named <strong>entry</strong>.  In the context of the combobox, this
+        entry widget can be referred to as <strong>entryfield_entry</strong>.</p>
+
+<p>        <strong>Component aliases:</strong> Because the sub-component notation may
+        make component names inconveniently long, components and
+        sub-components can be aliased to simpler names.  For example,
+        the <strong>entryfield_entry</strong> sub-component of <a href="ComboBox.html">Pmw.ComboBox</a> is aliased
+        to simply <strong>entry</strong>.  If there is no conflict in component
+        names, sub-component names are usually aliased to the name of
+        the "leaf" component.</p>
+
+<p>        <strong>Component groups:</strong> Similar components of a megawidget can be
+        given a <em>group</em> name, which allows all components of a group
+        to be referenced using the one group name.  For example, the
+        two arrow components of <a href="Counter.html">Pmw.Counter</a> have a group name of <strong>Arrow</strong>.
+        Also, megawidgets that can create an unlimited number of
+        similar components, such as <a href="ButtonBox.html">Pmw.ButtonBox</a>, create each of these
+        components with the same group name.  By convention, group
+        names begin with a capital letter.</p>
+<p>        </p>
+
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+<p>
+        A megawidget defines options which allow the megawidget user
+        to modify the appearance and behaviour of the megawidget.
+        Using the same technique as Tkinter widgets, the values of
+        megawidget options may be set in calls to the constructor and
+        to <code>configure()</code> and the values may be queried by calls to
+        <code>cget()</code> and <code>configure()</code>.  Like Tkinter widgets, megawidget
+        options are initialised with default values.  Also, if the
+        <em>useTkOptionDb</em> option to <code>Pmw.initialise()</code> has been set,
+        then the Tk option database will be queried to get the initial
+        values.  Strings found in the option database are converted
+        to python objects (integer, float, tuple, dictionary, etc)
+        using a restricted <code>eval()</code> call.  Anything that is not accepted by
+        <code>eval()</code> is treated as a string.</p>
+
+<p>        <strong>Inherited options:</strong> As well as the options defined in a class,
+        a derived class inherits all options of its base classes.  The
+        default value of an option defined by a base class may be
+        modified by the derived class.</p>
+
+<p>        <strong>Initialisation options:</strong> Some megawidget options can only be
+        set in the call to the constructor.  These are called
+        <em>initialisation options</em>.  Unlike normal configuration
+        options, they cannot be set by calling the <code>configure()</code>
+        method.</p>
+
+<p>        <strong>Component options:</strong> Options of the components of a megawidget
+        can be referred to using the notation <em>component_option</em>.
+        Like the megawidget options, component options can be used in
+        calls to the constructor and to the <code>cget()</code> and <code>configure()</code>
+        methods.  For example, the <strong>state</strong> option of the Tkinter.Text
+        <strong>text</strong> component of <a href="ScrolledText.html">Pmw.ScrolledText</a> may be set by calling</p>
+<dl><dd><pre> widget.configure(text_state = 'disabled')</pre></dd></dl>
+
+
+<p>        Sub-components, component aliases and component groups may
+        also be combined with options.  For example, the <strong>state</strong>
+        option of the <strong>entryfield_entry</strong> component of <a href="ComboBox.html">Pmw.ComboBox</a>
+        may be set by calling</p>
+<dl><dd><pre> combobox.configure(entryfield_entry_state = 'normal')</pre></dd></dl>
+
+
+<p>        Since it has an alias, it is more convenient to use the
+        equivalent form</p>
+<dl><dd><pre> combobox.configure(entry_state = 'normal')</pre></dd></dl>
+
+
+<p>        Also, the background color of both arrows of <a href="Counter.html">Pmw.Counter</a>
+        can be set using the <strong>Arrow</strong> component group.</p>
+<dl><dd><pre> counter.configure(Arrow_background = 'aliceblue')</pre></dd></dl>
+
+
+<p>    </p>
+
+
+</dd>
+<dt> <h3>The pyclass component option</h3></dt><dd>
+<p>
+        The <strong>pyclass</strong> component option is a special notation that can
+        be used to specify a non-default python class for a component.
+        This can only be used when the component is being constructed.
+        For a component created during the construction of its parent
+        megawidget, this option must be given to the constructor in
+        the form <em>component_pyclass</em>.  For example, to change the
+        python class of the <strong>text</strong> sub-component of <a href="TextDialog.html">Pmw.TextDialog</a>
+        to a class <strong>FontText.Text</strong></p>
+<dl><dd><pre> dialog = Pmw.TextDialog(text_pyclass = FontText.Text)</pre></dd></dl>
+
+
+<p>        For components created after the construction of the parent
+        megawidget, the <strong>pyclass</strong> option must be passed into the
+        method which constructs the component.  For example, to set
+        the python class of a button in <a href="ButtonBox.html">Pmw.ButtonBox</a> to a class
+        <strong>MyButton</strong>:</p>
+<dl><dd><pre> buttonBox.add('special', pyclass = MyButton)</pre></dd></dl>
+
+
+<p>        The new python class of the component must support all methods
+        and options that are used by the megawidget when operating on
+        the component.  The exact interface required for each
+        component is not documented.  You will have to examine the Pmw
+        source code.  However, any class derived from the default
+        class of a component can be used as the new class of the
+        component, as long as all of the original methods and options
+        are still supported.  For example, any class derived from
+        <strong>Tkinter.Text</strong> can be used as the class of the <strong>text</strong>
+        sub-component of <a href="TextDialog.html">Pmw.TextDialog</a>.</p>
+
+<p>        The <strong>pyclass</strong> component option should not be confused with the
+        <strong>class</strong> option that some of the Tk widgets support.  The
+        <strong>class</strong> option sets the Tk option database class for the
+        widget and is used by Tk to query the database for the default
+        values of the widget's other options.  The name <strong>pyclass</strong> was
+        chosen so that it did not conflict with any known Tk options.</p>
+
+<p>    </p>
+
+
+</dd>
+<dt> <h3>Construction</h3></dt><dd>
+<p>
+        The constructors of classes derived from this class all accept
+        the same arguments:  one positional argument and any number of
+        keyword arguments.  The positional argument defaults to <strong>None</strong>
+        (meaning the root window) and specifies the widget to use as
+        the parent when creating the
+        megawidget's <strong>hull</strong> component.  The keyword arguments define
+        initial values for options.  The format for the constructors
+        of derived classes is:</p>
+
+<dl><dd><pre>   def __init__(self, parent = None, **kw):</pre></dd></dl>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong>Tkinter.object</strong>.
+<p></p>
+<a name=method.addoptions></a>
+<dl><dt> <strong>addoptions</strong>(<em>optionDefs</em>)</dt><dd>
+Add additional options for this megawidget.  The <em>optionDefs</em>
+    argument is treated in the same way as for the <code>defineoptions()</code>
+    method.</p>
+<p>    This method is for use by derived classes.  It is only used if a
+    megawidget should conditionally define some options, perhaps
+    depending on the value of other options.  Usually, megawidgets
+    unconditionally define all their options in the call to
+    <code>defineoptions()</code> and do not need to use <code>addoptions()</code>.  This
+    method must be called after the call to <code>defineoptions()</code> and
+    before the call to <code>initialiseoptions()</code>.</p>
+
+
+
+</dd></dl>
+<a name=method.cget></a>
+<dl><dt> <strong>cget</strong>(<em>option</em>)</dt><dd>
+Return the current value of <em>option</em> (which should be in the
+    format described in the <strong>Options</strong> section).  This method is also
+    available using object subscripting, for example
+    <code>myWidget['font']</code>.  Unlike Tkinter's cget(), which always returns
+    a string, this method returns the same value and type as used when
+    the option was set (except where <em>option</em> is a component option
+    and the component is a Tkinter widget, in which case it returns
+    the string returned by Tcl/Tk).</p>
+
+
+</dd></dl>
+<a name=method.component></a>
+<dl><dt> <strong>component</strong>(<em>name</em>)</dt><dd>
+Return the component widget whose name is <em>name</em>.  This
+    allows the user of a megawidget to access and configure component
+    widgets directly.</p>
+
+
+</dd></dl>
+<a name=method.componentaliases></a>
+<dl><dt> <strong>componentaliases</strong>()</dt><dd>
+Return the list of aliases for components.  Each item in the list
+    is a tuple whose first item is the name of the alias and whose
+    second item is the name of the component or sub-component it
+    refers to.</p>
+
+
+</dd></dl>
+<a name=method.componentgroup></a>
+<dl><dt> <strong>componentgroup</strong>(<em>name</em>)</dt><dd>
+Return the group of the component whose name is <em>name</em> or <strong>None</strong>
+    if it does not have a group.</p>
+
+
+</dd></dl>
+<a name=method.components></a>
+<dl><dt> <strong>components</strong>()</dt><dd>
+Return a sorted list of names of the components of this
+    megawidget.</p>
+
+
+</dd></dl>
+<a name=method.configure></a>
+<dl><dt> <strong>configure</strong>(<em>option</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+Query or configure the megawidget options.</p>
+<p>    If no arguments are given, return a tuple consisting of all
+    megawidget options and values, each as a 5-element tuple
+    (<em>name</em>, <em>resourceName</em>, <em>resourceClass</em>, <em>default</em>, <em>value</em>).
+    This is in the same format as the value returned by the standard
+    Tkinter <code>configure()</code> method, except that the resource name is
+    always the same as the option name and the resource class is the
+    option name with the first letter capitalised.</p>
+
+<p>    If one argument is given, return the 5 element tuple for <em>option</em>.</p>
+
+<p>    Otherwise, set the configuration options specified by the keyword
+    arguments.  Each key should be in the format described in the
+    <strong>Options</strong> section.</p>
+
+
+
+</dd></dl>
+<a name=method.createcomponent></a>
+<dl><dt> <strong>createcomponent</strong>(<em>componentName</em>,<em>componentAliases</em>,<em>componentGroup</em>,<em>widgetClass</em>,*<em>widgetArgs</em>,**<em>kw</em>)</dt><dd>
+Create a component widget by calling <em>widgetClass</em> with the
+    arguments given by <em>widgetArgs</em> and any keyword arguments.  The
+    <em>componentName</em> argument is the name by which the component will
+    be known and must not contain the underscore, <strong>'_'</strong>, character.
+    The <em>componentGroup</em> argument specifies the group of the
+    component.  The <em>componentAliases</em> argument is a sequence of
+    2-element tuples, whose first item is an alias name and whose
+    second item is the name of the component or sub-component it is to
+    refer to.</p>
+<p>    If this method is called during megawidget construction, any
+    component options supplied to the megawidget constructor which
+    refer to this component (by <em>componentName</em> or <em>componentGroup</em>)
+    are added to the <em>kw</em> dictionary before calling <em>widgetClass</em>.  If
+    the dictionary contains a <strong>'pyclass'</strong> key, then this item is
+    removed from the dictionary and the value is used instead of
+    <em>widgetClass</em>.  For more details see <strong>The pyclass component option</strong>
+    section.</p>
+
+<p>    This method may be called by derived classes during or after
+    megawidget construction.  It returns the instance of the class
+    created.</p>
+
+
+
+</dd></dl>
+<a name=method.createlabel></a>
+<dl><dt> <strong>createlabel</strong>(<em>parent</em>,<em>childCols</em> = <strong>1</strong>,<em>childRows</em> = <strong>1</strong>)</dt><dd>
+Create a <strong>Tkinter.Label</strong> component named <strong>'label'</strong> in the <em>parent</em>
+    widget.  This is a convenience method used by several megawidgets
+    that require an optional label.  The widget must have options
+    named <strong>labelpos</strong> and <strong>labelmargin</strong>.  If <strong>labelpos</strong> is <strong>None</strong>, no
+    label is created.  Otherwise, a label is created and positioned
+    according to the value of <strong>labelpos</strong> and <strong>labelmargin</strong>.  The label
+    is added to the parent using the <code>grid()</code> method, with <em>childCols</em>
+    and <em>childRows</em> indicating how many rows and columns the label
+    should span.  Note that all other child widgets of the parent
+    <em>must</em> be added to the parent using the <code>grid()</code> method.  The
+    <code>createlabel()</code> method may be called by derived classes during
+    megawidget construction.</p>
+
+
+</dd></dl>
+<a name=method.defineoptions></a>
+<dl><dt> <strong>defineoptions</strong>(<em>keywords</em>,<em>optionDefs</em>,<em>dynamicGroups</em> = <strong>()</strong>)</dt><dd>
+Create options for this megawidget.  The <em>optionDefs</em> argument
+    defines the options.  It is a sequence of 3-element tuples,
+    (<em>name</em>, <em>default</em>, <em>callback</em>), where <em>name</em> is the name of the
+    option, <em>default</em> is its default value and <em>callback</em> is the
+    function to call when the value of the option is set by a call to
+    <code>configure()</code>.  The <em>keywords</em> argument should be the keyword
+    arguments passed in to the constructor of the megawidget.  The user
+    may override the default value of an option by supplying a keyword
+    argument to the constructor.</p>
+<p>    If any option created by a base class is also defined by
+    <em>optionDefs</em>, then the derived class's default value will take
+    precedence over the base class's.  If the <em>callback</em> field is not
+    <strong>None</strong>, then this will also override the callback set by the base
+    class.</p>
+
+<p>    If <em>callback</em> is <strong>Pmw.INITOPT</strong>, then the option is an
+    <em>initialisation option</em>.</p>
+
+<p>    The <em>dynamicGroups</em> argument contains a list of the groups of the
+    components created dynamically by this megawidget.  If a group is
+    included in this list, then it not an error if a keyword argument
+    for the group is given to the constructor or to <code>configure()</code>,
+    even when no components with this group have been created.</p>
+
+<p>    If <code>defineoptions()</code> is called, it must be called once in the
+    megawidget constructor before the call to the constructor of the
+    base class and there must be a matching call to
+    <code>initialiseoptions()</code> at the end of the constructor.</p>
+
+
+
+</dd></dl>
+<a name=method.destroy></a>
+<dl><dt> <strong>destroy</strong>()</dt><dd>
+Destroy the <strong>hull</strong> component widget, if it exists, including all
+    of its children.</p>
+
+
+</dd></dl>
+<a name=method.destroycomponent></a>
+<dl><dt> <strong>destroycomponent</strong>(<em>name</em>)</dt><dd>
+Remove the megawidget component called <em>name</em>.  This method may be
+    called by derived classes to destroy a megawidget component.  It
+    destroys the component widget and then removes all record of the
+    component from the megawidget.</p>
+
+
+</dd></dl>
+<a name=method.hulldestroyed></a>
+<dl><dt> <strong>hulldestroyed</strong>()</dt><dd>
+Return true if the Tk widget corresponding to the <strong>hull</strong> component
+    has been destroyed.</p>
+
+
+</dd></dl>
+<a name=method.initialiseoptions></a>
+<dl><dt> <strong>initialiseoptions</strong>(<em>dummy</em> = <strong>None</strong>)</dt><dd>
+Check keyword arguments and call option callback functions.  This
+    method must be called, at the end of a megawidget constructor, if
+    and only if <code>defineoptions()</code> was also called in the constructor.
+    The <em>dummy</em> argument is not required, but is retained for
+    backwards compatibility.</p>
+<p>    It checks that all keyword arguments given to the constructor have
+    been used.  If not, it raises an error indicating which arguments
+    were unused.  A keyword is defined to be used if, during the
+    construction of a megawidget, it is defined in a call to
+    <code>defineoptions()</code> or <code>addoptions()</code> (by the megawidget or one of
+    its base classes), or it references, by name, a component of the
+    megawidget, or it references, by group, at least one component.
+    It also calls the configuration callback function for all options
+    that have a callback.</p>
+
+<p>    This method is only effective when called by the constructor of
+    the <em>leaf</em> class, that is, the class in the class hierarchy which
+    first called <code>defineoptions()</code>.  For all other classes in the
+    class hierarchy (base classes), the method returns immediately.</p>
+
+
+
+</dd></dl>
+<a name=method.interior></a>
+<dl><dt> <strong>interior</strong>()</dt><dd>
+Return the widget framing the interior space in which any children
+    of this megawidget should be created.  By default, this returns
+    the <strong>hull</strong> component widget, if one was created, or <strong>None</strong>
+    otherwise.  A subclass should use the widget returned by
+    <code>interior()</code> as the parent of any components or sub-widgets it
+    creates.  Megawidgets which can be further subclassed, such as
+    <a href="Dialog.html">Pmw.Dialog</a>, should redefine this method to return the widget in
+    which subclasses should create children.  The overall containing
+    widget is always available as the <strong>hull</strong> component.</p>
+
+
+</dd></dl>
+<a name=method.isinitoption></a>
+<dl><dt> <strong>isinitoption</strong>(<em>option</em>)</dt><dd>
+If <em>option</em> is an initialisation option, return true.  Otherwise,
+    return false (the option is a configuration option).  The <em>option</em>
+    argument must be an option of this megawidget, not an option of a
+    component.  Otherwise an exception is raised.</p>
+
+
+</dd></dl>
+<a name=method.options></a>
+<dl><dt> <strong>options</strong>()</dt><dd>
+Return a sorted list of this megawidget's options.  Each item in
+    the list is a 3-element tuple, (<em>option</em>, <em>default</em>, <em>isinit</em>),
+    where <em>option</em> is the name of the option, <em>default</em> is its default
+    value and <em>isinit</em> is true if the option is an initialisation
+    option.</p>
+
+
+</dd></dl>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 22 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

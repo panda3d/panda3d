@@ -1,0 +1,272 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.OptionMenu reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.OptionMenu</h1>
+    
+<center><IMG SRC=OptionMenu.gif ALT="" WIDTH=298 HEIGHT=170></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.OptionMenu() - 
+    single item selection megawidget
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    An option menu consists of a menu button
+    and an associated menu which pops up when the button is pressed.
+    The text displayed in the menu button is updated whenever an item
+    is selected in the menu.  The currently selected value can be
+    retrieved from the megawidget.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+Specifies a function to call whenever a menu item is selected or
+    the <code>invoke()</code> method is called.  The function is called with the
+    currently selected value as its single argument. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.initialitem></a>
+<dl><dt> <strong>initialitem
+</strong></dt><dd>
+Initialisation option. Specifies the initial selected value.  This option is treated in
+    the same way as the <em>index</em> argument of the <code>setitems()</code> method. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.items></a>
+<dl><dt> <strong>items
+</strong></dt><dd>
+Initialisation option. A sequence of strings containing the initial items to be displayed
+    in the <strong>menu</strong> component. The default is <strong>()</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.menu></a>
+<dl><dt> <strong>menu
+</strong></dt><dd>
+The popup menu displayed when the <strong>menubutton</strong> is pressed. By default, this component is a Tkinter.Menu.</p>
+
+
+</dd></dl>
+<a name=component.menubutton></a>
+<dl><dt> <strong>menubutton
+</strong></dt><dd>
+The menu button displaying the currently selected value. By default, this component is a Tkinter.Menubutton.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.getcurselection></a>
+<dl><dt> <strong>getcurselection</strong>()</dt><dd>
+Same as <code>getvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+Return the currently selected value.</p>
+
+
+</dd></dl>
+<a name=method.index></a>
+<dl><dt> <strong>index</strong>(<em>index</em>)</dt><dd>
+Return the numerical index of the menu item corresponding to
+    <em>index</em>.  This may be specified in any of the following forms:</p>
+<dl><dt><em>name</em></dt><dd>Specifies the menu item labelled <em>name</em>.<p></p>
+
+</dd>
+<dt><em>number</em></dt><dd>Specifies the menu item numerically, where <strong>0</strong> corresponds to
+         the first menu item.<p></p>
+
+</dd>
+<dt><strong>Pmw.END</strong></dt><dd>Specifies the last menu item.<p></p>
+
+</dd>
+<dt><strong>Pmw.SELECT</strong></dt><dd>Specifies the currently selected menu item.<p></p>
+
+</dd></dl>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>(<em>index</em> = <strong>Pmw.SELECT</strong>)</dt><dd>
+Calling this method is the same as selecting the menu item
+    specified by <em>index</em>:  the text displayed by the
+    <strong>menubutton</strong> component is updated and the function specified by
+    the <strong>command</strong> option is called.  <em>index</em> may have any of the
+    forms accepted by the <code>index()</code> method.  The value returned by
+    <strong>command</strong> is returned.</p>
+
+
+</dd></dl>
+<a name=method.setitems></a>
+<dl><dt> <strong>setitems</strong>(<em>items</em>,<em>index</em> = <strong>None</strong>)</dt><dd>
+Replace all the items in the <strong>menu</strong> component with those specified
+    by <em>items</em>, which must be a sequence of strings.</p>
+<p>    If <em>index</em> is not <strong>None</strong>, set the selected value to <em>index</em>, which
+    may have any of the forms accepted by the <code>index()</code> method.</p>
+
+<p>    If <em>index</em> is <strong>None</strong> and the <strong>textvariable</strong> option of the
+    <strong>menubutton</strong> component is the empty string, then if
+    the previous selected value is one of the <em>items</em>, then do not
+    change the selection.  If the previous selected value is no longer
+    in <em>items</em>, then set the selected value to the first value in
+    <em>items</em>.  If <em>items</em> is empty, set the selected value to the empty
+    string.</p>
+
+<p>    If <em>index</em> is <strong>None</strong> and the <strong>textvariable</strong> option of the
+    <strong>menubutton</strong> component is not the empty string, then do not set
+    the selected value.  This assumes that the variable is already (or
+    will be) set to the desired value.</p>
+
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>text</em>)</dt><dd>
+Set the text displayed by the <strong>menubutton</strong> component to <em>text</em>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the OptionMenu megawidgets.
+        # The first one has a textvariable.
+        self.var = tkinter.StringVar()
+        self.var.set('steamed')
+        self.method_menu = Pmw.OptionMenu(parent,
+                labelpos = 'w',
+                label_text = 'Choose method:',
+                menubutton_textvariable = self.var,
+                items = ['baked', 'steamed', 'stir fried', 'boiled', 'raw'],
+                menubutton_width = 10,
+        )
+        self.method_menu.pack(anchor = 'w', padx = 10, pady = 10)
+
+        self.vege_menu = Pmw.OptionMenu (parent,
+                labelpos = 'w',
+                label_text = 'Choose vegetable:',
+                items = ('broccoli', 'peas', 'carrots', 'pumpkin'),
+                menubutton_width = 10,
+                command = self._printOrder,
+        )
+        self.vege_menu.pack(anchor = 'w', padx = 10, pady = 10)
+
+        self.direction_menu = Pmw.OptionMenu (parent,
+                labelpos = 'w',
+                label_text = 'Menu direction:',
+                items = ('flush', 'above', 'below', 'left', 'right'),
+                menubutton_width = 10,
+                command = self._changeDirection,
+        )
+        self.direction_menu.pack(anchor = 'w', padx = 10, pady = 10)
+
+        menus = (self.method_menu, self.vege_menu, self.direction_menu)
+        Pmw.alignlabels(menus)
+
+    def _printOrder(self, vege):
+        # Can use 'self.var.get()' instead of 'getcurselection()'.
+        print(('You have chosen %s %s.' % \
+            (self.method_menu.getcurselection(), vege)))
+
+    def _changeDirection(self, direction):
+        for menu in (self.method_menu, self.vege_menu, self.direction_menu):
+            menu.configure(menubutton_direction = direction)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 23 October 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

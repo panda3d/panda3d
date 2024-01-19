@@ -1,0 +1,410 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.HistoryText reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.HistoryText</h1>
+    
+<center><IMG SRC=HistoryText.gif ALT="" WIDTH=551 HEIGHT=142></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.HistoryText() - 
+    text widget with a course-grained form of history
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="ScrolledText.html">Pmw.ScrolledText</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A history text is a scrolled text widget with added functionality
+    to maintain a history of each screen and allow editing of prior
+    screens.  Here, <em>screen</em> refers to the entire contents of the text
+    widget.  This widget does not support a fine-grained history of
+    every change made to the text.</p>
+
+<p>    Together with a few buttons and a scrolled text to display the
+    results, a history text can be used as the query-entry part of a
+    simple interactive text-based database query system.  When the
+    user enters and executes a query, the query (the entire contents
+    of the text widget) is added to the history list.  The user may
+    view previous queries and either execute them again or modify them
+    and execute the new query.  If a previously executed query is
+    modified, the user may undo or redo all changes made to the query
+    <em>before the query is executed</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+Initialisation option. If true, the <strong>borderframe</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.columnheader></a>
+<dl><dt> <strong>columnheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>columnheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.compressany></a>
+<dl><dt> <strong>compressany
+</strong></dt><dd>
+See <code>addhistory()</code>. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.compresstail></a>
+<dl><dt> <strong>compresstail
+</strong></dt><dd>
+See <code>addhistory()</code>. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.historycommand></a>
+<dl><dt> <strong>historycommand
+</strong></dt><dd>
+This is a callback to indicate whether the currently displayed
+    entry in the history list has a previous or next entry.  The
+    callback is given two arguments, <em>prevstate</em> and <em>nextstate</em>.  If
+    the currently displayed entry is first in the history list, then
+    <em>prevstate</em> is <strong>'disabled'</strong>, otherwise it is <strong>'normal'</strong>.  If the
+    currently displayed entry is last in the history list, then
+    <em>nextstate</em> is <strong>'disabled'</strong>, otherwise it is <strong>'normal'</strong>.  These
+    values can be used, for example, to modify the state of <strong>Next</strong> and
+    <strong>Previous</strong> buttons that call the <code>next()</code> and <code>prev()</code> methods. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.hscrollmode></a>
+<dl><dt> <strong>hscrollmode
+</strong></dt><dd>
+The horizontal scroll mode.  If <strong>'none'</strong>, the horizontal scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.rowcolumnheader></a>
+<dl><dt> <strong>rowcolumnheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>rowcolumnheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.rowheader></a>
+<dl><dt> <strong>rowheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>rowheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.scrollmargin></a>
+<dl><dt> <strong>scrollmargin
+</strong></dt><dd>
+Initialisation option. The distance between the scrollbars and the text widget. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.usehullsize></a>
+<dl><dt> <strong>usehullsize
+</strong></dt><dd>
+Initialisation option. If true, the size of the megawidget is determined solely by the
+    width and height options of the <strong>hull</strong> component.</p>
+<p>    Otherwise, the size of the megawidget is determined by the width
+    and height of the <strong>text</strong> component, along with the size and/or
+    existence of the other components, such as the label, the
+    scrollbars and the scrollmargin option.  All these affect the
+    overall size of the megawidget. The default is <strong>0</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vscrollmode></a>
+<dl><dt> <strong>vscrollmode
+</strong></dt><dd>
+The vertical scroll mode.  If <strong>'none'</strong>, the vertical scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+A frame widget which snuggly fits around the text widget, to give
+    the appearance of a text border.  It is created with a border so
+    that the text widget, which is created without a border, looks
+    like it has a border. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.columnheader></a>
+<dl><dt> <strong>columnheader
+</strong></dt><dd>
+A text widget with a default height of 1 displayed above the main
+    text widget and which scrolls horizontally in sync with the
+    horizontal scrolling of the main text widget. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.horizscrollbar></a>
+<dl><dt> <strong>horizscrollbar
+</strong></dt><dd>
+The horizontal scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.rowcolumnheader></a>
+<dl><dt> <strong>rowcolumnheader
+</strong></dt><dd>
+A text widget displayed to the top left of the main text widget,
+    above the row header and to the left of the column header if they
+    exist.  The widget is not scrolled  automatically. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.rowheader></a>
+<dl><dt> <strong>rowheader
+</strong></dt><dd>
+A text widget displayed to the left of the main text widget and
+    which scrolls vertically in sync with the vertical scrolling of
+    the main text widget. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.text></a>
+<dl><dt> <strong>text
+</strong></dt><dd>
+The text widget which is scrolled by the scrollbars.  If the
+    <strong>borderframe</strong> option is true, this is created with a borderwidth
+    of <strong>0</strong> to overcome a known problem with text widgets:  if a widget
+    inside a text widget extends across one of the edges of the text
+    widget, then the widget obscures the border of the text widget.
+    Therefore, if the text widget has no border, then this overlapping
+    does not occur. By default, this component is a Tkinter.Text.</p>
+
+
+</dd></dl>
+<a name=component.vertscrollbar></a>
+<dl><dt> <strong>vertscrollbar
+</strong></dt><dd>
+The vertical scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="ScrolledText.html#methods">Pmw.ScrolledText</a></strong>.
+<p></p>
+<a name=method.addhistory></a>
+<dl><dt> <strong>addhistory</strong>()</dt><dd>
+Append the currently displayed text to the history list.</p>
+<p>    If <strong>compressany</strong> is true, a new entry will be added to the history
+    list only if the currently displayed entry has changed.</p>
+
+<p>    If <strong>compresstail</strong> is true, a new entry will be added to the
+    history list only if the currently displayed entry has changed
+    <em>or</em> if it is not the last entry in the history list.</p>
+
+
+
+</dd></dl>
+<a name=method.gethistory></a>
+<dl><dt> <strong>gethistory</strong>()</dt><dd>
+Return the history list.  Each entry in the list is a 3-tuple.
+    The first item in a history entry is the original text as added by
+    <code>addhistory()</code>.  The second item is the edited text (if the user
+    has modified the entry but <code>addhistory()</code> has not yet been called
+    on the text).  The third item specifies whether the entry should
+    currently display the original or modified text.</p>
+
+
+</dd></dl>
+<a name=method.next></a>
+<dl><dt> <strong>next</strong>()</dt><dd>
+Display the next screen in the history list.</p>
+
+
+</dd></dl>
+<a name=method.prev></a>
+<dl><dt> <strong>prev</strong>()</dt><dd>
+Display the previous screen in the history list.</p>
+
+
+</dd></dl>
+<a name=method.redo></a>
+<dl><dt> <strong>redo</strong>()</dt><dd>
+Reverse the effect of <code>undo()</code>.</p>
+
+
+</dd></dl>
+<a name=method.undo></a>
+<dl><dt> <strong>undo</strong>()</dt><dd>
+Undo all changes made since this entry was added to the history
+    list.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the PanedWidget to hold the query and result
+        # windows.
+        # !! panedwidget should automatically size to requested size
+        panedWidget = Pmw.PanedWidget(parent,
+                orient = 'vertical',
+                hull_height = 400,
+                hull_width = 550)
+        panedWidget.add('query', min = 0.05, size = 0.2)
+        panedWidget.add('buttons', min = 0.1, max = 0.1)
+        panedWidget.add('results', min = 0.05)
+        panedWidget.pack(fill = 'both', expand = 1)
+
+        # Create and pack the HistoryText.
+        self.historyText = Pmw.HistoryText(panedWidget.pane('query'),
+                text_wrap = 'none',
+                text_width = 60,
+                text_height = 10,
+                historycommand = self.statechange,
+        )
+        self.historyText.pack(fill = 'both', expand = 1)
+        self.historyText.component('text').focus()
+
+        buttonList = (
+            [20, None],
+            ['Clear', self.clear],
+            ['Undo', self.historyText.undo],
+            ['Redo', self.historyText.redo],
+            [20, None],
+            ['Prev', self.historyText.prev],
+            ['Next', self.historyText.__next__],
+            [30, None],
+            ['Execute', Pmw.busycallback(self.executeQuery)],
+        )
+        self.buttonDict = {}
+
+        buttonFrame = panedWidget.pane('buttons')
+        for text, cmd in buttonList:
+            if type(text) == type(69):
+                frame = tkinter.Frame(buttonFrame, width = text)
+                frame.pack(side = 'left')
+            else:
+                button = tkinter.Button(buttonFrame, text = text, command = cmd)
+                button.pack(side = 'left')
+                self.buttonDict[text] = button
+
+        for text in ('Prev', 'Next'):
+            self.buttonDict[text].configure(state = 'disabled')
+
+        self.results = Pmw.ScrolledText(panedWidget.pane('results'), text_wrap = 'none')
+        self.results.pack(fill = 'both', expand = 1)
+
+    def statechange(self, prevstate, nextstate):
+        self.buttonDict['Prev'].configure(state = prevstate)
+        self.buttonDict['Next'].configure(state = nextstate)
+
+    def clear(self):
+        self.historyText.delete('1.0', 'end')
+
+    def addnewlines(self, text):
+        if len(text) == 1:
+            text = text + '\n'
+        if text[-1] != '\n':
+            text = text + '\n'
+        if text[-2] != '\n':
+            text = text + '\n'
+        return text
+
+    def executeQuery(self):
+        sql = self.historyText.get()
+        self.results.insert('end', 'Query:\n' + self.addnewlines(sql))
+        self.results.see('end')
+        self.results.update_idletasks()
+        self.historyText.addhistory()
+        results = 'Results:\nfoo'
+        if len(results) &gt; 0:
+            self.results.insert('end', self.addnewlines(results))
+        self.results.see('end')
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 20 May 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

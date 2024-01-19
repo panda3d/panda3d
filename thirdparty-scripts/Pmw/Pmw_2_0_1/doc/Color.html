@@ -1,0 +1,326 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.Color reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.Color</h1>
+    
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.Color - 
+    contains functions for handling colors and color schemes</p>
+<p></p>
+
+
+
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This module is a set of functions for manipulating colors and for
+    modifying the color scheme of an application or a widget.  Many of
+    the functions in this module take or return colors.  These values
+    may represent colors in the following ways:</p>
+<dl><dt><strong>name</strong></dt><dd>a standard color name, eg <code>'orange'</code> or <code>'#ffa500'</code><p></p>
+
+</dd>
+<dt><strong>rgb</strong></dt><dd>a 3-element sequence of red, green and blue intensities
+        each between 0.0 (dark) and 1.0 (light), eg <code>[1.0, 0.6, 0.0]</code>.<p></p>
+
+</dd>
+<dt><strong>hsi</strong></dt><dd>a 3-element sequence (<em>hue</em>, <em>saturation</em>,
+        <em>intensity</em>).  The value of <em>hue</em> is between 0.0 and <strong>2pi</strong>
+        (6.28318) giving a range of colors covering, in order, red,
+        orange, yellow green, cyan, blue, magenta and back to red.
+        The value of <em>saturation</em> is between 0.0 (grey) and 1.0
+        (brilliant) and the value of <em>intensity</em> is between 0.0 (dark)
+        and 1.0 (bright).<p></p>
+
+</dd></dl>
+
+<p>    As used in these functions, the <strong>brightness</strong> of a color is the
+    perceived grey level of the color as registered by the human eye.
+    For example, even though the colors red, blue and yellow have the
+    same intensity (1.0), they have different brightnesses, 0.299,
+    0.114 and 0.886 respectively, reflecting the different way these
+    colors appear to the eye.  The brightness of a color is a value
+    between 0.0 (dark) and 1.0 (bright).</p>
+
+<p>    A <strong>color scheme</strong> is a set of colors defined for each of the
+    default color options in the Tk option database.  Color schemes
+    can be used in two ways.  Firstly, using <code>Pmw.Color.setscheme()</code>,
+    the Tk option database can be set to the values in the color
+    scheme.  This will not have any effect on currently existing
+    widgets, but any new widgets created after setting the options
+    will have these colors as their defaults.  Secondly, using
+    <code>Pmw.Color.changecolor()</code> the color scheme can be used to change
+    the colors of a widget and all its child widgets.</p>
+
+<p>    A color scheme is specified by defining one or more color options
+    (one of the defined options must be <code>background</code>).  Not all
+    options need be specified - if any options are not defined, they
+    are calculated from the other colors.  These are the options used
+    by a color scheme, together with their values if not specified:</p>
+<dl><dd><pre> background:            (must be specified)
+ foreground:            black
+ activeForeground:      same as foreground
+ insertBackground:      same as foreground
+ selectForeground:      same as foreground
+ highlightColor:        same as foreground
+ disabledForeground:    between fg and bg but closer to bg
+ highlightBackground:   same as background
+ activeBackground:      a little lighter that bg
+ selectBackground:      a little darker that bg
+ troughColor:           a little darker that bg
+ selectColor:           yellow</pre></dd></dl>
+
+
+<p>    There are many functions in this module.  As well as
+    <code>Pmw.Color.setscheme()</code> and <code>Pmw.Color.changecolor()</code>, some of the
+    most useful are <code>Pmw.Color.spectrum()</code>,
+    <code>Pmw.Color.changebrightness()</code> and
+    <code>Pmw.Color.getdefaultpalette()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Functions</h3></dt><dd>
+The following functions are available.<p></p>
+<dl>
+<dt> <strong>Pmw.Color.average</strong>(<em>rgb1</em>,<em>rgb2</em>,<em>fraction</em>)</dt><dd>
+
+    Return an <strong>rgb</strong> color <em>fraction</em> of the way "between" the colors
+    <em>rgb1</em> and <em>rgb2</em>, where <em>fraction</em> must be between <strong>0.0</strong> and
+    <strong>1.0</strong>.  If <em>fraction</em> is close to <strong>0.0</strong>, then the color returned
+    will be close to <em>rgb1</em>.  If it is close to <strong>1.0</strong>, then the color
+    returned will be close to <em>rgb2</em>.  If it is near <strong>0.5</strong>, then the
+    color returned will be half way between the two colors.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.bhi2saturation</strong>(<em>brightness</em>,<em>hue</em>,<em>intensity</em>)</dt><dd>
+
+    Return the saturation of the color represented by <em>brightness</em>,
+    <em>hue</em> and <em>intensity</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.bordercolors</strong>(<em>root</em>,<em>colorName</em>)</dt><dd>
+
+    Return a tuple <code>(light, dark)</code> of color names that can be used as
+    the light and dark border shadows on a widget where the background
+    is <em>colorName</em>.  This is the same method that Tk uses for shadows
+    when drawing reliefs on widget borders.  The <em>root</em> argument is
+    only used to query Tk for the <strong>rgb</strong> values of <em>colorName</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.changebrightness</strong>(<em>root</em>,<em>colorName</em>,<em>brightness</em>)</dt><dd>
+
+    Find the hue of the color <em>colorName</em> and return a color of this
+    hue with the required <em>brightness</em>.  If <em>brightness</em> is <strong>None</strong>,
+    return the name of color with the given hue and with saturation
+    and intensity both <strong>1.0</strong>.  The <em>root</em> argument is only used to
+    query Tk for the <strong>rgb</strong> values of <em>colorName</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.changecolor</strong>(<em>widget</em>,<em>background</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+
+    Change the color of <em>widget</em> and all its child widgets according
+    to the color scheme specified by the other arguments.  This is done
+    by modifying all of the color options of existing widgets that
+    have the default value.  The color options are the lower case
+    versions of those described in the <strong>color scheme</strong> section.  Any
+    options which are different to the previous color scheme (or the
+    defaults, if this is the first call) are not changed.</p>
+
+<p>    For example to change a widget to have a red color scheme with a
+    white foreground:</p>
+
+<dl><dd><pre> Pmw.Color.changecolor(widget,
+     background = 'red3', foreground = 'white')</pre></dd></dl>
+
+<p>    The colors of widgets created after this call will not be
+    affected.</p>
+
+<p>    Note that <em>widget</em> must be a Tk widget or toplevel.  To change the
+    color of a Pmw megawidget, use it's <strong>hull</strong> component.  For example:</p>
+
+<dl><dd><pre> widget = megawidget.component('hull')
+ Pmw.Color.changecolor(widget, background = 'red3')</pre></dd></dl>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.correct</strong>(<em>rgb</em>,<em>correction</em>)</dt><dd>
+
+    Return the "corrected" value of <em>rgb</em>.  This can be used to
+    correct for dull monitors.  If <em>correction</em> is less than <strong>1.0</strong>,
+    the color is dulled.  If <em>correction</em> is greater than <strong>1.0</strong>, the
+    color is brightened.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.getdefaultpalette</strong>(<em>root</em>)</dt><dd>
+
+    Return a dictionary of the default values of the color options
+    described in the <strong>color scheme</strong> section.</p>
+
+<p>    To do this, a few widgets are created as children of <em>root</em>, their
+    defaults are queried, and then the widgets are destroyed.  (Tk
+    supplies no other way to get widget default values.)</p>
+
+<p>    Note that <em>root</em> must be a Tk widget or toplevel.  To use a Pmw
+    megawidget as the root, use it's <strong>hull</strong> component.  For example:</p>
+
+<dl><dd><pre> root = megawidget.component('hull')
+ Pmw.Color.getdefaultpalette(root)</pre></dd></dl>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.hsi2rgb</strong>(<em>hue</em>,<em>saturation</em>,<em>intensity</em>)</dt><dd>
+
+    Return the <strong>rgb</strong> representation of the color represented by <em>hue</em>,
+    <em>saturation</em> and <em>intensity</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.hue2name</strong>(<em>hue</em>,<em>brightness</em> = <strong>None</strong>)</dt><dd>
+
+    Return the name of the color with the specified <em>hue</em> and
+    <em>brightness</em>.  If <em>hue</em> is <strong>None</strong>, return a grey of the requested
+    brightness.  Otherwise, the value of <em>hue</em> should be as described
+    above.  If <em>brightness</em> is <strong>None</strong>, return the name of color with
+    the given hue and with saturation and intensity both <strong>1.0</strong>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.name2rgb</strong>(<em>root</em>,<em>colorName</em>,<em>asInt</em> = <strong>0</strong>)</dt><dd>
+
+    Return <em>colorName</em> as an <strong>rgb</strong> value.  If <em>asInt</em> is true, then
+    the elements of the return sequence are in the range <strong>0</strong> to
+    <strong>65535</strong> rather than <strong>0.0</strong> to <strong>1.0</strong>.  The <em>root</em> argument is only
+    used to query Tk for the <strong>rgb</strong> values of <em>colorName</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.rgb2brightness</strong>(<em>rgb</em>)</dt><dd>
+
+    Return the brightness of the color represented by <em>rgb</em>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.rgb2hsi</strong>(<em>rgb</em>)</dt><dd>
+
+    Return a tuple (<em>hue</em>, <em>saturation</em>, <em>intensity</em>) corresponding to
+    the color specified by the <em>rgb</em> sequence.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.rgb2name</strong>(<em>rgb</em>)</dt><dd>
+
+    Return the name of the color represented by <em>rgb</em> as a string of
+    the form <code>'#RRGGBB'</code> suitable for use with Tk color functions.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.setscheme</strong>(<em>root</em>,<em>background</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+
+    Set the color scheme for the application by setting default colors
+    (in the Tk option database of the root window of <em>root</em>) according
+    to the color scheme specified by the other arguments.  This will
+    affect the initial colours of all widgets created after the call
+    to this function.</p>
+
+<p>    For example to initialise an application to have a red color
+    scheme with a white foreground:</p>
+
+<dl><dd><pre> Pmw.Color.setscheme(root,
+     background = 'red3', foreground = 'white')</pre></dd></dl>
+
+<p>    This function does not modify the colors of already existing
+    widgets.  Use <strong>Pmw.Color.changecolor()</strong> to do this.</p>
+
+<p>    Note that <em>root</em> must be a Tk widget or toplevel.  To use the Tk
+    option database of the root window of a Pmw megawidget, use the
+    megawidget's <strong>hull</strong> component.  For example:</p>
+
+<dl><dd><pre> root = megawidget.component('hull')
+ Pmw.Color.setscheme(root, background = 'red3')</pre></dd></dl>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.Color.spectrum</strong>(<em>numColors</em>,<em>correction</em> = <strong>1.0</strong>,<em>saturation</em> = <strong>1.0</strong>,<em>intensity</em> = <strong>1.0</strong>,<em>extraOrange</em> = <strong>1</strong>,<em>returnHues</em> = <strong>0</strong>)</dt><dd>
+
+    Return a list of <em>numColors</em> different colors making up a
+    <em>spectrum</em>.  If <em>extraOrange</em> is false, the colors are evenly
+    spaced by hue from one end of the spectrum (red) to the other
+    (magenta).  If <em>extraOrange</em> is true, the hues are not quite
+    evenly spaced - the hues around orange are emphasised, thus
+    preventing the spectrum from appearing to have to many <em>cool</em>
+    hues.</p>
+
+<p>    If <em>returnHues</em> is false, the return values are the names of the
+    colors represented by the hues together with <em>saturation</em> and
+    <em>intensity</em> and corrected by <em>correction</em>.</p>
+
+<p>    If <em>returnHues</em> is true, the return values are hues.</p>
+
+<p></p>
+
+
+</dd>
+</dl>
+</dd></dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 25 May 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

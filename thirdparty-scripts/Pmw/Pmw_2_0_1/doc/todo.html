@@ -1,0 +1,1111 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw todo list</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw todo list</h1>
+    
+<p>
+This is a long list of suggestions and enhancements for Pmw.  If
+you are interested in doing any of these, please let the Pmw maintainer
+(<em>gregm@iname.com</em>) know.</p>
+
+<p><strong>New Pmw megawidgets</strong></p>
+<ul><li><p>Multicolumn listbox.</p>
+<p>      Useful features - smooth scrolling, embedded images, different
+      fonts and colours, text correctly masked when it is longer than
+      its column width, interactive resizing of columns.</p>
+
+<p>      Probably should be implemented as canvas widget rather than by
+      using multiple frames or multiple listboxes.  There would be a
+      lot of work needed to position all the elements - you can't just
+      pack or grid them.</p>
+
+
+</li>
+<li><p>File dialog.</p>
+
+</li>
+<li><p>Main window class (App class), with menu bar, information line
+      with status boxes and an about box.  (See iwidgets' mainwindow
+      class for example.) This should handle creation of multiple main
+      windows, recycling of unused main windows and should exit if
+      last open main window is closed.</p>
+
+</li>
+<li><p>Searchable text megawidget.</p>
+
+</li>
+<li><p>Tree browser.</p>
+
+</li>
+<li><p>Check out Doug Hellmann's contributed megawidgets at
+      &lt;http://www.mindspring.com/~doughellmann/Projects/PmwContribD&gt; or
+      &lt;http://members.home.net/doughellmann/PmwContribD/&gt;
+      and integrate into Pmw.</p>
+
+</li></ul>
+
+<p><strong>Changes to current megawidgets</strong></p>
+<p>    MegaToplevel</p>
+<ul><li><p>Modify activate() geometry argument to allow window positioning
+          relative to the pointer, another window or the screen and
+          allow the centering of the window relative to the
+          positioning point or by a specified offset.  Also add the
+          ability to position the window so that the mouse is over a
+          particular widget in the toplevel.</p>
+<p>          Should handle all combinations of</p>
+<dl><dd><pre> when (always/first)
+ where (center/geometry/mouse)
+ parent (screen/window)
+
+ and None (don't position)</pre></dd></dl>
+
+
+<p>          Check Tix4.1.0/library/DialogS.tcl center method for how to
+          center over another window</p>
+
+<p>          Check iwidget's shell.itk for code to center widget over
+          screen or another widget.</p>
+
+<p>          See Pmw.Balloon code for how to position over pointer.</p>
+
+<p>          Tcl code to center over another (parent) window:</p>
+<dl><dd><pre> # center client relative to master (default xoff, yoff = -1)
+ set geomaster [split [wm geometry $master] "x+"]
+ set geoclient [split [wm geometry $client] "x+"]
+
+ if {$xoff == -1} {
+   set xoff [expr (
+     ([lindex $geomaster 0] - [lindex $geoclient 0]) / 2)]
+ }
+ set newxpos [expr [lindex $geomaster 2] + $xoff]
+
+ if {$yoff == -1} {
+   set yoff [expr (
+     ([lindex $geomaster 1] - [lindex $geoclient 1]) / 2)]
+ }
+ set newypos [expr [lindex $geomaster 3] + $yoff]
+
+ wm geometry $client +$newxpos+$newypos</pre></dd></dl>
+
+
+<p>          More tcl code to center dialog over another (parent) window:</p>
+<dl><dd><pre> (args: parent dlg)
+ # First, display the dialog offscreen to get dimensions.
+ set screenW [winfo screenwidth $parent]
+ set screenH [winfo screenheight $parent]
+ set w [expr $screenW + 1]
+ wm geometry $dlg +$w+0
+ update
+
+ # Get relative center of parent.
+ set w [winfo width $parent]
+ set h [winfo height $parent]
+ set w [expr $w/2]
+ set h [expr $h/2]
+
+ # Get and add screen offset of parent.
+ set w [expr $w + [winfo rootx $parent]]
+ set h [expr $h + [winfo rooty $parent]]
+
+ # Get dimensions of dialog.
+ set dlgW [winfo width $dlg]
+ set dlgH [winfo height $dlg]
+
+ # Make adjustments for actual dimensions of dialog.
+ set w [expr $w - $dlgW / 2]
+ set h [expr $h - $dlgH / 2]
+
+ # Let's keep the entire dialog onscreen at all times.
+ # Center in screen if things are awry.
+ set recenter 0
+ if { $w &lt; 0 } { set recenter 1 }
+ if { $h &lt; 0 } { set recenter 1 }
+ if { [expr $w + $dlgW] &gt; $screenW } { set recenter 1 }
+ if { [expr $h + $dlgH] &gt; $screenH } { set recenter 1 }
+ if { $recenter } {
+   set w [expr ($screenW -$dlgW) / 2]
+   set h [expr ($screenH - $dlgH) / 2]
+ }
+
+ wm geometry $dlg +$w+$h</pre></dd></dl>
+
+
+
+</li>
+<li><p>Add geometry argument to show() (same as activate() above).</p>
+
+</li></ul>
+
+<p>    Dialog</p>
+<ul><li><p>Add label (header?) to Dialog class.  May not be necessary, or
+          too complicated.</p>
+
+</li></ul>
+
+<p>    ButtonBox</p>
+<ul><li><p>When a horizontal ButtonBox is stretched, the left button
+          stays anchored to the left edge and there is too much space
+          between the last button and the right edge.</p>
+
+</li>
+<li><p>Add an option to either evenly space the buttons across the
+          button box, or to keep them together and justify them to the
+          left, right or center.  Check that deleting buttons works
+          correctly.</p>
+
+</li></ul>
+
+<p>    ComboBox</p>
+<ul><li><p>Remove arrowrelief option from ComboBox and do what counter
+          does:  gets value of arrow's relief just before sinking it,
+          then restores it later.</p>
+
+</li>
+<li><p>Change bindings: remove all bindings from arrow key and remove
+          arrow key from &lt;tab&gt; focus sequence; only implement these
+          bindings on the entry widget:</p>
+<dl><dd><pre> Up    popup dropdown list, scroll up if already displayed
+ Down  popup dropdown list, scroll down if already displayed
+ Esc   popdown dropdown list, return entry to previous value
+ Enter popdown dropdown list, execute current selection</pre></dd></dl>
+
+<p>          Remove bindings from listbox and scrollbar(s), so that all
+          bindings are via the entry widget?</p>
+
+
+</li>
+<li><p>When entering keys when list is displayed, scroll list to
+          first entry beginning with entered keys.  If no match,
+          scroll list to top.</p>
+
+</li>
+<li><p>Remove many of the arrow bindings from Pmw.ComboBox - there
+          are just too many key bindings on the arrow button.  There
+          is no need for it to respond to keys such as the up/down
+          keys when the adjacent Entry widget already does so.  I
+          propose to remove all Pmw.ComboBox arrow button key bindings
+          except for &lt;space&gt;, which can be used to bring up the
+          dropdown list.  The Entry widget behaviour would remain
+          unchanged:  when it has focus, you can use the up/down keys
+          to go to the next/previous entries and then use &lt;Return&gt; to
+          invoke the selection command.</p>
+<p>          Alternatively, make the bindings the same as the MS-Windows
+          combobox. (Use the url entry field in Navigator or IE as an
+          example of MS-Windows behaviour).  These have been reported
+          to be:</p>
+<ul><li><p>All mouse actions are exclusively triggered by the left
+              button.</p>
+
+</li>
+<li><p>Right button displays "Direkthilfe" on my german system
+              ("Direct Help").  This is a floating button, that
+              triggers display of a tool tip like the |?| button that
+              appears next to the |x| at the right end of the title
+              bar of some native windows dialogs.</p>
+
+</li>
+<li><p>The arrow is very slim (acutally flat:  width/height is
+              about 2/1)</p>
+
+</li>
+<li><p>Entry and popup have the same color ("window color")</p>
+
+</li>
+<li><p>The popup has a 1 pixel dark border, no spacing between
+              popup and scrollbar.</p>
+
+</li>
+<li><p>If the box has the focus, the full entry is displayed in
+              "selected" style.</p>
+
+</li>
+<li><p>If the box has the focus, up and left keys rotate items
+              up, down and right keys rotate items down, all with
+              immediate effect.</p>
+
+</li>
+<li><p>If the box has the focus, keys a-z (not case sensitive)
+              rotate through the items with same first character, with
+              immediate effect.</p>
+
+</li>
+<li><p>No separate focus for the arrowbutton</p>
+
+</li>
+<li><p>Discussing how the combobox behaves with arrow keys when
+              it has the focus:  "The concept is almost identical to
+              what you already have, just gives more visual feedback.
+              In your current implementation you allow to rotate
+              through the values with the up and down arrow keys,
+              showing the strings in the entryfield, and accepting the
+              values when the user presses the spacebar (hmmm, how can
+              I exit this without moving back to the original value
+              manually?).  On Windows, the choice is not shown in the
+              entryfield, but the popup opens when you press the up or
+              down arrow keys, as if you clicked on the arrowbutton,
+              and you then navigate the values in the listbox.  This
+              avoids the display of not finally selected values in the
+              entryfield and is a lot more obvious and less confusing.
+              The current behaviour certainly confused me, which is
+              why I first proposed the changes to the moveup/down
+              methods." (Georg Mischler)</p>
+
+</li></ul>
+
+<p>          Also, check bindings on other megawidgets for consistency.</p>
+
+
+</li>
+<li><p>Modify Pmw.ComboBox so that the width of the entry widget is
+          forced to be the same as the width of the dropdown listbox.
+          If the "width" option to the standard listbox is 0, Tk sets
+          the requested width of the listbox to be just large enough
+          to hold the widest element in the listbox.  Using this
+          option, I can see that listbox.winfo_reqwidth() is changing
+          as I insert items into an unmapped listbox.  The question
+          is, how do I get notified of these events so that I can set
+          the width of the entry?</p>
+<p>          The problem is that the listbox is in another toplevel which
+          has not yet been displayed, so I can't bind to &lt;Configure&gt;
+          to determine its width.</p>
+
+<p>          One suggestion is to override the insert and delete methods
+          of the Listbox class.  The problem with this is what if the
+          font changed, or the borderwidth, etc?  You would need to
+          override and check many more methods.</p>
+
+
+</li>
+<li><p>Add ability to tearoff dropdown list (suggested by Dean N.
+          Williams).</p>
+
+</li>
+<li><p>Should be able to disable/enable arrow button.</p>
+
+</li></ul>
+
+<p>    Counter</p>
+<ul><li><p>Add option for different increment/decrement behaviour.  For
+          example, assuming increment is 1:</p>
+<ol><li><p>Current behaviour - move to the next multiple of the
+               increment, eg:  1.0 -&gt; 2.0, 1.234 -&gt; 2.0</p>
+
+</li>
+<li><p>Add or subtract the increment to whatever is displayed,
+               eg:  1.0 -&gt; 2.0, 1.234 -&gt; 2.234</p>
+
+</li>
+<li><p>Move to the next multiple of the increment, offset by some value.
+               eg: (if offset is 0.5) 0.5 -&gt; 1.5, 1.234 -&gt; 1.5, 1.678 -&gt; 2.5</p>
+
+</li></ol>
+
+</li>
+<li><p>Add wrap option (to wrap around at limits) (then don't need
+          time24 arg to <strong>'time'</strong> datatype).</p>
+
+</li>
+<li><p>Add a state option to disable Counter.</p>
+
+</li>
+<li><p>Add option to Counter to allow the buttons to be on the same
+          side, one on top of the other, like Tix, Itcl, Motif,
+          Windows 95, etc.  There should probably also be an option to
+          lay the current large buttons on the same side of the entry
+          field, next to each other.</p>
+
+</li>
+<li><p>Redo TimeCounter using vertical Counter, add limitcommand
+          option to Counter to allow overflow from seconds to minutes
+          to hours</p>
+
+</li></ul>
+
+<p>    Arrowed megawidgets (Counter, ComboBox, TimeCounter)</p>
+<ul><li><p>Potential construction speed up if Canvas arrows are replaced
+          by Label with Bitmap or BitmapImage.  The hard part would be
+          to make the bitmap change size depending on size of Label.</p>
+
+</li>
+<li><p>Pmw.drawarrow should draw arrows which look like Tk cascade
+          menu arrows.</p>
+
+</li></ul>
+
+<p>    EntryField</p>
+<ul><li><p>Can it be modified to change all entered characters to upper
+          or lower case automatically?  Or first-upper or
+          first-of-each-word-upper?</p>
+
+</li>
+<li><p>If the validity of the currently displayed text is ERROR,
+          allow any changes, even those which result in invalid text.
+          This is useful when invalid data has been given to the
+          <strong>value</strong> option and the user is trying to correct it.</p>
+
+</li></ul>
+
+<p>    LabeledWidget</p>
+<ul><li><p>Add tix-style border.</p>
+
+</li></ul>
+
+<p>    MenuBar</p>
+<ul><li><p>Maybe Pmw.MenuBar should also have (optional) balloon help
+          for menu items as well as menu buttons.  I am not sure
+          whether users would find this useful.</p>
+
+</li>
+<li><p>The status help hints do not appear when using F10/arrow
+          keys.</p>
+
+</li>
+<li><p>Look at the Tk8.0 menu demo and check the help bindings for
+          ideas, in particular, how can you get help when using
+          keyboard bindings.</p>
+
+</li>
+<li><p>Check the new menu features in Tk8.0 for creating "native"
+          menu bars and the special ".help" menu.</p>
+
+</li>
+<li><p>Add index() method.</p>
+
+</li>
+<li><p>Add a <strong>'position'</strong> option to addmenu and deletemenu methods.
+          This option should accept an index number, a menuName or
+          <strong>Pmw.END</strong>.</p>
+
+</li>
+<li><p>Look at itcl menubar for ideas.</p>
+
+</li></ul>
+
+<p>    Balloon</p>
+<ul><li><p>Positioning of the balloon with respect to the target
+          widget or canvas item: There are a number of ways that
+          Pmw.Balloon could be improved.  For example, currently the
+          the top left corner of the balloon is positioned relative to
+          the bottom left corner of the target, offset by the
+          [xy]offset options.  These options apply to all targets -
+          they can not be set differently for different targets.</p>
+<p>          To make it more configurable, the user should be able to
+          specify, for each target:</p>
+<ul><li><p>the base position in the target relative to which the
+              balloon should be placed (n, s, e, w, nw, sw, ne, se, c)
+              (Currently sw)</p>
+
+</li>
+<li><p>the x and y offsets (Default (20, 1))</p>
+
+</li>
+<li><p>the position in the balloon that should be placed at the
+              offset position (n, s, e, w, nw, sw, ne, se, c)
+              (Currently nw)</p>
+<p>              Note, if this is anything other than nw,
+              update_idletasks() will need to be called to get the
+              size of the balloon before it is positioned - there is a
+              possibility that this may cause weird ugly flashing.</p>
+
+
+</li>
+<li><p>whether either the base x or y position should be taken
+              relative to the current mouse position rather than as
+              one of the corners of the target.  This would be useful
+              for large targets, such as text widgets, or strange
+              shaped canvas items.  This could be specified using
+              special base positions, such as (nm, sm, em, wm).  For
+              example, for <strong>'sm'</strong>, the x base position is the mouse x
+              position and y base position is the bottom (south) edge
+              of the target.</p>
+
+</li></ul>
+
+<p>          The user should be able to specify global defaults for all
+          of these, as well as be able to override them for each
+          target.  The Pmw.Balloon options and their defaults could
+          be:</p>
+<dl><dd><pre> basepoint   sw        # Position on target.
+ anchor      nw        # Position on the balloon
+ xoffset     20        # x distance between basepoint and anchor
+ yoffset     1         # y distance between basepoint and anchor</pre></dd></dl>
+
+
+<p>          To be able to override these, the bind() and tagbind()
+          methods would have to accept these as additional arguments.
+          Each would default to None, in which case the default values
+          at the time the balloon is deiconified would be used.</p>
+
+<p>          I'm not sure about how to handle the case when the balloon
+          is configured to come up under the mouse.  When this happens
+          the balloon flashes on and off continuously.  This can
+          happen now if you set the yoffset to a negative number.
+          Should the balloon widget detect this and do something about
+          it?</p>
+
+
+</li>
+<li><p>Add showballoon(x, y, text) method to Balloon and use in
+          balloon help for a listbox:</p>
+<p>          On 3 Dec, Michael Lackhoff wrote:</p>
+
+<dl><dd><pre> And another question:
+ Is it possible to create a balloon-help for the entries
+ in the listbox?  Not all the information is in the
+ listbox and it would be nice if a balloon help could
+ give addtional information.</pre></dd></dl>
+
+<p>          Rather than popup a balloon help window as the mouse moves
+          over items in the listbox, I think it would be better if it
+          pops up after you clicked on an item (or a short time
+          afterwards).  Pmw.Balloon displays the balloon help a short
+          time after the mouse enters a widget, so is not directly
+          usable in this case.  However, a method could be added to
+          Pmw.Balloon to request it to popup the balloon at a
+          particular x,y position.  This method could be called from
+          the listbox_focus method above.  Something like:</p>
+<dl><dd><pre> def listbox_focus(self, event):
+     self.indexlist.component('listbox').focus_set()</pre></dd></dl>
+
+<dl><dd><pre>     text = self.indexlist.getcurselection()
+     # expand text to whatever you want:
+     text = 'This is ' + text
+     self.balloon.showballoon(x, y, text)</pre></dd></dl>
+
+
+<p>          The Pmw.Balloon showballoon() method would have to set a
+          timer which sometime later calls another method which
+          displays the text.  You would also need to bind
+          &lt;ButtonRelease-1&gt; to a hideballoon() method which withdraws
+          the popup.</p>
+
+
+</li>
+<li><p>The balloon can be displayed off-screen if the window is
+          near the edge of the screen.  Add a fix so that the balloon
+          always stays on the screen (but does not popup under the
+          mouse, otherwise it will immediately pop down).</p>
+
+</li>
+<li><p>Add a fix so that the balloon does not disappear if the
+          mouse enters it.  Could do this by setting a short timer on
+          the Leave event before withdrawing the balloon and if there
+          is an Enter event on the balloon itself, do not withdraw it.</p>
+
+</li>
+<li><p>For tagged items in text widgets, the balloon is placed
+          relative to the character in the tagged item closest to the
+          mouse.  This is not consistent:  in the other cases
+          (including canvas), the balloon is placed relative to the
+          bottom left corner of the widget or canvas item.  This
+          should also be the case for text items.</p>
+
+</li>
+<li><p>Is the new (in Tk8) "&lt;&lt;MenuSelect&gt;&gt;" event useful for
+          balloon and/or status help.</p>
+
+</li></ul>
+
+<p>    MessageBar</p>
+<ul><li><p>Finish logmessage functionality.</p>
+
+</li>
+<li><p>Add colours and fonts to MessageBar message types.  For
+          example, systemerror message types could have bold font on a
+          red background.</p>
+
+</li>
+<li><p>Add message logging history view (like the ddd debugger).</p>
+
+</li></ul>
+
+<p>    NoteBook</p>
+<ul><li><p>Notebook should recalculate layout if the requested size of a tab
+          changes (eg font size, text, etc).</p>
+
+</li>
+<li><p>The tabpos option should accept <em>s</em>, <em>e</em> and <em>w</em> as well as <em>n</em>.</p>
+
+</li>
+<li><p>Possible new options (borrowed from iwidgets):</p>
+<ul><li><p><strong>equaltabs</strong></p>
+<p>                If set to true, causes horizontal tabs to be equal in
+                in width and vertical tabs to equal in height.</p>
+
+<p>                Specifies whether to force tabs to be  equal  sized  or
+                not.  A  value of true means constrain tabs to be equal
+                sized. A value of false allows each tab to  size  based
+                on  the  text label size. The value may have any of the
+                forms accepted by the  Tcl_GetBoolean,  such  as  true,
+                false, 0, 1, yes, or no.</p>
+
+<p>                For horizontally positioned tabs (tabpos is either s or
+                n),  true  forces all tabs to be equal width (the width
+                being equal to the longest label plus any  padX  speci-
+                fied). Horizontal tabs are always equal in height.</p>
+
+<p>                For vertically positioned tabs (tabpos is either  w  or
+                e), true forces all tabs to be equal height (the height
+                being equal to the height of the label with the largest
+                font).  Vertically  oriented  tabs  are always equal in
+                width.</p>
+
+<p>                Could have a special value which sets equal sized and
+                also forces tabs to completely fill notebook width
+                (apparently like
+                Windows).</p>
+
+
+</li>
+<li><p><strong>tabgap</strong></p>
+<p>                Specifies the amount of pixel space  to  place  between
+                each tab. Value may be any pixel offset value. In addi-
+                tion, a special keyword overlap  can  be  used  as  the
+                value to achieve a standard overlap of tabs. This value
+                may have any of the forms acceptable to Tk_GetPixels.</p>
+
+
+</li>
+<li><p><strong>raiseselect</strong></p>
+<p>                Sets whether to raise selected tabs slightly (2 pixels).</p>
+
+<p>                Specifes whether to slightly  raise  the  selected  tab
+                from  the rest of the tabs. The selected tab is drawn 2
+                pixels closer to the outside of  the  tabnotebook  than
+                the  unselected  tabs.  A  value  of true says to raise
+                selected tabs, a value of false turns this feature off.
+                The  default  is  false.  The value may have any of the
+                forms accepted by the  Tcl_GetBoolean,  such  as  true,
+                false, 0, 1, yes, or no.</p>
+
+
+</li>
+<li><p><strong>bevelamount</strong></p>
+<p>                Specifies pixel size of tab corners. 0 means no corners.</p>
+
+
+</li></ul>
+
+</li>
+<li><p>There should be a way to temporarily hide a page, without
+            deleting it (like pack_forget).  (Suggested by Michel Sanner)</p>
+
+</li></ul>
+
+<p>    OptionMenu</p>
+<ul><li><p>Should accept focus and obey up and down arrow keys.</p>
+
+</li></ul>
+
+<p>    PanedWidget</p>
+<ul><li><p>Add index() method</p>
+
+</li>
+<li><p>Modify all methods so that they accept <strong>Pmw.END</strong> as a pane
+          identifier as well as an index or a name.</p>
+
+</li>
+<li><p>Check iwidgets pane and panedwindow classes.</p>
+
+</li></ul>
+
+<p>    RadioSelect</p>
+<ul><li><p>Add insert() and delete() methods.</p>
+
+</li>
+<li><p>The index method should have <strong>forInsert</strong> argument.</p>
+
+</li>
+<li><p>Add Pmw.SELECT to index() method.  For single selectmode
+          this returns an integer, for multiple selectmode this
+          returns a list of integers.</p>
+
+</li>
+<li><p>Add option to set background color on selected buttons.
+          Maybe should also be able set selected foreground as well.
+          Any others?</p>
+
+</li></ul>
+
+<p>    LogicalFont</p>
+<ul><li><p>Add boldFixed fonts,</p>
+
+</li>
+<li><p>Search for closest size font if no exact match.</p>
+
+</li>
+<li><p>Maybe replace with Tk8.0 font mechanism.</p>
+
+</li>
+<li><p>Can the Tk8.0 font measuring functionality be used in Pmw somehow?</p>
+
+</li></ul>
+
+<p>    Scrolled widgets</p>
+<ul><li><p>Can some common scrolling methods be factored out, either as
+          a base class, "ScrolledMixin" mixin class or as helper functions?
+          Candidate methods: constructor, destroy, interior, _hscrollMode,
+          _vscrollMode, _configureScrollCommands, _scrollXNow, _scrollYNow,
+          _scrollBothLater, _scrollBothNow, _toggleHorizScrollbar,
+          _toggleVertScrollbar.</p>
+
+</li>
+<li><p>ScrolledField should have optional arrow buttons, so that it
+          can still be scrolled even if the mouse does not have a
+          middle button.</p>
+
+</li></ul>
+
+<p>    Miscellaneous</p>
+<ul><li><p>Add a button to the Pmw "Stack trace window" which
+          optionally removes all grabs:</p>
+<p>            I normally interact with the "Stack trace window"
+            immediately, and dismiss it afterwards.  In many cases
+            where a bug appears like this, the rest of the application
+            is still functional (many of the problems appearing at
+            this stage of development of my application are unforeseen
+            exceptions communicating with a robot on the other end of
+            a socket, not affecting the GUI per se).  For that reason
+            I'd prefer if the "stack trace window" would push another
+            grab on the grab stack (if any grabs are active at the
+            moment the exception occurs).  Could the window have an
+            extra "Terminate application" option for this case?</p>
+
+
+</li>
+<li><p>need to handle component option queries in configure():</p>
+<dl><dd><pre> foo = Pmw.AboutDialog(applicationname = 'abc XYZ')
+ foo.component('message').configure('text')    - works
+ foo.cget('message_text')                      - works
+ foo.configure('message_text')                 - doesn't</pre></dd></dl>
+
+
+</li>
+<li><p>Implement bindings (ComboBox, etc) via a dictionary lookup,
+          to allow people to invent new bindings, such as for
+          handicapped users.  (Suggested by Michael McLay)</p>
+
+</li>
+<li><p>Modify bundlepmw.py so that it checks Pmw.def to see that no
+          files have been missed.</p>
+
+</li>
+<li><p>Potential cheap speedup by adding this to each module, or
+          inside functions if it has a loop containing calls to
+          builtins:</p>
+<dl><dd><pre> from __builtin__ import *</pre></dd></dl>
+
+
+</li>
+<li><p>Look at how update_idletasks and after_* are used in Pmw -
+          are they consistent?  could it be improved?  What are the
+          problems of using these on other bits of an application
+          (such as when the size of the toplevel is being determined
+          for the window manager).</p>
+
+</li>
+<li><p>If lots of errors occur (such as in a fast time callback)
+          the error window may not appear, since Tk will wait until it
+          is idle - which may never occur.  The solution is to call
+          update_idletask when updating the error window, but only
+          after a short time has passed.  This will provide better
+          user response.  However, it may not be possible to do this
+          if some python interpretes (omppython, for example) do not
+          handle calls to update_idletasks at certain times.</p>
+
+</li>
+<li><p>In the Pmw FAQ, in the "Why don't Pmw megawidgets have a
+          <strong>'state'</strong> option?" section, it mentions several Pmw
+          megawidgets that can not be disabled.  Fix them.</p>
+
+</li>
+<li><p>Add RCSID version string to all files.</p>
+
+</li>
+<li><p>When raising exceptions use the third argument to raise:</p>
+<dl><dd><pre> raise SimulationException, msg, sys.exc_info()[2]</pre></dd></dl>
+
+
+</li>
+<li><p>When update_idletasks is called all pending changes are
+          flushed to the window system server.  However, it may take
+          some time for the server to display the changes.  If it is
+          required that the display be up-to-date, update_idletasks
+          should be followed by a call that blocks until processed by
+          the server and a reply received.  This may be useful in
+          Pmw.busycallback to ensure the busy cursor remains visible
+          until the display is actually modified.</p>
+
+</li>
+<li><p>There is a small bug which appears only with Tk8.0 (the bug
+          is not apparent with Tk4.2).  If a dialog is activated and
+          pops up directly over the cursor and the dialog has a
+          default button, then pressing the &lt;strong&gt;Return&lt;/strong&gt;
+          key will not invoke the default button.  If you move the
+          mouse out of and then back into the dialog, pressing the
+          &lt;strong&gt;Return&lt;/strong&gt; key will work.  This behaviour has
+          been noticed in Tcl-only programs, so it is probably a bug
+          in Tk.  (Tested on Solaris.)</p>
+
+</li>
+<li><p>Modify PmwBlt.py to use blt2.4 instead of blt8.0.unoff.
+          Nick Belshaw &lt;nickb@earth.ox.ac.uk&gt; is looking at wrapping
+          the new BLT StripChart and TabSet into Pmw.</p>
+
+</li>
+<li><p>Perhaps Pmw should have its own exception defined, like
+          TkInters's TclError, perhaps called PmwError.</p>
+
+</li>
+<li><p>This one is caused by a bug in the implementation of Tcl/Tk
+          for Microsoft Windows NT (and maybe other Microsoft
+          products).  Mouse release events can get lost if the
+          grab_set and grab_release commands are used and the mouse
+          goes outside of the window while the mouse button is down.
+          This can occur while Pmw modal dialogs are active.  Below
+          is some Tkinter-only code which demonstrates the problem.
+          Maybe there is a work around.</p>
+<dl><dd><pre> # Test script to demonstrate bug in Tk
+ #implementation of grab under NT.
+
+ # Click on "Dialog" to bring up the modal
+ # dialog window.  Then button down on the scale,
+ # move the mouse outside the window,
+ # then button up.  The scale slider will still
+ # be sunken and clicks on the "OK" button
+ # will be ineffective.
+
+ import Tkinter
+
+ def activate():
+     waitVar.set(0)
+     toplevel.deiconify()
+     toplevel.wait_visibility()
+     toplevel.grab_set()        # Problem here
+     toplevel.focus_set()
+     toplevel.wait_variable(waitVar)
+
+ def deactivate():
+     toplevel.withdraw()
+     toplevel.grab_release()    # and here
+     waitVar.set(1)
+
+ root = Tkinter.Tk()
+ toplevel = Tkinter.Toplevel()
+ waitVar = Tkinter.IntVar()
+ toplevel.withdraw()
+ scale = Tkinter.Scale(toplevel, orient='horizontal', length=200)
+ scale.pack()
+ button = Tkinter.Button(toplevel, text='OK', command=deactivate)
+ button.pack()
+
+ button = Tkinter.Button(text='Dialog', command=activate)
+ button.pack()
+ button = Tkinter.Button(text='Exit', command=root.destroy)
+ button.pack()
+
+ root.mainloop()</pre></dd></dl>
+
+
+</li></ul>
+
+
+<p><strong>Documentation</strong></p>
+<ul><li><p>Document how to get Pmw working on a Mac, for example:</p>
+<ul><li><p>Unzip and untar</p>
+<p>            This depends on what you use to unpack the tar file.  If
+            you use (macgzip and) SunTar you have to tell it that files
+            with ".py" extensions are text files (in the
+            preferences/file type section).  If you use stuffit
+            expander:  this can be made to do the conversion
+            correctly, but it could be that this only works if you set
+            the .py extension correctly in Internet Config.</p>
+
+<ul><li><p>Where do you untar Pmw?</p>
+
+</li>
+<li><p>How do you get line terminators correct (carriage
+              return/line feed)?</p>
+
+</li>
+<li><p>Is there any problem with file name case?  (mixed
+              upper/lower case)</p>
+
+</li>
+<li><p>Is there any problem with file name length?</p>
+
+</li></ul>
+<p>            (Joseph Saltiel says:  It was the same type of operation
+            as in Windows/Unix.  Run a program that unzips it and
+            untars it.  It seems to get case and length right on its
+            own.)</p>
+
+
+</li>
+<li><p>Let python know where Pmw is</p>
+<ul><li><p>If Pmw is in its own folder you will have to add the
+              parent of that folder to the sys paths in Edit
+              PythonPaths.  If it is in the Python home folder, you
+              do not need to do this.</p>
+
+</li>
+<li><p>Make sure that the Pmw folder is called "Pmw" and not
+              something else.  Since Pmw is a package, python expects
+              to find a "Pmw" folder somewhere in sys.path.</p>
+
+</li></ul>
+<p>            (Joseph Saltiel says:  With the Python distribution on the
+            Mac there is an application called editPythonPrefs, when
+            you run it it gives you a list of a paths.  These paths
+            are similiar to the PYTHONPATH variable.  I just added the
+            path to Pmw at the bottom of this list.)</p>
+
+
+</li></ul>
+
+</li>
+<li><p>Document general ideas about building guis, eg:</p>
+<p>      When I write gui applications, I usually defer creation of windows
+      as much as possible - this means that the application starts up
+      quickly because it usually only has to create the main window.
+      Whenever another window is required for the first time, it is
+      created then.  When the user has finished with the window, the
+      window is withdrawn, not deleted, so that next time it is required
+      it much faster to come up.</p>
+
+<p>      In summary - don't create a window until you need and
+      don't destroy a window if you may want it again.</p>
+
+<p>      The amount of memory required to keep the windows should not be
+      very much - except for very long running programs where the user
+      may create thousands of different windows.</p>
+
+
+</li>
+<li><p>Add class hierarchy diagram to documentation:</p>
+<dl><dd><pre> MegaArchetype
+     MegaToplevel
+        etc
+     MegaWidget
+        etc</pre></dd></dl>
+
+
+</li>
+<li><p>Add to doco something like:  "Another way to extend a Pmw
+      megawidget is to specify a non-default type for one of the
+      components.  For example <code>text_pytype = FontText</code>."</p>
+
+</li>
+<li><p>Document pyclass and pyclass = None (options for null components
+      are ignored; the only time this can be used is with the
+      Group's tag component - all
+      other's use the component widget in some way)</p>
+
+</li>
+<li><p>Create index of all Pmw methods, functions, options, components.</p>
+
+</li>
+<li><p>Add description of how to run the Pmw demos without installing.</p>
+
+</li>
+<li><p>Add description of how to install Pmw.</p>
+
+</li>
+<li><p>Describe grid structure of megawidgets, so that it is possible
+      to extend megawidgets by adding new widgets into the interior
+      (hence avoiding a childsite in most megawidgets)</p>
+
+</li>
+<li><p>Document error display and difference between callback and
+      binding error reports.</p>
+
+</li>
+<li><p>Document difference between <strong>'Helvetica 12'</strong> and <strong>'Helvetica size: 12'</strong>
+      in logicalfont.</p>
+
+</li>
+<li><p>Add to howtouse, to describe using the option database to set
+        options for a specific megawidget:</p>
+<dl><dd><pre> import Pmw
+ root = Pmw.initialise(useTkOptionDb = 1)
+ root.option_add('*entryfield24*Label.text', 'German')
+ e = Pmw.EntryField(hull_name = 'entryfield24', labelpos = 'w')
+ e.pack()
+ root.update()</pre></dd></dl>
+
+
+</li>
+<li><p>Also document hull_name and hull_class.</p>
+
+</li>
+<li><p>Finish FAQ, ReleaseProcedure and StructuredText test.</p>
+
+</li>
+<li><p>Put html through gifwizard and html lint.</p>
+<dl><dd><pre> http://www.cen.uiuc.edu/cgi-bin/weblint
+ (eg: http://www.cre.canon.co.uk/~neilb/weblint/manpage.html)</pre></dd></dl>
+
+
+</li>
+<li><p>Delete comments from source if they have been added to docs
+      (should not have two copies of anything).</p>
+
+</li>
+<li><p>Need to document non-standard initial values for component
+      options, such as border in ButtonBox and Dialog's childsite.</p>
+
+</li>
+<li><p>Docs should have DEFAULT BINDINGS section (like iwidget combobox).</p>
+
+</li>
+<li><p>Promote home page:</p>
+<dl><dd><pre> http://www.geocities.com/homestead/promote.html
+ http://www.submit-it.com/subopt.htm, etc</pre></dd></dl>
+
+
+</li>
+<li><p>Create man pages as well as html (modify createmanuals to produce both).</p>
+
+</li>
+<li><p>Maybe something with html frames like: itcl2.2/html/index.html</p>
+
+</li>
+<li><p>Add to starting.html a note that Pmw is a python "package" and add
+      a pointer to python documentation on packages.</p>
+
+</li>
+<li><p>Document scrolled widget implementations, explaining why they
+      are all slightly different (because the underlying widgets which
+      are being scrolled have different behaviors).</p>
+
+</li>
+<li><p>Make copyright clearer. Maybe borrow python's?</p>
+
+</li></ul>
+
+<p><strong>Demos</strong></p>
+<ul><li><p>Check for missing demos.</p>
+
+</li>
+<li><p>In all demos can move the three lines beginning with "Import Pmw
+      from the sibling directory", to inside "if __name__" clause.
+      Also, "sibling directory" is now incorrect.  Also, add note that
+      this is only necessary when running demos without installing Pmw.</p>
+
+</li>
+<li><p>Change demo/All.py so that it displays the traceback if it
+      cannot load or run a demo (easier for users to report errors).</p>
+
+</li>
+<li><p>Add option to demo/All.py:  "Display demos in separate window"
+      to allow resizing of sub-demos</p>
+
+</li>
+<li><p>TimeCounter and Spectrum demos beep when they come up, using:</p>
+<dl><dd><pre> root.option_add('*EntryField*value', 'VALUE')</pre></dd></dl>
+
+
+</li>
+<li><p>In demos, add <code>title = 'blah'</code> to top of file and replace
+      <code>root.title(..)</code> with <code>root.title(title)</code> at bottom.</p>
+
+</li>
+<li><p>Add comprehensive speed test demo which creates one or more of
+      each (common) megawidget.  Remove old SpeedTest demo.</p>
+
+</li>
+<li><p>Check demos work when called from ptui.  (Changes have to do
+      with calling compile/exec where __name__ is not the name of the
+      All.py script, but is <strong>'__builtin__'</strong>)</p>
+
+</li>
+<li><p>PromptDialog demo should not remember password.</p>
+
+</li>
+<li><p>Finish Counter, Radioselect demos.</p>
+
+</li>
+<li><p>Modify the All demo so that you can reload a demo module.</p>
+
+</li>
+<li><p>The syntax-coloured code viewer looks strange on Microsoft NT,
+      because the size of the fonts differ.  Check out Guido's
+      idle-0.1 text colouring for Pmw code viewer.</p>
+
+</li>
+<li><p>Document restrictions on adding bindings to a megawidget:  you
+      probably need to bind to components of the megawidget and also
+      check that you are not destroying bindings set up by the
+      megawidget itself.</p>
+
+</li>
+<li><p>Add a demo that demonstrates setting the color scheme at run time.</p>
+
+</li></ul>
+
+<p><strong>Tests</strong></p>
+<ul><li><p>Check for missing tests, such as TimeCounter, RadioSelect,
+      SelectionDialog, MessageBar, MenuBar, ComboBoxDialog, Balloon.</p>
+
+</li>
+<li><p>Create test for useTkOptionDb option to Pmw.initialise().</p>
+
+</li>
+<li><p>Check that destroyed widgets' python classes are garbage
+      collected (add test and/or demo).</p>
+
+</li>
+<li><p>Add tests for changecolor, setscheme, etc.</p>
+
+</li>
+<li><p>Need Resources test.</p>
+
+</li>
+<li><p>Create tests for deriving from Pmw classes (eg ComboBox).</p>
+
+</li></ul>
+
+<p><strong>Ideas</strong></p>
+<ul><li><p>Add more Tix (www.xpi.com/tix/screenshot.html) and iwidgets widgets.</p>
+
+</li>
+<li><p>Look at spinner.itk for how to do vertical orientation on
+      same side for Counter.</p>
+
+</li>
+<li><p>Investigate these new features in Tk8.0 and see if they could be
+      used in Pmw:</p>
+<dl><dd><pre> embedded images in text widgets
+ destroy command ignores windows that don't exist
+</pre></dd></dl>
+
+
+</li></ul>
+
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

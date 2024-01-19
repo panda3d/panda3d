@@ -1,0 +1,421 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.MainMenuBar reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.MainMenuBar</h1>
+    
+<center><IMG SRC=MainMenuBar.gif ALT="" WIDTH=474 HEIGHT=29></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.MainMenuBar() - 
+    manager for toplevel native menus
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaArchetype.html">Pmw.MegaArchetype</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This class is a wrapper for the Tkinter.Menu class.  It should be
+    used as the main menu of toplevel windows. The class is similar
+    to <a href="MenuBar.html">Pmw.MenuBar</a>, but should be used when native menus are required.
+    See the Tkinter.Menu documentation for full details.</p>
+
+<p>    This class should be created as the child of a Tkinter.Toplevel
+    and should then be specified as the menu associated with the
+    toplevel, using the toplevel's <code>configure()</code> method.  For example:</p>
+<dl><dd><pre> # Create a Pmw.MegaToplevel.
+ megaToplevel = Pmw.MegaToplevel()
+ # Get the Tkinter.Toplevel from Pmw.MegaToplevel.
+ toplevel = megaToplevel.interior()
+ # Create the menu bar for the toplevel.
+ menuBar = Pmw.MainMenuBar(toplevel)
+ # Configure the toplevel to use the menuBar.
+ toplevel.configure(menu = menuBar)</pre></dd></dl>
+
+
+<p>    There are methods to add menus, both as toplevel menus and
+    sub-menus, and for adding menu items to the menus.  Each menu item
+    may have help text to be displayed by a <a href="Balloon.html">Pmw.Balloon</a>.  Each menu and
+    cascaded menu (sub-menu) is referenced by name which is supplied
+    on creation.</p>
+
+<p>    This megawidget is derived from <a href="MegaArchetype.html">Pmw.MegaArchetype</a> (not <a href="MegaWidget.html">Pmw.MegaWidget</a>
+    like most other megawidgets), with the hull class being
+    Tkinter.Menu.</p>
+
+<p>    (Note that due to bugs in Tk's menubar functionality, balloon help
+    has not been implemented and status help does not work properly.)</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.balloon></a>
+<dl><dt> <strong>balloon
+</strong></dt><dd>
+Specifies a <a href="Balloon.html">Pmw.Balloon</a> to display the help text for menu items.  If
+    <strong>None</strong>, no help is displayed.  If the balloon has an associated
+    <a href="MessageBar.html">Pmw.MessageBar</a>, the help text will also be displayed there.</p>
+<p>    Due to a bug in some versions of Tk (8.0 and possible others),
+    help text will not be displayed by the balloon.  However, help
+    text will be displayed in the balloon's associated messagebar. The default is <strong>None</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.hotkeys></a>
+<dl><dt> <strong>hotkeys
+</strong></dt><dd>
+Initialisation option. If true, keyboard accelerators will be assigned to each menu item.
+    Keyboard accelerators can be used to access the menus without
+    using the mouse.  The accelerator character is always one of the
+    alphanumeric characters in the text label of the menu item and is
+    indicated by an underline.</p>
+<p>    To select a menu, simultaneously press the <strong>&lt;Alt&gt;</strong> key and the
+    accelerator character indicated on a toplevel menu item.  The
+    arrows keys can then be used to select other menus and menu items.
+    To invoke a menu item, press <strong>&lt;Return&gt;</strong> or press the accelerator
+    character indicated on the menu item.</p>
+
+<p>    Each accelerator character will be assigned automatically unless
+    <em>traverseSpec</em> is supplied to the <code>addmenu()</code>, <code>addmenuitem()</code> or
+    <code>addcascademenu()</code> methods.  The automatically selected
+    accelerator character for a menu item is the first character in
+    the label text that has not already been used as an accelerator in
+    the menu containing the menu item.</p>
+
+<p>    If <em>traverseSpec</em> is given, it must be either an integer or a
+    character.  If an integer, it specifies the index of the character
+    in the label text to use as the accelerator character.  If a
+    character, it specifies the character to use as the accelerator
+    character. The default is <strong>1</strong>.</p>
+
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+The toplevel menu widget. By default, this component is a Tkinter.Menu.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Dynamic components</h3></dt><dd>
+<p>
+        Menu components are created dynamically by the <code>addmenu()</code> and
+        <code>addcascademenu()</code> methods.  By default, these are of type
+        Tkinter.Menu and are created with a component group of <strong>Menu</strong>.</p>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaArchetype.html#methods">Pmw.MegaArchetype</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Menu</strong> class
+are forwarded by this megawidget to the
+<strong>hull</strong> component.
+<p></p>
+<a name=method.addcascademenu></a>
+<dl><dt> <strong>addcascademenu</strong>(<em>parentMenuName</em>,<em>menuName</em>,<em>statusHelp</em> = <strong>''</strong>,<em>traverseSpec</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+Add a cascade menu (sub-menu) to the menu <em>parentMenuName</em>.  The
+    <em>menuName</em> argument must not be the same as any menu already
+    created using the <code>addmenu()</code> or <code>addcascademenu()</code> methods.</p>
+<p>    A menu item in the parent menu is created (with the
+    <code>add_cascade()</code> method of the parent menu) using all keyword
+    arguments except <strong>tearoff</strong> and <strong>name</strong>.</p>
+
+<p>    If the <strong>label</strong> keyword argument is not given, the <strong>label</strong> option
+    of the menu item defaults to <em>menuName</em>.  If the <strong>underline</strong>
+    keyword argument is not given (and the <strong>hotkeys</strong> megawidget option
+    is true) the <strong>underline</strong> option is determined as described under
+    <strong>hotkeys</strong> and is used to specify the keyboard accelerator.</p>
+
+<p>    The <em>statusHelp</em> argument is used as the help string for the menu
+    item.  This is displayed using the <code>showstatus()</code> method of the
+    balloon.</p>
+
+<p>    The <strong>tearoff</strong> and <strong>name</strong> keyword arguments, if present, are passed
+    to the constructor of the menu.  See Tkinter.Menu for details of
+    these options.  The menu is created as a component named
+    <em>menuName</em>.</p>
+
+
+
+</dd></dl>
+<a name=method.addmenu></a>
+<dl><dt> <strong>addmenu</strong>(<em>menuName</em>,<em>balloonHelp</em>,<em>statusHelp</em> = <strong>None</strong>,<em>traverseSpec</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+Add a cascade menu to the toplevel menu.  The <em>menuName</em> argument
+    must not be the same as any menu already created using the
+    <code>addmenu()</code> or <code>addcascademenu()</code> methods.</p>
+<p>    A menu item in the toplevel menu is created (with the
+    <code>add_cascade()</code> method) using all keyword arguments except
+    <strong>tearoff</strong> and <strong>name</strong>.</p>
+
+<p>    If the <strong>label</strong> keyword argument is not given, the <strong>label</strong> option
+    of the menu button defaults to <em>menuName</em>.  If the <strong>underline</strong>
+    keyword argument is not given (and the <strong>hotkeys</strong> megawidget option
+    is true) the <strong>underline</strong> option is determined as described under
+    <strong>hotkeys</strong> and is used to specify the keyboard accelerator.</p>
+
+<p>    The <em>statusHelp</em> argument is used as the help string for the menu
+    item.  This is displayed using the <code>showstatus()</code> method of the
+    balloon.  Currently <em>balloonHelp</em> is not used, due to a bug in Tk
+    version 8.0.</p>
+
+<p>    The <strong>tearoff</strong> and <strong>name</strong> keyword arguments, if present, are passed
+    to the constructor of the menu.  See Tkinter.Menu for details of
+    these options.  The menu is created as a component named
+    <em>menuName</em>.</p>
+
+
+
+</dd></dl>
+<a name=method.addmenuitem></a>
+<dl><dt> <strong>addmenuitem</strong>(<em>menuName</em>,<em>itemType</em>,<em>statusHelp</em> = <strong>''</strong>,<em>traverseSpec</em> = <strong>None</strong>,**<em>kw</em>)</dt><dd>
+Add a menu item to the menu <em>menuName</em>.  The kind of menu item is
+    given by <em>itemType</em> and may be one of <strong>command</strong>, <strong>separator</strong>,
+    <strong>checkbutton</strong>, <strong>radiobutton</strong> or <strong>cascade</strong> (although cascade menus
+    are better added using the <code>addcascademenu()</code> method).  Any
+    keyword arguments present will be passed to the menu when creating
+    the menu item.  See Tkinter.Menu for the valid options for each
+    item type.  In addition, a keyboard accelerator may be
+    automatically given to the item, as described under <strong>hotkeys</strong>.</p>
+<p>    When the mouse is moved over the menu item, the <em>helpString</em> will
+    be displayed by the <strong>balloon</strong>'s <strong>statuscommand</strong>.</p>
+
+
+
+</dd></dl>
+<a name=method.deletemenu></a>
+<dl><dt> <strong>deletemenu</strong>(<em>menuName</em>)</dt><dd>
+Delete the menu <em>menuName</em> and all its items.  The menu may either
+    be a toplevel menu or a cascade menu.</p>
+
+
+</dd></dl>
+<a name=method.deletemenuitems></a>
+<dl><dt> <strong>deletemenuitems</strong>(<em>menuName</em>,<em>start</em>,<em>end</em> = <strong>None</strong>)</dt><dd>
+Delete menu items from the menu <em>menuName</em>.  If <em>end</em> is not
+    given, the <em>start</em> item is deleted.  Otherwise all items from
+    <em>start</em> to <em>end</em> are deleted.</p>
+
+
+</dd></dl>
+<a name=method.disableall></a>
+<dl><dt> <strong>disableall</strong>()</dt><dd>
+Disable all toplevel menus.</p>
+
+
+</dd></dl>
+<a name=method.enableall></a>
+<dl><dt> <strong>enableall</strong>()</dt><dd>
+Enable all toplevel menus.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create button to launch the toplevel with main menubar.
+        w = tkinter.Button(parent, text = 'Show Pmw.MainMenuBar demo',
+                command = lambda parent=parent: MainMenuBarToplevel(parent))
+        w.pack(padx = 8, pady = 8)
+
+class MainMenuBarToplevel:
+    def __init__(self, parent):
+        # Create the toplevel to contain the main menubar.
+        megaToplevel = Pmw.MegaToplevel(parent, title = title)
+        toplevel = megaToplevel.interior()
+
+        # Create the Balloon for this toplevel.
+        self.balloon = Pmw.Balloon(toplevel)
+
+        # Create and install the MenuBar.
+        menuBar = Pmw.MainMenuBar(toplevel,
+                balloon = self.balloon)
+        toplevel.configure(menu = menuBar)
+        self.menuBar = menuBar
+
+        # Add some buttons to the MainMenuBar.
+        menuBar.addmenu('File', 'Close this window or exit')
+        menuBar.addmenuitem('File', 'command', 'Close this window',
+                command = PrintOne('Action: close'),
+                label = 'Close')
+        menuBar.addmenuitem('File', 'separator')
+        menuBar.addmenuitem('File', 'command', 'Exit the application',
+                command = PrintOne('Action: exit'),
+                label = 'Exit')
+
+        menuBar.addmenu('Edit', 'Cut, copy or paste')
+        menuBar.addmenuitem('Edit', 'command', 'Delete the current selection',
+                command = PrintOne('Action: delete'),
+                label = 'Delete')
+
+        menuBar.addmenu('Options', 'Set user preferences')
+        menuBar.addmenuitem('Options', 'command', 'Set general preferences',
+                command = PrintOne('Action: general options'),
+                label = 'General...')
+
+        # Create a checkbutton menu item.
+        self.toggleVar = tkinter.IntVar()
+        # Initialise the checkbutton to 1:
+        self.toggleVar.set(1)
+        menuBar.addmenuitem('Options', 'checkbutton', 'Toggle me on/off',
+                label = 'Toggle',
+                command = self._toggleMe,
+                variable = self.toggleVar)
+        self._toggleMe()
+
+        menuBar.addcascademenu('Options', 'Size',
+                'Set some other preferences', traverseSpec = 'z', tearoff = 1)
+        for size in ('tiny', 'small', 'average', 'big', 'huge'):
+            menuBar.addmenuitem('Size', 'command', 'Set size to ' + size,
+                    command = PrintOne('Action: size ' + size),
+                    label = size)
+
+        menuBar.addmenu('Help', 'User manuals', name = 'help')
+        menuBar.addmenuitem('Help', 'command', 'About this application',
+                command = PrintOne('Action: about'),
+                label = 'About...')
+
+        # Create and pack the main part of the window.
+        self.mainPart = tkinter.Label(toplevel,
+                text = 'This is the\nmain part of\nthe window',
+                background = 'black',
+                foreground = 'white',
+                padx = 30,
+                pady = 30)
+        self.mainPart.pack(fill = 'both', expand = 1)
+
+        # Create and pack the MessageBar.
+        self.messageBar = Pmw.MessageBar(toplevel,
+                entry_width = 40,
+                entry_relief='groove',
+                labelpos = 'w',
+                label_text = 'Status:')
+        self.messageBar.pack(fill = 'x', padx = 10, pady = 10)
+        self.messageBar.message('state',
+            'Balloon/status help not working properly - Tk menubar bug')
+
+        buttonBox = Pmw.ButtonBox(toplevel)
+        buttonBox.pack(fill = 'x')
+        buttonBox.add('Disable\nall', command = menuBar.disableall)
+        buttonBox.add('Enable\nall', command = menuBar.enableall)
+        buttonBox.add('Create\nmenu', command = self.add)
+        buttonBox.add('Delete\nmenu', command = self.delete)
+        buttonBox.add('Create\nitem', command = self.additem)
+        buttonBox.add('Delete\nitem', command = self.deleteitem)
+
+        # Configure the balloon to displays its status messages in the
+        # message bar.
+        self.balloon.configure(statuscommand = self.messageBar.helpmessage)
+
+        self.testMenuList = []
+
+    def _toggleMe(self):
+        print(('Toggle value:', self.toggleVar.get()))
+
+    def add(self):
+        if len(self.testMenuList) == 0:
+            num = 0
+        else:
+            num = self.testMenuList[-1]
+        num = num + 1
+        name = 'Menu%d' % num
+        self.testMenuList.append(num)
+
+        self.menuBar.addmenu(name, 'This is ' + name)
+
+    def delete(self):
+        if len(self.testMenuList) == 0:
+            self.menuBar.bell()
+        else:
+            num = self.testMenuList[0]
+            name = 'Menu%d' % num
+            del self.testMenuList[0]
+            self.menuBar.deletemenu(name)
+
+    def additem(self):
+        if len(self.testMenuList) == 0:
+            self.menuBar.bell()
+        else:
+            num = self.testMenuList[-1]
+            menuName = 'Menu%d' % num
+            menu = self.menuBar.component(menuName)
+            if menu.index('end') is None:
+                label = 'item X'
+            else:
+                label = menu.entrycget('end', 'label') + 'X'
+            self.menuBar.addmenuitem(menuName, 'command', 'Help for ' + label,
+                    command = PrintOne('Action: ' + menuName + ': ' + label),
+                    label = label)
+
+    def deleteitem(self):
+        if len(self.testMenuList) == 0:
+            self.menuBar.bell()
+        else:
+            num = self.testMenuList[-1]
+            menuName = 'Menu%d' % num
+            menu = self.menuBar.component(menuName)
+            if menu.index('end') is None:
+                self.menuBar.bell()
+            else:
+                self.menuBar.deletemenuitems(menuName, 0)
+
+class PrintOne:
+    def __init__(self, text):
+        self.text = text
+
+    def __call__(self):
+        print((self.text))
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 22 April 2000
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

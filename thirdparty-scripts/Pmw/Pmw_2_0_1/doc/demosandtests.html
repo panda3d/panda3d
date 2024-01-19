@@ -1,0 +1,364 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw demonstrations and tests</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw demonstrations and tests</h1>
+    
+<center><P ALIGN="CENTER">
+<IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+</p></center>
+
+<p>
+  Pmw comes with an extensive range of demonstrations and tests.  The
+  demonstrations can be used to get a feel for what is provided by Pmw
+  and the demonstration code can be viewed to see examples of how to
+  use Pmw.  The tests can be executed to check that there are no
+  problems with running Pmw in your environment.
+
+</p>
+
+<dl>
+<dt> <h2>Demonstrations</h2></dt><dd>
+<p>
+  The Pmw <code>demos</code> directory contains demonstration scripts
+  showing many of the features of Pmw megawidgets.  To view a
+  comprehensive package of all the demonstrations, including a view of
+  the source code, run the <code>All.py</code> script.  Run
+  <code>All.py -help</code> for a short description of the script's
+  options.
+
+<p>
+  All of the demonstrations may also be run separately.  Most of the
+  demonstrations show some of the features of one of the Pmw
+  megawidgets.  For example, to see a demonstration of the ButtonBox
+  megawidget, change into the <code>demos</code> directory and
+  run
+
+</p>
+<dl>
+<dd>
+<pre>
+python ButtonBox.py
+</pre>
+</dd>
+</dl>
+
+<p>
+  Other demonstrations, which show other features of Pmw include
+</p>
+<dl>
+<dd>
+<pre>
+BltGraph.py         demonstrates the Pmw interface to
+                    the BLT graph and vector commands
+BltTabset.py        demonstrates the Pmw interface to
+                    the BLT tabset command
+Colors.py           how to set color schemes
+ConfigClass.py      how to configure the python class
+                    of a megawidger component
+ErrorHandling.py    how Pmw displays run time errors
+                    in a window
+ExampleDemo.py      template for new demonstrations
+Grid.py             the Tkinter Grid geometry manager
+LogicalFont.py      how to use standard values for fonts
+MessageInfo.py      how to extend the Pmw MegaToplevel
+                    class
+NestedDialogs.py    how nested modal dialogs behave
+Resources.py        how to use the option database to
+                    modify Tk widget option defaults
+Resources_Pmw.py    how to use the option database to
+                    modify megawidget option defaults
+ShowBusy.py         demonstrates the Pmw interface to
+                    the BLT busy command
+SpecialEntry.py     deriving from Pmw.EntryField
+Spectrum.py         some of the Pmw color handling
+                    functions
+SpeedTest.py        tests the speed of creating Pmw
+                    megawidgets
+TextDisplay.py      how to extend the Pmw MegaWidget
+                    class
+WidgetDestroy.py    megawidget destruction
+</pre>
+</dd>
+</dl>
+
+<b>Creating demonstrations of new megawidgets</b>
+<br>
+<p>
+If you create a new megawidget you can create a demonstration for it
+by using the file
+<a href="ExampleDemo.py"><code>ExampleDemo.py</code></a> as a
+template.  This template allows the demonstration to be run
+individually or to be automatically included as part of the
+demonstration package <code>All.py</code>.  You should take a copy of
+the template and name the new file after your megawidget.  You should
+then replace each instance of the word <code>EXAMPLE</code> with the
+name of your megawidget and replace the code in the
+<code>__init__</code> method with code to create and initialise one or
+more instances of your megawidget, which should be a child of
+<code>parent</code>.  You can add other methods as necessary.
+
+</p>
+
+</dd>
+<dt> <h2>Tests</h2></dt><dd>
+<p>
+  The Pmw <code>tests</code> directory contains a test framework
+  and a set of test scripts for Pmw.
+  The tests cover the standard Tkinter module and most of the Pmw megawidgets.
+  The tests make a great
+  demonstration of the flexibility of the megawidgets.  Simply change
+  into the <code>tests</code> directory and run
+  <code>python All.py</code>.
+
+<p>
+  If all tests pass there should be no output printed to standard
+  output.  If any of the tests fail, please send the test output to
+  the maintainer at
+  <a href="mailto:gregm@iname.com"><i>gregm@iname.com</i></a>.
+
+</p>
+
+<p>
+  All of the tests may be run separately.  Most of the tests test the
+  features of one of the Pmw megawidgets.  For example, to execute the
+  test for the ButtonBox megawidget, run
+
+</p>
+
+<dl>
+<dd>
+<pre>
+python ButtonBox_test.py
+</pre>
+</dd>
+</dl>
+
+<p>
+  The Test.py file contains general testing functions and is imported
+  by all test files.
+  Other files, which test other features of Pmw include
+</p>
+<dl>
+<dd>
+<pre>
+Blt_test.py           BLT vector and graph interface
+Colors_test.py        setting color schemes
+MegaWidget_test.py    creation of megawidget classes
+Options_test.py       option and component handling
+PmwBase_test.py       more option and component handling
+Tkinter_test.py       Tk widgets in the Tkinter module
+</pre>
+</dd>
+</dl>
+
+<b>Creating tests for new megawidgets</b>
+<br>
+<p>
+If you create a new megawidget you should create a test for it.  There
+is no template file for creating tests, but by looking at the other
+Pmw tests (for example,
+<a href="ScrolledText_test.py"><code>ScrolledText_test.py</code></a>) you
+will get some idea of how to create a test for your megawidget.
+
+</p>
+
+<p>
+The test files are designed to be run both individually or
+automatically by the test package <code>All.py</code>.  Each test file
+must define the <code>testData</code> tuple.  This consists of a
+sequence of 2-element tuples, each tuple being a test specification
+for one megawidget.  Usually a file tests only one megawidget and so
+there is only one test specification.  The first element in the
+specification is the megawidget class and the second is a sequence of
+(yet more) 2-element tuples.  In each of these tuples, the first
+element is a sequence of individual tests to perform on an instance of
+the megawidget and the second element is a dictionary to use for
+the keyword arguments when creating the instance.  Each individual
+test is a tuple, the meaning of which depends on the type of the first
+element, which may be either a string, a function or a method of the
+megawidget class, as explained below.
+
+</p>
+
+<ul>
+<li>
+<p>
+If the first element is a string, then it is treated as an option of
+the megawidget and configure() is called to set the option to the
+value specified by the second element.  After setting the option,
+cget() is called to query the option.  If the test tuple has three
+elements, then the value returned by cget() must equal the value
+specified by the third element.  Otherwise, the value returned must
+equal the value specified by the second element. For example,
+
+</p>
+<dl>
+<dd>
+<pre>
+('vscrollmode', 'static'),
+('text_relief', 'sunken'),
+('vscrollmode', 'bogus', 'ValueError: bad vscrollmode ' +
+  'option "bogus": should be static, dynamic, or none'),
+</pre>
+</dd>
+</dl>
+
+</li>
+<li>
+<p>
+If the first element is a function or method, then the function or
+method is called.  The arguments to the call are given by the second
+element.  (As a special case, if the second element is not a tuple, it
+is used as the only argument to the call.) The test tuple may have 2,
+3 or 4 elements.
+
+</p>
+<ul>
+<li>
+<p>
+If it has two elements, then the value returned by the call must be
+None.  For example,
+
+</p>
+<dl>
+<dd>
+<pre>
+(c.exportfile, '/tmp/ScrolledText_test.py'),
+(os.unlink, '/tmp/ScrolledText_test.py'),
+</pre>
+</dd>
+</dl>
+
+</li>
+<li>
+<p>
+If it has four elements, then the third element is a dictionary to use
+for the keyword arguments in the call and the value returned by the
+call must equal the value specified by the fourth element.  For
+example,
+
+</p>
+<dl>
+<dd>
+<pre>
+(c.search, ('abc', '0.0'), {'nocase': 1}, '2.24'),
+</pre>
+</dd>
+</dl>
+
+</li>
+<li>
+<p>
+If is has three elements and the third element is a dictionary, then
+it is used for the keyword arguments in the call and the value
+returned by the call must be None.  For example
+
+</p>
+<dl>
+<dd>
+<pre>
+(c.configurepane, 'first', {'size' : 200}),
+</pre>
+</dd>
+</dl>
+
+</li>
+<li>
+<p>
+If is has three elements and the third element is not a dictionary,
+then the value returned by the call must equal the value specified by
+the third element.  For example,
+
+</p>
+<dl>
+<dd>
+<pre>
+(c.components, (), ['hull', 'label']),
+(c.add, ('Legumes',),
+  'ValueError: name "Legumes" already exists'),
+</pre>
+</dd>
+</dl>
+
+</li>
+</ul>
+</li>
+</ul>
+
+<p>
+Some special functions and values supplied by the Test module that may
+be used in the tests include:
+</p>
+<dl>
+<dd>
+<pre>
+Test.callback       callback taking no arguments
+Test.callback1      callback taking one argument
+Test.callbackN      callback taking any number of arguments
+
+Test.currentWidget  returns the widget instance being tested
+Test.num_options    returns number of options for the widget
+
+Test.earthris       a sample Tkinter.PhotoImage
+Test.flagup         a sample Tkinter.BitmapImage
+Test.floatvar       a Tkinter.DoubleVar
+Test.stringvar      a Tkinter.StringVar
+</pre>
+</dd>
+</dl>
+
+<p>
+  To slow down a test (to see what is being displayed), add the
+  following line which sets the delay between tests to (say) 1000
+  milliseconds:
+
+</p>
+<dl>
+<dd>
+<pre>
+Test.setdelay(1000)
+</pre>
+</dd>
+</dl>
+
+<p>
+  To print information about what is being tested, add the line:
+
+</p>
+<dl>
+<dd>
+<pre>
+Test.setverbose(1)
+</pre>
+</dd>
+</dl>
+
+</dd>
+</dl>
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

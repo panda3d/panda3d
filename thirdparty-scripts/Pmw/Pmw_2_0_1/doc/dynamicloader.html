@@ -1,0 +1,147 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Dynamic loader</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Dynamic loader</h1>
+    
+<p>
+    There are two aspects of Pmw, unrelated to megawidgets, that
+    require special attention.  Firstly, Pmw is made up of many
+    sub-modules, potentially making access to its various classes and
+    functions cumbersome for the user.  Secondly, Pmw is regularly
+    being modified and added to, thus requiring the release of new
+    versions.  Therefore, techniques for making access to the
+    sub-modules easy and efficient and for dealing with the different
+    versions have been developed.  These techniques are incorporated
+    into the dynamic loader which Pmw creates when it is first
+    imported.</p>
+
+<p>    The first purpose of the loader is to give access to all Pmw classes
+    and functions through a single entry point, the <strong>Pmw.</strong> prefix.  For
+    example, to access the ComboBox class (which resides in one of the
+    sub-modules of Pmw), you just have to use <code>Pmw.ComboBox</code>.  Without
+    the loader, this would be a more complicated reference, such as,
+    hypothetically, <code>Pmw.PmwComboBox.ComboBox</code>.</p>
+
+<p>    The second purpose of the loader is to delay the importing of the
+    sub-modules until they are needed.  This improves the startup time
+    of applications which only use a few Pmw megawidgets.  It also
+    allows more megawidgets to be added to the library without slowing
+    down applications which do not use them.</p>
+
+<p>    The third purpose of the loader is to allow a script using Pmw to
+    specify which version of Pmw it requires.  This allows an
+    application to continue working correctly even after newer releases
+    of Pmw have been made which are not compatible with the version
+    expected by the application.  Several versions of Pmw can be
+    installed at once, with the actual version used being specified by
+    each application.  In addition, the loader can be configured to
+    search in one or more alpha versions of Pmw.  These versions may
+    contain new megawidgets, or new versions of existing megawidgets,
+    that are currently not in the base releases.</p>
+
+<p>    Several functions are available to set and query the version of
+    Pmw being used.  These are <code>Pmw.setversion()</code> and
+    <code>Pmw.setalphaversions()</code> which specify the version and alpha
+    versions (if any) to use for this session; <code>Pmw.version()</code> which
+    returns the version(s) being used by this session; and
+    <code>Pmw.installedversions()</code> which returns the version(s) of Pmw
+    currently installed.  These are described in the
+    <a href="PmwFunctions.html">Pmw functions reference manual</a>.</p>
+
+<p>    When Pmw is first imported, an instance of PmwLoader is created
+    and placed into <code>sys.modules['Pmw']</code>.  From that point on, any
+    reference to attributes of the Pmw 'module' is handled by the
+    loader.  The real Pmw package is stored in <code>sys.modules['_Pmw']</code>.</p>
+
+<p>    The loader searches the Pmw package base directory for
+    sub-directories with the prefixes <code>Pmw_</code> and <code>Alpha_</code>, which
+    contain Pmw base releases and alpha releases.  The version numbers
+    are given by the part of the directory name following the prefix.
+    These versions are available for use and are those returned by the
+    <code>Pmw.installedversions</code> function.  The initial version is set to
+    the base release with the greatest version number.  When the first
+    reference to a Pmw class or function is made, the loader reads the
+    files named <strong>Pmw.def</strong> in the current base version directory and
+    also in the alpha directories (if any).  These files list all the
+    classes and functions supported by the version.  Pmw attributes
+    are first searched for in the alpha directories and then in the
+    base version directory.  The first directory which supports the
+    reference is used.  In this way, alpha versions override base
+    versions.</p>
+
+<p>    The directory <code>Alpha_99_9_example</code> contains a simple example of
+    how to structure an alpha version.  The following code can be used
+    to request that the alpha version be used and then creates an
+    instance of a new megawidget defined in the alpha version.</p>
+
+<dl><dd><pre> import Pmw
+ Pmw.setalphaversions('99.9.example')
+
+ # Create a standard message dialog using the base Pmw version.
+ ordinary = Pmw.MessageDialog(
+     message_text = 'Ordinary\nPmw Dialog')
+
+ # Create an example dialog using the alpha Pmw version.
+ alpha = Pmw.AlphaExample()</pre></dd></dl>
+
+<p>    <strong>Freezing Pmw</strong></p>
+
+<p>    Since the dynamic loader requires that Pmw be installed at run
+    time, it can not be used when <em>freezing</em> Pmw.  In this case, a
+    single module containing all Pmw code is required, which can then
+    be frozen with the rest of the application's modules.  The
+    <code>bundlepmw.py</code> script in the Pmw <code>bin</code> directory can be used to
+    create such a file.  This script concatenates (almost) all Pmw
+    megawidget files into a single file, <code>Pmw.py</code>, which it writes to
+    the current directory.  The script is called like this:</p>
+
+<dl><dd><pre> bundlepmw.py [-noblt] [-nocolor] /path/to/Pmw/Pmw_X_X_X/lib</pre></dd></dl>
+
+<p>    The last argument should be the path to the <code>lib</code> directory of the
+    required version of Pmw.  By default, the <code>Pmw.py</code> file imports
+    the <code>PmwBlt</code> and <code>PmwColor</code> modules and so, to freeze an
+    application using Pmw, you will need to copy the files <code>PmwBlt.py</code>
+    and <code>PmwColor.py</code> to the application directory before freezing.</p>
+
+<p>    If you are sure that your application does not use any of the
+    <code>Pmw.Blt</code> or <code>Pmw.Color</code> functions, you can use the <code>-noblt</code> or
+    <code>-nocolor</code> options.  In this case <code>Pmw.py</code> will be modified so
+    that it does not import these module(s) and so will not need to be
+    included when freezing the application.</p>
+
+<p>    If your application only uses a few Pmw megawidgets, you can
+    remove the references to the usused ones in the <code>files</code> list in
+    the <code>bundlepmw.py</code> code.  To make the change, take a copy of the
+    script and modify it.  This will make the <code>Pmw.py</code> file smaller.
+    However, be sure that you do not delete megawidgets that are
+    components or base classes of megawidgets that you use.</p>
+
+<p></p>
+
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

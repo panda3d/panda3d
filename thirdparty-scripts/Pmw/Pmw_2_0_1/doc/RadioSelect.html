@@ -1,0 +1,387 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.RadioSelect reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.RadioSelect</h1>
+    
+<center><IMG SRC=RadioSelect.gif ALT="" WIDTH=466 HEIGHT=272></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.RadioSelect() - 
+    a set of buttons, some of which may be selected
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A radio select is a container megawidget which manages a number of
+    buttons.  The buttons may be laid out either horizontally or
+    vertically.  In single selection mode, only one button may be
+    selected at any one time.  In multiple selection mode, several
+    buttons may be selected at the same time and clicking on a
+    selected button will deselect it.</p>
+
+<p>    The buttons displayed can be either standard buttons, radio
+    buttons or check buttons.  When selected, standard buttons are
+    displayed sunken and radio and check buttons are displayed with
+    the appropriate indicator color and relief.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.buttontype></a>
+<dl><dt> <strong>buttontype
+</strong></dt><dd>
+Initialisation option. Specifies the default type of buttons created by the <code>add()</code>
+    method.  If <strong>'button'</strong>, the default type is Tkinter.Button.  If
+    <strong>'radiobutton'</strong>, the default type is Tkinter.Radiobutton.  If
+    <strong>'checkbutton'</strong>, the default type is Tkinter.Checkbutton.</p>
+<p>    If <strong>'radiobutton'</strong>, single selection mode is automatically set.
+    If <strong>'checkbutton'</strong>, multiple selection mode is automatically set. The default is <strong>'button'</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+Specifies a function to call when one of the buttons is clicked on
+    or when <code>invoke()</code> is called.</p>
+<p>    In single selection mode, the function is called with a single
+    argument, which is the name of the selected button.</p>
+
+<p>    In multiple selection mode, the function is called with the first
+    argument being the name of the button and the second argument
+    being true if the button is now selected or false if it is now
+    deselected. The default is <strong>None</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.orient></a>
+<dl><dt> <strong>orient
+</strong></dt><dd>
+Initialisation option. Specifies the direction in which the buttons are laid out.  This
+    may be <strong>'horizontal'</strong> or <strong>'vertical'</strong>. The default is <strong>'horizontal'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.padx></a>
+<dl><dt> <strong>padx
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave between each button in the x
+    direction and also between the buttons and the outer edge of the
+    radio select. The default is <strong>5</strong>.</p>
+
+
+</dd></dl>
+<a name=option.pady></a>
+<dl><dt> <strong>pady
+</strong></dt><dd>
+Initialisation option. Specifies a padding distance to leave between each button in the y
+    direction and also between the buttons and the outer edge of the
+    radio select. The default is <strong>5</strong>.</p>
+
+
+</dd></dl>
+<a name=option.selectmode></a>
+<dl><dt> <strong>selectmode
+</strong></dt><dd>
+Initialisation option. Specifies the selection mode:  whether a single button or multiple
+    buttons can be selected at one time.  If <strong>'single'</strong>, clicking on
+    an unselected button selects it and deselects all other buttons.
+    If <strong>'multiple'</strong>, clicking on an unselected button selects it and
+    clicking on a selected button deselects it.  This option is
+    ignored if <strong>buttontype</strong> is <strong>'radiobutton'</strong> or <strong>'checkbutton'</strong>. The default is <strong>'single'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.frame></a>
+<dl><dt> <strong>frame
+</strong></dt><dd>
+If the <strong>label</strong> component has been created (that is, the <strong>labelpos</strong>
+    option is not <strong>None</strong>), the <strong>frame</strong> component is created to act as
+    the container of the buttons created by the <code>add()</code> method.  If
+    there is no <strong>label</strong> component, then no <strong>frame</strong> component is
+    created and the <strong>hull</strong> component acts as the container. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Dynamic components</h3></dt><dd>
+<p>
+        Button components are created dynamically by the <code>add()</code>
+        method.  The default type of the buttons depends on the value
+        of the <strong>buttontype</strong> option.</p>
+
+<p>        Button components are created with a component group of <strong>Button</strong>.</p>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.add></a>
+<dl><dt> <strong>add</strong>(<em>componentName</em>,**<em>kw</em>)</dt><dd>
+Add a button to the end of the radio select as a component
+    named <em>componentName</em>.  with a default type as specified by
+    <strong>buttontype</strong>.  Any keyword arguments present (except <strong>command</strong>)
+    will be passed to the constructor when creating the button.  If
+    the <strong>text</strong> keyword argument is not given, the <strong>text</strong> option of the
+    button defaults to <em>componentName</em>.  The method returns the
+    component widget.</p>
+
+
+</dd></dl>
+<a name=method.button></a>
+<dl><dt> <strong>button</strong>(<em>buttonIndex</em>)</dt><dd>
+Return the button specified by <em>buttonIndex</em>, which may have any
+    of the forms accepted by the <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.deleteall></a>
+<dl><dt> <strong>deleteall</strong>()</dt><dd>
+Delete all buttons and clear the current selection.</p>
+
+
+</dd></dl>
+<a name=method.getcurselection></a>
+<dl><dt> <strong>getcurselection</strong>()</dt><dd>
+Same as <code>getvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+In single selection mode, return the name of the currently
+    selected button, or <strong>None</strong> if no buttons have been selected yet.</p>
+<p>    In multiple selection mode, return a list of the names of the
+    currently selected buttons.</p>
+
+
+
+</dd></dl>
+<a name=method.index></a>
+<dl><dt> <strong>index</strong>(<em>index</em>)</dt><dd>
+Return the numerical index of the button corresponding to <em>index</em>.
+    This may be specified in any of the following forms:</p>
+<dl><dt><em>name</em></dt><dd>Specifies the button named <em>name</em>.<p></p>
+
+</dd>
+<dt><em>number</em></dt><dd>Specifies the button numerically, where <strong>0</strong> corresponds to
+         the left (or top) button.<p></p>
+
+</dd>
+<dt><strong>Pmw.END</strong></dt><dd>Specifies the right (or bottom) button.<p></p>
+
+</dd></dl>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>(<em>index</em>)</dt><dd>
+Calling this method is the same as clicking on the button
+    specified by <em>index</em>:  the buttons are displayed selected or
+    deselected according to the selection mode and <strong>command</strong> is
+    called.  <em>index</em> may have any of the forms accepted by the
+    <code>index()</code> method.  The value returned by <strong>command</strong> is returned.</p>
+
+
+</dd></dl>
+<a name=method.numbuttons></a>
+<dl><dt> <strong>numbuttons</strong>()</dt><dd>
+Return the number of buttons in the radio select.</p>
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>textOrList</em>)</dt><dd>
+Set the current selection for the radio select to <em>textOrList</em>,
+    but do not invoke <strong>command</strong>.</p>
+<p>    In single selection mode, select only the button specified by the
+    string <em>textOrList</em>.</p>
+
+<p>    In multiple selection mode, select only the buttons specified by
+    the list <em>textOrList</em>.</p>
+
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack a horizontal RadioSelect widget.
+        horiz = Pmw.RadioSelect(parent,
+                labelpos = 'w',
+                command = self.callback,
+                label_text = 'Horizontal',
+                frame_borderwidth = 2,
+                frame_relief = 'ridge'
+        )
+        horiz.pack(fill = 'x', padx = 10, pady = 10)
+
+        # Add some buttons to the horizontal RadioSelect.
+        for text in ('Fruit', 'Vegetables', 'Cereals', 'Legumes'):
+            horiz.add(text)
+        horiz.invoke('Cereals')
+
+        # Create and pack a multiple selection RadioSelect widget.
+        self.multiple = Pmw.RadioSelect(parent,
+                labelpos = 'w',
+                command = self.multcallback,
+                label_text = 'Multiple\nselection',
+                frame_borderwidth = 2,
+                frame_relief = 'ridge',
+                selectmode = 'multiple',
+        )
+        self.multiple.pack(fill = 'x', padx = 10)
+
+        # Add some buttons to the multiple selection RadioSelect.
+        for text in ('Apricots', 'Eggplant', 'Rice', 'Lentils'):
+            self.multiple.add(text)
+        self.multiple.invoke('Rice')
+
+        # Create and pack a vertical RadioSelect widget, with checkbuttons.
+        self.checkbuttons = Pmw.RadioSelect(parent,
+                buttontype = 'checkbutton',
+                orient = 'vertical',
+                labelpos = 'w',
+                command = self.checkbuttoncallback,
+                label_text = 'Vertical,\nusing\ncheckbuttons',
+                hull_borderwidth = 2,
+                hull_relief = 'ridge',
+        )
+        self.checkbuttons.pack(side = 'left', expand = 1, padx = 10, pady = 10)
+
+        # Add some buttons to the checkbutton RadioSelect.
+        for text in ('Male', 'Female'):
+            self.checkbuttons.add(text)
+        self.checkbuttons.invoke('Male')
+        self.checkbuttons.invoke('Female')
+
+        # Create and pack a RadioSelect widget, with radiobuttons.
+        radiobuttons = Pmw.RadioSelect(parent,
+                buttontype = 'radiobutton',
+                orient = 'vertical',
+                labelpos = 'w',
+                command = self.callback,
+                label_text = 'Vertical,\nusing\nradiobuttons',
+                hull_borderwidth = 2,
+                hull_relief = 'ridge',
+        )
+        radiobuttons.pack(side = 'left', expand = 1, padx = 10, pady = 10)
+
+        # Add some buttons to the radiobutton RadioSelect.
+        for text in ('Male', 'Female', 'Both', 'Neither'):
+            radiobuttons.add(text)
+        radiobuttons.invoke('Both')
+
+    def callback(self, tag):
+        # This is called whenever the user clicks on a button
+        # in a single select RadioSelect widget.
+        print(('Button', tag, 'was pressed.'))
+
+    def multcallback(self, tag, state):
+        # This is called whenever the user clicks on a button
+        # in the multiple select RadioSelect widget.
+        if state:
+            action = 'pressed.'
+        else:
+            action = 'released.'
+
+        print(('Button', tag, 'was', action, \
+                'Selection:', self.multiple.getcurselection()))
+
+    def checkbuttoncallback(self, tag, state):
+        # This is called whenever the user clicks on a button
+        # in the checkbutton RadioSelect widget.
+        if state:
+            action = 'pressed.'
+        else:
+            action = 'released.'
+
+        print(('Button', tag, 'was', action, \
+                'Selection:', self.checkbuttons.getcurselection()))
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 6 June 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

@@ -1,0 +1,1779 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Changes to Pmw</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Changes to Pmw</h1>
+    
+<p>
+  6 January 1997</p>
+
+<ul><li><p>Release of version 0.1</p>
+
+</li></ul>
+<p>  14 February 1997</p>
+
+<ul><li><p>Fixed bug in Counter demo for the Macintosh - the maximum size of an
+    integer is smaller than the value returned by time.time().</p>
+
+</li>
+<li><p>Fixed bug in Grid demo for Tk 4.2 - grid_bbox returns garbage if it is
+    called without update_idletasks.  Also, grid_bbox can only have two
+    arguments in Tk 4.1.</p>
+
+</li>
+<li><p>Modified ScrolledText demo so that the text widget contains enough text
+    to require a vertical scrollbar.</p>
+
+</li>
+<li><p>Changes to PmwBase:</p>
+<ul><li><p>Prefixed the name of several private variables with a double underscore.</p>
+
+</li>
+<li><p>Added symbolic constants for the indexes into an optionInfo list.</p>
+
+</li>
+<li><p>Changed names of several methods and variables to be more descriptive.</p>
+
+</li>
+<li><p>Removed options() method.</p>
+
+</li>
+<li><p>Simplified configuration option data structures.  Modified option
+      handling code so that default options are set correctly.  If an
+      option is created before initialise() is called then initialise()
+      checks if the option is set by the keyword arguments to
+      initialise().  If not, then it is given the value found in the
+      Tk option database, if a value exists, or the default value.  If an
+      option is created after initialise() is called, then it is given the
+      value found in the Tk option database, if a value exists, or the
+      default value.</p>
+
+</li></ul>
+
+</li>
+<li><p>Replaced usage of self._hull in megawidgets by interior() method.</p>
+
+</li>
+<li><p>Added autoclear option to ComboBox.</p>
+
+</li>
+<li><p>Fixed bug in ComboBox - fast clicking on the arrow button could result
+    in an attempt to grab a window that was not yet visible.</p>
+
+</li>
+<li><p>Added "sys.exc_traceback = None" to the except clauses of all try
+    statements so that references to objects in the stack trace would not
+    be left.</p>
+
+</li>
+<li><p>Added takefocus option to PushButton.</p>
+
+</li>
+<li><p>Modified the getcurselection() method of ScrolledListBox so that it
+    returns a string if the selection mode is <strong>'single'</strong> or <strong>'browse'</strong>, rather
+    than a tuple with one element.  This also affects methods forwarded and
+    derived from ScrolledListBox.</p>
+
+</li>
+<li><p>Modified ScrolledListBox so that it avoids unnecessary updates by
+    using idle timer.</p>
+
+</li>
+<li><p>Modified ScrolledText to use grid instead of pack.</p>
+
+</li>
+<li><p>Added shutdown() function to Tk module to clean up all references to
+    the Tcl interpreter and then delete it.</p>
+
+</li>
+<li><p>Fixed bug in Tk module for the Macintosh - update() was being called in
+    initialise() before the Tcl interpreter was created.</p>
+
+</li></ul>
+<p>  14 February 1997</p>
+
+<ul><li><p>Version 0.1.1 completed and released internally.</p>
+
+</li></ul>
+<p>  6 March 1997</p>
+
+<ul><li><p>Pmw now uses the standard Tkinter module.  The Tk module has been
+    dropped.  This means that the Tk module functions such as after,
+    bell, bind, update, etc, are no longer available and the equivalent
+    Tkinter methods should be used.</p>
+
+</li>
+<li><p>To restore some of the features of the Tk module, Pmw.initialise()
+    now adds run-time hooks into Tkinter to get notification of when Tk
+    widgets are created and destroyed.  It also modifies the CallWrapper
+    class so that errors during callbacks and bindings can be displayed
+    in a window.  If Pmw.initialise() is not called, Tkinter is not
+    modified and these features are not available.</p>
+
+</li>
+<li><p>If a Tk widget which is acting as the hull of a megawidget is
+    destroyed, then the megawidget is destroyed as well.  This can
+    only happen if Pmw.initialise() is called.</p>
+
+</li>
+<li><p>Pmw.initialise() now takes the Tkinter root as its argument.</p>
+
+</li>
+<li><p>The parent of megawidgets now defaults to the Tk root.  Previously,
+    the parent of non-toplevel megawidgets had to be given.</p>
+
+</li>
+<li><p>Added PmwBase.tracetk() function to get trace of calls to the Tcl
+    interpreter for debugging.</p>
+
+</li>
+<li><p>Added functions to PmwBase to display a busy cursor over the
+    application such as when a modal dialog is displayed or it is
+    blocked doing a long calculation.  Uses busy command of the blt
+    extension, if present.</p>
+
+</li>
+<li><p>Created a nifty new demo which demonstrates most of the megawidgets
+    in a convenient way.</p>
+
+</li>
+<li><p>Added a TextDialog.</p>
+
+</li>
+<li><p>Added functionality to handle the grabbing of nested modal dialogs
+    correctly.</p>
+
+</li>
+<li><p>Added an activatecommand option to Dialog which allows, for example,
+    the PromptDialog widget to set the keyboard focus when it is
+    activated.</p>
+
+</li>
+<li><p>Added tests for Counter and logicalfont.</p>
+
+</li>
+<li><p>The ScrolledListBox selectioncommand is no longer given the widget
+    as its first argument.</p>
+
+</li>
+<li><p>Several method, function and component names were changed, to be
+    consistent with the coding conventions.</p>
+
+</li>
+<li><p>Some of the effects of moving from the Tk module to Tkinter are:</p>
+<ul><li><p>The Tk module used to exit if there were no non-root toplevel
+      windows shown.  This is no longer the case and so the application
+      must handle this explicitly, particularly if the root window is
+      withdrawn and the last non-root toplevel is deleted by the window
+      manager.</p>
+
+</li>
+<li><p>The Tk module bind functions and methods used to take a noEvent
+      argument to indicate that the Tk event should not be passed to the
+      callback.  Tkinter does not support this.</p>
+
+</li>
+<li><p>The Tk module initialise() function should be replaced by
+      "root = Tkinter.Tk()" and root should be used instead of "Tk.Root()"</p>
+
+</li>
+<li><p>The Tk module quit() function should be replace by "root.destroy()".</p>
+
+</li>
+<li><p>Toplevels are not hidden when created.  To be consistent,
+      MegaToplevels are not hidden either.</p>
+
+</li>
+<li><p>The hide and show methods are not available for Tkinter Toplevels,
+      only MegaToplevels</p>
+
+</li>
+<li><p>There is no grid_configure method.</p>
+
+</li>
+<li><p>Tkinter.Canvas.coords() returns a python list, not a tuple.</p>
+
+</li>
+<li><p>The Tkinter cget and configure widget methods always return
+      strings for the option values.  The Tk module used to convert the
+      string to the appropriate python type (such as string, integer,
+      float, Variable, Image, callback function).</p>
+
+</li>
+<li><p>Tkinter Menu and Toplevel classes incorrectly have a pack method.</p>
+
+</li>
+<li><p>Menu class has no geometry method.</p>
+
+</li>
+<li><p>Canvas focus returns <strong>''</strong> rather than None.</p>
+
+</li>
+<li><p>Text mark_gravity returns <strong>''</strong> rather than None.</p>
+
+</li></ul>
+
+</li></ul>
+<p>  13 March 1997</p>
+
+<ul><li><p>Release of version 0.2</p>
+
+</li></ul>
+<p>  17 March 1997</p>
+
+<ul><li><p>Set default WM_DELETE_WINDOW protocol of Tkinter.Toplevel to
+    destroy() and removed duplicated protocol request from all demos.</p>
+
+</li>
+<li><p>Modified text of ShowBusy demo to indicate that busy cursor will
+    only be seen if the BLT extension is present.</p>
+
+</li>
+<li><p>Replaced call to update() in PmwLabeledWidget.py with update_idletasks().</p>
+
+</li>
+<li><p>Changed name of PromptDialog component from <strong>'entry'</strong> to <strong>'entryfield'</strong>.</p>
+
+</li></ul>
+<p>  28 April 1997</p>
+
+<ul><li><p>Version 0.3 released internally</p>
+
+</li></ul>
+<p>  19 August 1997</p>
+
+<ul><li><p>Many changes made (see the version 0.4 porting guide for
+    more details).</p>
+
+</li>
+<li><p>The option propagation mechanism that iwidgets uses is too
+    cumbersome, too hard to understand and, in python, too slow.
+    Developed a new mechanism which is more explicit in naming
+    options.  This resulted in most options which were simply
+    propagated to components being removed.  Removed keep(), rename()
+    and ignore() methods and "usual" options.</p>
+
+</li>
+<li><p>For speed, Pmw no longer queries the Tk option database for
+    default values for megawidget options.  Hence, resource names and
+    classes do not need to be supplied when creating options and
+    <strong>None</strong> is returned for the resource name and class when using
+    <code>configure()</code> to query the options.  Option "types" no longer
+    used.</p>
+
+</li>
+<li><p>Changed method and component names to be more consistent.</p>
+
+</li>
+<li><p>Replaced most uses of pack() with grid().</p>
+
+</li>
+<li><p>Megawidgets no longer inherit from LabeledWidget.  Instead they
+    call createlabel() to optionally create the label component.</p>
+
+</li>
+<li><p>Removed child site from EntryField and rewrote ComboBox
+    accordingly.</p>
+
+</li>
+<li><p>Wrote lots more documentation, including automatically generated
+    reference manuals.</p>
+
+</li>
+<li><p>Removed PushButton and rewrote ButtonBox to directly create
+    Tkinter.Buttons rather than PushButtons.</p>
+
+</li>
+<li><p>Added initialisation options - options which can be set at
+    creation time but not later using configure().</p>
+
+</li>
+<li><p>Added aliases for components.</p>
+
+</li>
+<li><p>Modified the base classes so that during option configuration,
+    components are configured <em>before</em> configuration called functions
+    are called.</p>
+
+</li>
+<li><p>Added several more megawidgets.</p>
+
+</li>
+<li><p>Added interface to BLT graph and vector commands.</p>
+
+</li>
+<li><p>Created PmwLazy module for lazy importing of Pmw - avoids loading
+    megawidgets which are not used.</p>
+
+</li>
+<li><p>Added several more functions for handling color and fonts.</p>
+
+</li>
+<li><p>Replaced Counter and EntryField <em>time</em> with <em>timeN</em> and <em>time24</em></p>
+
+</li>
+<li><p>Pmw.initialise() will now create Tkinter.Tk if not given root.</p>
+
+</li></ul>
+<p>  1 September 1997</p>
+
+<ul><li><p>Release of version 0.4</p>
+
+</li></ul>
+<p>  5 September 1997</p>
+
+<ul><li><p>Modified the base classes so that the Tk option database resource
+    class of megawidgets can be overridden in the call to the
+    constructor using the <strong>hull_class</strong> option.</p>
+
+</li>
+<li><p>The separators in Pmw.PanedWidget are now active - they can be
+    grabbed, like the handles, and moved around.  The cursor now
+    changes to the correct left/right or up/down cursor when over a
+    separator or handle.  (Clemens Hintze)</p>
+
+</li>
+<li><p>Fixed bug in MessageInfo demo Dismiss button.  If it is invoked,
+    an error occurs saying "not enough arguments".  (Mark Colclough)</p>
+
+</li></ul>
+<p>  9 September 1997</p>
+
+<ul><li><p>Added the <strong>useTkOptionDb</strong> argument to Pmw.initialise which
+    specifies that the initial values of megawidget options are to be
+    set by querying the Tk option database.</p>
+
+</li>
+<li><p>When used to query options, the configure() method now returns the
+    resource class and name of the options.</p>
+
+</li></ul>
+<p>  19 September 1997</p>
+
+<ul><li><p>Changed functions datestringtoint() and timestringtoint() to
+    datestringtojdn() and timestringtoseconds().  Changed return value
+    of datestringtojdn() to be Julian Day Numbers rather than seconds
+    since the epoch.</p>
+
+</li>
+<li><p>Fixed a bug in the date Counter due to use of time.timezone, by
+    replacing, when calculating date increments, calls to the time
+    module with calls to datestringtojdn().</p>
+
+</li>
+<li><p>Added century pivot year (setyearpivot function) to Counter date
+    datatypes to handle two-digit years.</p>
+
+</li>
+<li><p>Added date_dmy4, date_mdy4 and date_y4md datatypes to Counter.</p>
+
+</li>
+<li><p>Modified demos All.py and ScrolledText.py so that demos can be called
+    from directories other than the demos directory.  (Case Roole and
+    Guido van Rossum)</p>
+
+</li>
+<li><p>Changed the default for the Pmw.Balloon <em>label_justify</em> option to
+    <em>left</em> to improve appearance of multi-line balloons.  Pmw.Balloon
+    now replaces newlines with spaces in the statusHelp string so that
+    the strings look better when displayed in a Pmw.MessageBar.
+    (Andreas Kostyrka)</p>
+
+</li>
+<li><p>Pmw.Blt now calls <em>package require BLT</em> when checking for the
+    existence of Blt, so that it can be loaded if it is not statically
+    linked.  (Clemens Hintze, Matthias Klose)</p>
+
+</li>
+<li><p>Copied earthris.gif and flagup.bmp files from Tcl distribution to
+    test directory, just in case they have not been installed.
+    (Jonathan Kelly)</p>
+
+</li>
+<li><p>Lots of improvements to the documentation and documenting recent
+    changes.</p>
+
+</li></ul>
+<p>  16 October 1997</p>
+
+<ul><li><p>Modified Pmw.Balloon and Pmw.ComboBox to work around a bug in the
+    Windows95 version of Tk which caused the popup windows to appear
+    in the wrong place.  (Fredrik Lundh and Jerome Gay)</p>
+
+</li>
+<li><p>Added Pmw.maxfontwidth() function. (Rob Pearson)</p>
+
+</li></ul>
+<p>  24 October 1997</p>
+
+<ul><li><p>Changed PmwBase._reporterror to handle the class exceptions of
+    python 1.5.  (Case Roole)</p>
+
+</li></ul>
+<p>  29 October 1997</p>
+
+<ul><li><p>Fixed a bug in forwardmethods() function which occurred if the
+    <em>toClass</em> class had a method called <strong>type</strong>.</p>
+
+</li></ul>
+<p>  7 November 1997</p>
+
+<ul><li><p>Changed tests/Test._getErrorValue to handle the class exceptions of
+    python 1.5.  (Michael McLay)</p>
+
+</li>
+<li><p>Changed bug fix in forwardmethods() function to use the
+    <code>exec execString in d</code> construct. (Guido van Rossum)</p>
+
+</li>
+<li><p>Can now use Pmw.MegaArchetype as a base class just to get option
+    handling; it will not create the hull component unless requested.
+    Moved __str__() and interior() methods from Pmw.MegaToplevel and
+    Pmw.MegaWidget to Pmw.MegaArchetype class.</p>
+
+</li></ul>
+<p>  10 November 1997</p>
+
+<ul><li><p>Added <em>textclass</em> option to Pmw.ScrolledText and <em>listboxclass</em>
+    option for Pmw.ScrolledListBox to allow embedding of custom
+    widgets.</p>
+
+</li>
+<li><p>Added Mitch Chapman's <strong>FontText</strong> module to the <code>demos</code> directory
+    and used it to display the demo source code in color.</p>
+
+</li>
+<li><p>Added two notebook megawwidgets, Pmw.NoteBookR and Pmw.NoteBookS.
+    (Case Roole and Joe Saltiel)</p>
+
+</li>
+<li><p>Added Pmw.ScrolledCanvas megawidget. (Joe Saltiel)</p>
+
+</li>
+<li><p>Added Pmw.TreeBrowse megawidget. (Michael McLay)</p>
+
+</li>
+<li><p>Added Pmw.Group megawidget and modified to use <code>grid()</code> instead
+    of <code>pack()</code>. (Case Roole)</p>
+
+</li>
+<li><p>Release of version 0.5</p>
+
+</li></ul>
+<p>  12 November 1997</p>
+
+<ul><li><p>Added <em>pyclass</em> option to components and removed <em>textclass</em>
+    option from Pmw.ScrolledText and <em>listboxclass</em> option from
+    Pmw.ScrolledListBox.  (Suggested by Shen Wang)</p>
+
+</li>
+<li><p>Added label component to Pmw.ButtonBox megawidget.</p>
+
+</li>
+<li><p>Fixed mis-spelling of PmwTreeBrowse in Pmw.py.</p>
+
+</li>
+<li><p>Release of version 0.5.1</p>
+
+</li></ul>
+<p>  5 December 1997</p>
+
+<ul><li><p>The pyclass option can now be None.  If so, createcomponent
+    returns None.</p>
+
+</li>
+<li><p>Removed tagtype option from Pmw.Group.  Can now use the more
+    general tag_pyclass instead.</p>
+
+</li>
+<li><p>Added tcl call to <code>load {} Blt</code> when testing for presence of Blt.</p>
+
+</li>
+<li><p>Added julian and papal options to Pmw.ymdtojulian and
+    Pmw.juliantoymd functions and made sure divisions give the same
+    result as C even when operands are negative.</p>
+
+</li>
+<li><p>Exported ymdtojulian and juliantoymd functions.</p>
+
+</li>
+<li><p>Fixed bug in activate method.  Did not prepend TclError with Tkinter.</p>
+
+</li>
+<li><p>When the Blt busy hold command is called from showbusycursor, the
+    bindtags on the busy window are set so that no events cause
+    callbacks to occur for the toplevel or all bindings.  Also, while
+    a busy window is up, the focus is changed to the busy window so
+    that no keyboard events are accepted.  This fixes a bug where the
+    Tkinter._nametowidget function could crash with a <code>KeyError: _Busy</code>
+    if there was a binding on a toplevel window and the mouse
+    was pressed while the busy cursor was up.</p>
+
+</li></ul>
+<p>  9 December 1997</p>
+
+<ul><li><p>Fixed bug in Pmw.datestringtojdn() when dealing with century year,
+    such as 2000.</p>
+
+</li></ul>
+<p>  10 December 1997</p>
+
+<ul><li><p>Added <em>where</em> option to <code>Pmw.ScrolledText.importfile()</code>.  (Graham
+    Matthews)</p>
+
+</li></ul>
+<p>  16 December 1997</p>
+
+<ul><li><p>Modified Pmw.RadioSelect and Pmw.ButtonBox so that you can no
+    longer index their buttons using regular expressions.  This
+    feature seemed to have little use and caused problems with buttons
+    labeled for example <em>a*</em> and <em>b*</em>.  (Problem reported by Rob
+    Hooft)</p>
+
+</li>
+<li><p>Added updateFunction option to Pmw.busycallback().  If set, the
+    function will be called just after the command given to
+    Pmw.busycallback().  If the function is set the Tkinter update()
+    method, then this will clear any events that may have occurred
+    while the command was executing.</p>
+
+</li></ul>
+<p>  30 December 1997</p>
+
+<ul><li><p>Changed ymdtojulian and juliantoymd functions to jdntoymd and
+    ymdtojdn, because the meaning of "julian" is ambiguous, whereas
+    the meaning of "Julian Day Number" is not (maybe).</p>
+
+</li>
+<li><p>Converted Pmw to use python 1.5 package mechanism.  (Michael McLay
+    and Case Roole)</p>
+
+</li>
+<li><p>Removed Pmw.py and PmwLazy files.  Added __init__.py, PmwLoader.py
+    and Pmw.def files.  (Case Roole)</p>
+
+</li>
+<li><p>Applications can now specify at runtime which version of Pmw to
+    use and also which alpha versions, if any.  (Case Roole)</p>
+
+</li>
+<li><p>Modified Pmw code for the version of Tkinter released with python
+    1.5.</p>
+
+</li>
+<li><p>Release of version 0.6</p>
+
+</li></ul>
+<p>  5 January 1998</p>
+
+<ul><li><p>Fixed alpha version handling so that alpha versions do not have to
+    supply PmwBase.py and PmwUtils.py.  (Case Roole)</p>
+
+</li>
+<li><p>Added example alpha directory and documentation.  (Case Roole)</p>
+
+</li></ul>
+<p>  7 January 1998</p>
+
+<ul><li><p>Added selectmode option to Pmw.RadioSelect megawidget.  (Roman
+    Sulzhyk)</p>
+
+</li>
+<li><p>Added some changes to Pmw.ScrolledCanvas to get around some bugs.
+    (Joe Saltiel)</p>
+
+</li>
+<li><p>Release of version 0.6.1</p>
+
+</li></ul>
+<p>  8 January 1998</p>
+
+<ul><li><p>Added some more changes to Pmw.ScrolledCanvas.  (from Joe Saltiel)</p>
+
+</li></ul>
+<p>  12 January 1998</p>
+
+<ul><li><p>Added Pmw.OptionMenu megawidget. (Roman Sulzhyk)</p>
+
+</li></ul>
+<p>  20 February 1998</p>
+
+<ul><li><p>Added new Pmw.MenuBar features to delete menus and menuitems,
+    enable and disable menu bar and to add cascade menus.  (Rob Pearson)</p>
+
+</li>
+<li><p>Added extra arguments to Pmw.Color.spectrum for more control over
+    color choice.</p>
+
+</li></ul>
+<p>  23 February 1998</p>
+
+<ul><li><p>Added canvasbind() method to Pmw.Balloon.</p>
+
+</li>
+<li><p>Fixed demos/All.py so that it will correctly determine which Pmw
+    version to use even if it is in a directory symlinked to the demos
+    directory.</p>
+
+</li>
+<li><p>Removed "import DemoVersion" from all demos, except All.py, so
+    that they will work unchanged when copied outside of the Pmw
+    distribution.</p>
+
+</li>
+<li><p>Release of version 0.6.2</p>
+
+</li></ul>
+<p>  26 February 1998</p>
+
+<ul><li><p>Fixed PmwLoader so that it works on Macintoshes.  (Jack Jansen)</p>
+
+</li></ul>
+<p>  2 March 1998</p>
+
+<ul><li><p>Fixed PmwBase and PmwBlt so that an attempt is made to dynamically
+    load Blt before it is used.  Previously only attempted to load Blt
+    when calling showbusycursor.</p>
+
+</li></ul>
+<p>  16 March 1998</p>
+
+<ul><li><p>Added hulldestroyed() method.</p>
+
+</li>
+<li><p>Modified displayerror() function to use value given to
+    reporterrorstofile() if it is set.</p>
+
+</li>
+<li><p>Fixed bug in Pmw.EntryField which occurred when the <em>command</em>
+    option destroyed the megawidget.</p>
+
+</li>
+<li><p>Pmw.EntryField invoke method now passes on the value returned by
+    the <em>command</em> function.</p>
+
+</li></ul>
+<p>  3 April 1998</p>
+
+<ul><li><p>Added Pmw.ScrolledFrame megawidget.  (Joe Saltiel)</p>
+
+</li>
+<li><p>Color.rgb2hsi() now uses the built-in <code>min()</code> and <code>max()</code> functions.</p>
+
+</li></ul>
+<p>  20 April 1998</p>
+
+<ul><li><p>Moved time and date functions from PmwCounter.py to new file,
+    PmwTimeFuncs.py.</p>
+
+</li>
+<li><p>Added optional <em>separator</em> argument to <code>timestringtoseconds</code> and
+    <code>datestringtojdn</code> functions.  These functions are now stricter
+    when checking if a string is a valid date or time.  For example,
+    it now checks for correct day in month, month in year, etc.  These
+    changes also affect the Pmw.Counter date and time validators.</p>
+
+</li>
+<li><p>The <code>datestringtojdn</code> function now accepts all combinations of
+    <strong>'d'</strong>, <strong>'m'</strong>, <strong>'y'</strong> as format string.</p>
+
+</li>
+<li><p>Moved functions to bottom of file and class to top of file in
+    PmwEntryField.py and PmwCounter.py.</p>
+
+</li>
+<li><p>The validation for Pmw.EntryField <em>integer</em>, <em>hexadecimal</em> and
+    <em>real</em> types now use int() or float() rather than
+    regular expressions.</p>
+
+</li>
+<li><p>The validation for the Pmw.EntryField <em>real</em> type accepts a
+    <em>separator</em> argument, for those who prefer a comma instead of a
+    full stop/period/point as the decimal dividing symbol.</p>
+
+</li>
+<li><p>The Pmw.EntryField <em>time*</em> and <em>date_*</em> validators have been
+    removed.  The functionality can be replaced by using the new
+    <em>time</em> and <em>date</em> validators with <em>min</em> and <em>max</em> fields.</p>
+
+</li>
+<li><p>The Pmw.EntryField <em>maxwidth</em> option has been removed.  The
+    functionality can be replaced by using the <em>max</em> field of the
+    validator.</p>
+
+</li>
+<li><p>Added an <em>extravalidators</em> option to Pmw.EntryField.  This allows
+    new types of validation to be added, particularly in classes
+    derived from Pmw.EntryField.  It also allows the use of different
+    names for the same validation, by using aliases.  Added
+    SpecialEntry demo to show <em>extravalidators</em> option, based on work
+    by Joachim Schmitz.</p>
+
+</li>
+<li><p>Fixed a bug in Pmw.EntryField when combining use of <em>value</em> and
+    <em>entry_textvariable</em> options.</p>
+
+</li>
+<li><p>The Pmw.EntryField <em>validate</em> option now also accepts a dictionary
+    to handle minimum and maximum validation and to allow the passing
+    of other arguments to the validating functions, such as date, time
+    and number formats and separators.</p>
+
+</li>
+<li><p>Fixed bug in Pmw.EntryField where the entry would scroll to the
+    start of the text if an invalid character was typed.</p>
+
+</li>
+<li><p>Added checkentry() method to Pmw.EntryField, so that it can be
+    updated if the entry widget is tied to a textvariable.</p>
+
+</li></ul>
+<p>  10 May 1998</p>
+
+<ul><li><p>The activate() method now takes a geometry option to allow more
+    flexible positioning of the modal dialog.</p>
+
+</li>
+<li><p>Fixed rarely occurring bug in deactivate() method if it is called
+    (perhaps from a timer) during the call to wait_visibility() in the
+    activate() method.  This bug used to generate an error and the
+    application would not exit properly.</p>
+
+</li>
+<li><p>Fixed another rarely occurring bug in deactivate() method if it is
+    called while another application has the grab.</p>
+
+</li>
+<li><p>Removed "sys.exc_traceback = None" for except clauses which used
+    to be required by python 1.4 so that references to objects in the
+    stack trace would not be left.</p>
+
+</li>
+<li><p>Now uses sys.exc_info() function when displaying exception
+    traceback.</p>
+
+</li>
+<li><p>The <strong>state</strong> option of Pmw.Balloon and the <strong>orient</strong> option of
+    several others now generate an exception if they have a bad value.</p>
+
+</li>
+<li><p>Added a deactivatecommand option to Pmw.MegaToplevel which can be
+    used, for example, to cancel timers.</p>
+
+</li>
+<li><p>Made changes to Pmw.Counter so that the entry display continuously
+    changes when arrow key presses are repeated quickly.</p>
+
+</li>
+<li><p>Made changes to Pmw.Counter so that the insertion cursor is maintained
+    while counting and the entry scrolls to the end if the value is long.</p>
+
+</li>
+<li><p>Pmw.Counter now behaves correctly when counting past the maximum
+    and minimum values of the EntryField.</p>
+
+</li></ul>
+<p>  28 May 1998</p>
+
+<ul><li><p>Made all Pmw.EntryField standard validators publicly available
+    as <code>Pmw.numericvalidator</code>, etc.</p>
+
+</li>
+<li><p>Now uses faster <code>string.replace()</code> instead of <code>regsub.gsub()</code> when
+    applicable.</p>
+
+</li>
+<li><p>If the <em>balloonHelp</em> argument of the Pmw.Balloon bind methods is
+    <strong>None</strong>, no balloon is displayed.</p>
+
+</li>
+<li><p>Merged the code from the PmwUtils module (forwardmethods()) into
+    PmwBase, since it was always used, was used nowhere else, and made
+    freezing a little more complicated.</p>
+
+</li>
+<li><p>Added a short delay between calling Tkinter bell() method (sounds nicer).</p>
+
+</li>
+<li><p>The functions <code>datestringtojdn()</code> and <code>timestringtoseconds()</code> now
+    return ValueError on invalid input.</p>
+
+</li>
+<li><p>Created bundlepmw.py, to help when freezing in Pmw.  Placed in bin
+    directory.</p>
+
+</li></ul>
+<p>  29 May 1998</p>
+
+<ul><li><p>Fixed rare bug in Pmw.Counter which occured if the counter was
+    unmapped while the mouse button was held down over an arrow button.</p>
+
+</li>
+<li><p>Created contrib directory and placed PmwVerticalGuage.py in it.
+    (Chris Wright)</p>
+
+</li>
+<li><p>Patched PmwNoteBookR.py.  (Siggy Brentrup)</p>
+
+</li>
+<li><p>Added addoptions() method to Pmw.MegaArchetype class. (Dieter Maurer)</p>
+
+</li>
+<li><p>By default, MenuBar creates hotkeys for menus and menu items for
+    keyboard traversal.  Added traversSpec argument to MenuBar add
+    methods.  (Michael McLay)</p>
+
+</li></ul>
+<p>  31 May 1998</p>
+
+<ul><li><p>Cleaned up bbox() methods in Pmw.ScrolledCanvas and
+    Pmw.ScrolledListBox.</p>
+
+</li>
+<li><p>The createcomponent() method now disallows the creation of
+    component names containing an underscore, since the query
+    functions would not be able to find them.</p>
+
+</li></ul>
+<p>  2 June 1998</p>
+
+<ul><li><p>Release of version 0.7</p>
+
+</li></ul>
+<p>  3 June 1998</p>
+
+<ul><li><p>Moved Pmw.TreeBrowse megawidget to contrib directory.</p>
+
+</li></ul>
+<p>  17 June 1998</p>
+
+<ul><li><p>Added PmwFullTimeCounter.py to contrib directory (Daniel Michelson)</p>
+
+</li></ul>
+<p>  1 July 1998</p>
+
+<ul><li><p>Changed mispelt file PmwVerticalGuage.py to PmwVerticalGauge.py
+    in contrib directory.</p>
+
+</li></ul>
+<p>  7 July 1998</p>
+
+<ul><li><p>Fixed bug in Pmw.Counter real datatype.  Sometimes incorrectly
+    counted negative decimal fractions.  (Reported by David Ascher)</p>
+
+</li></ul>
+<p>  12 July 1998</p>
+
+<ul><li><p>The <em>format</em> argument of Pmw.datestringtojdn() now defaults to
+    <strong>'ymd'</strong>.</p>
+
+</li>
+<li><p>Removed Tkinter_test.py from tests since it does not test any Pmw
+    functionality (only Tkinter) and it fails under MS-Windows 95.</p>
+
+</li></ul>
+<p>  23 August 1998</p>
+
+<ul><li><p>Changed several exception types to be more consistent.</p>
+
+</li>
+<li><p>Made the interface to Pmw.Blt.Vector more like the builtin python
+    list type.</p>
+
+</li>
+<li><p>It is no longer an error to call Pmw.setversion() or
+    Pmw.setalphaversions() after initialisation, as long as the
+    requested version matches the actual version.</p>
+
+</li>
+<li><p>Fixed Pmw.NoteBookR so that it behaves better when the
+    highlightthickness is changed.</p>
+
+</li>
+<li><p>The setyearpivot() function now returns a tuple containing the old
+    values of <em>pivot</em> and <em>century</em>.</p>
+
+</li>
+<li><p>Added PmwFileDialog.py to contrib directory (Rob Hooft)</p>
+
+</li>
+<li><p>Modified demos so that full tracebacks are displayed if an error
+    occurs when importing a module.</p>
+
+</li>
+<li><p>Removed justify() method from Pmw.ScrolledListBox, since it is
+    just a wrapper around the xview and yview methods of the listbox.
+    Also, it was not a permanent justification, as the name implied.</p>
+
+</li></ul>
+<p>  20 September 1998</p>
+
+<ul><li><p>Changed implementation of Pmw.ScrolledCanvas.</p>
+
+</li>
+<li><p>Added <strong>borderframe</strong> option to Pmw.ScrolledText and Pmw.ScrolledCanvas.</p>
+
+</li></ul>
+<p>  18 October 1998</p>
+
+<ul><li><p>Major overhaul of all scrolled widgets.  Modified all to use
+    similar structure, given the peculiarities of each.  Fixed several
+    subtle bugs.</p>
+
+</li>
+<li><p>Pmw.ScrolledFrame: now uses a frame positioned within a clipping
+    frame using the place geometry manager.  Added borderframe,
+    horizflex, horizfraction, usehullsize, vertflex, vertfraction
+    options.  Added reposition() method.  Removed getFrame() method;
+    use interior() method instead.</p>
+
+</li>
+<li><p>Pmw.ScrolledListBox: added usehullsize option.</p>
+
+</li>
+<li><p>Pmw.ScrolledText: added borderframe and usehullsize options.</p>
+
+</li>
+<li><p>Pmw.ScrolledCanvas:  simplified widget structure.  Added
+    borderframe, canvasmargin, scrollmargin and usehullsize options.
+    Added label.</p>
+
+</li>
+<li><p>Modified Pmw.OptionMenu to use standard widgets rather than call
+    tcl procedure.  Added <strong>initialitem</strong> option.  Now handles
+    <strong>menubutton_textvariable</strong> component option correctly.</p>
+
+</li></ul>
+<p>  1 November 1998</p>
+
+<ul><li><p>Documented more Pmw functions and Pmw.ComboBox.</p>
+
+</li></ul>
+<p>  15 November 1998</p>
+
+<ul><li><p>Fixed some bugs, cleaned up code and wrote documentation for
+    Pmw.Group.  Removed <strong>ringpadx</strong> and <strong>ringpady</strong> options, since this
+    functionality is more generally available by padding the
+    megawidget itself and by padding the children of the megawidget.
+    Modified Pmw.aligngrouptags so that it takes into account the
+    borderwidth and highlightthickness of the ring and so that it
+    works when there is no tag widget.  Added <strong>tagindent</strong> option.</p>
+
+</li></ul>
+<p>  18 November 1998</p>
+
+<ul><li><p>Renamed canvasbind() and canvasunbind() methods of Pmw.Balloon to
+    tagbind() and tagunbind() and modified so that they work with both
+    Tkinter.Canvas items and Tkinter.Text tagged items.</p>
+
+</li></ul>
+<p>  19 November 1998</p>
+
+<ul><li><p>Added havebltbusy() method to Pmw.Blt. (Robin Becker)</p>
+
+</li></ul>
+<p>  21 November 1998</p>
+
+<ul><li><p>Modified contrib/PmwFileDialog.py so that when a file is selected
+    with the mouse, the highlight (in the file list) persists and the
+    file list does not scroll to the top. (Rob Hooft)</p>
+
+</li>
+<li><p>Modified Pmw.Balloon so that it can be bound to a tag associated
+    with several Canvas or Text items.  (Magnus Kessler)</p>
+
+</li></ul>
+<p>  21 November 1998</p>
+
+<ul><li><p>Cleaned up appearance and colors of Pmw.NoteBookR tabs.  (Georg
+    Mischler)</p>
+
+</li>
+<li><p>Added <strong>buttontype</strong> option to Pmw.RadioSelect to support
+    radiobuttons and checkbuttons.  (Georg Mischler)</p>
+
+</li></ul>
+<p>  23 November 1998</p>
+
+<ul><li><p>Updated usage of <code>bind_class(tag)</code> due to change in return value
+    in Tkinter module in python 1.5.2.  (Magnus Kessler, Fredrik Lundh)</p>
+
+</li>
+<li><p>The default time displayed in Pmw.TimeCounter is now the current
+    local time, not GMT as before.</p>
+
+</li>
+<li><p>The times displayed in the Counter demonstration are now the
+    current local time, not GMT as before.</p>
+
+</li></ul>
+<p>  7 December 1998</p>
+
+<ul><li><p>Modified Pmw.ComboBox to take advantage of the fix to the Tkinter
+    <code>bind()</code> method callback handling of <code>Event.widget</code> in python
+    1.5.2.  It works even if the <strong>selectioncommand</strong> destroys the
+    combobox.  For simple comboboxes, the invoke() method now returns
+    the return value of the <strong>selectioncommand</strong>.</p>
+
+</li>
+<li><p>Modified Pmw.EntryField to take advantage of the fix to the
+    Tkinter <code>bind()</code> method callback handling of <code>Event.widget</code> in
+    python 1.5.2.  It works even if a user-supplied callback
+    (<strong>command</strong>, <strong>invalidcommand</strong>, <strong>validator</strong> or <strong>stringtovalue</strong>)
+    destroys the entryfield.  Cleans up correctly when destroyed.  The
+    invoke() method now returns the return value of the <strong>command</strong>.</p>
+
+</li>
+<li><p>The invoke() method of Pmw.TimeCounter now returns the return
+    value of the <strong>command</strong>.</p>
+
+</li>
+<li><p>Modified Pmw.ButtonBox to use the new (in Tk8.0) <strong>default</strong> option
+    of the Tkinter <strong>Button</strong> widget instead of a separate frame.
+    Changed default padding to be more compact.  Removed "ring" frame
+    component and "ringborderwidth", "ringpadx" and "ringpady"
+    options.  (Georg Mischler)</p>
+
+</li>
+<li><p>Changed <strong>'pmw1'</strong> fontScheme to set default fonts only when running
+    under posix, since the default fonts on other systems look better.</p>
+
+</li></ul>
+<p>  10 December 1998</p>
+
+<ul><li><p>Release of version 0.8</p>
+
+</li></ul>
+<p>  20 January 1999</p>
+
+<ul><li><p>Added <strong>master</strong> option to Pmw.MegaToplevel and removed <strong>master</strong>
+    argument from the activate method.</p>
+
+</li>
+<li><p>Replaced rand module in demos with a simple random number
+    generator (since rand is not built-in on all versions of python).</p>
+
+</li></ul>
+<p>  22 February 1999</p>
+
+<ul><li><p>Modified <code>__init__.py</code> so that it only accepts directories whose
+    names begin with <strong>Pmw_M_N</strong> and which have a /lib/PmwLoader.py/
+    file.</p>
+
+</li></ul>
+<p>  13 May 1999</p>
+
+<ul><li><p>Changed Pmw.ScrolledCanvas, Pmw.ScrolledText and Pmw.ScrolledListBox
+    to speed up scrolling if the scrollmodes are not both dynamic.</p>
+
+</li>
+<li><p>Changed busy cursor and activate/deactivate code so that it works
+    correctly under fast mouse clicking or fast keyboarding (using
+    accelerators).  Also fixed so that grab is correctly restored
+    after a Pmw.ComboBox popup list is unmapped inside a modal dialog.
+    (Clemens Hintze)</p>
+
+</li>
+<li><p>Several dialogs now give focus to one of their components (listbox
+    or entry widget) when activated.  (Clemens Hintze)</p>
+
+</li>
+<li><p>Fixed Pmw.ComboBox so that it unposts popup if the combobox is
+    unmapped and returns grab and focus correctly if destroyed.</p>
+
+</li>
+<li><p>Improved tracetk() output to be more readable.  Also displays
+    nested calls to the Tk mainloop better and shows callbacks from
+    tcl to python.</p>
+
+</li>
+<li><p>Upgraded Blt support to blt2.4i.  Graph widget is not backwards
+    compatible with blt2.1.</p>
+
+</li></ul>
+<p>  19 May 1999</p>
+
+<ul><li><p>Fixed bug in Pmw.Balloon in placement of balloons over canvas
+    items when the canvas was scrolled. (Tessa Lau)</p>
+
+</li></ul>
+<p>  20 May 1999</p>
+
+<ul><li><p>Added new Tk event types (new in Tk 8.0 and 8.0.5) to PmwBase
+    error display method.  Also added check for unknown event types to
+    safeguard against future changes.  (Magnus Kessler)</p>
+
+</li>
+<li><p>Added <strong>exclude</strong> argument to <code>showbusycursor()</code>.  (Rob Hooft)</p>
+
+</li></ul>
+<p>  1 June 1999</p>
+
+<ul><li><p>Added wrappers for Blt Stripchart and Tabset widgets.  (Nick Belshaw)</p>
+
+</li>
+<li><p>Changed createcomponent() so that arguments to the constructor of
+    the component can now be specified as either multiple trailing
+    arguments to createcomponent() or as a single tuple argument.</p>
+
+</li></ul>
+<p>  7 June 1999</p>
+
+<ul><li><p>Added call to update_idletasks() in Pmw.ScrolledCanvas,
+    Pmw.ScrolledFrame, Pmw.ScrolledText and Pmw.ScrolledListBox to
+    avoid endless mapping/unmapping of two dynamic scrollbars when the
+    window is first mapped and only one scrollbar is needed.
+    (Reported by Mark C Favas, solution suggested by Dieter Maurer.)</p>
+
+</li></ul>
+<p>  10 June 1999</p>
+
+<ul><li><p>Fixed bug in bundlepmw.py when called with -noblt option.
+    (Reported by Kevin O'Connor)</p>
+
+</li>
+<li><p>Pmw.ComboBox now unposts the dropdown listbox before the selection
+    callback is invoked, to avoid problems when the callback takes a
+    long time to run.  (Reported by Randall Hopper)</p>
+
+</li></ul>
+<p>  11 June 1999</p>
+
+<ul><li><p>Release of version 0.8.1</p>
+
+</li></ul>
+<p>  29 June 1999</p>
+
+<ul><li><p>PmwMessageBar.message() now replaces newlines with spaces before
+    displaying message.  Also applies to helpmessage().</p>
+
+</li></ul>
+<p>  2 July 1999</p>
+
+<ul><li><p>Improved toplevel window positioning under NT, and stopped most of
+    the ugly flashing.</p>
+
+</li></ul>
+<p>  5 July 1999</p>
+
+<ul><li><p>The <strong>pmw1</strong> fontScheme is now supported under NT, as is the <em>size</em>
+    option to <code>Pmw.initialise()</code>.</p>
+
+</li></ul>
+<p>  6 July 1999</p>
+
+<ul><li><p>Changed the names of positional arguments in the following
+    methods, so that they have less chance of conflicting with keyword
+    arguments:  MegaArchetype.createcomponent(), ButtonBox.insert(),
+    ButtonBox.add(), MenuBar.addcascademenu(), MenuBar.addmenuitem()
+    and RadioSelect.add().</p>
+
+</li></ul>
+<p>  9 July 1999</p>
+
+<ul><li><p>Added images and example code to the megawidget reference manuals.
+    (Suggested by Joerg Henrichs)</p>
+
+</li>
+<li><p>Fixed showbusycursor() under NT.  It now calls update() instead of
+    update_idletasks() to force display of cursor.  (Solution
+    suggested by George Howlett)</p>
+
+</li>
+<li><p>Improved display of arrows in ComboBox, Counter and TimeCounter.</p>
+
+</li></ul>
+<p>  16 July 1999</p>
+
+<ul><li><p>Removed Pmw.maxfontwidth() function, since better functionality is
+    now supplied by the Tk "font measure" command.</p>
+
+</li>
+<li><p>Removed Pmw.fontexists() function, since in Tk8.0 all fonts exist.</p>
+
+</li></ul>
+<p>  28 July 1999</p>
+
+<ul><li><p>Fixed bug in date counter with separator other than <strong>'/'</strong> and time
+    counter with separator other than <strong>':'</strong>.  (David M.  Cooke, Alan
+    Robinson)</p>
+
+</li>
+<li><p>Under NT, the font named <strong>'fixed'</strong> is not fixed width, so added
+    alias from <strong>'Fixed'</strong> to <strong>'Courier'</strong>.</p>
+
+</li>
+<li><p>Changed the <code>bind()</code> and <code>tagbind()</code> methods of Pmw.Balloon to
+    remove a potential memory leak.  The methods now store the
+    <em>funcids</em> of the callback functions, so that if the same widget or
+    tag is bound twice, the balloon can remove the old bindings.
+    (Peter Stoehr)</p>
+
+</li>
+<li><p>Changed NoteBookR so that lowercmd, creatcmd and raisecmd are
+    called in that order when a page is selected.  Also fixed bug
+    which always raised page 0 when notebook is resized.  (Scott
+    Evans, Charles Choi)</p>
+
+</li></ul>
+<p>  1 August 1999</p>
+
+<ul><li><p>Added <strong>dynamicGroups</strong> argument to <code>defineoptions()</code> method and
+    modified ButtonBox, MenuBar, PanedWidget, RadioSelect to register
+    their dynamic groups.</p>
+
+</li>
+<li><p><code>Pmw.initialise()</code> can now be called multiple times, with
+    different <em>root</em> arguments, but only sequentially.  Pmw does not
+    (yet) support multiple simultaneous interpreters.  Modified
+    Pmw.EntryField so that it recreates class bindings when
+    Tkinter.root changes.</p>
+
+</li></ul>
+<p>  4 August 1999</p>
+
+<ul><li><p>Added relmouse option to Pmw.Balloon.  Fixed Pmw.Balloon so that
+    the balloon is not displayed off-screen.  (Tessa Lau)</p>
+
+</li></ul>
+<p>  16 August 1999</p>
+
+<ul><li><p>Added disableKeyboardWhileBusy option to initialise().  To ignore
+    keyboard input while displaying the busy cursor, Pmw sets the
+    focus for each toplevel window to the Blt busy window.  However,
+    under NT, this causes each window to be raised.  If this is not
+    acceptable, programs running on NT can request show/hidebusycursor
+    not to ignore keyboard input.</p>
+
+</li></ul>
+<p>  25 August 1999</p>
+
+<ul><li><p>Added Pmw.Blt.busy_forget() and used it in Pmw.hidebusycursor()
+    when running under NT.  There is a bug in the Blt busy release
+    command under NT where it sometimes fails to display the busy
+    cursor.  Using busy forget avoids the problem.</p>
+
+</li></ul>
+<p>  27 September 1999</p>
+
+<ul><li><p>Added busyCursorName option to Pmw.initialise() and added cursor
+    argument to Pmw.Blt.busy_hold().  (Mark Favas)</p>
+
+</li></ul>
+<p>  20 October 1999</p>
+
+<ul><li><p>Replaced Pmw.NoteBookR and Pmw.NoteBookS with completely rewritten
+    Pmw.NoteBook.</p>
+
+</li>
+<li><p>Renamed Pmw.OptionMenu.get() to Pmw.OptionMenu.getcurselection()
+    and Pmw.PanedWidget.remove() to Pmw.PanedWidget.delete(), to be
+    more consistent with other megawidgets.</p>
+
+</li>
+<li><p>The index() method of several megawidgets now use Pmw.END,
+    Pmw.SELECT and Pmw.DEFAULT instead of strings, since these may
+    conflict with component names.</p>
+
+</li>
+<li><p>Pmw.OptionMenu.index() now uses Pmw.SELECT to return
+    index of the currently selected menu item, rather than None.</p>
+
+</li>
+<li><p>Added destroy() method to Pmw.MegaArchetype to handle cleaning up
+    of _hullToMegaWidget mapping.</p>
+
+</li>
+<li><p>Removed exclude argument from Pmw.showbusycursor() and added
+    Pmw.excludefrombusycursor() function instead.  (Rob Hooft)</p>
+
+</li>
+<li><p>Fixed several bugs for Windows NT.</p>
+
+</li>
+<li><p>Added Pmw.ButtonBox.button() and Pmw.RadioSelect.button().</p>
+
+</li>
+<li><p>Added Pmw.Color.bordercolors().</p>
+
+</li></ul>
+<p>  21 October 1999</p>
+
+<ul><li><p>Release of version 0.8.3. (Version 0.8.2 was not released.)</p>
+
+</li></ul>
+<p>  30 October 1999</p>
+
+<ul><li><p>Added arrownavigation option and previouspage() and nextpage()
+    methods to Pmw.NoteBook.  (Peter Funk)</p>
+
+</li>
+<li><p>Renamed the <code>setnaturalpagesize()</code> method of Pmw.NoteBook to
+    <code>setnaturalsize()</code> to be consistent with Pmw.PanedWidget.</p>
+
+</li>
+<li><p>Changed Pmw.excludefrombusycursor() to Pmw.setbusycursorattributes().
+    Removed busyCursorName option from Pmw.initialise() and added
+    cursorName attribute to Pmw.setbusycursorattributes().</p>
+
+</li>
+<li><p>Added documentation source and build scripts to ftp site.</p>
+
+</li></ul>
+<p>  6 November 1999</p>
+
+<ul><li><p>Fixed memory leaks when destroying megawidgets.  Added automatic
+    check for memory leak to test script used by all tests.
+    Pmw.initialise() now uses a hook into Tkinter.Widget.destroy
+    rather than Tkinter.Frame.destroy to handle the case of
+    Pmw.NoteBook being destroyed (since the notebook hull is a canvas
+    and not a frame).  Window manager delete protocol callbacks are
+    now cleaned up.  Pmw.ScrolledListBox event bindings now do not
+    leak.  (Reported by Jeff Weeks)</p>
+
+</li>
+<li><p>Removed key bindings for Pmw.ScrolledListBox except space and return keys.</p>
+
+</li></ul>
+<p>  20 November 1999</p>
+
+<ul><li><p>Fixed bug in Pmw.Balloon when the canvas or text item that
+    triggered the balloon is deleted before the balloon is displayed
+    by the <strong>initwait</strong> timer.  (Magnus Kessler)</p>
+
+</li>
+<li><p>Added <strong>'nograb'</strong> to <em>globalMode</em> option of <code>activate()</code> method. (Rob Hooft)</p>
+
+</li>
+<li><p>Added __setitem__ method to Pmw.MegaArchetype, so that megawidget
+    options can be now set using <code>megawidget['option'] = value</code> style.
+    (Oliver Gathmann)</p>
+
+</li></ul>
+<p>  27 December 1999</p>
+
+<ul><li><p>Converted from <code>regex</code> module to <code>re</code> module, since <code>regex</code> is not
+    implemented for Jpython.  (Finn Bock)</p>
+
+</li></ul>
+<p>  30 December 1999</p>
+
+<ul><li><p>Added <code>clear()</code> method to Pmw.ScrolledListBox (suggested by Carson
+    Fenimore).</p>
+
+</li></ul>
+<p>  15 March 2000</p>
+
+<ul><li><p>Fixed problem in PmwBase when deleting windows that were created
+    before Pmw was initialised (such as splash windows displayed while
+    the application is coming up).  (Mark Favas)</p>
+
+</li>
+<li><p>Added splash window to Pmw demo.  (Mark Favas)</p>
+
+</li></ul>
+<p>  30 April 2000</p>
+
+<ul><li><p>Added Pmw.MainMenuBar megawidget, which uses the menubar feature
+    of Tk to provide platform specific menu bars.</p>
+
+</li>
+<li><p>Fixed Pmw.Counter and several other megawidgets so that certain
+    <strong>hull</strong> constructor keywords, such as <strong>hull_relief</strong> and
+    <strong>hull_borderwidth</strong>, are not overriden in the constructor.</p>
+
+</li>
+<li><p>Thanks to Peter Cashin for his help on how to unpack gzipped tar
+    files on Microsoft Windows operating systems.</p>
+
+</li>
+<li><p>Added Pmw.HistoryText megawidget.  This can be used as the basis
+    of an interactive text-based database query gui.  It maintains a
+    history of each query and allows editing of prior queries.</p>
+
+</li>
+<li><p>Added references to the Pmw.Blt.Graph documentation by Bjorn Ove
+    Thue and Hans Petter Langtangen.</p>
+
+</li>
+<li><p>Searched for and fixed memory leaks. There are no more known memory leaks.</p>
+<ul><li><p>For commands created by <code>bind</code>:  these are cleaned up by Tkinter
+      when the widget is destroyed.  Pmw.Balloon, which repeatedly
+      binds to the same widget (or item, using <code>tag_bind</code>), has been
+      fixed by passing the old command into the call to <code>unbind</code> or
+      <code>tag_unbind</code> which is cleaned up by Tkinter.</p>
+
+</li>
+<li><p>For commands created by <code>class_bind</code>:  most class bindings are
+      only created once (per Tk interpreter) and so do not need to be
+      cleaned up.  The exception is adding and deleting menus in
+      Pmw.MenuBar.  This has now been fixed to clean up <code>class_bind</code>
+      commands when deleting menus.</p>
+
+</li>
+<li><p>Callbacks given to command, xscrollcommand, yscrollcommand, etc
+      options are cleaned up by Tkinter when the widget is destroyed.
+      Cases where Pmw repeatedly sets such options have now been fixed
+      to clean up the old command before configuring the new one.
+      These are in <code>setitems</code> in Pmw.OptionMenu and when modifying the
+      scrollcommand options in several of the scrolled widgets.</p>
+
+</li>
+<li><p>Pmw now cleans up calbacks it registers with the
+      WM_DELETE_WINDOW protocol for toplevel windows.</p>
+
+</li></ul>
+
+</li>
+<li><p>Added ManualTests.py to tests directory for tests which need to be
+    run by hand.</p>
+
+</li></ul>
+<p>  12 May 2000</p>
+
+<ul><li><p>Release of version 0.8.4.</p>
+
+</li></ul>
+<p>  17 May 2000</p>
+
+<ul><li><p>Modified Pmw.Counter to deal with the presence (python up to
+    1.5.2) or absence (python 1.6 and after) of an <strong>L</strong> at the end of
+    the ascii representation of a long.  (Mark Favas)</p>
+
+</li>
+<li><p>Fixed bug in Pmw.ScrolledFrame when given invalid flex options.
+    (Stephen D Evans)</p>
+
+</li></ul>
+<p>  23 January 2001</p>
+
+<ul><li><p>Moved Pmw home from www.dscpl.com.au to pmw.sourceforge.net.</p>
+
+</li>
+<li><p>Added pmw2 font scheme, since the font used for balloon text with
+    pmw1 is too small on Linux.</p>
+
+</li>
+<li><p>Removed syntax coloring from code window in demos.  It did not
+    look good and the pattern matching was not always correct.</p>
+
+</li>
+<li><p>Changed font size used for demos to 12 for Unix, since 14 looked
+    too big under Linux.</p>
+
+</li>
+<li><p>Minor fixes to tests for Tk 8.3.</p>
+
+</li></ul>
+<p>  8 February 2001</p>
+
+<ul><li><p>Release of version 0.8.5</p>
+
+</li></ul>
+<p>  18 February 2001</p>
+
+<ul><li><p>Added xview() and yview() methods to Pmw.ScrolledFrame (suggested
+    by Christer Fernstrom).</p>
+
+</li>
+<li><p>Made tktrace output more readable.</p>
+
+</li>
+<li><p>Added noBltBusy option to Pmw.initialise.</p>
+
+</li>
+<li><p>Fixed bug where combobox dropdown list could stay mapped after
+    entryfield was unmapped.</p>
+
+</li>
+<li><p>Improved scrolling in scrolled frame.</p>
+
+</li></ul>
+<p>  21 February 2001</p>
+
+<ul><li><p>Fixed tests for recent version of Blt graph (reported by
+    Venkatesh Prasad Ranganath).</p>
+
+</li>
+<li><p>Fixed problem in Pmw.ScrolledFrame in python 1.5 - string.atof
+    does not accept a number as argument, but it does in python 2.0.</p>
+
+</li></ul>
+<p>  24 February 2001</p>
+
+<ul><li><p>Modified Pmw.OptionMenu documentation to specify that list
+    elements must be strings (problem reported by Guy Middleton).</p>
+
+</li>
+<li><p>Fixed bug in Pmw.OptionMenu where the wrong item was displayed
+    when an integer item in the menu was selected with the mouse (even
+    though items should be strings).</p>
+
+</li>
+<li><p>Added work around to Pmw.ScrolledFrame for bug in Tk when
+    retrieving value from scrollbars soon after creation.</p>
+
+</li></ul>
+<p>  27 February 2001</p>
+
+<ul><li><p>Added HistoryText and MainMenuBar to bin/bundlepmw.py - accidently
+    left out.</p>
+
+</li></ul>
+<p>  13 April 2001</p>
+
+<ul><li><p>Changed default foreground (text) of Pmw.Balloown to black.  (Eric
+    Pettersen)</p>
+
+</li>
+<li><p>Added default fontScheme to Pmw.initialise().</p>
+
+</li>
+<li><p>Added -fontscheme and -fontsize options to demo.</p>
+
+</li>
+<li><p>Added updatelayout() to Pmw.PanedWidget for use when dynamically
+    adding and deleting panes.  (G Cash)</p>
+
+</li>
+<li><p>Added move() to Pmw.PanedWidget to move panes.  (G Cash)</p>
+
+</li></ul>
+<p>  20 April 2001</p>
+
+<ul><li><p>Fixed bug in Pmw.Balloon where the balloon would reappear if the
+    mouse button was pressed down inside a widget and then, while the
+    mouse button was being held down, the mouse was moved outside of
+    the widget and then moved back over the widget.</p>
+
+</li>
+<li><p>Fixed bug in Pmw.Balloon when destroying widgets while the balloon
+    was up.  In this case, the balloon remained displayed even though
+    the widget had been destroyed. (Reported by Stefan Schone.)</p>
+
+</li>
+<li><p>Fixed bug in Pmw.Balloon when destroying widgets during the
+    initwait period.  In this case, an error occurred when the
+    initwait timer went off when it tried to access the destroyed
+    widget. (Reported by Stefan Schone.)</p>
+
+</li>
+<li><p>Fixed Pmw.Balloon so that unbinding withdraws the balloon if
+    the widget being unbound is the widget which triggered the balloon.</p>
+
+</li>
+<li><p>Modified Pmw.Balloon so that when deleting a canvas or text item,
+    <code>tagunbind()</code> can be called which will withdraw the balloon if it
+    was triggered by the item.  Unfortunately this can not be
+    automated as for widgets since Tk does not support &lt;Destroy&gt;
+    bindings on canvas or text items, so there is no way that
+    Pmw.Balloon can be notified of the deletion of an item.</p>
+
+</li>
+<li><p>Updated tests for python 2.1.</p>
+
+</li></ul>
+<p>  21 May 2001</p>
+
+<ul><li><p>Pmw.OptionMenu now defaults to taking focus (on &lt;Tab&gt; key).</p>
+
+</li></ul>
+<p>  15 May 2002</p>
+
+<ul><li><p>Fixed bug in Pmw.Graph.element_closest() where element names
+    should follow option arguments.  (Val Shkolnikov)</p>
+
+</li></ul>
+<p>  5 June 2002</p>
+
+<ul><li><p>Added command option to Pmw.TimeCounter.</p>
+
+</li>
+<li><p>Finished all documentation.</p>
+
+</li>
+<li><p>Fixed bug in documentation creation script which, since python
+    2.0, printed default values of real options (such as the
+    horizfraction option of Pmw.ScrolledFrame) with too many digits
+    (such as 0.050000000000000003).</p>
+
+</li>
+<li><p>Fixed bug in setgeometryanddeiconify for cygwin python (John
+    Williams).</p>
+
+</li></ul>
+<p>  4 July 2002</p>
+
+<ul><li><p>Added master option to <code>MegaToplevel.show()</code></p>
+
+</li>
+<li><p>Improved <code>MegaToplevel.show()</code> so that tkraise is not called
+    unecessarily, thus avoiding 2 second delay under certain window
+    managers (such as sawfish) in most circumstances.  There are still
+    problems with the Enlightenment window manager.</p>
+
+</li></ul>
+<p>  18 August 2002</p>
+
+<ul><li><p>Added columnheader, rowheader and rowcolumnheader components to
+    Pmw.ScrolledText.  (Rob Pearson)</p>
+
+</li>
+<li><p>Added <code>getvalue()</code> and <code>setvalue()</code> methods to several megawidgets
+    as a consistent way to set and get the user-modifiable state.
+    (Cimarron Taylor)</p>
+
+</li>
+<li><p>Made sub-classing simpler when no new options or components are
+    being created.  A sub-class of a Pmw megawidget does not need to
+    have an __init__() method.  If it does, it does not need to call
+    defineoptions().  Also, initialiseoptions() no longer requires an
+    argument (for backwards compatibility it may take an argument, but
+    it is ignored).</p>
+
+</li></ul>
+<p>  24 August 2002</p>
+
+<ul><li><p>Release of version 1.0</p>
+
+</li></ul>
+<p>  26 August 2002</p>
+
+<ul><li><p>Minor fixes.</p>
+
+</li>
+<li><p>Release of version 1.1</p>
+
+</li></ul>
+<p>  4 September 2002</p>
+
+<ul><li><p>Added collapse, expand and toggle methods and collapsedsize option
+    to Pmw.Group.  (Rob Pearson)</p>
+
+</li></ul>
+<p>  5 September 2002</p>
+
+<ul><li><p>Added sticky option to several megawidgets.</p>
+
+</li></ul>
+<p>  18 September 2002</p>
+
+<ul><li><p>Added appendtext method to Pmw.ScrolledText.  (Graham Dumpleton)</p>
+
+</li></ul>
+<p>  26 September 2002</p>
+
+<ul><li><p>Modified Pmw.ScrolledListBox to call dblclickcommand on
+    &lt;Double-ButtonRelease-1&gt; rather than &lt;Double-ButtonPress-1&gt; which
+    caused problems if the double button press unmapped the
+    ScrolledListBox.  In this case, the second button release of the
+    double click is given to another widget.  (Eric Pettersen)</p>
+
+</li></ul>
+<p>  14 June 2003</p>
+
+<ul><li><p>Changes for python 2.3 and Tcl/Tk 8.4.2:</p>
+<ul><li><p>Wrapped calls to cget() for Tkinter widgets in a call to
+        str().  Before python 2.3 cget() always returned a string.
+        Under python 2.3, Tkinter sometimes returns non-string values
+        (such as int, or Tcl_Obj).  Made similar change when using
+        configure() to retrieve values.  Fixed tests to handle integer
+        and Tcl_Obj return value from cget().  (Charles Doutriaux)</p>
+
+</li>
+<li><p>Fixed uses of <code>col</code> field of grid command.  Must use full
+        <code>column</code> under Tcl/Tk 8.4.2.</p>
+
+</li>
+<li><p>Fixed PmwEntryField.py, PmwMessageBar.py, PmwScrolledField.py
+        so that the text is not greyed out under Tcl/Tk 8.4.2.  This
+        was caused by a change in behaviour of the <strong>'disabled'</strong> state
+        and the Tk entry widget.  Now use new <strong>'readonly'</strong> state for
+        Tcl/Tk 8.4.2.</p>
+
+</li>
+<li><p>Test script now ignores Blt test for Tcl/Tk 8.4.2, since it
+        causes Blt 2.4z to core dump.  Blt needs to be fixed.</p>
+
+</li>
+<li><p>Changed Dialog test to work around problem caused by Tk 8.4.2
+        enforcing transient behaviour of windows.  When activate() is
+        called on a dialog whose parent is withdrawn, then the dialog
+        window is made transient.  Under old versions of Tk, the
+        transient dialog was displayed, but under 8.4.2 the dialog is
+        not displayed.  Work around is to deiconify parent of dialog.</p>
+
+</li></ul>
+
+</li></ul>
+<p>  5 August 2003</p>
+
+<ul><li><p>Release of version 1.2</p>
+
+</li>
+<li><p>Changes for python 2.4 and 2.5:</p>
+<p>  5 August 2007</p>
+<ul><li><p>In module PmwBase.py: An explicit cast is now required from exception
+      to string (str) .</p>
+
+</li></ul>
+
+<ul><li><p>Release of version 1.3</p>
+
+</li></ul>
+<p>  21 Februar 2010</p>
+<ul><li><p>change bin/bundlepmw.py to use module re instead of regsub.</p>
+
+</li></ul>
+
+<p>  24 Februar 2010</p>
+<ul><li><p>change /bin/env to /usr/bin/env in Tests/ManualTests.py</p>
+
+</li></ul>
+
+<p>  23 September 2012</p>
+<ul><li><p>multiple changes to make library Python3 compatible</p>
+
+</li></ul>
+
+<ul><li><p>Release of version 2.0-alpha</p>
+
+</li></ul>
+<p>  23 September 2012</p>
+<ul><li><p>multiple changes to make library Python3 compatible</p>
+
+</li></ul>
+
+<ul><li><p>Release of version 2.0.0-alpha</p>
+
+</li></ul>
+
+</li></ul>
+<p></p>
+
+
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

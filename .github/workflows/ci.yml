@@ -2,6 +2,52 @@ name: Continuous Integration
 on: [push, pull_request]
 
 jobs:
+  build_thirdparty:
+    name: Thirdparty Dependencies
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - dir: win-libs-vc14-x64
+          generator: Visual Studio 17 2022
+          os: windows-2022
+          args: -A x64
+          archive: thirdparty-win64.zip
+        - dir: win-libs-vc14
+          generator: Visual Studio 17 2022
+          os: windows-2022
+          args: -A Win32
+          archive: thirdparty-win32.zip
+        - dir: darwin-libs-a
+          generator: Unix Makefiles
+          os: macos-11
+          args: >-
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            -DBUILD_NVIDIACG=OFF
+          archive: thirdparty-mac.tar.xz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yasm
+        if: startsWith(runner.os, 'ubuntu')
+        run: sudo apt-get install yasm
+      - name: Build
+        run: |
+          cmake -S thirdparty-scripts -B thirdparty-scripts/build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}}
+          cmake --build thirdparty-scripts/build --config Release -j4
+      - name: Get Python and Utils (Windows)
+        if: runner.os == 'Windows'
+        working-directory: thirdparty-scripts
+        run: |
+          .\install-python.ps1 ${{github.workspace}}/thirdparty/${{matrix.dir}}
+          cp -v -R win-util ${{github.workspace}}/thirdparty/win-util
+      - name: Make ZIP file
+        if: endsWith(matrix.archive, '.zip')
+        run: 7z a ${{matrix.archive}} thirdparty/${{matrix.dir}} thirdparty/win-util thirdparty/win-python*/
+      - name: Make tarball
+        if: endsWith(matrix.archive, '.tar') || contains(matrix.archive, '.tar.')
+        run: tar -cJvf ${{matrix.archive}} thirdparty/${{matrix.dir}}
   cmake:
     name: CMake Buildsystem
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"

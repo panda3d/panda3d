@@ -1,0 +1,344 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.NoteBook reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.NoteBook</h1>
+    
+<center><IMG SRC=NoteBook.gif ALT="" WIDTH=400 HEIGHT=219></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.NoteBook() - 
+    a set of tabbed pages
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaArchetype.html">Pmw.MegaArchetype</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A notebook contains a set of tabbed pages.  At any one time only
+    one of these pages (the <em>selected</em> page) is visible, with the
+    other pages being hidden "beneath" it.  Another page in the
+    notebook may be displayed by clicking on the tab attached to the
+    page.  The tabs are displayed along the top edge.</p>
+
+<p>    Optionally, the notebook may be displayed without tabs.  In this
+    case, another selection widget, such as <a href="OptionMenu.html">Pmw.OptionMenu</a>, may be used
+    to select the pages.</p>
+
+<p>    This megawidget is derived from <a href="MegaArchetype.html">Pmw.MegaArchetype</a> (not <a href="MegaWidget.html">Pmw.MegaWidget</a>
+    like most other megawidgets), with the hull class being
+    Tkinter.Canvas.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.arrownavigation></a>
+<dl><dt> <strong>arrownavigation
+</strong></dt><dd>
+Initialisation option. If true and a tab button has the keyboard focus, then the Left and
+    Right arrow keys can be used to select the page before or after
+    the tab button with the focus. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.borderwidth></a>
+<dl><dt> <strong>borderwidth
+</strong></dt><dd>
+Initialisation option. The width of the border drawn around each tab and around the
+    selected page. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.createcommand></a>
+<dl><dt> <strong>createcommand
+</strong></dt><dd>
+Specifies a function to call when a page is selected for the first
+    time.  The function is called with a single argument, which is the
+    name of the selected page, and is called before the <strong>raisecommand</strong>
+    function.  This allows the creation of the page contents to be
+    deferred until the page is first displayed. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.lowercommand></a>
+<dl><dt> <strong>lowercommand
+</strong></dt><dd>
+Specifies a function to call when the selected page is replaced
+    with a new selected page.  The function is called with a single
+    argument, which is the name of the previously selected page, and
+    is called before the <strong>createcommand</strong> or <strong>raisecommand</strong> functions. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.pagemargin></a>
+<dl><dt> <strong>pagemargin
+</strong></dt><dd>
+Initialisation option. The margin (in pixels) around the selected page inside the
+    notebook's page border. The default is <strong>4</strong>.</p>
+
+
+</dd></dl>
+<a name=option.raisecommand></a>
+<dl><dt> <strong>raisecommand
+</strong></dt><dd>
+Specifies a function to call when a new page is selected.  The
+    function is called with a single argument, which is the name of
+    the selected page. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.tabpos></a>
+<dl><dt> <strong>tabpos
+</strong></dt><dd>
+Initialisation option. Specifies the location of the tabs.  If <strong>'n'</strong>, tabs are created
+    for each page and positioned at the top of the notebook.  If
+    <strong>None</strong>, no tabs are created, in which case another selection
+    widget can be used to select pages by calling the <code>selectpage()</code>
+    method. The default is <strong>'n'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the megawidget.  The contents of the
+    megawidget are created as canvas items and positioned in the
+    hull using the canvas coordinate system. By default, this component is a Tkinter.Canvas.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Dynamic components</h3></dt><dd>
+<p>
+        Page and tab components are created dynamically by the <code>add()</code>
+        and <code>insert()</code> methods.  By default, the pages are of type
+        Tkinter.Frame and are created with a component group of <strong>Page</strong>
+        and the tabs are of type Tkinter.Button and are created with a
+        component group of <strong>Tab</strong>.</p>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaArchetype.html#methods">Pmw.MegaArchetype</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Canvas</strong> class
+are forwarded by this megawidget to the
+<strong>hull</strong> component.
+<p></p>
+<a name=method.add></a>
+<dl><dt> <strong>add</strong>(<em>pageName</em>,**<em>kw</em>)</dt><dd>
+Add a page at the end of the notebook. See the <code>insert()</code> method
+    for full details.</p>
+
+
+</dd></dl>
+<a name=method.delete></a>
+<dl><dt> <strong>delete</strong>(*<em>pageNames</em>)</dt><dd>
+Delete the pages given by <em>pageNames</em> from the notebook.  Each of
+    the <em>pageNames</em> may have any of the forms accepted by the
+    <code>index()</code> method.</p>
+<p>    If the currently selected page is deleted, then the next page, in
+    index order, is selected.  If the <strong>end</strong> page is deleted, then the
+    previous page is selected.</p>
+
+
+
+</dd></dl>
+<a name=method.getcurselection></a>
+<dl><dt> <strong>getcurselection</strong>()</dt><dd>
+Return the name of the currently selected page.</p>
+
+
+</dd></dl>
+<a name=method.index></a>
+<dl><dt> <strong>index</strong>(<em>index</em>,<em>forInsert</em> = <strong>0</strong>)</dt><dd>
+Return the numerical index of the page corresponding to <em>index</em>.
+    This may be specified in any of the following forms:</p>
+<dl><dt><em>name</em></dt><dd>Specifies the page labelled <em>name</em>.<p></p>
+
+</dd>
+<dt><em>number</em></dt><dd>Specifies the page numerically, where <strong>0</strong> corresponds to
+         the first page.<p></p>
+
+</dd>
+<dt><strong>Pmw.END</strong></dt><dd>Specifies the last page.<p></p>
+
+</dd>
+<dt><strong>Pmw.SELECT</strong></dt><dd>Specifies the currently selected page.<p></p>
+
+</dd></dl>
+<p>    If <em>forInsert</em> is true, <strong>Pmw.END</strong> returns the number of pages
+    rather than the index of the last page.</p>
+
+
+
+</dd></dl>
+<a name=method.insert></a>
+<dl><dt> <strong>insert</strong>(<em>pageName</em>,<em>before</em> = <strong>0</strong>,**<em>kw</em>)</dt><dd>
+Add a page to the notebook as a component named <em>pageName</em>.  The
+    page is added just before the page specified by <em>before</em>, which
+    may have any of the forms accepted by the <code>index()</code> method.  If
+    <strong>tabpos</strong> is not <strong>None</strong>, also create a tab as a component named
+    <em>pageName</em>-<strong>tab</strong>.  Keyword arguments prefixed with <strong>page_</strong> or
+    <strong>tab_</strong> are passed to the respective constructors when creating the
+    page or tab.  If the <strong>tab_text</strong> keyword argument is not given, the
+    <strong>text</strong> option of the tab defaults to <em>pageName</em>.  If a page is
+    inserted into an empty notebook, the page is selected.  To add a
+    page to the end of the notebook, use <code>add()</code>.  The method returns
+    the <em>pageName</em> component widget.</p>
+
+
+</dd></dl>
+<a name=method.nextpage></a>
+<dl><dt> <strong>nextpage</strong>(<em>pageIndex</em> = <strong>None</strong>)</dt><dd>
+If <em>pageIndex</em> is <strong>None</strong>, then select the page after the
+    currently selected page.  Otherwise select the page after
+    <em>pageIndex</em>, which may have any of the forms accepted by the
+    <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.page></a>
+<dl><dt> <strong>page</strong>(<em>pageIndex</em>)</dt><dd>
+Return the frame component widget of the page <em>pageIndex</em>, where
+    <em>pageIndex</em> may have any of the forms accepted by the <code>index()</code>
+    method.</p>
+
+
+</dd></dl>
+<a name=method.pagenames></a>
+<dl><dt> <strong>pagenames</strong>()</dt><dd>
+Return a list of the names of the pages, in display order.</p>
+
+
+</dd></dl>
+<a name=method.previouspage></a>
+<dl><dt> <strong>previouspage</strong>(<em>pageIndex</em> = <strong>None</strong>)</dt><dd>
+If <em>pageIndex</em> is <strong>None</strong>, then select the page before the
+    currently selected page.  Otherwise select the page before
+    <em>pageIndex</em>, which may have any of the forms accepted by the
+    <code>index()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.recolorborders></a>
+<dl><dt> <strong>recolorborders</strong>()</dt><dd>
+Change the color of the page and tab borders.  This method is
+    required because the borders are created as canvas polygons and
+    hence do not respond to normal color changing techniques, such as
+    <code>Pmw.Color.changecolor()</code>.</p>
+
+
+</dd></dl>
+<a name=method.selectpage></a>
+<dl><dt> <strong>selectpage</strong>(<em>page</em>)</dt><dd>
+Select <em>page</em> to be the currently selected page.  The page will be
+    raised and the previous selected page will be lowered.</p>
+
+
+</dd></dl>
+<a name=method.setnaturalsize></a>
+<dl><dt> <strong>setnaturalsize</strong>(<em>pageNames</em> = <strong>None</strong>)</dt><dd>
+Set the width and height of the notebook to be the maximum
+    requested width and height of the pages specified by <em>pageNames</em>.
+    If <em>pageNames</em> is <strong>None</strong>, the size of all pages are used to
+    determine the size of the notebook.  Otherwise, <em>pageNames</em> must
+    be a list of page names whose sizes are to be used to determine
+    the size of the notebook.  This method should be called after all
+    pages and their contents have been created.  It calls
+    <code>update_idletasks()</code> so that the width and height of the pages can
+    be determined.  This may cause the notebook to flash onto the
+    screen at the default size before resizing to the natural size.</p>
+
+
+</dd></dl>
+<a name=method.tab></a>
+<dl><dt> <strong>tab</strong>(<em>pageIndex</em>)</dt><dd>
+Return the tab component widget of the page <em>pageIndex</em>, where
+    <em>pageIndex</em> may have any of the forms accepted by the <code>index()</code>
+    method.  If <strong>tabpos</strong> is <strong>None</strong>, return <strong>None</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the NoteBook.
+        notebook = Pmw.NoteBook(parent)
+        notebook.pack(fill = 'both', expand = 1, padx = 10, pady = 10)
+
+        # Add the "Appearance" page to the notebook.
+        page = notebook.add('Appearance')
+        notebook.tab('Appearance').focus_set()
+
+        # Create the "Toolbar" contents of the page.
+        group = Pmw.Group(page, tag_text = 'Toolbar')
+        group.pack(fill = 'both', expand = 1, padx = 10, pady = 10)
+        b1 = tkinter.Checkbutton(group.interior(), text = 'Show toolbar')
+        b1.grid(row = 0, column = 0)
+        b2 = tkinter.Checkbutton(group.interior(), text = 'Toolbar tips')
+        b2.grid(row = 0, column = 1)
+
+        # Create the "Startup" contents of the page.
+        group = Pmw.Group(page, tag_text = 'Startup')
+        group.pack(fill = 'both', expand = 1, padx = 10, pady = 10)
+        home = Pmw.EntryField(group.interior(), labelpos = 'w',
+            label_text = 'Home page location:')
+        home.pack(fill = 'x', padx = 20, pady = 10)
+
+        # Add two more empty pages.
+        page = notebook.add('Helpers')
+        page = notebook.add('Images')
+
+        notebook.setnaturalsize()
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 30 October 1999
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

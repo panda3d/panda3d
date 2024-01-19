@@ -1,0 +1,429 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.Balloon reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.Balloon</h1>
+    
+<center><IMG SRC=Balloon.gif ALT="" WIDTH=428 HEIGHT=189></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.Balloon() - 
+    display "tool tips" for a number of widgets
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaToplevel.html">Pmw.MegaToplevel</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A balloon megawidget can be used to give short help messages to
+    the user when they place the mouse over a button or other widget
+    for a short time.  It can also be used to display help messages
+    for canvas or text items.</p>
+
+<p>    One balloon megawidget can be used to display help for many
+    widgets or items.  For each widget or item that requires balloon
+    help, the <code>bind()</code> or <code>bindtag()</code> method is used to specify the
+    help text that should be displayed.</p>
+
+<p>    The help message is displayed in a popup balloon window when the
+    mouse remains over the widget or item for a short time.  The popup
+    balloon is withdrawn when the mouse leaves the widget or item, or
+    any mouse buttons are pressed.</p>
+
+<p>    The position of the popup balloon is configurable and may appear
+    either relative to the widget or item or relative to the position
+    of the mouse.</p>
+
+<p>    The popup balloon is displayed without any window manager
+    decorations.</p>
+
+<p>    The megawidget can cooperate with a <a href="MessageBar.html">Pmw.MessageBar</a> to display a
+    single-line help message as well as the balloon help.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.activatecommand></a>
+<dl><dt> <strong>activatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    activated by a call to <code>activate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.deactivatecommand></a>
+<dl><dt> <strong>deactivatecommand
+</strong></dt><dd>
+If this is callable, it will be called whenever the megawidget is
+    deactivated by a call to <code>deactivate()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.initwait></a>
+<dl><dt> <strong>initwait
+</strong></dt><dd>
+The number of milliseconds delay between when the mouse enters a
+    widget or item and when the popup balloon window should be
+    displayed. The default is <strong>500</strong>.</p>
+
+
+</dd></dl>
+<a name=option.master></a>
+<dl><dt> <strong>master
+</strong></dt><dd>
+This is used by the <code>activate()</code> method to control whether the
+    window is made <em>transient</em> during modal dialogs.  See the
+    <code>activate()</code> method. The default is <strong>'parent'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.relmouse></a>
+<dl><dt> <strong>relmouse
+</strong></dt><dd>
+This may be one of <strong>'both'</strong>, <strong>'x'</strong>, <strong>'y'</strong> or <strong>'none'</strong> and
+    indicates that the top left corner of the popup balloon window
+    should be placed relative to the current position of the mouse
+    rather than relative to the bottom left corner of the widget or
+    item (the default).  The positioning may be set for the horizontal
+    (x) and vertical (y) axes independently. The default is <strong>'none'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.state></a>
+<dl><dt> <strong>state
+</strong></dt><dd>
+This may be one of <strong>'both'</strong>, <strong>'balloon'</strong>, <strong>'status'</strong> or <strong>'none'</strong>
+    and indicates whether the help message should be displayed in the
+    popup balloon window, in an associated messagebar (via the
+    <strong>statuscommand</strong> option), or both. The default is <strong>'both'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.statuscommand></a>
+<dl><dt> <strong>statuscommand
+</strong></dt><dd>
+This specifies a function to call when the mouse enters a widget
+    or item bound to this balloon megawidget.  To configure a
+    <a href="MessageBar.html">Pmw.MessageBar</a> to display help, set this option to the <code>helpmessage</code>
+    method of the messagebar. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.title></a>
+<dl><dt> <strong>title
+</strong></dt><dd>
+This is the title that the window manager displays in the title
+    bar of the window. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.xoffset></a>
+<dl><dt> <strong>xoffset
+</strong></dt><dd>
+This specifies the horizontal offset of the position of the left
+    side of the popup balloon window relative the point determined by
+    the <strong>relmouse</strong> option. The default is <strong>20</strong>.</p>
+
+
+</dd></dl>
+<a name=option.yoffset></a>
+<dl><dt> <strong>yoffset
+</strong></dt><dd>
+This specifies the vertical offset of the position of the top of
+    the popup balloon window relative the point determined by the
+    <strong>relmouse</strong> option. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Toplevel.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+This component displays the text of the help message in the popup
+    balloon window.  By default it is created with a <strong>'lightyellow'</strong>
+    background, a <strong>'black'</strong> foreground and is <strong>'left'</strong> justified. By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaToplevel.html#methods">Pmw.MegaToplevel</a></strong>.
+<p></p>
+<a name=method.bind></a>
+<dl><dt> <strong>bind</strong>(<em>widget</em>,<em>balloonHelp</em>,<em>statusHelp</em> = <strong>None</strong>)</dt><dd>
+Create bindings for <em>widget</em> so that balloon help and/or status
+    help is displayed when the mouse enters the widget.  The balloon
+    help message is given by <em>balloonHelp</em> and the status help message
+    is given by <em>statusHelp</em>.  If <em>balloonHelp</em> is <strong>None</strong>, no balloon
+    is displayed.  If <em>statusHelp</em> is not set, it defaults to
+    <em>balloonHelp</em>.  Any previous bindings for this widget are removed.</p>
+
+
+</dd></dl>
+<a name=method.clearstatus></a>
+<dl><dt> <strong>clearstatus</strong>()</dt><dd>
+Clear the text in the associated messagebar by passing <strong>None</strong> to
+    the <strong>statuscommand</strong> function.</p>
+
+
+</dd></dl>
+<a name=method.showstatus></a>
+<dl><dt> <strong>showstatus</strong>(<em>statusHelp</em>)</dt><dd>
+Set the text in the associated messagebar by passing <em>statusHelp</em>
+    to the <strong>statuscommand</strong> function.</p>
+
+
+</dd></dl>
+<a name=method.tagbind></a>
+<dl><dt> <strong>tagbind</strong>(<em>widget</em>,<em>tagOrItem</em>,<em>balloonHelp</em>,<em>statusHelp</em> = <strong>None</strong>)</dt><dd>
+Create bindings for the tag or item specified by <em>tagOrItem</em> in
+    the text or canvas <em>widget</em> so that balloon help and/or status
+    help is displayed when the mouse enters the tag or item.  The
+    balloon help message is given by <em>balloonHelp</em> and the status help
+    message is given by <em>statusHelp</em>.  If <em>balloonHelp</em> is <strong>None</strong>, no
+    balloon is displayed.  If <em>statusHelp</em> is not set, it defaults to
+    <em>balloonHelp</em>.  Any previous bindings for this tag or item are
+    removed.</p>
+
+
+</dd></dl>
+<a name=method.tagunbind></a>
+<dl><dt> <strong>tagunbind</strong>(<em>widget</em>,<em>tagOrItem</em>)</dt><dd>
+Remove the balloon help bindings from the tag or item specified by
+    <em>tagOrItem</em> in the text or canvas <em>widget</em>.</p>
+<p>    Note that <code>tagunbind()</code> must be called when deleting a canvas
+    item, so that the popup balloon window can be withdrawn if it was
+    triggered by the item.  (Unfortunately this can not be automated
+    as is done for widgets since Tk does not support <code>&lt;Destroy&gt;</code>
+    bindings on canvas items, so there is no way that Pmw.Balloon can
+    be notified of the deletion of an item.)</p>
+
+
+
+</dd></dl>
+<a name=method.unbind></a>
+<dl><dt> <strong>unbind</strong>(<em>widget</em>)</dt><dd>
+Remove the balloon help bindings from <em>widget</em>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create the Balloon.
+        self.balloon = Pmw.Balloon(parent)
+
+        # Create some widgets and megawidgets with balloon help.
+        frame = tkinter.Frame(parent)
+        frame.pack(padx = 10, pady = 5)
+        field = Pmw.EntryField(frame,
+                labelpos = 'nw',
+                label_text = 'Command:')
+        field.setentry('mycommand -name foo')
+        field.pack(side = 'left', padx = 10)
+        self.balloon.bind(field, 'Command to\nstart/stop',
+                'Enter the shell command to control')
+
+        start = tkinter.Button(frame, text='Start')
+        start.pack(side='left', padx = 10)
+        self.balloon.bind(start, 'Start the command')
+
+        stop = tkinter.Button(frame, text='Stop')
+        stop.pack(side='left', padx = 10)
+        self.balloon.bind(stop, 'Stop the command')
+
+        self.suicide = tkinter.Button(frame, text='Kill me soon!',
+            command = self.killButton)
+        self.suicide.pack(side='left', padx = 10)
+        self.balloon.bind(self.suicide, 'Watch this button disappear!')
+
+        scrolledCanvas = Pmw.ScrolledCanvas(parent,
+                canvas_width = 300,
+                canvas_height = 115,
+        )
+        scrolledCanvas.pack()
+        canvas = scrolledCanvas.component('canvas')
+        self.canvas = canvas
+
+        # Create some canvas items and individual help.
+        item = canvas.create_arc(5, 5, 35, 35, fill = 'red', extent = 315)
+        self.balloon.tagbind(canvas, item, 'This is help for\nan arc item')
+        item = canvas.create_bitmap(20, 150, bitmap = 'question')
+        self.balloon.tagbind(canvas, item, 'This is help for\na bitmap')
+        item = canvas.create_line(50, 60, 70, 80, 85, 20, width = 5)
+        self.balloon.tagbind(canvas, item, 'This is help for\na line item')
+        item = canvas.create_text(10, 90, text = 'Canvas items with balloons',
+                anchor = 'nw', font = field.cget('entry_font'))
+        self.balloon.tagbind(canvas, item, 'This is help for\na text item')
+
+        # Create two canvas items which have the same tag and which use
+        # the same help.
+        canvas.create_rectangle(100, 10, 170, 50, fill = 'aliceblue',
+                tags = 'TAG1')
+        self.bluecircle = canvas.create_oval(110, 30, 160, 80, fill = 'blue',
+                tags = 'TAG1')
+        self.balloon.tagbind(canvas, 'TAG1',
+                'This is help for the two blue items' + '\n' * 10 +
+                    'It is very, very big.',
+                'This is help for the two blue items')
+        item = canvas.create_text(180, 10, text = 'Delete',
+                anchor = 'nw', font = field.cget('entry_font'))
+        self.balloon.tagbind(canvas, item,
+                'After 2 seconds,\ndelete the blue circle')
+        canvas.tag_bind(item, '&lt;ButtonPress&gt;', self._canvasButtonpress)
+        scrolledCanvas.resizescrollregion()
+
+        scrolledText = Pmw.ScrolledText(parent,
+                text_width = 32,
+                text_height = 4,
+                text_wrap = 'none',
+        )
+        scrolledText.pack(pady = 5)
+        text = scrolledText.component('text')
+        self.text = text
+
+        text.insert('end',
+                'This is a text widget with ', '',
+                ' balloon', 'TAG1',
+                '\nhelp. Find the ', '',
+                ' text ', 'TAG1',
+                ' tagged with', '',
+                ' help.', 'TAG2',
+                '\n', '',
+                'Remove tag 1.', 'TAG3',
+                '\nAnother line.\nAnd another', '',
+        )
+        text.tag_configure('TAG1', borderwidth = 2, relief = 'sunken')
+        text.tag_configure('TAG3', borderwidth = 2, relief = 'raised')
+
+        self.balloon.tagbind(text, 'TAG1',
+                'There is one secret\nballoon help.\nCan you find it?')
+        self.balloon.tagbind(text, 'TAG2',
+                'Well done!\nYou found it!')
+        self.balloon.tagbind(text, 'TAG3',
+                'After 2 seconds\ndelete the tag')
+        text.tag_bind('TAG3', '&lt;ButtonPress&gt;', self._textButtonpress)
+
+        frame = tkinter.Frame(parent)
+        frame.pack(padx = 10)
+        self.toggleBalloonVar = tkinter.IntVar()
+        self.toggleBalloonVar.set(1)
+        toggle = tkinter.Checkbutton(frame,
+                variable = self.toggleBalloonVar,
+                text = 'Balloon help', command = self.toggle)
+        toggle.pack(side = 'left', padx = 10)
+        self.balloon.bind(toggle, 'Toggle balloon help\non and off')
+
+        self.toggleStatusVar = tkinter.IntVar()
+        self.toggleStatusVar.set(1)
+        toggle = tkinter.Checkbutton(frame,
+                variable = self.toggleStatusVar,
+                text = 'Status help', command = self.toggle)
+        toggle.pack(side = 'left', padx = 10)
+        self.balloon.bind(toggle,
+                'Toggle status help on and off, on and off' + '\n' * 10 +
+                    'It is very, very big, too.',
+                'Toggle status help on and off')
+
+        # Create and pack the MessageBar.
+        messageBar = Pmw.MessageBar(parent,
+                entry_width = 40,
+                entry_relief='groove',
+                labelpos = 'w',
+                label_text = 'Status:')
+        messageBar.pack(fill = 'x', expand = 1, padx = 10, pady = 5)
+
+        # Configure the balloon to display its status messages in the
+        # message bar.
+        self.balloon.configure(statuscommand = messageBar.helpmessage)
+
+    def toggle(self):
+        if self.toggleBalloonVar.get():
+            if self.toggleStatusVar.get():
+                self.balloon.configure(state = 'both')
+            else:
+                self.balloon.configure(state = 'balloon')
+        else:
+            if self.toggleStatusVar.get():
+                self.balloon.configure(state = 'status')
+            else:
+                self.balloon.configure(state = 'none')
+
+    def killButton(self):
+        # Test for old bug when destroying widgets 1) while the
+        # balloon was up and 2) during the initwait period.
+        print('Destroying button in 2 seconds')
+        self.suicide.after(2000, self.suicide.destroy)
+
+    def _canvasButtonpress(self, event):
+        print('Destroying blue circle in 2 seconds')
+        self.canvas.after(2000, self.deleteBlueCircle)
+
+    def deleteBlueCircle(self):
+        self.balloon.tagunbind(self.canvas, self.bluecircle)
+        self.canvas.delete(self.bluecircle)
+
+    def _textButtonpress(self, event):
+        print('Deleting the text tag in 2 seconds')
+        self.text.after(2000, self.deleteTextTag)
+
+    def deleteTextTag(self):
+        self.balloon.tagunbind(self.text, 'TAG1')
+        self.text.tag_delete('TAG1')
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 20 May 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

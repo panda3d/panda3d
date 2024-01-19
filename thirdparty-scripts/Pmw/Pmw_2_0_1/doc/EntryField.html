@@ -1,0 +1,528 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.EntryField reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.EntryField</h1>
+    
+<center><IMG SRC=EntryField.gif ALT="" WIDTH=313 HEIGHT=177></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.EntryField() - 
+    entry widget with validation
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    An entry field contains an entry widget with optional validation of
+    various kinds.  Built-in validation may be used, such as
+    <strong>integer</strong>, <strong>real</strong>, <strong>time</strong> or <strong>date</strong>, or an external validation
+    function may be supplied.  If valid text is entered, it will be
+    displayed with the normal background.  If invalid text is entered,
+    it is not displayed and the previously displayed text is restored.
+    If partially valid text is entered, it will be displayed with a
+    background color to indicate it is in error.  An example of
+    partially valid <strong>real</strong> text is <strong>'-.'</strong>, which may be the first two
+    charactes of the valid string <strong>'-.5'</strong>.  Some validators, such as
+    <strong>date</strong>, have a relaxed interpretation of partial validity, which
+    allows the user flexibility in how they enter the text.</p>
+
+<p>    Validation is performed <em>early</em>, at each keystroke or other event
+    which modifies the text.  However, if partially valid text is
+    permitted, the validity of the entered text can be checked just
+    before it is to be used, which is a form of <em>late</em> validation.</p>
+
+<p>    Minimum and maximum values may be specified.  Some validators also
+    accept other specifications, such as date and time formats and
+    separators.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Validation function return values</h3></dt><dd>
+<p>
+        Validation is performed by a function which takes as its first
+        argument the entered text and returns one of three standard
+        values, indicating whether the text is valid:</p>
+
+<dl><dt><strong>Pmw.OK</strong></dt><dd>The text is valid.<p></p>
+
+</dd>
+<dt><strong>Pmw.ERROR</strong></dt><dd>The text is invalid and is not acceptable for
+            display.  In this case the entry will be restored to its
+            previous value.<p></p>
+
+</dd>
+<dt><strong>Pmw.PARTIAL</strong></dt><dd>The text is partially valid and is acceptable
+            for display.  In this case the text will be displayed
+            using the <strong>errorbackground</strong> color.<p></p>
+<p>        </p>
+
+
+</dd></dl>
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+This specifies a function to call whenever the <strong>&lt;Return&gt;</strong> key is
+    pressed or <code>invoke()</code> is called. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.errorbackground></a>
+<dl><dt> <strong>errorbackground
+</strong></dt><dd>
+Specifies the background color to use when displaying invalid or
+    partially valid text. The default is <strong>'pink'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.extravalidators></a>
+<dl><dt> <strong>extravalidators
+</strong></dt><dd>
+This is a dictionary of extra validators.  The keys are the names
+    of validators which may be used in a future call to the
+    <strong>validate</strong> option.  Each value in the dictionary is a tuple of
+    (<em>validate_function</em>, <em>stringtovalue_function</em>).</p>
+<p>    The <em>validate_function</em> is used to implement the validation and
+    the <em>stringtovalue_function</em> is used to convert the entry input
+    into a value which can be compared with the minimum and maximum
+    limits.  These functions are as described for the <strong>validate</strong>
+    option.</p>
+
+<p>    If either of these is not given as a function, it is assumed to be
+    the name of one of the other extra validators or one of the
+    standard validators.  The alias search is performed when the
+    <strong>validate</strong> option is configured, not when the <strong>extravalidators</strong>
+    option is configured or when the <strong>validate</strong> function is called.</p>
+
+<p>    If the name of one of the extra validators is the same as one of
+    the standard validators, the extra validator takes precedence. The default is <strong>{}</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.invalidcommand></a>
+<dl><dt> <strong>invalidcommand
+</strong></dt><dd>
+This is executed when invalid text is entered and the text is
+    restored to its previous value (that is, when the <strong>validate</strong>
+    function returns <strong>Pmw.ERROR</strong>).  It is also called if an attempt is
+    made to set invalid text in a call to <code>setentry()</code>.  The default
+    is <strong>self.bell</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.modifiedcommand></a>
+<dl><dt> <strong>modifiedcommand
+</strong></dt><dd>
+This is called whenever the text of the entry has been changed
+    due to user action or by a call to <code>setentry()</code>. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.sticky></a>
+<dl><dt> <strong>sticky
+</strong></dt><dd>
+Initialisation option.  The default is <strong>'ew'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.validate></a>
+<dl><dt> <strong>validate
+</strong></dt><dd>
+Specifies what kind of validation should be performed on the entry
+    input text.</p>
+<p>    The most general way to specify the <strong>validate</strong> option is as a
+    dictionary.  The kind of validation is specified by the
+    <strong>'validator'</strong> dictionary field, which may be the name of one of
+    the standard validators described below, the name of a validator
+    supplied by the <strong>extravalidators</strong> option, a function or <strong>None</strong>.
+    The default is <strong>None</strong>.</p>
+
+<p>    Any other dictionary fields specify other restrictions on the
+    entered values.  For all validators, the following fields may be
+    specified:</p>
+
+<dl><dt><strong>'min'</strong></dt><dd>Specifies the minimum acceptable value, or <strong>None</strong> if no
+        minimum checking should be performed.  The default is <strong>None</strong>.<p></p>
+
+</dd>
+<dt><strong>'max'</strong></dt><dd>Specifies the maximum acceptable value, or <strong>None</strong> if no
+        maximum checking should be performed.  The default is <strong>None</strong>.<p></p>
+
+</dd>
+<dt><strong>'minstrict'</strong></dt><dd>If true, then minimum checking is strictly enforced.
+        Otherwise, the entry input may be less than <strong>min</strong>, but will be
+        displayed using the <strong>errorbackground</strong> color.  The default is true.<p></p>
+
+</dd>
+<dt><strong>'maxstrict'</strong></dt><dd>If true, then maximum checking is strictly enforced.
+        Otherwise, the entry input may be more than <strong>max</strong>, but will be
+        displayed using the <strong>errorbackground</strong> color.  The default is true.<p></p>
+
+</dd></dl>
+<p>    If the dictionary contains a <strong>'stringtovalue'</strong> field, it overrides
+    the normal <em>stringtovalue</em> function for the validator.  The
+    <em>stringtovalue</em> function is described below.</p>
+
+<p>    Other fields in the dictionary (apart from the core fields
+    mentioned above) are passed on to the <em>validator</em> and
+    <em>stringtovalue</em> functions as keyword arguments.</p>
+
+<p>    If <strong>validate</strong> is not a dictionary, then it is equivalent to
+    specifying it as a dictionary with a single <strong>'validator'</strong> field.
+    For example, <code>validate = 'real'</code> is equivalent to /validate =
+    {'validator' : 'real'}/ and specifies real numbers without any
+    minimum or maximum limits and using <strong>'.'</strong> as the decimal point
+    character.</p>
+
+<p>    The standard validators accepted in the <strong>'validator'</strong> field are:</p>
+
+<dl><dt><strong>'numeric'</strong></dt><dd>An integer greater than or equal to 0.  Digits
+        only. No sign.<p></p>
+
+</dd>
+<dt><strong>'integer'</strong></dt><dd>Any integer (negative, 0 or positive) as accepted
+        by <code>int()</code>.<p></p>
+
+</dd>
+<dt><strong>'hexadecimal'</strong></dt><dd>Hex number (with optional leading <strong>'0x'</strong>), as accepted
+        by <code>int(text, 16)</code>.<p></p>
+
+</dd>
+<dt><strong>'real'</strong></dt><dd>A number, with or without a decimal point and optional
+        exponent (e or E), as accepted by <code>float()</code>.  This
+        validator accepts a <strong>'separator'</strong> argument, which specifies
+        the character used to represent the decimal point.  The
+        default <strong>'separator'</strong> is <strong>'.'</strong>.<p></p>
+
+</dd>
+<dt><strong>'alphabetic'</strong></dt><dd>Consisting of the letters <strong>'a-z'</strong> and <strong>'A-Z'</strong>.
+        In this case, <strong>'min'</strong> and <strong>'max'</strong> specify limits on the length
+        of the text.<p></p>
+
+</dd>
+<dt><strong>'alphanumeric'</strong></dt><dd>Consisting of the letters <strong>'a-z'</strong>, <strong>'A-Z'</strong> and <strong>'0-9'</strong>.
+        In this case, <strong>'min'</strong> and <strong>'max'</strong> specify limits on the length
+        of the text.<p></p>
+
+</dd>
+<dt><strong>'time'</strong></dt><dd>Hours, minutes and seconds, in the format
+        <strong>'HH:MM:SS'</strong>, as accepted by <code>Pmw.timestringtoseconds()</code>.
+        This validator accepts a <strong>'separator'</strong> argument, which
+        specifies the character used to separate the three fields.
+        The default separator is <strong>':'</strong>.  The time may be negative.<p></p>
+
+</dd>
+<dt><strong>'date'</strong></dt><dd>Day, month and year, as accepted by
+        <code>Pmw.datestringtojdn()</code>.  This validator accepts a
+        <strong>'separator'</strong> argument, which specifies the character used to
+        separate the three fields.  The default is <strong>':'</strong>.  This
+        validator also accepts a <strong>'format'</strong> argument, which is passed to
+        <code>Pmw.datestringtojdn()</code> to specify the desired ordering of the
+        fields.  The default is <strong>'ymd'</strong>.<p></p>
+
+</dd></dl>
+<p>    If <strong>'validator'</strong> is a function, then it will be called whenever
+    the contents of the entry may have changed due to user action or
+    by a call to <code>setentry()</code>.  The function is called with at least
+    one argument, the first one being the new text as modified by the
+    user or <code>setentry()</code>.  The other arguments are keyword arguments
+    made up of the non-core fields of the <strong>validate</strong> dictionary.</p>
+
+<p>    The <em>validator</em> function should return <strong>Pmw.OK</strong>, <strong>Pmw.ERROR</strong> or
+    <strong>Pmw.PARTIAL</strong> as described above.  It should not perform minimum
+    and maximum checking.  This is done after the call, if it returns
+    <strong>Pmw.OK</strong>.</p>
+
+<p>    The <strong>'stringtovalue'</strong> field in the dictionary may be specified as
+    the name of one of the standard validators, the name of a
+    validator supplied by the <strong>extravalidators</strong> option, a function or
+    <strong>None</strong>.</p>
+
+<p>    The <em>stringtovalue</em> function is used to convert the entry input
+    into a value which can then be compared with any minimum or
+    maximum values specified for the validator.  If the <strong>'min'</strong> or
+    <strong>'max'</strong> fields are specified as strings, they are converted using
+    the <em>stringtovalue</em> function.  The <em>stringtovalue</em> function is
+    called with the same arguments as the <em>validator</em> function.  The
+    <em>stringtovalue</em> function for the standard number validators
+    convert the string to a number.  Those for the standard alpha
+    validators return the length of the string.  Those for the
+    standard <strong>'time'</strong> and <strong>'date'</strong> validators return the number of
+    seconds and the Julian Day Number, respectively.  See
+    <code>Pmw.stringtoreal()</code>, <code>Pmw.timestringtoseconds()</code> and
+    <code>Pmw.datestringtojdn()</code>.</p>
+
+<p>    If the validator has been specified as a function and no
+    <strong>'stringtovalue'</strong> field is given, then it defaults to the standard
+    python <code>len()</code> function.</p>
+
+<p>    If <strong>'validator'</strong> is <strong>None</strong>, no validation is performed.  However,
+    minimum and maximum checking may be performed, according to the
+    <em>stringtovalue</em> function.  For example, to limit the entry text to
+    a maximum of five characters:</p>
+
+<dl><dd><pre> Pmw.EntryField(validate = {'max' : 5})</pre></dd></dl>
+
+<p>    The validator functions for each of the standard validators can
+    be accessed as:</p>
+<dl><dd><pre> Pmw.numericvalidator
+ Pmw.integervalidator
+ Pmw.hexadecimalvalidator
+ Pmw.realvalidator
+ Pmw.alphabeticvalidator
+ Pmw.alphanumericvalidator
+ Pmw.timevalidator
+ Pmw.datevalidator</pre></dd></dl>
+
+
+<p>    Whenever the <strong>validate</strong> option is configured, the text currently
+    displayed in the entry widget is revalidated.  If it is not valid,
+    the <strong>errorbackground</strong> color is set and the <strong>invalidcommand</strong>
+    function is called.  However, the displayed text is not modified.</p>
+
+<p>    The default for <strong>validate</strong> is <strong>None</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.value></a>
+<dl><dt> <strong>value
+</strong></dt><dd>
+Initialisation option. Specifies the initial contents of the entry.
+    If this text is invalid, it will be displayed with the
+    <strong>errorbackground</strong> color and the <strong>invalidcommand</strong> function will be called.
+    If both <strong>value</strong> and <strong>entry_textvariable</strong> options are specified in
+    the constructor, <strong>value</strong> will take precedence. The default is <strong>''</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.entry></a>
+<dl><dt> <strong>entry
+</strong></dt><dd>
+The widget where the user may enter text.  Long text may be
+    scrolled horizontally by dragging with the middle mouse button. By default, this component is a Tkinter.Entry.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Entry</strong> class
+are forwarded by this megawidget to the
+<strong>entry</strong> component.
+<p></p>
+<a name=method.checkentry></a>
+<dl><dt> <strong>checkentry</strong>()</dt><dd>
+Check the validity of the current contents of the entry widget
+    and return the result.
+    If the text is not valid, set the background to <strong>errorbackground</strong> and
+    call the <strong>invalidcommand</strong> function.  If there is a variable
+    specified by the <strong>entry_textvariable</strong> option, this method should be
+    called after the <code>set()</code> method of the variable is called.  If this
+    is not done in this case, the entry widget background will not be
+    set correctly.</p>
+
+
+</dd></dl>
+<a name=method.clear></a>
+<dl><dt> <strong>clear</strong>()</dt><dd>
+Remove all text from the entry widget.  Equivalent to <code>setentry('')</code>.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+Return the text displayed by the entry.</p>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>()</dt><dd>
+Invoke the command specified by the <strong>command</strong> option as if the
+    <strong>&lt;Return&gt;</strong> key had been pressed and return the result.</p>
+
+
+</dd></dl>
+<a name=method.setentry></a>
+<dl><dt> <strong>setentry</strong>(<em>text</em>)</dt><dd>
+Same as <code>setvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>text</em>)</dt><dd>
+Set the contents of the entry widget to <em>text</em> and carry out
+    validation as if the text had been entered by the user.  If the
+    text is invalid, the entry widget will not be changed and the
+    <strong>invalidcommand</strong> function will be called.  Return the validity
+    of <em>text</em>.</p>
+
+
+</dd></dl>
+<a name=method.valid></a>
+<dl><dt> <strong>valid</strong>()</dt><dd>
+Return true if the contents of the entry widget are valid.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create and pack the EntryFields.
+        self._any = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Any:',
+                validate = None,
+                command = self.execute)
+        self._real = Pmw.EntryField(parent,
+                labelpos = 'w',
+                value = '55.5',
+                label_text = 'Real (10.0 to 99.0):',
+                validate = {'validator' : 'real',
+                        'min' : 10, 'max' : 99, 'minstrict' : 0},
+                modifiedcommand = self.changed)
+        self._odd = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Odd length:',
+                validate = self.custom_validate,
+                value = 'ABC')
+        self._date = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Date (in 2000):',
+                value = '2000/2/29',
+                validate = {'validator' : 'date',
+                        'min' : '2000/1/1', 'max' : '2000/12/31',
+                        'minstrict' : 0, 'maxstrict' : 0,
+                        'fmt' : 'ymd'},
+                )
+        now = time.localtime(time.time())
+        self._date2 = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Date (d.m.y):',
+                value = '%d.%d.%d' % (now[2], now[1], now[0]),
+                validate = {'validator' : 'date',
+                        'fmt' : 'dmy', 'separator' : '.'},
+                )
+        self._time = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Time (24hr clock):',
+                value = '8:00:00',
+                validate = {'validator' : 'time',
+                        'min' : '00:00:00', 'max' : '23:59:59',
+                        'minstrict' : 0, 'maxstrict' : 0},
+                )
+        self._comma = Pmw.EntryField(parent,
+                labelpos = 'w',
+                label_text = 'Real (with comma):',
+                value = '123,456',
+                validate = {'validator' : 'real', 'separator' : ','},
+                )
+
+        entries = (self._any, self._real, self._odd, self._date, self._date2,
+                self._time, self._comma)
+
+        for entry in entries:
+            entry.pack(fill='x', expand=1, padx=10, pady=5)
+        Pmw.alignlabels(entries)
+
+        self._any.component('entry').focus_set()
+
+    def changed(self):
+        print(('Text changed, value is', self._real.getvalue()))
+
+    def execute(self):
+        print(('Return pressed, value is', self._any.getvalue()))
+
+    # This implements a custom validation routine.  It simply checks
+    # if the string is of odd length.
+    def custom_validate(self, text):
+        print(('text:', text))
+        if len(text) % 2 == 0:
+            return -1
+        else:
+            return 1
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 22 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

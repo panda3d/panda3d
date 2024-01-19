@@ -1,0 +1,362 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ScrolledListBox reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ScrolledListBox</h1>
+    
+<center><IMG SRC=ScrolledListBox.gif ALT="" WIDTH=210 HEIGHT=168></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ScrolledListBox() - 
+    listbox with optional scrollbars
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A scrolled listbox consists of a standard listbox widget with optional
+    scrollbars which can be used to scroll the listbox.  The
+    scrollbars can be <em>dynamic</em>, which means that a scrollbar will
+    only be displayed if it is necessary.  That is, if the listbox
+    does not contain enough entries, the vertical scrollbar will be
+    automatically hidden and if the entries are not wide enough, the
+    horizontal scrollbar will be automatically hidden.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.dblclickcommand></a>
+<dl><dt> <strong>dblclickcommand
+</strong></dt><dd>
+This specifies a function to call when mouse button 1 is double
+    clicked over an entry in the <strong>listbox</strong> component. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.hscrollmode></a>
+<dl><dt> <strong>hscrollmode
+</strong></dt><dd>
+The horizontal scroll mode.  If <strong>'none'</strong>, the horizontal scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.items></a>
+<dl><dt> <strong>items
+</strong></dt><dd>
+Initialisation option. A tuple containing the initial items to be displayed by the
+    <strong>listbox</strong> component. The default is <strong>()</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.scrollmargin></a>
+<dl><dt> <strong>scrollmargin
+</strong></dt><dd>
+Initialisation option. The distance between the scrollbars and the listbox widget. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.selectioncommand></a>
+<dl><dt> <strong>selectioncommand
+</strong></dt><dd>
+This specifies a function to call when mouse button 1 is single
+    clicked over an entry in the <strong>listbox</strong> component or if the <strong>&lt;Space&gt;</strong>
+    or <strong>&lt;Return&gt;</strong> key is hit while the <strong>listbox</strong> has focus. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.usehullsize></a>
+<dl><dt> <strong>usehullsize
+</strong></dt><dd>
+Initialisation option. If true, the size of the megawidget is determined solely by the
+    width and height options of the <strong>hull</strong> component.</p>
+<p>    Otherwise, the size of the megawidget is determined by the width
+    and height of the <strong>listbox</strong> component, along with the size and/or
+    existence of the other components, such as the label, the
+    scrollbars and the scrollmargin option.  All these affect the
+    overall size of the megawidget. The default is <strong>0</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vscrollmode></a>
+<dl><dt> <strong>vscrollmode
+</strong></dt><dd>
+The vertical scroll mode.  If <strong>'none'</strong>, the vertical scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.horizscrollbar></a>
+<dl><dt> <strong>horizscrollbar
+</strong></dt><dd>
+The horizontal scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.listbox></a>
+<dl><dt> <strong>listbox
+</strong></dt><dd>
+The listbox widget which is scrolled by the scrollbars. By default, this component is a Tkinter.Listbox.</p>
+
+
+</dd></dl>
+<a name=component.vertscrollbar></a>
+<dl><dt> <strong>vertscrollbar
+</strong></dt><dd>
+The vertical scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Listbox</strong> class
+are forwarded by this megawidget to the
+<strong>listbox</strong> component.
+<p></p>
+<a name=method.bbox></a>
+<dl><dt> <strong>bbox</strong>(<em>index</em>)</dt><dd>
+This method is explicitly forwarded to the <strong>listbox</strong> component's
+    <code>bbox()</code> method.  Without this explicit forwarding, the <code>bbox()</code>
+    method (aliased to <code>grid_bbox()</code>) of the <strong>hull</strong> would be invoked,
+    which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+<a name=method.clear></a>
+<dl><dt> <strong>clear</strong>()</dt><dd>
+Delete all items from the scrolled listbox.  Equivalent to
+    <code>setlist(())</code>.</p>
+
+
+</dd></dl>
+<a name=method.get></a>
+<dl><dt> <strong>get</strong>(<em>first</em> = <strong>None</strong>,<em>last</em> = <strong>None</strong>)</dt><dd>
+This is the same as the <code>get()</code> method of the <strong>listbox</strong> component,
+    except that if <em>first</em> is <strong>None</strong> all list
+    elements are returned.</p>
+
+
+</dd></dl>
+<a name=method.getcurselection></a>
+<dl><dt> <strong>getcurselection</strong>()</dt><dd>
+Same as <code>getvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+Return a list of the currently selected items of the listbox.</p>
+
+
+</dd></dl>
+<a name=method.setlist></a>
+<dl><dt> <strong>setlist</strong>(<em>items</em>)</dt><dd>
+Replace all the items of the <strong>listbox</strong> component with those
+    specified by the <em>items</em> sequence.</p>
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>textOrList</em>)</dt><dd>
+Set the current selection for the scrolled list to <em>textOrList</em>.</p>
+<p>    If <em>textOrList</em> is a string, select only the list item specified.</p>
+
+<p>    Otherwise, select only the list items specified by <em>textOrList</em>,
+    which must be a sequence of strings.</p>
+
+
+
+</dd></dl>
+<a name=method.size></a>
+<dl><dt> <strong>size</strong>()</dt><dd>
+This method is explicitly forwarded to the <strong>listbox</strong> component's
+    <code>size()</code> method.  Without this explicit forwarding, the <code>size()</code>
+    method (aliased to <code>grid_size()</code>) of the <strong>hull</strong> would be invoked,
+    which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create the ScrolledListBox.
+        self.box = Pmw.ScrolledListBox(parent,
+                items=('Sydney', 'Melbourne', 'Brisbane'),
+                labelpos='nw',
+                label_text='Cities',
+                listbox_height = 6,
+                selectioncommand=self.selectionCommand,
+                dblclickcommand=self.defCmd,
+                usehullsize = 1,
+                hull_width = 200,
+                hull_height = 200,
+        )
+
+        # Create a group widget to contain the scrollmode options.
+        w = Pmw.Group(parent, tag_text='Scroll mode')
+        w.pack(side = 'bottom', padx = 5, pady = 5)
+
+        hmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Horizontal:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.sethscrollmode,
+                menubutton_width = 8,
+        )
+        hmode.pack(side = 'top', padx = 5, pady = 5)
+        hmode.invoke('dynamic')
+
+        vmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Vertical:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.setvscrollmode,
+                menubutton_width = 8,
+        )
+        vmode.pack(side = 'top', padx = 5, pady = 5)
+        vmode.invoke('dynamic')
+
+        buttonBox = Pmw.ButtonBox(parent)
+        buttonBox.pack(side = 'bottom')
+        buttonBox.add('yview', text = 'Show\nyview', command = self.showYView)
+        buttonBox.add('scroll', text = 'Page\ndown', command = self.pageDown)
+        buttonBox.add('center', text = 'Center', command = self.centerPage)
+
+        # Pack this last so that the buttons do not get shrunk when
+        # the window is resized.
+        self.box.pack(fill = 'both', expand = 1, padx = 5, pady = 5)
+
+        # Do this after packing the scrolled list box, so that the
+        # window does not resize as soon as it appears (because
+        # alignlabels has to do an update_idletasks).
+        Pmw.alignlabels((hmode, vmode))
+
+        # Add some more entries to the listbox.
+        items = ('Andamooka', 'Coober Pedy', 'Innamincka', 'Oodnadatta')
+        self.box.setlist(items)
+        self.box.insert(2, 'Wagga Wagga', 'Perth', 'London')
+        self.box.insert('end', 'Darwin', 'Auckland', 'New York')
+        index = list(self.box.get(0, 'end')).index('London')
+        self.box.delete(index)
+        self.box.delete(7, 8)
+        self.box.insert('end', 'Bulli', 'Alice Springs', 'Woy Woy')
+        self.box.insert('end', 'Wallumburrawang', 'Willandra Billabong')
+
+    def sethscrollmode(self, tag):
+        self.box.configure(hscrollmode = tag)
+
+    def setvscrollmode(self, tag):
+        self.box.configure(vscrollmode = tag)
+
+    def selectionCommand(self):
+        sels = self.box.getcurselection()
+        if len(sels) == 0:
+            print('No selection')
+        else:
+            print(('Selection:', sels[0]))
+
+    def defCmd(self):
+        sels = self.box.getcurselection()
+        if len(sels) == 0:
+            print('No selection for double click')
+        else:
+            print(('Double click:', sels[0]))
+
+    def showYView(self):
+        print((self.box.yview()))
+
+    def pageDown(self):
+        self.box.yview('scroll', 1, 'page')
+
+    def centerPage(self):
+        top, bottom = self.box.yview()
+        size = bottom - top
+        middle = 0.5 - size / 2
+        self.box.yview('moveto', middle)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 30 August 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

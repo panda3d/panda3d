@@ -1,0 +1,392 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ScrolledText reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ScrolledText</h1>
+    
+<center><IMG SRC=ScrolledText.gif ALT="" WIDTH=409 HEIGHT=310></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ScrolledText() - 
+    text widget with optional scrollbars
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A scrolled text consists of a standard text widget with optional
+    scrollbars which can be used to scroll the text.  The
+    scrollbars can be <em>dynamic</em>, which means that a scrollbar will
+    only be displayed if it is necessary.  That is, if the text widget
+    does not contain enough text (either horizontally or vertically),
+    the scrollbar will be automatically hidden.  If it is displayed,
+    the horizontal scrollbar is under the text widget.  Similarly, if
+    it is displayed, the vertical scrollbar is to the right of the
+    text widget.</p>
+
+<p>    Row and column headers may also be displayed, which scroll in sync
+    with the text widget and may be useful when displaying tabular
+    data.  To assist in ensuring that columns line up when using a
+    column header, a fixed width font should be used.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+Initialisation option. If true, the <strong>borderframe</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.columnheader></a>
+<dl><dt> <strong>columnheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>columnheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.hscrollmode></a>
+<dl><dt> <strong>hscrollmode
+</strong></dt><dd>
+The horizontal scroll mode.  If <strong>'none'</strong>, the horizontal scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.rowcolumnheader></a>
+<dl><dt> <strong>rowcolumnheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>rowcolumnheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.rowheader></a>
+<dl><dt> <strong>rowheader
+</strong></dt><dd>
+Initialisation option. If true, the <strong>rowheader</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.scrollmargin></a>
+<dl><dt> <strong>scrollmargin
+</strong></dt><dd>
+Initialisation option. The distance between the scrollbars and the text widget. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.usehullsize></a>
+<dl><dt> <strong>usehullsize
+</strong></dt><dd>
+Initialisation option. If true, the size of the megawidget is determined solely by the
+    width and height options of the <strong>hull</strong> component.</p>
+<p>    Otherwise, the size of the megawidget is determined by the width
+    and height of the <strong>text</strong> component, along with the size and/or
+    existence of the other components, such as the label, the
+    scrollbars and the scrollmargin option.  All these affect the
+    overall size of the megawidget. The default is <strong>0</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vscrollmode></a>
+<dl><dt> <strong>vscrollmode
+</strong></dt><dd>
+The vertical scroll mode.  If <strong>'none'</strong>, the vertical scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+A frame widget which snuggly fits around the text widget, to give
+    the appearance of a text border.  It is created with a border so
+    that the text widget, which is created without a border, looks
+    like it has a border. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.columnheader></a>
+<dl><dt> <strong>columnheader
+</strong></dt><dd>
+A text widget with a default height of 1 displayed above the main
+    text widget and which scrolls horizontally in sync with the
+    horizontal scrolling of the main text widget. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.horizscrollbar></a>
+<dl><dt> <strong>horizscrollbar
+</strong></dt><dd>
+The horizontal scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.rowcolumnheader></a>
+<dl><dt> <strong>rowcolumnheader
+</strong></dt><dd>
+A text widget displayed to the top left of the main text widget,
+    above the row header and to the left of the column header if they
+    exist.  The widget is not scrolled  automatically. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.rowheader></a>
+<dl><dt> <strong>rowheader
+</strong></dt><dd>
+A text widget displayed to the left of the main text widget and
+    which scrolls vertically in sync with the vertical scrolling of
+    the main text widget. By default, this component is a Tkinter.Text. Its component group is <strong>Header</strong>.</p>
+
+
+</dd></dl>
+<a name=component.text></a>
+<dl><dt> <strong>text
+</strong></dt><dd>
+The text widget which is scrolled by the scrollbars.  If the
+    <strong>borderframe</strong> option is true, this is created with a borderwidth
+    of <strong>0</strong> to overcome a known problem with text widgets:  if a widget
+    inside a text widget extends across one of the edges of the text
+    widget, then the widget obscures the border of the text widget.
+    Therefore, if the text widget has no border, then this overlapping
+    does not occur. By default, this component is a Tkinter.Text.</p>
+
+
+</dd></dl>
+<a name=component.vertscrollbar></a>
+<dl><dt> <strong>vertscrollbar
+</strong></dt><dd>
+The vertical scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Text</strong> class
+are forwarded by this megawidget to the
+<strong>text</strong> component.
+<p></p>
+<a name=method.appendtext></a>
+<dl><dt> <strong>appendtext</strong>(<em>text</em>)</dt><dd>
+Add <em>text</em> to the end of the <strong>text</strong> component.  Scroll to the
+    bottom of the text, but only if it was already visible before the
+    new text was added.</p>
+
+
+</dd></dl>
+<a name=method.bbox></a>
+<dl><dt> <strong>bbox</strong>(<em>index</em>)</dt><dd>
+This method is explicitly forwarded to the <strong>text</strong> component's
+    <code>bbox()</code> method.  Without this explicit forwarding, the <code>bbox()</code>
+    method (aliased to <code>grid_bbox()</code>) of the <strong>hull</strong> would be invoked,
+    which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+<a name=method.clear></a>
+<dl><dt> <strong>clear</strong>()</dt><dd>
+Delete all text from the <strong>text</strong> component.</p>
+
+
+</dd></dl>
+<a name=method.exportfile></a>
+<dl><dt> <strong>exportfile</strong>(<em>fileName</em>)</dt><dd>
+Write the contents of the <strong>text</strong> component to the file <em>fileName</em>.</p>
+
+
+</dd></dl>
+<a name=method.get></a>
+<dl><dt> <strong>get</strong>(<em>first</em> = <strong>None</strong>,<em>last</em> = <strong>None</strong>)</dt><dd>
+This is the same as the <code>get()</code> method of the <strong>text</strong> component,
+    except that if <em>first</em> is <strong>None</strong> the entire
+    contents of the text widget are returned.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+Return the entire contents of the text widget.</p>
+
+
+</dd></dl>
+<a name=method.importfile></a>
+<dl><dt> <strong>importfile</strong>(<em>fileName</em>,<em>where</em> = <strong>'end'</strong>)</dt><dd>
+Read the contents of the file <em>fileName</em> and insert into the
+    <strong>text</strong> component at the position given by <em>where</em>.</p>
+
+
+</dd></dl>
+<a name=method.settext></a>
+<dl><dt> <strong>settext</strong>(<em>text</em>)</dt><dd>
+Same as <code>setvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>text</em>)</dt><dd>
+Replace the entire contents of the <strong>text</strong> component with <em>text</em>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+
+        # Create the ScrolledText with headers.
+        fixedFont = Pmw.logicalfont('Fixed')
+        self.st = Pmw.ScrolledText(parent,
+                # borderframe = 1,
+                labelpos = 'n',
+                label_text='ScrolledText with headers',
+                columnheader = 1,
+                rowheader = 1,
+                rowcolumnheader = 1,
+                usehullsize = 1,
+                hull_width = 400,
+                hull_height = 300,
+                text_wrap='none',
+                text_font = fixedFont,
+                Header_font = fixedFont,
+                Header_foreground = 'blue',
+                rowheader_width = 3,
+                rowcolumnheader_width = 3,
+                text_padx = 4,
+                text_pady = 4,
+                Header_padx = 4,
+                rowheader_pady = 4,
+        )
+
+        self.st.pack(padx = 5, pady = 5, fill = 'both', expand = 1)
+
+        funcs = 'atan cos cosh exp log log10 sin sinh sqrt tan tanh'
+        funcs = funcs.split()
+
+        # Create the header for the row headers
+        self.st.component('rowcolumnheader').insert('end', 'x')
+
+        # Create the column headers
+        headerLine = ''
+        for column in range(len(funcs)):
+            headerLine = headerLine + ('%-7s   ' % (funcs[column],))
+        headerLine = headerLine[:-3]
+        self.st.component('columnheader').insert('0.0', headerLine)
+
+        self.st.tag_configure('yellow', background = 'yellow')
+
+        # Create the data rows and the row headers
+        numRows = 50
+        tagList = []
+        for row in range(1, numRows):
+            dataLine = ''
+            x = row / 5.0
+            for column in range(len(funcs)):
+                value = eval('math.' + funcs[column] + '(' + str(x) + ')')
+                data = str(value)[:7]
+                if value &lt; 0:
+                    tag1 = '%d.%d' % (row, len(dataLine))
+                    tag2 = '%d.%d' % (row, len(dataLine) + len(data))
+                    tagList.append(tag1)
+                    tagList.append(tag2)
+                data = '%-7s' % (data,)
+                dataLine = dataLine + data + '   '
+            dataLine = dataLine[:-3]
+            header = '%.1f' % (x,)
+            if row &lt; numRows - 1:
+                dataLine = dataLine + '\n'
+                header = header + '\n'
+            self.st.insert('end', dataLine)
+            self.st.component('rowheader').insert('end', header)
+        self.st.tag_add(*('yellow',) + tuple(tagList))
+
+        # Prevent users' modifying text and headers
+        self.st.configure(
+            text_state = 'disabled',
+            Header_state = 'disabled',
+        )
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 30 August 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

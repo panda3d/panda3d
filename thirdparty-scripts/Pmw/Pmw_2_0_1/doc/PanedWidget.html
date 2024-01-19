@@ -1,0 +1,345 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.PanedWidget reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.PanedWidget</h1>
+    
+<center><IMG SRC=PanedWidget.gif ALT="" WIDTH=400 HEIGHT=128></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.PanedWidget() - 
+    frame subdivided into several resizable panes
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A paned widget is a container megawidget which manages a number of
+    resizable frames, known as panes.  Each pane may act as the container for
+    other widgets.  The user may interactively resize the panes by
+    dragging a small rectangle (the handle) or the line between the
+    panes (the separator).  The panes may be arranged horizontally or
+    vertically.  Each pane may have maximum and minimum limits of its
+    size.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+Specifies a function to be called whenever the size of any of the
+    panes changes.  The function is called with a single argument,
+    being a list of the sizes of the panes, in order.  For <strong>vertical</strong>
+    orientation, the size is the height of the panes.  For
+    <strong>horizontal</strong> orientation, the size is the width of the panes. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.handlesize></a>
+<dl><dt> <strong>handlesize
+</strong></dt><dd>
+Initialisation option. Specifies the size in pixels of the square handle which appears on
+    the lines separating the panes. The default is <strong>8</strong>.</p>
+
+
+</dd></dl>
+<a name=option.orient></a>
+<dl><dt> <strong>orient
+</strong></dt><dd>
+Initialisation option. Specifies the orientation of the paned widget.  This may be
+    <strong>'horizontal'</strong> or <strong>'vertical'</strong>.  If <strong>'vertical'</strong>, the panes are
+    stacked above and below each other, otherwise the panes are laid
+    out side by side. The default is <strong>'vertical'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.separatorrelief></a>
+<dl><dt> <strong>separatorrelief
+</strong></dt><dd>
+Initialisation option. Specifies the relief of the lines separating the panes. The default is <strong>'sunken'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.separatorthickness></a>
+<dl><dt> <strong>separatorthickness
+</strong></dt><dd>
+Initialisation option. Specifies the thickness of the lines separating the panes. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Pane options</h3></dt><dd>
+<p>
+        Each pane has the following options.  These may be set when
+        creating or configuring a pane.  The value of each option may
+        be an integer, which specifies a pane size in pixels, or a
+        real number between 0.0 and 1.0, which specifies a pane size
+        proportional to the size of the entire paned widget.</p>
+
+<dl><dt><strong>size</strong></dt><dd>Specifies the initial size of the pane.  The default is <strong>0</strong>.<p></p>
+
+</dd>
+<dt><strong>min</strong></dt><dd>Specifies the minimum size of the pane.  The default is <strong>0</strong>.<p></p>
+
+</dd>
+<dt><strong>max</strong></dt><dd>Specifies the maximum size of the pane.  The default is a
+            very large number.<p></p>
+<p>        </p>
+
+
+</dd></dl>
+
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Dynamic components</h3></dt><dd>
+<p>
+        Frame, separator and handle components are created dynamically
+        by the <code>add()</code> and <code>insert()</code> methods.  The components are of type
+        Tkinter.Frame and are created with component groups of
+        <strong>Frame</strong>, <strong>Separator</strong> and <strong>Handle</strong> respectively.</p>
+<p>        </p>
+
+
+
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.add></a>
+<dl><dt> <strong>add</strong>(<em>name</em>,**<em>kw</em>)</dt><dd>
+Add a pane to the end of the paned widget as a component named
+    <em>name</em>.  This is equivalent to calling <code>insert()</code> with <em>before</em>
+    set to the current number of panes.  The method returns the <em>name</em>
+    component widget.</p>
+
+
+</dd></dl>
+<a name=method.configurepane></a>
+<dl><dt> <strong>configurepane</strong>(<em>name</em>,**<em>kw</em>)</dt><dd>
+Configure the pane specified by <em>name</em>, where <em>name</em> is either an
+    integer, specifying the index of the pane, or a string, specifying
+    the name of the pane.  The keyword arguments specify the new
+    values for the options for the pane.  These options are described
+    in the <strong>Pane options</strong> section.</p>
+
+
+</dd></dl>
+<a name=method.delete></a>
+<dl><dt> <strong>delete</strong>(<em>name</em>)</dt><dd>
+Delete the pane specified by <em>name</em>, where <em>name</em> is either an
+    integer, specifying the index of the pane, or a string, specifying
+    the name of the pane.</p>
+<p>    If the pane deleted was not the only pane in the paned widget,
+    also delete the separator and handle components named
+    <strong>separator</strong>-<em>n</em> and <strong>handle</strong>-<em>n</em>, where <em>n</em> is the number of
+    panes remaining.</p>
+
+
+
+</dd></dl>
+<a name=method.insert></a>
+<dl><dt> <strong>insert</strong>(<em>name</em>,<em>before</em> = <strong>0</strong>,**<em>kw</em>)</dt><dd>
+Add a pane to the paned widget as a component named <em>name</em>.  The
+    pane is added just before the pane specified by <em>before</em>, where
+    <em>before</em> may be either an integer, specifying the index of the
+    pane, or a string, specifying the name of the pane.  The keyword
+    arguments specify the initial values for the options for the new
+    pane.  These options are described in the <strong>Pane options</strong> section.
+    To add a pane to the end of the paned widget, use <code>add()</code>.</p>
+<p>    The new pane is created as a Tkinter.Frame component named <em>name</em>.
+    If this is not the only pane, a separator and handle are also
+    created as components named <strong>separator</strong>-<em>n</em> and <strong>handle</strong>-<em>n</em>,
+    where <em>n</em> is one less than the number of panes.  The method
+    returns the <em>name</em> component widget.</p>
+
+
+
+</dd></dl>
+<a name=method.move></a>
+<dl><dt> <strong>move</strong>(<em>name</em>,<em>newPos</em>,<em>newPosOffset</em> = <strong>0</strong>)</dt><dd>
+Move the pane specified by <em>name</em> to the new position specified by
+    <em>newPos</em>.  The first two arguments may be either an integer,
+    specifying the index of the pane, or a string, specifying the name
+    of the pane.  If <em>newPosOffset</em> is specified, it is added to the
+    <em>newPos</em> index.  For example, to move a horizontal pane one pane
+    to the left, specify the name or index of the pane for both <em>name</em>
+    and <em>newPos</em> and specify <strong>-1</strong> for <em>newPosOffset</em>.</p>
+
+
+</dd></dl>
+<a name=method.pane></a>
+<dl><dt> <strong>pane</strong>(<em>name</em>)</dt><dd>
+Return the Tkinter.Frame pane widget for the pane specified by
+    <em>name</em>, where <em>name</em> is either an integer, specifying the index of
+    the pane, or a string, specifying the name of the pane.</p>
+
+
+</dd></dl>
+<a name=method.panes></a>
+<dl><dt> <strong>panes</strong>()</dt><dd>
+Return a list of the names of the panes, in display order.</p>
+
+
+</dd></dl>
+<a name=method.setnaturalsize></a>
+<dl><dt> <strong>setnaturalsize</strong>()</dt><dd>
+If oriented horizontally, set the width of the paned widget to the
+    sum of the requested widths of all panes and set the height to the
+    maximum requested height of all panes.</p>
+<p>    If oriented vertically, set the height of the paned widget to the
+    sum of the requested heights of all panes and set the width to the
+    maximum requested width of all panes.</p>
+
+
+
+</dd></dl>
+<a name=method.updatelayout></a>
+<dl><dt> <strong>updatelayout</strong>()</dt><dd>
+Recalculate size and position of panes.  This method must be
+    called after adding or deleting one or more panes.  However it
+    does not need to be called when panes are first added to a newly
+    created paned widget, before it has been displayed.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+
+        # Create a main PanedWidget with a few panes.
+        self.pw = Pmw.PanedWidget(parent,
+                orient='vertical',
+                hull_borderwidth = 1,
+                hull_relief = 'sunken',
+                hull_width=300,
+                hull_height=400)
+        for self.numPanes in range(4):
+            if self.numPanes == 1:
+                name = 'Fixed size'
+                pane = self.pw.add(name, min = .1, max = .1)
+            else:
+                name = 'Pane ' + str(self.numPanes)
+                pane = self.pw.add(name, min = .1, size = .25)
+            label = tkinter.Label(pane, text = name)
+            label.pack(side = 'left', expand = 1)
+            button = tkinter.Button(pane, text = 'Delete',
+                    command = lambda s=self, n=name: s.deletePane(n))
+            button.pack(side = 'left', expand = 1)
+            # TODO: add buttons to invoke self.moveOneUp and self.moveOneUp.
+
+        self.pw.pack(expand = 1, fill='both')
+
+        buttonBox = Pmw.ButtonBox(parent)
+        buttonBox.pack(fill = 'x')
+        buttonBox.add('Add pane', command = self.addPane)
+        buttonBox.add('Move pane', command = self.move)
+        self.moveSrc = 0
+        self.moveNewPos = 1
+        self.moveBack = 0
+
+    def move(self):
+        numPanes = len(self.pw.panes())
+        if numPanes == 0:
+            print('No panes to move!')
+            return
+
+        if self.moveSrc &gt;= numPanes:
+            self.moveSrc = numPanes - 1
+        if self.moveNewPos &gt;= numPanes:
+            self.moveNewPos = numPanes - 1
+        print(('Moving pane', self.moveSrc, 'to new position', self.moveNewPos))
+        self.pw.move(self.moveSrc, self.moveNewPos)
+
+        self.moveSrc, self.moveNewPos = self.moveNewPos, self.moveSrc
+        if self.moveBack:
+            if self.moveNewPos == numPanes - 1:
+                self.moveNewPos = 0
+                if self.moveSrc == numPanes - 1:
+                    self.moveSrc = 0
+                else:
+                    self.moveSrc = self.moveSrc + 1
+            else:
+                self.moveNewPos = self.moveNewPos + 1
+        self.moveBack = not self.moveBack
+
+    def addPane(self):
+        self.numPanes = self.numPanes + 1
+        name = 'Pane ' + str(self.numPanes)
+        print(('Adding', name))
+        pane = self.pw.add(name, min = .1, size = .25)
+        label = tkinter.Label(pane, text = name)
+        label.pack(side = 'left', expand = 1)
+        button = tkinter.Button(pane, text = 'Delete',
+                command = lambda s=self, n=name: s.deletePane(n))
+        button.pack(side = 'left', expand = 1)
+        self.pw.updatelayout()
+
+    def deletePane(self, name):
+        print(('Deleting', name))
+        self.pw.delete(name)
+        self.pw.updatelayout()
+
+    def moveOneUp(self, name):
+        self.pw.move(name, name, -1)
+
+    def moveOneDown(self, name):
+        self.pw.move(name, name, 1)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 14 April 2001
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

@@ -1,0 +1,335 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.ScrolledCanvas reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.ScrolledCanvas</h1>
+    
+<center><IMG SRC=ScrolledCanvas.gif ALT="" WIDTH=382 HEIGHT=240></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.ScrolledCanvas() - 
+    canvas with optional scrollbars
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A scrolled canvas consists of a standard canvas widget with optional
+    scrollbars which can be used to scroll the canvas.  The scrollbars
+    can be <em>dynamic</em>, which means that a scrollbar will only be
+    displayed if it is necessary, that is, if the scrollregion of the
+    canvas is larger than the canvas.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+Initialisation option. If true, the <strong>borderframe</strong> component will be created. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.canvasmargin></a>
+<dl><dt> <strong>canvasmargin
+</strong></dt><dd>
+Initialisation option. The margin around the items in the canvas.  Used by the
+    <strong>resizescrollregion()</strong> method. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.hscrollmode></a>
+<dl><dt> <strong>hscrollmode
+</strong></dt><dd>
+The horizontal scroll mode.  If <strong>'none'</strong>, the horizontal scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.scrollmargin></a>
+<dl><dt> <strong>scrollmargin
+</strong></dt><dd>
+Initialisation option. The distance between the scrollbars and the enclosing canvas
+    widget. The default is <strong>2</strong>.</p>
+
+
+</dd></dl>
+<a name=option.usehullsize></a>
+<dl><dt> <strong>usehullsize
+</strong></dt><dd>
+Initialisation option. If true, the size of the megawidget is determined solely by the
+    width and height options of the <strong>hull</strong> component.</p>
+<p>    Otherwise, the size of the megawidget is determined by the width
+    and height of the <strong>canvas</strong> component, along with the size and/or
+    existence of the other components, such as the label, the
+    scrollbars and the scrollmargin option.  All these affect the
+    overall size of the megawidget. The default is <strong>0</strong>.</p>
+
+
+
+</dd></dl>
+<a name=option.vscrollmode></a>
+<dl><dt> <strong>vscrollmode
+</strong></dt><dd>
+The vertical scroll mode.  If <strong>'none'</strong>, the vertical scrollbar
+    will never be displayed.  If <strong>'static'</strong>, the scrollbar will always
+    be displayed.  If <strong>'dynamic'</strong>, the scrollbar will be displayed
+    only if necessary. The default is <strong>'dynamic'</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.borderframe></a>
+<dl><dt> <strong>borderframe
+</strong></dt><dd>
+A frame widget which snuggly fits around the canvas, to give the
+    appearance of a canvas border.  It is created with a border so
+    that the canvas, which is created without a border, looks like it
+    has a border. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.canvas></a>
+<dl><dt> <strong>canvas
+</strong></dt><dd>
+The canvas widget which is scrolled by the scrollbars.  If the
+    <strong>borderframe</strong> option is true, this is created with a borderwidth
+    of <strong>0</strong> to overcome a known problem with canvas widgets:  if a
+    widget inside a canvas extends across one of the edges of the
+    canvas, then the widget obscures the border of the canvas.
+    Therefore, if the canvas has no border, then this overlapping does
+    not occur. By default, this component is a Tkinter.Canvas.</p>
+
+
+</dd></dl>
+<a name=component.horizscrollbar></a>
+<dl><dt> <strong>horizscrollbar
+</strong></dt><dd>
+The horizontal scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.vertscrollbar></a>
+<dl><dt> <strong>vertscrollbar
+</strong></dt><dd>
+The vertical scrollbar. By default, this component is a Tkinter.Scrollbar. Its component group is <strong>Scrollbar</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Canvas</strong> class
+are forwarded by this megawidget to the
+<strong>canvas</strong> component.
+<p></p>
+<a name=method.bbox></a>
+<dl><dt> <strong>bbox</strong>(*<em>args</em>)</dt><dd>
+This method is explicitly forwarded to the <strong>canvas</strong> component's
+    <code>bbox()</code> method.  Without this explicit forwarding, the <code>bbox()</code>
+    method (aliased to <code>grid_bbox()</code>) of the <strong>hull</strong> would be invoked,
+    which is probably not what the programmer intended.</p>
+
+
+</dd></dl>
+<a name=method.interior></a>
+<dl><dt> <strong>interior</strong>()</dt><dd>
+Return the canvas widget within which the programmer should create
+    graphical items and child widgets.  This is the same as
+    <code>component('canvas')</code>.</p>
+
+
+</dd></dl>
+<a name=method.resizescrollregion></a>
+<dl><dt> <strong>resizescrollregion</strong>()</dt><dd>
+Resize the scrollregion of the <strong>canvas</strong> component to be the
+    bounding box covering all the items in the canvas plus a margin on
+    all sides, as specified by the <strong>canvasmargin</strong> option.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        # Create the ScrolledCanvas.
+        self.sc = Pmw.ScrolledCanvas(parent,
+                borderframe = 1,
+                labelpos = 'n',
+                label_text = 'ScrolledCanvas',
+                usehullsize = 1,
+                hull_width = 400,
+                hull_height = 300,
+        )
+
+        # Create a group widget to contain the scrollmode options.
+        w = Pmw.Group(parent, tag_text='Scroll mode')
+        w.pack(side = 'bottom', padx = 5, pady = 5)
+
+        hmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Horizontal:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.sethscrollmode,
+                menubutton_width = 8,
+        )
+        hmode.pack(side = 'left', padx = 5, pady = 5)
+        hmode.invoke('dynamic')
+
+        vmode = Pmw.OptionMenu(w.interior(),
+                labelpos = 'w',
+                label_text = 'Vertical:',
+                items = ['none', 'static', 'dynamic'],
+                command = self.setvscrollmode,
+                menubutton_width = 8,
+        )
+        vmode.pack(side = 'left', padx = 5, pady = 5)
+        vmode.invoke('dynamic')
+
+        buttonBox = Pmw.ButtonBox(parent)
+        buttonBox.pack(side = 'bottom')
+        buttonBox.add('yview', text = 'Show\nyview', command = self.showYView)
+        buttonBox.add('scroll', text = 'Page\ndown', command = self.pageDown)
+        buttonBox.add('center', text = 'Center', command = self.centerPage)
+
+        # Pack this last so that the buttons do not get shrunk when
+        # the window is resized.
+        self.sc.pack(padx = 5, pady = 5, fill = 'both', expand = 1)
+
+        self.sc.component('canvas').bind('&lt;1&gt;', self.addcircle)
+
+        testEntry = tkinter.Entry(parent)
+        self.sc.create_line(20, 20, 100, 100)
+        self.sc.create_oval(100, 100, 200, 200, fill = 'green')
+        self.sc.create_text(100, 20, anchor = 'nw',
+                text = 'Click in the canvas\nto draw ovals',
+                font = testEntry.cget('font'))
+        button = tkinter.Button(self.sc.interior(),
+                text = 'Hello,\nWorld!\nThis\nis\na\nbutton.')
+        self.sc.create_window(200, 200,
+                anchor='nw',
+                window = button)
+
+        # Set the scroll region of the canvas to include all the items
+        # just created.
+        self.sc.resizescrollregion()
+
+        self.colours = ('red', 'green', 'blue', 'yellow', 'cyan', 'magenta',
+                'black', 'white')
+        self.oval_count = 0
+        self.rand = 12345
+
+    def sethscrollmode(self, tag):
+        self.sc.configure(hscrollmode = tag)
+
+    def setvscrollmode(self, tag):
+        self.sc.configure(vscrollmode = tag)
+
+    def addcircle(self, event):
+        x = self.sc.canvasx(event.x)
+        y = self.sc.canvasy(event.y)
+        width = 10 + self.random() % 100
+        height = 10 + self.random() % 100
+        self.sc.create_oval(
+            x - width, y - height, x + width, y + height,
+            fill = self.colours[self.oval_count])
+        self.oval_count = (self.oval_count + 1) % len(self.colours)
+        self.sc.resizescrollregion()
+
+    # Simple random number generator.
+    def random(self):
+        self.rand = (self.rand * 125) % 2796203
+        return self.rand
+
+    def showYView(self):
+        print((self.sc.yview()))
+
+    def pageDown(self):
+        self.sc.yview('scroll', 1, 'page')
+
+    def centerPage(self):
+        top, bottom = self.sc.yview()
+        size = bottom - top
+        middle = 0.5 - size / 2
+        self.sc.yview('moveto', middle)
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 20 September 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

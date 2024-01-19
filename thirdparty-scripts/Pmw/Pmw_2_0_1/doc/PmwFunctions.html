@@ -1,0 +1,543 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw functions reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw functions</h1>
+    
+<dl>
+<dt> <strong>Pmw.alignlabels</strong>(<em>widgets</em>,<em>sticky</em> = <strong>None</strong>)</dt><dd>
+<p>
+    Adjust the size of the labels of all the <em>widgets</em> to be equal, so
+    that the body of each widget lines up vertically.  This assumes
+    that each widget is a megawidget with a <strong>label</strong> component in
+    column 0 (ie, the <strong>labelpos</strong> option was set to <strong>'w'</strong>, <strong>'wn'</strong> or
+    <strong>'ws'</strong>).  If <em>sticky</em> is set to a combination of <strong>'n'</strong>, <strong>'s'</strong>,
+    <strong>'e'</strong> and <strong>'w'</strong>, the label will be positioned within its cell
+    accordingly.  For example to make labels right justified, set
+    <em>sticky</em> to <strong>'e'</strong>, <strong>'ne'</strong> or <strong>'se'</strong>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.busycallback</strong>(<em>command</em>,<em>updateFunction</em> = <strong>None</strong>)</dt><dd>
+<p>
+    Create a wrapper function which displays a busy cursor while
+    executing <em>command</em> and return the wrapper.  When the wrapper
+    function is called, it first calls <code>Pmw.showbusycursor()</code>, then
+    the <em>command</em> (passing any arguments to it), then <code>Pmw.hidebusycursor()</code>.
+    The return value of <em>command</em> is returned from the wrapper.</p>
+
+<p>    If <em>updateFunction</em> is specified, it is called just before the
+    call to <code>Pmw.hidebusycursor()</code>.  This is intended to be the
+    Tkinter <code>update()</code> method, in which case it will clear any events
+    that may have occurred while <em>command</em> was executing.  An example
+    of this usage is in the <code>ShowBusy</code> demonstration:  run the
+    demonstration, click on the entry widget then click on the button
+    and type some characters while the busy cursor is displayed.  No
+    characters should appear in the entry widget.</p>
+
+<p>    Note that the Tkinter <code>update()</code> method should only be called when
+    it is known that it can be safely called.  One case where a
+    problem has been found is when a filehandler has been created (on
+    a non-blocking Oracle database connection), but the filehandler
+    does not read from the connection.  The connection is read (by a
+    call to the Oracle fetch function <em>ofen</em>) in a loop which also
+    contains a call to <code>_tkinter.dooneevent()</code>.  If <code>update()</code> is
+    called from <code>dooneevent()</code> and there is data to be read on the
+    connection, then the filehandler will be called continuously, thus
+    hanging the application.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.clearbusycursor</strong>()</dt><dd>
+<p>
+    Unconditionally remove the event block and busy cursor from all
+    windows.  This undoes all outstanding calls to
+    <code>Pmw.showbusycursor()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.displayerror</strong>(<em>text</em>)</dt><dd>
+<p>
+    This is a general purpose method for displaying background errors
+    to the user.  The errors would normally be programming errors and
+    may be caused by errors in Tk callbacks or functions called by other
+    asynchronous events.</p>
+
+<p>    If the global error report file (set by calling
+    <code>Pmw.reporterrorstofile()</code>) is <strong>None</strong>, the error message `text` is
+    written to standard error and also shown in a text window.  If
+    <code>displayerror</code> is called while previous error messages are being
+    displayed, the window is raised and the new error is queued.  The
+    queued errors may be viewed by the user or ignored by dismissing
+    the window.</p>
+
+<p>    If the global error report file is not <strong>None</strong>, `text` is written
+    to the file.  <em>file</em> may be any object with a <code>write()</code> method,
+    such as <code>sys.stderr</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.drawarrow</strong>(<em>canvas</em>,<em>color</em>,<em>direction</em>,<em>tag</em>,<em>baseOffset</em> = <strong>0.25</strong>,<em>edgeOffset</em> = <strong>0.15</strong>)</dt><dd>
+<p>
+    Draw a triangle in the Tkinter.Canvas <em>canvas</em> in the given
+    <em>color</em>.  The value of <em>direction</em> may be <strong>'up'</strong>, <strong>'down'</strong>,
+    <strong>'left'</strong> or <strong>'right'</strong> and specifies which direction the arrow
+    should point.  The values of <em>baseOffset</em> and <em>edgeOffset</em> specify
+    how far from the edges of the canvas the points of the triangles
+    are as a fraction of the size of the canvas.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.forwardmethods</strong>(<em>fromClass</em>,<em>toClass</em>,<em>toPart</em>,<em>exclude</em> = <strong>()</strong>)</dt><dd>
+<p>
+    Forward methods from one class to another.</p>
+
+<p>    This function adds methods to the class <em>fromClass</em>.  The names of
+    the methods added are the names of the methods of the class
+    <em>toClass</em> (and its base classes) except those which are already
+    defined by <em>fromClass</em> or are found in the <em>exclude</em> list.
+    Special methods with one or more leading or trailing underscores
+    are also excluded.</p>
+
+<p>    When one of the added methods is called, the method of the same
+    name is called on an instance defined by <em>toPart</em> and the return
+    value passed back.  If <em>toPart</em> is a string, then it specifies the
+    name of an attribute (<em>not</em> a component) of the <em>fromClass</em>
+    object.  The class of this attribute should be <em>toClass</em>.  If
+    <em>toPart</em> is not a string, it must be a function taking a
+    <em>fromClass</em> object and returning a <em>toClass</em> object.</p>
+
+<p>    This function must be called outside of and after the definition
+    of <em>fromClass</em>.</p>
+
+<p>    For example:</p>
+
+<dl><dd><pre>class MyClass:
+    def __init__(self):
+        ...
+        self.__target = TargetClass()
+        ...
+
+    def foo(self):
+        pass
+
+    def findtarget(self):
+        return self.__target
+
+Pmw.forwardmethods(MyClass, TargetClass, '__target',
+    ['dangerous1', 'dangerous2'])
+
+# ...or...
+
+Pmw.forwardmethods(MyClass, TargetClass,
+    MyClass.findtarget, ['dangerous1', 'dangerous2'])</pre></dd></dl>
+
+<p>    In both cases, all <code>TargetClass</code> methods will be forwarded from
+    <code>MyClass</code> except for <code>dangerous1</code>, <code>dangerous2</code>, special methods like
+    <code>__str__</code>, and pre-existing methods like <code>foo</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.grabstacktopwindow</strong>()</dt><dd>
+<p>
+    Return the window at the top of the grab stack (the window
+    currently with the grab) or <strong>None</strong> if the grab stack is empty (no
+    window has the grab).  See also <code>pushgrab()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.hidebusycursor</strong>(<em>forceFocusRestore</em> = <strong>0</strong>)</dt><dd>
+<p>
+    Undo one call to <code>Pmw.showbusycursor()</code>.  If there are no
+    outstanding calls to <code>Pmw.showbusycursor()</code>, remove the event
+    block and busy cursor.</p>
+
+<p>    If the focus window has not been changed since the corresponding
+    call to <code>Pmw.showbusycursor()</code>, or if <em>forceFocusRestore</em> is true,
+    then the focus is restored to that saved by <code>Pmw.showbusycursor()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.initialise</strong>(<em>root</em> = <strong>None</strong>,<em>size</em> = <strong>None</strong>,<em>fontScheme</em> = <strong>None</strong>,<em>useTkOptionDb</em> = <strong>0</strong>,<em>noBltBusy</em> = <strong>0</strong>,<em>disableKeyboardWhileBusy</em> = <strong>None</strong>)</dt><dd>
+<p>
+    Initialise Pmw.  This performs several functions:</p>
+<ul><li><p>Set up a trap in the Tkinter Toplevel constructor so that a
+          list of Toplevels can be maintained.  A list of all Toplevel
+          windows needs to be kept so that <code>Pmw.showbusycursor()</code> can
+          create busy cursors for them.</p>
+
+</li>
+<li><p>Set up a trap in the Tkinter Toplevel and Frame destructors
+          so that Pmw is notified when these widgets are destroyed.
+          This allows Pmw to destroy megawidgets when their hull
+          widget is destroyed and to prune the list of Toplevels.</p>
+
+</li>
+<li><p>Modify Tkinter's CallWrapper class to improve the display of
+          errors which occur in callbacks.  If an error occurs, the
+          new CallWrapper class calls <code>Pmw.clearbusycursor()</code> to
+          remove any outstanding busy cursors and calls
+          <code>Pmw.displayerror()</code> to display the error.</p>
+
+</li>
+<li><p>Using the window given by <em>root</em>, set the <strong>WM_DELETE_WINDOW</strong>
+          root window protocol to destroy the root window.  This means
+          that the root window is destroyed if the window manager
+          deletes it.  This is only done if the protocol has not been
+          set before the call to <code>Pmw.initialise()</code>.  This protocol is
+          required if there is a modal dialog displayed and the window
+          manager deletes the root window.  Otherwise the application
+          will not exit, even though there are no windows.</p>
+
+</li>
+<li><p>Set the base font size for the application to <em>size</em>.  This
+          is used by <code>Pmw.logicalfont()</code> as the default point size for
+          fonts.  If this is not given, the default is <strong>14</strong>, except
+          under NT where it is <strong>16</strong>.  These are reasonable default
+          sizes for most screens, but for unusually high or low screen
+          resolutions, an appropriate size should be supplied.  Note
+          that Tk's definition of <em>point size</em>, is somewhat
+          idiosyncratic.</p>
+
+</li>
+<li><p>Set the Tk option database for <em>root</em> according to
+          <em>fontScheme</em>.  This changes the default fonts set by Tk.
+          <em>fontScheme</em> may be one of</p>
+<dl><dt><strong>None</strong> </dt><dd>Do not change the Tk defaults.<p></p>
+
+</dd>
+<dt><strong>'pmw1'</strong> </dt><dd>If running under posix (Unix), set the default font to
+                be Helvetica with bold italic menus, italic scales and
+                a special balloon font 6 points smaller than the base
+                font size and with the <strong>'pixel'</strong> field set to <strong>'12'</strong>.
+                For other operating systems (such as NT or Macintosh),
+                simply set the default font to be Helvetica.  All
+                fonts are as returned by calls to <code>Pmw.logicalfont()</code>.<p></p>
+
+</dd>
+<dt><strong>'pmw2'</strong> </dt><dd>This is the same as <strong>'pmw1'</strong> except that under posix
+                the balloon font is 2 points smaller than the base
+                font size and the <strong>'pixel'</strong> field is not set.<p></p>
+
+</dd>
+<dt><strong>'default'</strong> </dt><dd>This sets the default fonts using the Tk font naming
+                convention, rather than that returned by
+                <code>Pmw.logicalfont()</code>.  The default font is bold
+                Helvetica.  The font for entry widgets is Helvetica.
+                The font for text widgets is Courier The size of all
+                fonts is the application base font size as described
+                above.<p></p>
+
+</dd></dl>
+
+</li>
+<li><p>If <em>root</em> is <strong>None</strong>, use the Tkinter default root window as the
+          root, if it has been created, or create a new Tk root window.
+          The <code>initialise()</code> method returns this <em>root</em>.</p>
+
+</li>
+<li><p>If <em>useTkOptionDb</em> is true, then, when a megawidget is
+          created, the Tk option database will be queried to get the
+          initial values of the options which have not been set in
+          the call to the constructor.  The resource name used in the
+          query is the same as the option name and the resource class
+          is the option name with the first letter capitalised.  If
+          <em>useTkOptionDb</em> is false, then options for newly created
+          megawidgets will be initialised to default values.</p>
+
+</li>
+<li><p>If <em>noBltBusy</em> is true, then <code>Pmw.showbusycursor()</code> will not
+          display a busy cursor, even if the BLT busy command is
+          present.</p>
+
+</li>
+<li><p>If <em>disableKeyboardWhileBusy</em> is false, then do not disable
+          keyboard input while displaying the busy cursor.  Normally,
+          Pmw ignores keyboard input while displaying the busy cursor
+          by setting the focus for each toplevel window to the Blt
+          busy window.  However, under NT, this may cause the toplevel
+          windows to be raised.  If this is not acceptable, programs
+          running on NT can request show/hidebusycursor to not ignore
+          keyboard input by setting <em>disableKeyboardWhileBusy</em> to true
+          in <code>Pmw.initialise()</code>.</p>
+
+</li></ul>
+
+<p>    It is not absolutely necessary to call this function to be able to use
+    Pmw.  However, some functionality will be lost.  Most importantly,
+    Pmw megawidgets will not be notified when their hull widget is
+    destroyed.  This may prevent the megawidget from cleaning up
+    timers which will try to access the widget, hence causing a
+    background error to occur.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.installedversions</strong>(<em>alpha</em> = <strong>0</strong>)</dt><dd>
+<p>
+    If <em>alpha</em> is false, return the list of base versions of Pmw
+    that are currently installed and available for use.  If <em>alpha</em> is
+    true, return the list of alpha versions.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.popgrab</strong>(<em>window</em>)</dt><dd>
+<p>
+    Remove <em>window</em> from the grab stack.  If there are not more
+    windows in the grab stack, release the grab.  Otherwise set the
+    grab and the focus to the next window in the grab stack.  See also
+    <code>pushgrab()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.pushgrab</strong>(<em>grabWindow</em>,<em>globalMode</em>,<em>deactivateFunction</em>)</dt><dd>
+<p>
+    The grab functions (<code>pushgrab()</code>, <code>popgrab()</code>, <code>releasegrabs()</code>
+    and <code>grabstacktopwindow()</code>) are an interface to the Tk <strong>grab</strong>
+    command which implements simple pointer and keyboard grabs.  When
+    a grab is set for a particular window, Tk restricts all pointer
+    events to the grab window and its descendants in Tk's window
+    hierarchy.  The functions are used by the <code>activate()</code> and
+    <code>deactivate()</code> methods to implement modal dialogs.</p>
+
+<p>    Pmw maintains a stack of grabbed windows, where the window on the
+    top of the stack is the window currently with the grab.  The grab
+    stack allows nested modal dialogs, where one modal dialog can be
+    activated while another modal dialog is activated.  When the
+    second dialog is deactivated, the first dialog becomes active
+    again.</p>
+
+<p>    Use <code>pushgrab()</code> to add <em>grabWindow</em> to the grab stack.  This
+    releases the grab by the window currently on top of the stack (if
+    there is one) and gives the grab and focus to the <em>grabWindow</em>.
+    If <em>globalMode</em> is true, perform a global grab, otherwise perform
+    a local grab.  The value of <em>deactivateFunction</em> specifies a
+    function to call (usually grabWindow.deactivate) if popgrab() is
+    called (usually from a deactivate() method) on a window which is
+    not at the top of the stack (that is, does not have the grab or
+    focus).  For example, if a modal dialog is deleted by the window
+    manager or deactivated by a timer.  In this case, all dialogs
+    above and including this one are deactivated, starting at the top
+    of the stack.</p>
+
+<p>    For more information, see the Tk grab manual page.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.releasegrabs</strong>()</dt><dd>
+<p>
+    Release grab and clear the grab stack.  This should normally not
+    be used, use <code>popgrab()</code> instead.  See also <code>pushgrab()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.reporterrorstofile</strong>(<em>file</em> = <strong>None</strong>)</dt><dd>
+<p>
+    Sets the global error report file, which is initially <strong>None</strong>.  See
+    <code>Pmw.displayerror()</code></p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.setalphaversions</strong>(*<em>alpha_versions</em>)</dt><dd>
+<p>
+    Set the list of alpha versions of Pmw to use for this session to
+    the arguments.  When searching for Pmw classes and functions,
+    these alpha versions will be searched, in the order given, before
+    the base version.  This must be called before any other Pmw class
+    or function, except functions setting or querying versions.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.setbusycursorattributes</strong>(<em>window</em>,**<em>kw</em>)</dt><dd>
+<p>
+    Use the keyword arguments to set attributes controlling the effect
+    on <em>window</em> (which must be a <strong>Tkinter.Toplevel</strong>) of future calls
+    to <code>Pmw.showbusycursor()</code>.  The attributes are:</p>
+
+<dl><dt><strong>exclude</strong></dt><dd>a boolean value which specifies whether the window
+    will be affected by calls to <code>Pmw.showbusycursor()</code>.  If a window
+    is excluded, then the cursor will not be changed to a busy cursor
+    and events will still be delivered to the window.  By default,
+    windows are affected by calls to <code>Pmw.showbusycursor()</code>.<p></p>
+
+</dd>
+<dt><strong>cursorName</strong></dt><dd>the name of the cursor to use when displaying the
+    busy cursor.  If <strong>None</strong>, then the default cursor is used.<p></p>
+
+</dd></dl>
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.setgeometryanddeiconify</strong>(<em>window</em>,<em>geom</em>)</dt><dd>
+<p>
+    Deiconify and raise the toplevel <em>window</em> and set its position and
+    size according to <em>geom</em>.  This overcomes some problems with the
+    window flashing under X and correctly positions the window under
+    NT (caused by Tk bugs).</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.setversion</strong>(<em>version</em>)</dt><dd>
+<p>
+    Set the version of Pmw to use for this session to <em>version</em>.  If
+    <code>Pmw.setversion()</code> is not called, the latest installed version of
+    Pmw will be used.  This must be called before any other Pmw class
+    or function, except functions setting or querying versions.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.showbusycursor</strong>()</dt><dd>
+<p>
+    Block events to and display a busy cursor over all windows in this
+    application that are in the state <strong>'normal'</strong> or <strong>'iconic'</strong>, except
+    those windows whose <strong>exclude</strong> busycursor attribute has been set to
+    true by a call to <code>Pmw.setbusycursorattributes()</code>.</p>
+
+<p>    If a window and its contents have just been created,
+    <code>update_idletasks()</code> may have to be called before
+    <code>Pmw.showbusycursor()</code> so that the window is mapped to the screen.
+    Windows created or deiconified after calling
+    <code>Pmw.showbusycursor()</code> will not be blocked.</p>
+
+<p>    To unblock events and remove the busy cursor, use
+    <code>Pmw.hidebusycursor()</code>.  Nested calls to <code>Pmw.showbusycursor()</code>
+    may be made.  In this case, a matching number of calls to
+    <code>Pmw.hidebusycursor()</code> must be made before the event block and
+    busy cursor are removed.</p>
+
+<p>    If the BLT extension to Tk is not present, this function has no
+    effect other than to save the value of the current focus window,
+    to be later restored by <code>Pmw.hidebusycursor()</code>.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.tracetk</strong>(<em>root</em> = <strong>None</strong>,<em>on</em> = <strong>1</strong>,<em>withStackTrace</em> = <strong>0</strong>,<em>file</em> = <strong>None</strong>)</dt><dd>
+<p>
+    Print debugging trace of calls to, and callbacks from, the Tk
+    interpreter associated with the <em>root</em> window .  If <em>root</em> is
+    <strong>None</strong>, use the Tkinter default root.  If <em>on</em> is true, start
+    tracing, otherwise stop tracing.  If <em>withStackTrace</em> is true,
+    print a python function call stacktrace after the trace for each
+    call to Tk.  If <em>file</em> is <strong>None</strong>, print to standard error,
+    otherwise print to the file given by <em>file</em>.</p>
+
+<p>    For each call to Tk, the Tk command and its options are printed as
+    a python tuple, followed by the return value of the command (if
+    not the empty string).  For example:</p>
+
+<dl><dd><pre>python executed:
+  button = Tkinter.Button()
+  button.configure(text = 'Hi')
+
+tracetk output:
+  CALL  TK&gt; 1:  ('button', '.3662448') -&gt; '.3662448'
+  CALL  TK&gt; 1:  ('.3662448', 'configure', '-text', 'Hi')</pre></dd></dl>
+
+<p>    Some calls from python to Tk (such as <strong>update</strong>, <strong>tkwait</strong>,
+    <strong>invoke</strong>, etc) result in the execution of callbacks from Tk to
+    python.  These python callbacks can then recursively call into Tk.
+    When displayed by <strong>tracetk()</strong>, these recursive calls are indented
+    proportionally to the depth of recursion.  The depth is also
+    printed as a leading number.  The return value of a call to Tk
+    which generated recursive calls is printed on a separate line at
+    the end of the recursion.  For example:</p>
+
+<dl><dd><pre>python executed:
+  def callback():
+      button.configure(text = 'Bye')
+      return 'Got me!'
+  button = Tkinter.Button()
+  button.configure(command = callback)
+  button.invoke()</pre></dd></dl>
+
+<dl><dd><pre>tracetk output:
+  CALL  TK&gt; 1:  ('button', '.3587144') -&gt; '.3587144'
+  CALL  TK&gt; 1:  ('.3587144', 'configure', '-command', '3638368callback')
+  CALL  TK&gt; 1:  ('.3587144', 'invoke')
+  CALLBACK&gt; 2:    callback()
+  CALL  TK&gt; 2:    ('.3587144', 'configure', '-text', 'Bye')
+  CALL RTN&gt; 1:  -&gt; 'Got me!'</pre></dd></dl>
+
+<p>    <strong>Pmw.initialise()</strong> must be called before <strong>tracetk()</strong> so that hooks
+    are put into the Tkinter CallWrapper class to trace callbacks from
+    Tk to python and also to handle recursive calls correctly.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <strong>Pmw.version</strong>(<em>alpha</em> = <strong>0</strong>)</dt><dd>
+<p>
+    If <em>alpha</em> is false, return the base version of Pmw being used
+    for this session.  If <code>Pmw.setversion()</code> has not been called, this
+    will be the latest installed version of Pmw.  If <em>alpha</em> is true,
+    return the list of alpha versions of Pmw being used for this
+    session, in search order.  If <code>Pmw.setalphaversions()</code> has not
+    been called, this will be the empty list.</p>
+
+<p></p>
+
+
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

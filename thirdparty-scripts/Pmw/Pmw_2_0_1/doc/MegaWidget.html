@@ -1,0 +1,83 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.MegaWidget reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.MegaWidget</h1>
+    
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.MegaWidget() - 
+    base class for megawidgets within a frame
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaArchetype.html">Pmw.MegaArchetype</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    This class creates a megawidget contained within a Tkinter.Frame
+    window.  The class acts as the base class for megawidgets that are
+    not contained in their own toplevel window, such as <a href="ButtonBox.html">Pmw.ButtonBox</a> and
+    <a href="ComboBox.html">Pmw.ComboBox</a>.  It creates a Tkinter.Frame component, named <strong>hull</strong>,
+    to act as the container of the megawidget.  The window class name
+    for the <strong>hull</strong> widget is set to the most-specific class name for
+    the megawidget.  Derived classes specialise this class by
+    creating other widget components as children of the <strong>hull</strong> widget.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+This megawidget has no methods of its own.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaArchetype.html#methods">Pmw.MegaArchetype</a></strong>.
+In addition, methods from the
+<strong>Tkinter.Frame</strong> class
+are forwarded by this megawidget to the
+<strong>hull</strong> component.
+<p></p>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 22 May 1998
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    

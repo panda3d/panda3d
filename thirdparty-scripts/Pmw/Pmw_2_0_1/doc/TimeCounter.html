@@ -1,0 +1,346 @@
+
+    <html>
+    <head>
+    <meta name="description" content="Pmw - a toolkit for building high-level compound widgets in Python">
+    <meta name="content" content="python, megawidget, mega widget, compound widget, gui, tkinter">
+    <title>Pmw.TimeCounter reference manual</title>
+    </head>
+
+    <body bgcolor="#ffffff" text="#000000" link="#0000ee"
+        vlink="551a8b" alink="ff0000">
+
+    <h1 ALIGN="CENTER">Pmw.TimeCounter</h1>
+    
+<center><IMG SRC=TimeCounter.gif ALT="" WIDTH=170 HEIGHT=85></center>
+<dl>
+<dt> <h3>Name</h3></dt><dd>
+<p>Pmw.TimeCounter() - 
+    counter for display and input of time
+</p>
+
+
+</dd>
+<dt> <h3>Inherits</h3></dt><dd>
+<a href="MegaWidget.html">Pmw.MegaWidget</a><br>
+</dd>
+<dt> <h3>Description</h3></dt><dd>
+<p>
+    A time counter is similar to a regular <a href="Counter.html">Pmw.Counter</a> except that the
+    user may increment and decrement the hours, minutes and seconds
+    individually.</p>
+
+<p></p>
+
+
+</dd>
+<dt> <h3>Options</h3></dt><dd>
+Options for this megawidget and its base
+classes are described below.<p></p>
+<a name=option.autorepeat></a>
+<dl><dt> <strong>autorepeat
+</strong></dt><dd>
+If true, the counter will continue to count up or down while an
+    arrow button is held pressed down. The default is <strong>1</strong>.</p>
+
+
+</dd></dl>
+<a name=option.buttonaspect></a>
+<dl><dt> <strong>buttonaspect
+</strong></dt><dd>
+Initialisation option. Specifies the width of the arrow buttons as a proportion of their
+    height.  Values less than <strong>1.0</strong> will produce thin arrow buttons.
+    Values greater than <strong>1.0</strong> will produce fat arrow buttons. The default is <strong>1.0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.command></a>
+<dl><dt> <strong>command
+</strong></dt><dd>
+This specifies a function to call whenever the <strong>&lt;Return&gt;</strong> key is
+    pressed in one of the entry fields or <code>invoke()</code> is called. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.initwait></a>
+<dl><dt> <strong>initwait
+</strong></dt><dd>
+Specifies the initial delay (in milliseconds) before a depressed
+    arrow button automatically starts to repeat counting. The default is <strong>300</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelmargin></a>
+<dl><dt> <strong>labelmargin
+</strong></dt><dd>
+Initialisation option.  The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.labelpos></a>
+<dl><dt> <strong>labelpos
+</strong></dt><dd>
+Initialisation option.  The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.max></a>
+<dl><dt> <strong>max
+</strong></dt><dd>
+Specifies the maximum acceptable time in the form "HH:MM:SS", or
+    <strong>None</strong> if no maximum checking should be performed. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.min></a>
+<dl><dt> <strong>min
+</strong></dt><dd>
+Specifies the minimum acceptable time in the form "HH:MM:SS", or
+    <strong>None</strong> if no minimum checking should be performed. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+<a name=option.padx></a>
+<dl><dt> <strong>padx
+</strong></dt><dd>
+Initialisation option. Specifies how much wider to make each column than the default
+    width (where a column consists of two arrows and an entry field).
+    The entry fields expand to fill the extra space, but the arrow
+    buttons are centered in the available space. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.pady></a>
+<dl><dt> <strong>pady
+</strong></dt><dd>
+Initialisation option. Specifies how much higher to make each row of arrow buttons than
+    the default hight.  The arrow buttons are centered in the
+    available space. The default is <strong>0</strong>.</p>
+
+
+</dd></dl>
+<a name=option.repeatrate></a>
+<dl><dt> <strong>repeatrate
+</strong></dt><dd>
+Specifies the delay (in milliseconds) between automatic counts
+    while an arrow button is held pressed down. The default is <strong>50</strong>.</p>
+
+
+</dd></dl>
+<a name=option.value></a>
+<dl><dt> <strong>value
+</strong></dt><dd>
+Initialisation option. Specifies the initial contents of the time counter, in the form
+    "HH:MM:SS".  If this is <strong>None</strong>, the current time is used as the
+    initial contents. The default is <strong>None</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Components</h3></dt><dd>
+Components created by this megawidget and its base
+classes are described below.<p></p>
+<a name=component.downhourarrow></a>
+<dl><dt> <strong>downhourarrow
+</strong></dt><dd>
+The arrow button used for decrementing the hour field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.downminutearrow></a>
+<dl><dt> <strong>downminutearrow
+</strong></dt><dd>
+The arrow button used for decrementing the minute field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.downsecondarrow></a>
+<dl><dt> <strong>downsecondarrow
+</strong></dt><dd>
+The arrow button used for decrementing the second field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.frame></a>
+<dl><dt> <strong>frame
+</strong></dt><dd>
+If the <strong>label</strong> component has been created (that is, the <strong>labelpos</strong>
+    option is not <strong>None</strong>), the <strong>frame</strong> component is created to act as
+    the container of the entry fields and arrow buttons.  If there is
+    no <strong>label</strong> component, then no <strong>frame</strong> component is created and the
+    <strong>hull</strong> component acts as the container.  In either case the border
+    around the container of the entry fields and arrow buttons will be
+    raised (but not around the label). By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.hourentryfield></a>
+<dl><dt> <strong>hourentryfield
+</strong></dt><dd>
+The entry field where the hours are entered and displayed. By default, this component is a <a href="EntryField.html">Pmw.EntryField</a>.</p>
+
+
+</dd></dl>
+<a name=component.hull></a>
+<dl><dt> <strong>hull
+</strong></dt><dd>
+This acts as the body for the entire megawidget.  Other components
+    are created as children of the hull to further specialise this
+    class. By default, this component is a Tkinter.Frame.</p>
+
+
+</dd></dl>
+<a name=component.label></a>
+<dl><dt> <strong>label
+</strong></dt><dd>
+ By default, this component is a Tkinter.Label.</p>
+
+
+</dd></dl>
+<a name=component.minuteentryfield></a>
+<dl><dt> <strong>minuteentryfield
+</strong></dt><dd>
+The entry field where the minutes are entered and displayed. By default, this component is a <a href="EntryField.html">Pmw.EntryField</a>.</p>
+
+
+</dd></dl>
+<a name=component.secondentryfield></a>
+<dl><dt> <strong>secondentryfield
+</strong></dt><dd>
+The entry field where the seconds are entered and displayed. By default, this component is a <a href="EntryField.html">Pmw.EntryField</a>.</p>
+
+
+</dd></dl>
+<a name=component.uphourarrow></a>
+<dl><dt> <strong>uphourarrow
+</strong></dt><dd>
+The arrow button used for incrementing the hour field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.upminutearrow></a>
+<dl><dt> <strong>upminutearrow
+</strong></dt><dd>
+The arrow button used for incrementing the minute field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+<a name=component.upsecondarrow></a>
+<dl><dt> <strong>upsecondarrow
+</strong></dt><dd>
+The arrow button used for incrementing the second field. By default, this component is a Tkinter.Canvas. Its component group is <strong>Arrow</strong>.</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Component aliases</h3></dt><dd>
+Sub-components of components of this megawidget
+may be accessed via the following aliases.<p></p>
+<dl><dt> <strong>hourentry
+</strong></dt><dd>
+Alias for <strong>hourentryfield_entry</strong>.
+</dd></dl>
+<dl><dt> <strong>minuteentry
+</strong></dt><dd>
+Alias for <strong>minuteentryfield_entry</strong>.
+</dd></dl>
+<dl><dt> <strong>secondentry
+</strong></dt><dd>
+Alias for <strong>secondentryfield_entry</strong>.
+</dd></dl>
+</dd>
+<a name=methods></a>
+<dt> <h3>Methods</h3></dt><dd>
+Only methods specific to this megawidget are described below.
+For a description of its inherited methods, see the
+manual for its base class
+<strong><a href="MegaWidget.html#methods">Pmw.MegaWidget</a></strong>.
+<p></p>
+<a name=method.decrement></a>
+<dl><dt> <strong>decrement</strong>(<em>seconds</em> = <strong>1</strong>)</dt><dd>
+Decrement the time by <em>seconds</em> seconds.</p>
+
+
+</dd></dl>
+<a name=method.getint></a>
+<dl><dt> <strong>getint</strong>()</dt><dd>
+Return the currently displayed time as a number of seconds.</p>
+
+
+</dd></dl>
+<a name=method.getstring></a>
+<dl><dt> <strong>getstring</strong>()</dt><dd>
+Same as <code>getvalue()</code> method.</p>
+
+
+</dd></dl>
+<a name=method.getvalue></a>
+<dl><dt> <strong>getvalue</strong>()</dt><dd>
+Return the currently displayed time as a string in the form
+    "HH:MM:SS".</p>
+
+
+</dd></dl>
+<a name=method.increment></a>
+<dl><dt> <strong>increment</strong>(<em>seconds</em> = <strong>1</strong>)</dt><dd>
+Increment the time by <em>seconds</em> seconds.</p>
+
+
+</dd></dl>
+<a name=method.invoke></a>
+<dl><dt> <strong>invoke</strong>()</dt><dd>
+Invoke the command specified by the <strong>command</strong> option as if the
+    <strong>&lt;Return&gt;</strong> key had been pressed.</p>
+
+
+</dd></dl>
+<a name=method.setvalue></a>
+<dl><dt> <strong>setvalue</strong>(<em>text</em>)</dt><dd>
+Set the contents of the time counter, where <em>text</em> must be in the
+    form "HH:MM:SS".</p>
+
+
+</dd></dl>
+</dd>
+<dt> <h3>Example</h3></dt><dd>
+The image at the top of this manual is a snapshot
+of the window (or part of the window) produced
+by the following code.<p></p>
+<pre>
+class Demo:
+    def __init__(self, parent):
+        self._time = Pmw.TimeCounter(parent,
+                labelpos = 'w',
+                label_text = 'HH:MM:SS',
+                min = '00:00:00',
+                max = '23:59:59')
+        self._time.pack(padx=10, pady=5)
+
+        button = tkinter.Button(parent, text = 'Show', command = self.show)
+        button.pack()
+
+    def show(self):
+        stringVal = self._time.getstring()
+        intVal =  self._time.getint()
+        print((stringVal + '  (' + str(intVal) + ')'))
+
+</pre>
+</dd>
+</dl>
+
+    <center><P ALIGN="CENTER">
+    <IMG SRC = blue_line.gif ALT = "" WIDTH=320 HEIGHT=5>
+    </p></center>
+    
+
+    <font size=-1>
+    <center><P ALIGN="CENTER">
+    Pmw 2.0.0 -
+    29 Mar 2014
+     - <a href="index.html">Home</a>
+    <br>Manual page last reviewed: 25 May 2002
+    </p></center>
+    </font>
+
+    </body>
+    </html>
+    
