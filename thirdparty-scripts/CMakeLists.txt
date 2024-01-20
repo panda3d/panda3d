@@ -807,7 +807,7 @@ if(BUILD_OPENEXR)
     openexr
     DEPENDS zlib
     GIT_REPOSITORY https://github.com/AcademySoftwareFoundation/openexr.git
-    GIT_TAG e94d82b2165da4e2af167aa74630906202e3d43b #v3.1.4
+    GIT_TAG 6f5fc9013d14c04960c13b8d3724e18642c02eba #v3.1.11
 
     CMAKE_ARGS ${COMMON_CMAKE_ARGS}
       -DCMAKE_PREFIX_PATH=${THIRDPARTY_DIR}/zlib
