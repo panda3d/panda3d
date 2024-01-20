@@ -77,15 +77,15 @@ jobs:
 
       matrix:
         profile:
-        - ubuntu-bionic-standard-unity-makefile
-        - ubuntu-bionic-coverage-ninja
+        - ubuntu-standard-unity-makefile
+        - ubuntu-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
-        - profile: ubuntu-bionic-standard-unity-makefile
+        - profile: ubuntu-standard-unity-makefile
           os: ubuntu-20.04
           config: Standard
           unity: YES
@@ -96,7 +96,7 @@ jobs:
           eigen: NO
           thirdparty-dir: linux-libs-x64
 
-        - profile: ubuntu-bionic-coverage-ninja
+        - profile: ubuntu-coverage-ninja
           os: ubuntu-20.04
           config: Coverage
           unity: NO
