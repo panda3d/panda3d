@@ -32,20 +32,24 @@ jobs:
       - uses: actions/cache@v4
         id: cache
         with:
-          path: |
-            thirdparty/${{matrix.dir}}
-            thirdparty/win-utils
-            thirdparty/win-python
+          path: thirdparty
           key: ${{matrix.dir}}-${{hashFiles('**/thirdparty-scripts/**')}}
           restore-keys: |
             ${{matrix.dir}}-
+      - uses: actions/cache@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: thirdparty-scripts/build
+          key: ${{matrix.dir}}-build-${{hashFiles('**/thirdparty-scripts/**')}}
+          restore-keys: |
+            ${{matrix.dir}}-build-
       - name: Install yasm (ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt-get install yasm
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          cmake -S thirdparty-scripts -B thirdparty-scripts/build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}}
+          cmake -S thirdparty-scripts -B thirdparty-scripts/build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}} -D CMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY=CHECKOUT
           cmake --build thirdparty-scripts/build --config Release -j4
       - name: Get Python and Utils (Windows)
         if: runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true'
