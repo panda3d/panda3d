@@ -708,6 +708,9 @@ elseif(BUILD_NVIDIACG AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
   endif()
 endif()
 
+set(OPENSSL_VERSION "1.1.1")
+set(OPENSSL_URL "https://www.openssl.org/source/old/${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}m.tar.gz")
+set(OPENSSL_URL_HASH "SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96")
 if(BUILD_OPENSSL AND MSVC)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ssl_config VC-WIN64A)
@@ -717,8 +720,8 @@ if(BUILD_OPENSSL AND MSVC)
 
   ExternalProject_Add(
     openssl
-    URL https://www.openssl.org/source/openssl-1.1.1m.tar.gz
-    URL_HASH SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96
+    URL ${OPENSSL_URL}
+    URL_HASH ${OPENSSL_URL_HASH}
 
     CONFIGURE_COMMAND perl Configure ${ssl_config} no-shared --prefix=<INSTALL_DIR>
     BUILD_COMMAND nmake build_libs
@@ -737,8 +740,8 @@ if(BUILD_OPENSSL AND MSVC)
 elseif(BUILD_OPENSSL AND NOT APPLE)
   ExternalProject_Add(
     openssl
-    URL https://www.openssl.org/source/openssl-1.1.1m.tar.gz
-    URL_HASH SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96
+    URL ${OPENSSL_URL}
+    URL_HASH ${OPENSSL_URL_HASH}
 
     CONFIGURE_COMMAND ./config no-shared --prefix=<INSTALL_DIR> ${CMAKE_C_FLAGS}
     BUILD_COMMAND ${MAKE}
@@ -766,8 +769,8 @@ elseif(BUILD_OPENSSL AND APPLE)
   if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
     ExternalProject_Add(
       openssl-arm64
-      URL https://www.openssl.org/source/openssl-1.1.1m.tar.gz
-      URL_HASH SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96
+      URL ${OPENSSL_URL}
+      URL_HASH ${OPENSSL_URL_HASH}
 
       CONFIGURE_COMMAND /usr/bin/perl ./Configure darwin64-arm64-cc --prefix=<INSTALL_DIR> --openssldir=<INSTALL_DIR> ${ssl_flags}
       BUILD_COMMAND ${MAKE}
@@ -778,8 +781,8 @@ elseif(BUILD_OPENSSL AND APPLE)
   if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
     ExternalProject_Add(
       openssl-x86_64
-      URL https://www.openssl.org/source/openssl-1.1.1m.tar.gz
-      URL_HASH SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96
+      URL ${OPENSSL_URL}
+      URL_HASH ${OPENSSL_URL_HASH}
 
       CONFIGURE_COMMAND /usr/bin/perl ./Configure darwin64-x86_64-cc --prefix=<INSTALL_DIR> --openssldir=<INSTALL_DIR> ${ssl_flags}
       BUILD_COMMAND ${MAKE}
@@ -790,8 +793,8 @@ elseif(BUILD_OPENSSL AND APPLE)
   if("i386" IN_LIST CMAKE_OSX_ARCHITECTURES)
     ExternalProject_Add(
       openssl-i386
-      URL https://www.openssl.org/source/openssl-1.1.1m.tar.gz
-      URL_HASH SHA256=f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96
+      URL ${OPENSSL_URL}
+      URL_HASH ${OPENSSL_URL_HASH}
 
       CONFIGURE_COMMAND /usr/bin/perl ./Configure darwin-i386-cc --prefix=<INSTALL_DIR> --openssldir=<INSTALL_DIR> ${ssl_flags}
       BUILD_COMMAND ${MAKE}
