@@ -65,6 +65,16 @@
 #define DTOOL_PLATFORM "android_i386"
 #endif
 
+#elif defined(__wasm32__)
+#define DTOOL_PLATFORM "wasi_wasm32"
+
+#elif defined(__wasm64__)
+#define DTOOL_PLATFORM "wasi_wasm64"
+
+// fallback to wasm32 with older sdk
+#elif defined(__wasi__)
+#define DTOOL_PLATFORM "wasi_wasm32"
+
 #elif defined(__EMSCRIPTEN__)
 #if defined(__wasm64__)
 #define DTOOL_PLATFORM "emscripten_wasm64"
