@@ -1192,7 +1192,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       if (param_type == GL_FLOAT_VEC3) {
         bind._piece = Shader::SMP_vec3;
       } else if (param_type == GL_FLOAT_VEC4) {
-        bind._piece = Shader::SMP_vec3;
+        bind._piece = Shader::SMP_vec4;
       } else {
         GLCAT.error()
           << "p3d_Color should be vec3 or vec4\n";
