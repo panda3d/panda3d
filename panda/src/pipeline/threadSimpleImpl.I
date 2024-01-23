@@ -36,11 +36,13 @@ is_same_system_thread() const {
 }
 
 /**
- * Associates the indicated Thread object with the currently-executing thread.
+ * Associates the indicated Thread object with the currently-executing thread,
+ * unless a thread is already bound, in which case it is returned.
  * You should not call this directly; use Thread::bind_thread() instead.
  */
-INLINE void ThreadSimpleImpl::
+INLINE Thread *ThreadSimpleImpl::
 bind_thread(Thread *) {
+  return get_current_thread();
 }
 
 /**

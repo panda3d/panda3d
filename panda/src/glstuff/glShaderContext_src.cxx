@@ -1192,7 +1192,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       if (param_type == GL_FLOAT_VEC3) {
         bind._piece = Shader::SMP_vec3;
       } else if (param_type == GL_FLOAT_VEC4) {
-        bind._piece = Shader::SMP_vec3;
+        bind._piece = Shader::SMP_vec4;
       } else {
         GLCAT.error()
           << "p3d_Color should be vec3 or vec4\n";
@@ -1708,17 +1708,35 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_UNSIGNED_INT_IMAGE_BUFFER:
         // This won't really change at runtime, so we might as well bind once
         // and then forget about it.
-        // Note that OpenGL ES doesn't support changing this at runtime, so we
-        // rely on the shader using a layout declaration.
-#ifndef OPENGLES
-        _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
-#endif
         {
+#ifdef OPENGLES
+          // In OpenGL ES, we can't choose our own binding, but we can ask the
+          // driver what it assigned (or what the shader specified).
+          GLint binding = 0;
+          glGetUniformiv(_glsl_program, p, &binding);
+          if (GLCAT.is_debug()) {
+            GLCAT.debug()
+              << "Active uniform " << param_name
+              << " is bound to image unit " << binding << "\n";
+          }
+
+          if (binding >= _glsl_img_inputs.size()) {
+            _glsl_img_inputs.resize(binding + 1);
+          }
+
+          ImageInput &input = _glsl_img_inputs[binding];
+          input._name = InternalName::make(param_name);
+#else
+          if (GLCAT.is_debug()) {
+            GLCAT.debug()
+              << "Binding image uniform " << param_name
+              << " to image unit " << _glsl_img_inputs.size() << "\n";
+          }
+          _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
           ImageInput input;
           input._name = InternalName::make(param_name);
-          input._writable = false;
-          input._gtc = nullptr;
-          _glsl_img_inputs.push_back(input);
+          _glsl_img_inputs.push_back(std::move(input));
+#endif
         }
         return;
       default:
@@ -2676,6 +2694,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
       const ParamTextureImage *param = nullptr;
       Texture *tex;
 
+      if (input._name == nullptr) {
+        continue;
+      }
+
       const ShaderInput &sinp = _glgsg->_target_shader->get_shader_input(input._name);
       switch (sinp.get_value_type()) {
       case ShaderInput::M_texture_image:
@@ -2729,6 +2751,16 @@ update_shader_texture_bindings(ShaderContext *prev) {
         // TODO: automatically convert to sized type instead of plain GL_RGBA
         // If a base type is used, it will crash.
         GLenum internal_format = gtc->_internal_format;
+#ifdef OPENGLES
+        if (!gtc->_immutable) {
+          static bool error_shown = false;
+          if (!error_shown) {
+            error_shown = true;
+            GLCAT.error()
+              << "Enable gl-immutable-texture-storage to use image textures in OpenGL ES.\n";
+          }
+        }
+#endif
         if (internal_format == GL_RGBA || internal_format == GL_RGB) {
           GLCAT.error()
             << "Texture " << tex->get_name() << " has an unsized format.  Textures bound "

@@ -92,7 +92,7 @@ post_load(Texture *tex) {
   egg_tex->set_alpha_mode(tex_image.get_alpha_mode());
   egg_tex->set_format(props._format);
   egg_tex->set_minfilter(props._minfilter);
-  egg_tex->set_minfilter(props._magfilter);
+  egg_tex->set_magfilter(props._magfilter);
   egg_tex->set_anisotropic_degree(props._anisotropic_degree);
 
   tex->set_aux_data("egg", egg_tex);

@@ -184,15 +184,20 @@ get_current_thread() {
 }
 
 /**
- * Associates the indicated Thread object with the currently-executing thread.
+ * Associates the indicated Thread object with the currently-executing thread,
+ * unless a thread is already bound, in which case it is returned.
  * You should not call this directly; use Thread::bind_thread() instead.
  */
-void ThreadWin32Impl::
+Thread *ThreadWin32Impl::
 bind_thread(Thread *thread) {
-  if (_current_thread == nullptr && thread == Thread::get_main_thread()) {
+  if (_current_thread != nullptr) {
+    return _current_thread;
+  }
+  if (thread == Thread::get_main_thread()) {
     _main_thread_known.test_and_set(std::memory_order_relaxed);
   }
   _current_thread = thread;
+  return thread;
 }
 
 /**

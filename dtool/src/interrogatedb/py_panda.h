@@ -216,12 +216,17 @@ EXPCL_PYPANDA PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const
 EXPCL_PYPANDA PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
 
 EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError();
+EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError(const char *message);
+EXPCL_PYPANDA int _Dtool_Raise_BadArgumentsError_Int();
+EXPCL_PYPANDA int _Dtool_Raise_BadArgumentsError_Int(const char *message);
 #ifdef NDEBUG
 // Define it to a function that just prints a generic message.
 #define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError()
+#define Dtool_Raise_BadArgumentsError_Int(x) _Dtool_Raise_BadArgumentsError_Int()
 #else
 // Expand this to a TypeError listing all of the overloads.
-#define Dtool_Raise_BadArgumentsError(x) Dtool_Raise_TypeError("Arguments must match:\n" x)
+#define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError(x)
+#define Dtool_Raise_BadArgumentsError_Int(x) _Dtool_Raise_BadArgumentsError_Int(x)
 #endif
 
 // These functions are similar to Dtool_WrapValue, except that they also
