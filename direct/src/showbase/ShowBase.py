@@ -122,9 +122,11 @@ from . import DConfig
 from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 
 # This needs to be available early for DirectGUI imports
+from typing import Any
+builtins: Any  # Tell mypy not to worry about us setting attributes on builtins
 import sys
 import builtins
-builtins.config = DConfig  # type: ignore[attr-defined]
+builtins.config = DConfig
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from direct.directnotify.Notifier import Notifier
@@ -145,7 +147,7 @@ import importlib
 from direct.showbase import ExceptionVarDump
 from . import DirectObject
 from . import SfxPlayer
-from typing import Any, Callable, ClassVar, Literal, NoReturn
+from typing import Callable, ClassVar, Literal, NoReturn
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
@@ -193,7 +195,7 @@ class ShowBase(DirectObject.DirectObject):
         #: Set if the want-dev Config.prc variable is enabled.  By default, it
         #: is set to True except when using Python with the -O flag.
         self.__dev__ = ShowBaseGlobal.__dev__
-        builtins.__dev__ = self.__dev__  # type: ignore[attr-defined]
+        builtins.__dev__ = self.__dev__
 
         logStackDump = (ConfigVariableBool('log-stack-dump', False).value or
                         ConfigVariableBool('client-log-stack-dump', False).value)
@@ -517,41 +519,41 @@ class ShowBase(DirectObject.DirectObject):
 
         # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
         # built-in variables by ShowBase.  Use a Global module if necessary.
-        builtins.base = self  # type: ignore[attr-defined]
-        builtins.render2d = self.render2d  # type: ignore[attr-defined]
-        builtins.aspect2d = self.aspect2d  # type: ignore[attr-defined]
-        builtins.pixel2d = self.pixel2d  # type: ignore[attr-defined]
-        builtins.render = self.render  # type: ignore[attr-defined]
-        builtins.hidden = self.hidden  # type: ignore[attr-defined]
-        builtins.camera = self.camera  # type: ignore[attr-defined]
-        builtins.loader = self.loader  # type: ignore[attr-defined]
-        builtins.taskMgr = self.taskMgr  # type: ignore[attr-defined]
-        builtins.jobMgr = self.jobMgr  # type: ignore[attr-defined]
-        builtins.eventMgr = self.eventMgr  # type: ignore[attr-defined]
-        builtins.messenger = self.messenger  # type: ignore[attr-defined]
-        builtins.bboard = self.bboard  # type: ignore[attr-defined]
+        builtins.base = self
+        builtins.render2d = self.render2d
+        builtins.aspect2d = self.aspect2d
+        builtins.pixel2d = self.pixel2d
+        builtins.render = self.render
+        builtins.hidden = self.hidden
+        builtins.camera = self.camera
+        builtins.loader = self.loader
+        builtins.taskMgr = self.taskMgr
+        builtins.jobMgr = self.jobMgr
+        builtins.eventMgr = self.eventMgr
+        builtins.messenger = self.messenger
+        builtins.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
         #builtins.config = self.config
-        builtins.ostream = Notify.out()  # type: ignore[attr-defined]
-        builtins.directNotify = directNotify  # type: ignore[attr-defined]
-        builtins.giveNotify = giveNotify  # type: ignore[attr-defined]
-        builtins.globalClock = clock  # type: ignore[attr-defined]
-        builtins.vfs = vfs  # type: ignore[attr-defined]
-        builtins.cpMgr = ConfigPageManager.getGlobalPtr()  # type: ignore[attr-defined]
-        builtins.cvMgr = ConfigVariableManager.getGlobalPtr()  # type: ignore[attr-defined]
-        builtins.pandaSystem = PandaSystem.getGlobalPtr()  # type: ignore[attr-defined]
+        builtins.ostream = Notify.out()
+        builtins.directNotify = directNotify
+        builtins.giveNotify = giveNotify
+        builtins.globalClock = clock
+        builtins.vfs = vfs
+        builtins.cpMgr = ConfigPageManager.getGlobalPtr()
+        builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
+        builtins.pandaSystem = PandaSystem.getGlobalPtr()
         if __debug__:
-            builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")  # type: ignore[attr-defined]
+            builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
             self.onScreenDebug = OnScreenDebug.OnScreenDebug()
-            builtins.onScreenDebug = self.onScreenDebug  # type: ignore[attr-defined]
+            builtins.onScreenDebug = self.onScreenDebug
 
         if self.wantRender2dp:
-            builtins.render2dp = self.render2dp  # type: ignore[attr-defined]
-            builtins.aspect2dp = self.aspect2dp  # type: ignore[attr-defined]
-            builtins.pixel2dp = self.pixel2dp  # type: ignore[attr-defined]
+            builtins.render2dp = self.render2dp
+            builtins.aspect2dp = self.aspect2dp
+            builtins.pixel2dp = self.pixel2dp
 
         # Now add this instance to the ShowBaseGlobal module scope.
-        builtins.run = ShowBaseGlobal.run  # type: ignore[attr-defined]
+        builtins.run = ShowBaseGlobal.run
         ShowBaseGlobal.base = self
         ShowBaseGlobal.__dev__ = self.__dev__
 
@@ -687,10 +689,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # Remove the built-in base reference
         if getattr(builtins, 'base', None) is self:
-            del builtins.run  # type: ignore[attr-defined]
-            del builtins.base  # type: ignore[attr-defined]
-            del builtins.loader  # type: ignore[attr-defined]
-            del builtins.taskMgr  # type: ignore[attr-defined]
+            del builtins.run
+            del builtins.base
+            del builtins.loader
+            del builtins.taskMgr
             ShowBaseGlobal = sys.modules.get('direct.showbase.ShowBaseGlobal', None)
             if ShowBaseGlobal:
                 del ShowBaseGlobal.base
