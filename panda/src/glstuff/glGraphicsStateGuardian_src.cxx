@@ -14070,7 +14070,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         << "Attempt to modify texture with immutable storage, recreating texture.\n";
       gtc->reset_data(gtc->_target, num_views);
     }
-    else if (_supports_tex_storage && gl_immutable_texture_storage) {
+    else if (_supports_tex_storage && gl_immutable_texture_storage &&
+             texture_type != Texture::TT_buffer_texture) {
       gtc->_immutable = true;
     }
   }
