@@ -1,5 +1,0 @@
-#include "cocoaGLGraphicsBuffer.mm"
-#include "cocoaGLGraphicsPipe.mm"
-#include "cocoaGLGraphicsStateGuardian.mm"
-#include "cocoaGLGraphicsWindow.mm"
-#include "config_cocoagldisplay.mm"

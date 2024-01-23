@@ -1,6 +1,0 @@
-#include "config_ffmpeg.cxx"
-#include "ffmpegAudio.cxx"
-#include "ffmpegVideo.cxx"
-#include "ffmpegVirtualFile.cxx"
-#include "ffmpegAudioCursor.cxx"
-#include "ffmpegVideoCursor.cxx"

@@ -26,7 +26,7 @@ assert os.path.isfile(os.path.join(root, 'LICENSE'))
 assert os.path.isdir(os.path.join(root, 'pandatool'))
 
 # Now we get to work! First, the makepanda directory isn't needed:
-shutil.rmtree(os.path.join(root, 'makepanda'))
+# shutil.rmtree(os.path.join(root, 'makepanda'))
 
 # Then we look under each of the separate project trees:
 projects = ['contrib', 'direct', 'dtool', 'panda', 'pandatool']

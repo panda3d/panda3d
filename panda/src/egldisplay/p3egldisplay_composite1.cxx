@@ -1,6 +1,0 @@
-#include "config_egldisplay.cxx"
-#include "eglGraphicsBuffer.cxx"
-#include "eglGraphicsPipe.cxx"
-#include "eglGraphicsPixmap.cxx"
-#include "eglGraphicsStateGuardian.cxx"
-#include "eglGraphicsWindow.cxx"
