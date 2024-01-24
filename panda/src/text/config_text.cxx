@@ -62,7 +62,11 @@ ConfigVariableBool text_kerning
           "is true, since HarfBuzz offers superior kerning support."));
 
 ConfigVariableBool text_use_harfbuzz
+#ifdef HAVE_HARFBUZZ
+("text-use-harfbuzz", true,
+#else
 ("text-use-harfbuzz", false,
+#endif
  PRC_DESC("Set this true to enable HarfBuzz support, which offers superior "
           "text shaping and better support for non-Latin text."));
 

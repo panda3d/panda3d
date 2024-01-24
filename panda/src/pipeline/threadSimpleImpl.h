@@ -61,7 +61,7 @@ public:
   INLINE static Thread *get_current_thread();
   INLINE bool is_same_system_thread() const;
 
-  INLINE static void bind_thread(Thread *thread);
+  INLINE static Thread *bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   static bool is_true_threads();
   INLINE static bool is_simple_threads();

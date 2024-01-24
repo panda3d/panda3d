@@ -3196,7 +3196,7 @@ reset() {
   _max_image_units = 0;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
-  if (is_at_least_gl_version(3, 1)) {
+  if (is_at_least_gles_version(3, 1) && gl_immutable_texture_storage) {
 #else
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
 #endif
@@ -14099,7 +14099,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         << "Attempt to modify texture with immutable storage, recreating texture.\n";
       gtc->reset_data(gtc->_target, num_views);
     }
-    else if (_supports_tex_storage && gl_immutable_texture_storage) {
+    else if (_supports_tex_storage && gl_immutable_texture_storage &&
+             texture_type != Texture::TT_buffer_texture) {
       gtc->_immutable = true;
     }
   }
@@ -14313,7 +14314,8 @@ upload_texture_image(CLP(TextureContext) *gtc, int view, bool needs_reload,
         GLCAT.debug()
           << "allocating storage for texture " << tex->get_name() << ", "
           << width << " x " << height << " x " << depth << ", mipmaps "
-          << num_levels << "\n";
+          << num_levels << ", internal_format = 0x" << std::hex
+          << internal_format << std::dec << "\n";
       }
 
       switch (texture_type) {

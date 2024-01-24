@@ -188,6 +188,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(NSOpenGLPFAColorSize);
   attribs.push_back(properties.get_color_bits());
 
+  if (properties.get_float_color()) {
+    attribs.push_back(NSOpenGLPFAColorFloat);
+  }
+
   // Set the depth buffer bits to 24 manually when 1 is requested.
   // This prevents getting a depth buffer of only 16 bits when requesting 1.
   attribs.push_back(NSOpenGLPFADepthSize);

@@ -40,14 +40,17 @@ PUBLISHED:
 
   INLINE void set_range(PN_stdfloat range);
   INLINE PN_stdfloat get_range() const;
+  MAKE_PROPERTY(range, get_range, set_range);
 
   INLINE void set_value(PN_stdfloat value);
   INLINE PN_stdfloat get_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
 
   INLINE PN_stdfloat get_percent() const;
 
   INLINE void set_bar_style(const PGFrameStyle &style);
   INLINE PGFrameStyle get_bar_style() const;
+  MAKE_PROPERTY(bar_style, get_bar_style, set_bar_style);
 
 private:
   void update();

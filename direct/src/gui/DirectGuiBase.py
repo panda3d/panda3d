@@ -229,7 +229,12 @@ class DirectGuiBase(DirectObject.DirectObject):
                         del keywords[name]
                     else:
                         # Use optionDefs value
-                        optionInfo[name] = [default, default, function]
+                        value = default
+                        if isinstance(value, list):
+                            value = list(value)
+                        elif isinstance(value, dict):
+                            value = dict(value)
+                        optionInfo[name] = [default, value, function]
                 elif optionInfo[name][FUNCTION] is None:
                     # Only override function if not defined by derived class
                     optionInfo[name][FUNCTION] = function

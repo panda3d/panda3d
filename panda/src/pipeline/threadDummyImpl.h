@@ -55,7 +55,7 @@ public:
   INLINE static void prepare_for_exit();
 
   static Thread *get_current_thread();
-  INLINE static void bind_thread(Thread *thread);
+  INLINE static Thread *bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
   INLINE static bool is_simple_threads();

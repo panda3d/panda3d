@@ -59,12 +59,16 @@ PUBLISHED:
   INLINE const LVecBase4 &get_clip_frame() const;
   INLINE bool has_clip_frame() const;
   void clear_clip_frame();
+  MAKE_PROPERTY2(clip_frame, has_clip_frame, get_clip_frame, set_clip_frame, clear_clip_frame);
 
   INLINE void set_canvas_transform(const TransformState *transform);
   INLINE const TransformState *get_canvas_transform() const;
+  MAKE_PROPERTY(canvas_transform, get_canvas_transform, set_canvas_transform);
 
   INLINE PandaNode *get_canvas_node() const;
   INLINE PandaNode *get_canvas_parent() const;
+  MAKE_PROPERTY(canvas_node, get_canvas_node);
+  MAKE_PROPERTY(canvas_parent, get_canvas_parent);
 
 protected:
   virtual void clip_frame_changed();
