@@ -445,8 +445,8 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   _first_byte_requested = first_byte;
   _last_byte_requested = last_byte;
 
-  bool result = (bool)EM_ASM_INT(({
-    var methods = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"];
+  bool result = (bool)EM_ASM_INT({
+    var methods = (["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"]);
     var xhr = window._httpChannels[$0];
     try {
       xhr.open(methods[$1], UTF8ToString($2), !!$3);
@@ -463,7 +463,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
       (console.error || console.log)(ex);
       return 0;
     }
-  }), this, method, _request.get_url().c_str(), (int)_nonblocking, (int)first_byte, (int)last_byte);
+  }, this, method, _request.get_url().c_str(), (int)_nonblocking, (int)first_byte, (int)last_byte);
 
   if (!result) {
     return false;
