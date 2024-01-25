@@ -4881,6 +4881,7 @@ if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
 
 if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
   DefSymbol('GLES2', 'OPENGLES_2', '')
+  LinkFlag('GLES2', '-s GL_ENABLE_GET_PROC_ADDRESS=1')
   OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
   TargetAdd('p3webgldisplay_webgldisplay_composite1.obj', opts=OPTS, input='p3webgldisplay_composite1.cxx')
   TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_config_gles2gsg.obj')
