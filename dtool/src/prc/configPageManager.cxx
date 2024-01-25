@@ -127,11 +127,13 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
+#elif defined(__EMSCRIPTEN__)
+  const BlobInfo *blobinfo = nullptr;
 #else
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     // Clear the error flag.
     dlerror();
 #endif
@@ -153,6 +155,7 @@ reload_implicit_pages() {
   // Pull them out and store them in _prc_patterns.
   _prc_patterns.clear();
 
+#ifdef PRC_PATTERNS
   string prc_patterns = PRC_PATTERNS;
   if (blobinfo != nullptr && blobinfo->prc_patterns != nullptr) {
     prc_patterns = blobinfo->prc_patterns;
@@ -171,10 +174,12 @@ reload_implicit_pages() {
       _prc_patterns.push_back(glob);
     }
   }
+#endif  // PRC_PATTERNS
 
   // Similarly for PRC_ENCRYPTED_PATTERNS.
   _prc_encrypted_patterns.clear();
 
+#ifdef PRC_ENCRYPTED_PATTERNS
   string prc_encrypted_patterns = PRC_ENCRYPTED_PATTERNS;
   if (blobinfo != nullptr && blobinfo->prc_encrypted_patterns != nullptr) {
     prc_encrypted_patterns = blobinfo->prc_encrypted_patterns;
@@ -191,10 +196,12 @@ reload_implicit_pages() {
       _prc_encrypted_patterns.push_back(glob);
     }
   }
+#endif  // PRC_ENCRYPTED_PATTERNS
 
   // And again for PRC_EXECUTABLE_PATTERNS.
   _prc_executable_patterns.clear();
 
+#ifdef PRC_EXECUTABLE_PATTERNS
   string prc_executable_patterns = PRC_EXECUTABLE_PATTERNS;
   if (blobinfo != nullptr && blobinfo->prc_executable_patterns != nullptr) {
     prc_executable_patterns = blobinfo->prc_executable_patterns;
@@ -211,10 +218,12 @@ reload_implicit_pages() {
       _prc_executable_patterns.push_back(glob);
     }
   }
+#endif  // PRC_EXECUTABLE_PATTERNS
 
   // Now build up the search path for .prc files.
   _search_path.clear();
 
+#ifdef PRC_DIR_ENVVARS
   // PRC_DIR_ENVVARS lists one or more environment variables separated by
   // spaces.  Pull them out, and each of those contains the name of a single
   // directory to search.  Add it to the search path.
@@ -236,7 +245,9 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // PRC_DIR_ENVVARS
 
+#ifdef PRC_PATH_ENVVARS
   // PRC_PATH_ENVVARS lists one or more environment variables separated by
   // spaces.  Pull them out, and then each one of those contains a list of
   // directories to search.  Add each of those to the search path.
@@ -264,7 +275,9 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // PRC_PATH_ENVVARS
 
+#ifdef PRC_PATH2_ENVVARS
 /*
  * PRC_PATH2_ENVVARS is a special variable that is rarely used; it exists
  * primarily to support the Cygwin-based "ctattach" tools used by the Walt
@@ -294,7 +307,9 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // PRC_PATH2_ENVVARS
 
+#ifdef DEFAULT_PRC_DIR
   if (_search_path.is_empty()) {
     // If nothing's on the search path (PRC_DIR and PRC_PATH were not
     // defined), then use the DEFAULT_PRC_DIR.
@@ -310,6 +325,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // DEFAULT_PRC_DIR
 
   // Now find all of the *.prc files (or whatever matches PRC_PATTERNS) on the
   // path.
@@ -398,6 +414,11 @@ reload_implicit_pages() {
 
     if ((file._file_flags & FF_execute) != 0 &&
         filename.is_executable()) {
+
+#ifdef __EMSCRIPTEN__
+      prc_cat.error()
+        << "Executable config files are not supported with Emscripten.\n";
+#else
       // Attempt to execute the file as a command.
       string command = filename.to_os_specific();
 
@@ -420,6 +441,7 @@ reload_implicit_pages() {
       _pages_sorted = false;
 
       page->read_prc(ifs);
+#endif  // __EMSCRIPTEN__
 
     } else if ((file._file_flags & FF_decrypt) != 0) {
       // Read and decrypt the file.

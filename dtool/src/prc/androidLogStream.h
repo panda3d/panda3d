@@ -49,6 +49,8 @@ public:
   virtual ~AndroidLogStream();
 
   static std::ostream &out(NotifySeverity severity);
+
+  friend class Notify;
 };
 
 #endif  // ANDROID

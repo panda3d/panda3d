@@ -13,7 +13,7 @@
 
 #include "httpCookie.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 #include "httpChannel.h"
 #include "string_utils.h"

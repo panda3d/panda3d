@@ -30,10 +30,15 @@ if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
 endif()
 
 # Are we building with static or dynamic linking?
+if(EMSCRIPTEN OR WASI)
+  set(_default_shared OFF)
+else()
+  set(_default_shared ON)
+endif()
 option(BUILD_SHARED_LIBS
   "Causes subpackages to be built separately -- setup for dynamic linking.
 Utilities/tools/binaries/etc are then dynamically linked to the
-libraries instead of being statically linked." ON)
+libraries instead of being statically linked." ${_default_shared})
 
 option(BUILD_METALIBS
   "Should we build 'metalibs' -- fewer, larger libraries that contain the bulk
@@ -561,12 +566,18 @@ set(THREADS_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
 set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
 # Add basic use flag for threading
+if(EMSCRIPTEN OR WASI)
+  set(_default_threads OFF)
+else()
+  set(_default_threads ON)
+endif()
 package_option(THREADS
   "If on, compile Panda3D with threading support.
 Building in support for threading will enable Panda to take
 advantage of multiple CPU's if you have them (and if the OS
 supports kernel threads running on different CPU's), but it will
 slightly slow down Panda for the single CPU case."
+  DEFAULT ${_default_threads}
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads

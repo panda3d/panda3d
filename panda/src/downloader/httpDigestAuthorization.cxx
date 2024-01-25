@@ -13,7 +13,7 @@
 
 #include "httpDigestAuthorization.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 #include "hashVal.h"
 #include "string_utils.h"

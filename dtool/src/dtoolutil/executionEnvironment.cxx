@@ -62,7 +62,7 @@ extern char **environ;
 #include <sys/sysctl.h>
 #endif
 
-#if defined(IS_LINUX) || defined(IS_FREEBSD)
+#if (defined(IS_LINUX) || defined(IS_FREEBSD)) && !defined(__wasi__)
 // For link_map and dlinfo.
 #include <link.h>
 #include <dlfcn.h>
@@ -576,6 +576,9 @@ read_environment_variables() {
       _variables[variable] = value;
     }
   }
+#elif defined(__EMSCRIPTEN__)
+  // Emscripten has no environment vars.  Don't even try.
+
 #elif defined(HAVE_PROC_SELF_ENVIRON)
   // In some cases, we may have a file called procselfenviron that may be read
   // to determine all of our environment variables.
@@ -918,7 +921,7 @@ read_args() {
   }
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__wasi__)
   // Try to use realpath to get cleaner paths.
 
   if (!_binary_name.empty()) {
@@ -934,7 +937,7 @@ read_args() {
       _dtool_name = newpath;
     }
   }
-#endif  // _WIN32
+#endif  // _WIN32 __wasi__
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

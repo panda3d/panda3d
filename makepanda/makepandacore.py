@@ -46,6 +46,14 @@ ANDROID_API = None
 SYS_LIB_DIRS = []
 SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
+if sys.platform == "darwin" or sys.platform.startswith("freebsd"):
+    DEFAULT_CC = "clang"
+    DEFAULT_CXX = "clang++"
+else:
+    DEFAULT_CC = "gcc"
+    DEFAULT_CXX = "g++"
+DEFAULT_AR = "ar"
+DEFAULT_RANLIB = "ranlib"
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
@@ -353,6 +361,7 @@ def SetTarget(target, arch=None):
     be called *before* any calls are made to GetOutputDir, GetCC, etc."""
     global TARGET, TARGET_ARCH, HAS_TARGET_ARCH
     global TOOLCHAIN_PREFIX
+    global DEFAULT_CC, DEFAULT_CXX, DEFAULT_AR, DEFAULT_RANLIB
 
     host = GetHost()
     host_arch = GetHostArch()
@@ -376,6 +385,9 @@ def SetTarget(target, arch=None):
             exit("Windows architecture must be x86 or x64")
 
     elif target == 'darwin':
+        DEFAULT_CC = "clang"
+        DEFAULT_CXX = "clang++"
+
         if arch == 'amd64':
             arch = 'x86_64'
         if arch == 'aarch64':
@@ -437,6 +449,8 @@ def SetTarget(target, arch=None):
 
         ANDROID_TRIPLE += str(ANDROID_API)
         TOOLCHAIN_PREFIX = ANDROID_TRIPLE + '-'
+        DEFAULT_CC = "clang"
+        DEFAULT_CXX = "clang++"
 
     elif target == 'linux':
         if arch is not None:
@@ -445,7 +459,19 @@ def SetTarget(target, arch=None):
         elif host != 'linux':
             exit('Should specify an architecture when building for Linux')
 
+    elif target == 'emscripten':
+        DEFAULT_CC = "emcc"
+        DEFAULT_CXX = "em++"
+        DEFAULT_AR = "emar"
+        DEFAULT_RANLIB = "emranlib"
+
+        arch = "wasm32"
+
     elif target == host:
+        if target == 'freebsd':
+            DEFAULT_CC = "clang"
+            DEFAULT_CXX = "clang++"
+
         if arch is None or arch == host_arch:
             # Not a cross build.
             pass
@@ -486,16 +512,10 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    if TARGET in ('darwin', 'freebsd', 'android'):
-        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'clang')
-    else:
-        return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
+    return os.environ.get('CC', TOOLCHAIN_PREFIX + DEFAULT_CC)
 
 def GetCXX():
-    if TARGET in ('darwin', 'freebsd', 'android'):
-        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'clang++')
-    else:
-        return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
+    return os.environ.get('CXX', TOOLCHAIN_PREFIX + DEFAULT_CXX)
 
 def GetStrip():
     # Hack
@@ -507,16 +527,16 @@ def GetStrip():
 def GetAR():
     # Hack
     if TARGET == 'android':
-        return TOOLCHAIN_PREFIX + 'ar'
+        return TOOLCHAIN_PREFIX + DEFAULT_AR
     else:
-        return 'ar'
+        return DEFAULT_AR
 
 def GetRanlib():
     # Hack
     if TARGET == 'android':
-        return TOOLCHAIN_PREFIX + 'ranlib'
+        return TOOLCHAIN_PREFIX + DEFAULT_RANLIB
     else:
-        return 'ranlib'
+        return DEFAULT_RANLIB
 
 BISON = None
 def GetBison():
@@ -1392,6 +1412,9 @@ def GetThirdpartyDir():
 
     elif (target == 'android'):
         THIRDPARTYDIR = base + "/android-libs-%s/" % (target_arch)
+
+    elif (target == 'emscripten'):
+        THIRDPARTYDIR = base + "/emscripten-libs/"
 
     else:
         Warn("Unsupported platform:", target)
@@ -2837,6 +2860,8 @@ LIBDIRECTORIES = []
 FRAMEWORKDIRECTORIES = []
 LIBNAMES = []
 DEFSYMBOLS = []
+COMPILEFLAGS = []
+LINKFLAGS = []
 
 def IncDirectory(opt, dir):
     INCDIRECTORIES.append((opt, dir))
@@ -2899,6 +2924,12 @@ def LibName(opt, name):
 
 def DefSymbol(opt, sym, val=""):
     DEFSYMBOLS.append((opt, sym, val))
+
+def CompileFlag(opt, flag):
+    COMPILEFLAGS.append((opt, flag))
+
+def LinkFlag(opt, flag):
+    LINKFLAGS.append((opt, flag))
 
 ########################################################################
 #
@@ -2965,7 +2996,9 @@ def SetupBuildEnvironment(compiler):
             sysroot_flag = " -target " + ANDROID_TRIPLE
 
         # Extract the dirs from the line that starts with 'libraries: ='.
-        cmd = GetCXX() + " -print-search-dirs" + sysroot_flag
+        # The -E is mostly to keep emscripten happy by preventing it from
+        # running the compiler and complaining about the lack of input files.
+        cmd = GetCXX() + " -E -print-search-dirs" + sysroot_flag
         handle = os.popen(cmd)
         for line in handle:
             if not line.startswith('libraries: ='):
@@ -3373,7 +3406,8 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if GetTarget() == 'windows':
+    target = GetTarget()
+    if target == 'windows':
         if GetOptimize() <= 2:
             dllext = '_d'
         else:
@@ -3383,6 +3417,8 @@ def GetExtensionSuffix():
             return dllext + '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
         else:
             return dllext + '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+    elif target == 'emscripten':
+        return '.so'
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
@@ -3453,6 +3489,15 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".rsrc")):  return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".app")):   return OUTPUTDIR+"/bin/"+fn
+    elif (target == 'emscripten'):
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".o"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".o"
+        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".js"
+        if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]+".js"
+        if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
@@ -3677,10 +3722,17 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
         if GetLinkAllStatic() and ORIG_EXT[fullinput] == '.lib' and fullinput in TARGET_TABLE:
             tdep = TARGET_TABLE[fullinput]
             for y in tdep.inputs:
-                if ORIG_EXT[y] == '.lib':
+                if ORIG_EXT[y] == '.lib' and y not in t.inputs:
                     t.inputs.append(y)
 
-            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES:
+            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES + LINKFLAGS + COMPILEFLAGS:
+                if opt in tdep.opts and opt not in t.opts:
+                    t.opts.append(opt)
+
+        elif GetTarget() == 'emscripten' and ORIG_EXT[fullinput] == '.dll' and fullinput in TARGET_TABLE:
+            # Transfer over flags like -s USE_LIBPNG=1
+            tdep = TARGET_TABLE[fullinput]
+            for opt, _ in LINKFLAGS:
                 if opt in tdep.opts and opt not in t.opts:
                     t.opts.append(opt)
 

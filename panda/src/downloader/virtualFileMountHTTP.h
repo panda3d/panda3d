@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 #include "virtualFileMount.h"
 #include "httpClient.h"

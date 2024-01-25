@@ -473,6 +473,46 @@ set_time_scale(double time, double new_time_scale) {
   _time_scale = new_time_scale;
 }
 
+#elif defined(__EMSCRIPTEN__)
+
+/**
+ * The Emscripten implementation.  This uses either the JavaScript function
+ * performance.now() if available, otherwise Date.now().
+ */
+
+#include <emscripten.h>
+
+/**
+ *
+ */
+double TrueClock::
+get_long_time() {
+  return emscripten_get_now() * 0.001;
+}
+
+/**
+ *
+ */
+double TrueClock::
+get_short_raw_time() {
+  return emscripten_get_now() * 0.001;
+}
+
+/**
+ *
+ */
+bool TrueClock::
+set_cpu_affinity(uint32_t mask) const {
+  return false;
+}
+
+/**
+ *
+ */
+TrueClock::
+TrueClock() {
+}
+
 #else  // !_WIN32
 
 // The Posix implementation.
