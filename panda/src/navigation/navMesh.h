@@ -104,10 +104,10 @@ private:
   LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
 
-	dtTileCache *_tile_cache;
-	dtTileCacheAlloc *_tile_alloc;
-	dtTileCacheCompressor *_tile_compressor;
-	dtTileCacheMeshProcess *_tile_mesh_proc;
+  dtTileCache *_tile_cache;
+  dtTileCacheAlloc *_tile_alloc;
+  dtTileCacheCompressor *_tile_compressor;
+  dtTileCacheMeshProcess *_tile_mesh_proc;
   
 public:
   dtNavMesh *get_nav_mesh() { return _nav_mesh; }
