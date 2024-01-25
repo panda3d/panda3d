@@ -2287,7 +2287,9 @@ touch() const {
         perror(os_specific.c_str());
         return false;
       }
-      close(fd);
+      if (close(fd) < 0) {
+        perror(os_specific.c_str());
+      }
       return true;
     }
     perror(os_specific.c_str());
@@ -2736,7 +2738,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   if (flock(fd, LOCK_EX) != 0) {
 #endif
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2748,7 +2752,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   if (bytes_read < 0) {
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2759,7 +2765,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     ssize_t bytes_written = write(fd, new_contents.data(), new_contents.size());
     if (bytes_written < 0) {
       perror(os_specific.c_str());
-      close(fd);
+      if (close(fd) < 0) {
+        perror(os_specific.c_str());
+      }
       return false;
     }
   }
@@ -2852,7 +2860,9 @@ atomic_read_contents(string &contents) const {
   if (flock(fd, LOCK_EX) != 0) {
 #endif
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2864,11 +2874,15 @@ atomic_read_contents(string &contents) const {
 
   if (bytes_read < 0) {
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
-  close(fd);
+  if (close(fd) < 0) {
+    perror(os_specific.c_str());
+  }
   return true;
 #endif  // WIN32_VC
 }
