@@ -78,25 +78,27 @@ class NavigationDemo(ShowBase):
         # Add an untracked collision mesh.
         self.navmesh.add_coll_node_path(self.scene, tracked=False)
 
-        # Add a tracked obstacle.
-        self.navmesh.add_obstacles(render)
-
-        self.navmesh.update()
-
         self.navmeshnode = NavMeshNode("scene", self.navmesh)
         self.navmeshnodepath: NodePath = self.scene.attach_new_node(self.navmeshnode)
 
         self.accept("m", self.toggle_nav_mesh)
 
+        self.navmesh.update()
+
         # Uncomment the line below to save the generated navmesh to file.
-        # self.navmeshnodepath.write_bam_file("scene_navmesh.bam")
+        #self.navmeshnodepath.write_bam_file("scene_navmesh.bam")
 
         # Uncomment the following section to read the generated navmesh from file.
-        # self.navmeshnodepath.remove_node()
-        # self.navmeshnodepath = self.loader.loadModel("scene_navmesh.bam")
-        # self.navmeshnodepath.reparent_to(self.scene)
-        # self.navmeshnode: NavMeshNode = self.navmeshnodepath.node()
-        # self.navmesh = self.navmeshnode.get_nav_mesh()
+        #self.navmeshnodepath.remove_node()
+        #self.navmeshnodepath = self.loader.loadModel("scene_navmesh.bam")
+        #self.navmeshnodepath.reparent_to(self.scene)
+        #self.navmeshnode: NavMeshNode = self.navmeshnodepath.node()
+        #self.navmesh = self.navmeshnode.get_nav_mesh()
+
+        # Add a tracked obstacle.
+        self.navmesh.add_obstacles(render)
+
+        self.navmesh.update()
 
         self.destinationMarker = self.loader.loadModel("misc/objectHandles.egg")
         self.destinationMarker.set_scale(3)

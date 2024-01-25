@@ -90,6 +90,10 @@ public:
 #endif
   };
 
+  static dtTileCacheAlloc *make_tile_allocator();
+  static dtTileCacheMeshProcess *make_mesh_process();
+  static dtTileCacheCompressor *make_tile_compressor();
+
 private:
   NodePath _parent;
 
