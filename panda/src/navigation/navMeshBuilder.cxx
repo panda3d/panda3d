@@ -593,9 +593,9 @@ PT(NavMesh) NavMeshBuilder::build() {
     return nullptr;
   }
 
-	dtTileCacheAlloc *tile_alloc = new LinearAllocator(32000);
-	dtTileCacheCompressor *tile_compressor = new ExpressCompressor();
-	dtTileCacheMeshProcess *tile_mesh_proc = new MeshProcess();
+	dtTileCacheAlloc *tile_alloc = make_tile_allocator();
+	dtTileCacheCompressor *tile_compressor = make_tile_compressor();
+	dtTileCacheMeshProcess *tile_mesh_proc = make_mesh_process();
 
   status = tile_cache->init(&tcparams, tile_alloc, tile_compressor, tile_mesh_proc);
   if (dtStatusFailed(status))
@@ -838,4 +838,19 @@ process_obstacle_node_path(dtTileCache *tile_cache, std::set<ObstacleData> &exis
     CPT(TransformState) net_transform = transform->compose(child_transform);
     process_obstacle_node_path(tile_cache, existing_obstacles, new_obstacles, cnp, net_transform);
   }
+}
+
+dtTileCacheAlloc *NavMeshBuilder::
+make_tile_allocator() {
+  return new LinearAllocator(32000);
+}
+
+dtTileCacheMeshProcess *NavMeshBuilder::
+make_mesh_process() {
+  return new MeshProcess();
+}
+
+dtTileCacheCompressor *NavMeshBuilder::
+make_tile_compressor() {
+  return new ExpressCompressor();
 }

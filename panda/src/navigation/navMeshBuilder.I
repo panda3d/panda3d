@@ -14,6 +14,8 @@
 /**
  * Sets the NavMeshParams that control building the NavMesh.
  */
+#include "navMeshBuilder.h"
+
 INLINE void NavMeshBuilder::
 set_params(NavMeshParams &p) {
   _params = NavMeshParams(p);

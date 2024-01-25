@@ -61,11 +61,11 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh,
 								 dtTileCacheMeshProcess *tile_mesh_proc) :
                  _nav_mesh(nav_mesh),
                  _params(params),
+								 _internal_rebuilder(params),
 								 _tile_cache(tile_cache),
 								 _tile_alloc(tile_alloc),
 								 _tile_compressor(tile_compressor),
-								 _tile_mesh_proc(tile_mesh_proc),
-                 _internal_rebuilder(params) {
+                 _tile_mesh_proc(tile_mesh_proc) {
   _internal_rebuilder._last_tris = untracked_tris;
   std::copy(untracked_tris.begin(), untracked_tris.end(), std::inserter(_untracked_tris, _untracked_tris.begin()));
 }
@@ -367,7 +367,7 @@ register_with_read_factory() {
  * Writes the contents of this object to the datagram for shipping out to a
  * Bam file.
  *
- * Note: Tracked nodes are NOT saved.
+ * Note: Tracked nodes and obstacles are NOT saved.
  */
 void NavMesh::
 write_datagram(BamWriter *manager, Datagram &dg) {
@@ -397,29 +397,33 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_bool(_params.get_filter_ledge_spans());
   dg.add_bool(_params.get_filter_walkable_low_height_spans());
 
-  // Need to reassign to const variable as it
-  const dtNavMesh *mesh = _nav_mesh;
-
   int num_tiles = 0;
 
-  for (int i = 0; i < mesh->getMaxTiles(); ++i)
+  for (int i = 0; i < _tile_cache->getTileCount(); ++i)
   {
-    const dtMeshTile* tile = mesh->getTile(i);
+    const dtCompressedTile* tile = _tile_cache->getTile(i);
     if (!tile || !tile->header || !tile->dataSize) continue;
     num_tiles++;
   }
 
-  dg.add_int32(num_tiles);
+  dg.add_uint32(num_tiles);
 
-  for (int i = 0; i < mesh->getMaxTiles(); ++i)
+  navigation_cat.debug() << "Writing " << num_tiles << " tiles" << std::endl;
+  if (num_tiles == 0) {
+    navigation_cat.warning() << "The NavMesh being saved does not have any tiles generated. Did you forget to run update() ?" << std::endl;
+  }
+
+  for (int i = 0; i < _tile_cache->getTileCount(); ++i)
   {
-    const dtMeshTile* tile = mesh->getTile(i);
+    const dtCompressedTile* tile = _tile_cache->getTile(i);
     if (!tile || !tile->header || !tile->dataSize) continue;
     dg.add_blob({tile->data, tile->data + tile->dataSize});
-    dg.add_uint32(mesh->getTileRef(tile));
+    dg.add_uint32(_tile_cache->getTileRef(tile));
   }
 
   dg.add_uint64(_untracked_tris.size());
+
+  navigation_cat.debug() << "Writing " << _untracked_tris.size() << " untracked tris" << std::endl;
 
   for (auto &tri_group : _untracked_tris) {
     dg.add_float64(tri_group.a[0]);
@@ -446,35 +450,10 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
 
-  NavMeshParams navParams;
+  NavMesh *mesh = new NavMesh();
+  mesh->fillin(scan, manager);
 
-  // Version
-  int version = scan.get_int16();
-  nassertr(version == 1, nullptr);
-
-  navParams.set_cell_size(scan.get_float64());
-  navParams.set_cell_height(scan.get_float64());
-  navParams.set_actor_height(scan.get_float64());
-  navParams.set_actor_radius(scan.get_float64());
-  navParams.set_actor_max_climb(scan.get_float64());
-  navParams.set_actor_max_slope(scan.get_float64());
-  navParams.set_region_min_size(scan.get_float64());
-  navParams.set_region_merge_size(scan.get_float64());
-  navParams.set_edge_max_len(scan.get_float64());
-  navParams.set_edge_max_error(scan.get_float64());
-  navParams.set_verts_per_poly(scan.get_int32());
-  navParams.set_detail_sample_dist(scan.get_float64());
-  navParams.set_detail_sample_max_error(scan.get_float64());
-  navParams.set_partition_type(static_cast<NavMeshParams::PartitionType>(scan.get_int32()));
-  navParams.set_tile_size(scan.get_float64());
-  navParams.set_filter_low_hanging_obstacles(scan.get_bool());
-  navParams.set_filter_ledge_spans(scan.get_bool());
-  navParams.set_filter_walkable_low_height_spans(scan.get_bool());
-
-  auto param = new NavMesh(navParams);
-  param->fillin(scan, manager);
-
-  return param;
+  return mesh;
 }
 
 /**
@@ -483,40 +462,137 @@ make_from_bam(const FactoryParams &params) {
  */
 void NavMesh::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  int num_tiles = scan.get_int32();
+  NavMeshParams navParams;
 
-  for (int i = 0; i < num_tiles; ++i)
+  // Version
+  int version = scan.get_int16();
+  nassertv(version == 1);
+
+  _params.set_cell_size(scan.get_float64());
+  _params.set_cell_height(scan.get_float64());
+  _params.set_actor_height(scan.get_float64());
+  _params.set_actor_radius(scan.get_float64());
+  _params.set_actor_max_climb(scan.get_float64());
+  _params.set_actor_max_slope(scan.get_float64());
+  _params.set_region_min_size(scan.get_float64());
+  _params.set_region_merge_size(scan.get_float64());
+  _params.set_edge_max_len(scan.get_float64());
+  _params.set_edge_max_error(scan.get_float64());
+  _params.set_verts_per_poly(scan.get_int32());
+  _params.set_detail_sample_dist(scan.get_float64());
+  _params.set_detail_sample_max_error(scan.get_float64());
+  _params.set_partition_type(static_cast<NavMeshParams::PartitionType>(scan.get_int32()));
+  _params.set_tile_size(scan.get_float64());
+  _params.set_filter_low_hanging_obstacles(scan.get_bool());
+  _params.set_filter_ledge_spans(scan.get_bool());
+  _params.set_filter_walkable_low_height_spans(scan.get_bool());
+
+  // Tile cache params.
+  dtTileCacheParams tcparams = {};
+  memset(&tcparams, 0, sizeof(tcparams));
+  rcVcopy(tcparams.orig, _params.get_orig_bound_min().get_data());
+  tcparams.cs = _params.get_cell_size();
+  tcparams.ch = _params.get_cell_height();
+  tcparams.width = (int)_params.get_tile_size();
+  tcparams.height = (int)_params.get_tile_size();
+  tcparams.walkableHeight = _params.get_actor_height();
+  tcparams.walkableRadius = _params.get_actor_radius();
+  tcparams.walkableClimb = _params.get_actor_max_climb();
+  tcparams.maxSimplificationError = _params.get_edge_max_error();
+  tcparams.maxTiles = _params.get_max_tiles() * _params.get_max_layers_per_tile();
+  tcparams.maxObstacles = 256;
+
+  dtStatus status;
+
+  _tile_cache = dtAllocTileCache();
+  if (!_tile_cache)
   {
+    navigation_cat.error() << "Could not allocate tile cache." << std::endl;
+    return;
+  }
+
+  dtTileCacheAlloc *tile_alloc = NavMeshBuilder::make_tile_allocator();
+  dtTileCacheCompressor *tile_compressor = NavMeshBuilder::make_tile_compressor();
+  dtTileCacheMeshProcess *tile_mesh_proc = NavMeshBuilder::make_mesh_process();
+
+  status = _tile_cache->init(&tcparams, tile_alloc, tile_compressor, tile_mesh_proc);
+  if (dtStatusFailed(status))
+  {
+    navigation_cat.error() << "Could not init tile cache." << std::endl;
+    return;
+  }
+
+  _nav_mesh = dtAllocNavMesh();
+  if (!_nav_mesh)
+  {
+    navigation_cat.error() << "Could not allocate navmesh." << std::endl;
+    return;
+  }
+
+  dtNavMeshParams dtParams = {};
+  rcVcopy(dtParams.orig, _params.get_orig_bound_min().get_data());
+  dtParams.tileWidth = _params.get_tile_size()*_params.get_cell_size();
+  dtParams.tileHeight = _params.get_tile_size()*_params.get_cell_size();
+  dtParams.maxTiles = _params.get_max_tiles();
+  dtParams.maxPolys = _params.get_max_polys_per_tile();
+
+  status = _nav_mesh->init(&dtParams);
+  if (dtStatusFailed(status))
+  {
+    navigation_cat.error() << "Could not init navmesh." << std::endl;
+    return;
+  }
+
+  unsigned int num_tiles = scan.get_uint32();
+
+  navigation_cat.debug() << "Loading " << num_tiles << " tiles from bam." << std::endl;
+
+  for (unsigned int i = 0; i < num_tiles; ++i) {
     auto data = scan.get_blob();
-    uint32_t ref = scan.get_uint32();
-    // Need to make a copy of the tile data for the NavMesh to own.
+    // Not used.
+    scan.get_uint32();
+    // Need to make a copy of the tile data for the TileCache to own.
     auto tile_data = static_cast<unsigned char *>(malloc(data.size()));
     std::copy(data.begin(), data.end(), tile_data);
-    _nav_mesh->addTile(tile_data, data.size(), DT_TILE_FREE_DATA, ref, 0);
+    dtCompressedTileRef tile = 0;
+    status = _tile_cache->addTile(tile_data, data.size(), DT_COMPRESSEDTILE_FREE_DATA, &tile);
+    if (dtStatusFailed(status))
+    {
+      navigation_cat.warning() << "Failed to load tile " << i << " from bam." << std::endl;
+      continue;
+    }
+    if (tile)
+      _tile_cache->buildNavMeshTile(tile, _nav_mesh);
   }
 
   uint64_t num_tris = scan.get_uint64();
 
+  navigation_cat.debug() << "Loading " << num_tris << " untracked tris from bam." << std::endl;
+
   for (uint64_t i = 0; i < num_tris; ++i) {
-    _untracked_tris.push_back(
+    _untracked_tris.emplace_back(
+      NavTriVertGroup {
         {
-            {
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64())
-            },
-            {
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64())
-            },
-            {
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64()),
-                static_cast<float>(scan.get_float64())
-            }
-        });
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64())
+        },
+        {
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64())
+        },
+        {
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64()),
+          static_cast<float>(scan.get_float64())
+        }
+      });
   }
 
+  _tile_alloc = tile_alloc;
+  _tile_compressor = tile_compressor;
+  _tile_mesh_proc = tile_mesh_proc;
+  _internal_rebuilder = NavMeshBuilder(_params);
   std::copy(_untracked_tris.begin(), _untracked_tris.end(), std::inserter(_internal_rebuilder._last_tris, _internal_rebuilder._last_tris.begin()));
 }
