@@ -134,6 +134,12 @@ class Interval(DirectObject):
         return self.getT()
 
     def resume(self, startT = None):
+        """
+        In versions previous to 1.11, this would resume an interval even if it had ended
+        As of 1.11 we now check if the interval has ended, and only resume it if startT has been passed
+        """
+        if self.getState() == CInterval.SFinal and startT is None:
+            return
         if startT is not None:
             self.setT(startT)
         self.setupResume()
