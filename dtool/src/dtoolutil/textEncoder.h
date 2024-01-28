@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE static Encoding get_default_encoding();
   MAKE_PROPERTY(default_encoding, get_default_encoding, set_default_encoding);
 
-#if defined(CPPPARSER)
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
   PY_EXTEND(void set_text(PyObject *text));
   PY_EXTEND(void set_text(PyObject *text, Encoding encoding));
 #else // CPPPARSER
@@ -67,7 +67,7 @@ PUBLISHED:
   void make_upper();
   void make_lower();
 
-#if defined(CPPPARSER)
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
   PY_EXTEND(PyObject *get_text() const);
   PY_EXTEND(PyObject *get_text(Encoding encoding) const);
   PY_EXTEND(void append_text(PyObject *text));
@@ -108,7 +108,7 @@ PUBLISHED:
   std::wstring get_wtext_as_ascii() const;
   bool is_wtext() const;
 
-#if defined(CPPPARSER)
+#if defined(CPPPARSER) && defined(HAVE_PYTHON)
   PY_EXTEND(static PyObject *encode_wchar(char32_t ch, Encoding encoding));
   PY_EXTEND(INLINE PyObject *encode_wtext(const std::wstring &wtext) const);
   PY_EXTEND(static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding));
@@ -120,6 +120,7 @@ PUBLISHED:
   static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
   INLINE std::wstring decode_text(const std::string &text) const;
   static std::wstring decode_text(const std::string &text, Encoding encoding);
+
 #endif // CPPPARSER
 
   MAKE_PROPERTY(text, get_text, set_text);
