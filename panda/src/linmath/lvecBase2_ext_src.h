@@ -11,6 +11,8 @@
  * @date 2013-09-13
  */
 
+#ifdef HAVE_PYTHON
+
 /**
  * This class defines the extension methods for LVecBase2, which are called
  * instead of any C++ methods with the same prototype.
@@ -39,3 +41,5 @@ public:
 };
 
 #include "lvecBase2_ext_src.I"
+
+#endif
