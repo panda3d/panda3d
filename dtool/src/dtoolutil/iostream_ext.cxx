@@ -283,19 +283,18 @@ write(PyObject *b) {
  */
 void Extension<ostream>::
 writelines(PyObject *lines) {
-  PyObject *seq = PySequence_Fast(lines, "writelines() expects a sequence");
-  if (seq == nullptr) {
+  PyObject *iter = PyObject_GetIter(lines);
+  if (iter == nullptr) {
     return;
   }
 
-  PyObject **items = PySequence_Fast_ITEMS(seq);
-  Py_ssize_t len = PySequence_Fast_GET_SIZE(seq);
-
-  for (Py_ssize_t i = 0; i < len; ++i) {
-    write(items[i]);
+  PyObject *next = PyIter_Next(iter);
+  while (next != nullptr) {
+    write(next);
+    Py_DECREF(next);
+    next = PyIter_Next(iter);
   }
-
-  Py_DECREF(seq);
+  Py_DECREF(iter);
 }
 
 #endif  // HAVE_PYTHON
