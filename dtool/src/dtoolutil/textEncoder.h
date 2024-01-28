@@ -120,7 +120,6 @@ PUBLISHED:
   static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
   INLINE std::wstring decode_text(const std::string &text) const;
   static std::wstring decode_text(const std::string &text, Encoding encoding);
-
 #endif // CPPPARSER
 
   MAKE_PROPERTY(text, get_text, set_text);
