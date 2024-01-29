@@ -17,8 +17,7 @@
  * Increments the reference count.  Assumes the GIL is held.
  */
 INLINE ParamPyObject::
-ParamPyObject(PyObject *value) : _value(value) {
-  Py_INCREF(value);
+ParamPyObject(PyObject *value) : _value(Py_NewRef(value)) {
 }
 
 /**
@@ -26,6 +25,5 @@ ParamPyObject(PyObject *value) : _value(value) {
  */
 INLINE PyObject *ParamPyObject::
 get_value() const {
-  Py_INCREF(_value);
-  return _value;
+  return Py_NewRef(_value);
 }

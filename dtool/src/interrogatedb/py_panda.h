@@ -237,7 +237,7 @@ EXPCL_PYPANDA PyObject *Dtool_Return_Bool(bool value);
 EXPCL_PYPANDA PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_NewRef(Py_None)) : nullptr)
 #define Dtool_Return(value) (LIKELY(PyErr_Occurred() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()

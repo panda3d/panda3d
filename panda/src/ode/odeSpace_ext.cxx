@@ -82,10 +82,9 @@ collide(PyObject* arg, PyObject* callback) {
     return -1;
 
   } else {
-    _python_callback = (PyObject*) callback;
-    Py_XINCREF(_python_callback);
+    _python_callback = Py_NewRef(callback);
     dSpaceCollide(_this->get_id(), (void*) arg, &near_callback);
-    Py_XDECREF(_python_callback);
+    Py_CLEAR(_python_callback);
     return 0;
   }
 }

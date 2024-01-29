@@ -84,8 +84,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
       future->get_result(ptr, ref_ptr);
 
       if (ptr == nullptr) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        return Py_NewRef(Py_None);
       }
 
       TypeHandle type = ptr->get_type();
@@ -141,9 +140,9 @@ static PyObject *gen_next(PyObject *self) {
 
   if (!future->done()) {
     // Continue awaiting the result.
-    Py_INCREF(self);
-    return self;
-  } else {
+    return Py_NewRef(self);
+  }
+  else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
       PyErr_SetObject(PyExc_StopIteration, result);
@@ -323,8 +322,7 @@ add_done_callback(PyObject *self, PyObject *fn) {
 
   _this->add_waiting_task(task);
 
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**

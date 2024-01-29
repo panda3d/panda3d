@@ -41,9 +41,7 @@ void Extension<DCClass>::
 set_class_def(PyObject *class_def) {
   PythonClassDefsImpl *defs = do_get_defs();
 
-  Py_XINCREF(class_def);
-  Py_XDECREF(defs->_class_def);
-  defs->_class_def = class_def;
+  Py_XSETREF(defs->_class_def, Py_XNewRef(class_def));
 }
 
 /**
@@ -53,13 +51,11 @@ set_class_def(PyObject *class_def) {
 PyObject *Extension<DCClass>::
 get_class_def() const {
   if (!has_class_def()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PythonClassDefsImpl *defs = do_get_defs();
-  Py_INCREF(defs->_class_def);
-  return defs->_class_def;
+  return Py_NewRef(defs->_class_def);
 }
 
 /**
@@ -80,9 +76,7 @@ void Extension<DCClass>::
 set_owner_class_def(PyObject *owner_class_def) {
   PythonClassDefsImpl *defs = do_get_defs();
 
-  Py_XINCREF(owner_class_def);
-  Py_XDECREF(defs->_owner_class_def);
-  defs->_owner_class_def = owner_class_def;
+  Py_XSETREF(defs->_owner_class_def, Py_XNewRef(owner_class_def));
 }
 
 /**
@@ -92,13 +86,11 @@ set_owner_class_def(PyObject *owner_class_def) {
 PyObject *Extension<DCClass>::
 get_owner_class_def() const {
   if (!has_owner_class_def()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PythonClassDefsImpl *defs = do_get_defs();
-  Py_INCREF(defs->_owner_class_def);
-  return defs->_owner_class_def;
+  return Py_NewRef(defs->_owner_class_def);
 }
 
 /**

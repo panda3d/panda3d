@@ -23,8 +23,7 @@ INLINE PyObject *Extension<NodePath>::
 get_python_tags() {
   // An empty NodePath returns None
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   return invoke_extension(_this->node()).get_python_tags();
 }
@@ -38,8 +37,7 @@ INLINE PyObject *Extension<NodePath>::
 get_tag_keys() const {
   // An empty NodePath returns None
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   return invoke_extension(_this->node()).get_tag_keys();
 }
@@ -52,8 +50,7 @@ INLINE PyObject *Extension<NodePath>::
 get_python_tag_keys() const {
   // An empty NodePath returns None
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   return invoke_extension(_this->node()).get_python_tag_keys();
 }
@@ -83,8 +80,7 @@ get_python_tag(PyObject *key) const {
   // An empty NodePath quietly returns no tags.  This makes
   // get_net_python_tag() easier to implement.
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   return invoke_extension(_this->node()).get_python_tag(key);
 }

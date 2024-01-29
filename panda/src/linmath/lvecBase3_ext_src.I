@@ -274,8 +274,7 @@ __ifloordiv__(PyObject *self, FLOATTYPE scalar) {
   _this->_v(1) = std::floor(_this->_v(1) / scalar);
   _this->_v(2) = std::floor(_this->_v(2) / scalar);
 #endif
-  Py_INCREF(self);
-  return self;
+  return Py_NewRef(self);
 }
 
 /**
@@ -306,8 +305,7 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(0) = cpow(_this->_v(0), exponent);
   _this->_v(1) = cpow(_this->_v(1), exponent);
   _this->_v(2) = cpow(_this->_v(2), exponent);
-  Py_INCREF(self);
-  return self;
+  return Py_NewRef(self);
 }
 
 /**
@@ -384,10 +382,8 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   static const char format[2] = {FLOATTOKEN, 0};
   static const Py_ssize_t shape = FLOATNAME(LVecBase3)::num_components;
 
-  Py_INCREF(self);
-
   view->buf = (void *)_this->get_data();
-  view->obj = self;
+  view->obj = Py_NewRef(self);
   view->len = 3 * sizeof(FLOATTYPE);
   view->readonly = 1;
   view->itemsize = sizeof(FLOATTYPE);

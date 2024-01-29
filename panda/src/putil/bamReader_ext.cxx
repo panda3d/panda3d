@@ -135,8 +135,7 @@ read_object() {
   }
 
   if (ptr == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   if (ref_ptr != nullptr) {
@@ -165,15 +164,13 @@ get_file_version() const {
  */
 void Extension<BamReader>::
 register_factory(TypeHandle handle, PyObject *func) {
-  nassertv(func != nullptr);
-
   if (!PyCallable_Check(func)) {
     Dtool_Raise_TypeError("second argument to register_factory must be callable");
     return;
   }
 
-  Py_INCREF(func);
-  BamReader::get_factory()->register_factory(handle, &factory_callback, (void *)func);
+  void *user_data = (void *)Py_NewRef(func);
+  BamReader::get_factory()->register_factory(handle, &factory_callback, user_data);
 }
 
 #endif

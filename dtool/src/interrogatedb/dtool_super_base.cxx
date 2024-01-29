@@ -27,15 +27,13 @@ static PyMemberDef standard_type_members[] = {
 
 static PyObject *GetSuperBase(PyObject *self) {
   Dtool_PyTypedObject *super_base = Dtool_GetSuperBase();
-  Py_XINCREF((PyTypeObject *)super_base); // order is important .. this is used for static functions
-  return (PyObject *)super_base;
+  return Py_XNewRef((PyObject *)&super_base->_PyType);
 };
 
 static void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   if (module != nullptr) {
     Dtool_PyTypedObject *super_base = Dtool_GetSuperBase();
-    Py_INCREF((PyTypeObject *)&super_base);
-    PyModule_AddObject(module, "DTOOL_SUPER_BASE", (PyObject *)&super_base);
+    PyModule_AddObjectRef(module, "DTOOL_SUPER_BASE", (PyObject *)&super_base->_PyType);
   }
 }
 
@@ -152,7 +150,7 @@ Dtool_PyTypedObject *Dtool_GetSuperBase() {
     PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPER_BASE)");
     return nullptr;
   }
-  Py_INCREF((PyTypeObject *)&super_base_type);
+  Py_INCREF(&super_base_type._PyType);
 
   PyDict_SetItemString(super_base_type._PyType.tp_dict, "DtoolGetSuperBase", PyCFunction_New(&methods[0], (PyObject *)&super_base_type));
 

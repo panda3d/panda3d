@@ -50,8 +50,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   PyObject *dupe = PyDict_GetItem(memo, self);
   if (dupe != nullptr) {
     // Already in the memo dictionary.
-    Py_INCREF(dupe);
-    return dupe;
+    return Py_NewRef(dupe);
   }
 
   PT(PandaNode) node_dupe = _this->copy_subgraph();
@@ -94,9 +93,7 @@ get_tag_keys() const {
  */
 PyObject *Extension<PandaNode>::
 get_python_tags() {
-  PyObject *dict = do_get_python_tags();
-  Py_INCREF(dict);
-  return dict;
+  return Py_NewRef(do_get_python_tags());
 }
 
 /**
@@ -121,8 +118,7 @@ set_python_tag(PyObject *key, PyObject *value) {
 PyObject *Extension<PandaNode>::
 get_python_tag(PyObject *key) const {
   if (_this->_python_tag_data == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PyObject *dict = ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
@@ -131,8 +127,7 @@ get_python_tag(PyObject *key) const {
     value = Py_None;
   }
   // PyDict_GetItem returns a borrowed reference.
-  Py_INCREF(value);
-  return value;
+  return Py_NewRef(value);
 }
 
 /**

@@ -32,8 +32,7 @@ static PyObject *gen_next(PyObject *self) {
 
   if (ival->get_state() != CInterval::S_final) {
     // Try again next frame.
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   else {
     PyErr_SetNone(PyExc_StopIteration);

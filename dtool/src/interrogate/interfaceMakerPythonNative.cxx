@@ -797,9 +797,7 @@ write_python_instance(ostream &out, int indent_level, const string &return_expr,
     indent(out, indent_level)
       << "if (" << return_expr << " == nullptr) {\n";
     indent(out, indent_level)
-      << "  Py_INCREF(Py_None);\n";
-    indent(out, indent_level)
-      << "  return Py_None;\n";
+      << "  return Py_NewRef(Py_None);\n";
     indent(out, indent_level)
       << "} else {\n";
     // Special exception if we are returning TypedWritable, which might
@@ -1372,16 +1370,15 @@ write_sub_module(ostream &out, Object *obj) {
 
   class_ptr = "(PyObject *)" + class_ptr;
 
-  // Note: PyModule_AddObject steals a reference, so we have to call Py_INCREF
-  // for every but the first time we add it to the module.
-  if (obj->_itype.is_typedef()) {
-    out << "  Py_INCREF(" << class_ptr << ");\n";
+  // The first time we add something to a module, we use PyModule_AddObject,
+  // which steals a reference.  This saves a call to Py_DECREF.
+  if (!obj->_itype.is_typedef()) {
+    out << "  PyModule_AddObject(module, \"" << export_class_name << "\", " << class_ptr << ");\n";
+  } else {
+    out << "  PyModule_AddObjectRef(module, \"" << export_class_name << "\", " << class_ptr << ");\n";
   }
-
-  out << "  PyModule_AddObject(module, \"" << export_class_name << "\", " << class_ptr << ");\n";
   if (export_class_name != export_class_name2) {
-    out << "  Py_INCREF(Dtool_Ptr_" << class_name << ");\n";
-    out << "  PyModule_AddObject(module, \"" << export_class_name2 << "\", " << class_ptr << ");\n";
+    out << "  PyModule_AddObjectRef(module, \"" << export_class_name2 << "\", " << class_ptr << ");\n";
   }
 }
 
@@ -2038,8 +2035,7 @@ write_module_class(ostream &out, Object *obj) {
             out << "  }\n";
           }
 
-          out << "  Py_INCREF(Py_NotImplemented);\n";
-          out << "  return Py_NotImplemented;\n";
+          out << "  return Py_NewRef(Py_NotImplemented);\n";
           out << "}\n\n";
         }
         break;
@@ -2508,8 +2504,7 @@ write_module_class(ostream &out, Object *obj) {
           // of raising an exception, if the this pointer doesn't match.  This
           // is for things like __pow__, which Python likes to call on the
           // wrong-type objects.
-          out << "    Py_INCREF(Py_NotImplemented);\n";
-          out << "    return Py_NotImplemented;\n";
+          out << "    return Py_NewRef(Py_NotImplemented);\n";
           out << "  }\n";
 
           set<FunctionRemap*> one_param_remaps;
@@ -2862,8 +2857,7 @@ write_module_class(ostream &out, Object *obj) {
       has_local_richcompare = true;
     }
 
-    out << "  Py_INCREF(Py_NotImplemented);\n";
-    out << "  return Py_NotImplemented;\n";
+    out << "  return Py_NewRef(Py_NotImplemented);\n";
     out << "}\n\n";
   }
 
@@ -6297,7 +6291,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
-      indent(out, indent_level) << "Py_XINCREF(return_value);\n";
+      return_expr = "Py_XNewRef(return_value)";
     } else {
       return_expr = manage_return_value(out, indent_level, remap, "return_value");
     }
@@ -6488,8 +6482,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
   } else if (return_flags & RF_self) {
-    indent(out, indent_level) << "Py_INCREF(self);\n";
-    indent(out, indent_level) << "return self;\n";
+    indent(out, indent_level) << "return Py_NewRef(self);\n";
 
   } else if (return_flags & RF_richcompare_zero) {
     indent(out, indent_level)
@@ -6497,8 +6490,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
   } else if (return_flags & RF_pyobject) {
     if (return_expr.empty()) {
-      indent(out, indent_level) << "Py_INCREF(Py_None);\n";
-      indent(out, indent_level) << "return Py_None;\n";
+      indent(out, indent_level) << "return Py_NewRef(Py_None);\n";
 
     } else if (return_flags & RF_preserve_null) {
       indent(out, indent_level) << "if (" << return_expr << " == nullptr) {\n";
@@ -6619,8 +6611,7 @@ error_return(ostream &out, int indent_level, int return_flags) {
     indent(out, indent_level) << "return -1;\n";
 
   } else if (return_flags & RF_err_notimplemented) {
-    indent(out, indent_level) << "Py_INCREF(Py_NotImplemented);\n";
-    indent(out, indent_level) << "return Py_NotImplemented;\n";
+    indent(out, indent_level) << "return Py_NewRef(Py_NotImplemented);\n";
 
   } else if (return_flags & RF_err_null) {
     indent(out, indent_level) << "return nullptr;\n";
@@ -6668,8 +6659,7 @@ error_bad_args_return(ostream &out, int indent_level, int return_flags,
     indent(out, indent_level) << "return -1;\n";
 
   } else if (return_flags & RF_err_notimplemented) {
-    indent(out, indent_level) << "Py_INCREF(Py_NotImplemented);\n";
-    indent(out, indent_level) << "return Py_NotImplemented;\n";
+    indent(out, indent_level) << "return Py_NewRef(Py_NotImplemented);\n";
 
   } else if (return_flags & RF_err_null) {
     indent(out, indent_level) << "return nullptr;\n";
@@ -6991,8 +6981,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
     /*if (property->_has_function != NULL) {
       out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "(index)) {\n"
-          << "    Py_INCREF(Py_None);\n"
-          << "    return Py_None;\n"
+          << "    return Py_NewRef(Py_None);\n"
           << "  }\n";
     }*/
 
@@ -7237,10 +7226,8 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
       // We have to create an args tuple only to unpack it later, ugh.
       out << "  PyObject *args = PyTuple_New(2);\n"
-          << "  PyTuple_SET_ITEM(args, 0, key);\n"
-          << "  PyTuple_SET_ITEM(args, 1, value);\n"
-          << "  Py_INCREF(key);\n"
-          << "  Py_INCREF(value);\n";
+          << "  PyTuple_SET_ITEM(args, 0, Py_NewRef(key));\n"
+          << "  PyTuple_SET_ITEM(args, 1, Py_NewRef(value));\n";
 
       string expected_params;
       if (!write_function_forset(out, remaps, 2, 2,
@@ -7423,8 +7410,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       } else {
         out << "  if (!" << cClassName << "::" << property->_has_function->_ifunc.get_name() << "()) {\n";
       }
-      out << "    Py_INCREF(Py_None);\n"
-          << "    return Py_None;\n"
+      out << "    return Py_NewRef(Py_None);\n"
           << "  }\n";
     }
 

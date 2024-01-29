@@ -134,8 +134,7 @@ PyObject *Extension<Filename>::
 scan_directory() const {
   vector_string contents;
   if (!_this->scan_directory(contents)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PyObject *result = PyList_New(contents.size());

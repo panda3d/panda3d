@@ -97,8 +97,7 @@ ALWAYS_INLINE void
 Dtool_Assign_PyObject(PyObject *&ptr, PyObject *value) {
   PyObject *prev_value = ptr;
   if (prev_value != value) {
-    Py_XINCREF(value);
-    ptr = value;
+    ptr = Py_XNewRef(value);
     Py_XDECREF(prev_value);
   }
 }
@@ -246,8 +245,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(unsigned long long value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(bool value) {
   PyObject *result = (value ? Py_True : Py_False);
-  Py_INCREF(result);
-  return result;
+  return Py_NewRef(result);
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(double value) {
@@ -256,8 +254,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(double value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
   if (value == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   } else {
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(value);
@@ -269,8 +266,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const wchar_t *value) {
   if (value == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   } else {
     return PyUnicode_FromWideChar(value, (Py_ssize_t)wcslen(value));
   }
@@ -290,8 +286,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring &value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
   if (value == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   } else {
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromStringAndSize(value->data(), (Py_ssize_t)value->length());
@@ -303,8 +298,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value) {
   if (value == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   } else {
     return PyUnicode_FromWideChar(value->data(), (Py_ssize_t)value->length());
   }
@@ -323,8 +317,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(std::nullptr_t) {
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value) {

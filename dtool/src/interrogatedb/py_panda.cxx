@@ -273,8 +273,7 @@ PyObject *_Dtool_Return_None() {
     return Dtool_Raise_AssertionError();
   }
 #endif
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**
@@ -290,9 +289,7 @@ PyObject *Dtool_Return_Bool(bool value) {
     return Dtool_Raise_AssertionError();
   }
 #endif
-  PyObject *result = (value ? Py_True : Py_False);
-  Py_INCREF(result);
-  return result;
+  return Py_NewRef(value ? Py_True : Py_False);
 }
 
 /**
@@ -325,8 +322,7 @@ static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObj
   }
 
   if (Py_TYPE(arg) == subtype) {
-    Py_INCREF(arg);
-    return arg;
+    return Py_NewRef(arg);
   }
 
   PyObject *value2member = PyDict_GetItemString(subtype->tp_dict, "_value2member_map_");
@@ -334,8 +330,7 @@ static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObj
 
   PyObject *member = PyDict_GetItem(value2member, arg);
   if (member != nullptr) {
-    Py_INCREF(member);
-    return member;
+    return Py_NewRef(member);
   }
 
   PyObject *repr = PyObject_Repr(arg);
@@ -418,12 +413,10 @@ PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const cha
     value2member_map_sunder_str = PyString_InternFromString("_value2member_map_");
 #endif
     PyObject *name_value_tuple = PyTuple_New(4);
-    PyTuple_SET_ITEM(name_value_tuple, 0, name_str);
-    PyTuple_SET_ITEM(name_value_tuple, 1, value_str);
+    PyTuple_SET_ITEM(name_value_tuple, 0, Py_NewRef(name_str));
+    PyTuple_SET_ITEM(name_value_tuple, 1, Py_NewRef(value_str));
     PyTuple_SET_ITEM(name_value_tuple, 2, name_sunder_str);
     PyTuple_SET_ITEM(name_value_tuple, 3, value_sunder_str);
-    Py_INCREF(name_str);
-    Py_INCREF(value_str);
 
     PyObject *slots_dict = PyDict_New();
     PyDict_SetItemString(slots_dict, "__slots__", name_value_tuple);
@@ -516,8 +509,7 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   if (local_this == nullptr) {
     // This is actually a very common case, so let's allow this, but return
     // Py_None consistently.  This eliminates code in the wrappers.
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&in_classdef._PyType, 0);
@@ -724,8 +716,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
         to->_is_const = from->_is_const;
         to->_ptr_to_object = from->_ptr_to_object;
 
-        Py_INCREF(Py_None);
-        return Py_None;
+        return Py_NewRef(Py_None);
       }
 
       return PyErr_Format(PyExc_TypeError, "types %s and %s do not match",
@@ -755,8 +746,7 @@ Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   if (PyErr_Occurred()) {
     return nullptr;
   }
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**

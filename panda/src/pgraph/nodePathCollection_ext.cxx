@@ -110,10 +110,9 @@ get_tight_bounds() const {
     PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3f, true, false);
 #endif
     return Py_BuildValue("NN", min_inst, max_inst);
-
-  } else {
-    Py_INCREF(Py_None);
-    return Py_None;
+  }
+  else {
+    return Py_NewRef(Py_None);
   }
 }
 

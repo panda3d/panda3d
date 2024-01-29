@@ -241,6 +241,28 @@ INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObje
 }
 #endif
 
+/* Python 3.10 */
+
+#if PY_VERSION_HEX < 0x030A0000
+INLINE int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
+  int ret = PyModule_AddObject(module, name, value);
+  if (ret == 0) {
+    Py_INCREF(value);
+  }
+  return ret;
+}
+
+ALWAYS_INLINE PyObject *Py_NewRef(PyObject *obj) {
+  Py_INCREF(obj);
+  return obj;
+}
+
+ALWAYS_INLINE PyObject *Py_XNewRef(PyObject *obj) {
+  Py_XINCREF(obj);
+  return obj;
+}
+#endif
+
 /* Python 3.12 */
 
 #if PY_VERSION_HEX < 0x030C0000
