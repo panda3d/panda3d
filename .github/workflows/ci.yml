@@ -19,6 +19,11 @@ jobs:
           os: windows-2022
           args: -A Win32
           archive: thirdparty-win32.zip
+        - dir: linux-libs-x64
+          generator: Unix Makefiles
+          os: ubuntu-20.04
+          args: ''
+          archive: thirdparty-linux64.tar.xz
         - dir: darwin-libs-a
           generator: Unix Makefiles
           os: macos-11
@@ -184,9 +189,7 @@ jobs:
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
         bison flex
-        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
-        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
-        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev
         python3-setuptools python3-tk
 
     - name: ccache (non-Windows)
