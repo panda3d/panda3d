@@ -344,12 +344,13 @@ set(_PREV_WANT_PYTHON_VERSION "${WANT_PYTHON_VERSION}" CACHE INTERNAL "Internal.
 #
 
 # OpenSSL
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
 
 package_option(OpenSSL
   DEFAULT ON
   "Enable OpenSSL support"
-  IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
+  IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto OpenSSL::applink)
 
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
