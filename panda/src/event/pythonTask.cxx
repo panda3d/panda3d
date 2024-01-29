@@ -301,7 +301,6 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
 
   PyObject *descr = _PyType_Lookup(Py_TYPE(self), attr);
   if (descr != nullptr) {
-    Py_INCREF(descr);
     descrsetfunc f = descr->ob_type->tp_descr_set;
     if (f != nullptr) {
       return f(descr, self, v);
