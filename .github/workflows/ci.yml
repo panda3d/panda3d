@@ -33,14 +33,14 @@ jobs:
         id: cache
         with:
           path: thirdparty
-          key: ${{matrix.dir}}-${{hashFiles('**/thirdparty-scripts/**')}}
+          key: ${{matrix.dir}}-${{hashFiles('**/cmake/thirdparty/**')}}
           restore-keys: |
             ${{matrix.dir}}-
       - uses: actions/cache@v4
         if: steps.cache.outputs.cache-hit != 'true'
         with:
-          path: thirdparty-scripts/build
-          key: ${{matrix.dir}}-build-${{hashFiles('**/thirdparty-scripts/**')}}
+          path: thirdparty-build
+          key: ${{matrix.dir}}-build-${{hashFiles('**/cmake/thirdparty/**')}}
           restore-keys: |
             ${{matrix.dir}}-build-
       - name: Install yasm (ubuntu)
@@ -49,11 +49,11 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          cmake -S thirdparty-scripts -B thirdparty-scripts/build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}} -D CMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY=CHECKOUT
-          cmake --build thirdparty-scripts/build --config Release -j4
+          cmake -S cmake/thirdparty -B thirdparty-build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}} -D CMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY=CHECKOUT
+          cmake --build thirdparty-build --config Release -j4
       - name: Get Python and Utils (Windows)
         if: runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true'
-        working-directory: thirdparty-scripts
+        working-directory: cmake/thirdparty
         run: |
           .\install-python.ps1 ${{github.workspace}}/thirdparty/${{matrix.dir}}
           cp -v -R win-util ${{github.workspace}}/thirdparty/win-util
@@ -169,7 +169,7 @@ jobs:
       with:
         fail-on-cache-miss: true
         path: thirdparty
-        key: ${{matrix.thirdparty-dir}}-${{hashFiles('**/thirdparty-scripts/**')}}
+        key: ${{matrix.thirdparty-dir}}-${{hashFiles('**/cmake/thirdparty/**')}}
 
     - name: Install extra dependencies (macOS)
       if: runner.os == 'macOS'
