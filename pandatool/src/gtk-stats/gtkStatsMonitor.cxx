@@ -160,11 +160,6 @@ new_collector(int collector_index) {
   for (GtkStatsGraph *graph : _graphs) {
     graph->new_collector(collector_index);
   }
-
-  // We might need to update our menus.
-  for (GtkStatsChartMenu *chart_menu : _chart_menus) {
-    chart_menu->check_update();
-  }
 }
 
 /**
@@ -190,6 +185,8 @@ new_thread(int thread_index) {
  */
 void GtkStatsMonitor::
 new_data(int thread_index, int frame_number) {
+  PStatMonitor::new_data(thread_index, frame_number);
+
   for (GtkStatsGraph *graph : _graphs) {
     graph->new_data(thread_index, frame_number);
   }
