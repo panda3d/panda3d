@@ -59,6 +59,7 @@ option(BUILD_SPIRV_CROSS "Build spirv-cross" ${DEFAULT_ENABLE})
 option(BUILD_SPIRV_TOOLS "Build spirv-tools" ${DEFAULT_ENABLE})
 option(BUILD_OPENCV "Build OpenCV" OFF)
 option(BUILD_MIMALLOC "Build mimalloc" ${DEFAULT_ENABLE})
+option(BUILD_RECAST "Build Recast Navigation" ${DEFAULT_ENABLE})
 set(THIRDPARTY_BASE_DIR
   thirdparty
   CACHE PATH
@@ -1067,5 +1068,19 @@ if(BUILD_MIMALLOC)
       -DMI_INSTALL_TOPLEVEL=ON
       -DMI_OVERRIDE=OFF
     INSTALL_DIR ${THIRDPARTY_DIR}/mimalloc
+  )
+endif()
+
+if(BUILD_RECAST)
+  ExternalProject_Add(
+    recast
+    GIT_REPOSITORY https://github.com/recastnavigation/recastnavigation.git
+    GIT_TAG 6dc1667f580357e8a2154c28b7867bea7e8ad3a7 # 1.6.0
+
+    CMAKE_ARGS ${COMMON_CMAKE_ARGS}
+      -DRECASTNAVIGATION_DEMO=OFF
+      -DRECASTNAVIGATION_TESTS=OFF
+      -DRECASTNAVIGATION_EXAMPLES=OFF
+    INSTALL_DIR ${THIRDPARTY_DIR}/recast
   )
 endif()
