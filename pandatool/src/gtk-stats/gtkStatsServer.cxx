@@ -123,6 +123,7 @@ make_monitor(const NetAddress &address) {
 
   if (_status_bar_label != nullptr) {
     gtk_container_remove(GTK_CONTAINER(_status_bar), _status_bar_label);
+    g_object_unref(_status_bar_label);
     _status_bar_label = nullptr;
   }
 
@@ -177,9 +178,16 @@ new_session() {
       std::ostringstream strm;
       strm << "Waiting for client to connect on port " << _port << "...";
       std::string title = strm.str();
-      _status_bar_label = gtk_label_new(title.c_str());
+      // As workaround for https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/2029
+      // We manually create a GtkFlowBoxChild instance and attach the label to it
+      // and increase its reference count so it it not prematurely destroyed when
+      // removed from the GtkFlowBox, causing the app to segfault.
+      GtkWidget * label = gtk_label_new(title.c_str());
+      _status_bar_label = gtk_flow_box_child_new();
+      gtk_container_add(GTK_CONTAINER(_status_bar_label), label);
       gtk_container_add(GTK_CONTAINER(_status_bar), _status_bar_label);
       gtk_widget_show(_status_bar_label);
+      g_object_ref(_status_bar_label);
     }
 
     gtk_widget_set_sensitive(_new_session_menu_item, FALSE);
@@ -462,6 +470,7 @@ close_session() {
 
   if (_status_bar_label != nullptr) {
     gtk_container_remove(GTK_CONTAINER(_status_bar), _status_bar_label);
+    g_object_unref(_status_bar_label);
     _status_bar_label = nullptr;
   }
 
