@@ -552,6 +552,17 @@ package_status(FMODEx "FMOD Ex sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
+if(OPENAL_FOUND)
+  if (APPLE)
+    set(HAVE_OPENAL_FRAMEWORK YES)
+  else()
+    # Pop "AL" directory off include dir so we can include "AL/al.h'
+    get_filename_component(_parent_dir "${OPENAL_INCLUDE_DIR}" DIRECTORY)
+    set_target_properties(OpenAL::OpenAL PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${_parent_dir}")
+    set(OPENAL_INCLUDE_DIR ${_parent_dir})
+  endif()
+endif()
 
 package_option(OpenAL
   "This enables support for audio output via OpenAL. Some platforms, such as
@@ -561,10 +572,6 @@ package_option(OpenAL
   LICENSE "LGPL")
 
 package_status(OpenAL "OpenAL sound library")
-
-if(OpenAL_FOUND AND APPLE OR OPENAL_FOUND AND APPLE)
-  set(HAVE_OPENAL_FRAMEWORK YES)
-endif()
 
 
 #
