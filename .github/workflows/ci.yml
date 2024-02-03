@@ -22,7 +22,11 @@ jobs:
         - dir: linux-libs-x64
           generator: Unix Makefiles
           os: ubuntu-20.04
-          args: ''
+          args: >-
+            -DBUILD_PNG=OFF
+            -DBUILD_JPEG=OFF
+            -DBUILD_TIFF=OFF
+            -DBUILD_ZLIB=OFF
           archive: thirdparty-linux64.tar.xz
         - dir: darwin-libs-a
           generator: Unix Makefiles
@@ -191,6 +195,7 @@ jobs:
         bison flex
         libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev
         python3-setuptools python3-tk
+        libtiff-dev libpng-dev libjpeg-dev zlib1g-dev
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
