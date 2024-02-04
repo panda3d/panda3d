@@ -1,7 +1,7 @@
 if(NOT HAVE_AUDIO)
   return()
 elseif(NOT HAVE_FMODEX AND NOT HAVE_OPENAL)
-  message(SEND_ERROR
+  message(WARNING
     "You must have an audio backend for audio support! Turn off HAVE_AUDIO to ignore this.")
 endif()
 
