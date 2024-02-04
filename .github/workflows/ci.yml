@@ -27,6 +27,7 @@ jobs:
             -DBUILD_JPEG=OFF
             -DBUILD_TIFF=OFF
             -DBUILD_ZLIB=OFF
+            -DBUILD_FCOLLADA=OFF
           archive: thirdparty-linux64.tar.xz
         - dir: darwin-libs-a
           generator: Unix Makefiles
