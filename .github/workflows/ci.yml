@@ -46,13 +46,6 @@ jobs:
           key: ${{matrix.dir}}-${{hashFiles('**/cmake/thirdparty/**')}}
           restore-keys: |
             ${{matrix.dir}}-
-      - uses: actions/cache@v4
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          path: thirdparty-build
-          key: ${{matrix.dir}}-build-${{hashFiles('**/cmake/thirdparty/**')}}
-          restore-keys: |
-            ${{matrix.dir}}-build-
       - name: Install yasm (ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt-get install yasm
