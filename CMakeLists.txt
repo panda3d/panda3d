@@ -41,8 +41,10 @@ if(APPLE)
   endif()
 endif()
 
-# Forces GCC/Clang compilers to enable color diagnostics if using Ninja.
-if(CMAKE_GENERATOR STREQUAL "Ninja")
+set(COMPILER_FORCE_COLOR_DIAGNOSTICS TRUE CACHE BOOL "Force GCC/Clang to output ANSI colors.")
+
+# Forces GCC/Clang compilers to enable color diagnostics.
+if(COMPILER_FORCE_COLOR_DIAGNOSTICS)
   set(CMAKE_COLOR_DIAGNOSTICS ON)
   
   # CMake versions 3.24 and below do not support this option, so we have
