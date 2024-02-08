@@ -60,6 +60,7 @@ option(BUILD_SPIRV_TOOLS "Build spirv-tools" ${DEFAULT_ENABLE})
 option(BUILD_OPENCV "Build OpenCV" OFF)
 option(BUILD_MIMALLOC "Build mimalloc" ${DEFAULT_ENABLE})
 option(BUILD_RECAST "Build Recast Navigation" ${DEFAULT_ENABLE})
+option(BUILD_PMW "Build Python Pmw package" ${DEFAULT_ENABLE})
 set(THIRDPARTY_BASE_DIR
   thirdparty
   CACHE PATH
@@ -1082,5 +1083,20 @@ if(BUILD_RECAST)
       -DRECASTNAVIGATION_TESTS=OFF
       -DRECASTNAVIGATION_EXAMPLES=OFF
     INSTALL_DIR ${THIRDPARTY_DIR}/recast
+  )
+endif()
+
+if(BUILD_PMW)
+  ExternalProject_Add(
+    pmw
+    URL https://files.pythonhosted.org/packages/78/c7/d2e18a08af53d64eb658c5ca9b4655317c3d3e54589fe86e3a3bf0b51762/Pmw-2.1.1.tar.gz
+    URL_HASH SHA256=948412457cfccf0c775dd08e0913fb00f90896a33c79737d571c7312aeaf55c6
+
+    # No need to build anything; just copy over the Pmw directory.
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/Pmw <INSTALL_DIR>
+    INSTALL_DIR ${THIRDPARTY_DIR}/Pmw
   )
 endif()
