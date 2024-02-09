@@ -117,7 +117,7 @@ x11GraphicsPipe(const std::string &display) :
     _XF86DGADirectVideo = nullptr;
     if (x11display_cat.is_debug()) {
       x11display_cat.debug()
-        << "cannot dlopen libXxf86dga.so.1; cursor changing will not work.\n";
+        << "cannot dlopen libXxf86dga.so.1; relative mouse mode will not work.\n";
     }
   }
 
