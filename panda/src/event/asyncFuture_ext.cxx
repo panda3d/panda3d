@@ -132,7 +132,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
 /**
  * Yields continuously until the task has finished.
  */
-static PyObject *gen_next(PyObject *self) {
+static PyObject *gen_next_asyncfuture(PyObject *self) {
   const AsyncFuture *future = nullptr;
   if (!Dtool_Call_ExtractThisPointer(self, Dtool_AsyncFuture, (void **)&future)) {
     return nullptr;
@@ -158,7 +158,7 @@ static PyObject *gen_next(PyObject *self) {
  */
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
-  return Dtool_NewGenerator(self, &gen_next);
+  return Dtool_NewGenerator(self, &gen_next_asyncfuture);
 }
 
 /**
