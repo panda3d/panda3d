@@ -1231,7 +1231,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fogcolor;
 
         if (param_type == GL_FLOAT_VEC3) {
-          bind._piece = Shader::SMP_vec4;
+          bind._piece = Shader::SMP_vec3;
         } else if (param_type == GL_FLOAT_VEC4) {
           bind._piece = Shader::SMP_vec4;
         } else {
@@ -1256,7 +1256,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 13;
+          bind._offset = 1;
         } else {
           GLCAT.error()
             << "p3d_Fog.start should be float\n";
@@ -1268,7 +1268,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 14;
+          bind._offset = 2;
         } else {
           GLCAT.error()
             << "p3d_Fog.end should be float\n";
@@ -1280,7 +1280,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 15;
+          bind._offset = 3;
         } else {
           GLCAT.error()
             << "p3d_Fog.scale should be float\n";
