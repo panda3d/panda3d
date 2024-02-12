@@ -22,8 +22,7 @@ get_data() const {
   if (data == nullptr) {
     data = Py_None;
   }
-  Py_INCREF(data);
-  return data;
+  return Py_NewRef(data);
 }
 
 /**

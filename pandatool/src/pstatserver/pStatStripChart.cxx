@@ -229,6 +229,10 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
 
+  if (time < thread_data->get_oldest_time()) {
+    return -1;
+  }
+
   // And now we can determine which collector within the frame, based on the
   // value height.
   if (_average_mode) {
@@ -984,7 +988,12 @@ draw_frames(int first_frame, int last_frame) {
     if (_scroll_mode) {
       // In scrolling mode, slide the world back.
       int slide_pixels = last_pixel - _xsize;
+      // This is really slow on macOS, just redraw instead
+#ifdef __APPLE__
+      draw_pixels(0, first_pixel - slide_pixels);
+#else
       copy_region(slide_pixels, first_pixel, 0);
+#endif
       first_pixel -= slide_pixels;
       last_pixel -= slide_pixels;
       _start_time += (double)slide_pixels / (double)_xsize * _time_width;

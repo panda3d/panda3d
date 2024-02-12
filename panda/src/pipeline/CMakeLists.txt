@@ -115,11 +115,9 @@ endif()
 
 set(P3PIPELINE_IGATEEXT
   pmutex_ext.h
-  pmutex_ext.I
   pythonThread.cxx
   pythonThread.h
   reMutex_ext.h
-  reMutex_ext.I
 )
 
 composite_sources(p3pipeline P3PIPELINE_SOURCES)

@@ -92,16 +92,19 @@ Thread::
  */
 PT(Thread) Thread::
 bind_thread(const std::string &name, const std::string &sync_name) {
-  Thread *current_thread = get_current_thread();
-  if (current_thread != get_external_thread()) {
+  PT(Thread) thread = new ExternalThread(name, sync_name);
+#ifndef HAVE_THREADS
+  Thread *current_thread = get_main_thread();
+#else
+  Thread *current_thread = ThreadImpl::bind_thread(thread);
+#endif
+  if (current_thread != nullptr &&
+      current_thread != thread.p()) {
     // This thread already has an associated thread.
     nassertr(current_thread->get_name() == name &&
              current_thread->get_sync_name() == sync_name, current_thread);
-    return current_thread;
+    thread = current_thread;
   }
-
-  PT(Thread) thread = new ExternalThread(name, sync_name);
-  ThreadImpl::bind_thread(thread);
   return thread;
 }
 

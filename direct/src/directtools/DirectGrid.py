@@ -1,6 +1,7 @@
 import math
 from panda3d.core import NodePath, Point3, VBase4
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase import ShowBaseGlobal
 from .DirectUtil import ROUND_TO, useDirectRenderStyle
 from .DirectGeometry import LineNodePath
 
@@ -14,7 +15,7 @@ class DirectGrid(NodePath, DirectObject):
 
         # Load up grid parts to initialize grid object
         # Polygon used to mark grid plane
-        self.gridBack = base.loader.loadModel('models/misc/gridBack')
+        self.gridBack = ShowBaseGlobal.loader.loadModel('models/misc/gridBack')
         self.gridBack.reparentTo(self)
         self.gridBack.setColor(*planeColor)
 
@@ -36,7 +37,7 @@ class DirectGrid(NodePath, DirectObject):
         self.centerLines.setThickness(3)
 
         # Small marker to hilight snap-to-grid point
-        self.snapMarker = base.loader.loadModel('models/misc/sphere')
+        self.snapMarker = ShowBaseGlobal.loader.loadModel('models/misc/sphere')
         self.snapMarker.node().setName('gridSnapMarker')
         self.snapMarker.reparentTo(self)
         self.snapMarker.setColor(1, 0, 0, 1)
@@ -55,7 +56,7 @@ class DirectGrid(NodePath, DirectObject):
         if parent:
             self.reparentTo(parent)
         else:
-            self.reparentTo(base.direct.group)
+            self.reparentTo(ShowBaseGlobal.direct.group)
 
         self.updateGrid()
         self.fEnabled = 1

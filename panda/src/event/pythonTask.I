@@ -16,8 +16,7 @@
  */
 INLINE PyObject *PythonTask::
 get_function() {
-  Py_INCREF(_function);
-  return _function;
+  return Py_NewRef(_function);
 }
 
 /**
@@ -25,8 +24,7 @@ get_function() {
  */
 INLINE PyObject *PythonTask::
 get_upon_death() {
-  Py_INCREF(_upon_death);
-  return _upon_death;
+  return Py_NewRef(_upon_death);
 }
 
 /**
@@ -34,8 +32,7 @@ get_upon_death() {
  */
 INLINE PyObject *PythonTask::
 get_owner() const {
-  Py_INCREF(_owner);
-  return _owner;
+  return Py_NewRef(_owner);
 }
 
 /**
@@ -50,7 +47,5 @@ set_result(PyObject *result) {
   nassertv(is_alive());
   nassertv(!done());
   nassertv(_exception == nullptr);
-  Py_INCREF(result);
-  Py_XDECREF(_exc_value);
-  _exc_value = result;
+  Py_XSETREF(_exc_value, Py_NewRef(result));
 }

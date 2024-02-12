@@ -20,6 +20,10 @@
 #include "mutexImpl.h"
 #include <map>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/heap.h>
+#endif
+
 /**
  * This class provides a wrapper around the various possible malloc schemes
  * Panda might employ.  It also exists to allow the MemoryUsage class in Panda
@@ -77,12 +81,17 @@ protected:
 
   virtual void overflow_heap_size();
 
+#ifndef __EMSCRIPTEN__
   void determine_page_size() const;
+#endif
 
 private:
+#ifdef __EMSCRIPTEN__
+  static const size_t _page_size = EMSCRIPTEN_PAGE_SIZE;
+#else
   mutable size_t _page_size = 0;
-
   mutable MutexImpl _lock;
+#endif
 };
 
 #include "memoryHook.I"

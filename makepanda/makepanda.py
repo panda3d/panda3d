@@ -9,8 +9,8 @@
 ########################################################################
 
 import sys
-if sys.version_info < (3, 6):
-    print("This version of Python is not supported, use version 3.6 or higher.")
+if sys.version_info < (3, 8):
+    print("This version of Python is not supported, use version 3.8 or higher.")
     exit(1)
 
 try:
@@ -30,11 +30,9 @@ except:
     print("Please install the development package of Python and try again.")
     exit(1)
 
-if sys.version_info >= (3, 10):
-    from sysconfig import get_platform
-else:
-    from distutils.util import get_platform
 from makepandacore import *
+
+from sysconfig import get_platform
 
 try:
     import zlib
@@ -379,6 +377,12 @@ if GetHost() == "darwin":
 if VERSION is None:
     # Take the value from the setup.cfg file.
     VERSION = GetMetadataValue('version')
+    match = re.match(r'^\d+\.\d+(\.\d+)+', VERSION)
+    if not match:
+        exit("Invalid version %s in setup.cfg, three digits are required" % (VERSION))
+    if WHLVERSION is None:
+        WHLVERSION = VERSION
+    VERSION = match.group()
 
 if WHLVERSION is None:
     WHLVERSION = VERSION
@@ -890,7 +894,6 @@ if (COMPILER=="GCC"):
     assimp_libs = ("libassimp", "libassimpd")
 
     #         Name         pkg-config   libs, include(dir)s
-    SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
     SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
     SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
     SmartPkgEnable("ASSIMP",    "assimp",    ChooseLib(assimp_libs, "ASSIMP"), "assimp/Importer.hpp")
@@ -899,34 +902,55 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
     SmartPkgEnable("FFTW",      "fftw3",     ("fftw3"), ("fftw.h"))
     SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-    SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
-    SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
-    SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
-    SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
-    SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
-    SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
     SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
-    SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
-    SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
-    SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
 
-    # Copy freetype libraries to be specified after harfbuzz libraries as well,
-    # because there's a circular dependency between the two libraries.
-    if not PkgSkip("FREETYPE") and not PkgSkip("HARFBUZZ"):
-        for (opt, name) in LIBNAMES:
-            if opt == "FREETYPE":
-                LibName("HARFBUZZ", name)
+    if GetTarget() != 'emscripten':
+        # Most of these are provided by emscripten or via emscripten-ports.
+        SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
+        SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
+        SmartPkgEnable("BULLET",   "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
+        SmartPkgEnable("FREETYPE", "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+        SmartPkgEnable("HARFBUZZ", "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
+        SmartPkgEnable("PNG",      "libpng",    ("png"), "png.h", tool = "libpng-config")
+        SmartPkgEnable("GL",       "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
+        SmartPkgEnable("GLES",     "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
+        SmartPkgEnable("GLES2",    "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+        SmartPkgEnable("EGL",      "egl",       ("EGL"), ("EGL/egl.h"))
+
+        # Copy freetype libraries to be specified after harfbuzz libraries as well,
+        # because there's a circular dependency between the two libraries.
+        if not PkgSkip("FREETYPE") and not PkgSkip("HARFBUZZ"):
+            for (opt, name) in LIBNAMES:
+                if opt == "FREETYPE":
+                    LibName("HARFBUZZ", name)
+    else:
+        PkgDisable("EIGEN")
+        PkgDisable("X11")
+        PkgDisable("GL")
+        PkgDisable("GLES")
+        PkgDisable("TINYDISPLAY")
+        for pkg, empkg in {
+            'VORBIS': 'VORBIS',
+            'BULLET': 'BULLET',
+            'ZLIB': 'ZLIB',
+            'FREETYPE': 'FREETYPE',
+            'HARFBUZZ': 'HARFBUZZ',
+            'PNG': 'LIBPNG',
+        }.items():
+            if not PkgSkip(pkg):
+                LinkFlag(pkg, '-s USE_' + empkg + '=1')
+                CompileFlag(pkg, '-s USE_' + empkg + '=1')
 
     if not PkgSkip("FFMPEG"):
         if GetTarget() == "darwin":
@@ -935,8 +959,9 @@ if (COMPILER=="GCC"):
             # Needed when linking ffmpeg statically on Linux.
             LibName("FFMPEG", "-Wl,-Bsymbolic")
             # Don't export ffmpeg symbols from libp3ffmpeg when linking statically.
-            for ffmpeg_lib in ffmpeg_libs:
-                LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
+            if GetTarget() != "emscripten":
+                for ffmpeg_lib in ffmpeg_libs:
+                    LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
     if not PkgSkip("OPENEXR"):
         # OpenEXR libraries have different names depending on the version.
@@ -955,7 +980,7 @@ if (COMPILER=="GCC"):
             # using the OpenEXR 3 naming scheme.
             SmartPkgEnable("OPENEXR", "OpenEXR", ("OpenEXR", "IlmThread", "Imath", "Iex"), openexr_incs)
 
-    if GetTarget() != "darwin":
+    if GetTarget() not in ("darwin", "emscripten"):
         for fcollada_lib in fcollada_libs:
             LibName("FCOLLADA", "-Wl,--exclude-libs,lib%s.a" % (fcollada_lib))
 
@@ -1046,7 +1071,7 @@ if (COMPILER=="GCC"):
             LibName("OPENAL", "-framework AudioUnit")
             LibName("OPENAL", "-framework AudioToolbox")
             LibName("OPENAL", "-framework CoreAudio")
-        else:
+        elif GetTarget() != "emscripten":
             LibName("OPENAL", "-Wl,--exclude-libs,libopenal.a")
 
     if not PkgSkip("ASSIMP") and \
@@ -1056,7 +1081,7 @@ if (COMPILER=="GCC"):
         if os.path.isfile(irrxml):
             LibName("ASSIMP", irrxml)
 
-            if GetTarget() != "darwin":
+            if GetTarget() not in ("darwin", "emscripten"):
                 LibName("ASSIMP", "-Wl,--exclude-libs,libassimp.a")
                 LibName("ASSIMP", "-Wl,--exclude-libs,libIrrXML.a")
 
@@ -1064,19 +1089,31 @@ if (COMPILER=="GCC"):
         python_lib = SDK["PYTHONVERSION"]
         SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
+        if not PkgSkip("PYTHON") and GetTarget() == "emscripten":
+            # Python may have been compiled with these requirements.
+            # Is there a cleaner way to check this?
+            LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
+            if not PkgHasCustomLocation("PYTHON"):
+                python_libdir = GetThirdpartyDir() + "python/lib"
+                if os.path.isfile(python_libdir + "/libmpdec.a"):
+                    LibName("PYTHON", python_libdir + "/libmpdec.a")
+                if os.path.isfile(python_libdir + "/libexpat.a"):
+                    LibName("PYTHON", python_libdir + "/libexpat.a")
+
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
             LibName("PYTHON", "-lrt")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK3",      "gtk+-3.0")
+    if GetTarget() != 'emscripten':
+       SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
 
-    if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
+    if not PkgSkip("OPENSSL") and GetTarget() not in ("darwin", "emscripten"):
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
         LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
-    if GetTarget() != 'darwin':
+    if GetTarget() not in ('darwin', 'emscripten'):
         if GetTarget() != "android":
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h", "X11/XKBlib.h"))
         else:
@@ -1124,6 +1161,9 @@ if (COMPILER=="GCC"):
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+        # When using pre-11.0 SDKs, for PStats
+        if os.path.basename(SDK["MACOSX"]).startswith("MacOSX10."):
+            LibName("COCOA", "-Wl,-U,_OBJC_CLASS_$_NSTrackingSeparatorToolbarItem")
 
         # Temporary exceptions to removal of this flag
         if not PkgSkip("FFMPEG"):
@@ -1174,7 +1214,7 @@ if (COMPILER=="GCC"):
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
-if GetLinkAllStatic():
+if GetLinkAllStatic() or GetTarget() == 'emscripten':
     DefSymbol("ALWAYS", "LINK_ALL_STATIC")
 if GetTarget() == 'android':
     DefSymbol("ALWAYS", "ANDROID")
@@ -1408,6 +1448,8 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
+        for (opt,flag) in COMPILEFLAGS:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + flag
         for x in ipath: cmd += ' -I' + x
 
         if not GetLinkAllStatic() and 'NOHIDDEN' not in opts:
@@ -1431,7 +1473,7 @@ def CompileCxx(obj,src,opts):
                 if 'NOARCH:' + arch.upper() not in opts:
                     cmd += " -arch %s" % arch
 
-        elif 'clang' not in GetCXX().split('/')[-1]:
+        elif 'clang' not in GetCXX().split('/')[-1] and GetCXX() != 'em++':
             # Enable interprocedural optimizations in GCC.
             cmd += " -fno-semantic-interposition"
 
@@ -1477,6 +1519,12 @@ def CompileCxx(obj,src,opts):
             if arch != 'arm64' and arch.startswith('arm') and PkgSkip("NEON") == 0:
                 cmd += ' -mfpu=neon'
 
+        elif GetTarget() == 'emscripten':
+            if GetOptimize() <= 1:
+                cmd += " -s ASSERTIONS=2"
+            elif GetOptimize() <= 2:
+                cmd += " -s ASSERTIONS=1"
+
         else:
             cmd += " -pthread"
 
@@ -1486,6 +1534,8 @@ def CompileCxx(obj,src,opts):
                 cmd += " -fexceptions"
             else:
                 cmd += " -fno-exceptions"
+                if GetTarget() == 'emscripten':
+                    cmd += " -s DISABLE_EXCEPTION_CATCHING=1"
 
                 if src.endswith(".mm"):
                     # Work around Apple compiler bug.
@@ -1498,7 +1548,8 @@ def CompileCxx(obj,src,opts):
                     cmd += " -fno-rtti"
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
-            cmd += " -msse2"
+            if GetTarget() != "emscripten":
+                cmd += " -msse2"
 
         # Needed by both Python, Panda, Eigen, all of which break aliasing rules.
         cmd += " -fno-strict-aliasing"
@@ -1513,9 +1564,14 @@ def CompileCxx(obj,src,opts):
                 cmd += " -fno-finite-math-only"
 
             # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
-            cmd += " -fno-unsafe-math-optimizations"
+            if GetTarget() != "emscripten":
+                cmd += " -fno-unsafe-math-optimizations"
 
-        if (optlevel==1): cmd += " -ggdb -D_DEBUG"
+        if (optlevel==1):
+            if GetTarget() == "emscripten":
+                cmd += " -g -D_DEBUG"
+            else:
+                cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
@@ -1665,6 +1721,9 @@ def CompileIgate(woutd,wsrc,opts):
         elif target == 'android':
             cmd += ' -D__ANDROID__'
 
+    if GetTarget() == "emscripten":
+        cmd += ' -D__EMSCRIPTEN__'
+
     optlevel = GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' -D_DEBUG'
     if (optlevel==2): cmd += ' -D_DEBUG'
@@ -1703,10 +1762,8 @@ def CompileIgate(woutd,wsrc,opts):
 def CompileImod(wobj, wsrc, opts):
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
-    if (COMPILER=="MSVC"):
-        woutc = wobj[:-4]+".cxx"
-    if (COMPILER=="GCC"):
-        woutc = wobj[:-2]+".cxx"
+    woutc = os.path.splitext(wobj)[0] + ".cxx"
+
     if (PkgSkip("PYTHON")):
         WriteFile(woutc, "")
         CompileCxx(wobj, woutc, opts)
@@ -1929,13 +1986,18 @@ def CompileLink(dll, obj, opts):
             else:
                 cmd = cxx + ' -shared'
                 # Always set soname on Android to avoid a linker warning when loading the library.
-                if "MODULE" not in opts or GetTarget() == 'android':
+                if GetTarget() == 'android' or ("MODULE" not in opts and GetTarget() != 'emscripten'):
                     cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
-        for x in obj:
-            if GetOrigExt(x) != ".dat":
-                cmd += ' ' + x
+        if GetTarget() == 'emscripten' and GetOrigExt(dll) != ".exe":
+            for x in obj:
+                if GetOrigExt(x) not in (".dat", ".dll"):
+                    cmd += ' ' + x
+        else:
+            for x in obj:
+                if GetOrigExt(x) != ".dat":
+                    cmd += ' ' + x
 
         if (GetOrigExt(dll) == ".exe" and GetTarget() == 'windows' and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
@@ -1969,6 +2031,13 @@ def CompileLink(dll, obj, opts):
             elif arch == 'mips':
                 cmd += ' -mips32'
             cmd += ' -lc -lm'
+
+        elif GetTarget() == 'emscripten':
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            if GetOrigExt(dll) == ".exe":
+                cmd += " --memory-init-file 0"
+                cmd += " -s EXIT_RUNTIME=1"
+
         else:
             cmd += " -pthread"
             if "SYSROOT" in SDK:
@@ -1988,12 +2057,22 @@ def CompileLink(dll, obj, opts):
         for (opt, dir) in FRAMEWORKDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts):
                 cmd += ' -F' + BracketNameWithQuotes(dir)
-        for (opt, name) in LIBNAMES:
+        if GetOrigExt(dll) == ".exe" or GetTarget() != 'emscripten':
+            for (opt, name) in LIBNAMES:
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += ' ' + BracketNameWithQuotes(name)
+        for (opt, flag) in LINKFLAGS:
             if (opt=="ALWAYS") or (opt in opts):
-                cmd += ' ' + BracketNameWithQuotes(name)
+                cmd += ' ' + flag
 
-        if GetTarget() != 'freebsd':
+        if GetTarget() not in ('freebsd', 'emscripten'):
             cmd += " -ldl"
+
+        if GetTarget() == 'emscripten':
+            optlevel = GetOptimizeOption(opts)
+            if optlevel == 2: cmd += " -O1"
+            if optlevel == 3: cmd += " -O2"
+            if optlevel == 4: cmd += " -O3"
 
         oscmd(cmd)
 
@@ -2202,7 +2281,7 @@ def CompileBundle(target, inputs, opts):
     # Now link the object files to form the bundle.
     if plist is None:
         exit("One plist file must be used when creating a bundle!")
-    bundleName = plistlib.load(plist)["CFBundleExecutable"]
+    bundleName = plistlib.load(open(plist, 'rb'))["CFBundleExecutable"]
 
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
@@ -2318,7 +2397,7 @@ def CompileAnything(target, inputs, opts, progress = None):
                 if target.lower().endswith(".dylib"):
                     target = target[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
-            elif tplatform != "windows" and tplatform != "android":
+            elif tplatform not in ("windows", "android", "emscripten"):
                 # On Linux, libraries are named like libpanda.so.1.2
                 target += "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
@@ -2500,11 +2579,11 @@ PRC_PARAMETERS=[
     ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-    ("PRC_PATH2_ENVVARS",              '""',                     '""'),
+    ("PRC_PATH2_ENVVARS",              'UNDEF',                  'UNDEF'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
     ("PRC_ENCRYPTED_PATTERNS",         '"*.prc.pe"',             '"*.prc.pe"'),
     ("PRC_ENCRYPTION_KEY",             '""',                     '""'),
-    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+    ("PRC_EXECUTABLE_PATTERNS",        'UNDEF',                  'UNDEF'),
     ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
     ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
     ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
@@ -2585,6 +2664,26 @@ def WriteConfigSettings():
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
 
+    if (GetTarget() == "emscripten"):
+        # There are no threads in JavaScript, so don't bother using them.
+        dtool_config["HAVE_THREADS"] = 'UNDEF'
+        dtool_config["DO_PIPELINING"] = 'UNDEF'
+        dtool_config["HAVE_POSIX_THREADS"] = 'UNDEF'
+        dtool_config["IS_LINUX"] = 'UNDEF'
+        dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["HAVE_NET"] = 'UNDEF'
+        dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
+        dtool_config["HAVE_X11"] = 'UNDEF'
+        dtool_config["HAVE_GLX"] = 'UNDEF'
+
+        # There are no environment vars either, or default prc files.
+        prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'
+        prc_parameters["PRC_DIR_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH2_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATTERNS"] = 'UNDEF'
+        prc_parameters["PRC_ENCRYPTED_PATTERNS"] = 'UNDEF'
+
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
 
@@ -2598,7 +2697,7 @@ def WriteConfigSettings():
     if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
 
-    if (GetOptimize() <= 3):
+    if (GetOptimize() <= 3) and GetTarget() != 'emscripten':
         dtool_config["DO_MEMORY_USAGE"] = '1'
 
     if (GetOptimize() <= 3):
@@ -2713,11 +2812,18 @@ template class CheckPandaVersion<void>;
 
 
 def CreatePandaVersionFiles():
-    version1=int(VERSION.split(".")[0])
-    version2=int(VERSION.split(".")[1])
-    version3=int(VERSION.split(".")[2])
-    nversion=version1*1000000+version2*1000+version3
-    if (DISTRIBUTOR != "cmu"):
+    parts = VERSION.split(".", 2)
+    version1 = int(parts[0])
+    version2 = int(parts[1])
+    version3 = 0
+    if len(parts) > 2:
+        for c in parts[2]:
+            if c.isdigit():
+                version3 = version3 * 10 + ord(c) - 48
+            else:
+                break
+    nversion = version1 * 1000000 + version2 * 1000 + version3
+    if DISTRIBUTOR != "cmu":
         # Subtract 1 if we are not an official version.
         nversion -= 1
 
@@ -3744,7 +3850,6 @@ TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
 OPTS=['DIR:panda/src/putil', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
 IGATEFILES.remove("test_bam.h")
-IGATEFILES.remove("config_util.h")
 TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3putil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
 PyTargetAdd('p3putil_ext_composite.obj', opts=OPTS, input='p3putil_ext_composite.cxx')
@@ -3811,7 +3916,9 @@ TargetAdd('libp3gsgbase.in', opts=['IMOD:panda3d.core', 'ILIB:libp3gsgbase', 'SR
 OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'ZLIB']
 TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
 TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
-TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
+
+if GetTarget() != "emscripten":
+  TargetAdd('p3pnmimage_convert_srgb_sse2.obj', opts=OPTS+['SSE2'], input='convert_srgb_sse2.cxx')
 
 OPTS=['DIR:panda/src/pnmimage', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
@@ -3823,8 +3930,9 @@ PyTargetAdd('p3pnmimage_pfmFile_ext.obj', opts=OPTS, input='pfmFile_ext.cxx')
 # DIRECTORY: panda/src/nativenet/
 #
 
-OPTS=['DIR:panda/src/nativenet', 'BUILDING:PANDA']
-TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
+if GetTarget() != 'emscripten':
+  OPTS=['DIR:panda/src/nativenet', 'BUILDING:PANDA']
+  TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
 
 OPTS=['DIR:panda/src/nativenet']
 IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite*.cxx"])
@@ -3835,9 +3943,10 @@ TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.core', 'ILIB:libp3nativenet',
 # DIRECTORY: panda/src/net/
 #
 
-OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
-TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
-TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
+if GetTarget() != 'emscripten':
+  OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
+  TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
+  TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
 
 OPTS=['DIR:panda/src/net']
 IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite*.cxx"])
@@ -3855,7 +3964,6 @@ TargetAdd('p3pstatclient_composite2.obj', opts=OPTS, input='p3pstatclient_compos
 
 OPTS=['DIR:panda/src/pstatclient']
 IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite*.cxx"])
-IGATEFILES.remove("config_pstats.h")
 TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
 PyTargetAdd('p3pstatclient_pStatClient_ext.obj', opts=OPTS, input='pStatClient_ext.cxx')
@@ -4195,7 +4303,6 @@ TargetAdd('libpanda.dll', input='p3pnmimagetypes_composite1.obj')
 TargetAdd('libpanda.dll', input='p3pnmimagetypes_composite2.obj')
 TargetAdd('libpanda.dll', input='p3pnmimage_composite1.obj')
 TargetAdd('libpanda.dll', input='p3pnmimage_composite2.obj')
-TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
 TargetAdd('libpanda.dll', input='p3text_composite1.obj')
 TargetAdd('libpanda.dll', input='p3text_composite2.obj')
 TargetAdd('libpanda.dll', input='p3tform_composite1.obj')
@@ -4205,13 +4312,16 @@ TargetAdd('libpanda.dll', input='p3putil_composite2.obj')
 TargetAdd('libpanda.dll', input='p3audio_composite1.obj')
 TargetAdd('libpanda.dll', input='p3pgui_composite1.obj')
 TargetAdd('libpanda.dll', input='p3pgui_composite2.obj')
-TargetAdd('libpanda.dll', input='p3net_composite1.obj')
-TargetAdd('libpanda.dll', input='p3net_composite2.obj')
-TargetAdd('libpanda.dll', input='p3nativenet_composite1.obj')
 TargetAdd('libpanda.dll', input='p3pandabase_pandabase.obj')
 TargetAdd('libpanda.dll', input='libpandaexpress.dll')
 TargetAdd('libpanda.dll', input='libp3dtoolconfig.dll')
 TargetAdd('libpanda.dll', input='libp3dtool.dll')
+
+if GetTarget() != "emscripten":
+  TargetAdd('libpanda.dll', input='p3net_composite1.obj')
+  TargetAdd('libpanda.dll', input='p3net_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3nativenet_composite1.obj')
+  TargetAdd('libpanda.dll', input='p3pnmimage_convert_srgb_sse2.obj')
 
 if PkgSkip("FREETYPE")==0:
     TargetAdd('libpanda.dll', input="p3pnmtext_composite1.obj")
@@ -4251,10 +4361,12 @@ PyTargetAdd('core_module.obj', input='libp3text.in')
 PyTargetAdd('core_module.obj', input='libp3tform.in')
 PyTargetAdd('core_module.obj', input='libp3putil.in')
 PyTargetAdd('core_module.obj', input='libp3audio.in')
-PyTargetAdd('core_module.obj', input='libp3nativenet.in')
-PyTargetAdd('core_module.obj', input='libp3net.in')
 PyTargetAdd('core_module.obj', input='libp3pgui.in')
 PyTargetAdd('core_module.obj', input='libp3movies.in')
+
+if GetTarget() != "emscripten":
+  PyTargetAdd('core_module.obj', input='libp3nativenet.in')
+  PyTargetAdd('core_module.obj', input='libp3net.in')
 
 if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core_module.obj', input='libp3pnmtext.in')
@@ -4298,8 +4410,10 @@ PyTargetAdd('core.pyd', input='libp3tform_igate.obj')
 PyTargetAdd('core.pyd', input='libp3putil_igate.obj')
 PyTargetAdd('core.pyd', input='libp3audio_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgui_igate.obj')
-PyTargetAdd('core.pyd', input='libp3net_igate.obj')
-PyTargetAdd('core.pyd', input='libp3nativenet_igate.obj')
+
+if GetTarget() != "emscripten":
+  PyTargetAdd('core.pyd', input='libp3net_igate.obj')
+  PyTargetAdd('core.pyd', input='libp3nativenet_igate.obj')
 
 if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
@@ -4677,7 +4791,7 @@ if not PkgSkip("EGG"):
 # DIRECTORY: panda/src/x11display/
 #
 
-if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("X11"):
+if GetTarget() not in ['windows', 'darwin', 'emscripten'] and not PkgSkip("X11"):
     OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11', 'X11']
     TargetAdd('p3x11display_composite1.obj', opts=OPTS, input='p3x11display_composite1.cxx')
 
@@ -4685,7 +4799,7 @@ if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("X11"):
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("GL") and not PkgSkip("X11"):
+if GetTarget() not in ['windows', 'darwin', 'emscripten'] and not PkgSkip("GL") and not PkgSkip("X11"):
     DefSymbol('GLX', 'HAVE_GLX', '')
     OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL', 'GL', 'GLX']
     TargetAdd('p3glxdisplay_composite1.obj', opts=OPTS, input='p3glxdisplay_composite1.cxx')
@@ -4814,6 +4928,21 @@ if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
     TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
     TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'SPIRV-CROSS-GLSL'])
+
+#
+# DIRECTORY: panda/src/webgldisplay/
+#
+
+if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
+  DefSymbol('GLES2', 'OPENGLES_2', '')
+  LinkFlag('GLES2', '-s GL_ENABLE_GET_PROC_ADDRESS=1')
+  OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
+  TargetAdd('p3webgldisplay_webgldisplay_composite1.obj', opts=OPTS, input='p3webgldisplay_composite1.cxx')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_config_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3webgldisplay_webgldisplay_composite1.obj')
+  TargetAdd('libp3webgldisplay.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3webgldisplay.dll', opts=['MODULE', 'GLES2', 'WEBGL'])
 
 #
 # DIRECTORY: panda/src/ode/
@@ -5000,6 +5129,8 @@ if not PkgSkip("PVIEW"):
 
     if GetLinkAllStatic() and not PkgSkip("GL"):
         TargetAdd('pview.exe', input='libpandagl.dll')
+    if GetTarget() == "emscripten" and not PkgSkip("GLES2"):
+        TargetAdd('pview.exe', input='libp3webgldisplay.dll')
 
 #
 # DIRECTORY: panda/src/android/
@@ -5166,7 +5297,7 @@ if not PkgSkip("DIRECT"):
 # DIRECTORY: direct/src/distributed/
 #
 
-if not PkgSkip("DIRECT"):
+if not PkgSkip("DIRECT") and GetTarget() != 'emscripten':
     OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT']
     TargetAdd('p3distributed_config_distributed.obj', opts=OPTS, input='config_distributed.cxx')
 
@@ -5234,7 +5365,8 @@ if not PkgSkip("DIRECT"):
     if GetTarget() == 'darwin':
         TargetAdd('libp3direct.dll', input='p3showbase_showBase_assist.obj')
     TargetAdd('libp3direct.dll', input='p3deadrec_composite1.obj')
-    TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
+    if GetTarget() != 'emscripten':
+        TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
     TargetAdd('libp3direct.dll', input='p3interval_composite1.obj')
     TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
     TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
@@ -5245,7 +5377,8 @@ if not PkgSkip("DIRECT"):
     PyTargetAdd('direct_module.obj', input='libp3showbase.in')
     PyTargetAdd('direct_module.obj', input='libp3deadrec.in')
     PyTargetAdd('direct_module.obj', input='libp3interval.in')
-    PyTargetAdd('direct_module.obj', input='libp3distributed.in')
+    if GetTarget() != 'emscripten':
+        PyTargetAdd('direct_module.obj', input='libp3distributed.in')
     PyTargetAdd('direct_module.obj', input='libp3motiontrail.in')
     PyTargetAdd('direct_module.obj', opts=['IMOD:panda3d.direct', 'ILIB:direct', 'IMPORT:panda3d.core'])
 
@@ -5254,15 +5387,17 @@ if not PkgSkip("DIRECT"):
     PyTargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3interval_igate.obj')
     PyTargetAdd('direct.pyd', input='p3interval_cInterval_ext.obj')
-    PyTargetAdd('direct.pyd', input='libp3distributed_igate.obj')
+    if GetTarget() != 'emscripten':
+        PyTargetAdd('direct.pyd', input='libp3distributed_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
 
     # These are part of direct.pyd, not libp3direct.dll, because they rely on
     # the Python libraries.  If a C++ user needs these modules, we can move them
     # back and filter out the Python-specific code.
     PyTargetAdd('direct.pyd', input='p3dcparser_ext_composite.obj')
-    PyTargetAdd('direct.pyd', input='p3distributed_cConnectionRepository.obj')
-    PyTargetAdd('direct.pyd', input='p3distributed_cDistributedSmoothNodeBase.obj')
+    if GetTarget() != 'emscripten':
+        PyTargetAdd('direct.pyd', input='p3distributed_cConnectionRepository.obj')
+        PyTargetAdd('direct.pyd', input='p3distributed_cDistributedSmoothNodeBase.obj')
 
     PyTargetAdd('direct.pyd', input='direct_module.obj')
     PyTargetAdd('direct.pyd', input='libp3direct.dll')
@@ -5928,7 +6063,7 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/text-stats/
 #
 
-if not PkgSkip("PANDATOOL"):
+if not PkgSkip("PANDATOOL") and GetTarget() != 'emscripten':
     OPTS=['DIR:pandatool/src/text-stats']
     TargetAdd('text-stats_textMonitor.obj', opts=OPTS, input='textMonitor.cxx')
     TargetAdd('text-stats_textStats.obj', opts=OPTS, input='textStats.cxx')
@@ -5967,10 +6102,13 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
+if not PkgSkip("PANDATOOL") and (GetTarget() in ('windows', 'darwin') or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
+    elif GetTarget() == 'darwin':
+        OPTS=['DIR:pandatool/src/mac-stats']
+        TargetAdd('pstats_composite1.obj', opts=OPTS, input='macstats_composite1.mm')
     else:
         OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
@@ -5979,7 +6117,7 @@ if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINCOMDLG', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'UXTHEME', 'GTK3', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/
@@ -6197,6 +6335,9 @@ if PkgSkip("PYTHON") == 0:
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
     PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON', 'ANDROID'])
+
+    if GetTarget() == 'emscripten':
+        PyTargetAdd('deploy-stub.exe', opts=['ZLIB'])
 
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stubw.exe', input='deploy-stub.obj')

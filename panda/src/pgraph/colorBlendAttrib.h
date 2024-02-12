@@ -24,7 +24,7 @@ class FactoryParams;
  * This specifies how colors are blended into the frame buffer, for special
  * effects.  This overrides transparency if transparency is also specified.
  */
-class EXPCL_PANDA_PGRAPH ColorBlendAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ColorBlendAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_none,             // Blending is disabled

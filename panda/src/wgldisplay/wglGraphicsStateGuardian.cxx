@@ -336,6 +336,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
   _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
 
+  bool supports_pixel_format_float = _supports_pixel_format && has_extension("WGL_ARB_pixel_format_float");
+
   if (has_extension("WGL_ARB_create_context")) {
     _wglCreateContextAttribsARB =
       (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
@@ -380,6 +382,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   if (!properties.get_float_color()) {
     iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
     iattrib_list[ni++] = WGL_TYPE_RGBA_ARB;
+  }
+  else if (supports_pixel_format_float) {
+    iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
+    iattrib_list[ni++] = WGL_TYPE_RGBA_FLOAT_ARB;
   }
 
   if (need_pbuffer) {

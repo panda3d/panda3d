@@ -13,7 +13,7 @@
 
 #include "httpEnum.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 /**
  *

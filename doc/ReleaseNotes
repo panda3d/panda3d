@@ -1,3 +1,93 @@
+-----------------------  RELEASE 1.10.14  -----------------------
+
+This release adds support for Python 3.12 and furthermore contains significant
+bug fixes, and also implements some missing features in the shader generator.
+
+API
+* Accept bytes object in DatagramOutputFile.write_header()
+* Add missing clear_color() method to CardMaker
+* Add file_version properties to BamFile and BamWriter, mirroring BamReader
+* Add missing method for getting current display mode index (#1550)
+
+Shader Generator
+* Add support for perspective points (#1440)
+* Implement remaining missing TexGenAttrib modes (#1437)
+* Fix support for hardware point sprites
+* Support missing texture types: cube map arrays, 1D arrays, buffer textures
+
+Rendering
+* Add texconst_i input for Cg shaders to access TexGenAttrib constants
+* Fix bug when same texture is used with different TexGenAttrib modes
+* OpenGL 3.2+/ES: Correctly handle 4-component texcoords in default shader
+* DX9: fix bugs setting some kinds of shader inputs
+* OpenGL: guard against exceeding max supported vertex attribute stride
+* Add missing handling for 1D array textures in Cg shaders
+* OpenGL: improve handling of SM5 Cg shaders
+* Fix p3d_LightModel.ambient not updating properly
+* Work around wireframe rendering bug in Panfrost drivers
+* Fix assertion error when preparing texture fails
+* Fix image load/store support in GLES 3.1 (set gl-immutable-texture-storage)
+
+Windowing
+* Windows: Fix issues switching fullscreen while maximized (#1469)
+* macOS: Fix undecorated setting ignored when switching back to windowed mode
+* macOS: Fix window sizing bug when simultaneously changing undecorated
+* macOS: Fix black bar when switching to fullscreen with Z-Order set to Top
+* macOS: Squelch secure restorable state warning on macOS 14 "Sonoma"
+* X11: Fix crash on shutdown when using custom cursor
+* EGL: Fix invalid operation error when using headless pbuffer
+* EGL: Add support for resizing (offscreen) pbuffers
+* Windows: Message loop is no longer disabled when using tk with threaded draw
+* Windows: Fix handling of invalid raw mouse devices
+
+Deployment
+* Fix crash when running executable built with Python 3.11 (#1423)
+* Fix for thirdparty packages that use delvewheel (#1492)
+* Strip .abi3.so suffix from libraries
+* Silently ignore missing hidden imports
+* Add missing hidden imports for setuptools and shapely
+* Show better error message when targeting no-longer-supported platforms
+* Fix issues running pfreeze on macOS
+* Fix crash using on arm64 systems with 16 KiB pages (eg. Asahi Linux)
+* Fix error using bam_model_extensions with bdist_apps
+
+Pipeline
+* Support reading .bmp files with RLE8 compression
+* Fix wrong magfilter being written by egg-palettize (#1585)
+* Fix memory leaks when writing TIFF files
+* Fix hang in .egg loader when `<Collide>` used with `<Line>` (#1515)
+* Add assimp-disable-extensions config var (see #1537)
+* Fix assert/crash when reading multiple recorders from bam file (#1561)
+
+Build
+* Add support for building with Python 3.12
+* macOS .dmg are now built as HFS+ for 10.9 compatibility (#1502)
+* Don't use RTTI features in headers when building with `-fno-rtti`
+* Fix some new compiler warnings
+* Fix compile errors with some versions of png.h
+* Work around GCC 13.2 bug compiling interrogate-generated code (#1580)
+* Support building with LibreSSL on Windows (#1503)
+* Fix some issues in anticipation of Python 3.13+ (#1523, #1526)
+* More robust parsing of version in setup.cfg (incl. #1539)
+* Avoid using deprecated distutils module (#1549)
+* Add _d suffix to .pyd files when building debug build on Windows (#1566)
+
+Miscellaneous
+* Fix bug causing textures to sometimes be randomly downloaded
+* Fix PStats Python profiling exception when using metaclasses (#1505)
+* Fix segfault when ConnectionRepository is verbose (#1430)
+* Fix broken minusnode icon in dmodels (#1449)
+* Fix wrong delete operator in ARToolKit
+* Fix crash when encountering corruption in OpenAL stream (#1452)
+* Fix SimpleHashMap error reporting at static init time
+* Fix assorted code issues, typos, and Python 2-isms in direct tree
+* Code size reductions for interrogate-generated bindings
+* Assorted docstring corrections and additions
+* Interrogate supports explicit cls parameter for static methods
+* Interrogate: fix enum scope issue
+* Don't assume presence of softspace attribute on files in directnotify
+* Use importlib.metadata (not pkg_resources) for entry points in Python 3.8+
+
 -----------------------  RELEASE 1.10.13  -----------------------
 
 This is a significant release containing many important bug fixes and a couple

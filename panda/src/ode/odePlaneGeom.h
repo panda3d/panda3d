@@ -32,8 +32,8 @@ public:
 PUBLISHED:
   OdePlaneGeom(dReal a, dReal b, dReal c, dReal d);
   OdePlaneGeom(const LVecBase4f &params);
-  OdePlaneGeom(OdeSpace &space, dReal a, dReal b, dReal c, dReal d);
-  OdePlaneGeom(OdeSpace &space, const LVecBase4f &params);
+  explicit OdePlaneGeom(OdeSpace &space, dReal a, dReal b, dReal c, dReal d);
+  explicit OdePlaneGeom(OdeSpace &space, const LVecBase4f &params);
   virtual ~OdePlaneGeom();
 
   INLINE void set_params(dReal a, dReal b, dReal c, dReal d);

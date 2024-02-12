@@ -149,10 +149,7 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = list(count2classes.keys())
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(count2classes, reverse=True):
             count2classes[count].sort()
             for name in count2classes[count]:
                 print('%s %s' % (count, name))
@@ -166,10 +163,7 @@ class DoCollectionManager:
             class2count.setdefault(className, 0)
             class2count[className] += 1
         count2classes = invertDictLossless(class2count)
-        counts = list(count2classes.keys())
-        counts.sort()
-        counts.reverse()
-        for count in counts:
+        for count in sorted(count2classes, reverse=True):
             count2classes[count].sort()
             for name in count2classes[count]:
                 # print '%s %s' % (count, name)

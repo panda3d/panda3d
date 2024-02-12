@@ -40,9 +40,11 @@ dec_heap(size_t size) {
  */
 INLINE size_t MemoryHook::
 get_page_size() const {
+#ifndef __EMSCRIPTEN__
   if (_page_size == 0) {
     determine_page_size();
   }
+#endif
   return _page_size;
 }
 
@@ -52,10 +54,12 @@ get_page_size() const {
  */
 INLINE size_t MemoryHook::
 round_up_to_page_size(size_t size) const {
+#ifndef __EMSCRIPTEN__
   if (_page_size == 0) {
     determine_page_size();
   }
-  return  ((size + _page_size - 1) / _page_size) * _page_size;
+#endif
+  return ((size + _page_size - 1) / _page_size) * _page_size;
 }
 
 /**

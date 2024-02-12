@@ -87,6 +87,7 @@ private:
   bool _needs_query_uniform_locations = false;
   bool _remap_uniform_locations = false;
   bool _emulate_float_attribs = false;
+  size_t _scratch_space_size = 0;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
@@ -124,12 +125,12 @@ private:
 
   struct ImageInput {
     CPT(InternalName) _name;
-    CLP(TextureContext) *_gtc;
-    bool _writable;
+    CLP(TextureContext) *_gtc = nullptr;
+    bool _writable = false;
   };
   pvector<ImageInput> _glsl_img_inputs;
 
-  LMatrix4 *_mat_part_cache = nullptr;
+  LVecBase4 *_mat_part_cache = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

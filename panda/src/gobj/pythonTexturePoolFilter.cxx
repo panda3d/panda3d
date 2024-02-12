@@ -78,9 +78,7 @@ init(PyObject *tex_filter) {
     return false;
   }
 
-  _entry_point = tex_filter;
-
-  Py_INCREF(_entry_point);
+  _entry_point = Py_NewRef(tex_filter);
   return true;
 }
 

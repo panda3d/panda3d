@@ -24,12 +24,14 @@
 class EXPCL_DTOOL_PRC ConfigVariableInt : public ConfigVariable {
 PUBLISHED:
   INLINE explicit ConfigVariableInt(const std::string &name);
-  INLINE ConfigVariableInt(const std::string &name, int default_value,
-                           const std::string &description = std::string(),
-                           int flags = 0);
-  INLINE ConfigVariableInt(const std::string &name, const std::string &default_value,
-                           const std::string &description = std::string(),
-                           int flags = 0);
+  INLINE explicit ConfigVariableInt(const std::string &name,
+                                    int default_value,
+                                    const std::string &description = std::string(),
+                                    int flags = 0);
+  INLINE explicit ConfigVariableInt(const std::string &name,
+                                    const std::string &default_value,
+                                    const std::string &description = std::string(),
+                                    int flags = 0);
 
   INLINE void operator = (int value);
   INLINE operator int () const;

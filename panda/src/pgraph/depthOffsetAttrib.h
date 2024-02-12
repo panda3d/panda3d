@@ -49,7 +49,7 @@ class FactoryParams;
  *
  * @deprecated See DepthBiasAttrib and DisplayRegion::set_depth_range() instead.
  */
-class EXPCL_PANDA_PGRAPH DepthOffsetAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthOffsetAttrib final : public RenderAttrib {
 private:
   INLINE DepthOffsetAttrib(int offset, PN_stdfloat min_value, PN_stdfloat max_value);
 

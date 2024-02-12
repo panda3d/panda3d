@@ -71,7 +71,8 @@ private:
   pmap<CPT(GeomVertexFormat), std::pair<LPDIRECT3DVERTEXDECLARATION9, BitMask32> > _vertex_declarations;
 
   int _frame_number = -1;
-  LMatrix4 *_mat_part_cache = nullptr;
+  LVecBase4 *_mat_part_cache = nullptr;
+  size_t _scratch_space_size = 0;
 
 private:
   void release_resources(void);

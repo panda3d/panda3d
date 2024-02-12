@@ -51,17 +51,17 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
 
   nassertv(func_or_coro != nullptr);
   if (func_or_coro == Py_None || PyCallable_Check(func_or_coro)) {
-    _function = func_or_coro;
-    Py_INCREF(_function);
-  } else if (PyCoro_CheckExact(func_or_coro)) {
+    _function = Py_NewRef(func_or_coro);
+  }
+  else if (PyCoro_CheckExact(func_or_coro)) {
     // We also allow passing in a coroutine, because why not.
-    _generator = func_or_coro;
-    Py_INCREF(_generator);
-  } else if (PyGen_CheckExact(func_or_coro)) {
+    _generator = Py_NewRef(func_or_coro);
+  }
+  else if (PyGen_CheckExact(func_or_coro)) {
     // Something emulating a coroutine.
-    _generator = func_or_coro;
-    Py_INCREF(_generator);
-  } else {
+    _generator = Py_NewRef(func_or_coro);
+  }
+  else {
     nassert_raise("Invalid function passed to PythonTask");
   }
 
@@ -114,10 +114,8 @@ PythonTask::
  */
 void PythonTask::
 set_function(PyObject *function) {
-  Py_XDECREF(_function);
+  Py_XSETREF(_function, Py_NewRef(function));
 
-  _function = function;
-  Py_INCREF(_function);
   if (_function != Py_None && !PyCallable_Check(_function)) {
     nassert_raise("Invalid function passed to PythonTask");
   }
@@ -165,18 +163,16 @@ get_args() {
     PyObject *with_task = PyTuple_New(num_args + 1);
     for (int i = 0; i < num_args; ++i) {
       PyObject *item = PyTuple_GET_ITEM(_args, i);
-      Py_INCREF(item);
-      PyTuple_SET_ITEM(with_task, i, item);
+      PyTuple_SET_ITEM(with_task, i, Py_NewRef(item));
     }
 
     this->ref();
     PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     PyTuple_SET_ITEM(with_task, num_args, self);
     return with_task;
-
-  } else {
-    Py_INCREF(_args);
-    return _args;
+  }
+  else {
+    return Py_NewRef(_args);
   }
 }
 
@@ -186,10 +182,8 @@ get_args() {
  */
 void PythonTask::
 set_upon_death(PyObject *upon_death) {
-  Py_XDECREF(_upon_death);
+  Py_XSETREF(_upon_death, Py_NewRef(upon_death));
 
-  _upon_death = upon_death;
-  Py_INCREF(_upon_death);
   if (_upon_death != Py_None && !PyCallable_Check(_upon_death)) {
     nassert_raise("Invalid upon_death function passed to PythonTask");
   }
@@ -234,9 +228,7 @@ set_owner(PyObject *owner) {
     unregister_from_owner();
   }
 
-  Py_XDECREF(_owner);
-  _owner = owner;
-  Py_INCREF(_owner);
+  Py_XSETREF(_owner, Py_NewRef(owner));
 
   if (_owner != Py_None && _state != S_inactive) {
     register_to_owner();
@@ -254,14 +246,11 @@ get_result() const {
 
   if (_exception == nullptr) {
     // The result of the call is stored in _exc_value.
-    Py_XINCREF(_exc_value);
-    return _exc_value;
-  } else {
+    return Py_XNewRef(_exc_value);
+  }
+  else {
     _retrieved_exception = true;
-    Py_INCREF(_exception);
-    Py_XINCREF(_exc_value);
-    Py_XINCREF(_exc_traceback);
-    PyErr_Restore(_exception, _exc_value, _exc_traceback);
+    PyErr_Restore(Py_NewRef(_exception), Py_XNewRef(_exc_value), Py_XNewRef(_exc_traceback));
     return nullptr;
   }
 }
@@ -273,13 +262,15 @@ get_result() const {
 /*PyObject *PythonTask::
 exception() const {
   if (_exception == nullptr) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  } else if (_exc_value == nullptr || _exc_value == Py_None) {
+    return Py_NewRef(Py_None);
+  }
+  else if (_exc_value == nullptr || _exc_value == Py_None) {
     return PyObject_CallNoArgs(_exception);
-  } else if (PyTuple_Check(_exc_value)) {
+  }
+  else if (PyTuple_Check(_exc_value)) {
     return PyObject_Call(_exception, _exc_value, nullptr);
-  } else {
+  }
+  else {
     return PyObject_CallOneArg(_exception, _exc_value);
   }
 }*/
@@ -301,7 +292,6 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
 
   PyObject *descr = _PyType_Lookup(Py_TYPE(self), attr);
   if (descr != nullptr) {
-    Py_INCREF(descr);
     descrsetfunc f = descr->ob_type->tp_descr_set;
     if (f != nullptr) {
       return f(descr, self, v);
@@ -363,8 +353,7 @@ __getattribute__(PyObject *self, PyObject *attr) const {
 
   if (item != nullptr) {
     // PyDict_GetItem returns a borrowed reference.
-    Py_INCREF(item);
-    return item;
+    return Py_NewRef(item);
   }
 
   return PyObject_GenericGetAttr(self, attr);
@@ -617,7 +606,19 @@ do_python_task() {
       Py_DECREF(_generator);
       _generator = nullptr;
 
+#if PY_VERSION_HEX >= 0x030D0000 // Python 3.13
+      // Python 3.13 does not support _PyGen_FetchStopIterationValue anymore.
+      if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
+        PyObject *exc = PyErr_GetRaisedException();
+        result = ((PyStopIterationObject *)exc)->value;
+        if (result == nullptr) {
+          result = Py_None;
+        }
+        result = Py_NewRef(result);
+        Py_DECREF(exc);
+#else
       if (_PyGen_FetchStopIterationValue(&result) == 0) {
+#endif
         PyErr_Clear();
 
         if (_must_cancel) {

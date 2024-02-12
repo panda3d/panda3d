@@ -12,9 +12,27 @@
  */
 
 #include "bamFile_ext.h"
-#include "bamWriter_ext.h"
+#include "bamReader_ext.h"
 
 #ifdef HAVE_PYTHON
+
+#ifndef CPPPARSER
+extern Dtool_PyTypedObject Dtool_TypedWritable;
+#endif  // CPPPARSER
+
+/**
+ * Reads an object from the BamFile.
+ */
+PyObject *Extension<BamFile>::
+read_object() {
+  BamReader *reader = _this->get_reader();
+  if (reader == nullptr) {
+    PyErr_SetString(PyExc_ValueError, "BamFile not open for reading");
+    return nullptr;
+  }
+
+  return invoke_extension(reader).read_object();
+}
 
 /**
  * Returns the version number of the Bam file currently being written.

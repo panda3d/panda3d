@@ -146,11 +146,6 @@ new_collector(int collector_index) {
   for (WinStatsGraph *graph : _graphs) {
     graph->new_collector(collector_index);
   }
-
-  // We might need to update our menus.
-  for (WinStatsChartMenu *chart_menu : _chart_menus) {
-    chart_menu->do_update();
-  }
 }
 
 /**
@@ -196,6 +191,8 @@ remove_thread(int thread_index) {
  */
 void WinStatsMonitor::
 new_data(int thread_index, int frame_number) {
+  PStatMonitor::new_data(thread_index, frame_number);
+
   for (WinStatsGraph *graph : _graphs) {
     graph->new_data(thread_index, frame_number);
   }

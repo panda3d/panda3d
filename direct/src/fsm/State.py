@@ -1,5 +1,7 @@
 """State module: contains State class"""
 
+from __future__ import annotations
+
 __all__ = ['State']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -18,7 +20,7 @@ class State(DirectObject):
     # should not cause any leaks.
     if __debug__:
         import weakref
-        States = weakref.WeakKeyDictionary()
+        States: weakref.WeakKeyDictionary[State, int] = weakref.WeakKeyDictionary()
 
         @classmethod
         def replaceMethod(cls, oldFunction, newFunction):

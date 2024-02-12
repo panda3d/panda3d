@@ -42,6 +42,7 @@ protected:
 
 private:
   bool _vsync_enabled = false;
+  uint32_t _vsync_counter = 0;
 
 public:
   static TypeHandle get_class_type() {

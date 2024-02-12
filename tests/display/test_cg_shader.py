@@ -1,4 +1,6 @@
 import os
+import platform
+import pytest
 
 from panda3d import core
 
@@ -16,12 +18,14 @@ def run_cg_compile_check(gsg, shader_path, expect_fail=False):
         assert shader is not None
 
 
+@pytest.mark.skipif(platform.machine().lower() in ('arm64', 'aarch64'), reason="Cg not supported on arm64")
 def test_cg_compile_error(gsg):
     """Test getting compile errors from bad Cg shaders"""
     shader_path = core.Filename(SHADERS_DIR, 'cg_bad.sha')
     run_cg_compile_check(gsg, shader_path, expect_fail=True)
 
 
+@pytest.mark.skipif(platform.machine().lower() in ('arm64', 'aarch64'), reason="Cg not supported on arm64")
 def test_cg_from_file(gsg):
     """Test compiling Cg shaders from files"""
     shader_path = core.Filename(SHADERS_DIR, 'cg_simple.sha')

@@ -183,7 +183,7 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 * LINUX and FreeBSD STUFF
 ************************************************************************/
 
-#elif defined(IS_LINUX) || defined(IS_OSX) || defined(IS_FREEBSD)
+#elif defined(IS_LINUX) || defined(IS_OSX) || defined(IS_FREEBSD) || defined(__EMSCRIPTEN__)
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -246,7 +246,9 @@ inline int DO_RECV_FROM(SOCKET sck, char *data, int len, sockaddr *addr) {
 
 
 inline int init_network() {
+#ifndef __EMSCRIPTEN__
   signal(SIGPIPE, SIG_IGN); // hmm do i still need this ...
+#endif
   return ALL_OK;
 }
 

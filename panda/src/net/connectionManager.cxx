@@ -544,6 +544,8 @@ scan_interfaces() {
 #elif defined(__ANDROID__)
   // TODO: implementation using netlink_socket?
 
+#elif defined(__EMSCRIPTEN__)
+
 #else  // _WIN32
   struct ifaddrs *ifa;
   if (getifaddrs(&ifa) != 0) {

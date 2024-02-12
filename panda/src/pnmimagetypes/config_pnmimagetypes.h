@@ -74,6 +74,6 @@ EXPCL_PANDA_PNMIMAGETYPES std::istream &operator >> (std::istream &in, IMGHeader
 extern ConfigVariableEnum<IMGHeaderType> img_header_type;
 extern ConfigVariableInt img_size;
 
-extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
+extern "C" EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
 
 #endif

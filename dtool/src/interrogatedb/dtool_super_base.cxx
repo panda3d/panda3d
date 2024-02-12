@@ -21,21 +21,19 @@ static PyMemberDef standard_type_members[] = {
   {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
 // {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
 // READONLY, (char *)"A type check signature"},
-  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
+  {(char *)"this_metatype", T_OBJECT_EX, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
   {nullptr}  /* Sentinel */
 };
 
 static PyObject *GetSuperBase(PyObject *self) {
   Dtool_PyTypedObject *super_base = Dtool_GetSuperBase();
-  Py_XINCREF((PyTypeObject *)super_base); // order is important .. this is used for static functions
-  return (PyObject *)super_base;
+  return Py_XNewRef((PyObject *)&super_base->_PyType);
 };
 
 static void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {
   if (module != nullptr) {
     Dtool_PyTypedObject *super_base = Dtool_GetSuperBase();
-    Py_INCREF((PyTypeObject *)&super_base);
-    PyModule_AddObject(module, "DTOOL_SUPER_BASE", (PyObject *)&super_base);
+    PyModule_AddObjectRef(module, "DTOOL_SUPER_BASE", (PyObject *)&super_base->_PyType);
   }
 }
 
@@ -43,7 +41,7 @@ static void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyType
   return nullptr;
 }
 
-static Dtool_PyInstDef *Dtool_Wrap_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
+static PyObject *Dtool_Wrap_DTOOL_SUPER_BASE(void *from_this, PyTypeObject *from_type) {
   return nullptr;
 }
 
@@ -152,7 +150,7 @@ Dtool_PyTypedObject *Dtool_GetSuperBase() {
     PyErr_SetString(PyExc_TypeError, "PyType_Ready(Dtool_DTOOL_SUPER_BASE)");
     return nullptr;
   }
-  Py_INCREF((PyTypeObject *)&super_base_type);
+  Py_INCREF(&super_base_type._PyType);
 
   PyDict_SetItemString(super_base_type._PyType.tp_dict, "DtoolGetSuperBase", PyCFunction_New(&methods[0], (PyObject *)&super_base_type));
 

@@ -17,6 +17,8 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 * Max Voss
 * Hawkheart
 * Veronica
+* Cody Sevier
+* Marek Alexa
 
 ## Enthusiasts
 
@@ -28,6 +30,8 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 * SureBet
 * Gyedo Jeon
 * GameDev JONI
+* Max Rodriguez
+* Jethro Schoppenhorst
 
 ## Backers
 

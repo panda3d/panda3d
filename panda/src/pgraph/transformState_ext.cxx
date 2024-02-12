@@ -42,8 +42,7 @@ get_composition_cache() const {
 
     const TransformState *source = _this->_composition_cache.get_key(si);
     if (source == nullptr) {
-      a = Py_None;
-      Py_INCREF(a);
+      a = Py_NewRef(Py_None);
     } else {
       source->ref();
       a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState,
@@ -51,8 +50,7 @@ get_composition_cache() const {
     }
     const TransformState *result = _this->_composition_cache.get_data(si)._result;
     if (result == nullptr) {
-      b = Py_None;
-      Py_INCREF(b);
+      b = Py_NewRef(Py_None);
     } else {
       result->ref();
       b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState,
@@ -97,8 +95,7 @@ get_invert_composition_cache() const {
 
     const TransformState *source = _this->_invert_composition_cache.get_key(si);
     if (source == nullptr) {
-      a = Py_None;
-      Py_INCREF(a);
+      a = Py_NewRef(Py_None);
     } else {
       source->ref();
       a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState,
@@ -106,8 +103,7 @@ get_invert_composition_cache() const {
     }
     const TransformState *result = _this->_invert_composition_cache.get_data(si)._result;
     if (result == nullptr) {
-      b = Py_None;
-      Py_INCREF(b);
+      b = Py_NewRef(Py_None);
     } else {
       result->ref();
       b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState,

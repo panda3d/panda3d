@@ -11,6 +11,7 @@ so that I can just type: ``inspect(anObject)`` any time.
 See :ref:`inspection-utilities` for more information.
 """
 
+from __future__ import annotations
 
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
@@ -30,6 +31,8 @@ def inspect(anObject):
     return inspectorWindow
 
 ### private
+
+_InspectorMap: dict[str, str]
 
 
 def inspectorFor(anObject):
@@ -95,9 +98,7 @@ class Inspector:
 
     def initializePartsList(self):
         self._partsList = []
-        keys = self.namedParts()
-        keys.sort()
-        for each in keys:
+        for each in sorted(self.namedParts()):
             self._partsList.append(each)
             #if not callable(getattr(self.object, each)):
             #    self._partsList.append(each)
@@ -202,9 +203,7 @@ class DictionaryInspector(Inspector):
 
     def initializePartsList(self):
         Inspector.initializePartsList(self)
-        keys = list(self.object.keys())
-        keys.sort()
-        for each in keys:
+        for each in sorted(self.object):
             self._partsList.append(each)
 
     def partNumber(self, partNumber):
@@ -400,7 +399,8 @@ class InspectorWindow:
         self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
-        help = tk.Toplevel(base.tkRoot)
+        from direct.showbase import ShowBaseGlobal
+        help = tk.Toplevel(ShowBaseGlobal.base.tkRoot)
         help.title("Inspector Help")
         frame = tk.Frame(help)
         frame.pack()

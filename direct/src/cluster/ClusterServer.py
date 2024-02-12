@@ -137,13 +137,9 @@ class ClusterServer(DirectObject.DirectObject):
             self.objectMappings.pop(name)
 
     def redoSortedPriorities(self):
-
-        self.sortedControlMappings = []
-        for key in self.objectMappings:
-            self.sortedControlMappings.append([self.controlPriorities[key],
-                                               key])
-
-        self.sortedControlMappings.sort()
+        self.sortedControlMappings = sorted(
+            [self.controlPriorities[key], key] for key in self.objectMappings
+        )
 
     def addControlMapping(self, objectName, controlledName, offset = None,
                           priority = 0):

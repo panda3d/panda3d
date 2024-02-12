@@ -107,7 +107,7 @@ make_python_frame_collector(PyFrameObject *frame, PyCodeObject *code) {
         }
         meth_name = PyUnicode_FromFormat("_%s%S", cls_name, meth_name);
       } else {
-        Py_INCREF(meth_name);
+        meth_name = Py_NewRef(meth_name);
       }
       if (!find_method(cls, meth_name, code)) {
         // Not a matching method object, it's something else.  Forget it.

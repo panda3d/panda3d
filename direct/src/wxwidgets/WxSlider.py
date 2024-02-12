@@ -16,7 +16,7 @@ class WxSlider(wx.Slider):
 
         self.maxValue = maxValue
         self.minValue = minValue
-        intVal = 100.0 / (self.maxValue - self.minValue) * (value - self.minValue)
+        intVal = int(100.0 / (self.maxValue - self.minValue) * (value - self.minValue))
 
         intMin = 0
         intMax = 100
@@ -35,33 +35,37 @@ class WxSlider(wx.Slider):
                                              textSize, wx.TE_CENTER | wx.TE_PROCESS_ENTER)
 
                 self.textValue.Disable()
-                newPos = (pos[0], pos[1] + 20)
+                pos = (pos[0], pos[1] + 20)
         else:
             newStyle = wx.SL_VERTICAL
-            newPos = (pos[0], pos[1] + 40)
+            pos = (pos[0], pos[1] + 40)
 
         if style & wx.SL_AUTOTICKS:
             newStyle |= wx.SL_AUTOTICKS
 
-        wx.Slider.__init__(self, parent, id, intVal, intMin, intMax, newPos, size, style=newStyle)
+        wx.Slider.__init__(self, parent, id, intVal, intMin, intMax, pos, size, style=newStyle)
         self.Disable()
 
     def GetValue(self):
         # overriding wx.Slider.GetValue()
-        #return (wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue)
-        return float(self.textValue.GetValue()) # [gjeon] since the value from the slider is not as precise as the value entered by the user
+        if self.textValue is not None: # Horizontal with labels
+            return float(self.textValue.GetValue()) # [gjeon] since the value from the slider is not as precise as the value entered by the user
+        else:
+            return (wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue)
 
     def SetValue(self, value):
         # overriding wx.Slider.SetValue()
-        self.textValue.SetValue("%.2f" % value)
+        if self.textValue is not None:
+            self.textValue.SetValue("%.2f" % value)
         intVal = 100.0 / (self.maxValue - self.minValue) * (value - self.minValue)
         wx.Slider.SetValue(self, intVal)
 
     def onChange(self, event):
         # update textValue from slider
-        self.textValue.Clear()
-        floatVal = wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue
-        self.textValue.WriteText("%.2f" % floatVal)
+        if self.textValue is not None:
+            self.textValue.Clear()
+            floatVal = wx.Slider.GetValue(self) * (self.maxValue - self.minValue) / 100.0 + self.minValue
+            self.textValue.WriteText("%.2f" % floatVal)
         if self.updateCB: # callback function sould receive event as the argument
             self.updateCB(event)
         event.Skip()
@@ -82,13 +86,14 @@ class WxSlider(wx.Slider):
     def Disable(self):
         # overriding wx.Slider.Disable()
         wx.Slider.Disable(self)
-        self.textValue.Disable()
+        if self.textValue is not None:
+            self.textValue.Disable()
 
     def Enable(self):
         # overriding wx.Slider.Enable()
         wx.Slider.Enable(self)
         self.Bind(wx.EVT_SLIDER, self.onChange)
 
-        if not self.textValue is None:
+        if self.textValue is not None:
             self.textValue.Enable()
             self.textValue.Bind(wx.EVT_TEXT_ENTER, self.onEnter)

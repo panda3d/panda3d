@@ -54,7 +54,48 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
     }
   }
 
-  _mat_part_cache = new LMatrix4[s->cp_get_mat_cache_size()];
+  _mat_part_cache = new LVecBase4[s->cp_get_mat_cache_size()];
+
+  // Determine the size of the scratch space to allocate on the stack inside
+  // issue_parameters().
+  for (const Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
+    if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
+      continue;
+    }
+
+    ConstantRegister &reg = _register_map[spec._id._location];
+    if (reg.count == 0) {
+      continue;
+    }
+
+    size_t num_cols = spec._dim[2];
+    if (num_cols == 0) {
+      continue;
+    }
+    size_t size = (size_t)spec._dim[0] * (size_t)spec._dim[1];
+    size *= 16;
+    if (size > _scratch_space_size) {
+      _scratch_space_size = size;
+    }
+  }
+
+  for (const Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
+    if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
+      continue;
+    }
+
+    ConstantRegister &reg = _register_map[spec._id._location];
+    if (reg.count == 0) {
+      continue;
+    }
+    if (reg.set == D3DXRS_FLOAT4) {
+      size_t size = spec._array_count * std::max(spec._size, 4);
+      size *= 4;
+      if (size > _scratch_space_size) {
+        _scratch_space_size = size;
+      }
+    }
+  }
 }
 
 /**
@@ -452,6 +493,8 @@ issue_parameters(GSG *gsg, int altered) {
     return;
   }
 
+  float *scratch = (float *)alloca(_scratch_space_size);
+
   LPDIRECT3DDEVICE9 device = gsg->_d3d_device;
 
   // We have no way to track modifications to PTAs, so we assume that they are
@@ -485,7 +528,7 @@ issue_parameters(GSG *gsg, int altered) {
       switch (reg.set) {
       case D3DXRS_BOOL:
         {
-          BOOL *data = (BOOL *)alloca(sizeof(BOOL) * 4 * num_rows);
+          BOOL *data = (BOOL *)scratch;
           memset(data, 0, sizeof(BOOL) * 4 * num_rows);
           switch (ptr_data._type) {
           case ShaderType::ST_int:
@@ -568,7 +611,7 @@ issue_parameters(GSG *gsg, int altered) {
         }
         else {
           // Need to pad out the rows.
-          LVecBase4i *data = (LVecBase4i *)alloca(sizeof(LVecBase4i) * num_rows);
+          LVecBase4i *data = (LVecBase4i *)scratch;
           memset(data, 0, sizeof(LVecBase4i) * num_rows);
           if (num_cols == 1) {
             for (size_t i = 0; i < num_rows; ++i) {
@@ -610,7 +653,7 @@ issue_parameters(GSG *gsg, int altered) {
         }
         else {
           // Need to pad out the rows.
-          LVecBase4f *data = (LVecBase4f *)alloca(sizeof(LVecBase4f) * num_rows);
+          LVecBase4f *data = (LVecBase4f *)scratch;
           memset(data, 0, sizeof(LVecBase4f) * num_rows);
           switch (ptr_data._type) {
           case ShaderType::ST_int:
@@ -744,144 +787,98 @@ issue_parameters(GSG *gsg, int altered) {
       if (reg.count == 0) {
         continue;
       }
-      nassertd(reg.set == D3DXRS_FLOAT4) continue;
 
-      const LMatrix4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const VecBase4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
 
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
+      switch (reg.set) {
+      case D3DXRS_FLOAT4:
+        {
+#ifdef STDFLOAT_DOUBLE
+          float *data = (float *)scratch;
+          const double *from_data = val->get_data();
+          from_data += spec._offset;
+          for (size_t i = 0; i < spec._size; ++i) {
+            data[i] = (float)from_data[i];
+          }
 #else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
+          const float *data = val->get_data();
+          data += spec._offset;
 #endif
-      PN_float32 scratch[16];
 
-      switch (spec._piece) {
-      case Shader::SMP_whole:
-      case Shader::SMP_upper3x4:
-      case Shader::SMP_upper4x3:
-        break;
-      case Shader::SMP_transpose:
-      case Shader::SMP_transpose3x4:
-      case Shader::SMP_transpose4x3:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[12];
-        scratch[4] = data[1];
-        scratch[5] = data[5];
-        scratch[6] = data[9];
-        scratch[7] = data[13];
-        scratch[8] = data[2];
-        scratch[9] = data[6];
-        scratch[10] = data[10];
-        scratch[11] = data[14];
-        scratch[12] = data[3];
-        scratch[13] = data[7];
-        scratch[14] = data[11];
-        scratch[15] = data[15];
-        data = scratch;
-        break;
-      case Shader::SMP_row0:
-        break;
-      case Shader::SMP_row1:
-        data = data + 4;
-        break;
-      case Shader::SMP_row2:
-        data = data + 8;
-        break;
-      case Shader::SMP_row3:
-        data = data + 12;
-        break;
-      case Shader::SMP_col0:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[12];
-        data = scratch;
-        break;
-      case Shader::SMP_col1:
-        scratch[0] = data[1];
-        scratch[1] = data[5];
-        scratch[2] = data[9];
-        scratch[3] = data[13];
-        data = scratch;
-        break;
-      case Shader::SMP_col2:
-        scratch[0] = data[2];
-        scratch[1] = data[6];
-        scratch[2] = data[10];
-        scratch[3] = data[14];
-        data = scratch;
-        break;
-      case Shader::SMP_col3:
-        scratch[0] = data[3];
-        scratch[1] = data[7];
-        scratch[2] = data[11];
-        scratch[3] = data[15];
-        data = scratch;
-        break;
-      case Shader::SMP_row3x1:
-      case Shader::SMP_row3x2:
-      case Shader::SMP_row3x3:
-        data = data + 12;
-        break;
-      case Shader::SMP_upper3x3:
-        scratch[0] = data[0];
-        scratch[1] = data[1];
-        scratch[2] = data[2];
-        scratch[3] = data[4];
-        scratch[4] = data[5];
-        scratch[5] = data[6];
-        scratch[6] = data[8];
-        scratch[7] = data[9];
-        scratch[8] = data[10];
-        data = scratch;
-        break;
-      case Shader::SMP_transpose3x3:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[1];
-        scratch[4] = data[5];
-        scratch[5] = data[9];
-        scratch[6] = data[2];
-        scratch[7] = data[6];
-        scratch[8] = data[10];
-        data = scratch;
-        break;
-      case Shader::SMP_cell15:
-        // Need to copy to scratch, otherwise D3D will read out of bounds.
-        scratch[0] = data[15];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
-        break;
-      case Shader::SMP_cell14:
-        scratch[0] = data[14];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
-        break;
-      case Shader::SMP_cell13:
-        scratch[0] = data[13];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
-        break;
-      }
+          switch (spec._piece) {
+          default:
+            break;
+          case Shader::SMP_mat4_whole:
+          case Shader::SMP_mat4_upper3x4:
+          case Shader::SMP_mat4_upper4x3:
+            break;
+          case Shader::SMP_mat4_transpose:
+          case Shader::SMP_mat4_transpose3x4:
+          case Shader::SMP_mat4_transpose4x3:
+            scratch[0] = data[0];
+            scratch[1] = data[4];
+            scratch[2] = data[8];
+            scratch[3] = data[12];
+            scratch[4] = data[1];
+            scratch[5] = data[5];
+            scratch[6] = data[9];
+            scratch[7] = data[13];
+            scratch[8] = data[2];
+            scratch[9] = data[6];
+            scratch[10] = data[10];
+            scratch[11] = data[14];
+            scratch[12] = data[3];
+            scratch[13] = data[7];
+            scratch[14] = data[11];
+            scratch[15] = data[15];
+            data = scratch;
+            break;
+          case Shader::SMP_mat4_column:
+            scratch[0] = data[0];
+            scratch[1] = data[4];
+            scratch[2] = data[8];
+            scratch[3] = data[12];
+            data = scratch;
+            break;
+          }
 
-      if (reg.vreg >= 0) {
-        device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
-      }
-      if (reg.freg >= 0) {
-        device->SetPixelShaderConstantF(reg.freg, data, reg.count);
+          if (reg.vreg >= 0) {
+            device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
+          }
+          if (reg.freg >= 0) {
+            device->SetPixelShaderConstantF(reg.freg, data, reg.count);
+          }
+        }
+        break;
+
+      case D3DXRS_INT4:
+        {
+          const int *data = (const int *)val->get_data();
+          data += spec._offset;
+
+          if (reg.vreg >= 0) {
+            device->SetVertexShaderConstantI(reg.vreg, data, reg.count);
+          }
+          if (reg.freg >= 0) {
+            device->SetPixelShaderConstantI(reg.freg, data, reg.count);
+          }
+          break;
+        }
+
+      case D3DXRS_BOOL:
+        {
+          const BOOL *data = (const BOOL *)val->get_data();
+          data += spec._offset;
+
+          if (reg.vreg >= 0) {
+            device->SetVertexShaderConstantB(reg.vreg, data, reg.count);
+          }
+          if (reg.freg >= 0) {
+            device->SetPixelShaderConstantB(reg.freg, data, reg.count);
+          }
+          break;
+        }
       }
     }
   }

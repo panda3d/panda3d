@@ -130,6 +130,7 @@
 // flag to link in Python, we'll just excerpt the forward declaration of
 // PyObject.
 typedef struct _object PyObject;
+typedef struct _typeobject PyTypeObject;
 
 #ifndef HAVE_EIGEN
 // If we don't have the Eigen library, don't define LINMATH_ALIGN.

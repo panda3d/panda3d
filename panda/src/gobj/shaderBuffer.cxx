@@ -76,18 +76,23 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 BufferContext *ShaderBuffer::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
-  if (_contexts == nullptr) {
+  if (_contexts != nullptr) {
+    Contexts::const_iterator ci;
+    ci = _contexts->find(prepared_objects);
+    if (ci != _contexts->end()) {
+      return (*ci).second;
+    }
+  } else {
     _contexts = new Contexts;
-  }
-  Contexts::const_iterator ci;
-  ci = _contexts->find(prepared_objects);
-  if (ci != _contexts->end()) {
-    return (*ci).second;
   }
 
   BufferContext *vbc = prepared_objects->prepare_shader_buffer_now(this, gsg);
   if (vbc != nullptr) {
     (*_contexts)[prepared_objects] = vbc;
+  }
+  else if (_contexts->empty()) {
+    delete _contexts;
+    _contexts = nullptr;
   }
   return vbc;
 }

@@ -28,6 +28,10 @@
 #include "executionEnvironment.h"
 #include "pset.h"
 
+#ifdef __EMSCRIPTEN__
+#include "virtualFileMountHTTP.h"
+#endif
+
 using std::iostream;
 using std::istream;
 using std::ostream;
@@ -853,10 +857,54 @@ get_global_ptr() {
     _global_ptr = new VirtualFileSystem;
 
     // Set up the default mounts.  First, there is always the root mount.
-    _global_ptr->mount("/", "/", 0);
+#ifdef __EMSCRIPTEN__
+    // Unless we're running in node.js, we don't have a filesystem, and instead
+    // mount the current server root as our filesystem root.
+    bool is_node = (bool)EM_ASM_INT(return (typeof process === 'object' && typeof process.versions === 'object' && typeof process.versions.node === 'string'));
+    if (!is_node) {
+      _global_ptr->mount(new VirtualFileMountHTTP(URLSpec("/")), "/", MF_read_only);
 
-    // And our initial cwd comes from the environment.
-    _global_ptr->chdir(ExecutionEnvironment::get_cwd());
+      // And get the "current working directory".
+      char cwd[4096];
+      bool have_memfs = (bool)EM_ASM_INT({
+        var path = location.pathname;
+        stringToUTF8(path.substring(0, path.lastIndexOf('/')), $0, 4096);
+
+        if (FS && FS.root) {
+          /* Emscripten creates these by default, but we don't want them. */
+          var contents = FS.root.contents;
+          delete contents.dev;
+          delete contents.home;
+          delete contents.proc;
+          delete contents.tmp;
+          return true;
+        }
+        else {
+          return false;
+        }
+      }, cwd);
+
+      if (cwd[0] == 0) {
+        cwd[0] = '/';
+        cwd[1] = 0;
+      }
+
+      _global_ptr->_cwd = cwd;
+
+      // If we built with the Emscripten VFS enabled, mount it on top of the
+      // current directory, so that emscripten's preload system will work.
+      if (have_memfs) {
+        _global_ptr->mount("/", _global_ptr->_cwd, MF_read_only);
+      }
+    }
+    else
+#endif
+    {
+      _global_ptr->mount("/", "/", 0);
+
+      // And our initial cwd comes from the environment.
+      _global_ptr->chdir(ExecutionEnvironment::get_cwd());
+    }
 
     // Then, we add whatever mounts are listed in the Configrc file.
     ConfigVariableList mounts

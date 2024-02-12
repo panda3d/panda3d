@@ -12,9 +12,7 @@ import os
 import sys
 from optparse import OptionParser
 from makepandacore import *
-
-# DO NOT CHANGE TO sysconfig - see GitHub issue #1230
-from distutils.sysconfig import get_python_lib
+from locations import get_python_lib
 
 
 MIME_INFO = (

@@ -1,6 +1,7 @@
 import pytest
 from panda3d import core
 import tempfile
+import sys
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -178,6 +179,7 @@ def test_file_small(datagram_small):
 
     do_file_test(dg, verify, filename)
 
+@pytest.mark.skipif(sys.platform == "emscripten", reason="Low-memory environment")
 def test_file_large(datagram_large):
     """This tests DatagramOutputFile/DatagramInputFile on very large datagrams."""
     dg, verify = datagram_large

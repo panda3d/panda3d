@@ -16,6 +16,8 @@
 
 #include "pfstreamBuf.h"
 
+#ifndef __EMSCRIPTEN__
+
 class EXPCL_DTOOL_DTOOLUTIL IPipeStream : public std::istream {
 public:
   INLINE IPipeStream(const std::string);
@@ -49,5 +51,7 @@ private:
 };
 
 #include "pfstream.I"
+
+#endif /* __EMSCRIPTEN__ */
 
 #endif /* __PFSTREAM_H__ */

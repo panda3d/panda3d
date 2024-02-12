@@ -57,10 +57,9 @@ enum DeletedChainFlag : unsigned int {
  * Use MemoryHook to get a new DeletedBufferChain of a particular size.
  */
 class EXPCL_DTOOL_DTOOLBASE DeletedBufferChain {
-protected:
-  constexpr explicit DeletedBufferChain(size_t buffer_size);
-
 public:
+  constexpr DeletedBufferChain() = default;
+  constexpr explicit DeletedBufferChain(size_t buffer_size) noexcept;
   INLINE DeletedBufferChain(DeletedBufferChain &&from) noexcept;
   INLINE DeletedBufferChain(const DeletedBufferChain &copy);
 
@@ -72,11 +71,9 @@ public:
 
   INLINE bool operator < (const DeletedBufferChain &other) const;
 
-  static INLINE DeletedBufferChain *get_deleted_chain(size_t buffer_size);
+  static DeletedBufferChain *get_deleted_chain(size_t buffer_size);
 
 private:
-  static DeletedBufferChain *get_large_deleted_chain(size_t buffer_size);
-
   class ObjectNode {
   public:
 #ifdef USE_DELETEDCHAINFLAG
@@ -99,7 +96,7 @@ private:
   ObjectNode *_deleted_chain = nullptr;
 
   MutexImpl _lock;
-  const size_t _buffer_size;
+  size_t _buffer_size = 0;
 
 #ifndef USE_DELETEDCHAINFLAG
   // Without DELETEDCHAINFLAG, we don't even store the _flag member at all.
@@ -109,11 +106,6 @@ private:
   // Otherwise, we need space for the integer.
   static const size_t flag_reserved_bytes = sizeof(AtomicAdjust::Integer);
 #endif  // USE_DELETEDCHAINFLAG
-
-  // This array stores the deleted chains for smaller sizes, starting with
-  // sizeof(void *) and increasing in multiples thereof.
-  static const size_t num_small_deleted_chains = 24;
-  static DeletedBufferChain _small_deleted_chains[num_small_deleted_chains];
 
   friend class MemoryHook;
 };

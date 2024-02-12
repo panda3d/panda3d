@@ -56,4 +56,4 @@ extern EXPCL_PANDA_EXPRESS ConfigVariableDouble collect_tcp_interval;
 
 extern EXPCL_PANDA_EXPRESS void init_libexpress();
 
-#endif /* __CONFIG_UTIL_H__ */
+#endif /* __CONFIG_EXPRESS_H__ */

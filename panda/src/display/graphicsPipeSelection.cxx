@@ -49,6 +49,7 @@ GraphicsPipeSelection() : _lock("GraphicsPipeSelection") {
 
   _default_display_module = load_display.get_word(0);
   _default_pipe_name = load_display.get_word(1);
+  _default_pipe_type = TypeHandle::none();
 
   if (_default_display_module == "*") {
     // '*' or empty string is the key for all display modules.
@@ -124,7 +125,11 @@ print_pipe_types() const {
   LightMutexHolder holder(_lock);
   nout << "Known pipe types:" << std::endl;
   for (const PipeType &pipe_type : _pipe_types) {
-    nout << "  " << pipe_type._type << "\n";
+    nout << "  " << pipe_type._type;
+    if (_pipe_types.size() > 1 && pipe_type._type == _default_pipe_type) {
+      nout << " (default)";
+    }
+    nout << "\n";
   }
   if (_display_modules.empty()) {
     nout << "(all display modules loaded.)\n";
@@ -256,7 +261,7 @@ make_default_pipe() {
 
   if (!_default_pipe_name.empty()) {
     // First, look for an exact match of the default type name from the
-    // Configrc file (excepting case and hyphenunderscore).
+    // Config.prc file (excepting case and hyphen / underscore).
     for (const PipeType &ptype : _pipe_types) {
       if (cmp_nocase_uh(ptype._type.get_name(), _default_pipe_name) == 0) {
         // Here's an exact match.
@@ -273,6 +278,18 @@ make_default_pipe() {
       string ptype_name = downcase(ptype._type.get_name());
       if (ptype_name.find(preferred_name) != string::npos) {
         // Here's a substring match.
+        PT(GraphicsPipe) pipe = (*ptype._constructor)();
+        if (pipe != nullptr) {
+          return pipe;
+        }
+      }
+    }
+  }
+
+  // Look for the preferred type of the default display module.
+  if (_default_pipe_type != TypeHandle::none()) {
+    for (const PipeType &ptype : _pipe_types) {
+      if (ptype._type == _default_pipe_type) {
         PT(GraphicsPipe) pipe = (*ptype._constructor)();
         if (pipe != nullptr) {
           return pipe;
@@ -358,7 +375,7 @@ do_load_default_module() {
     return;
   }
 
-  load_named_module(_default_display_module);
+  _default_pipe_type = load_named_module(_default_display_module);
 
   DisplayModules::iterator di =
     std::find(_display_modules.begin(), _display_modules.end(),

@@ -32,8 +32,8 @@ public:
 
 PUBLISHED:
   OdeBoxGeom(dReal lx, dReal ly, dReal lz);
-  OdeBoxGeom(OdeSpace &space, dReal lx, dReal ly, dReal lz);
-  OdeBoxGeom(OdeSpace &space, const LVecBase3f &size);
+  explicit OdeBoxGeom(OdeSpace &space, dReal lx, dReal ly, dReal lz);
+  explicit OdeBoxGeom(OdeSpace &space, const LVecBase3f &size);
   virtual ~OdeBoxGeom();
 
   INLINE void set_lengths(dReal lx, dReal ly, dReal lz);

@@ -21,11 +21,11 @@ import builtins
 
 # Create toplevel widget dictionary
 if not hasattr(builtins, "widgetDict"):
-    builtins.widgetDict = {}
+    builtins.widgetDict = {}  # type: ignore[attr-defined]
 
 # Create toplevel variable dictionary
 if not hasattr(builtins, "variableDict"):
-    builtins.variableDict = {}
+    builtins.variableDict = {}  # type: ignore[attr-defined]
 
 
 def resetWidgetDict():
@@ -550,7 +550,3 @@ class TestAppShell(AppShell):
     def createInterface(self):
         self.createButtons()
         self.createMain()
-
-
-if __name__ == '__main__':
-    test = TestAppShell(balloon_state='none')

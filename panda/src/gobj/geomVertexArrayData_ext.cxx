@@ -53,10 +53,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 
   view->internal = (void*) data;
 
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) handle->get_write_pointer();
   view->len = row_size * handle->get_num_rows();
   view->readonly = 0;
@@ -115,10 +112,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
   view->internal = (void*) data;
 
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) handle->get_read_pointer(true);
   view->len = row_size * handle->get_num_rows();
   view->readonly = 1;

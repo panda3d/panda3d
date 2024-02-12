@@ -69,7 +69,7 @@ oldExcepthook = None
 # from its main exception handler
 wantStackDumpLog = False
 wantStackDumpUpload = False
-variableDumpReasons = []
+variableDumpReasons: list = []
 dumpOnExceptionInit = False
 
 
@@ -116,15 +116,10 @@ def _excepthookDumpVars(eType, eValue, tb):
         for name, obj in frame.f_locals.items():
             if name in codeNames:
                 name2obj[name] = obj
-        # show them in alphabetical order
-        names = list(name2obj.keys())
-        names.sort()
-        # push them in reverse order so they'll be popped in the correct order
-        names.reverse()
 
         traversedIds = set()
-
-        for name in names:
+        # push them in reverse alphabetical order so they'll be popped in the correct order
+        for name in sorted(name2obj, reverse=True):
             stateStack.push([name, name2obj[name], traversedIds])
 
         while len(stateStack) > 0:
@@ -150,14 +145,10 @@ def _excepthookDumpVars(eType, eValue, tb):
                                 continue
                         attrName2obj[attrName] = attr
                 if len(attrName2obj) > 0:
-                    # show them in alphabetical order
-                    attrNames = list(attrName2obj.keys())
-                    attrNames.sort()
-                    # push them in reverse order so they'll be popped in the correct order
-                    attrNames.reverse()
                     ids = set(traversedIds)
                     ids.add(id(obj))
-                    for attrName in attrNames:
+                    # push them in reverse alphabetical order so they'll be popped in the correct order
+                    for attrName in sorted(attrName2obj, reverse=True):
                         obj = attrName2obj[attrName]
                         stateStack.push(['%s.%s' % (name, attrName), obj, ids])
 

@@ -329,17 +329,3 @@ class ColorEntry(VectorEntry):
             initialcolor = tuple(self.get()[:3]))[0]
         if color:
             self.set((color[0], color[1], color[2], self.getAt(3)))
-
-
-if __name__ == '__main__':
-    root = tk.Toplevel()
-    root.title('Vector Widget demo')
-
-    ve = VectorEntry(root)
-    ve.pack()
-    v3e = Vector3Entry(root)
-    v3e.pack()
-    v4e = Vector4Entry(root)
-    v4e.pack()
-    ce = ColorEntry(root)
-    ce.pack()

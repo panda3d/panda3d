@@ -47,10 +47,10 @@ __reduce__() const {
   }
 
   extern struct Dtool_PyTypedObject Dtool_Datagram;
-  Py_INCREF((PyObject *)&Dtool_Datagram._PyType);
+  PyObject *tp = (PyObject *)&Dtool_Datagram._PyType;
 
   PyObject *result = PyTuple_New(2);
-  PyTuple_SET_ITEM(result, 0, (PyObject *)&Dtool_Datagram._PyType);
+  PyTuple_SET_ITEM(result, 0, Py_NewRef(tp));
   PyTuple_SET_ITEM(result, 1, args);
   return result;
 }

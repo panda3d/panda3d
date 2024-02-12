@@ -134,18 +134,18 @@ add_axis(Axis axis, int minimum, int maximum, bool centered) {
 int InputDevice::
 add_axis(Axis axis, int minimum, int maximum) {
   bool centered = (minimum < 0)
-    || axis == Axis::x
-    || axis == Axis::y
-    || axis == Axis::z
-    || axis == Axis::yaw
-    || axis == Axis::pitch
-    || axis == Axis::roll
-    || axis == Axis::left_x
-    || axis == Axis::left_y
-    || axis == Axis::right_x
-    || axis == Axis::right_y
-    || axis == Axis::wheel
-    || axis == Axis::rudder;
+    || axis == Axis::X
+    || axis == Axis::Y
+    || axis == Axis::Z
+    || axis == Axis::YAW
+    || axis == Axis::PITCH
+    || axis == Axis::ROLL
+    || axis == Axis::LEFT_X
+    || axis == Axis::LEFT_Y
+    || axis == Axis::RIGHT_X
+    || axis == Axis::RIGHT_Y
+    || axis == Axis::WHEEL
+    || axis == Axis::RUDDER;
   return add_axis(axis, minimum, maximum, centered);
 }
 
@@ -321,7 +321,7 @@ set_axis_value(int index, double value) {
     device_cat.spam()
       << "Changed axis " << index;
 
-    if (_axes[index].axis != Axis::none) {
+    if (_axes[index].axis != Axis::NONE) {
       device_cat.spam(false) << " (" << _axes[index].axis << ")";
     }
 
@@ -350,7 +350,7 @@ axis_changed(int index, int state) {
     device_cat.spam()
       << "Changed axis " << index;
 
-    if (_axes[index].axis != Axis::none) {
+    if (_axes[index].axis != Axis::NONE) {
       device_cat.spam(false) << " (" << _axes[index].axis << ")";
     }
 
@@ -388,7 +388,7 @@ output(std::ostream &out) const {
 
   out << "connected)";
 
-  if (_device_class != DeviceClass::unknown) {
+  if (_device_class != DeviceClass::UNKNOWN) {
     out << ", " << _device_class;
   }
 
@@ -404,19 +404,19 @@ output(std::ostream &out) const {
         << (_axes.size() != 1 ? 'e' : 'i') << 's';
   }
 
-  if (_features & (1 << (unsigned int)Feature::pointer)) {
+  if (_features & (1 << (unsigned int)Feature::POINTER)) {
     out << ", pointer";
   }
-  if (_features & (1 << (unsigned int)Feature::keyboard)) {
+  if (_features & (1 << (unsigned int)Feature::KEYBOARD)) {
     out << ", keyboard";
   }
-  if (_features & (1 << (unsigned int)Feature::tracker)) {
+  if (_features & (1 << (unsigned int)Feature::TRACKER)) {
     out << ", tracker";
   }
-  if (_features & (1 << (unsigned int)Feature::vibration)) {
+  if (_features & (1 << (unsigned int)Feature::VIBRATION)) {
     out << ", vibration";
   }
-  if (_features & (1 << (unsigned int)Feature::battery)) {
+  if (_features & (1 << (unsigned int)Feature::BATTERY)) {
     out << ", battery";
 
     if (_battery_data.level > 0 && _battery_data.max_level > 0) {
@@ -546,40 +546,40 @@ do_poll() {
 std::string InputDevice::
 format_device_class(DeviceClass dc) {
   switch (dc) {
-  case InputDevice::DeviceClass::unknown:
+  case InputDevice::DeviceClass::UNKNOWN:
     return "unknown";
 
-  case InputDevice::DeviceClass::virtual_device:
-    return "virtual_device";
+  case InputDevice::DeviceClass::VIRTUAL:
+    return "virtual";
 
-  case InputDevice::DeviceClass::keyboard:
+  case InputDevice::DeviceClass::KEYBOARD:
     return "keyboard";
 
-  case InputDevice::DeviceClass::mouse:
+  case InputDevice::DeviceClass::MOUSE:
     return "mouse";
 
-  case InputDevice::DeviceClass::touch:
+  case InputDevice::DeviceClass::TOUCH:
     return "touch";
 
-  case InputDevice::DeviceClass::gamepad:
+  case InputDevice::DeviceClass::GAMEPAD:
     return "gamepad";
 
-  case InputDevice::DeviceClass::flight_stick:
+  case InputDevice::DeviceClass::FLIGHT_STICK:
     return "flight_stick";
 
-  case InputDevice::DeviceClass::steering_wheel:
+  case InputDevice::DeviceClass::STEERING_WHEEL:
     return "steering_wheel";
 
-  case InputDevice::DeviceClass::dance_pad:
+  case InputDevice::DeviceClass::DANCE_PAD:
     return "dance_pad";
 
-  case InputDevice::DeviceClass::hmd:
+  case InputDevice::DeviceClass::HMD:
     return "hmd";
 
-  case InputDevice::DeviceClass::spatial_mouse:
+  case InputDevice::DeviceClass::SPATIAL_MOUSE:
     return "spatial_mouse";
 
-  case InputDevice::DeviceClass::digitizer:
+  case InputDevice::DeviceClass::DIGITIZER:
     return "digitizer";
   }
   return "**invalid**";
@@ -591,64 +591,64 @@ format_device_class(DeviceClass dc) {
 std::string InputDevice::
 format_axis(Axis axis) {
   switch (axis) {
-  case InputDevice::Axis::none:
+  case Axis::NONE:
     return "none";
 
-  case InputDevice::Axis::x:
+  case Axis::X:
     return "x";
 
-  case InputDevice::Axis::y:
+  case Axis::Y:
     return "y";
 
-  case InputDevice::Axis::z:
+  case Axis::Z:
     return "z";
 
-  case InputDevice::Axis::yaw:
+  case Axis::YAW:
     return "yaw";
 
-  case InputDevice::Axis::pitch:
+  case Axis::PITCH:
     return "pitch";
 
-  case InputDevice::Axis::roll:
+  case Axis::ROLL:
     return "roll";
 
-  case InputDevice::Axis::left_x:
+  case Axis::LEFT_X:
     return "left_x";
 
-  case InputDevice::Axis::left_y:
+  case Axis::LEFT_Y:
     return "left_y";
 
-  case InputDevice::Axis::left_trigger:
+  case Axis::LEFT_TRIGGER:
     return "left_trigger";
 
-  case InputDevice::Axis::right_x:
+  case Axis::RIGHT_X:
     return "right_x";
 
-  case InputDevice::Axis::right_y:
+  case Axis::RIGHT_Y:
     return "right_y";
 
-  case InputDevice::Axis::right_trigger:
+  case Axis::RIGHT_TRIGGER:
     return "right_trigger";
 
-  //case InputDevice::Axis::trigger:
+  //case Axis::TRIGGER:
   //  return "trigger";
 
-  case InputDevice::Axis::throttle:
+  case Axis::THROTTLE:
     return "throttle";
 
-  case InputDevice::Axis::rudder:
+  case Axis::RUDDER:
     return "rudder";
 
-  case InputDevice::Axis::wheel:
+  case Axis::WHEEL:
     return "wheel";
 
-  case InputDevice::Axis::accelerator:
+  case Axis::ACCELERATOR:
     return "accelerator";
 
-  case InputDevice::Axis::brake:
+  case Axis::BRAKE:
     return "brake";
 
-  case InputDevice::Axis::pressure:
+  case Axis::PRESSURE:
     return "pressure";
   }
   return "**invalid**";

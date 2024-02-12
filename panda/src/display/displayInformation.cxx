@@ -75,7 +75,6 @@ DisplayInformation::
 DisplayInformation::
 DisplayInformation() {
   DisplayInformation::DetectionState state;
-  int get_adapter_display_mode_state;
   int get_device_caps_state;
   int window_width;
   int window_height;
@@ -88,7 +87,6 @@ DisplayInformation() {
   uint64_t available_physical_memory;
 
   state = DisplayInformation::DS_unknown;
-  get_adapter_display_mode_state = false;
   get_device_caps_state = false;
   window_width = 0;
   window_height = 0;
@@ -101,7 +99,7 @@ DisplayInformation() {
   available_physical_memory = 0;
 
   _state = state;
-  _get_adapter_display_mode_state = get_adapter_display_mode_state;
+  _current_display_mode_index = -1;
   _get_device_caps_state = get_device_caps_state;
   _maximum_window_width = window_width;
   _maximum_window_height = window_height;
@@ -210,7 +208,17 @@ get_display_mode(int display_index) {
 }
 
 /**
- *
+ * Returns the index of the current display mode (determined at the time of
+ * application start) in the display mode array, or -1 if this could not be
+ * determined.
+ */
+int DisplayInformation::
+get_current_display_mode_index() const {
+  return _current_display_mode_index;
+}
+
+/**
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_width (int display_index) {
@@ -225,7 +233,7 @@ get_display_mode_width (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_height (int display_index) {
@@ -240,7 +248,7 @@ get_display_mode_height (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_bits_per_pixel (int display_index) {
@@ -255,9 +263,9 @@ get_display_mode_bits_per_pixel (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
-int DisplayInformation::
+double DisplayInformation::
 get_display_mode_refresh_rate (int display_index) {
   int value;
 
@@ -270,7 +278,7 @@ get_display_mode_refresh_rate (int display_index) {
 }
 
 /**
- *
+ * @deprecated use get_display_mode instead.
  */
 int DisplayInformation::
 get_display_mode_fullscreen_only (int display_index) {

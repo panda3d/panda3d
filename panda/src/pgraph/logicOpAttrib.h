@@ -27,7 +27,7 @@ class FactoryParams;
  *
  * @since 1.10.0
  */
-class EXPCL_PANDA_PGRAPH LogicOpAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH LogicOpAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Operation {
     O_none,  // LogicOp disabled, regular blending occurs.
