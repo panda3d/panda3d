@@ -75,6 +75,11 @@ ConfigVariableInt audio_preload_threshold
           "practical to stream multiple sound-files from disk at the same "
           "time - the hard drive seek time makes it stutter."));
 
+ConfigVariableBool audio_want_hrtf
+("audio-want-hrtf", true,
+ PRC_DESC("Whether OpenAL-Soft is able to enable HRTF in certain hardware "
+          "configurations, such as when headphones are detected."));
+
 // Unknown
 
 ConfigVariableInt audio_min_hw_channels
