@@ -158,14 +158,7 @@ OpenALAudioManager() {
 
       ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
 
-      int attrs_size;
-      if (is_hrtf_present) {
-        attrs_size = 3;
-      } else {
-        attrs_size = 1;
-      }
-
-      ALCint attrs[attrs_size];
+      ALCint attrs[3];
 
       if (is_hrtf_present) {
         attrs[0] = ALC_HRTF_SOFT;
