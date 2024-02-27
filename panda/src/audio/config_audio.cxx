@@ -77,8 +77,10 @@ ConfigVariableInt audio_preload_threshold
 
 ConfigVariableBool audio_want_hrtf
 ("audio-want-hrtf", true,
- PRC_DESC("Whether OpenAL-Soft is able to enable HRTF in certain hardware "
-          "configurations, such as when headphones are detected."));
+ PRC_DESC("This determines whether OpenAL-Soft should activate HRTF in "
+          "certain hardware configurations. Set it to true to cause "
+          "OpenAL to automatically apply HRTF processing to all output "
+          "audio when headphones are used for playback."));
 
 // Unknown
 
