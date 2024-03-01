@@ -3152,7 +3152,9 @@ del_files = ['core.py', 'core.pyc', 'core.pyo',
              '_core.pyd', '_core.so',
              'direct.py', 'direct.pyc', 'direct.pyo',
              '_direct.pyd', '_direct.so',
-             'dtoolconfig.pyd', 'dtoolconfig.so']
+             'dtoolconfig.pyd', 'dtoolconfig.so',
+             'net.pyd', 'net.so',
+             'net.py', 'net.pyc', 'net.pyo']
 
 for basename in del_files:
     path = os.path.join(GetOutputDir(), 'panda3d', basename)
