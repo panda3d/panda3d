@@ -37,6 +37,10 @@ add_component_library(p3nativenet SYMBOL BUILDING_PANDA_NATIVENET
 target_link_libraries(p3nativenet p3pandabase pandaexpress)
 target_interrogate(p3nativenet ALL)
 
+# These are temporarily built with -module panda3d.net, even though they are
+# still part of panda3d.core, see #1466
+set_target_properties(p3nativenet PROPERTIES IGATE_MODULE panda3d.net)
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3nativenet
     EXPORT Core COMPONENT Core
