@@ -359,7 +359,7 @@ function(add_python_module module)
       make_directory "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}"
     COMMAND host_interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
-      -module ${modname} -library ${modname}
+      -module ${module} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles_rel}
