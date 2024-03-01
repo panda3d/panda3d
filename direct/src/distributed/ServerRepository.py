@@ -4,19 +4,21 @@ from panda3d.core import (
     ConfigVariableBool,
     ConfigVariableDouble,
     ConfigVariableInt,
-    ConnectionWriter,
     DatagramIterator,
     Filename,
+    TPLow,
+    UniqueIdAllocator,
+    VirtualFileSystem,
+    getModelPath,
+)
+from panda3d.net import (
+    ConnectionWriter,
     NetAddress,
     NetDatagram,
     PointerToConnection,
     QueuedConnectionListener,
     QueuedConnectionManager,
     QueuedConnectionReader,
-    TPLow,
-    UniqueIdAllocator,
-    VirtualFileSystem,
-    getModelPath,
 )
 from panda3d.direct import DCFile
 from direct.distributed.MsgTypesCMU import (
