@@ -70,25 +70,24 @@ init_libpandagl() {
  */
 int
 get_pipe_type_pandagl() {
-#ifdef HAVE_WGL
+#if defined(HAVE_WGL)
   return wglGraphicsPipe::get_class_type().get_index();
-#endif
 
-#if defined(HAVE_COCOA)
+#elif defined(HAVE_COCOA)
   return CocoaGraphicsPipe::get_class_type().get_index();
+
 #elif defined(HAVE_CARBON)
   return osxGraphicsPipe::get_class_type().get_index();
-#endif
 
-#ifdef HAVE_GLX
+#elif defined(HAVE_GLX)
   return glxGraphicsPipe::get_class_type().get_index();
-#endif
 
-#ifdef HAVE_EGL
+#elif defined(HAVE_EGL)
   return eglGraphicsPipe::get_class_type().get_index();
-#endif
 
+#else
   return 0;
+#endif
 }
 
 #if defined(HAVE_EGL) && !defined(USE_X11)
