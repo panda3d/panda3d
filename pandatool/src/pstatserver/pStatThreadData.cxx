@@ -176,6 +176,28 @@ get_frame_number_at_time(double time, int hint) const {
 }
 
 /**
+ * Returns the frame number of the first frame later than the indicated time
+ * and start frame number.
+ */
+int PStatThreadData::
+get_frame_number_after(double time, int start_at) const {
+  int i = std::max(0, start_at - _first_frame_number);
+  double end = get_frame(i).get_end();
+
+  while (end < time) {
+    ++i;
+    if (i >= _frames.size()) {
+      break;
+    }
+    if (_frames[i] != nullptr) {
+      end = _frames[i]->get_end();
+    }
+  }
+
+  return _first_frame_number + i;
+}
+
+/**
  * Returns the FrameData associated with the most recent frame.
  */
 const PStatFrameData &PStatThreadData::

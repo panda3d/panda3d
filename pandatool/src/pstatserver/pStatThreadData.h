@@ -51,6 +51,7 @@ public:
   double get_oldest_time() const;
   const PStatFrameData &get_frame_at_time(double time) const;
   int get_frame_number_at_time(double time, int hint = -1) const;
+  int get_frame_number_after(double time, int start_at = 0) const;
 
   const PStatFrameData &get_latest_frame() const;
 

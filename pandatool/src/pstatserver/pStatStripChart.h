@@ -86,7 +86,11 @@ protected:
     int _count;
     double _net_value;
   };
-  typedef pvector<ColorData> FrameData;
+  class FrameData : public pvector<ColorData> {
+  public:
+    double _start, _end;
+    double _net_value, _net_time;
+  };
   typedef pmap<int, FrameData> Data;
 
   static void accumulate_frame_data(FrameData &fdata,
@@ -96,8 +100,6 @@ protected:
   const FrameData &get_frame_data(int frame_number) const;
   void compute_average_pixel_data(PStatStripChart::FrameData &result,
                                   int &then_i, int &now_i, double now);
-  double get_net_value(int frame_number) const;
-  double get_net_value(int frame_number, int collector_index) const;
   double get_average_net_value() const;
 
   void changed_size(int xsize, int ysize);
