@@ -590,6 +590,7 @@ get_frame_data(int frame_number) const {
   }
 
   const PStatThreadData *thread_data = _view.get_thread_data();
+  //assert(thread_data->has_frame(frame_number));
   const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
   _view.set_to_frame(frame_data);
 
@@ -659,24 +660,26 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   then_i = thread_data->get_frame_number_after(then, then_i);
   now_i = thread_data->get_frame_number_after(now, now_i);
 
-  const FrameData &then_fdata = get_frame_data(then_i);
-  then = max(then, then_fdata._start);
-  double then_end = then_fdata._end;
+  const FrameData *fdata = &get_frame_data(then_i);
+  then = max(then, fdata->_start);
+  double then_end = fdata->_end;
 
   // Sum up a weighted average of all of the individual frames we pass.
 
   // We start with just the portion of frame then_i that actually does fall
   // within our "then to now" window.
-  accumulate_frame_data(result, then_fdata, then_end - then);
+  accumulate_frame_data(result, *fdata, then_end - then);
   double last = then_end;
 
   // Then we get all of each of the middle frames.
   for (int frame_number = then_i + 1;
        frame_number < now_i;
        frame_number++) {
-    const FrameData &fdata = get_frame_data(frame_number);
-    accumulate_frame_data(result, fdata, fdata._end - last);
-    last = fdata._end;
+    if (thread_data->has_frame(frame_number)) {
+      fdata = &get_frame_data(frame_number);
+    }
+    accumulate_frame_data(result, *fdata, fdata->_end - last);
+    last = fdata->_end;
   }
 
   // And finally, we get the remainder as now_i.
@@ -729,19 +732,21 @@ get_average_net_value() const {
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
     const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    const FrameData *frame = &get_frame_data(then_i);
     if (frame_data.get_end() > then) {
-      const FrameData &frame = get_frame_data(then_i);
-      double this_time = (frame._end - then);
-      net_value += frame._net_value * this_time;
+      double this_time = (frame->_end - then);
+      net_value += frame->_net_value * this_time;
       net_time += this_time;
     }
     // Then we get all of each of the remaining frames.
     for (int frame_number = then_i + 1;
          frame_number <= now_i;
          frame_number++) {
-      const FrameData &frame = get_frame_data(frame_number);
-      double this_time = frame._net_time;
-      net_value += frame._net_value * this_time;
+      if (thread_data->has_frame(frame_number)) {
+        frame = &get_frame_data(frame_number);
+      }
+      double this_time = frame->_net_time;
+      net_value += frame->_net_value * this_time;
       net_time += this_time;
     }
 
