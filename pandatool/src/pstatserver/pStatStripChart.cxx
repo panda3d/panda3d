@@ -672,14 +672,23 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   double last = then_end;
 
   // Then we get all of each of the middle frames.
+  double weight = 0.0;
   for (int frame_number = then_i + 1;
        frame_number < now_i;
        frame_number++) {
     if (thread_data->has_frame(frame_number)) {
+      if (weight > 0.0) {
+        accumulate_frame_data(result, *fdata, weight);
+        weight = 0.0;
+      }
       fdata = &get_frame_data(frame_number);
     }
-    accumulate_frame_data(result, *fdata, fdata->_end - last);
+    weight += fdata->_end - last;
     last = fdata->_end;
+  }
+
+  if (weight > 0.0) {
+    accumulate_frame_data(result, *fdata, weight);
   }
 
   // And finally, we get the remainder as now_i.
