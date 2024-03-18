@@ -511,7 +511,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  * Factory method to generate an AnimChannelMatrixXfmTable object.
  */
 TypedWritable *AnimChannelMatrixXfmTable::
-make_AnimChannelMatrixXfmTable(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   AnimChannelMatrixXfmTable *me = new AnimChannelMatrixXfmTable;
   DatagramIterator scan;
   BamReader *manager;
@@ -526,5 +526,5 @@ make_AnimChannelMatrixXfmTable(const FactoryParams &params) {
  */
 void AnimChannelMatrixXfmTable::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelMatrixXfmTable);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

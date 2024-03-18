@@ -316,7 +316,7 @@ write_pfm(const PfmFile &pfm) {
 void PNMFileTypePfm::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_PNMFileTypePfm);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -328,6 +328,6 @@ register_with_read_factory() {
  * we just pull the object from the registry.
  */
 TypedWritable *PNMFileTypePfm::
-make_PNMFileTypePfm(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }

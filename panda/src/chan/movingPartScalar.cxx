@@ -133,8 +133,8 @@ apply_control(PandaNode *node) {
 /**
  * Factory method to generate a MovingPartScalar object
  */
-TypedWritable* MovingPartScalar::
-make_MovingPartScalar(const FactoryParams &params) {
+TypedWritable *MovingPartScalar::
+make_from_bam(const FactoryParams &params) {
   MovingPartScalar *me = new MovingPartScalar;
   DatagramIterator scan;
   BamReader *manager;
@@ -149,5 +149,5 @@ make_MovingPartScalar(const FactoryParams &params) {
  */
 void MovingPartScalar::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartScalar);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

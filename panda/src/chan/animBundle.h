@@ -56,7 +56,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
-  static TypedWritable *make_AnimBundle(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
