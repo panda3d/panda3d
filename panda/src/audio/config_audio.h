@@ -67,6 +67,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_distance_factor;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_drop_off_factor;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_buffering_seconds;
 extern EXPCL_PANDA_AUDIO ConfigVariableInt    audio_preload_threshold;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool   audio_want_hrtf;
 
 #ifdef NOTIFY_DEBUG //[
   // Non-release build:
