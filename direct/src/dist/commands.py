@@ -277,6 +277,7 @@ class build_apps(setuptools.Command):
         self.gui_apps = {}
         self.console_apps = {}
         self.macos_main_app = None
+        self.external_blob = False
         self.rename_paths = {}
         self.include_patterns = []
         self.exclude_patterns = []
@@ -1006,6 +1007,11 @@ class build_apps(setuptools.Command):
                 freezer.excludeModule(exmod)
             freezer.done(addStartupModules=True)
 
+
+            # We only support using an external blob on MacOS
+            if 'macosx' not in platform and self.external_blob:
+                self.external_blob = False
+
             stub_name = 'deploy-stub'
             target_name = appname
             if platform.startswith('win') or 'macosx' in platform:
@@ -1059,7 +1065,7 @@ class build_apps(setuptools.Command):
                 'prc_executable_args_envvar': None,
                 'main_dir': None,
                 'log_filename': self.expand_path(self.log_filename, platform),
-            }, self.log_append, use_strftime)
+            }, self.log_append, use_strftime, self.external_blob)
             stub_file.close()
 
             if temp_file:

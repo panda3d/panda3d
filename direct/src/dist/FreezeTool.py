@@ -1816,7 +1816,7 @@ class Freezer:
         return target
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
-                                log_append=False, log_filename_strftime=False):
+                                log_append=False, log_filename_strftime=False, external_blob=False):
         self.__replacePaths()
 
         # We must have a __main__ module to make an exe file.
@@ -1962,15 +1962,19 @@ class Freezer:
             blob_size += pad
 
         # TODO: Support creating custom sections in universal binaries.
+        """
+            ARM64 MacOS has strict codesigning requirements, that makes it tricky to motify the binary
+            external_blob allows us to use the binary blob as an external file
+        """
         append_blob = True
-        if self.platform.startswith('macosx') and len(bitnesses) == 1:
+        if self.platform.startswith('macosx') and len(bitnesses) == 1 and not external_blob:
             # If our deploy-stub has a __PANDA segment, we know we're meant to
             # put our blob there rather than attach it to the end.
             load_commands = self._parse_macho_load_commands(stub_data)
             if b'__PANDA' in load_commands.keys():
                 append_blob = False
 
-        if self.platform.startswith("macosx") and not append_blob:
+        if self.platform.startswith("macosx") and not append_blob and not external_blob:
             # Take this time to shift any Mach-O structures around to fit our
             # blob. We don't need to worry about aligning the offset since the
             # compiler already took care of that when creating the segment.
@@ -2021,6 +2025,10 @@ class Freezer:
             if self.optimize < 2:
                 flags |= 4 # keep_docstrings
 
+            # When we use an external_blob, the offset is the size of the header
+            if external_blob:
+                blob_offset = struct.calcsize(header_layout)
+
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
             header = struct.pack(header_layout,
@@ -2046,12 +2054,13 @@ class Freezer:
                 field_offsets.get('log_filename', 0),
                 0)
 
-            # Now, find the location of the 'blobinfo' symbol in the binary,
-            # to which we will write our header.
-            if not self._replace_symbol(stub_data, b'blobinfo', header, bitness=bitness):
-                # This must be a legacy deploy-stub, which requires the offset to
-                # be appended to the end.
-                append_offset = True
+            if not external_blob:
+                # Now, find the location of the 'blobinfo' symbol in the binary,
+                # to which we will write our header.
+                if not self._replace_symbol(stub_data, b'blobinfo', header, bitness=bitness):
+                    # This must be a legacy deploy-stub, which requires the offset to
+                    # be appended to the end.
+                    append_offset = True
 
         # Add the string/code pool.
         assert len(blob) == pool_offset
@@ -2063,17 +2072,26 @@ class Freezer:
             blob += b'\0' * (blob_size - len(blob))
         assert len(blob) == blob_size
 
-        if append_offset:
+        if append_offset and external_blob:
             # This is for legacy deploy-stub.
             warnings.warn("Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
-        with open(target, 'wb') as f:
-            if append_blob:
+        if append_blob and not external_blob:
+            with open(target, 'wb') as f:
                 f.write(stub_data)
                 assert f.tell() == blob_offset
                 f.write(blob)
-            else:
+        elif external_blob:
+            # Write game.bin which stores our blob
+            with open(os.path.splitext(target)[0] + ".bin", "wb") as f:
+                f.write(header + blob)
+                f.close()
+            with open(target, "wb") as bin:
+                bin.write(stub_data)
+                bin.close()
+        else:
+            with open(target, 'wb') as f:
                 stub_data[blob_offset:blob_offset + blob_size] = blob
                 f.write(stub_data)
 
