@@ -28,7 +28,7 @@
 #include "executionEnvironment.h"
 #include "pset.h"
 
-#ifdef __EMSCRIPTEN__
+#if defined(VFS_HTTP)
 #include "virtualFileMountHTTP.h"
 #endif
 
@@ -857,7 +857,7 @@ get_global_ptr() {
     _global_ptr = new VirtualFileSystem;
 
     // Set up the default mounts.  First, there is always the root mount.
-#ifdef __EMSCRIPTEN__
+#if defined(VFS_HTTP)
     // Unless we're running in node.js, we don't have a filesystem, and instead
     // mount the current server root as our filesystem root.
     bool is_node = (bool)EM_ASM_INT(return (typeof process === 'object' && typeof process.versions === 'object' && typeof process.versions.node === 'string'));
