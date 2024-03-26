@@ -1452,6 +1452,9 @@ get_preprocessor_args(int c, string &args) {
   // Following the command, the rest of the line, as well as any text on
   // successive lines, is part of the arguments to the command.
 
+  // Check for comments first.
+  c = skip_comment(c);
+
   while (c != EOF && c != '\n') {
     if (c == '\\') {
       int next_c = get();
