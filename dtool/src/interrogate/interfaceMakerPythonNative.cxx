@@ -3915,7 +3915,7 @@ write_function_for_name(ostream &out, Object *obj,
         // None of the remaps take any keyword arguments, so let's check that
         // we take none.  This saves some checks later on.
         indent(out, 4) << "if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {\n";
-        if (min_args == 1 && min_args == 1) {
+        if (min_args == 1 && max_args == 1) {
           indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
           always_returns = write_function_forset(out, mii->second, min_args,
                                                  max_args, expected_params, 6,

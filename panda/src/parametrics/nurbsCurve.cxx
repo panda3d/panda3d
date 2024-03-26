@@ -485,14 +485,14 @@ find_cv(PN_stdfloat t) {
  */
 void NurbsCurve::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_NurbsCurve);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
  * Factory method to generate an object of this type.
  */
 TypedWritable *NurbsCurve::
-make_NurbsCurve(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   NurbsCurve *me = new NurbsCurve;
   DatagramIterator scan;
   BamReader *manager;

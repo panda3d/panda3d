@@ -341,10 +341,15 @@ function(add_python_module module)
     # Keep command lines short
     file(RELATIVE_PATH workdir_rel "${CMAKE_CURRENT_BINARY_DIR}" "${workdir_abs}")
 
+    get_target_property(target_module "${target}" IGATE_MODULE)
+    if(NOT target_module)
+      set(target_module "${module}")
+    endif()
+
     interrogate_sources(${target}
       "${workdir_abs}/${target}_igate.cxx"
       "${workdir_abs}/${target}.in"
-      "-python-native;-module;${module}")
+      "-python-native;-module;${target_module}")
 
     get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
     list(APPEND infiles_rel "${workdir_rel}/${target}.in")
@@ -359,7 +364,7 @@ function(add_python_module module)
       make_directory "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}"
     COMMAND host_interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
-      -module ${modname} -library ${modname}
+      -module ${module} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles_rel}

@@ -280,7 +280,7 @@ r_make_complete(PaletteGroups::Groups &result, PaletteGroup *group) {
 void PaletteGroups::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_PaletteGroups);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -320,8 +320,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* PaletteGroups::
-make_PaletteGroups(const FactoryParams &params) {
+TypedWritable *PaletteGroups::
+make_from_bam(const FactoryParams &params) {
   PaletteGroups *me = new PaletteGroups;
   DatagramIterator scan;
   BamReader *manager;

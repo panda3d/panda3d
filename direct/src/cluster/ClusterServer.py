@@ -1,12 +1,14 @@
 from panda3d.core import (
     ClockObject,
+    Vec3,
+)
+from panda3d.net import (
     ConnectionWriter,
     NetAddress,
     PointerToConnection,
     QueuedConnectionListener,
     QueuedConnectionManager,
     QueuedConnectionReader,
-    Vec3,
 )
 from .ClusterMsgs import (
     CLUSTER_CAM_FRUSTUM,

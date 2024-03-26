@@ -174,7 +174,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  * Factory method to generate a AnimChannelScalarDynamic object
  */
 TypedWritable *AnimChannelScalarDynamic::
-make_AnimChannelScalarDynamic(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   AnimChannelScalarDynamic *me = new AnimChannelScalarDynamic;
   DatagramIterator scan;
   BamReader *manager;
@@ -189,5 +189,5 @@ make_AnimChannelScalarDynamic(const FactoryParams &params) {
  */
 void AnimChannelScalarDynamic::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelScalarDynamic);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
