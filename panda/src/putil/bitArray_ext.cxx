@@ -14,7 +14,9 @@
 #include "bitArray_ext.h"
 
 #ifdef HAVE_PYTHON
-
+#ifndef CPPPARSER
+#include "longobject.h"
+#endif
 /**
  * Creates a BitArray from a Python long object.
  */
@@ -32,7 +34,7 @@ __init__(PyObject *init_value) {
     _PyLong_AsByteArray((PyLongObject *)init_value,
       (unsigned char *)&_this->_array[0],
       num_words * sizeof(BitArray::WordType),
-      1, 0);
+      1, 0, 0);
   }
 }
 
