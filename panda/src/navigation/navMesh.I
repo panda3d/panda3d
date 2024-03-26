@@ -1,0 +1,88 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file navMesh.I
+ * @author Maxwell175
+ * @date 2022-02-21
+ */
+
+
+/**
+ * Returns the color that the specified detour Poly will show() as.
+ *
+ * Defaults to blue.
+ */
+INLINE LColor NavMesh::
+get_poly_debug_color(dtPolyRef poly) const {
+  auto it = _debug_colors.find(poly);
+  if (it == _debug_colors.end()) {
+    return {0, 0, 1, 1};
+  } else {
+    return (*it).second;
+  }
+}
+
+/**
+ * Sets the color that the specified detour Poly will show() as.
+ */
+INLINE void NavMesh::
+set_poly_debug_color(dtPolyRef poly, LColor color) {
+  _debug_colors[poly] = color;
+}
+
+/**
+ * Clears any debug colors that have been set on this NavMesh.
+ */
+INLINE void NavMesh::
+reset_debug_colors() {
+  _debug_colors.clear();
+}
+
+/**
+ * Returns the parameters of this nav mesh. They cannot be changed after the mesh is built.
+ */
+INLINE const NavMeshParams NavMesh::
+get_params() const {
+  return _params;
+}
+
+/**
+ * Returns the list of NodePaths that this NavMesh will track.
+ */
+INLINE NodePaths NavMesh::
+get_tracked_nodes() const {
+  return _tracked_nodes;
+}
+
+/**
+ * Returns the list of NodePaths the collisions from which will
+ * be tracked.
+ */
+INLINE TrackedCollInfos NavMesh::
+get_tracked_coll_nodes() const {
+  return _tracked_coll_nodes;
+}
+
+/**
+ * Returns a list of raw tris that are static and not tracked to
+ * a specific NodePath.
+ *
+ * Note: All vertices will be in the y-up system.
+ */
+INLINE NavTriVertGroups NavMesh::
+get_untracked_tris() const {
+  return _untracked_tris;
+}
+
+/**
+ * Returns the list of obstacle nodes that are tracked onto the NavMesh.
+ */
+INLINE NodePaths NavMesh::
+get_obstacles() const {
+  return _obstacle_nodes;
+}
