@@ -48,7 +48,6 @@ BMPlenfileheader(int classv)
         case C_WINV4:
         case C_WINV5:
                 return 14;
-                return 14;
         default:
                 pm_error(er_internal, "BMPlenfileheader");
                 return 0;

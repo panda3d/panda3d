@@ -34,6 +34,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <set>
 
 using std::cerr;
 using std::string;
@@ -796,80 +797,8 @@ expand_manifests(const string &input_expr, bool expand_undefined,
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
-  // Repeatedly scan the expr for any manifest names or defined() function.
-
-  bool manifest_found;
-  do {
-    manifest_found = false;
-    size_t p = 0;
-    while (p < expr.size()) {
-      if (isalpha(expr[p]) || expr[p] == '_') {
-        size_t q = p;
-        while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-          p++;
-        }
-        string ident = expr.substr(q, p - q);
-
-        // Here's an identifier.  Is it "defined"?
-        if (ident == "defined") {
-          expand_defined_function(expr, q, p);
-        } else if (expand_undefined && ident == "__has_include") {
-          expand_has_include_function(expr, q, p, loc);
-        } else {
-          // Is it a manifest?
-          Manifests::const_iterator mi = _manifests.find(ident);
-          if (mi != _manifests.end()) {
-            const CPPManifest *manifest = (*mi).second;
-            expand_manifest_inline(expr, q, p, manifest);
-            manifest_found = true;
-
-          } else if (ident == "__FILE__") {
-            // Special case: this is a dynamic definition.
-            string file = string("\"") + loc.file._filename_as_referenced.get_fullpath() + "\"";
-            expr = expr.substr(0, q) + file + expr.substr(p);
-            p = q + file.size();
-            manifest_found = true;
-
-          } else if (ident == "__LINE__") {
-            // So is this.
-            string line = format_string(loc.first_line);
-            expr = expr.substr(0, q) + line + expr.substr(p);
-            p = q + line.size();
-            manifest_found = true;
-
-          } else if (expand_undefined && ident != "true" && ident != "false") {
-            // It is not found.  Expand it to 0, but only if we are currently
-            // parsing an #if expression.
-            expr = expr.substr(0, q) + "0" + expr.substr(p);
-            p = q + 1;
-          }
-        }
-      } else if (expr[p] == '\'' || expr[p] == '"') {
-        // Skip the next part until we find a closing quotation mark.
-        char quote = expr[p];
-        p++;
-        while (p < expr.size() && expr[p] != quote) {
-          if (expr[p] == '\\') {
-            // This might be an escaped quote.  Skip an extra char.
-            p++;
-          }
-          p++;
-        }
-        if (p >= expr.size()) {
-          // Unclosed string.
-          warning("missing terminating " + string(1, quote) + " character", loc);
-        }
-        p++;
-      } else {
-        p++;
-      }
-    }
-
-    // If we expanded any manifests at all that time, then go back through the
-    // string and look again--we might have a manifest that expands to another
-    // manifest.
-  } while (manifest_found);
-
+  std::set<const CPPManifest *> expanded;
+  r_expand_manifests(expr, expand_undefined, loc, expanded);
   return expr;
 }
 
@@ -1455,6 +1384,9 @@ int CPPPreprocessor::
 get_preprocessor_args(int c, string &args) {
   // Following the command, the rest of the line, as well as any text on
   // successive lines, is part of the arguments to the command.
+
+  // Check for comments first.
+  c = skip_comment(c);
 
   while (c != EOF && c != '\n') {
     if (c == '\\') {
@@ -2205,6 +2137,96 @@ expand_manifest(const CPPManifest *manifest) {
 #endif
 
   return internal_get_next_token();
+}
+
+/**
+ * Recursive implementation of expand_manifests().
+ */
+void CPPPreprocessor::
+r_expand_manifests(string &expr, bool expand_undefined,
+                   const YYLTYPE &loc, std::set<const CPPManifest *> &expanded) {
+  size_t p = 0;
+  while (p < expr.size()) {
+    if (isalpha(expr[p]) || expr[p] == '_') {
+      size_t q = p;
+      while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+        p++;
+      }
+      string ident = expr.substr(q, p - q);
+
+      // Here's an identifier.  Is it "defined"?
+      if (ident == "defined") {
+        expand_defined_function(expr, q, p);
+      }
+      else if (expand_undefined && ident == "__has_include") {
+        expand_has_include_function(expr, q, p, loc);
+      }
+      else {
+        // Is it a manifest?
+        Manifests::const_iterator mi = _manifests.find(ident);
+        if (mi != _manifests.end()) {
+          const CPPManifest *manifest = (*mi).second;
+          if (expanded.count(manifest) == 0) {
+            vector_string args;
+            if (manifest->_has_parameters) {
+              extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
+                                           manifest->_variadic_param, args, expr, p);
+            }
+
+            string result = manifest->expand(args);
+
+            // Recurse, but adding the manifest we just expanded to the list
+            // to be ignored for future expansion, to prevent recursion.
+            std::set<const CPPManifest *> ignore = expanded;
+            ignore.insert(manifest);
+            r_expand_manifests(result, expand_undefined, loc, ignore);
+
+            expr = expr.substr(0, q) + result + expr.substr(p);
+            p = q + result.size();
+          }
+        }
+        else if (ident == "__FILE__") {
+          // Special case: this is a dynamic definition.
+          string file = string("\"") + loc.file._filename_as_referenced.get_fullpath() + "\"";
+          expr = expr.substr(0, q) + file + expr.substr(p);
+          p = q + file.size();
+
+        }
+        else if (ident == "__LINE__") {
+          // So is this.
+          string line = format_string(loc.first_line);
+          expr = expr.substr(0, q) + line + expr.substr(p);
+          p = q + line.size();
+        }
+        else if (expand_undefined && ident != "true" && ident != "false") {
+          // It is not found.  Expand it to 0, but only if we are currently
+          // parsing an #if expression.
+          expr = expr.substr(0, q) + "0" + expr.substr(p);
+          p = q + 1;
+        }
+      }
+    }
+    else if (expr[p] == '\'' || expr[p] == '"') {
+      // Skip the next part until we find a closing quotation mark.
+      char quote = expr[p];
+      p++;
+      while (p < expr.size() && expr[p] != quote) {
+        if (expr[p] == '\\') {
+          // This might be an escaped quote.  Skip an extra char.
+          p++;
+        }
+        p++;
+      }
+      if (p >= expr.size()) {
+        // Unclosed string.
+        warning("missing terminating " + string(1, quote) + " character", loc);
+      }
+      p++;
+    }
+    else {
+      p++;
+    }
+  }
 }
 
 /**

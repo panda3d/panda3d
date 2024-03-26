@@ -115,7 +115,7 @@ protected:
   bool push_string(const std::string &input, bool lock_position);
 
   std::string expand_manifests(const std::string &input_expr, bool expand_undefined,
-                          const YYLTYPE &loc);
+                               const YYLTYPE &loc);
   CPPExpression *parse_expr(const std::string &expr, CPPScope *current_scope,
                             CPPScope *global_scope, const YYLTYPE &loc);
 
@@ -152,6 +152,8 @@ private:
   CPPToken get_literal(int token, YYLTYPE loc, const std::string &str,
                        const YYSTYPE &result = YYSTYPE());
   CPPToken expand_manifest(const CPPManifest *manifest);
+  void r_expand_manifests(std::string &expr, bool expand_undefined,
+                          const YYLTYPE &loc, std::set<const CPPManifest *> &expanded);
   void extract_manifest_args(const std::string &name, int num_args,
                              int va_arg, vector_string &args);
   void expand_defined_function(std::string &expr, size_t q, size_t &p);
