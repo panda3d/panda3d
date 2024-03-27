@@ -621,6 +621,9 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       render_distance_field(image, outline, bounds.xMin, bounds.yMin);
 
       glyph = slot_glyph(character, int_x_size, int_y_size, advance);
+      if (glyph == nullptr) {
+        return nullptr;
+      }
       if (!_needs_image_processing) {
         copy_pnmimage_to_texture(image, glyph);
       } else {
@@ -633,6 +636,9 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       // other processing before it goes to the texture, we can just copy it
       // directly into the texture.
       glyph = slot_glyph(character, bitmap.width, bitmap.rows, advance);
+      if (glyph == nullptr) {
+        return nullptr;
+      }
       copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
@@ -660,6 +666,9 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       tex_x_size += outline * 2;
       tex_y_size += outline * 2;
       glyph = slot_glyph(character, int_x_size, int_y_size, advance);
+      if (glyph == nullptr) {
+        return nullptr;
+      }
 
       if (outline != 0) {
         // Pad the glyph image to make room for the outline.
@@ -940,10 +949,7 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
 
       if (page->is_empty()) {
         // If we couldn't even put it on an empty page, we're screwed.
-        text_cat.error()
-          << "Glyph of size " << x_size << " by " << y_size
-          << " pixels won't fit on an empty page.\n";
-        return nullptr;
+        goto does_not_fit;
       }
 
       pi = (pi + 1) % _pages.size();
@@ -954,15 +960,27 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
   if (garbage_collect() != 0) {
     // Yes, we just freed up some space.  Try once more, recursively.
     return slot_glyph(character, x_size, y_size, advance);
+  }
 
-  } else {
-    // No good; all recorded glyphs are actually in use.  We need to make a
-    // new page.
+  // No good; all recorded glyphs are actually in use.  We need to make a new
+  // page.
+  {
     _preferred_page = _pages.size();
     PT(DynamicTextPage) page = new DynamicTextPage(this, _preferred_page);
     _pages.push_back(page);
-    return page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
+
+    DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
+    if (glyph != nullptr) {
+      return glyph;
+    }
   }
+
+does_not_fit:
+  // If you get this error, increase text-page-size in Config.prc.
+  text_cat.error()
+    << "Glyph of size " << x_size << " by " << y_size
+    << " pixels won't fit on an empty page.\n";
+  return nullptr;
 }
 
 /**
