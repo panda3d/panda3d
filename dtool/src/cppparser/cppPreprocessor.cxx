@@ -2320,7 +2320,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
     string arg;
     while (c != EOF) {
       if (c == ',' && paren_level == 1) {
-        args.push_back(arg);
+        args.push_back(trim_blanks(arg));
         arg = "";
         c = get();
 
@@ -2379,7 +2379,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
       }
     }
     if (num_args != 0 || !arg.empty()) {
-      args.push_back(arg);
+      args.push_back(trim_blanks(arg));
     }
   }
 
@@ -2539,10 +2539,14 @@ extract_manifest_args_inline(const string &name, int num_args,
   } else {
     // Skip paren.
     p++;
+    // Skip whitespace after paren.
+    while (p < expr.size() && isspace(expr[p])) {
+      p++;
+    }
     size_t q = p;
     while (p < expr.size() && expr[p] != ')') {
       if (expr[p] == ',') {
-        args.push_back(expr.substr(q, p - q));
+        args.push_back(trim_blanks(expr.substr(q, p - q)));
         q = p+1;
 
       } else if (expr[p] == '(') {
@@ -2559,7 +2563,7 @@ extract_manifest_args_inline(const string &name, int num_args,
       }
       p++;
     }
-    args.push_back(expr.substr(q, p - q));
+    args.push_back(trim_blanks(expr.substr(q, p - q)));
 
     if (p < expr.size() && expr[p] == ')') {
       p++;
