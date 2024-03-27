@@ -2184,6 +2184,11 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
   for (string &arg : args) {
     std::set<const CPPManifest *> expanded;
     expanded.insert(manifest);
+    for (const InputFile &infile : _files) {
+      if (infile._ignore_manifest) {
+        expanded.insert(infile._manifest);
+      }
+    }
     r_expand_manifests(arg, false, loc, expanded);
   }
 
