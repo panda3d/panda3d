@@ -2180,8 +2180,12 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
                           manifest->_variadic_param, args);
   }
 
-  string expanded = " " + manifest->expand(args) + " ";
-  push_string(expanded, true);
+  // Perform expansion on the macro arguments.
+  for (string &arg : args) {
+    std::set<const CPPManifest *> expanded;
+    expanded.insert(manifest);
+    r_expand_manifests(arg, false, loc, expanded);
+  }
 
   string expanded = " " + manifest->expand(args) + " ";
   push_expansion(expanded, manifest, loc);
@@ -2226,6 +2230,13 @@ r_expand_manifests(string &expr, bool expand_undefined,
             if (manifest->_has_parameters) {
               extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
                                            manifest->_variadic_param, args, expr, p);
+            }
+
+            // Perform expansion on the macro arguments.
+            for (string &arg : args) {
+              std::set<const CPPManifest *> ignore = expanded;
+              ignore.insert(manifest);
+              r_expand_manifests(arg, expand_undefined, loc, ignore);
             }
 
             string result = manifest->expand(args);
