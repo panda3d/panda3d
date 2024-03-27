@@ -112,7 +112,9 @@ protected:
   bool init_const_expr(const std::string &expr);
   bool init_type(const std::string &type);
   bool push_file(const CPPFile &file);
-  bool push_string(const std::string &input, bool lock_position);
+  bool push_string(const std::string &input);
+  bool push_expansion(const std::string &input, const CPPManifest *manifest,
+                      const YYLTYPE &loc);
 
   std::string expand_manifests(const std::string &input_expr, bool expand_undefined,
                                const YYLTYPE &loc);
@@ -151,7 +153,7 @@ private:
   CPPToken get_identifier(int c);
   CPPToken get_literal(int token, YYLTYPE loc, const std::string &str,
                        const YYSTYPE &result = YYSTYPE());
-  CPPToken expand_manifest(const CPPManifest *manifest);
+  CPPToken expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc);
   void r_expand_manifests(std::string &expr, bool expand_undefined,
                           const YYLTYPE &loc, std::set<const CPPManifest *> &expanded);
   void extract_manifest_args(const std::string &name, int num_args,
@@ -192,7 +194,7 @@ private:
     int get();
     int peek();
 
-    const CPPManifest *_ignore_manifest;
+    const CPPManifest *_manifest;
     CPPFile _file;
     std::string _input;
     std::istream *_in;
@@ -201,6 +203,7 @@ private:
     int _next_line_number;
     int _next_col_number;
     bool _lock_position;
+    bool _ignore_manifest;
     int _prev_last_c;
   };
 

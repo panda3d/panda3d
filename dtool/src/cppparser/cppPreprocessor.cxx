@@ -92,12 +92,13 @@ trim_blanks(const string &str) {
 CPPPreprocessor::InputFile::
 InputFile() {
   _in = nullptr;
-  _ignore_manifest = nullptr;
+  _manifest = nullptr;
   _line_number = 0;
   _col_number = 0;
   _next_line_number = 1;
   _next_col_number = 1;
   _lock_position = false;
+  _ignore_manifest = false;
 }
 
 /**
@@ -548,6 +549,34 @@ error(const string &message, const YYLTYPE &loc) {
     cerr << " error: " << message << "\n";
     show_line(loc);
 
+    if (!_files.empty() && !loc.file.empty()) {
+      Files::reverse_iterator rit;
+      for (rit = _files.rbegin();
+           rit != _files.rend() && (*rit)._file == loc.file && (*rit)._manifest != nullptr;
+           ++rit) {
+      }
+      if (rit != _files.rbegin() && rit != _files.rend()) {
+        --rit;
+        InputFile &infile = *rit;
+        if (_verbose >= 3) {
+          cerr << "Expansion of " << infile._manifest->_name << ":\n";
+          cerr << " -> " << trim_blanks(infile._input) << "\n";
+          while (rit != _files.rbegin()) {
+            --rit;
+            InputFile &infile = *rit;
+            cerr << " -> " << trim_blanks(infile._input) << "\n";
+          }
+        }
+        else {
+          cerr << "with " << infile._manifest->_name;
+          if (infile._manifest->_has_parameters) {
+            cerr << "()";
+          }
+          cerr << " expanded to: " << trim_blanks(_files.back()._input) << "\n";
+        }
+      }
+    }
+
     if (_error_abort) {
       cerr << "Aborting.\n";
       abort();
@@ -706,7 +735,7 @@ init_const_expr(const string &expr) {
   _state = S_normal;
   _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
 
-  return push_string(expr, false);
+  return push_string(expr);
 }
 
 /**
@@ -717,7 +746,7 @@ init_type(const string &type) {
   _state = S_normal;
   _saved_tokens.push_back(CPPToken(START_TYPE));
 
-  return push_string(type, false);
+  return push_string(type);
 }
 
 /**
@@ -752,25 +781,54 @@ push_file(const CPPFile &file) {
  *
  */
 bool CPPPreprocessor::
-push_string(const string &input, bool lock_position) {
+push_string(const string &input) {
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
     << "Pushing to string \"" << input
-    << "\"\nlock_position = " << lock_position << "\n";
+    << "\"\n";
 #endif
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
-
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
 
   if (infile.connect_input(input)) {
-    if (lock_position) {
-      infile._file = first_file;
-      infile._line_number = first_line;
-      infile._col_number = first_col;
-      infile._lock_position = true;
+    infile._prev_last_c = _last_c;
+    _last_c = '\0';
+    return true;
+  }
+
+#ifdef CPP_VERBOSE_LEX
+  indent(cerr, _files.size() * 2)
+    << "Unable to read string\n";
+#endif
+
+  _files.pop_back();
+  return false;
+}
+
+/**
+ *
+ */
+bool CPPPreprocessor::
+push_expansion(const string &input, const CPPManifest *manifest, const YYLTYPE &loc) {
+#ifdef CPP_VERBOSE_LEX
+  indent(cerr, _files.size() * 2)
+    << "Pushing to expansion \"" << input
+    << "\"\n";
+#endif
+  _files.push_back(InputFile());
+  InputFile &infile = _files.back();
+
+  if (infile.connect_input(input)) {
+    infile._manifest = manifest;
+    infile._file = loc.file;
+    infile._line_number = loc.first_line;
+    infile._col_number = loc.first_column;
+    infile._lock_position = true;
+
+    if (!manifest->_has_parameters) {
+      // If the manifest does not use arguments, then disallow recursive
+      // expansion.
+      infile._ignore_manifest = true;
     }
 
     infile._prev_last_c = _last_c;
@@ -780,7 +838,7 @@ push_string(const string &input, bool lock_position) {
 
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
-    << "Unable to read string\n";
+    << "Unable to read expansion\n";
 #endif
 
   _files.pop_back();
@@ -1888,11 +1946,11 @@ get_identifier(int c) {
       }
       if (c == '(') {
         // It is followed by a parenthesis, so we can expand this.
-        return expand_manifest(manifest);
+        return expand_manifest(manifest, loc);
       }
     } else {
       // Non-function-like macros are always expanded.
-      return expand_manifest(manifest);
+      return expand_manifest(manifest, loc);
     }
   }
   if (name == "__FILE__") {
@@ -2113,7 +2171,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
  *
  */
 CPPToken CPPPreprocessor::
-expand_manifest(const CPPManifest *manifest) {
+expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
   vector_string args;
 
   if (manifest->_has_parameters) {
@@ -2125,11 +2183,8 @@ expand_manifest(const CPPManifest *manifest) {
   string expanded = " " + manifest->expand(args) + " ";
   push_string(expanded, true);
 
-  if (!manifest->_has_parameters) {
-    // If the manifest does not use arguments, then disallow recursive
-    // expansion.
-    _files.back()._ignore_manifest = manifest;
-  }
+  string expanded = " " + manifest->expand(args) + " ";
+  push_expansion(expanded, manifest, loc);
 
 #ifdef CPP_VERBOSE_LEX
   indent(cerr, _files.size() * 2)
@@ -2908,9 +2963,8 @@ scan_raw(int c) {
  */
 bool CPPPreprocessor::
 should_ignore_manifest(const CPPManifest *manifest) const {
-  Files::const_iterator fi;
-  for (fi = _files.begin(); fi != _files.end(); ++fi) {
-    if ((*fi)._ignore_manifest == manifest) {
+  for (const InputFile &infile : _files) {
+    if (infile._ignore_manifest && infile._manifest == manifest) {
       return true;
     }
   }
@@ -2924,9 +2978,8 @@ should_ignore_manifest(const CPPManifest *manifest) const {
  */
 bool CPPPreprocessor::
 should_ignore_preprocessor() const {
-  Files::const_iterator fi;
-  for (fi = _files.begin(); fi != _files.end(); ++fi) {
-    if ((*fi)._ignore_manifest != nullptr) {
+  for (const InputFile &infile : _files) {
+    if (infile._ignore_manifest) {
       return true;
     }
   }
