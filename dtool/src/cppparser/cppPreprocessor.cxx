@@ -2546,26 +2546,39 @@ extract_manifest_args_inline(const string &name, int num_args,
   } else {
     // Skip paren.
     p++;
-    // Skip whitespace after paren.
-    while (p < expr.size() && isspace(expr[p])) {
-      p++;
-    }
+    int paren_level = 1;
     size_t q = p;
-    while (p < expr.size() && expr[p] != ')') {
-      if (expr[p] == ',') {
+    while (p < expr.size()) {
+      if (expr[p] == ',' && paren_level == 1) {
         args.push_back(trim_blanks(expr.substr(q, p - q)));
         q = p+1;
 
-      } else if (expr[p] == '(') {
-        // Nested parens.
-        int paren_level = 1;
-        while (p+1 < expr.size() && paren_level > 0) {
-          p++;
-          if (expr[p] == '(') {
-            paren_level++;
-          } else if (expr[p] == ')') {
-            paren_level--;
+      } else if (expr[p] == '"' || expr[p] == '\'') {
+        // Quoted string or character.
+        int quote_mark = expr[p];
+        p++;
+        while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+          if (expr[p] == '\\') {
+            p++;
           }
+          if (p < expr.size()) {
+            p++;
+          }
+        }
+
+      } else if (expr[p] == '(') {
+        ++paren_level;
+
+      } else if (expr[p] == ')') {
+        --paren_level;
+        if (paren_level == 0) {
+          break;
+        }
+
+      } else if (isspace(expr[p])) {
+        // Skip whitespace at the beginning.
+        if (q == p) {
+          q++;
         }
       }
       p++;
