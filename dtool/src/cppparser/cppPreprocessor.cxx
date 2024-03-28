@@ -2233,6 +2233,14 @@ r_expand_manifests(string &expr, bool expand_undefined,
           if (expanded.count(manifest) == 0) {
             vector_string args;
             if (manifest->_has_parameters) {
+              // If it's not followed by a parenthesis, don't expand it.
+              while (p < expr.size() && isspace(expr[p])) {
+                p++;
+              }
+              if (p >= expr.size() || expr[p] != '(') {
+                continue;
+              }
+
               extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
                                            manifest->_variadic_param, args, expr, p);
             }
@@ -2498,23 +2506,6 @@ expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc) {
   }
 
   string result = found_file ? "1" : "0";
-  expr = expr.substr(0, q) + result + expr.substr(p);
-  p = q + result.size();
-}
-
-/**
- *
- */
-void CPPPreprocessor::
-expand_manifest_inline(string &expr, size_t q, size_t &p,
-                       const CPPManifest *manifest) {
-  vector_string args;
-  if (manifest->_has_parameters) {
-    extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
-                                 manifest->_variadic_param, args, expr, p);
-  }
-  string result = manifest->expand(args);
-
   expr = expr.substr(0, q) + result + expr.substr(p);
   p = q + result.size();
 }

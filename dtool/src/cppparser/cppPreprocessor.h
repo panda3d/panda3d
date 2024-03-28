@@ -160,8 +160,6 @@ private:
                              int va_arg, vector_string &args);
   void expand_defined_function(std::string &expr, size_t q, size_t &p);
   void expand_has_include_function(std::string &expr, size_t q, size_t &p, YYLTYPE loc);
-  void expand_manifest_inline(std::string &expr, size_t q, size_t &p,
-                              const CPPManifest *manifest);
   void extract_manifest_args_inline(const std::string &name, int num_args,
                                     int va_arg, vector_string &args,
                                     const std::string &expr, size_t &p);
