@@ -13,6 +13,7 @@
 
 #include "cppManifest.h"
 #include "cppExpression.h"
+#include "cppPreprocessor.h"
 
 #include <ctype.h>
 
