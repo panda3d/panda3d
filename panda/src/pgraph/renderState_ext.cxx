@@ -56,7 +56,11 @@ make(PyObject *args, PyObject *kwds) {
 
   int override = 0;
   if (py_override != nullptr) {
+#if PY_VERSION_HEX >= 0x030d0000  // 3.13
+    override = PyLong_AsInt(py_override);
+#else
     override = _PyLong_AsInt(py_override);
+#endif
     if (override == -1 && PyErr_Occurred()) {
       return nullptr;
     }

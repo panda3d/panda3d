@@ -275,6 +275,15 @@ INLINE bool PyLong_IsNonNegative(PyObject *value) {
 }
 #endif
 
+/* Python 3.13 */
+
+#if PY_VERSION_HEX >= 0x030d0000  // 3.13
+#define Py_BUILD_CORE
+#include "internal/pycore_unicodeobject.h"
+extern "C" PyObject * _PyLong_Lshift(PyObject *, size_t);
+extern "C" size_t _PyLong_NumBits(PyObject *v);
+#endif
+
 /* Other Python implementations */
 
 #endif  // HAVE_PYTHON

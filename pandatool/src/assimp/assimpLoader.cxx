@@ -1177,7 +1177,11 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
       //case AI_BOOL:
       //  value = (*static_cast<bool *>(entry.mData)) ? "1" : "";
       //  break;
+#if defined(AI_INT32)
       case AI_INT32:
+#else
+      case AI_INT:
+#endif
         value = format_string(*static_cast<int32_t *>(entry.mData));
         break;
       case AI_UINT64:
@@ -1186,9 +1190,11 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
       case AI_FLOAT:
         value = format_string(*static_cast<float *>(entry.mData));
         break;
+#if defined(AI_DOUBLE)
       case AI_DOUBLE:
         value = format_string(*static_cast<double *>(entry.mData));
         break;
+#endif
       case AI_AISTRING:
         {
           const aiString *str = static_cast<const aiString *>(entry.mData);

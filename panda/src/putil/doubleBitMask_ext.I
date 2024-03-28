@@ -31,7 +31,7 @@ __init__(PyObject *init_value) {
   if (n > 0) {
     size_t num_bytes = (n + 7) / 8;
     unsigned char *bytes = (unsigned char *)alloca(num_bytes);
-    _PyLong_AsByteArray((PyLongObject *)init_value, bytes, num_bytes, 1, 0);
+    _PyLong_AsByteArray((PyLongObject *)init_value, bytes, num_bytes, 1, 0, 0);
 
     for (size_t i = 0; i < num_bytes; ++i) {
       this->_this->store(bytes[i], i * 8, 8);
