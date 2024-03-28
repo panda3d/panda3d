@@ -45,7 +45,7 @@ predefine_macro(CPPParser &parser, const string &option) {
 
   cerr << "Predefining " << macro_name << " as " << macro_def << "\n";
 
-  CPPManifest *macro = new CPPManifest(macro_name, macro_def);
+  CPPManifest *macro = new CPPManifest(parser, macro_name, macro_def);
   parser._manifests[macro->_name] = macro;
 }
 

@@ -461,7 +461,7 @@ peek_next_token() {
  *
  */
 void CPPPreprocessor::
-warning(const string &message) {
+warning(const string &message) const {
   if (_verbose < 2) {
     return;
   }
@@ -480,7 +480,7 @@ warning(const string &message) {
  *
  */
 void CPPPreprocessor::
-warning(const string &message, const YYLTYPE &loc) {
+warning(const string &message, const YYLTYPE &loc) const {
   if (_verbose >= 2) {
     if (_verbose >= 3) {
       indent(cerr, _files.size() * 2);
@@ -507,7 +507,7 @@ warning(const string &message, const YYLTYPE &loc) {
  *
  */
 void CPPPreprocessor::
-error(const string &message) {
+error(const string &message) const {
   int line = get_line_number();
   int col = get_col_number();
   YYLTYPE loc;
@@ -523,7 +523,7 @@ error(const string &message) {
  *
  */
 void CPPPreprocessor::
-error(const string &message, const YYLTYPE &loc) {
+error(const string &message, const YYLTYPE &loc) const {
   if (_state == S_nested || _state == S_end_nested) {
     // Don't report or log errors in the nested state.  These will be reported
     // when the nesting level collapses.
@@ -550,20 +550,20 @@ error(const string &message, const YYLTYPE &loc) {
     show_line(loc);
 
     if (!_files.empty() && !loc.file.empty()) {
-      Files::reverse_iterator rit;
+      Files::const_reverse_iterator rit;
       for (rit = _files.rbegin();
            rit != _files.rend() && (*rit)._file == loc.file && (*rit)._manifest != nullptr;
            ++rit) {
       }
       if (rit != _files.rbegin() && rit != _files.rend()) {
         --rit;
-        InputFile &infile = *rit;
+        const InputFile &infile = *rit;
         if (_verbose >= 3) {
           cerr << "Expansion of " << infile._manifest->_name << ":\n";
           cerr << " -> " << trim_blanks(infile._input) << "\n";
           while (rit != _files.rbegin()) {
             --rit;
-            InputFile &infile = *rit;
+            const InputFile &infile = *rit;
             cerr << " -> " << trim_blanks(infile._input) << "\n";
           }
         }
@@ -589,7 +589,7 @@ error(const string &message, const YYLTYPE &loc) {
  * Shows the indicated line, useful for error messages.
  */
 void CPPPreprocessor::
-show_line(const YYLTYPE &loc) {
+show_line(const YYLTYPE &loc) const {
   if (loc.file._filename.empty()) {
     return;
   }
@@ -846,18 +846,98 @@ push_expansion(const string &input, const CPPManifest *manifest, const YYLTYPE &
 }
 
 /**
- * Given a string, expand all manifests within the string and return the new
- * string.
+ * Given a string, expand all manifests within the string.
  */
-string CPPPreprocessor::
-expand_manifests(const string &input_expr, bool expand_undefined,
-                 const YYLTYPE &loc) {
-  // Get a copy of the expression string we can modify.
-  string expr = input_expr;
+void CPPPreprocessor::
+expand_manifests(string &expr, const Manifests &manifests, bool expand_undefined) const {
+  size_t p = 0;
+  while (p < expr.size()) {
+    if (isalpha(expr[p]) || expr[p] == '_') {
+      size_t q = p;
+      while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+        p++;
+      }
+      string ident = expr.substr(q, p - q);
 
-  std::set<const CPPManifest *> expanded;
-  r_expand_manifests(expr, expand_undefined, loc, expanded);
-  return expr;
+      // Here's an identifier.  Is it "defined"?
+      if (ident == "defined") {
+        expand_defined_function(expr, q, p);
+      }
+      else if (expand_undefined && ident == "__has_include") {
+        expand_has_include_function(expr, q, p);
+      }
+      else {
+        // Is it a manifest?
+        Manifests::const_iterator mi = manifests.find(ident);
+        if (mi != manifests.end()) {
+          const CPPManifest *manifest = (*mi).second;
+          vector_string args;
+          if (manifest->_has_parameters) {
+            // If it's not followed by a parenthesis, don't expand it.
+            while (p < expr.size() && isspace(expr[p])) {
+              p++;
+            }
+            if (p >= expr.size() || expr[p] != '(') {
+              continue;
+            }
+
+            manifest->extract_args(args, expr, p);
+          }
+
+          // Don't consider this manifest when expanding the arguments or
+          // result, to prevent recursion.
+          Manifests nested_manifests(manifests);
+          nested_manifests.erase((*mi).first);
+
+          string result = manifest->expand(args);
+          expand_manifests(result, nested_manifests, expand_undefined);
+
+          expr = expr.substr(0, q) + result + expr.substr(p);
+          p = q + result.size();
+        }
+        else if (ident == "__FILE__") {
+          // Special case: this is a dynamic definition.
+          CPPFile file = get_file();
+          string result = string("\"") + file._filename_as_referenced.get_fullpath() + "\"";
+          expr = expr.substr(0, q) + result + expr.substr(p);
+          p = q + result.size();
+
+        }
+        else if (ident == "__LINE__") {
+          // So is this.
+          string line = format_string(get_line_number());
+          expr = expr.substr(0, q) + line + expr.substr(p);
+          p = q + line.size();
+        }
+        else if (expand_undefined && ident != "true" && ident != "false") {
+          // It is not found.  Expand it to 0, but only if we are currently
+          // parsing an #if expression.
+          expr = expr.substr(0, q) + "0" + expr.substr(p);
+          p = q + 1;
+        }
+      }
+    }
+    else if (expr[p] == '\'' || expr[p] == '"') {
+      // Skip the next part until we find a closing quotation mark.
+      char quote = expr[p];
+      p++;
+      while (p < expr.size() && expr[p] != quote) {
+        if (expr[p] == '\\') {
+          // This might be an escaped quote.  Skip an extra char.
+          p++;
+        }
+        p++;
+      }
+      if (p >= expr.size()) {
+        // Unclosed string.
+        warning("missing terminating " + string(1, quote) + " character");
+      }
+      p++;
+    }
+    else {
+      p++;
+    }
+  }
 }
 
 /**
@@ -870,7 +950,8 @@ expand_manifests(const string &input_expr, bool expand_undefined,
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope, const YYLTYPE &loc) {
-  string expr = expand_manifests(input_expr, false, loc);
+  string expr = input_expr;
+  expand_manifests(expr, _manifests, false);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1479,7 +1560,7 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
     warning("Ignoring empty #define directive", loc);
   } else {
-    CPPManifest *manifest = new CPPManifest(args, loc);
+    CPPManifest *manifest = new CPPManifest(*this, args, loc);
     manifest->_vis = preprocessor_vis;
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
@@ -1494,8 +1575,10 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
     if (!result.second) {
       // There was already a macro with this name.  Delete the old.
       CPPManifest *other = result.first->second;
-      warning("redefinition of macro '" + manifest->_name + "'", loc);
-      warning("previous definition is here", other->_loc);
+      if (!manifest->is_equal(other)) {
+        warning("redefinition of macro '" + manifest->_name + "'", loc);
+        warning("previous definition is here", other->_loc);
+      }
       result.first->second = manifest;
     }
   }
@@ -1544,7 +1627,8 @@ handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
 void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
   // When expanding manifests, we should replace unknown macros with 0.
-  string expr = expand_manifests(args, true, loc);
+  string expr = args;
+  expand_manifests(expr, _manifests, true);
 
   int expression_result = 0;
   CPPExpressionParser ep(current_scope, global_scope);
@@ -1589,7 +1673,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   // filter out quotes and angle brackets properly, we'll only expand
   // manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expr = expand_manifests(expr, false, loc);
+    expand_manifests(expr, _manifests, false);
   }
 
   if (!expr.empty()) {
@@ -1767,7 +1851,7 @@ skip_false_if_block(bool consider_elifs) {
  * Returns true if the given manifest is defined.
  */
 bool CPPPreprocessor::
-is_manifest_defined(const string &manifest_name) {
+is_manifest_defined(const string &manifest_name) const {
   Manifests::const_iterator mi = _manifests.find(manifest_name);
   if (mi != _manifests.end()) {
     return true;
@@ -1787,7 +1871,7 @@ is_manifest_defined(const string &manifest_name) {
  * Locates the given filename.  Changes the first argument to the full path.
  */
 bool CPPPreprocessor::
-find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) {
+find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) const {
   // Now look for the filename.  If we didn't use angle quotes, look first in
   // the current directory.
   if (!angle_quotes && filename.exists()) {
@@ -2180,19 +2264,17 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
                           manifest->_variadic_param, args);
   }
 
-  // Perform expansion on the macro arguments.
-  for (string &arg : args) {
-    std::set<const CPPManifest *> expanded;
-    expanded.insert(manifest);
-    for (const InputFile &infile : _files) {
-      if (infile._ignore_manifest) {
-        expanded.insert(infile._manifest);
-      }
+  // Make a copy of the manifests, without the ones we're supposed to ignore.
+  Manifests manifests = _manifests;
+  manifests.erase(manifest->_name);
+
+  for (const InputFile &infile : _files) {
+    if (infile._ignore_manifest) {
+      manifests.erase(infile._manifest->_name);
     }
-    r_expand_manifests(arg, false, loc, expanded);
   }
 
-  string expanded = " " + manifest->expand(args) + " ";
+  string expanded = " " + manifest->expand(args, manifests, false) + " ";
   push_expansion(expanded, manifest, loc);
 
 #ifdef CPP_VERBOSE_LEX
@@ -2201,111 +2283,6 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
 #endif
 
   return internal_get_next_token();
-}
-
-/**
- * Recursive implementation of expand_manifests().
- */
-void CPPPreprocessor::
-r_expand_manifests(string &expr, bool expand_undefined,
-                   const YYLTYPE &loc, std::set<const CPPManifest *> &expanded) {
-  size_t p = 0;
-  while (p < expr.size()) {
-    if (isalpha(expr[p]) || expr[p] == '_') {
-      size_t q = p;
-      while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-        p++;
-      }
-      string ident = expr.substr(q, p - q);
-
-      // Here's an identifier.  Is it "defined"?
-      if (ident == "defined") {
-        expand_defined_function(expr, q, p);
-      }
-      else if (expand_undefined && ident == "__has_include") {
-        expand_has_include_function(expr, q, p, loc);
-      }
-      else {
-        // Is it a manifest?
-        Manifests::const_iterator mi = _manifests.find(ident);
-        if (mi != _manifests.end()) {
-          const CPPManifest *manifest = (*mi).second;
-          if (expanded.count(manifest) == 0) {
-            vector_string args;
-            if (manifest->_has_parameters) {
-              // If it's not followed by a parenthesis, don't expand it.
-              while (p < expr.size() && isspace(expr[p])) {
-                p++;
-              }
-              if (p >= expr.size() || expr[p] != '(') {
-                continue;
-              }
-
-              extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
-                                           manifest->_variadic_param, args, expr, p);
-            }
-
-            // Perform expansion on the macro arguments.
-            for (string &arg : args) {
-              std::set<const CPPManifest *> ignore = expanded;
-              ignore.insert(manifest);
-              r_expand_manifests(arg, expand_undefined, loc, ignore);
-            }
-
-            string result = manifest->expand(args);
-
-            // Recurse, but adding the manifest we just expanded to the list
-            // to be ignored for future expansion, to prevent recursion.
-            std::set<const CPPManifest *> ignore = expanded;
-            ignore.insert(manifest);
-            r_expand_manifests(result, expand_undefined, loc, ignore);
-
-            expr = expr.substr(0, q) + result + expr.substr(p);
-            p = q + result.size();
-          }
-        }
-        else if (ident == "__FILE__") {
-          // Special case: this is a dynamic definition.
-          string file = string("\"") + loc.file._filename_as_referenced.get_fullpath() + "\"";
-          expr = expr.substr(0, q) + file + expr.substr(p);
-          p = q + file.size();
-
-        }
-        else if (ident == "__LINE__") {
-          // So is this.
-          string line = format_string(loc.first_line);
-          expr = expr.substr(0, q) + line + expr.substr(p);
-          p = q + line.size();
-        }
-        else if (expand_undefined && ident != "true" && ident != "false") {
-          // It is not found.  Expand it to 0, but only if we are currently
-          // parsing an #if expression.
-          expr = expr.substr(0, q) + "0" + expr.substr(p);
-          p = q + 1;
-        }
-      }
-    }
-    else if (expr[p] == '\'' || expr[p] == '"') {
-      // Skip the next part until we find a closing quotation mark.
-      char quote = expr[p];
-      p++;
-      while (p < expr.size() && expr[p] != quote) {
-        if (expr[p] == '\\') {
-          // This might be an escaped quote.  Skip an extra char.
-          p++;
-        }
-        p++;
-      }
-      if (p >= expr.size()) {
-        // Unclosed string.
-        warning("missing terminating " + string(1, quote) + " character", loc);
-      }
-      p++;
-    }
-    else {
-      p++;
-    }
-  }
 }
 
 /**
@@ -2427,23 +2404,34 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
  * whether the manifest exists.
  */
 void CPPPreprocessor::
-expand_defined_function(string &expr, size_t q, size_t &p) {
-  string result;
+expand_defined_function(string &expr, size_t q, size_t &p) const {
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
 
-  vector_string args;
-  extract_manifest_args_inline("defined", 1, -1, args, expr, p);
-  if (args.size() >= 1) {
-    if (is_manifest_defined(args[0])) {
-      // The macro is defined; the result is "1".
-      result = "1";
+  bool has_paren = false;
+  if (expr[p] == '(') {
+    has_paren = true;
+    p++;
+  }
+
+  size_t r = p;
+  while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+    p++;
+  }
+
+  if (has_paren) {
+    if (expr[p] == ')') {
+      p++;
     } else {
-      // The macro is undefined; the result is "0".
-      result = "0";
+      error("missing ')' after 'defined'");
     }
   }
 
+  string name = expr.substr(r, p - r - 1);
+  char result = is_manifest_defined(name) ? '1' : '0';
   expr = expr.substr(0, q) + result + expr.substr(p);
-  p = q + result.size();
+  p = q + 1;
 }
 
 /**
@@ -2451,151 +2439,107 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
  * whether the include file exists.
  */
 void CPPPreprocessor::
-expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc) {
+expand_has_include_function(string &expr, size_t q, size_t &p) const {
   bool found_file = false;
 
   // Skip whitespace till paren.
   while (p < expr.size() && isspace(expr[p])) {
     p++;
   }
-  size_t args_begin = p + 1;
 
-  vector_string args;
-  extract_manifest_args_inline("__has_include", 1, -1, args, expr, p);
-
-  if (!args.empty() && args[0].size() >= 2) {
-    Filename filename;
-    bool angle_quotes = false;
-
-    string inc = args[0];
-
-    // Just to play things safe, since our manifest-expansion logic might not
-    // filter out quotes and angle brackets properly, we'll only expand
-    // manifests if we don't begin with a quote or bracket.
-    if (!inc.empty() && (inc[0] != '"' && inc[0] != '<')) {
-      inc = expand_manifests(inc, false, loc);
-    }
-
-    if (inc[0] == '"' && inc[inc.size() - 1] == '"') {
-      filename = inc.substr(1, inc.size() - 2);
-    } else if (inc[0] == '<' && inc[inc.size() - 1] == '>') {
-      filename = inc.substr(1, inc.size() - 2);
-      if (!_noangles) {
-        // If _noangles is true, we don't make a distinction between angle
-        // brackets and quote marks--all #inc statements are treated the
-        // same, as if they used quote marks.
-        angle_quotes = true;
-      }
-    } else {
-      loc.last_column += loc.first_column + p - 2;
-      loc.first_column += args_begin;
-      warning("invalid argument for __has_include() directive", loc);
-      expr = expr.substr(0, q) + "0" + expr.substr(p);
-      p = q + 1;
-      return;
-    }
-
-    filename.set_text();
-
-    CPPFile::Source source = CPPFile::S_none;
-    found_file = find_include(filename, angle_quotes, source);
-  } else {
-    loc.last_column += loc.first_column + p - 2;
-    loc.first_column += args_begin;
-    warning("invalid argument for __has_include() directive", loc);
+  if (expr[p] != '(') {
+    error("expected '(' after '__has_include'");
+    return;
   }
+  p++;
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
+
+  int paren_level = 1;
+  bool needs_expansion = false;
+  size_t r = p;
+  while (p < expr.size()) {
+    if (expr[p] == '"' || expr[p] == '\'' || expr[p] == '<') {
+      // Quoted string or angle bracket.
+      int quote_mark = expr[p];
+      if (quote_mark == '<') {
+        quote_mark = '>';
+      }
+      p++;
+      while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+        if (expr[p] == '\\') {
+          p++;
+        }
+        if (p < expr.size()) {
+          p++;
+        }
+      }
+    }
+    else if (expr[p] == '(') {
+      ++paren_level;
+    }
+    else if (expr[p] == ')') {
+      --paren_level;
+      if (paren_level == 0) {
+        break;
+      }
+    }
+    else if (isalnum(expr[p]) || expr[p] == '_') {
+      needs_expansion = true;
+    }
+    p++;
+  }
+
+  if (p >= expr.size() || expr[p] != ')') {
+    error("missing ')' after '__has_include'");
+    return;
+  }
+
+  // Back up to strip trailing whitespace.
+  size_t t = p;
+  while (t > r && isspace(expr[t - 1])) {
+    --t;
+  }
+  string inc = expr.substr(r, t - r);
+  p++;
+
+  // Only expand if we've encountered unquoted identifier-valid characters,
+  // to be on the safe side.
+  if (needs_expansion) {
+    expand_manifests(inc, _manifests, false);
+  }
+
+  Filename filename;
+  bool angle_quotes = false;
+
+  if (!inc.empty() && inc[0] == '"' && inc[inc.size() - 1] == '"') {
+    filename = inc.substr(1, inc.size() - 2);
+  }
+  else if (!inc.empty() && inc[0] == '<' && inc[inc.size() - 1] == '>') {
+    filename = inc.substr(1, inc.size() - 2);
+    if (!_noangles) {
+      // If _noangles is true, we don't make a distinction between angle
+      // brackets and quote marks--all #inc statements are treated the
+      // same, as if they used quote marks.
+      angle_quotes = true;
+    }
+  }
+  else {
+    warning("invalid argument for __has_include() directive: " + inc);
+    expr = expr.substr(0, q) + "0" + expr.substr(p);
+    p = q + 1;
+    return;
+  }
+
+  filename.set_text();
+
+  CPPFile::Source source = CPPFile::S_none;
+  found_file = find_include(filename, angle_quotes, source);
 
   string result = found_file ? "1" : "0";
   expr = expr.substr(0, q) + result + expr.substr(p);
   p = q + result.size();
-}
-
-/**
- *
- */
-void CPPPreprocessor::
-extract_manifest_args_inline(const string &name, int num_args,
-                             int va_arg, vector_string &args,
-                             const string &expr, size_t &p) {
-  // Skip whitespace till paren.
-  while (p < expr.size() && isspace(expr[p])) {
-    p++;
-  }
-  if (p >= expr.size() || expr[p] != '(') {
-    // No paren, so we have only one arg.
-    size_t q = p;
-    while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-      p++;
-    }
-    args.push_back(expr.substr(q, p - q));
-
-  } else if (expr[p] == '"' || expr[p] == '\'') {
-    // Quoted string or character.
-    int quote_mark = expr[p];
-    p++;
-    while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
-      if (expr[p] == '\\') {
-        p++;
-      }
-      if (p < expr.size()) {
-        p++;
-      }
-    }
-    p++;
-
-  } else {
-    // Skip paren.
-    p++;
-    int paren_level = 1;
-    size_t q = p;
-    while (p < expr.size()) {
-      if (expr[p] == ',' && paren_level == 1) {
-        args.push_back(trim_blanks(expr.substr(q, p - q)));
-        q = p+1;
-
-      } else if (expr[p] == '"' || expr[p] == '\'') {
-        // Quoted string or character.
-        int quote_mark = expr[p];
-        p++;
-        while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
-          if (expr[p] == '\\') {
-            p++;
-          }
-          if (p < expr.size()) {
-            p++;
-          }
-        }
-
-      } else if (expr[p] == '(') {
-        ++paren_level;
-
-      } else if (expr[p] == ')') {
-        --paren_level;
-        if (paren_level == 0) {
-          break;
-        }
-
-      } else if (isspace(expr[p])) {
-        // Skip whitespace at the beginning.
-        if (q == p) {
-          q++;
-        }
-      }
-      p++;
-    }
-    args.push_back(trim_blanks(expr.substr(q, p - q)));
-
-    if (p < expr.size() && expr[p] == ')') {
-      p++;
-    }
-  }
-
-  if ((int)args.size() < num_args) {
-    warning("Not enough arguments for manifest " + name);
-
-  } else if (va_arg < 0 && (int)args.size() > num_args) {
-    warning("Too many arguments for manifest " + name);
-  }
 }
 
 /**

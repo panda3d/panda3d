@@ -57,11 +57,11 @@ public:
   int _token_index;
 #endif
 
-  void warning(const std::string &message);
-  void warning(const std::string &message, const YYLTYPE &loc);
-  void error(const std::string &message);
-  void error(const std::string &message, const YYLTYPE &loc);
-  void show_line(const YYLTYPE &loc);
+  void warning(const std::string &message) const;
+  void warning(const std::string &message, const YYLTYPE &loc) const;
+  void error(const std::string &message) const;
+  void error(const std::string &message, const YYLTYPE &loc) const;
+  void show_line(const YYLTYPE &loc) const;
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
   CPPCommentBlock *get_comment_on(int line, CPPFile file);
@@ -69,7 +69,7 @@ public:
   int get_warning_count() const;
   int get_error_count() const;
 
-  typedef std::map<std::string, CPPManifest *> Manifests;
+  typedef CPPManifest::Manifests Manifests;
   Manifests _manifests;
 
   typedef std::vector<CPPManifest *> ManifestStack;
@@ -116,8 +116,9 @@ protected:
   bool push_expansion(const std::string &input, const CPPManifest *manifest,
                       const YYLTYPE &loc);
 
-  std::string expand_manifests(const std::string &input_expr, bool expand_undefined,
-                               const YYLTYPE &loc);
+public:
+  void expand_manifests(std::string &expr, const Manifests &manifests,
+                        bool expand_undefined = false) const;
   CPPExpression *parse_expr(const std::string &expr, CPPScope *current_scope,
                             CPPScope *global_scope, const YYLTYPE &loc);
 
@@ -145,8 +146,8 @@ private:
   void handle_error_directive(const std::string &args, const YYLTYPE &loc);
 
   void skip_false_if_block(bool consider_elifs);
-  bool is_manifest_defined(const std::string &manifest_name);
-  bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source);
+  bool is_manifest_defined(const std::string &manifest_name) const;
+  bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) const;
 
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
@@ -158,11 +159,8 @@ private:
                           const YYLTYPE &loc, std::set<const CPPManifest *> &expanded);
   void extract_manifest_args(const std::string &name, int num_args,
                              int va_arg, vector_string &args);
-  void expand_defined_function(std::string &expr, size_t q, size_t &p);
-  void expand_has_include_function(std::string &expr, size_t q, size_t &p, YYLTYPE loc);
-  void extract_manifest_args_inline(const std::string &name, int num_args,
-                                    int va_arg, vector_string &args,
-                                    const std::string &expr, size_t &p);
+  void expand_defined_function(std::string &expr, size_t q, size_t &p) const;
+  void expand_has_include_function(std::string &expr, size_t q, size_t &p) const;
 
   CPPToken get_number(int c);
   static int check_keyword(const std::string &name);
@@ -227,8 +225,8 @@ private:
 
   std::vector<CPPToken> _saved_tokens;
 
-  int _warning_count;
-  int _error_count;
+  mutable int _warning_count;
+  mutable int _error_count;
   bool _error_abort;
 };
 
