@@ -164,8 +164,10 @@ define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
         errstr << " has conflicting declaration as ";
         other_type->output(errstr, 0, nullptr, true);
         error_sink->error(errstr.str(), type->_ident->_loc);
-        error_sink->error("previous definition is here",
-                          other_td->_ident->_loc);
+        if (other_td != nullptr && other_td->_ident != nullptr) {
+          error_sink->error("previous definition is here",
+                            other_td->_ident->_loc);
+        }
       }
     }
   } else {

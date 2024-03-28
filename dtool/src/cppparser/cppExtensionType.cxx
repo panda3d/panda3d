@@ -211,7 +211,7 @@ is_equivalent(const CPPType &other) const {
   // We consider two different extension types to be equivalent if they have
   // the same name.
 
-  return *_ident == *ot->_ident;
+  return _ident != nullptr && ot->_ident != nullptr && *_ident == *ot->_ident;
 }
 
 /**
