@@ -736,7 +736,11 @@ output_code(std::ostream &out) const {
         break;
 
       case '\'':
-        out << "\\\'";
+        out << (_token == CHAR_TOK ? "\\\'" : "'");
+        break;
+
+      case '"':
+        out << (_token == CHAR_TOK ? "\"" : "\\\"");
         break;
 
       case '\\':
