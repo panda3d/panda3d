@@ -244,6 +244,10 @@ output(std::ostream &out) const {
     out << "ANDEQUAL";
     break;
 
+  case XOREQUAL:
+    out << "XOREQUAL";
+    break;
+
   case LSHIFTEQUAL:
     out << "LSHIFTEQUAL";
     break;
@@ -260,6 +264,26 @@ output(std::ostream &out) const {
     out << "ATTR_RIGHT";
     break;
 
+  case KW_ALIGNAS:
+    out << "KW_ALIGNAS";
+    break;
+
+  case KW_ALIGNOF:
+    out << "KW_ALIGNOF";
+    break;
+
+  case KW_AUTO:
+    out << "KW_AUTO";
+    break;
+
+  case KW_BEGIN_PUBLISH:
+    out << "KW_BEGIN_PUBLISH";
+    break;
+
+  case KW_BLOCKING:
+    out << "KW_BLOCKING";
+    break;
+
   case KW_BOOL:
     out << "KW_BOOL";
     break;
@@ -272,12 +296,44 @@ output(std::ostream &out) const {
     out << "KW_CHAR";
     break;
 
+  case KW_CHAR8_T:
+    out << "KW_CHAR8_T";
+    break;
+
+  case KW_CHAR16_T:
+    out << "KW_CHAR16_T";
+    break;
+
+  case KW_CHAR32_T:
+    out << "KW_CHAR32_T";
+    break;
+
   case KW_CLASS:
     out << "KW_CLASS";
     break;
 
   case KW_CONST:
     out << "KW_CONST";
+    break;
+
+  case KW_CONSTEVAL:
+    out << "KW_CONSTEVAL";
+    break;
+
+  case KW_CONSTEXPR:
+    out << "KW_CONSTEXPR";
+    break;
+
+  case KW_CONSTINIT:
+    out << "KW_CONSTINIT";
+    break;
+
+  case KW_DECLTYPE:
+    out << "KW_DECLTYPE";
+    break;
+
+  case KW_DEFAULT:
+    out << "KW_DECLTYPE";
     break;
 
   case KW_DELETE:
@@ -304,12 +360,24 @@ output(std::ostream &out) const {
     out << "KW_EXPLICIT";
     break;
 
+  case KW_EXPLICIT_LPAREN:
+    out << "KW_EXPLICIT_LPAREN";
+    break;
+
+  case KW_EXTENSION:
+    out << "KW_EXTENSION";
+    break;
+
   case KW_EXTERN:
     out << "KW_EXTERN";
     break;
 
   case KW_FALSE:
     out << "KW_FALSE";
+    break;
+
+  case KW_FINAL:
+    out << "KW_FINAL";
     break;
 
   case KW_FLOAT:
@@ -328,6 +396,10 @@ output(std::ostream &out) const {
     out << "KW_GOTO";
     break;
 
+  case KW_HAS_VIRTUAL_DESTRUCTOR:
+    out << "KW_HAS_VIRTUAL_DESTRUCTOR";
+    break;
+
   case KW_IF:
     out << "KW_IF";
     break;
@@ -340,8 +412,96 @@ output(std::ostream &out) const {
     out << "KW_INT";
     break;
 
+  case KW_IS_ABSTRACT:
+    out << "KW_IS_ABSTRACT";
+    break;
+
+  case KW_IS_BASE_OF:
+    out << "KW_IS_BASE_OF";
+    break;
+
+  case KW_IS_CLASS:
+    out << "KW_IS_CLASS";
+    break;
+
+  case KW_IS_CONSTRUCTIBLE:
+    out << "KW_IS_CONSTRUCTIBLE";
+    break;
+
+  case KW_IS_CONVERTIBLE_TO:
+    out << "KW_IS_CONVERTIBLE_TO";
+    break;
+
+  case KW_IS_DESTRUCTIBLE:
+    out << "KW_IS_DESTRUCTIBLE";
+    break;
+
+  case KW_IS_EMPTY:
+    out << "KW_IS_EMPTY";
+    break;
+
+  case KW_IS_ENUM:
+    out << "KW_IS_ENUM";
+    break;
+
+  case KW_IS_FINAL:
+    out << "KW_IS_FINAL";
+    break;
+
+  case KW_IS_FUNDAMENTAL:
+    out << "KW_IS_FUNDAMENTAL";
+    break;
+
+  case KW_IS_POD:
+    out << "KW_IS_POD";
+    break;
+
+  case KW_IS_POLYMORPHIC:
+    out << "KW_IS_POLYMORPHIC";
+    break;
+
+  case KW_IS_STANDARD_LAYOUT:
+    out << "KW_IS_STANDARD_LAYOUT";
+    break;
+
+  case KW_IS_TRIVIAL:
+    out << "KW_IS_TRIVIAL";
+    break;
+
+  case KW_IS_TRIVIALLY_COPYABLE:
+    out << "KW_IS_TRIVIALLY_COPYABLE";
+    break;
+
+  case KW_IS_UNION:
+    out << "KW_IS_UNION";
+    break;
+
   case KW_LONG:
     out << "KW_LONG";
+    break;
+
+  case KW_MAKE_MAP_KEYS_SEQ:
+    out << "KW_MAKE_MAP_KEYS_SEQ";
+    break;
+
+  case KW_MAKE_MAP_PROPERTY:
+    out << "KW_MAKE_MAP_PROPERTY";
+    break;
+
+  case KW_MAKE_PROPERTY:
+    out << "KW_MAKE_PROPERTY";
+    break;
+
+  case KW_MAKE_PROPERTY2:
+    out << "KW_MAKE_PROPERTY2";
+    break;
+
+  case KW_MAKE_SEQ:
+    out << "KW_MAKE_SEQ";
+    break;
+
+  case KW_MAKE_SEQ_PROPERTY:
+    out << "KW_MAKE_SEQ_PROPERTY";
     break;
 
   case KW_MUTABLE:
@@ -356,11 +516,27 @@ output(std::ostream &out) const {
     out << "KW_NEW";
     break;
 
+  case KW_NOEXCEPT:
+    out << "KW_NOEXCEPT";
+    break;
+
+  case KW_NOEXCEPT_LPAREN:
+    out << "KW_NOEXCEPT_LPAREN";
+    break;
+
+  case KW_NULLPTR:
+    out << "KW_NULLPTR";
+    break;
+
   case KW_OPERATOR:
     if (_lval.u.identifier != nullptr) {
       out << *_lval.u.identifier << "::";
     }
     out << "KW_OPERATOR";
+    break;
+
+  case KW_OVERRIDE:
+    out << "KW_OVERRIDE";
     break;
 
   case KW_PRIVATE:
@@ -375,8 +551,16 @@ output(std::ostream &out) const {
     out << "KW_PUBLIC";
     break;
 
+  case KW_PUBLISHED:
+    out << "KW_PUBLISHED";
+    break;
+
   case KW_REGISTER:
     out << "KW_REGISTER";
+    break;
+
+  case KW_REINTERPRET_CAST:
+    out << "KW_REINTERPRET_CAST";
     break;
 
   case KW_RETURN:
@@ -399,6 +583,10 @@ output(std::ostream &out) const {
     out << "KW_STATIC";
     break;
 
+  case KW_STATIC_ASSERT:
+    out << "KW_STATIC_ASSERT";
+    break;
+
   case KW_STATIC_CAST:
     out << "KW_STATIC_CAST";
     break;
@@ -409,6 +597,10 @@ output(std::ostream &out) const {
 
   case KW_TEMPLATE:
     out << "KW_TEMPLATE";
+    break;
+
+  case KW_THREAD_LOCAL:
+    out << "KW_THREAD_LOCAL";
     break;
 
   case KW_THROW:
@@ -427,8 +619,16 @@ output(std::ostream &out) const {
     out << "KW_TYPEDEF";
     break;
 
+  case KW_TYPEID:
+    out << "KW_TYPEID";
+    break;
+
   case KW_TYPENAME:
     out << "KW_TYPENAME";
+    break;
+
+  case KW_UNDERLYING_TYPE:
+    out << "KW_UNDERLYING_TYPE";
     break;
 
   case KW_USING:
@@ -453,6 +653,10 @@ output(std::ostream &out) const {
 
   case KW_VOLATILE:
     out << "KW_VOLATILE";
+    break;
+
+  case KW_WCHAR_T:
+    out << "KW_WCHAR_T";
     break;
 
   case KW_WHILE:

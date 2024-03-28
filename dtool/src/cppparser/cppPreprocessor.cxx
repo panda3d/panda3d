@@ -2666,6 +2666,7 @@ get_number(int c) {
  */
 int CPPPreprocessor::
 check_keyword(const string &name) {
+  // Don't forget to update CPPToken::output() when adding entries.
   if (name == "alignas") return KW_ALIGNAS;
   if (name == "alignof") return KW_ALIGNOF;
   if (name == "__alignof") return KW_ALIGNOF;
