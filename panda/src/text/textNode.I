@@ -756,7 +756,9 @@ clear_wordwrap() {
 }
 
 /**
- *
+ * Sets the color of the text.  Note that this will modulate the color of all
+ * components of the text, including the shadow and outline.  If you wish to
+ * only set the foreground color, see DynamicTextFont::set_fg().
  */
 INLINE void TextNode::
 set_text_color(const LColor &text_color) {
@@ -766,7 +768,9 @@ set_text_color(const LColor &text_color) {
 }
 
 /**
- *
+ * Sets the color of the text.  Note that this will modulate the color of all
+ * components of the text, including the shadow and outline.  If you wish to
+ * only set the foreground color, see DynamicTextFont::set_fg().
  */
 INLINE void TextNode::
 set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {

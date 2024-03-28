@@ -3016,7 +3016,7 @@ build_apps = direct.dist.commands:build_apps
 bdist_apps = direct.dist.commands:bdist_apps
 
 [setuptools.finalize_distribution_options]
-build_apps = direct.dist.commands:finalize_distribution_options
+build_apps = direct.dist._dist_hooks:finalize_distribution_options
 """
 
 if not PkgSkip("DIRECT"):

@@ -23,6 +23,7 @@ from . import FreezeTool
 from . import pefile
 from . import installers
 from .icon import Icon
+from ._dist_hooks import finalize_distribution_options
 import panda3d.core as p3d
 
 
@@ -1773,14 +1774,3 @@ class bdist_apps(setuptools.Command):
                     continue
 
                 self.installer_functions[installer](self, basename, build_dir)
-
-
-def finalize_distribution_options(dist):
-    """Entry point for compatibility with setuptools>=61, see #1394."""
-
-    options = dist.get_option_dict('build_apps')
-    if options.get('gui_apps') or options.get('console_apps'):
-        # Make sure this is set to avoid auto-discovery taking place.
-        if getattr(dist.metadata, 'py_modules', None) is None and \
-           getattr(dist.metadata, 'packages', None) is None:
-            dist.py_modules = []
