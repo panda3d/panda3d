@@ -2472,6 +2472,7 @@ expand_defined_function(string &expr, size_t q, size_t &p) const {
   while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
     p++;
   }
+  string name = expr.substr(r, p - r);
 
   if (has_paren) {
     if (expr[p] == ')') {
@@ -2481,7 +2482,6 @@ expand_defined_function(string &expr, size_t q, size_t &p) const {
     }
   }
 
-  string name = expr.substr(r, p - r - 1);
   char result = is_manifest_defined(name) ? '1' : '0';
   expr = expr.substr(0, q) + result + expr.substr(p);
   p = q + 1;
