@@ -233,6 +233,59 @@ CPPPreprocessor() {
 }
 
 /**
+ *
+ */
+bool CPPPreprocessor::
+preprocess_file(const Filename &filename) {
+  Filename canonical(filename);
+  canonical.make_canonical();
+
+  CPPFile file(canonical, filename, CPPFile::S_local);
+
+  // Don't read it if we included it before and it had #pragma once.
+  ParsedFiles::iterator it = _parsed_files.find(file);
+  if (it != _parsed_files.end() && it->_pragma_once) {
+    // But mark it as local.
+    it->_source = CPPFile::S_local;
+    return true;
+  }
+
+  if (!init_cpp(file)) {
+    std::cerr << "Unable to read " << filename << "\n";
+    return false;
+  }
+
+  int line_number = 1;
+  int nesting = 0;
+  bool next_space = false;
+  CPPToken token = get_next_token();
+  while (!token.is_eof()) {
+    if (token._token == '}') {
+      nesting -= 1;
+    }
+    if (token._lloc.first_line > line_number) {
+      // Token is on a different line, so insert a newline.
+      std::cout << "\n";
+      line_number = token._lloc.first_line;
+      indent(std::cout, nesting * 2);
+    }
+    else if (next_space && token._token != ';' && token._token != ':' && token._token != ',' && token._token != ')') {
+      // The above tokens never need a preceding space
+      std::cout << " ";
+    }
+    if (token._token == '{') {
+      nesting += 1;
+    }
+    next_space = (token._token != '(' && token._token != '~');
+    token.output_code(std::cout);
+    token = get_next_token();
+  }
+  std::cout << "\n";
+
+  return get_error_count() == 0;
+}
+
+/**
  * Sets the verbosity level of the parser.  At 0, no warnings will be
  * reported; at 1 or higher, expect to get spammed.
  */
@@ -353,8 +406,8 @@ get_next_token0() {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
-      } else {
-        error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
+      //} else {
+      //  error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
       }
     }
 

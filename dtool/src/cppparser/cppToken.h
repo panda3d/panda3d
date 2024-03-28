@@ -37,6 +37,7 @@ public:
   bool is_eof() const;
 
   void output(std::ostream &out) const;
+  void output_code(std::ostream &out) const;
 
   int _token;
   YYSTYPE _lval;

@@ -41,6 +41,8 @@ class CPPPreprocessor {
 public:
   CPPPreprocessor();
 
+  bool preprocess_file(const Filename &filename);
+
   void set_verbose(int verbose);
   int get_verbose() const;
 
