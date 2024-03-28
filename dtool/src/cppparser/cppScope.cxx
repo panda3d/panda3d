@@ -724,6 +724,12 @@ find_symbol(const string &name, bool recurse) const {
     return _struct_type;
   }
 
+  Functions::const_iterator fi;
+  fi = _functions.find(name);
+  if (fi != _functions.end()) {
+    return (*fi).second;
+  }
+
   Types::const_iterator ti;
   ti = _types.find(name);
   if (ti != _types.end()) {
@@ -739,12 +745,6 @@ find_symbol(const string &name, bool recurse) const {
   vi = _enum_values.find(name);
   if (vi != _enum_values.end()) {
     return (*vi).second;
-  }
-
-  Functions::const_iterator fi;
-  fi = _functions.find(name);
-  if (fi != _functions.end()) {
-    return (*fi).second;
   }
 
   Using::const_iterator ui;
