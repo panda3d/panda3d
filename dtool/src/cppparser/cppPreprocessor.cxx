@@ -2186,6 +2186,17 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   CPPIdentifier *ident = new CPPIdentifier("operator \"\" " + suffix);
   CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope, this);
 
+  if (decl == nullptr) {
+    // Special case to handle C code, which allows a macro to directly follow
+    // a string, like "str"SUFFIX.  In this case, it becomes a separate token.
+    Manifests::const_iterator mi = _manifests.find(suffix);
+    if (mi != _manifests.end() && !should_ignore_manifest((*mi).second)) {
+      CPPManifest *manifest = (*mi).second;
+      _saved_tokens.push_back(expand_manifest(manifest, loc));
+      return CPPToken(token, loc, str, value);
+    }
+  }
+
   if (decl == nullptr || decl->get_subtype() != CPPDeclaration::ST_function_group) {
     error("unknown literal suffix " + suffix, loc);
     return CPPToken(token, loc, str, value);
