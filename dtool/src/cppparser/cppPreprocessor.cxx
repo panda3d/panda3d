@@ -919,6 +919,10 @@ expand_manifests(string &expr, const Manifests &manifests, bool expand_undefined
       else if (expand_undefined && ident == "__has_include") {
         expand_has_include_function(expr, q, p);
       }
+      else if (ident == "L" && p < expr.size() && (expr[p] == '\'' || expr[p] == '\"')) {
+        // Special exception for the wide string literal suffix, which is
+        // never expanded.
+      }
       else {
         // Is it a manifest?
         Manifests::const_iterator mi = manifests.find(ident);
