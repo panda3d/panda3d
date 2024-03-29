@@ -25,7 +25,6 @@
 #include "vector_string.h"
 
 #include <map>
-#include <list>
 #include <vector>
 #include <unordered_map>
 
