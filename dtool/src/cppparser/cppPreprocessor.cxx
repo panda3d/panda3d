@@ -2816,6 +2816,9 @@ check_keyword(const string &name) {
   if (name == "public") return KW_PUBLIC;
   if (name == "register") return KW_REGISTER;
   if (name == "reinterpret_cast") return KW_REINTERPRET_CAST;
+  //if (name == "restrict") return KW_RESTRICT;
+  if (name == "__restrict") return KW_RESTRICT;
+  if (name == "__restrict__") return KW_RESTRICT;
   if (name == "return") return KW_RETURN;
   if (name == "short") return KW_SHORT;
   if (name == "signed") return KW_SIGNED;

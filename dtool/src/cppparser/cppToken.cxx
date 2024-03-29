@@ -567,6 +567,10 @@ output(std::ostream &out) const {
     out << "KW_REINTERPRET_CAST";
     break;
 
+  case KW_RESTRICT:
+    out << "KW_RESTRICT";
+    break;
+
   case KW_RETURN:
     out << "KW_RETURN";
     break;
@@ -1225,6 +1229,10 @@ output_code(std::ostream &out) const {
 
   case KW_REINTERPRET_CAST:
     out << "reinterpret_cast";
+    break;
+
+  case KW_RESTRICT:
+    out << "__restrict";
     break;
 
   case KW_RETURN:

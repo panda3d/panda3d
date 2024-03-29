@@ -333,6 +333,7 @@ pop_struct() {
 %token KW_PUBLIC
 %token KW_REGISTER
 %token KW_REINTERPRET_CAST
+%token KW_RESTRICT
 %token KW_RETURN
 %token KW_SHORT
 %token KW_SIGNED
@@ -2266,6 +2267,11 @@ not_paren_formal_parameter_identifier:
   $$ = $2;
   $$->add_modifier(IIT_volatile);
 }
+        | KW_RESTRICT not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
+}
         | '*' optional_attributes not_paren_formal_parameter_identifier  %prec UNARY
 {
   $$ = $3;
@@ -2311,6 +2317,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes formal_parameter_identifier  %prec UNARY
 {
@@ -2370,6 +2381,11 @@ parameter_pack_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes parameter_pack_identifier  %prec UNARY
 {
@@ -2434,6 +2450,11 @@ not_paren_empty_instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_volatile);
 }
+        | KW_RESTRICT not_paren_empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
+}
         | '*' optional_attributes not_paren_empty_instance_identifier  %prec UNARY
 {
   $$ = $3;
@@ -2485,6 +2506,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes not_paren_empty_instance_identifier  %prec UNARY
 {
@@ -3318,7 +3344,7 @@ element:
         | KW_NAMESPACE | KW_NEW | KW_NOEXCEPT | KW_NOEXCEPT_LPAREN | KW_NULLPTR
         | KW_OPERATOR | KW_OVERRIDE | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_REINTERPRET_CAST
-        | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
+        | KW_RESTRICT | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
         | KW_STATIC_ASSERT | KW_STATIC_CAST | KW_STRUCT | KW_TEMPLATE
         | KW_THREAD_LOCAL | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF
         | KW_TYPEID | KW_TYPENAME | KW_UNDERLYING_TYPE | KW_UNION
