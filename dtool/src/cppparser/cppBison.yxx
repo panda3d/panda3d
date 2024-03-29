@@ -1833,6 +1833,19 @@ template_formal_parameter:
   CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
   $$ = inst;
 }
+        | KW_VOLATILE template_formal_parameter_type formal_parameter_identifier template_parameter_maybe_initialize
+{
+  $3->add_modifier(IIT_volatile);
+  CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
+  inst->set_initializer($4);
+  $$ = inst;
+}
+        | KW_VOLATILE template_formal_parameter_type parameter_pack_identifier
+{
+  $3->add_modifier(IIT_volatile);
+  CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
+  $$ = inst;
+}
         ;
 
 template_formal_parameter_type:
@@ -2183,50 +2196,29 @@ structure_init_body:
         ;
 
 function_parameter:
-        optional_attributes type formal_parameter_identifier maybe_initialize
+        optional_attributes storage_class type formal_parameter_identifier maybe_initialize
 {
-  $3->add_attributes($1);
-  $$ = new CPPInstance($2, $3, 0, @3.file);
-  $$->set_initializer($4);
-}
-        | optional_attributes KW_CONST type formal_parameter_identifier maybe_initialize
-{
+  if ($2 & CPPInstance::SC_const) {
+    $4->add_modifier(IIT_const);
+  }
+  if ($2 & CPPInstance::SC_volatile) {
+    $4->add_modifier(IIT_volatile);
+  }
   $4->add_attributes($1);
-  $4->add_modifier(IIT_const);
   $$ = new CPPInstance($3, $4, 0, @4.file);
   $$->set_initializer($5);
 }
-        | optional_attributes KW_CONST KW_REGISTER type formal_parameter_identifier maybe_initialize
+        | optional_attributes storage_class type_pack parameter_pack_identifier maybe_initialize
 {
-  $5->add_attributes($1);
-  $5->add_modifier(IIT_const);
-  $$ = new CPPInstance($4, $5, 0, @4.file);
-  $$->set_initializer($6);
-}
-        | optional_attributes type_pack parameter_pack_identifier maybe_initialize
-{
-  $3->add_attributes($1);
-  $$ = new CPPInstance($2, $3, 0, @3.file);
-  $$->set_initializer($4);
-}
-        | optional_attributes KW_CONST type_pack parameter_pack_identifier maybe_initialize
-{
+  if ($2 & CPPInstance::SC_const) {
+    $4->add_modifier(IIT_const);
+  }
+  if ($2 & CPPInstance::SC_volatile) {
+    $4->add_modifier(IIT_volatile);
+  }
   $4->add_attributes($1);
-  $4->add_modifier(IIT_const);
   $$ = new CPPInstance($3, $4, 0, @4.file);
   $$->set_initializer($5);
-}
-        | optional_attributes KW_CONST KW_REGISTER type_pack parameter_pack_identifier maybe_initialize
-{
-  $5->add_attributes($1);
-  $5->add_modifier(IIT_const);
-  $$ = new CPPInstance($4, $5, 0, @4.file);
-  $$->set_initializer($6);
-}
-        | optional_attributes KW_REGISTER function_parameter
-{
-  $$ = $3;
-  $$->_attributes.add_attributes_from($1);
 }
         ;
 
