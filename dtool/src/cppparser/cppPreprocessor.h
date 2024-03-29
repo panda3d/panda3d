@@ -182,6 +182,8 @@ private:
   void skip_to_end_nested();
   void skip_to_angle_bracket();
 
+  int get_file_depth() const;
+
   class InputFile {
   public:
     InputFile();
@@ -203,12 +205,11 @@ private:
     bool _lock_position;
     bool _ignore_manifest;
     int _prev_last_c;
+
+    InputFile *_parent = nullptr;
   };
 
-  // This must be a list and not a vector because we don't have a good copy
-  // constructor defined for InputFile.
-  typedef std::list<InputFile> Files;
-  Files _files;
+  InputFile *_infile = nullptr;
 
   enum State {
     S_normal, S_eof, S_nested, S_end_nested

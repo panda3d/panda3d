@@ -439,10 +439,11 @@ get_verbose() const {
  */
 void CPPPreprocessor::
 copy_filepos(const CPPPreprocessor &other) {
-  assert(!_files.empty());
-  _files.back()._file = other.get_file();
-  _files.back()._line_number = other.get_line_number();
-  _files.back()._col_number = other.get_col_number();
+  InputFile *infile = _infile;
+  assert(infile != nullptr);
+  infile->_file = other.get_file();
+  infile->_line_number = other.get_line_number();
+  infile->_col_number = other.get_col_number();
 }
 
 /**
@@ -450,10 +451,12 @@ copy_filepos(const CPPPreprocessor &other) {
  */
 CPPFile CPPPreprocessor::
 get_file() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_file;
+  } else {
     return CPPFile("");
   }
-  return _files.back()._file;
 }
 
 /**
@@ -461,10 +464,12 @@ get_file() const {
  */
 int CPPPreprocessor::
 get_line_number() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_line_number;
+  } else {
     return 0;
   }
-  return _files.back()._line_number;
 }
 
 /**
@@ -472,10 +477,12 @@ get_line_number() const {
  */
 int CPPPreprocessor::
 get_col_number() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_col_number;
+  } else {
     return 0;
   }
-  return _files.back()._col_number;
 }
 
 /**
@@ -486,7 +493,7 @@ get_next_token() {
 
 #ifdef CPP_VERBOSE_LEX
   CPPToken tok = get_next_token0();
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << _token_index++ << ". " << tok << "\n";
   return tok;
 }
@@ -668,7 +675,7 @@ void CPPPreprocessor::
 warning(const string &message, const YYLTYPE &loc) const {
   if (_verbose >= 2) {
     if (_verbose >= 3) {
-      indent(cerr, _files.size() * 2);
+      indent(cerr, get_file_depth() * 2);
     }
 
     if (!loc.file.empty()) {
@@ -717,7 +724,7 @@ error(const string &message, const YYLTYPE &loc) const {
 
   if (_verbose >= 1) {
     if (_verbose >= 3) {
-      indent(cerr, _files.size() * 2);
+      indent(cerr, get_file_depth() * 2);
     }
 
     if (!loc.file.empty()) {
@@ -734,31 +741,31 @@ error(const string &message, const YYLTYPE &loc) const {
     cerr << " error: " << message << "\n";
     show_line(loc);
 
-    if (!_files.empty() && !loc.file.empty()) {
-      Files::const_reverse_iterator rit;
-      for (rit = _files.rbegin();
-           rit != _files.rend() && (*rit)._file == loc.file && (*rit)._manifest != nullptr;
-           ++rit) {
+    InputFile *infile = _infile;
+    if (infile != nullptr && !loc.file.empty()) {
+      // Add all the expansions to a vector for easy reverse iteration.
+      std::vector<InputFile *> infiles;
+      while (infile != nullptr && infile->_file == loc.file && infile->_manifest != nullptr) {
+        infiles.push_back(infile);
+        infile = infile->_parent;
       }
-      if (rit != _files.rbegin() && rit != _files.rend()) {
-        --rit;
-        const InputFile &infile = *rit;
+      if (!infiles.empty()) {
+        auto rit = infiles.rbegin();
         if (_verbose >= 3) {
-          cerr << "Expansion of " << infile._manifest->_name << ":\n";
-          cerr << " -> " << trim_blanks(infile._input) << "\n";
-          while (rit != _files.rbegin()) {
-            --rit;
-            const InputFile &infile = *rit;
-            cerr << " -> " << trim_blanks(infile._input) << "\n";
+          cerr << "Expansion of " << (*rit)->_manifest->_name << ":\n";
+          while (rit != infiles.rend()) {
+            cerr << " -> " << trim_blanks((*rit)->_input) << "\n";
+            ++rit;
           }
         }
         else {
-          cerr << "with " << infile._manifest->_name;
-          if (infile._manifest->_has_parameters) {
+          cerr << "with " << (*rit)->_manifest->_name;
+          if ((*rit)->_manifest->_has_parameters) {
             cerr << "()";
           }
-          cerr << " expanded to: " << trim_blanks(_files.back()._input) << "\n";
+          cerr << " expanded to: " << trim_blanks(_infile->_input) << "\n";
         }
+        cerr << std::endl;
       }
     }
 
@@ -781,7 +788,7 @@ show_line(const YYLTYPE &loc) const {
 
   int indent_level = 0;
   if (_verbose >= 3) {
-    indent_level = _files.size() * 2;
+    indent_level = get_file_depth() * 2;
   }
 
   // Seek to the offending line in the file.
@@ -940,25 +947,26 @@ init_type(const string &type) {
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
   if (_verbose >= 3) {
-    indent(cerr, _files.size() * 2)
+    indent(cerr, get_file_depth() * 2)
       << "Reading " << file << "\n";
   }
   assert(_last_c == 0);
 
-  _files.push_back(InputFile());
-  InputFile &infile = _files.back();
+  InputFile *infile = new InputFile;
+  if (infile->open(file)) {
+    infile->_parent = _infile;
+    _infile = infile;
 
-  if (infile.open(file)) {
     // Record the fact that we opened the file for the benefit of user code.
     _parsed_files.insert(file);
 
-    infile._prev_last_c = _last_c;
+    infile->_prev_last_c = _last_c;
     _last_c = '\0';
     _start_of_line = true;
     return true;
   }
 
-  _files.pop_back();
+  delete infile;
   return false;
 }
 
@@ -968,25 +976,26 @@ push_file(const CPPFile &file) {
 bool CPPPreprocessor::
 push_string(const string &input) {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Pushing to string \"" << input
     << "\"\n";
 #endif
-  _files.push_back(InputFile());
-  InputFile &infile = _files.back();
 
-  if (infile.connect_input(input)) {
-    infile._prev_last_c = _last_c;
+  InputFile *infile = new InputFile;
+  if (infile->connect_input(input)) {
+    infile->_prev_last_c = _last_c;
+    infile->_parent = _infile;
+    _infile = infile;
     _last_c = '\0';
     return true;
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Unable to read string\n";
 #endif
 
-  _files.pop_back();
+  delete infile;
   return false;
 }
 
@@ -996,37 +1005,38 @@ push_string(const string &input) {
 bool CPPPreprocessor::
 push_expansion(const string &input, const CPPManifest *manifest, const YYLTYPE &loc) {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Pushing to expansion \"" << input
     << "\"\n";
 #endif
-  _files.push_back(InputFile());
-  InputFile &infile = _files.back();
 
-  if (infile.connect_input(input)) {
-    infile._manifest = manifest;
-    infile._file = loc.file;
-    infile._line_number = loc.first_line;
-    infile._col_number = loc.first_column;
-    infile._lock_position = true;
+  InputFile *infile = new InputFile;
+  if (infile->connect_input(input)) {
+    infile->_manifest = manifest;
+    infile->_file = loc.file;
+    infile->_line_number = loc.first_line;
+    infile->_col_number = loc.first_column;
+    infile->_lock_position = true;
 
     if (!manifest->_has_parameters) {
       // If the manifest does not use arguments, then disallow recursive
       // expansion.
-      infile._ignore_manifest = true;
+      infile->_ignore_manifest = true;
     }
 
-    infile._prev_last_c = _last_c;
+    infile->_prev_last_c = _last_c;
+    infile->_parent = _infile;
+    _infile = infile;
     _last_c = '\0';
     return true;
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Unable to read expansion\n";
 #endif
 
-  _files.pop_back();
+  delete infile;
   return false;
 }
 
@@ -1647,7 +1657,7 @@ process_directive(int c) {
   loc.last_column = 0;
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "#" << command << " " << args << "\n";
 #endif
 
@@ -1870,7 +1880,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
     if (expr[0] == '"' && expr[expr.size() - 1] == '"') {
       filename = expr.substr(1, expr.size() - 2);
 
-      if (_files.size() == 1) {
+      if (_infile->_parent == nullptr) {
         // If we're currently processing a top-level file, record the include
         // directive.  We don't need to record includes from included files.
         _quote_includes.insert(filename);
@@ -1884,7 +1894,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
         angle_quotes = true;
       }
 
-      if (_files.size() == 1) {
+      if (_infile->_parent == nullptr) {
         // If we're currently processing a top-level file, record the include
         // directive.  We don't need to record includes from included files.
         _angle_includes.insert(filename);
@@ -2470,17 +2480,19 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
   CPPManifest::Ignores ignores;
   ignores.insert(manifest);
 
-  for (const InputFile &infile : _files) {
-    if (infile._ignore_manifest) {
-      ignores.insert(infile._manifest);
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest) {
+      ignores.insert(infile->_manifest);
     }
+    infile = infile->_parent;
   }
 
   string expanded = " " + manifest->expand(args, false, ignores) + " ";
   push_expansion(expanded, manifest, loc);
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Expanding " << manifest->_name << " to " << expanded << "\n";
 #endif
 
@@ -3006,10 +3018,12 @@ scan_raw(int c) {
  */
 bool CPPPreprocessor::
 should_ignore_manifest(const CPPManifest *manifest) const {
-  for (const InputFile &infile : _files) {
-    if (infile._ignore_manifest && infile._manifest == manifest) {
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest && infile->_manifest == manifest) {
       return true;
     }
+    infile = infile->_parent;
   }
 
   return false;
@@ -3021,10 +3035,12 @@ should_ignore_manifest(const CPPManifest *manifest) const {
  */
 bool CPPPreprocessor::
 should_ignore_preprocessor() const {
-  for (const InputFile &infile : _files) {
-    if (infile._ignore_manifest) {
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest) {
       return true;
     }
+    infile = infile->_parent;
   }
 
   return false;
@@ -3041,18 +3057,21 @@ get() {
     return c;
   }
 
-  if (_files.empty()) {
+  if (UNLIKELY(_infile == nullptr)) {
     return EOF;
   }
 
-  int c = _files.back().get();
+  int c = _infile->get();
 
-  while (c == EOF && !_files.empty()) {
+  while (UNLIKELY(c == EOF && _infile != nullptr)) {
 #ifdef CPP_VERBOSE_LEX
-    indent(cerr, _files.size() * 2)
+    indent(cerr, get_file_depth() * 2)
       << "End of input stream, restoring to previous input\n";
 #endif
-    _files.pop_back();
+    // Pop the last file off the end.
+    InputFile *infile = _infile;
+    _infile = infile->_parent;
+    delete infile;
 
     // Synthesize a newline, just in case the file doesn't already end with
     // one.
@@ -3077,21 +3096,21 @@ peek() {
     return _unget;
   }
 
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (UNLIKELY(infile == nullptr)) {
     return EOF;
   }
 
-  Files::reverse_iterator it = _files.rbegin();
-  int c = (*it).peek();
+  int c = infile->peek();
 
-  while (c == EOF && it != _files.rend()) {
-    int last_c = (*it)._prev_last_c;
-    ++it;
+  while (UNLIKELY(c == EOF && infile != nullptr)) {
+    int last_c = infile->_prev_last_c;
+    infile = infile->_parent;
 
     if (last_c != '\0') {
       c = last_c;
-    } else if (it != _files.rend()) {
-      c = (*it).peek();
+    } else if (infile != nullptr) {
+      c = infile->peek();
     }
   }
 
@@ -3117,7 +3136,7 @@ unget(int c) {
 CPPTemplateParameterList *CPPPreprocessor::
 nested_parse_template_instantiation(CPPTemplateScope *scope) {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Beginning nested parse\n";
 #endif
   assert(scope != nullptr);
@@ -3206,7 +3225,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   _parsing_template_params = old_parsing_params;
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Ending nested parse\n";
 #endif
   return actual_params;
@@ -3222,7 +3241,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 void CPPPreprocessor::
 skip_to_end_nested() {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Skipping tokens:\n";
 #endif
 
@@ -3236,7 +3255,7 @@ skip_to_end_nested() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Done skipping tokens.\n";
 #endif
 }
@@ -3249,7 +3268,7 @@ skip_to_end_nested() {
 void CPPPreprocessor::
 skip_to_angle_bracket() {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Skipping tokens:\n";
 #endif
 
@@ -3266,7 +3285,21 @@ skip_to_angle_bracket() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Done skipping tokens.\n";
 #endif
+}
+
+/**
+ * Returns the number of files on the _infile list.
+ */
+int CPPPreprocessor::
+get_file_depth() const{
+  int depth = 0;
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    ++depth;
+    infile = infile->_parent;
+  }
+  return depth;
 }
