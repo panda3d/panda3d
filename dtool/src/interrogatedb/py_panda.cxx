@@ -540,6 +540,32 @@ Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
   }
 }
 
+/**
+ *
+ */
+void DtoolProxy_Init(DtoolProxy *proxy, PyObject *self,
+                     Dtool_PyTypedObject &classdef,
+                     TypeRegistry::PythonWrapFunc *wrap_func) {
+  if (proxy == nullptr) {
+    // Out of memory, the generated code will handle this.
+    return;
+  }
+
+  proxy->_self = Py_NewRef(self);
+  PyTypeObject *cls = Py_TYPE(self);
+  if (cls != &classdef._PyType) {
+    TypeRegistry *registry = TypeRegistry::ptr();
+    TypeHandle handle = registry->register_dynamic_type(cls->tp_name);
+    registry->record_derivation(handle, classdef._type);
+    //TODO unregister type when it is unloaded? weak callback?
+    PyTypeObject *cls_ref = (PyTypeObject *)Py_NewRef((PyObject *)cls);
+    registry->record_python_type(handle, cls_ref, wrap_func);
+    proxy->_type = handle;
+  } else {
+    proxy->_type = classdef._type;
+  }
+}
+
 #define PY_MAJOR_VERSION_STR #PY_MAJOR_VERSION "." #PY_MINOR_VERSION
 
 #if PY_MAJOR_VERSION >= 3
