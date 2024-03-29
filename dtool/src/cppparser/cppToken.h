@@ -30,8 +30,6 @@ public:
   CPPToken(int token, const YYLTYPE &loc,
            const std::string &str = std::string(),
            const YYSTYPE &lval = YYSTYPE());
-  CPPToken(const CPPToken &copy);
-  void operator = (const CPPToken &copy);
 
   static CPPToken eof();
   bool is_eof() const;

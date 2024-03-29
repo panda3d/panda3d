@@ -410,7 +410,7 @@ preprocess_file(const Filename &filename) {
       // Switched to a new file, reset the line number.
       line_number = 0;
     }
-    token = next_token;
+    token = std::move(next_token);
   }
   std::cout << "\n";
 
@@ -501,7 +501,7 @@ get_next_token0() {
 
   CPPToken token(0);
   if (!_saved_tokens.empty()) {
-    token = _saved_tokens.back();
+    token = std::move(_saved_tokens.back());
     _saved_tokens.pop_back();
   } else {
     token = internal_get_next_token();

@@ -47,29 +47,6 @@ CPPToken(int token, const YYLTYPE &loc, const std::string &str, const YYSTYPE &v
 }
 
 /**
- *
- */
-CPPToken::
-CPPToken(const CPPToken &copy) :
-  _token(copy._token),
-  _lloc(copy._lloc)
-{
-  _lval.str = copy._lval.str;
-  _lval.u = copy._lval.u;
-}
-
-/**
- *
- */
-void CPPToken::
-operator = (const CPPToken &copy) {
-  _token = copy._token;
-  _lval.str = copy._lval.str;
-  _lval.u = copy._lval.u;
-  _lloc = copy._lloc;
-}
-
-/**
  * A named constructor for the token returned when the end of file has been
  * reached.
  */
