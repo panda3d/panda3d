@@ -27,6 +27,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <unordered_map>
 
 class CPPScope;
 class CPPTemplateParameterList;
@@ -71,7 +72,7 @@ public:
   int get_warning_count() const;
   int get_error_count() const;
 
-  typedef CPPManifest::Manifests Manifests;
+  typedef std::unordered_map<std::string, CPPManifest *> Manifests;
   Manifests _manifests;
 
   typedef std::vector<CPPManifest *> ManifestStack;
@@ -119,8 +120,8 @@ protected:
                       const YYLTYPE &loc);
 
 public:
-  void expand_manifests(std::string &expr, const Manifests &manifests,
-                        bool expand_undefined = false) const;
+  void expand_manifests(std::string &expr, bool expand_undefined = false,
+                        const CPPManifest::Ignores &ignores = CPPManifest::Ignores()) const;
   CPPExpression *parse_expr(const std::string &expr, CPPScope *current_scope,
                             CPPScope *global_scope, const YYLTYPE &loc);
 

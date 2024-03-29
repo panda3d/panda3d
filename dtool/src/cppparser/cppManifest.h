@@ -21,6 +21,7 @@
 #include "cppBisonDefs.h"
 
 #include "vector_string.h"
+#include <unordered_set>
 
 class CPPExpression;
 class CPPType;
@@ -30,7 +31,7 @@ class CPPType;
  */
 class CPPManifest {
 public:
-  typedef std::map<std::string, CPPManifest *> Manifests;
+  typedef std::unordered_set<const CPPManifest *> Ignores;
 
   CPPManifest(const CPPPreprocessor &parser, const std::string &args, const cppyyltype &loc);
   CPPManifest(const CPPPreprocessor &parser, const std::string &macro, const std::string &definition);
@@ -39,8 +40,8 @@ public:
   static std::string stringify(const std::string &source);
   void extract_args(vector_string &args, const std::string &expr, size_t &p) const;
   std::string expand(const vector_string &args = vector_string(),
-                     const Manifests &manifests = Manifests(),
-                     bool expand_undefined = false) const;
+                     bool expand_undefined = false,
+                     const Ignores &ignores = Ignores()) const;
 
 
   CPPType *determine_type() const;
@@ -86,7 +87,7 @@ private:
                       const vector_string &parameter_names);
 
   std::string r_expand(const Expansion &expansion, const vector_string &args,
-                       const Manifests &manifests, bool expand_undefined) const;
+                       bool expand_undefined, const Ignores &ignores) const;
 
   Expansion _expansion;
 };

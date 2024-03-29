@@ -902,7 +902,8 @@ push_expansion(const string &input, const CPPManifest *manifest, const YYLTYPE &
  * Given a string, expand all manifests within the string.
  */
 void CPPPreprocessor::
-expand_manifests(string &expr, const Manifests &manifests, bool expand_undefined) const {
+expand_manifests(string &expr, bool expand_undefined,
+                 const CPPManifest::Ignores &ignores) const {
   size_t p = 0;
   while (p < expr.size()) {
     if (isalpha(expr[p]) || expr[p] == '_') {
@@ -925,8 +926,8 @@ expand_manifests(string &expr, const Manifests &manifests, bool expand_undefined
       }
       else {
         // Is it a manifest?
-        Manifests::const_iterator mi = manifests.find(ident);
-        if (mi != manifests.end()) {
+        Manifests::const_iterator mi = _manifests.find(ident);
+        if (mi != _manifests.end() && ignores.count((*mi).second) == 0) {
           const CPPManifest *manifest = (*mi).second;
           vector_string args;
           if (manifest->_has_parameters) {
@@ -943,11 +944,11 @@ expand_manifests(string &expr, const Manifests &manifests, bool expand_undefined
 
           // Don't consider this manifest when expanding the arguments or
           // result, to prevent recursion.
-          Manifests nested_manifests(manifests);
-          nested_manifests.erase((*mi).first);
+          CPPManifest::Ignores nested_ignores(ignores);
+          nested_ignores.insert(manifest);
 
-          string result = manifest->expand(args);
-          expand_manifests(result, nested_manifests, expand_undefined);
+          string result = manifest->expand(args, expand_undefined, nested_ignores);
+          expand_manifests(result, expand_undefined, nested_ignores);
 
           expr = expr.substr(0, q) + result + expr.substr(p);
           p = q + result.size();
@@ -1008,7 +1009,7 @@ CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope, const YYLTYPE &loc) {
   string expr = input_expr;
-  expand_manifests(expr, _manifests, false);
+  expand_manifests(expr, false);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1685,7 +1686,7 @@ void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
   // When expanding manifests, we should replace unknown macros with 0.
   string expr = args;
-  expand_manifests(expr, _manifests, true);
+  expand_manifests(expr, true);
 
   int expression_result = 0;
   CPPExpressionParser ep(current_scope, global_scope);
@@ -1730,7 +1731,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   // filter out quotes and angle brackets properly, we'll only expand
   // manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expand_manifests(expr, _manifests, false);
+    expand_manifests(expr, false);
   }
 
   if (!expr.empty()) {
@@ -2332,17 +2333,17 @@ expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
                           manifest->_variadic_param, args);
   }
 
-  // Make a copy of the manifests, without the ones we're supposed to ignore.
-  Manifests manifests = _manifests;
-  manifests.erase(manifest->_name);
+  // Keep track of the manifests we're supposed to ignore.
+  CPPManifest::Ignores ignores;
+  ignores.insert(manifest);
 
   for (const InputFile &infile : _files) {
     if (infile._ignore_manifest) {
-      manifests.erase(infile._manifest->_name);
+      ignores.insert(infile._manifest);
     }
   }
 
-  string expanded = " " + manifest->expand(args, manifests, false) + " ";
+  string expanded = " " + manifest->expand(args, false, ignores) + " ";
   push_expansion(expanded, manifest, loc);
 
 #ifdef CPP_VERBOSE_LEX
@@ -2575,7 +2576,7 @@ expand_has_include_function(string &expr, size_t q, size_t &p) const {
   // Only expand if we've encountered unquoted identifier-valid characters,
   // to be on the safe side.
   if (needs_expansion) {
-    expand_manifests(inc, _manifests, false);
+    expand_manifests(inc, false);
   }
 
   Filename filename;

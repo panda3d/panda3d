@@ -34,9 +34,6 @@ public:
   CPPFile(const Filename &filename = "",
           const Filename &filename_as_referenced = "",
           Source source = S_none);
-  CPPFile(const CPPFile &copy);
-  void operator = (const CPPFile &copy);
-  ~CPPFile();
 
   bool is_c_or_i_file() const;
   static bool is_c_or_i_file(const Filename &filename);

@@ -325,8 +325,8 @@ extract_args(vector_string &args, const string &expr, size_t &p) const {
  *
  */
 string CPPManifest::
-expand(const vector_string &args, const Manifests &manifests, bool expand_undefined) const {
-  return r_expand(_expansion, args, manifests, expand_undefined);
+expand(const vector_string &args, bool expand_undefined, const Ignores &ignores) const {
+  return r_expand(_expansion, args, expand_undefined, ignores);
 }
 
 /**
@@ -601,7 +601,7 @@ save_expansion(Expansion &expansion, const string &exp, const vector_string &par
  */
 string CPPManifest::
 r_expand(const Expansion &expansion, const vector_string &args,
-         const Manifests &manifests, bool expand_undefined) const {
+         bool expand_undefined, const Ignores &ignores) const {
   std::string result;
 
   for (const ExpansionNode &node : expansion) {
@@ -631,7 +631,7 @@ r_expand(const Expansion &expansion, const vector_string &args,
       }
 
       if (node._expand) {
-        _parser.expand_manifests(subst, manifests, expand_undefined);
+        _parser.expand_manifests(subst, expand_undefined, ignores);
       }
 
       if (!subst.empty()) {
@@ -654,7 +654,7 @@ r_expand(const Expansion &expansion, const vector_string &args,
     if (!node._nested.empty()) {
       string nested_result;
       if (node._optional && args.size() >= _num_parameters) {
-        nested_result = r_expand(node._nested, args, manifests, expand_undefined);
+        nested_result = r_expand(node._nested, args, expand_undefined, ignores);
       }
       if (node._stringify) {
         nested_result = stringify(nested_result);
