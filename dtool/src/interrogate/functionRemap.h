@@ -61,6 +61,7 @@ public:
   FunctionWrapperIndex make_wrapper_entry(FunctionIndex function_index);
 
   std::string get_call_str(const std::string &container, const vector_string &pexprs) const;
+  void write_call_args(std::ostream &out, const vector_string &pexprs) const;
 
   int get_min_num_args() const;
   int get_max_num_args() const;

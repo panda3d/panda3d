@@ -182,6 +182,16 @@ typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
 
 EXPCL_PYPANDA Dtool_TypeMap *Dtool_GetGlobalTypeMap();
 
+class DtoolProxy {
+public:
+  mutable PyObject *_self;
+  TypeHandle _type;
+};
+
+EXPCL_PYPANDA void DtoolProxy_Init(DtoolProxy *proxy, PyObject *self,
+                                   Dtool_PyTypedObject &classdef,
+                                   TypeRegistry::PythonWrapFunc *wrap_func);
+
 /**
 
  */

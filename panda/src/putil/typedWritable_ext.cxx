@@ -31,7 +31,7 @@ extern Dtool_PyTypedObject Dtool_TypeHandle;
 /**
  * Class that upcalls to the parent class when write_datagram is called.
  */
-class TypedWritableProxy : public TypedWritable {
+class TypedWritableProxy : public TypedWritable, public DtoolProxy {
 public:
   ~TypedWritableProxy() {
   }
@@ -123,10 +123,6 @@ public:
   virtual TypeHandle force_init_type() override {
     return _type;
   }
-
-public:
-  PyObject *_self;
-  TypeHandle _type;
 };
 
 /**
