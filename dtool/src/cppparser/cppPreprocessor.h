@@ -166,7 +166,6 @@ private:
   void expand_has_include_function(std::string &expr, size_t q, size_t &p) const;
 
   CPPToken get_number(int c);
-  static int check_keyword(const std::string &name);
   int scan_escape_sequence(int c);
   std::string scan_quoted(int c);
   std::string scan_raw(int c);

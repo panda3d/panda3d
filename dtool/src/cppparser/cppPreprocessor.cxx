@@ -46,6 +46,132 @@ using std::string;
 // behind the preprocessor.)
 static CPPVisibility preprocessor_vis = V_public;
 
+// Don't forget to update CPPToken::output() when adding entries.
+static const std::unordered_map<std::string, int> keywords = {
+  {"alignas", KW_ALIGNAS},
+  {"alignof", KW_ALIGNOF},
+  {"__alignof", KW_ALIGNOF},
+  {"__alignof__", KW_ALIGNOF},
+  {"auto", KW_AUTO},
+  {"__begin_publish", KW_BEGIN_PUBLISH},
+  {"__blocking", KW_BLOCKING},
+  {"bool", KW_BOOL},
+  {"__builtin_va_list", KW_BUILTIN_VA_LIST},
+  {"catch", KW_CATCH},
+  {"char", KW_CHAR},
+  {"char8_t", KW_CHAR8_T},
+  {"char16_t", KW_CHAR16_T},
+  {"char32_t", KW_CHAR32_T},
+  {"class", KW_CLASS},
+  {"const", KW_CONST},
+  {"__const", KW_CONST},
+  {"__const__", KW_CONST},
+  {"consteval", KW_CONSTEVAL},
+  {"constexpr", KW_CONSTEXPR},
+  {"constinit", KW_CONSTINIT},
+  {"const_cast", KW_CONST_CAST},
+  {"decltype", KW_DECLTYPE},
+  {"default", KW_DEFAULT},
+  {"delete", KW_DELETE},
+  {"double", KW_DOUBLE},
+  {"dynamic_cast", KW_DYNAMIC_CAST},
+  {"else", KW_ELSE},
+  {"__end_publish", KW_END_PUBLISH},
+  {"enum", KW_ENUM},
+  {"extern", KW_EXTERN},
+  {"__extension", KW_EXTENSION},
+  {"explicit", KW_EXPLICIT},
+  {"__published", KW_PUBLISHED},
+  {"false", KW_FALSE},
+  {"final", KW_FINAL},
+  {"float", KW_FLOAT},
+  {"friend", KW_FRIEND},
+  {"for", KW_FOR},
+  {"goto", KW_GOTO},
+  {"__has_virtual_destructor", KW_HAS_VIRTUAL_DESTRUCTOR},
+  {"if", KW_IF},
+  {"inline", KW_INLINE},
+  {"__inline", KW_INLINE},
+  {"__inline__", KW_INLINE},
+  {"int", KW_INT},
+  {"__is_abstract", KW_IS_ABSTRACT},
+  {"__is_base_of", KW_IS_BASE_OF},
+  {"__is_class", KW_IS_CLASS},
+  {"__is_constructible", KW_IS_CONSTRUCTIBLE},
+  {"__is_convertible_to", KW_IS_CONVERTIBLE_TO},
+  {"__is_destructible", KW_IS_DESTRUCTIBLE},
+  {"__is_empty", KW_IS_EMPTY},
+  {"__is_enum", KW_IS_ENUM},
+  {"__is_final", KW_IS_FINAL},
+  {"__is_fundamental", KW_IS_FUNDAMENTAL},
+  {"__is_pod", KW_IS_POD},
+  {"__is_polymorphic", KW_IS_POLYMORPHIC},
+  {"__is_standard_layout", KW_IS_STANDARD_LAYOUT},
+  {"__is_trivial", KW_IS_TRIVIAL},
+  {"__is_trivially_copyable", KW_IS_TRIVIALLY_COPYABLE},
+  {"__is_union", KW_IS_UNION},
+  {"long", KW_LONG},
+  {"__make_map_keys_seq", KW_MAKE_MAP_KEYS_SEQ},
+  {"__make_map_property", KW_MAKE_MAP_PROPERTY},
+  {"__make_property", KW_MAKE_PROPERTY},
+  {"__make_property2", KW_MAKE_PROPERTY2},
+  {"__make_seq", KW_MAKE_SEQ},
+  {"__make_seq_property", KW_MAKE_SEQ_PROPERTY},
+  {"mutable", KW_MUTABLE},
+  {"namespace", KW_NAMESPACE},
+  {"noexcept", KW_NOEXCEPT},
+  {"nullptr", KW_NULLPTR},
+  {"new", KW_NEW},
+  {"operator", KW_OPERATOR},
+  {"override", KW_OVERRIDE},
+  {"private", KW_PRIVATE},
+  {"protected", KW_PROTECTED},
+  {"public", KW_PUBLIC},
+  {"register", KW_REGISTER},
+  {"reinterpret_cast", KW_REINTERPRET_CAST},
+  //{"restrict", KW_RESTRICT},
+  {"__restrict", KW_RESTRICT},
+  {"__restrict__", KW_RESTRICT},
+  {"return", KW_RETURN},
+  {"short", KW_SHORT},
+  {"signed", KW_SIGNED},
+  {"sizeof", KW_SIZEOF},
+  {"static", KW_STATIC},
+  {"static_assert", KW_STATIC_ASSERT},
+  {"static_cast", KW_STATIC_CAST},
+  {"struct", KW_STRUCT},
+  {"template", KW_TEMPLATE},
+  {"thread_local", KW_THREAD_LOCAL},
+  {"throw", KW_THROW},
+  {"true", KW_TRUE},
+  {"try", KW_TRY},
+  {"typedef", KW_TYPEDEF},
+  {"typeid", KW_TYPEID},
+  {"typename", KW_TYPENAME},
+  {"__underlying_type", KW_UNDERLYING_TYPE},
+  {"union", KW_UNION},
+  {"unsigned", KW_UNSIGNED},
+  {"using", KW_USING},
+  {"virtual", KW_VIRTUAL},
+  {"void", KW_VOID},
+  {"volatile", KW_VOLATILE},
+  {"wchar_t", KW_WCHAR_T},
+  {"while", KW_WHILE},
+
+  // These are alternative ways to refer to built-in operators.
+  {"and", ANDAND},
+  {"and_eq", ANDEQUAL},
+  {"bitand", '&'},
+  {"bitor", '|'},
+  {"compl", '~'},
+  {"not", '!'},
+  {"not_eq", NECOMPARE},
+  {"or", OROR},
+  {"or_eq", OREQUAL},
+  {"xor", '^'},
+  {"xor_eq", XOREQUAL},
+};
+
 static int
 hex_val(int c) {
   switch (c) {
@@ -2105,7 +2231,8 @@ get_identifier(int c) {
   }
 
   // Check for keywords.
-  int kw = check_keyword(name);
+  auto kwit = keywords.find(name);
+  int kw = (kwit != keywords.end()) ? (*kwit).second : 0;
 
   // Update our internal visibility flag.
   switch (kw) {
@@ -2728,138 +2855,6 @@ get_number(int c) {
   }
 
   return get_literal(INTEGER, loc, num, result);
-}
-
-/**
- *
- */
-int CPPPreprocessor::
-check_keyword(const string &name) {
-  // Don't forget to update CPPToken::output() when adding entries.
-  if (name == "alignas") return KW_ALIGNAS;
-  if (name == "alignof") return KW_ALIGNOF;
-  if (name == "__alignof") return KW_ALIGNOF;
-  if (name == "__alignof__") return KW_ALIGNOF;
-  if (name == "auto") return KW_AUTO;
-  if (name == "__begin_publish") return KW_BEGIN_PUBLISH;
-  if (name == "__blocking") return KW_BLOCKING;
-  if (name == "bool") return KW_BOOL;
-  if (name == "__builtin_va_list") return KW_BUILTIN_VA_LIST;
-  if (name == "catch") return KW_CATCH;
-  if (name == "char") return KW_CHAR;
-  if (name == "char8_t") return KW_CHAR8_T;
-  if (name == "char16_t") return KW_CHAR16_T;
-  if (name == "char32_t") return KW_CHAR32_T;
-  if (name == "class") return KW_CLASS;
-  if (name == "const") return KW_CONST;
-  if (name == "__const") return KW_CONST;
-  if (name == "__const__") return KW_CONST;
-  if (name == "consteval") return KW_CONSTEVAL;
-  if (name == "constexpr") return KW_CONSTEXPR;
-  if (name == "constinit") return KW_CONSTINIT;
-  if (name == "const_cast") return KW_CONST_CAST;
-  if (name == "decltype") return KW_DECLTYPE;
-  if (name == "default") return KW_DEFAULT;
-  if (name == "delete") return KW_DELETE;
-  if (name == "double") return KW_DOUBLE;
-  if (name == "dynamic_cast") return KW_DYNAMIC_CAST;
-  if (name == "else") return KW_ELSE;
-  if (name == "__end_publish") return KW_END_PUBLISH;
-  if (name == "enum") return KW_ENUM;
-  if (name == "extern") return KW_EXTERN;
-  if (name == "__extension") return KW_EXTENSION;
-  if (name == "explicit") return KW_EXPLICIT;
-  if (name == "__published") return KW_PUBLISHED;
-  if (name == "false") return KW_FALSE;
-  if (name == "final") return KW_FINAL;
-  if (name == "float") return KW_FLOAT;
-  if (name == "friend") return KW_FRIEND;
-  if (name == "for") return KW_FOR;
-  if (name == "goto") return KW_GOTO;
-  if (name == "__has_virtual_destructor") return KW_HAS_VIRTUAL_DESTRUCTOR;
-  if (name == "if") return KW_IF;
-  if (name == "inline") return KW_INLINE;
-  if (name == "__inline") return KW_INLINE;
-  if (name == "__inline__") return KW_INLINE;
-  if (name == "int") return KW_INT;
-  if (name == "__is_abstract") return KW_IS_ABSTRACT;
-  if (name == "__is_base_of") return KW_IS_BASE_OF;
-  if (name == "__is_class") return KW_IS_CLASS;
-  if (name == "__is_constructible") return KW_IS_CONSTRUCTIBLE;
-  if (name == "__is_convertible_to") return KW_IS_CONVERTIBLE_TO;
-  if (name == "__is_destructible") return KW_IS_DESTRUCTIBLE;
-  if (name == "__is_empty") return KW_IS_EMPTY;
-  if (name == "__is_enum") return KW_IS_ENUM;
-  if (name == "__is_final") return KW_IS_FINAL;
-  if (name == "__is_fundamental") return KW_IS_FUNDAMENTAL;
-  if (name == "__is_pod") return KW_IS_POD;
-  if (name == "__is_polymorphic") return KW_IS_POLYMORPHIC;
-  if (name == "__is_standard_layout") return KW_IS_STANDARD_LAYOUT;
-  if (name == "__is_trivial") return KW_IS_TRIVIAL;
-  if (name == "__is_trivially_copyable") return KW_IS_TRIVIALLY_COPYABLE;
-  if (name == "__is_union") return KW_IS_UNION;
-  if (name == "long") return KW_LONG;
-  if (name == "__make_map_keys_seq") return KW_MAKE_MAP_KEYS_SEQ;
-  if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
-  if (name == "__make_property") return KW_MAKE_PROPERTY;
-  if (name == "__make_property2") return KW_MAKE_PROPERTY2;
-  if (name == "__make_seq") return KW_MAKE_SEQ;
-  if (name == "__make_seq_property") return KW_MAKE_SEQ_PROPERTY;
-  if (name == "mutable") return KW_MUTABLE;
-  if (name == "namespace") return KW_NAMESPACE;
-  if (name == "noexcept") return KW_NOEXCEPT;
-  if (name == "nullptr") return KW_NULLPTR;
-  if (name == "new") return KW_NEW;
-  if (name == "operator") return KW_OPERATOR;
-  if (name == "override") return KW_OVERRIDE;
-  if (name == "private") return KW_PRIVATE;
-  if (name == "protected") return KW_PROTECTED;
-  if (name == "public") return KW_PUBLIC;
-  if (name == "register") return KW_REGISTER;
-  if (name == "reinterpret_cast") return KW_REINTERPRET_CAST;
-  //if (name == "restrict") return KW_RESTRICT;
-  if (name == "__restrict") return KW_RESTRICT;
-  if (name == "__restrict__") return KW_RESTRICT;
-  if (name == "return") return KW_RETURN;
-  if (name == "short") return KW_SHORT;
-  if (name == "signed") return KW_SIGNED;
-  if (name == "sizeof") return KW_SIZEOF;
-  if (name == "static") return KW_STATIC;
-  if (name == "static_assert") return KW_STATIC_ASSERT;
-  if (name == "static_cast") return KW_STATIC_CAST;
-  if (name == "struct") return KW_STRUCT;
-  if (name == "template") return KW_TEMPLATE;
-  if (name == "thread_local") return KW_THREAD_LOCAL;
-  if (name == "throw") return KW_THROW;
-  if (name == "true") return KW_TRUE;
-  if (name == "try") return KW_TRY;
-  if (name == "typedef") return KW_TYPEDEF;
-  if (name == "typeid") return KW_TYPEID;
-  if (name == "typename") return KW_TYPENAME;
-  if (name == "__underlying_type") return KW_UNDERLYING_TYPE;
-  if (name == "union") return KW_UNION;
-  if (name == "unsigned") return KW_UNSIGNED;
-  if (name == "using") return KW_USING;
-  if (name == "virtual") return KW_VIRTUAL;
-  if (name == "void") return KW_VOID;
-  if (name == "volatile") return KW_VOLATILE;
-  if (name == "wchar_t") return KW_WCHAR_T;
-  if (name == "while") return KW_WHILE;
-
-  // These are alternative ways to refer to built-in operators.
-  if (name == "and") return ANDAND;
-  if (name == "and_eq") return ANDEQUAL;
-  if (name == "bitand") return '&';
-  if (name == "bitor") return '|';
-  if (name == "compl") return '~';
-  if (name == "not") return '!';
-  if (name == "not_eq") return NECOMPARE;
-  if (name == "or") return OROR;
-  if (name == "or_eq") return OREQUAL;
-  if (name == "xor") return '^';
-  if (name == "xor_eq") return XOREQUAL;
-
-  return 0;
 }
 
 /**
