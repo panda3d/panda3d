@@ -262,6 +262,7 @@ pop_struct() {
 %token KW_BEGIN_PUBLISH
 %token KW_BLOCKING
 %token KW_BOOL
+%token KW_BUILTIN_VA_LIST
 %token KW_CATCH
 %token KW_CHAR
 %token KW_CHAR8_T
@@ -2627,6 +2628,10 @@ type:
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
 }
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
+}
         ;
 
 type_pack:
@@ -2746,6 +2751,10 @@ type_decl:
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
 }
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
+}
         ;
 
 predefined_type:
@@ -2819,6 +2828,10 @@ predefined_type:
         | KW_AUTO
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
+}
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
 }
         ;
 
@@ -3295,8 +3308,8 @@ element:
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
         | ATTR_LEFT | ATTR_RIGHT
-        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_CATCH
-        | KW_CHAR | KW_CHAR8_T | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS
+        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_BUILTIN_VA_LIST
+        | KW_CATCH | KW_CHAR | KW_CHAR8_T | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS
         | KW_CONST | KW_CONSTEVAL | KW_CONSTEXPR | KW_CONSTINIT | KW_CONST_CAST
         | KW_DECLTYPE | KW_DEFAULT | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST
         | KW_ELSE | KW_ENUM | KW_EXTERN | KW_EXPLICIT | KW_EXPLICIT_LPAREN

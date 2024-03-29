@@ -2743,6 +2743,7 @@ check_keyword(const string &name) {
   if (name == "__begin_publish") return KW_BEGIN_PUBLISH;
   if (name == "__blocking") return KW_BLOCKING;
   if (name == "bool") return KW_BOOL;
+  if (name == "__builtin_va_list") return KW_BUILTIN_VA_LIST;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
   if (name == "char8_t") return KW_CHAR8_T;

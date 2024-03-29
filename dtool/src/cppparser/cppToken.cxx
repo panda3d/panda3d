@@ -288,6 +288,10 @@ output(std::ostream &out) const {
     out << "KW_BOOL";
     break;
 
+  case KW_BUILTIN_VA_LIST:
+    out << "KW_BUILTIN_VA_LIST";
+    break;
+
   case KW_CATCH:
     out << "KW_CATCH";
     break;
@@ -938,6 +942,10 @@ output_code(std::ostream &out) const {
 
   case KW_BOOL:
     out << "bool";
+    break;
+
+  case KW_BUILTIN_VA_LIST:
+    out << "__builtin_va_list";
     break;
 
   case KW_CATCH:
