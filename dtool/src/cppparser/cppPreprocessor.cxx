@@ -404,7 +404,13 @@ preprocess_file(const Filename &filename) {
     }
     next_space = (token._token != '(' && token._token != '~');
     token.output_code(std::cout);
-    token = get_next_token();
+
+    CPPToken next_token = get_next_token();
+    if (next_token._lloc.file != token._lloc.file) {
+      // Switched to a new file, reset the line number.
+      line_number = 0;
+    }
+    token = next_token;
   }
   std::cout << "\n";
 
