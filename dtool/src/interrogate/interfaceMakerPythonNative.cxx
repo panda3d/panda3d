@@ -32,6 +32,7 @@
 #include "cppStructType.h"
 #include "cppExpression.h"
 #include "cppParameterList.h"
+#include "cppReferenceType.h"
 #include "lineStream.h"
 
 #include <algorithm>
