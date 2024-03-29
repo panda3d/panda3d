@@ -107,104 +107,106 @@ extern int cppyydebug;
     KW_BEGIN_PUBLISH = 308,        /* KW_BEGIN_PUBLISH  */
     KW_BLOCKING = 309,             /* KW_BLOCKING  */
     KW_BOOL = 310,                 /* KW_BOOL  */
-    KW_CATCH = 311,                /* KW_CATCH  */
-    KW_CHAR = 312,                 /* KW_CHAR  */
-    KW_CHAR8_T = 313,              /* KW_CHAR8_T  */
-    KW_CHAR16_T = 314,             /* KW_CHAR16_T  */
-    KW_CHAR32_T = 315,             /* KW_CHAR32_T  */
-    KW_CLASS = 316,                /* KW_CLASS  */
-    KW_CONST = 317,                /* KW_CONST  */
-    KW_CONSTEVAL = 318,            /* KW_CONSTEVAL  */
-    KW_CONSTEXPR = 319,            /* KW_CONSTEXPR  */
-    KW_CONSTINIT = 320,            /* KW_CONSTINIT  */
-    KW_CONST_CAST = 321,           /* KW_CONST_CAST  */
-    KW_DECLTYPE = 322,             /* KW_DECLTYPE  */
-    KW_DEFAULT = 323,              /* KW_DEFAULT  */
-    KW_DELETE = 324,               /* KW_DELETE  */
-    KW_DOUBLE = 325,               /* KW_DOUBLE  */
-    KW_DYNAMIC_CAST = 326,         /* KW_DYNAMIC_CAST  */
-    KW_ELSE = 327,                 /* KW_ELSE  */
-    KW_END_PUBLISH = 328,          /* KW_END_PUBLISH  */
-    KW_ENUM = 329,                 /* KW_ENUM  */
-    KW_EXTENSION = 330,            /* KW_EXTENSION  */
-    KW_EXTERN = 331,               /* KW_EXTERN  */
-    KW_EXPLICIT = 332,             /* KW_EXPLICIT  */
-    KW_EXPLICIT_LPAREN = 333,      /* KW_EXPLICIT_LPAREN  */
-    KW_PUBLISHED = 334,            /* KW_PUBLISHED  */
-    KW_FALSE = 335,                /* KW_FALSE  */
-    KW_FINAL = 336,                /* KW_FINAL  */
-    KW_FLOAT = 337,                /* KW_FLOAT  */
-    KW_FRIEND = 338,               /* KW_FRIEND  */
-    KW_FOR = 339,                  /* KW_FOR  */
-    KW_GOTO = 340,                 /* KW_GOTO  */
-    KW_HAS_VIRTUAL_DESTRUCTOR = 341, /* KW_HAS_VIRTUAL_DESTRUCTOR  */
-    KW_IF = 342,                   /* KW_IF  */
-    KW_INLINE = 343,               /* KW_INLINE  */
-    KW_INT = 344,                  /* KW_INT  */
-    KW_IS_ABSTRACT = 345,          /* KW_IS_ABSTRACT  */
-    KW_IS_BASE_OF = 346,           /* KW_IS_BASE_OF  */
-    KW_IS_CLASS = 347,             /* KW_IS_CLASS  */
-    KW_IS_CONSTRUCTIBLE = 348,     /* KW_IS_CONSTRUCTIBLE  */
-    KW_IS_CONVERTIBLE_TO = 349,    /* KW_IS_CONVERTIBLE_TO  */
-    KW_IS_DESTRUCTIBLE = 350,      /* KW_IS_DESTRUCTIBLE  */
-    KW_IS_EMPTY = 351,             /* KW_IS_EMPTY  */
-    KW_IS_ENUM = 352,              /* KW_IS_ENUM  */
-    KW_IS_FINAL = 353,             /* KW_IS_FINAL  */
-    KW_IS_FUNDAMENTAL = 354,       /* KW_IS_FUNDAMENTAL  */
-    KW_IS_POD = 355,               /* KW_IS_POD  */
-    KW_IS_POLYMORPHIC = 356,       /* KW_IS_POLYMORPHIC  */
-    KW_IS_STANDARD_LAYOUT = 357,   /* KW_IS_STANDARD_LAYOUT  */
-    KW_IS_TRIVIAL = 358,           /* KW_IS_TRIVIAL  */
-    KW_IS_TRIVIALLY_COPYABLE = 359, /* KW_IS_TRIVIALLY_COPYABLE  */
-    KW_IS_UNION = 360,             /* KW_IS_UNION  */
-    KW_LONG = 361,                 /* KW_LONG  */
-    KW_MAKE_MAP_KEYS_SEQ = 362,    /* KW_MAKE_MAP_KEYS_SEQ  */
-    KW_MAKE_MAP_PROPERTY = 363,    /* KW_MAKE_MAP_PROPERTY  */
-    KW_MAKE_PROPERTY = 364,        /* KW_MAKE_PROPERTY  */
-    KW_MAKE_PROPERTY2 = 365,       /* KW_MAKE_PROPERTY2  */
-    KW_MAKE_SEQ = 366,             /* KW_MAKE_SEQ  */
-    KW_MAKE_SEQ_PROPERTY = 367,    /* KW_MAKE_SEQ_PROPERTY  */
-    KW_MUTABLE = 368,              /* KW_MUTABLE  */
-    KW_NAMESPACE = 369,            /* KW_NAMESPACE  */
-    KW_NEW = 370,                  /* KW_NEW  */
-    KW_NOEXCEPT = 371,             /* KW_NOEXCEPT  */
-    KW_NOEXCEPT_LPAREN = 372,      /* KW_NOEXCEPT_LPAREN  */
-    KW_NULLPTR = 373,              /* KW_NULLPTR  */
-    KW_OPERATOR = 374,             /* KW_OPERATOR  */
-    KW_OVERRIDE = 375,             /* KW_OVERRIDE  */
-    KW_PRIVATE = 376,              /* KW_PRIVATE  */
-    KW_PROTECTED = 377,            /* KW_PROTECTED  */
-    KW_PUBLIC = 378,               /* KW_PUBLIC  */
-    KW_REGISTER = 379,             /* KW_REGISTER  */
-    KW_REINTERPRET_CAST = 380,     /* KW_REINTERPRET_CAST  */
-    KW_RETURN = 381,               /* KW_RETURN  */
-    KW_SHORT = 382,                /* KW_SHORT  */
-    KW_SIGNED = 383,               /* KW_SIGNED  */
-    KW_SIZEOF = 384,               /* KW_SIZEOF  */
-    KW_STATIC = 385,               /* KW_STATIC  */
-    KW_STATIC_ASSERT = 386,        /* KW_STATIC_ASSERT  */
-    KW_STATIC_CAST = 387,          /* KW_STATIC_CAST  */
-    KW_STRUCT = 388,               /* KW_STRUCT  */
-    KW_TEMPLATE = 389,             /* KW_TEMPLATE  */
-    KW_THREAD_LOCAL = 390,         /* KW_THREAD_LOCAL  */
-    KW_THROW = 391,                /* KW_THROW  */
-    KW_TRUE = 392,                 /* KW_TRUE  */
-    KW_TRY = 393,                  /* KW_TRY  */
-    KW_TYPEDEF = 394,              /* KW_TYPEDEF  */
-    KW_TYPEID = 395,               /* KW_TYPEID  */
-    KW_TYPENAME = 396,             /* KW_TYPENAME  */
-    KW_UNDERLYING_TYPE = 397,      /* KW_UNDERLYING_TYPE  */
-    KW_UNION = 398,                /* KW_UNION  */
-    KW_UNSIGNED = 399,             /* KW_UNSIGNED  */
-    KW_USING = 400,                /* KW_USING  */
-    KW_VIRTUAL = 401,              /* KW_VIRTUAL  */
-    KW_VOID = 402,                 /* KW_VOID  */
-    KW_VOLATILE = 403,             /* KW_VOLATILE  */
-    KW_WCHAR_T = 404,              /* KW_WCHAR_T  */
-    KW_WHILE = 405,                /* KW_WHILE  */
-    START_CPP = 406,               /* START_CPP  */
-    START_CONST_EXPR = 407,        /* START_CONST_EXPR  */
-    START_TYPE = 408               /* START_TYPE  */
+    KW_BUILTIN_VA_LIST = 311,      /* KW_BUILTIN_VA_LIST  */
+    KW_CATCH = 312,                /* KW_CATCH  */
+    KW_CHAR = 313,                 /* KW_CHAR  */
+    KW_CHAR8_T = 314,              /* KW_CHAR8_T  */
+    KW_CHAR16_T = 315,             /* KW_CHAR16_T  */
+    KW_CHAR32_T = 316,             /* KW_CHAR32_T  */
+    KW_CLASS = 317,                /* KW_CLASS  */
+    KW_CONST = 318,                /* KW_CONST  */
+    KW_CONSTEVAL = 319,            /* KW_CONSTEVAL  */
+    KW_CONSTEXPR = 320,            /* KW_CONSTEXPR  */
+    KW_CONSTINIT = 321,            /* KW_CONSTINIT  */
+    KW_CONST_CAST = 322,           /* KW_CONST_CAST  */
+    KW_DECLTYPE = 323,             /* KW_DECLTYPE  */
+    KW_DEFAULT = 324,              /* KW_DEFAULT  */
+    KW_DELETE = 325,               /* KW_DELETE  */
+    KW_DOUBLE = 326,               /* KW_DOUBLE  */
+    KW_DYNAMIC_CAST = 327,         /* KW_DYNAMIC_CAST  */
+    KW_ELSE = 328,                 /* KW_ELSE  */
+    KW_END_PUBLISH = 329,          /* KW_END_PUBLISH  */
+    KW_ENUM = 330,                 /* KW_ENUM  */
+    KW_EXTENSION = 331,            /* KW_EXTENSION  */
+    KW_EXTERN = 332,               /* KW_EXTERN  */
+    KW_EXPLICIT = 333,             /* KW_EXPLICIT  */
+    KW_EXPLICIT_LPAREN = 334,      /* KW_EXPLICIT_LPAREN  */
+    KW_PUBLISHED = 335,            /* KW_PUBLISHED  */
+    KW_FALSE = 336,                /* KW_FALSE  */
+    KW_FINAL = 337,                /* KW_FINAL  */
+    KW_FLOAT = 338,                /* KW_FLOAT  */
+    KW_FRIEND = 339,               /* KW_FRIEND  */
+    KW_FOR = 340,                  /* KW_FOR  */
+    KW_GOTO = 341,                 /* KW_GOTO  */
+    KW_HAS_VIRTUAL_DESTRUCTOR = 342, /* KW_HAS_VIRTUAL_DESTRUCTOR  */
+    KW_IF = 343,                   /* KW_IF  */
+    KW_INLINE = 344,               /* KW_INLINE  */
+    KW_INT = 345,                  /* KW_INT  */
+    KW_IS_ABSTRACT = 346,          /* KW_IS_ABSTRACT  */
+    KW_IS_BASE_OF = 347,           /* KW_IS_BASE_OF  */
+    KW_IS_CLASS = 348,             /* KW_IS_CLASS  */
+    KW_IS_CONSTRUCTIBLE = 349,     /* KW_IS_CONSTRUCTIBLE  */
+    KW_IS_CONVERTIBLE_TO = 350,    /* KW_IS_CONVERTIBLE_TO  */
+    KW_IS_DESTRUCTIBLE = 351,      /* KW_IS_DESTRUCTIBLE  */
+    KW_IS_EMPTY = 352,             /* KW_IS_EMPTY  */
+    KW_IS_ENUM = 353,              /* KW_IS_ENUM  */
+    KW_IS_FINAL = 354,             /* KW_IS_FINAL  */
+    KW_IS_FUNDAMENTAL = 355,       /* KW_IS_FUNDAMENTAL  */
+    KW_IS_POD = 356,               /* KW_IS_POD  */
+    KW_IS_POLYMORPHIC = 357,       /* KW_IS_POLYMORPHIC  */
+    KW_IS_STANDARD_LAYOUT = 358,   /* KW_IS_STANDARD_LAYOUT  */
+    KW_IS_TRIVIAL = 359,           /* KW_IS_TRIVIAL  */
+    KW_IS_TRIVIALLY_COPYABLE = 360, /* KW_IS_TRIVIALLY_COPYABLE  */
+    KW_IS_UNION = 361,             /* KW_IS_UNION  */
+    KW_LONG = 362,                 /* KW_LONG  */
+    KW_MAKE_MAP_KEYS_SEQ = 363,    /* KW_MAKE_MAP_KEYS_SEQ  */
+    KW_MAKE_MAP_PROPERTY = 364,    /* KW_MAKE_MAP_PROPERTY  */
+    KW_MAKE_PROPERTY = 365,        /* KW_MAKE_PROPERTY  */
+    KW_MAKE_PROPERTY2 = 366,       /* KW_MAKE_PROPERTY2  */
+    KW_MAKE_SEQ = 367,             /* KW_MAKE_SEQ  */
+    KW_MAKE_SEQ_PROPERTY = 368,    /* KW_MAKE_SEQ_PROPERTY  */
+    KW_MUTABLE = 369,              /* KW_MUTABLE  */
+    KW_NAMESPACE = 370,            /* KW_NAMESPACE  */
+    KW_NEW = 371,                  /* KW_NEW  */
+    KW_NOEXCEPT = 372,             /* KW_NOEXCEPT  */
+    KW_NOEXCEPT_LPAREN = 373,      /* KW_NOEXCEPT_LPAREN  */
+    KW_NULLPTR = 374,              /* KW_NULLPTR  */
+    KW_OPERATOR = 375,             /* KW_OPERATOR  */
+    KW_OVERRIDE = 376,             /* KW_OVERRIDE  */
+    KW_PRIVATE = 377,              /* KW_PRIVATE  */
+    KW_PROTECTED = 378,            /* KW_PROTECTED  */
+    KW_PUBLIC = 379,               /* KW_PUBLIC  */
+    KW_REGISTER = 380,             /* KW_REGISTER  */
+    KW_REINTERPRET_CAST = 381,     /* KW_REINTERPRET_CAST  */
+    KW_RESTRICT = 382,             /* KW_RESTRICT  */
+    KW_RETURN = 383,               /* KW_RETURN  */
+    KW_SHORT = 384,                /* KW_SHORT  */
+    KW_SIGNED = 385,               /* KW_SIGNED  */
+    KW_SIZEOF = 386,               /* KW_SIZEOF  */
+    KW_STATIC = 387,               /* KW_STATIC  */
+    KW_STATIC_ASSERT = 388,        /* KW_STATIC_ASSERT  */
+    KW_STATIC_CAST = 389,          /* KW_STATIC_CAST  */
+    KW_STRUCT = 390,               /* KW_STRUCT  */
+    KW_TEMPLATE = 391,             /* KW_TEMPLATE  */
+    KW_THREAD_LOCAL = 392,         /* KW_THREAD_LOCAL  */
+    KW_THROW = 393,                /* KW_THROW  */
+    KW_TRUE = 394,                 /* KW_TRUE  */
+    KW_TRY = 395,                  /* KW_TRY  */
+    KW_TYPEDEF = 396,              /* KW_TYPEDEF  */
+    KW_TYPEID = 397,               /* KW_TYPEID  */
+    KW_TYPENAME = 398,             /* KW_TYPENAME  */
+    KW_UNDERLYING_TYPE = 399,      /* KW_UNDERLYING_TYPE  */
+    KW_UNION = 400,                /* KW_UNION  */
+    KW_UNSIGNED = 401,             /* KW_UNSIGNED  */
+    KW_USING = 402,                /* KW_USING  */
+    KW_VIRTUAL = 403,              /* KW_VIRTUAL  */
+    KW_VOID = 404,                 /* KW_VOID  */
+    KW_VOLATILE = 405,             /* KW_VOLATILE  */
+    KW_WCHAR_T = 406,              /* KW_WCHAR_T  */
+    KW_WHILE = 407,                /* KW_WHILE  */
+    START_CPP = 408,               /* START_CPP  */
+    START_CONST_EXPR = 409,        /* START_CONST_EXPR  */
+    START_TYPE = 410               /* START_TYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -266,104 +268,106 @@ extern int cppyydebug;
 #define KW_BEGIN_PUBLISH 308
 #define KW_BLOCKING 309
 #define KW_BOOL 310
-#define KW_CATCH 311
-#define KW_CHAR 312
-#define KW_CHAR8_T 313
-#define KW_CHAR16_T 314
-#define KW_CHAR32_T 315
-#define KW_CLASS 316
-#define KW_CONST 317
-#define KW_CONSTEVAL 318
-#define KW_CONSTEXPR 319
-#define KW_CONSTINIT 320
-#define KW_CONST_CAST 321
-#define KW_DECLTYPE 322
-#define KW_DEFAULT 323
-#define KW_DELETE 324
-#define KW_DOUBLE 325
-#define KW_DYNAMIC_CAST 326
-#define KW_ELSE 327
-#define KW_END_PUBLISH 328
-#define KW_ENUM 329
-#define KW_EXTENSION 330
-#define KW_EXTERN 331
-#define KW_EXPLICIT 332
-#define KW_EXPLICIT_LPAREN 333
-#define KW_PUBLISHED 334
-#define KW_FALSE 335
-#define KW_FINAL 336
-#define KW_FLOAT 337
-#define KW_FRIEND 338
-#define KW_FOR 339
-#define KW_GOTO 340
-#define KW_HAS_VIRTUAL_DESTRUCTOR 341
-#define KW_IF 342
-#define KW_INLINE 343
-#define KW_INT 344
-#define KW_IS_ABSTRACT 345
-#define KW_IS_BASE_OF 346
-#define KW_IS_CLASS 347
-#define KW_IS_CONSTRUCTIBLE 348
-#define KW_IS_CONVERTIBLE_TO 349
-#define KW_IS_DESTRUCTIBLE 350
-#define KW_IS_EMPTY 351
-#define KW_IS_ENUM 352
-#define KW_IS_FINAL 353
-#define KW_IS_FUNDAMENTAL 354
-#define KW_IS_POD 355
-#define KW_IS_POLYMORPHIC 356
-#define KW_IS_STANDARD_LAYOUT 357
-#define KW_IS_TRIVIAL 358
-#define KW_IS_TRIVIALLY_COPYABLE 359
-#define KW_IS_UNION 360
-#define KW_LONG 361
-#define KW_MAKE_MAP_KEYS_SEQ 362
-#define KW_MAKE_MAP_PROPERTY 363
-#define KW_MAKE_PROPERTY 364
-#define KW_MAKE_PROPERTY2 365
-#define KW_MAKE_SEQ 366
-#define KW_MAKE_SEQ_PROPERTY 367
-#define KW_MUTABLE 368
-#define KW_NAMESPACE 369
-#define KW_NEW 370
-#define KW_NOEXCEPT 371
-#define KW_NOEXCEPT_LPAREN 372
-#define KW_NULLPTR 373
-#define KW_OPERATOR 374
-#define KW_OVERRIDE 375
-#define KW_PRIVATE 376
-#define KW_PROTECTED 377
-#define KW_PUBLIC 378
-#define KW_REGISTER 379
-#define KW_REINTERPRET_CAST 380
-#define KW_RETURN 381
-#define KW_SHORT 382
-#define KW_SIGNED 383
-#define KW_SIZEOF 384
-#define KW_STATIC 385
-#define KW_STATIC_ASSERT 386
-#define KW_STATIC_CAST 387
-#define KW_STRUCT 388
-#define KW_TEMPLATE 389
-#define KW_THREAD_LOCAL 390
-#define KW_THROW 391
-#define KW_TRUE 392
-#define KW_TRY 393
-#define KW_TYPEDEF 394
-#define KW_TYPEID 395
-#define KW_TYPENAME 396
-#define KW_UNDERLYING_TYPE 397
-#define KW_UNION 398
-#define KW_UNSIGNED 399
-#define KW_USING 400
-#define KW_VIRTUAL 401
-#define KW_VOID 402
-#define KW_VOLATILE 403
-#define KW_WCHAR_T 404
-#define KW_WHILE 405
-#define START_CPP 406
-#define START_CONST_EXPR 407
-#define START_TYPE 408
+#define KW_BUILTIN_VA_LIST 311
+#define KW_CATCH 312
+#define KW_CHAR 313
+#define KW_CHAR8_T 314
+#define KW_CHAR16_T 315
+#define KW_CHAR32_T 316
+#define KW_CLASS 317
+#define KW_CONST 318
+#define KW_CONSTEVAL 319
+#define KW_CONSTEXPR 320
+#define KW_CONSTINIT 321
+#define KW_CONST_CAST 322
+#define KW_DECLTYPE 323
+#define KW_DEFAULT 324
+#define KW_DELETE 325
+#define KW_DOUBLE 326
+#define KW_DYNAMIC_CAST 327
+#define KW_ELSE 328
+#define KW_END_PUBLISH 329
+#define KW_ENUM 330
+#define KW_EXTENSION 331
+#define KW_EXTERN 332
+#define KW_EXPLICIT 333
+#define KW_EXPLICIT_LPAREN 334
+#define KW_PUBLISHED 335
+#define KW_FALSE 336
+#define KW_FINAL 337
+#define KW_FLOAT 338
+#define KW_FRIEND 339
+#define KW_FOR 340
+#define KW_GOTO 341
+#define KW_HAS_VIRTUAL_DESTRUCTOR 342
+#define KW_IF 343
+#define KW_INLINE 344
+#define KW_INT 345
+#define KW_IS_ABSTRACT 346
+#define KW_IS_BASE_OF 347
+#define KW_IS_CLASS 348
+#define KW_IS_CONSTRUCTIBLE 349
+#define KW_IS_CONVERTIBLE_TO 350
+#define KW_IS_DESTRUCTIBLE 351
+#define KW_IS_EMPTY 352
+#define KW_IS_ENUM 353
+#define KW_IS_FINAL 354
+#define KW_IS_FUNDAMENTAL 355
+#define KW_IS_POD 356
+#define KW_IS_POLYMORPHIC 357
+#define KW_IS_STANDARD_LAYOUT 358
+#define KW_IS_TRIVIAL 359
+#define KW_IS_TRIVIALLY_COPYABLE 360
+#define KW_IS_UNION 361
+#define KW_LONG 362
+#define KW_MAKE_MAP_KEYS_SEQ 363
+#define KW_MAKE_MAP_PROPERTY 364
+#define KW_MAKE_PROPERTY 365
+#define KW_MAKE_PROPERTY2 366
+#define KW_MAKE_SEQ 367
+#define KW_MAKE_SEQ_PROPERTY 368
+#define KW_MUTABLE 369
+#define KW_NAMESPACE 370
+#define KW_NEW 371
+#define KW_NOEXCEPT 372
+#define KW_NOEXCEPT_LPAREN 373
+#define KW_NULLPTR 374
+#define KW_OPERATOR 375
+#define KW_OVERRIDE 376
+#define KW_PRIVATE 377
+#define KW_PROTECTED 378
+#define KW_PUBLIC 379
+#define KW_REGISTER 380
+#define KW_REINTERPRET_CAST 381
+#define KW_RESTRICT 382
+#define KW_RETURN 383
+#define KW_SHORT 384
+#define KW_SIGNED 385
+#define KW_SIZEOF 386
+#define KW_STATIC 387
+#define KW_STATIC_ASSERT 388
+#define KW_STATIC_CAST 389
+#define KW_STRUCT 390
+#define KW_TEMPLATE 391
+#define KW_THREAD_LOCAL 392
+#define KW_THROW 393
+#define KW_TRUE 394
+#define KW_TRY 395
+#define KW_TYPEDEF 396
+#define KW_TYPEID 397
+#define KW_TYPENAME 398
+#define KW_UNDERLYING_TYPE 399
+#define KW_UNION 400
+#define KW_UNSIGNED 401
+#define KW_USING 402
+#define KW_VIRTUAL 403
+#define KW_VOID 404
+#define KW_VOLATILE 405
+#define KW_WCHAR_T 406
+#define KW_WHILE 407
+#define START_CPP 408
+#define START_CONST_EXPR 409
+#define START_TYPE 410
 
 /* Value type.  */
 
