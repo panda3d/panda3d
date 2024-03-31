@@ -603,10 +603,10 @@ close_stream() {
     avcodec_flush_buffers(_video_ctx);
 #endif
 
-    avcodec_close(_video_ctx);
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);
 #else
+    avcodec_close(_video_ctx);
     av_free(_video_ctx);
 #endif
   }

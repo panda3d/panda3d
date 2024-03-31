@@ -99,7 +99,15 @@ FfmpegAudioCursor(FfmpegAudio *src) :
 
   _audio_timebase = av_q2d(stream->time_base);
   _audio_rate = codecpar->sample_rate;
+
+  // As of libavformat version 60.25.100, the deprecated
+  // AVCodecParameters.channels has been removed.
+  // AVCodecParameters.ch_layout is available since version 59.18.101.
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(59, 18, 101)
+  _audio_channels = codecpar->ch_layout.nb_channels;
+#else
   _audio_channels = codecpar->channels;
+#endif /* LIBAVFORMAT_VERSION_INT */
 
   const AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == nullptr) {
@@ -138,10 +146,20 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     }
 
     _resample_ctx = swr_alloc();
+
+    // As of libavformat version 60.25.100, the deprecated
+    // AVCodecContext.channel_layout has been removed.
+    // AVCodecContext.ch_layout is available since version 59.18.101.
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(59, 18, 101)
+    av_opt_set_chlayout(_resample_ctx, "in_chlayout", &_audio_ctx->ch_layout, 0);
+    av_opt_set_chlayout(_resample_ctx, "out_chlayout", &_audio_ctx->ch_layout, 0);
+#else
     av_opt_set_int(_resample_ctx, "in_channel_count", _audio_channels, 0);
     av_opt_set_int(_resample_ctx, "out_channel_count", _audio_channels, 0);
     av_opt_set_int(_resample_ctx, "in_channel_layout", _audio_ctx->channel_layout, 0);
     av_opt_set_int(_resample_ctx, "out_channel_layout", _audio_ctx->channel_layout, 0);
+#endif /* LIBAVFORMAT_VERSION_INT */
+
     av_opt_set_int(_resample_ctx, "in_sample_rate", _audio_ctx->sample_rate, 0);
     av_opt_set_int(_resample_ctx, "out_sample_rate", _audio_ctx->sample_rate, 0);
     av_opt_set_sample_fmt(_resample_ctx, "in_sample_fmt", _audio_ctx->sample_fmt, 0);
@@ -155,7 +173,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
 #else
     ffmpeg_cat.error()
       << "Codec does not use signed 16-bit sample format, but support for libswresample has not been enabled.\n";
-#endif
+#endif /* HAVE_SWRESAMPLE */
   }
 
   _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
@@ -220,10 +238,10 @@ cleanup() {
     avcodec_flush_buffers(_audio_ctx);
 #endif
 
-    avcodec_close(_audio_ctx);
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_audio_ctx);
 #else
+    avcodec_close(_audio_ctx);
     av_free(_audio_ctx);
 #endif
   }
