@@ -2,10 +2,10 @@
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
-
 Panda3D
 =======
+
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200" />
 
 Panda3D is a game engine, a framework for 3D rendering and game development for
 Python and C++ programs.  Panda3D is open-source and free for any purpose,
