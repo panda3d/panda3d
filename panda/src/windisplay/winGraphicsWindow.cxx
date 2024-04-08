@@ -304,7 +304,9 @@ set_properties_now(WindowProperties &properties) {
       }
       if (do_fullscreen_switch(x_size, y_size)) {
         _properties.set_fullscreen(true);
+        _properties.set_size(x_size, y_size);
         properties.clear_size();
+        properties.clear_origin();
       } else {
         windisplay_cat.warning()
           << "Switching to fullscreen mode failed!\n";
@@ -950,7 +952,7 @@ do_fullscreen_switch(int x_size, int y_size) {
   SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, x_size, y_size,
     SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
-  handle_reshape();
+  set_size_and_recalc(x_size, y_size);
   return true;
 }
 
