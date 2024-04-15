@@ -290,6 +290,8 @@ class CommonFilters:
 
                     shader = settings.get("shader")
                     if shader:
+                        if type(shader) is str:
+                            shader = Shader.make(shader, Shader.SL_Cg)
                         quad.set_shader(shader)
 
                     shader_inputs = settings.get("shader_inputs")
