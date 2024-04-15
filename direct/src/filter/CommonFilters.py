@@ -17,7 +17,6 @@ These filters are written in the Cg shading language.
 # clunky approach.  - Josh
 from panda3d.core import VirtualFileSystem
 
-vfs: VirtualFileSystem = VirtualFileSystem.get_global_ptr()
 from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import AuxBitplaneAttrib, AntialiasAttrib
 from panda3d.core import Texture, Shader, ATSNone
@@ -89,6 +88,7 @@ void fshader(out float4 o_color : COLOR,
 }
 """
 
+vfs = VirtualFileSystem.get_global_ptr()
 
 class FilterConfig:
     pass
