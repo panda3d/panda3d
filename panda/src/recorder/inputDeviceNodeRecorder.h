@@ -70,12 +70,12 @@ private:
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter* manager, Datagram& dg);
-  virtual void write_recorder(BamWriter* manager, Datagram& dg);
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
   INLINE virtual int get_ref_count() const final { return ReferenceCount::get_ref_count(); };
   INLINE virtual void ref() const final { ReferenceCount::ref(); };
-  INLINE virtual bool unref() const final { return ReferenceCount::unref(); };
+  INLINE virtual bool unref() const { return ReferenceCount::unref(); };
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
@@ -91,13 +91,13 @@ public:
     DataNode::init_type();
     RecorderBase::init_type();
     register_type(_type_handle, "InputDeviceNodeRecorder",
-      DataNode::get_class_type(),
-      RecorderBase::get_class_type());
+                  DataNode::get_class_type(),
+                  RecorderBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() { init_type(); return get_class_type(); }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;
