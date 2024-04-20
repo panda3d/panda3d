@@ -45,7 +45,7 @@ public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
 
 protected:
-  static TypedWritable *make_DestTextureImage(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

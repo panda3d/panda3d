@@ -174,11 +174,6 @@ new_collector(int collector_index) {
   for (MacStatsGraph *graph : _graphs) {
     graph->new_collector(collector_index);
   }
-
-  // We might need to update our menus.
-  for (MacStatsChartMenu *chart_menu : _chart_menus) {
-    chart_menu->check_update();
-  }
 }
 
 /**
@@ -204,6 +199,8 @@ new_thread(int thread_index) {
  */
 void MacStatsMonitor::
 new_data(int thread_index, int frame_number) {
+  PStatMonitor::new_data(thread_index, frame_number);
+
   for (MacStatsGraph *graph : _graphs) {
     graph->new_data(thread_index, frame_number);
   }
@@ -355,9 +352,9 @@ get_collector_color(int collector_index, bool highlight) {
   }
 
   LRGBColor rgb = PStatMonitor::get_collector_color(collector_index);
-  rgb[0] = encode_sRGB_float(rgb[0]);
-  rgb[1] = encode_sRGB_float(rgb[1]);
-  rgb[2] = encode_sRGB_float(rgb[2]);
+  rgb[0] = encode_sRGB_float((float)rgb[0]);
+  rgb[1] = encode_sRGB_float((float)rgb[1]);
+  rgb[2] = encode_sRGB_float((float)rgb[2]);
 
   PN_stdfloat bright = rgb.dot(LRGBColor(0.2126, 0.7152, 0.0722));
   CGColorRef color = CGColorCreateGenericRGB(rgb[0], rgb[1], rgb[2], 1.0);

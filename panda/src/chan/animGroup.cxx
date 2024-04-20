@@ -290,8 +290,8 @@ complete_pointers(TypedWritable **p_list, BamReader *) {
 /**
  * Factory method to generate a AnimGroup object
  */
-TypedWritable* AnimGroup::
-make_AnimGroup(const FactoryParams &params) {
+TypedWritable *AnimGroup::
+make_from_bam(const FactoryParams &params) {
   AnimGroup *me = new AnimGroup;
   DatagramIterator scan;
   BamReader *manager;
@@ -306,5 +306,5 @@ make_AnimGroup(const FactoryParams &params) {
  */
 void AnimGroup::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_AnimGroup);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

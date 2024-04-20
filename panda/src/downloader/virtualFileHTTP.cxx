@@ -19,7 +19,7 @@
 
 #include <iterator>
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 using std::istream;
 using std::ostream;
@@ -140,7 +140,30 @@ open_read_file(bool auto_unwrap) const {
     return nullptr;
   }
 
+  strstream->seekg(0);
+
   return return_file(strstream, auto_unwrap);
+}
+
+/**
+ * Fills up the indicated string with the contents of the file, if it is a
+ * regular file.  Returns true on success, false otherwise.
+ */
+bool VirtualFileHTTP::
+read_file(string &result, bool auto_unwrap) const {
+  result = string();
+
+  if (_status_only) {
+    return false;
+  }
+
+  Ramfile ramfile;
+  if (!_channel->download_to_ram(&ramfile, false)) {
+    return false;
+  }
+
+  result = std::move(ramfile._data);
+  return true;
 }
 
 /**

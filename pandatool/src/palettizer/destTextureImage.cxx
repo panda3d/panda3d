@@ -123,7 +123,7 @@ to_power_2(int value) {
 void DestTextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_DestTextureImage);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -140,8 +140,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* DestTextureImage::
-make_DestTextureImage(const FactoryParams &params) {
+TypedWritable *DestTextureImage::
+make_from_bam(const FactoryParams &params) {
   DestTextureImage *me = new DestTextureImage;
   DatagramIterator scan;
   BamReader *manager;

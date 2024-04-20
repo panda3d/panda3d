@@ -36,6 +36,10 @@ add_component_library(p3net SYMBOL BUILDING_PANDA_NET
 target_link_libraries(p3net p3nativenet p3pipeline p3pandabase pandaexpress)
 target_interrogate(p3net ALL)
 
+# These are temporarily built with -module panda3d.net, even though they are
+# still part of panda3d.core, see #1466
+set_target_properties(p3net PROPERTIES IGATE_MODULE panda3d.net)
+
 if(WIN32)
   target_link_libraries(p3net iphlpapi.lib)
 endif()

@@ -9,6 +9,7 @@ set(P3PNMIMAGE_HEADERS
   pnmPainter.h pnmPainter.I
   pnmReader.I
   pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h
+  pnmReaderEmscripten.h
   ppmcmap.h
 )
 
@@ -24,6 +25,7 @@ set(P3PNMIMAGE_SOURCES
   pnmFileTypeRegistry.cxx pnmImage.cxx pnmImageHeader.cxx
   pnmPainter.cxx
   pnmReader.cxx pnmWriter.cxx pnmimage_base.cxx
+  pnmReaderEmscripten.cxx
   ppmcmap.cxx
 )
 

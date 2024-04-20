@@ -31,7 +31,7 @@ extern Dtool_PyTypedObject Dtool_TypeHandle;
 /**
  * Class that upcalls to the parent class when write_datagram is called.
  */
-class TypedWritableProxy : public TypedWritable {
+class TypedWritableProxy : public TypedWritable, public DtoolProxy {
 public:
   ~TypedWritableProxy() {
   }
@@ -123,10 +123,6 @@ public:
   virtual TypeHandle force_init_type() override {
     return _type;
   }
-
-public:
-  PyObject *_self;
-  TypeHandle _type;
 };
 
 /**
@@ -149,8 +145,7 @@ wrap_typed_writable(void *from_this, PyTypeObject *from_type) {
   }
 
   nassertr(to_this->_self != nullptr, nullptr);
-  Py_INCREF(to_this->_self);
-  return to_this->_self;
+  return Py_NewRef(to_this->_self);
 }
 
 /**
@@ -212,8 +207,8 @@ __new__(PyTypeObject *cls) {
 
   // Make sure that the bindings know how to obtain a wrapper for this type.
   TypeRegistry *registry = TypeRegistry::ptr();
-  registry->record_python_type(*handle, cls, &wrap_typed_writable);
-  Py_INCREF(cls);
+  PyTypeObject *cls_ref = (PyTypeObject *)Py_NewRef((PyObject *)cls);
+  registry->record_python_type(*handle, cls_ref, &wrap_typed_writable);
 
   // Note that we don't increment the reference count here, because that would
   // create a memory leak.  The TypedWritableProxy gets deleted when the Python

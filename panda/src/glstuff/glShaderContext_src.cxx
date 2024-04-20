@@ -1231,7 +1231,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._part[0] = Shader::SMO_attr_fogcolor;
 
         if (param_type == GL_FLOAT_VEC3) {
-          bind._piece = Shader::SMP_vec4;
+          bind._piece = Shader::SMP_vec3;
         } else if (param_type == GL_FLOAT_VEC4) {
           bind._piece = Shader::SMP_vec4;
         } else {
@@ -1256,7 +1256,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 13;
+          bind._offset = 1;
         } else {
           GLCAT.error()
             << "p3d_Fog.start should be float\n";
@@ -1268,7 +1268,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 14;
+          bind._offset = 2;
         } else {
           GLCAT.error()
             << "p3d_Fog.end should be float\n";
@@ -1280,7 +1280,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_float;
-          bind._offset = 15;
+          bind._offset = 3;
         } else {
           GLCAT.error()
             << "p3d_Fog.scale should be float\n";
@@ -3296,6 +3296,7 @@ glsl_compile_and_link() {
 
   // If we requested to retrieve the shader, we should indicate that before
   // linking.
+#ifndef __EMSCRIPTEN__
   bool retrieve_binary = false;
   if (_glgsg->_supports_get_program_binary) {
     retrieve_binary = _shader->get_cache_compiled_shader();
@@ -3308,6 +3309,7 @@ glsl_compile_and_link() {
 
     _glgsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
   }
+#endif  // !__EMSCRIPTEN__
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -3328,6 +3330,7 @@ glsl_compile_and_link() {
   // Report any warnings.
   glsl_report_program_errors(_glsl_program, false);
 
+#ifndef __EMSCRIPTEN__
   if (retrieve_binary) {
     GLint length = 0;
     _glgsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
@@ -3358,6 +3361,7 @@ glsl_compile_and_link() {
     }
 #endif  // NDEBUG
   }
+#endif  // !__EMSCRIPTEN__
 
   _glgsg->report_my_gl_errors();
   return valid;

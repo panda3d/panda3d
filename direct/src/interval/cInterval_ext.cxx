@@ -24,7 +24,7 @@ extern struct Dtool_PyTypedObject Dtool_CInterval;
 /**
  * Yields continuously until the interval is done.
  */
-static PyObject *gen_next(PyObject *self) {
+static PyObject *gen_next_c_interval(PyObject *self) {
   const CInterval *ival;
   if (!Dtool_Call_ExtractThisPointer(self, Dtool_CInterval, (void **)&ival)) {
     return nullptr;
@@ -32,8 +32,7 @@ static PyObject *gen_next(PyObject *self) {
 
   if (ival->get_state() != CInterval::S_final) {
     // Try again next frame.
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
   else {
     PyErr_SetNone(PyExc_StopIteration);
@@ -55,7 +54,7 @@ __await__(PyObject *self) {
   // we call this via Python.
   PyObject *result = PyObject_CallMethod(self, "start", nullptr);
   Py_XDECREF(result);
-  return Dtool_NewGenerator(self, &gen_next);
+  return Dtool_NewGenerator(self, &gen_next_c_interval);
 }
 
 #endif  // HAVE_PYTHON

@@ -453,6 +453,9 @@ std::ostream &operator << (std::ostream &out, HTTPChannel::State state);
 
 #include "httpChannel.I"
 
+#elif defined(__EMSCRIPTEN__)
+#include "httpChannel_emscripten.h"
+
 #endif  // HAVE_OPENSSL
 
 #endif

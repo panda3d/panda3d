@@ -84,8 +84,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
       future->get_result(ptr, ref_ptr);
 
       if (ptr == nullptr) {
-        Py_INCREF(Py_None);
-        return Py_None;
+        return Py_NewRef(Py_None);
       }
 
       TypeHandle type = ptr->get_type();
@@ -133,7 +132,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
 /**
  * Yields continuously until the task has finished.
  */
-static PyObject *gen_next(PyObject *self) {
+static PyObject *gen_next_asyncfuture(PyObject *self) {
   const AsyncFuture *future = nullptr;
   if (!Dtool_Call_ExtractThisPointer(self, Dtool_AsyncFuture, (void **)&future)) {
     return nullptr;
@@ -141,9 +140,9 @@ static PyObject *gen_next(PyObject *self) {
 
   if (!future->done()) {
     // Continue awaiting the result.
-    Py_INCREF(self);
-    return self;
-  } else {
+    return Py_NewRef(self);
+  }
+  else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
       PyErr_SetObject(PyExc_StopIteration, result);
@@ -159,7 +158,7 @@ static PyObject *gen_next(PyObject *self) {
  */
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
-  return Dtool_NewGenerator(self, &gen_next);
+  return Dtool_NewGenerator(self, &gen_next_asyncfuture);
 }
 
 /**
@@ -323,8 +322,7 @@ add_done_callback(PyObject *self, PyObject *fn) {
 
   _this->add_waiting_task(task);
 
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**

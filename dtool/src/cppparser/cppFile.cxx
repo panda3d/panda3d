@@ -31,37 +31,6 @@ CPPFile(const Filename &filename, const Filename &filename_as_referenced,
   _filename_as_referenced.set_text();
 }
 
-
-/**
- *
- */
-CPPFile::
-CPPFile(const CPPFile &copy) :
-  _filename(copy._filename),
-  _filename_as_referenced(copy._filename_as_referenced),
-  _source(copy._source),
-  _pragma_once(copy._pragma_once)
-{
-}
-
-/**
- *
- */
-void CPPFile::
-operator = (const CPPFile &copy) {
-  _filename = copy._filename;
-  _filename_as_referenced = copy._filename_as_referenced;
-  _source = copy._source;
-  _pragma_once = copy._pragma_once;
-}
-
-/**
- *
- */
-CPPFile::
-~CPPFile() {
-}
-
 /**
  * Returns true if the file appears to be a C or C++ source code file based on
  * its extension.  That is, returns true if the filename ends in .c, .C, .cc,

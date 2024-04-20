@@ -34,6 +34,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <set>
 
 using std::cerr;
 using std::string;
@@ -44,6 +45,132 @@ using std::string;
 // visibility is prone to error, since the parser might be several tokens
 // behind the preprocessor.)
 static CPPVisibility preprocessor_vis = V_public;
+
+// Don't forget to update CPPToken::output() when adding entries.
+static const std::unordered_map<std::string, int> keywords = {
+  {"alignas", KW_ALIGNAS},
+  {"alignof", KW_ALIGNOF},
+  {"__alignof", KW_ALIGNOF},
+  {"__alignof__", KW_ALIGNOF},
+  {"auto", KW_AUTO},
+  {"__begin_publish", KW_BEGIN_PUBLISH},
+  {"__blocking", KW_BLOCKING},
+  {"bool", KW_BOOL},
+  {"__builtin_va_list", KW_BUILTIN_VA_LIST},
+  {"catch", KW_CATCH},
+  {"char", KW_CHAR},
+  {"char8_t", KW_CHAR8_T},
+  {"char16_t", KW_CHAR16_T},
+  {"char32_t", KW_CHAR32_T},
+  {"class", KW_CLASS},
+  {"const", KW_CONST},
+  {"__const", KW_CONST},
+  {"__const__", KW_CONST},
+  {"consteval", KW_CONSTEVAL},
+  {"constexpr", KW_CONSTEXPR},
+  {"constinit", KW_CONSTINIT},
+  {"const_cast", KW_CONST_CAST},
+  {"decltype", KW_DECLTYPE},
+  {"default", KW_DEFAULT},
+  {"delete", KW_DELETE},
+  {"double", KW_DOUBLE},
+  {"dynamic_cast", KW_DYNAMIC_CAST},
+  {"else", KW_ELSE},
+  {"__end_publish", KW_END_PUBLISH},
+  {"enum", KW_ENUM},
+  {"extern", KW_EXTERN},
+  {"__extension", KW_EXTENSION},
+  {"explicit", KW_EXPLICIT},
+  {"__published", KW_PUBLISHED},
+  {"false", KW_FALSE},
+  {"final", KW_FINAL},
+  {"float", KW_FLOAT},
+  {"friend", KW_FRIEND},
+  {"for", KW_FOR},
+  {"goto", KW_GOTO},
+  {"__has_virtual_destructor", KW_HAS_VIRTUAL_DESTRUCTOR},
+  {"if", KW_IF},
+  {"inline", KW_INLINE},
+  {"__inline", KW_INLINE},
+  {"__inline__", KW_INLINE},
+  {"int", KW_INT},
+  {"__is_abstract", KW_IS_ABSTRACT},
+  {"__is_base_of", KW_IS_BASE_OF},
+  {"__is_class", KW_IS_CLASS},
+  {"__is_constructible", KW_IS_CONSTRUCTIBLE},
+  {"__is_convertible_to", KW_IS_CONVERTIBLE_TO},
+  {"__is_destructible", KW_IS_DESTRUCTIBLE},
+  {"__is_empty", KW_IS_EMPTY},
+  {"__is_enum", KW_IS_ENUM},
+  {"__is_final", KW_IS_FINAL},
+  {"__is_fundamental", KW_IS_FUNDAMENTAL},
+  {"__is_pod", KW_IS_POD},
+  {"__is_polymorphic", KW_IS_POLYMORPHIC},
+  {"__is_standard_layout", KW_IS_STANDARD_LAYOUT},
+  {"__is_trivial", KW_IS_TRIVIAL},
+  {"__is_trivially_copyable", KW_IS_TRIVIALLY_COPYABLE},
+  {"__is_union", KW_IS_UNION},
+  {"long", KW_LONG},
+  {"__make_map_keys_seq", KW_MAKE_MAP_KEYS_SEQ},
+  {"__make_map_property", KW_MAKE_MAP_PROPERTY},
+  {"__make_property", KW_MAKE_PROPERTY},
+  {"__make_property2", KW_MAKE_PROPERTY2},
+  {"__make_seq", KW_MAKE_SEQ},
+  {"__make_seq_property", KW_MAKE_SEQ_PROPERTY},
+  {"mutable", KW_MUTABLE},
+  {"namespace", KW_NAMESPACE},
+  {"noexcept", KW_NOEXCEPT},
+  {"nullptr", KW_NULLPTR},
+  {"new", KW_NEW},
+  {"operator", KW_OPERATOR},
+  {"override", KW_OVERRIDE},
+  {"private", KW_PRIVATE},
+  {"protected", KW_PROTECTED},
+  {"public", KW_PUBLIC},
+  {"register", KW_REGISTER},
+  {"reinterpret_cast", KW_REINTERPRET_CAST},
+  //{"restrict", KW_RESTRICT},
+  {"__restrict", KW_RESTRICT},
+  {"__restrict__", KW_RESTRICT},
+  {"return", KW_RETURN},
+  {"short", KW_SHORT},
+  {"signed", KW_SIGNED},
+  {"sizeof", KW_SIZEOF},
+  {"static", KW_STATIC},
+  {"static_assert", KW_STATIC_ASSERT},
+  {"static_cast", KW_STATIC_CAST},
+  {"struct", KW_STRUCT},
+  {"template", KW_TEMPLATE},
+  {"thread_local", KW_THREAD_LOCAL},
+  {"throw", KW_THROW},
+  {"true", KW_TRUE},
+  {"try", KW_TRY},
+  {"typedef", KW_TYPEDEF},
+  {"typeid", KW_TYPEID},
+  {"typename", KW_TYPENAME},
+  {"__underlying_type", KW_UNDERLYING_TYPE},
+  {"union", KW_UNION},
+  {"unsigned", KW_UNSIGNED},
+  {"using", KW_USING},
+  {"virtual", KW_VIRTUAL},
+  {"void", KW_VOID},
+  {"volatile", KW_VOLATILE},
+  {"wchar_t", KW_WCHAR_T},
+  {"while", KW_WHILE},
+
+  // These are alternative ways to refer to built-in operators.
+  {"and", ANDAND},
+  {"and_eq", ANDEQUAL},
+  {"bitand", '&'},
+  {"bitor", '|'},
+  {"compl", '~'},
+  {"not", '!'},
+  {"not_eq", NECOMPARE},
+  {"or", OROR},
+  {"or_eq", OREQUAL},
+  {"xor", '^'},
+  {"xor_eq", XOREQUAL},
+};
 
 static int
 hex_val(int c) {
@@ -91,12 +218,13 @@ trim_blanks(const string &str) {
 CPPPreprocessor::InputFile::
 InputFile() {
   _in = nullptr;
-  _ignore_manifest = nullptr;
+  _manifest = nullptr;
   _line_number = 0;
   _col_number = 0;
   _next_line_number = 1;
   _next_col_number = 1;
   _lock_position = false;
+  _ignore_manifest = false;
 }
 
 /**
@@ -231,6 +359,65 @@ CPPPreprocessor() {
 }
 
 /**
+ *
+ */
+bool CPPPreprocessor::
+preprocess_file(const Filename &filename) {
+  Filename canonical(filename);
+  canonical.make_canonical();
+
+  CPPFile file(canonical, filename, CPPFile::S_local);
+
+  // Don't read it if we included it before and it had #pragma once.
+  ParsedFiles::iterator it = _parsed_files.find(file);
+  if (it != _parsed_files.end() && it->_pragma_once) {
+    // But mark it as local.
+    it->_source = CPPFile::S_local;
+    return true;
+  }
+
+  if (!init_cpp(file)) {
+    std::cerr << "Unable to read " << filename << "\n";
+    return false;
+  }
+
+  int line_number = 1;
+  int nesting = 0;
+  bool next_space = false;
+  CPPToken token = get_next_token();
+  while (!token.is_eof()) {
+    if (token._token == '}') {
+      nesting -= 1;
+    }
+    if (token._lloc.first_line > line_number) {
+      // Token is on a different line, so insert a newline.
+      std::cout << "\n";
+      line_number = token._lloc.first_line;
+      indent(std::cout, nesting * 2);
+    }
+    else if (next_space && token._token != ';' && token._token != ':' && token._token != ',' && token._token != ')') {
+      // The above tokens never need a preceding space
+      std::cout << " ";
+    }
+    if (token._token == '{') {
+      nesting += 1;
+    }
+    next_space = (token._token != '(' && token._token != '~');
+    token.output_code(std::cout);
+
+    CPPToken next_token = get_next_token();
+    if (next_token._lloc.file != token._lloc.file) {
+      // Switched to a new file, reset the line number.
+      line_number = 0;
+    }
+    token = std::move(next_token);
+  }
+  std::cout << "\n";
+
+  return get_error_count() == 0;
+}
+
+/**
  * Sets the verbosity level of the parser.  At 0, no warnings will be
  * reported; at 1 or higher, expect to get spammed.
  */
@@ -252,10 +439,11 @@ get_verbose() const {
  */
 void CPPPreprocessor::
 copy_filepos(const CPPPreprocessor &other) {
-  assert(!_files.empty());
-  _files.back()._file = other.get_file();
-  _files.back()._line_number = other.get_line_number();
-  _files.back()._col_number = other.get_col_number();
+  InputFile *infile = _infile;
+  assert(infile != nullptr);
+  infile->_file = other.get_file();
+  infile->_line_number = other.get_line_number();
+  infile->_col_number = other.get_col_number();
 }
 
 /**
@@ -263,10 +451,12 @@ copy_filepos(const CPPPreprocessor &other) {
  */
 CPPFile CPPPreprocessor::
 get_file() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_file;
+  } else {
     return CPPFile("");
   }
-  return _files.back()._file;
 }
 
 /**
@@ -274,10 +464,12 @@ get_file() const {
  */
 int CPPPreprocessor::
 get_line_number() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_line_number;
+  } else {
     return 0;
   }
-  return _files.back()._line_number;
 }
 
 /**
@@ -285,10 +477,12 @@ get_line_number() const {
  */
 int CPPPreprocessor::
 get_col_number() const {
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (infile != nullptr) {
+    return infile->_col_number;
+  } else {
     return 0;
   }
-  return _files.back()._col_number;
 }
 
 /**
@@ -299,7 +493,7 @@ get_next_token() {
 
 #ifdef CPP_VERBOSE_LEX
   CPPToken tok = get_next_token0();
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << _token_index++ << ". " << tok << "\n";
   return tok;
 }
@@ -314,7 +508,7 @@ get_next_token0() {
 
   CPPToken token(0);
   if (!_saved_tokens.empty()) {
-    token = _saved_tokens.back();
+    token = std::move(_saved_tokens.back());
     _saved_tokens.pop_back();
   } else {
     token = internal_get_next_token();
@@ -351,8 +545,8 @@ get_next_token0() {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
-      } else {
-        error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
+      //} else {
+      //  error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
       }
     }
 
@@ -459,7 +653,7 @@ peek_next_token() {
  *
  */
 void CPPPreprocessor::
-warning(const string &message) {
+warning(const string &message) const {
   if (_verbose < 2) {
     return;
   }
@@ -478,10 +672,10 @@ warning(const string &message) {
  *
  */
 void CPPPreprocessor::
-warning(const string &message, const YYLTYPE &loc) {
+warning(const string &message, const YYLTYPE &loc) const {
   if (_verbose >= 2) {
     if (_verbose >= 3) {
-      indent(cerr, _files.size() * 2);
+      indent(cerr, get_file_depth() * 2);
     }
 
     if (!loc.file.empty()) {
@@ -505,7 +699,7 @@ warning(const string &message, const YYLTYPE &loc) {
  *
  */
 void CPPPreprocessor::
-error(const string &message) {
+error(const string &message) const {
   int line = get_line_number();
   int col = get_col_number();
   YYLTYPE loc;
@@ -521,7 +715,7 @@ error(const string &message) {
  *
  */
 void CPPPreprocessor::
-error(const string &message, const YYLTYPE &loc) {
+error(const string &message, const YYLTYPE &loc) const {
   if (_state == S_nested || _state == S_end_nested) {
     // Don't report or log errors in the nested state.  These will be reported
     // when the nesting level collapses.
@@ -530,7 +724,7 @@ error(const string &message, const YYLTYPE &loc) {
 
   if (_verbose >= 1) {
     if (_verbose >= 3) {
-      indent(cerr, _files.size() * 2);
+      indent(cerr, get_file_depth() * 2);
     }
 
     if (!loc.file.empty()) {
@@ -547,6 +741,34 @@ error(const string &message, const YYLTYPE &loc) {
     cerr << " error: " << message << "\n";
     show_line(loc);
 
+    InputFile *infile = _infile;
+    if (infile != nullptr && !loc.file.empty()) {
+      // Add all the expansions to a vector for easy reverse iteration.
+      std::vector<InputFile *> infiles;
+      while (infile != nullptr && infile->_file == loc.file && infile->_manifest != nullptr) {
+        infiles.push_back(infile);
+        infile = infile->_parent;
+      }
+      if (!infiles.empty()) {
+        auto rit = infiles.rbegin();
+        if (_verbose >= 3) {
+          cerr << "Expansion of " << (*rit)->_manifest->_name << ":\n";
+          while (rit != infiles.rend()) {
+            cerr << " -> " << trim_blanks((*rit)->_input) << "\n";
+            ++rit;
+          }
+        }
+        else {
+          cerr << "with " << (*rit)->_manifest->_name;
+          if ((*rit)->_manifest->_has_parameters) {
+            cerr << "()";
+          }
+          cerr << " expanded to: " << trim_blanks(_infile->_input) << "\n";
+        }
+        cerr << std::endl;
+      }
+    }
+
     if (_error_abort) {
       cerr << "Aborting.\n";
       abort();
@@ -559,14 +781,14 @@ error(const string &message, const YYLTYPE &loc) {
  * Shows the indicated line, useful for error messages.
  */
 void CPPPreprocessor::
-show_line(const YYLTYPE &loc) {
+show_line(const YYLTYPE &loc) const {
   if (loc.file._filename.empty()) {
     return;
   }
 
   int indent_level = 0;
   if (_verbose >= 3) {
-    indent_level = _files.size() * 2;
+    indent_level = get_file_depth() * 2;
   }
 
   // Seek to the offending line in the file.
@@ -705,7 +927,7 @@ init_const_expr(const string &expr) {
   _state = S_normal;
   _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
 
-  return push_string(expr, false);
+  return push_string(expr);
 }
 
 /**
@@ -716,7 +938,7 @@ init_type(const string &type) {
   _state = S_normal;
   _saved_tokens.push_back(CPPToken(START_TYPE));
 
-  return push_string(type, false);
+  return push_string(type);
 }
 
 /**
@@ -725,25 +947,26 @@ init_type(const string &type) {
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
   if (_verbose >= 3) {
-    indent(cerr, _files.size() * 2)
+    indent(cerr, get_file_depth() * 2)
       << "Reading " << file << "\n";
   }
   assert(_last_c == 0);
 
-  _files.push_back(InputFile());
-  InputFile &infile = _files.back();
+  InputFile *infile = new InputFile;
+  if (infile->open(file)) {
+    infile->_parent = _infile;
+    _infile = infile;
 
-  if (infile.open(file)) {
     // Record the fact that we opened the file for the benefit of user code.
     _parsed_files.insert(file);
 
-    infile._prev_last_c = _last_c;
+    infile->_prev_last_c = _last_c;
     _last_c = '\0';
     _start_of_line = true;
     return true;
   }
 
-  _files.pop_back();
+  delete infile;
   return false;
 }
 
@@ -751,126 +974,170 @@ push_file(const CPPFile &file) {
  *
  */
 bool CPPPreprocessor::
-push_string(const string &input, bool lock_position) {
+push_string(const string &input) {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Pushing to string \"" << input
-    << "\"\nlock_position = " << lock_position << "\n";
+    << "\"\n";
 #endif
-  CPPFile first_file = get_file();
-  int first_line = get_line_number();
-  int first_col = get_col_number();
 
-  _files.push_back(InputFile());
-  InputFile &infile = _files.back();
-
-  if (infile.connect_input(input)) {
-    if (lock_position) {
-      infile._file = first_file;
-      infile._line_number = first_line;
-      infile._col_number = first_col;
-      infile._lock_position = true;
-    }
-
-    infile._prev_last_c = _last_c;
+  InputFile *infile = new InputFile;
+  if (infile->connect_input(input)) {
+    infile->_prev_last_c = _last_c;
+    infile->_parent = _infile;
+    _infile = infile;
     _last_c = '\0';
     return true;
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Unable to read string\n";
 #endif
 
-  _files.pop_back();
+  delete infile;
   return false;
 }
 
 /**
- * Given a string, expand all manifests within the string and return the new
- * string.
+ *
  */
-string CPPPreprocessor::
-expand_manifests(const string &input_expr, bool expand_undefined,
-                 const YYLTYPE &loc) {
-  // Get a copy of the expression string we can modify.
-  string expr = input_expr;
+bool CPPPreprocessor::
+push_expansion(const string &input, const CPPManifest *manifest, const YYLTYPE &loc) {
+#ifdef CPP_VERBOSE_LEX
+  indent(cerr, get_file_depth() * 2)
+    << "Pushing to expansion \"" << input
+    << "\"\n";
+#endif
 
-  // Repeatedly scan the expr for any manifest names or defined() function.
+  InputFile *infile = new InputFile;
+  if (infile->connect_input(input)) {
+    infile->_manifest = manifest;
+    infile->_file = loc.file;
+    infile->_line_number = loc.first_line;
+    infile->_col_number = loc.first_column;
+    infile->_lock_position = true;
 
-  bool manifest_found;
-  do {
-    manifest_found = false;
-    size_t p = 0;
-    while (p < expr.size()) {
-      if (isalpha(expr[p]) || expr[p] == '_') {
-        size_t q = p;
-        while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-          p++;
-        }
-        string ident = expr.substr(q, p - q);
-
-        // Here's an identifier.  Is it "defined"?
-        if (ident == "defined") {
-          expand_defined_function(expr, q, p);
-        } else if (expand_undefined && ident == "__has_include") {
-          expand_has_include_function(expr, q, p, loc);
-        } else {
-          // Is it a manifest?
-          Manifests::const_iterator mi = _manifests.find(ident);
-          if (mi != _manifests.end()) {
-            const CPPManifest *manifest = (*mi).second;
-            expand_manifest_inline(expr, q, p, manifest);
-            manifest_found = true;
-
-          } else if (ident == "__FILE__") {
-            // Special case: this is a dynamic definition.
-            string file = string("\"") + loc.file._filename_as_referenced.get_fullpath() + "\"";
-            expr = expr.substr(0, q) + file + expr.substr(p);
-            p = q + file.size();
-            manifest_found = true;
-
-          } else if (ident == "__LINE__") {
-            // So is this.
-            string line = format_string(loc.first_line);
-            expr = expr.substr(0, q) + line + expr.substr(p);
-            p = q + line.size();
-            manifest_found = true;
-
-          } else if (expand_undefined && ident != "true" && ident != "false") {
-            // It is not found.  Expand it to 0, but only if we are currently
-            // parsing an #if expression.
-            expr = expr.substr(0, q) + "0" + expr.substr(p);
-            p = q + 1;
-          }
-        }
-      } else if (expr[p] == '\'' || expr[p] == '"') {
-        // Skip the next part until we find a closing quotation mark.
-        char quote = expr[p];
-        p++;
-        while (p < expr.size() && expr[p] != quote) {
-          if (expr[p] == '\\') {
-            // This might be an escaped quote.  Skip an extra char.
-            p++;
-          }
-          p++;
-        }
-        if (p >= expr.size()) {
-          // Unclosed string.
-          warning("missing terminating " + string(1, quote) + " character", loc);
-        }
-        p++;
-      } else {
-        p++;
-      }
+    if (!manifest->_has_parameters) {
+      // If the manifest does not use arguments, then disallow recursive
+      // expansion.
+      infile->_ignore_manifest = true;
     }
 
-    // If we expanded any manifests at all that time, then go back through the
-    // string and look again--we might have a manifest that expands to another
-    // manifest.
-  } while (manifest_found);
+    infile->_prev_last_c = _last_c;
+    infile->_parent = _infile;
+    _infile = infile;
+    _last_c = '\0';
+    return true;
+  }
 
-  return expr;
+#ifdef CPP_VERBOSE_LEX
+  indent(cerr, get_file_depth() * 2)
+    << "Unable to read expansion\n";
+#endif
+
+  delete infile;
+  return false;
+}
+
+/**
+ * Given a string, expand all manifests within the string.
+ */
+void CPPPreprocessor::
+expand_manifests(string &expr, bool expand_undefined,
+                 const CPPManifest::Ignores &ignores) const {
+  size_t p = 0;
+  while (p < expr.size()) {
+    if (isalpha(expr[p]) || expr[p] == '_') {
+      size_t q = p;
+      while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+        p++;
+      }
+      string ident = expr.substr(q, p - q);
+
+      // Here's an identifier.  Is it "defined"?
+      if (ident == "defined") {
+        expand_defined_function(expr, q, p);
+      }
+      else if (expand_undefined && ident == "__has_include") {
+        expand_has_include_function(expr, q, p);
+      }
+      else if (ident == "L" && p < expr.size() && (expr[p] == '\'' || expr[p] == '\"')) {
+        // Special exception for the wide string literal suffix, which is
+        // never expanded.
+      }
+      else {
+        // Is it a manifest?
+        Manifests::const_iterator mi = _manifests.find(ident);
+        if (mi != _manifests.end() && ignores.count((*mi).second) == 0) {
+          const CPPManifest *manifest = (*mi).second;
+          vector_string args;
+          if (manifest->_has_parameters) {
+            // If it's not followed by a parenthesis, don't expand it.
+            while (p < expr.size() && isspace(expr[p])) {
+              p++;
+            }
+            if (p >= expr.size() || expr[p] != '(') {
+              continue;
+            }
+
+            manifest->extract_args(args, expr, p);
+          }
+
+          // Don't consider this manifest when expanding the arguments or
+          // result, to prevent recursion.
+          CPPManifest::Ignores nested_ignores(ignores);
+          nested_ignores.insert(manifest);
+
+          string result = manifest->expand(args, expand_undefined, nested_ignores);
+          expand_manifests(result, expand_undefined, nested_ignores);
+
+          expr = expr.substr(0, q) + result + expr.substr(p);
+          p = q + result.size();
+        }
+        else if (ident == "__FILE__") {
+          // Special case: this is a dynamic definition.
+          CPPFile file = get_file();
+          string result = string("\"") + file._filename_as_referenced.get_fullpath() + "\"";
+          expr = expr.substr(0, q) + result + expr.substr(p);
+          p = q + result.size();
+
+        }
+        else if (ident == "__LINE__") {
+          // So is this.
+          string line = format_string(get_line_number());
+          expr = expr.substr(0, q) + line + expr.substr(p);
+          p = q + line.size();
+        }
+        else if (expand_undefined && ident != "true" && ident != "false") {
+          // It is not found.  Expand it to 0, but only if we are currently
+          // parsing an #if expression.
+          expr = expr.substr(0, q) + "0" + expr.substr(p);
+          p = q + 1;
+        }
+      }
+    }
+    else if (expr[p] == '\'' || expr[p] == '"') {
+      // Skip the next part until we find a closing quotation mark.
+      char quote = expr[p];
+      p++;
+      while (p < expr.size() && expr[p] != quote) {
+        if (expr[p] == '\\') {
+          // This might be an escaped quote.  Skip an extra char.
+          p++;
+        }
+        p++;
+      }
+      if (p >= expr.size()) {
+        // Unclosed string.
+        warning("missing terminating " + string(1, quote) + " character");
+      }
+      p++;
+    }
+    else {
+      p++;
+    }
+  }
 }
 
 /**
@@ -883,7 +1150,8 @@ expand_manifests(const string &input_expr, bool expand_undefined,
 CPPExpression *CPPPreprocessor::
 parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope, const YYLTYPE &loc) {
-  string expr = expand_manifests(input_expr, false, loc);
+  string expr = input_expr;
+  expand_manifests(expr, false);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1389,7 +1657,7 @@ process_directive(int c) {
   loc.last_column = 0;
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "#" << command << " " << args << "\n";
 #endif
 
@@ -1456,6 +1724,9 @@ get_preprocessor_args(int c, string &args) {
   // Following the command, the rest of the line, as well as any text on
   // successive lines, is part of the arguments to the command.
 
+  // Check for comments first.
+  c = skip_comment(c);
+
   while (c != EOF && c != '\n') {
     if (c == '\\') {
       int next_c = get();
@@ -1489,7 +1760,7 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
   if (args.empty()) {
     warning("Ignoring empty #define directive", loc);
   } else {
-    CPPManifest *manifest = new CPPManifest(args, loc);
+    CPPManifest *manifest = new CPPManifest(*this, args, loc);
     manifest->_vis = preprocessor_vis;
     if (!manifest->_has_parameters) {
       string expr_string = manifest->expand();
@@ -1504,8 +1775,10 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
     if (!result.second) {
       // There was already a macro with this name.  Delete the old.
       CPPManifest *other = result.first->second;
-      warning("redefinition of macro '" + manifest->_name + "'", loc);
-      warning("previous definition is here", other->_loc);
+      if (!manifest->is_equal(other)) {
+        warning("redefinition of macro '" + manifest->_name + "'", loc);
+        warning("previous definition is here", other->_loc);
+      }
       result.first->second = manifest;
     }
   }
@@ -1554,7 +1827,8 @@ handle_ifndef_directive(const string &args, const YYLTYPE &loc) {
 void CPPPreprocessor::
 handle_if_directive(const string &args, const YYLTYPE &loc) {
   // When expanding manifests, we should replace unknown macros with 0.
-  string expr = expand_manifests(args, true, loc);
+  string expr = args;
+  expand_manifests(expr, true);
 
   int expression_result = 0;
   CPPExpressionParser ep(current_scope, global_scope);
@@ -1599,14 +1873,14 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   // filter out quotes and angle brackets properly, we'll only expand
   // manifests if we don't begin with a quote or bracket.
   if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
-    expr = expand_manifests(expr, false, loc);
+    expand_manifests(expr, false);
   }
 
   if (!expr.empty()) {
     if (expr[0] == '"' && expr[expr.size() - 1] == '"') {
       filename = expr.substr(1, expr.size() - 2);
 
-      if (_files.size() == 1) {
+      if (_infile->_parent == nullptr) {
         // If we're currently processing a top-level file, record the include
         // directive.  We don't need to record includes from included files.
         _quote_includes.insert(filename);
@@ -1620,7 +1894,7 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
         angle_quotes = true;
       }
 
-      if (_files.size() == 1) {
+      if (_infile->_parent == nullptr) {
         // If we're currently processing a top-level file, record the include
         // directive.  We don't need to record includes from included files.
         _angle_includes.insert(filename);
@@ -1777,7 +2051,7 @@ skip_false_if_block(bool consider_elifs) {
  * Returns true if the given manifest is defined.
  */
 bool CPPPreprocessor::
-is_manifest_defined(const string &manifest_name) {
+is_manifest_defined(const string &manifest_name) const {
   Manifests::const_iterator mi = _manifests.find(manifest_name);
   if (mi != _manifests.end()) {
     return true;
@@ -1797,7 +2071,7 @@ is_manifest_defined(const string &manifest_name) {
  * Locates the given filename.  Changes the first argument to the full path.
  */
 bool CPPPreprocessor::
-find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) {
+find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) const {
   // Now look for the filename.  If we didn't use angle quotes, look first in
   // the current directory.
   if (!angle_quotes && filename.exists()) {
@@ -1956,11 +2230,11 @@ get_identifier(int c) {
       }
       if (c == '(') {
         // It is followed by a parenthesis, so we can expand this.
-        return expand_manifest(manifest);
+        return expand_manifest(manifest, loc);
       }
     } else {
       // Non-function-like macros are always expanded.
-      return expand_manifest(manifest);
+      return expand_manifest(manifest, loc);
     }
   }
   if (name == "__FILE__") {
@@ -1973,7 +2247,8 @@ get_identifier(int c) {
   }
 
   // Check for keywords.
-  int kw = check_keyword(name);
+  auto kwit = keywords.find(name);
+  int kw = (kwit != keywords.end()) ? (*kwit).second : 0;
 
   // Update our internal visibility flag.
   switch (kw) {
@@ -2058,6 +2333,17 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   // Find the literal operator for this literal.
   CPPIdentifier *ident = new CPPIdentifier("operator \"\" " + suffix);
   CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope, this);
+
+  if (decl == nullptr) {
+    // Special case to handle C code, which allows a macro to directly follow
+    // a string, like "str"SUFFIX.  In this case, it becomes a separate token.
+    Manifests::const_iterator mi = _manifests.find(suffix);
+    if (mi != _manifests.end() && !should_ignore_manifest((*mi).second)) {
+      CPPManifest *manifest = (*mi).second;
+      _saved_tokens.push_back(expand_manifest(manifest, loc));
+      return CPPToken(token, loc, str, value);
+    }
+  }
 
   if (decl == nullptr || decl->get_subtype() != CPPDeclaration::ST_function_group) {
     error("unknown literal suffix " + suffix, loc);
@@ -2181,7 +2467,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
  *
  */
 CPPToken CPPPreprocessor::
-expand_manifest(const CPPManifest *manifest) {
+expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc) {
   vector_string args;
 
   if (manifest->_has_parameters) {
@@ -2190,17 +2476,23 @@ expand_manifest(const CPPManifest *manifest) {
                           manifest->_variadic_param, args);
   }
 
-  string expanded = " " + manifest->expand(args) + " ";
-  push_string(expanded, true);
+  // Keep track of the manifests we're supposed to ignore.
+  CPPManifest::Ignores ignores;
+  ignores.insert(manifest);
 
-  if (!manifest->_has_parameters) {
-    // If the manifest does not use arguments, then disallow recursive
-    // expansion.
-    _files.back()._ignore_manifest = manifest;
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest) {
+      ignores.insert(infile->_manifest);
+    }
+    infile = infile->_parent;
   }
 
+  string expanded = " " + manifest->expand(args, false, ignores) + " ";
+  push_expansion(expanded, manifest, loc);
+
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Expanding " << manifest->_name << " to " << expanded << "\n";
 #endif
 
@@ -2243,7 +2535,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
     string arg;
     while (c != EOF) {
       if (c == ',' && paren_level == 1) {
-        args.push_back(arg);
+        args.push_back(trim_blanks(arg));
         arg = "";
         c = get();
 
@@ -2302,7 +2594,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
       }
     }
     if (num_args != 0 || !arg.empty()) {
-      args.push_back(arg);
+      args.push_back(trim_blanks(arg));
     }
   }
 
@@ -2326,23 +2618,34 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
  * whether the manifest exists.
  */
 void CPPPreprocessor::
-expand_defined_function(string &expr, size_t q, size_t &p) {
-  string result;
+expand_defined_function(string &expr, size_t q, size_t &p) const {
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
 
-  vector_string args;
-  extract_manifest_args_inline("defined", 1, -1, args, expr, p);
-  if (args.size() >= 1) {
-    if (is_manifest_defined(args[0])) {
-      // The macro is defined; the result is "1".
-      result = "1";
+  bool has_paren = false;
+  if (expr[p] == '(') {
+    has_paren = true;
+    p++;
+  }
+
+  size_t r = p;
+  while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+    p++;
+  }
+  string name = expr.substr(r, p - r);
+
+  if (has_paren) {
+    if (expr[p] == ')') {
+      p++;
     } else {
-      // The macro is undefined; the result is "0".
-      result = "0";
+      error("missing ')' after 'defined'");
     }
   }
 
+  char result = is_manifest_defined(name) ? '1' : '0';
   expr = expr.substr(0, q) + result + expr.substr(p);
-  p = q + result.size();
+  p = q + 1;
 }
 
 /**
@@ -2350,151 +2653,107 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
  * whether the include file exists.
  */
 void CPPPreprocessor::
-expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc) {
+expand_has_include_function(string &expr, size_t q, size_t &p) const {
   bool found_file = false;
 
   // Skip whitespace till paren.
   while (p < expr.size() && isspace(expr[p])) {
     p++;
   }
-  size_t args_begin = p + 1;
 
-  vector_string args;
-  extract_manifest_args_inline("__has_include", 1, -1, args, expr, p);
-
-  if (!args.empty() && args[0].size() >= 2) {
-    Filename filename;
-    bool angle_quotes = false;
-
-    string inc = args[0];
-
-    // Just to play things safe, since our manifest-expansion logic might not
-    // filter out quotes and angle brackets properly, we'll only expand
-    // manifests if we don't begin with a quote or bracket.
-    if (!inc.empty() && (inc[0] != '"' && inc[0] != '<')) {
-      inc = expand_manifests(inc, false, loc);
-    }
-
-    if (inc[0] == '"' && inc[inc.size() - 1] == '"') {
-      filename = inc.substr(1, inc.size() - 2);
-    } else if (inc[0] == '<' && inc[inc.size() - 1] == '>') {
-      filename = inc.substr(1, inc.size() - 2);
-      if (!_noangles) {
-        // If _noangles is true, we don't make a distinction between angle
-        // brackets and quote marks--all #inc statements are treated the
-        // same, as if they used quote marks.
-        angle_quotes = true;
-      }
-    } else {
-      loc.last_column += loc.first_column + p - 2;
-      loc.first_column += args_begin;
-      warning("invalid argument for __has_include() directive", loc);
-      expr = expr.substr(0, q) + "0" + expr.substr(p);
-      p = q + 1;
-      return;
-    }
-
-    filename.set_text();
-
-    CPPFile::Source source = CPPFile::S_none;
-    found_file = find_include(filename, angle_quotes, source);
-  } else {
-    loc.last_column += loc.first_column + p - 2;
-    loc.first_column += args_begin;
-    warning("invalid argument for __has_include() directive", loc);
+  if (expr[p] != '(') {
+    error("expected '(' after '__has_include'");
+    return;
   }
+  p++;
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
+
+  int paren_level = 1;
+  bool needs_expansion = false;
+  size_t r = p;
+  while (p < expr.size()) {
+    if (expr[p] == '"' || expr[p] == '\'' || expr[p] == '<') {
+      // Quoted string or angle bracket.
+      int quote_mark = expr[p];
+      if (quote_mark == '<') {
+        quote_mark = '>';
+      }
+      p++;
+      while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+        if (expr[p] == '\\') {
+          p++;
+        }
+        if (p < expr.size()) {
+          p++;
+        }
+      }
+    }
+    else if (expr[p] == '(') {
+      ++paren_level;
+    }
+    else if (expr[p] == ')') {
+      --paren_level;
+      if (paren_level == 0) {
+        break;
+      }
+    }
+    else if (isalnum(expr[p]) || expr[p] == '_') {
+      needs_expansion = true;
+    }
+    p++;
+  }
+
+  if (p >= expr.size() || expr[p] != ')') {
+    error("missing ')' after '__has_include'");
+    return;
+  }
+
+  // Back up to strip trailing whitespace.
+  size_t t = p;
+  while (t > r && isspace(expr[t - 1])) {
+    --t;
+  }
+  string inc = expr.substr(r, t - r);
+  p++;
+
+  // Only expand if we've encountered unquoted identifier-valid characters,
+  // to be on the safe side.
+  if (needs_expansion) {
+    expand_manifests(inc, false);
+  }
+
+  Filename filename;
+  bool angle_quotes = false;
+
+  if (!inc.empty() && inc[0] == '"' && inc[inc.size() - 1] == '"') {
+    filename = inc.substr(1, inc.size() - 2);
+  }
+  else if (!inc.empty() && inc[0] == '<' && inc[inc.size() - 1] == '>') {
+    filename = inc.substr(1, inc.size() - 2);
+    if (!_noangles) {
+      // If _noangles is true, we don't make a distinction between angle
+      // brackets and quote marks--all #inc statements are treated the
+      // same, as if they used quote marks.
+      angle_quotes = true;
+    }
+  }
+  else {
+    warning("invalid argument for __has_include() directive: " + inc);
+    expr = expr.substr(0, q) + "0" + expr.substr(p);
+    p = q + 1;
+    return;
+  }
+
+  filename.set_text();
+
+  CPPFile::Source source = CPPFile::S_none;
+  found_file = find_include(filename, angle_quotes, source);
 
   string result = found_file ? "1" : "0";
   expr = expr.substr(0, q) + result + expr.substr(p);
   p = q + result.size();
-}
-
-/**
- *
- */
-void CPPPreprocessor::
-expand_manifest_inline(string &expr, size_t q, size_t &p,
-                       const CPPManifest *manifest) {
-  vector_string args;
-  if (manifest->_has_parameters) {
-    extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
-                                 manifest->_variadic_param, args, expr, p);
-  }
-  string result = manifest->expand(args);
-
-  expr = expr.substr(0, q) + result + expr.substr(p);
-  p = q + result.size();
-}
-
-/**
- *
- */
-void CPPPreprocessor::
-extract_manifest_args_inline(const string &name, int num_args,
-                             int va_arg, vector_string &args,
-                             const string &expr, size_t &p) {
-  // Skip whitespace till paren.
-  while (p < expr.size() && isspace(expr[p])) {
-    p++;
-  }
-  if (p >= expr.size() || expr[p] != '(') {
-    // No paren, so we have only one arg.
-    size_t q = p;
-    while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
-      p++;
-    }
-    args.push_back(expr.substr(q, p - q));
-
-  } else if (expr[p] == '"' || expr[p] == '\'') {
-    // Quoted string or character.
-    int quote_mark = expr[p];
-    p++;
-    while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
-      if (expr[p] == '\\') {
-        p++;
-      }
-      if (p < expr.size()) {
-        p++;
-      }
-    }
-    p++;
-
-  } else {
-    // Skip paren.
-    p++;
-    size_t q = p;
-    while (p < expr.size() && expr[p] != ')') {
-      if (expr[p] == ',') {
-        args.push_back(expr.substr(q, p - q));
-        q = p+1;
-
-      } else if (expr[p] == '(') {
-        // Nested parens.
-        int paren_level = 1;
-        while (p+1 < expr.size() && paren_level > 0) {
-          p++;
-          if (expr[p] == '(') {
-            paren_level++;
-          } else if (expr[p] == ')') {
-            paren_level--;
-          }
-        }
-      }
-      p++;
-    }
-    args.push_back(expr.substr(q, p - q));
-
-    if (p < expr.size() && expr[p] == ')') {
-      p++;
-    }
-  }
-
-  if ((int)args.size() < num_args) {
-    warning("Not enough arguments for manifest " + name);
-
-  } else if (va_arg < 0 && (int)args.size() > num_args) {
-    warning("Too many arguments for manifest " + name);
-  }
 }
 
 /**
@@ -2614,133 +2873,6 @@ get_number(int c) {
   }
 
   return get_literal(INTEGER, loc, num, result);
-}
-
-/**
- *
- */
-int CPPPreprocessor::
-check_keyword(const string &name) {
-  if (name == "alignas") return KW_ALIGNAS;
-  if (name == "alignof") return KW_ALIGNOF;
-  if (name == "__alignof") return KW_ALIGNOF;
-  if (name == "__alignof__") return KW_ALIGNOF;
-  if (name == "auto") return KW_AUTO;
-  if (name == "__begin_publish") return KW_BEGIN_PUBLISH;
-  if (name == "__blocking") return KW_BLOCKING;
-  if (name == "bool") return KW_BOOL;
-  if (name == "catch") return KW_CATCH;
-  if (name == "char") return KW_CHAR;
-  if (name == "char8_t") return KW_CHAR8_T;
-  if (name == "char16_t") return KW_CHAR16_T;
-  if (name == "char32_t") return KW_CHAR32_T;
-  if (name == "class") return KW_CLASS;
-  if (name == "const") return KW_CONST;
-  if (name == "__const") return KW_CONST;
-  if (name == "__const__") return KW_CONST;
-  if (name == "consteval") return KW_CONSTEVAL;
-  if (name == "constexpr") return KW_CONSTEXPR;
-  if (name == "constinit") return KW_CONSTINIT;
-  if (name == "const_cast") return KW_CONST_CAST;
-  if (name == "decltype") return KW_DECLTYPE;
-  if (name == "default") return KW_DEFAULT;
-  if (name == "delete") return KW_DELETE;
-  if (name == "double") return KW_DOUBLE;
-  if (name == "dynamic_cast") return KW_DYNAMIC_CAST;
-  if (name == "else") return KW_ELSE;
-  if (name == "__end_publish") return KW_END_PUBLISH;
-  if (name == "enum") return KW_ENUM;
-  if (name == "extern") return KW_EXTERN;
-  if (name == "__extension") return KW_EXTENSION;
-  if (name == "explicit") return KW_EXPLICIT;
-  if (name == "__published") return KW_PUBLISHED;
-  if (name == "false") return KW_FALSE;
-  if (name == "final") return KW_FINAL;
-  if (name == "float") return KW_FLOAT;
-  if (name == "friend") return KW_FRIEND;
-  if (name == "for") return KW_FOR;
-  if (name == "goto") return KW_GOTO;
-  if (name == "__has_virtual_destructor") return KW_HAS_VIRTUAL_DESTRUCTOR;
-  if (name == "if") return KW_IF;
-  if (name == "inline") return KW_INLINE;
-  if (name == "__inline") return KW_INLINE;
-  if (name == "__inline__") return KW_INLINE;
-  if (name == "int") return KW_INT;
-  if (name == "__is_abstract") return KW_IS_ABSTRACT;
-  if (name == "__is_base_of") return KW_IS_BASE_OF;
-  if (name == "__is_class") return KW_IS_CLASS;
-  if (name == "__is_constructible") return KW_IS_CONSTRUCTIBLE;
-  if (name == "__is_convertible_to") return KW_IS_CONVERTIBLE_TO;
-  if (name == "__is_destructible") return KW_IS_DESTRUCTIBLE;
-  if (name == "__is_empty") return KW_IS_EMPTY;
-  if (name == "__is_enum") return KW_IS_ENUM;
-  if (name == "__is_final") return KW_IS_FINAL;
-  if (name == "__is_fundamental") return KW_IS_FUNDAMENTAL;
-  if (name == "__is_pod") return KW_IS_POD;
-  if (name == "__is_polymorphic") return KW_IS_POLYMORPHIC;
-  if (name == "__is_standard_layout") return KW_IS_STANDARD_LAYOUT;
-  if (name == "__is_trivial") return KW_IS_TRIVIAL;
-  if (name == "__is_trivially_copyable") return KW_IS_TRIVIALLY_COPYABLE;
-  if (name == "__is_union") return KW_IS_UNION;
-  if (name == "long") return KW_LONG;
-  if (name == "__make_map_keys_seq") return KW_MAKE_MAP_KEYS_SEQ;
-  if (name == "__make_map_property") return KW_MAKE_MAP_PROPERTY;
-  if (name == "__make_property") return KW_MAKE_PROPERTY;
-  if (name == "__make_property2") return KW_MAKE_PROPERTY2;
-  if (name == "__make_seq") return KW_MAKE_SEQ;
-  if (name == "__make_seq_property") return KW_MAKE_SEQ_PROPERTY;
-  if (name == "mutable") return KW_MUTABLE;
-  if (name == "namespace") return KW_NAMESPACE;
-  if (name == "noexcept") return KW_NOEXCEPT;
-  if (name == "nullptr") return KW_NULLPTR;
-  if (name == "new") return KW_NEW;
-  if (name == "operator") return KW_OPERATOR;
-  if (name == "override") return KW_OVERRIDE;
-  if (name == "private") return KW_PRIVATE;
-  if (name == "protected") return KW_PROTECTED;
-  if (name == "public") return KW_PUBLIC;
-  if (name == "register") return KW_REGISTER;
-  if (name == "reinterpret_cast") return KW_REINTERPRET_CAST;
-  if (name == "return") return KW_RETURN;
-  if (name == "short") return KW_SHORT;
-  if (name == "signed") return KW_SIGNED;
-  if (name == "sizeof") return KW_SIZEOF;
-  if (name == "static") return KW_STATIC;
-  if (name == "static_assert") return KW_STATIC_ASSERT;
-  if (name == "static_cast") return KW_STATIC_CAST;
-  if (name == "struct") return KW_STRUCT;
-  if (name == "template") return KW_TEMPLATE;
-  if (name == "thread_local") return KW_THREAD_LOCAL;
-  if (name == "throw") return KW_THROW;
-  if (name == "true") return KW_TRUE;
-  if (name == "try") return KW_TRY;
-  if (name == "typedef") return KW_TYPEDEF;
-  if (name == "typeid") return KW_TYPEID;
-  if (name == "typename") return KW_TYPENAME;
-  if (name == "__underlying_type") return KW_UNDERLYING_TYPE;
-  if (name == "union") return KW_UNION;
-  if (name == "unsigned") return KW_UNSIGNED;
-  if (name == "using") return KW_USING;
-  if (name == "virtual") return KW_VIRTUAL;
-  if (name == "void") return KW_VOID;
-  if (name == "volatile") return KW_VOLATILE;
-  if (name == "wchar_t") return KW_WCHAR_T;
-  if (name == "while") return KW_WHILE;
-
-  // These are alternative ways to refer to built-in operators.
-  if (name == "and") return ANDAND;
-  if (name == "and_eq") return ANDEQUAL;
-  if (name == "bitand") return '&';
-  if (name == "bitor") return '|';
-  if (name == "compl") return '~';
-  if (name == "not") return '!';
-  if (name == "not_eq") return NECOMPARE;
-  if (name == "or") return OROR;
-  if (name == "or_eq") return OREQUAL;
-  if (name == "xor") return '^';
-  if (name == "xor_eq") return XOREQUAL;
-
-  return 0;
 }
 
 /**
@@ -2886,11 +3018,12 @@ scan_raw(int c) {
  */
 bool CPPPreprocessor::
 should_ignore_manifest(const CPPManifest *manifest) const {
-  Files::const_iterator fi;
-  for (fi = _files.begin(); fi != _files.end(); ++fi) {
-    if ((*fi)._ignore_manifest == manifest) {
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest && infile->_manifest == manifest) {
       return true;
     }
+    infile = infile->_parent;
   }
 
   return false;
@@ -2902,11 +3035,12 @@ should_ignore_manifest(const CPPManifest *manifest) const {
  */
 bool CPPPreprocessor::
 should_ignore_preprocessor() const {
-  Files::const_iterator fi;
-  for (fi = _files.begin(); fi != _files.end(); ++fi) {
-    if ((*fi)._ignore_manifest != nullptr) {
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    if (infile->_ignore_manifest) {
       return true;
     }
+    infile = infile->_parent;
   }
 
   return false;
@@ -2923,18 +3057,21 @@ get() {
     return c;
   }
 
-  if (_files.empty()) {
+  if (UNLIKELY(_infile == nullptr)) {
     return EOF;
   }
 
-  int c = _files.back().get();
+  int c = _infile->get();
 
-  while (c == EOF && !_files.empty()) {
+  while (UNLIKELY(c == EOF && _infile != nullptr)) {
 #ifdef CPP_VERBOSE_LEX
-    indent(cerr, _files.size() * 2)
+    indent(cerr, get_file_depth() * 2)
       << "End of input stream, restoring to previous input\n";
 #endif
-    _files.pop_back();
+    // Pop the last file off the end.
+    InputFile *infile = _infile;
+    _infile = infile->_parent;
+    delete infile;
 
     // Synthesize a newline, just in case the file doesn't already end with
     // one.
@@ -2959,21 +3096,21 @@ peek() {
     return _unget;
   }
 
-  if (_files.empty()) {
+  InputFile *infile = _infile;
+  if (UNLIKELY(infile == nullptr)) {
     return EOF;
   }
 
-  Files::reverse_iterator it = _files.rbegin();
-  int c = (*it).peek();
+  int c = infile->peek();
 
-  while (c == EOF && it != _files.rend()) {
-    int last_c = (*it)._prev_last_c;
-    ++it;
+  while (UNLIKELY(c == EOF && infile != nullptr)) {
+    int last_c = infile->_prev_last_c;
+    infile = infile->_parent;
 
     if (last_c != '\0') {
       c = last_c;
-    } else if (it != _files.rend()) {
-      c = (*it).peek();
+    } else if (infile != nullptr) {
+      c = infile->peek();
     }
   }
 
@@ -2999,7 +3136,7 @@ unget(int c) {
 CPPTemplateParameterList *CPPPreprocessor::
 nested_parse_template_instantiation(CPPTemplateScope *scope) {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Beginning nested parse\n";
 #endif
   assert(scope != nullptr);
@@ -3088,7 +3225,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   _parsing_template_params = old_parsing_params;
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Ending nested parse\n";
 #endif
   return actual_params;
@@ -3104,7 +3241,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 void CPPPreprocessor::
 skip_to_end_nested() {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Skipping tokens:\n";
 #endif
 
@@ -3118,7 +3255,7 @@ skip_to_end_nested() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Done skipping tokens.\n";
 #endif
 }
@@ -3131,7 +3268,7 @@ skip_to_end_nested() {
 void CPPPreprocessor::
 skip_to_angle_bracket() {
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Skipping tokens:\n";
 #endif
 
@@ -3148,7 +3285,21 @@ skip_to_angle_bracket() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  indent(cerr, _files.size() * 2)
+  indent(cerr, get_file_depth() * 2)
     << "Done skipping tokens.\n";
 #endif
+}
+
+/**
+ * Returns the number of files on the _infile list.
+ */
+int CPPPreprocessor::
+get_file_depth() const{
+  int depth = 0;
+  InputFile *infile = _infile;
+  while (infile != nullptr) {
+    ++depth;
+    infile = infile->_parent;
+  }
+  return depth;
 }

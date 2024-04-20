@@ -725,9 +725,9 @@ handle_update_field() {
       // while we call the update method--otherwise, the update method might
       // get into trouble if it tried to delete the object from the doId2do
       // map.
-      Py_INCREF(distobj);
-      invoke_extension(dclass).receive_update(distobj, _di);
-      Py_DECREF(distobj);
+      PyObject *distobj_ref = Py_NewRef(distobj);
+      invoke_extension(dclass).receive_update(distobj_ref, _di);
+      Py_DECREF(distobj_ref);
 
       if (PyErr_Occurred()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -802,12 +802,12 @@ handle_update_field_owner() {
         // raised while we call the update method--otherwise, the update
         // method might get into trouble if it tried to delete the object from
         // the doId2do map.
-        Py_INCREF(distobjOV);
+        PyObject *distobjOV_ref = Py_NewRef(distobjOV);
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        invoke_extension(dclass).receive_update(distobjOV, _odi);
-        Py_DECREF(distobjOV);
+        invoke_extension(dclass).receive_update(distobjOV_ref, _odi);
+        Py_DECREF(distobjOV_ref);
 
         if (PyErr_Occurred()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -846,9 +846,9 @@ handle_update_field_owner() {
         // while we call the update method--otherwise, the update method might
         // get into trouble if it tried to delete the object from the doId2do
         // map.
-        Py_INCREF(distobj);
-        invoke_extension(dclass).receive_update(distobj, _di);
-        Py_DECREF(distobj);
+        PyObject *distobj_ref = Py_NewRef(distobj);
+        invoke_extension(dclass).receive_update(distobj_ref, _di);
+        Py_DECREF(distobj_ref);
 
         if (PyErr_Occurred()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)

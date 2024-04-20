@@ -20,7 +20,7 @@
 // use any OpenSSL code, because it is a support module for HTTPChannel, which
 // *does* use OpenSSL code.
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 #include "httpAuthorization.h"
 

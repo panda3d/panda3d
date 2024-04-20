@@ -182,6 +182,16 @@ typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
 
 EXPCL_PYPANDA Dtool_TypeMap *Dtool_GetGlobalTypeMap();
 
+class DtoolProxy {
+public:
+  mutable PyObject *_self;
+  TypeHandle _type;
+};
+
+EXPCL_PYPANDA void DtoolProxy_Init(DtoolProxy *proxy, PyObject *self,
+                                   Dtool_PyTypedObject &classdef,
+                                   TypeRegistry::PythonWrapFunc *wrap_func);
+
 /**
 
  */
@@ -237,7 +247,7 @@ EXPCL_PYPANDA PyObject *Dtool_Return_Bool(bool value);
 EXPCL_PYPANDA PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_NewRef(Py_None)) : nullptr)
 #define Dtool_Return(value) (LIKELY(PyErr_Occurred() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()

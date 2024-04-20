@@ -63,8 +63,7 @@ get_points() const {
 
   default:
     Py_DECREF(list);
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   return list;
@@ -92,10 +91,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   int channels = _this->get_num_channels();
   int num_pixels = _this->get_x_size() * _this->get_y_size();
 
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void *) &(table[0]);
   view->len = 4 * table.size();
   view->readonly = 1;

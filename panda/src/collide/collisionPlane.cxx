@@ -596,9 +596,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 /**
  * Factory method to generate a CollisionPlane object
  */
-TypedWritable* CollisionPlane::
-make_CollisionPlane(const FactoryParams &params)
-{
+TypedWritable *CollisionPlane::
+make_from_bam(const FactoryParams &params) {
   CollisionPlane *me = new CollisionPlane;
   DatagramIterator scan;
   BamReader *manager;
@@ -612,7 +611,6 @@ make_CollisionPlane(const FactoryParams &params)
  * Factory method to generate a CollisionPlane object
  */
 void CollisionPlane::
-register_with_read_factory()
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionPlane);
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

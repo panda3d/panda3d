@@ -129,20 +129,15 @@ set(P3PUTIL_IGATEEXT
   bamWriter_ext.h
   bitArray_ext.cxx
   bitArray_ext.h
-  bitArray_ext.I
   bitMask_ext.h
-  bitMask_ext.I
   callbackObject_ext.h
   doubleBitMask_ext.h
-  doubleBitMask_ext.I
   paramPyObject.cxx
   paramPyObject.h
-  paramPyObject.I
   pythonCallbackObject.cxx
   pythonCallbackObject.h
   sparseArray_ext.cxx
   sparseArray_ext.h
-  sparseArray_ext.I
   typedWritable_ext.cxx
   typedWritable_ext.h
 )

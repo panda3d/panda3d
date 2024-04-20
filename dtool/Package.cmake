@@ -2,6 +2,9 @@ set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
 if(NOT IS_DIRECTORY "${_thirdparty_dir_default}")
   set(_thirdparty_dir_default "")
 endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
+  set(_thirdparty_dir_default "")
+endif()
 
 set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
   "Optional location of a makepanda-style thirdparty directory. All libraries

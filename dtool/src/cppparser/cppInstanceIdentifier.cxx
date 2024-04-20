@@ -302,6 +302,7 @@ r_unroll_type(CPPType *start_type,
     break;
 
   case IIT_volatile:
+  case IIT_restrict:
     // Just pass it through for now.
     result = r_unroll_type(start_type, mi);
     break;

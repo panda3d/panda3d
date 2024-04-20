@@ -25,8 +25,8 @@
 #include "vector_string.h"
 
 #include <map>
-#include <list>
 #include <vector>
+#include <unordered_map>
 
 class CPPScope;
 class CPPTemplateParameterList;
@@ -40,6 +40,8 @@ class CPPExpression;
 class CPPPreprocessor {
 public:
   CPPPreprocessor();
+
+  bool preprocess_file(const Filename &filename);
 
   void set_verbose(int verbose);
   int get_verbose() const;
@@ -57,11 +59,11 @@ public:
   int _token_index;
 #endif
 
-  void warning(const std::string &message);
-  void warning(const std::string &message, const YYLTYPE &loc);
-  void error(const std::string &message);
-  void error(const std::string &message, const YYLTYPE &loc);
-  void show_line(const YYLTYPE &loc);
+  void warning(const std::string &message) const;
+  void warning(const std::string &message, const YYLTYPE &loc) const;
+  void error(const std::string &message) const;
+  void error(const std::string &message, const YYLTYPE &loc) const;
+  void show_line(const YYLTYPE &loc) const;
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
   CPPCommentBlock *get_comment_on(int line, CPPFile file);
@@ -69,7 +71,7 @@ public:
   int get_warning_count() const;
   int get_error_count() const;
 
-  typedef std::map<std::string, CPPManifest *> Manifests;
+  typedef std::unordered_map<std::string, CPPManifest *> Manifests;
   Manifests _manifests;
 
   typedef std::vector<CPPManifest *> ManifestStack;
@@ -112,10 +114,13 @@ protected:
   bool init_const_expr(const std::string &expr);
   bool init_type(const std::string &type);
   bool push_file(const CPPFile &file);
-  bool push_string(const std::string &input, bool lock_position);
+  bool push_string(const std::string &input);
+  bool push_expansion(const std::string &input, const CPPManifest *manifest,
+                      const YYLTYPE &loc);
 
-  std::string expand_manifests(const std::string &input_expr, bool expand_undefined,
-                          const YYLTYPE &loc);
+public:
+  void expand_manifests(std::string &expr, bool expand_undefined = false,
+                        const CPPManifest::Ignores &ignores = CPPManifest::Ignores()) const;
   CPPExpression *parse_expr(const std::string &expr, CPPScope *current_scope,
                             CPPScope *global_scope, const YYLTYPE &loc);
 
@@ -143,27 +148,23 @@ private:
   void handle_error_directive(const std::string &args, const YYLTYPE &loc);
 
   void skip_false_if_block(bool consider_elifs);
-  bool is_manifest_defined(const std::string &manifest_name);
-  bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source);
+  bool is_manifest_defined(const std::string &manifest_name) const;
+  bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source) const;
 
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
   CPPToken get_identifier(int c);
   CPPToken get_literal(int token, YYLTYPE loc, const std::string &str,
                        const YYSTYPE &result = YYSTYPE());
-  CPPToken expand_manifest(const CPPManifest *manifest);
+  CPPToken expand_manifest(const CPPManifest *manifest, const YYLTYPE &loc);
+  void r_expand_manifests(std::string &expr, bool expand_undefined,
+                          const YYLTYPE &loc, std::set<const CPPManifest *> &expanded);
   void extract_manifest_args(const std::string &name, int num_args,
                              int va_arg, vector_string &args);
-  void expand_defined_function(std::string &expr, size_t q, size_t &p);
-  void expand_has_include_function(std::string &expr, size_t q, size_t &p, YYLTYPE loc);
-  void expand_manifest_inline(std::string &expr, size_t q, size_t &p,
-                              const CPPManifest *manifest);
-  void extract_manifest_args_inline(const std::string &name, int num_args,
-                                    int va_arg, vector_string &args,
-                                    const std::string &expr, size_t &p);
+  void expand_defined_function(std::string &expr, size_t q, size_t &p) const;
+  void expand_has_include_function(std::string &expr, size_t q, size_t &p) const;
 
   CPPToken get_number(int c);
-  static int check_keyword(const std::string &name);
   int scan_escape_sequence(int c);
   std::string scan_quoted(int c);
   std::string scan_raw(int c);
@@ -180,6 +181,8 @@ private:
   void skip_to_end_nested();
   void skip_to_angle_bracket();
 
+  int get_file_depth() const;
+
   class InputFile {
   public:
     InputFile();
@@ -190,7 +193,7 @@ private:
     int get();
     int peek();
 
-    const CPPManifest *_ignore_manifest;
+    const CPPManifest *_manifest;
     CPPFile _file;
     std::string _input;
     std::istream *_in;
@@ -199,13 +202,13 @@ private:
     int _next_line_number;
     int _next_col_number;
     bool _lock_position;
+    bool _ignore_manifest;
     int _prev_last_c;
+
+    InputFile *_parent = nullptr;
   };
 
-  // This must be a list and not a vector because we don't have a good copy
-  // constructor defined for InputFile.
-  typedef std::list<InputFile> Files;
-  Files _files;
+  InputFile *_infile = nullptr;
 
   enum State {
     S_normal, S_eof, S_nested, S_end_nested
@@ -224,8 +227,8 @@ private:
 
   std::vector<CPPToken> _saved_tokens;
 
-  int _warning_count;
-  int _error_count;
+  mutable int _warning_count;
+  mutable int _error_count;
   bool _error_abort;
 };
 

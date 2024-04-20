@@ -59,8 +59,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   PyObject *dupe = PyDict_GetItem(memo, self);
   if (dupe != nullptr) {
     // Already in the memo dictionary.
-    Py_INCREF(dupe);
-    return dupe;
+    return Py_NewRef(dupe);
   }
 
   NodePath *np_dupe;
@@ -174,8 +173,7 @@ PyObject *Extension<NodePath>::
 get_tags() const {
   // An empty NodePath returns None
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   // Just call PandaNode.tags rather than defining a whole new interface.
@@ -323,8 +321,7 @@ get_tight_bounds(const NodePath &other) const {
     return Py_BuildValue("NN", min_inst, max_inst);
 
   } else {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 }
 

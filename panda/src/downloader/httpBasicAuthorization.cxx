@@ -13,7 +13,7 @@
 
 #include "httpBasicAuthorization.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 using std::string;
 

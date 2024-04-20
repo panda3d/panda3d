@@ -628,6 +628,7 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 void CLP(GraphicsStateGuardian)::
 reset() {
   _last_error_check = -1.0;
+  _white_texture = 0;
 
   free_pointers();
   GraphicsStateGuardian::reset();
@@ -942,7 +943,10 @@ reset() {
 
 #elif defined(OPENGLES)
   if (gl_support_primitive_restart_index && is_at_least_gles_version(3, 0)) {
+    // In WebGL 2, primitive restart is always enabled.
+#ifndef __EMSCRIPTEN__
     glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+#endif
     _supported_geom_rendering |= Geom::GR_strip_cut_index;
   }
 
@@ -987,6 +991,8 @@ reset() {
 #ifndef OPENGLES_1
   _glDrawRangeElements = null_glDrawRangeElements;
 
+  // Temporarily disabled in WebGL due to Firefox bug
+#ifndef __EMSCRIPTEN__
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 0)) {
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
@@ -1007,6 +1013,7 @@ reset() {
       << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     _glDrawRangeElements = null_glDrawRangeElements;
   }
+#endif  // !__EMSCRIPTEN__
 #endif  // !OPENGLES_1
 
   _supports_3d_texture = false;
@@ -1570,7 +1577,12 @@ reset() {
     _supports_depth24 = true;
     _supports_depth32 = true;
   } else {
+#ifdef __EMSCRIPTEN__
+    if (has_extension("WEBGL_depth_texture") ||
+        has_extension("GL_ANGLE_depth_texture")) {
+#else
     if (has_extension("GL_ANGLE_depth_texture")) {
+#endif
       // This extension provides both depth textures and depth-stencil support.
       _supports_depth_texture = true;
       _supports_depth_stencil = true;
@@ -2624,6 +2636,12 @@ reset() {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffers");
 
+#ifdef __EMSCRIPTEN__
+  } else if (has_extension("WEBGL_draw_buffers")) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
+      get_extension_func("glDrawBuffers");
+#endif  // EMSCRIPTEN
+
   } else if (has_extension("GL_EXT_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersEXT");
@@ -2839,7 +2857,7 @@ reset() {
 
 #elif defined(OPENGLES)
   // In OpenGL ES 2.x and above, this is supported in the core.
-  _supports_blend_equation_separate = false;
+  _supports_blend_equation_separate = true;
 
 #else
   if (is_at_least_gl_version(1, 2)) {
@@ -3300,7 +3318,7 @@ reset() {
   }
 #endif  // !OPENGLES
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   _supports_get_program_binary = false;
   _program_binary_formats.clear();
 
@@ -3641,7 +3659,7 @@ reset() {
 
   report_my_gl_errors();
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()
@@ -9633,7 +9651,7 @@ query_glsl_version() {
     if (ver.empty() ||
         sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
                                      &_gl_shadlang_ver_minor) != 2) {
-      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
     }
   }
 #else
@@ -9644,7 +9662,11 @@ query_glsl_version() {
   if (ver.empty() ||
       sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &_gl_shadlang_ver_major,
                                                      &_gl_shadlang_ver_minor) != 2) {
-    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+#ifdef __EMSCRIPTEN__  // See emscripten bug 4070
+    if (sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &_gl_shadlang_ver_major,
+                                                    &_gl_shadlang_ver_minor) != 2)
+#endif
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
   }
 #endif
 
@@ -11041,6 +11063,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
     }
   }
+
+#if defined(__EMSCRIPTEN__) && defined(OPENGLES)
+  // WebGL 1 has no sized formats, it would seem.
+  if (!is_at_least_gles_version(3, 0)) {
+    return get_external_image_format(tex);
+  }
+#endif
 
   switch (format) {
 #ifndef OPENGLES

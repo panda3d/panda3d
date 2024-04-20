@@ -30,6 +30,10 @@
 
 #include <algorithm>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 using std::istream;
 using std::ostream;
 using std::string;
@@ -1070,6 +1074,15 @@ ns_release_all_textures() {
 
   // Blow away the cache of resolved relative filenames.
   _relpath_lookup.clear();
+
+#ifdef __EMSCRIPTEN__
+  // Also empty the emscripten preload cache.
+  EM_ASM({
+    if (Module["preloadedImages"]) {
+      Module["preloadedImages"] = {};
+    }
+  });
+#endif
 }
 
 /**

@@ -2083,6 +2083,8 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       const LightAttrib *target_light;
       _target_rs->get_attrib_def(target_light);
 
+      PT(Texture) tex;
+
       // We don't count ambient lights, which would be pretty silly to handle
       // via this mechanism.
       size_t num_lights = target_light->get_num_non_ambient_lights();
@@ -2092,28 +2094,21 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
         Light *light_obj = light.node()->as_light();
         nassertr(light_obj != nullptr, nullptr);
 
-        PT(Texture) tex;
         LightLensNode *lln = DCAST(LightLensNode, light.node());
         if (lln != nullptr && lln->_shadow_caster) {
           tex = get_shadow_map(light);
         } else {
           tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
         }
-
-        if (tex != nullptr) {
-          sampler = tex->get_default_sampler();
-        }
-        return tex;
       } else {
         // There is no such light assigned.  Bind a dummy shadow map.
-        PT(Texture) tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
-        if (tex != nullptr) {
-          sampler = tex->get_default_sampler();
-        }
-        return tex;
+        tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
       }
+      if (tex != nullptr) {
+        sampler = tex->get_default_sampler();
+      }
+      return tex;
     }
-    break;
 
   case Shader::STO_ff_stage_i:
     {
@@ -2181,7 +2176,6 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       }
       return default_add_tex;
     }
-    break;
 
   case Shader::STO_stage_normal_i:
     {
@@ -2211,7 +2205,6 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       }
       return default_normal_height_tex;
     }
-    break;
 
   case Shader::STO_stage_gloss_i:
     {
@@ -2264,7 +2257,6 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       }
       return default_normal_height_tex;
     }
-    break;
 
   case Shader::STO_stage_selector_i:
     {

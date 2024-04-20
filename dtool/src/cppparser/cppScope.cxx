@@ -164,8 +164,10 @@ define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
         errstr << " has conflicting declaration as ";
         other_type->output(errstr, 0, nullptr, true);
         error_sink->error(errstr.str(), type->_ident->_loc);
-        error_sink->error("previous definition is here",
-                          other_td->_ident->_loc);
+        if (other_td != nullptr && other_td->_ident != nullptr) {
+          error_sink->error("previous definition is here",
+                            other_td->_ident->_loc);
+        }
       }
     }
   } else {
@@ -722,6 +724,12 @@ find_symbol(const string &name, bool recurse) const {
     return _struct_type;
   }
 
+  Functions::const_iterator fi;
+  fi = _functions.find(name);
+  if (fi != _functions.end()) {
+    return (*fi).second;
+  }
+
   Types::const_iterator ti;
   ti = _types.find(name);
   if (ti != _types.end()) {
@@ -737,12 +745,6 @@ find_symbol(const string &name, bool recurse) const {
   vi = _enum_values.find(name);
   if (vi != _enum_values.end()) {
     return (*vi).second;
-  }
-
-  Functions::const_iterator fi;
-  fi = _functions.find(name);
-  if (fi != _functions.end()) {
-    return (*fi).second;
   }
 
   Using::const_iterator ui;

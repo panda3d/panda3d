@@ -173,8 +173,7 @@ unpack_object() {
 
   switch (pack_type) {
   case PT_invalid:
-    object = Py_None;
-    Py_INCREF(object);
+    object = Py_NewRef(Py_None);
     _this->unpack_skip();
     break;
 

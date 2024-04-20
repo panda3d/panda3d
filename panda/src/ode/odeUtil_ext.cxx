@@ -31,10 +31,9 @@ collide2(const OdeGeom &geom1, const OdeGeom &geom2, PyObject* arg, PyObject* ca
     PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
     return -1;
   } else {
-    _python_callback = (PyObject*) callback;
-    Py_XINCREF(_python_callback);
+    _python_callback = Py_XNewRef(callback);
     dSpaceCollide2(geom1.get_id(), geom2.get_id(), (void*) arg, &near_callback);
-    Py_XDECREF(_python_callback);
+    Py_CLEAR(_python_callback);
     return 0;
   }
 }

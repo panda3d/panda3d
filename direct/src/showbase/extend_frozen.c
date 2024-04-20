@@ -147,14 +147,12 @@ py_is_frozen_module(PyObject *self, PyObject *args) {
   i = 0;
   while (PyImport_FrozenModules[i].name != NULL) {
     if (strcmp(PyImport_FrozenModules[i].name, name) == 0) {
-      Py_INCREF(Py_True);
-      return Py_True;
+      Py_RETURN_TRUE;
     }
     ++i;
   }
 
-  Py_INCREF(Py_False);
-  return Py_False;
+  Py_RETURN_FALSE;
 }
 
 /*

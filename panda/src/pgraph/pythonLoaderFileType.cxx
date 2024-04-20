@@ -44,10 +44,9 @@ PythonLoaderFileType() {
 PythonLoaderFileType::
 PythonLoaderFileType(std::string extension, PyObject *entry_point) :
   _extension(std::move(extension)),
-  _entry_point(entry_point) {
+  _entry_point(Py_NewRef(entry_point)) {
 
   init_type();
-  Py_INCREF(entry_point);
 }
 
 /**
@@ -314,8 +313,7 @@ load_file(const Filename &path, const LoaderOptions &options,
     record->ref();
     PyTuple_SET_ITEM(args, 2, DTool_CreatePyInstanceTyped((void *)record, Dtool_BamCacheRecord, true, false, record->get_type_index()));
   } else {
-    PyTuple_SET_ITEM(args, 2, Py_None);
-    Py_INCREF(Py_None);
+    PyTuple_SET_ITEM(args, 2, Py_NewRef(Py_None));
   }
 
   PT(PandaNode) node;

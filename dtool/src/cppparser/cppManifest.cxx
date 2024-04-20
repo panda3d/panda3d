@@ -13,6 +13,7 @@
 
 #include "cppManifest.h"
 #include "cppExpression.h"
+#include "cppPreprocessor.h"
 
 #include <ctype.h>
 
@@ -23,7 +24,11 @@ using std::string;
  */
 CPPManifest::ExpansionNode::
 ExpansionNode(int parm_number, bool stringify, bool paste) :
-  _parm_number(parm_number), _stringify(stringify), _paste(paste), _optional(false)
+  _parm_number(parm_number),
+  _expand(!stringify && !paste),
+  _stringify(stringify),
+  _paste(paste),
+  _optional(false)
 {
 }
 
@@ -32,7 +37,12 @@ ExpansionNode(int parm_number, bool stringify, bool paste) :
  */
 CPPManifest::ExpansionNode::
 ExpansionNode(const string &str, bool paste) :
-  _parm_number(-1), _stringify(false), _paste(paste), _optional(false), _str(str)
+  _parm_number(-1),
+  _expand(!paste),
+  _stringify(false),
+  _paste(paste),
+  _optional(false),
+  _str(str)
 {
 }
 
@@ -41,15 +51,35 @@ ExpansionNode(const string &str, bool paste) :
  */
 CPPManifest::ExpansionNode::
 ExpansionNode(Expansion nested, bool stringify, bool paste, bool optional) :
-  _parm_number(-1), _stringify(stringify), _paste(paste), _optional(optional), _nested(std::move(nested))
+  _parm_number(-1),
+  _expand(!stringify && !paste),
+  _stringify(stringify),
+  _paste(paste),
+  _optional(optional),
+  _nested(std::move(nested))
 {
+}
+
+/**
+ *
+ */
+bool CPPManifest::ExpansionNode::
+operator ==(const ExpansionNode &other) const {
+  return _parm_number == other._parm_number
+      && _expand == other._expand
+      && _stringify == other._stringify
+      && _paste == other._paste
+      && _optional == other._optional
+      && _str == other._str
+      && _nested == other._nested;
 }
 
 /**
  * Creates a manifest from a preprocessor definition.
  */
 CPPManifest::
-CPPManifest(const string &args, const cppyyltype &loc) :
+CPPManifest(const CPPPreprocessor &parser, const string &args, const cppyyltype &loc) :
+  _parser(parser),
   _variadic_param(-1),
   _loc(loc),
   _expr(nullptr),
@@ -93,7 +123,8 @@ CPPManifest(const string &args, const cppyyltype &loc) :
  * command-line -D option.
  */
 CPPManifest::
-CPPManifest(const string &macro, const string &definition) :
+CPPManifest(const CPPPreprocessor &parser, const string &macro, const string &definition) :
+  _parser(parser),
   _variadic_param(-1),
   _expr(nullptr),
   _vis(V_public)
@@ -193,9 +224,109 @@ stringify(const string &source) {
 /**
  *
  */
+void CPPManifest::
+extract_args(vector_string &args, const string &expr, size_t &p) const {
+  // Skip whitespace till paren.
+  while (p < expr.size() && isspace(expr[p])) {
+    p++;
+  }
+  if (p >= expr.size() || expr[p] != '(') {
+    // No paren, so we have only one arg.
+    size_t q = p;
+    while (p < expr.size() && (isalnum(expr[p]) || expr[p] == '_')) {
+      p++;
+    }
+    args.push_back(expr.substr(q, p - q));
+  }
+  else if (expr[p] == '"' || expr[p] == '\'') {
+    // Quoted string or character.
+    int quote_mark = expr[p];
+    p++;
+    while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+      if (expr[p] == '\\') {
+        p++;
+      }
+      if (p < expr.size()) {
+        p++;
+      }
+    }
+    p++;
+  }
+  else {
+    // Skip paren.
+    p++;
+    int paren_level = 1;
+    size_t q = p;
+    while (p < expr.size()) {
+      if (expr[p] == ',' && paren_level == 1) {
+        // Back up to strip any trailing whitespace.
+        size_t r = p;
+        while (r > q && isspace(expr[r - 1])) {
+          --r;
+        }
+        args.push_back(expr.substr(q, r - q));
+        q = p+1;
+      }
+      else if (expr[p] == '"' || expr[p] == '\'') {
+        // Quoted string or character.
+        int quote_mark = expr[p];
+        p++;
+        while (p < expr.size() && expr[p] != quote_mark && expr[p] != '\n') {
+          if (expr[p] == '\\') {
+            p++;
+          }
+          if (p < expr.size()) {
+            p++;
+          }
+        }
+      }
+      else if (expr[p] == '(') {
+        ++paren_level;
+      }
+      else if (expr[p] == ')') {
+        --paren_level;
+        if (paren_level == 0) {
+          break;
+        }
+      }
+      else if (isspace(expr[p])) {
+        // Skip whitespace at the beginning.
+        if (q == p) {
+          q++;
+        }
+      }
+      p++;
+    }
+    {
+      // Back up to strip any trailing whitespace.
+      size_t r = p;
+      while (r > q && isspace(expr[r - 1])) {
+        --r;
+      }
+      if (!args.empty() || r > q) {
+        args.push_back(expr.substr(q, r - q));
+      }
+    }
+
+    if (p < expr.size() && expr[p] == ')') {
+      p++;
+    }
+  }
+
+  if ((int)args.size() < _num_parameters) {
+    _parser.warning("Not enough arguments for manifest " + _name);
+  }
+  else if (_variadic_param < 0 && (int)args.size() > _num_parameters) {
+    _parser.warning("Too many arguments for manifest " + _name);
+  }
+}
+
+/**
+ *
+ */
 string CPPManifest::
-expand(const vector_string &args) const {
-  return r_expand(_expansion, args);
+expand(const vector_string &args, bool expand_undefined, const Ignores &ignores) const {
+  return r_expand(_expansion, args, expand_undefined, ignores);
 }
 
 /**
@@ -208,6 +339,32 @@ determine_type() const {
     return _expr->determine_type();
   }
   return nullptr;
+}
+
+/**
+ * Returns true if the macro definitions are equal.
+ */
+bool CPPManifest::
+is_equal(const CPPManifest *other) const {
+  if (this == other) {
+    return true;
+  }
+  if (_name != other->_name) {
+    return false;
+  }
+  if (_has_parameters != other->_has_parameters) {
+    return false;
+  }
+  if (_num_parameters != other->_num_parameters) {
+    return false;
+  }
+  if (_variadic_param != other->_variadic_param) {
+    return false;
+  }
+  if (_expansion != other->_expansion) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -409,6 +566,10 @@ save_expansion(Expansion &expansion, const string &exp, const vector_string &par
       if (p < exp.size() && exp[p] == '#') {
         // Woah, this is a token-pasting operator.
         paste = true;
+        if (!expansion.empty()) {
+          // The previous expansion shouldn't be expanded.
+          expansion.back()._expand = false;
+        }
         ++p;
       } else {
         // Mark that the next argument should be stringified.
@@ -439,7 +600,8 @@ save_expansion(Expansion &expansion, const string &exp, const vector_string &par
  *
  */
 string CPPManifest::
-r_expand(const Expansion &expansion, const vector_string &args) const {
+r_expand(const Expansion &expansion, const vector_string &args,
+         bool expand_undefined, const Ignores &ignores) const {
   std::string result;
 
   for (const ExpansionNode &node : expansion) {
@@ -458,7 +620,8 @@ r_expand(const Expansion &expansion, const vector_string &args) const {
         if (node._stringify) {
           subst = stringify(subst);
         }
-      } else if (i == _variadic_param && node._paste) {
+      }
+      else if (i == _variadic_param && node._paste) {
         // Special case GCC behavior: if __VA_ARGS__ is pasted to a comma and
         // no arguments are passed, the comma is removed.  MSVC does this
         // automatically.  Not sure if we should allow MSVC behavior as well.
@@ -467,8 +630,12 @@ r_expand(const Expansion &expansion, const vector_string &args) const {
         }
       }
 
+      if (node._expand) {
+        _parser.expand_manifests(subst, expand_undefined, ignores);
+      }
+
       if (!subst.empty()) {
-        if (result.empty() || node._paste) {
+        if (result.empty() || node._paste || result.back() == '(') {
           result += subst;
         } else {
           result += ' ';
@@ -477,7 +644,7 @@ r_expand(const Expansion &expansion, const vector_string &args) const {
       }
     }
     if (!node._str.empty()) {
-      if (result.empty() || node._paste) {
+      if (result.empty() || node._paste || node._str[0] == ',' || node._str[0] == ')') {
         result += node._str;
       } else {
         result += ' ';
@@ -487,7 +654,7 @@ r_expand(const Expansion &expansion, const vector_string &args) const {
     if (!node._nested.empty()) {
       string nested_result;
       if (node._optional && args.size() >= _num_parameters) {
-        nested_result = r_expand(node._nested, args);
+        nested_result = r_expand(node._nested, args, expand_undefined, ignores);
       }
       if (node._stringify) {
         nested_result = stringify(nested_result);

@@ -878,7 +878,7 @@ if __debug__:
     entry_points += 'build_apps = direct.dist.commands:build_apps\n'
     entry_points += 'bdist_apps = direct.dist.commands:bdist_apps\n'
     entry_points += '[setuptools.finalize_distribution_options]\n'
-    entry_points += 'build_apps = direct.dist.commands:finalize_distribution_options\n'
+    entry_points += 'build_apps = direct.dist._dist_hooks:finalize_distribution_options\n'
 
     whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
 

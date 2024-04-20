@@ -262,6 +262,7 @@ pop_struct() {
 %token KW_BEGIN_PUBLISH
 %token KW_BLOCKING
 %token KW_BOOL
+%token KW_BUILTIN_VA_LIST
 %token KW_CATCH
 %token KW_CHAR
 %token KW_CHAR8_T
@@ -332,6 +333,7 @@ pop_struct() {
 %token KW_PUBLIC
 %token KW_REGISTER
 %token KW_REINTERPRET_CAST
+%token KW_RESTRICT
 %token KW_RETURN
 %token KW_SHORT
 %token KW_SIGNED
@@ -1831,6 +1833,19 @@ template_formal_parameter:
   CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
   $$ = inst;
 }
+        | KW_VOLATILE template_formal_parameter_type formal_parameter_identifier template_parameter_maybe_initialize
+{
+  $3->add_modifier(IIT_volatile);
+  CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
+  inst->set_initializer($4);
+  $$ = inst;
+}
+        | KW_VOLATILE template_formal_parameter_type parameter_pack_identifier
+{
+  $3->add_modifier(IIT_volatile);
+  CPPInstance *inst = new CPPInstance($2, $3, 0, @3.file);
+  $$ = inst;
+}
         ;
 
 template_formal_parameter_type:
@@ -2181,50 +2196,29 @@ structure_init_body:
         ;
 
 function_parameter:
-        optional_attributes type formal_parameter_identifier maybe_initialize
+        optional_attributes storage_class type formal_parameter_identifier maybe_initialize
 {
-  $3->add_attributes($1);
-  $$ = new CPPInstance($2, $3, 0, @3.file);
-  $$->set_initializer($4);
-}
-        | optional_attributes KW_CONST type formal_parameter_identifier maybe_initialize
-{
+  if ($2 & CPPInstance::SC_const) {
+    $4->add_modifier(IIT_const);
+  }
+  if ($2 & CPPInstance::SC_volatile) {
+    $4->add_modifier(IIT_volatile);
+  }
   $4->add_attributes($1);
-  $4->add_modifier(IIT_const);
   $$ = new CPPInstance($3, $4, 0, @4.file);
   $$->set_initializer($5);
 }
-        | optional_attributes KW_CONST KW_REGISTER type formal_parameter_identifier maybe_initialize
+        | optional_attributes storage_class type_pack parameter_pack_identifier maybe_initialize
 {
-  $5->add_attributes($1);
-  $5->add_modifier(IIT_const);
-  $$ = new CPPInstance($4, $5, 0, @4.file);
-  $$->set_initializer($6);
-}
-        | optional_attributes type_pack parameter_pack_identifier maybe_initialize
-{
-  $3->add_attributes($1);
-  $$ = new CPPInstance($2, $3, 0, @3.file);
-  $$->set_initializer($4);
-}
-        | optional_attributes KW_CONST type_pack parameter_pack_identifier maybe_initialize
-{
+  if ($2 & CPPInstance::SC_const) {
+    $4->add_modifier(IIT_const);
+  }
+  if ($2 & CPPInstance::SC_volatile) {
+    $4->add_modifier(IIT_volatile);
+  }
   $4->add_attributes($1);
-  $4->add_modifier(IIT_const);
   $$ = new CPPInstance($3, $4, 0, @4.file);
   $$->set_initializer($5);
-}
-        | optional_attributes KW_CONST KW_REGISTER type_pack parameter_pack_identifier maybe_initialize
-{
-  $5->add_attributes($1);
-  $5->add_modifier(IIT_const);
-  $$ = new CPPInstance($4, $5, 0, @4.file);
-  $$->set_initializer($6);
-}
-        | optional_attributes KW_REGISTER function_parameter
-{
-  $$ = $3;
-  $$->_attributes.add_attributes_from($1);
 }
         ;
 
@@ -2264,6 +2258,11 @@ not_paren_formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT not_paren_formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes not_paren_formal_parameter_identifier  %prec UNARY
 {
@@ -2310,6 +2309,11 @@ formal_parameter_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT formal_parameter_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes formal_parameter_identifier  %prec UNARY
 {
@@ -2369,6 +2373,11 @@ parameter_pack_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT parameter_pack_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes parameter_pack_identifier  %prec UNARY
 {
@@ -2433,6 +2442,11 @@ not_paren_empty_instance_identifier:
   $$ = $2;
   $$->add_modifier(IIT_volatile);
 }
+        | KW_RESTRICT not_paren_empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
+}
         | '*' optional_attributes not_paren_empty_instance_identifier  %prec UNARY
 {
   $$ = $3;
@@ -2484,6 +2498,11 @@ empty_instance_identifier:
 {
   $$ = $2;
   $$->add_modifier(IIT_volatile);
+}
+        | KW_RESTRICT empty_instance_identifier  %prec UNARY
+{
+  $$ = $2;
+  $$->add_modifier(IIT_restrict);
 }
         | '*' optional_attributes not_paren_empty_instance_identifier  %prec UNARY
 {
@@ -2627,6 +2646,10 @@ type:
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
 }
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
+}
         ;
 
 type_pack:
@@ -2746,6 +2769,10 @@ type_decl:
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
 }
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
+}
         ;
 
 predefined_type:
@@ -2819,6 +2846,10 @@ predefined_type:
         | KW_AUTO
 {
   $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_auto));
+}
+        | KW_BUILTIN_VA_LIST
+{
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_va_list));
 }
         ;
 
@@ -3295,8 +3326,8 @@ element:
         | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL
         | OREQUAL | ANDEQUAL | XOREQUAL | LSHIFTEQUAL | RSHIFTEQUAL
         | ATTR_LEFT | ATTR_RIGHT
-        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_CATCH
-        | KW_CHAR | KW_CHAR8_T | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS
+        | KW_ALIGNAS | KW_ALIGNOF | KW_AUTO | KW_BOOL | KW_BUILTIN_VA_LIST
+        | KW_CATCH | KW_CHAR | KW_CHAR8_T | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS
         | KW_CONST | KW_CONSTEVAL | KW_CONSTEXPR | KW_CONSTINIT | KW_CONST_CAST
         | KW_DECLTYPE | KW_DEFAULT | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST
         | KW_ELSE | KW_ENUM | KW_EXTERN | KW_EXPLICIT | KW_EXPLICIT_LPAREN
@@ -3305,7 +3336,7 @@ element:
         | KW_NAMESPACE | KW_NEW | KW_NOEXCEPT | KW_NOEXCEPT_LPAREN | KW_NULLPTR
         | KW_OPERATOR | KW_OVERRIDE | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_REINTERPRET_CAST
-        | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
+        | KW_RESTRICT | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
         | KW_STATIC_ASSERT | KW_STATIC_CAST | KW_STRUCT | KW_TEMPLATE
         | KW_THREAD_LOCAL | KW_THROW | KW_TRUE | KW_TRY | KW_TYPEDEF
         | KW_TYPEID | KW_TYPENAME | KW_UNDERLYING_TYPE | KW_UNION

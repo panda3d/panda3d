@@ -117,6 +117,14 @@ add_element(const std::string &name, CPPExpression *value,
     } else if (_last_value->_type == CPPExpression::T_integer) {
       value = new CPPExpression(_last_value->_u._integer + 1);
 
+    } else if (_last_value->_type == CPPExpression::T_binary_operation &&
+               _last_value->_u._op._operator == '+' &&
+               _last_value->_u._op._op2->_type == CPPExpression::T_integer) {
+      // Prevent an endless expansion of + expressions.
+      value = new CPPExpression('+',
+        _last_value->_u._op._op1,
+        new CPPExpression(_last_value->_u._op._op2->_u._integer + 1));
+
     } else {
       // We may not be able to determine the value just yet.  No problem;
       // we'll just define it as another expression.

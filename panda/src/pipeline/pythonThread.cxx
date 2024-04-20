@@ -27,8 +27,7 @@ PythonThread(PyObject *function, PyObject *args,
              const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
-  _function = function;
-  Py_INCREF(_function);
+  _function = Py_NewRef(function);
   _args = nullptr;
   _result = nullptr;
 
@@ -78,14 +77,13 @@ PyObject *PythonThread::
 join() {
   Thread::join();
 
-  if (_result == nullptr) {
+  PyObject *result = _result;
+  if (result == nullptr) {
     // No result; return None.
-    Py_INCREF(Py_None);
-    return Py_None;
+    result = Py_None;
   }
 
-  Py_INCREF(_result);
-  return _result;
+  return Py_NewRef(result);
 }
 
 /**
@@ -147,10 +145,7 @@ call_python_func(PyObject *function, PyObject *args) {
         PyObject *exc, *val, *tb;
         PyErr_Fetch(&exc, &val, &tb);
 
-        Py_XINCREF(exc);
-        Py_XINCREF(val);
-        Py_XINCREF(tb);
-        PyErr_Restore(exc, val, tb);
+        PyErr_Restore(Py_XNewRef(exc), Py_XNewRef(val), Py_XNewRef(tb));
         PyErr_Print();
 
         PyErr_Restore(exc, val, tb);
@@ -206,10 +201,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
       // Temporarily restore the exception state so we can print a callback
       // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
+      PyErr_Restore(Py_XNewRef(exc), Py_XNewRef(val), Py_XNewRef(tb));
       PyErr_Print();
 
       PyThreadState_Swap(orig_thread_state);
@@ -252,10 +244,7 @@ call_python_func(PyObject *function, PyObject *args) {
         thread_cat.error()
           << "Exception occurred within " << *current_thread << "\n";
 
-        Py_XINCREF(exc);
-        Py_XINCREF(val);
-        Py_XINCREF(tb);
-        PyErr_Restore(exc, val, tb);
+        PyErr_Restore(Py_XNewRef(exc), Py_XNewRef(val), Py_XNewRef(tb));
         PyErr_Print();
       } else {
         thread_cat.info()

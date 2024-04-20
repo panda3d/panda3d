@@ -563,7 +563,22 @@ new_thread(int) {
  * data will facilitate this.
  */
 void PStatMonitor::
-new_data(int, int) {
+new_data(int thread_index, int frame_number) {
+  const PStatClientData *client_data = get_client_data();
+
+  // Don't bother to update the thread data until we know at least something
+  // about the collectors and threads.
+  if (client_data->get_num_collectors() != 0 &&
+      client_data->get_num_threads() != 0) {
+    PStatView &view = get_view(thread_index);
+    const PStatThreadData *thread_data = view.get_thread_data();
+    if (!thread_data->is_empty()) {
+      int latest = thread_data->get_latest_frame_number();
+      if (frame_number == latest) {
+        view.set_to_frame(thread_data->get_frame(frame_number));
+      }
+    }
+  }
 }
 
 /**

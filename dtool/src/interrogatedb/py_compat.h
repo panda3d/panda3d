@@ -239,6 +239,32 @@ INLINE PyObject *PyObject_CallMethodNoArgs(PyObject *obj, PyObject *name) {
 INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObject *arg) {
   return PyObject_CallMethodObjArgs(obj, name, arg, nullptr);
 }
+
+INLINE int PyObject_GC_IsTracked(PyObject *obj) {
+  return _PyObject_GC_IS_TRACKED(obj);
+}
+#endif
+
+/* Python 3.10 */
+
+#if PY_VERSION_HEX < 0x030A0000
+INLINE int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
+  int ret = PyModule_AddObject(module, name, value);
+  if (ret == 0) {
+    Py_INCREF(value);
+  }
+  return ret;
+}
+
+ALWAYS_INLINE PyObject *Py_NewRef(PyObject *obj) {
+  Py_INCREF(obj);
+  return obj;
+}
+
+ALWAYS_INLINE PyObject *Py_XNewRef(PyObject *obj) {
+  Py_XINCREF(obj);
+  return obj;
+}
 #endif
 
 /* Python 3.12 */

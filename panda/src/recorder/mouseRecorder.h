@@ -79,7 +79,7 @@ public:
 
   INLINE virtual int get_ref_count() const final { return ReferenceCount::get_ref_count(); };
   INLINE virtual void ref() const final { ReferenceCount::ref(); };
-  INLINE virtual bool unref() const final { return ReferenceCount::unref(); };
+  INLINE virtual bool unref() const { return ReferenceCount::unref(); };
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
