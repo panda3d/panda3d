@@ -737,6 +737,13 @@ class Actor(DirectObject, NodePath):
         else:
             return None
 
+    def getPlayMode(self, animName=None, partName=None):
+        if self.__animControlDict:
+            controls = self.getAnimControls(animName, partName, onlyPlaying=False)
+            if controls:
+                return controls[0].getPlayMode()
+        return None
+
     def hasLOD(self):
         """
         Return 1 if the actor has LODs, 0 otherwise
@@ -1762,7 +1769,7 @@ class Actor(DirectObject, NodePath):
         return None
 
     def getAnimControls(self, animName=None, partName=None, lodName=None,
-                        allowAsyncBind = True):
+                        allowAsyncBind = True, onlyPlaying = True):
         """getAnimControls(self, string, string=None, string=None)
 
         Returns a list of the AnimControls that represent the given
@@ -1840,7 +1847,7 @@ class Actor(DirectObject, NodePath):
                 # get all playing animations
                 for thisPart, animDict in animDictItems:
                     for anim in animDict.values():
-                        if anim.animControl and anim.animControl.isPlaying():
+                        if anim.animControl and (not onlyPlaying or anim.animControl.isPlaying()):
                             controls.append(anim.animControl)
             else:
                 # get the named animation(s) only.
@@ -2660,3 +2667,4 @@ class Actor(DirectObject, NodePath):
     get_base_frame_rate = getBaseFrameRate
     remove_anim_control_dict = removeAnimControlDict
     load_anims_on_all_lods = loadAnimsOnAllLODs
+    get_play_mode = getPlayMode
