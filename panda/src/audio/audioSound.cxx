@@ -232,3 +232,22 @@ get_comment(std::string key) const {
   }
   return "";
 }
+
+/*
+ * Returns the number of comments this sound has.
+ */
+int AudioSound::
+get_num_raw_comments() const {
+  return get_raw_comment().size();
+}
+
+/*
+ * Returns the comment at a given index.
+ */
+std::string AudioSound::
+get_raw_comment(int index) const {
+  if (index >= get_num_raw_comments() || index < 0) {
+    return "";
+  }
+  return get_raw_comment()[index];
+}
