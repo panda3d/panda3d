@@ -2220,7 +2220,7 @@ issue_parameters(int altered) {
           default:
 #ifndef NDEBUG
             GLCAT.error()
-              << "Invalid ShaderPtrSpec type " << (int)ptr_data->_type
+              << "Invalid ShaderPtrSpec type " << (int)ptr_data._type
               << " for shader input '" << spec._id._name << "'\n";
 #endif
             continue;
