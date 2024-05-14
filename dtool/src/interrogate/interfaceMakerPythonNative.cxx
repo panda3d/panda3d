@@ -3058,9 +3058,10 @@ write_module_class(ostream &out, Object *obj) {
       out << "static int Dtool_Traverse_" << ClassName << "(PyObject *self, visitproc visit, void *arg) {\n";
       out << "  // If the only reference remaining is the one held by the Python wrapper,\n";
       out << "  // report the circular reference to Python's GC, so that it can break it.\n";
-      out << "  " << cClassName  << " *local_this = nullptr;\n";
-      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
-      out << "    return -1;\n";
+      out << "  " << cClassName  << " *local_this;\n";
+      out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void**)(&local_this));\n";
+      out << "  if (local_this == nullptr) {\n";
+      out << "    return 0;\n";
       out << "  }\n";
       out << "  if (local_this->get_ref_count() == (int)((Dtool_PyInstDef *)self)->_memory_rules) {\n";
       if (py_subclassable) {
