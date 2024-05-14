@@ -88,6 +88,10 @@ OpenALAudioSound(OpenALAudioManager *manager,
       audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
+
+  // Not doing this results in a segmentation fault when running get_comment()
+  // due to release_sound_data deleting _sd
+  _comment = _sd->_comment;
   release_sound_data(false);
 }
 
@@ -1091,4 +1095,9 @@ status() const {
   } else {
     return AudioSound::PLAYING;
   }
+}
+
+std::vector<std::string> OpenALAudioSound::
+get_raw_comment() const {
+  return _comment;
 }
