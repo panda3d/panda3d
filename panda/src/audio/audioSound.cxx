@@ -200,7 +200,35 @@ operator << (ostream &out, AudioSound::SoundStatus status) {
 /**
  * Get the comment attached to this AudioSound as a list of strings.
  */
+std::vector<std::string> AudioSound::
+get_raw_comment() const {
+  return {};
+}
+
+/*
+ * Returns true if this AudioSound has a comment with the given key,
+ * i.e. "author". Case-sensitive.
+ */
+bool AudioSound::
+has_comment(std::string key) const {
+  for (std::string st : get_raw_comment()) {
+    if (st.rfind(key + "=", 0) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/*
+ * Returns the value for a given key in the comment. If the key is not present,
+ * returns an empty string.
+ */
 std::string AudioSound::
-get_comment() const {
+get_comment(std::string key) const {
+  for (std::string st : get_raw_comment()) {
+    if (st.rfind(key + "=", 0) == 0) {
+      return st.substr(key.length() + 1);
+    }
+  }
   return "";
 }

@@ -37,7 +37,7 @@ PUBLISHED:
   explicit OpusAudioCursor(OpusAudio *src, std::istream *stream);
   virtual ~OpusAudioCursor();
   virtual void seek(double offset);
-  std::string get_comment() const;
+  std::vector<std::string> get_raw_comment() const;
 
 public:
   virtual int read_samples(int n, int16_t *data);

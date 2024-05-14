@@ -1056,7 +1056,7 @@ status() const {
   }
 }
 
-std::string OpenALAudioSound::
-get_comment() const {
+std::vector<std::string> OpenALAudioSound::
+get_raw_comment() const {
   return _comment;
 }

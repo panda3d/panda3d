@@ -173,7 +173,7 @@ private:
     int                  _client_count;
     ExpirationQueue::iterator _expire;
 
-    std::string _comment;
+    std::vector<std::string> _comment;
   };
 
 

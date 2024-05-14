@@ -284,14 +284,9 @@ read_samples(int n, int16_t *data) {
   return n;
 }
 
-std::string OpusAudioCursor::
-get_comment() const {
-  std::string commentString;
-  for (std::string it : _comment) {
-    commentString.append(it);
-    commentString.append("\n");
-  }
-  return commentString;
+std::vector<std::string> OpusAudioCursor::
+get_raw_comment() const {
+  return _comment;
 }
 
 #endif // HAVE_OPUS

@@ -117,9 +117,6 @@ from . import DConfig
 # Register the extension methods for NodePath.
 from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 
-# Register the extension methods for AudioSound.
-from direct.extensions_native import AudioSound_extensions # pylint: disable=unused-import
-
 # This needs to be available early for DirectGUI imports
 import sys
 import builtins

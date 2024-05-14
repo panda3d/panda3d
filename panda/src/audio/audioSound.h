@@ -144,7 +144,11 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;
 
-  virtual std::string get_comment() const;
+  virtual std::vector<std::string> get_raw_comment() const;
+
+  bool has_comment(std::string key) const;
+  std::string get_comment(std::string key) const;
+  MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
 
 PUBLISHED:
   MAKE_PROPERTY(time, get_time, set_time);

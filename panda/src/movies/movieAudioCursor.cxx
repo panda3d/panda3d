@@ -168,7 +168,7 @@ ready() const {
   return 0x40000000;
 }
 
-std::string MovieAudioCursor::
-get_comment() const {
-    return "";
+std::vector<std::string> MovieAudioCursor::
+get_raw_comment() const {
+    return {};
 }

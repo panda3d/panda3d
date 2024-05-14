@@ -491,15 +491,15 @@ read_samples(int n, int16_t *data) {
   return n;
 }
 
-std::string FfmpegAudioCursor::
-get_comment() const {
+std::vector<std::string> FfmpegAudioCursor::
+get_raw_comment() const {
   AVDictionaryEntry *tag = NULL;
-  std::string commentString;
+  std::vector<std::string> commentStrings;
   while ((tag = av_dict_get(_format_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
-    commentString.append(tag->key);
-    commentString.append("=");
-    commentString.append(tag->value);
-    commentString.append("\n");
+    std::string comment(tag->key);
+    comment.append("=");
+    comment.append(tag->value);
+    commentStrings.push_back(comment);
   }
-  return commentString;
+  return commentStrings;
 }
