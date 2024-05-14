@@ -167,3 +167,8 @@ int MovieAudioCursor::
 ready() const {
   return 0x40000000;
 }
+
+std::string MovieAudioCursor::
+get_comment() const {
+    return "";
+}

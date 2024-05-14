@@ -144,6 +144,8 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;
 
+  virtual std::string get_comment() const;
+
 PUBLISHED:
   MAKE_PROPERTY(time, get_time, set_time);
   MAKE_PROPERTY(volume, get_volume, set_volume);

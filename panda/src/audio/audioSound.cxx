@@ -196,3 +196,11 @@ operator << (ostream &out, AudioSound::SoundStatus status) {
 
   return out << "**invalid AudioSound::SoundStatus(" << (int)status << ")**";
 }
+
+/**
+ * Get the comment attached to this AudioSound as a list of strings.
+ */
+std::string AudioSound::
+get_comment() const {
+  return "";
+}
