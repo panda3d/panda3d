@@ -490,3 +490,16 @@ read_samples(int n, int16_t *data) {
   _samples_read += n;
   return n;
 }
+
+std::string FfmpegAudioCursor::
+get_comment() const {
+  AVDictionaryEntry *tag = NULL;
+  std::string commentString;
+  while ((tag = av_dict_get(_format_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+    commentString.append(tag->key);
+    commentString.append("=");
+    commentString.append(tag->value);
+    commentString.append("\n");
+  }
+  return commentString;
+}

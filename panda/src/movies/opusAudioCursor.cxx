@@ -121,6 +121,17 @@ static const OpusFileCallbacks callbacks = {cb_read, cb_seek, cb_tell, nullptr};
 
 TypeHandle OpusAudioCursor::_type_handle;
 
+std::vector<std::string>
+parse_opus_comments(const OpusTags *com) {
+  // Blatant copy from vorbis code because they're the same struct
+  std::vector<std::string> comments;
+  for (int cnum = 0; cnum < com->comments; ++cnum) {
+    std::string tag(com->user_comments[cnum], com->comment_lengths[cnum]);
+    comments.push_back(tag);
+  }
+  return comments;
+}
+
 /**
  * Reads the .wav header from the indicated stream.  This leaves the read
  * pointer positioned at the start of the data.
@@ -156,6 +167,9 @@ OpusAudioCursor(OpusAudio *src, istream *stream) :
   _can_seek_fast = _can_seek;
 
   _is_valid = true;
+
+  const OpusTags* tag = op_tags(_op, -1);
+  _comment = parse_opus_comments(tag);
 }
 
 /**
@@ -268,6 +282,16 @@ read_samples(int n, int16_t *data) {
     n -= (end - data) / _audio_channels;
   }
   return n;
+}
+
+std::string OpusAudioCursor::
+get_comment() const {
+  std::string commentString;
+  for (std::string it : _comment) {
+    commentString.append(it);
+    commentString.append("\n");
+  }
+  return commentString;
 }
 
 #endif // HAVE_OPUS
