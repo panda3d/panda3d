@@ -172,6 +172,8 @@ private:
     int                  _channels;
     int                  _client_count;
     ExpirationQueue::iterator _expire;
+
+    std::vector<std::string> _comment;
   };
 
 

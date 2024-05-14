@@ -116,6 +116,8 @@ public:
 
   void finished();
 
+  std::vector<std::string> get_raw_comment() const;
+
 private:
   OpenALAudioSound(OpenALAudioManager* manager,
                    MovieAudio *movie,
@@ -212,6 +214,8 @@ private:
   PN_stdfloat _cone_inner_angle;
   PN_stdfloat _cone_outer_angle;
   PN_stdfloat _cone_outer_gain;
+
+  std::vector<std::string> _comment;
 
 public:
   static TypeHandle get_class_type() {
