@@ -125,6 +125,7 @@ public:
 public:
   // Atom specifications.
   Atom _wm_delete_window;
+  Atom _net_wm_name;
   Atom _net_wm_pid;
   Atom _net_wm_window_type;
   Atom _net_wm_window_type_splash;
