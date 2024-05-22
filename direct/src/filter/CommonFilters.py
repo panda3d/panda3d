@@ -712,7 +712,7 @@ o_color = lerp(o_color, cartooncolor, cartoon_thresh);""",
     def delGammaAdjust(self):
         self.del_filter("GammaAdjust")
 
-    def setSrgbEncode(self, sort=9):
+    def setSrgbEncode(self, force=False, sort=9):
         """ Applies the inverse sRGB EOTF to the output, unless the window
         already has an sRGB framebuffer, in which case this filter refuses to
         apply, to prevent accidental double-application.
