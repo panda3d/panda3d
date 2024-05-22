@@ -764,6 +764,9 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
                                ], sort=sort)
 
     def delHighDynamicRange(self):
+        self.fbprops.setFloatColor(False)
+        self.fbprops.setSrgbColor(True)
+        self.clamping = True
         self.del_filter("HighDynamicRange")
 
     def setExposureAdjust(self, stops, sort=7):
