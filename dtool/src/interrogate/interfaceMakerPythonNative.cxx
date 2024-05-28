@@ -885,12 +885,19 @@ write_prototypes(ostream &out_code, ostream *out_h) {
 
   // Write out a table of the externally imported types that will be filled in
   // upon module initialization.
-  if (!_external_imports.empty()) {
+  std::vector<CPPType *> ext_imports(_external_imports.begin(), _external_imports.end());
+  if (!ext_imports.empty()) {
     out_code << "#ifndef LINK_ALL_STATIC\n";
     out_code << "static Dtool_TypeDef imports[] = {\n";
 
+    // Ensure that there is a deterministic ordering of external imports.
+    std::sort(ext_imports.begin(), ext_imports.end(),
+              [] (const CPPType *a, const CPPType *b) {
+      return a->get_local_name(&parser) < b->get_local_name(&parser);
+    });
+
     int idx = 0;
-    for (CPPType *type : _external_imports) {
+    for (CPPType *type : ext_imports) {
       string class_name = type->get_local_name(&parser);
       string safe_name = make_safe_name(class_name);
 
@@ -903,7 +910,7 @@ write_prototypes(ostream &out_code, ostream *out_h) {
     out_code << "#endif\n\n";
   }
 
-  for (CPPType *type : _external_imports) {
+  for (CPPType *type : ext_imports) {
     string class_name = type->get_local_name(&parser);
     string safe_name = make_safe_name(class_name);
 
