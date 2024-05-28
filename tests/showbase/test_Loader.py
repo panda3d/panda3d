@@ -90,7 +90,7 @@ class FnargleLoader:
 """)
     tmpdir.join("fnargle.dist-info").mkdir()
     tmpdir.join("fnargle.dist-info", "METADATA").write("""
-Metadata-Version: 2.0
+Metadata-Version: 2.1
 Name: fnargle
 Version: 1.0.0
 """)
