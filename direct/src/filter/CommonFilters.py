@@ -24,14 +24,19 @@ from panda3d.core import getDefaultCoordinateSystem, CS_zup_right, CS_zup_left
 
 from direct.task.TaskManagerGlobal import taskMgr
 
-from .FilterManager import FilterManager
-from .filterBloomI import BLOOM_I
-from .filterBloomX import BLOOM_X
-from .filterBloomY import BLOOM_Y
-from .filterBlurX import BLUR_X
-from .filterBlurY import BLUR_Y
-from .filterCopy import COPY
-from .filterDown4 import DOWN_4
+from direct.filter.FilterManager import FilterManager
+from direct.filter.filterBloomI import BLOOM_I
+from direct.filter.filterBloomX import BLOOM_X
+from direct.filter.filterBloomY import BLOOM_Y
+from direct.filter.filterBlurX import BLUR_X
+from direct.filter.filterBlurY import BLUR_Y
+from direct.filter.filterCopy import COPY
+from direct.filter.filterDown4 import DOWN_4
+
+class ToneMap:
+    ACES = "ACES"
+    neutral = "Neutral"
+
 
 CARTOON_BODY = """
 float4 cartoondelta = k_cartoonseparation * texpix_txaux.xwyw;
@@ -96,8 +101,7 @@ void fshader(out float4 o_color : COLOR,
   }
   o_color.rgb = 1.0 + (occlusion * k_params1.y);
   o_color.a = 1.0;
-}
-"""
+}"""
 
 
 class FilterConfig:
@@ -279,16 +283,21 @@ class CommonFilters:
 
             text = "//Cg\n"
             if "HighDynamicRange" in configuration:
-                text += "static const float3x3 aces_input_mat = {\n"
-                text += "  {0.59719, 0.35458, 0.04823},\n"
-                text += "  {0.07600, 0.90834, 0.01566},\n"
-                text += "  {0.02840, 0.13383, 0.83777},\n"
-                text += "};\n"
-                text += "static const float3x3 aces_output_mat = {\n"
-                text += "  { 1.60475, -0.53108, -0.07367},\n"
-                text += "  {-0.10208,  1.10813, -0.00605},\n"
-                text += "  {-0.00327, -0.07276,  1.07602},\n"
-                text += "};\n"
+                if "ToneMap" in configuration:
+                    tonemap = configuration["ToneMap"]
+                    if tonemap == ToneMap.ACES:
+                        text += "static const float3x3 aces_input_mat = {\n"
+                        text += "  {0.59719, 0.35458, 0.04823},\n"
+                        text += "  {0.07600, 0.90834, 0.01566},\n"
+                        text += "  {0.02840, 0.13383, 0.83777},\n"
+                        text += "};\n"
+                        text += "static const float3x3 aces_output_mat = {\n"
+                        text += "  { 1.60475, -0.53108, -0.07367},\n"
+                        text += "  {-0.10208,  1.10813, -0.00605},\n"
+                        text += "  {-0.00327, -0.07276,  1.07602},\n"
+                        text += "};\n"
+
+
             text += "void vshader(float4 vtx_position : POSITION,\n"
             text += "  out float4 l_position : POSITION,\n"
 
@@ -383,8 +392,32 @@ class CommonFilters:
 
             # With thanks to Stephen Hill!
             if "HighDynamicRange" in configuration:
-                text += "  float3 aces_color = mul(aces_input_mat, o_color.rgb);\n"
-                text += "  o_color.rgb = saturate(mul(aces_output_mat, (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));\n"
+                if "ToneMap" in configuration:
+                    tonemap = configuration["ToneMap"]
+                    if tonemap == ToneMap.ACES:
+                        text += "  float3 aces_color = mul(aces_input_mat, o_color.rgb);\n"
+                        text += "  o_color.rgb = saturate(mul(aces_output_mat, (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));\n"
+                    elif tonemap == ToneMap.neutral:
+                        text += "float3 neutral_color = o_color.rgb;"
+                        text += "const float start_compression = 0.76;"
+                        text += "const float desaturation = 0.15;"
+
+                        text += "float x = min(neutral_color.r, min(neutral_color.g, neutral_color.b));"
+                        text += "float offset = x < 0.08 ? x - 6.25 * x * x : 0.04; "
+                        text += "neutral_color -= offset;"
+
+                        text += "float peak = max(neutral_color.r, max(neutral_color.g, neutral_color.b));"
+
+                        text += "if (peak < start_compression){ "
+                        text += "o_color.rgb =  neutral_color;"
+                        text += "}else{ "
+
+                        text += "const float d = 1.0 - start_compression;"
+                        text += "float new_peak = 1.0 - d * d / (peak + d - start_compression);"
+                        text += "neutral_color *= new_peak / peak;"
+                        text += "float g = 1.0 - 1.0 / (desaturation * (peak - new_peak) + 1.0);"
+
+                        text += "o_color.rgb = mix(neutral_color, new_peak * float3(1, 1, 1), g);}"
 
             if "GammaAdjust" in configuration:
                 gamma = configuration["GammaAdjust"]
@@ -449,7 +482,6 @@ class CommonFilters:
             if "ExposureAdjust" in configuration:
                 stops = configuration["ExposureAdjust"]
                 self.finalQuad.setShaderInput("exposure", 2 ** stops)
-
         self.update()
         return True
 
@@ -668,7 +700,7 @@ class CommonFilters:
             return self.reconfigure(old_enable, "SrgbEncode")
         return True
 
-    def setHighDynamicRange(self):
+    def setHighDynamicRange(self, tonemap=ToneMap.ACES):
         """ Enables HDR rendering by using a floating-point framebuffer,
         disabling color clamping on the main scene, and applying a tone map
         operator (ACES).
@@ -681,6 +713,7 @@ class CommonFilters:
 
         fullrebuild = (("HighDynamicRange" in self.configuration) is False)
         self.configuration["HighDynamicRange"] = 1
+        self.configuration["ToneMap"] = tonemap
         return self.reconfigure(fullrebuild, "HighDynamicRange")
 
     def delHighDynamicRange(self):
