@@ -24,14 +24,14 @@ from panda3d.core import getDefaultCoordinateSystem, CS_zup_right, CS_zup_left
 
 from direct.task.TaskManagerGlobal import taskMgr
 
-from direct.filter.FilterManager import FilterManager
-from direct.filter.filterBloomI import BLOOM_I
-from direct.filter.filterBloomX import BLOOM_X
-from direct.filter.filterBloomY import BLOOM_Y
-from direct.filter.filterBlurX import BLUR_X
-from direct.filter.filterBlurY import BLUR_Y
-from direct.filter.filterCopy import COPY
-from direct.filter.filterDown4 import DOWN_4
+from .FilterManager import FilterManager
+from .filterBloomI import BLOOM_I
+from .filterBloomX import BLOOM_X
+from .filterBloomY import BLOOM_Y
+from .filterBlurX import BLUR_X
+from .filterBlurY import BLUR_Y
+from .filterCopy import COPY
+from .filterDown4 import DOWN_4
 
 class ToneMap:
     ACES = "ACES"
