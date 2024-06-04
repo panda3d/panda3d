@@ -156,6 +156,28 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
   }
 }
 
+PT(GeomNode) CollisionSolid::
+get_viz() const {
+  LightMutexHolder holder(_lock);
+  if ((_flags & F_viz_geom_stale) != 0) {
+    if (_viz_geom == nullptr) {
+      ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
+      ((CollisionSolid *)this)->_bounds_viz_geom = new GeomNode("bounds_viz");
+    } else {
+      _viz_geom->remove_all_geoms();
+      _viz_geom->clear_effects();
+      _viz_geom->clear_transform();
+      _bounds_viz_geom->remove_all_geoms();
+      _bounds_viz_geom->clear_effects();
+      _bounds_viz_geom->clear_transform();
+    }
+    ((CollisionSolid *)this)->fill_viz_geom();
+    ((CollisionSolid *)this)->_flags &= ~F_viz_geom_stale;
+  }
+
+  return _viz_geom;
+}
+
 /**
  * Returns a PStatCollector that is used to count the number of bounding
  * volume tests made against a solid of this type in a given frame.
