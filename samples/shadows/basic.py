@@ -44,13 +44,9 @@ class World(DirectObject):
         # Preliminary capabilities check.
         
         if not base.win.getGsg().getSupportsBasicShaders():
-            self.t = addTitle(
-                "Shadow Demo: Video driver reports that shaders are not supported.")
-            return
+            raise ValueError("Shadow Demo: Video driver reports that shaders are not supported.")
         if not base.win.getGsg().getSupportsDepthTexture():
-            self.t = addTitle(
-                "Shadow Demo: Video driver reports that depth textures are not supported.")
-            return
+            raise ValueError("Shadow Demo: Video driver reports that depth textures are not supported.")
             
     def add_instructions(self):
         self.inst_p = addInstructions(0.06, 'P : stop/start the Panda Rotation')
