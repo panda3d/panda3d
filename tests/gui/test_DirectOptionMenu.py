@@ -71,3 +71,54 @@ def test_item_text_scale():
     # back to initial scale
     menu._unhighlightItem(item, item["frameColor"])
     assert item["text_scale"] == unhighlightScale
+
+def test_static_and_dynamic_text():
+
+    # Setup
+
+    itemListList = [
+        ["mew", "meow"],
+        ["cat", "kitten"]
+                    ]
+
+    staticText = "No kitties here!"
+
+    menuNormal = DirectOptionMenu(items = itemListList[0])
+    menuStatic = DirectOptionMenu(items = itemListList[0],
+                                  text = staticText)
+
+    # Check that the normal menu works as expected,
+    # even when changing selection or item-list
+
+    assert menuNormal["text"] == itemListList[0][0]
+
+    menuNormal.set(1)
+
+    assert menuNormal["text"] == itemListList[0][1]
+
+    menuNormal["items"] = itemListList[1]
+    menuNormal.set(0)
+
+    assert menuNormal["text"] == itemListList[1][0]
+
+    menuNormal.set(1)
+
+    assert menuNormal["text"] == itemListList[1][1]
+
+    # Check that the static menu doesn't change its text,
+    # regardless of item -list or -selection
+
+    assert menuStatic["text"] == staticText
+
+    menuStatic.set(1)
+
+    assert menuStatic["text"] == staticText
+
+    menuStatic["items"] = itemListList[1]
+    menuStatic.set(0)
+
+    assert menuStatic["text"] == staticText
+
+    menuStatic.set(1)
+
+    assert menuStatic["text"] == staticText
