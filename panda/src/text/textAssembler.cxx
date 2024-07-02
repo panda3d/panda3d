@@ -1781,6 +1781,76 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
              const TextProperties &properties) {
 
 #ifdef HAVE_HARFBUZZ
+  // before we do *anything*, check to see if small_caps == true, and change the characters before
+  // setting up everything else; check to see if small_caps == true, and change "glyph_index" if so
+  // (glyph_index *should* be the character, since we've not told harfbuff what to do with it yet)
+  // but first, we need some of these defined sooner rather than later:
+  DynamicTextFont *font = DCAST(DynamicTextFont, properties.get_font());
+
+  if (properties.has_small_caps()) {
+    // create a temporary buffer to iterate through
+    hb_buffer_t *tmp_harfbuff = nullptr;
+    tmp_harfbuff = hb_buffer_create();
+    // copy buf into our temp one, and reset it
+    hb_buffer_append(tmp_harfbuff, buf, 0, HB_FEATURE_GLOBAL_END);
+    hb_buffer_reset(buf);
+    // setup a couple more temp variables with the new temp buffer set up
+    unsigned int tmp_glyph_count;
+    hb_glyph_info_t *tmp_glyph_info = hb_buffer_get_glyph_infos(tmp_harfbuff, &tmp_glyph_count);
+
+    // iterate through the temporary buffer and see if we need to set any lowercase letters to
+    // "small_caps" uppercase ones.
+    for (unsigned int i = 0; i < tmp_glyph_count; ++i) {
+      int character = tmp_glyph_info[i].cluster;
+      int glyph_index = tmp_glyph_info[i].codepoint;
+
+      // reusing bits from get_character_glyphs, since this is perhaps the easiest and quickest way
+      // for me to check and get the uppercase values
+      const UnicodeLatinMap::Entry *map_entry =
+        UnicodeLatinMap::look_up((char32_t)character);
+      if (map_entry != nullptr &&
+          map_entry->_toupper_character != (char32_t)character) {
+        char32_t new_character = map_entry->_toupper_character;
+        // sanity check before we overwrite character
+        CPT(TextGlyph) tmp_glyph = nullptr;
+        bool got_glyph = font->get_glyph(new_character, tmp_glyph);
+        if (!got_glyph) {
+          // okay, that didn't go well, so try a similar ASCII equivalent in get_character_glyphs
+          // before we call it a loss here.
+          got_glyph = font->get_glyph(UnicodeLatinMap::look_up(map_entry->_ascii_equiv)->_toupper_character, tmp_glyph);
+        }
+
+        if (got_glyph) {
+          // one way or another, we were successful, so use the new character instead
+
+          // check to see if character and glyph_index are the same. if so, change glyph_index
+          // (which should ideally not be an actual index just yet)
+          if (character == glyph_index) {
+            hb_buffer_add(buf, new_character, character);
+            continue;
+          }
+          // however if character != glyph_index, I might need to actually figure something out and fix it.
+          char cbuff[512];
+          char gbuff[512];
+          sprintf(cbuff, "U+%04x", character);
+          sprintf(gbuff, "U+%04x", glyph_index);
+          text_cat.warning() << "Character \"";
+          if (character < 128 && isprint((unsigned int)character)) {
+            text_cat.warning(false) << (char)character;
+          } else {
+            text_cat.warning(false) << cbuff;
+          }
+          text_cat.warning(false) << "\" does not match glyph_index \""
+            << gbuff << "\".\n";
+        }
+      }
+      // always use the same character + glyph_index otherwise
+      hb_buffer_add(buf, glyph_index, character);
+    }
+    // clean this up since we no longer need the temp buffer
+    hb_buffer_destroy(tmp_harfbuff);
+  }
+
   // If we did not specify a text direction, harfbuzz will guess it based on
   // the script we are using.
   hb_direction_t direction = HB_DIRECTION_INVALID;
@@ -1798,7 +1868,6 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   hb_buffer_set_direction(buf, direction);
   hb_buffer_guess_segment_properties(buf);
 
-  DynamicTextFont *font = DCAST(DynamicTextFont, properties.get_font());
   hb_font_t *hb_font = font->get_hb_font();
   hb_shape(hb_font, buf, nullptr, 0);
 
@@ -1812,6 +1881,22 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   for (unsigned int i = 0; i < glyph_count; ++i) {
     int character = glyph_info[i].cluster;
     int glyph_index = glyph_info[i].codepoint;
+
+    // these are so that we may have individual 'character scales', especially for has_small_caps
+    PN_stdfloat char_glyph_scale = glyph_scale;
+    PN_stdfloat char_scale = scale;
+
+    // check to see if small_caps == true, and change scales if necessary
+    if (properties.has_small_caps()) {
+      const UnicodeLatinMap::Entry *map_entry =
+        UnicodeLatinMap::look_up((char32_t)character);
+      if (map_entry != nullptr &&
+          map_entry->_toupper_character != (char32_t)character) {
+        // if all went well earlier, we should *not* have to do anything more than modify scales now
+        char_glyph_scale = properties.get_small_caps_scale() * properties.get_text_scale();
+        char_scale = char_glyph_scale / (font->get_pixels_per_unit() * font->get_scale_factor() * 64.0);
+      }
+    }
 
     CPT(TextGlyph) glyph;
     if (!font->get_glyph_by_index(character, glyph_index, glyph)) {
@@ -1828,15 +1913,15 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
         << "\n";
     }
 
-    PN_stdfloat advance = glyph_pos[i].x_advance * scale;
+    PN_stdfloat advance = glyph_pos[i].x_advance * char_scale;
     if (glyph->is_whitespace()) {
       // A space is a special case.
       xpos += advance;
       continue;
     }
 
-    PN_stdfloat x_offset = glyph_pos[i].x_offset * scale;
-    PN_stdfloat y_offset = glyph_pos[i].y_offset * scale;
+    PN_stdfloat x_offset = glyph_pos[i].x_offset * char_scale;
+    PN_stdfloat y_offset = glyph_pos[i].y_offset * char_scale;
 
     // Build up a GlyphPlacement, indicating all of the Geoms that go into
     // this character.  Normally, there is only one Geom per character, but
@@ -1844,7 +1929,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     // ligatures.
     GlyphPlacement placement;
     placement._glyph = std::move(glyph);
-    placement._scale = glyph_scale;
+    placement._scale = char_glyph_scale;
     placement._xpos = xpos + x_offset;
     placement._ypos = properties.get_glyph_shift() + y_offset;
     placement._slant = properties.get_slant();
