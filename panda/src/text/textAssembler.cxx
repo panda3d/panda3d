@@ -38,6 +38,7 @@
 
 #ifdef HAVE_HARFBUZZ
 #include <hb.h>
+#include <vector>
 #endif
 
 using std::max;
@@ -1787,7 +1788,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   // but first, we need some of these defined sooner rather than later:
   DynamicTextFont *font = DCAST(DynamicTextFont, properties.get_font());
 
-  if (properties.has_small_caps()) {
+  if (properties.get_small_caps()) {
     // create a temporary buffer to iterate through
     hb_buffer_t *tmp_harfbuff = nullptr;
     tmp_harfbuff = hb_buffer_create();
@@ -1882,12 +1883,12 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     int character = glyph_info[i].cluster;
     int glyph_index = glyph_info[i].codepoint;
 
-    // these are so that we may have individual 'character scales', especially for has_small_caps
+    // these are so that we may have individual 'character scales', especially for get_small_caps
     PN_stdfloat char_glyph_scale = glyph_scale;
     PN_stdfloat char_scale = scale;
 
     // check to see if small_caps == true, and change scales if necessary
-    if (properties.has_small_caps()) {
+    if (properties.get_small_caps()) {
       const UnicodeLatinMap::Entry *map_entry =
         UnicodeLatinMap::look_up((char32_t)character);
       if (map_entry != nullptr &&
