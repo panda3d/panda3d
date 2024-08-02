@@ -913,7 +913,7 @@ compute_statistics(std::ostream &out, int indent_level,
 void Palettizer::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_Palettizer);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -1099,8 +1099,8 @@ finalize(BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* Palettizer::
-make_Palettizer(const FactoryParams &params) {
+TypedWritable *Palettizer::
+make_from_bam(const FactoryParams &params) {
   Palettizer *me = new Palettizer;
   DatagramIterator scan;
   BamReader *manager;

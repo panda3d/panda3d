@@ -21,6 +21,7 @@
 #include "cppBisonDefs.h"
 
 #include "vector_string.h"
+#include <unordered_set>
 
 class CPPExpression;
 class CPPType;
@@ -30,17 +31,25 @@ class CPPType;
  */
 class CPPManifest {
 public:
-  CPPManifest(const std::string &args, const cppyyltype &loc);
-  CPPManifest(const std::string &macro, const std::string &definition);
+  typedef std::unordered_set<const CPPManifest *> Ignores;
+
+  CPPManifest(const CPPPreprocessor &parser, const std::string &args, const cppyyltype &loc);
+  CPPManifest(const CPPPreprocessor &parser, const std::string &macro, const std::string &definition);
   ~CPPManifest();
 
   static std::string stringify(const std::string &source);
-  std::string expand(const vector_string &args = vector_string()) const;
+  void extract_args(vector_string &args, const std::string &expr, size_t &p) const;
+  std::string expand(const vector_string &args = vector_string(),
+                     bool expand_undefined = false,
+                     const Ignores &ignores = Ignores()) const;
+
 
   CPPType *determine_type() const;
 
+  bool is_equal(const CPPManifest *other) const;
   void output(std::ostream &out) const;
 
+  const CPPPreprocessor &_parser;
   std::string _name;
   bool _has_parameters;
   size_t _num_parameters;
@@ -59,7 +68,11 @@ private:
     ExpansionNode(int parm_number, bool stringify, bool paste);
     ExpansionNode(const std::string &str, bool paste = false);
     ExpansionNode(std::vector<ExpansionNode> nested, bool stringify = false, bool paste = false, bool optional = false);
+
+    bool operator ==(const ExpansionNode &other) const;
+
     int _parm_number;
+    bool _expand;
     bool _stringify;
     bool _paste;
     bool _optional;
@@ -73,8 +86,8 @@ private:
   void save_expansion(Expansion &expansion, const std::string &exp,
                       const vector_string &parameter_names);
 
-  std::string r_expand(const Expansion &expansion,
-                       const vector_string &args = vector_string()) const;
+  std::string r_expand(const Expansion &expansion, const vector_string &args,
+                       bool expand_undefined, const Ignores &ignores) const;
 
   Expansion _expansion;
 };

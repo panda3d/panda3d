@@ -61,8 +61,7 @@ This package contains the SDK for development with Panda3D.
 /usr/%_lib/panda3d
 /usr/include/panda3d
 """
-INSTALLER_SPEC_FILE_PVIEW = """\
-/usr/share/applications/pview.desktop
+INSTALLER_SPEC_FILE_MIME = """\
 /usr/share/mime-info/panda3d.mime
 /usr/share/mime-info/panda3d.keys
 /usr/share/mime/packages/panda3d.xml
@@ -384,9 +383,15 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
 
         txt = INSTALLER_SPEC_FILE[1:]
 
-        # Add the MIME associations if we have pview
-        if not PkgSkip("PVIEW"):
-            txt += INSTALLER_SPEC_FILE_PVIEW
+        # Add the MIME associations if we have pview or pstats
+        if not PkgSkip("PVIEW") or not PkgSkip("PSTATS"):
+            txt += INSTALLER_SPEC_FILE_MIME
+
+            if not PkgSkip("PVIEW"):
+                txt += "/usr/share/applications/pview.desktop\n"
+
+            if not PkgSkip("PSTATS"):
+                txt += "/usr/share/applications/pstats.desktop\n"
 
         # Add the platform-specific Python directories.
         dirs = set()

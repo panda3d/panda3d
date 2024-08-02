@@ -188,7 +188,8 @@ set_auto_vertical_scale() {
 
     for (int frame_number = oldest_frame; frame_number <= latest_frame; ++frame_number) {
       if (thread_data->has_frame(frame_number)) {
-        values.push_back(get_net_value(frame_number));
+        const FrameData &frame = get_frame_data(frame_number);
+        values.push_back(frame._net_value);
       }
     }
   }
@@ -589,9 +590,16 @@ get_frame_data(int frame_number) const {
   }
 
   const PStatThreadData *thread_data = _view.get_thread_data();
-  _view.set_to_frame(thread_data->get_frame(frame_number));
+  //assert(thread_data->has_frame(frame_number));
+  const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
+  _view.set_to_frame(frame_data);
 
   FrameData &fdata = _data[frame_number];
+  fdata._start = frame_data.get_start();
+  fdata._end = frame_data.get_end();
+  fdata._net_time = frame_data.get_net_time();
+
+  double net_value = 0.0;
 
   const PStatViewLevel *level = _view.get_level(_collector_index);
   int num_children = level->get_num_children();
@@ -604,6 +612,7 @@ get_frame_data(int frame_number) const {
     cd._net_value = child->get_net_value();
     if (cd._net_value != 0.0) {
       fdata.push_back(cd);
+      net_value += cd._net_value;
     }
   }
 
@@ -616,7 +625,10 @@ get_frame_data(int frame_number) const {
   cd._net_value = level->get_value_alone();
   if (cd._net_value > 0.0) {
     fdata.push_back(cd);
+    net_value += cd._net_value;
   }
+
+  fdata._net_value = net_value;
 
   ((PStatStripChart *)this)->inc_label_usage(fdata);
 
@@ -645,34 +657,38 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   }
 
   double then = now - pstats_average_time;
+  then_i = thread_data->get_frame_number_after(then, then_i);
+  now_i = thread_data->get_frame_number_after(now, now_i);
 
-  int latest_frame = thread_data->get_latest_frame_number();
-  while (then_i <= latest_frame &&
-         thread_data->get_frame(then_i).get_end() < then) {
-    then_i++;
-  }
-  while (now_i <= latest_frame &&
-         thread_data->get_frame(now_i).get_end() < now) {
-    now_i++;
-  }
-
-  then = max(then, thread_data->get_frame(then_i).get_start());
+  const FrameData *fdata = &get_frame_data(then_i);
+  then = max(then, fdata->_start);
+  double then_end = fdata->_end;
 
   // Sum up a weighted average of all of the individual frames we pass.
 
   // We start with just the portion of frame then_i that actually does fall
   // within our "then to now" window.
-  accumulate_frame_data(result, get_frame_data(then_i),
-                        thread_data->get_frame(then_i).get_end() - then);
-  double last = thread_data->get_frame(then_i).get_end();
+  accumulate_frame_data(result, *fdata, then_end - then);
+  double last = then_end;
 
   // Then we get all of each of the middle frames.
+  double weight = 0.0;
   for (int frame_number = then_i + 1;
        frame_number < now_i;
        frame_number++) {
-    accumulate_frame_data(result, get_frame_data(frame_number),
-                          thread_data->get_frame(frame_number).get_end() - last);
-    last = thread_data->get_frame(frame_number).get_end();
+    if (thread_data->has_frame(frame_number)) {
+      if (weight > 0.0) {
+        accumulate_frame_data(result, *fdata, weight);
+        weight = 0.0;
+      }
+      fdata = &get_frame_data(frame_number);
+    }
+    weight += fdata->_end - last;
+    last = fdata->_end;
+  }
+
+  if (weight > 0.0) {
+    accumulate_frame_data(result, *fdata, weight);
   }
 
   // And finally, we get the remainder as now_i.
@@ -681,22 +697,6 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   }
 
   scale_frame_data(result, 1.0f / (now - then));
-}
-
-/**
- * Returns the net value of the chart's collector for the indicated frame
- * number.
- */
-double PStatStripChart::
-get_net_value(int frame_number) const {
-  const FrameData &frame = get_frame_data(frame_number);
-
-  double net_value = 0.0;
-  for (const ColorData &cd : frame) {
-    net_value += cd._net_value;
-  }
-
-  return net_value;
 }
 
 /**
@@ -741,17 +741,21 @@ get_average_net_value() const {
     // We start with just the portion of frame then_i that actually does fall
     // within our "then to now" window (usually some portion of it will).
     const PStatFrameData &frame_data = thread_data->get_frame(then_i);
+    const FrameData *frame = &get_frame_data(then_i);
     if (frame_data.get_end() > then) {
-      double this_time = (frame_data.get_end() - then);
-      net_value += get_net_value(then_i) * this_time;
+      double this_time = (frame->_end - then);
+      net_value += frame->_net_value * this_time;
       net_time += this_time;
     }
     // Then we get all of each of the remaining frames.
     for (int frame_number = then_i + 1;
          frame_number <= now_i;
          frame_number++) {
-      double this_time = thread_data->get_frame(frame_number).get_net_time();
-      net_value += get_net_value(frame_number) * this_time;
+      if (thread_data->has_frame(frame_number)) {
+        frame = &get_frame_data(frame_number);
+      }
+      double this_time = frame->_net_time;
+      net_value += frame->_net_value * this_time;
       net_time += this_time;
     }
 

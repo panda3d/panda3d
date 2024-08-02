@@ -239,6 +239,10 @@ INLINE PyObject *PyObject_CallMethodNoArgs(PyObject *obj, PyObject *name) {
 INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObject *arg) {
   return PyObject_CallMethodObjArgs(obj, name, arg, nullptr);
 }
+
+INLINE int PyObject_GC_IsTracked(PyObject *obj) {
+  return _PyObject_GC_IS_TRACKED(obj);
+}
 #endif
 
 /* Python 3.10 */

@@ -200,6 +200,8 @@ public:
   bool isExportThisRun(Function *func);
   bool isFunctionWithThis( Function *func);
   bool IsRunTimeTyped(const InterrogateType &itype);
+  bool is_python_subclassable(CPPStructType *type);
+  bool has_self_member(CPPStructType *type);
 
   // comunicates the cast capabilites among methods..
   struct CastDetails {

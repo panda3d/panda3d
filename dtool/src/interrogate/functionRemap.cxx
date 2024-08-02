@@ -450,8 +450,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
 
   } else {
-    const char *separator = "";
-
     // If this function is marked as having an extension function, call that
     // instead.
     if (_extension) {
@@ -488,31 +486,39 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       }
     }
     call << "(";
-
-    if (_flags & F_explicit_self) {
-      // Pass on the PyObject * that we stripped off above.
-      call << separator << "self";
-      separator = ", ";
-    }
-    if (_flags & F_explicit_cls) {
-      call << separator << "cls";
-      separator = ", ";
-    }
-
-    size_t pn;
-    size_t num_parameters = pexprs.size();
-
-    for (pn = _first_true_parameter;
-         pn < num_parameters; ++pn) {
-      nassertd(pn < _parameters.size()) break;
-      call << separator;
-      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-      separator = ", ";
-    }
+    write_call_args(call, pexprs);
     call << ")";
   }
 
   return call.str();
+}
+
+/**
+ * Writes the arguments to pass to the function.
+ */
+void FunctionRemap::
+write_call_args(std::ostream &call, const vector_string &pexprs) const {
+  const char *separator = "";
+  if (_flags & F_explicit_self) {
+    // Pass on the PyObject * that we stripped off above.
+    call << separator << "self";
+    separator = ", ";
+  }
+  if (_flags & F_explicit_cls) {
+    call << separator << "cls";
+    separator = ", ";
+  }
+
+  size_t pn;
+  size_t num_parameters = pexprs.size();
+
+  for (pn = _first_true_parameter;
+       pn < num_parameters; ++pn) {
+    nassertd(pn < _parameters.size()) break;
+    call << separator;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    separator = ", ";
+  }
 }
 
 /**

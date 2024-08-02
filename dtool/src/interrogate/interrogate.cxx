@@ -302,7 +302,7 @@ predefine_macro(CPPParser& parser, const string& inoption) {
     macro_name = inoption;
   }
 
-  CPPManifest *macro = new CPPManifest(macro_name, macro_def);
+  CPPManifest *macro = new CPPManifest(parser, macro_name, macro_def);
   parser._manifests[macro->_name] = macro;
 }
 

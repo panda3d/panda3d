@@ -75,7 +75,7 @@ operator = (const TexturePosition &copy) {
 void TexturePosition::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_TexturePosition);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -103,8 +103,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* TexturePosition::
-make_TexturePosition(const FactoryParams &params) {
+TypedWritable *TexturePosition::
+make_from_bam(const FactoryParams &params) {
   TexturePosition *me = new TexturePosition;
   DatagramIterator scan;
   BamReader *manager;

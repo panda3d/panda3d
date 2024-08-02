@@ -2867,7 +2867,8 @@ del_files = ['core.py', 'core.pyc', 'core.pyo',
              '_core.pyd', '_core.so',
              'direct.py', 'direct.pyc', 'direct.pyo',
              '_direct.pyd', '_direct.so',
-             'dtoolconfig.pyd', 'dtoolconfig.so']
+             'dtoolconfig.pyd', 'dtoolconfig.so',
+             'net.pyd', 'net.so']
 
 for basename in del_files:
     path = os.path.join(GetOutputDir(), 'panda3d', basename)
@@ -2915,6 +2916,20 @@ if not PkgSkip("PYTHON"):
 if __debug__:
     print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
+""")
+
+    # Add this for forward compatibility.
+    ConditionalWriteFile(GetOutputDir() + '/panda3d/net.py', """\
+__all__ = 'BufferedDatagramConnection', 'Buffered_DatagramConnection', 'Connection', 'ConnectionListener', 'ConnectionManager', 'ConnectionReader', 'ConnectionWriter', 'DatagramGeneratorNet', 'DatagramSinkNet', 'Dtool_BorrowThisReference', 'Dtool_PyNativeInterface', 'NetAddress', 'NetDatagram', 'PointerToBaseConnection', 'PointerToBase_Connection', 'PointerToConnection', 'PointerTo_Connection', 'QueuedConnectionListener', 'QueuedConnectionManager', 'QueuedConnectionReader', 'QueuedReturnConnectionListenerData', 'QueuedReturnDatagram', 'QueuedReturnNetDatagram', 'QueuedReturnPointerToConnection', 'QueuedReturn_ConnectionListenerData', 'QueuedReturn_Datagram', 'QueuedReturn_NetDatagram', 'QueuedReturn_PointerTo_Connection', 'RecentConnectionReader', 'SocketAddress', 'SocketFdset', 'SocketIP', 'SocketTCP', 'SocketTCPListen', 'SocketUDP', 'SocketUDPIncoming', 'SocketUDPOutgoing', 'Socket_Address', 'Socket_IP', 'Socket_TCP', 'Socket_TCP_Listen', 'Socket_UDP', 'Socket_UDP_Incoming', 'Socket_UDP_Outgoing', 'Socket_fdset'
+
+from . import core
+
+scope = globals()
+for name in __all__:
+    if hasattr(core, name):
+        scope[name] = getattr(core, name)
+
+del core, scope, name
 """)
 
 # PandaModules is now deprecated; generate a shim for backward compatibility.
@@ -3002,7 +3017,7 @@ build_apps = direct.dist.commands:build_apps
 bdist_apps = direct.dist.commands:bdist_apps
 
 [setuptools.finalize_distribution_options]
-build_apps = direct.dist.commands:finalize_distribution_options
+build_apps = direct.dist._dist_hooks:finalize_distribution_options
 """
 
 if not PkgSkip("DIRECT"):
@@ -3905,7 +3920,7 @@ if GetTarget() != 'emscripten':
 OPTS=['DIR:panda/src/nativenet']
 IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3nativenet.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.core', 'ILIB:libp3nativenet', 'SRCDIR:panda/src/nativenet'])
+TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.net', 'ILIB:libp3nativenet', 'SRCDIR:panda/src/nativenet'])
 
 #
 # DIRECTORY: panda/src/net/
@@ -3920,7 +3935,7 @@ OPTS=['DIR:panda/src/net']
 IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite*.cxx"])
 IGATEFILES.remove("datagram_ui.h")
 TargetAdd('libp3net.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libp3net.in', opts=['IMOD:panda3d.core', 'ILIB:libp3net', 'SRCDIR:panda/src/net'])
+TargetAdd('libp3net.in', opts=['IMOD:panda3d.net', 'ILIB:libp3net', 'SRCDIR:panda/src/net'])
 
 #
 # DIRECTORY: panda/src/pstatclient/

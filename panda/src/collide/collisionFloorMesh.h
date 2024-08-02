@@ -101,7 +101,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter* manager, Datagram &me);
 
-  static TypedWritable *make_CollisionFloorMesh(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   static TypeHandle get_class_type() {
     return _type_handle;
   }

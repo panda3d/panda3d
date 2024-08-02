@@ -155,7 +155,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &me);
 
 protected:
-  static TypedWritable *make_CollisionBox(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

@@ -495,7 +495,7 @@ match_texture(TextureImage *texture) const {
 
     case KW_mipmap:
       request._minfilter = EggTexture::FT_linear_mipmap_linear;
-      request._magfilter = EggTexture::FT_linear_mipmap_linear;
+      request._magfilter = EggTexture::FT_linear;
       break;
 
     case KW_anisotropic:

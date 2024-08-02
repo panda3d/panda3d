@@ -53,6 +53,9 @@ public:
     // determined at a later stage based on the type of the expression that is
     // assigned to it.
     T_auto,
+
+    // This is also a special built-in type.
+    T_va_list,
   };
 
   enum Flags {

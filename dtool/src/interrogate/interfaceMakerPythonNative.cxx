@@ -32,6 +32,7 @@
 #include "cppStructType.h"
 #include "cppExpression.h"
 #include "cppParameterList.h"
+#include "cppReferenceType.h"
 #include "lineStream.h"
 
 #include <algorithm>
@@ -1106,6 +1107,170 @@ write_class_details(ostream &out, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName = obj->_itype.get_true_name();
 
+  CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
+  CPPStructType *struct_type = cpptype->as_struct_type();
+
+  // Determine which external imports we will need.
+  std::map<string, CastDetails> details;
+  std::map<string, CastDetails>::iterator di;
+  builder.get_type(TypeManager::unwrap(cpptype), false);
+  get_valid_child_classes(details, cpptype->as_struct_type());
+  for (di = details.begin(); di != details.end(); di++) {
+    // InterrogateType ptype =idb->get_type(di->first);
+    if (di->second._is_legal_py_class && !isExportThisRun(di->second._structType)) {
+      _external_imports.insert(TypeManager::resolve_type(di->second._structType));
+    }
+    // out << "IMPORT_THIS struct Dtool_PyTypedObject Dtool_" <<
+    // make_safe_name(di->second._to_class_name) << ";\n";
+  }
+
+  bool py_subclassable = is_python_subclassable(struct_type);
+  if (py_subclassable) {
+    assert(!obj->_constructors.empty());
+    out << "/**\n";
+    out << " * Proxy class for " << cClassName << "\n";
+    out << " */\n";
+    out << "class DtoolProxy_" << ClassName << " final : public " << cClassName << ", public DtoolProxy {\n";
+    out << "public:\n";
+    // I'd love just to use "using" to inherit the constructors from the base.
+    // However, MSVC seems to have a bug inheriting constructors with default
+    // arguments.
+    if (struct_type->is_default_constructible()) {
+      out << "  DtoolProxy_" << ClassName << "() = default;\n";
+    }
+    for (Function *func : obj->_constructors) {
+      for (FunctionRemap *remap : func->_remaps) {
+        CPPParameterList::Parameters &params = remap->_ftype->_parameters->_parameters;
+        if (params.empty()) {
+          continue;
+        }
+        out << "  DtoolProxy_" << ClassName << "(";
+        for (size_t i = 0; i < params.size(); ++i) {
+          if (i > 0) {
+            out << ", ";
+          }
+          params[i]->_type->output_instance(out, remap->get_parameter_name(i), &parser);
+          if (i > 0 && params[i]->_initializer != nullptr) {
+            out << " = " << *params[i]->_initializer;
+          }
+        }
+        out << ")";
+        if (remap->_ftype->_flags & CPPFunctionType::F_noexcept) {
+          out << " noexcept";
+        }
+        out << " : " << cClassName << "(";
+        for (size_t i = 0; i < params.size(); ++i) {
+          if (i > 0) {
+            out << ", ";
+          }
+          // Determine whether to pass with move semantics or not.
+          CPPType *param_type = params[i]->_type;
+          CPPType::SubType subtype = param_type->get_subtype();
+          while (subtype == CPPDeclaration::ST_typedef) {
+            param_type = param_type->as_typedef_type()->_type;
+            subtype = param_type->get_subtype();
+          }
+          if (subtype == CPPType::ST_pointer ||
+              subtype == CPPType::ST_const ||
+              subtype == CPPType::ST_enum ||
+              subtype == CPPType::ST_simple ||
+              (subtype == CPPType::ST_reference && param_type->as_reference_type()->_value_category == CPPReferenceType::VC_lvalue)) {
+            out << remap->get_parameter_name(i);
+          } else {
+            out << "std::move(" << remap->get_parameter_name(i) << ")";
+          }
+        }
+        out << ") {}\n";
+      }
+    }
+
+    // Move constructor is never listed above, but we do use it.
+    if (struct_type->is_move_constructible()) {
+      out << "  DtoolProxy_" << ClassName << "(" << cClassName << " &&from)";
+      CPPInstance *ctor = struct_type->get_move_constructor();
+      if (ctor != nullptr) {
+        CPPFunctionType *ftype = ctor->_type->as_function_type();
+        if (ftype != nullptr && (ftype->_flags & CPPFunctionType::F_noexcept) != 0) {
+          out << " noexcept";
+        }
+      }
+      out << " : " << cClassName << "(std::move(from)) {}\n";
+    }
+    out << "\n";
+    out << "  virtual bool unref() const override {\n";
+    out << "    if (!(" << cClassName << "::unref())) {\n";
+    out << "      // It was cleaned up by the Python garbage collector.\n";
+    out << "      return false;\n";
+    out << "    }\n";
+    out << "    nassertr(DtoolProxy::_self != nullptr, true);\n";
+    out << "\n";
+    out << "    // If the last reference to the object is the one being held by Python,\n";
+    out << "    // check whether the Python wrapper itself is also at a refcount of 1.\n";
+    out << "    bool result = true;\n";
+    out << "    if (get_ref_count() == 1) {\n";
+    out << "      PyGILState_STATE gstate = PyGILState_Ensure();\n";
+    out << "      int ref_count = Py_REFCNT(DtoolProxy::_self);\n";
+    out << "      assert(ref_count > 0);\n";
+    out << "      if (ref_count == 1) {\n";
+    out << "        // The last reference to the Python wrapper is being held by us.\n";
+    out << "        // Break the reference cycle and allow the object to go away.\n";
+    out << "        if (!" << cClassName << "::unref()) {\n";
+    out << "          PyObject_GC_UnTrack(DtoolProxy::_self);\n";
+    out << "          ((Dtool_PyInstDef *)DtoolProxy::_self)->_memory_rules = false;\n";
+    out << "          Py_CLEAR(DtoolProxy::_self);\n";
+    out << "\n";
+    out << "          // Let the caller destroy the object.\n";
+    out << "          result = false;\n";
+    out << "        }\n";
+    out << "      }\n";
+    //out << "      else {\n";
+    //out << "        // There is still a Python reference.  Make sure it can be cleaned up\n";
+    //out << "        // by the garbage collector when it gets to it.\n";
+    //out << "        if (!PyObject_GC_IsTracked(DtoolProxy::_self)) {\n";
+    //out << "          PyObject_GC_Track(DtoolProxy::_self);\n";
+    //out << "        }\n";
+    //out << "      }\n";
+    out << "      PyGILState_Release(gstate);\n";
+    out << "    }\n";
+    out << "    return result;\n";
+    out << "  }\n";
+    out << "\n";
+    out << "  virtual TypeHandle get_type() const override {\n";
+    out << "    return DtoolProxy::_type;\n";
+    out << "  }\n";
+    out << "\n";
+    out << "  virtual TypeHandle force_init_type() override {\n";
+    out << "    return DtoolProxy::_type;\n";
+    out << "  }\n";
+    out << "};\n";
+    out << "\n";
+
+    out << "static PyObject *Dtool_WrapProxy_" << ClassName << "(void *from_this, PyTypeObject *from_type) {\n";
+    out << "  DtoolProxy_" << ClassName << " *to_this;\n";
+    out << "  if (from_type == nullptr || from_type == &Dtool_" << ClassName << "._PyType) {\n";
+    out << "    to_this = (DtoolProxy_" << ClassName << " *)(" << cClassName << "*)from_this;\n";
+    out << "  }\n";
+    for (di = details.begin(); di != details.end(); di++) {
+      if (di->second._can_downcast && di->second._is_legal_py_class) {
+        out << "  else if (from_type == (PyTypeObject *)Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
+        out << "    " << di->second._to_class_name << " *other_this = (" << di->second._to_class_name << " *)from_this;\n" ;
+        out << "    to_this = (DtoolProxy_" << ClassName << " *)(" << cClassName << " *)other_this;\n";
+        out << "  }\n";
+      }
+    }
+    out << "  else {\n";
+    out << "    return nullptr;\n";
+    out << "  }\n";
+    out << "  nassertr(to_this->DtoolProxy::_self != nullptr, nullptr);\n";
+    out << "  PyObject *result = Py_NewRef(to_this->DtoolProxy::_self);\n";
+    // Directly call the parent class' unref(), because we know our version
+    // would only find that the Python refcount > 1 and do nothing else
+    out << "  bool nonzero = to_this->" << cClassName << "::unref();\n";
+    out << "  nassertr(nonzero, result);\n";
+    out << "  return result;\n";
+    out << "}\n\n";
+  }
+
   out << "/**\n";
   out << " * Python wrappers for functions of class " << cClassName << "\n" ;
   out << " */\n";
@@ -1149,11 +1314,9 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
-  CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
-
   // If we have "coercion constructors", write a single wrapper to consolidate
   // those.
-  int has_coerce = has_coerce_constructor(cpptype->as_struct_type());
+  int has_coerce = has_coerce_constructor(struct_type);
   if (has_coerce > 0) {
     write_coerce_constructor(out, obj, true);
     if (has_coerce > 1 && TypeManager::is_reference_count(obj->_itype._cpptype)) {
@@ -1174,20 +1337,6 @@ write_class_details(ostream &out, Object *obj) {
         std::cerr << "illegal element function for MAKE_SEQ: " << make_seq->_element_getter->_name << "\n";
       }
     }
-  }
-
-  // Determine which external imports we will need.
-  std::map<string, CastDetails> details;
-  std::map<string, CastDetails>::iterator di;
-  builder.get_type(TypeManager::unwrap(cpptype), false);
-  get_valid_child_classes(details, cpptype->as_struct_type());
-  for (di = details.begin(); di != details.end(); di++) {
-    // InterrogateType ptype =idb->get_type(di->first);
-    if (di->second._is_legal_py_class && !isExportThisRun(di->second._structType)) {
-      _external_imports.insert(TypeManager::resolve_type(di->second._structType));
-    }
-    // out << "IMPORT_THIS struct Dtool_PyTypedObject Dtool_" <<
-    // make_safe_name(di->second._to_class_name) << ";\n";
   }
 
   // Write support methods to cast from and to pointers of this type.
@@ -1241,27 +1390,46 @@ write_class_details(ostream &out, Object *obj) {
     out << "static PyObject *Dtool_Wrap_" << ClassName << "(void *from_this, PyTypeObject *from_type) {\n";
     out << "  " << cClassName << " *to_this;\n";
     out << "  if (from_type == nullptr || from_type == &Dtool_" << ClassName << "._PyType) {\n";
-    out << "    to_this = (" << cClassName << "*)from_this;\n";
+    out << "    to_this = (" << cClassName << " *)from_this;\n";
     out << "  }\n";
     for (di = details.begin(); di != details.end(); di++) {
       if (di->second._can_downcast && di->second._is_legal_py_class) {
         out << "  else if (from_type == (PyTypeObject *)Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
         out << "    " << di->second._to_class_name << " *other_this = (" << di->second._to_class_name << " *)from_this;\n" ;
-        out << "    to_this = (" << cClassName << "*)other_this;\n";
+        out << "    to_this = (" << cClassName << " *)other_this;\n";
         out << "  }\n";
       }
     }
     out << "  else {\n";
     out << "    return nullptr;\n";
     out << "  }\n";
-    out << "  // Allocate a new Python instance\n";
-    out << "  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&Dtool_" << ClassName << "._PyType, 0);\n";
-    out << "  self->_signature = PY_PANDA_SIGNATURE;\n";
-    out << "  self->_My_Type = &Dtool_" << ClassName << ";\n";
-    out << "  self->_ptr_to_object = to_this;\n";
-    out << "  self->_memory_rules = false;\n";
-    out << "  self->_is_const = false;\n";
-    out << "  return (PyObject *)self;\n";
+    if (has_self_member(struct_type)) {
+      out << "  PyObject *stored_self = to_this->__self__;\n";
+      out << "  if (stored_self == nullptr) {\n";
+      out << "    // Allocate a new Python instance\n";
+      out << "    Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&Dtool_" << ClassName << "._PyType, 0);\n";
+      out << "    self->_signature = PY_PANDA_SIGNATURE;\n";
+      out << "    self->_My_Type = &Dtool_" << ClassName << ";\n";
+      out << "    self->_ptr_to_object = to_this;\n";
+      out << "    self->_memory_rules = true;\n";
+      out << "    self->_is_const = false;\n";
+      out << "    to_this->__self__ = Py_NewRef((PyObject *)self);\n";
+      out << "    return Py_NewRef((PyObject *)self);\n";
+      out << "  }\n";
+      out << "  PyObject *result = Py_NewRef(stored_self);\n";
+      out << "  bool nonzero = to_this->unref();\n";
+      out << "  nassertr(nonzero, result);\n";
+      out << "  return result;\n";
+    } else {
+      out << "  // Allocate a new Python instance\n";
+      out << "  Dtool_PyInstDef *self = (Dtool_PyInstDef *)PyType_GenericAlloc(&Dtool_" << ClassName << "._PyType, 0);\n";
+      out << "  self->_signature = PY_PANDA_SIGNATURE;\n";
+      out << "  self->_My_Type = &Dtool_" << ClassName << ";\n";
+      out << "  self->_ptr_to_object = to_this;\n";
+      out << "  self->_memory_rules = false;\n";
+      out << "  self->_is_const = false;\n";
+      out << "  return (PyObject *)self;\n";
+    }
     out << "}\n\n";
   }
 }
@@ -1677,6 +1845,9 @@ write_module_class(ostream &out, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName =  obj->_itype.get_true_name();
   std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
+
+  CPPStructType *struct_type = obj->_itype._cpptype->as_struct_type();
+  bool py_subclassable = is_python_subclassable(struct_type);
 
   out << "/**\n";
   out << " * Python method tables for " << ClassName << " (" << export_class_name << ")\n" ;
@@ -2558,22 +2729,36 @@ write_module_class(ostream &out, Object *obj) {
 
           // Find the remap.  There should be only one.
           FunctionRemap *remap = *def._remaps.begin();
-          const char *container = "";
 
-          if (remap->_has_this) {
-            out << "  " << cClassName << " *local_this = nullptr;\n";
-            out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **) &local_this);\n";
-            out << "  if (local_this == nullptr) {\n";
-            out << "    return 0;\n";
-            out << "  }\n\n";
-            container = "local_this";
+          out << "  " << cClassName << " *local_this = nullptr;\n";
+          out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
+          out << "  if (local_this == nullptr) {\n";
+          out << "    return 0;\n";
+          out << "  }\n\n";
+
+          // Only participate in cycle detection if there are no C++
+          // references to this object.
+          out << "  if (local_this->get_ref_count() != (int)((Dtool_PyInstDef *)self)->_memory_rules) {\n";
+          out << "    return 0;\n";
+          out << "  }\n\n";
+
+          if (py_subclassable) {
+            // Python-subclassable types store a reference to their Python
+            // wrapper.
+            if (struct_type->is_final()) {
+              out << "  if (Py_TYPE(self) != &Dtool_" << ClassName << "._PyType) {\n";
+            } else {
+              out << "  if (Py_TYPE(self) != &Dtool_" << ClassName << "._PyType && DtoolInstance_TYPE(self) == &Dtool_" << ClassName << ") {\n";
+            }
+            out << "    Py_VISIT(self);\n";
+            out << "  }\n";
           }
 
           vector_string params((int)remap->_has_this);
           params.push_back("visit");
           params.push_back("arg");
 
-          out << "  return " << remap->call_function(out, 2, false, container, params) << ";\n";
+          out << "  return " << remap->call_function(out, 2, false, "local_this", params) << ";\n";
           out << "}\n\n";
         }
         break;
@@ -2859,6 +3044,57 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "  return Py_NewRef(Py_NotImplemented);\n";
     out << "}\n\n";
+  }
+
+  bool has_gc = (slots.count("tp_traverse") || has_self_member(struct_type));
+  bool has_local_traverse = false;
+  bool has_local_clear = false;
+  if (py_subclassable || has_gc) {
+    // Note that in the case of py_subclassable, the traverse function will
+    // only be called if the class is subclassed from Python, since we don't
+    // set Py_TPFLAGS_HAVE_GC, so we don't need to check whether it's a proxy.
+    if (!slots.count("tp_traverse")) {
+      has_local_traverse = true;
+      out << "static int Dtool_Traverse_" << ClassName << "(PyObject *self, visitproc visit, void *arg) {\n";
+      out << "  // If the only reference remaining is the one held by the Python wrapper,\n";
+      out << "  // report the circular reference to Python's GC, so that it can break it.\n";
+      out << "  " << cClassName  << " *local_this;\n";
+      out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void**)(&local_this));\n";
+      out << "  if (local_this == nullptr) {\n";
+      out << "    return 0;\n";
+      out << "  }\n";
+      out << "  if (local_this->get_ref_count() == (int)((Dtool_PyInstDef *)self)->_memory_rules) {\n";
+      if (py_subclassable) {
+        out << "    Py_VISIT(self);\n";
+      }
+      if (has_self_member(struct_type)) {
+        out << "    Py_VISIT(local_this->__self__);\n";
+      }
+      out << "  }\n";
+      out << "  return 0;\n";
+      out << "}\n";
+      out << "\n";
+    }
+
+    if (!slots.count("tp_clear")) {
+      has_local_clear = true;
+      out << "static int Dtool_Clear_" << ClassName << "(PyObject *self) {\n";
+      if (has_self_member(struct_type)) {
+        out << "  Py_CLEAR(local_this->__self__);\n";
+      }
+      if (py_subclassable) {
+        if (struct_type->is_final()) {
+          out << "  if (Py_TYPE(self) != &Dtool_" << ClassName << "._PyType) {\n";
+        } else {
+          out << "  if (Py_TYPE(self) != &Dtool_" << ClassName << "._PyType && DtoolInstance_TYPE(self) == &Dtool_" << ClassName << ") {\n";
+        }
+        out << "    DtoolProxy_" << ClassName << " *proxy = (DtoolProxy_" << ClassName << " *)DtoolInstance_VOID_PTR(self);\n";
+        out << "    Py_CLEAR(proxy->DtoolProxy::_self);\n";
+        out << "  }\n";
+      }
+      out << "  return 0;\n";
+      out << "}\n\n";
+    }
   }
 
   int num_getset = 0;
@@ -3151,7 +3387,7 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   string gcflag;
-  if (obj->_protocol_types & Object::PT_python_gc) {
+  if (has_gc && slots.count("tp_traverse")) {
     gcflag = " | Py_TPFLAGS_HAVE_GC";
   }
 
@@ -3179,12 +3415,22 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // traverseproc tp_traverse;
-  out << "    nullptr, // tp_traverse\n";
-  //write_function_slot(out, 4, slots, "tp_traverse");
+  if (has_local_traverse) {
+    out << "    &Dtool_Traverse_" << ClassName << ",\n";
+  } else if (has_gc) {
+    write_function_slot(out, 4, slots, "tp_traverse");
+  } else {
+    out << "    nullptr, // tp_traverse\n";
+  }
 
   // inquiry tp_clear;
-  out << "    nullptr, // tp_clear\n";
-  //write_function_slot(out, 4, slots, "tp_clear");
+  if (has_local_clear) {
+    out << "    &Dtool_Clear_" << ClassName << ",\n";
+  } else if (has_gc) {
+    write_function_slot(out, 4, slots, "tp_clear");
+  } else {
+    out << "    nullptr, // tp_clear\n";
+  }
 
   // richcmpfunc tp_richcompare;
   if (has_local_richcompare) {
@@ -3237,7 +3483,7 @@ write_module_class(ostream &out, Object *obj) {
   // newfunc tp_new;
   write_function_slot(out, 4, slots, "tp_new", "Dtool_new_" + ClassName);
   // freefunc tp_free;
-  if (obj->_protocol_types & Object::PT_python_gc) {
+  if (slots.count("tp_traverse") || has_self_member(struct_type)) {
     out << "    PyObject_GC_Del,\n";
   } else {
     out << "    PyObject_Del,\n";
@@ -3277,9 +3523,9 @@ write_module_class(ostream &out, Object *obj) {
   out << "  Dtool_UpcastInterface_" << ClassName << ",\n";
   out << "  Dtool_Wrap_" << ClassName << ",\n";
 
-  int has_coerce = has_coerce_constructor(obj->_itype._cpptype->as_struct_type());
+  int has_coerce = has_coerce_constructor(struct_type);
   if (has_coerce > 0) {
-    if (TypeManager::is_reference_count(obj->_itype._cpptype)) {
+    if (TypeManager::is_reference_count(struct_type)) {
       out << "  (CoerceFunction)Dtool_ConstCoerce_" << ClassName << ",\n";
       if (has_coerce > 1) {
         out << "  (CoerceFunction)Dtool_Coerce_" << ClassName << ",\n";
@@ -3915,7 +4161,7 @@ write_function_for_name(ostream &out, Object *obj,
         // None of the remaps take any keyword arguments, so let's check that
         // we take none.  This saves some checks later on.
         indent(out, 4) << "if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {\n";
-        if (min_args == 1 && min_args == 1) {
+        if (min_args == 1 && max_args == 1) {
           indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
           always_returns = write_function_forset(out, mii->second, min_args,
                                                  max_args, expected_params, 6,
@@ -6150,8 +6396,12 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     indent_level += 2;
   }
 
-  if (is_constructor && !remap->_has_this &&
-      (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
+  bool init_self_member = is_constructor &&
+    (return_flags & RF_coerced) == 0 &&
+    has_self_member(remap->_cpptype->as_struct_type());
+
+  if (init_self_member || (is_constructor && !remap->_has_this &&
+      (remap->_flags & FunctionRemap::F_explicit_self) != 0)) {
     // If we'll be passing "self" to the constructor, we need to pre-
     // initialize it here.  Unfortunately, we can't pre-load the "this"
     // pointer, but the constructor itself can do this.
@@ -6231,6 +6481,41 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
     return_expr = "&coerced";
 
+  } else if (is_constructor && (return_flags & RF_coerced) == 0 &&
+             is_python_subclassable(remap->_cpptype->as_struct_type())) {
+    // Add special code to detect whether we're trying to create a subclass
+    // of this object.  If so, create a proxy instance instead.
+    CPPType *orig_type = remap->_return_type->get_orig_type();
+    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)), false);
+    const InterrogateType &itype = idb->get_type(type_index);
+    std::string safe_name = make_safe_name(itype.get_scoped_name());
+
+    CPPType *type = remap->_return_type->get_temporary_type();
+    type->output_instance(indent(out, indent_level), "return_value", &parser);
+    out << ";\n";
+
+    indent(out, indent_level)
+      << "if (Py_TYPE(self) != &Dtool_" << safe_name << "._PyType) {\n";
+    indent(out, indent_level)
+      << "  DtoolProxy_" << safe_name << " *proxy = new DtoolProxy_" << safe_name << "(";
+    remap->write_call_args(out, pexprs);
+    out << ");\n";
+    indent(out, indent_level)
+      << "  DtoolProxy_Init(proxy, self, Dtool_" << safe_name << ", &Dtool_WrapProxy_" << safe_name << ");\n";
+    indent(out, indent_level)
+      << "  return_value = proxy;\n";
+    indent(out, indent_level)
+      << "} else {\n";
+
+    return_expr = remap->call_function(out, indent_level, true, container, pexprs);
+    indent(out, indent_level)
+      << "  return_value = " << return_expr << ";\n";
+    indent(out, indent_level)
+      << "}\n";
+
+    return_expr = "return_value";
+    manage_return = true;
+
   } else {
     // The general case; an ordinary constructor or function.
     return_expr = remap->call_function(out, indent_level, true, container, pexprs);
@@ -6288,6 +6573,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         error_return(out, indent_level + 2, return_flags);
       }
       indent(out, indent_level) << "}\n";
+    }
+
+    if (init_self_member) {
+      indent(out, indent_level)
+        << "return_value->__self__ = Py_NewRef(self);\n";
     }
 
     if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
@@ -8051,6 +8341,53 @@ IsRunTimeTyped(const InterrogateType &itype) {
     return true;
   }
 
+  return false;
+}
+
+/**
+ * Returns true if this object has special support for inheriting from Python.
+ */
+bool InterfaceMakerPythonNative::
+is_python_subclassable(CPPStructType *struct_type) {
+  if (struct_type != nullptr && !struct_type->is_final() &&
+      IsPandaTypedObject(struct_type) &&
+      TypeManager::is_reference_count(struct_type)) {
+
+    // Make sure the type has a published constructor.
+    TypeIndex type_index = builder.get_type(struct_type, false);
+    if (type_index != 0) {
+      Objects::iterator oi = _objects.find(type_index);
+      if (oi != _objects.end()) {
+        Object *obj = (*oi).second;
+        return !obj->_constructors.empty();
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns true if the type has a public member named __self__.
+ */
+bool InterfaceMakerPythonNative::
+has_self_member(CPPStructType *struct_type) {
+  if (struct_type == nullptr) {
+    return false;
+  }
+
+  CPPScope *scope = struct_type->get_scope();
+  if (scope != nullptr && scope->_variables.count("__self__")) {
+    return true;
+  }
+
+  for (const CPPStructType::Base &base : struct_type->_derivation) {
+    if (base._base != nullptr) {
+      CPPStructType *base_type = base._base->as_struct_type();
+      if (base_type != nullptr && has_self_member(base_type)) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 

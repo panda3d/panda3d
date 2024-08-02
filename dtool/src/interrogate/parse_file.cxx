@@ -45,7 +45,7 @@ predefine_macro(CPPParser &parser, const string &option) {
 
   cerr << "Predefining " << macro_name << " as " << macro_def << "\n";
 
-  CPPManifest *macro = new CPPManifest(macro_name, macro_def);
+  CPPManifest *macro = new CPPManifest(parser, macro_name, macro_def);
   parser._manifests[macro->_name] = macro;
 }
 
@@ -208,11 +208,12 @@ int
 main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "I:S:D:o:l:vp";
+  const char *optstr = "I:S:D:o:l:vpE";
   preprocess_argv(argc, argv);
 
   parser.set_verbose(2);
   bool prompt = false;
+  bool preprocess = false;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -249,6 +250,10 @@ main(int argc, char **argv) {
       prompt = true;
       break;
 
+    case 'E':
+      preprocess = true;
+      break;
+
     default:
       exit(1);
     }
@@ -268,15 +273,23 @@ main(int argc, char **argv) {
          << "  -D manifest_name=manifest_definition\n"
          << "  -o output_file (ignored)\n"
          << "  -v             (increase verbosity)\n"
+         << "  -E             (output preprocessed token stream)\n"
          << "  -p             (prompt for expression instead of dumping output)\n";
 
     exit(1);
   }
 
   for (int i = 1; i < argc; i++) {
-    if (!parser.parse_file(argv[i])) {
-      cerr << "Error in parsing.\n";
-      exit(1);
+    if (preprocess) {
+      if (!parser.preprocess_file(argv[i])) {
+        cerr << "Error in preprocessing.\n";
+        exit(1);
+      }
+    } else {
+      if (!parser.parse_file(argv[i])) {
+        cerr << "Error in parsing.\n";
+        exit(1);
+      }
     }
   }
 

@@ -262,7 +262,7 @@ public:
   virtual void write_datagram(BamWriter *manager, Datagram &me);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
-  static TypedWritable *make_TextureStage(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

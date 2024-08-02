@@ -987,7 +987,7 @@ compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
 void TexturePlacement::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_TexturePlacement);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -1077,8 +1077,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* TexturePlacement::
-make_TexturePlacement(const FactoryParams &params) {
+TypedWritable *TexturePlacement::
+make_from_bam(const FactoryParams &params) {
   TexturePlacement *me = new TexturePlacement;
   DatagramIterator scan;
   BamReader *manager;
