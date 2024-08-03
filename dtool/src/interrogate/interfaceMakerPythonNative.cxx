@@ -1331,10 +1331,10 @@ write_class_details(ostream &out, Object *obj) {
       write_make_seq(out, obj, ClassName, cClassName, make_seq);
     } else {
       if (!is_function_legal(make_seq->_length_getter)) {
-        std::cerr << "illegal length function for MAKE_SEQ: " << make_seq->_length_getter->_name << "\n";
+        nout << "illegal length function for MAKE_SEQ: " << make_seq->_length_getter->_name << "\n";
       }
       if (!is_function_legal(make_seq->_element_getter)) {
-        std::cerr << "illegal element function for MAKE_SEQ: " << make_seq->_element_getter->_name << "\n";
+        nout << "illegal element function for MAKE_SEQ: " << make_seq->_element_getter->_name << "\n";
       }
     }
   }
