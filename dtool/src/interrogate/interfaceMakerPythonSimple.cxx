@@ -43,6 +43,18 @@ InterfaceMakerPythonSimple::
 }
 
 /**
+ * Generates the list of #include ... whatever that's required by this
+ * particular interface to the indicated output stream.
+ */
+void InterfaceMakerPythonSimple::
+write_includes(std::ostream &out) {
+  out << "#if PY_VERSION_HEX >= 0x30300000\n";
+  out << "#define Py_LIMITED_API 0x30300000\n";
+  out << "#endif\n\n";
+  InterfaceMakerPython::write_includes(out);
+}
+
+/**
  * Generates the list of function prototypes corresponding to the functions
  * that will be output in write_functions().
  */

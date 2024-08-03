@@ -35,6 +35,7 @@ public:
   InterfaceMakerPythonSimple(InterrogateModuleDef *def);
   virtual ~InterfaceMakerPythonSimple();
 
+  virtual void write_includes(std::ostream &out);
   virtual void write_prototypes(std::ostream &out,std::ostream *out_h);
   virtual void write_functions(std::ostream &out);
 
