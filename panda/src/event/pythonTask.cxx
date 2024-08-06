@@ -795,6 +795,7 @@ do_python_task() {
             << *this << " is now polling " << PyUnicode_AsUTF8(str) << ".done()\n";
           Py_DECREF(str);
         }
+        Py_DECREF(fut_done);
         _fut_waiter = result;
         return DS_cont;
       }
