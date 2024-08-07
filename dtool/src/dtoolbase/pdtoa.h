@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 EXPCL_DTOOL_DTOOLBASE void pdtoa(double value, char *buffer);
+EXPCL_DTOOL_DTOOLBASE void pftoa(float value, char *buffer);
 
 #ifdef __cplusplus
 };  /* end of extern "C" */

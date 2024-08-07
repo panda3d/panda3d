@@ -16,6 +16,18 @@
 using std::max;
 using std::min;
 
+/**
+ * Returns a copy of the FrameBufferProperties, but without back buffers.
+ * This is used since the GraphicsOutput constructor makes some decisions
+ * based on whether this is set, so we need to unset it early.
+ */
+static FrameBufferProperties
+without_back_buffers(const FrameBufferProperties &fb_prop) {
+  FrameBufferProperties copy(fb_prop);
+  copy.set_back_buffers(0);
+  return copy;
+}
+
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
 /**
@@ -29,7 +41,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  GraphicsBuffer(engine, pipe, name, without_back_buffers(fb_prop), win_prop, flags, gsg, host),
   _requested_multisamples(0),
   _requested_coverage_samples(0),
   _rb_context(nullptr),

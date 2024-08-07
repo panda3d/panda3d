@@ -105,7 +105,7 @@ PROJECT_URLS = dict([line.split('=', 1) for line in GetMetadataValue('project_ur
 METADATA = {
     "license": GetMetadataValue('license'),
     "name": GetMetadataValue('name'),
-    "metadata_version": "2.0",
+    "metadata_version": "2.1",
     "generator": "makepanda",
     "summary": GetMetadataValue('description'),
     "extensions": {

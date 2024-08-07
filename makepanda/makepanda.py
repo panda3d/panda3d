@@ -3002,7 +3002,7 @@ if not PkgSkip("PYTHON"):
 # This is just some basic stuff since setuptools just needs this file to
 # exist, otherwise it will not read the entry_points.txt file.  Maybe we will
 # eventually want to merge this with the metadata generator in makewheel.py.
-METADATA = """Metadata-Version: 2.0
+METADATA = """Metadata-Version: 2.1
 Name: Panda3D
 Version: {version}
 License: BSD

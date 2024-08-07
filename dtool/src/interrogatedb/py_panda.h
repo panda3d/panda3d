@@ -162,6 +162,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
+// Extract the PyTypeObject pointer corresponding to a Dtool_PyTypedObject.
+#define Dtool_GetPyTypeObject(type) (&(type)->_PyType)
+
 // Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
 #define DtoolInstance_Check(obj) \
   (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
