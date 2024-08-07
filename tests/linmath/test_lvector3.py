@@ -127,3 +127,16 @@ def test_vec3_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec3_repr():
+    assert repr(Vec3F(0.1, 0.2, 0.3)) == "LVector3f(0.1, 0.2, 0.3)"
+    assert repr(Vec3F(-0.9999999403953552, 1.00000001, 1)) == "LVector3f(-0.99999994, 1, 1)"
+    assert repr(Vec3F(-9.451235e29, 9.451234e-19, 1e-11)) == "LVector3f(-9.451235e29, 9.451234e-19, 1e-11)"
+    assert repr(Vec3F(0.001, 0.0001, 0.00001)) == "LVector3f(0.001, 0.0001, 0.00001)"
+    assert repr(Vec3F(-0.001, -0.0001, -0.00001)) == "LVector3f(-0.001, -0.0001, -0.00001)"
+    assert repr(Vec3D(0.1, 0.2, 0.3)) == "LVector3d(0.1, 0.2, 0.3)"
+    assert repr(Vec3D(-0.9999999403953552, 1.00000001, 1)) == "LVector3d(-0.9999999403953552, 1.00000001, 1)"
+    assert repr(Vec3D(-9.451235e29, 9.451234e-19, 1e-11)) == "LVector3d(-9.451235e29, 9.451234e-19, 1e-11)"
+    assert repr(Vec3D(0.001, 0.0001, 0.00001)) == "LVector3d(0.001, 0.0001, 0.00001)"
+    assert repr(Vec3D(-0.001, -0.0001, -0.00001)) == "LVector3d(-0.001, -0.0001, -0.00001)"

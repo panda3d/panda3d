@@ -16,12 +16,23 @@
  */
 INLINE_LINMATH std::string Extension<FLOATNAME(LPoint3)>::
 __repr__() const {
-  std::ostringstream out;
-  out << "LPoint3" << FLOATTOKEN << "("
-      << MAYBE_ZERO(_this->_v(0)) << ", "
-      << MAYBE_ZERO(_this->_v(1)) << ", "
-      << MAYBE_ZERO(_this->_v(2)) << ")";
-  return out.str();
+  char buf[128] = "LPoint3";
+  char *p = buf + strlen(buf);
+  *(p++) = FLOATTOKEN;
+  *(p++) = '(';
+  FLOATTYPE_REPR(_this->_v(0), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(1), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(2), p);
+  p += strlen(p);
+  *(p++) = ')';
+  *p = '\0';
+  return std::string(buf, p - buf);
 }
 
 /**

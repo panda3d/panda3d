@@ -143,3 +143,10 @@ def test_vec4_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec4_repr():
+    assert repr(Vec4F(0.1, 0.2, 0.3, 0.4)) == "LVector4f(0.1, 0.2, 0.3, 0.4)"
+    assert repr(Vec4F(-0.9999999403953552, 1.000001, 1e-8, 0.0)) == "LVector4f(-0.99999994, 1.000001, 1e-8, 0)"
+    assert repr(Vec4D(0.1, 0.2, 0.3, 0.4)) == "LVector4d(0.1, 0.2, 0.3, 0.4)"
+    assert repr(Vec4D(-0.9999999403953552, 1.00000001, 1e-8, 0.0)) == "LVector4d(-0.9999999403953552, 1.00000001, 1e-8, 0)"
