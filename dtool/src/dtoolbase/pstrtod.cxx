@@ -16,9 +16,12 @@
 #include <ctype.h>
 #include <math.h>
 #include <limits>
+#include <string.h>
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
+#else
+#include <strings.h>
 #endif
 
 /**
