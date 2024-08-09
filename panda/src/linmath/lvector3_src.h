@@ -99,4 +99,12 @@ private:
   static TypeHandle _type_handle;
 };
 
+namespace std {
+  template<>
+  struct hash<FLOATNAME(LVector3)> {
+    size_t
+    operator()(const FLOATNAME(LVector3) &_vec) const noexcept { return _vec.get_hash(); }
+  };
+}
+
 #include "lvector3_src.I"
