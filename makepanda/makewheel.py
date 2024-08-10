@@ -94,6 +94,16 @@ IGNORE_UNIX_DEPS_OF = [
     "panda3d_tools/pstats",
 ]
 
+# Tools to exclude from the wheel.
+EXCLUDE_BINARIES = [
+    'eggcacher',
+    'packpanda',
+    'interrogate',
+    'interrogate_module',
+    'test_interrogate',
+    'parse_file',
+]
+
 WHEEL_DATA = """Wheel-Version: 1.0
 Generator: makepanda
 Root-Is-Purelib: false
@@ -856,7 +866,7 @@ if __debug__:
     tools_init = ''
     for file in sorted(os.listdir(bin_dir)):
         basename = os.path.splitext(file)[0]
-        if basename in ('eggcacher', 'packpanda'):
+        if basename in EXCLUDE_BINARIES:
             continue
 
         source_path = os.path.join(bin_dir, file)
