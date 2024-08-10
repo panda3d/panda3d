@@ -612,6 +612,50 @@ def GetSevenZip():
 def HasSevenZip():
     return GetSevenZip() is not None
 
+
+########################################################################
+##
+## GetInterrogate[Module]
+##
+## Installs and locates the interrogate tool.
+##
+########################################################################
+
+INTERROGATE_DIR = None
+INTERROGATE_LOCK = threading.Lock()
+
+def GetInterrogateDir():
+    global INTERROGATE_DIR
+
+    if INTERROGATE_DIR:
+        return INTERROGATE_DIR
+
+    with INTERROGATE_LOCK:
+        if INTERROGATE_DIR:
+            return INTERROGATE_DIR
+
+        dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.1.0.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall -t \"%s\" panda3d-interrogate==0.1.0" % (sys.executable, dir))
+
+        INTERROGATE_DIR = dir
+
+    return dir
+
+
+def GetInterrogate():
+    path = GetInterrogateDir() + '/interrogate/interrogate'
+    if sys.platform == "win32":
+        path += ".exe"
+    return path
+
+
+def GetInterrogateModule():
+    path = GetInterrogateDir() + '/interrogate_module/interrogate_module'
+    if sys.platform == "win32":
+        path += ".exe"
+    return path
+
 ########################################################################
 ##
 ## LocateBinary

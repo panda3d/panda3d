@@ -1638,12 +1638,7 @@ def CompileIgate(woutd,wsrc,opts):
         ConditionalWriteFile(woutd, "")
         return
 
-    if not CrossCompiling():
-        # If we're compiling for this platform, we can use the one we've built.
-        cmd = os.path.join(GetOutputDir(), 'bin', 'interrogate')
-    else:
-        # Assume that interrogate is on the PATH somewhere.
-        cmd = 'interrogate'
+    cmd = GetInterrogate()
 
     if GetVerbose():
         cmd += ' -v'
@@ -1722,12 +1717,7 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj, woutc, opts)
         return
 
-    if not CrossCompiling():
-        # If we're compiling for this platform, we can use the one we've built.
-        cmd = os.path.join(GetOutputDir(), 'bin', 'interrogate_module')
-    else:
-        # Assume that interrogate_module is on the PATH somewhere.
-        cmd = 'interrogate_module'
+    cmd = GetInterrogateModule()
 
     cmd += ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native'
     importmod = GetValueOption(opts, "IMPORT:")
@@ -3329,13 +3319,10 @@ CopyAllHeaders('dtool/src/dtoolbase')
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
 CopyFile(GetOutputDir()+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 CopyAllHeaders('dtool/metalibs/dtool')
-CopyAllHeaders('dtool/src/cppparser')
 CopyAllHeaders('dtool/src/prc', skip=["prc_parameters.h"])
 CopyAllHeaders('dtool/src/dconfig')
 CopyAllHeaders('dtool/src/interrogatedb')
 CopyAllHeaders('dtool/metalibs/dtoolconfig')
-CopyAllHeaders('dtool/src/interrogate')
-CopyAllHeaders('dtool/src/test_interrogate')
 CopyAllHeaders('panda/src/putil')
 CopyAllHeaders('panda/src/pandabase')
 CopyAllHeaders('panda/src/express')
@@ -3574,20 +3561,6 @@ TargetAdd('libp3dtool.dll', input='p3dtoolbase_lookup3.obj')
 TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL','MIMALLOC'])
 
 #
-# DIRECTORY: dtool/src/cppparser/
-#
-
-OPTS=['DIR:dtool/src/cppparser', 'BISONPREFIX_cppyy']
-CreateFile(GetOutputDir()+"/include/cppBison.h")
-TargetAdd('p3cppParser_cppBison.obj',  opts=OPTS, input='cppBison.yxx')
-TargetAdd('cppBison.h', input='p3cppParser_cppBison.obj', opts=['DEPENDENCYONLY'])
-TargetAdd('p3cppParser_composite1.obj', opts=OPTS, input='p3cppParser_composite1.cxx')
-TargetAdd('p3cppParser_composite2.obj', opts=OPTS, input='p3cppParser_composite2.cxx')
-TargetAdd('libp3cppParser.ilb', input='p3cppParser_composite1.obj')
-TargetAdd('libp3cppParser.ilb', input='p3cppParser_composite2.obj')
-TargetAdd('libp3cppParser.ilb', input='p3cppParser_cppBison.obj')
-
-#
 # DIRECTORY: dtool/src/prc/
 #
 
@@ -3629,42 +3602,6 @@ PyTargetAdd('interrogatedb.pyd', input='libp3dtoolconfig.dll')
 PyTargetAdd('interrogatedb.pyd', input='libp3interrogatedb.dll')
 
 #
-# DIRECTORY: dtool/src/interrogate/
-#
-
-OPTS=['DIR:dtool/src/interrogate', 'DIR:dtool/src/cppparser', 'DIR:dtool/src/interrogatedb']
-TargetAdd('interrogate_composite1.obj', opts=OPTS, input='interrogate_composite1.cxx')
-TargetAdd('interrogate_composite2.obj', opts=OPTS, input='interrogate_composite2.cxx')
-TargetAdd('interrogate.exe', input='interrogate_composite1.obj')
-TargetAdd('interrogate.exe', input='interrogate_composite2.obj')
-TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
-TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
-TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
-TargetAdd('interrogate.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
-
-preamble = WriteEmbeddedStringFile('interrogate_preamble_python_native', inputs=[
-    'dtool/src/interrogatedb/py_panda.cxx',
-    'dtool/src/interrogatedb/py_compat.cxx',
-    'dtool/src/interrogatedb/py_wrappers.cxx',
-    'dtool/src/interrogatedb/dtool_super_base.cxx',
-])
-TargetAdd('interrogate_module_preamble_python_native.obj', opts=OPTS, input=preamble)
-TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
-TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
-TargetAdd('interrogate_module.exe', input='interrogate_module_preamble_python_native.obj')
-TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
-TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
-TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
-TargetAdd('interrogate_module.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
-
-TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
-TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
-TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
-TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
-TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
-TargetAdd('parse_file.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
-
-#
 # DIRECTORY: dtool/src/prckeys/
 #
 
@@ -3674,17 +3611,6 @@ if not PkgSkip("OPENSSL"):
     TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
     TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('make-prc-key.exe', opts=['ADVAPI', 'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
-
-#
-# DIRECTORY: dtool/src/test_interrogate/
-#
-
-OPTS=['DIR:dtool/src/test_interrogate']
-TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
-TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
-TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
-TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
-TargetAdd('test_interrogate.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: dtool/src/dtoolbase/
