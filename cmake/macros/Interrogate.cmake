@@ -257,7 +257,7 @@ function(interrogate_sources target output database language_flags)
       make_directory "${output_directory}"
     COMMAND ${CMAKE_COMMAND} -E
       make_directory "${database_directory}"
-    COMMAND host_interrogate
+    COMMAND interrogate
       -oc "${output}"
       -od "${database}"
       -srcdir "${srcdir}"
@@ -272,7 +272,7 @@ function(interrogate_sources target output database language_flags)
       ${include_flags}
       ${scan_sources}
 
-    DEPENDS host_interrogate ${sources} ${extensions} ${nfiles}
+    DEPENDS interrogate ${sources} ${extensions} ${nfiles}
     COMMENT "Interrogating ${target}")
 
   # Propagate the target's compile definitions to the output file
@@ -362,13 +362,13 @@ function(add_python_module module)
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
     COMMAND ${CMAKE_COMMAND} -E
       make_directory "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}"
-    COMMAND host_interrogate_module
+    COMMAND interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
       -module ${module} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles_rel}
-    DEPENDS host_interrogate_module ${infiles_abs}
+    DEPENDS interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}")
 
   # CMake chokes on ${CMAKE_CFG_INTDIR} in source paths when unity builds are
