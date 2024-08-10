@@ -472,14 +472,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install build-essential ninja-build bison flex
 
-    - name: Build Host Interrogate
-      shell: bash
-      run: |
-        mkdir -p host-build
-        cmake -S . -B host-build -DBUILD_DIRECT=OFF -DBUILD_PANDA=OFF -DBUILD_PANDATOOL=OFF -DBUILD_CONTRIB=OFF -DBUILD_DTOOL=ON -DBUILD_MODELS=OFF -DBUILD_SHARED_LIBS=OFF -DINTERROGATE_PYTHON_INTERFACE=OFF
-        cmake --build host-build --config Standard --parallel 4
-        echo host-build/bin >> $GITHUB_PATH
-
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
       with:
