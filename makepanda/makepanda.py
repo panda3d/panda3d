@@ -1571,9 +1571,9 @@ def CompileBison(wobj, wsrc, opts):
         else:
             exit('Could not find bison!')
     else:
-        oscmd(bison + ' -y -d -o'+GetOutputDir()+'/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
-        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile+".c")
-        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
+        oscmd(bison + ' -y -d -o'+GetOutputDir()+'/tmp/'+ifile[:-4]+'.c -p '+pre+' '+wsrc)
+        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile[:-4]+".c")
+        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile[:-4]+".h")
 
     # Finally, compile the generated source file.
     CompileCxx(wobj, wdstc, opts + ["FLEX"])
