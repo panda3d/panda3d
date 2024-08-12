@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(bam-info bamInfo.cxx bamInfo.h)
 target_link_libraries(bam-info p3progbase panda)
 install(TARGETS bam-info EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})
