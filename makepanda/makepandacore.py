@@ -601,6 +601,10 @@ def GetInterrogateDir():
 
 
 def GetInterrogate():
+    path = os.environ.get('INTERROGATE')
+    if path:
+        return path
+
     path = GetInterrogateDir() + '/interrogate/interrogate'
     if sys.platform == "win32":
         path += ".exe"
@@ -608,6 +612,10 @@ def GetInterrogate():
 
 
 def GetInterrogateModule():
+    path = os.environ.get('INTERROGATE_MODULE')
+    if path:
+        return path
+
     path = GetInterrogateDir() + '/interrogate_module/interrogate_module'
     if sys.platform == "win32":
         path += ".exe"
