@@ -178,6 +178,11 @@ def parseopts(args):
         "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
         "no-max6", "no-max7", "no-max8", "no-max9", "no-max2009",
         "no-max2010", "no-max2011", "no-max2012", "no-max2013", "no-max2014",
+        "no-maya6", "no-maya65", "no-maya7", "no-maya8", "no-maya85",
+        "no-maya2008", "no-maya2009", "no-maya2010", "no-maya2011",
+        "no-maya2012", "no-maya2013", "no-maya20135", "no-maya2014",
+        "no-maya2015", "no-maya2016", "no-maya20165", "no-maya2017",
+        "no-maya2018", "no-maya2019", "no-maya2020", "no-maya2022",
         ]
 
     # All recognized options.
