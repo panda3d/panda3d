@@ -93,38 +93,11 @@ MSVCVERSIONINFO = {
 
 ########################################################################
 ##
-## Maya and Max Version List (with registry keys)
+## DirectX Version List
 ##
 ########################################################################
 
-MAYAVERSIONINFO = [("MAYA6",   "6.0"),
-                   ("MAYA65",  "6.5"),
-                   ("MAYA7",   "7.0"),
-                   ("MAYA8",   "8.0"),
-                   ("MAYA85",  "8.5"),
-                   ("MAYA2008","2008"),
-                   ("MAYA2009","2009"),
-                   ("MAYA2010","2010"),
-                   ("MAYA2011","2011"),
-                   ("MAYA2012","2012"),
-                   ("MAYA2013","2013"),
-                   ("MAYA20135","2013.5"),
-                   ("MAYA2014","2014"),
-                   ("MAYA2015","2015"),
-                   ("MAYA2016","2016"),
-                   ("MAYA20165","2016.5"),
-                   ("MAYA2017","2017"),
-                   ("MAYA2018","2018"),
-                   ("MAYA2019","2019"),
-                   ("MAYA2020","2020"),
-                   ("MAYA2022","2022"),
-]
-
-MAYAVERSIONS = []
 DXVERSIONS = ["DX9"]
-
-for (ver,key) in MAYAVERSIONINFO:
-    MAYAVERSIONS.append(ver)
 
 ########################################################################
 ##
@@ -2116,32 +2089,6 @@ def SdkLocateDirectX( strMode = 'default' ):
     if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
-def SdkLocateMaya():
-    for (ver, key) in MAYAVERSIONINFO:
-        if (PkgSkip(ver)==0 and ver not in SDK):
-            GetSdkDir(ver.lower().replace("x",""), ver)
-            if (not ver in SDK):
-                if (GetHost() == "windows"):
-                    for dev in ["Alias|Wavefront","Alias","Autodesk"]:
-                        fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
-                        res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION", override64=False)
-                        if (res != 0):
-                            res = res.replace("\\", "/").rstrip("/")
-                            SDK[ver] = res
-                elif (GetHost() == "darwin"):
-                    ddir = "/Applications/Autodesk/maya"+key
-                    if (os.path.isdir(ddir)): SDK[ver] = ddir
-                else:
-                    if (GetTargetArch() in ("x86_64", "amd64")):
-                        ddir1 = "/usr/autodesk/maya"+key+"-x64"
-                        ddir2 = "/usr/aw/maya"+key+"-x64"
-                    else:
-                        ddir1 = "/usr/autodesk/maya"+key
-                        ddir2 = "/usr/aw/maya"+key
-
-                    if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
-                    elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
-
 def SdkLocatePython(prefer_thirdparty_python=False):
     if PkgSkip("PYTHON"):
         # We're not compiling with Python support.  We still need to set this
@@ -2686,16 +2633,6 @@ def SdkAutoDisableDirectX():
                 PkgDisable(ver)
             else:
                 WARNINGS.append("Using "+ver+" sdk: "+SDK[ver])
-
-def SdkAutoDisableMaya():
-    for (ver,key) in MAYAVERSIONINFO:
-        if (ver not in SDK) and (PkgSkip(ver)==0):
-            if (GetHost() == "windows"):
-                WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
-            else:
-                WARNINGS.append("I cannot locate SDK for "+ver)
-            WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
-            PkgDisable(ver)
 
 def SdkAutoDisableSpeedTree():
     if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):

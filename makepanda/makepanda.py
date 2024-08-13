@@ -86,7 +86,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
-  ] + MAYAVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG",    # 3D Formats support
+  "FCOLLADA", "ASSIMP", "EGG",                         # 3D Formats support
   "FREETYPE", "HARFBUZZ",                              # Text rendering
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
@@ -522,7 +522,6 @@ LoadDependencyCache()
 MakeBuildTree()
 
 SdkLocateDirectX(STRDXSDKVERSION)
-SdkLocateMaya()
 SdkLocateMacOSX(OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
@@ -530,7 +529,6 @@ SdkLocateSpeedTree()
 SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
-SdkAutoDisableMaya()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
@@ -581,11 +579,7 @@ if (COMPILER == "MSVC"):
     SmartPkgEnable("EIGEN",     "eigen3",     (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
     for pkg in PkgListGet():
         if not PkgSkip(pkg):
-            if (pkg[:4]=="MAYA"):
-                IncDirectory(pkg, SDK[pkg]      + "/include")
-                DefSymbol(pkg, "MAYAVERSION", pkg)
-                DefSymbol(pkg, "MLIBRARY_DONTUSE_MFC_MANIFEST", "")
-            elif (pkg[:2]=="DX"):
+            if (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif GetThirdpartyDir() is not None:
                 IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
@@ -761,12 +755,6 @@ if (COMPILER == "MSVC"):
             if not os.path.isfile(path):
                 path = GetThirdpartyDir() + "opus/lib/{0}.lib".format(lib)
             LibName("OPUS", path)
-    for pkg in MAYAVERSIONS:
-        if not PkgSkip(pkg):
-            LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
-            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMaya.lib"')
-            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaAnim.lib"')
-            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaUI.lib"')
 
     if not PkgSkip("SPEEDTREE"):
         if GetTargetArch() == 'x64':
@@ -1065,28 +1053,6 @@ if (COMPILER=="GCC"):
         elif not PkgSkip("X11"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
-    for pkg in MAYAVERSIONS:
-        if (PkgSkip(pkg)==0 and (pkg in SDK)):
-            if (GetHost() == "darwin"):
-                # Sheesh, Autodesk really can't make up their mind
-                # regarding the location of the Maya devkit on macOS.
-                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/lib")):
-                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/lib")
-                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/MacOS")):
-                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/MacOS")
-                if (os.path.isdir(SDK[pkg] + "/lib")):
-                    LibDirectory(pkg, SDK[pkg] + "/lib")
-                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/include/maya")):
-                    IncDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/include")
-                if (os.path.isdir(SDK[pkg] + "/devkit/include/maya")):
-                    IncDirectory(pkg, SDK[pkg] + "/devkit/include")
-                if (os.path.isdir(SDK[pkg] + "/include/maya")):
-                    IncDirectory(pkg, SDK[pkg] + "/include")
-            else:
-                LibDirectory(pkg, SDK[pkg] + "/lib")
-                IncDirectory(pkg, SDK[pkg] + "/include")
-            DefSymbol(pkg, "MAYAVERSION", pkg)
-
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
         LibName("IOKIT", "-framework IOKit")
@@ -1113,40 +1079,6 @@ if (COMPILER=="GCC"):
         LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
         LibName("OPENSLES", '-lOpenSLES')
-
-    for pkg in MAYAVERSIONS:
-        if (PkgSkip(pkg)==0 and (pkg in SDK)):
-            if GetTarget() == 'darwin':
-                LibName(pkg, "-Wl,-rpath,/Applications/Autodesk/" + pkg.lower() + "/Maya.app/Contents/MacOS")
-            else:
-                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
-            LibName(pkg, "-lOpenMaya")
-            LibName(pkg, "-lOpenMayaAnim")
-            LibName(pkg, "-lOpenMayaUI")
-            LibName(pkg, "-lAnimSlice")
-            LibName(pkg, "-lDeformSlice")
-            LibName(pkg, "-lModifiers")
-            LibName(pkg, "-lDynSlice")
-            LibName(pkg, "-lKinSlice")
-            LibName(pkg, "-lModelSlice")
-            LibName(pkg, "-lNurbsSlice")
-            LibName(pkg, "-lPolySlice")
-            LibName(pkg, "-lProjectSlice")
-            LibName(pkg, "-lImage")
-            LibName(pkg, "-lShared")
-            LibName(pkg, "-lTranslators")
-            LibName(pkg, "-lDataModel")
-            LibName(pkg, "-lRenderModel")
-            LibName(pkg, "-lNurbsEngine")
-            LibName(pkg, "-lDependEngine")
-            LibName(pkg, "-lCommandEngine")
-            LibName(pkg, "-lFoundation")
-            if pkg not in ("MAYA2020", "MAYA2022"):
-                LibName(pkg, "-lIMFbase")
-            if GetTarget() != 'darwin':
-                LibName(pkg, "-lOpenMayalib")
-            else:
-                LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic() or GetTarget() == 'emscripten':
@@ -2394,7 +2326,6 @@ DTOOL_CONFIG=[
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
-    ("HAVE_MAYA",                      '1',                      '1'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
@@ -3268,10 +3199,6 @@ else:
     CopyFile(GetOutputDir()+"/", "doc/LICENSE")
     CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
 
-if not PkgSkip("PANDATOOL"):
-    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
-    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
-
 if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase() + "/Pmw"):
     CopyTree(GetOutputDir() + "/Pmw", GetThirdpartyBase() + "/Pmw", exclude=["Pmw_1_3", "Pmw_1_3_3"])
 
@@ -3437,8 +3364,6 @@ if not PkgSkip("PANDATOOL"):
     CopyAllHeaders('pandatool/src/lwo')
     CopyAllHeaders('pandatool/src/lwoegg')
     CopyAllHeaders('pandatool/src/lwoprogs')
-    CopyAllHeaders('pandatool/src/maya')
-    CopyAllHeaders('pandatool/src/mayaegg')
     CopyAllHeaders('pandatool/src/objegg')
     CopyAllHeaders('pandatool/src/objprogs')
     CopyAllHeaders('pandatool/src/vrml')
@@ -5741,34 +5666,6 @@ if not PkgSkip("PANDATOOL"):
         TargetAdd('lwo2egg.exe', opts=['ADVAPI'])
 
 #
-# DIRECTORY: pandatool/src/maya/
-#
-
-for VER in MAYAVERSIONS:
-    VNUM = VER[4:]
-    if PkgSkip(VER) or PkgSkip("PANDATOOL"):
-        continue
-
-    OPTS=['DIR:pandatool/src/maya', VER]
-    TargetAdd('maya'+VNUM+'_composite1.obj', opts=OPTS, input='p3maya_composite1.cxx')
-    TargetAdd('libmaya'+VNUM+'.lib', input='maya'+VNUM+'_composite1.obj')
-
-#
-# DIRECTORY: pandatool/src/mayaegg/
-#
-
-for VER in MAYAVERSIONS:
-    VNUM = VER[4:]
-    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
-        continue
-
-    OPTS=['DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/maya', VER]
-    TargetAdd('mayaegg'+VNUM+'_loader.obj', opts=OPTS, input='mayaEggLoader.cxx')
-    TargetAdd('mayaegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3mayaegg_composite1.cxx')
-    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_loader.obj')
-    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_composite1.obj')
-
-#
 # DIRECTORY: pandatool/src/vrml/
 #
 
@@ -5971,127 +5868,6 @@ if not PkgSkip("PANDATOOL"):
         TargetAdd('x2egg.exe', input='libp3xfile.lib')
         TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS)
         TargetAdd('x2egg.exe', opts=['ADVAPI'])
-
-#
-# DIRECTORY: pandatool/src/mayaprogs/
-#
-
-MAYA_BUILT = False
-
-for VER in MAYAVERSIONS:
-    VNUM = VER[4:]
-    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
-        continue
-
-    if GetTarget() == 'darwin':
-        if int(VNUM) < 2009:
-            # No x86_64 support.
-            continue
-        if tuple(OSX_ARCHS) == ('arm64',):
-            # No arm64 support.
-            continue
-        ARCH_OPTS = ['NOARCH:ARM64']
-    else:
-        ARCH_OPTS = []
-
-    MAYA_BUILT = True
-
-    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', VER] + ARCH_OPTS
-    TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
-    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaegg'+VNUM+'_loader.obj')
-    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
-    TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
-    TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
-    TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='mayaloader'+VNUM+'_config_mayaloader.obj')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3ptloader.dll')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmaya'+VNUM+'.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3fltegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3flt.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3lwoegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3lwo.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3dxfegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3dxf.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3objegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3vrmlegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3vrml.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3xfileegg.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3xfile.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3eggbase.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3progbase.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3converter.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3pandatoolbase.lib')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpandaegg.dll')
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('mayapview'+VNUM+'_mayaPview.obj', opts=OPTS, input='mayaPview.cxx')
-    TargetAdd('libmayapview'+VNUM+'.mll', input='mayapview'+VNUM+'_mayaPview.obj')
-    TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
-    TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
-    TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
-    TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('mayaprogs'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
-    TargetAdd('mayaprogs'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('mayaprogs_mayaConversionServer.obj', opts=OPTS, input='mayaConversionServer.cxx')
-
-    TargetAdd('maya2egg'+VNUM+'_mayaToEggBin.obj', opts=OPTS, input='mayaToEggBin.cxx')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEggBin.obj')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('egg2maya'+VNUM+'_eggToMayaBin.obj', opts=OPTS, input='eggToMayaBin.cxx')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMayaBin.obj')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
-    TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
-    TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
-
-    TargetAdd('mayapath'+VNUM+'.obj', opts=OPTS, input='mayapath.cxx')
-
-    TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
-    TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
-    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
-    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
-
-    TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
-    TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
-    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
-    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
-
-if MAYA_BUILT:
-    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', 'NOARCH:ARM64']
-
-    TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
-
-    TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
-    TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
-    TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
-    TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('maya2egg_client.exe', opts=['NOARCH:ARM64'])
-
-    TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
-    TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
-    TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
-    TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('egg2maya_client.exe', opts=['NOARCH:ARM64'])
 
 #
 # DIRECTORY: contrib/src/ai/
