@@ -86,7 +86,6 @@ LangString DESC_SecPython ${LANG_ENGLISH} "Contains a ${REGVIEW}-bit copy of Pyt
 LangString DESC_SecEnsurePip ${LANG_ENGLISH} "Installs the pip package manager into the included Python installation."
 LangString DESC_SecHeadersLibs ${LANG_ENGLISH} "Headers and libraries needed for C++ development with Panda3D."
 LangString DESC_SecSamples ${LANG_ENGLISH} "The sample programs demonstrate how to make Python applications with Panda3D."
-LangString DESC_SecMaxPlugins ${LANG_ENGLISH} "Plug-ins for Autodesk 3ds Max (${REGVIEW}-bit) that can be used to export models to Panda3D."
 LangString DESC_SecMayaPlugins ${LANG_ENGLISH} "Plug-ins and scripts for Autodesk Maya (${REGVIEW}-bit) that can be used to export models to Panda3D."
 
 var READABLE
@@ -114,7 +113,6 @@ var READABLE
 !insertmacro !defineifexist HAVE_BULLET "${BUILT}\bin\libpandabullet.dll"
 !insertmacro !defineifexist HAVE_ODE "${BUILT}\bin\libpandaode.dll"
 !insertmacro !defineifexist HAVE_SAMPLES "${SOURCE}\samples"
-!insertmacro !defineifexist HAVE_MAX_PLUGINS "${BUILT}\plugins\*.dlo"
 !insertmacro !defineifexist HAVE_MAYA_PLUGINS "${BUILT}\plugins\*.mll"
 
 !macro RemovePythonPath PYVER
@@ -697,21 +695,6 @@ Section "Sample programs" SecSamples
 SectionEnd
 !endif
 
-!ifdef HAVE_MAX_PLUGINS
-Section "3ds Max plug-ins" SecMaxPlugins
-    SectionIn 1 2
-
-    SetDetailsPrint both
-    DetailPrint "Installing Autodesk 3ds Max plug-ins..."
-    SetDetailsPrint listonly
-
-    SetOutPath $INSTDIR\plugins
-    File /nonfatal /r "${BUILT}\plugins\*.dle"
-    File /nonfatal /r "${BUILT}\plugins\*.dlo"
-    File /nonfatal /r "${BUILT}\plugins\*.ms"
-SectionEnd
-!endif
-
 !ifdef HAVE_MAYA_PLUGINS
 Section "Maya plug-ins" SecMayaPlugins
     SectionIn 1 2
@@ -959,9 +942,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SecHeadersLibs} $(DESC_SecHeadersLibs)
   !ifdef HAVE_SAMPLES
     !insertmacro MUI_DESCRIPTION_TEXT ${SecSamples} $(DESC_SecSamples)
-  !endif
-  !ifdef HAVE_MAX_PLUGINS
-    !insertmacro MUI_DESCRIPTION_TEXT ${SecMaxPlugins} $(DESC_SecMaxPlugins)
   !endif
   !ifdef HAVE_MAYA_PLUGINS
     !insertmacro MUI_DESCRIPTION_TEXT ${SecMayaPlugins} $(DESC_SecMayaPlugins)

@@ -86,7 +86,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
-  ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG", # 3D Formats support
+  ] + MAYAVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG",    # 3D Formats support
   "FREETYPE", "HARFBUZZ",                              # Text rendering
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
@@ -176,6 +176,8 @@ def parseopts(args):
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
         "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
+        "no-max6", "no-max7", "no-max8", "no-max9", "no-max2009",
+        "no-max2010", "no-max2011", "no-max2012", "no-max2013", "no-max2014",
         ]
 
     # All recognized options.
@@ -521,7 +523,6 @@ MakeBuildTree()
 
 SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
-SdkLocateMax()
 SdkLocateMacOSX(OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
@@ -530,7 +531,6 @@ SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
-SdkAutoDisableMax()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
@@ -585,15 +585,6 @@ if (COMPILER == "MSVC"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
                 DefSymbol(pkg, "MAYAVERSION", pkg)
                 DefSymbol(pkg, "MLIBRARY_DONTUSE_MFC_MANIFEST", "")
-            elif (pkg[:3]=="MAX"):
-                IncDirectory(pkg, SDK[pkg]      + "/include")
-                IncDirectory(pkg, SDK[pkg]      + "/include/CS")
-                IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
-                IncDirectory(pkg, SDK[pkg+"CS"] + "/include/CS")
-                DefSymbol(pkg, "MAX", pkg)
-                if (int(pkg[3:]) >= 2013):
-                    DefSymbol(pkg, "UNICODE", "")
-                    DefSymbol(pkg, "_UNICODE", "")
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif GetThirdpartyDir() is not None:
@@ -776,15 +767,6 @@ if (COMPILER == "MSVC"):
             LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMaya.lib"')
             LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaAnim.lib"')
             LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaUI.lib"')
-    for pkg in MAXVERSIONS:
-        if not PkgSkip(pkg):
-            LibName(pkg, SDK[pkg] +  '/lib/core.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/edmodel.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/gfx.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/geom.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/mesh.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
-            LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
 
     if not PkgSkip("SPEEDTREE"):
         if GetTargetArch() == 'x64':
@@ -3293,8 +3275,6 @@ if not PkgSkip("PANDATOOL"):
 if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase() + "/Pmw"):
     CopyTree(GetOutputDir() + "/Pmw", GetThirdpartyBase() + "/Pmw", exclude=["Pmw_1_3", "Pmw_1_3_3"])
 
-ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
-
 # Since Eigen is included by all sorts of core headers, as a convenience
 # to C++ users on Win and Mac, we include it in the Panda include directory.
 if not PkgSkip("EIGEN") and GetTarget() in ("windows", "darwin") and GetThirdpartyDir():
@@ -3459,8 +3439,6 @@ if not PkgSkip("PANDATOOL"):
     CopyAllHeaders('pandatool/src/lwoprogs')
     CopyAllHeaders('pandatool/src/maya')
     CopyAllHeaders('pandatool/src/mayaegg')
-    CopyAllHeaders('pandatool/src/maxegg')
-    CopyAllHeaders('pandatool/src/maxprogs')
     CopyAllHeaders('pandatool/src/objegg')
     CopyAllHeaders('pandatool/src/objprogs')
     CopyAllHeaders('pandatool/src/vrml')
@@ -5789,47 +5767,6 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayaegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3mayaegg_composite1.cxx')
     TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_loader.obj')
     TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_composite1.obj')
-
-#
-# DIRECTORY: pandatool/src/maxegg/
-#
-
-for VER in MAXVERSIONS:
-    VNUM = VER[3:]
-    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
-        continue
-
-    OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
-    TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
-    TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
-    TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3maxegg_composite1.cxx')
-    TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
-    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg'+VNUM+'.res')
-    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
-    TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS)
-    TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
-
-#
-# DIRECTORY: pandatool/src/maxprogs/
-#
-
-for VER in MAXVERSIONS:
-    VNUM = VER[3:]
-    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
-        continue
-
-    OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
-    TargetAdd('maxImportRes.res', opts=OPTS, input='maxImportRes.rc')
-    TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaegg.dll')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpanda.dll')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaexpress.dll')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.res')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxEggImport.def', ipath=OPTS)
-    TargetAdd('maxeggimport'+VNUM+'.dle', input=COMMON_DTOOL_LIBS)
-    TargetAdd('maxeggimport'+VNUM+'.dle', opts=OPTS)
 
 #
 # DIRECTORY: pandatool/src/vrml/

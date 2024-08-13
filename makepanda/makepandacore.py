@@ -120,27 +120,11 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2022","2022"),
 ]
 
-MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
-                  ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2009", "SOFTWARE\\Autodesk\\3DSMAX\\11.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2010", "SOFTWARE\\Autodesk\\3DSMAX\\12.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2011", "SOFTWARE\\Autodesk\\3DSMAX\\13.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2012", "SOFTWARE\\Autodesk\\3DSMAX\\14.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2013", "SOFTWARE\\Autodesk\\3DSMAX\\15.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2014", "SOFTWARE\\Autodesk\\3DSMAX\\16.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
-]
-
 MAYAVERSIONS = []
-MAXVERSIONS = []
 DXVERSIONS = ["DX9"]
 
 for (ver,key) in MAYAVERSIONINFO:
     MAYAVERSIONS.append(ver)
-
-for (ver,key1,key2,subdir) in MAXVERSIONINFO:
-    MAXVERSIONS.append(ver)
 
 ########################################################################
 ##
@@ -2158,20 +2142,6 @@ def SdkLocateMaya():
                     if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
                     elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
 
-def SdkLocateMax():
-    if (GetHost() != "windows"): return
-    for version,key1,key2,subdir in MAXVERSIONINFO:
-        if (PkgSkip(version)==0):
-            if (version not in SDK):
-                GetSdkDir("maxsdk"+version.lower()[3:], version)
-                GetSdkDir("maxsdk"+version.lower()[3:], version+"CS")
-                if (not version in SDK):
-                    top = GetRegistryKey(key1,key2)
-                    if (top != 0):
-                        SDK[version] = top + "maxsdk"
-                        if (os.path.isdir(top + "\\" + subdir)!=0):
-                            SDK[version+"CS"] = top + subdir
-
 def SdkLocatePython(prefer_thirdparty_python=False):
     if PkgSkip("PYTHON"):
         # We're not compiling with Python support.  We still need to set this
@@ -2726,17 +2696,6 @@ def SdkAutoDisableMaya():
                 WARNINGS.append("I cannot locate SDK for "+ver)
             WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
             PkgDisable(ver)
-
-def SdkAutoDisableMax():
-    for version,key1,key2,subdir in MAXVERSIONINFO:
-        if (PkgSkip(version)==0) and ((version not in SDK) or (version+"CS" not in SDK)):
-            if (GetHost() == "windows"):
-                if (version in SDK):
-                    WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
-                else:
-                    WARNINGS.append("The registry does not appear to contain a pointer to "+version)
-                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-            PkgDisable(version)
 
 def SdkAutoDisableSpeedTree():
     if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):
