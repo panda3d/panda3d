@@ -293,7 +293,7 @@ pop_struct() {
 #  endif
 # endif
 
-#include "cppBison.yxx.h"
+#include "cppBison.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
