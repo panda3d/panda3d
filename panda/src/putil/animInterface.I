@@ -232,6 +232,16 @@ is_playing() const {
 }
 
 /**
+ * Returns the current play mode of the animation; whether the animation is
+ * playing normally, looping, posing, or in ping-pong mode.
+ */
+INLINE AnimInterface::PlayMode AnimInterface::
+get_play_mode() const {
+  CDReader cdata(_cycler);
+  return cdata->get_play_mode();
+}
+
+/**
  * Should be called by a derived class to specify the native frame rate of the
  * animation.  It is legal to call this after the animation has already
  * started.
@@ -264,6 +274,11 @@ set_num_frames(int num_frames) {
 INLINE double AnimInterface::CData::
 get_frac() const {
   return get_full_fframe() - (double)get_full_frame(0);
+}
+
+INLINE AnimInterface::PlayMode AnimInterface::CData::
+get_play_mode() const {
+  return _play_mode;
 }
 
 INLINE std::ostream &

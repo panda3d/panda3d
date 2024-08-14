@@ -18,5 +18,10 @@ if(IOCTL_TERMINAL_WIDTH)
   target_compile_definitions(p3progbase PRIVATE IOCTL_TERMINAL_WIDTH)
 endif()
 
-# This is only needed for binaries in the pandatool package. It is not useful
-# for user applications, so it is not installed.
+install(TARGETS p3progbase
+  EXPORT ToolsDevel COMPONENT ToolsDevel
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT ToolsDevel)
+install(FILES ${P3PROGBASE_HEADERS} COMPONENT ToolsDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

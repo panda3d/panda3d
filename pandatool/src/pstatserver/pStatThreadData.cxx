@@ -136,10 +136,11 @@ get_frame_at_time(double time) const {
 
 /**
  * Returns the frame number of the latest frame not later than the indicated
- * time.
+ * time.  If no frames were found, returns get_oldest_frame_number() - 1.
  *
- * If the hint is nonnegative, it represents a frame number that we believe
- * the correct answer to be near, which may speed the search for the frame.
+ * If the hint is nonnegative, it represents a frame number (for which
+ * has_frame() must return true) we believe the correct answer to be after and
+ * close by, which may speed the search for the frame.
  */
 int PStatThreadData::
 get_frame_number_at_time(double time, int hint) const {
@@ -161,15 +162,85 @@ get_frame_number_at_time(double time, int hint) const {
     }
   }
 
-  // The hint is totally wrong.  Start from the end and work backwards.
+  // The hint is wrong, we have to search the entire set.
+  int first_i = 0;
+  int last_i = _frames.size() - 1;
+  while (first_i < last_i && _frames[first_i] == nullptr) {
+    ++first_i;
+  }
+  while (first_i < last_i && _frames[last_i] == nullptr) {
+    --last_i;
+  }
 
-  int i = _frames.size() - 1;
-  while (i >= 0) {
+  if (first_i >= last_i) {
+    // There are no frames.
+    return _first_frame_number - 1;
+  }
+
+  // Take a guess by interpolating based on the first and last frame times.
+  double first = _frames[first_i]->get_start();
+  if (time < first) {
+    return _first_frame_number - 1;
+  }
+
+  double last = _frames[last_i]->get_start();
+  double t = (time - first) / (last - first);
+  hint = std::max(0, (int)(t * (last_i - first_i))) + first_i;
+
+  // Find a frame around the guess that has data.
+  if (_frames[hint] == nullptr) {
+    if (hint <= first_i) {
+      hint = first_i;
+    }
+    else do {
+      // Skip backward until we find a frame with data.
+      --hint;
+    } while (_frames[hint] == nullptr);
+  }
+
+  if (_frames[hint]->get_start() <= time) {
+    // Search forward.
+    for (int i = hint + 1; i < (int)_frames.size(); ++i) {
+      const PStatFrameData *frame = _frames[i];
+      if (frame != nullptr) {
+        if (frame->get_start() <= time) {
+          hint = i;
+        } else {
+          break;
+        }
+      }
+    }
+    return _first_frame_number + hint;
+  }
+
+  // Search backward.
+  for (int i = hint - 1; i >= 0; --i) {
     const PStatFrameData *frame = _frames[i];
     if (frame != nullptr && frame->get_start() <= time) {
+      return _first_frame_number + i;
+    }
+  }
+
+  return _first_frame_number - 1;
+}
+
+/**
+ * Returns the frame number of the first frame later than the indicated time
+ * and start frame number.
+ */
+int PStatThreadData::
+get_frame_number_after(double time, int start_at) const {
+  int i = std::max(0, start_at - _first_frame_number);
+  double end = get_frame(i).get_end();
+
+  while (end < time) {
+    ++i;
+    if (i >= _frames.size()) {
       break;
     }
-    --i;
+    if (_frames[i] != nullptr) {
+      end = _frames[i]->get_end();
+    }
   }
 
   return _first_frame_number + i;

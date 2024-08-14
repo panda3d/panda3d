@@ -696,7 +696,7 @@ rescan_textures() {
 void EggFile::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_EggFile);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -764,8 +764,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* EggFile::
-make_EggFile(const FactoryParams &params) {
+TypedWritable *EggFile::
+make_from_bam(const FactoryParams &params) {
   EggFile *me = new EggFile();
   DatagramIterator scan;
   BamReader *manager;

@@ -246,7 +246,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  * Factory method to generate an AnimChannelMatrixDynamic object.
  */
 TypedWritable *AnimChannelMatrixDynamic::
-make_AnimChannelMatrixDynamic(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   AnimChannelMatrixDynamic *me = new AnimChannelMatrixDynamic;
   DatagramIterator scan;
   BamReader *manager;
@@ -261,5 +261,5 @@ make_AnimChannelMatrixDynamic(const FactoryParams &params) {
  */
 void AnimChannelMatrixDynamic::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelMatrixDynamic);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

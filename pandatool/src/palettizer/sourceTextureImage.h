@@ -56,7 +56,7 @@ public:
                                 BamReader *manager);
 
 protected:
-  static TypedWritable *make_SourceTextureImage(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

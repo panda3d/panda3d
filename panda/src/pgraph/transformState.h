@@ -134,6 +134,17 @@ PUBLISHED:
   INLINE bool has_nonzero_shear() const;
   INLINE bool has_mat() const;
 
+#ifdef CPPPARSER
+  // Force interrogate to make a copy as a temporary solution for #1625.
+  LPoint3 get_pos() const;
+  LVecBase3 get_hpr() const;
+  LQuaternion get_quat() const;
+  LQuaternion get_norm_quat() const;
+  LVecBase3 get_scale() const;
+  PN_stdfloat get_uniform_scale() const;
+  LVecBase3 get_shear() const;
+  LMatrix4 get_mat() const;
+#else
   INLINE const LPoint3 &get_pos() const;
   INLINE const LVecBase3 &get_hpr() const;
   INLINE const LQuaternion &get_quat() const;
@@ -142,6 +153,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_uniform_scale() const;
   INLINE const LVecBase3 &get_shear() const;
   INLINE const LMatrix4 &get_mat() const;
+#endif
   INLINE const LMatrix4 *get_inverse_mat() const;
 
   INLINE LVecBase2 get_pos2d() const;

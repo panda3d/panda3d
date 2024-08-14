@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(flt-info fltInfo.cxx fltInfo.h)
 target_link_libraries(flt-info p3progbase p3flt)
 install(TARGETS flt-info EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

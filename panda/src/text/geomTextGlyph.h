@@ -52,7 +52,7 @@ private:
 
 public:
   static void register_with_read_factory();
-  static TypedWritable *make_GeomTextGlyph(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 PUBLISHED:
   static TypeHandle get_class_type() {

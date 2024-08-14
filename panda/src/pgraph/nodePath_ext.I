@@ -135,10 +135,10 @@ has_net_python_tag(PyObject *key) const {
 /**
  * Called by Python to implement cycle detection.
  */
-INLINE int Extension<NodePath>::
+/*INLINE int Extension<NodePath>::
 __traverse__(visitproc visit, void *arg) {
   if (_this->is_empty()) {
     return 0;
   }
   return invoke_extension(_this->node()).__traverse__(visit, arg);
-}
+}*/

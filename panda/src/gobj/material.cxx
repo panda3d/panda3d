@@ -457,7 +457,7 @@ write(std::ostream &out, int indent_level) const {
  */
 void Material::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_Material);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -503,7 +503,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
  * Factory method to generate a Material object
  */
 TypedWritable *Material::
-make_Material(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   Material *me = new Material;
   DatagramIterator scan;
   BamReader *manager;

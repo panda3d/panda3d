@@ -969,7 +969,7 @@ remove_image() {
 void PaletteImage::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_PaletteImage);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -1037,7 +1037,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * all the data read.
  */
 TypedWritable *PaletteImage::
-make_PaletteImage(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   PaletteImage *me = new PaletteImage;
   DatagramIterator scan;
   BamReader *manager;

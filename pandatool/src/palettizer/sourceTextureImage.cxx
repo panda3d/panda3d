@@ -149,7 +149,7 @@ set_header(const PNMImageHeader &header) {
 void SourceTextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_SourceTextureImage);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -188,7 +188,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * all the data read.
  */
 TypedWritable *SourceTextureImage::
-make_SourceTextureImage(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   SourceTextureImage *me = new SourceTextureImage;
   DatagramIterator scan;
   BamReader *manager;

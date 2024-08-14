@@ -346,14 +346,14 @@ operand_valid_for_alpha(TextureStage::CombineOperand co) {
  */
 void TextureStage::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_TextureStage);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
  * Factory method to generate a TextureStage object
  */
-TypedWritable* TextureStage::
-make_TextureStage(const FactoryParams &params) {
+TypedWritable *TextureStage::
+make_from_bam(const FactoryParams &params) {
   DatagramIterator scan;
   BamReader *manager;
 

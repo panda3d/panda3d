@@ -1,7 +1,26 @@
 from panda3d.core import PythonTask
+from contextlib import contextmanager
 import pytest
 import types
 import sys
+import gc
+
+
+@contextmanager
+def gc_disabled():
+    gc.disable()
+    gc.collect()
+    gc.freeze()
+    gc.set_debug(gc.DEBUG_SAVEALL)
+
+    try:
+        yield
+    finally:
+        gc.set_debug(0)
+        gc.garbage.clear()
+        gc.unfreeze()
+        gc.collect()
+        gc.enable()
 
 
 def test_pythontask_property_builtin():
@@ -76,3 +95,23 @@ def test_pythontask_dict_set():
     rc2 = sys.getrefcount(d)
 
     assert rc1 == rc2
+
+
+def test_pythontask_cycle():
+    with gc_disabled():
+        task = PythonTask()
+        assert gc.is_tracked(task)
+        task.marker = 'test_pythontask_cycle'
+        task.prop = task
+
+        del task
+
+        gc.collect()
+        assert len(gc.garbage) > 0
+
+        for g in gc.garbage:
+            if isinstance(g, PythonTask) and \
+               getattr(g, 'marker', None) == 'test_pythontask_cycle':
+                break
+        else:
+            pytest.fail('not found in garbage')

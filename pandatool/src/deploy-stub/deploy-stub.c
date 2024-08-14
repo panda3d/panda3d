@@ -321,7 +321,9 @@ static int setup_logging(const char *path, int append) {
   dup2(fd, 1);
   dup2(fd, 2);
 
-  close(fd);
+  if (close(fd) < 0) {
+    perror("setup_logging: close");
+  }
   return 1;
 #endif
 }

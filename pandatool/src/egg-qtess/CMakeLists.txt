@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 if(NOT HAVE_EGG)
   return()
 endif()

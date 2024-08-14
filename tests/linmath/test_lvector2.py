@@ -145,6 +145,17 @@ def test_vec2_floordiv(type):
             assert v.x == i // -j
 
 
+def test_vec2_repr():
+    assert repr(Vec2F(0.1, 0.2)) == "LVector2f(0.1, 0.2)"
+    assert repr(Vec2F(0.3, 0.4)) == "LVector2f(0.3, 0.4)"
+    assert repr(Vec2F(-0.9999999403953552, 1.00000001)) == "LVector2f(-0.99999994, 1)"
+    assert repr(Vec2F(0.00000001, 0.0)) == "LVector2f(1e-8, 0)"
+    assert repr(Vec2D(0.1, 0.2)) == "LVector2d(0.1, 0.2)"
+    assert repr(Vec2D(0.3, 0.4)) == "LVector2d(0.3, 0.4)"
+    assert repr(Vec2D(-0.9999999403953552, 1.00000001)) == "LVector2d(-0.9999999403953552, 1.00000001)"
+    assert repr(Vec2D(0.00000001, 0.0)) == "LVector2d(1e-8, 0)"
+
+
 def test_vec2_buffer():
     v = Vec2(1.5, -10.0)
     m = memoryview(v)

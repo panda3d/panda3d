@@ -37,11 +37,11 @@ run() {
   if (!_strip_prefix.empty()) {
     nout << "Stripping prefix from nodes.\n";
     int num_renamed = 0;
-    int num_egg_files = 0;
+    //int num_egg_files = 0;
     Eggs::iterator ei;
     for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
       num_renamed += (*ei)->rename_nodes(_strip_prefix, true);
-      ++num_egg_files;
+      //++num_egg_files;
     }
     nout << "  (" << num_renamed << " renamed.)\n";
   }

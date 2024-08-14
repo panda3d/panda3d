@@ -841,8 +841,12 @@ class LerpFunctionInterval(Interval.Interval):
         self.extraArgs = extraArgs
         # Generate unique name if necessary
         if name is None:
+            if hasattr(function, '__name__'):
+                name = function.__name__
+            else:
+                name = '<' + function.__class__.__name__ + '>'
             name = ('LerpFunctionInterval-%s-%d' %
-                    (function.__name__,
+                    (name,
                      LerpFunctionInterval.lerpFunctionIntervalNum))
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
         else:

@@ -214,7 +214,7 @@ update_images(bool redo_all) {
 void PalettePage::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_PalettePage);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -271,8 +271,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* PalettePage::
-make_PalettePage(const FactoryParams &params) {
+TypedWritable *PalettePage::
+make_from_bam(const FactoryParams &params) {
   PalettePage *me = new PalettePage;
   DatagramIterator scan;
   BamReader *manager;

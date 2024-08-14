@@ -76,7 +76,7 @@ public:
                                 BamReader *manager);
 
 protected:
-  static TypedWritable *make_PaletteGroups(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   void fillin(DatagramIterator &scan, BamReader *manager);

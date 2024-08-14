@@ -33,6 +33,7 @@
 #undef FLOATTYPE_IS_INT
 #undef STRINGIFY
 #undef FLOATNAME_STR
+#undef FLOATTYPE_REPR
 
 #define FLOATTYPE float
 #define FLOATNAME(ARG) ARG##f
@@ -41,3 +42,15 @@
 
 #define STRINGIFY(ARG) #ARG
 #define FLOATNAME_STR(ARG) STRINGIFY(ARG##f)
+
+#define FLOATTYPE_REPR(v, str) do { \
+  float v_copy = (v); \
+  char *into_str = (str); \
+  if ((float)(int)v_copy == v_copy) { \
+    snprintf(into_str, 32, "%d", (int)v_copy); \
+  } else { \
+    pftoa(v_copy, into_str); \
+  } \
+} while (0)
+
+#include "pdtoa.h"
