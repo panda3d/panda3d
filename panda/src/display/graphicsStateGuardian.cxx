@@ -904,8 +904,10 @@ update_shader_matrix_cache(Shader *shader, LVecBase4f *cache, int altered) {
 /**
  * The gsg contains a large number of useful matrices:
  *
- * * the world transform, * the modelview matrix, * the cs_transform, * etc,
- * etc.
+ * - the world transform,
+ * - the modelview matrix,
+ * - the cs_transform,
+ * - etc, etc.
  *
  * A shader can request any of these values, and furthermore, it can request
  * that various compositions, inverses, and transposes be performed.  The
@@ -915,7 +917,8 @@ update_shader_matrix_cache(Shader *shader, LVecBase4f *cache, int altered) {
  *
  * Some values, like the following, aren't matrices:
  *
- * * window size * texture coordinates of card center
+ * - window size
+ * - texture coordinates of card center
  *
  * This routine can fetch these values as well, by shoehorning them into a
  * matrix.  In this way, we avoid the need for a separate routine to fetch
