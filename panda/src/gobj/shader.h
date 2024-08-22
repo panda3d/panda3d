@@ -33,7 +33,7 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "pStatCollector.h"
-#include "epvector.h"
+#include "pvector.h"
 #include "asyncFuture.h"
 #include "bamCacheRecord.h"
 
@@ -438,7 +438,6 @@ public:
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
-    LMatrix4f         _value;
     int               _dep = SSD_NONE;
     int               _index = 0;
     ShaderMatPiece    _piece;
@@ -608,7 +607,7 @@ public:
 
 public:
   pvector<ShaderPtrSpec> _ptr_spec;
-  epvector<ShaderMatSpec> _mat_spec;
+  pvector<ShaderMatSpec> _mat_spec;
   pvector<ShaderTexSpec> _tex_spec;
   pvector<ShaderVarSpec> _var_spec;
   pvector<ShaderMatPart> _mat_parts;

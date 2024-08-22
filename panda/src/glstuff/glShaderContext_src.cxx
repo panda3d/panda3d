@@ -2299,12 +2299,14 @@ issue_parameters(int altered) {
   if (altered & _shader->_mat_deps) {
     _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
+    LMatrix4f scratch;
+
     for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
       if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, &scratch);
       if (!val) continue;
       const float *data = val->get_data();
       data += spec._offset;

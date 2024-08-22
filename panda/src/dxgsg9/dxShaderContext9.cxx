@@ -76,6 +76,7 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
 
   _mat_part_cache = new LVecBase4f[s->cp_get_mat_cache_size()];
+  _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
 }
 
 /**
@@ -96,6 +97,7 @@ DXShaderContext9::
   }
 
   delete[] _mat_part_cache;
+  delete[] _mat_scratch_space;
 }
 
 /**
@@ -231,6 +233,8 @@ issue_parameters(GSG *gsg, int altered) {
     if (altered & _shader->_mat_deps) {
       gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
+      LMatrix4f scratch;
+
       for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
         if ((altered & spec._dep) == 0) {
           continue;
@@ -241,7 +245,7 @@ issue_parameters(GSG *gsg, int altered) {
           continue;
         }
 
-        const LVecBase4f *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
+        const LVecBase4f *val = gsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space);
         if (val) {
           const float *data = (const float *)val + spec._offset;
           LVecBase4f v;

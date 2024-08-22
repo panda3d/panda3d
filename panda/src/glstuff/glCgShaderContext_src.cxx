@@ -330,6 +330,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   }
 
   _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
+  _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
 
   _glgsg->report_my_gl_errors();
 }
@@ -341,6 +342,7 @@ CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
   delete[] _mat_part_cache;
+  delete[] _mat_scratch_space;
 }
 
 /**
@@ -694,12 +696,14 @@ issue_parameters(int altered) {
   if (altered & _shader->_mat_deps) {
     _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
+    LMatrix4f scratch;
+
     for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
       if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space);
       if (!val) continue;
       const float *data = val->get_data();
       data += spec._offset;

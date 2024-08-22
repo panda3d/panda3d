@@ -923,14 +923,9 @@ update_shader_matrix_cache(Shader *shader, LVecBase4f *cache, int altered) {
  * This routine can fetch these values as well, by shoehorning them into a
  * matrix.  In this way, we avoid the need for a separate routine to fetch
  * these values.
- *
- * The "altered" bits indicate what parts of the state_and_transform have
- * changed since the last time this particular ShaderMatSpec was evaluated.
- * This may allow data to be cached and not reevaluated.
- *
  */
 const LVecBase4f *GraphicsStateGuardian::
-fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4f *cache, int altered) {
+fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4f *cache, LMatrix4f *scratch) {
   LVecBase3f v;
 
   const LVecBase4f *cache0 = cache + spec._cache_offset[0];
@@ -941,42 +936,42 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4f *cache, int 
     return cache0;
 
   case Shader::SMF_compose:
-    spec._value.multiply(*(LMatrix4f *)cache0, *(LMatrix4f *)cache1);
-    return (LVecBase4f *)&spec._value;
+    scratch->multiply(*(LMatrix4f *)cache0, *(LMatrix4f *)cache1);
+    return (LVecBase4f *)scratch;
 
   case Shader::SMF_transform_dlight:
-    spec._value = *(LMatrix4f *)cache0;
+    *scratch = *(LMatrix4f *)cache0;
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[2].get_xyz());
     v.normalize();
-    spec._value.set_row(2, v);
+    scratch->set_row(2, v);
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[3].get_xyz());
     v.normalize();
-    spec._value.set_row(3, v);
-    return (LVecBase4f *)&spec._value;
+    scratch->set_row(3, v);
+    return (LVecBase4f *)scratch;
 
   case Shader::SMF_transform_plight:
     {
       // Careful not to touch the w component, which contains the near value.
-      spec._value = *(LMatrix4f *)cache0;
+      *scratch = *(LMatrix4f *)cache0;
       LPoint3f point = (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz());
-      spec._value(2, 0) = point[0];
-      spec._value(2, 1) = point[1];
-      spec._value(2, 2) = point[2];
-      return (LVecBase4f *)&spec._value;
+      (*scratch)(2, 0) = point[0];
+      (*scratch)(2, 1) = point[1];
+      (*scratch)(2, 2) = point[2];
+      return (LVecBase4f *)scratch;
     }
 
   case Shader::SMF_transform_slight:
-    spec._value = *(LMatrix4f *)cache0;
-    spec._value.set_row(2, (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz()));
+    *scratch = *(LMatrix4f *)cache0;
+    scratch->set_row(2, (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz()));
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[3].get_xyz());
     v.normalize();
-    spec._value.set_row(3, v);
-    return (LVecBase4f *)&spec._value;
+    scratch->set_row(3, v);
+    return (LVecBase4f *)scratch;
   }
 
   // Should never get here
-  spec._value = LMatrix4f::ident_mat();
-  return (LVecBase4f *)&spec._value;
+  *scratch = LMatrix4f::ident_mat();
+  return (LVecBase4f *)scratch;
 }
 
 /**
