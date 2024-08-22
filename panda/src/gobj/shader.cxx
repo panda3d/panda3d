@@ -602,6 +602,9 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
   int num_parts = (spec._func != SMF_first) ? 2 : 1;
 
   for (int p = 0; p < num_parts; ++p) {
+    if (spec._part[p] == SMO_INVALID) {
+      continue;
+    }
     int dep = cp_dependency(spec._part[p]);
     spec._dep |= dep;
 
@@ -724,9 +727,18 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
         assert(part._size == 4);
       }
 
+      _mat_cache_deps |= part._dep;
       _mat_parts.push_back(std::move(part));
     }
     spec._cache_offset[p] = offset + begin[p];
+  }
+  if (spec._func == SMF_shader_input_ptr) {
+    _mat_scratch_size = std::max(_mat_scratch_size, spec._array_count);
+
+    // We specify SSD_frame because a PTA may be modified by the app from
+    // frame to frame, and we have no way to know.  So, we must respecify a
+    // PTA at least once every frame.
+    spec._dep |= SSD_general | SSD_shaderinputs | SSD_frame;
   }
 
   _mat_spec.push_back(spec);
@@ -744,6 +756,15 @@ cp_get_mat_cache_size() const {
     size += part._size * part._count;
   }
   return size;
+}
+
+/**
+ * Returns the total amount of scratch space required to fetch the largest
+ * shader input of this shader.
+ */
+size_t Shader::
+cp_get_mat_scratch_size() const {
+  return _mat_scratch_size;
 }
 
 #ifdef HAVE_CG
@@ -1483,7 +1504,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       if (!cp_errchk_parameter_float(p, 1, 1)) {
         return false;
       }
-      bind._piece = SMP_float;
+      bind._piece = SMP_scalar;
       bind._part[0] = SMO_frame_time;
       bind._arg[0] = nullptr;
 
@@ -1635,25 +1656,25 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   case SAC_matrix:
   case SAC_scalar:
   case SAC_array: {
-    if (!cp_errchk_parameter_ptr(p))
+    if (!cp_errchk_parameter_ptr(p)) {
       return false;
+    }
 
-    ShaderPtrSpec bind;
-    bind._id      = p._id;
-    bind._arg     = kinputname;
-    bind._info    = p;
-
-    // We specify SSD_frame because a PTA may be modified by the app from
-    // frame to frame, and we have no way to know.  So, we must respecify a
-    // PTA at least once every frame.
-    bind._dep[0]  = SSD_general | SSD_shaderinputs | SSD_frame;
-    bind._dep[1]  = SSD_NONE;
-
-    memcpy(bind._dim,arg_dim,sizeof(int)*3);
+    ShaderMatSpec bind;
+    bind._id = p._id;
+    bind._func = SMF_shader_input_ptr;
+    bind._part[0] = SMO_INVALID;
+    bind._part[1] = SMO_INVALID;
+    bind._arg[0] = kinputname;
+    bind._arg[1] = nullptr;
+    bind._array_count = arg_dim[0] * arg_dim[1];
+    bind._num_components = arg_dim[2];
+    bind._numeric_type = p._numeric_type;
+    bind._piece = (ShaderMatPiece)(SMP_scalar + (arg_dim[2] - 1));
 
     // if dim[0] = -1,  glShaderContext will not check the param size
-    if (k_prefix) bind._dim[0] = -1;
-    _ptr_spec.push_back(bind);
+    //if (k_prefix) bind._dim[0] = -1;
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -2285,11 +2306,6 @@ cg_analyze_shader(const ShaderCaps &caps) {
     _tex_spec[i]._id._seqno = seqno++;
   }
 
-  for (size_t i = 0; i < _ptr_spec.size(); ++i) {
-    _ptr_spec[i]._id._seqno = seqno++;
-    _ptr_spec[i]._info._id = _ptr_spec[i]._id;
-  }
-
   /*
   // The following code is present to work around a bug in the Cg compiler.
   // It does not generate correct code for shadow map lookups when using arbfp1.
@@ -2452,9 +2468,8 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
   size_t n_mat = _mat_spec.size();
   size_t n_tex = _tex_spec.size();
   size_t n_var = _var_spec.size();
-  size_t n_ptr = _ptr_spec.size();
 
-  map.resize(n_mat + n_tex + n_var + n_ptr);
+  map.resize(n_mat + n_tex + n_var);
 
   // This is a bit awkward, we have to go in and seperate out the combined
   // program, since all the parameter bindings have changed.
@@ -2511,19 +2526,6 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     }
 
     map[id._seqno] = p;
-  }
-
-  for (size_t i = 0; i < n_ptr; ++i) {
-    const ShaderArgId &id = _ptr_spec[i]._id;
-    map[id._seqno] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
-
-    if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(map[id._seqno]);
-      if (resource != nullptr) {
-        shader_cat.debug() << "Uniform ptr parameter " << id._name
-                           << " is bound to resource " << resource << "\n";
-      }
-    }
   }
 
   // Transfer ownership of the compiled shader.

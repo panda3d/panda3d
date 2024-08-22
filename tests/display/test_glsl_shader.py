@@ -463,6 +463,26 @@ def test_glsl_pta_ivec4(gsg):
     run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
+def test_glsl_pta_mat3(gsg):
+    pta = core.PTA_LMatrix3f((
+        (0, 1, 2, 3, 4, 5, 6, 7, 8),
+        (9, 10, 11, 12, 13, 14, 15, 16, 17),
+    ))
+
+    preamble = """
+    uniform mat3 pta[2];
+    """
+    code = """
+    assert(pta[0][0] == vec3(0, 1, 2));
+    assert(pta[0][1] == vec3(3, 4, 5));
+    assert(pta[0][2] == vec3(6, 7, 8));
+    assert(pta[1][0] == vec3(9, 10, 11));
+    assert(pta[1][1] == vec3(12, 13, 14));
+    assert(pta[1][2] == vec3(15, 16, 17));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
 def test_glsl_pta_mat4(gsg):
     pta = core.PTA_LMatrix4f((
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),

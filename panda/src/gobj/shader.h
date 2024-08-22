@@ -292,21 +292,22 @@ public:
   };
 
   enum ShaderMatPiece {
-    SMP_float,
+    SMP_scalar,
     SMP_vec2,
     SMP_vec3,
     SMP_vec4,
+    SMP_scalar_array,
+    SMP_vec2_array,
+    SMP_vec3_array,
     SMP_vec4_array,
+    SMP_mat3_whole,
+    SMP_mat3_array,
     SMP_mat4_whole,
     SMP_mat4_array,
     SMP_mat4_transpose,
     SMP_mat4_column,
     SMP_mat4_upper3x3,
     SMP_mat4_transpose3x3,
-    SMP_int,
-    SMP_ivec2,
-    SMP_ivec3,
-    SMP_ivec4,
   };
 
   enum ShaderStateDep {
@@ -339,6 +340,7 @@ public:
     SMF_transform_dlight,
     SMF_transform_plight,
     SMF_transform_slight,
+    SMF_shader_input_ptr,
   };
 
   struct ShaderArgId {
@@ -352,6 +354,7 @@ public:
     SPT_double,
     SPT_int,
     SPT_uint,
+    SPT_bool,
     SPT_unknown
   };
 
@@ -443,6 +446,8 @@ public:
     ShaderMatPiece    _piece;
     int               _offset = 0;
     int               _array_count = 1;
+    int               _num_components;
+    ShaderPtrType     _numeric_type = SPT_float;
   };
 
   struct ShaderTexSpec {
@@ -547,6 +552,7 @@ public:
   int cp_dependency(ShaderMatInput inp);
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
+  size_t cp_get_mat_scratch_size() const;
 
 #ifdef HAVE_CG
   void cg_recurse_parameters(CGparameter parameter,
@@ -606,13 +612,13 @@ public:
 #endif
 
 public:
-  pvector<ShaderPtrSpec> _ptr_spec;
   pvector<ShaderMatSpec> _mat_spec;
   pvector<ShaderTexSpec> _tex_spec;
   pvector<ShaderVarSpec> _var_spec;
   pvector<ShaderMatPart> _mat_parts;
+  int _mat_cache_deps = 0;
   int _mat_deps = 0;
-  int _mat_cache_size = 0;
+  int _mat_scratch_size = 4;
 
   bool _error_flag;
   ShaderFile _text;

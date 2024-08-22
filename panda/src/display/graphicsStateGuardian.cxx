@@ -925,53 +925,173 @@ update_shader_matrix_cache(Shader *shader, LVecBase4f *cache, int altered) {
  * these values.
  */
 const LVecBase4f *GraphicsStateGuardian::
-fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4f *cache, LMatrix4f *scratch) {
+fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4f *cache, LVecBase4f *scratch) {
   LVecBase3f v;
 
   const LVecBase4f *cache0 = cache + spec._cache_offset[0];
   const LVecBase4f *cache1 = cache + spec._cache_offset[1];
+
+  LMatrix4f &m = *(LMatrix4f *)scratch;
 
   switch (spec._func) {
   case Shader::SMF_first:
     return cache0;
 
   case Shader::SMF_compose:
-    scratch->multiply(*(LMatrix4f *)cache0, *(LMatrix4f *)cache1);
-    return (LVecBase4f *)scratch;
+    m.multiply(*(LMatrix4f *)cache0, *(LMatrix4f *)cache1);
+    return (LVecBase4f *)&m;
 
   case Shader::SMF_transform_dlight:
-    *scratch = *(LMatrix4f *)cache0;
+    m = *(LMatrix4f *)cache0;
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[2].get_xyz());
     v.normalize();
-    scratch->set_row(2, v);
+    m.set_row(2, v);
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[3].get_xyz());
     v.normalize();
-    scratch->set_row(3, v);
-    return (LVecBase4f *)scratch;
+    m.set_row(3, v);
+    return (LVecBase4f *)&m;
 
   case Shader::SMF_transform_plight:
     {
       // Careful not to touch the w component, which contains the near value.
-      *scratch = *(LMatrix4f *)cache0;
+      m = *(LMatrix4f *)cache0;
       LPoint3f point = (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz());
-      (*scratch)(2, 0) = point[0];
-      (*scratch)(2, 1) = point[1];
-      (*scratch)(2, 2) = point[2];
-      return (LVecBase4f *)scratch;
+      m(2, 0) = point[0];
+      m(2, 1) = point[1];
+      m(2, 2) = point[2];
+      return (LVecBase4f *)&m;
     }
 
   case Shader::SMF_transform_slight:
-    *scratch = *(LMatrix4f *)cache0;
-    scratch->set_row(2, (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz()));
+    m = *(LMatrix4f *)cache0;
+    m.set_row(2, (*(LMatrix4f *)cache1).xform_point(cache0[2].get_xyz()));
     v = (*(LMatrix4f *)cache1).xform_vec(cache0[3].get_xyz());
     v.normalize();
-    scratch->set_row(3, v);
-    return (LVecBase4f *)scratch;
+    m.set_row(3, v);
+    return (LVecBase4f *)&m;
+
+  case Shader::SMF_shader_input_ptr:
+    return (const LVecBase4f *)fetch_ptr_parameter(spec, scratch);
   }
 
   // Should never get here
-  *scratch = LMatrix4f::ident_mat();
-  return (LVecBase4f *)scratch;
+  m = LMatrix4f::ident_mat();
+  return (LVecBase4f *)&m;
+}
+
+/**
+ * Fetches a numeric shader input, doing conversion as necessary using the
+ * given amount of scratch space.
+ */
+const void *GraphicsStateGuardian::
+fetch_ptr_parameter(Shader::ShaderMatSpec &spec, LVecBase4f *scratch) {
+  Shader::ShaderPtrData ptr_data;
+  if (!_target_shader->get_shader_input_ptr(spec._arg[0], ptr_data)) {
+    return nullptr;
+  }
+
+  nassertr(spec._num_components > 0, nullptr);
+
+  int array_size = std::min(spec._array_count, (int)ptr_data._size / spec._num_components);
+  switch (spec._numeric_type) {
+  case Shader::SPT_float:
+    {
+      float *data = (float *)scratch;
+
+      switch (ptr_data._type) {
+      case Shader::SPT_int:
+        // Convert int data to float data.
+        for (int i = 0; i < (array_size * spec._num_components); ++i) {
+          data[i] = (float)(((int*)ptr_data._ptr)[i]);
+        }
+        return data;
+
+      case Shader::SPT_uint:
+        // Convert unsigned int data to float data.
+        for (int i = 0; i < (array_size * spec._num_components); ++i) {
+          data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
+        }
+        return data;
+
+      case Shader::SPT_double:
+        // Downgrade double data to float data.
+        for (int i = 0; i < (array_size * spec._num_components); ++i) {
+          data[i] = (float)(((double*)ptr_data._ptr)[i]);
+        }
+        return data;
+
+      case Shader::SPT_float:
+        return (float *)ptr_data._ptr;
+
+      default:
+#ifndef NDEBUG
+        display_cat.error()
+          << "Invalid ShaderPtrData type " << (int)ptr_data._type
+          << " for shader input '" << spec._id._name << "'\n";
+#endif
+        return nullptr;
+      }
+
+      return data;
+    }
+    break;
+
+  case Shader::SPT_int:
+    if (ptr_data._type != Shader::SPT_int &&
+        ptr_data._type != Shader::SPT_uint) {
+      display_cat.error()
+        << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+      // Deactivate it to make sure the user doesn't get flooded with this
+      // error.
+      spec._dep = 0;
+
+    } else {
+      return ptr_data._ptr;
+    }
+    break;
+
+  case Shader::SPT_uint:
+    if (ptr_data._type != Shader::SPT_uint &&
+        ptr_data._type != Shader::SPT_int) {
+      display_cat.error()
+        << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+      // Deactivate it to make sure the user doesn't get flooded with this
+      // error.
+      spec._dep = 0;
+      return nullptr;
+
+    } else {
+      return ptr_data._ptr;
+    }
+    break;
+
+  case Shader::SPT_double:
+    display_cat.error()
+      << "Passing double-precision shader inputs to shaders is not currently supported\n";
+
+    // Deactivate it to make sure the user doesn't get flooded with this
+    // error.
+    spec._dep = 0;
+    break;
+
+  case Shader::SPT_bool:
+    if (ptr_data._type == Shader::SPT_double) {
+      unsigned int *data = (unsigned int *)scratch;
+      for (int i = 0; i < (array_size * spec._num_components); ++i) {
+        data[i] = ((double *)ptr_data._ptr)[i] != 0;
+      }
+      return data;
+    } else {
+      return (float *)ptr_data._ptr;
+    }
+
+  case Shader::SPT_unknown:
+    break;
+  }
+
+  return nullptr;
 }
 
 /**

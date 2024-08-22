@@ -113,6 +113,7 @@ private:
   pvector<ImageInput> _glsl_img_inputs;
 
   LVecBase4f *_mat_part_cache = nullptr;
+  LVecBase4f *_mat_scratch_space = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
