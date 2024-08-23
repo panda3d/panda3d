@@ -1703,7 +1703,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
         }
       }
 
-      into += i * 4;
+      into += 4;
     }
     // Apply the default OpenGL lights otherwise.
     // Special exception for light 0, which defaults to white.
@@ -1719,7 +1719,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       into[1].set(1, 0, 0, 0);
       into[2].set(0, 0, 0, 0);
       into[3].set(0, 0, 0, 0);
-      into += i * 4;
+      into += 4;
     }
     return;
   }
