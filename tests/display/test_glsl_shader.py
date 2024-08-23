@@ -603,7 +603,8 @@ def test_glsl_state_light_source(gsg):
     assert(p3d_LightSource[0].shadowViewMatrix[3][1] < -16.8508);
     assert(p3d_LightSource[0].shadowViewMatrix[3][2] > -22.0003);
     assert(p3d_LightSource[0].shadowViewMatrix[3][2] < -22.0001);
-    assert(p3d_LightSource[0].shadowViewMatrix[3][3] == -21);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][3] > -21.0001);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][3] < -20.9999);
     assert(p3d_LightSource[1].color == vec4(9, 10, 11, 12));
     assert(p3d_LightSource[1].specular == vec4(13, 14, 15, 16));
     assert(p3d_LightSource[1].diffuse == vec4(9, 10, 11, 12));
