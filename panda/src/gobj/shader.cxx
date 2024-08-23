@@ -381,16 +381,16 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_INVALID) {
     return SSD_NONE;
   }
-  if (inp == SMO_attr_material || inp == SMO_attr_material2) {
+  if (inp == SMO_attr_material) {
     dep |= SSD_material | SSD_frame;
   }
-  if (inp == SMO_attr_color || inp == SMO_attr_material2) {
+  if (inp == SMO_attr_color) {
     dep |= SSD_color;
   }
   if (inp == SMO_attr_colorscale) {
     dep |= SSD_colorscale;
   }
-  if (inp == SMO_attr_fog || inp == SMO_attr_fogcolor) {
+  if (inp == SMO_attr_fog) {
     dep |= SSD_fog | SSD_frame;
   }
   if ((inp == SMO_model_to_view) ||
@@ -459,12 +459,12 @@ cp_dependency(ShaderMatInput inp) {
     }
   }
   if ((inp == SMO_light_ambient) ||
-      (inp == SMO_light_source_i_vec_attrib) ||
+      (inp == SMO_light_source_i) ||
       (inp == SMO_apiview_to_apiclip_light_source_i) ||
       (inp == SMO_light_source_i_packed)) {
     dep |= SSD_light | SSD_frame;
   }
-  if (inp == SMO_light_source_i_vec_attrib ||
+  if (inp == SMO_light_source_i ||
       inp == SMO_apiview_to_apiclip_light_source_i ||
       inp == SMO_light_source_i_packed ||
       inp == SMO_mat_constant_x_attrib ||
@@ -510,6 +510,90 @@ cp_dependency(ShaderMatInput inp) {
   }
 
   return dep;
+}
+
+/**
+ * Given ShaderMatInput, returns the size in the cache that this part requires.
+ */
+int Shader::
+cp_size(ShaderMatInput inp) {
+  switch (inp) {
+  case SMO_INVALID:
+    return 0;
+
+  case SMO_window_size:
+  case SMO_pixel_size:
+  case SMO_texpad_x:
+  case SMO_texpix_x:
+  case SMO_attr_color:
+  case SMO_attr_colorscale:
+  case SMO_satten_x:
+  case SMO_plane_x:
+  case SMO_clipplane_x:
+  case SMO_vec_constant_x:
+  case SMO_frame_number:
+  case SMO_frame_time:
+  case SMO_frame_delta:
+  case SMO_vec_constant_x_attrib:
+  case SMO_light_ambient:
+  case SMO_light_product_i_ambient:
+  case SMO_light_product_i_diffuse:
+  case SMO_light_product_i_specular:
+  case SMO_apiview_clipplane_i:
+  case SMO_tex_is_alpha_i:
+  case SMO_texscale_i:
+  case SMO_texcolor_i:
+  case SMO_texconst_i:
+  case SMO_attr_pointparams:
+    return 1;
+
+  case SMO_identity:
+  case SMO_alight_x:
+  case SMO_dlight_x:
+  case SMO_plight_x:
+  case SMO_slight_x:
+  case SMO_texmat_i:
+  case SMO_mat_constant_x:
+  case SMO_world_to_view:
+  case SMO_view_to_world:
+  case SMO_model_to_view:
+  case SMO_view_to_model:
+  case SMO_apiview_to_view:
+  case SMO_view_to_apiview:
+  case SMO_clip_to_view:
+  case SMO_view_to_clip:
+  case SMO_apiclip_to_view:
+  case SMO_view_to_apiclip:
+  case SMO_view_x_to_view:
+  case SMO_view_to_view_x:
+  case SMO_apiview_x_to_view:
+  case SMO_view_to_apiview_x:
+  case SMO_clip_x_to_view:
+  case SMO_view_to_clip_x:
+  case SMO_apiclip_x_to_view:
+  case SMO_view_to_apiclip_x:
+  case SMO_mat_constant_x_attrib:
+  case SMO_apiview_to_apiclip_light_source_i:
+  case SMO_model_to_apiview:
+  case SMO_apiview_to_model:
+  case SMO_apiview_to_apiclip:
+  case SMO_apiclip_to_apiview:
+  case SMO_inv_texmat_i:
+  case SMO_light_source_i_packed:
+    return 4;
+
+  case SMO_attr_material:
+    return MA_COUNT;
+
+  case SMO_light_source_i:
+    return LA_COUNT;
+
+  case SMO_attr_fog:
+    return FA_COUNT;
+  }
+
+  nassertr(false, 0);
+  return 0;
 }
 
 /**
@@ -581,7 +665,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
     for (int i = 0; i < 2; ++i) {
       if (spec._part[i] == SMO_texmat_i ||
           spec._part[i] == SMO_inv_texmat_i ||
-          spec._part[i] == SMO_light_source_i_vec_attrib ||
+          spec._part[i] == SMO_light_source_i ||
           spec._part[i] == SMO_apiview_to_apiclip_light_source_i ||
           spec._part[i] == SMO_light_product_i_ambient ||
           spec._part[i] == SMO_light_product_i_diffuse ||
@@ -638,6 +722,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
       }
       offset += part._count * part._size;
     }
+    int size = cp_size(spec._part[p]);
     if (i == _mat_parts.size()) {
       // Didn't find this part yet, create a new one.
       ShaderMatPart part;
@@ -645,83 +730,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
       part._count = end[p];
       part._arg = spec._arg[p];
       part._dep = dep;
-
-      switch (part._part) {
-      case SMO_INVALID:
-        part._size = 0;
-        break;
-
-      case SMO_window_size:
-      case SMO_pixel_size:
-      case SMO_texpad_x:
-      case SMO_texpix_x:
-      case SMO_attr_color:
-      case SMO_attr_colorscale:
-      case SMO_satten_x:
-      case SMO_plane_x:
-      case SMO_clipplane_x:
-      case SMO_vec_constant_x:
-      case SMO_attr_fog:
-      case SMO_attr_fogcolor:
-      case SMO_frame_number:
-      case SMO_frame_time:
-      case SMO_frame_delta:
-      case SMO_vec_constant_x_attrib:
-      case SMO_light_ambient:
-      case SMO_light_source_i_vec_attrib:
-      case SMO_light_product_i_ambient:
-      case SMO_light_product_i_diffuse:
-      case SMO_light_product_i_specular:
-      case SMO_apiview_clipplane_i:
-      case SMO_tex_is_alpha_i:
-      case SMO_texscale_i:
-      case SMO_texcolor_i:
-      case SMO_texconst_i:
-      case SMO_attr_pointparams:
-        part._size = 1;
-        break;
-
-      case SMO_attr_material2:
-        part._size = 2;
-        break;
-
-      case SMO_identity:
-      case SMO_attr_material:
-      case SMO_alight_x:
-      case SMO_dlight_x:
-      case SMO_plight_x:
-      case SMO_slight_x:
-      case SMO_texmat_i:
-      case SMO_mat_constant_x:
-      case SMO_world_to_view:
-      case SMO_view_to_world:
-      case SMO_model_to_view:
-      case SMO_view_to_model:
-      case SMO_apiview_to_view:
-      case SMO_view_to_apiview:
-      case SMO_clip_to_view:
-      case SMO_view_to_clip:
-      case SMO_apiclip_to_view:
-      case SMO_view_to_apiclip:
-      case SMO_view_x_to_view:
-      case SMO_view_to_view_x:
-      case SMO_apiview_x_to_view:
-      case SMO_view_to_apiview_x:
-      case SMO_clip_x_to_view:
-      case SMO_view_to_clip_x:
-      case SMO_apiclip_x_to_view:
-      case SMO_view_to_apiclip_x:
-      case SMO_mat_constant_x_attrib:
-      case SMO_apiview_to_apiclip_light_source_i:
-      case SMO_model_to_apiview:
-      case SMO_apiview_to_model:
-      case SMO_apiview_to_apiclip:
-      case SMO_apiclip_to_apiview:
-      case SMO_inv_texmat_i:
-      case SMO_light_source_i_packed:
-        part._size = 4;
-        break;
-      }
+      part._size = size;
 
       if (spec._func != SMF_first) {
         assert(part._size == 4);
@@ -730,7 +739,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
       _mat_cache_deps |= part._dep;
       _mat_parts.push_back(std::move(part));
     }
-    spec._cache_offset[p] = offset + begin[p];
+    spec._cache_offset[p] = offset + begin[p] * size;
   }
   if (spec._func == SMF_shader_input_ptr) {
     _mat_scratch_size = std::max(_mat_scratch_size, spec._array_count);
@@ -1188,6 +1197,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._offset = FA_params;
     } else if (pieces[1] == "fogcolor") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -1195,10 +1205,11 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._id = p._id;
       bind._piece = SMP_vec4;
       bind._func = SMF_first;
-      bind._part[0] = SMO_attr_fogcolor;
+      bind._part[0] = SMO_attr_fog;
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._offset = FA_color;
     } else if (pieces[1] == "ambient") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -1229,11 +1240,12 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._id = p._id;
       bind._piece = SMP_vec4;
       bind._func = SMF_first;
-      bind._part[0] = SMO_light_source_i_vec_attrib;
-      bind._arg[0] = InternalName::make("specular");
+      bind._part[0] = SMO_light_source_i;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
+      bind._offset = LA_specular;
     } else if (pieces[1] == "pointparams") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;

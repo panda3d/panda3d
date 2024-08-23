@@ -1156,32 +1156,23 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
     if (target_material->is_off()) {
-      into[0].set(1, 1, 1, 1);
-      into[1].set(1, 1, 1, 1);
-      into[2].set(0, 0, 0, 0);
-      into[3].set(0, 0, 0, 0);
+      into[Shader::MA_ambient].set(1, 1, 1, 1);
+      into[Shader::MA_diffuse].set(1, 1, 1, 1);
+      into[Shader::MA_emission].set(0, 0, 0, 0);
+      into[Shader::MA_specular].set(0, 0, 0, 0);
+      into[Shader::MA_base_color].set(0, 0, 0, 0);
+      into[Shader::MA_metallic_ior_roughness].set(0, 0, 0, 1);
       return;
     }
     Material *m = target_material->get_material();
     LVecBase4 spc = m->get_specular();
     spc[3] = m->get_shininess();
-    into[0] = LCAST(float, m->get_ambient());
-    into[1] = LCAST(float, m->get_diffuse());
-    into[2] = LCAST(float, m->get_emission());
-    into[3] = LCAST(float, spc);
-    return;
-  }
-  case Shader::SMO_attr_material2: {
-    const MaterialAttrib *target_material = (const MaterialAttrib *)
-      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
-    if (target_material->is_off()) {
-      into[0].set(0, 0, 0, 0);
-      into[1].set(0, 0, 0, 1);
-      return;
-    }
-    Material *m = target_material->get_material();
-    into[0] = LCAST(float, m->get_base_color());
-    into[1].set(m->get_metallic(), m->get_refractive_index(), 0, m->get_roughness());
+    into[Shader::MA_ambient] = LCAST(float, m->get_ambient());
+    into[Shader::MA_diffuse] = LCAST(float, m->get_diffuse());
+    into[Shader::MA_emission] = LCAST(float, m->get_emission());
+    into[Shader::MA_specular] = LCAST(float, spc);
+    into[Shader::MA_base_color] = LCAST(float, m->get_base_color());
+    into[Shader::MA_metallic_ior_roughness].set(m->get_metallic(), m->get_refractive_index(), 0, m->get_roughness());
     return;
   }
   case Shader::SMO_attr_color: {
@@ -1210,22 +1201,13 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     Fog *fog = target_fog->get_fog();
     if (fog == nullptr) {
       into[0].set(0, 1, 1, 1);
+      into[1].set(1, 1, 1, 1);
       return;
     }
     PN_stdfloat start, end;
     fog->get_linear_range(start, end);
     into[0].set(fog->get_exp_density(), start, end, 1.0f / (end - start));
-    return;
-  }
-  case Shader::SMO_attr_fogcolor: {
-    const FogAttrib *target_fog = (const FogAttrib *)
-      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
-    Fog *fog = target_fog->get_fog();
-    if (fog == nullptr) {
-      into[0].set(1, 1, 1, 1);
-      return;
-    }
-    into[0] = LCAST(float, fog->get_color());
+    into[1] = LCAST(float, fog->get_color());
     return;
   }
   case Shader::SMO_alight_x: {
@@ -1706,7 +1688,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     fetch_specified_member(np, name->get_basename(), into[0]);
     return;
   }
-  case Shader::SMO_light_source_i_vec_attrib: {
+  case Shader::SMO_light_source_i: {
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
@@ -1718,17 +1700,17 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     for (i = 0; i < num_lights; ++i) {
       NodePath light = target_light->get_on_light(i);
       nassertv(!light.is_empty());
-      fetch_specified_member(light, name, into[i]);
+      fetch_specified_light(light, into);
+      into += Shader::LA_COUNT;
     }
     // Apply the default OpenGL lights otherwise.
     // Special exception for light 0, which defaults to white.
-    if (i == 0) {
-      //FIXME: only the color attribute
-      into[0].set(1, 1, 1, 1);
-      ++i;
-    }
     for (; i < (size_t)count; ++i) {
-      fetch_specified_member(NodePath(), name, into[i]);
+      fetch_specified_light(NodePath(), into);
+      if (i == 0) {
+        into[Shader::LA_color].set(1, 1, 1, 1);
+      }
+      into += Shader::LA_COUNT;
     }
     return;
   }
@@ -1767,7 +1749,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return;
   }
   case Shader::SMO_light_source_i_packed: {
-    // The light matrix contains COLOR, ATTENUATION, POSITION, VIEWVECTOR
+    // The light matrix contains COLOR, ATTENUATION, VIEWVECTOR, POSITION
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
@@ -2123,6 +2105,111 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       << "Shader input requests invalid attribute " << *attrib
       << " from node " << np << "\n";
     v.set(0, 0, 0, 1);
+  }
+}
+
+/**
+ * Given a NodePath passed into a shader input that is a structure, fetches
+ * the value for the given member.
+ */
+void GraphicsStateGuardian::
+fetch_specified_light(const NodePath &np, LVecBase4f *into) {
+  PandaNode *node = nullptr;
+  if (!np.is_empty()) {
+    node = np.node();
+  }
+
+  if (node == nullptr) {
+    into[Shader::LA_color].set(0, 0, 0, 1);
+    into[Shader::LA_specular].set(0, 0, 0, 1);
+    into[Shader::LA_ambient].set(0, 0, 0, 1);
+    into[Shader::LA_diffuse].set(0, 0, 0, 1);
+    into[Shader::LA_position].set(0, 0, 1, 0);
+    into[Shader::LA_half_vector].set(0, 0, 1, 0);
+    into[Shader::LA_spot_direction].set(0, 0, -1, 0);
+    into[Shader::LA_spot_params].set(-1, 180, 0, 0);
+    into[Shader::LA_attenuation].set(1, 0, 0, 0);
+    *(LMatrix4f *)&into[Shader::LA_shadow_view_matrix] = LCAST(float, shadow_bias_mat);
+  } else {
+    Light *light = node->as_light();
+    nassertv(light != nullptr);
+
+    LVecBase4f color = LCAST(float, light->get_color());
+    into[Shader::LA_color] = color;
+    into[Shader::LA_specular] = LCAST(float, light->get_specular_color());
+
+    if (node->is_ambient_light()) {
+      into[Shader::LA_ambient] = color;
+      into[Shader::LA_diffuse].set(0, 0, 0, 1);
+      into[Shader::LA_position].set(0, 0, 0, 0);
+      into[Shader::LA_half_vector].set(0, 0, 0, 0);
+      into[Shader::LA_spot_direction].set(0, 0, 0, 0);
+      into[Shader::LA_spot_params].set(-1, 180, 0, 0);
+    } else {
+      into[Shader::LA_ambient].set(0, 0, 0, 1);
+      into[Shader::LA_diffuse] = color;
+
+      CPT(TransformState) net_transform =
+        np.get_transform(_scene_setup->get_scene_root().get_parent());
+      CPT(TransformState) transform =
+        _scene_setup->get_cs_world_transform()->compose(net_transform);
+      const LMatrix4 &light_mat = transform->get_mat();
+
+      LightLensNode *light;
+      DCAST_INTO_V(light, node);
+      Lens *lens = light->get_lens();
+      nassertv(lens != nullptr);
+
+      if (node->is_of_type(DirectionalLight::get_class_type())) {
+        DirectionalLight *light;
+        DCAST_INTO_V(light, node);
+
+        LVector3 dir = -(light->get_direction() * light_mat);
+        into[Shader::LA_position].set(dir[0], dir[1], dir[2], 0);
+
+        dir.normalize();
+        dir += LVector3(0, 0, 1);
+        dir.normalize();
+        into[Shader::LA_half_vector].set(dir[0], dir[1], dir[2], 1);
+      }
+      else {
+        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        into[Shader::LA_position].set(pos[0], pos[1], pos[2], 1);
+
+        pos.normalize();
+        pos += LVector3(0, 0, 1);
+        pos.normalize();
+        into[Shader::LA_half_vector].set(pos[0], pos[1], pos[2], 1);
+      }
+
+      if (node->is_of_type(Spotlight::get_class_type())) {
+        float cutoff = lens->get_hfov() * 0.5f;
+        into[Shader::LA_spot_params].set(ccos(deg_2_rad(cutoff)), cutoff, light->get_exponent(), 0);
+      } else {
+        // spotCosCutoff, spotCutoff, spotExponent
+        into[Shader::LA_spot_params].set(-1, 180, light->get_exponent(), 0);
+      }
+
+      LVector3 dir = lens->get_view_vector() * light_mat;
+      into[Shader::LA_spot_direction].set(dir[0], dir[1], dir[2], 0);
+
+      LMatrix4 t = _inv_cs_transform->get_mat() *
+        _scene_setup->get_camera_transform()->get_mat() *
+        net_transform->get_inverse()->get_mat() *
+        LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
+
+      if (!node->is_of_type(PointLight::get_class_type())) {
+        t *= lens->get_projection_mat() * shadow_bias_mat;
+      }
+      *(LMatrix4f *)&into[Shader::LA_shadow_view_matrix] = t;
+    }
+
+    LVecBase3 atten = light->get_attenuation();
+    PN_stdfloat radius = 0;
+    if (node->is_of_type(SphereLight::get_class_type())) {
+      radius = ((const SphereLight *)node)->get_radius();
+    }
+    into[Shader::LA_attenuation].set(atten[0], atten[1], atten[2], radius);
   }
 }
 

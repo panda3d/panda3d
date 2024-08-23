@@ -960,10 +960,11 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           }
 
           bind._func = Shader::SMF_first;
-          bind._part[0] = Shader::SMO_apiview_to_apiclip_light_source_i;
+          bind._part[0] = Shader::SMO_light_source_i;
           bind._arg[0] = nullptr;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = nullptr;
+          bind._offset = 4 * Shader::LA_shadow_view_matrix;
 
         } else if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
           // Only supported for backward compatibility: includes the model
@@ -1074,90 +1075,88 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           GLCAT.error()
             << "p3d_Material.baseColor should be vec4\n";
         }
-        bind._part[0] = Shader::SMO_attr_material2;
+        bind._offset = 4 * Shader::MA_base_color;
         bind._piece = Shader::SMP_vec4;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.ambient") {
+      }
+      else if (noprefix == "Material.ambient") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.ambient should be vec4\n";
         }
+        bind._offset = 4 * Shader::MA_ambient;
         bind._piece = Shader::SMP_vec4;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.diffuse") {
+      }
+      else if (noprefix == "Material.diffuse") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.diffuse should be vec4\n";
         }
+        bind._offset = 4 * Shader::MA_diffuse;
         bind._piece = Shader::SMP_vec4;
-        bind._offset = 4;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.emission") {
+      }
+      else if (noprefix == "Material.emission") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.emission should be vec4\n";
         }
+        bind._offset = 4 * Shader::MA_emission;
         bind._piece = Shader::SMP_vec4;
-        bind._offset = 8;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.specular") {
+      }
+      else if (noprefix == "Material.specular") {
         if (param_type != GL_FLOAT_VEC3) {
           GLCAT.error()
             << "p3d_Material.specular should be vec3\n";
         }
+        bind._offset = 4 * Shader::MA_specular;
         bind._piece = Shader::SMP_vec3;
-        bind._offset = 12;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.shininess") {
+      }
+      else if (noprefix == "Material.shininess") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.shininess should be float\n";
         }
+        bind._offset = 4 * Shader::MA_specular + 3;
         bind._piece = Shader::SMP_scalar;
-        bind._offset = 15;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.roughness") {
+      }
+      else if (noprefix == "Material.roughness") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.roughness should be float\n";
         }
-        bind._part[0] = Shader::SMO_attr_material2;
+        bind._offset = 4 * Shader::MA_metallic_ior_roughness + 3;
         bind._piece = Shader::SMP_scalar;
-        bind._offset = 7;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.metallic") {
+      }
+      else if (noprefix == "Material.metallic") {
         if (param_type != GL_FLOAT && param_type != GL_BOOL) {
           GLCAT.error()
             << "p3d_Material.metallic should be bool or float\n";
         }
-        bind._part[0] = Shader::SMO_attr_material2;
+        bind._offset = 4 * Shader::MA_metallic_ior_roughness;
         bind._piece = Shader::SMP_scalar;
-        bind._offset = 4;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.refractiveIndex") {
+      }
+      else if (noprefix == "Material.refractiveIndex") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.refractiveIndex should be float\n";
         }
-        bind._part[0] = Shader::SMO_attr_material2;
+        bind._offset = 4 * Shader::MA_metallic_ior_roughness + 1;
         bind._piece = Shader::SMP_scalar;
-        bind._offset = 5;
         _shader->cp_add_mat_spec(bind);
         return;
       }
@@ -1231,7 +1230,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._arg[1] = nullptr;
 
       if (noprefix == "Fog.color") {
-        bind._part[0] = Shader::SMO_attr_fogcolor;
+        bind._part[0] = Shader::SMO_attr_fog;
+        bind._offset = 4 * Shader::FA_color;
 
         if (param_type == GL_FLOAT_VEC3) {
           bind._piece = Shader::SMP_vec3;
@@ -1245,6 +1245,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
       } else if (noprefix == "Fog.density") {
         bind._part[0] = Shader::SMO_attr_fog;
+        bind._offset = 4 * Shader::FA_params;
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_scalar;
@@ -1256,10 +1257,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
       } else if (noprefix == "Fog.start") {
         bind._part[0] = Shader::SMO_attr_fog;
+        bind._offset = 4 * Shader::FA_params + 1;
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_scalar;
-          bind._offset = 1;
         } else {
           GLCAT.error()
             << "p3d_Fog.start should be float\n";
@@ -1268,10 +1269,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
       } else if (noprefix == "Fog.end") {
         bind._part[0] = Shader::SMO_attr_fog;
+        bind._offset = 4 * Shader::FA_params + 2;
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_scalar;
-          bind._offset = 2;
         } else {
           GLCAT.error()
             << "p3d_Fog.end should be float\n";
@@ -1280,10 +1281,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
       } else if (noprefix == "Fog.scale") {
         bind._part[0] = Shader::SMO_attr_fog;
+        bind._offset = 4 * Shader::FA_params + 3;
 
         if (param_type == GL_FLOAT) {
           bind._piece = Shader::SMP_scalar;
-          bind._offset = 3;
         } else {
           GLCAT.error()
             << "p3d_Fog.scale should be float\n";
@@ -1350,10 +1351,77 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._id = arg_id;
           bind._func = Shader::SMF_first;
           bind._index = index;
-          bind._part[0] = Shader::SMO_light_source_i_vec_attrib;
-          bind._arg[0] = InternalName::make(member_name);
+          bind._part[0] = Shader::SMO_light_source_i;
+          bind._arg[0] = nullptr;
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = nullptr;
+
+          GLenum expected = GL_FLOAT_VEC4;
+          if (member_name == "color") {
+            bind._offset = 4 * Shader::LA_color;
+          }
+          else if (member_name == "specular") {
+            bind._offset = 4 * Shader::LA_specular;
+          }
+          else if (member_name == "ambient") {
+            bind._offset = 4 * Shader::LA_ambient;
+          }
+          else if (member_name == "diffuse") {
+            bind._offset = 4 * Shader::LA_diffuse;
+          }
+          else if (member_name == "position") {
+            bind._offset = 4 * Shader::LA_position;
+          }
+          else if (member_name == "halfVector") {
+            bind._offset = 4 * Shader::LA_half_vector;
+          }
+          else if (member_name == "spotDirection") {
+            bind._offset = 4 * Shader::LA_spot_direction;
+          }
+          else if (member_name == "spotCosCutoff") {
+            bind._offset = 4 * Shader::LA_spot_params;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "spotCutoff") {
+            bind._offset = 4 * Shader::LA_spot_params + 1;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "spotExponent") {
+            bind._offset = 4 * Shader::LA_spot_params + 2;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "attenuation") {
+            bind._offset = 4 * Shader::LA_attenuation;
+            expected = GL_FLOAT_VEC3;
+          }
+          else if (member_name == "constantAttenuation") {
+            bind._offset = 4 * Shader::LA_attenuation;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "linearAttenuation") {
+            bind._offset = 4 * Shader::LA_attenuation + 1;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "quadraticAttenuation") {
+            bind._offset = 4 * Shader::LA_attenuation + 2;
+            expected = GL_FLOAT;
+          }
+          else if (member_name == "radius") {
+            bind._offset = 4 * Shader::LA_attenuation + 3;
+            expected = GL_FLOAT;
+          }
+          else {
+            GLCAT.error()
+              << "Invalid light struct member " << member_name << "\n";
+            return;
+          }
+
+          // It's okay to declare as vec3 if we allow vec4.
+          if (param_type != expected && (expected != GL_FLOAT_VEC4 || param_type != GL_FLOAT_VEC3)) {
+            GLCAT.error()
+              << "p3d_LightSource[]." << member_name << " has unexpected type\n";
+            return;
+          }
 
           switch (param_type) {
           case GL_FLOAT:
@@ -1373,8 +1441,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             break;
 
           default:
-            GLCAT.error()
-              << "p3d_LightSource[]." << member_name << " should be float or vec\n";
+            assert(false);
             return;
           }
           _shader->cp_add_mat_spec(bind);

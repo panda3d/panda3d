@@ -343,6 +343,7 @@ public:
                             LVecBase4f *into, int count = 1);
   void fetch_specified_member(const NodePath &np, CPT_InternalName member,
                               LVecBase4f &v);
+  void fetch_specified_light(const NodePath &np, LVecBase4f *into);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);

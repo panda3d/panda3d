@@ -173,7 +173,6 @@ public:
     SMO_view_to_apiclip_x,
 
     SMO_attr_fog,
-    SMO_attr_fogcolor,
 
     SMO_frame_number,
     SMO_frame_time,
@@ -183,7 +182,8 @@ public:
     SMO_vec_constant_x_attrib,
 
     SMO_light_ambient,
-    SMO_light_source_i_vec_attrib,
+    SMO_light_source_i,
+    SMO_light_source_i_packed,
     SMO_apiview_to_apiclip_light_source_i,
 
     SMO_light_product_i_ambient,
@@ -200,13 +200,8 @@ public:
 
     SMO_inv_texmat_i,
 
-    // Additional properties for PBR materials
-    SMO_attr_material2,
-
     // Hack for text rendering.  Don't use in user shaders.
     SMO_tex_is_alpha_i,
-
-    SMO_light_source_i_packed,
 
     // Texture scale component of texture matrix.
     SMO_texscale_i,
@@ -356,6 +351,39 @@ public:
     SPT_uint,
     SPT_bool,
     SPT_unknown
+  };
+
+  // Attributes (vec4) of the material structure.
+  enum MaterialAttribute {
+    MA_ambient,
+    MA_diffuse,
+    MA_emission,
+    MA_specular, // shininess in w
+    MA_base_color,
+    MA_metallic_ior_roughness,
+    MA_COUNT,
+  };
+
+  // Attributes (vec4) of the light structure.
+  enum LightAttribute {
+    LA_color,
+    LA_specular,
+    LA_ambient,
+    LA_diffuse,
+    LA_position,
+    LA_half_vector,
+    LA_spot_direction,
+    LA_spot_params, // spotCosCutoff, spotCutoff, spotExponent
+    LA_attenuation, // and radius
+    LA_shadow_view_matrix, // mat4
+    LA_COUNT = LA_shadow_view_matrix + 4,
+  };
+
+  // Attributes (vec4) of the fog structure.
+  enum FogAttribute {
+    FA_params, // exp density, start, end, scale
+    FA_color,
+    FA_COUNT,
   };
 
   struct ShaderArgInfo {
@@ -550,6 +578,7 @@ public:
                           vector_string &pieces, int &next,
                           ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
+  int cp_size(ShaderMatInput inp);
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
   size_t cp_get_mat_scratch_size() const;
