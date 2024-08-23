@@ -42,7 +42,7 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set(), state=None):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
@@ -84,10 +84,15 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
         attrib = attrib.set_shader_input(name, value)
     attrib = attrib.set_shader_input('_triggered', result)
 
+    if not state:
+        state = core.RenderState.make(attrib)
+    else:
+        state = state.set_attrib(attrib)
+
     # Run the compute shader.
     engine = core.GraphicsEngine.get_global_ptr()
     try:
-        engine.dispatch_compute((1, 1, 1), attrib, gsg)
+        engine.dispatch_compute((1, 1, 1), state, gsg)
     except AssertionError as exc:
         assert False, "Error executing compute shader:\n" + code
 
@@ -508,6 +513,161 @@ def test_glsl_param_ivec4(gsg):
     assert(param.w == 3);
     """
     run_glsl_test(gsg, code, preamble, {'param': param})
+
+
+def test_glsl_named_light_source(gsg):
+    spot = core.Spotlight("spot")
+    spot.get_lens().set_fov(90, 90)
+    spot.set_color((1, 2, 3, 4))
+    spot.set_specular_color((5, 6, 7, 8))
+
+    preamble = """
+    struct p3d_LightSourceParameters {
+      vec4 color;
+      vec4 specular;
+    };
+    uniform p3d_LightSourceParameters spot;
+    """
+    code = """
+    assert(spot.color == vec4(1, 2, 3, 4));
+    assert(spot.specular == vec4(5, 6, 7, 8));
+    """
+    run_glsl_test(gsg, code, preamble, {'spot': core.NodePath(spot)})
+
+
+def test_glsl_state_light_source(gsg):
+    spot = core.Spotlight("spot")
+    spot.priority = 3
+    spot.get_lens().set_fov(90, 90)
+    spot.set_color((1, 2, 3, 4))
+    spot.set_specular_color((5, 6, 7, 8))
+
+    dire = core.DirectionalLight("dire")
+    dire.priority = 2
+    dire.set_color((9, 10, 11, 12))
+    dire.set_specular_color((13, 14, 15, 16))
+
+    preamble = """
+    struct p3d_LightSourceParameters {
+      vec4 color;
+      vec4 specular;
+    };
+    uniform p3d_LightSourceParameters p3d_LightSource[3];
+    """
+    code = """
+    assert(p3d_LightSource[0].color == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].specular == vec4(5, 6, 7, 8));
+    assert(p3d_LightSource[1].color == vec4(9, 10, 11, 12));
+    assert(p3d_LightSource[1].specular == vec4(13, 14, 15, 16));
+    assert(p3d_LightSource[2].color == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].specular == vec4(0, 0, 0, 1));
+    """
+
+    node = core.NodePath("state")
+    node.set_light(node.attach_new_node(spot))
+    node.set_light(node.attach_new_node(dire))
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_material(gsg):
+    mat = core.Material("mat")
+    mat.ambient = (1, 2, 3, 4)
+    mat.diffuse = (5, 6, 7, 8)
+    mat.emission = (9, 10, 11, 12)
+    mat.specular = (13, 14, 15, 0)
+    mat.shininess = 16
+    mat.metallic = 0.5
+    mat.refractive_index = 21
+
+    preamble = """
+    struct p3d_MaterialParameters {
+      vec4 ambient;
+      vec4 diffuse;
+      vec4 emission;
+      vec3 specular;
+      float shininess;
+      float metallic;
+      float refractiveIndex;
+    };
+    uniform p3d_MaterialParameters p3d_Material;
+    """
+    code = """
+    assert(p3d_Material.ambient == vec4(1, 2, 3, 4));
+    assert(p3d_Material.diffuse == vec4(5, 6, 7, 8));
+    assert(p3d_Material.emission == vec4(9, 10, 11, 12));
+    assert(p3d_Material.specular == vec3(13, 14, 15));
+    assert(p3d_Material.shininess == 16);
+    assert(p3d_Material.metallic == 0.5);
+    assert(p3d_Material.refractiveIndex == 21);
+    """
+
+    node = core.NodePath("state")
+    node.set_material(mat)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_material_pbr(gsg):
+    mat = core.Material("mat")
+    mat.base_color = (1, 2, 3, 4)
+    mat.emission = (9, 10, 11, 12)
+    mat.roughness = 16
+    mat.metallic = 0.5
+    mat.refractive_index = 21
+
+    preamble = """
+    struct p3d_MaterialParameters {
+      vec4 baseColor;
+      vec4 emission;
+      float metallic;
+      float refractiveIndex;
+      float roughness;
+    };
+    uniform p3d_MaterialParameters p3d_Material;
+    """
+    code = """
+    assert(p3d_Material.baseColor == vec4(1, 2, 3, 4));
+    assert(p3d_Material.emission == vec4(9, 10, 11, 12));
+    assert(p3d_Material.roughness == 16);
+    assert(p3d_Material.metallic == 0.5);
+    assert(p3d_Material.refractiveIndex == 21);
+    """
+
+    node = core.NodePath("state")
+    node.set_material(mat)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_fog(gsg):
+    fog = core.Fog("fog")
+    fog.color = (1, 2, 3, 4)
+    fog.exp_density = 0.5
+    fog.set_linear_range(6, 10)
+
+    preamble = """
+    struct p3d_FogParameters {
+      vec4 color;
+      float density;
+      float start;
+      float end;
+      float scale;
+    };
+    uniform p3d_FogParameters p3d_Fog;
+    """
+    code = """
+    assert(p3d_Fog.color == vec4(1, 2, 3, 4));
+    assert(p3d_Fog.density == 0.5);
+    assert(p3d_Fog.start == 6);
+    assert(p3d_Fog.end == 10);
+    assert(p3d_Fog.scale == 0.25);
+    """
+
+    node = core.NodePath("state")
+    node.set_fog(fog)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
 
 
 def test_glsl_write_extract_image_buffer(gsg):
