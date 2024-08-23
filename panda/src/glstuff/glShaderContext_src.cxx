@@ -290,7 +290,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
-  _frame_number_loc = -1;
   _frame_number = -1;
   _validated = !gl_validate_shaders;
 
@@ -1528,12 +1527,15 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       return;
 
     } else if (noprefix == "FrameNumber") {
-      // We don't currently support ints with this mechanism, so we special-
-      // case this one.
+      bind._piece = Shader::SMP_scalar;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_frame_number;
+      bind._part[1] = Shader::SMO_identity;
+      bind._numeric_type = Shader::SPT_int;
       if (param_type != GL_INT) {
         GLCAT.error() << "osg_FrameNumber should be uniform int\n";
       } else {
-        _frame_number_loc = p;
+        _shader->cp_add_mat_spec(bind);
       }
       return;
     }
@@ -2328,142 +2330,6 @@ issue_parameters(int altered) {
     GLCAT.spam()
       << "Setting uniforms for " << _shader->get_filename()
       << " (altered 0x" << hex << altered << dec << ")\n";
-  }
-
-  // We have no way to track modifications to PTAs, so we assume that they are
-  // modified every frame and when we switch ShaderAttribs.
-  if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
-
-    // If we have an osg_FrameNumber input, set it now.
-    if ((altered & Shader::SSD_frame) != 0 && _frame_number_loc >= 0) {
-      _glgsg->_glUniform1i(_frame_number_loc, _frame_number);
-    }
-
-    // Iterate through _ptr parameters
-    /*for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
-      Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
-
-      Shader::ShaderPtrData ptr_data;
-      if (!_glgsg->fetch_ptr_parameter(spec, ptr_data)) { //the input is not contained in ShaderPtrData
-        release_resources();
-        return;
-      }
-
-      nassertd(spec._dim[1] > 0) continue;
-
-      GLint p = spec._id._seqno;
-      int array_size = min(spec._dim[0], (int)ptr_data._size / spec._dim[1]);
-      switch (spec._type) {
-      case Shader::SPT_float:
-        {
-          float *data = nullptr;
-
-          switch (ptr_data._type) {
-          case Shader::SPT_int:
-            // Convert int data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case Shader::SPT_uint:
-            // Convert unsigned int data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case Shader::SPT_double:
-            // Downgrade double data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((double*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case Shader::SPT_float:
-            data = (float*)ptr_data._ptr;
-            break;
-
-          default:
-#ifndef NDEBUG
-            GLCAT.error()
-              << "Invalid ShaderPtrSpec type " << (int)ptr_data._type
-              << " for shader input '" << spec._id._name << "'\n";
-#endif
-            continue;
-          }
-
-          switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1fv(p, array_size, (float*)data); continue;
-          case 2: _glgsg->_glUniform2fv(p, array_size, (float*)data); continue;
-          case 3: _glgsg->_glUniform3fv(p, array_size, (float*)data); continue;
-          case 4: _glgsg->_glUniform4fv(p, array_size, (float*)data); continue;
-          case 9: _glgsg->_glUniformMatrix3fv(p, array_size, GL_FALSE, (float*)data); continue;
-          case 16: _glgsg->_glUniformMatrix4fv(p, array_size, GL_FALSE, (float*)data); continue;
-          }
-          nassertd(false) continue;
-        }
-        break;
-
-      case Shader::SPT_int:
-        if (ptr_data._type != Shader::SPT_int &&
-            ptr_data._type != Shader::SPT_uint) {
-          GLCAT.error()
-            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-          // Deactivate it to make sure the user doesn't get flooded with this
-          // error.
-          spec._dep[0] = 0;
-          spec._dep[1] = 0;
-
-        } else {
-          switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data._ptr); continue;
-          case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data._ptr); continue;
-          case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data._ptr); continue;
-          case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data._ptr); continue;
-          }
-          nassertd(false) continue;
-        }
-        break;
-
-      case Shader::SPT_uint:
-        if (ptr_data._type != Shader::SPT_uint &&
-            ptr_data._type != Shader::SPT_int) {
-          GLCAT.error()
-            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-          // Deactivate it to make sure the user doesn't get flooded with this
-          // error.
-          spec._dep[0] = 0;
-          spec._dep[1] = 0;
-
-        } else {
-          switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
-          case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
-          case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
-          case 4: _glgsg->_glUniform4uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
-          }
-          nassertd(false) continue;
-        }
-        break;
-
-      case Shader::SPT_double:
-        GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
-
-        // Deactivate it to make sure the user doesn't get flooded with this
-        // error.
-        spec._dep[0] = 0;
-        spec._dep[1] = 0;
-
-      default:
-        continue;
-      }
-    }*/
   }
 
   if (altered & _shader->_mat_deps) {

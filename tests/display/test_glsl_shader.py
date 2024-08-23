@@ -760,6 +760,24 @@ def test_glsl_state_fog(gsg):
     run_glsl_test(gsg, code, preamble, state=node.get_state())
 
 
+def test_glsl_frame_number(gsg):
+    clock = core.ClockObject.get_global_clock()
+    old_frame_count = clock.get_frame_count()
+    try:
+        clock.set_frame_count(123)
+
+        preamble = """
+        uniform int osg_FrameNumber;
+        """
+        code = """
+        assert(osg_FrameNumber == 123);
+        """
+
+        run_glsl_test(gsg, code, preamble)
+    finally:
+        clock.set_frame_count(old_frame_count)
+
+
 def test_glsl_write_extract_image_buffer(gsg):
     # Tests that we can write to a buffer texture on the GPU, and then extract
     # the data on the CPU.  We test two textures since there was in the past a
