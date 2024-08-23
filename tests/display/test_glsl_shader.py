@@ -538,34 +538,103 @@ def test_glsl_named_light_source(gsg):
 def test_glsl_state_light_source(gsg):
     spot = core.Spotlight("spot")
     spot.priority = 3
-    spot.get_lens().set_fov(90, 90)
+    spot.get_lens().set_fov(120, 120)
     spot.set_color((1, 2, 3, 4))
     spot.set_specular_color((5, 6, 7, 8))
+    spot.attenuation = (23, 24, 25)
+    spot.exponent = 26
 
     dire = core.DirectionalLight("dire")
     dire.priority = 2
     dire.set_color((9, 10, 11, 12))
     dire.set_specular_color((13, 14, 15, 16))
+    dire.direction = (17, 18, 19)
 
     preamble = """
     struct p3d_LightSourceParameters {
       vec4 color;
       vec4 specular;
+      vec4 ambient;
+      vec4 diffuse;
+      vec4 position;
+      vec3 attenuation;
+      float constantAttenuation;
+      float linearAttenuation;
+      float quadraticAttenuation;
+      float spotExponent;
+      float spotCosCutoff;
+      float spotCutoff;
+      mat4 shadowViewMatrix;
     };
     uniform p3d_LightSourceParameters p3d_LightSource[3];
     """
     code = """
     assert(p3d_LightSource[0].color == vec4(1, 2, 3, 4));
     assert(p3d_LightSource[0].specular == vec4(5, 6, 7, 8));
+    assert(p3d_LightSource[0].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[0].diffuse == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].position == vec4(20, 21, 22, 1));
+    assert(p3d_LightSource[0].attenuation == vec3(23, 24, 25));
+    assert(p3d_LightSource[0].constantAttenuation == 23);
+    assert(p3d_LightSource[0].linearAttenuation == 24);
+    assert(p3d_LightSource[0].quadraticAttenuation == 25);
+    assert(p3d_LightSource[0].spotExponent == 26);
+    assert(p3d_LightSource[0].spotCosCutoff > 0.499);
+    assert(p3d_LightSource[0].spotCosCutoff < 0.501);
+    assert(p3d_LightSource[0].spotCutoff == 60);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][0] > 0.2886);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][0] < 0.2887);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][1] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][2] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][3] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][0] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][1] > 0.2886);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][1] < 0.2887);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][2] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][3] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][0] == -0.5);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][1] == -0.5);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][2] > -1.00002);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][2] < -1.0);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][3] == -1);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][0] > -16.2736);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][0] < -16.2734);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][1] > -16.8510);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][1] < -16.8508);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][2] > -22.0003);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][2] < -22.0001);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][3] == -21);
     assert(p3d_LightSource[1].color == vec4(9, 10, 11, 12));
     assert(p3d_LightSource[1].specular == vec4(13, 14, 15, 16));
+    assert(p3d_LightSource[1].diffuse == vec4(9, 10, 11, 12));
+    assert(p3d_LightSource[1].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[1].position == vec4(-17, -18, -19, 0));
+    assert(p3d_LightSource[1].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[1].constantAttenuation == 1);
+    assert(p3d_LightSource[1].linearAttenuation == 0);
+    assert(p3d_LightSource[1].quadraticAttenuation == 0);
+    assert(p3d_LightSource[1].spotExponent == 0);
+    assert(p3d_LightSource[1].spotCosCutoff == -1);
     assert(p3d_LightSource[2].color == vec4(0, 0, 0, 1));
     assert(p3d_LightSource[2].specular == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].diffuse == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].position == vec4(0, 0, 1, 0));
+    assert(p3d_LightSource[2].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[2].constantAttenuation == 1);
+    assert(p3d_LightSource[2].linearAttenuation == 0);
+    assert(p3d_LightSource[2].quadraticAttenuation == 0);
+    assert(p3d_LightSource[2].spotExponent == 0);
+    assert(p3d_LightSource[2].spotCosCutoff == -1);
     """
 
     node = core.NodePath("state")
-    node.set_light(node.attach_new_node(spot))
-    node.set_light(node.attach_new_node(dire))
+    spot_path = node.attach_new_node(spot)
+    spot_path.set_pos(20, 21, 22)
+    node.set_light(spot_path)
+
+    dire_path = node.attach_new_node(dire)
+    node.set_light(dire_path)
 
     run_glsl_test(gsg, code, preamble, state=node.get_state())
 
