@@ -1187,7 +1187,8 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, GraphicsStateGuardian *gsg) {
   const ShaderAttrib *sattr;
-  state->get_attrib_def(sattr);
+  DCAST_INTO_V(sattr, state->get_attrib(ShaderAttrib::get_class_slot()));
+
   const Shader *shader = sattr->get_shader();
   nassertv(shader != nullptr);
   nassertv(gsg != nullptr);

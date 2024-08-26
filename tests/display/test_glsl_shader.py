@@ -390,14 +390,16 @@ def test_glsl_bool(gsg):
 
 
 def test_glsl_mat3(gsg):
-    param1 = core.LMatrix4(core.LMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9))
+    param1 = core.LMatrix4f(core.LMatrix3f(1, 2, 3, 4, 5, 6, 7, 8, 9))
+    param2 = core.LMatrix4d(core.LMatrix3d(10, 11, 12, 13, 14, 15, 16, 17, 18))
 
-    param2 = core.NodePath("param2")
-    param2.set_mat(core.LMatrix3(10, 11, 12, 13, 14, 15, 16, 17, 18))
+    param3 = core.NodePath("param3")
+    param3.set_mat(core.LMatrix3(19, 20, 21, 22, 23, 24, 25, 26, 27))
 
     preamble = """
     uniform mat3 param1;
     uniform mat3 param2;
+    uniform mat3 param3;
     """
     code = """
     assert(param1[0] == vec3(1, 2, 3));
@@ -406,23 +408,29 @@ def test_glsl_mat3(gsg):
     assert(param2[0] == vec3(10, 11, 12));
     assert(param2[1] == vec3(13, 14, 15));
     assert(param2[2] == vec3(16, 17, 18));
+    assert(param3[0] == vec3(19, 20, 21));
+    assert(param3[1] == vec3(22, 23, 24));
+    assert(param3[2] == vec3(25, 26, 27));
     """
-    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+    run_glsl_test(gsg, code, preamble,
+        {'param1': param1, 'param2': param2, 'param3': param3})
 
 
 def test_glsl_mat4(gsg):
-    param1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
 
-    param2 = core.NodePath("param2")
-    param2.set_mat(core.LMatrix4(
-        17, 18, 19, 20,
-        21, 22, 23, 24,
-        25, 26, 27, 28,
-        29, 30, 31, 32))
+    param3 = core.NodePath("param3")
+    param3.set_mat(core.LMatrix4(
+        33, 34, 35, 36,
+        37, 38, 39, 40,
+        41, 42, 43, 44,
+        45, 46, 47, 48))
 
     preamble = """
     uniform mat4 param1;
     uniform mat4 param2;
+    uniform mat4 param3;
     """
     code = """
     assert(param1[0] == vec4(1, 2, 3, 4));
@@ -433,8 +441,56 @@ def test_glsl_mat4(gsg):
     assert(param2[1] == vec4(21, 22, 23, 24));
     assert(param2[2] == vec4(25, 26, 27, 28));
     assert(param2[3] == vec4(29, 30, 31, 32));
+    assert(param3[0] == vec4(33, 34, 35, 36));
+    assert(param3[1] == vec4(37, 38, 39, 40));
+    assert(param3[2] == vec4(41, 42, 43, 44));
+    assert(param3[3] == vec4(45, 46, 47, 48));
     """
-    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+    run_glsl_test(gsg, code, preamble,
+        {'param1': param1, 'param2': param2, 'param3': param3})
+
+
+def test_glsl_mat3x4(gsg):
+    param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
+
+    preamble = """
+    uniform mat3x4 param1;
+    uniform mat3x4 param2;
+    """
+    code = """
+    assert(param1[0] == vec4(1, 2, 3, 4));
+    assert(param1[1] == vec4(5, 6, 7, 8));
+    assert(param1[2] == vec4(9, 10, 11, 12));
+    assert(param2[0] == vec4(17, 18, 19, 20));
+    assert(param2[1] == vec4(21, 22, 23, 24));
+    assert(param2[2] == vec4(25, 26, 27, 28));
+    """
+    run_glsl_test(gsg, code, preamble,
+        {'param1': param1, 'param2': param2})
+
+
+def test_glsl_mat4x3(gsg):
+    param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
+
+    preamble = """
+    uniform mat4x3 param1;
+    uniform mat4x3 param2;
+    uniform mat4x3 param3;
+    """
+    code = """
+    assert(param1[0] == vec3(1, 2, 3));
+    assert(param1[1] == vec3(5, 6, 7));
+    assert(param1[2] == vec3(9, 10, 11));
+    assert(param1[3] == vec3(13, 14, 15));
+    assert(param2[0] == vec3(17, 18, 19));
+    assert(param2[1] == vec3(21, 22, 23));
+    assert(param2[2] == vec3(25, 26, 27));
+    assert(param2[3] == vec3(29, 30, 31));
+    """
+    run_glsl_test(gsg, code, preamble,
+        {'param1': param1, 'param2': param2})
 
 
 def test_glsl_pta_int(gsg):
@@ -465,8 +521,106 @@ def test_glsl_pta_ivec4(gsg):
     run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
-def test_glsl_pta_mat4(gsg):
-    pta = core.PTA_LMatrix4f((
+@pytest.mark.parametrize("type", (core.PTA_LVecBase3f, core.PTA_LVecBase3d, core.PTA_LVecBase3i))
+def test_glsl_pta_vec3(gsg, type):
+    pta = type((
+        (0, 1, 2),
+        (3, 4, 5),
+        (6, 7, 8),
+    ))
+
+    preamble = """
+    uniform vec3 pta[3];
+    """
+    code = """
+    assert(pta[0] == vec3(0, 1, 2));
+    assert(pta[1] == vec3(3, 4, 5));
+    assert(pta[2] == vec3(6, 7, 8));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+@pytest.mark.parametrize("type", (core.PTA_LVecBase3f, core.PTA_LVecBase3d, core.PTA_LVecBase3i))
+def test_glsl_pta_dvec3(gsg, type):
+    pta = type((
+        (0, 1, 2),
+        (3, 4, 5),
+        (6, 7, 8),
+    ))
+
+    preamble = """
+    uniform dvec3 pta[3];
+    """
+    code = """
+    assert(pta[0] == vec3(0, 1, 2));
+    assert(pta[1] == vec3(3, 4, 5));
+    assert(pta[2] == vec3(6, 7, 8));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+@pytest.mark.parametrize("type", (core.PTA_LVecBase4f, core.PTA_LVecBase4d, core.PTA_LVecBase4i))
+def test_glsl_pta_vec4(gsg, type):
+    pta = type((
+        (0, 1, 2, 3),
+        (4, 5, 6, 7),
+        (8, 9, 10, 11),
+    ))
+
+    preamble = """
+    uniform vec4 pta[4];
+    """
+    code = """
+    assert(pta[0] == vec4(0, 1, 2, 3));
+    assert(pta[1] == vec4(4, 5, 6, 7));
+    assert(pta[2] == vec4(8, 9, 10, 11));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+@pytest.mark.parametrize("type", (core.PTA_LVecBase4f, core.PTA_LVecBase4d, core.PTA_LVecBase4i))
+def test_glsl_pta_dvec4(gsg, type):
+    pta = type((
+        (0, 1, 2, 3),
+        (4, 5, 6, 7),
+        (8, 9, 10, 11),
+    ))
+
+    preamble = """
+    uniform dvec4 pta[4];
+    """
+    code = """
+    assert(pta[0] == dvec4(0, 1, 2, 3));
+    assert(pta[1] == dvec4(4, 5, 6, 7));
+    assert(pta[2] == dvec4(8, 9, 10, 11));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+@pytest.mark.parametrize("type", (core.PTA_LMatrix3f, core.PTA_LMatrix3d))
+def test_glsl_pta_mat3(gsg, type):
+    pta = type((
+        (0, 1, 2, 3, 4, 5, 6, 7, 8),
+        (9, 10, 11, 12, 13, 14, 15, 16, 17),
+    ))
+
+    preamble = """
+    uniform mat3 pta[2];
+    """
+    code = """
+    assert(pta[0][0] == vec3(0, 1, 2));
+    assert(pta[0][1] == vec3(3, 4, 5));
+    assert(pta[0][2] == vec3(6, 7, 8));
+    assert(pta[1][0] == vec3(9, 10, 11));
+    assert(pta[1][1] == vec3(12, 13, 14));
+    assert(pta[1][2] == vec3(15, 16, 17));
+    """
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+@pytest.mark.parametrize("type", (core.PTA_LMatrix4f, core.PTA_LMatrix4d))
+def test_glsl_pta_mat4(gsg, type):
+    pta = type((
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
         (16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31),
     ))
@@ -671,6 +825,26 @@ def test_glsl_light(gsg):
     })
 
 
+def test_glsl_named_light_source(gsg):
+    spot = core.Spotlight("spot")
+    spot.get_lens().set_fov(90, 90)
+    spot.set_color((1, 2, 3, 4))
+    spot.set_specular_color((5, 6, 7, 8))
+
+    preamble = """
+    struct p3d_LightSourceParameters {
+      vec4 color;
+      vec4 specular;
+    };
+    uniform p3d_LightSourceParameters spot;
+    """
+    code = """
+    assert(spot.color == vec4(1, 2, 3, 4));
+    assert(spot.specular == vec4(5, 6, 7, 8));
+    """
+    run_glsl_test(gsg, code, preamble, {'spot': core.NodePath(spot)})
+
+
 def test_glsl_state_light(gsg):
     preamble = """
     uniform struct p3d_LightSourceParameters {
@@ -738,6 +912,229 @@ def test_glsl_state_light(gsg):
     state = core.RenderState.make(lattr)
 
     run_glsl_test(gsg, code, preamble, state=state)
+
+
+def test_glsl_state_light_source(gsg):
+    spot = core.Spotlight("spot")
+    spot.priority = 3
+    spot.get_lens().set_fov(120, 120)
+    spot.set_color((1, 2, 3, 4))
+    spot.set_specular_color((5, 6, 7, 8))
+    spot.attenuation = (23, 24, 25)
+    spot.exponent = 26
+
+    dire = core.DirectionalLight("dire")
+    dire.priority = 2
+    dire.set_color((9, 10, 11, 12))
+    dire.set_specular_color((13, 14, 15, 16))
+    dire.direction = (17, 18, 19)
+
+    preamble = """
+    struct p3d_LightSourceParameters {
+      vec4 color;
+      vec4 specular;
+      vec4 ambient;
+      vec4 diffuse;
+      vec4 position;
+      vec3 attenuation;
+      float constantAttenuation;
+      float linearAttenuation;
+      float quadraticAttenuation;
+      float spotExponent;
+      float spotCosCutoff;
+      float spotCutoff;
+      mat4 shadowViewMatrix;
+    };
+    uniform p3d_LightSourceParameters p3d_LightSource[3];
+    """
+    code = """
+    assert(p3d_LightSource[0].color == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].specular == vec4(5, 6, 7, 8));
+    assert(p3d_LightSource[0].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[0].diffuse == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].position == vec4(20, 21, 22, 1));
+    assert(p3d_LightSource[0].attenuation == vec3(23, 24, 25));
+    assert(p3d_LightSource[0].constantAttenuation == 23);
+    assert(p3d_LightSource[0].linearAttenuation == 24);
+    assert(p3d_LightSource[0].quadraticAttenuation == 25);
+    assert(p3d_LightSource[0].spotExponent == 26);
+    assert(p3d_LightSource[0].spotCosCutoff > 0.499);
+    assert(p3d_LightSource[0].spotCosCutoff < 0.501);
+    assert(p3d_LightSource[0].spotCutoff == 60);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][0] > 0.2886);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][0] < 0.2887);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][1] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][2] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[0][3] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][0] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][1] > 0.2886);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][1] < 0.2887);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][2] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[1][3] == 0);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][0] == -0.5);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][1] == -0.5);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][2] > -1.00002);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][2] < -1.0);
+    assert(p3d_LightSource[0].shadowViewMatrix[2][3] == -1);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][0] > -16.2736);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][0] < -16.2734);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][1] > -16.8510);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][1] < -16.8508);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][2] > -22.0003);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][2] < -22.0001);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][3] > -21.0001);
+    assert(p3d_LightSource[0].shadowViewMatrix[3][3] < -20.9999);
+    assert(p3d_LightSource[1].color == vec4(9, 10, 11, 12));
+    assert(p3d_LightSource[1].specular == vec4(13, 14, 15, 16));
+    assert(p3d_LightSource[1].diffuse == vec4(9, 10, 11, 12));
+    assert(p3d_LightSource[1].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[1].position == vec4(-17, -18, -19, 0));
+    assert(p3d_LightSource[1].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[1].constantAttenuation == 1);
+    assert(p3d_LightSource[1].linearAttenuation == 0);
+    assert(p3d_LightSource[1].quadraticAttenuation == 0);
+    assert(p3d_LightSource[1].spotExponent == 0);
+    assert(p3d_LightSource[1].spotCosCutoff == -1);
+    assert(p3d_LightSource[2].color == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].specular == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].diffuse == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].ambient == vec4(0, 0, 0, 1));
+    assert(p3d_LightSource[2].position == vec4(0, 0, 1, 0));
+    assert(p3d_LightSource[2].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[2].constantAttenuation == 1);
+    assert(p3d_LightSource[2].linearAttenuation == 0);
+    assert(p3d_LightSource[2].quadraticAttenuation == 0);
+    assert(p3d_LightSource[2].spotExponent == 0);
+    assert(p3d_LightSource[2].spotCosCutoff == -1);
+    """
+
+    node = core.NodePath("state")
+    spot_path = node.attach_new_node(spot)
+    spot_path.set_pos(20, 21, 22)
+    node.set_light(spot_path)
+
+    dire_path = node.attach_new_node(dire)
+    node.set_light(dire_path)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_material(gsg):
+    mat = core.Material("mat")
+    mat.ambient = (1, 2, 3, 4)
+    mat.diffuse = (5, 6, 7, 8)
+    mat.emission = (9, 10, 11, 12)
+    mat.specular = (13, 14, 15, 0)
+    mat.shininess = 16
+    mat.metallic = 0.5
+    mat.refractive_index = 21
+
+    preamble = """
+    struct p3d_MaterialParameters {
+      vec4 ambient;
+      vec4 diffuse;
+      vec4 emission;
+      vec3 specular;
+      float shininess;
+      float metallic;
+      float refractiveIndex;
+    };
+    uniform p3d_MaterialParameters p3d_Material;
+    """
+    code = """
+    assert(p3d_Material.ambient == vec4(1, 2, 3, 4));
+    assert(p3d_Material.diffuse == vec4(5, 6, 7, 8));
+    assert(p3d_Material.emission == vec4(9, 10, 11, 12));
+    assert(p3d_Material.specular == vec3(13, 14, 15));
+    assert(p3d_Material.shininess == 16);
+    assert(p3d_Material.metallic == 0.5);
+    assert(p3d_Material.refractiveIndex == 21);
+    """
+
+    node = core.NodePath("state")
+    node.set_material(mat)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_material_pbr(gsg):
+    mat = core.Material("mat")
+    mat.base_color = (1, 2, 3, 4)
+    mat.emission = (9, 10, 11, 12)
+    mat.roughness = 16
+    mat.metallic = 0.5
+    mat.refractive_index = 21
+
+    preamble = """
+    struct p3d_MaterialParameters {
+      vec4 baseColor;
+      vec4 emission;
+      float metallic;
+      float refractiveIndex;
+      float roughness;
+    };
+    uniform p3d_MaterialParameters p3d_Material;
+    """
+    code = """
+    assert(p3d_Material.baseColor == vec4(1, 2, 3, 4));
+    assert(p3d_Material.emission == vec4(9, 10, 11, 12));
+    assert(p3d_Material.roughness == 16);
+    assert(p3d_Material.metallic == 0.5);
+    assert(p3d_Material.refractiveIndex == 21);
+    """
+
+    node = core.NodePath("state")
+    node.set_material(mat)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_state_fog(gsg):
+    fog = core.Fog("fog")
+    fog.color = (1, 2, 3, 4)
+    fog.exp_density = 0.5
+    fog.set_linear_range(6, 10)
+
+    preamble = """
+    struct p3d_FogParameters {
+      vec4 color;
+      float density;
+      float start;
+      float end;
+      float scale;
+    };
+    uniform p3d_FogParameters p3d_Fog;
+    """
+    code = """
+    assert(p3d_Fog.color == vec4(1, 2, 3, 4));
+    assert(p3d_Fog.density == 0.5);
+    assert(p3d_Fog.start == 6);
+    assert(p3d_Fog.end == 10);
+    assert(p3d_Fog.scale == 0.25);
+    """
+
+    node = core.NodePath("state")
+    node.set_fog(fog)
+
+    run_glsl_test(gsg, code, preamble, state=node.get_state())
+
+
+def test_glsl_frame_number(gsg):
+    clock = core.ClockObject.get_global_clock()
+    old_frame_count = clock.get_frame_count()
+    try:
+        clock.set_frame_count(123)
+
+        preamble = """
+        uniform int osg_FrameNumber;
+        """
+        code = """
+        assert(osg_FrameNumber == 123);
+        """
+
+        run_glsl_test(gsg, code, preamble)
+    finally:
+        clock.set_frame_count(old_frame_count)
 
 
 def test_glsl_write_extract_image_buffer(gsg):

@@ -72,7 +72,7 @@ private:
 
   int _frame_number = -1;
   LVecBase4 *_mat_part_cache = nullptr;
-  size_t _scratch_space_size = 0;
+  LVecBase4 *_mat_scratch_space = nullptr;
 
 private:
   void release_resources(void);

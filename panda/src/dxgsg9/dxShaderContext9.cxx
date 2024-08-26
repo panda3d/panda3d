@@ -55,47 +55,7 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
   }
 
   _mat_part_cache = new LVecBase4[s->cp_get_mat_cache_size()];
-
-  // Determine the size of the scratch space to allocate on the stack inside
-  // issue_parameters().
-  for (const Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
-    if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
-      continue;
-    }
-
-    ConstantRegister &reg = _register_map[spec._id._location];
-    if (reg.count == 0) {
-      continue;
-    }
-
-    size_t num_cols = spec._dim[2];
-    if (num_cols == 0) {
-      continue;
-    }
-    size_t size = (size_t)spec._dim[0] * (size_t)spec._dim[1];
-    size *= 16;
-    if (size > _scratch_space_size) {
-      _scratch_space_size = size;
-    }
-  }
-
-  for (const Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
-    if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
-      continue;
-    }
-
-    ConstantRegister &reg = _register_map[spec._id._location];
-    if (reg.count == 0) {
-      continue;
-    }
-    if (reg.set == D3DXRS_FLOAT4) {
-      size_t size = spec._array_count * std::max(spec._size, 4);
-      size *= 4;
-      if (size > _scratch_space_size) {
-        _scratch_space_size = size;
-      }
-    }
-  }
+  _mat_scratch_space = new LVecBase4[_shader->cp_get_mat_scratch_size(true)];
 }
 
 /**
@@ -106,6 +66,7 @@ DXShaderContext9::
   release_resources();
 
   delete[] _mat_part_cache;
+  delete[] _mat_scratch_space;
 }
 
 /**
@@ -493,287 +454,12 @@ issue_parameters(GSG *gsg, int altered) {
     return;
   }
 
-  float *scratch = (float *)alloca(_scratch_space_size);
-
   LPDIRECT3DDEVICE9 device = gsg->_d3d_device;
 
-  // We have no way to track modifications to PTAs, so we assume that they are
-  // modified every frame and when we switch ShaderAttribs.
-  if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
-    // Iterate through _ptr parameters
-    for (const Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
-      Shader::ShaderPtrData ptr_data;
-      if (!gsg->fetch_ptr_parameter(spec, ptr_data)) { //the input is not contained in ShaderPtrData
-        release_resources();
-        return;
-      }
-      if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
-        continue;
-      }
-
-      ConstantRegister &reg = _register_map[spec._id._location];
-      if (reg.count == 0) {
-        continue;
-      }
-
-      // Calculate how many elements to transfer; no more than it expects,
-      // but certainly no more than we have.
-      size_t num_cols = spec._dim[2];
-      if (num_cols == 0) {
-        continue;
-      }
-      size_t num_rows = std::min((size_t)spec._dim[0] * (size_t)spec._dim[1],
-                                 (size_t)(ptr_data._size / num_cols));
-
-      switch (reg.set) {
-      case D3DXRS_BOOL:
-        {
-          BOOL *data = (BOOL *)scratch;
-          memset(data, 0, sizeof(BOOL) * 4 * num_rows);
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-          case ShaderType::ST_uint:
-          case ShaderType::ST_float:
-            // All have the same 0-representation.
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4] = ((int *)ptr_data._ptr)[i] != 0;
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((int *)ptr_data._ptr)[i * 2] != 0;
-                data[i * 4 + 1] = ((int *)ptr_data._ptr)[i * 2 + 1] != 0;
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((int *)ptr_data._ptr)[i * 3] != 0;
-                data[i * 4 + 1] = ((int *)ptr_data._ptr)[i * 3 + 1] != 0;
-                data[i * 4 + 2] = ((int *)ptr_data._ptr)[i * 3 + 2] != 0;
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                data[i] = ((int *)ptr_data._ptr)[i] != 0;
-              }
-            }
-            break;
-
-          case ShaderType::ST_double:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4] = ((double *)ptr_data._ptr)[i] != 0;
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((double *)ptr_data._ptr)[i * 2] != 0;
-                data[i * 4 + 1] = ((double *)ptr_data._ptr)[i * 2 + 1] != 0;
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((double *)ptr_data._ptr)[i * 3] != 0;
-                data[i * 4 + 1] = ((double *)ptr_data._ptr)[i * 3 + 1] != 0;
-                data[i * 4 + 2] = ((double *)ptr_data._ptr)[i * 3 + 2] != 0;
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                data[i] = ((double *)ptr_data._ptr)[i] != 0;
-              }
-            }
-            break;
-          }
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantB(reg.vreg, data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantB(reg.freg, data, num_rows);
-          }
-        }
-        break;
-
-      case D3DXRS_INT4:
-        if (ptr_data._type != ShaderType::ST_int &&
-            ptr_data._type != ShaderType::ST_uint) {
-          dxgsg9_cat.error()
-            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-          // Deactivate it to make sure the user doesn't get flooded with this
-          // error.
-          reg.count = -1;
-        }
-        else if (num_cols == 4) {
-          // Straight passthrough, hooray!
-          void *data = ptr_data._ptr;
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantI(reg.vreg, (int *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantI(reg.freg, (int *)data, num_rows);
-          }
-        }
-        else {
-          // Need to pad out the rows.
-          LVecBase4i *data = (LVecBase4i *)scratch;
-          memset(data, 0, sizeof(LVecBase4i) * num_rows);
-          if (num_cols == 1) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i], 0, 0, 0);
-            }
-          } else if (num_cols == 2) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i * 2],
-                          ((int *)ptr_data._ptr)[i * 2 + 1],
-                          0, 0);
-            }
-          } else if (num_cols == 3) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i * 3],
-                          ((int *)ptr_data._ptr)[i * 3 + 1],
-                          ((int *)ptr_data._ptr)[i * 3 + 2],
-                          0);
-            }
-          }
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantI(reg.vreg, (int *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantI(reg.freg, (int *)data, num_rows);
-          }
-        }
-        break;
-
-      case D3DXRS_FLOAT4:
-        if (ptr_data._type == ShaderType::ST_float && num_cols == 4) {
-          // Straight passthrough, hooray!
-          void *data = ptr_data._ptr;
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantF(reg.vreg, (float *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantF(reg.freg, (float *)data, num_rows);
-          }
-        }
-        else {
-          // Need to pad out the rows.
-          LVecBase4f *data = (LVecBase4f *)scratch;
-          memset(data, 0, sizeof(LVecBase4f) * num_rows);
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i * 2],
-                            (float)((int *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i * 3],
-                            (float)((int *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((int *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((int *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_uint:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i * 2],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i * 3],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((unsigned int *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_float:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i * 2],
-                            ((float *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i * 3],
-                            ((float *)ptr_data._ptr)[i * 3 + 1],
-                            ((float *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = ((float *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_double:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i * 2],
-                            (float)((double *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i * 3],
-                            (float)((double *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((double *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((double *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-          }
-
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantF(reg.vreg, (float *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantF(reg.freg, (float *)data, num_rows);
-          }
-        }
-        break;
-
-      default:
-        continue;
-      }
-    }
-  }
-
   if (altered & _shader->_mat_deps) {
-    gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+    if (altered & _shader->_mat_cache_deps) {
+      gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+    }
 
     for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
       if ((altered & spec._dep) == 0) {
@@ -788,23 +474,14 @@ issue_parameters(GSG *gsg, int altered) {
         continue;
       }
 
-      const VecBase4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const void *val = gsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space, true);
       if (!val) continue;
 
       switch (reg.set) {
       case D3DXRS_FLOAT4:
         {
-#ifdef STDFLOAT_DOUBLE
-          float *data = (float *)scratch;
-          const double *from_data = val->get_data();
-          from_data += spec._offset;
-          for (size_t i = 0; i < spec._size; ++i) {
-            data[i] = (float)from_data[i];
-          }
-#else
-          const float *data = val->get_data();
-          data += spec._offset;
-#endif
+          const float *data = (const float *)val;
+          float scratch[16];
 
           switch (spec._piece) {
           default:
@@ -854,8 +531,7 @@ issue_parameters(GSG *gsg, int altered) {
 
       case D3DXRS_INT4:
         {
-          const int *data = (const int *)val->get_data();
-          data += spec._offset;
+          const int *data = (const int *)val;
 
           if (reg.vreg >= 0) {
             device->SetVertexShaderConstantI(reg.vreg, data, reg.count);
@@ -868,8 +544,7 @@ issue_parameters(GSG *gsg, int altered) {
 
       case D3DXRS_BOOL:
         {
-          const BOOL *data = (const BOOL *)val->get_data();
-          data += spec._offset;
+          const BOOL *data = (const BOOL *)val;
 
           if (reg.vreg >= 0) {
             device->SetVertexShaderConstantB(reg.vreg, data, reg.count);

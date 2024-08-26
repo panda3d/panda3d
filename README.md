@@ -168,7 +168,7 @@ Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.11 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source

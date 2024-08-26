@@ -1,5 +1,5 @@
-import tkinter as tk
 import pytest
+tk = pytest.importorskip('tkinter')
 pytest.importorskip('Pmw')
 from direct.tkwidgets.Dial import Dial
 

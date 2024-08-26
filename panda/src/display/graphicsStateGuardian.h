@@ -339,11 +339,14 @@ public:
   virtual void clear(DrawableRegion *clearable);
 
   void update_shader_matrix_cache(Shader *shader, LVecBase4 *cache, int altered);
-  const LVecBase4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache, int altered);
+  const void *fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
+                                    LVecBase4 *scratch, bool pad_rows);
+  const void *fetch_ptr_parameter(Shader::ShaderMatSpec &spec, LVecBase4 *scratch, bool pad_rows);
   void fetch_specified_part(Shader::ShaderMatInput input, const InternalName *name,
                             LVecBase4 *into, int count = 1);
   void fetch_specified_member(const NodePath &np, CPT_InternalName member,
                               LVecBase4 &v);
+  void fetch_specified_light(const NodePath &np, LVecBase4 *into);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);

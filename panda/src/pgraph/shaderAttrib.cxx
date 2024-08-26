@@ -462,7 +462,7 @@ get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const 
         else if (param->is_of_type(ParamVecBase4d::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4d *)param)->get_value().get_data();
           data._size = 4;
-          data._type = ShaderType::ST_float;
+          data._type = ShaderType::ST_double;
           return true;
         }
       }
