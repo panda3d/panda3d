@@ -192,8 +192,8 @@ public:
     SMO_frame_time,
     SMO_frame_delta,
 
-    SMO_mat_constant_x_attrib,
-    SMO_vec_constant_x_attrib,
+    SMO_struct_constant_x,
+    SMO_struct_constant_x_light, // looks like light struct, may not be!
 
     SMO_light_ambient,
     SMO_light_source_i,
@@ -414,6 +414,7 @@ public:
   struct ShaderMatPart {
     ShaderMatInput _part;
     CPT(InternalName) _arg;
+    const ShaderType *_type;
     int _size = 1;
     int _count = 1;
     int _dep = SSD_NONE;
@@ -514,8 +515,10 @@ protected:
   bool expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
                                 vector_string &pieces, int &next,
                                 ShaderMatSpec &spec, bool fromflag);
+  static bool check_light_struct_member(const std::string &name, const ::ShaderType *type,
+                                        ShaderMatPiece &piece, int &offset);
   int cp_dependency(ShaderMatInput inp);
-  int cp_size(ShaderMatInput inp);
+  int cp_size(ShaderMatInput inp, const ::ShaderType *type);
 
 public:
   void cp_add_mat_spec(ShaderMatSpec &spec);
@@ -603,6 +606,9 @@ public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
   bool bind_parameter(const Parameter &parameter);
+  bool r_bind_struct_members(const Parameter &param, const InternalName *name,
+                             const ::ShaderType::Struct *struct_type,
+                             int &location, int &offset);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

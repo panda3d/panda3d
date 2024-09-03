@@ -883,7 +883,7 @@ void GraphicsStateGuardian::
 update_shader_matrix_cache(Shader *shader, LVecBase4 *cache, int altered) {
   for (Shader::ShaderMatPart &part : shader->_mat_parts) {
     if (altered & part._dep) {
-      fetch_specified_part(part._part, part._arg, cache, part._count);
+      fetch_specified_part(part._part, part._arg, part._type, cache, part._count);
     }
     cache += part._count * part._size;
   }
@@ -1034,7 +1034,8 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
     break;
 
   case Shader::SMF_shader_input_ptr:
-    return fetch_ptr_parameter(spec, scratch, pad_rows);
+    return _target_shader->get_shader_input_data(spec._arg[0], scratch,
+      spec._scalar_type, spec._array_count, spec._num_rows, spec._num_cols, pad_rows);
 
   default:
     // Should never get here
@@ -1052,280 +1053,11 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
 }
 
 /**
- * Fetches a numeric shader input, doing conversion as necessary using the
- * given amount of scratch space.
- */
-const void *GraphicsStateGuardian::
-fetch_ptr_parameter(Shader::ShaderMatSpec &spec, LVecBase4 *scratch, bool pad_rows) {
-  Shader::ShaderPtrData ptr_data;
-  if (!_target_shader->get_shader_input_ptr(spec._arg[0], ptr_data)) {
-    return nullptr;
-  }
-
-  int total_rows = std::min(spec._array_count * spec._num_rows, (int)ptr_data._size / spec._num_cols);
-  if (total_rows == 1) {
-    pad_rows = false;
-  }
-  switch (spec._scalar_type) {
-  case ShaderType::ST_float:
-    {
-      float *data = (float *)scratch;
-
-      switch (ptr_data._type) {
-      case ShaderType::ST_int:
-        // Convert int data to float data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (float)(((int *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const int *from_data = (const int *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (float)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_uint:
-        // Convert unsigned int data to float data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (float)(((unsigned int *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const unsigned int *from_data = (const unsigned int *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (float)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_double:
-        // Downgrade double data to float data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (float)(((double *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const double *from_data = (const double *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (float)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_float:
-        if (!pad_rows || spec._num_cols == 4) {
-          // No conversion needed.
-          return (float *)ptr_data._ptr;
-        } else {
-          const float *from_data = (const float *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (float)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      default:
-#ifndef NDEBUG
-        display_cat.error()
-          << "Invalid ShaderPtrData type " << (int)ptr_data._type
-          << " for shader input '" << spec._id._name << "'\n";
-#endif
-        return nullptr;
-      }
-
-      return data;
-    }
-    break;
-
-  case ShaderType::ST_int:
-    if (ptr_data._type != ShaderType::ST_int &&
-        ptr_data._type != ShaderType::ST_uint) {
-      display_cat.error()
-        << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-      // Deactivate it to make sure the user doesn't get flooded with this
-      // error.
-      spec._dep = 0;
-
-    } else {
-      return ptr_data._ptr;
-    }
-    break;
-
-  case ShaderType::ST_uint:
-    if (ptr_data._type != ShaderType::ST_uint &&
-        ptr_data._type != ShaderType::ST_int) {
-      display_cat.error()
-        << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-      // Deactivate it to make sure the user doesn't get flooded with this
-      // error.
-      spec._dep = 0;
-      return nullptr;
-
-    } else {
-      return ptr_data._ptr;
-    }
-    break;
-
-  case ShaderType::ST_double:
-    {
-      double *data = (double *)scratch;
-
-      switch (ptr_data._type) {
-      case ShaderType::ST_int:
-        // Convert int data to double data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (double)(((int *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const int *from_data = (const int *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (double)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_uint:
-        // Convert int data to double data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (double)(((unsigned int *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const int *from_data = (const int *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (double)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_double:
-        if (!pad_rows || spec._num_cols == 4) {
-          // No conversion needed.
-          return (double *)ptr_data._ptr;
-        } else {
-          const double *from_data = (const double *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (double)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_float:
-        // Upgrade float data to double data.
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = (double)(((float *)ptr_data._ptr)[i]);
-          }
-        } else {
-          const float *from_data = (const float *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (double)*from_data++;
-            }
-          }
-        }
-        return data;
-
-      default:
-  #ifndef NDEBUG
-        display_cat.error()
-          << "Invalid ShaderPtrData type " << (int)ptr_data._type
-          << " for shader input '" << spec._id._name << "'\n";
-  #endif
-        return nullptr;
-      }
-
-      return data;
-    }
-    break;
-
-  case ShaderType::ST_bool:
-    {
-      unsigned int *data = (unsigned int *)scratch;
-
-      switch (ptr_data._type) {
-      case ShaderType::ST_int:
-      case ShaderType::ST_uint:
-      case ShaderType::ST_bool:
-        if (!pad_rows || spec._num_cols == 4) {
-          // No conversion needed.
-          return (unsigned int *)ptr_data._ptr;
-        } else {
-          // Pad out rows.
-          const unsigned int *from_data = (const unsigned int *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (*from_data++) != 0;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_double:
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = ((double *)ptr_data._ptr)[i] != 0.0;
-          }
-        } else {
-          const double *from_data = (const double *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (*from_data++) != 0.0;
-            }
-          }
-        }
-        return data;
-
-      case ShaderType::ST_float:
-        if (!pad_rows || spec._num_cols == 4) {
-          for (int i = 0; i < total_rows * spec._num_cols; ++i) {
-            data[i] = ((float *)ptr_data._ptr)[i] != 0.0f;
-          }
-        } else {
-          const float *from_data = (const float *)ptr_data._ptr;
-          for (int i = 0; i < total_rows; ++i) {
-            for (int c = 0; c < spec._num_cols; ++c) {
-              data[i * 4 + c] = (*from_data++) != 0.0f;
-            }
-          }
-        }
-        return data;
-      }
-    }
-    break;
-
-  case ShaderType::ST_unknown:
-    break;
-  }
-
-  return nullptr;
-}
-
-/**
  * See fetch_specified_value
  */
 void GraphicsStateGuardian::
 fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
-                     LVecBase4 *into, int count) {
+                     const ShaderType *type, LVecBase4 *into, int count) {
   nassertv(count > 0);
 
   switch (part) {
@@ -1859,54 +1591,32 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
       calc_projection_mat(lens)->get_mat();
     return;
   }
-  case Shader::SMO_mat_constant_x_attrib: {
+  case Shader::SMO_struct_constant_x_light: {
+    // Could be a light, or generic struct
     if (_target_shader->has_shader_input(name)) {
-      // There is an input specifying precisely this whole thing, with dot and
-      // all.  Support this, even if only for backward compatibility.
-      _target_shader->get_shader_input_matrix(name, *(LMatrix4 *)into);
+      const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+      fetch_specified_light(np, into);
       return;
     }
-
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name->get_parent());
-    const PandaNode *node = np.node();
-
-    // This is the only matrix member we support from NodePath inputs.
-    if (node != nullptr && node->is_of_type(LensNode::get_class_type()) &&
-        name->get_basename() == "shadowViewMatrix") {
-      const LensNode *lnode = (const LensNode *)node;
-      const Lens *lens = lnode->get_lens();
-
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        np.get_net_transform()->get_inverse()->get_mat() *
-        LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
-
-      if (!lnode->is_of_type(PointLight::get_class_type())) {
-        t *= lens->get_projection_mat() * shadow_bias_mat;
-      }
-      *(LMatrix4 *)into = t;
-    }
-    else {
-      display_cat.error()
-        << "Shader input " << *name << " requests invalid attribute "
-        << name->get_basename() << " from node " << np << "\n";
-      *(LMatrix4 *)into = LMatrix4::ident_mat();
-    }
-    return;
+    // fall through
   }
-  case Shader::SMO_vec_constant_x_attrib: {
-    if (_target_shader->has_shader_input(name)) {
-      // There is an input specifying precisely this whole thing, with dot and
-      // all.  Support this, even if only for backward compatibility.
-      into[0] = _target_shader->get_shader_input_vector(name);
-      return;
+  case Shader::SMO_struct_constant_x: {
+    int offset = 0;
+    const ShaderType::Struct *struct_type = type->as_struct();
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      ShaderType::ScalarType scalar_type;
+      uint32_t num_elements;
+      uint32_t num_rows;
+      uint32_t num_columns;
+      if (member.type->as_scalar_type(scalar_type, num_elements, num_rows, num_columns)) {
+        Shader::ShaderPtrData data;
+        _target_shader->get_shader_input_data(((InternalName *)name)->append(member.name), &into[offset], scalar_type, num_elements, num_rows, num_columns, true);
+        offset += num_elements * num_rows;
+      }
     }
-
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name->get_parent());
-    nassertv(!np.is_empty());
-
-    fetch_specified_member(np, name->get_basename(), into[0]);
-    return;
+    break;
   }
   case Shader::SMO_light_source_i: {
     const LightAttrib *target_light;
@@ -2078,261 +1788,6 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
  * the value for the given member.
  */
 void GraphicsStateGuardian::
-fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4 &v) {
-  // This system is not ideal.  It will be improved in the future.
-  static const CPT_InternalName IN_color("color");
-  static const CPT_InternalName IN_ambient("ambient");
-  static const CPT_InternalName IN_diffuse("diffuse");
-  static const CPT_InternalName IN_specular("specular");
-  static const CPT_InternalName IN_position("position");
-  static const CPT_InternalName IN_halfVector("halfVector");
-  static const CPT_InternalName IN_spotDirection("spotDirection");
-  static const CPT_InternalName IN_spotCutoff("spotCutoff");
-  static const CPT_InternalName IN_spotCosCutoff("spotCosCutoff");
-  static const CPT_InternalName IN_spotExponent("spotExponent");
-  static const CPT_InternalName IN_attenuation("attenuation");
-  static const CPT_InternalName IN_constantAttenuation("constantAttenuation");
-  static const CPT_InternalName IN_linearAttenuation("linearAttenuation");
-  static const CPT_InternalName IN_quadraticAttenuation("quadraticAttenuation");
-
-  PandaNode *node = nullptr;
-  if (!np.is_empty()) {
-    node = np.node();
-  }
-
-  if (attrib == IN_color) {
-    if (node == nullptr) {
-      v.set(0, 0, 0, 1);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    v = light->get_color();
-  }
-  else if (attrib == IN_ambient) {
-    if (node == nullptr) {
-      v.set(0, 0, 0, 1);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    if (node->is_ambient_light()) {
-      v = light->get_color();
-    } else {
-      // Non-ambient lights don't currently have an ambient color in Panda3D.
-      v.set(0, 0, 0, 1);
-    }
-  }
-  else if (attrib == IN_diffuse) {
-    if (node == nullptr) {
-      v.set(0, 0, 0, 1);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    if (node->is_ambient_light()) {
-      // Ambient light has no diffuse color.
-      v.set(0, 0, 0, 1);
-    } else {
-      v = light->get_color();
-    }
-  }
-  else if (attrib == IN_specular) {
-    if (node == nullptr) {
-      v.set(0, 0, 0, 1);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    v = light->get_specular_color();
-  }
-  else if (attrib == IN_position) {
-    if (np.is_empty()) {
-      v.set(0, 0, 1, 0);
-    }
-    else if (node->is_ambient_light()) {
-      // Ambient light has no position.
-      v.set(0, 0, 0, 0);
-    }
-    else if (node->is_of_type(DirectionalLight::get_class_type())) {
-      DirectionalLight *light;
-      DCAST_INTO_V(light, node);
-
-      CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
-      LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= _scene_setup->get_cs_world_transform()->get_mat();
-      v.set(dir[0], dir[1], dir[2], 0);
-    }
-    else {
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
-          np.get_transform(_scene_setup->get_scene_root().get_parent()));
-
-      const LMatrix4 &light_mat = transform->get_mat();
-      LPoint3 pos = lens->get_nodal_point() * light_mat;
-      v.set(pos[0], pos[1], pos[2], 1);
-    }
-  }
-  else if (attrib == IN_halfVector) {
-    if (np.is_empty()) {
-      v.set(0, 0, 1, 0);
-    }
-    else if (node->is_ambient_light()) {
-      // Ambient light has no half-vector.
-      v.set(0, 0, 0, 0);
-    }
-    else if (node->is_of_type(DirectionalLight::get_class_type())) {
-      DirectionalLight *light;
-      DCAST_INTO_V(light, node);
-
-      CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
-      LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= _scene_setup->get_cs_world_transform()->get_mat();
-      dir.normalize();
-      dir += LVector3(0, 0, 1);
-      dir.normalize();
-      v.set(dir[0], dir[1], dir[2], 1);
-    }
-    else {
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
-          np.get_transform(_scene_setup->get_scene_root().get_parent()));
-
-      const LMatrix4 &light_mat = transform->get_mat();
-      LPoint3 pos = lens->get_nodal_point() * light_mat;
-      pos.normalize();
-      pos += LVector3(0, 0, 1);
-      pos.normalize();
-      v.set(pos[0], pos[1], pos[2], 1);
-    }
-  }
-  else if (attrib == IN_spotDirection) {
-    if (node == nullptr) {
-      v.set(0, 0, -1, 0);
-    }
-    else if (node->is_ambient_light()) {
-      // Ambient light has no spot direction.
-      v.set(0, 0, 0, 0);
-    }
-    else {
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
-          np.get_transform(_scene_setup->get_scene_root().get_parent()));
-
-      const LMatrix4 &light_mat = transform->get_mat();
-      LVector3 dir = lens->get_view_vector() * light_mat;
-      v.set(dir[0], dir[1], dir[2], 0);
-    }
-  }
-  else if (attrib == IN_spotCutoff) {
-    if (node != nullptr &&
-        node->is_of_type(Spotlight::get_class_type())) {
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      float cutoff = lens->get_hfov() * 0.5f;
-      v.fill(cutoff);
-    }
-    else {
-      // Other lights have no cut-off.
-      v.fill(180);
-    }
-  }
-  else if (attrib == IN_spotCosCutoff) {
-    if (node != nullptr &&
-        node->is_of_type(Spotlight::get_class_type())) {
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      float cutoff = lens->get_hfov() * 0.5f;
-      v.fill(ccos(deg_2_rad(cutoff)));
-    } else {
-      // Other lights have no cut-off.
-      v.fill(-1);
-    }
-  }
-  else if (attrib == IN_spotExponent) {
-    if (node == nullptr) {
-      v.fill(0);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-
-    v.fill(light->get_exponent());
-  }
-  else if (attrib == IN_attenuation) {
-    if (node != nullptr) {
-      Light *light = node->as_light();
-      nassertv(light != nullptr);
-
-      v = LVecBase4(light->get_attenuation(), 0);
-    } else {
-      v.set(1, 0, 0, 0);
-    }
-  }
-  else if (attrib == IN_constantAttenuation) {
-    if (node == nullptr) {
-      v.fill(1);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-
-    v.fill(light->get_attenuation()[0]);
-  }
-  else if (attrib == IN_linearAttenuation) {
-    if (node == nullptr) {
-      v.fill(0);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-
-    v.fill(light->get_attenuation()[1]);
-  }
-  else if (attrib == IN_quadraticAttenuation) {
-    if (node == nullptr) {
-      v.fill(0);
-      return;
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-
-    v.fill(light->get_attenuation()[2]);
-  }
-  else {
-    display_cat.error()
-      << "Shader input requests invalid attribute " << *attrib
-      << " from node " << np << "\n";
-    v.set(0, 0, 0, 1);
-  }
-}
-
-/**
- * Given a NodePath passed into a shader input that is a structure, fetches
- * the value for the given member.
- */
-void GraphicsStateGuardian::
 fetch_specified_light(const NodePath &np, LVecBase4 *into) {
   PandaNode *node = nullptr;
   if (!np.is_empty()) {
@@ -2421,7 +1876,10 @@ fetch_specified_light(const NodePath &np, LVecBase4 *into) {
       if (!node->is_of_type(PointLight::get_class_type())) {
         t *= lens->get_projection_mat() * shadow_bias_mat;
       }
-      *(LMatrix4 *)&into[Shader::LA_shadow_view_matrix] = t;
+      into[Shader::LA_shadow_view_matrix + 0] = t[0];
+      into[Shader::LA_shadow_view_matrix + 1] = t[1];
+      into[Shader::LA_shadow_view_matrix + 2] = t[2];
+      into[Shader::LA_shadow_view_matrix + 3] = t[3];
     }
 
     LVecBase3 atten = light->get_attenuation();
@@ -2731,22 +2189,6 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
   }
 
   return nullptr;
-}
-
-/**
- * Return a pointer to struct ShaderPtrData
- */
-const Shader::ShaderPtrData *GraphicsStateGuardian::
-fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
-  return (_target_shader->get_shader_input_ptr(spec._arg));
-}
-
-/**
- *
- */
-bool GraphicsStateGuardian::
-fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec, Shader::ShaderPtrData &data) {
-  return _target_shader->get_shader_input_ptr(spec._arg, data);
 }
 
 /**

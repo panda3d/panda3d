@@ -253,6 +253,106 @@ expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
 }
 
 /**
+ *
+ */
+bool Shader::
+check_light_struct_member(const string &name, const ShaderType *type,
+                          ShaderMatPiece &piece, int &offset) {
+
+  ShaderMatPiece expected = SMP_vec4;
+  if (name == "color") {
+    offset = 4 * Shader::LA_color;
+  }
+  else if (name == "specular") {
+    offset = 4 * Shader::LA_specular;
+  }
+  else if (name == "ambient") {
+    offset = 4 * Shader::LA_ambient;
+  }
+  else if (name == "diffuse") {
+    offset = 4 * Shader::LA_diffuse;
+  }
+  else if (name == "position") {
+    offset = 4 * Shader::LA_position;
+  }
+  else if (name == "halfVector") {
+    offset = 4 * Shader::LA_half_vector;
+  }
+  else if (name == "spotDirection") {
+    offset = 4 * Shader::LA_spot_direction;
+  }
+  else if (name == "spotCosCutoff") {
+    offset = 4 * Shader::LA_spot_params;
+    expected = SMP_scalar;
+  }
+  else if (name == "spotCutoff") {
+    offset = 4 * Shader::LA_spot_params + 1;
+    expected = SMP_scalar;
+  }
+  else if (name == "spotExponent") {
+    offset = 4 * Shader::LA_spot_params + 2;
+    expected = SMP_scalar;
+  }
+  else if (name == "attenuation") {
+    offset = 4 * Shader::LA_attenuation;
+    expected = SMP_vec3;
+  }
+  else if (name == "constantAttenuation") {
+    offset = 4 * Shader::LA_attenuation;
+    expected = SMP_scalar;
+  }
+  else if (name == "linearAttenuation") {
+    offset = 4 * Shader::LA_attenuation + 1;
+    expected = SMP_scalar;
+  }
+  else if (name == "quadraticAttenuation") {
+    offset = 4 * Shader::LA_attenuation + 2;
+    expected = SMP_scalar;
+  }
+  else if (name == "radius") {
+    offset = 4 * Shader::LA_attenuation + 3;
+    expected = SMP_scalar;
+  }
+  else if (name == "shadowViewMatrix") {
+    offset = 4 * Shader::LA_shadow_view_matrix;
+    expected = SMP_mat4_whole;
+  }
+  else {
+    return false;
+  }
+
+  const ::ShaderType::Matrix *matrix = type->as_matrix();
+  if (matrix != nullptr) {
+    if (matrix->get_num_rows() != 4 || matrix->get_num_columns() != 4) {
+      return false;
+    }
+    piece = SMP_mat4_whole;
+  }
+  else {
+    const ::ShaderType::Vector *vector = type->as_vector();
+    if (vector == nullptr || vector->get_num_components() == 1) {
+      piece = SMP_scalar;
+    }
+    else if (vector->get_num_components() == 2) {
+      piece = SMP_vec2;
+    }
+    else if (vector->get_num_components() == 3) {
+      piece = SMP_vec3;
+    }
+    else {
+      piece = SMP_vec4;
+    }
+  }
+
+  // It's okay to declare as vec3 if we allow vec4.
+  if (piece != expected && (expected != SMP_vec4 || piece != SMP_vec3)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Given ShaderMatInput, returns an indication of what part or parts of the
  * state_and_transform the ShaderMatInput depends upon.
  */
@@ -305,9 +405,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_slight_x) ||
       (inp == SMO_satten_x) ||
       (inp == SMO_mat_constant_x) ||
-      (inp == SMO_mat_constant_x_attrib) ||
       (inp == SMO_vec_constant_x) ||
-      (inp == SMO_vec_constant_x_attrib) ||
+      (inp == SMO_struct_constant_x) ||
+      (inp == SMO_struct_constant_x_light) ||
       (inp == SMO_view_x_to_view) ||
       (inp == SMO_view_to_view_x) ||
       (inp == SMO_apiview_x_to_view) ||
@@ -326,8 +426,8 @@ cp_dependency(ShaderMatInput inp) {
         (inp == SMO_slight_x) ||
         (inp == SMO_satten_x) ||
         (inp == SMO_mat_constant_x) ||
-        (inp == SMO_mat_constant_x_attrib) ||
-        (inp == SMO_vec_constant_x_attrib) ||
+        (inp == SMO_struct_constant_x) ||
+        (inp == SMO_struct_constant_x_light) ||
         (inp == SMO_view_x_to_view) ||
         (inp == SMO_view_to_view_x) ||
         (inp == SMO_apiview_x_to_view) ||
@@ -350,8 +450,8 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_light_source_i ||
       inp == SMO_apiview_to_apiclip_light_source_i ||
       inp == SMO_light_source_i_packed ||
-      inp == SMO_mat_constant_x_attrib ||
-      inp == SMO_vec_constant_x_attrib) {
+      inp == SMO_struct_constant_x ||
+      inp == SMO_struct_constant_x_light) {
     // Some light attribs (eg. position) need to be transformed to view space.
     dep |= SSD_view_transform;
   }
@@ -399,7 +499,7 @@ cp_dependency(ShaderMatInput inp) {
  * Given ShaderMatInput, returns the size in the cache that this part requires.
  */
 int Shader::
-cp_size(ShaderMatInput inp) {
+cp_size(ShaderMatInput inp, const ::ShaderType *type) {
   switch (inp) {
   case SMO_INVALID:
     return 0;
@@ -417,7 +517,6 @@ cp_size(ShaderMatInput inp) {
   case SMO_frame_number:
   case SMO_frame_time:
   case SMO_frame_delta:
-  case SMO_vec_constant_x_attrib:
   case SMO_light_ambient:
   case SMO_light_product_i_ambient:
   case SMO_light_product_i_diffuse:
@@ -455,7 +554,6 @@ cp_size(ShaderMatInput inp) {
   case SMO_view_to_clip_x:
   case SMO_apiclip_x_to_view:
   case SMO_view_to_apiclip_x:
-  case SMO_mat_constant_x_attrib:
   case SMO_apiview_to_apiclip_light_source_i:
   case SMO_model_to_apiview:
   case SMO_apiview_to_model:
@@ -469,10 +567,14 @@ cp_size(ShaderMatInput inp) {
     return MA_COUNT;
 
   case SMO_light_source_i:
+  case SMO_struct_constant_x_light:
     return LA_COUNT;
 
   case SMO_attr_fog:
     return FA_COUNT;
+
+  case SMO_struct_constant_x:
+    return type->get_num_interface_locations();
   }
 
   nassertr(false, 0);
@@ -648,13 +750,14 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
       }
       offset += part._count * part._size;
     }
-    int size = cp_size(spec._part[p]);
+    int size = cp_size(spec._part[p], spec._id._type);
     if (i == _mat_parts.size()) {
       // Didn't find this part yet, create a new one.
       ShaderMatPart part;
       part._part = spec._part[p];
-      part._count = end[p];
       part._arg = spec._arg[p];
+      part._type = spec._id._type;
+      part._count = end[p];
       part._dep = dep;
       part._size = size;
 
@@ -1852,17 +1955,12 @@ bind_parameter(const Parameter &param) {
               return false;
             }
             bind._piece = SMP_mat4_whole;
-            bind._part[0] = SMO_apiview_to_apiclip_light_source_i;
+            bind._part[0] = SMO_light_source_i;
             bind._arg[0] = nullptr;
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
             bind._scalar_type = member.type->as_matrix()->get_scalar_type();
-          }
-          else if (member.name == "shadowViewMatrixInverse") {
-            shader_cat.error()
-              << "p3d_LightSource struct does not provide a matrix named "
-              << "shadowViewMatrixInverse!\n";
-            return false;
+            bind._offset = 4 * LA_shadow_view_matrix;
           }
           else if (member.name == "shadowMatrix") {
             // Only supported for backward compatibility: includes the model
@@ -1892,90 +1990,16 @@ bind_parameter(const Parameter &param) {
             if (!expect_float_vector(fqname, member.type, 1, 4)) {
               return false;
             }
-            const ::ShaderType::Vector *vector = member.type->as_vector();
-            if (vector == nullptr || vector->get_num_components() == 1) {
-              bind._piece = SMP_scalar;
-            }
-            else if (vector->get_num_components() == 2) {
-              bind._piece = SMP_vec2;
-            }
-            else if (vector->get_num_components() == 3) {
-              bind._piece = SMP_vec3;
-            }
-            else {
-              bind._piece = SMP_vec4;
-            }
             bind._part[0] = SMO_light_source_i;
             bind._arg[0] = nullptr;
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
             bind._scalar_type = ScalarType::ST_float;
 
-            ShaderMatPiece expected = SMP_vec4;
-            if (member.name == "color") {
-              bind._offset = 4 * Shader::LA_color;
-            }
-            else if (member.name == "specular") {
-              bind._offset = 4 * Shader::LA_specular;
-            }
-            else if (member.name == "ambient") {
-              bind._offset = 4 * Shader::LA_ambient;
-            }
-            else if (member.name == "diffuse") {
-              bind._offset = 4 * Shader::LA_diffuse;
-            }
-            else if (member.name == "position") {
-              bind._offset = 4 * Shader::LA_position;
-            }
-            else if (member.name == "halfVector") {
-              bind._offset = 4 * Shader::LA_half_vector;
-            }
-            else if (member.name == "spotDirection") {
-              bind._offset = 4 * Shader::LA_spot_direction;
-            }
-            else if (member.name == "spotCosCutoff") {
-              bind._offset = 4 * Shader::LA_spot_params;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "spotCutoff") {
-              bind._offset = 4 * Shader::LA_spot_params + 1;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "spotExponent") {
-              bind._offset = 4 * Shader::LA_spot_params + 2;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "attenuation") {
-              bind._offset = 4 * Shader::LA_attenuation;
-              expected = SMP_vec3;
-            }
-            else if (member.name == "constantAttenuation") {
-              bind._offset = 4 * Shader::LA_attenuation;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "linearAttenuation") {
-              bind._offset = 4 * Shader::LA_attenuation + 1;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "quadraticAttenuation") {
-              bind._offset = 4 * Shader::LA_attenuation + 2;
-              expected = SMP_scalar;
-            }
-            else if (member.name == "radius") {
-              bind._offset = 4 * Shader::LA_attenuation + 3;
-              expected = SMP_scalar;
-            }
-            else {
+            if (!check_light_struct_member(member.name, member.type, bind._piece, bind._offset)) {
               shader_cat.error()
-                << "Invalid light struct member " << member.name << "\n";
-              return false;
-            }
-
-            // It's okay to declare as vec3 if we allow vec4.
-            if (bind._piece != expected && (expected != SMP_vec4 || bind._piece != SMP_vec3)) {
-              shader_cat.error()
-                << "p3d_LightSource[]." << member.name << " has unexpected type "
-                << bind._piece << ", expected " << expected << "\n";
+                << "Invalid light struct member "
+                << *member.type << " " << member.name << "\n";
               return false;
             }
           }
@@ -2846,95 +2870,9 @@ bind_parameter(const Parameter &param) {
   }
   else if (const ::ShaderType::Struct *struct_type = type->as_struct()) {
     // Is this a struct?  If so, bind the individual members.
-    bool success = true;
-
     int location = param._location;
-
-    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
-      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
-
-      PT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
-
-      // Numeric struct members under GLSL may need a special treatment.
-      ScalarType scalar_type;
-      uint32_t dim[3];
-      if (_language == SL_GLSL &&
-          member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2]) &&
-          (scalar_type == ScalarType::ST_float || scalar_type == ScalarType::ST_double) &&
-          dim[0] == 1) {
-        // It might be something like an attribute of a shader input, like a
-        // light parameter.  It might also just be a custom struct parameter.
-        // We can't know yet, so we always have to handle it specially.
-        ShaderMatSpec bind;
-        bind._id = param;
-        bind._id._name = fqname;
-        bind._id._type = member.type;
-        bind._id._location = location;
-        bind._scalar_type = scalar_type;
-        if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
-          // Special exception for shadowMatrix, which is deprecated because it
-          // includes the model transformation.  It is far more efficient to do
-          // that in the shader instead.
-          static bool warned = false;
-          if (!warned) {
-            warned = true;
-            shader_cat.warning()
-              << "light.shadowMatrix inputs are deprecated; use "
-                 "shadowViewMatrix instead, which transforms from view "
-                 "space instead of model space.\n";
-          }
-          bind._piece = SMP_mat4_whole;
-          bind._func = SMF_compose;
-          bind._part[0] = SMO_model_to_apiview;
-          bind._arg[0] = nullptr;
-          bind._part[1] = SMO_mat_constant_x_attrib;
-          bind._arg[1] = ((InternalName *)name.p())->append("shadowViewMatrix");
-        }
-        else {
-          bind._func = SMF_first;
-          if (dim[1] == 4) {
-            bind._piece = SMP_mat4_whole;
-            bind._part[0] = SMO_mat_constant_x_attrib;
-          }
-          else if (dim[1] == 3) {
-            bind._piece = SMP_mat4_upper3x3;
-            bind._part[0] = SMO_mat_constant_x_attrib;
-          }
-          else {
-            bind._part[0] = SMO_vec_constant_x_attrib;
-            if (dim[2] == 1) {
-              bind._piece = SMP_scalar;
-            }
-            else if (dim[2] == 2) {
-              bind._piece = SMP_vec2;
-            }
-            else if (dim[2] == 3) {
-              bind._piece = SMP_vec3;
-            }
-            else {
-              bind._piece = SMP_vec4;
-            }
-          }
-          bind._arg[0] = fqname;
-          bind._part[1] = SMO_identity;
-          bind._arg[1] = nullptr;
-        }
-        cp_add_mat_spec(bind);
-      }
-      else {
-        // Otherwise, recurse.
-        Parameter member_param(param);
-        member_param._name = fqname;
-        member_param._type = member.type;
-        member_param._location = location;
-        if (!bind_parameter(member_param)) {
-          success = false;
-        }
-      }
-      location += member.type->get_num_parameter_locations();
-    }
-
-    return success;
+    int offset = 0;
+    return r_bind_struct_members(param, name, struct_type, location, offset);
   }
   else if (const ::ShaderType::Array *array_type = type->as_array()) {
     // Check if this is an array of structs.
@@ -3020,6 +2958,121 @@ bind_parameter(const Parameter &param) {
     << "Uniform parameter '" << name_str << "' has unsupported type "
     << *type << "\n";
   return false;
+}
+
+/**
+ * Recursive version of the above function to bind struct members.
+ */
+bool Shader::
+r_bind_struct_members(const Parameter &param, const InternalName *name,
+                      const ::ShaderType::Struct *struct_type,
+                      int &location, int &offset) {
+
+  bool success = true;
+
+  // Check if this could be a light structure.
+  bool maybe_light_struct = false;
+  if (_language == SL_GLSL && struct_type->get_num_members() > 0) {
+    maybe_light_struct = true;
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+      ShaderMatPiece piece;
+      int offset;
+      if (!check_light_struct_member(member.name, member.type, piece, offset)) {
+        if (member.name != "shadowMatrix") {
+          maybe_light_struct = false;
+          break;
+        }
+      }
+    }
+  }
+
+  for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+    const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+    PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+
+    // Members under a GLSL light struct may need a special treatment.
+    ScalarType scalar_type;
+    uint32_t dim[3];
+    if (maybe_light_struct &&
+        member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2])) {
+      // It might be something like an attribute of a shader input, like a
+      // light parameter.  It might also just be a custom struct parameter.
+      // We can't know yet, so we always have to handle it specially.
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._id._name = fqname;
+      bind._id._type = member.type;
+      bind._id._location = location;
+      bind._scalar_type = scalar_type;
+      if (member.name == "shadowMatrix" &&
+          dim[0] == 1 && dim[1] == 4 && dim[2] == 4) {
+        // This has been deprecated for a while and is no longer supported.
+        static bool warned = false;
+        if (!warned) {
+          warned = true;
+          shader_cat.error()
+            << "light.shadowMatrix inputs are no longer supported; use "
+               "shadowViewMatrix instead, which transforms from view "
+               "space instead of model space.\n";
+        }
+      }
+      bind._func = SMF_first;
+      bind._id._type = struct_type;
+      bind._part[0] = SMO_struct_constant_x;
+      bind._arg[0] = name;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._offset = offset;
+
+      if (maybe_light_struct) {
+        bind._part[0] = SMO_struct_constant_x_light;
+        check_light_struct_member(member.name, member.type, bind._piece, bind._offset);
+      }
+      else if (dim[1] == 4) {
+        bind._piece = SMP_mat4_whole;
+      }
+      else if (dim[1] == 3) {
+        bind._piece = SMP_mat4_upper3x3;
+      }
+      else if (dim[2] == 1) {
+        bind._piece = SMP_scalar;
+      }
+      else if (dim[2] == 2) {
+        bind._piece = SMP_vec2;
+      }
+      else if (dim[2] == 3) {
+        bind._piece = SMP_vec3;
+      }
+      else {
+        bind._piece = SMP_vec4;
+      }
+      cp_add_mat_spec(bind);
+
+      offset += dim[0] * dim[1] * 4;
+      location += dim[0];
+    }
+    /*else if (const ::ShaderType::Struct *nested = member.type->as_struct()) {
+      // Recurse.
+      if (!r_bind_struct_members(param, fqname, nested, location, offset)) {
+        success = false;
+      }
+    }*/
+    else {
+      // If it's any other type, bind as dotted parameter.
+      Parameter member_param(param);
+      member_param._name = fqname;
+      member_param._type = member.type;
+      member_param._location = location;
+      if (!bind_parameter(member_param)) {
+        success = false;
+      }
+      location += member.type->get_num_parameter_locations();
+    }
+  }
+
+  return success;
 }
 
 /**

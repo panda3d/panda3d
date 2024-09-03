@@ -1461,6 +1461,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._id = param;
         bind._piece = Shader::SMP_mat4_whole;
         bind._func = Shader::SMF_first;
+        bind._part[0] = Shader::SMO_mat_constant_x;
+        bind._arg[0] = param._name;
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = nullptr;
         if (param._name->get_basename() == "shadowMatrix") {
@@ -1470,19 +1472,11 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           static bool warned = false;
           if (!warned) {
             warned = true;
-            GLCAT.warning()
-              << "light.shadowMatrix inputs are deprecated; use "
+            GLCAT.error()
+              << "light.shadowMatrix inputs are no longer supported; use "
                  "shadowViewMatrix instead, which transforms from view "
                  "space instead of model space.\n";
           }
-          bind._func = Shader::SMF_compose;
-          bind._part[0] = Shader::SMO_model_to_apiview;
-          bind._arg[0] = nullptr;
-          bind._part[1] = Shader::SMO_mat_constant_x_attrib;
-          bind._arg[1] = param._name->get_parent()->append("shadowViewMatrix");
-        } else {
-          bind._part[0] = Shader::SMO_mat_constant_x_attrib;
-          bind._arg[0] = param._name;
         }
         _shader->cp_add_mat_spec(bind);
       } else {
@@ -1514,7 +1508,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._piece = Shader::SMP_vec4;
         }
         bind._func = Shader::SMF_first;
-        bind._part[0] = Shader::SMO_vec_constant_x_attrib;
+        bind._part[0] = Shader::SMO_vec_constant_x;
         bind._arg[0] = param._name;
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = nullptr;
