@@ -256,10 +256,10 @@ expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
  *
  */
 bool Shader::
-check_light_struct_member(const string &name, const ShaderType *type,
-                          ShaderMatPiece &piece, int &offset) {
-
-  ShaderMatPiece expected = SMP_vec4;
+check_light_struct_member(const string &name, const ShaderType *type, int &offset) {
+  uint32_t num_rows = 1;
+  uint32_t min_cols = 3;
+  uint32_t max_cols = 4;
   if (name == "color") {
     offset = 4 * Shader::LA_color;
   }
@@ -283,39 +283,47 @@ check_light_struct_member(const string &name, const ShaderType *type,
   }
   else if (name == "spotCosCutoff") {
     offset = 4 * Shader::LA_spot_params;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "spotCutoff") {
     offset = 4 * Shader::LA_spot_params + 1;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "spotExponent") {
     offset = 4 * Shader::LA_spot_params + 2;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "attenuation") {
     offset = 4 * Shader::LA_attenuation;
-    expected = SMP_vec3;
   }
   else if (name == "constantAttenuation") {
     offset = 4 * Shader::LA_attenuation;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "linearAttenuation") {
     offset = 4 * Shader::LA_attenuation + 1;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "quadraticAttenuation") {
     offset = 4 * Shader::LA_attenuation + 2;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "radius") {
     offset = 4 * Shader::LA_attenuation + 3;
-    expected = SMP_scalar;
+    min_cols = 1;
+    max_cols = 1;
   }
   else if (name == "shadowViewMatrix") {
     offset = 4 * Shader::LA_shadow_view_matrix;
-    expected = SMP_mat4_whole;
+    num_rows = 4;
+    min_cols = 4;
+    max_cols = 4;
   }
   else {
     return false;
@@ -323,30 +331,26 @@ check_light_struct_member(const string &name, const ShaderType *type,
 
   const ::ShaderType::Matrix *matrix = type->as_matrix();
   if (matrix != nullptr) {
-    if (matrix->get_num_rows() != 4 || matrix->get_num_columns() != 4) {
+    if (matrix->get_num_rows() != num_rows ||
+        matrix->get_num_columns() < min_cols ||
+        matrix->get_num_columns() > max_cols) {
       return false;
     }
-    piece = SMP_mat4_whole;
+  }
+  else if (num_rows != 1) {
+    return false;
   }
   else {
-    const ::ShaderType::Vector *vector = type->as_vector();
-    if (vector == nullptr || vector->get_num_components() == 1) {
-      piece = SMP_scalar;
+    uint32_t num_components = 1;
+    if (const ::ShaderType::Vector *vector = type->as_vector()) {
+      num_components = vector->get_num_components();
     }
-    else if (vector->get_num_components() == 2) {
-      piece = SMP_vec2;
+    else if (type->as_scalar() == nullptr) {
+      return false;
     }
-    else if (vector->get_num_components() == 3) {
-      piece = SMP_vec3;
+    if (num_components < min_cols || num_components > max_cols) {
+      return false;
     }
-    else {
-      piece = SMP_vec4;
-    }
-  }
-
-  // It's okay to declare as vec3 if we allow vec4.
-  if (piece != expected && (expected != SMP_vec4 || piece != SMP_vec3)) {
-    return false;
   }
 
   return true;
@@ -1670,9 +1674,8 @@ bind_parameter(const Parameter &param) {
               }
             }
 
-            ShaderMatPiece piece;
             int offset;
-            if (!check_light_struct_member(member.name, member.type, piece, offset)) {
+            if (!check_light_struct_member(member.name, member.type, offset)) {
               shader_cat.error()
                 << "Invalid light struct member "
                 << *member.type << " " << member.name << "\n";
@@ -2035,10 +2038,11 @@ bind_parameter(const Parameter &param) {
           "unexpected extra words after parameter name");
       }
 
-      return do_bind_parameter(param, func, SMP_mat4_whole, 0,
-        cp_dependency(part[0]) | cp_dependency(part[1]),
+      return do_bind_parameter(param, func,
         cp_add_mat_part(part[0], arg[0], type),
-        cp_add_mat_part(part[1], arg[1], type)
+        cp_add_mat_part(part[1], arg[1], type),
+        false, 0,
+        cp_dependency(part[0]) | cp_dependency(part[1])
       );
     }
 
@@ -2274,25 +2278,6 @@ bind_parameter(const Parameter &param) {
       return false;
     }
 
-    ShaderMatPiece piece;
-    if (arg_dim[1] >= 4) {
-      if (arg_dim[2] == 4) {
-        piece = type->as_array() ? SMP_mat4_array : SMP_mat4_whole;
-      } else {
-        piece = SMP_mat4_upper4x3;
-      }
-    } else if (arg_dim[1] > 1) {
-      if (arg_dim[2] == 4) {
-        piece = SMP_mat4_upper3x4;
-      } else {
-        piece = type->as_array() ? SMP_mat3_array : SMP_mat3_whole;
-      }
-    } else if (type->as_array()) {
-      piece = (ShaderMatPiece)(SMP_scalar_array + (arg_dim[2] - 1));
-    } else {
-      piece = (ShaderMatPiece)(SMP_scalar + (arg_dim[2] - 1));
-    }
-
     //if (k_prefix) {
     //  // Backward compatibility, disables certain checks.
     //  bind._dim[0] = -1;
@@ -2302,7 +2287,7 @@ bind_parameter(const Parameter &param) {
     // frame to frame, and we have no way to know.  So, we must respecify a
     // PTA at least once every frame.
     int dep = SSD_general | SSD_shaderinputs | SSD_frame;
-    return do_bind_parameter(param, SMF_shader_input_ptr, piece, 0, dep);
+    return do_bind_parameter(param, SMF_shader_input, 0, 0, false, 0, dep);
   }
 
   shader_cat.error()
@@ -2318,48 +2303,15 @@ bool Shader::
 bind_parameter(const Parameter &param, ShaderMatInput part,
                const InternalName *arg, int index, int offset) {
 
-  ScalarType scalar_type;
-  uint32_t array_count, num_rows, num_cols;
-  if (!param._type->as_scalar_type(scalar_type, array_count, num_rows, num_cols)) {
-    return report_parameter_error(param._name, param._type, "expected numeric type");
-  }
-
-  ShaderMatPiece piece;
-  bool transpose = (_language == SL_Cg);
-  if (num_rows >= 4 && num_cols >= 3) {
-    if (num_cols >= 4) {
-      piece = transpose ? SMP_mat4_transpose : SMP_mat4_whole;
-    } else {
-      piece = transpose ? SMP_mat4_transpose4x3 : SMP_mat4_upper4x3;
-    }
-  }
-  else if (num_rows >= 3 && num_cols >= 3) {
-    if (num_cols >= 4) {
-      piece = transpose ? SMP_mat4_transpose3x4 : SMP_mat4_upper3x4;
-    } else {
-      piece = transpose ? SMP_mat4_transpose3x3 : SMP_mat4_upper3x3;
-    }
-  }
-  else if (num_rows == 2 || num_cols == 2) {
-    return report_parameter_error(param._name, param._type, "mat2 not supported");
-  }
-  else if (num_cols == 1) {
-    piece = SMP_scalar;
-  }
-  else if (num_cols == 2) {
-    piece = SMP_vec2;
-  }
-  else if (num_cols == 3) {
-    piece = SMP_vec3;
-  }
-  else {
-    piece = SMP_vec4;
+  uint32_t array_count = 1;
+  if (const ::ShaderType::Array *array = param._type->as_array()) {
+    array_count = array->get_num_elements();
   }
 
   size_t cache_offset = cp_add_mat_part(part, arg, param._type, index, index + array_count);
-
+  bool transpose = (_language == SL_Cg);
   int dep = cp_dependency(part);
-  do_bind_parameter(param, SMF_first, piece, offset, dep, cache_offset);
+  do_bind_parameter(param, SMF_first, cache_offset, 0, transpose, offset, dep);
   return true;
 }
 
@@ -2393,41 +2345,8 @@ bind_parameter_xform(const Parameter &param,
     func = SMF_compose;
   }
 
-  ShaderMatPiece piece;
-  if (dim[1] >= 4 && dim[2] >= 3) {
-    if (dim[2] >= 4) {
-      piece = transpose ? SMP_mat4_transpose : SMP_mat4_whole;
-    } else {
-      piece = transpose ? SMP_mat4_transpose4x3 : SMP_mat4_upper4x3;
-    }
-  }
-  else if (dim[1] >= 3 && dim[2] >= 3) {
-    if (dim[2] >= 4) {
-      piece = transpose ? SMP_mat4_transpose3x4 : SMP_mat4_upper3x4;
-    } else {
-      piece = transpose ? SMP_mat4_upper3x3 : SMP_mat4_transpose3x3;
-    }
-  }
-  else if (dim[1] == 2 || dim[2] == 2) {
-    return report_parameter_error(param._name, param._type, "mat2 not supported");
-  }
-  else if (transpose) {
-    piece = SMP_mat4_column;
-    if (dim[2] != 4) {
-      return report_parameter_error(param._name, param._type, "expected mat4");
-    }
-  }
-  else if (dim[2] == 1) {
-    piece = SMP_scalar;
-  }
-  else if (dim[2] == 2) {
-    piece = SMP_vec2;
-  }
-  else if (dim[2] == 3) {
-    piece = SMP_vec3;
-  }
-  else {
-    piece = SMP_vec4;
+  if (dim[1] == 2 || (dim[1] > 1 && dim[2] == 2)) {
+    return report_parameter_error(param._name, param._type, "mat2 is not supported");
   }
 
   // More optimal combinations for common matrices.
@@ -2513,7 +2432,7 @@ bind_parameter_xform(const Parameter &param,
     dep |= cp_dependency(part1);
   }
 
-  do_bind_parameter(param, func, piece, offset, dep, cache_offset0, cache_offset1);
+  do_bind_parameter(param, func, cache_offset0, cache_offset1, transpose, offset, dep);
   return true;
 }
 
@@ -2522,61 +2441,71 @@ bind_parameter_xform(const Parameter &param,
  */
 bool Shader::
 do_bind_parameter(const Parameter &param, ShaderMatFunc func,
-                  ShaderMatPiece piece, int offset, int dep,
-                  size_t cache_offset0, size_t cache_offset1) {
-
-  // If we're compiling a Cg shader, transpose the matrices, to account for the
-  // differing matrix convention.
-  if (_language == SL_Cg) {
-    switch (piece) {
-    case SMP_mat4_whole: piece = SMP_mat4_transpose; break;
-    case SMP_mat4_transpose: piece = SMP_mat4_whole; break;
-    case SMP_mat4_upper3x3: piece = SMP_mat4_transpose3x3; break;
-    case SMP_mat4_transpose3x3: piece = SMP_mat4_upper3x3; break;
-    case SMP_mat4_upper3x4: piece = SMP_mat4_transpose3x4; break;
-    case SMP_mat4_transpose3x4: piece = SMP_mat4_upper3x4; break;
-    case SMP_mat4_upper4x3: piece = SMP_mat4_transpose4x3; break;
-    case SMP_mat4_transpose4x3: piece = SMP_mat4_upper4x3; break;
-    default: break;
-    }
-  }
+                  size_t cache_offset0, size_t cache_offset1,
+                  bool transpose, int offset, int dep) {
 
   ShaderMatSpec spec;
   spec._id = param;
   spec._func = func;
-  spec._piece = piece;
   spec._dep = dep;
   spec._cache_offset[0] = cache_offset0;
   spec._cache_offset[1] = cache_offset1;
   spec._offset = offset;
 
-  uint32_t dim[3];
-  param._type->as_scalar_type(spec._scalar_type, dim[0], dim[1], dim[2]);
+  uint32_t array_count, num_rows, num_cols;
+  if (!param._type->as_scalar_type(spec._scalar_type, array_count, num_rows, num_cols)) {
+    return false;
+  }
 
-  spec._array_count = dim[0];
+  spec._array_count = array_count;
+  spec._num_rows = num_rows;
+  spec._num_cols = num_cols;
 
-  // Determine the number of elements that will be passed to the shader.
-  switch (spec._piece) {
-  case SMP_scalar: spec._num_rows = 1; spec._num_cols = 1; break;
-  case SMP_vec2: spec._num_rows = 1; spec._num_cols = 2; break;
-  case SMP_vec3: spec._num_rows = 1; spec._num_cols = 3; break;
-  case SMP_vec4: spec._num_rows = 1; spec._num_cols = 4; break;
-  case SMP_scalar_array: spec._num_rows = 1; spec._num_cols = 1; break;
-  case SMP_vec2_array: spec._num_rows = 1; spec._num_cols = 2; break;
-  case SMP_vec3_array: spec._num_rows = 1; spec._num_cols = 3; break;
-  case SMP_vec4_array: spec._num_rows = 1; spec._num_cols = 4; break;
-  case SMP_mat3_whole: spec._num_rows = 3; spec._num_cols = 3; break;
-  case SMP_mat3_array: spec._num_rows = 3; spec._num_cols = 3; break;
-  case SMP_mat4_whole: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_array: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_transpose: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_column: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_upper3x3: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_transpose3x3: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_upper3x4: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_transpose3x4: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_upper4x3: spec._num_rows = 4; spec._num_cols = 4; break;
-  case SMP_mat4_transpose4x3: spec._num_rows = 4; spec._num_cols = 4; break;
+  if (num_rows >= 4 && num_cols >= 3) {
+    if (num_cols >= 4) {
+      spec._piece = transpose ? SMP_mat4_transpose : SMP_mat4_whole;
+    } else {
+      spec._piece = transpose ? SMP_mat4_transpose4x3 : SMP_mat4_upper4x3;
+    }
+    spec._num_rows = 4;
+    spec._num_cols = 4;
+  }
+  else if (num_rows >= 3 && num_cols >= 3) {
+    if (num_cols >= 4) {
+      spec._piece = transpose ? SMP_mat4_transpose3x4 : SMP_mat4_upper3x4;
+      spec._num_rows = 4;
+      spec._num_cols = 4;
+    }
+    else if (func == SMF_shader_input) {
+      // Not from cache, so pass whole as mat3
+      nassertr(!transpose, false);
+      spec._piece = SMP_mat3_whole;
+    }
+    else {
+      spec._piece = transpose ? SMP_mat4_transpose3x3 : SMP_mat4_upper3x3;
+      spec._num_rows = 4;
+      spec._num_cols = 4;
+    }
+  }
+  else if (num_rows == 2 || (num_rows > 1 && num_cols == 2)) {
+    return report_parameter_error(param._name, param._type, "mat2 is not supported");
+  }
+  else if (transpose) {
+    spec._piece = SMP_mat4_column;
+    spec._num_rows = 4;
+    spec._num_cols = 4;
+  }
+  else if (num_cols == 1) {
+    spec._piece = SMP_scalar;
+  }
+  else if (num_cols == 2) {
+    spec._piece = SMP_vec2;
+  }
+  else if (num_cols == 3) {
+    spec._piece = SMP_vec3;
+  }
+  else {
+    spec._piece = SMP_vec4;
   }
 
   _mat_spec.push_back(std::move(spec));
@@ -2610,9 +2539,8 @@ r_bind_struct_members(const Parameter &param, const InternalName *name,
         continue;
       }
 
-      ShaderMatPiece piece;
       int offset;
-      if (!check_light_struct_member(member.name, member.type, piece, offset)) {
+      if (!check_light_struct_member(member.name, member.type, offset)) {
         if (member.name != "shadowMatrix") {
           maybe_light_struct = false;
           break;
@@ -2665,12 +2593,10 @@ r_bind_struct_members(const Parameter &param, const InternalName *name,
         success = false;
       }
 
-      ShaderMatInput part;
-      ShaderMatPiece piece;
       int member_offset;
-      check_light_struct_member(member.name, member.type, piece, member_offset);
+      check_light_struct_member(member.name, member.type, member_offset);
 
-      if (!do_bind_parameter(member_param, SMF_first, piece, member_offset, dep, cache_offset)) {
+      if (!do_bind_parameter(member_param, SMF_first, cache_offset, 0, false, member_offset, dep)) {
         success = false;
       }
 

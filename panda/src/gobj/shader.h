@@ -256,14 +256,8 @@ public:
     SMP_vec2,
     SMP_vec3,
     SMP_vec4,
-    SMP_scalar_array,
-    SMP_vec2_array,
-    SMP_vec3_array,
-    SMP_vec4_array,
     SMP_mat3_whole,
-    SMP_mat3_array,
     SMP_mat4_whole,
-    SMP_mat4_array,
     SMP_mat4_transpose,
     SMP_mat4_column,
     SMP_mat4_upper3x3,
@@ -460,13 +454,6 @@ public:
     ScalarType        _scalar_type;
   };
 
-  struct ShaderPtrSpec {
-    Parameter         _id;
-    uint32_t          _dim[3]; //n_elements,rows,cols
-    CPT(InternalName) _arg;
-    ScalarType        _type;
-  };
-
   class ShaderFile : public ReferenceCount {
   public:
     INLINE ShaderFile() {};
@@ -513,7 +500,7 @@ protected:
                                 vector_string &pieces, int &next, bool fromflag,
                                 ShaderMatInput *part, CPT(InternalName) *arg);
   static bool check_light_struct_member(const std::string &name, const ::ShaderType *type,
-                                        ShaderMatPiece &piece, int &offset);
+                                        int &offset);
   int cp_dependency(ShaderMatInput inp);
   int cp_size(ShaderMatInput inp, const ::ShaderType *type);
 
@@ -614,8 +601,8 @@ public:
                             int index = 0, bool transpose = false,
                             int offset = 0);
   bool do_bind_parameter(const Parameter &parameter, ShaderMatFunc func,
-                         ShaderMatPiece piece, int offset = 0, int dep = 0,
-                         size_t cache_offset0 = 0, size_t cache_offset1 = 0);
+                         size_t cache_offset0 = 0, size_t cache_offset1 = 0,
+                         bool transpose = false, int offset = 0, int dep = 0);
   bool r_bind_struct_members(const Parameter &param, const InternalName *name,
                              const ::ShaderType::Struct *struct_type,
                              int &location, int &offset);

@@ -1412,19 +1412,13 @@ issue_parameters(int altered) {
         const float *data = (const float *)val;
 
         switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1fv(p, 1, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2fv(p, 1, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3fv(p, 1, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4fv(p, 1, data); continue;
-        case Shader::SMP_scalar_array: _glgsg->_glUniform1fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2_array: _glgsg->_glUniform2fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3_array: _glgsg->_glUniform3fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4_array: _glgsg->_glUniform4fv(p, spec._array_count, data); continue;
-        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3fv(p, 1, GL_FALSE, data); continue;
-        case Shader::SMP_mat3_array: _glgsg->_glUniformMatrix3fv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_array: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_scalar: _glgsg->_glUniform1fv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec2: _glgsg->_glUniform2fv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec3: _glgsg->_glUniform3fv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec4: _glgsg->_glUniform4fv(p, spec._array_count, data); continue;
+        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3fv(p, spec._array_count, GL_FALSE, data); continue;
+        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_FALSE, data); continue;
+        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_TRUE, data); continue;
         case Shader::SMP_mat4_column: _glgsg->_glUniform4f(p, data[0], data[4], data[8], data[12]); continue;
         case Shader::SMP_mat4_upper3x3:
           {
@@ -1470,19 +1464,13 @@ issue_parameters(int altered) {
         set_uniform_location(spec._id._location, -1);
 #else
         switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1dv(p, 1, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2dv(p, 1, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3dv(p, 1, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4dv(p, 1, data); continue;
-        case Shader::SMP_scalar_array: _glgsg->_glUniform1dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2_array: _glgsg->_glUniform2dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3_array: _glgsg->_glUniform3dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4_array: _glgsg->_glUniform4dv(p, spec._array_count, data); continue;
-        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3dv(p, 1, GL_FALSE, data); continue;
-        case Shader::SMP_mat3_array: _glgsg->_glUniformMatrix3dv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4dv(p, 1, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_array: _glgsg->_glUniformMatrix4dv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4dv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_scalar: _glgsg->_glUniform1dv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec2: _glgsg->_glUniform2dv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec3: _glgsg->_glUniform3dv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec4: _glgsg->_glUniform4dv(p, spec._array_count, data); continue;
+        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3dv(p, spec._array_count, GL_FALSE, data); continue;
+        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4dv(p, spec._array_count, GL_FALSE, data); continue;
+        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4dv(p, spec._array_count, GL_TRUE, data); continue;
         case Shader::SMP_mat4_column: _glgsg->_glUniform4d(p, data[0], data[4], data[8], data[12]); continue;
         case Shader::SMP_mat4_upper3x3:
           {
@@ -1521,14 +1509,10 @@ issue_parameters(int altered) {
         const int *data = (const int *)val;
 
         switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1i(p, ((int *)data)[0]);; continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2iv(p, 1, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3iv(p, 1, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4iv(p, 1, data); continue;
-        case Shader::SMP_scalar_array: _glgsg->_glUniform1iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2_array: _glgsg->_glUniform2iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3_array: _glgsg->_glUniform3iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4_array: _glgsg->_glUniform4iv(p, spec._array_count, data); continue;
+        case Shader::SMP_scalar: _glgsg->_glUniform1iv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec2: _glgsg->_glUniform2iv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec3: _glgsg->_glUniform3iv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec4: _glgsg->_glUniform4iv(p, spec._array_count, data); continue;
         default: nassert_raise("Invalid ShaderMatSpec piece with scalar type int");
         }
       }
@@ -1536,14 +1520,10 @@ issue_parameters(int altered) {
         const unsigned int *data = (const unsigned int *)val;
 
         switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1uiv(p, 1, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2uiv(p, 1, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3uiv(p, 1, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4uiv(p, 1, data); continue;
-        case Shader::SMP_scalar_array: _glgsg->_glUniform1uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2_array: _glgsg->_glUniform2uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3_array: _glgsg->_glUniform3uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4_array: _glgsg->_glUniform4uiv(p, spec._array_count, data); continue;
+        case Shader::SMP_scalar: _glgsg->_glUniform1uiv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec2: _glgsg->_glUniform2uiv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec3: _glgsg->_glUniform3uiv(p, spec._array_count, data); continue;
+        case Shader::SMP_vec4: _glgsg->_glUniform4uiv(p, spec._array_count, data); continue;
         default: nassert_raise("Invalid ShaderMatSpec piece with scalar type uint/bool");
         }
       }

@@ -922,6 +922,10 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
   const LVecBase4 *cache1 = cache + spec._cache_offset[1];
 
   switch (spec._func) {
+  case Shader::SMF_shader_input:
+    return _target_shader->get_shader_input_data(spec._id._name, scratch,
+      spec._scalar_type, spec._array_count, spec._num_rows, spec._num_cols, pad_rows);
+
   case Shader::SMF_first:
 #ifdef STDFLOAT_DOUBLE
     if (spec._scalar_type == ShaderType::ST_double) {
@@ -1032,10 +1036,6 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
     v.normalize();
     m.set_row(3, v);
     break;
-
-  case Shader::SMF_shader_input_ptr:
-    return _target_shader->get_shader_input_data(spec._id._name, scratch,
-      spec._scalar_type, spec._array_count, spec._num_rows, spec._num_cols, pad_rows);
 
   default:
     // Should never get here
