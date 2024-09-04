@@ -19,6 +19,7 @@ const char *texture_type_suffixes[] = {
 
 ShaderType::Registry *ShaderType::_registered_types = nullptr;
 TypeHandle ShaderType::_type_handle;
+TypeHandle ShaderType::Void::_type_handle;
 TypeHandle ShaderType::Scalar::_type_handle;
 TypeHandle ShaderType::Vector::_type_handle;
 TypeHandle ShaderType::Matrix::_type_handle;
@@ -28,6 +29,7 @@ TypeHandle ShaderType::Image::_type_handle;
 TypeHandle ShaderType::Sampler::_type_handle;
 TypeHandle ShaderType::SampledImage::_type_handle;
 
+const ShaderType::Void *ShaderType::void_type;
 const ShaderType::Scalar *ShaderType::bool_type;
 const ShaderType::Scalar *ShaderType::int_type;
 const ShaderType::Scalar *ShaderType::uint_type;
@@ -60,6 +62,7 @@ init_type() {
   TypedWritable::init_type();
   ::register_type(_type_handle, "ShaderType", TypedWritable::get_class_type());
 
+  ::register_type(Void::_type_handle, "ShaderType::Void", _type_handle);
   ::register_type(Scalar::_type_handle, "ShaderType::Scalar", _type_handle);
   ::register_type(Vector::_type_handle, "ShaderType::Vector", _type_handle);
   ::register_type(Matrix::_type_handle, "ShaderType::Matrix", _type_handle);
@@ -69,6 +72,7 @@ init_type() {
   ::register_type(Sampler::_type_handle, "ShaderType::Sampler", _type_handle);
   ::register_type(SampledImage::_type_handle, "ShaderType::SampledImage", _type_handle);
 
+  void_type = ShaderType::register_type(ShaderType::Void());
   bool_type = ShaderType::register_type(ShaderType::Scalar(ST_bool));
   int_type = ShaderType::register_type(ShaderType::Scalar(ST_int));
   uint_type = ShaderType::register_type(ShaderType::Scalar(ST_uint));
@@ -84,6 +88,7 @@ init_type() {
 void ShaderType::
 register_with_read_factory() {
   WritableFactory *factory = BamReader::get_factory();
+  factory->register_factory(Void::_type_handle, Void::make_from_bam);
   factory->register_factory(Scalar::_type_handle, Scalar::make_from_bam);
   factory->register_factory(Vector::_type_handle, Vector::make_from_bam);
   factory->register_factory(Matrix::_type_handle, Matrix::make_from_bam);
@@ -160,6 +165,33 @@ get_size_bytes() const {
   } else {
     return -1;
   }
+}
+
+/**
+ *
+ */
+void ShaderType::Void::
+output(std::ostream &out) const {
+  out << "void";
+}
+
+/**
+ * Private implementation of compare_to, only called for types with the same
+ * TypeHandle.
+ */
+int ShaderType::Void::
+compare_to_impl(const ShaderType &other) const {
+  return true;
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ShaderType is encountered in the Bam file.  It should create the
+ * ShaderType and extract its information from the file.
+ */
+TypedWritable *ShaderType::Void::
+make_from_bam(const FactoryParams &params) {
+  return (ShaderType *)ShaderType::void_type;
 }
 
 /**

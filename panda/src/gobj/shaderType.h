@@ -61,6 +61,7 @@ private:
   static Registry *_registered_types;
 
 PUBLISHED:
+  class Void;
   class Scalar;
   class Vector;
   class Matrix;
@@ -71,6 +72,7 @@ PUBLISHED:
   class SampledImage;
 
   // Fundamental types.
+  static const ShaderType::Void *void_type;
   static const ShaderType::Scalar *bool_type;
   static const ShaderType::Scalar *int_type;
   static const ShaderType::Scalar *uint_type;
@@ -132,6 +134,33 @@ INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
   stype.output(out);
   return out;
 }
+
+/**
+ * The void type, invalid for most uses.
+ */
+class EXPCL_PANDA_GOBJ ShaderType::Void final : public ShaderType {
+public:
+  virtual void output(std::ostream &out) const override;
+
+private:
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  virtual TypeHandle get_type() const override {
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class ShaderType;
+};
 
 /**
  * A numeric scalar type, like int or float.

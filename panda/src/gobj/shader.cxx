@@ -2976,6 +2976,12 @@ r_bind_struct_members(const Parameter &param, const InternalName *name,
     maybe_light_struct = true;
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      // Skip members with void type.
+      if (member.type->get_type() == ShaderType::Void::get_class_type()) {
+        continue;
+      }
+
       ShaderMatPiece piece;
       int offset;
       if (!check_light_struct_member(member.name, member.type, piece, offset)) {
@@ -2989,6 +2995,11 @@ r_bind_struct_members(const Parameter &param, const InternalName *name,
 
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+    // Skip members with void type.
+    if (member.type->get_type() == ShaderType::Void::get_class_type()) {
+      continue;
+    }
 
     PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
 
