@@ -548,6 +548,10 @@ compare_to_impl(const ShaderType &other) const {
       return (_members[i].name > other_struct._members[i].name)
            - (_members[i].name < other_struct._members[i].name);
     }
+    if (_members[i].offset != other_struct._members[i].offset) {
+      return (_members[i].offset > other_struct._members[i].offset)
+           - (_members[i].offset < other_struct._members[i].offset);
+    }
   }
 
   return 0;
