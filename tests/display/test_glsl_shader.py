@@ -785,18 +785,18 @@ def test_glsl_struct_pseudo_light(gsg):
     # Something that looks like a named light source, but isn't one at all
     preamble = """
     struct FakeLightParameters {
-      vec4 color;
       vec4 specular;
+      vec4 position;
     };
     uniform FakeLightParameters test;
     """
     code = """
-    assert(test.color == vec4(1, 2, 3, 4));
-    assert(test.specular == vec4(5, 6, 7, 8));
+    assert(test.specular == vec4(1, 2, 3, 4));
+    assert(test.position == vec4(5, 6, 7, 8));
     """
     run_glsl_test(gsg, code, preamble, {
-        'test.color': (1, 2, 3, 4),
-        'test.specular': (5, 6, 7, 8),
+        'test.specular': (1, 2, 3, 4),
+        'test.position': (5, 6, 7, 8),
     })
 
 

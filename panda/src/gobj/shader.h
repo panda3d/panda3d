@@ -427,10 +427,7 @@ public:
     size_t _cache_offset[2];
     Parameter         _id;
     ShaderMatFunc     _func;
-    ShaderMatInput    _part[2];
-    CPT(InternalName) _arg[2];
     int               _dep = SSD_NONE;
-    int               _index = 0;
     ShaderMatPiece    _piece;
     int               _offset = 0;
     int               _array_count = 1;
@@ -513,15 +510,16 @@ protected:
   bool expect_float_vector(const InternalName *name, const ::ShaderType *type, int lo, int hi);
   bool expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, int hi);
   bool expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
-                                vector_string &pieces, int &next,
-                                ShaderMatSpec &spec, bool fromflag);
+                                vector_string &pieces, int &next, bool fromflag,
+                                ShaderMatInput *part, CPT(InternalName) *arg);
   static bool check_light_struct_member(const std::string &name, const ::ShaderType *type,
                                         ShaderMatPiece &piece, int &offset);
   int cp_dependency(ShaderMatInput inp);
   int cp_size(ShaderMatInput inp, const ::ShaderType *type);
 
 public:
-  void cp_add_mat_spec(ShaderMatSpec &spec);
+  size_t cp_add_mat_part(ShaderMatInput input, const InternalName *arg,
+                         const ShaderType *type, int begin = 0, int end = 1);
   size_t cp_get_mat_cache_size() const;
   size_t cp_get_mat_scratch_size(bool pad_rows) const;
 
@@ -606,6 +604,18 @@ public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
   bool bind_parameter(const Parameter &parameter);
+  bool bind_parameter(const Parameter &parameter, ShaderMatInput part,
+                      const InternalName *arg = nullptr,
+                      int index = 0, int offset = 0);
+  bool bind_parameter_xform(const Parameter &parameter,
+                            ShaderMatInput part0, const InternalName *arg0,
+                            ShaderMatInput part1 = SMO_identity,
+                            const InternalName *arg1 = nullptr,
+                            int index = 0, bool transpose = false,
+                            int offset = 0);
+  bool do_bind_parameter(const Parameter &parameter, ShaderMatFunc func,
+                         ShaderMatPiece piece, int offset = 0, int dep = 0,
+                         size_t cache_offset0 = 0, size_t cache_offset1 = 0);
   bool r_bind_struct_members(const Parameter &param, const InternalName *name,
                              const ::ShaderType::Struct *struct_type,
                              int &location, int &offset);

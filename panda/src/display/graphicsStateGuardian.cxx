@@ -1034,7 +1034,7 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
     break;
 
   case Shader::SMF_shader_input_ptr:
-    return _target_shader->get_shader_input_data(spec._arg[0], scratch,
+    return _target_shader->get_shader_input_data(spec._id._name, scratch,
       spec._scalar_type, spec._array_count, spec._num_rows, spec._num_cols, pad_rows);
 
   default:
@@ -1601,7 +1601,6 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
     // fall through
   }
   case Shader::SMO_struct_constant_x: {
-    int offset = 0;
     const ShaderType::Struct *struct_type = type->as_struct();
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ShaderType::Struct::Member &member = struct_type->get_member(i);
@@ -1612,8 +1611,10 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
       uint32_t num_columns;
       if (member.type->as_scalar_type(scalar_type, num_elements, num_rows, num_columns)) {
         Shader::ShaderPtrData data;
-        _target_shader->get_shader_input_data(((InternalName *)name)->append(member.name), &into[offset], scalar_type, num_elements, num_rows, num_columns, true);
-        offset += num_elements * num_rows;
+        _target_shader->get_shader_input_data(
+          ((InternalName *)name)->append(member.name),
+          (char *)into + member.offset,
+          scalar_type, num_elements, num_rows, num_columns, false);
       }
     }
     break;

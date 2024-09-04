@@ -47,6 +47,12 @@ public:
     ST_int,
     ST_uint,
     ST_bool,
+
+#ifdef STDFLOAT_DOUBLE
+    ST_stdfloat = ST_double,
+#else
+    ST_stdfloat = ST_float,
+#endif
   };
 
   enum class Access {
