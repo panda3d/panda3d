@@ -293,12 +293,15 @@ public:
   };
 
   enum ShaderMatFunc {
+    // Direct fetch from shader input
+    SMF_shader_input,
+
+    // Fetched via ShaderMatPart cache
     SMF_first,
     SMF_compose,
     SMF_transform_dlight,
     SMF_transform_plight,
     SMF_transform_slight,
-    SMF_shader_input_ptr,
   };
 
   struct Parameter {
