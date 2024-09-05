@@ -95,6 +95,11 @@ class FilterConfig:
     pass
 
 
+class ToneMap:
+    ACES = "ACES"
+    neutral = "Neutral"
+
+
 class CommonFilters:
     """ Class CommonFilters implements certain common image postprocessing
     filters.  The constructor requires a filter builder as a parameter. """
@@ -596,7 +601,7 @@ o_color = lerp(o_color, cartooncolor, cartoon_thresh);""",
                                (density / float(numsamples), decay, exposure)}},
                        needed_textures=[source],
                        shader_string="""float decay = 1.0f;
-          float2 curcoord = l_texcoord_color; 
+          float2 curcoord = l_texcoord_color;
           float2 lightdir = curcoord - casterpos.xy;\n
           lightdir *= vlparams.x;
           half4 sample = tex2D(k_txcolor, curcoord);
@@ -731,7 +736,7 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
         """ Reverses the effects of setSrgbEncode. """
         self.del_filter("SRBGEncode")
 
-    def setHighDynamicRange(self, sort=8):
+    def setHighDynamicRange(self):
         """ Enables HDR rendering by using a floating-point framebuffer,
         disabling color clamping on the main scene, and applying a tone map
         operator (ACES).
@@ -745,8 +750,6 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
         self.fbprops.setSrgbColor(False)
         self.clamping = False
 
-        # With thanks to Stephen Hill!
-        self.setFilter("HighDynamicRange",
                        shader_string="""float3 aces_color = mul(aces_input_mat, o_color.rgb);
                                      o_color.rgb = saturate(mul(aces_output_mat, 
                                      (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / 
@@ -788,9 +791,27 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
     def delExposureAdjust(self):
         self.del_filter("ExposureAdjust")
 
+            neutral_color -= offset;
+            float peak = max(neutral_color.r, max(neutral_color.g, neutral_color.b));
+            if (peak < start_compression){
+            o_color.rgb =  neutral_color;
+            }else{
+            const float d = 1.0 - start_compression;
+            float new_peak = 1.0 - d * d / (peak + d - start_compression);
+            neutral_color *= new_peak / peak;
+            float g = 1.0 - 1.0 / (desaturation * (peak - new_peak) + 1.0);
+            text += "o_color.rgb = mix(neutral_color, new_peak * float3(1, 1, 1), g);}"""
+
+            self.setFilter("ToneMap", shader_string=text, sort=sort)
+
+    def delToneMap(self):
+        self.del_filter("ToneMap")
+
+
     def printShader(self):
         for count, line in enumerate(c.current_text.split("\n")):
             print(count, line)
+
 
     #snake_case alias:
     set_msaa = setMSAA
@@ -828,6 +849,8 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
     set_shader_inputs = setShaderInputs
     set_shader_input = setShaderInput
     print_shader = printShader
+    set_tonemap = setToneMap
+    del_tonemap = delToneMap
 
 
 if __name__ == "__main__":
