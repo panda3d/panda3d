@@ -1601,7 +1601,8 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
     // fall through
   }
   case Shader::SMO_struct_constant_x: {
-    const ShaderType::Struct *struct_type = type->as_struct();
+    _target_shader->get_shader_input_data(name, (char *)into, type, false);
+    /*const ShaderType::Struct *struct_type = type->as_struct();
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ShaderType::Struct::Member &member = struct_type->get_member(i);
 
@@ -1610,13 +1611,12 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
       uint32_t num_rows;
       uint32_t num_columns;
       if (member.type->as_scalar_type(scalar_type, num_elements, num_rows, num_columns)) {
-        Shader::ShaderPtrData data;
         _target_shader->get_shader_input_data(
           ((InternalName *)name)->append(member.name),
           (char *)into + member.offset,
           scalar_type, num_elements, num_rows, num_columns, false);
       }
-    }
+    }*/
     break;
   }
   case Shader::SMO_light_source_i: {

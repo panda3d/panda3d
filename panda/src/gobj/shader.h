@@ -594,9 +594,10 @@ public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
   bool bind_parameter(const Parameter &parameter);
+  bool bind_parameter(const Parameter &parameter, ShaderTexInput part);
   bool bind_parameter(const Parameter &parameter, ShaderMatInput part,
                       const InternalName *arg = nullptr,
-                      int index = 0, int offset = 0);
+                      int index = 0, const vector_int &offsets = vector_int());
   bool bind_parameter_xform(const Parameter &parameter,
                             ShaderMatInput part0, const InternalName *arg0,
                             ShaderMatInput part1 = SMO_identity,
@@ -606,9 +607,6 @@ public:
   bool do_bind_parameter(const Parameter &parameter, ShaderMatFunc func,
                          size_t cache_offset0 = 0, size_t cache_offset1 = 0,
                          bool transpose = false, int offset = 0, int dep = 0);
-  bool r_bind_struct_members(const Parameter &param, const InternalName *name,
-                             const ::ShaderType::Struct *struct_type,
-                             int &location, int &offset);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

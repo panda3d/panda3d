@@ -1226,7 +1226,7 @@ bind_parameter(const Parameter &param) {
   const ::ShaderType *type = param._type;
   std::string name_str = name->get_name();
 
-  // If this is an empty struct, we bind the individual members.
+  // If this is a nameless struct, we bind the individual members.
   const ::ShaderType::Struct *struct_type = type->as_struct();
   if (struct_type != nullptr && name_str.empty()) {
     bool success = true;
@@ -1264,6 +1264,8 @@ bind_parameter(const Parameter &param) {
         << param._location + num_locations - 1 << ")\n";
     }
   }
+
+  nassertr(name->get_parent() == InternalName::get_root(), false);
 
   // Split it at the underscores.
   vector_string pieces;
@@ -1440,71 +1442,64 @@ bind_parameter(const Parameter &param) {
         return report_parameter_error(name, type, "expected struct");
       }
 
+      vector_int offsets;
       bool success = true;
       for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
         CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
-        Parameter member_param(param);
-        member_param._location = param._location + i;
-        member_param._name = fqname;
-        member_param._type = member.type;
 
+        int offset = -1;
         if (member.name == "baseColor") {
-          if (expect_float_vector(fqname, member.type, 4, 4) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_base_color)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            offset = 4 * MA_base_color;
           }
         } else if (member.name == "ambient") {
-          if (expect_float_vector(fqname, member.type, 4, 4) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_ambient)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            offset = 4 * MA_ambient;
           }
         } else if (member.name == "diffuse") {
-          if (expect_float_vector(fqname, member.type, 4, 4) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_diffuse)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            offset = 4 * MA_diffuse;
           }
         } else if (member.name == "emission") {
-          if (expect_float_vector(fqname, member.type, 4, 4) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_emission)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            offset = 4 * MA_emission;
           }
         } else if (member.name == "specular") {
-          if (expect_float_vector(fqname, member.type, 3, 3) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_specular)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 3, 3)) {
+            offset = 4 * MA_specular;
           }
         } else if (member.name == "shininess") {
-          if (expect_float_vector(fqname, member.type, 1, 1) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_specular + 3)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            offset = 4 * MA_specular + 3;
           }
         } else if (member.name == "roughness") {
-          if (expect_float_vector(fqname, member.type, 1, 1) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_metallic_ior_roughness + 3)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            offset = 4 * MA_metallic_ior_roughness + 3;
           }
         } else if (member.name == "metallic") {
           if (member.type == ::ShaderType::bool_type ||
               member.type == ::ShaderType::float_type) {
-            bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_metallic_ior_roughness);
-            continue;
+            offset = 4 * MA_metallic_ior_roughness;
           } else {
             report_parameter_error(fqname, member.type, "expected bool or float");
           }
         } else if (member.name == "refractiveIndex") {
-          if (expect_float_vector(fqname, member.type, 1, 1) &&
-              bind_parameter(member_param, SMO_attr_material, nullptr, 0, 4 * MA_metallic_ior_roughness + 1)) {
-            continue;
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            offset = 4 * MA_metallic_ior_roughness + 1;
           }
         } else {
           report_parameter_error(fqname, member.type, "unrecognized material attribute");
         }
-        success = false;
+
+        if (offset < -1) {
+          success = false;
+        }
+        offsets.push_back(offset);
       }
 
-      return success;
+      return success && bind_parameter(param, SMO_attr_material, nullptr, 0, offsets);
     }
     if (pieces[1] == "ColorScale") {
       if (!expect_float_vector(name, type, 3, 4)) {
@@ -1536,15 +1531,13 @@ bind_parameter(const Parameter &param) {
         return report_parameter_error(name, type, "expected struct");
       }
 
+      vector_int offsets;
+
       bool success = true;
       for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
         CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
-        Parameter member_param(param);
-        member_param._location = param._location + i;
-        member_param._name = fqname;
-        member_param._type = member.type;
 
         int offset = -1;
         if (member.name == "color") {
@@ -1569,15 +1562,16 @@ bind_parameter(const Parameter &param) {
           }
         } else {
           report_parameter_error(fqname, member.type, "unrecognized fog attribute");
-        }
-
-        if (offset < 0 ||
-            !bind_parameter(member_param, SMO_attr_fog, nullptr, 0, offset)) {
           success = false;
         }
+
+        if (offset < 0) {
+          success = false;
+        }
+        offsets.push_back(offset);
       }
 
-      return success;
+      return success && bind_parameter(param, SMO_attr_fog, nullptr, 0, offsets);
     }
     if (pieces[1] == "LightModel") {
       const ::ShaderType::Struct *struct_type = type->as_struct();
@@ -1615,83 +1609,20 @@ bind_parameter(const Parameter &param) {
         return report_parameter_error(name, type, "expected array of structs");
       }
 
-      int location = param._location;
-
-      size_t num_members = struct_type->get_num_members();
-      for (size_t i = 0; i < num_members; ++i) {
+      vector_int offsets;
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
-        Parameter member_param(param);
-        member_param._name = fqname;
-        member_param._type = member.type;
-        member_param._location = location++;
-
-        if (member.name == "shadowMap") {
-          if (member.type->as_sampled_image() == nullptr) {
-            return report_parameter_error(name, type, "expected sampler2D");
-          }
-          ShaderTexSpec bind;
-          bind._id = member_param;
-          bind._part = STO_light_i_shadow_map;
-          bind._desired_type = Texture::TT_2d_texture;
-          for (bind._stage = 0; bind._stage < (int)array->get_num_elements(); ++bind._stage) {
-            _tex_spec.push_back(bind);
-            bind._id._location += num_members;
-          }
+        int offset;
+        if (check_light_struct_member(member.name, member.type, offset)) {
+          offsets.push_back(offset);
         } else {
-          if (member.name == "shadowMatrix") {
-            // Only supported for backward compatibility: includes the model
-            // matrix.  Not very efficient to do this.
-            if (!expect_float_matrix(fqname, member.type, 4, 4)) {
-              return false;
-            }
-
-            static bool warned = false;
-            if (!warned) {
-              warned = true;
-              shader_cat.warning()
-                << "p3d_LightSource[].shadowMatrix is deprecated; use "
-                   "shadowViewMatrix instead, which transforms from view space "
-                   "instead of model space.\n";
-            }
-
-            for (int index = 0; index < (int)array->get_num_elements(); ++index) {
-              if (!bind_parameter_xform(member_param, SMO_model_to_apiview, nullptr, SMO_apiview_to_apiclip_light_source_i, nullptr, index)) {
-                return false;
-              }
-              member_param._location += num_members;
-            }
-          }
-          else {
-            if (member.name == "shadowViewMatrix") {
-              if (!expect_float_matrix(fqname, member.type, 4, 4)) {
-                return false;
-              }
-            } else {
-              if (!expect_float_vector(fqname, member.type, 1, 4)) {
-                return false;
-              }
-            }
-
-            int offset;
-            if (!check_light_struct_member(member.name, member.type, offset)) {
-              shader_cat.error()
-                << "Invalid light struct member "
-                << *member.type << " " << member.name << "\n";
-              return false;
-            }
-            for (int index = 0; index < (int)array->get_num_elements(); ++index) {
-              if (!bind_parameter(member_param, SMO_light_source_i, nullptr, index, offset)) {
-                return false;
-              }
-              member_param._location += num_members;
-            }
-          }
+          PT(InternalName) fqname = ((InternalName *)param._name.p())->append(member.name);
+          return report_parameter_error(fqname, member.type, "not a valid light struct member");
         }
       }
 
-      return true;
+      return bind_parameter(param, SMO_light_source_i, nullptr, 0, offsets);
     }
     if (pieces[1] == "TransformTable") {
       const ::ShaderType *element_type;
@@ -1943,13 +1874,13 @@ bind_parameter(const Parameter &param) {
       }
       else if (pieces[1] == "fog") {
         if (!expect_float_vector(name, type, 3, 4) ||
-            !bind_parameter(param, SMO_attr_fog, nullptr, 0, 4 * FA_params)) {
+            !bind_parameter(param, SMO_attr_fog, nullptr, 0, {4 * FA_params})) {
           return false;
         }
       }
       else if (pieces[1] == "fogcolor") {
         if (!expect_float_vector(name, type, 3, 4) ||
-            !bind_parameter(param, SMO_attr_fog, nullptr, 0, 4 * FA_color)) {
+            !bind_parameter(param, SMO_attr_fog, nullptr, 0, {4 * FA_color})) {
           return false;
         }
       }
@@ -1969,7 +1900,7 @@ bind_parameter(const Parameter &param) {
       else if (pieces[1].compare(0, 5, "lspec") == 0) {
         int index = atoi(pieces[1].c_str() + 5);
         if (!expect_float_vector(name, type, 3, 4) ||
-            !bind_parameter(param, SMO_light_source_i, nullptr, index, 4 * LA_specular)) {
+            !bind_parameter(param, SMO_light_source_i, nullptr, index, {4 * LA_specular})) {
           return false;
         }
       }
@@ -2228,44 +2159,47 @@ bind_parameter(const Parameter &param) {
     return bind_parameter(param, SMO_mat_constant_x, name);
   }
   else if (const ::ShaderType::Struct *struct_type = type->as_struct()) {
-    // Is this a struct?  If so, bind the individual members.
-    int location = param._location;
-    int offset = 0;
-    return r_bind_struct_members(param, name, struct_type, location, offset);
+    // Check if this could be a light structure.
+    if (_language == SL_GLSL && struct_type->get_num_members() > 0) {
+      bool maybe_light_struct = true;
+      vector_int offsets;
+
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        int offset;
+        if (check_light_struct_member(member.name, member.type, offset)) {
+          offsets.push_back(offset);
+        } else {
+          if (member.name == "shadowMatrix") {
+            // This has been deprecated for a while and is no longer supported.
+            shader_cat.error()
+              << "light.shadowMatrix inputs are no longer supported; use "
+                 "shadowViewMatrix instead, which transforms from view "
+                 "space instead of model space.\n";
+            return false;
+          }
+          else if (member.name != "shadowMap" ||
+                   member.type->as_sampled_image() == nullptr) {
+            maybe_light_struct = false;
+            break;
+          }
+        }
+      }
+
+      if (maybe_light_struct) {
+        // It looks like a light structure, but maybe it's simply a user-defined
+        // one that has the same members.
+        return bind_parameter(param, SMO_struct_constant_x_light, name, 0, offsets);
+      }
+    }
+
+    return bind_parameter(param, SMO_struct_constant_x, name);
   }
   else if (const ::ShaderType::Array *array_type = type->as_array()) {
     // Check if this is an array of structs.
-    int location = param._location;
     if (const ::ShaderType::Struct *struct_type = array_type->get_element_type()->as_struct()) {
-      bool success = true;
-
-      // Generate names like structname[0].membername for every array element.
-      // This is how GLSL has historically exposed these variables.
-      size_t basename_size = name->get_basename().size();
-      char *buffer = (char *)alloca(basename_size + 14);
-      memcpy(buffer, name->get_basename().c_str(), basename_size);
-
-      for (uint32_t ai = 0; ai < array_type->get_num_elements(); ++ai) {
-        sprintf(buffer + basename_size, "[%d]", (int)ai);
-
-        PT(InternalName) elemname = name->get_parent()->append(buffer);
-
-        for (size_t mi = 0; mi < struct_type->get_num_members(); ++mi) {
-          const ::ShaderType::Struct::Member &member = struct_type->get_member(mi);
-
-          // Recurse.
-          Parameter member_param(param);
-          member_param._name = elemname->append(member.name);
-          member_param._type = member.type;
-          member_param._location = location;
-          if (!bind_parameter(member_param)) {
-            success = false;
-          }
-
-          location += member.type->get_num_parameter_locations();
-        }
-      }
-      return success;
+      return bind_parameter(param, SMO_struct_constant_x, name);
     }
   }
 
@@ -2297,22 +2231,129 @@ bind_parameter(const Parameter &param) {
 }
 
 /**
+ * Binds a texture parameter.
+ */
+bool Shader::
+bind_parameter(const Parameter &param, ShaderTexInput part) {
+  if (const ::ShaderType::SampledImage *sampler = param._type->as_sampled_image()) {
+    ShaderTexSpec bind;
+    bind._id = param;
+    bind._part = part;
+    bind._name = param._name;
+    bind._desired_type = sampler->get_texture_type();
+    bind._stage = 0;
+    _tex_spec.push_back(bind);
+    return true;
+  }
+  return report_parameter_error(param._name, param._type, "expected sampled image");
+}
+
+/**
  * Binds a parameter to a value fetched from the state cache, with offset.
+ * If this is a struct, multiple offsets should be provided, one for each
+ * member of the structure.
  */
 bool Shader::
 bind_parameter(const Parameter &param, ShaderMatInput part,
-               const InternalName *arg, int index, int offset) {
+               const InternalName *arg, int index, const vector_int &offsets) {
 
   uint32_t array_count = 1;
+  const ::ShaderType *element_type = param._type;
   if (const ::ShaderType::Array *array = param._type->as_array()) {
     array_count = array->get_num_elements();
+    element_type = array->get_element_type();
   }
 
-  size_t cache_offset = cp_add_mat_part(part, arg, param._type, index, index + array_count);
-  bool transpose = (_language == SL_Cg);
   int dep = cp_dependency(part);
-  do_bind_parameter(param, SMF_first, cache_offset, 0, transpose, offset, dep);
-  return true;
+
+  // Special handling of light structs.
+  if (part == SMO_struct_constant_x_light || part == SMO_light_source_i) {
+    const ::ShaderType::Struct *struct_type = element_type->as_struct();
+    if (struct_type == nullptr) {
+      return report_parameter_error(param._name, param._type, "expected struct");
+    }
+    nassertr(offsets.size() == struct_type->get_num_members(), false);
+
+    // Create a new struct with the members in the right order for a light
+    // structure.  Used when fetching SMO_struct_constant_x_light when it turns
+    // out that this is not a light source, but a user-defined struct.
+    ShaderType::Struct new_struct;
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      new_struct.add_member(member.type, member.name, offsets[i] * 4);
+    }
+
+    size_t cache_offset = cp_add_mat_part(part, arg, ShaderType::register_type(std::move(new_struct)), index, index + array_count);
+
+    int location = param._location;
+    bool success = true;
+    for (size_t ai = 0; ai < array_count; ++ai) {
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        PT(InternalName) fqname = ((InternalName *)param._name.p())->append(member.name);
+        Parameter member_param(param);
+        member_param._name = fqname;
+        member_param._type = member.type;
+        member_param._location = location;
+
+        if (member.name == "shadowMap") {
+          if (part == SMO_struct_constant_x_light) {
+            if (!bind_parameter(member_param, STO_named_input)) {
+              success = false;
+            }
+          } else {
+            ShaderTexSpec bind;
+            bind._id = member_param;
+            bind._part = STO_light_i_shadow_map;
+            bind._desired_type = Texture::TT_2d_texture;
+            bind._stage = ai;
+            _tex_spec.push_back(bind);
+          }
+        } else {
+          if (!do_bind_parameter(member_param, SMF_first, cache_offset, 0, false, offsets[i] + ai * LA_COUNT * 4, dep)) {
+            success = false;
+          }
+        }
+
+        location += member.type->get_num_parameter_locations();
+      }
+    }
+    return success;
+  }
+  else if (offsets.size() > 1) {
+    // Different kind of structs, also split into its individual members.
+    const ::ShaderType::Struct *struct_type = element_type->as_struct();
+    nassertr(struct_type != nullptr, false);
+    nassertr(offsets.size() == struct_type->get_num_members(), false);
+
+    size_t cache_offset = cp_add_mat_part(part, arg, param._type, index, index + array_count);
+
+    int location = param._location;
+    bool success = true;
+    for (size_t ai = 0; ai < array_count; ++ai) {
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        PT(InternalName) fqname = ((InternalName *)param._name.p())->append(member.name);
+        Parameter member_param(param);
+        member_param._name = fqname;
+        member_param._type = member.type;
+        member_param._location = location;
+
+        if (!do_bind_parameter(member_param, SMF_first, cache_offset, 0, false, offsets[i], dep)) {
+          success = false;
+        }
+        location += member.type->get_num_parameter_locations();
+      }
+    }
+    return success;
+  }
+
+  bool transpose = (_language == SL_Cg);
+  size_t cache_offset = cp_add_mat_part(part, arg, param._type, index, index + array_count);
+  return do_bind_parameter(param, SMF_first, cache_offset, 0, transpose, offsets.empty() ? 0 : offsets[0], dep);
 }
 
 /**
@@ -2444,6 +2485,66 @@ do_bind_parameter(const Parameter &param, ShaderMatFunc func,
                   size_t cache_offset0, size_t cache_offset1,
                   bool transpose, int offset, int dep) {
 
+  if (const ::ShaderType::Array *array_type = param._type->as_array()) {
+    // Check if this is an array of structs.
+    const ::ShaderType *element_type = array_type->get_element_type();
+    if (const ::ShaderType::Struct *struct_type = element_type->as_struct()) {
+      bool success = true;
+      int location = param._location;
+
+      // Generate names like structname[0].membername for every array element.
+      // This is how GLSL has historically exposed these variables.
+      size_t basename_size = param._name->get_basename().size();
+      char *buffer = (char *)alloca(basename_size + 14);
+      memcpy(buffer, param._name->get_basename().c_str(), basename_size);
+
+      for (uint32_t ai = 0; ai < array_type->get_num_elements(); ++ai) {
+        sprintf(buffer + basename_size, "[%d]", (int)ai);
+
+        Parameter elem_param(param);
+        elem_param._name = param._name->get_parent()->append(buffer);
+        elem_param._type = element_type;
+        elem_param._location = location;
+
+        if (!do_bind_parameter(elem_param, func, cache_offset0, cache_offset1, transpose, offset, dep)) {
+          success = false;
+        }
+
+        offset += (element_type->get_size_bytes() + 3) / 4;
+        location += element_type->get_num_parameter_locations();
+      }
+      return success;
+    }
+  }
+
+  // Break out structs into individual members.
+  if (const ::ShaderType::Struct *struct_type = param._type->as_struct()) {
+    int location = param._location;
+    bool success = true;
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      PT(InternalName) fqname = ((InternalName *)param._name.p())->append(member.name);
+      Parameter member_param(param);
+      member_param._name = fqname;
+      member_param._type = member.type;
+      member_param._location = location;
+
+      if (member.type->as_sampled_image()) {
+        if (!bind_parameter(member_param, STO_named_input)) {
+          success = false;
+        }
+      }
+      else {
+        if (!do_bind_parameter(member_param, SMF_first, cache_offset0, cache_offset1, transpose, offset + member.offset / 4, dep)) {
+          success = false;
+        }
+      }
+      location += member.type->get_num_parameter_locations();
+    }
+    return success;
+  }
+
   ShaderMatSpec spec;
   spec._id = param;
   spec._func = func;
@@ -2454,7 +2555,7 @@ do_bind_parameter(const Parameter &param, ShaderMatFunc func,
 
   uint32_t array_count, num_rows, num_cols;
   if (!param._type->as_scalar_type(spec._scalar_type, array_count, num_rows, num_cols)) {
-    return false;
+    return report_parameter_error(param._name, param._type, "expected numeric type");
   }
 
   spec._array_count = array_count;
@@ -2511,114 +2612,6 @@ do_bind_parameter(const Parameter &param, ShaderMatFunc func,
   _mat_spec.push_back(std::move(spec));
   _mat_deps |= dep;
   return true;
-}
-
-/**
- * Recursive version of the above function to bind struct members.
- */
-bool Shader::
-r_bind_struct_members(const Parameter &param, const InternalName *name,
-                      const ::ShaderType::Struct *struct_type,
-                      int &location, int &offset) {
-
-  bool success = true;
-
-  // Check if this could be a light structure.
-  size_t cache_offset = 0;
-  int dep = 0;
-  bool maybe_light_struct = false;
-  if (_language == SL_GLSL && struct_type->get_num_members() > 0) {
-    ShaderType::Struct new_struct;
-    maybe_light_struct = true;
-
-    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
-      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
-
-      // Skip members with void type.
-      if (member.type->get_type() == ShaderType::Void::get_class_type()) {
-        continue;
-      }
-
-      int offset;
-      if (!check_light_struct_member(member.name, member.type, offset)) {
-        if (member.name != "shadowMatrix") {
-          maybe_light_struct = false;
-          break;
-        }
-      }
-
-      new_struct.add_member(member.type, member.name, offset * 4);
-    }
-
-    if (maybe_light_struct) {
-      // It looks like a light structure, but maybe it's simply a user-defined
-      // one that has the same members.
-      // Replace the type with one that has the members ordered in the same way
-      // as we have ordered the light structure.
-      cache_offset = cp_add_mat_part(SMO_struct_constant_x_light, name,
-                                     ShaderType::register_type(std::move(new_struct)));
-      dep = cp_dependency(SMO_struct_constant_x_light);
-    }
-  }
-
-  for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
-    const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
-
-    // Skip members with void type.
-    if (member.type->get_type() == ShaderType::Void::get_class_type()) {
-      continue;
-    }
-
-    PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
-    Parameter member_param(param);
-    member_param._name = fqname;
-    member_param._type = member.type;
-    member_param._location = location;
-
-    // Members under a GLSL light struct may need a special treatment.
-    ScalarType scalar_type;
-    uint32_t dim[3];
-    if (maybe_light_struct &&
-        member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2])) {
-      // It might be something like an attribute of a shader input, like a
-      // light parameter.  It might also just be a custom struct parameter.
-      // We can't know yet, so we always have to handle it specially.
-      if (member.name == "shadowMatrix" &&
-          dim[0] == 1 && dim[1] == 4 && dim[2] == 4) {
-        // This has been deprecated for a while and is no longer supported.
-        shader_cat.error()
-          << "light.shadowMatrix inputs are no longer supported; use "
-             "shadowViewMatrix instead, which transforms from view "
-             "space instead of model space.\n";
-        success = false;
-      }
-
-      int member_offset;
-      check_light_struct_member(member.name, member.type, member_offset);
-
-      if (!do_bind_parameter(member_param, SMF_first, cache_offset, 0, false, member_offset, dep)) {
-        success = false;
-      }
-
-      offset += dim[0] * dim[1] * 4;
-      location += dim[0];
-    }
-    /*else if (const ::ShaderType::Struct *nested = member.type->as_struct()) {
-      // Recurse.
-      if (!r_bind_struct_members(param, fqname, nested, location, offset)) {
-        success = false;
-      }
-    }*/
-    else {
-      // If it's any other type, bind as dotted parameter.
-      if (!bind_parameter(member_param)) {
-        success = false;
-      }
-      location += member.type->get_num_parameter_locations();
-    }
-  }
-
-  return success;
 }
 
 /**

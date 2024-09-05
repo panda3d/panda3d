@@ -496,23 +496,31 @@ get_shader_input_data(const InternalName *id, void *into,
     get_shader_input_data(id, into, scalar_type, num_elements, num_rows, num_columns, pad_rows, true);
     return num_elements * num_rows * (pad_rows ? 16 : num_columns * 4);
   }
-  /*else if (const ShaderType::Array *array_type = type->as_array()) {
+  else if (const ShaderType::Array *array_type = type->as_array()) {
+    size_t basename_size = id->get_basename().size();
+    char *buffer = (char *)alloca(basename_size + 14);
+    memcpy(buffer, id->get_basename().c_str(), basename_size);
+
     size_t total_size = 0;
     for (size_t i = 0; i < array_type->get_num_elements(); ++i) {
-      total_size += get_shader_input_data(id, into, type, rows);
+      sprintf(buffer + basename_size, "[%d]", (int)i);
+
+      size_t size = get_shader_input_data(id->get_parent()->append(buffer), into, array_type->get_element_type(), pad_rows);
+      into = (char *)into + size;
+      total_size += size;
     }
-  }*/
-  /*else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    return total_size;
+  }
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
     size_t total_size = 0;
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      size_t size = get_shader_input_data(((InternalName *)id)->append(member.name), into, member.type, pad_rows);
+      size_t size = get_shader_input_data(((InternalName *)id)->append(member.name), (char *)into + member.offset, member.type, pad_rows);
       total_size += size;
-      into = (char *)into + size;
     }
     return total_size;
-  }*/
+  }
   else {
     return 0;
   }
