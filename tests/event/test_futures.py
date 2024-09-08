@@ -705,3 +705,32 @@ def test_task_manager_cleanup_non_panda_future():
     del coro_main # this should break the last strong reference to the mock future
 
     assert future_ref() is None, "MockFuture was not cleaned up!"
+
+def test_await_future_result_cleanup():
+    # Create a simple future and an object for it to return
+    future = core.AsyncFuture()
+
+    class TestObject:
+        pass
+
+    test_result = TestObject()
+    future_result_ref = weakref.ref(test_result)
+
+    # Setup an async environment and dispatch it to a task chain to await the future
+    async def coro_main():
+        nonlocal test_result
+        future.set_result(test_result)
+        del test_result
+        await future
+
+    task = core.PythonTask(coro_main(), 'coro_main')
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    # Poll the task_mgr so the PythonTask starts polling on future.done()
+    task_mgr.poll()
+    # Break all possible references to the future object
+    del task
+    del coro_main
+    del future # this should break the last strong reference to the future
+
+    assert future_result_ref() is None, "TestObject was not cleaned up!"
