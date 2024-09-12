@@ -178,13 +178,12 @@ get_args() {
 
     // Check whether we have a Python wrapper.  This is not the case if the
     // object has been created by C++ and never been exposed to Python code.
-    if (__self__ == nullptr)
-    {
+    if (__self__ == nullptr) {
       // A __self__ instance does not exist, let's create one now.
       __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     }
 
-    PyTuple_SET_ITEM(with_task, num_args, Py_XNewRef(__self__));
+    PyTuple_SET_ITEM(with_task, num_args, Py_NewRef(__self__));
     return with_task;
   }
   else {
