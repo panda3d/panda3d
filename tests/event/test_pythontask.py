@@ -1,4 +1,4 @@
-from panda3d.core import PythonTask
+from panda3d.core import AsyncTaskManager, PythonTask
 from contextlib import contextmanager
 import pytest
 import types
@@ -115,3 +115,28 @@ def test_pythontask_cycle():
                 break
         else:
             pytest.fail('not found in garbage')
+
+def test_task_persistent_wrapper():
+    task_mgr = AsyncTaskManager.get_global_ptr()
+    task_chain = task_mgr.make_task_chain("test_task_persistent_wrapper")
+
+    # Create a subclass of PythonTask
+    class PythonTaskSubclassTest(PythonTask):
+        pass
+
+    def task_main(task):
+        # Set our result to be the input task we got into this function
+        task.set_result(task)
+        # Verify we got the subclass
+        assert isinstance(task, PythonTaskSubclassTest)
+        return task.done
+
+    task = PythonTaskSubclassTest(task_main)
+    task.set_task_chain(task_chain.name)
+    task_mgr.add(task)
+    task_chain.wait_for_tasks()
+
+    assert task.done()
+    assert not task.cancelled()
+    # Verify the task passed into the function is the same task we created
+    assert task.result() is task
