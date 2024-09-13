@@ -131,8 +131,17 @@ def test_task_persistent_wrapper():
         assert isinstance(task, PythonTaskSubclassTest)
         return task.done
 
+    done_callback_reached = False
+
+    def done_callback(task):
+        # Verify we got the subclass
+        assert isinstance(task, PythonTaskSubclassTest)
+        nonlocal done_callback_reached
+        done_callback_reached = True
+
     task = PythonTaskSubclassTest(task_main)
     task.set_task_chain(task_chain.name)
+    task.set_upon_death(done_callback)
     task_mgr.add(task)
     task_chain.wait_for_tasks()
 
@@ -140,3 +149,5 @@ def test_task_persistent_wrapper():
     assert not task.cancelled()
     # Verify the task passed into the function is the same task we created
     assert task.result() is task
+    # Verify the done callback worked and was tested
+    assert done_callback_reached

@@ -177,8 +177,8 @@ get_args() {
     // Check whether we have a Python wrapper.  This is not the case if the
     // object has been created by C++ and never been exposed to Python code.
     if (__self__ == nullptr) {
-      this->ref();
       // A __self__ instance does not exist, let's create one now.
+      this->ref();
       __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     }
 
