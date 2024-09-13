@@ -1018,7 +1018,7 @@ call_function(PyObject *function) {
       __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     }
 
-    PyObject *result = PyObject_CallOneArg(function, Py_NewRef(__self__));
+    PyObject *result = PyObject_CallOneArg(function, __self__);
     Py_XDECREF(result);
   }
 }
