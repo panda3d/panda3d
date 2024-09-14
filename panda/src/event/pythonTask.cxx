@@ -174,9 +174,15 @@ get_args() {
       PyTuple_SET_ITEM(with_task, i, Py_NewRef(item));
     }
 
-    this->ref();
-    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyTuple_SET_ITEM(with_task, num_args, self);
+    // Check whether we have a Python wrapper.  This is not the case if the
+    // object has been created by C++ and never been exposed to Python code.
+    if (__self__ == nullptr) {
+      // A __self__ instance does not exist, let's create one now.
+      this->ref();
+      __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+    }
+
+    PyTuple_SET_ITEM(with_task, num_args, Py_NewRef(__self__));
     return with_task;
   }
   else {
@@ -1004,11 +1010,16 @@ call_owner_method(const char *method_name) {
 void PythonTask::
 call_function(PyObject *function) {
   if (function != Py_None) {
-    this->ref();
-    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyObject *result = PyObject_CallOneArg(function, self);
+    // Check whether we have a Python wrapper.  This is not the case if the
+    // object has been created by C++ and never been exposed to Python code.
+    if (__self__ == nullptr) {
+      // A __self__ instance does not exist, let's create one now.
+      this->ref();
+      __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+    }
+
+    PyObject *result = PyObject_CallOneArg(function, __self__);
     Py_XDECREF(result);
-    Py_DECREF(self);
   }
 }
 
