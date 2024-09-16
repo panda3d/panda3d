@@ -16,11 +16,11 @@
 
 @implementation CocoaPandaApp
 - (void) sendEvent: (NSEvent *) event {
-  // This is a hack that allows us to receive cmd-key-up events correctly.
-  // Also prevent it from eating the inserthelp key.
-  if (([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask))
-    ||([event type] == NSKeyDown && [event keyCode] == 0x72)) {
-
+  // This is a hack that allows us to receive cmd-key-up events correctly, as
+  // well as key-up events during a full-screen transition.
+  // Also prevent it from eating the insert/help key.
+  if ([event type] == NSKeyUp ||
+      ([event type] == NSKeyDown && [event keyCode] == 0x72)) {
     [[self keyWindow] sendEvent: event];
   } else {
     [super sendEvent: event];
