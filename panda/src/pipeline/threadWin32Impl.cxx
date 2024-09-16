@@ -78,6 +78,11 @@ ThreadWin32Impl::
   }
 
   CloseHandle(_thread);
+
+  if (_timer != nullptr) {
+    CloseHandle(_timer);
+    _timer = nullptr;
+  }
 }
 
 /**
@@ -198,6 +203,27 @@ bind_thread(Thread *thread) {
   }
   _current_thread = thread;
   return thread;
+}
+
+
+/**
+ *
+ */
+void ThreadWin32Impl::
+sleep(double seconds) {
+  Thread *thread = get_current_thread();
+  ThreadWin32Impl *self = &thread->_impl;
+
+  HANDLE timer = self->_timer;
+  if (timer == nullptr) {
+    timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_MANUAL_RESET | CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+    self->_timer = timer;
+  }
+
+  LARGE_INTEGER ft;
+  ft.QuadPart = seconds * -10000000LL;
+  SetWaitableTimer(timer, &ft, 0, nullptr, nullptr, 0);
+  WaitForSingleObject(timer, INFINITE);
 }
 
 /**
