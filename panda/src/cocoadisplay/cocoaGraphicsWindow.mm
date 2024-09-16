@@ -858,7 +858,7 @@ set_properties_now(WindowProperties &properties) {
                 [_window setLevel: NSNormalWindowLevel];
               }
               if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-                [_window setStyleMask:NSBorderlessWindowMask];
+                [_window setStyleMask:([_window styleMask] & NSFullScreenWindowMask)];
               }
               [_window makeFirstResponder:_view];
               [_window setLevel:CGShieldingWindowLevel()];
@@ -897,7 +897,7 @@ set_properties_now(WindowProperties &properties) {
             // For some reason, setting the style mask makes it give up its
             // first-responder status.
             if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-              [_window setStyleMask:NSBorderlessWindowMask];
+              [_window setStyleMask:([_window styleMask] & NSFullScreenWindowMask)];
             }
             [_window makeFirstResponder:_view];
             [_window setLevel:CGShieldingWindowLevel()];
@@ -963,13 +963,12 @@ set_properties_now(WindowProperties &properties) {
       // here.
       if (!properties.has_undecorated() && !_properties.get_undecorated() &&
           [_window respondsToSelector:@selector(setStyleMask:)]) {
-        if (properties.get_fixed_size()) {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask ];
-        } else {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
+        NSUInteger style = ([_window styleMask] & NSFullScreenWindowMask);
+        style |= NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+        if (!properties.get_fixed_size()) {
+          style |= NSResizableWindowMask;
         }
+        [_window setStyleMask:style];
         [_window makeFirstResponder:_view];
       }
     }
@@ -981,16 +980,14 @@ set_properties_now(WindowProperties &properties) {
     _properties.set_undecorated(properties.get_undecorated());
 
     if (!_properties.get_fullscreen()) {
-      if (properties.get_undecorated()) {
-        [_window setStyleMask: NSBorderlessWindowMask];
-      } else if (_properties.get_fixed_size()) {
-        // Fixed size windows should not show the resize button.
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask ];
-      } else {
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask | NSResizableWindowMask ];
+      NSUInteger style = ([_window styleMask] & NSFullScreenWindowMask);
+      if (!properties.get_undecorated()) {
+        style |= NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+        if (!properties.get_fixed_size()) {
+          style |= NSResizableWindowMask;
+        }
       }
+      [_window setStyleMask:style];
       [_window makeFirstResponder:_view];
     }
 
