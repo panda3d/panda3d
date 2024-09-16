@@ -1475,6 +1475,11 @@ do_switch_fullscreen(CFDictionaryRef mode) {
     }
 
     if (_window != nil) {
+      // Exit macOS' own fullscreen mode, since our own fullscreen mode
+      // doesn't work properly with it.
+      if ([_window styleMask] & NSFullScreenWindowMask) {
+        [_window toggleFullScreen:nil];
+      }
       [_window setFrame:frame display:YES];
       [_view setFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
       [_window update];
