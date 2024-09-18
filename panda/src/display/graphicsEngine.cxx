@@ -62,6 +62,17 @@
   #include <sys/time.h>
 #endif
 
+#if defined(__APPLE__) && !defined(CPPPARSER)
+#include <AvailabilityMacros.h>
+
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+extern "C" {
+  void *objc_autoreleasePoolPush();
+  void objc_autoreleasePoolPop(void *);
+};
+#endif
+#endif
+
 using std::string;
 
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
@@ -2550,10 +2561,19 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
   PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   LightReMutexHolder holder(_wl_lock);
 
+#if defined(__APPLE__) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+  // Enclose the entire frame in an autorelease pool.
+  void *pool = objc_autoreleasePoolPush();
+#endif
+
   engine->cull_to_bins(_cull, current_thread);
   engine->cull_and_draw_together(_cdraw, current_thread);
   engine->draw_bins(_draw, current_thread);
   engine->process_events(_window, current_thread);
+
+#if defined(__APPLE__) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+  objc_autoreleasePoolPop(pool);
+#endif
 
   // If any GSG's on the list have no more outstanding pointers, clean them
   // up.  (We are in the draw thread for all of these GSG's.)
@@ -2586,10 +2606,18 @@ void GraphicsEngine::WindowRenderer::
 do_windows(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
 
+#if defined(__APPLE__) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+  void *pool = objc_autoreleasePoolPush();
+#endif
+
   engine->process_events(_window, current_thread);
 
   engine->make_contexts(_cdraw, current_thread);
   engine->make_contexts(_draw, current_thread);
+
+#if defined(__APPLE__) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+  objc_autoreleasePoolPop(pool);
+#endif
 }
 
 /**
