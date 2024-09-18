@@ -63,6 +63,13 @@
   #include <sys/time.h>
 #endif
 
+#ifdef __APPLE__
+extern "C" {
+  void *objc_autoreleasePoolPush();
+  void objc_autoreleasePoolPop(void *);
+};
+#endif
+
 using std::string;
 
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
@@ -2586,6 +2593,11 @@ void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
 
+#ifdef __APPLE__
+  // Enclose the entire frame in an autorelease pool.
+  void *pool = objc_autoreleasePoolPush();
+#endif
+
   if (!_cull.empty()) {
     engine->cull_to_bins(_cull, current_thread);
   }
@@ -2598,6 +2610,10 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
   if (!_window.empty()) {
     engine->process_events(_window, current_thread);
   }
+
+#ifdef __APPLE__
+  objc_autoreleasePoolPop(pool);
+#endif
 
   // If any GSG's on the list have no more outstanding pointers, clean them
   // up.  (We are in the draw thread for all of these GSG's.)
@@ -2630,10 +2646,18 @@ void GraphicsEngine::WindowRenderer::
 do_windows(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
 
+#ifdef __APPLE__
+  void *pool = objc_autoreleasePoolPush();
+#endif
+
   engine->process_events(_window, current_thread);
 
   engine->make_contexts(_cdraw, current_thread);
   engine->make_contexts(_draw, current_thread);
+
+#ifdef __APPLE__
+  objc_autoreleasePoolPop(pool);
+#endif
 }
 
 /**
