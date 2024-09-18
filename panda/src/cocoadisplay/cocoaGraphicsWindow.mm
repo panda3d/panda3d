@@ -32,7 +32,6 @@
 #import "cocoaPandaAppDelegate.h"
 
 #import <ApplicationServices/ApplicationServices.h>
-#import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSCursor.h>
 #import <AppKit/NSEvent.h>
@@ -177,7 +176,6 @@ void CocoaGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   NSEvent *event = nil;
 
   while (true) {
@@ -211,8 +209,6 @@ process_events() {
   if (_window != nil) {
     [_window update];
   }
-
-  [pool release];
 
   if (_context_needs_update && _gsg != nullptr) {
     update_context();
