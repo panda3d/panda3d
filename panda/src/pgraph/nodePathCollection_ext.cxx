@@ -36,13 +36,14 @@ __init__(PyObject *self, PyObject *sequence) {
     return;
   }
 
+  Py_BEGIN_CRITICAL_SECTION(fast);
   Py_ssize_t size = PySequence_Fast_GET_SIZE(fast);
   _this->reserve(size);
 
   for (int i = 0; i < size; ++i) {
     PyObject *item = PySequence_Fast_GET_ITEM(fast, i);
     if (item == nullptr) {
-      return;
+      break;
     }
 
     NodePath *path;
@@ -52,13 +53,12 @@ __init__(PyObject *self, PyObject *sequence) {
       stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
       std::string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
-      Py_DECREF(fast);
-      return;
+      break;
     } else {
       _this->add_path(*path);
     }
   }
-
+  Py_END_CRITICAL_SECTION();
   Py_DECREF(fast);
 }
 

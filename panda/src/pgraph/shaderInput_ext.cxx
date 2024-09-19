@@ -269,12 +269,20 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
 
   } else if (PySequence_Check(value) && !PyUnicode_CheckExact(value)) {
     // Iterate over the sequence to make sure all have the same type.
+#ifdef Py_GIL_DISABLED
+    PyObject *fast = PySequence_Tuple(value);
+#else
     PyObject *fast = PySequence_Fast(value, "unknown type passed to ShaderInput");
+#endif
     if (fast == nullptr) {
       return;
     }
 
+#ifdef Py_GIL_DISABLED
+    Py_ssize_t num_items = PyTuple_GET_SIZE(fast);
+#else
     Py_ssize_t num_items = PySequence_Fast_GET_SIZE(fast);
+#endif
     if (num_items <= 0) {
       // We can't determine the type of a list of size 0.
       _this->_type = ShaderInput::M_numeric;
@@ -289,6 +297,9 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
     for (Py_ssize_t i = 0; i < num_items; ++i) {
       PyObject *item = items[i];
 
+      //FIXME: if these items are not tuples, this is not thread-safe in the
+      // free-threaded build.  Convert everything to tuples, and push to a
+      // vector?
       if (PySequence_Check(item)) {
         Py_ssize_t itemsize = PySequence_Size(item);
         if (known_itemsize >= 0 && itemsize != known_itemsize) {
@@ -310,7 +321,7 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
             Dtool_Raise_TypeError("unknown element type in sequence passed as element of sequence passed to ShaderInput");
             Py_DECREF(subitem);
             Py_DECREF(fast);
-            break;
+            return;
           }
           Py_DECREF(subitem);
         }

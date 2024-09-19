@@ -349,17 +349,24 @@ find_global_decode(PyObject *this_class, const char *func_name) {
 
   PyObject *bases = PyObject_GetAttrString(this_class, "__bases__");
   if (bases != nullptr) {
-    if (PySequence_Check(bases)) {
-      Py_ssize_t size = PySequence_Size(bases);
-      for (Py_ssize_t i = 0; i < size; ++i) {
-        PyObject *base = PySequence_GetItem(bases, i);
-        if (base != nullptr) {
-          PyObject *func = find_global_decode(base, func_name);
-          Py_DECREF(base);
-          if (func != nullptr) {
-            Py_DECREF(bases);
-            return func;
-          }
+    {
+      PyObject *tuple = PySequence_Tuple(bases);
+      Py_DECREF(bases);
+      if (tuple == nullptr) {
+        PyErr_Clear();
+        return nullptr;
+      }
+      bases = tuple;
+    }
+
+    Py_ssize_t size = PyTuple_GET_SIZE(bases);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+      PyObject *base = PyTuple_GET_ITEM(bases, i);
+      if (base != nullptr) {
+        PyObject *func = find_global_decode(base, func_name);
+        if (func != nullptr) {
+          Py_DECREF(bases);
+          return func;
         }
       }
     }
