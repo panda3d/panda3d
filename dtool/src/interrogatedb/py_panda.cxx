@@ -328,9 +328,9 @@ static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObj
   PyObject *value2member = PyDict_GetItemString(subtype->tp_dict, "_value2member_map_");
   nassertr_always(value2member != nullptr, nullptr);
 
-  PyObject *member = PyDict_GetItem(value2member, arg);
-  if (member != nullptr) {
-    return Py_NewRef(member);
+  PyObject *member;
+  if (PyDict_GetItemRef(value2member, arg, &member) > 0) {
+    return member;
   }
 
   PyObject *repr = PyObject_Repr(arg);

@@ -363,11 +363,9 @@ PyObject *PythonTask::
 __getattribute__(PyObject *self, PyObject *attr) const {
   // We consult the instance dict first, since the user may have overridden a
   // method or something.
-  PyObject *item = PyDict_GetItem(__dict__, attr);
-
-  if (item != nullptr) {
-    // PyDict_GetItem returns a borrowed reference.
-    return Py_NewRef(item);
+  PyObject *item;
+  if (PyDict_GetItemRef(__dict__, attr, &item) > 0) {
+    return item;
   }
 
   return PyObject_GenericGetAttr(self, attr);

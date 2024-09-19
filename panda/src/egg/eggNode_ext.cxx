@@ -30,9 +30,12 @@ __reduce__() const {
   PyObject *module_name = PyObject_GetAttrString((PyObject *)&Dtool_EggNode, "__module__");
   nassertr_always(module_name != nullptr, nullptr);
 
-  PyObject *module = PyDict_GetItem(sys_modules, module_name);
+  PyObject *module;
+  int res = PyDict_GetItemRef(sys_modules, module_name, &module);
   Py_DECREF(module_name);
-  nassertr_always(module != nullptr, nullptr);
+  if (res <= 0) {
+    return nullptr;
+  }
 
   PyObject *func;
   if (_this->is_of_type(EggData::get_class_type())) {
@@ -40,6 +43,7 @@ __reduce__() const {
   } else {
     func = PyObject_GetAttrString(module, "parse_egg_node");
   }
+  Py_DECREF(module);
   nassertr_always(func != nullptr, nullptr);
 
   // Get the egg syntax to pass to the parse_egg_node function.
