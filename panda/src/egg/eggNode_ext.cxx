@@ -24,18 +24,12 @@ __reduce__() const {
   extern struct Dtool_PyTypedObject Dtool_EggNode;
 
   // Find the parse_egg_node function in this module.
-  PyObject *sys_modules = PyImport_GetModuleDict();
-  nassertr_always(sys_modules != nullptr, nullptr);
-
   PyObject *module_name = PyObject_GetAttrString((PyObject *)&Dtool_EggNode, "__module__");
   nassertr_always(module_name != nullptr, nullptr);
 
-  PyObject *module;
-  int res = PyDict_GetItemRef(sys_modules, module_name, &module);
+  PyObject *module = PyImport_GetModule(module_name);
   Py_DECREF(module_name);
-  if (res <= 0) {
-    return nullptr;
-  }
+  nassertr_always(module != nullptr, nullptr);
 
   PyObject *func;
   if (_this->is_of_type(EggData::get_class_type())) {

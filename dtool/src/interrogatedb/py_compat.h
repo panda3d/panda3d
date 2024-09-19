@@ -189,6 +189,20 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
   } while (0)
 #endif
 
+#if PY_VERSION_HEX < 0x03070000
+INLINE PyObject *PyImport_GetModule(PyObject *name) {
+  PyObject *modules = PyImport_GetModuleDict();
+  if (modules != nullptr) {
+    PyObject *module = PyDict_GetItem(modules, name);
+    if (module != nullptr) {
+      Py_INCREF(module);
+      return module;
+    }
+  }
+  return nullptr;
+}
+#endif
+
 /* Python 3.8 */
 #if PY_VERSION_HEX < 0x03080000
 INLINE PyObject *_PyLong_Rshift(PyObject *a, size_t shiftby) {

@@ -336,20 +336,15 @@ find_global_decode(PyObject *this_class, const char *func_name) {
   // Get the module in which BamWriter is defined.
   PyObject *module_name = PyObject_GetAttrString((PyObject *)&Dtool_BamWriter, "__module__");
   if (module_name != nullptr) {
-    // borrowed reference
-    PyObject *sys_modules = PyImport_GetModuleDict();
-    if (sys_modules != nullptr) {
-      // borrowed reference
-      PyObject *module = PyDict_GetItem(sys_modules, module_name);
-      if (module != nullptr) {
-        PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
-        if (func != nullptr) {
-          Py_DECREF(module_name);
-          return func;
-        }
+    PyObject *module = PyImport_GetModule(module_name);
+    Py_DECREF(module_name);
+    if (module != nullptr) {
+      PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
+      Py_DECREF(module);
+      if (func != nullptr) {
+        return func;
       }
     }
-    Py_DECREF(module_name);
   }
 
   PyObject *bases = PyObject_GetAttrString(this_class, "__bases__");
