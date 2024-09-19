@@ -279,6 +279,12 @@ INLINE bool PyLong_IsNonNegative(PyObject *value) {
 }
 #endif
 
+/* Python 3.13 */
+
+#if PY_VERSION_HEX < 0x030D00A1
+#  define PyLong_AsInt(x) (_PyLong_AsInt(x))
+#endif
+
 /* Other Python implementations */
 
 #endif  // HAVE_PYTHON

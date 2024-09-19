@@ -886,7 +886,9 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       }
 
       // We got the item, we just need to make sure that it had the right key.
-#if PY_VERSION_HEX >= 0x03060000
+#if PY_VERSION_HEX >= 0x030d0000
+      return PyUnicode_CheckExact(key) && PyUnicode_EqualToUTF8(key, keyword);
+#elif PY_VERSION_HEX >= 0x03060000
       return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
 #elif PY_MAJOR_VERSION >= 3
       return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
