@@ -717,6 +717,7 @@ handle_update_field() {
         nassertr(neverDisable != nullptr, false);
 
         unsigned int cNeverDisable = PyLong_AsLong(neverDisable);
+        Py_DECREF(neverDisable);
         if (!cNeverDisable) {
           // in quiet zone and distobj is disable-able drop update on the
           // floor
