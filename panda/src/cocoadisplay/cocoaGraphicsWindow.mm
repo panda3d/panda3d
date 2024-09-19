@@ -49,6 +49,12 @@ TypeHandle CocoaGraphicsWindow::_type_handle;
 #define NSAppKitVersionNumber10_14 1671
 #endif
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+enum {
+  NSFullScreenWindowMask = 1 << 14
+};
+#endif
+
 /**
  *
  */
