@@ -32,7 +32,7 @@ format_string(bool value) {
 INLINE std::string
 format_string(float value) {
   char buffer[32];
-  pdtoa((double)value, buffer);
+  pftoa(value, buffer);
   return std::string(buffer);
 }
 

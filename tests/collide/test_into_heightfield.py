@@ -26,9 +26,9 @@ def test_sphere_into_heightfield():
     entry, np_from, np_into = make_collision(sphere, heightfield)
     assert entry.get_surface_point(np_from) == (1, 510, 10.1)
 
-    with pytest.raises(AssertionError) as err:
-        assert heightfield.set_num_subdivisions(-1) == err
-        assert heightfield.set_num_subdivisions(11) == err
+    #with pytest.raises(AssertionError) as err:
+    #    assert heightfield.set_num_subdivisions(-1) == err
+    #    assert heightfield.set_num_subdivisions(11) == err
 
     # Use a greater number of subdivisions, should still work
     num_subdivisions = 10

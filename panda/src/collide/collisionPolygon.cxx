@@ -1877,8 +1877,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 /**
  * Factory method to generate a CollisionPolygon object
  */
-TypedWritable* CollisionPolygon::
-make_CollisionPolygon(const FactoryParams &params) {
+TypedWritable *CollisionPolygon::
+make_from_bam(const FactoryParams &params) {
   CollisionPolygon *me = new CollisionPolygon;
   DatagramIterator scan;
   BamReader *manager;
@@ -1893,5 +1893,5 @@ make_CollisionPolygon(const FactoryParams &params) {
  */
 void CollisionPolygon::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionPolygon);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

@@ -386,8 +386,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 /**
  * Factory method to generate a CollisionPolygon object
  */
-TypedWritable* CollisionFloorMesh::
-make_CollisionFloorMesh(const FactoryParams &params) {
+TypedWritable *CollisionFloorMesh::
+make_from_bam(const FactoryParams &params) {
   CollisionFloorMesh *me = new CollisionFloorMesh;
   DatagramIterator scan;
   BamReader *manager;
@@ -402,9 +402,8 @@ make_CollisionFloorMesh(const FactoryParams &params) {
  */
 void CollisionFloorMesh::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionFloorMesh);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
-
 
 /**
  *

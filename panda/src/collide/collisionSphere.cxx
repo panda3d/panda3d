@@ -771,7 +771,7 @@ compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
  */
 void CollisionSphere::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionSphere);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -789,7 +789,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
  * Factory method to generate a CollisionSphere object
  */
 TypedWritable *CollisionSphere::
-make_CollisionSphere(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   CollisionSphere *me = new CollisionSphere;
   DatagramIterator scan;
   BamReader *manager;

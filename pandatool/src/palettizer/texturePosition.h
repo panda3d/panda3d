@@ -50,7 +50,7 @@ public:
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
 
 protected:
-  static TypedWritable *make_TexturePosition(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   void fillin(DatagramIterator &scan, BamReader *manager);

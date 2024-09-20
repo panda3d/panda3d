@@ -677,8 +677,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 /**
  * Factory method to generate a PartGroup object
  */
-TypedWritable* PartGroup::
-make_PartGroup(const FactoryParams &params) {
+TypedWritable *PartGroup::
+make_from_bam(const FactoryParams &params) {
   PartGroup *me = new PartGroup;
   DatagramIterator scan;
   BamReader *manager;
@@ -693,5 +693,5 @@ make_PartGroup(const FactoryParams &params) {
  */
 void PartGroup::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_PartGroup);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

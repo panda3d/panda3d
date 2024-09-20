@@ -24,5 +24,10 @@ composite_sources(p3eggbase P3EGGBASE_SOURCES)
 add_library(p3eggbase STATIC ${P3EGGBASE_HEADERS} ${P3EGGBASE_SOURCES})
 target_link_libraries(p3eggbase p3progbase p3converter)
 
-# This is only needed for binaries in the pandatool package. It is not useful
-# for user applications, so it is not installed.
+install(TARGETS p3eggbase
+  EXPORT ToolsDevel COMPONENT ToolsDevel
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT ToolsDevel)
+install(FILES ${P3EGGBASE_HEADERS} COMPONENT ToolsDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

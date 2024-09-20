@@ -33,7 +33,7 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "pStatCollector.h"
-#include "epvector.h"
+#include "pvector.h"
 #include "asyncFuture.h"
 #include "bamCacheRecord.h"
 
@@ -173,7 +173,6 @@ public:
     SMO_view_to_apiclip_x,
 
     SMO_attr_fog,
-    SMO_attr_fogcolor,
 
     SMO_frame_number,
     SMO_frame_time,
@@ -183,7 +182,8 @@ public:
     SMO_vec_constant_x_attrib,
 
     SMO_light_ambient,
-    SMO_light_source_i_vec_attrib,
+    SMO_light_source_i,
+    SMO_light_source_i_packed,
     SMO_apiview_to_apiclip_light_source_i,
 
     SMO_light_product_i_ambient,
@@ -200,13 +200,8 @@ public:
 
     SMO_inv_texmat_i,
 
-    // Additional properties for PBR materials
-    SMO_attr_material2,
-
     // Hack for text rendering.  Don't use in user shaders.
     SMO_tex_is_alpha_i,
-
-    SMO_light_source_i_packed,
 
     // Texture scale component of texture matrix.
     SMO_texscale_i,
@@ -292,21 +287,22 @@ public:
   };
 
   enum ShaderMatPiece {
-    SMP_float,
+    SMP_scalar,
     SMP_vec2,
     SMP_vec3,
     SMP_vec4,
+    SMP_scalar_array,
+    SMP_vec2_array,
+    SMP_vec3_array,
     SMP_vec4_array,
+    SMP_mat3_whole,
+    SMP_mat3_array,
     SMP_mat4_whole,
     SMP_mat4_array,
     SMP_mat4_transpose,
     SMP_mat4_column,
     SMP_mat4_upper3x3,
     SMP_mat4_transpose3x3,
-    SMP_int,
-    SMP_ivec2,
-    SMP_ivec3,
-    SMP_ivec4,
   };
 
   enum ShaderStateDep {
@@ -339,6 +335,7 @@ public:
     SMF_transform_dlight,
     SMF_transform_plight,
     SMF_transform_slight,
+    SMF_shader_input_ptr,
   };
 
   struct ShaderArgId {
@@ -352,7 +349,41 @@ public:
     SPT_double,
     SPT_int,
     SPT_uint,
+    SPT_bool,
     SPT_unknown
+  };
+
+  // Attributes (vec4) of the material structure.
+  enum MaterialAttribute {
+    MA_ambient,
+    MA_diffuse,
+    MA_emission,
+    MA_specular, // shininess in w
+    MA_base_color,
+    MA_metallic_ior_roughness,
+    MA_COUNT,
+  };
+
+  // Attributes (vec4) of the light structure.
+  enum LightAttribute {
+    LA_color,
+    LA_specular,
+    LA_ambient,
+    LA_diffuse,
+    LA_position,
+    LA_half_vector,
+    LA_spot_direction,
+    LA_spot_params, // spotCosCutoff, spotCutoff, spotExponent
+    LA_attenuation, // and radius
+    LA_shadow_view_matrix, // mat4
+    LA_COUNT = LA_shadow_view_matrix + 4,
+  };
+
+  // Attributes (vec4) of the fog structure.
+  enum FogAttribute {
+    FA_params, // exp density, start, end, scale
+    FA_color,
+    FA_COUNT,
   };
 
   struct ShaderArgInfo {
@@ -438,12 +469,13 @@ public:
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
-    LMatrix4f         _value;
     int               _dep = SSD_NONE;
     int               _index = 0;
     ShaderMatPiece    _piece;
     int               _offset = 0;
     int               _array_count = 1;
+    int               _num_components;
+    ShaderPtrType     _numeric_type = SPT_float;
   };
 
   struct ShaderTexSpec {
@@ -546,8 +578,10 @@ public:
                           vector_string &pieces, int &next,
                           ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
+  int cp_size(ShaderMatInput inp);
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
+  size_t cp_get_mat_scratch_size() const;
 
 #ifdef HAVE_CG
   void cg_recurse_parameters(CGparameter parameter,
@@ -607,13 +641,13 @@ public:
 #endif
 
 public:
-  pvector<ShaderPtrSpec> _ptr_spec;
-  epvector<ShaderMatSpec> _mat_spec;
+  pvector<ShaderMatSpec> _mat_spec;
   pvector<ShaderTexSpec> _tex_spec;
   pvector<ShaderVarSpec> _var_spec;
   pvector<ShaderMatPart> _mat_parts;
+  int _mat_cache_deps = 0;
   int _mat_deps = 0;
-  int _mat_cache_size = 0;
+  int _mat_scratch_size = 4;
 
   bool _error_flag;
   ShaderFile _text;

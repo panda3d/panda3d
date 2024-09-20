@@ -36,7 +36,7 @@
  * additional bitplanes above and beyond the normal depth,stencil,color.  One
  * can use them to render out multiple textures in a single pass.  Cumulative
  * render-to-texture means that if don't clear the buffer, then the contents
- * of the buffer will be equal to the texture's previous contents.  This alo
+ * of the buffer will be equal to the texture's previous contents.  This also
  * means you can meaningfully share a bitplane between two buffers by binding
  * the same texture to both buffers.
  *

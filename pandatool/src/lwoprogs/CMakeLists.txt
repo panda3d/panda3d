@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(lwo-scan lwoScan.cxx lwoScan.h)
 target_link_libraries(lwo-scan p3progbase p3lwo)
 install(TARGETS lwo-scan EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

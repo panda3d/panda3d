@@ -2,10 +2,10 @@
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
-
 Panda3D
 =======
+
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200" />
 
 Panda3D is a game engine, a framework for 3D rendering and game development for
 Python and C++ programs.  Panda3D is open-source and free for any purpose,
@@ -168,7 +168,7 @@ Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.11 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source

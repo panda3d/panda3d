@@ -48,26 +48,21 @@ __rmul__(FLOATTYPE scalar) const {
  */
 INLINE_LINMATH std::string Extension<FLOATNAME(LMatrix4)>::
 __repr__() const {
-  std::ostringstream out;
-  out << "LMatrix4" << FLOATTOKEN << "("
-      << MAYBE_ZERO(_this->_m(0, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(0, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(0, 2)) << ", "
-      << MAYBE_ZERO(_this->_m(0, 3)) << ", "
+  char buf[32 * 17] = "LMatrix4";
+  char *p = buf + strlen(buf);
+  *(p++) = FLOATTOKEN;
+  *(p++) = '(';
+  FLOATTYPE_REPR(_this->_m(0, 0), p);
+  p += strlen(p);
 
-      << MAYBE_ZERO(_this->_m(1, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(1, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(1, 2)) << ", "
-      << MAYBE_ZERO(_this->_m(1, 3)) << ", "
+  for (int i = 1; i < 16; ++i) {
+    *(p++) = ',';
+    *(p++) = ' ';
+    FLOATTYPE_REPR(_this->get_data()[i], p);
+    p += strlen(p);
+  }
 
-      << MAYBE_ZERO(_this->_m(2, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(2, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(2, 2)) << ", "
-      << MAYBE_ZERO(_this->_m(2, 3)) << ", "
-
-      << MAYBE_ZERO(_this->_m(3, 0)) << ", "
-      << MAYBE_ZERO(_this->_m(3, 1)) << ", "
-      << MAYBE_ZERO(_this->_m(3, 2)) << ", "
-      << MAYBE_ZERO(_this->_m(3, 3)) << ")";
-  return out.str();
+  *(p++) = ')';
+  *p = '\0';
+  return std::string(buf, p - buf);
 }

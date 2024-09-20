@@ -76,6 +76,7 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
 
   _mat_part_cache = new LVecBase4f[s->cp_get_mat_cache_size()];
+  _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
 }
 
 /**
@@ -96,6 +97,7 @@ DXShaderContext9::
   }
 
   delete[] _mat_part_cache;
+  delete[] _mat_scratch_space;
 }
 
 /**
@@ -188,48 +190,12 @@ void DXShaderContext9::
 issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
   if (_cg_program) {
-
-    // Iterate through _ptr parameters
-    for (size_t i = 0; i < _shader->_ptr_spec.size(); ++i) {
-      const Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
-
-      if (altered & (spec._dep[0] | spec._dep[1])) {
-        const Shader::ShaderPtrData *ptr_data = gsg->fetch_ptr_parameter(spec);
-
-        if (ptr_data == nullptr) { //the input is not contained in ShaderPtrData
-          release_resources();
-          return;
-        }
-
-        // Calculate how many elements to transfer; no more than it expects,
-        // but certainly no more than we have.
-        int input_size = std::min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), (int)ptr_data->_size);
-
-        CGparameter p = _cg_parameter_map[spec._id._seqno];
-        switch (ptr_data->_type) {
-        case Shader::SPT_int:
-          cgSetParameterValueic(p, input_size, (int *)ptr_data->_ptr);
-          break;
-
-        case Shader::SPT_double:
-          cgSetParameterValuedc(p, input_size, (double *)ptr_data->_ptr);
-          break;
-
-        case Shader::SPT_float:
-          cgSetParameterValuefc(p, input_size, (float *)ptr_data->_ptr);
-          break;
-
-        default:
-          dxgsg9_cat.error()
-            << spec._id._name << ": unrecognized parameter type\n";
-          release_resources();
-          return;
-        }
-      }
-    }
-
     if (altered & _shader->_mat_deps) {
-      gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+      if (altered & _shader->_mat_cache_deps) {
+        gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+      }
+
+      LMatrix4f scratch;
 
       for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
         if ((altered & spec._dep) == 0) {
@@ -241,7 +207,7 @@ issue_parameters(GSG *gsg, int altered) {
           continue;
         }
 
-        const LVecBase4f *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
+        const LVecBase4f *val = gsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space);
         if (val) {
           const float *data = (const float *)val + spec._offset;
           LVecBase4f v;

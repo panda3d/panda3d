@@ -56,7 +56,7 @@ make(PyObject *args, PyObject *kwds) {
 
   int override = 0;
   if (py_override != nullptr) {
-    override = _PyLong_AsInt(py_override);
+    override = PyLong_AsInt(py_override);
     if (override == -1 && PyErr_Occurred()) {
       return nullptr;
     }

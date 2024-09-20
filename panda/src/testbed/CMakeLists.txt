@@ -1,6 +1,4 @@
-if(NOT BUILD_PANDATOOL)
-  # It's safe to say, if the user doesn't want pandatool, they don't want pview
-  # either.
+if(NOT BUILD_TOOLS)
   return()
 endif()
 

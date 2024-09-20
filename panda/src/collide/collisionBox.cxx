@@ -1414,7 +1414,7 @@ compute_vectors(Points &points) {
  */
 void CollisionBox::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionBox);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -1457,7 +1457,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
  * Factory method to generate a CollisionBox object
  */
 TypedWritable *CollisionBox::
-make_CollisionBox(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   CollisionBox *me = new CollisionBox;
   DatagramIterator scan;
   BamReader *manager;

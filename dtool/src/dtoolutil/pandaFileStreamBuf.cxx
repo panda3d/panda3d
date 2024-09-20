@@ -267,7 +267,15 @@ close() {
   _handle = nullptr;
 #else
   if (_fd != -1) {
-    ::close(_fd);
+    if (::close(_fd) < 0) {
+#ifdef NDEBUG
+      perror("close");
+#else
+      char *str = (char *)alloca(_filename.size() + 32);
+      sprintf(str, "close(%d \"%s\")", _fd, _filename.c_str());
+      perror(str);
+#endif
+    }
   }
   _fd = -1;
 #endif  // _WIN32

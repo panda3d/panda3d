@@ -330,6 +330,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   }
 
   _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
+  _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
 
   _glgsg->report_my_gl_errors();
 }
@@ -341,6 +342,7 @@ CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
   delete[] _mat_part_cache;
+  delete[] _mat_scratch_space;
 }
 
 /**
@@ -533,7 +535,7 @@ issue_parameters(int altered) {
   // modified every frame and when we switch ShaderAttribs.
   if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
     // Iterate through _ptr parameters
-    for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
+    /*for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
       Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
       const Shader::ShaderPtrData *ptr_data =_glgsg->fetch_ptr_parameter(spec);
@@ -688,49 +690,100 @@ issue_parameters(int altered) {
         release_resources();
         return;
       }
-    }
+    }*/
   }
 
   if (altered & _shader->_mat_deps) {
-    _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+    if (altered & _shader->_mat_cache_deps) {
+      _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+    }
+
+    LMatrix4f scratch;
 
     for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
       if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
+      const LVecBase4f *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space);
       if (!val) continue;
       const float *data = val->get_data();
       data += spec._offset;
 
       CGparameter p = _cg_parameter_map[spec._id._seqno];
-      switch (spec._piece) {
-      case Shader::SMP_float: cgGLSetParameter1f(p, data[0]); continue;
-      case Shader::SMP_vec2: cgGLSetParameter2fv(p, data); continue;
-      case Shader::SMP_vec3: cgGLSetParameter3fv(p, data); continue;
-      case Shader::SMP_vec4: cgGLSetParameter4fv(p, data); continue;
-      case Shader::SMP_vec4_array: cgGLSetParameterArray4f(p, 0, spec._array_count, data); continue;
-      case Shader::SMP_mat4_whole: cgGLSetMatrixParameterfc(p, data); continue;
-      case Shader::SMP_mat4_array: cgGLSetMatrixParameterArrayfc(p, 0, spec._array_count, data); continue;
-      case Shader::SMP_mat4_transpose: cgGLSetMatrixParameterfr(p, data); continue;
-      case Shader::SMP_mat4_column: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
-      case Shader::SMP_mat4_upper3x3:
-        {
-          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-          cgGLSetMatrixParameterfc(p, upper3.get_data());
-          continue;
+      if (spec._numeric_type == Shader::SPT_float) {
+        switch (spec._piece) {
+        case Shader::SMP_scalar: cgGLSetParameter1f(p, data[0]); continue;
+        case Shader::SMP_vec2: cgGLSetParameter2fv(p, data); continue;
+        case Shader::SMP_vec3: cgGLSetParameter3fv(p, data); continue;
+        case Shader::SMP_vec4: cgGLSetParameter4fv(p, data); continue;
+        case Shader::SMP_scalar_array: cgGLSetParameterArray1f(p, 0, spec._array_count, data); continue;
+        case Shader::SMP_vec2_array: cgGLSetParameterArray2f(p, 0, spec._array_count, data); continue;
+        case Shader::SMP_vec3_array: cgGLSetParameterArray3f(p, 0, spec._array_count, data); continue;
+        case Shader::SMP_vec4_array: cgGLSetParameterArray4f(p, 0, spec._array_count, data); continue;
+        case Shader::SMP_mat3_whole:
+        case Shader::SMP_mat4_whole: cgGLSetMatrixParameterfc(p, data); continue;
+        case Shader::SMP_mat3_array:
+        case Shader::SMP_mat4_array: cgGLSetMatrixParameterArrayfc(p, 0, spec._array_count, data); continue;
+        case Shader::SMP_mat4_transpose: cgGLSetMatrixParameterfr(p, data); continue;
+        case Shader::SMP_mat4_column: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_mat4_upper3x3:
+          {
+            LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
+            cgGLSetMatrixParameterfc(p, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_mat4_transpose3x3:
+          {
+            LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
+            cgGLSetMatrixParameterfr(p, upper3.get_data());
+            continue;
+          }
         }
-      case Shader::SMP_mat4_transpose3x3:
-        {
-          LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-          cgGLSetMatrixParameterfr(p, upper3.get_data());
-          continue;
+      }
+      else if (spec._numeric_type == Shader::SPT_double) {
+        const double *datad = (const double *)data;
+        switch (spec._piece) {
+        case Shader::SMP_scalar: cgGLSetParameter1d(p, datad[0]); continue;
+        case Shader::SMP_vec2: cgGLSetParameter2dv(p, datad); continue;
+        case Shader::SMP_vec3: cgGLSetParameter3dv(p, datad); continue;
+        case Shader::SMP_vec4: cgGLSetParameter4dv(p, datad); continue;
+        case Shader::SMP_scalar_array: cgGLSetParameterArray1d(p, 0, spec._array_count, datad); continue;
+        case Shader::SMP_vec2_array: cgGLSetParameterArray2d(p, 0, spec._array_count, datad); continue;
+        case Shader::SMP_vec3_array: cgGLSetParameterArray3d(p, 0, spec._array_count, datad); continue;
+        case Shader::SMP_vec4_array: cgGLSetParameterArray4d(p, 0, spec._array_count, datad); continue;
+        case Shader::SMP_mat3_whole:
+        case Shader::SMP_mat4_whole: cgGLSetMatrixParameterdc(p, datad); continue;
+        case Shader::SMP_mat3_array:
+        case Shader::SMP_mat4_array: cgGLSetMatrixParameterArraydc(p, 0, spec._array_count, datad); continue;
+        case Shader::SMP_mat4_transpose: cgGLSetMatrixParameterdr(p, datad); continue;
+        case Shader::SMP_mat4_column: cgGLSetParameter4d(p, datad[0], datad[4], datad[ 8], datad[12]); continue;
+        case Shader::SMP_mat4_upper3x3:
+          {
+            LMatrix3d upper3(datad[0], datad[1], datad[2], datad[4], datad[5], datad[6], datad[8], datad[9], datad[10]);
+            cgGLSetMatrixParameterdc(p, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_mat4_transpose3x3:
+          {
+            LMatrix3d upper3(datad[0], datad[1], datad[2], datad[4], datad[5], datad[6], datad[8], datad[9], datad[10]);
+            cgGLSetMatrixParameterdr(p, upper3.get_data());
+            continue;
+          }
         }
-      case Shader::SMP_int: cgSetParameter1i(p, ((const int *)data)[0]); continue;
-      case Shader::SMP_ivec2: cgSetParameter2iv(p, (const int *)data); continue;
-      case Shader::SMP_ivec3: cgSetParameter3iv(p, (const int *)data); continue;
-      case Shader::SMP_ivec4: cgSetParameter4iv(p, (const int *)data); continue;
+      }
+      else if (spec._numeric_type == Shader::SPT_int || spec._numeric_type == Shader::SPT_uint) {
+        switch (spec._piece) {
+        case Shader::SMP_scalar_array:
+        case Shader::SMP_scalar: cgSetParameter1i(p, ((int *)data)[0]); continue;
+        case Shader::SMP_vec2_array:
+        case Shader::SMP_vec2: cgSetParameter2iv(p, (int *)data); continue;
+        case Shader::SMP_vec3_array:
+        case Shader::SMP_vec3: cgSetParameter3iv(p, (int *)data); continue;
+        case Shader::SMP_vec4_array:
+        case Shader::SMP_vec4: cgSetParameter4iv(p, (int *)data); continue;
+        default: assert(false);
+        }
       }
     }
   }

@@ -40,7 +40,7 @@ jobs:
           eigen: NO
 
         - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-11
+          os: macOS-12
           config: Coverage
           unity: YES
           generator: Xcode
@@ -50,7 +50,7 @@ jobs:
           eigen: YES
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-11
+          os: macOS-12
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -361,7 +361,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macOS-11]
+        os: [ubuntu-20.04, windows-2019, macOS-12]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
@@ -471,14 +471,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install build-essential ninja-build bison flex
-
-    - name: Build Host Interrogate
-      shell: bash
-      run: |
-        mkdir -p host-build
-        cmake -S . -B host-build -DBUILD_DIRECT=OFF -DBUILD_PANDA=OFF -DBUILD_PANDATOOL=OFF -DBUILD_CONTRIB=OFF -DBUILD_DTOOL=ON -DBUILD_MODELS=OFF -DBUILD_SHARED_LIBS=OFF -DINTERROGATE_PYTHON_INTERFACE=OFF
-        cmake --build host-build --config Standard --parallel 4
-        echo host-build/bin >> $GITHUB_PATH
 
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14

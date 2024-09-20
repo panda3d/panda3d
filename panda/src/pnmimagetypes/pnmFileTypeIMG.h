@@ -63,7 +63,7 @@ public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWritable *make_PNMFileTypeIMG(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

@@ -227,7 +227,7 @@ readlines(Py_ssize_t hint) {
 /**
  * Yields continuously to read all the lines from the istream.
  */
-static PyObject *gen_next(PyObject *self) {
+static PyObject *gen_next_istream(PyObject *self) {
   istream *stream = nullptr;
   if (!Dtool_Call_ExtractThisPointer(self, Dtool_std_istream, (void **)&stream)) {
     return nullptr;
@@ -247,7 +247,7 @@ static PyObject *gen_next(PyObject *self) {
  */
 PyObject *Extension<istream>::
 __iter__(PyObject *self) {
-  return Dtool_NewGenerator(self, &gen_next);
+  return Dtool_NewGenerator(self, &gen_next_istream);
 }
 
 /**

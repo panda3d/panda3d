@@ -17,25 +17,33 @@
 #endif
 
 static void _register_collection(PyTypeObject *type, const char *abc) {
-  PyObject *sys_modules = PyImport_GetModuleDict();
-  if (sys_modules != nullptr) {
-    PyObject *module = PyDict_GetItemString(sys_modules, _COLLECTIONS_ABC);
-    if (module != nullptr) {
-      PyObject *dict = PyModule_GetDict(module);
-      if (module != nullptr) {
 #if PY_MAJOR_VERSION >= 3
-        static PyObject *register_str = PyUnicode_InternFromString("register");
+  PyObject *module_name = PyUnicode_InternFromString(_COLLECTIONS_ABC);
 #else
-        static PyObject *register_str = PyString_InternFromString("register");
+  PyObject *module_name = PyString_InternFromString(_COLLECTIONS_ABC);
 #endif
-        PyObject *sequence = PyDict_GetItemString(dict, abc);
-        if (sequence != nullptr) {
-          if (PyObject_CallMethodOneArg(sequence, register_str, (PyObject *)type) == nullptr) {
-            PyErr_Print();
-          }
-        }
+  PyObject *module = PyImport_GetModule(module_name);
+  Py_DECREF(module_name);
+  if (module != nullptr) {
+    PyObject *dict = PyModule_GetDict(module);
+    if (dict != nullptr) {
+#if PY_MAJOR_VERSION >= 3
+      PyObject *register_str = PyUnicode_InternFromString("register");
+#else
+      PyObject *register_str = PyString_InternFromString("register");
+#endif
+      PyObject *obj = nullptr;
+      if (register_str == nullptr ||
+          PyDict_GetItemStringRef(dict, abc, &obj) <= 0 ||
+          PyObject_CallMethodOneArg(obj, register_str, (PyObject *)type) == nullptr) {
+        PyErr_Print();
       }
+      Py_XDECREF(obj);
+      Py_XDECREF(register_str);
+    } else {
+      PyErr_Clear();
     }
+    Py_DECREF(module);
   }
 }
 
@@ -1075,14 +1083,19 @@ static PyObject *Dtool_MutableMappingWrapper_update(PyObject *self, PyObject *ar
     return PyErr_Format(PyExc_TypeError, "%s.update() takes either a dict argument or keyword arguments", wrap->_base._name);
   }
 
+  PyObject *result = Py_None;
   PyObject *key, *value;
   Py_ssize_t pos = 0;
+  Py_BEGIN_CRITICAL_SECTION(dict);
   while (PyDict_Next(dict, &pos, &key, &value)) {
     if (wrap->_setitem_func(wrap->_base._self, key, value) != 0) {
-      return nullptr;
+      result = nullptr;
+      break;
     }
   }
-  return Py_NewRef(Py_None);
+  Py_END_CRITICAL_SECTION();
+
+  return Py_XNewRef(result);
 }
 
 /**

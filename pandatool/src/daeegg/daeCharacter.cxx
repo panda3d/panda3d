@@ -40,12 +40,11 @@ TypeHandle DaeCharacter::_type_handle;
 DaeCharacter::
 DaeCharacter(EggGroup *node_group, const FCDControllerInstance *instance) :
   _node_group(node_group),
-  _name(node_group->get_name()),
+  _skin_mesh(nullptr),
   _instance(instance),
-  _skin_controller(nullptr),
-  _skin_mesh(nullptr) {
-
-  _bind_shape_mat = LMatrix4d::ident_mat();
+  _bind_shape_mat(LMatrix4d::ident_mat()),
+  _name(node_group->get_name()),
+  _skin_controller(nullptr) {
 
   // If it's a skin controller, add the controller joints.
   const FCDController *controller = (const FCDController *)instance->GetEntity();

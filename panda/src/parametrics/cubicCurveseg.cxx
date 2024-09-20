@@ -516,14 +516,14 @@ compute_seg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
  */
 void CubicCurveseg::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CubicCurveseg);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
  * Factory method to generate an object of this type.
  */
 TypedWritable *CubicCurveseg::
-make_CubicCurveseg(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   CubicCurveseg *me = new CubicCurveseg;
   DatagramIterator scan;
   BamReader *manager;

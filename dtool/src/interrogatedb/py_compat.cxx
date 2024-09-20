@@ -33,7 +33,11 @@ size_t PyLongOrInt_AsSize_t(PyObject *vv) {
   size_t bytes;
   int one = 1;
   int res = _PyLong_AsByteArray((PyLongObject *)vv, (unsigned char *)&bytes,
-                                SIZEOF_SIZE_T, (int)*(unsigned char*)&one, 0);
+                                SIZEOF_SIZE_T, (int)*(unsigned char*)&one, 0,
+#if PY_VERSION_HEX >= 0x030d0000
+                                , 1 // with_exceptions
+#endif
+                                );
 
   if (res < 0) {
     return (size_t)res;

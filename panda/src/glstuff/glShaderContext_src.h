@@ -91,7 +91,6 @@ private:
   GLint _slider_table_index;
   GLsizei _transform_table_size;
   GLsizei _slider_table_size;
-  GLint _frame_number_loc;
   GLint _frame_number;
 
 #ifndef OPENGLES
@@ -113,6 +112,7 @@ private:
   pvector<ImageInput> _glsl_img_inputs;
 
   LVecBase4f *_mat_part_cache = nullptr;
+  LVecBase4f *_mat_scratch_space = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
