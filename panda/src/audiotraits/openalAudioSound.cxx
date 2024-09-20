@@ -180,9 +180,20 @@ play() {
 
   if (_sd->_sample) {
     push_fresh_buffers();
+    // The macOS implementation of alSourcePlay resets the offset, so we call
+    // it before and avoid calling restart_stalled_audio() afterwards (#1607)
+#ifdef HAVE_OPENAL_FRAMEWORK
+    ALenum status;
+    alGetSourcei(_source, AL_SOURCE_STATE, &status);
+    if (status != AL_PLAYING) {
+      alSourcePlay(_source);
+    }
+#endif
     alSourcef(_source, AL_SEC_OFFSET, _start_time);
     _stream_queued[0]._time_offset = _start_time;
+#ifndef HAVE_OPENAL_FRAMEWORK
     restart_stalled_audio();
+#endif
   } else {
     audio_debug("Play: stream tell = " << _sd->_stream->tell() << " seeking " << _start_time);
     if (_sd->_stream->tell() != _start_time) {

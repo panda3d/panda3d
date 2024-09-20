@@ -120,7 +120,7 @@ make_writer(std::ostream *file, bool owns_file) {
 void PNMFileTypeJPG::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_PNMFileTypeJPG);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -132,7 +132,7 @@ register_with_read_factory() {
  * we just pull the object from the registry.
  */
 TypedWritable *PNMFileTypeJPG::
-make_PNMFileTypeJPG(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
 

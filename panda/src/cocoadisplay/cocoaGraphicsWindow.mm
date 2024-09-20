@@ -32,7 +32,6 @@
 #import "cocoaPandaAppDelegate.h"
 
 #import <ApplicationServices/ApplicationServices.h>
-#import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSCursor.h>
 #import <AppKit/NSEvent.h>
@@ -45,6 +44,12 @@ TypeHandle CocoaGraphicsWindow::_type_handle;
 
 #ifndef MAC_OS_X_VERSION_10_15
 #define NSAppKitVersionNumber10_14 1671
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+enum {
+  NSFullScreenWindowMask = 1 << 14
+};
 #endif
 
 /**
@@ -177,7 +182,6 @@ void CocoaGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   NSEvent *event = nil;
 
   while (true) {
@@ -211,8 +215,6 @@ process_events() {
   if (_window != nil) {
     [_window update];
   }
-
-  [pool release];
 
   if (_context_needs_update && _gsg != nullptr) {
     update_context();
@@ -728,13 +730,12 @@ set_properties_now(WindowProperties &properties) {
       // here.
       if (!properties.has_undecorated() && !_properties.get_undecorated() &&
           [_window respondsToSelector:@selector(setStyleMask:)]) {
-        if (properties.get_fixed_size()) {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask ];
-        } else {
-          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
+        NSUInteger style = ([_window styleMask] & NSFullScreenWindowMask);
+        style |= NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+        if (!properties.get_fixed_size()) {
+          style |= NSResizableWindowMask;
         }
+        [_window setStyleMask:style];
         [_window makeFirstResponder:_view];
         // Resize event fired by makeFirstResponder has an invalid backing scale factor
         // The actual size must be reset afterward
@@ -749,16 +750,14 @@ set_properties_now(WindowProperties &properties) {
     _properties.set_undecorated(properties.get_undecorated());
 
     if (!_properties.get_fullscreen()) {
-      if (properties.get_undecorated()) {
-        [_window setStyleMask: NSBorderlessWindowMask];
-      } else if (_properties.get_fixed_size()) {
-        // Fixed size windows should not show the resize button.
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask ];
-      } else {
-        [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                               NSMiniaturizableWindowMask | NSResizableWindowMask ];
+      NSUInteger style = ([_window styleMask] & NSFullScreenWindowMask);
+      if (!properties.get_undecorated()) {
+        style |= NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+        if (!properties.get_fixed_size()) {
+          style |= NSResizableWindowMask;
+        }
       }
+      [_window setStyleMask:style];
       [_window makeFirstResponder:_view];
       // Resize event fired by makeFirstResponder has an invalid backing scale factor
       // The actual size must be reset afterward
@@ -1176,10 +1175,16 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     }
 
     if (_window != nil) {
+      // Exit macOS' own fullscreen mode, since our own fullscreen mode
+      // doesn't work properly with it.
+      if ([_window styleMask] & NSFullScreenWindowMask) {
+        [_window toggleFullScreen:nil];
+      }
+
       // For some reason, setting the style mask makes it give up its
       // first-responder status.
       if ([_window respondsToSelector:@selector(setStyleMask:)]) {
-        [_window setStyleMask:NSBorderlessWindowMask];
+        [_window setStyleMask:([_window styleMask] & NSFullScreenWindowMask)];
       }
       [_window makeFirstResponder:_view];
       [_window setLevel:CGShieldingWindowLevel()];

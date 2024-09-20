@@ -817,14 +817,14 @@ recompute_basis() {
  */
 void HermiteCurve::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_HermiteCurve);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
  * Factory method to generate an object of this type.
  */
 TypedWritable *HermiteCurve::
-make_HermiteCurve(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   HermiteCurve *me = new HermiteCurve;
   DatagramIterator scan;
   BamReader *manager;

@@ -799,7 +799,7 @@ get_test_pcollector() {
 }
 
 TypedWritable *CollisionHeightfield::
-make_CollisionHeightfield(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   CollisionHeightfield *me = new CollisionHeightfield;
   DatagramIterator scan;
   BamReader *manager;
@@ -815,5 +815,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
 void CollisionHeightfield::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionHeightfield);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

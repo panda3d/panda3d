@@ -109,6 +109,7 @@ option(BUILD_DIRECT "Build the direct source tree." ON)
 option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
 option(BUILD_CONTRIB "Build the contrib source tree." ON)
 option(BUILD_MODELS "Build/install the built-in models." ON)
+option(BUILD_TOOLS "Build binary tools." ON)
 
 # Include Panda3D packages
 if(BUILD_DTOOL)

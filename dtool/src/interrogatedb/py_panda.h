@@ -162,6 +162,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
+// Extract the PyTypeObject pointer corresponding to a Dtool_PyTypedObject.
+#define Dtool_GetPyTypeObject(type) (&(type)->_PyType)
+
 // Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
 #define DtoolInstance_Check(obj) \
   (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
@@ -178,9 +181,26 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
+#if PY_VERSION_HEX >= 0x030d0000
+class Dtool_TypeMap : public std::map<std::string, Dtool_PyTypedObject *> {
+public:
+  PyMutex _lock { 0 };
+};
+#else
 typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
+#endif
 
 EXPCL_PYPANDA Dtool_TypeMap *Dtool_GetGlobalTypeMap();
+
+class DtoolProxy {
+public:
+  mutable PyObject *_self;
+  TypeHandle _type;
+};
+
+EXPCL_PYPANDA void DtoolProxy_Init(DtoolProxy *proxy, PyObject *self,
+                                   Dtool_PyTypedObject &classdef,
+                                   TypeRegistry::PythonWrapFunc *wrap_func);
 
 /**
 

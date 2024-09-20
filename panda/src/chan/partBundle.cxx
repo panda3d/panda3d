@@ -772,7 +772,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 /**
  * Factory method to generate a PartBundle object
  */
-TypedWritable* PartBundle::
+TypedWritable *PartBundle::
 make_from_bam(const FactoryParams &params) {
   PartBundle *me = new PartBundle;
   DatagramIterator scan;

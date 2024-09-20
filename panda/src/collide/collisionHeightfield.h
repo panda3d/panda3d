@@ -151,7 +151,7 @@ private:
   static PStatCollector _test_pcollector;
 
 protected:
-  static TypedWritable *make_CollisionHeightfield(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:

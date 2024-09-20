@@ -27,5 +27,10 @@ if(MODULE_TYPE STREQUAL "MODULE")
     INTERFACE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-# This is only needed for binaries in the pandatool package. It is not useful
-# for user applications, so it is not installed.
+install(TARGETS p3pandatoolbase
+  EXPORT ToolsDevel COMPONENT ToolsDevel
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT ToolsDevel)
+install(FILES ${P3PANDATOOLBASE_HEADERS} COMPONENT ToolsDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

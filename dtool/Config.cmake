@@ -221,12 +221,6 @@ mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
 
-option(WANT_INTERROGATE
-  "Do you want to include Interrogate in the installation? This
-program reads C++ source files and generates bindings for another
-language.  If you won't be building interfaces for other languages,
-you don't need the program." ON)
-
 cmake_dependent_option(INTERROGATE_PYTHON_INTERFACE
   "Do you want to generate a Python-callable interrogate interface?
 This is only necessary if you plan to make calls into Panda from a
@@ -249,7 +243,78 @@ option(INTERROGATE_VERBOSE
   "Set this if you would like interrogate to generate advanced
 debugging information." OFF)
 
+set(_default_build_interrogate OFF)
+if (INTERROGATE_C_INTERFACE OR INTERROGATE_PYTHON_INTERFACE)
+  set(_default_build_interrogate ON)
+endif()
+
+option(BUILD_INTERROGATE
+  "Do you want to build interrogate from source?  This is necessary
+if you wish to build Python or other bindings around Panda3D's C++
+interface.  Set this to false if you already have a compatible
+version of interrogate installed." ${_default_build_interrogate})
+
 mark_as_advanced(INTERROGATE_OPTIONS)
+
+if(BUILD_INTERROGATE)
+  include(ExternalProject)
+
+  set(_interrogate_dir "${PROJECT_BINARY_DIR}/interrogate")
+
+  ExternalProject_Add(
+    panda3d-interrogate
+
+    GIT_REPOSITORY https://github.com/panda3d/interrogate.git
+    GIT_TAG c343350a6e210029cfe3fd8468e530e1ea6bcead
+
+    PREFIX ${_interrogate_dir}
+    CMAKE_ARGS
+      -DHAVE_PYTHON=OFF
+      -DBUILD_SHARED_LIBS=OFF
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+    EXCLUDE_FROM_ALL ON
+    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate"
+                     "${_interrogate_dir}/bin/interrogate_module"
+  )
+
+  add_executable(interrogate IMPORTED GLOBAL)
+  add_dependencies(interrogate panda3d-interrogate)
+  set_target_properties(interrogate PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate")
+
+  add_executable(interrogate_module IMPORTED GLOBAL)
+  add_dependencies(interrogate_module panda3d-interrogate)
+  set_target_properties(interrogate_module PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module")
+
+else()
+  find_program(INTERROGATE_EXECUTABLE interrogate)
+  find_program(INTERROGATE_MODULE_EXECUTABLE interrogate_module)
+
+  add_executable(interrogate IMPORTED GLOBAL)
+  if(INTERROGATE_EXECUTABLE)
+    set_target_properties(interrogate PROPERTIES
+      IMPORTED_LOCATION "${INTERROGATE_EXECUTABLE}")
+
+  elseif(INTERROGATE_PYTHON_INTERFACE OR INTERROGATE_C_INTERFACE)
+    message(FATAL_ERROR
+      "Requested interrogate bindings, but interrogate not found.  Set "
+      "BUILD_INTERROGATE to build interrogate from source, or set "
+      "INTERROGATE_EXECUTABLE to the location of this tool.")
+  endif()
+
+  add_executable(interrogate_module IMPORTED GLOBAL)
+  if(INTERROGATE_MODULE_EXECUTABLE)
+    set_target_properties(interrogate_module PROPERTIES
+      IMPORTED_LOCATION "${INTERROGATE_MODULE_EXECUTABLE}")
+
+  elseif(INTERROGATE_PYTHON_INTERFACE)
+    message(FATAL_ERROR
+      "Requested interrogate bindings, but interrogate not found.  Set "
+      "BUILD_INTERROGATE to build interrogate from source, or set "
+      "INTERROGATE_MODULE_EXECUTABLE to the location of this tool.")
+  endif()
+
+endif()
 
 #
 # The following options have to do with optional debugging features.

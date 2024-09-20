@@ -58,7 +58,7 @@ endif()
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx"
-  COMMAND host_interrogate
+  COMMAND interrogate
     -D EXPCL_INTERROGATEDB=
     -nodb -python -promiscuous
     -module panda3d.interrogatedb
@@ -68,7 +68,7 @@ add_custom_command(
     -oc "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx"
     ${P3INTERROGATEDB_IGATE}
 
-  DEPENDS host_interrogate ${P3INTERROGATEDB_IGATE}
+  DEPENDS interrogate ${P3INTERROGATEDB_IGATE}
   COMMENT "Interrogating interrogatedb")
 
 add_python_target(panda3d.interrogatedb

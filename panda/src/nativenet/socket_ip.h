@@ -81,7 +81,11 @@ private:
 inline bool Socket_IP::
 ErrorClose() {
   if (Active()) {
-    DO_CLOSE(_socket);
+    if (DO_CLOSE(_socket) != 0) {
+#ifndef _WIN32
+      perror("Socket_IP::ErrorClose");
+#endif
+    }
   }
 
   _socket = BAD_SOCKET;
@@ -126,7 +130,11 @@ inline Socket_IP::
 inline void Socket_IP::
 Close() {
   if (Active()) {
-    DO_CLOSE(_socket);
+    if (DO_CLOSE(_socket) != 0) {
+#ifndef _WIN32
+      perror("Socket_IP::ErrorClose");
+#endif
+    }
   }
 
   _socket = BAD_SOCKET;

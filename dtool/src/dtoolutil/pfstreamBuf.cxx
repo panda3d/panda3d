@@ -185,7 +185,7 @@ is_open() const {
  */
 bool PipeStreamBuf::
 eof_pipe() const {
-  return (_pipe == nullptr) && feof(_pipe);
+  return (_pipe == nullptr) || feof(_pipe);
 }
 
 /**

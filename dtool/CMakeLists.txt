@@ -2,11 +2,9 @@
 include(LocalSetup.cmake)
 
 # Include dtool source directories
-add_subdirectory(src/cppparser)
 add_subdirectory(src/dconfig)
 add_subdirectory(src/dtoolbase)
 add_subdirectory(src/dtoolutil)
-add_subdirectory(src/interrogate)
 add_subdirectory(src/interrogatedb)
 add_subdirectory(src/prc)
 

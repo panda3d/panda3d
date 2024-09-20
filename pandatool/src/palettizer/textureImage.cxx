@@ -1236,7 +1236,7 @@ get_source_key(const Filename &filename, const Filename &alpha_filename,
 void TextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_TextureImage);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -1346,7 +1346,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * all the data read.
  */
 TypedWritable *TextureImage::
-make_TextureImage(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   TextureImage *me = new TextureImage;
   DatagramIterator scan;
   BamReader *manager;

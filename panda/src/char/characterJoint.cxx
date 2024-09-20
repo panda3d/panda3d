@@ -534,8 +534,8 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
 /**
  * Factory method to generate a CharacterJoint object
  */
-TypedWritable* CharacterJoint::
-make_CharacterJoint(const FactoryParams &params) {
+TypedWritable *CharacterJoint::
+make_from_bam(const FactoryParams &params) {
   CharacterJoint *me = new CharacterJoint;
   DatagramIterator scan;
   BamReader *manager;
@@ -550,5 +550,5 @@ make_CharacterJoint(const FactoryParams &params) {
  */
 void CharacterJoint::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CharacterJoint);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

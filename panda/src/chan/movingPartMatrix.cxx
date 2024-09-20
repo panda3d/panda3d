@@ -387,8 +387,8 @@ apply_control(PandaNode *node) {
 /**
  * Factory method to generate a MovingPartMatrix object
  */
-TypedWritable* MovingPartMatrix::
-make_MovingPartMatrix(const FactoryParams &params) {
+TypedWritable *MovingPartMatrix::
+make_from_bam(const FactoryParams &params) {
   MovingPartMatrix *me = new MovingPartMatrix;
   DatagramIterator scan;
   BamReader *manager;
@@ -403,5 +403,5 @@ make_MovingPartMatrix(const FactoryParams &params) {
  */
 void MovingPartMatrix::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartMatrix);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

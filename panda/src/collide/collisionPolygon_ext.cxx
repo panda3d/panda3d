@@ -72,6 +72,9 @@ convert_points(pvector<LPoint3> &vec, PyObject *points) {
     return false;
   }
 
+  bool success = true;
+
+  Py_BEGIN_CRITICAL_SECTION(seq);
   PyObject **items = PySequence_Fast_ITEMS(seq);
   Py_ssize_t len = PySequence_Fast_GET_SIZE(seq);
   void *ptr;
@@ -90,13 +93,14 @@ convert_points(pvector<LPoint3> &vec, PyObject *points) {
     }
     else {
       Dtool_Raise_TypeError("Argument must be of LPoint3 type.");
-      Py_DECREF(seq);
-      return false;
+      success = false;
+      break;
     }
   }
 
+  Py_END_CRITICAL_SECTION();
   Py_DECREF(seq);
-  return true;
+  return success;
 }
 
 #endif

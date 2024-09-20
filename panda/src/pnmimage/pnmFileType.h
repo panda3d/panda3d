@@ -58,11 +58,7 @@ public:
 
   // The TypedWritable interface follows.
 public:
-  static void register_with_read_factory();
   virtual void write_datagram(BamWriter *writer, Datagram &datagram);
-
-protected:
-  static TypedWritable *make_PNMFileType(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

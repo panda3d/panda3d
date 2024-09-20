@@ -162,3 +162,12 @@ make_parasite(GraphicsOutput *host, const std::string &name,
                                        host->get_gsg(), host);
   return result;
 }
+
+/**
+ * Version of dispatch_compute that takes a ShaderAttrib instead of a full
+ * RenderState.
+ */
+INLINE void GraphicsEngine::
+dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+  dispatch_compute(work_groups, RenderState::make(sattr), gsg);
+}

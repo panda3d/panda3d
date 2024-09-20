@@ -419,7 +419,9 @@ get_preserve_trailing_whitespace() const {
 }
 
 /**
- *
+ * Sets the color of the text.  Note that this will modulate the color of all
+ * components of the text, including the shadow and outline.  If you wish to
+ * only set the foreground color, see DynamicTextFont::set_fg().
  */
 INLINE void TextProperties::
 set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
@@ -427,7 +429,9 @@ set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
 }
 
 /**
- *
+ * Sets the color of the text.  Note that this will modulate the color of all
+ * components of the text, including the shadow and outline.  If you wish to
+ * only set the foreground color, see DynamicTextFont::set_fg().
  */
 INLINE void TextProperties::
 set_text_color(const LColor &text_color) {
@@ -448,7 +452,7 @@ clear_text_color() {
 }
 
 /**
- *
+ * Returns true if a text color was specified with set_text_color().
  */
 INLINE bool TextProperties::
 has_text_color() const {

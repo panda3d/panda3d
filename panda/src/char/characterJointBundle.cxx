@@ -97,9 +97,8 @@ r_set_character(PartGroup *group, Character *character) {
 /**
  * Factory method to generate a CharacterJointBundle object
  */
-TypedWritable* CharacterJointBundle::
-make_CharacterJointBundle(const FactoryParams &params)
-{
+TypedWritable *CharacterJointBundle::
+make_from_bam(const FactoryParams &params) {
   CharacterJointBundle *me = new CharacterJointBundle;
   DatagramIterator scan;
   BamReader *manager;
@@ -114,7 +113,6 @@ make_CharacterJointBundle(const FactoryParams &params)
  * Factory method to generate a CharacterJointBundle object
  */
 void CharacterJointBundle::
-register_with_read_factory()
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_CharacterJointBundle);
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

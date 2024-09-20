@@ -129,9 +129,9 @@ get_plugin_path() {
 
 ConfigVariableDouble sleep_precision
 ("sleep-precision", 0.01,
- PRC_DESC("This is the accuracy within which we can expect select() to "
-          "return precisely.  That is, if we use select() to request a "
-          "timeout of 1.0 seconds, we can expect to actually sleep for "
+ PRC_DESC("This is the accuracy within which we can expect the operating "
+          "system sleep call to return precisely.  That is, if we request "
+          "a timeout of 1.0 seconds, we can expect to actually sleep for "
           "somewhere between 1.0 and 1.0 + sleep-precision seconds."));
 
 ConfigVariableBool preload_textures

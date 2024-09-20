@@ -48,7 +48,7 @@ public:
   NodePath find_net_python_tag(PyObject *key) const;
 
   // This is defined to implement cycle detection in Python tags.
-  INLINE int __traverse__(visitproc visit, void *arg);
+  //INLINE int __traverse__(visitproc visit, void *arg);
 
   void set_shader_input(CPT_InternalName id, PyObject *value, int priority=0);
   void set_shader_inputs(PyObject *args, PyObject *kwargs);

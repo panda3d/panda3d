@@ -93,7 +93,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  * Factory method to generate a AnimBundle object
  */
 TypedWritable *AnimBundle::
-make_AnimBundle(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   AnimBundle *me = new AnimBundle;
   DatagramIterator scan;
   BamReader *manager;
@@ -108,5 +108,5 @@ make_AnimBundle(const FactoryParams &params) {
  */
 void AnimBundle::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_AnimBundle);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

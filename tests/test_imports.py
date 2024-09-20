@@ -36,6 +36,13 @@ def test_imports_panda3d():
                 importlib.import_module('panda3d.%s' % (module))
 
 
+def test_imports_panda3d_net():
+    from panda3d import core
+    from panda3d import net
+    assert core.ConnectionWriter == net.ConnectionWriter
+    assert core.ConnectionWriter.__module__ == 'panda3d.net'
+
+
 def test_imports_direct():
     import direct.actor.Actor
     import direct.actor.DistributedActor

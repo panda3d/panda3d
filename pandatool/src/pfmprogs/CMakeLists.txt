@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(pfm-bba
   config_pfmprogs.cxx config_pfmprogs.h
   pfmBba.cxx pfmBba.h)

@@ -177,7 +177,7 @@ load_display_information() {
 
   // Get processor information
   const NXArchInfo *ainfo = NXGetLocalArchInfo();
-  _display_information->_cpu_brand_string = strdup(ainfo->description);
+  _display_information->_cpu_brand_string.assign(ainfo->description);
 
   // Get version of Mac OS X
   SInt32 major, minor, bugfix;

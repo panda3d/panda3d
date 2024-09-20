@@ -134,7 +134,6 @@ get_cursor_position() const {
 /**
  * Returns the node position x of the cursor
  */
-
 INLINE PN_stdfloat PGEntry::
 get_cursor_X() const {
   LightReMutexHolder holder(_lock);
@@ -144,13 +143,11 @@ get_cursor_X() const {
 /**
  * Returns the node position y of the cursor
  */
-
 INLINE PN_stdfloat PGEntry::
 get_cursor_Y() const {
   LightReMutexHolder holder(_lock);
-  return _cursor_def.get_y();
+  return _cursor_def.get_z();
 }
-
 
 /**
  * Sets the maximum number of characters that may be typed into the entry.

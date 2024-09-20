@@ -609,3 +609,9 @@ def test_map_property_items():
 
     assert isinstance(prop.items(), collections_abc.MappingView)
     assert frozenset(prop.items()) == frozenset((('key', 'value'), ('key2', 'value2')))
+
+
+def test_static_property():
+    v1 = core.PandaSystem.version_string
+    v2 = core.PandaSystem.get_version_string()
+    assert v1 == v2
