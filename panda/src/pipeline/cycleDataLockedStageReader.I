@@ -183,7 +183,9 @@ CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy
  */
 template<class CycleDataType>
 INLINE CycleDataLockedStageReader<CycleDataType>::
-CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) noexcept {
+CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) noexcept :
+  _pointer(from._pointer)
+{
   from._pointer = nullptr;
 }
 
