@@ -25,6 +25,10 @@
 static thread_local Thread *_current_thread = nullptr;
 static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
 
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+
 #if _WIN32_WINNT < 0x0601
 // Requires Windows 7.
 static DWORD (__stdcall *EnableThreadProfiling)(HANDLE, DWORD, DWORD64, HANDLE *) = nullptr;
