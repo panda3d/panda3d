@@ -868,19 +868,114 @@ get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
 }
 
 /**
+ *
+ */
+Texture *ShaderAttrib::
+get_shader_input_texture_image(const InternalName *id, ShaderType::Access &access, int &z, int &n) const {
+  PT(Texture) tex;
+
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    const ParamTextureImage *param = nullptr;
+
+    switch (p.get_value_type()) {
+    case ShaderInput::M_texture_image:
+      param = (const ParamTextureImage *)p.get_param();
+      tex = param->get_texture();
+      z = param->get_bind_layered() ? -1 : param->get_bind_layer();
+      n = param->get_bind_level();
+      break;
+
+    case ShaderInput::M_texture:
+      // People find it convenient to be able to pass a texture without
+      // further ado.
+      tex = p.get_texture();
+      access = ShaderType::Access::read_write;
+      z = -1;
+      n = 0;
+      break;
+
+    default:
+      ostringstream strm;
+      strm << "Shader input " << id->get_name() << " is not a texture.\n";
+      nassert_raise(strm.str());
+    }
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+  }
+
+  return tex;
+}
+
+/**
  * Returns the ShaderInput as a matrix.  Assertion fails if there is none, or
  * if it is not a matrix or NodePath.
  */
-const LMatrix4 &ShaderAttrib::
-get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
+const LMatrix4f &ShaderAttrib::
+get_shader_input_matrix(const InternalName *id, LMatrix4f &matrix) const {
   Inputs::const_iterator i = _inputs.find(id);
   if (i != _inputs.end()) {
     const ShaderInput &p = (*i).second;
 
     if (p.get_value_type() == ShaderInput::M_nodepath) {
       const NodePath &np = p.get_nodepath();
-      nassertr(!np.is_empty(), LMatrix4::ident_mat());
-      matrix = np.get_transform()->get_mat();
+      nassertr(!np.is_empty(), LMatrix4f::ident_mat());
+      matrix = LCAST(float, np.get_transform()->get_mat());
+      return matrix;
+
+    } else if (p.get_value_type() == ShaderInput::M_numeric &&
+               p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {
+      const Shader::ShaderPtrData &ptr = p.get_ptr();
+
+      switch (ptr._type) {
+        case ShaderType::ST_float: {
+          memcpy(&matrix(0, 0), ptr._ptr, sizeof(float) * 16);
+          return matrix;
+        }
+        case ShaderType::ST_double: {
+          LMatrix4d matrixd;
+          memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
+          matrix = LCAST(float, matrixd);
+          return matrix;
+        }
+        default: {
+          ostringstream strm;
+          strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
+          nassert_raise(strm.str());
+          return LMatrix4f::ident_mat();
+        }
+      }
+    }
+
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not a NodePath, LMatrix4 or PTA_LMatrix4.\n";
+    nassert_raise(strm.str());
+    return LMatrix4f::ident_mat();
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return LMatrix4f::ident_mat();
+  }
+}
+
+/**
+ * Returns the ShaderInput as a matrix.  Assertion fails if there is none, or
+ * if it is not a matrix or NodePath.
+ */
+const LMatrix4d &ShaderAttrib::
+get_shader_input_matrix(const InternalName *id, LMatrix4d &matrix) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+
+    if (p.get_value_type() == ShaderInput::M_nodepath) {
+      const NodePath &np = p.get_nodepath();
+      nassertr(!np.is_empty(), LMatrix4d::ident_mat());
+      matrix = LCAST(double, np.get_transform()->get_mat());
       return matrix;
 
     } else if (p.get_value_type() == ShaderInput::M_numeric &&
@@ -891,20 +986,18 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
         case ShaderType::ST_float: {
           LMatrix4f matrixf;
           memcpy(&matrixf(0, 0), ptr._ptr, sizeof(float) * 16);
-          matrix = LCAST(PN_stdfloat, matrixf);
+          matrix = LCAST(double, matrixf);
           return matrix;
         }
         case ShaderType::ST_double: {
-          LMatrix4d matrixd;
-          memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
-          matrix = LCAST(PN_stdfloat, matrixd);
+          memcpy(&matrix(0, 0), ptr._ptr, sizeof(double) * 16);
           return matrix;
         }
         default: {
           ostringstream strm;
           strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
           nassert_raise(strm.str());
-          return LMatrix4::ident_mat();
+          return LMatrix4d::ident_mat();
         }
       }
     }
@@ -912,12 +1005,12 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not a NodePath, LMatrix4 or PTA_LMatrix4.\n";
     nassert_raise(strm.str());
-    return LMatrix4::ident_mat();
+    return LMatrix4d::ident_mat();
   } else {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
-    return LMatrix4::ident_mat();
+    return LMatrix4d::ident_mat();
   }
 }
 

@@ -34,6 +34,14 @@ PUBLISHED:
     compute,
   };
 
+  enum ShaderLanguage {
+    SL_none,
+    SL_Cg,
+    SL_GLSL,
+    SL_HLSL,
+    SL_SPIR_V,
+  };
+
   /**
    * Indicates which features are used by the shader, which can be used by the
    * driver to check whether cross-compilation is possible, or whether certain
@@ -129,8 +137,82 @@ PUBLISHED:
     C_texture_query_samples = 1ull << 42,
   };
 
+  enum Dependency {
+    D_none           = 0x00000,
+    D_frame          = 0x00001,
+    D_scene          = 0x00002,
+    D_vertex_data    = 0x00008,
+    D_transform      = 0x00030,
+    D_view_transform = 0x00020,
+    D_projection     = 0x00040,
+    D_color          = 0x00080,
+    D_colorscale     = 0x00100,
+    D_material       = 0x00200,
+    D_shader_inputs  = 0x00400,
+    D_fog            = 0x00800,
+    D_light          = 0x01000,
+    D_clip_planes    = 0x02000,
+    D_tex_matrix     = 0x04000,
+    D_texture        = 0x08000,
+    D_tex_gen        = 0x10000,
+    D_render_mode    = 0x20000,
+    D_state = D_color | D_colorscale | D_material | D_shader_inputs | D_fog | D_light | D_clip_planes | D_tex_matrix | D_texture | D_tex_gen | D_render_mode,
+  };
+
+  enum StateMatrix {
+    SM_identity,
+
+    SM_plane_x,
+    SM_clipplane_x,
+
+    SM_mat_constant_x,
+    SM_vec_constant_x,
+
+    SM_world_to_view,
+    SM_view_to_world,
+
+    SM_world_to_apiview,
+    SM_apiview_to_world,
+
+    SM_model_to_view,
+    SM_view_to_model,
+
+    SM_apiview_to_view,
+    SM_view_to_apiview,
+
+    SM_clip_to_view,
+    SM_view_to_clip,
+
+    SM_apiclip_to_view,
+    SM_view_to_apiclip,
+
+    SM_view_x_to_view,
+    SM_view_to_view_x,
+
+    SM_apiview_x_to_view,
+    SM_view_to_apiview_x,
+
+    SM_clip_x_to_view,
+    SM_view_to_clip_x,
+
+    SM_apiclip_x_to_view,
+    SM_view_to_apiclip_x,
+
+    SM_model_to_apiview,
+    SM_apiview_to_model,
+    SM_apiview_to_apiclip,
+    SM_apiclip_to_apiview,
+
+    SM_world_to_apiclip_light_i,
+
+    SM_point_attenuation,
+
+    SM_INVALID
+  };
+
   static std::string format_stage(Stage stage);
-  static void output_capabilities(std::ostream &out, int capabilities);
+  static void output_capabilities(std::ostream &out, uint64_t capabilities);
+  static int get_matrix_deps(StateMatrix input);
 };
 
 INLINE std::ostream &operator << (std::ostream &out, ShaderEnums::Stage stage) {

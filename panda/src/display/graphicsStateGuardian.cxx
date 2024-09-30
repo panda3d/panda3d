@@ -153,7 +153,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _pipe(pipe),
   _engine(engine)
 {
-  _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();
 
   if (_internal_coordinate_system == CS_default) {
@@ -880,175 +879,12 @@ compute_distance_to(const LPoint3 &point) const {
  * have changed based on the aspects of the render state that were altered.
  */
 void GraphicsStateGuardian::
-update_shader_matrix_cache(Shader *shader, LVecBase4 *cache, int altered) {
-  for (Shader::ShaderMatPart &part : shader->_mat_parts) {
+update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered) {
+  for (Shader::MatrixCacheItem &part : shader->_matrix_cache_desc) {
     if (altered & part._dep) {
-      fetch_specified_part(part._part, part._arg, part._type, cache, part._count);
+      fetch_specified_matrix(part._part, part._arg, cache);
     }
-    cache += part._count * part._size;
-  }
-}
-
-/**
- * The gsg contains a large number of useful matrices:
- *
- * - the world transform,
- * - the modelview matrix,
- * - the cs_transform,
- * - etc, etc.
- *
- * A shader can request any of these values, and furthermore, it can request
- * that various compositions, inverses, and transposes be performed.  The
- * ShaderMatSpec is a data structure indicating what datum is desired and what
- * conversions to perform.  This routine, fetch_specified_value, is
- * responsible for doing the actual retrieval and conversions.
- *
- * Some values, like the following, aren't matrices:
- *
- * - window size
- * - texture coordinates of card center
- *
- * This routine can fetch these values as well, by shoehorning them into a
- * matrix.  In this way, we avoid the need for a separate routine to fetch
- * these values.
- */
-const void *GraphicsStateGuardian::
-fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
-                      LVecBase4 *scratch, bool pad_rows) {
-  LVecBase3 v;
-  LMatrix4 m;
-
-  const LVecBase4 *cache0 = cache + spec._cache_offset[0];
-  const LVecBase4 *cache1 = cache + spec._cache_offset[1];
-
-  switch (spec._func) {
-  case Shader::SMF_shader_input:
-    return _target_shader->get_shader_input_data(spec._id._name, scratch,
-      spec._scalar_type, spec._array_count, spec._num_rows, spec._num_cols, pad_rows);
-
-  case Shader::SMF_first:
-#ifdef STDFLOAT_DOUBLE
-    if (spec._scalar_type == ShaderType::ST_double) {
-      if (pad_rows || spec._num_cols == 4) {
-        // No padding or conversion needed
-        return (const double *)cache0->get_data() + spec._offset;
-      } else {
-        double *data = (double *)scratch;
-        const double *from_data = cache0->get_data();
-        from_data += spec._offset;
-
-        for (int i = 0; i < spec._array_count * spec._num_rows; ++i) {
-          for (int c = 0; c < spec._num_cols; ++c) {
-            *data++ = from_data[c];
-          }
-          from_data += 4;
-        }
-      }
-    }
-    else if (spec._scalar_type == ShaderType::ST_float) {
-      float *data = (float *)scratch;
-      const double *from_data = cache0->get_data();
-      from_data += spec._offset;
-
-      if (pad_rows || spec._num_cols == 4) {
-        for (size_t i = 0; i < (size_t)spec._array_count * (size_t)spec._num_rows * 4; ++i) {
-          data[i] = (float)from_data[i];
-        }
-        return data;
-      } else {
-        for (int i = 0; i < spec._array_count * spec._num_rows; ++i) {
-          for (int c = 0; c < spec._num_cols; ++c) {
-            *data++ = (float)from_data[c];
-          }
-          from_data += 4;
-        }
-      }
-      return (float *)scratch;
-    }
-#else
-    if (spec._scalar_type == ShaderType::ST_double) {
-      double *data = (double *)scratch;
-      const float *from_data = cache0->get_data();
-      from_data += spec._offset;
-
-      if (pad_rows || spec._num_cols == 4) {
-        for (size_t i = 0; i < (size_t)spec._array_count * (size_t)spec._num_rows * 4; ++i) {
-          data[i] = (double)from_data[i];
-        }
-        return data;
-      } else {
-        for (int i = 0; i < spec._array_count * spec._num_rows; ++i) {
-          for (int c = 0; c < spec._num_cols; ++c) {
-            *data++ = (double)from_data[c];
-          }
-          from_data += 4;
-        }
-      }
-      return data;
-    }
-#endif
-    if (pad_rows || spec._num_cols == 4 || (spec._num_rows == 1 && spec._array_count == 1)) {
-      // No padding or conversion needed
-      return (const uint32_t *)cache0->get_data() + spec._offset;
-    } else {
-      uint32_t *data = (uint32_t *)scratch;
-      const uint32_t *from_data = (const uint32_t *)cache0->get_data();
-      from_data += spec._offset;
-
-      for (int i = 0; i < spec._array_count * spec._num_rows; ++i) {
-        for (int c = 0; c < spec._num_cols; ++c) {
-          *data++ = from_data[c];
-        }
-        from_data += 4;
-      }
-    }
-    break;
-
-  case Shader::SMF_compose:
-    m.multiply(*(LMatrix4 *)cache0, *(LMatrix4 *)cache1);
-    break;
-
-  case Shader::SMF_transform_dlight:
-    m = *(LMatrix4 *)cache0;
-    v = (*(LMatrix4 *)cache1).xform_vec(cache0[2].get_xyz());
-    v.normalize();
-    m.set_row(2, v);
-    v = (*(LMatrix4 *)cache1).xform_vec(cache0[3].get_xyz());
-    v.normalize();
-    m.set_row(3, v);
-    break;
-
-  case Shader::SMF_transform_plight:
-    {
-      // Careful not to touch the w component, which contains the near value.
-      m = *(LMatrix4 *)cache0;
-      LPoint3 point = (*(LMatrix4 *)cache1).xform_point(cache0[2].get_xyz());
-      m(2, 0) = point[0];
-      m(2, 1) = point[1];
-      m(2, 2) = point[2];
-      break;
-    }
-
-  case Shader::SMF_transform_slight:
-    m = *(LMatrix4 *)cache0;
-    m.set_row(2, (*(LMatrix4 *)cache1).xform_point(cache0[2].get_xyz()));
-    v = (*(LMatrix4 *)cache1).xform_vec(cache0[3].get_xyz());
-    v.normalize();
-    m.set_row(3, v);
-    break;
-
-  default:
-    // Should never get here
-    m = LMatrix4::ident_mat();
-    break;
-  }
-
-  if (spec._scalar_type == ShaderType::ST_double) {
-    *(LMatrix4d *)scratch = LCAST(double, m);
-    return (const double *)scratch + spec._offset;
-  } else {
-    *(LMatrix4f *)scratch = LCAST(float, m);
-    return (const float *)scratch + spec._offset;
+    ++cache;
   }
 }
 
@@ -1056,339 +892,27 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
  * See fetch_specified_value
  */
 void GraphicsStateGuardian::
-fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
-                     const ShaderType *type, LVecBase4 *into, int count) {
-  nassertv(count > 0);
-
-  switch (part) {
-  case Shader::SMO_identity: {
-    for (int i = 0; i < count; ++i) {
-      ((LMatrix4 *)into)[i] = LMatrix4::ident_mat();
-    }
+fetch_specified_matrix(Shader::StateMatrix input, const InternalName *name,
+                       LMatrix4 *into) {
+  switch (input) {
+  case Shader::SM_identity: {
+    into[0] = LMatrix4::ident_mat();
     return;
   }
-  case Shader::SMO_window_size:
-  case Shader::SMO_pixel_size: {
-    LVecBase2i pixel_size = _current_display_region->get_pixel_size();
-    into[0].set(pixel_size[0], pixel_size[1], 0, 1);
-    return;
-  }
-  case Shader::SMO_frame_number: {
-    int count = ClockObject::get_global_clock()->get_frame_count();
-    ((LVecBase4i *)into)[0].fill(count);
-    return;
-  }
-  case Shader::SMO_frame_time: {
-    PN_stdfloat time = ClockObject::get_global_clock()->get_frame_time();
-    into[0].fill(time);
-    return;
-  }
-  case Shader::SMO_frame_delta: {
-    PN_stdfloat dt = ClockObject::get_global_clock()->get_dt();
-    into[0].fill(dt);
-    return;
-  }
-  case Shader::SMO_texpad_x: {
-    Texture *tex = _target_shader->get_shader_input_texture(name);
-    nassertv(tex != nullptr);
-    int sx = tex->get_x_size() - tex->get_pad_x_size();
-    int sy = tex->get_y_size() - tex->get_pad_y_size();
-    int sz = tex->get_z_size() - tex->get_pad_z_size();
-    double cx = (sx * 0.5) / tex->get_x_size();
-    double cy = (sy * 0.5) / tex->get_y_size();
-    double cz = (sz * 0.5) / tex->get_z_size();
-    into[0].set(cx, cy, cz, 0);
-    return;
-  }
-  case Shader::SMO_texpix_x: {
-    Texture *tex = _target_shader->get_shader_input_texture(name);
-    nassertv(tex != nullptr);
-    double px = 1.0 / tex->get_x_size();
-    double py = 1.0 / tex->get_y_size();
-    double pz = 1.0 / tex->get_z_size();
-    into[0].set(px, py, pz, 0);
-    return;
-  }
-  case Shader::SMO_attr_material: {
-    const MaterialAttrib *target_material = (const MaterialAttrib *)
-      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
-    // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
-    if (target_material->is_off()) {
-      into[Shader::MA_ambient].set(1, 1, 1, 1);
-      into[Shader::MA_diffuse].set(1, 1, 1, 1);
-      into[Shader::MA_emission].set(0, 0, 0, 0);
-      into[Shader::MA_specular].set(0, 0, 0, 0);
-      into[Shader::MA_base_color].set(0, 0, 0, 0);
-      into[Shader::MA_metallic_ior_roughness].set(0, 0, 0, 1);
-      return;
-    }
-    Material *m = target_material->get_material();
-    LVecBase4 spc = m->get_specular();
-    spc[3] = m->get_shininess();
-    into[Shader::MA_ambient] = m->get_ambient();
-    into[Shader::MA_diffuse] = m->get_diffuse();
-    into[Shader::MA_emission] = m->get_emission();
-    into[Shader::MA_specular] = spc;
-    into[Shader::MA_base_color] = m->get_base_color();
-    into[Shader::MA_metallic_ior_roughness].set(m->get_metallic(), m->get_refractive_index(), 0, m->get_roughness());
-    return;
-  }
-  case Shader::SMO_attr_color: {
-    const ColorAttrib *target_color = (const ColorAttrib *)
-      _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
-    if (target_color->get_color_type() != ColorAttrib::T_flat) {
-      into[0].set(1, 1, 1, 1);
-      return;
-    }
-    into[0] = target_color->get_color();
-    return;
-  }
-  case Shader::SMO_attr_colorscale: {
-    const ColorScaleAttrib *target_color = (const ColorScaleAttrib *)
-      _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
-    if (target_color->is_identity()) {
-      into[0].set(1, 1, 1, 1);
-      return;
-    }
-    into[0] = target_color->get_scale();
-    return;
-  }
-  case Shader::SMO_attr_fog: {
-    const FogAttrib *target_fog = (const FogAttrib *)
-      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
-    Fog *fog = target_fog->get_fog();
-    if (fog == nullptr) {
-      into[0].set(0, 1, 1, 1);
-      into[1].set(1, 1, 1, 1);
-      return;
-    }
-    PN_stdfloat start, end;
-    fog->get_linear_range(start, end);
-    into[0].set(fog->get_exp_density(), start, end, 1.0f / (end - start));
-    into[1] = fog->get_color();
-    return;
-  }
-  case Shader::SMO_alight_x: {
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertv(!np.is_empty());
-    AmbientLight *lt;
-    DCAST_INTO_V(lt, np.node());
-    into[0] = lt->get_color();
-    return;
-  }
-  case Shader::SMO_satten_x: {
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertv(!np.is_empty());
-    Spotlight *lt;
-    DCAST_INTO_V(lt, np.node());
-    LVecBase3 const &a = lt->get_attenuation();
-    PN_stdfloat x = lt->get_exponent();
-    into[0].set(a[0], a[1], a[2], x);
-    return;
-  }
-  case Shader::SMO_dlight_x: {
-    // The dlight matrix contains COLOR, SPECULAR, DIRECTION, PSEUDOHALFANGLE
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertv(!np.is_empty());
-    DirectionalLight *lt;
-    DCAST_INTO_V(lt, np.node());
-    LColor const &c = lt->get_color();
-    LColor const &s = lt->get_specular_color();
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
-    LVecBase3 d = -(t.xform_vec(lt->get_direction()));
-    d.normalize();
-    LVecBase3 h = d + LVecBase3(0,-1,0);
-    h.normalize();
-    into[0].set(c[0], c[1], c[2], c[3]);
-    into[1].set(s[0], s[1], s[2], c[3]);
-    into[2].set(d[0], d[1], d[2], 0);
-    into[3].set(h[0], h[1], h[2], 0);
-    return;
-  }
-  case Shader::SMO_plight_x: {
-    // The plight matrix contains COLOR, SPECULAR, POINT, ATTENUATION
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertv(!np.is_empty());
-    PointLight *lt;
-    DCAST_INTO_V(lt, np.node());
-    LColor const &c = lt->get_color();
-    LColor const &s = lt->get_specular_color();
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
-    LVecBase3 p = (t.xform_point(lt->get_point()));
-    LVecBase3 a = lt->get_attenuation();
-    Lens *lens = lt->get_lens(0);
-    PN_stdfloat lnear = lens->get_near();
-    PN_stdfloat lfar = lens->get_far();
-    into[0].set(c[0], c[1], c[2], c[3]);
-    into[1].set(s[0], s[1], s[2], s[3]);
-    into[2].set(p[0], p[1], p[2], lnear);
-    into[3].set(a[0], a[1], a[2], lfar);
-    return;
-  }
-  case Shader::SMO_slight_x: {
-    // The slight matrix contains COLOR, SPECULAR, POINT, DIRECTION
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertv(!np.is_empty());
-    Spotlight *lt;
-    DCAST_INTO_V(lt, np.node());
-    Lens *lens = lt->get_lens();
-    nassertv(lens != nullptr);
-    LColor const &c = lt->get_color();
-    LColor const &s = lt->get_specular_color();
-    PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
-    LVecBase3 p = t.xform_point(lens->get_nodal_point());
-    LVecBase3 d = -(t.xform_vec(lens->get_view_vector()));
-    into[0].set(c[0], c[1], c[2], c[3]);
-    into[1].set(s[0], s[1], s[2], s[3]);
-    into[2].set(p[0], p[1], p[2], 0);
-    into[3].set(d[0], d[1], d[2], cutoff);
-    return;
-  }
-  case Shader::SMO_light_ambient: {
-    LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
-    const LightAttrib *target_light = (const LightAttrib *)
-      _target_rs->get_attrib_def(LightAttrib::get_class_slot());
-
-    if (!target_light->has_any_on_light()) {
-      // There are no lights at all.  This means, to follow the fixed-
-      // function model, we pretend there is an all-white ambient light.
-      into[0].set(1, 1, 1, 1);
-    } else {
-      into[0] = target_light->get_ambient_contribution();
-    }
-    return;
-  }
-  case Shader::SMO_texmat_i: {
-    const TexMatrixAttrib *tma;
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      ((LMatrix4 *)into)[i] = tma->get_mat(ta->get_on_stage(i));
-    }
-    for (; i < count; ++i) {
-      ((LMatrix4 *)into)[i] = LMatrix4::ident_mat();
-    }
-    return;
-  }
-  case Shader::SMO_inv_texmat_i: {
-    const TexMatrixAttrib *tma;
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      ((LMatrix4 *)into)[i] = tma->get_transform(ta->get_on_stage(i))->get_inverse()->get_mat();
-    }
-    for (; i < count; ++i) {
-      ((LMatrix4 *)into)[i] = LMatrix4::ident_mat();
-    }
-    return;
-  }
-  case Shader::SMO_texscale_i: {
-    const TexMatrixAttrib *tma;
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      LVecBase3 scale = tma->get_transform(ta->get_on_stage(i))->get_scale();
-      into[i].set(scale[0], scale[1], scale[2], 0);
-    }
-    for (; i < count; ++i) {
-      into[i].set(0, 0, 0, 1);
-    }
-    return;
-  }
-  case Shader::SMO_texcolor_i: {
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      TextureStage *ts = ta->get_on_stage(i);
-      into[i] = ts->get_color();
-    }
-    for (; i < count; ++i) {
-      into[i].set(0, 0, 0, 1);
-    }
-    return;
-  }
-  case Shader::SMO_texconst_i: {
-    const TexGenAttrib *tga;
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tga)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      LVecBase3 value = tga->get_constant_value(ta->get_on_stage(i));
-      into[i].set(value[0], value[1], value[2], 1);
-    }
-    for (; i < count; ++i) {
-      into[i].set(0, 0, 0, 1);
-    }
-    return;
-  }
-  case Shader::SMO_tex_is_alpha_i: {
-    // This is a hack so we can support both F_alpha and other formats in the
-    // default shader, to fix font rendering in GLES2
-    const TextureAttrib *ta;
-
-    int num_stages = 0;
-    if (_target_rs->get_attrib(ta)) {
-      num_stages = std::min(count, (int)ta->get_num_on_stages());
-    }
-
-    int i = 0;
-    for (; i < num_stages; ++i) {
-      TextureStage *ts = ta->get_on_stage(i);
-      PN_stdfloat v = (ta->get_on_texture(ts)->get_format() == Texture::F_alpha);
-      into[i].set(v, v, v, 0);
-    }
-    for (; i < count; ++i) {
-      into[i].set(0, 0, 0, 0);
-    }
-    return;
-  }
-  case Shader::SMO_plane_x: {
+  case Shader::SM_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     const PlaneNode *plane_node;
     DCAST_INTO_V(plane_node, np.node());
-    into[0] = plane_node->get_plane();
+    into[0].set_row(3, plane_node->get_plane());
     return;
   }
-  case Shader::SMO_clipplane_x: {
+  case Shader::SM_clipplane_x: {
     const ClipPlaneAttrib *cpa;
     _target_rs->get_attrib_def(cpa);
     int planenr = atoi(name->get_name().c_str());
     if (planenr >= cpa->get_num_on_planes()) {
-      into[0].set(0, 0, 0, 0);
+      into[0].set_row(3, LVecBase4(0, 0, 0, 0));
       return;
     }
     const NodePath &np = cpa->get_on_plane(planenr);
@@ -1402,259 +926,178 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
     if (!transform->is_identity()) {
       plane.xform(transform->get_mat());
     }
-    into[0] = plane;
+    into[0].set_row(3, plane);
     return;
   }
-  case Shader::SMO_apiview_clipplane_i: {
-    const ClipPlaneAttrib *cpa;
-    _target_rs->get_attrib_def(cpa);
-
-    int num_planes = std::min(count, (int)cpa->get_num_on_planes());
-    int i = 0;
-    for (; i < num_planes; ++i) {
-      const NodePath &plane = cpa->get_on_plane(i);
-      nassertv(!plane.is_empty());
-      const PlaneNode *plane_node;
-      DCAST_INTO_V(plane_node, plane.node());
-
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
-          plane.get_transform(_scene_setup->get_scene_root().get_parent()));
-
-      LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
-      into[i] = xformed_plane;
-    }
-
-    for (; i < count; ++i) {
-      // Fill the remainder with zeroes.
-      into[i].set(0, 0, 0, 0);
-    }
+  case Shader::SM_mat_constant_x: {
+    _target_shader->get_shader_input_matrix(name, *into);
     return;
   }
-  case Shader::SMO_mat_constant_x: {
-#ifdef STDFLOAT_DOUBLE
-    LMatrix4 tmp;
-    _target_shader->get_shader_input_matrix(name, tmp);
-    *(LMatrix4 *)into = tmp;
-#else
-    _target_shader->get_shader_input_matrix(name, *(LMatrix4 *)into);
-#endif
+  case Shader::SM_vec_constant_x: {
+    into[0].set_row(3, _target_shader->get_shader_input_vector(name));
     return;
   }
-  case Shader::SMO_vec_constant_x: {
-    into[0] = _target_shader->get_shader_input_vector(name);
+  case Shader::SM_world_to_view: {
+    *into = _scene_setup->get_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_world_to_view: {
-    *(LMatrix4 *)into = _scene_setup->get_world_transform()->get_mat();
+  case Shader::SM_view_to_world: {
+    *into = _scene_setup->get_camera_transform()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_world: {
-    *(LMatrix4 *)into = _scene_setup->get_camera_transform()->get_mat();
+  case Shader::SM_world_to_apiview: {
+    *into = _scene_setup->get_cs_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_model_to_view: {
-    *(LMatrix4 *)into = _inv_cs_transform->compose(_internal_transform)->get_mat();
+  case Shader::SM_apiview_to_world: {
+    *into = _inv_cs_transform->get_mat() *
+      _scene_setup->get_camera_transform()->get_mat();
     return;
   }
-  case Shader::SMO_model_to_apiview: {
-    *(LMatrix4 *)into = _internal_transform->get_mat();
+  case Shader::SM_model_to_view: {
+    *into = _inv_cs_transform->compose(_internal_transform)->get_mat();
     return;
   }
-  case Shader::SMO_view_to_model: {
-    *(LMatrix4 *)into = _internal_transform->invert_compose(_cs_transform)->get_mat();
+  case Shader::SM_model_to_apiview: {
+    *into = _internal_transform->get_mat();
     return;
   }
-  case Shader::SMO_apiview_to_model: {
-    *(LMatrix4 *)into = _internal_transform->get_inverse()->get_mat();
+  case Shader::SM_view_to_model: {
+    *into = _internal_transform->invert_compose(_cs_transform)->get_mat();
     return;
   }
-  case Shader::SMO_apiview_to_view: {
-    *(LMatrix4 *)into = _inv_cs_transform->get_mat();
+  case Shader::SM_apiview_to_model: {
+    *into = _internal_transform->get_inverse()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_apiview: {
-    *(LMatrix4 *)into = _cs_transform->get_mat();
+  case Shader::SM_apiview_to_view: {
+    *into = _inv_cs_transform->get_mat();
     return;
   }
-  case Shader::SMO_clip_to_view: {
+  case Shader::SM_view_to_apiview: {
+    *into = _cs_transform->get_mat();
+    return;
+  }
+  case Shader::SM_clip_to_view: {
     if (_current_lens->get_coordinate_system() == _coordinate_system) {
-      *(LMatrix4 *)into = _current_lens->get_projection_mat_inv(_current_stereo_channel);
+      *into = _current_lens->get_projection_mat_inv(_current_stereo_channel);
     } else {
-      *(LMatrix4 *)into =
+      *into =
         _current_lens->get_projection_mat_inv(_current_stereo_channel) *
         LMatrix4::convert_mat(_current_lens->get_coordinate_system(), _coordinate_system);
     }
     return;
   }
-  case Shader::SMO_view_to_clip: {
+  case Shader::SM_view_to_clip: {
     if (_current_lens->get_coordinate_system() == _coordinate_system) {
-      *(LMatrix4 *)into = _current_lens->get_projection_mat(_current_stereo_channel);
+      *into = _current_lens->get_projection_mat(_current_stereo_channel);
     } else {
-      *(LMatrix4 *)into =
+      *into =
         LMatrix4::convert_mat(_coordinate_system, _current_lens->get_coordinate_system()) *
         _current_lens->get_projection_mat(_current_stereo_channel);
     }
     return;
   }
-  case Shader::SMO_apiclip_to_view: {
-    *(LMatrix4 *)into = _projection_mat_inv->get_mat() * _inv_cs_transform->get_mat();
+  case Shader::SM_apiclip_to_view: {
+    *into = _projection_mat_inv->get_mat() * _inv_cs_transform->get_mat();
     return;
   }
-  case Shader::SMO_view_to_apiclip: {
-    *(LMatrix4 *)into = _cs_transform->get_mat() * _projection_mat->get_mat();
+  case Shader::SM_view_to_apiclip: {
+    *into = _cs_transform->get_mat() * _projection_mat->get_mat();
     return;
   }
-  case Shader::SMO_apiclip_to_apiview: {
-    *(LMatrix4 *)into = _projection_mat_inv->get_mat();
+  case Shader::SM_apiclip_to_apiview: {
+    *into = _projection_mat_inv->get_mat();
     return;
   }
-  case Shader::SMO_apiview_to_apiclip: {
-    *(LMatrix4 *)into = _projection_mat->get_mat();
+  case Shader::SM_apiview_to_apiclip: {
+    *into = _projection_mat->get_mat();
     return;
   }
-  case Shader::SMO_view_x_to_view: {
+  case Shader::SM_view_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4 *)into = np.get_net_transform()->get_mat() *
+    *into = np.get_net_transform()->get_mat() *
       _scene_setup->get_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_view_x: {
+  case Shader::SM_view_to_view_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4 *)into = _scene_setup->get_camera_transform()->get_mat() *
+    *into = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat();
     return;
   }
-  case Shader::SMO_apiview_x_to_view: {
+  case Shader::SM_apiview_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4 *)into = LMatrix4::convert_mat(_internal_coordinate_system, _coordinate_system) *
+    *into = LMatrix4::convert_mat(_internal_coordinate_system, _coordinate_system) *
       np.get_net_transform()->get_mat() *
       _scene_setup->get_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_apiview_x: {
+  case Shader::SM_view_to_apiview_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4 *)into = (_scene_setup->get_camera_transform()->get_mat() *
+    *into = (_scene_setup->get_camera_transform()->get_mat() *
          np.get_net_transform()->get_inverse()->get_mat() *
          LMatrix4::convert_mat(_coordinate_system, _internal_coordinate_system));
     return;
   }
-  case Shader::SMO_clip_x_to_view: {
+  case Shader::SM_clip_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4 *)into = lens->get_projection_mat_inv(_current_stereo_channel) *
+    *into = lens->get_projection_mat_inv(_current_stereo_channel) *
       LMatrix4::convert_mat(lens->get_coordinate_system(), _coordinate_system) *
       np.get_net_transform()->get_mat() *
       _scene_setup->get_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_clip_x: {
+  case Shader::SM_view_to_clip_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4 *)into = _scene_setup->get_camera_transform()->get_mat() *
+    *into = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel);
     return;
   }
-  case Shader::SMO_apiclip_x_to_view: {
+  case Shader::SM_apiclip_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4 *)into = calc_projection_mat(lens)->get_inverse()->get_mat() *
+    *into = calc_projection_mat(lens)->get_inverse()->get_mat() *
       get_cs_transform_for(lens->get_coordinate_system())->get_inverse()->get_mat() *
       np.get_net_transform()->get_mat() *
       _scene_setup->get_world_transform()->get_mat();
     return;
   }
-  case Shader::SMO_view_to_apiclip_x: {
+  case Shader::SM_view_to_apiclip_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4 *)into = _scene_setup->get_camera_transform()->get_mat() *
+    *into = _scene_setup->get_camera_transform()->get_mat() *
       np.get_net_transform()->get_inverse()->get_mat() *
       get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
       calc_projection_mat(lens)->get_mat();
     return;
   }
-  case Shader::SMO_struct_constant_x_light: {
-    // Could be a light, or generic struct
-    if (_target_shader->has_shader_input(name)) {
-      const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-      fetch_specified_light(np, into);
-      return;
-    }
-    // fall through
-  }
-  case Shader::SMO_struct_constant_x: {
-    _target_shader->get_shader_input_data(name, (char *)into, type, false);
-    /*const ShaderType::Struct *struct_type = type->as_struct();
-    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
-      const ShaderType::Struct::Member &member = struct_type->get_member(i);
-
-      ShaderType::ScalarType scalar_type;
-      uint32_t num_elements;
-      uint32_t num_rows;
-      uint32_t num_columns;
-      if (member.type->as_scalar_type(scalar_type, num_elements, num_rows, num_columns)) {
-        _target_shader->get_shader_input_data(
-          ((InternalName *)name)->append(member.name),
-          (char *)into + member.offset,
-          scalar_type, num_elements, num_rows, num_columns, false);
-      }
-    }*/
-    break;
-  }
-  case Shader::SMO_light_source_i: {
+  case Shader::SM_world_to_apiclip_light_i: {
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
-    // We don't count ambient lights, which would be pretty silly to handle
-    // via this mechanism.
-    size_t num_lights = std::min((size_t)count, target_light->get_num_non_ambient_lights());
-
-    size_t i = 0;
-    for (i = 0; i < num_lights; ++i) {
-      NodePath light = target_light->get_on_light(i);
-      nassertv(!light.is_empty());
-      fetch_specified_light(light, into);
-      into += Shader::LA_COUNT;
-    }
-    // Apply the default OpenGL lights otherwise.
-    // Special exception for light 0, which defaults to white.
-    for (; i < (size_t)count; ++i) {
-      fetch_specified_light(NodePath(), into);
-      if (i == 0) {
-        into[Shader::LA_color].set(1, 1, 1, 1);
-      }
-      into += Shader::LA_COUNT;
-    }
-    return;
-  }
-  case Shader::SMO_apiview_to_apiclip_light_source_i: { // shadowViewMatrix
-    const LightAttrib *target_light;
-    _target_rs->get_attrib_def(target_light);
-
-    // We don't count ambient lights, which would be pretty silly to handle
-    // via this mechanism.
-    size_t num_lights = std::min((size_t)count, target_light->get_num_non_ambient_lights());
-
-    size_t i = 0;
-    for (i = 0; i < num_lights; ++i) {
+    size_t i = (size_t)atoi(name->get_basename().c_str());
+    if (i < target_light->get_num_non_ambient_lights()) {
       NodePath light = target_light->get_on_light(i);
       nassertv(!light.is_empty());
 
@@ -1662,534 +1105,37 @@ fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
       DCAST_INTO_V(lnode, light.node());
       Lens *lens = lnode->get_lens();
 
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        light.get_net_transform()->get_inverse()->get_mat() *
+      LMatrix4 t = light.get_net_transform()->get_inverse()->get_mat() *
         LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
       if (!lnode->is_of_type(PointLight::get_class_type())) {
         t *= lens->get_projection_mat() * shadow_bias_mat;
       }
-      ((LMatrix4 *)into)[i] = t;
-    }
-
-    // Apply just the bias matrix otherwise.
-    for (; i < (size_t)count; ++i) {
-      ((LMatrix4 *)into)[i] = shadow_bias_mat;
-    }
-    return;
-  }
-  case Shader::SMO_light_source_i_packed: {
-    // The light matrix contains COLOR, ATTENUATION, VIEWVECTOR, POSITION
-    const LightAttrib *target_light;
-    _target_rs->get_attrib_def(target_light);
-
-    // We don't count ambient lights, which would be pretty silly to handle
-    // via this mechanism.
-    size_t num_lights = std::min((size_t)count, target_light->get_num_non_ambient_lights());
-
-    size_t i = 0;
-    for (i = 0; i < num_lights; ++i) {
-      NodePath np = target_light->get_on_light(i);
-      nassertv(!np.is_empty());
-      PandaNode *node = np.node();
-      Light *light = node->as_light();
-      nassertv(light != nullptr);
-      into[0] = light->get_color();
-      into[1] = LVecBase4(light->get_attenuation(), 0);
-
-      LMatrix4 mat = np.get_net_transform()->get_mat() *
-        _scene_setup->get_world_transform()->get_mat();
-
-      if (node->is_of_type(DirectionalLight::get_class_type())) {
-        LVecBase3 d = mat.xform_vec(((const DirectionalLight *)node)->get_direction());
-        d.normalize();
-        into[2] = LVecBase4(d, 0);
-        into[3] = LVecBase4(-d, 0);
-      }
-      else if (node->is_of_type(LightLensNode::get_class_type())) {
-        const Lens *lens = ((const LightLensNode *)node)->get_lens();
-
-        LPoint3 p = mat.xform_point(lens->get_nodal_point());
-        into[3] = LVecBase4(p);
-
-        // For shadowed point light we need to store near/far.
-        // For spotlight we need to store cutoff angle.
-        if (node->is_of_type(Spotlight::get_class_type())) {
-          PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
-          LVecBase3 d = -(mat.xform_vec(lens->get_view_vector()));
-          into[1][3] = ((const Spotlight *)node)->get_exponent();
-          into[2] = LVecBase4(d, cutoff);
-        }
-        else if (node->is_of_type(PointLight::get_class_type())) {
-          into[1][3] = lens->get_far();
-          into[3][3] = lens->get_near();
-
-          if (node->is_of_type(SphereLight::get_class_type())) {
-            into[2][3] = ((const SphereLight *)node)->get_radius();
-          }
-        }
-      }
-
-      into += 4;
-    }
-    // Apply the default OpenGL lights otherwise.
-    // Special exception for light 0, which defaults to white.
-    if (i == 0) {
-      into[0].set(1, 1, 1, 1);
-      into[1].set(1, 0, 0, 0);
-      into[2].set(0, 0, 0, 0);
-      into[3].set(0, 0, 0, 0);
-      ++i;
-    }
-    for (; i < (size_t)count; ++i) {
-      into[0].set(0, 0, 0, 0);
-      into[1].set(1, 0, 0, 0);
-      into[2].set(0, 0, 0, 0);
-      into[3].set(0, 0, 0, 0);
-      into += 4;
-    }
-    return;
-  }
-  case Shader::SMO_attr_pointparams: {
-    const RenderModeAttrib *target_render_mode;
-    _target_rs->get_attrib_def(target_render_mode);
-
-    PN_stdfloat thickness = target_render_mode->get_thickness();
-    PN_stdfloat catten = thickness;
-    PN_stdfloat patten = 0.0f;
-    if (target_render_mode->get_perspective()) {
-      LVecBase2i pixel_size = _current_display_region->get_pixel_size();
-
-      LVector3 height(0.0f, thickness, 1.0f);
-      height = height * _projection_mat->get_mat();
-      height = height * _internal_transform->get_scale()[1];
-      PN_stdfloat s = height[1] * pixel_size[1];
-
-      if (_current_lens->is_orthographic()) {
-        catten = s;
-        patten = 0.0f;
-      } else {
-        catten = 0.0f;
-        patten = s;
-      }
-    }
-
-    into[0].set(thickness, catten, patten, 0.0f);
-    return;
-  }
-  default:
-    nassertv(false /*should never get here*/);
-    return;
-  }
-}
-
-/**
- * Given a NodePath passed into a shader input that is a structure, fetches
- * the value for the given member.
- */
-void GraphicsStateGuardian::
-fetch_specified_light(const NodePath &np, LVecBase4 *into) {
-  PandaNode *node = nullptr;
-  if (!np.is_empty()) {
-    node = np.node();
-  }
-
-  if (node == nullptr) {
-    into[Shader::LA_color].set(0, 0, 0, 1);
-    into[Shader::LA_specular].set(0, 0, 0, 1);
-    into[Shader::LA_ambient].set(0, 0, 0, 1);
-    into[Shader::LA_diffuse].set(0, 0, 0, 1);
-    into[Shader::LA_position].set(0, 0, 1, 0);
-    into[Shader::LA_half_vector].set(0, 0, 1, 0);
-    into[Shader::LA_spot_direction].set(0, 0, -1, 0);
-    into[Shader::LA_spot_params].set(-1, 180, 0, 0);
-    into[Shader::LA_attenuation].set(1, 0, 0, 0);
-    *(LMatrix4 *)&into[Shader::LA_shadow_view_matrix] = shadow_bias_mat;
-  } else {
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-
-    LVecBase4 color = light->get_color();
-    into[Shader::LA_color] = color;
-    into[Shader::LA_specular] = light->get_specular_color();
-
-    if (node->is_ambient_light()) {
-      into[Shader::LA_ambient] = color;
-      into[Shader::LA_diffuse].set(0, 0, 0, 1);
-      into[Shader::LA_position].set(0, 0, 0, 0);
-      into[Shader::LA_half_vector].set(0, 0, 0, 0);
-      into[Shader::LA_spot_direction].set(0, 0, 0, 0);
-      into[Shader::LA_spot_params].set(-1, 180, 0, 0);
+      *(LMatrix4 *)into = t;
     } else {
-      into[Shader::LA_ambient].set(0, 0, 0, 1);
-      into[Shader::LA_diffuse] = color;
-
-      CPT(TransformState) net_transform =
-        np.get_transform(_scene_setup->get_scene_root().get_parent());
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(net_transform);
-      const LMatrix4 &light_mat = transform->get_mat();
-
-      LightLensNode *light;
-      DCAST_INTO_V(light, node);
-      Lens *lens = light->get_lens();
-      nassertv(lens != nullptr);
-
-      if (node->is_of_type(DirectionalLight::get_class_type())) {
-        DirectionalLight *light;
-        DCAST_INTO_V(light, node);
-
-        LVector3 dir = -(light->get_direction() * light_mat);
-        into[Shader::LA_position].set(dir[0], dir[1], dir[2], 0);
-
-        dir.normalize();
-        dir += LVector3(0, 0, 1);
-        dir.normalize();
-        into[Shader::LA_half_vector].set(dir[0], dir[1], dir[2], 1);
-      }
-      else {
-        LPoint3 pos = lens->get_nodal_point() * light_mat;
-        into[Shader::LA_position].set(pos[0], pos[1], pos[2], 1);
-
-        pos.normalize();
-        pos += LVector3(0, 0, 1);
-        pos.normalize();
-        into[Shader::LA_half_vector].set(pos[0], pos[1], pos[2], 1);
-      }
-
-      if (node->is_of_type(Spotlight::get_class_type())) {
-        float cutoff = lens->get_hfov() * 0.5f;
-        into[Shader::LA_spot_params].set(ccos(deg_2_rad(cutoff)), cutoff, light->get_exponent(), 0);
-      } else {
-        // spotCosCutoff, spotCutoff, spotExponent
-        into[Shader::LA_spot_params].set(-1, 180, light->get_exponent(), 0);
-      }
-
-      LVector3 dir = lens->get_view_vector() * light_mat;
-      into[Shader::LA_spot_direction].set(dir[0], dir[1], dir[2], 0);
-
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        net_transform->get_inverse()->get_mat() *
-        LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
-
-      if (!node->is_of_type(PointLight::get_class_type())) {
-        t *= lens->get_projection_mat() * shadow_bias_mat;
-      }
-      into[Shader::LA_shadow_view_matrix + 0] = t[0];
-      into[Shader::LA_shadow_view_matrix + 1] = t[1];
-      into[Shader::LA_shadow_view_matrix + 2] = t[2];
-      into[Shader::LA_shadow_view_matrix + 3] = t[3];
+      // Apply just the bias matrix otherwise.
+      *(LMatrix4 *)into = shadow_bias_mat;
     }
-
-    LVecBase3 atten = light->get_attenuation();
-    PN_stdfloat radius = 0;
-    if (node->is_of_type(SphereLight::get_class_type())) {
-      radius = ((const SphereLight *)node)->get_radius();
-    }
-    into[Shader::LA_attenuation].set(atten[0], atten[1], atten[2], radius);
+    return;
   }
-}
+  case Shader::SM_point_attenuation: {
+    // Takes a vector like (0, thickness, 1, 0) and transforms it into point
+    // attenuation parameters
+    LVecBase2i pixel_size = _current_display_region->get_pixel_size();
 
-/**
- * Like fetch_specified_value, but for texture inputs.
- */
-PT(Texture) GraphicsStateGuardian::
-fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
-                        int &view) {
-
-  static PT(Texture) default_add_tex;
-  static PT(Texture) default_normal_height_tex;
-
-  switch (spec._part) {
-  case Shader::STO_named_input:
-    // Named texture input.
-    if (!_target_shader->has_shader_input(spec._name)) {
-      // Is this a member of something, like a node?
-      const InternalName *parent = spec._name->get_parent();
-      if (parent != InternalName::get_root() &&
-          _target_shader->has_shader_input(parent)) {
-
-        // Yes, grab the node.
-        const string &basename = spec._name->get_basename();
-        NodePath np = _target_shader->get_shader_input_nodepath(parent);
-
-        if (basename == "shadowMap") {
-          PT(Texture) tex = get_shadow_map(np);
-          if (tex != nullptr) {
-            sampler = tex->get_default_sampler();
-          }
-          return tex;
-
-        } else {
-          if (spec._stage == 0) {
-            display_cat.error()
-              << "Shader input " << *parent
-              << " has no member named " << basename << ".\n";
-            spec._stage = -1;
-          }
-        }
-      } else {
-        // This used to be legal for some reason, so don't trigger the assert.
-        // Prevent flood, though, so abuse the _stage flag to indicate whether
-        // we've already errored about this.
-        if (spec._stage == 0) {
-          display_cat.error()
-            << "Shader input " << *spec._name << " is not present.\n";
-          spec._stage = -1;
-        }
-      }
+    LMatrix4 mat = _projection_mat->get_mat();
+    if (_current_lens != nullptr && _current_lens->is_orthographic()) {
+      mat *= LMatrix4(0, 0, 0, 0, 0, pixel_size[1], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     } else {
-      // Just a regular texture input.
-      return _target_shader->get_shader_input_texture(spec._name, &sampler);
+      mat *= LMatrix4(0, 0, 0, 0, 0, 0, pixel_size[1], 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
-    break;
-
-  case Shader::STO_stage_i:
-    {
-      // We get the TextureAttrib directly from the _target_rs, not the
-      // filtered TextureAttrib in _target_texture.
-      const TextureAttrib *texattrib;
-      _target_rs->get_attrib_def(texattrib);
-
-      if (spec._stage < texattrib->get_num_on_stages()) {
-        TextureStage *stage = texattrib->get_on_stage(spec._stage);
-        sampler = texattrib->get_on_sampler(stage);
-        view += stage->get_tex_view_offset();
-        return texattrib->get_on_texture(stage);
-      }
-    }
-    break;
-
-  case Shader::STO_light_i_shadow_map:
-    {
-      const LightAttrib *target_light;
-      _target_rs->get_attrib_def(target_light);
-
-      PT(Texture) tex;
-
-      // We don't count ambient lights, which would be pretty silly to handle
-      // via this mechanism.
-      size_t num_lights = target_light->get_num_non_ambient_lights();
-      if (spec._stage >= 0 && (size_t)spec._stage < num_lights) {
-        NodePath light = target_light->get_on_light((size_t)spec._stage);
-        nassertr(!light.is_empty(), nullptr);
-        Light *light_obj = light.node()->as_light();
-        nassertr(light_obj != nullptr, nullptr);
-
-        LightLensNode *lln = DCAST(LightLensNode, light.node());
-        if (lln != nullptr && lln->_shadow_caster) {
-          tex = get_shadow_map(light);
-        } else {
-          tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
-        }
-      } else {
-        // There is no such light assigned.  Bind a dummy shadow map.
-        tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
-      }
-      if (tex != nullptr) {
-        sampler = tex->get_default_sampler();
-      }
-      return tex;
-    }
-
-  case Shader::STO_ff_stage_i:
-    {
-      // We get the TextureAttrib directly from the _target_rs, not the
-      // filtered TextureAttrib in _target_texture.
-      const TextureAttrib *texattrib;
-      _target_rs->get_attrib_def(texattrib);
-
-      if (spec._stage < texattrib->get_num_on_ff_stages()) {
-        TextureStage *stage = texattrib->get_on_ff_stage(spec._stage);
-        sampler = texattrib->get_on_sampler(stage);
-        view += stage->get_tex_view_offset();
-        return texattrib->get_on_texture(stage);
-      }
-    }
-    break;
-
-  case Shader::STO_stage_modulate_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_modulate ||
-              mode == TextureStage::M_modulate_glow ||
-              mode == TextureStage::M_modulate_gloss) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  case Shader::STO_stage_add_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_add) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-
-      if (default_add_tex == nullptr) {
-        PT(Texture) tex = new Texture("default-add");
-        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_luminance);
-        tex->set_clear_color(LColor(0, 0, 0, 1));
-        default_add_tex = std::move(tex);
-      }
-      return default_add_tex;
-    }
-
-  case Shader::STO_stage_normal_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_normal ||
-              mode == TextureStage::M_normal_height) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-
-      if (default_normal_height_tex == nullptr) {
-        PT(Texture) tex = new Texture("default-normal-height");
-        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba);
-        tex->set_clear_color(LColor(0.5, 0.5, 1, 0));
-        default_normal_height_tex = std::move(tex);
-      }
-      return default_normal_height_tex;
-    }
-
-  case Shader::STO_stage_gloss_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_gloss ||
-              mode == TextureStage::M_modulate_gloss ||
-              mode == TextureStage::M_normal_gloss) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  case Shader::STO_stage_height_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_height ||
-              mode == TextureStage::M_normal_height) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-
-      if (default_normal_height_tex == nullptr) {
-        PT(Texture) tex = new Texture("default-normal-height");
-        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba);
-        tex->set_clear_color(LColor(0.5, 0.5, 1, 0));
-        default_normal_height_tex = std::move(tex);
-      }
-      return default_normal_height_tex;
-    }
-
-  case Shader::STO_stage_selector_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_selector) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  case Shader::STO_stage_emission_i:
-    {
-      const TextureAttrib *texattrib;
-      if (_target_rs->get_attrib(texattrib)) {
-        int si = 0;
-        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
-          TextureStage *stage = texattrib->get_on_stage(i);
-          TextureStage::Mode mode = stage->get_mode();
-
-          if (mode == TextureStage::M_emission) {
-            if (si++ == spec._stage) {
-              sampler = texattrib->get_on_sampler(stage);
-              view += stage->get_tex_view_offset();
-              return texattrib->get_on_texture(stage);
-            }
-          }
-        }
-      }
-    }
-    break;
-
-  default:
-    nassertr(false, nullptr);
-    break;
+    // Put the thickness in the first parameter.
+    mat.set_col(0, LVecBase4(0, 1, 0, 0));
+    *into = mat;
+    return;
   }
-
-  return nullptr;
+  }
+  nassertv(false /*should never get here*/);
 }
 
 /**
@@ -3422,7 +2368,7 @@ async_reload_texture(TextureContext *tc) {
  * created, using the given host window to create the buffer, or the current
  * window if that is set to NULL.
  */
-PT(Texture) GraphicsStateGuardian::
+Texture *GraphicsStateGuardian::
 get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   PandaNode *node = light_np.node();
   bool is_point = node->is_of_type(PointLight::get_class_type());
@@ -3434,11 +2380,7 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   if (light == nullptr || !light->_shadow_caster) {
     // This light does not have a shadow caster.  Return a dummy shadow map
     // that is filled with a depth value of 1.
-    if (node->is_of_type(PointLight::get_class_type())) {
-      return get_dummy_shadow_map(Texture::TT_cube_map);
-    } else {
-      return get_dummy_shadow_map(Texture::TT_2d_texture);
-    }
+    return get_dummy_shadow_map(node->is_of_type(PointLight::get_class_type()));
   }
 
   // The light's shadow map should have been created by set_shadow_caster().
@@ -3490,9 +2432,9 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
  * Returns a dummy shadow map that can be used for a light of the given type
  * that does not cast shadows.
  */
-PT(Texture) GraphicsStateGuardian::
-get_dummy_shadow_map(Texture::TextureType texture_type) const {
-  if (texture_type != Texture::TT_cube_map) {
+Texture *GraphicsStateGuardian::
+get_dummy_shadow_map(bool cube_map) const {
+  if (!cube_map) {
     static PT(Texture) dummy_2d;
     if (dummy_2d == nullptr) {
       dummy_2d = new Texture("dummy-shadow-2d");

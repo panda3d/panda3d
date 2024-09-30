@@ -119,9 +119,11 @@ PUBLISHED:
   NodePath get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(const InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=nullptr) const;
+  Texture *get_shader_input_texture_image(const InternalName *id, ShaderType::Access &access, int &z, int &n) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   bool get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const;
-  const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
+  const LMatrix4f &get_shader_input_matrix(const InternalName *id, LMatrix4f &matrix) const;
+  const LMatrix4d &get_shader_input_matrix(const InternalName *id, LMatrix4d &matrix) const;
   size_t get_shader_input_data(const InternalName *id, void *into,
                                const ShaderType *type, bool pad_rows) const;
   void *get_shader_input_data(const InternalName *id, void *scratch,

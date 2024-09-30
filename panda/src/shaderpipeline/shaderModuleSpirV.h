@@ -80,7 +80,7 @@ public:
   /**
    * A container that allows conveniently iterating over the instructions.
    */
-  class InstructionStream {
+  class EXPCL_PANDA_SHADERPIPELINE InstructionStream {
   public:
     typedef InstructionIterator iterator;
 
@@ -89,6 +89,7 @@ public:
     INLINE InstructionStream(std::vector<uint32_t> words);
 
     bool validate_header() const;
+    bool disassemble(std::ostream &out) const;
 
     INLINE operator std::vector<uint32_t> & ();
 
@@ -154,6 +155,8 @@ public:
     // If both of these are set, no access is permitted (size queries only)
     DF_non_writable = 128, // readonly
     DF_non_readable = 256, // writeonly
+
+    DF_relaxed_precision = 512,
   };
 
   /**
@@ -208,7 +211,7 @@ public:
    * exist at any given time, and the stream may not be modified by other means
    * in the meantime.
    */
-  class InstructionWriter {
+  class EXPCL_PANDA_SHADERPIPELINE InstructionWriter {
   public:
     InstructionWriter(InstructionStream &stream);
 
@@ -217,6 +220,7 @@ public:
     Definition &modify_definition(uint32_t id);
 
     void assign_locations(Stage stage);
+    void assign_locations(pmap<uint32_t, int> locations);
     void bind_descriptor_set(uint32_t set, const vector_int &locations);
     void remove_unused_variables();
 

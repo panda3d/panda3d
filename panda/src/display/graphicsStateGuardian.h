@@ -239,7 +239,6 @@ PUBLISHED:
   INLINE static TextureStage *get_alpha_scale_texture_stage();
 
   void set_coordinate_system(CoordinateSystem cs);
-  INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
   MAKE_PROPERTY(coordinate_system, get_coordinate_system, set_coordinate_system);
 
@@ -338,14 +337,9 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  void update_shader_matrix_cache(Shader *shader, LVecBase4 *cache, int altered);
-  const void *fetch_specified_value(Shader::ShaderMatSpec &spec, const LVecBase4 *cache,
-                                    LVecBase4 *scratch, bool pad_rows);
-  void fetch_specified_part(Shader::ShaderMatInput input, const InternalName *name,
-                            const ShaderType *type, LVecBase4 *into, int count = 1);
-  void fetch_specified_light(const NodePath &np, LVecBase4 *into);
-  PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
-                                      SamplerState &sampler, int &view);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  void fetch_specified_matrix(Shader::StateMatrix input, const InternalName *name,
+                              LMatrix4 *into);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
@@ -402,6 +396,10 @@ public:
   INLINE void mark_new();
   virtual void reset();
 
+  INLINE const RenderState *get_target_state() const;
+  INLINE const ShaderAttrib *get_target_shader_attrib() const;
+  INLINE const GeomVertexDataPipelineReader *get_data_reader() const;
+
   INLINE CPT(TransformState) get_external_transform() const;
   INLINE CPT(TransformState) get_internal_transform() const;
 
@@ -436,8 +434,8 @@ public:
 
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
-  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=nullptr);
-  PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
+  Texture *get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=nullptr);
+  Texture *get_dummy_shadow_map(bool cube_map) const;
   virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
   virtual void ensure_generated_shader(const RenderState *state);
@@ -527,7 +525,6 @@ protected:
   CPT(TransformState) _projection_mat_inv;
   const FrameBufferProperties *_current_properties;
 
-  CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
   CPT(TransformState) _cs_transform;
   CPT(TransformState) _inv_cs_transform;

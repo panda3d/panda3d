@@ -18,6 +18,7 @@
 #include "internalName.h"
 #include "shader.h"
 #include "shaderContext.h"
+#include "shaderInputBinding.h"
 #include "deletedChain.h"
 #include "paramTexture.h"
 #include "small_vector.h"
@@ -28,6 +29,9 @@ class CLP(GraphicsStateGuardian);
  * xyz
  */
 class EXPCL_GL CLP(ShaderContext) final : public ShaderContext {
+private:
+  struct UniformBlock;
+
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -35,30 +39,30 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  void r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
+                          const ShaderType *type, const char *name,
+                          const char *sym, int location,
+                          const SparseArray &active_locations,
+                          int &resource_index, size_t offset = 0);
+
   void reflect_program();
-  void query_uniform_locations(const ShaderModule *module);
-  void r_query_uniform_locations(uint32_t from_location, const ShaderType *type, const char *name);
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
   void reflect_uniform_block(int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
   const ShaderType *get_param_type(GLenum type);
 
-  INLINE GLint get_uniform_location(int seqno) const;
-  INLINE void set_uniform_location(int seqno, GLint location);
-
   bool valid(void) override;
   void bind() override;
   void unbind() override;
 
+  INLINE void set_display_region(const DisplayRegion *display_region);
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
                                const TransformState *projection_transform) override;
 
   void issue_parameters(int altered) override;
-  void update_transform_table(const TransformTable *table);
-  void update_slider_table(const SliderTable *table);
   void disable_shader_vertex_arrays() override;
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force) override;
   void disable_shader_texture_bindings() override;
@@ -82,32 +86,67 @@ private:
   };
   typedef small_vector<Module, 2> Modules;
   Modules _modules;
-  bool _needs_reflection = false;
-  bool _needs_query_uniform_locations = false;
-  bool _remap_uniform_locations = false;
+  bool _is_legacy = false;
   bool _emulate_float_attribs = false;
 
   WCPT(RenderState) _state_rs;
-  CPT(TransformState) _modelview_transform;
-  CPT(TransformState) _camera_transform;
-  CPT(TransformState) _projection_transform;
-  CPT(ColorAttrib) _color_attrib;
-  WCPT(ShaderAttrib) _shader_attrib;
+  const TransformState *_modelview_transform;
+  const TransformState *_camera_transform;
+  const TransformState *_projection_transform;
+  const ColorAttrib *_color_attrib;
+  const ShaderAttrib *_shader_attrib;
+  const DisplayRegion *_display_region = nullptr;
+  int _frame_number = -1;
 
-/*
- * struct ParamContext { CPT(InternalName) _name; GLint _location; GLsizei
- * _count; WPT(ParamValue) _value; UpdateSeq _updated; }; typedef
- * pvector<ParamContext> ParamContexts; ParamContexts _params;
- */
+  pvector<LMatrix4> _matrix_cache;
+  int _matrix_cache_deps = ShaderEnums::D_none;
 
-  pvector<GLint> _uniform_location_map;
+  struct UniformBlock {
+    struct Binding {
+      PT(ShaderInputBinding) _binding;
+      size_t _offset;
+    };
+
+    small_vector<Binding, 1> _bindings;
+    int _dep;
+
+    // When UBOs are not used or supported, we use an array of glUniform
+    // calls instead.
+    struct Call {
+      GLint _location;
+      GLuint _count;
+      void *_func;
+      size_t _offset;
+    };
+
+    pvector<Call> _matrices;
+    pvector<Call> _vectors;
+  };
+  pvector<UniformBlock> _uniform_blocks;
+  int _uniform_data_deps = 0;
+  size_t _scratch_space_size = 0;
+
+  struct TextureUnit {
+    PT(ShaderInputBinding) _binding;
+    ShaderInputBinding::ResourceId _resource_id;
+    GLenum _target;
+    int _index;
+  };
+  typedef pvector<TextureUnit> TextureUnits;
+  TextureUnits _texture_units;
+
+  struct ImageUnit {
+    ShaderInputBinding *_binding;
+    ShaderInputBinding::ResourceId _resource_id;
+    CLP(TextureContext) *_gtc = nullptr;
+    ShaderType::Access _access;
+    bool _written = false;
+  };
+  typedef pvector<ImageUnit> ImageUnits;
+  ImageUnits _image_units;
+
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
-  GLint _transform_table_index;
-  GLint _slider_table_index;
-  GLsizei _transform_table_size;
-  GLsizei _slider_table_size;
-  GLint _frame_number;
 
 #ifndef OPENGLES
   struct StorageBlock {
@@ -120,24 +159,17 @@ private:
   BitArray _used_storage_bindings;
 #endif
 
-  struct ImageInput {
-    CPT(InternalName) _name;
-    CLP(TextureContext) *_gtc = nullptr;
-    bool _writable = false;
-  };
-  pvector<ImageInput> _glsl_img_inputs;
-
-  LVecBase4 *_mat_part_cache = nullptr;
-  LVecBase4 *_mat_scratch_space = nullptr;
-
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
 
+  typedef pmap<const InternalName *, GLint> LocationMap;
+
   void report_shader_errors(const Module &module, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
-  bool attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &spec_consts);
-  bool compile_and_link();
+  bool attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &spec_consts,
+                     const LocationMap &locations, bool &needs_query_locations);
+  bool compile_and_link(const LocationMap &locations, bool &needs_query_locations);
   void release_resources();
 
 public:

@@ -29,6 +29,7 @@
 #include "bamCache.h"
 #include "shaderModuleGlsl.h"
 #include "shaderModuleSpirV.h"
+#include "sparseArray.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
@@ -51,14 +52,21 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _uses_standard_vertex_arrays = false;
   _enabled_attribs.clear();
   _color_attrib_index = -1;
-  _transform_table_index = -1;
-  _slider_table_index = -1;
-  _frame_number = -1;
   _validated = !gl_validate_shaders;
+
+  // Ignoring any locations that may have already been set, we assign a new
+  // unique location to each parameter.
+  LocationMap locations;
+  GLint next_location = 0;
+  for (const Shader::Parameter &param : _shader->_parameters) {
+    locations[param._name] = next_location;
+    next_location += param._type->get_num_parameter_locations();
+  }
 
   // We compile and analyze the shader here, instead of in shader.cxx, to
   // avoid gobj getting a dependency on GL stuff.
-  if (!compile_and_link()) {
+  bool needs_query_locations = false;
+  if (!compile_and_link(locations, needs_query_locations)) {
     release_resources();
     s->_error_flag = true;
     return;
@@ -67,123 +75,70 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   // Bind the program, so that we can call glUniform1i for the textures.
   _glgsg->_glUseProgram(_glsl_program);
 
-  // Is this a SPIR-V shader?  If so, we've already done the reflection.
-  if (_needs_reflection) {
-    _remap_uniform_locations = false;
+  // If this is a legacy GLSL shader, we don't have the parameter definitions
+  // yet, so we need to perform reflection on the shader.
+  SparseArray active_locations;
+  if (_is_legacy) {
     reflect_program();
+    needs_query_locations = true;
   }
-  else {
-    _remap_uniform_locations = true;
+  else if (!needs_query_locations) {
+    // We still need to query which uniform locations are actually in use,
+    // because the GL driver may have optimized some out.
+    GLint num_active_uniforms = 0;
+    glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
 
-    if (_needs_query_uniform_locations) {
-      for (const Module &module : _modules) {
-        query_uniform_locations(module._module);
-      }
-    }
-    else {
-      // We still need to query which uniform locations are actually in use,
-      // because the GL driver may have optimized some out.
-      GLint num_active_uniforms = 0;
-      glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
-
-      for (GLint i = 0; i < num_active_uniforms; ++i) {
-        GLenum props[2] = {GL_LOCATION, GL_ARRAY_SIZE};
-        GLint values[2];
-        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
-        GLint location = values[0];
-        if (location >= 0) {
-          GLint array_size = values[1];
-          while (array_size--) {
-            set_uniform_location(location, location);
-            ++location;
-          }
-        }
+    for (GLint i = 0; i < num_active_uniforms; ++i) {
+      GLenum props[2] = {GL_LOCATION, GL_ARRAY_SIZE};
+      GLint values[2];
+      glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
+      GLint location = values[0];
+      if (location >= 0) {
+        GLint array_size = values[1];
+        active_locations.set_range(location, array_size);
       }
     }
   }
 
-  // Rebind the texture and image inputs.
-  size_t num_textures = s->_tex_spec.size();
-  for (size_t i = 0; i < num_textures;) {
-    Shader::ShaderTexSpec &spec = s->_tex_spec[i];
-    nassertd(spec._id._location >= 0) continue;
+  _matrix_cache = pvector<LMatrix4>(s->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = s->_matrix_cache_deps;
 
-    GLint location = get_uniform_location(spec._id._location);
-    if (location < 0) {
-      // Not used.  Optimize it out.
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Uniform " << *spec._id._name << " is unused, unbinding\n";
-      }
-      s->_tex_spec.erase(s->_tex_spec.begin() + i);
-      --num_textures;
+  _scratch_space_size = 16;
+  for (const Shader::Parameter &param : s->_parameters) {
+    if (param._binding == nullptr) {
       continue;
     }
 
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Uniform " << *spec._id._name << " is bound to location "
-        << location << " (texture binding " << i << ")\n";
-    }
+    UniformBlock block;
+    block._dep = param._binding->get_state_dep();
+    block._bindings.push_back({param._binding, 0});
 
-    _glgsg->_glUniform1i(location, (int)i);
-    ++i;
+    int chosen_location = locations[param._name];
+    int actual_location = needs_query_locations ? -1 : chosen_location;
+
+    // Though the code is written to take advantage of UBOs, we're not using
+    // UBOs yet, so we instead have the parameters copied to a scratch space.
+    // Now make a list of the individual uniform calls we will have to do.
+    int resource_index = 0;
+    std::string name = param._name->get_name();
+    char sym_buffer[16];
+    sprintf(sym_buffer, "p%d", chosen_location);
+    r_collect_uniforms(param, block, param._type, name.c_str(), sym_buffer,
+                       actual_location, active_locations, resource_index);
+
+    if (!block._matrices.empty() || !block._vectors.empty()) {
+      _uniform_data_deps |= block._dep;
+      _uniform_blocks.push_back(std::move(block));
+
+      // Pad space to 16-byte boundary
+      uint32_t size = param._type->get_size_bytes();
+      size = (size + 15) & ~15;
+      _scratch_space_size = std::max(_scratch_space_size, (size_t)size);
+    }
   }
 
-  size_t num_images = min(s->_img_spec.size(), (size_t)glgsg->_max_image_units);
-  for (size_t i = 0; i < num_images;) {
-    Shader::ShaderImgSpec &spec = s->_img_spec[i];
-    nassertd(spec._id._location >= 0) continue;
-
-    GLint location = get_uniform_location(spec._id._location);
-    if (location < 0) {
-      // Not used.  Optimize it out.
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Uniform " << *spec._id._name << " is unused, unbinding\n";
-      }
-      s->_img_spec.erase(s->_img_spec.begin() + i);
-      --num_images;
-      continue;
-    }
-
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Uniform " << *spec._id._name << " is bound to location "
-        << location << " (image binding " << i << ")\n";
-    }
-
-    ImageInput input;
-    input._name = spec._name;
-    input._writable = spec._writable;
-    _glsl_img_inputs.push_back(std::move(input));
-
-    _glgsg->_glUniform1i(location, (int)i);
-    ++i;
-  }
-
-  if (_remap_uniform_locations) {
-    for (auto it = s->_mat_spec.begin(); it != s->_mat_spec.end();) {
-      const Shader::ShaderMatSpec &spec = *it;
-
-      GLint location = get_uniform_location(spec._id._location);
-      if (location < 0) {
-        // Not used.  Optimize it out.
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Uniform " << *spec._id._name << " is unused, unbinding\n";
-        }
-        it = s->_mat_spec.erase(it);
-        continue;
-      }
-
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Uniform " << *spec._id._name << " is bound to location "
-          << location << "\n";
-      }
-      ++it;
-    }
+  if (_image_units.size() > (size_t)_glgsg->_max_image_units) {
+    _image_units.resize((size_t)_glgsg->_max_image_units);
   }
 
   // Do we have a p3d_Color attribute?
@@ -195,17 +150,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
   }
 
-  // Temporary hacks until array inputs are integrated into the rest of
-  // the shader input system.
-  if (_shader->_transform_table_loc >= 0) {
-    _transform_table_index = get_uniform_location(_shader->_transform_table_loc);
-    _transform_table_size = _shader->_transform_table_size;
-  }
-  if (_shader->_slider_table_loc >= 0) {
-    _slider_table_index = get_uniform_location(_shader->_slider_table_loc);
-    _slider_table_size = _shader->_slider_table_size;
-  }
-
   _glgsg->report_my_gl_errors();
 
   // Restore the active shader.
@@ -214,9 +158,199 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   } else {
     _glgsg->_current_shader_context->bind();
   }
+}
 
-  _mat_part_cache = new LVecBase4[_shader->cp_get_mat_cache_size()];
-  _mat_scratch_space = new LVecBase4[_shader->cp_get_mat_scratch_size(false)];
+/**
+ * For UBO emulation, expand the individual uniforms within aggregate types and
+ * make a list of individual glUniform calls, also querying their location from
+ * the driver if necessary.
+ * Also finds all resources and adds them to the respective arrays.
+ */
+void CLP(ShaderContext)::
+r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
+                   const ShaderType *type, const char *name, const char *sym,
+                   int location, const SparseArray &active_locations,
+                   int &resource_index, size_t offset) {
+
+  ShaderType::ScalarType scalar_type;
+  uint32_t num_elements;
+  uint32_t num_rows;
+  uint32_t num_cols;
+  if (type->as_scalar_type(scalar_type, num_elements, num_rows, num_cols)) {
+    if (location < 0) {
+      location = _glgsg->_glGetUniformLocation(_glsl_program, _is_legacy ? name : sym);
+      if (location < 0) {
+        return;
+      }
+    } else if (!active_locations.get_bit(location)) {
+      return;
+    }
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Active uniform " << name << " with type " << *type
+        << " is bound to location " << location << "\n";
+    }
+
+    UniformBlock::Call call;
+    call._location = location;
+    call._count = num_elements;
+    call._offset = offset;
+
+    if (num_rows > 1) {
+      if (num_rows == 3) {
+        if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniformMatrix3fv;
+        } else {
+          call._func = (void *)_glgsg->_glUniformMatrix3x4fv;
+        }
+      } else {
+        if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniformMatrix4x3fv;
+        } else {
+          call._func = (void *)_glgsg->_glUniformMatrix4fv;
+        }
+      }
+      block._matrices.push_back(std::move(call));
+    } else {
+      switch (scalar_type) {
+      case ShaderType::ST_float:
+        if (num_cols == 1) {
+          call._func = (void *)_glgsg->_glUniform1fv;
+        }
+        else if (num_cols == 2) {
+          call._func = (void *)_glgsg->_glUniform2fv;
+        }
+        else if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniform3fv;
+        }
+        else if (num_cols == 4) {
+          call._func = (void *)_glgsg->_glUniform4fv;
+        }
+        break;
+
+#ifndef OPENGLES
+      case ShaderType::ST_double:
+        if (num_cols == 1) {
+          call._func = (void *)_glgsg->_glUniform1dv;
+        }
+        else if (num_cols == 2) {
+          call._func = (void *)_glgsg->_glUniform2dv;
+        }
+        else if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniform3dv;
+        }
+        else if (num_cols == 4) {
+          call._func = (void *)_glgsg->_glUniform4dv;
+        }
+        break;
+#endif
+
+      case ShaderType::ST_int:
+        if (num_cols == 1) {
+          call._func = (void *)_glgsg->_glUniform1iv;
+        }
+        else if (num_cols == 2) {
+          call._func = (void *)_glgsg->_glUniform2iv;
+        }
+        else if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniform3iv;
+        }
+        else if (num_cols == 4) {
+          call._func = (void *)_glgsg->_glUniform4iv;
+        }
+        break;
+
+      default:
+        if (num_cols == 1) {
+          call._func = (void *)_glgsg->_glUniform1uiv;
+        }
+        else if (num_cols == 2) {
+          call._func = (void *)_glgsg->_glUniform2uiv;
+        }
+        else if (num_cols == 3) {
+          call._func = (void *)_glgsg->_glUniform3uiv;
+        }
+        else if (num_cols == 4) {
+          call._func = (void *)_glgsg->_glUniform4uiv;
+        }
+        break;
+      }
+      block._vectors.push_back(std::move(call));
+    }
+    return;
+  }
+  if (const ShaderType::Array *array_type = type->as_array()) {
+    // Recurse.
+    char *name_buffer = (char *)alloca(strlen(name) + 14);
+    char *sym_buffer = (char *)alloca(strlen(sym) + 14);
+    const ShaderType *element_type = array_type->get_element_type();
+    int num_locations = element_type->get_num_parameter_locations();
+    size_t stride = (size_t)array_type->get_stride_bytes();
+
+    for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
+      sprintf(name_buffer, "%s[%u]", name, i);
+      sprintf(sym_buffer, "%s[%u]", sym, i);
+      r_collect_uniforms(param, block, element_type, name_buffer, sym_buffer, location, active_locations, resource_index, offset);
+      if (location >= 0) {
+        location += num_locations;
+      }
+      offset += stride;
+    }
+    return;
+  }
+  if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    char *sym_buffer = (char *)alloca(strlen(sym) + 14);
+
+    for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      std::string qualname(name);
+      qualname += "." + member.name;
+
+      // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
+      sprintf(sym_buffer, "%s._m%u", sym, i);
+      r_collect_uniforms(param, block, member.type, qualname.c_str(), sym_buffer, location, active_locations, resource_index, offset + member.offset);
+
+      if (location >= 0) {
+        location += member.type->get_num_parameter_locations();
+      }
+    }
+    return;
+  }
+
+  if (location < 0) {
+    location = _glgsg->_glGetUniformLocation(_glsl_program, _is_legacy ? name : sym);
+    if (location < 0) {
+      return;
+    }
+  } else if (!active_locations.get_bit(location)) {
+    return;
+  }
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Active uniform " << name << " with type " << *type
+      << " is bound to location " << location << "\n";
+  }
+
+  if (const ::ShaderType::SampledImage *sampler = type->as_sampled_image()) {
+    TextureUnit unit;
+    unit._binding = param._binding;
+    unit._resource_id = param._binding->get_resource_id(resource_index++, type);
+    unit._target = _glgsg->get_texture_target(sampler->get_texture_type());
+
+    _glgsg->_glUniform1i(location, (GLint)_texture_units.size());
+    _texture_units.push_back(std::move(unit));
+  }
+  else if (const ::ShaderType::Image *image = type->as_image()) {
+    ImageUnit unit;
+    unit._binding = param._binding;
+    unit._resource_id = param._binding->get_resource_id(resource_index++, type);
+    unit._access = image->get_access();
+    unit._written = false;
+
+    _glgsg->_glUniform1i(location, (GLint)_image_units.size());
+    _image_units.push_back(std::move(unit));
+  }
 }
 
 /**
@@ -323,8 +457,7 @@ reflect_program() {
   param_count = 0;
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
 
-  _shader->_mat_spec.clear();
-  _shader->_tex_spec.clear();
+  _shader->_parameters.clear();
 
   // First gather the uniforms and sort them by location.
   struct Uniform {
@@ -342,12 +475,12 @@ reflect_program() {
     _glgsg->_glGetActiveUniform(_glsl_program, i, name_buflen, nullptr, &param_size, &param_type, name_buffer);
     GLint loc = _glgsg->_glGetUniformLocation(_glsl_program, name_buffer);
 
-    if (GLCAT.is_debug()) {
+    /*if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "Active uniform " << name_buffer << " with size " << param_size
         << " and type 0x" << hex << param_type << dec
         << " is bound to location " << loc << "\n";
-    }
+    }*/
 
     // Some NVidia drivers (361.43 for example) (incorrectly) include "internal"
     // uniforms in the list starting with "_main_" (for example,
@@ -424,11 +557,7 @@ reflect_program() {
 
       if (struct_stack.empty()) {
         // Add struct as top-level
-        Shader::Parameter param;
-        param._name = InternalName::make(item.name);
-        param._type = type;
-        param._location = item.loc;
-        _shader->bind_parameter(param);
+        _shader->add_parameter(InternalName::make(item.name), type, item.loc);
       }
       else if (struct_stack.back().num_elements <= 1) {
         // Add as nested struct member
@@ -451,11 +580,7 @@ reflect_program() {
     if (struct_stack.empty()) {
       // Add as top-level
       assert(parts.size() == 1);
-      Shader::Parameter param;
-      param._name = InternalName::make(parts[0]);
-      param._type = type;
-      param._location = loc;
-      _shader->bind_parameter(param);
+      _shader->add_parameter(InternalName::make(parts[0]), type, loc);
     }
     else if (struct_stack.back().num_elements <= 1) {
       // Add as struct member
@@ -478,11 +603,7 @@ reflect_program() {
 
     if (struct_stack.empty()) {
       // Add struct as top-level
-      Shader::Parameter param;
-      param._name = InternalName::make(item.name);
-      param._type = type;
-      param._location = item.loc;
-      _shader->bind_parameter(param);
+      _shader->add_parameter(InternalName::make(item.name), type, item.loc);
     }
     else if (struct_stack.back().num_elements <= 1) {
       // Add as nested struct member
@@ -492,82 +613,6 @@ reflect_program() {
       }
       struct_stack.back().type.add_member(type, item.name);
     }
-  }
-}
-
-/**
- * Queries the locations for a shader compiled with SPIRV-Cross.
- */
-void CLP(ShaderContext)::
-query_uniform_locations(const ShaderModule *module) {
-  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
-    const ShaderModule::Variable &var = module->get_parameter(i);
-    if (!var.has_location()) {
-      continue;
-    }
-
-    uint32_t location = (uint32_t)var.get_location();
-    char buffer[13];
-    sprintf(buffer, "p%u", location);
-    r_query_uniform_locations(location, var.type, buffer);
-  }
-}
-
-/**
- * Recursively queries the uniform locations of an aggregate type.
- */
-void CLP(ShaderContext)::
-r_query_uniform_locations(uint32_t from_location, const ShaderType *type, const char *name) {
-  while (from_location >= _uniform_location_map.size()) {
-    _uniform_location_map.push_back(-1);
-  }
-
-  // Is this an array of an aggregate type?
-  if (const ShaderType::Array *array_type = type->as_array()) {
-    const ShaderType *element_type = array_type->get_element_type();
-    if (element_type->is_aggregate_type()) {
-      // Recurse.
-      char *buffer = (char *)alloca(strlen(name) + 14);
-      int num_locations = element_type->get_num_parameter_locations();
-
-      for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
-        sprintf(buffer, "%s[%u]", name, i);
-        r_query_uniform_locations(from_location, element_type, buffer);
-        from_location += num_locations;
-      }
-      return;
-    }
-  }
-  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
-    char *buffer = (char *)alloca(strlen(name) + 14);
-
-    for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
-      const ShaderType::Struct::Member &member = struct_type->get_member(i);
-
-      // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
-      sprintf(buffer, "%s._m%u", name, i);
-      r_query_uniform_locations(from_location, member.type, buffer);
-      from_location += member.type->get_num_parameter_locations();
-    }
-    return;
-  }
-
-  GLint p = _glgsg->_glGetUniformLocation(_glsl_program, name);
-  if (p >= 0) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Active uniform " << name << " (original location " << from_location
-        << ") is mapped to location " << p << "\n";
-    }
-    set_uniform_location(from_location, p);
-  }
-  else {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Active uniform " << name << " (original location " << from_location
-        << ") does not appear in the compiled program\n";
-    }
-    set_uniform_location(from_location, -1);
   }
 }
 
@@ -1197,8 +1242,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   // Don't call release_resources; we may not have an active context.
-  delete[] _mat_part_cache;
-  delete[] _mat_scratch_space;
 }
 
 /**
@@ -1294,79 +1337,78 @@ set_state_and_transform(const RenderState *target_rs,
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
-    altered |= (Shader::SSD_transform & ~Shader::SSD_view_transform);
+    altered |= Shader::D_transform;
   }
   if (_camera_transform != camera_transform) {
     _camera_transform = camera_transform;
-    altered |= Shader::SSD_transform;
+    altered |= Shader::D_view_transform;
   }
   if (_projection_transform != projection_transform) {
     _projection_transform = projection_transform;
-    altered |= Shader::SSD_projection;
+    altered |= Shader::D_projection;
   }
 
   CPT(RenderState) state_rs = _state_rs.lock();
   if (state_rs == nullptr) {
     // Reset all of the state.
-    altered |= Shader::SSD_general;
+    altered |= Shader::D_state;
     _state_rs = target_rs;
     target_rs->get_attrib_def(_color_attrib);
-
-  } else if (state_rs != target_rs) {
+  }
+  else if (state_rs != target_rs) {
     // The state has changed since last time.
-    if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
-        target_rs->get_attrib(ColorAttrib::get_class_slot())) {
-      altered |= Shader::SSD_color;
+    if (_color_attrib != target_rs->get_attrib(ColorAttrib::get_class_slot())) {
+      altered |= Shader::D_color;
       target_rs->get_attrib_def(_color_attrib);
     }
     if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
-      altered |= Shader::SSD_colorscale;
+      altered |= Shader::D_colorscale;
     }
     if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
         target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
-      altered |= Shader::SSD_material;
+      altered |= Shader::D_material;
     }
     if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
         target_rs->get_attrib(FogAttrib::get_class_slot())) {
-      altered |= Shader::SSD_fog;
+      altered |= Shader::D_fog;
     }
     if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
         target_rs->get_attrib(LightAttrib::get_class_slot())) {
-      altered |= Shader::SSD_light;
+      altered |= Shader::D_light;
     }
     if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
         target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
-      altered |= Shader::SSD_clip_planes;
+      altered |= Shader::D_clip_planes;
     }
     if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
-      altered |= Shader::SSD_tex_matrix;
+      altered |= Shader::D_tex_matrix;
     }
     if (state_rs->get_attrib(TextureAttrib::get_class_slot()) !=
         target_rs->get_attrib(TextureAttrib::get_class_slot())) {
-      altered |= Shader::SSD_texture;
+      altered |= Shader::D_texture;
     }
     if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
-      altered |= Shader::SSD_tex_gen;
+      altered |= Shader::D_tex_gen;
     }
     if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
         target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
-      altered |= Shader::SSD_render_mode;
+      altered |= Shader::D_render_mode;
     }
     _state_rs = target_rs;
   }
 
-  if (_shader_attrib.get_orig() != _glgsg->_target_shader || _shader_attrib.was_deleted()) {
-    altered |= Shader::SSD_shaderinputs;
+  if (_shader_attrib != _glgsg->_target_shader) {
+    altered |= Shader::D_shader_inputs;
     _shader_attrib = _glgsg->_target_shader;
   }
 
   // Is this the first time this shader is used this frame?
   int frame_number = ClockObject::get_global_clock()->get_frame_count();
   if (frame_number != _frame_number) {
-     altered |= Shader::SSD_frame;
+     altered |= Shader::D_frame;
     _frame_number = frame_number;
   }
 
@@ -1390,229 +1432,41 @@ issue_parameters(int altered) {
       << " (altered 0x" << hex << altered << dec << ")\n";
   }
 
-  if (altered & _shader->_mat_deps) {
-    if (altered & _shader->_mat_cache_deps) {
-      _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
+#ifdef __GNUC__
+  unsigned char *scratch = (unsigned char *)__builtin_alloca_with_align(_scratch_space_size, 128);
+#else
+  unsigned char *scratch = (unsigned char *)alloca(_scratch_space_size);
+#endif
+
+  if (altered & _uniform_data_deps) {
+    if (altered & _matrix_cache_deps) {
+      _glgsg->update_shader_matrix_cache(_shader, &_matrix_cache[0], altered);
     }
 
-    for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
-      if ((altered & spec._dep) == 0) {
+    ShaderInputBinding::State state;
+    state.gsg = _glgsg;
+    state.matrix_cache = &_matrix_cache[0];
+
+    for (const UniformBlock &block : _uniform_blocks) {
+      if ((altered & block._dep) == 0) {
         continue;
       }
 
-      const void *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, _mat_scratch_space, false);
-      if (!val) continue;
-
-      GLint p = get_uniform_location(spec._id._location);
-      if (p < 0) {
-        continue;
+      for (const UniformBlock::Binding &binding : block._bindings) {
+        binding._binding->fetch_data(state, scratch + binding._offset, false);
       }
 
-      if (spec._scalar_type == ShaderType::ST_float) {
-        const float *data = (const float *)val;
-
-        switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3fv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4fv(p, spec._array_count, data); continue;
-        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3fv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4fv(p, spec._array_count, GL_TRUE, data); continue;
-        case Shader::SMP_mat4_column: _glgsg->_glUniform4f(p, data[0], data[4], data[8], data[12]); continue;
-        case Shader::SMP_mat4_upper3x3:
-          {
-            LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-            _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
-            continue;
-          }
-        case Shader::SMP_mat4_transpose3x3:
-          {
-            LMatrix3f upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-            _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
-            continue;
-          }
-        case Shader::SMP_mat4_upper3x4:
-          _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data);
-          continue;
-        case Shader::SMP_mat4_upper4x3:
-          {
-            GLfloat data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
-            _glgsg->_glUniformMatrix4x3fv(p, 1, GL_FALSE, data2);
-            continue;
-          }
-        case Shader::SMP_mat4_transpose3x4:
-          {
-            GLfloat data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
-            _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data2);
-            continue;
-          }
-        case Shader::SMP_mat4_transpose4x3:
-          _glgsg->_glUniformMatrix4x3fv(p, 1, GL_TRUE, data);
-          continue;
-        }
+      for (const UniformBlock::Call &call : block._matrices) {
+        ((PFNGLUNIFORMMATRIX4FVPROC)call._func)(call._location, call._count, GL_FALSE, (const GLfloat *)(scratch + call._offset));
       }
-      else if (spec._scalar_type == ShaderType::ST_double) {
-        const double *data = (const double *)val;
 
-#ifdef OPENGLES
-        GLCAT.error()
-          << "Passing double-precision shader inputs to shaders is not supported in OpenGL ES.\n";
-
-        // Deactivate it to make sure the user doesn't get flooded with this
-        // error.
-        set_uniform_location(spec._id._location, -1);
-#else
-        switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3dv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4dv(p, spec._array_count, data); continue;
-        case Shader::SMP_mat3_whole: _glgsg->_glUniformMatrix3dv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_whole: _glgsg->_glUniformMatrix4dv(p, spec._array_count, GL_FALSE, data); continue;
-        case Shader::SMP_mat4_transpose: _glgsg->_glUniformMatrix4dv(p, spec._array_count, GL_TRUE, data); continue;
-        case Shader::SMP_mat4_column: _glgsg->_glUniform4d(p, data[0], data[4], data[8], data[12]); continue;
-        case Shader::SMP_mat4_upper3x3:
-          {
-            LMatrix3d upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-            _glgsg->_glUniformMatrix3dv(p, 1, false, upper3.get_data());
-            continue;
-          }
-        case Shader::SMP_mat4_transpose3x3:
-          {
-            LMatrix3d upper3(data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10]);
-            _glgsg->_glUniformMatrix3dv(p, 1, true, upper3.get_data());
-            continue;
-          }
-        case Shader::SMP_mat4_upper3x4:
-          _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data);
-          continue;
-        case Shader::SMP_mat4_upper4x3:
-          {
-            GLdouble data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
-            _glgsg->_glUniformMatrix4x3dv(p, 1, GL_FALSE, data2);
-            continue;
-          }
-        case Shader::SMP_mat4_transpose3x4:
-          {
-            GLdouble data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
-            _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data2);
-            continue;
-          }
-        case Shader::SMP_mat4_transpose4x3:
-          _glgsg->_glUniformMatrix4x3dv(p, 1, GL_TRUE, data);
-          continue;
-        }
-#endif
-      }
-      else if (spec._scalar_type == ShaderType::ST_int) {
-        const int *data = (const int *)val;
-
-        switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3iv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4iv(p, spec._array_count, data); continue;
-        default: nassert_raise("Invalid ShaderMatSpec piece with scalar type int");
-        }
-      }
-      else if (spec._scalar_type == ShaderType::ST_uint || spec._scalar_type == ShaderType::ST_bool) {
-        const unsigned int *data = (const unsigned int *)val;
-
-        switch (spec._piece) {
-        case Shader::SMP_scalar: _glgsg->_glUniform1uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec2: _glgsg->_glUniform2uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec3: _glgsg->_glUniform3uiv(p, spec._array_count, data); continue;
-        case Shader::SMP_vec4: _glgsg->_glUniform4uiv(p, spec._array_count, data); continue;
-        default: nassert_raise("Invalid ShaderMatSpec piece with scalar type uint/bool");
-        }
-      }
-      else {
-        nassert_raise("numeric type not supported");
+      for (const UniformBlock::Call &call : block._vectors) {
+        ((PFNGLUNIFORM4FVPROC)call._func)(call._location, call._count, (const GLfloat *)(scratch + call._offset));
       }
     }
   }
 
   _glgsg->report_my_gl_errors();
-}
-
-/**
- * Changes the active transform table, used for hardware skinning.
- */
-void CLP(ShaderContext)::
-update_transform_table(const TransformTable *table) {
-  size_t num_matrices = (size_t)_transform_table_size;
-
-  if (!_shader->_transform_table_reduced) {
-    LMatrix4f *matrices = (LMatrix4f *)alloca(num_matrices * sizeof(LMatrix4f));
-
-    size_t i = 0;
-    if (table != nullptr) {
-      size_t num_transforms = min(num_matrices, table->get_num_transforms());
-      for (; i < num_transforms; ++i) {
-#ifdef STDFLOAT_DOUBLE
-        LMatrix4 matrix;
-        table->get_transform(i)->get_matrix(matrix);
-        matrices[i] = LCAST(float, matrix);
-#else
-        table->get_transform(i)->get_matrix(matrices[i]);
-#endif
-      }
-    }
-    for (; i < num_matrices; ++i) {
-      matrices[i] = LMatrix4f::ident_mat();
-    }
-    _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
-                                (_shader->get_language() == Shader::SL_Cg),
-                                (float *)matrices);
-  }
-  else {
-    // Reduced 3x4 matrix, used by shader generator
-    LVecBase4f *vectors = (LVecBase4f *)alloca(_transform_table_size * sizeof(LVecBase4f) * 3);
-
-    size_t i = 0;
-    if (table != nullptr) {
-      size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
-      for (; i < num_transforms; ++i) {
-        LMatrix4f matrix;
-#ifdef STDFLOAT_DOUBLE
-        LMatrix4d matrixd;
-        table->get_transform(i)->get_matrix(matrixd);
-        matrix = LCAST(float, matrixd);
-#else
-        table->get_transform(i)->get_matrix(matrix);
-#endif
-        vectors[i * 3 + 0] = matrix.get_col(0);
-        vectors[i * 3 + 1] = matrix.get_col(1);
-        vectors[i * 3 + 2] = matrix.get_col(2);
-      }
-    }
-    for (; i < num_matrices; ++i) {
-      vectors[i * 3 + 0].set(1, 0, 0, 0);
-      vectors[i * 3 + 1].set(0, 1, 0, 0);
-      vectors[i * 3 + 2].set(0, 0, 1, 0);
-    }
-    _glgsg->_glUniformMatrix3x4fv(_transform_table_index, _transform_table_size,
-                                  GL_FALSE, (float *)vectors);
-  }
-}
-
-/**
- * Changes the active slider table, used for hardware skinning.
- */
-void CLP(ShaderContext)::
-update_slider_table(const SliderTable *table) {
-  float *sliders = (float *)alloca(_slider_table_size * 4);
-  memset(sliders, 0, _slider_table_size * 4);
-
-  if (table != nullptr) {
-    size_t num_sliders = min((size_t)_slider_table_size, table->get_num_sliders());
-    for (size_t i = 0; i < num_sliders; ++i) {
-      sliders[i] = table->get_slider(i)->get_slider();
-    }
-  }
-
-  _glgsg->_glUniform1fv(_slider_table_index, _slider_table_size, sliders);
 }
 
 /**
@@ -1649,7 +1503,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   // Get the active ColorAttrib.  We'll need it to determine how to apply
   // vertex colors.
-  const ColorAttrib *color_attrib = _color_attrib.p();
+  const ColorAttrib *color_attrib = _color_attrib;
 
   const GeomVertexArrayDataHandle *array_reader;
 
@@ -1822,14 +1676,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     }
   }
 
-  if (_transform_table_index >= 0) {
-    const TransformTable *table = _glgsg->_data_reader->get_transform_table();
-    update_transform_table(table);
-  }
-
-  if (_slider_table_index >= 0) {
-    const SliderTable *table = _glgsg->_data_reader->get_slider_table();
-    update_slider_table(table);
+  if (_uniform_data_deps & Shader::D_vertex_data) {
+    issue_parameters(Shader::D_vertex_data);
   }
 
   _glgsg->report_my_gl_errors();
@@ -1850,20 +1698,20 @@ disable_shader_texture_bindings() {
 
 #ifndef OPENGLES
   if (_glgsg->_supports_multi_bind) {
-    _glgsg->_glBindTextures(0, _shader->_tex_spec.size(), nullptr);
+    _glgsg->_glBindTextures(0, _texture_units.size(), nullptr);
   }
   else if (_glgsg->_supports_dsa) {
-    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+    for (size_t i = 0; i < _texture_units.size(); ++i) {
       _glgsg->_glBindTextureUnit(i, 0);
     }
   }
   else
 #endif
   {
-    for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
+    for (size_t i = 0; i < _texture_units.size(); ++i) {
       _glgsg->set_active_texture_stage(i);
 
-      GLenum target = _glgsg->get_texture_target((Texture::TextureType)_shader->_tex_spec[i]._desired_type);
+      GLenum target = _texture_units[i]._target;
       if (target != GL_NONE) {
         glBindTexture(target, 0);
       }
@@ -1871,8 +1719,7 @@ disable_shader_texture_bindings() {
   }
 
   // Now unbind all the image units.  Not sure if we *have* to do this.
-  int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
-
+  int num_image_units = (int)_image_units.size();
   if (num_image_units > 0) {
 #ifndef OPENGLES
     if (_glgsg->_supports_multi_bind) {
@@ -1887,11 +1734,12 @@ disable_shader_texture_bindings() {
 
     if (gl_enable_memory_barriers) {
       for (int i = 0; i < num_image_units; ++i) {
-        ImageInput &input = _glsl_img_inputs[i];
+        ImageUnit &unit = _image_units[i];
 
-        if (input._gtc != nullptr) {
-          input._gtc->mark_incoherent(input._writable);
-          input._gtc = nullptr;
+        if (unit._gtc != nullptr) {
+          unit._gtc->mark_incoherent(unit._written);
+          unit._gtc = nullptr;
+          unit._written = false;
         }
       }
     }
@@ -1919,43 +1767,22 @@ update_shader_texture_bindings(ShaderContext *prev) {
   GLbitfield barriers = 0;
 #endif
 
+  ShaderInputBinding::State state;
+  state.gsg = _glgsg;
+  state.matrix_cache = &_matrix_cache[0];
+
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature
   // right now.
-  int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
-
+  int num_image_units = (int)_image_units.size();
   if (num_image_units > 0) {
     for (int i = 0; i < num_image_units; ++i) {
-      ImageInput &input = _glsl_img_inputs[i];
-      const ParamTextureImage *param = nullptr;
-      Texture *tex;
+      ImageUnit &unit = _image_units[i];
 
-      if (input._name == nullptr) {
-        continue;
-      }
-
-      const ShaderInput &sinp = _glgsg->_target_shader->get_shader_input(input._name);
-      switch (sinp.get_value_type()) {
-      case ShaderInput::M_texture_image:
-        param = (const ParamTextureImage *)sinp.get_param();
-        tex = param->get_texture();
-        break;
-
-      case ShaderInput::M_texture:
-        // People find it convenient to be able to pass a texture without
-        // further ado.
-        tex = sinp.get_texture();
-        break;
-
-      case ShaderInput::M_invalid:
-        GLCAT.error()
-          << "Missing texture image binding input " << *input._name << "\n";
-        continue;
-
-      default:
-        GLCAT.error()
-          << "Mismatching type for parameter " << *input._name << ", expected texture image binding\n";
-        continue;
-      }
+      ShaderType::Access access = ShaderType::Access::read_write;
+      int z = -1;
+      int n = 0;
+      PT(Texture) tex = unit._binding->fetch_texture_image(state, unit._resource_id, access, z, n);
+      access = access & unit._access;
 
       GLuint gl_tex = 0;
       CLP(TextureContext) *gtc;
@@ -1963,7 +1790,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       if (tex != nullptr) {
         gtc = DCAST(CLP(TextureContext), tex->prepare_now(_glgsg->_prepared_objects, _glgsg));
         if (gtc != nullptr) {
-          input._gtc = gtc;
+          unit._gtc = gtc;
 
           _glgsg->update_texture(gtc, true);
 
@@ -1977,7 +1804,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #endif
         }
       }
-      input._writable = false;
 
       if (gl_tex == 0) {
         _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
@@ -2005,44 +1831,40 @@ update_shader_texture_bindings(ShaderContext *prev) {
           internal_format = _glgsg->get_internal_image_format(tex, true);
         }
 
-        GLenum access = GL_READ_WRITE;
-        GLint bind_level = 0;
-        GLint bind_layer = 0;
-        GLboolean layered = GL_TRUE;
-
-        if (param != nullptr) {
-          layered = param->get_bind_layered();
-          bind_level = param->get_bind_level();
-          bind_layer = param->get_bind_layer();
-
-          bool has_read = param->has_read_access();
-          bool has_write = param->has_write_access();
-          input._writable = has_write;
-
-          if (gl_force_image_bindings_writeonly) {
-            access = GL_WRITE_ONLY;
-
-          } else if (has_read && has_write) {
-            access = GL_READ_WRITE;
-
-          } else if (has_read) {
-            access = GL_READ_ONLY;
-
-          } else if (has_write) {
-            access = GL_WRITE_ONLY;
-
-          } else {
-            access = GL_READ_ONLY;
-            gl_tex = 0;
-          }
+        if (gl_force_image_bindings_writeonly) {
+          access = access & ShaderType::Access::write_only;
         }
+
+        GLenum gl_access = GL_READ_WRITE;
+        GLint bind_level = n;
+        GLint bind_layer = std::max(z, 0);
+        GLboolean layered = z < 0;
+
+        switch (access) {
+        case ShaderType::Access::none:
+          gl_tex = 0;
+        case ShaderType::Access::read_only:
+          gl_access = GL_READ_ONLY;
+          break;
+
+        case ShaderType::Access::write_only:
+          gl_access = GL_WRITE_ONLY;
+          unit._written = true;
+          break;
+
+        case ShaderType::Access::read_write:
+          gl_access = GL_READ_WRITE;
+          unit._written = true;
+          break;
+        }
+
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
-                                    access, gtc->_internal_format);
+                                    gl_access, gtc->_internal_format);
       }
     }
   }
 
-  size_t num_textures = _shader->_tex_spec.size();
+  size_t num_textures = _texture_units.size();
   GLuint *textures = nullptr;
   GLuint *samplers = nullptr;
 #ifdef OPENGLES
@@ -2059,13 +1881,12 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #endif
 
   for (size_t i = 0; i < num_textures; ++i) {
-    Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
-    const InternalName *id = spec._name;
+    TextureUnit &unit = _texture_units[i];
 
     int view = _glgsg->get_current_tex_view_offset();
     SamplerState sampler;
 
-    PT(Texture) tex = _glgsg->fetch_specified_texture(spec, sampler, view);
+    PT(Texture) tex = unit._binding->fetch_texture(state, unit._resource_id, sampler, view);
     if (tex.is_null()) {
       // Apply a white texture in order to make it easier to use a shader that
       // takes a texture on a model that doesn't have a texture applied.
@@ -2081,36 +1902,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
       // Required to satisfy Intel drivers, which will otherwise sample zero.
       sampler.set_minfilter(sampler.uses_mipmaps() ? SamplerState::FT_nearest_mipmap_nearest : SamplerState::FT_nearest);
       sampler.set_magfilter(SamplerState::FT_nearest);
-    }
-
-    if (tex->get_texture_type() != spec._desired_type) {
-      switch (spec._part) {
-      case Shader::STO_named_input:
-        GLCAT.error()
-          << "Sampler type of shader input '" << *id << "' does not "
-             "match type of texture " << *tex << ".\n";
-        break;
-
-      case Shader::STO_stage_i:
-        GLCAT.error()
-          << "Sampler type of shader input p3d_Texture" << spec._stage
-          << " does not match type of texture " << *tex << ".\n";
-        break;
-
-      case Shader::STO_light_i_shadow_map:
-        GLCAT.error()
-          << "Sampler type of shader input p3d_LightSource[" << spec._stage
-          << "].shadowMap does not match type of texture " << *tex << ".\n";
-        break;
-
-      default:
-        GLCAT.error()
-          << "Sampler type of GLSL shader input does not match type of "
-             "texture " << *tex << ".\n";
-        break;
-      }
-      // TODO: also check whether shadow sampler textures have shadow filter
-      // enabled.
     }
 
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(_glgsg->_prepared_objects, _glgsg));
@@ -2132,7 +1923,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     // Note that simple RAM images are always 2-D for now, so to avoid errors,
     // we must load the real texture if this is not for a sampler2D.
-    bool force = (spec._desired_type != Texture::TT_2d_texture);
+    bool force = (tex->get_texture_type() != Texture::TT_2d_texture);
 #ifndef OPENGLES
     if (multi_bind) {
       // Multi-bind case.
@@ -2344,7 +2135,8 @@ report_program_errors(GLuint program, bool fatal) {
  * Compiles the given ShaderModuleGlsl and attaches it to the program.
  */
 bool CLP(ShaderContext)::
-attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
+attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
+              const LocationMap &locations, bool &needs_query_locations) {
   ShaderModule::Stage stage = module->get_stage();
 
   GLuint handle = 0;
@@ -2396,6 +2188,15 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
+    pmap<uint32_t, int> id_to_location;
+    for (size_t pi = 0; pi < spv->get_num_parameters(); ++pi) {
+      const ShaderModule::Variable &var = spv->get_parameter(pi);
+      auto it = locations.find(var.name);
+      if (it != locations.end()) {
+        id_to_location[var.id] = it->second;
+      }
+    }
+
 #ifndef OPENGLES
     if (_glgsg->_supports_spir_v) {
       // Load a SPIR-V binary.
@@ -2405,49 +2206,41 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
           << module->get_source_filename() << "\n";
       }
 
-      if (_glgsg->_gl_vendor == "NVIDIA Corporation" && spv->get_num_parameters() > 0) {
+      // Make a copy so we can do some transformations such as assigning
+      // locations.
+      ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
+
+      if (!id_to_location.empty()) {
+        ShaderModuleSpirV::InstructionWriter writer(stream);
+        writer.assign_locations(id_to_location);
+      }
+
+      if (_glgsg->_gl_vendor == "NVIDIA Corporation" && !id_to_location.empty()) {
         // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match
         // for variables with overlapping locations if the OpName is stripped.
         // We'll have to just insert OpNames for every parameter.
         // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
         // Bug was found with 446.14 drivers on Windows 10 64-bit.
-
-        // Make a copy of the stream wherein we insert names while we iterate
-        // on the original one.
-        ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
         ShaderModuleSpirV::InstructionIterator it = stream.begin_annotations();
-        pmap<uint32_t, uint32_t> locations;
         for (ShaderModuleSpirV::Instruction op : spv->_instructions) {
-          if (op.opcode == spv::OpDecorate) {
-            // Save the location for this variable.  Safe to do in the same
-            // iteration because SPIR-V guarantees that the decorations come
-            // before the variables.
-            if ((spv::Decoration)op.args[1] == spv::DecorationLocation && op.nargs >= 3) {
-              locations[op.args[0]] = op.args[2];
-            }
-          } else if (op.opcode == spv::OpVariable &&
-                     (spv::StorageClass)op.args[2] == spv::StorageClassUniformConstant) {
+          if (op.opcode == spv::OpVariable &&
+              (spv::StorageClass)op.args[2] == spv::StorageClassUniformConstant) {
             uint32_t var_id = op.args[1];
-            auto lit = locations.find(var_id);
-            if (lit != locations.end()) {
+            auto lit = id_to_location.find(var_id);
+            if (lit != id_to_location.end()) {
               uint32_t args[4] = {var_id, 0, 0, 0};
-              int len = sprintf((char *)(args + 1), "p%u", lit->second);
+              int len = sprintf((char *)(args + 1), "p%d", lit->second);
               nassertr(len > 0 && len < 12, false);
               it = stream.insert(it, spv::OpName, args, len / 4 + 2);
               ++it;
             }
           }
         }
+      }
 
-        _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                                (const char *)stream.get_data(),
-                                stream.get_data_size() * sizeof(uint32_t));
-      }
-      else {
-        _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                                (const char *)spv->get_data(),
-                                spv->get_data_size() * sizeof(uint32_t));
-      }
+      _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                              (const char *)stream.get_data(),
+                              stream.get_data_size() * sizeof(uint32_t));
 
       _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
                                   (GLuint *)consts._indices.data(),
@@ -2522,17 +2315,18 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
         uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
         spv::StorageClass sc = compiler.get_storage_class(id);
 
-        char buf[24];
+        char buf[1024];
         if (sc == spv::StorageClassUniformConstant) {
-          sprintf(buf, "p%u", loc);
-          compiler.set_name(id, buf);
-
-          // Find out how many locations this parameter occupies.
-          int num_locations = 1;
+          CPT(InternalName) name;
           for (size_t i = 0; i < spv->get_num_parameters(); ++i) {
             const ShaderModule::Variable &var = spv->get_parameter(i);
-            if (var._location == loc) {
-              num_locations = var.type->get_num_parameter_locations();
+            if (var.id == id) {
+              auto it = locations.find(var.name);
+              if (it != locations.end()) {
+                sprintf(buf, "p%u", it->second);
+                compiler.set_name(id, buf);
+                compiler.set_decoration(id, spv::DecorationLocation, it->second);
+              }
               break;
             }
           }
@@ -2541,12 +2335,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
           // locations, and we need to query the locations later.
           if ((!options.es && options.version < 430) ||
               (options.es && options.version < 310)) {
-            _needs_query_uniform_locations = true;
-          }
-          else {
-            for (int loc2 = loc; loc2 < loc + num_locations; ++loc2) {
-              set_uniform_location(loc2, loc2);
-            }
+            needs_query_locations = true;
           }
         }
         else if (sc == spv::StorageClassInput) {
@@ -2610,7 +2399,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
 
     needs_compile = true;
-    _needs_reflection = true;
+    _is_legacy = true;
   } else {
     GLCAT.error()
       << "Unsupported shader module type " << module->get_type() << "!\n";
@@ -2631,7 +2420,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
  * This subroutine compiles a GLSL shader.
  */
 bool CLP(ShaderContext)::
-compile_and_link() {
+compile_and_link(const LocationMap &locations, bool &needs_query_locations) {
   _modules.clear();
   _glsl_program = _glgsg->_glCreateProgram();
   if (!_glsl_program) {
@@ -2668,9 +2457,9 @@ compile_and_link() {
   }
 
   bool valid = true;
-
   for (Shader::LinkedModule &linked_module : _shader->_modules) {
-    valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts);
+    valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts,
+                           locations, needs_query_locations);
   }
 
   if (!valid) {

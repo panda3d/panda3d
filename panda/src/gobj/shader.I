@@ -143,7 +143,7 @@ get_language() const {
  * Returns a mask indicating which capabilities this shader needs to function
  * optimally.
  */
-INLINE int Shader::
+INLINE uint64_t Shader::
 get_used_capabilities() const {
   return _used_caps;
 }

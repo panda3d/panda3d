@@ -42,6 +42,7 @@ PUBLISHED:
   PUBLISHED:
     const ShaderType *type;
     CPT(InternalName) name;
+    uint32_t id;
 
     MAKE_PROPERTY2(location, has_location, get_location);
 

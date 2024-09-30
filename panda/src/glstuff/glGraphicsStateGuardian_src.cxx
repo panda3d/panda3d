@@ -4572,6 +4572,11 @@ begin_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_scene() {
+#ifndef OPENGLES_1
+  if (_current_shader_context != nullptr) {
+    _current_shader_context->set_display_region(_current_display_region);
+  }
+#endif
   return GraphicsStateGuardian::begin_scene();
 }
 
@@ -8644,6 +8649,8 @@ do_issue_shader() {
       context->bind();
       _current_shader = shader;
     }
+
+    context->set_display_region(_current_display_region);
 
     // Bind the shader storage buffers.
     context->update_shader_buffer_bindings(_current_shader_context);
@@ -12772,11 +12779,6 @@ set_state_and_transform(const RenderState *target,
     }
 #endif
     _state_mask.set_bit(tex_matrix_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
-    }
-#endif
 
     // See previous occurrence of this check.
     if (_tex_gen_modifies_mat) {

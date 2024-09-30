@@ -169,7 +169,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       var.type = def._type;
       var.name = InternalName::make(def._name);
       var._location = def._location;
-      //var._id = id;
+      var.id = id;
 
       if (def._storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
@@ -321,8 +321,8 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
 #ifndef NDEBUG
   if (shader_cat.is_spam()) {
-    spv::Disassemble(shader_cat.spam()
-      << "Disassembly for " << *this << ":\n", _instructions);
+    _instructions.disassemble(shader_cat.spam()
+      << "Disassembly for " << *this << ":\n");
   }
 #endif
 
@@ -641,6 +641,20 @@ validate_header() const {
 }
 
 /**
+ * Writes a disassembly, for debug purposes.  Returns false if the disassembler
+ * is disabled, eg. in a release build.
+ */
+bool ShaderModuleSpirV::InstructionStream::
+disassemble(std::ostream &out) const {
+#ifdef NDEBUG
+  return false;
+#else
+  spv::Disassemble(out, _words);
+  return true;
+#endif
+}
+
+/**
  * Changes the locations for all inputs of the given storage class based on the
  * indicated map.  Note that this only works for inputs that already have an
  * assigned location; assign_locations() may have to be called first to ensure
@@ -710,6 +724,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (const Variable &input : _inputs) {
     manager->write_pointer(dg, input.type);
     manager->write_pointer(dg, input.name);
+    dg.add_uint32(input.id);
     dg.add_int32(input._location);
   }
 
@@ -717,6 +732,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (const Variable &output : _outputs) {
     manager->write_pointer(dg, output.type);
     manager->write_pointer(dg, output.name);
+    dg.add_uint32(output.id);
     dg.add_int32(output._location);
   }
 
@@ -724,6 +740,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (const Variable &parameter : _parameters) {
     manager->write_pointer(dg, parameter.type);
     manager->write_pointer(dg, parameter.name);
+    dg.add_uint32(parameter.id);
     dg.add_int32(parameter._location);
   }
 
@@ -805,6 +822,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (uint32_t i = 0; i < num_inputs; ++i) {
     manager->read_pointer(scan); // type
     manager->read_pointer(scan); // name
+    _inputs[i].id = scan.get_uint32();
     _inputs[i]._location = scan.get_int32();
   }
 
@@ -813,6 +831,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (uint32_t i = 0; i < num_outputs; ++i) {
     manager->read_pointer(scan); // type
     manager->read_pointer(scan); // name
+    _outputs[i].id = scan.get_uint32();
     _outputs[i]._location = scan.get_int32();
   }
 
@@ -821,6 +840,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (uint32_t i = 0; i < num_parameters; ++i) {
     manager->read_pointer(scan); // type
     manager->read_pointer(scan); // name
+    _parameters[i].id = scan.get_uint32();
     _parameters[i]._location = scan.get_int32();
   }
 
@@ -980,9 +1000,9 @@ assign_locations(Stage stage) {
       else if (def._storage_class == spv::StorageClassOutput) {
         output_locations.set_range(def._location, def._type ? def._type->get_num_interface_locations() : 1);
       }
-      else if (def._storage_class == spv::StorageClassUniformConstant) {
+      /*else if (def._storage_class == spv::StorageClassUniformConstant) {
         uniform_locations.set_range(def._location, def._type ? def._type->get_num_parameter_locations() : 1);
-      }
+      }*/
     }
   }
 
@@ -1029,7 +1049,7 @@ assign_locations(Stage stage) {
 
         sc_str = "output";
       }
-      else if (def._storage_class == spv::StorageClassUniformConstant) {
+      /*else if (def._storage_class == spv::StorageClassUniformConstant) {
         num_locations = def._type->get_num_parameter_locations();
         if (num_locations == 0) {
           continue;
@@ -1039,7 +1059,7 @@ assign_locations(Stage stage) {
         uniform_locations.set_range(location, num_locations);
 
         sc_str = "uniform";
-      }
+      }*/
       else {
         continue;
       }
@@ -1060,6 +1080,40 @@ assign_locations(Stage stage) {
       def._location = location;
       it = _instructions.insert(it,
         spv::OpDecorate, {id, spv::DecorationLocation, (uint32_t)location});
+      ++it;
+    }
+  }
+}
+
+/**
+ * Assigns location decorations based on the given remapping.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+assign_locations(pmap<uint32_t, int> remap) {
+  // Replace existing locations.
+  InstructionIterator it = _instructions.begin_annotations();
+  while (it != _instructions.end_annotations()) {
+    Instruction op = *it;
+
+    if (op.opcode == spv::OpDecorate &&
+        (spv::Decoration)op.args[1] == spv::DecorationLocation && op.nargs >= 3) {
+      auto it = remap.find(op.args[0]);
+      if (it != remap.end()) {
+        op.args[2] = it->second;
+        remap.erase(it);
+      }
+    }
+
+    ++it;
+  }
+
+  // Insert decorations for every unassigned variable at the beginning of the
+  // annotations block.
+  if (!remap.empty()) {
+    it = _instructions.begin_annotations();
+    for (auto rit = remap.begin(); rit != remap.end(); ++rit) {
+      it = _instructions.insert(it,
+        spv::OpDecorate, {rit->first, spv::DecorationLocation, (uint32_t)rit->second});
       ++it;
     }
   }
@@ -2134,10 +2188,16 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
         ? ShaderType::uint_type
         : ShaderType::int_type;
 
-    uint32_t constant_id = r_define_constant(it, constant_type, array_type->get_num_elements());
+    auto size = array_type->get_num_elements();
+    if (size != 0) {
+      uint32_t constant_id = r_define_constant(it, constant_type, array_type->get_num_elements());
 
-    it = _instructions.insert(it, spv::OpTypeArray,
-      {id, element_type, constant_id});
+      it = _instructions.insert(it, spv::OpTypeArray,
+        {id, element_type, constant_id});
+    } else {
+      it = _instructions.insert(it, spv::OpTypeRuntimeArray,
+        {id, element_type});
+    }
   }
   else if (const ShaderType::Image *image_type = type->as_image()) {
     uint32_t args[9] = {
@@ -2575,6 +2635,13 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     if (_defs[op.args[1]]._type != nullptr) {
       record_type(op.args[0], ShaderType::register_type(
         ShaderType::Array(_defs[op.args[1]]._type, _defs[op.args[2]]._constant)));
+    }
+    break;
+
+  case spv::OpTypeRuntimeArray:
+    if (_defs[op.args[1]]._type != nullptr) {
+      record_type(op.args[0], ShaderType::register_type(
+        ShaderType::Array(_defs[op.args[1]]._type, 0)));
     }
     break;
 
@@ -3116,7 +3183,28 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
   def._origin_id = id;
   def._function_id = function_id;
 
-  if (def._flags & (DF_non_writable | DF_non_readable)) {
+  if (storage_class == spv::StorageClassStorageBuffer) {
+    // Inherit readonly/writeonly from the variable but also from the struct.
+    int flags = def._flags | type_def._flags;
+    ShaderType::Access access = ShaderType::Access::read_write;
+    if (flags & DF_non_writable) {
+      access = (access & ShaderType::Access::read_only);
+    }
+    if (flags & DF_non_readable) {
+      access = (access & ShaderType::Access::write_only);
+    }
+    def._type = ShaderType::register_type(ShaderType::StorageBuffer(def._type, access));
+
+    if (shader_cat.is_debug()) {
+      std::ostream &out = shader_cat.debug()
+        << "Defined buffer " << id;
+      if (!def._name.empty()) {
+        out << ": " << def._name;
+      }
+      out << " with type " << *def._type << "\n";
+    }
+  }
+  else if (def._flags & (DF_non_writable | DF_non_readable)) {
     // If an image variable has the readonly/writeonly qualifiers, then we'll
     // inject those back into the type.
     if (const ShaderType::Image *image = def._type->as_image()) {

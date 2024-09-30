@@ -40,7 +40,7 @@ format_stage(Stage stage) {
  * Outputs the given capabilities mask.
  */
 void ShaderEnums::
-output_capabilities(std::ostream &out, int caps) {
+output_capabilities(std::ostream &out, uint64_t caps) {
   if (caps & C_basic_shader) {
     out << "basic_shader ";
   }
@@ -167,4 +167,79 @@ output_capabilities(std::ostream &out, int caps) {
   if (caps & C_texture_query_samples) {
     out << "texture_query_samples ";
   }
+}
+
+/**
+ *
+ */
+int ShaderEnums::
+get_matrix_deps(StateMatrix inp) {
+  int dep = D_none;
+  if (inp == SM_model_to_view ||
+      inp == SM_view_to_model ||
+      inp == SM_model_to_apiview ||
+      inp == SM_apiview_to_model) {
+    dep |= D_transform & ~D_view_transform;
+  }
+  if (inp == SM_view_to_world ||
+      inp == SM_world_to_view ||
+      inp == SM_apiview_to_world ||
+      inp == SM_world_to_apiview ||
+      inp == SM_view_x_to_view ||
+      inp == SM_view_to_view_x ||
+      inp == SM_apiview_x_to_view ||
+      inp == SM_view_to_apiview_x ||
+      inp == SM_clip_x_to_view ||
+      inp == SM_view_to_clip_x ||
+      inp == SM_apiclip_x_to_view ||
+      inp == SM_view_to_apiclip_x) {
+    dep |= D_view_transform;
+  }
+  if (inp == SM_mat_constant_x ||
+      inp == SM_vec_constant_x ||
+      inp == SM_view_x_to_view ||
+      inp == SM_view_to_view_x ||
+      inp == SM_apiview_x_to_view ||
+      inp == SM_view_to_apiview_x ||
+      inp == SM_clip_x_to_view ||
+      inp == SM_view_to_clip_x ||
+      inp == SM_apiclip_x_to_view ||
+      inp == SM_view_to_apiclip_x) {
+    dep |= D_shader_inputs;
+
+    if (inp == SM_mat_constant_x ||
+        inp == SM_view_x_to_view ||
+        inp == SM_view_to_view_x ||
+        inp == SM_apiview_x_to_view ||
+        inp == SM_view_to_apiview_x ||
+        inp == SM_clip_x_to_view ||
+        inp == SM_view_to_clip_x ||
+        inp == SM_apiclip_x_to_view ||
+        inp == SM_view_to_apiclip_x ||
+        inp == SM_world_to_apiclip_light_i ||
+        inp == SM_point_attenuation) {
+      // We can't track changes to these yet, so we have to assume that they
+      // are modified every frame.
+      dep |= D_frame;
+    }
+  }
+  if (inp == SM_clipplane_x) {
+    dep |= D_clip_planes;
+  }
+  if (inp == SM_clip_to_view ||
+      inp == SM_view_to_clip ||
+      inp == SM_apiclip_to_view ||
+      inp == SM_view_to_apiclip ||
+      inp == SM_apiview_to_apiclip ||
+      inp == SM_apiclip_to_apiview ||
+      inp == SM_point_attenuation) {
+    dep |= D_projection;
+  }
+  if (inp == SM_point_attenuation) {
+    dep |= D_scene;
+  }
+  if (inp == SM_world_to_apiclip_light_i) {
+    dep |= D_light;
+  }
+  return dep;
 }

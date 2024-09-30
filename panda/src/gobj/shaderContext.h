@@ -32,6 +32,7 @@ class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
   INLINE ShaderContext(Shader *se);
 
+  virtual void set_display_region(const DisplayRegion *display_region) {}
   virtual void set_state_and_transform(const RenderState *,
                                        const TransformState *,
                                        const TransformState *,
