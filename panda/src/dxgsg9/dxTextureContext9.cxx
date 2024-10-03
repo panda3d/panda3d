@@ -1549,8 +1549,8 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 
       for (DWORD y = 0; y < copy_height; y++) {
         source_word = ((DWORD*)surface_bytes) + x_window_offset;
-        memcpy(dest_line, source_word, byte_pitch);
-        dest_line += byte_pitch;
+        memcpy(dest_line, source_word, copy_width * 4);
+        dest_line += copy_width * 4;
         surface_bytes += byte_pitch;
       }
     } else {
@@ -1600,8 +1600,8 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
       // 24bpp texture case (numComponents == 3)
       for (DWORD y = 0; y < copy_height; y++) {
         source_byte = surface_bytes + x_window_offset * 3 * sizeof(BYTE);
-        memcpy(dest_byte, source_byte, byte_pitch);
-        dest_byte += byte_pitch;
+        memcpy(dest_byte, source_byte, copy_width * 3);
+        dest_byte += copy_width * 3;
         surface_bytes += byte_pitch;
       }
     }
