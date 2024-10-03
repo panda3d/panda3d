@@ -169,7 +169,7 @@ typedef enum {
     D24S8_FLAG =        FLG(20),
     D32_FLAG =          FLG(21),
     INTZ_FLAG =         FLG(22),
-    W11V11U10_FLAG =    FLG(23),
+    R32F_FLAG =         FLG(23),
     A2W10V10U10_FLAG =  FLG(24),
     ATI1_FLAG =         FLG(25),
     ATI2_FLAG =         FLG(26),
