@@ -414,7 +414,7 @@ rebuild_bitplanes() {
         _depth_backing_store->Release();
         _depth_backing_store = nullptr;
       }
-      if (!_depth_backing_store) {
+      if (!_depth_backing_store && _saved_depth_buffer != nullptr) {
         hr = _dxgsg -> _d3d_device ->
           CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
                                      _saved_depth_desc.MultiSampleType, _saved_depth_desc.MultiSampleQuality,
@@ -758,10 +758,14 @@ open_buffer() {
     dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
     return false;
   }
-  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
-    return false;
+  if (_saved_depth_buffer) {
+    hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
+    if (!SUCCEEDED (hr)) {
+      dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+      return false;
+    }
+  } else {
+    ZeroMemory(&_saved_depth_desc, sizeof(_saved_depth_desc));
   }
   _fb_properties = _dxgsg->
     calc_fb_properties(_saved_color_desc.Format,
