@@ -32,7 +32,7 @@ extern ConfigVariableBool dc_sort_inheritance_by_file;
 
 static const bool dc_multiple_inheritance = true;
 static const bool dc_virtual_inheritance = true;
-static const bool dc_sort_inheritance_by_file = false;
+static const bool dc_sort_inheritance_by_file = true;
 
 #endif  // WITHIN_PANDA
 
