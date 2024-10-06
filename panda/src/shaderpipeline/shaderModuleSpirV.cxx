@@ -1202,7 +1202,10 @@ remove_unused_variables() {
     case spv::OpName:
     case spv::OpMemberName:
     case spv::OpDecorate:
+    case spv::OpDecorateId:
+    case spv::OpDecorateString:
     case spv::OpMemberDecorate:
+    case spv::OpMemberDecorateString:
       // Delete decorations on the variable.
       if (op.nargs >= 1 && delete_ids.count(op.args[0])) {
         it = _instructions.erase(it);
@@ -1272,6 +1275,9 @@ flatten_struct(uint32_t type_id) {
     case spv::OpMemberName:
     case spv::OpDecorate:
     case spv::OpMemberDecorate:
+    case spv::OpDecorateId:
+    case spv::OpDecorateString:
+    case spv::OpMemberDecorateString:
       // Delete decorations on the struct type.
       if (op.nargs >= 1 && op.args[0] == type_id) {
         it = _instructions.erase(it);
@@ -1580,7 +1586,13 @@ flatten_struct(uint32_t type_id) {
   while (it != _instructions.end()) {
     Instruction op = *it;
 
-    if ((op.opcode == spv::OpName || op.opcode == spv::OpDecorate || op.opcode == spv::OpMemberName || op.opcode == spv::OpMemberDecorate) &&
+    if ((op.opcode == spv::OpName ||
+         op.opcode == spv::OpDecorate ||
+         op.opcode == spv::OpDecorateId ||
+         op.opcode == spv::OpDecorateString ||
+         op.opcode == spv::OpMemberName ||
+         op.opcode == spv::OpMemberDecorate ||
+         op.opcode == spv::OpMemberDecorateString) &&
         op.nargs >= 2 && deleted_ids.count(op.args[0])) {
       _instructions.erase(it);
       continue;
@@ -1685,7 +1697,10 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
 
     case spv::OpMemberName:
     case spv::OpDecorate:
+    case spv::OpDecorateId:
+    case spv::OpDecorateString:
     case spv::OpMemberDecorate:
+    case spv::OpMemberDecorateString:
       // Remove other annotations on the members.
       if (op.nargs >= 1 && member_indices.count(op.args[0])) {
         it = _instructions.erase(it);
@@ -2739,6 +2754,15 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         << "OpFunction may not occur within another function!\n";
       return;
     }
+    {
+      const Definition &func_def = modify_definition(op.args[1]);
+      if (func_def._dtype == DT_function && func_def._type_id != op.args[0]) {
+        shader_cat.error()
+          << "OpFunctionCall has mismatched return type ("
+          << op.args[0] << " != " << func_def._type_id << ")\n";
+        return;
+      }
+    }
     current_function_id = op.args[1];
     record_function(op.args[1], op.args[0]);
     break;
@@ -2762,7 +2786,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpFunctionCall:
-    if (current_function_id != 0) {
+    if (current_function_id == 0) {
       shader_cat.error()
         << "OpFunctionCall" << " may only occur within a function!\n";
       return;
@@ -2779,11 +2803,13 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
 
       // Error checking.  Note that it's valid for the function to not yet have
       // been defined.
-      if (func_def._dtype == DT_function && func_def._type_id != op.args[0]) {
-        shader_cat.error()
-          << "OpFunctionCall has mismatched return type ("
-          << func_def._type_id << " != " << op.args[0] << ")\n";
-        return;
+      if (func_def._dtype == DT_function) {
+        if (func_def._type_id != 0 && func_def._type_id != op.args[0]) {
+          shader_cat.error()
+            << "OpFunctionCall has mismatched return type ("
+            << func_def._type_id << " != " << op.args[0] << ")\n";
+          return;
+        }
       }
       else if (func_def._dtype != DT_none) {
         shader_cat.error()
@@ -2797,6 +2823,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       // to not yet have been declared.
       func_def._dtype = DT_function;
       func_def._flags |= DF_used;
+      func_def._type_id = op.args[0];
       record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
     }
     break;

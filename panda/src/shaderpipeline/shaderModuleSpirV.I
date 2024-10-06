@@ -60,9 +60,12 @@ is_annotation() const {
   return
     opcode == spv::OpDecorate ||
     opcode == spv::OpMemberDecorate ||
+    opcode == spv::OpDecorationGroup ||
     opcode == spv::OpGroupDecorate ||
     opcode == spv::OpGroupMemberDecorate ||
-    opcode == spv::OpDecorationGroup;
+    opcode == spv::OpDecorateId ||
+    opcode == spv::OpDecorateString ||
+    opcode == spv::OpMemberDecorateString;
 }
 
 /**
