@@ -82,18 +82,35 @@ def gsg(graphics_pipe, graphics_engine):
     fbprops = FrameBufferProperties()
     fbprops.force_hardware = True
 
+    props = WindowProperties.size(32, 32)
+
     buffer = graphics_engine.make_output(
         graphics_pipe,
         'buffer',
         0,
         fbprops,
-        WindowProperties.size(32, 32),
+        props,
         GraphicsPipe.BF_refuse_window
     )
     graphics_engine.open_windows()
 
     if buffer is None:
-        pytest.skip("GraphicsPipe cannot make offscreen buffers")
+        # Try making a window instead, putting it in the background so it
+        # disrupts the desktop as little as possible
+        props.minimized = True
+        props.foreground = False
+        props.z_order = WindowProperties.Z_bottom
+        buffer = graphics_engine.make_output(
+            graphics_pipe,
+            'buffer',
+            0,
+            fbprops,
+            props,
+            GraphicsPipe.BF_require_window
+        )
+
+    if buffer is None:
+        pytest.skip("GraphicsPipe cannot make offscreen buffers or windows")
 
     yield buffer.gsg
 
