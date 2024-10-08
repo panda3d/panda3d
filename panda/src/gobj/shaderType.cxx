@@ -473,7 +473,9 @@ add_member(const ShaderType *type, std::string name) {
   member.name = std::move(name);
   member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
   int alignment = type->get_align_bytes();
-  member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  if (alignment > 0) {
+    member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  }
   _members.push_back(std::move(member));
 }
 
