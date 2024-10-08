@@ -217,6 +217,17 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     record_pointer_type(args[0], (spv::StorageClass)args[1], args[2]);
     break;
 
+  case spv::OpTypeFunction:
+    {
+      Definition &def = modify_definition(args[0]);
+      def._dtype = DT_type;
+      def._type_id = args[1];
+      for (size_t i = 2; i < nargs; ++i) {
+        def._parameters.push_back(args[i]);
+      }
+    }
+    break;
+
   case spv::OpTypeImage:
     {
       const ShaderType::Scalar *sampled_type;
@@ -435,16 +446,15 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       return;
     }
     {
-      const Definition &func_def = modify_definition(args[1]);
-      if (func_def.is_function() && func_def._type_id != args[0]) {
+      const Definition &ftype_def = get_definition(args[3]);
+      if (ftype_def._type_id != args[0]) {
         shader_cat.error()
-          << "OpFunctionCall has mismatched return type ("
-          << args[0] << " != " << func_def._type_id << ")\n";
-        return;
+          << "OpFunction has mismatched return type ("
+          << args[0] << " != " << ftype_def._type_id << ")\n";
       }
     }
     current_function_id = args[1];
-    record_function(args[1], args[0]);
+    record_function(args[1], args[3]);
     break;
 
   case spv::OpFunctionParameter:
@@ -484,10 +494,11 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       // Error checking.  Note that it's valid for the function to not yet have
       // been defined.
       if (func_def.is_function()) {
-        if (func_def._type_id != 0 && func_def._type_id != args[0]) {
+        const Definition &ftype_def = get_definition(func_def._type_id);
+        if (ftype_def._type_id != 0 && ftype_def._type_id != args[0]) {
           shader_cat.error()
             << "OpFunctionCall has mismatched return type ("
-            << func_def._type_id << " != " << args[0] << ")\n";
+            << ftype_def._type_id << " != " << args[0] << ")\n";
           return;
         }
       }
@@ -503,7 +514,6 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       // to not yet have been declared.
       func_def._dtype = DT_function;
       func_def._flags |= DF_used;
-      func_def._type_id = args[0];
       record_temporary(args[1], args[0], args[2], current_function_id);
     }
     break;
@@ -578,6 +588,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
   case spv::OpArrayLength:
   case spv::OpConvertPtrToU:
     mark_used(args[2]);
+    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpDecorate:
@@ -658,6 +669,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     for (size_t i = 2; i < nargs; ++i) {
       mark_used(args[i]);
     }
+    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpCopyObject:
@@ -669,6 +681,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     if (_defs[args[2]]._flags & DF_constant_expression) {
       _defs[args[1]]._flags |= DF_constant_expression;
     }
+    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpImageSampleImplicitLod:
@@ -689,6 +702,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       if (var_id != 0) {
         _defs[var_id]._flags |= DF_non_dref_sampled;
       }
+      _defs[args[1]]._type_id = args[0];
     }
     break;
 
@@ -708,6 +722,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       if (var_id != 0) {
         _defs[var_id]._flags |= DF_dref_sampled;
       }
+      _defs[args[1]]._type_id = args[0];
     }
     break;
 
@@ -740,6 +755,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     if ((_defs[args[2]]._flags & DF_constant_expression) != 0) {
       _defs[args[1]]._flags |= DF_constant_expression;
     }
+    _defs[args[1]]._type_id = args[0];
     break;
 
   // Binary arithmetic operators
@@ -778,6 +794,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
         (_defs[args[3]]._flags & DF_constant_expression) != 0) {
       _defs[args[1]]._flags |= DF_constant_expression;
     }
+    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpSelect:
@@ -791,6 +808,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
         (_defs[args[4]]._flags & DF_constant_expression) != 0) {
       _defs[args[1]]._flags |= DF_constant_expression;
     }
+    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpReturnValue:
@@ -805,9 +823,18 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     // on the safe side.
     mark_used(args[2]);
     mark_used(args[3]);
+    _defs[args[1]]._type_id = args[0];
     break;
 
   default:
+    {
+      bool has_result, has_type;
+      HasResultAndType(opcode, &has_result, &has_type);
+      if (has_result && has_type) {
+        // Record the result type of this operation.
+        _defs[args[1]]._type_id = args[0];
+      }
+    }
     break;
   }
 }
@@ -1010,6 +1037,9 @@ record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
   def._function_id = function_id;
 
   nassertv(function_id != 0);
+
+  Definition &func_def = modify_definition(function_id);
+  func_def._parameters.push_back(id);
 }
 
 /**

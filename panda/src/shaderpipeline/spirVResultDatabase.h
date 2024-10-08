@@ -80,6 +80,7 @@ public:
     uint32_t _function_id = 0;
     uint32_t _spec_id = 0;
     MemberDefinitions _members;
+    pvector<uint32_t> _parameters;
     int _flags = 0;
 
     // Only defined for DT_variable and DT_pointer_type.
@@ -88,6 +89,7 @@ public:
     INLINE bool is_type() const;
     INLINE bool is_pointer_type() const;
     INLINE bool is_variable() const;
+    INLINE bool is_function_parameter() const;
     INLINE bool is_constant() const;
     INLINE bool is_spec_constant() const;
     INLINE bool is_function() const;

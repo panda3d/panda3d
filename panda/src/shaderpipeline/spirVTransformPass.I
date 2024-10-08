@@ -18,7 +18,7 @@ INLINE uint32_t SpirVTransformPass::
 get_type_id(uint32_t id) const {
   const Definition &def = _db.get_definition(id);
   nassertr(def._type_id != 0, 0);
-  nassertr(is_defined(id), def._type_id);
+  nassertr(is_defined(id) || def.is_function(), def._type_id);
   return def._type_id;
 }
 

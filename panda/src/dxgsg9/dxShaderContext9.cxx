@@ -17,6 +17,7 @@
 #include "shaderModuleSpirV.h"
 #include "spirVTransformer.h"
 #include "spirVHoistStructResourcesPass.h"
+#include "spirVRemoveUnusedVariablesPass.h"
 
 #include <io.h>
 #include <stdio.h>
@@ -108,6 +109,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
   if (hoist_necessary) {
     SpirVTransformer transformer(stream);
     transformer.run(SpirVHoistStructResourcesPass());
+    transformer.run(SpirVRemoveUnusedVariablesPass());
     stream = transformer.get_result();
 
 #ifndef NDEBUG

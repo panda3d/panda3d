@@ -232,6 +232,27 @@ transform_definition_op(Instruction op) {
       }
     }
     break;
+
+  case spv::OpTypeFunction:
+    if (op.nargs >= 3) {
+      auto it = _deleted_function_parameters.find(op.args[0]);
+      if (it != _deleted_function_parameters.end()) {
+        pvector<uint32_t> new_args({op.args[0], op.args[1]});
+        for (size_t i = 2; i < op.nargs; ++i) {
+          if (!it->second.count(i - 2)) {
+            if (is_deleted(op.args[i])) {
+              delete_function_parameter(op.args[0], i);
+            } else {
+              new_args.push_back(op.args[i]);
+            }
+          }
+        }
+        add_definition(spv::OpTypeFunction, new_args.data(), new_args.size());
+        mark_defined(op.args[0]);
+        return false;
+      }
+    }
+    break;
   }
   return true;
 }
@@ -306,6 +327,29 @@ transform_function_op(Instruction op, uint32_t function_id) {
   case spv::OpPtrDiff:
     nassertr(!is_deleted(op.args[2]), true);
     nassertr(!is_deleted(op.args[3]), true);
+    break;
+
+  case spv::OpFunctionCall:
+    if (op.nargs >= 4) {
+      uint32_t func_type_id = get_type_id(op.args[2]);
+
+      auto it = _deleted_function_parameters.find(func_type_id);
+      if (it != _deleted_function_parameters.end()) {
+        pvector<uint32_t> new_args({op.args[0], op.args[1], op.args[2]});
+        for (size_t i = 3; i < op.nargs; ++i) {
+          if (!it->second.count(i - 3)) {
+            new_args.push_back(op.args[i]);
+          }
+        }
+        add_instruction(spv::OpFunctionCall, new_args.data(), new_args.size());
+        mark_defined(new_args[1]);
+        return false;
+      }
+    }
+    break;
+
+  case spv::OpReturnValue:
+    nassertr(!is_deleted(op.args[0]), true);
     break;
 
   default:
@@ -465,6 +509,25 @@ delete_struct_member(uint32_t id, uint32_t member_index) {
       }
 
       std::advance(it, wcount);
+    }
+  }
+}
+
+/**
+ * Deletes the given parameter of the given function type.
+ */
+void SpirVTransformPass::
+delete_function_parameter(uint32_t type_id, uint32_t param_index) {
+  if (!_deleted_function_parameters[type_id].insert(param_index).second) {
+    // Was already deleted.
+    return;
+  }
+
+  for (size_t id = 0; id < get_id_bound(); ++id) {
+    const Definition &def = _db.get_definition(id);
+    if (def._type_id == type_id) {
+      uint32_t param_id = def._parameters[param_index];
+      delete_id(param_id);
     }
   }
 }

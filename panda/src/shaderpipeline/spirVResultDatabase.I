@@ -36,6 +36,14 @@ is_variable() const {
 }
 
 /**
+ * Returns true if this is a function parameter.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_function_parameter() const {
+  return _dtype == DT_function_parameter;
+}
+
+/**
  * Returns true if this is a constant.
  */
 INLINE bool SpirVResultDatabase::Definition::

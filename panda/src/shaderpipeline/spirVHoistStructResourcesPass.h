@@ -23,6 +23,7 @@
 class EXPCL_PANDA_SHADERPIPELINE SpirVHoistStructResourcesPass final : public SpirVTransformPass {
 public:
   virtual bool transform_definition_op(Instruction op);
+  virtual bool begin_function(Instruction op);
   virtual bool transform_function_op(Instruction op, uint32_t function_id);
 
   virtual void postprocess();
@@ -36,6 +37,7 @@ private:
   // members only) leading to the hoisted type in question, as well as the
   // type that the wrapped additional variables should have.
   pmap<uint32_t, pvector<std::pair<const ShaderType *, AccessChain> > > _affected_types;
+  pset<uint32_t> _affected_pointer_types;
 
   // For each access chain consisting only of struct members
   // (prefixed by a variable id), map to the variable that has been hoisted

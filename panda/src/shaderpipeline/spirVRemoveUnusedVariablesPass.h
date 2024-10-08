@@ -17,7 +17,7 @@
 #include "spirVTransformPass.h"
 
 /**
- * Removes unused variables.
+ * Removes unused variables and function parameters.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVRemoveUnusedVariablesPass final : public SpirVTransformPass {
 public:

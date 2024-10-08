@@ -116,6 +116,9 @@ transform_definition_op(Instruction op) {
 
   case spv::OpTypePointer:
     if (op.nargs >= 3) {
+      if (_affected_types.count(op.args[2])) {
+        _affected_pointer_types.insert(op.args[0]);
+      }
       if (is_deleted(op.args[2])) {
         delete_id(op.args[0]);
         return false;
@@ -138,8 +141,10 @@ transform_definition_op(Instruction op) {
         // Structs with non-opaque types must be passed through pointers.
         nassertd(!_affected_types.count(arg)) continue;
 
-        auto ait = _affected_types.find(get_type_id(arg));
-        if (ait != _affected_types.end()) {
+        if (_affected_pointer_types.count(arg)) {
+          auto ait = _affected_types.find(unwrap_pointer_type(arg));
+          nassertd(ait != _affected_types.end()) continue;
+
           // Passing a struct with non-opaque types to a function.  That
           // means adding additional parameters for the hoisted variables.
           for (auto &pair : ait->second) {
@@ -149,6 +154,9 @@ transform_definition_op(Instruction op) {
         }
       }
 
+      // Let's go ahead and modify the definition now.
+      _db.modify_definition(op.args[0])._parameters = pvector<uint32_t>(new_args.data() + 2, new_args.data() + new_args.size());
+
       add_definition(spv::OpTypeFunction, new_args.data(), new_args.size());
       return false;
     }
@@ -156,8 +164,8 @@ transform_definition_op(Instruction op) {
 
   case spv::OpVariable:
     if (op.nargs >= 3) {
-      uint32_t pointer_type_id = unwrap_pointer_type(op.args[0]);
-      auto ait = _affected_types.find(pointer_type_id);
+      uint32_t type_id = unwrap_pointer_type(op.args[0]);
+      auto ait = _affected_types.find(type_id);
       if (ait != _affected_types.end()) {
         uint32_t var_id = op.args[1];
         spv::StorageClass storage_class = (spv::StorageClass)op.args[2];
@@ -177,7 +185,7 @@ transform_definition_op(Instruction op) {
       }
 
       // If the struct contained only samplers, delete the old variable.
-      if (is_deleted(pointer_type_id)) {
+      if (is_deleted(type_id)) {
         delete_id(op.args[1]);
         return false;
       }
@@ -185,6 +193,16 @@ transform_definition_op(Instruction op) {
     break;
   }
 
+  return true;
+}
+
+/**
+ *
+ */
+bool SpirVHoistStructResourcesPass::
+begin_function(Instruction op) {
+  // We will be re-recording the parameters.
+  _db.modify_definition(op.args[1])._parameters.clear();
   return true;
 }
 
@@ -202,13 +220,16 @@ transform_function_op(Instruction op, uint32_t function_id) {
         delete_id(param_id);
       } else {
         add_instruction(op.opcode, op.args, op.nargs);
+        _db.modify_definition(function_id)._parameters.push_back(op.args[1]);
       }
 
       // Structs with non-opaque types must be passed through pointers.
       nassertr(!_affected_types.count(op.args[0]), false);
 
-      auto ait = _affected_types.find(unwrap_pointer_type(op.args[0]));
-      if (ait != _affected_types.end()) {
+      if (_affected_pointer_types.count(op.args[0])) {
+        auto ait = _affected_types.find(unwrap_pointer_type(op.args[0]));
+        nassertr(ait != _affected_types.end(), false);
+
         // Passing a struct with non-opaque types to a function.  That means
         // adding additional parameters for the hoisted variables.
         for (auto &pair : ait->second) {
@@ -329,7 +350,6 @@ transform_function_op(Instruction op, uint32_t function_id) {
             auto hit = _hoisted_vars.find(full);
             nassertr(hit != _hoisted_vars.end(), false);
             uint32_t hoisted_var_id = hit->second;
-            mark_used(hoisted_var_id);
 
             uint32_t hoisted_type_ptr_id = define_pointer_type(pair.first, spv::StorageClassUniformConstant);
             nassertr(hoisted_type_ptr_id != 0, false);
@@ -360,12 +380,16 @@ transform_function_op(Instruction op, uint32_t function_id) {
         uint32_t arg = op.args[i];
         uint32_t arg_type_id = get_type_id(arg);
         if (!is_deleted(arg_type_id)) {
-          // Type is deleted, skip this arg.
           new_args.push_back(arg);
         }
 
-        auto ait = _affected_types.find(unwrap_pointer_type(arg_type_id));
-        if (ait != _affected_types.end()) {
+        // Structs with samplers must be passed through a pointer.
+        nassertd(!_affected_types.count(arg_type_id)) continue;
+
+        if (_affected_pointer_types.count(arg_type_id)) {
+          auto ait = _affected_types.find(unwrap_pointer_type(arg_type_id));
+          nassertd(ait != _affected_types.end()) continue;
+
           // Passing a struct with non-opaque types to a function.  That means
           // adding additional parameters for the hoisted variables.
           size_t j = i;
@@ -413,19 +437,33 @@ transform_function_op(Instruction op, uint32_t function_id) {
     // people actually do this, we can add support.
     nassertr(!_affected_types.count(op.args[0]), false);
     nassertr(!is_deleted(op.args[2]), false);
+    mark_used(op.args[2]);
     break;
 
   case spv::OpCopyObject:
   case spv::OpCopyLogical:
+    // Not allowed to copy structs containing resources.
+    nassertr(!_affected_types.count(op.args[0]), false);
+    nassertr(!_affected_pointer_types.count(op.args[0]), false);
+
     // Copying an empty struct means deleting the copy.
     if (is_deleted(op.args[2])) {
       delete_id(op.args[1]);
       return false;
     }
+    break;
 
-    // Not allowed to copy structs containing resources.
-    nassertr(!_affected_types.count(op.args[0]), false);
-    nassertr(!_affected_types.count(get_type_id(op.args[0])), false);
+  case spv::OpReturnValue:
+    // Cannot return a struct with an opaque type from a function.
+    if (op.nargs >= 1) {
+      uint32_t value_id = op.args[0];
+      uint32_t type_id = get_type_id(op.args[0]);
+      mark_used(value_id);
+      nassertr(!is_deleted(value_id), true);
+      nassertr(!is_deleted(type_id), true);
+      nassertr(!_affected_types.count(type_id), true);
+      nassertr(!_affected_pointer_types.count(type_id), true);
+    }
     break;
 
   default:

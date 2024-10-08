@@ -60,8 +60,10 @@ public:
 
   void add_name(uint32_t id, const std::string &name);
 
-  void delete_struct_member(uint32_t id, uint32_t member_index);
   void delete_id(uint32_t id);
+  void delete_struct_member(uint32_t id, uint32_t member_index);
+  void delete_function_parameter(uint32_t type_id, uint32_t param_index);
+
   INLINE bool is_deleted(uint32_t id) const;
   INLINE bool is_member_deleted(uint32_t id, uint32_t member) const;
 
@@ -126,6 +128,7 @@ protected:
   BitArray _defined;
   pset<uint32_t> _deleted_ids;
   pmap<uint32_t, pset<uint32_t> > _deleted_members;
+  pmap<uint32_t, pset<uint32_t> > _deleted_function_parameters;
 
   SpirVResultDatabase _db;
 };
