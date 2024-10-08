@@ -49,8 +49,6 @@ private:
   };
 
 public:
-  using Instruction = ShaderModuleSpirV::Instruction;
-
   /**
    * Used by below Definition struct to hold member info.
    */
@@ -111,7 +109,7 @@ public:
   const Definition &get_definition(uint32_t id) const;
   Definition &modify_definition(uint32_t id);
 
-  void parse_instruction(const Instruction &op, uint32_t &current_function_id);
+  void parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &current_function_id);
 
   uint32_t find_type(const ShaderType *type);
   uint32_t find_pointer_type(const ShaderType *type, spv::StorageClass storage_class);

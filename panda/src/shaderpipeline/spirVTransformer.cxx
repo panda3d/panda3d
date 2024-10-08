@@ -43,7 +43,7 @@ SpirVTransformer(InstructionStream &stream) {
       break;
     }
 
-    _db.parse_instruction(op, current_function_id);
+    _db.parse_instruction(op.opcode, op.args, op.nargs, current_function_id);
     ++it;
   }
   _preamble = std::vector<uint32_t>(stream._words.data(), it._words);
@@ -55,7 +55,7 @@ SpirVTransformer(InstructionStream &stream) {
       break;
     }
 
-    _db.parse_instruction(op, current_function_id);
+    _db.parse_instruction(op.opcode, op.args, op.nargs, current_function_id);
     ++it;
   }
   _annotations = std::vector<uint32_t>(begin._words, it._words);
@@ -67,7 +67,7 @@ SpirVTransformer(InstructionStream &stream) {
       break;
     }
 
-    _db.parse_instruction(op, current_function_id);
+    _db.parse_instruction(op.opcode, op.args, op.nargs, current_function_id);
     ++it;
   }
   _definitions = std::vector<uint32_t>(begin._words, it._words);
@@ -75,7 +75,7 @@ SpirVTransformer(InstructionStream &stream) {
   begin = it;
   while (it != stream.end()) {
     Instruction op = *it;
-    _db.parse_instruction(op, current_function_id);
+    _db.parse_instruction(op.opcode, op.args, op.nargs, current_function_id);
     ++it;
   }
   _functions = std::vector<uint32_t>(begin._words, it._words);

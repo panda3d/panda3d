@@ -120,32 +120,32 @@ modify_definition(uint32_t id) {
  * encountered definitions are recorded in the definitions vector.
  */
 void SpirVResultDatabase::
-parse_instruction(const Instruction &op, uint32_t &current_function_id) {
-  switch (op.opcode) {
+parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &current_function_id) {
+  switch (opcode) {
   case spv::OpExtInstImport:
-    record_ext_inst_import(op.args[0], (const char*)&op.args[1]);
+    record_ext_inst_import(args[0], (const char*)&args[1]);
     break;
 
   case spv::OpExtInst:
     {
-      const Definition &def = get_definition(op.args[2]);
+      const Definition &def = get_definition(args[2]);
       nassertv(def.is_ext_inst());
       if (def._name == "GLSL.std.450") {
         // These standard functions take pointers as arguments.
-        switch (op.args[3]) {
+        switch (args[3]) {
         case GLSLstd450Modf:
         case GLSLstd450Frexp:
-          mark_used(op.args[5]);
+          mark_used(args[5]);
           break;
 
         case GLSLstd450InterpolateAtCentroid:
-          mark_used(op.args[4]);
+          mark_used(args[4]);
           break;
 
         case GLSLstd450InterpolateAtSample:
         case GLSLstd450InterpolateAtOffset:
-          mark_used(op.args[4]);
-          mark_used(op.args[5]);
+          mark_used(args[4]);
+          mark_used(args[5]);
           break;
         }
       }
@@ -153,37 +153,37 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpName:
-    _defs[op.args[0]]._name.assign((const char *)&op.args[1]);
+    _defs[args[0]]._name.assign((const char *)&args[1]);
     break;
 
   case spv::OpMemberName:
-    _defs[op.args[0]].modify_member(op.args[1])._name.assign((const char *)&op.args[2]);
+    _defs[args[0]].modify_member(args[1])._name.assign((const char *)&args[2]);
     break;
 
   case spv::OpTypeVoid:
-    record_type(op.args[0], nullptr);
+    record_type(args[0], nullptr);
     break;
 
   case spv::OpTypeBool:
-    record_type(op.args[0], ShaderType::bool_type);
+    record_type(args[0], ShaderType::bool_type);
     break;
 
   case spv::OpTypeInt:
     {
-      if (op.args[2]) {
-        record_type(op.args[0], ShaderType::int_type);
+      if (args[2]) {
+        record_type(args[0], ShaderType::int_type);
       } else {
-        record_type(op.args[0], ShaderType::uint_type);
+        record_type(args[0], ShaderType::uint_type);
       }
     }
     break;
 
   case spv::OpTypeFloat:
     {
-      if (op.nargs >= 2 && op.args[1] >= 64) {
-        record_type(op.args[0], ShaderType::double_type);
+      if (nargs >= 2 && args[1] >= 64) {
+        record_type(args[0], ShaderType::double_type);
       } else {
-        record_type(op.args[0], ShaderType::float_type);
+        record_type(args[0], ShaderType::float_type);
       }
     }
     break;
@@ -191,9 +191,9 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpTypeVector:
     {
       const ShaderType::Scalar *element_type;
-      DCAST_INTO_V(element_type, _defs[op.args[1]]._type);
-      uint32_t component_count = op.args[2];
-      record_type(op.args[0], ShaderType::register_type(
+      DCAST_INTO_V(element_type, _defs[args[1]]._type);
+      uint32_t component_count = args[2];
+      record_type(args[0], ShaderType::register_type(
         ShaderType::Vector(element_type->get_scalar_type(), component_count)));
     }
     break;
@@ -201,9 +201,9 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpTypeMatrix:
     {
       const ShaderType::Vector *column_type;
-      DCAST_INTO_V(column_type, _defs[op.args[1]]._type);
-      uint32_t num_rows = op.args[2];
-      record_type(op.args[0], ShaderType::register_type(
+      DCAST_INTO_V(column_type, _defs[args[1]]._type);
+      uint32_t num_rows = args[2];
+      record_type(args[0], ShaderType::register_type(
         ShaderType::Matrix(column_type->get_scalar_type(), num_rows, column_type->get_num_components())));
     }
     break;
@@ -214,18 +214,18 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         << "OpTypePointer" << " may not occur within a function!\n";
       return;
     }
-    record_pointer_type(op.args[0], (spv::StorageClass)op.args[1], op.args[2]);
+    record_pointer_type(args[0], (spv::StorageClass)args[1], args[2]);
     break;
 
   case spv::OpTypeImage:
     {
       const ShaderType::Scalar *sampled_type;
-      DCAST_INTO_V(sampled_type, _defs[op.args[1]]._type);
+      DCAST_INTO_V(sampled_type, _defs[args[1]]._type);
 
       Texture::TextureType texture_type;
-      switch ((spv::Dim)op.args[2]) {
+      switch ((spv::Dim)args[2]) {
       case spv::Dim1D:
-        if (op.args[4]) {
+        if (args[4]) {
           texture_type = Texture::TT_1d_texture_array;
         } else {
           texture_type = Texture::TT_1d_texture;
@@ -233,7 +233,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         break;
 
       case spv::Dim2D:
-        if (op.args[4]) {
+        if (args[4]) {
           texture_type = Texture::TT_2d_texture_array;
         } else {
           texture_type = Texture::TT_2d_texture;
@@ -245,7 +245,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         break;
 
       case spv::DimCube:
-        if (op.args[4]) {
+        if (args[4]) {
           texture_type = Texture::TT_cube_map_array;
         } else {
           texture_type = Texture::TT_cube_map;
@@ -273,8 +273,8 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       }
 
       ShaderType::Access access = ShaderType::Access::read_write;
-      if (op.nargs > 8) {
-        switch ((spv::AccessQualifier)op.args[8]) {
+      if (nargs > 8) {
+        switch ((spv::AccessQualifier)args[8]) {
         case spv::AccessQualifierReadOnly:
           access = ShaderType::Access::read_only;
           break;
@@ -290,33 +290,33 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
           break;
         }
       }
-      if (_defs[op.args[0]]._flags & DF_non_writable) {
+      if (_defs[args[0]]._flags & DF_non_writable) {
         access = (access & ShaderType::Access::read_only);
       }
-      if (_defs[op.args[0]]._flags & DF_non_readable) {
+      if (_defs[args[0]]._flags & DF_non_readable) {
         access = (access & ShaderType::Access::write_only);
       }
 
-      record_type(op.args[0], ShaderType::register_type(
+      record_type(args[0], ShaderType::register_type(
         ShaderType::Image(texture_type, sampled_type->get_scalar_type(), access)));
 
       // We don't record the "depth" flag on the image type (because no shader
       // language actually does that), so we have to store it somewhere else.
-      if (op.args[3] == 1) {
-        _defs[op.args[0]]._flags |= DF_depth_image;
+      if (args[3] == 1) {
+        _defs[args[0]]._flags |= DF_depth_image;
       }
     }
     break;
 
   case spv::OpTypeSampler:
     // A sampler that's not bound to a particular image.
-    record_type(op.args[0], ShaderType::sampler_type);
+    record_type(args[0], ShaderType::sampler_type);
     break;
 
   case spv::OpTypeSampledImage:
-    if (const ShaderType::Image *image = _defs[op.args[1]]._type->as_image()) {
-      bool shadow = (_defs[op.args[1]]._flags & DF_depth_image) != 0;
-      record_type(op.args[0], ShaderType::register_type(
+    if (const ShaderType::Image *image = _defs[args[1]]._type->as_image()) {
+      bool shadow = (_defs[args[1]]._flags & DF_depth_image) != 0;
+      record_type(args[0], ShaderType::register_type(
         ShaderType::SampledImage(image->get_texture_type(), image->get_sampled_type(), shadow)));
     } else {
       shader_cat.error()
@@ -326,30 +326,30 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpTypeArray:
-    if (_defs[op.args[1]]._type != nullptr) {
-      record_type(op.args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[op.args[1]]._type, _defs[op.args[2]]._constant)));
+    if (_defs[args[1]]._type != nullptr) {
+      record_type(args[0], ShaderType::register_type(
+        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant)));
     }
-    _defs[op.args[0]]._type_id = op.args[1];
+    _defs[args[0]]._type_id = args[1];
     break;
 
   case spv::OpTypeRuntimeArray:
-    if (_defs[op.args[1]]._type != nullptr) {
-      record_type(op.args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[op.args[1]]._type, 0)));
+    if (_defs[args[1]]._type != nullptr) {
+      record_type(args[0], ShaderType::register_type(
+        ShaderType::Array(_defs[args[1]]._type, 0)));
     }
     break;
 
   case spv::OpTypeStruct:
     {
-      Definition &struct_def = _defs[op.args[0]];
+      Definition &struct_def = _defs[args[0]];
       int access_flags = DF_non_writable | DF_non_readable;
       ShaderType::Struct type;
-      for (size_t i = 0; i < op.nargs - 1; ++i) {
-        uint32_t member_type_id = op.args[i + 1];
+      for (size_t i = 0; i < nargs - 1; ++i) {
+        uint32_t member_type_id = args[i + 1];
         if (member_type_id >= _defs.size() || !_defs[member_type_id].is_type()) {
           shader_cat.error()
-            << "Struct type with id " << op.args[0]
+            << "Struct type with id " << args[0]
             << " contains invalid member type " << member_type_id << "\n";
           return;
         }
@@ -390,12 +390,12 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         // If any member is writable, the struct shan't be marked readonly.
         access_flags &= member_def._flags;
       }
-      record_type(op.args[0], ShaderType::register_type(std::move(type)));
+      record_type(args[0], ShaderType::register_type(std::move(type)));
 
       // If all struct members are flagged readonly/writeonly, we tag the type
       // so as well, since glslang doesn't decorate an SSBO in its entirety as
       // readonly/writeonly properly (it applies it to all members instead)
-      _defs[op.args[0]]._flags |= access_flags;
+      _defs[args[0]]._flags |= access_flags;
     }
     break;
 
@@ -405,7 +405,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         << "OpConstant" << " may not occur within a function!\n";
       return;
     }
-    record_constant(op.args[1], op.args[0], op.args + 2, op.nargs - 2);
+    record_constant(args[1], args[0], args + 2, nargs - 2);
     break;
 
   case spv::OpConstantNull:
@@ -414,18 +414,18 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         << "OpConstantNull" << " may not occur within a function!\n";
       return;
     }
-    record_constant(op.args[1], op.args[0], nullptr, 0);
+    record_constant(args[1], args[0], nullptr, 0);
     break;
 
   case spv::OpConstantComposite:
   case spv::OpSpecConstantComposite:
-    modify_definition(op.args[1])._flags |= DF_constant_expression;
+    modify_definition(args[1])._flags |= DF_constant_expression;
     break;
 
   case spv::OpSpecConstantTrue:
   case spv::OpSpecConstantFalse:
   case spv::OpSpecConstant:
-    record_spec_constant(op.args[1], op.args[0]);
+    record_spec_constant(args[1], args[0]);
     break;
 
   case spv::OpFunction:
@@ -435,16 +435,16 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       return;
     }
     {
-      const Definition &func_def = modify_definition(op.args[1]);
-      if (func_def.is_function() && func_def._type_id != op.args[0]) {
+      const Definition &func_def = modify_definition(args[1]);
+      if (func_def.is_function() && func_def._type_id != args[0]) {
         shader_cat.error()
           << "OpFunctionCall has mismatched return type ("
-          << op.args[0] << " != " << func_def._type_id << ")\n";
+          << args[0] << " != " << func_def._type_id << ")\n";
         return;
       }
     }
-    current_function_id = op.args[1];
-    record_function(op.args[1], op.args[0]);
+    current_function_id = args[1];
+    record_function(args[1], args[0]);
     break;
 
   case spv::OpFunctionParameter:
@@ -453,7 +453,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
         << "OpFunctionParameter" << " may only occur within a function!\n";
       return;
     }
-    record_function_parameter(op.args[1], op.args[0], current_function_id);
+    record_function_parameter(args[1], args[0], current_function_id);
     break;
 
   case spv::OpFunctionEnd:
@@ -472,29 +472,29 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       return;
     }
     {
-      Definition &func_def = modify_definition(op.args[2]);
+      Definition &func_def = modify_definition(args[2]);
 
       // Mark all arguments as used.  In the future we could be smart enough to
       // only mark the arguments used if the relevant parameters are used with
       // the function itself.
-      for (size_t i = 3; i < op.nargs; ++i) {
-        mark_used(op.args[i]);
+      for (size_t i = 3; i < nargs; ++i) {
+        mark_used(args[i]);
       }
 
       // Error checking.  Note that it's valid for the function to not yet have
       // been defined.
       if (func_def.is_function()) {
-        if (func_def._type_id != 0 && func_def._type_id != op.args[0]) {
+        if (func_def._type_id != 0 && func_def._type_id != args[0]) {
           shader_cat.error()
             << "OpFunctionCall has mismatched return type ("
-            << func_def._type_id << " != " << op.args[0] << ")\n";
+            << func_def._type_id << " != " << args[0] << ")\n";
           return;
         }
       }
       else if (func_def._dtype != DT_none) {
         shader_cat.error()
           << "OpFunctionCall tries to call non-function definition "
-          << op.args[2] << "\n";
+          << args[2] << "\n";
         return;
       }
 
@@ -503,17 +503,17 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       // to not yet have been declared.
       func_def._dtype = DT_function;
       func_def._flags |= DF_used;
-      func_def._type_id = op.args[0];
-      record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+      func_def._type_id = args[0];
+      record_temporary(args[1], args[0], args[2], current_function_id);
     }
     break;
 
   case spv::OpVariable:
-    record_variable(op.args[1], op.args[0], (spv::StorageClass)op.args[2], current_function_id);
+    record_variable(args[1], args[0], (spv::StorageClass)args[2], current_function_id);
     break;
 
   case spv::OpImageTexelPointer:
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(args[1], args[0], args[2], current_function_id);
     break;
 
   case spv::OpLoad:
@@ -536,23 +536,23 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpAtomicFMinEXT:
   case spv::OpAtomicFMaxEXT:
   case spv::OpAtomicFAddEXT:
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(args[1], args[0], args[2], current_function_id);
 
     // A load from the pointer is enough for us to consider it "used", for now.
-    mark_used(op.args[1]);
+    mark_used(args[1]);
     break;
 
   case spv::OpStore:
   case spv::OpAtomicStore:
   case spv::OpAtomicFlagClear:
     // An atomic write creates no result ID, but we do consider the var "used".
-    mark_used(op.args[0]);
+    mark_used(args[0]);
     break;
 
   case spv::OpCopyMemory:
   case spv::OpCopyMemorySized:
-    mark_used(op.args[0]);
-    mark_used(op.args[1]);
+    mark_used(args[0]);
+    mark_used(args[1]);
     break;
 
   case spv::OpAccessChain:
@@ -561,13 +561,13 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpInBoundsPtrAccessChain:
     // Record the access chain or pointer copy, so that as soon as something is
     // loaded through them we can transitively mark everything as "used".
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(args[1], args[0], args[2], current_function_id);
 
     // If one of the indices (including the base element for OpPtrAccessChain)
     // isn't a constant expression, we mark the variable as dynamically-indexed.
-    for (size_t i = 3; i < op.nargs; ++i) {
-      if ((_defs[op.args[i]]._flags & DF_constant_expression) == 0) {
-        const Definition &def = get_definition(op.args[1]);
+    for (size_t i = 3; i < nargs; ++i) {
+      if ((_defs[args[i]]._flags & DF_constant_expression) == 0) {
+        const Definition &def = get_definition(args[1]);
         nassertv(def._origin_id != 0);
         _defs[def._origin_id]._flags |= DF_dynamically_indexed;
         break;
@@ -577,37 +577,37 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
 
   case spv::OpArrayLength:
   case spv::OpConvertPtrToU:
-    mark_used(op.args[2]);
+    mark_used(args[2]);
     break;
 
   case spv::OpDecorate:
-    switch ((spv::Decoration)op.args[1]) {
+    switch ((spv::Decoration)args[1]) {
     case spv::DecorationBufferBlock:
-      _defs[op.args[0]]._flags |= DF_buffer_block;
+      _defs[args[0]]._flags |= DF_buffer_block;
       break;
 
     case spv::DecorationBuiltIn:
-      _defs[op.args[0]]._builtin = (spv::BuiltIn)op.args[2];
+      _defs[args[0]]._builtin = (spv::BuiltIn)args[2];
       break;
 
     case spv::DecorationNonWritable:
-      _defs[op.args[0]]._flags |= DF_non_writable;
+      _defs[args[0]]._flags |= DF_non_writable;
       break;
 
     case spv::DecorationNonReadable:
-      _defs[op.args[0]]._flags |= DF_non_readable;
+      _defs[args[0]]._flags |= DF_non_readable;
       break;
 
     case spv::DecorationLocation:
-      _defs[op.args[0]]._location = op.args[2];
+      _defs[args[0]]._location = args[2];
       break;
 
     case spv::DecorationArrayStride:
-      _defs[op.args[0]]._array_stride = op.args[2];
+      _defs[args[0]]._array_stride = args[2];
       break;
 
     case spv::DecorationSpecId:
-      _defs[op.args[0]]._spec_id = op.args[2];
+      _defs[args[0]]._spec_id = args[2];
       break;
 
     default:
@@ -616,21 +616,21 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpMemberDecorate:
-    switch ((spv::Decoration)op.args[2]) {
+    switch ((spv::Decoration)args[2]) {
     case spv::DecorationBuiltIn:
-      _defs[op.args[0]].modify_member(op.args[1])._builtin = (spv::BuiltIn)op.args[3];
+      _defs[args[0]].modify_member(args[1])._builtin = (spv::BuiltIn)args[3];
       break;
 
     case spv::DecorationNonWritable:
-      _defs[op.args[0]].modify_member(op.args[1])._flags |= DF_non_writable;
+      _defs[args[0]].modify_member(args[1])._flags |= DF_non_writable;
       break;
 
     case spv::DecorationNonReadable:
-      _defs[op.args[0]].modify_member(op.args[1])._flags |= DF_non_readable;
+      _defs[args[0]].modify_member(args[1])._flags |= DF_non_readable;
       break;
 
     case spv::DecorationLocation:
-      _defs[op.args[0]].modify_member(op.args[1])._location = op.args[3];
+      _defs[args[0]].modify_member(args[1])._location = args[3];
       break;
 
     case spv::DecorationBinding:
@@ -644,7 +644,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       break;
 
     case spv::DecorationOffset:
-      _defs[op.args[0]].modify_member(op.args[1])._offset = op.args[3];
+      _defs[args[0]].modify_member(args[1])._offset = args[3];
       break;
 
     default:
@@ -655,19 +655,19 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpCompositeConstruct:
     //XXX Not sure that we even need this, since it's probably not possible to
     // construct a composite from pointers?
-    for (size_t i = 2; i < op.nargs; ++i) {
-      mark_used(op.args[i]);
+    for (size_t i = 2; i < nargs; ++i) {
+      mark_used(args[i]);
     }
     break;
 
   case spv::OpCopyObject:
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(args[1], args[0], args[2], current_function_id);
     // fall through
 
   case spv::OpCompositeExtract:
     // Composite types are used for some arithmetic ops.
-    if (_defs[op.args[2]]._flags & DF_constant_expression) {
-      _defs[op.args[1]]._flags |= DF_constant_expression;
+    if (_defs[args[2]]._flags & DF_constant_expression) {
+      _defs[args[1]]._flags |= DF_constant_expression;
     }
     break;
 
@@ -685,7 +685,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpImageSparseGather:
     // Indicate that this variable was sampled with a non-dref sampler.
     {
-      uint32_t var_id = _defs[op.args[2]]._origin_id;
+      uint32_t var_id = _defs[args[2]]._origin_id;
       if (var_id != 0) {
         _defs[var_id]._flags |= DF_non_dref_sampled;
       }
@@ -704,7 +704,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpImageSparseDrefGather:
     // Indicate that this variable was sampled with a dref sampler.
     {
-      uint32_t var_id = _defs[op.args[2]]._origin_id;
+      uint32_t var_id = _defs[args[2]]._origin_id;
       if (var_id != 0) {
         _defs[var_id]._flags |= DF_dref_sampled;
       }
@@ -712,11 +712,11 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpBitcast:
-    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(args[1], args[0], args[2], current_function_id);
 
     // Treat this like a load if it is casting to a non-pointer type.
-    if (_defs[op.args[0]]._dtype != DT_pointer_type) {
-      mark_used(op.args[1]);
+    if (_defs[args[0]]._dtype != DT_pointer_type) {
+      mark_used(args[1]);
     }
     // fall through, counts as unary arithmetic
   case spv::OpConvertFToU:
@@ -737,8 +737,8 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpIsNormal:
   case spv::OpSignBitSet:
   case spv::OpNot:
-    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0) {
-      _defs[op.args[1]]._flags |= DF_constant_expression;
+    if ((_defs[args[2]]._flags & DF_constant_expression) != 0) {
+      _defs[args[1]]._flags |= DF_constant_expression;
     }
     break;
 
@@ -774,28 +774,28 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpBitwiseOr:
   case spv::OpBitwiseXor:
   case spv::OpBitwiseAnd:
-    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0 &&
-        (_defs[op.args[3]]._flags & DF_constant_expression) != 0) {
-      _defs[op.args[1]]._flags |= DF_constant_expression;
+    if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
+        (_defs[args[3]]._flags & DF_constant_expression) != 0) {
+      _defs[args[1]]._flags |= DF_constant_expression;
     }
     break;
 
   case spv::OpSelect:
     // This can in theory operate on pointers, which is why we handle this
-    //mark_used(op.args[2]);
-    mark_used(op.args[3]);
-    mark_used(op.args[4]);
+    //mark_used(args[2]);
+    mark_used(args[3]);
+    mark_used(args[4]);
 
-    if ((_defs[op.args[2]]._flags & DF_constant_expression) != 0 &&
-        (_defs[op.args[3]]._flags & DF_constant_expression) != 0 &&
-        (_defs[op.args[4]]._flags & DF_constant_expression) != 0) {
-      _defs[op.args[1]]._flags |= DF_constant_expression;
+    if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
+        (_defs[args[3]]._flags & DF_constant_expression) != 0 &&
+        (_defs[args[4]]._flags & DF_constant_expression) != 0) {
+      _defs[args[1]]._flags |= DF_constant_expression;
     }
     break;
 
   case spv::OpReturnValue:
     // A pointer can be returned when certain caps are present, so track it.
-    mark_used(op.args[0]);
+    mark_used(args[0]);
     break;
 
   case spv::OpPtrEqual:
@@ -803,8 +803,8 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpPtrDiff:
     // Consider a variable "used" if its pointer value is being compared, to be
     // on the safe side.
-    mark_used(op.args[2]);
-    mark_used(op.args[3]);
+    mark_used(args[2]);
+    mark_used(args[3]);
     break;
 
   default:
