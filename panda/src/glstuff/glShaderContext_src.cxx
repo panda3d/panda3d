@@ -30,6 +30,7 @@
 #include "shaderModuleGlsl.h"
 #include "shaderModuleSpirV.h"
 #include "sparseArray.h"
+#include "spirVTransformer.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
@@ -2206,14 +2207,15 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           << module->get_source_filename() << "\n";
       }
 
-      // Make a copy so we can do some transformations such as assigning
+      // Make a transformer so we can do some transformations such as assigning
       // locations.
-      ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
+      SpirVTransformer transformer(spv->_instructions);
 
       if (!id_to_location.empty()) {
-        ShaderModuleSpirV::InstructionWriter writer(stream);
-        writer.assign_locations(id_to_location);
+        transformer.assign_locations(id_to_location);
       }
+
+      ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
 
       if (_glgsg->_gl_vendor == "NVIDIA Corporation" && !id_to_location.empty()) {
         // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match

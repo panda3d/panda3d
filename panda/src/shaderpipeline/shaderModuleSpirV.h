@@ -15,6 +15,11 @@
 #define SHADERMODULESPIRV_H
 
 #include "shader.h"
+#include "bitArray.h"
+
+#ifdef BUILDING_PANDA_SHADERPIPELINE
+#define SPV_ENABLE_UTILITY_CODE
+#endif
 #include "spirv.hpp"
 
 class ShaderType;
@@ -63,18 +68,15 @@ public:
   class InstructionIterator {
   public:
     constexpr InstructionIterator() = default;
+    INLINE InstructionIterator(uint32_t *words);
 
     INLINE Instruction operator *();
     INLINE InstructionIterator &operator ++();
     INLINE bool operator ==(const InstructionIterator &other) const;
     INLINE bool operator !=(const InstructionIterator &other) const;
-
-  private:
-    INLINE InstructionIterator(uint32_t *words);
+    INLINE InstructionIterator next() const;
 
     uint32_t *_words = nullptr;
-
-    friend class InstructionStream;
   };
 
   /**
@@ -89,6 +91,7 @@ public:
     INLINE InstructionStream(std::vector<uint32_t> words);
 
     bool validate_header() const;
+    bool validate() const;
     bool disassemble(std::ostream &out) const;
 
     INLINE operator std::vector<uint32_t> & ();
@@ -111,158 +114,13 @@ public:
     INLINE uint32_t get_id_bound() const;
     INLINE uint32_t allocate_id();
 
-  private:
+  public:
     // We're not using a pvector since glslang/spirv-opt are working with
     // std::vector<uint32_t> and so we can avoid some unnecessary copies.
     std::vector<uint32_t> _words;
   };
 
   InstructionStream _instructions;
-
-  enum DefinitionType {
-    DT_none,
-    DT_type,
-    DT_type_pointer,
-    DT_variable,
-    DT_constant,
-    DT_ext_inst,
-    DT_function_parameter,
-    DT_function,
-    DT_temporary,
-    DT_spec_constant,
-  };
-
-  enum DefinitionFlags {
-    DF_used = 1,
-
-    // Set for image types that have the "depth" flag set
-    DF_depth_image = 2,
-
-    // Set on variables to indicate that they were used by a texture sample op,
-    // respectively one with and without depth comparison
-    DF_dref_sampled = 4,
-    DF_non_dref_sampled = 8,
-
-    // Set if we know for sure that this can be const-evaluated.
-    DF_constant_expression = 16,
-
-    // Set for arrays that are indexed with a non-const index.
-    DF_dynamically_indexed = 32,
-
-    // Has the "buffer block" decoration (older versions of SPIR-V).
-    DF_buffer_block = 64,
-
-    // If both of these are set, no access is permitted (size queries only)
-    DF_non_writable = 128, // readonly
-    DF_non_readable = 256, // writeonly
-
-    DF_relaxed_precision = 512,
-  };
-
-  /**
-   * Used by below Definition struct to hold member info.
-   */
-  struct MemberDefinition {
-    std::string _name;
-    uint32_t _type_id = 0;
-    int _location = -1;
-    int _offset = -1;
-    spv::BuiltIn _builtin = spv::BuiltInMax;
-    int _flags = 0; // Only readonly/writeonly
-  };
-  typedef pvector<MemberDefinition> MemberDefinitions;
-
-  /**
-   * Temporary structure to hold a single definition, which could be a variable,
-   * type or type pointer in the SPIR-V file.
-   */
-  struct Definition {
-    DefinitionType _dtype = DT_none;
-    std::string _name;
-    const ShaderType *_type = nullptr;
-    int _location = -1;
-    spv::BuiltIn _builtin = spv::BuiltInMax;
-    uint32_t _constant = 0;
-    uint32_t _type_id = 0;
-    uint32_t _array_stride = 0;
-    uint32_t _origin_id = 0; // set for loads, tracks original variable ID
-    uint32_t _function_id = 0;
-    uint32_t _spec_id = 0;
-    MemberDefinitions _members;
-    int _flags = 0;
-
-    // Only defined for DT_variable and DT_type_pointer.
-    spv::StorageClass _storage_class;
-
-    INLINE bool is_used() const;
-    INLINE bool is_builtin() const;
-    INLINE bool has_location() const;
-    bool has_builtin() const;
-    const MemberDefinition &get_member(uint32_t i) const;
-    MemberDefinition &modify_member(uint32_t i);
-    void clear();
-  };
-  typedef pvector<Definition> Definitions;
-
-  /**
-   * An InstructionWriter can be used for more advanced transformations on a
-   * SPIR-V instruction stream.  It sets up temporary support structures that
-   * help make changes more efficiently.  Only one writer to a given stream may
-   * exist at any given time, and the stream may not be modified by other means
-   * in the meantime.
-   */
-  class EXPCL_PANDA_SHADERPIPELINE InstructionWriter {
-  public:
-    InstructionWriter(InstructionStream &stream);
-
-    uint32_t find_definition(const std::string &name) const;
-    const Definition &get_definition(uint32_t id) const;
-    Definition &modify_definition(uint32_t id);
-
-    void assign_locations(Stage stage);
-    void assign_locations(pmap<uint32_t, int> locations);
-    void bind_descriptor_set(uint32_t set, const vector_int &locations);
-    void remove_unused_variables();
-
-    void flatten_struct(uint32_t type_id);
-    uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
-                        spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
-
-    void set_variable_type(uint32_t id, const ShaderType *type);
-
-    uint32_t find_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
-    uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
-    uint32_t define_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
-    uint32_t define_type(const ShaderType *type);
-    uint32_t define_constant(const ShaderType *type, uint32_t constant);
-
-  private:
-    uint32_t r_define_variable(InstructionIterator &it, const ShaderType *type, spv::StorageClass storage_class);
-    uint32_t r_define_type_pointer(InstructionIterator &it, const ShaderType *type, spv::StorageClass storage_class);
-    uint32_t r_define_type(InstructionIterator &it, const ShaderType *type);
-    uint32_t r_define_constant(InstructionIterator &it, const ShaderType *type, uint32_t constant);
-    void r_annotate_struct_layout(InstructionIterator &it, uint32_t type_id);
-
-    void parse_instruction(const Instruction &op, uint32_t &current_function_id);
-    void record_type(uint32_t id, const ShaderType *type);
-    void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
-    void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id=0);
-    void record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id);
-    void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
-    void record_ext_inst_import(uint32_t id, const char *import);
-    void record_function(uint32_t id, uint32_t type_id);
-    void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
-    void record_spec_constant(uint32_t id, uint32_t type_id);
-
-    void mark_used(uint32_t id);
-
-    InstructionStream &_instructions;
-    Definitions _defs;
-
-    // Reverse mapping from type to ID.  Excludes types with BuiltIn decoration.
-    typedef pmap<const ShaderType *, uint32_t> TypeMap;
-    TypeMap _type_map;
-  };
 
 private:
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);

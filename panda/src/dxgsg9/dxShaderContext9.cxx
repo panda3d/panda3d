@@ -15,6 +15,8 @@
 #include "dxShaderContext9.h"
 #include "dxVertexBufferContext9.h"
 #include "shaderModuleSpirV.h"
+#include "spirVTransformer.h"
+#include "spirVHoistStructResourcesPass.h"
 
 #include <io.h>
 #include <stdio.h>
@@ -77,7 +79,45 @@ compile_module(const ShaderModule *module, DWORD *&data) {
       << spv->get_source_filename() << "\n";
   }
 
-  spirv_cross::CompilerHLSL compiler(std::vector<uint32_t>(spv->get_data(), spv->get_data() + spv->get_data_size()));
+  // Create a mapping from id to parameter index.  This makes reflection
+  // a little easier later on.  The second int is for a resource index, used
+  // for resources hoisted from a struct (see below).
+  bool hoist_necessary = false;
+  pmap<uint32_t, std::pair<unsigned int, int> > params_by_id;
+  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
+    const ShaderModule::Variable &var = module->get_parameter(i);
+
+    if (!hoist_necessary &&
+        var.type->is_aggregate_type() &&
+        var.type->get_num_resources() > 0) {
+      hoist_necessary = true;
+    }
+
+    for (size_t j = 0; j < _shader->_parameters.size(); ++j) {
+      if (_shader->_parameters[j]._name == var.name) {
+        params_by_id[var.id] = std::make_pair((unsigned int)j, -1);
+        break;
+      }
+    }
+  }
+
+  ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
+
+  // HLSL does not support resources inside a struct, so if they exist, we
+  // need to modify the SPIR-V to hoist those out.
+  if (hoist_necessary) {
+    SpirVTransformer transformer(stream);
+    transformer.run(SpirVHoistStructResourcesPass());
+    stream = transformer.get_result();
+
+#ifndef NDEBUG
+    if (!stream.validate()) {
+      return false;
+    }
+#endif
+  }
+
+  spirv_cross::CompilerHLSL compiler(stream);
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;
   options.flatten_matrix_vertex_input_semantics = true;
@@ -125,32 +165,24 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
   }
 
-  // Create a mapping from id to parameter index.  This makes reflection
-  // a little easier later on.
-  pmap<uint32_t, unsigned int> params_by_id;
-  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
-    const ShaderModule::Variable &var = module->get_parameter(i);
-
-    for (size_t j = 0; j < _shader->_parameters.size(); ++j) {
-      if (_shader->_parameters[j]._name == var.name) {
-        params_by_id[var.id] = (unsigned int)j;
-        break;
-      }
-    }
-  }
-
   // Tell spirv-cross to rename the constants to "p#", where # is the index of
   // the original parameter.  This makes it easier to map the compiled
   // constants back to the original parameters later on.
   for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
     spv::StorageClass sc = compiler.get_storage_class(id);
 
-    char buf[24];
+    char buf[64];
     if (sc == spv::StorageClassUniformConstant) {
-      nassertd(params_by_id.count(id)) continue;
+      //nassertd(params_by_id.count(id)) continue;
+      if (!params_by_id.count(id)) continue;
 
-      unsigned int index = params_by_id[id];
-      sprintf(buf, "p%u", index);
+      unsigned int index = params_by_id[id].first;
+      int resource_index = params_by_id[id].second;
+      if (resource_index >= 0) {
+        sprintf(buf, "p%u_r%d", index, resource_index);
+      } else {
+        sprintf(buf, "p%u", index);
+      }
       compiler.set_name(id, buf);
     }
   }
@@ -263,7 +295,11 @@ query_constants(const ShaderModule *module, DWORD *data) {
         << "Ignoring unknown " << stage << " shader constant " << name << "\n";
       continue;
     }
-    int index = atoi(name + 1);
+    char *suffix;
+    long index = strtol(name + 1, &suffix, 10);
+    if (suffix[0] == '_' && suffix[1] == 'r') {
+      int resource_index = atoi(suffix + 2);
+    }
     const Shader::Parameter &param = _shader->_parameters[index];
     const ShaderType *element_type = param._type;
     size_t num_elements = 1;

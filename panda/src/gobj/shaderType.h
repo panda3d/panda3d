@@ -104,6 +104,7 @@ public:
   virtual const Matrix *as_matrix() const { return nullptr; }
   virtual const Struct *as_struct() const { return nullptr; }
   virtual const Array *as_array() const { return nullptr; }
+  virtual const Resource *as_resource() const { return nullptr; }
   virtual const Image *as_image() const { return nullptr; }
   virtual const Sampler *as_sampler() const { return nullptr; }
   virtual const SampledImage *as_sampled_image() const { return nullptr; }
@@ -430,12 +431,14 @@ public:
   virtual int get_num_resources() const { return 1; }
 
   virtual bool contains_opaque_type() const override { return true; }
+
+  const Resource *as_resource() const override final { return this; }
 };
 
 /**
  * Image type.
  */
-class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType::Resource {
 public:
   INLINE Image(Texture::TextureType texture_type, ScalarType sampled_type, Access access);
 
@@ -483,7 +486,7 @@ private:
 /**
  * Sampler state.
  */
-class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType::Resource {
 private:
   Sampler() = default;
 
@@ -513,7 +516,7 @@ private:
 /**
  * Sampled image type.
  */
-class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType::Resource {
 public:
   INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type,
                       bool shadow = false);
@@ -556,7 +559,7 @@ private:
  * Opaque storage buffer (SSBO) storing a given type, which is usually a struct
  * or an array.
  */
-class EXPCL_PANDA_GOBJ ShaderType::StorageBuffer final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::StorageBuffer final : public ShaderType::Resource {
 public:
   INLINE StorageBuffer(const ShaderType *contained_type, Access access);
 
