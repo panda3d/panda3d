@@ -52,8 +52,11 @@ public:
 
 private:
   bool r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
-                         const ShaderType *type, size_t offset, int resource_index,
+                         const ShaderType *type, size_t offset,
                          BYTE *table_data, D3DXSHADER_TYPEINFO &typeinfo,
+                         int reg_set, int &reg_idx, int reg_end);
+  bool r_query_resources(Shader::Stage stage, const Shader::Parameter &param,
+                         const ShaderType *type, const char *path, int index,
                          int reg_set, int &reg_idx, int reg_end);
 
   IDirect3DVertexShader9 *_vertex_shader = nullptr;

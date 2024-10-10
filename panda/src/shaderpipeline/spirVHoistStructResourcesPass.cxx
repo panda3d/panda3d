@@ -62,7 +62,7 @@ transform_definition_op(Instruction op) {
           changed = true;
         }
         else if (is_deleted(op.args[i])) {
-          // This nested struct became empty since it had only samplers.
+          // This nested struct/array became empty since it had only samplers.
           delete_struct_member(type_id, i - 1);
           changed = true;
         }
@@ -73,7 +73,7 @@ transform_definition_op(Instruction op) {
         }
       }
 
-      if (new_args.size() == 1 && op.nargs > 1) {
+      if (_remove_empty_structs && new_args.size() == 1 && op.nargs > 1) {
         // No members left, delete this struct (but only if it wasn't
         // already empty before this).
         delete_id(type_id);
@@ -309,13 +309,13 @@ transform_function_op(Instruction op, uint32_t function_id) {
 
         for (size_t i = 3; i < op.nargs; ++i) {
           const Definition &def = _db.get_definition(parent_id);
-          if (def._members.empty()) { // array
+          if (def._type->as_array()) {
             parent_id = def._type_id;
             new_args.push_back(op.args[i]);
             hoisted_new_args.push_back(op.args[i]);
             nassertr(parent_id > 0, false);
-          } else {
-            // Must be a struct.
+          }
+          else if (def._type->as_struct()) {
             uint32_t index = resolve_constant(op.args[i]);
 
             if (is_member_deleted(parent_id, index)) {
@@ -335,6 +335,12 @@ transform_function_op(Instruction op, uint32_t function_id) {
             }
 
             parent_id = def._members[index]._type_id;
+          }
+          else {
+            // Indexing into a non-aggregate composite type (vector/matrix).
+            // Just leave the rest of the access chain intact.
+            new_args.insert(new_args.end(), op.args + i, op.args + op.nargs);
+            break;
           }
         }
 

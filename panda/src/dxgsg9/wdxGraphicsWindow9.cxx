@@ -241,6 +241,7 @@ close_window() {
   }
 
   _dxgsg->release_swap_chain(&_wcontext);
+  _dxgsg = nullptr;
   WinGraphicsWindow::close_window();
 }
 
@@ -1185,7 +1186,7 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   if (wdxdisplay9_cat.is_debug()) {
     wdxdisplay9_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
   }
-  _gsg->mark_new();
+  _dxgsg->mark_new();
   init_resized_window();
   return retval;
 }

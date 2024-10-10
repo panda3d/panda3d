@@ -352,6 +352,9 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
     _glgsg->_glUniform1i(location, (GLint)_image_units.size());
     _image_units.push_back(std::move(unit));
   }
+  else if (type->as_resource()) {
+    resource_index++;
+  }
 }
 
 /**

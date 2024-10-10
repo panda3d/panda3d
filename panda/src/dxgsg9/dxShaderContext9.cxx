@@ -28,6 +28,17 @@
 
 #include <spirv_cross/spirv_hlsl.hpp>
 
+// Temporary hack to allow spirv-cross to emit empty structs, which we need it
+// to do in order not to mess up our member numbering for structs that used to
+// contain samplers
+class Compiler : public spirv_cross::CompilerHLSL {
+public:
+  explicit Compiler(std::vector<uint32_t> spirv_)
+    : CompilerHLSL(std::move(spirv_)) {
+    backend.supports_empty_struct = true;
+  }
+};
+
 #define DEBUG_SHADER 0
 
 TypeHandle DXShaderContext9::_type_handle;
@@ -80,11 +91,10 @@ compile_module(const ShaderModule *module, DWORD *&data) {
       << spv->get_source_filename() << "\n";
   }
 
-  // Create a mapping from id to parameter index.  This makes reflection
-  // a little easier later on.  The second int is for a resource index, used
-  // for resources hoisted from a struct (see below).
+  // Create a mapping from id to a new name, a string containing a parameter
+  // index.  This makes reflection a little easier later on.
   bool hoist_necessary = false;
-  pmap<uint32_t, std::pair<unsigned int, int> > params_by_id;
+  pmap<uint32_t, std::string> param_names;
   for (size_t i = 0; i < module->get_num_parameters(); ++i) {
     const ShaderModule::Variable &var = module->get_parameter(i);
 
@@ -96,7 +106,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 
     for (size_t j = 0; j < _shader->_parameters.size(); ++j) {
       if (_shader->_parameters[j]._name == var.name) {
-        params_by_id[var.id] = std::make_pair((unsigned int)j, -1);
+        param_names[var.id] = "p" + format_string(j);
         break;
       }
     }
@@ -106,11 +116,27 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 
   // HLSL does not support resources inside a struct, so if they exist, we
   // need to modify the SPIR-V to hoist those out.
+  // We tell it not to remove the empty structs, since that changes the member
+  // numbering, which we need to match between the original and the HLSL.
   if (hoist_necessary) {
     SpirVTransformer transformer(stream);
-    transformer.run(SpirVHoistStructResourcesPass());
+    SpirVHoistStructResourcesPass hoist_pass(false);
+    transformer.run(hoist_pass);
     transformer.run(SpirVRemoveUnusedVariablesPass());
     stream = transformer.get_result();
+
+    for (const auto &item : hoist_pass._hoisted_vars) {
+      const auto &access_chain = item.first;
+
+      std::ostringstream str;
+      str << param_names[access_chain._var_id];
+
+      for (size_t i = 0; i < access_chain.size(); ++i) {
+        str << '_' << access_chain[i];
+      }
+
+      param_names[item.second] = str.str();
+    }
 
 #ifndef NDEBUG
     if (!stream.validate()) {
@@ -119,7 +145,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 #endif
   }
 
-  spirv_cross::CompilerHLSL compiler(stream);
+  Compiler compiler(stream);
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;
   options.flatten_matrix_vertex_input_semantics = true;
@@ -173,19 +199,10 @@ compile_module(const ShaderModule *module, DWORD *&data) {
   for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
     spv::StorageClass sc = compiler.get_storage_class(id);
 
-    char buf[64];
     if (sc == spv::StorageClassUniformConstant) {
-      //nassertd(params_by_id.count(id)) continue;
-      if (!params_by_id.count(id)) continue;
-
-      unsigned int index = params_by_id[id].first;
-      int resource_index = params_by_id[id].second;
-      if (resource_index >= 0) {
-        sprintf(buf, "p%u_r%d", index, resource_index);
-      } else {
-        sprintf(buf, "p%u", index);
-      }
-      compiler.set_name(id, buf);
+      auto it = param_names.find(id);
+      nassertd(it != param_names.end()) continue;
+      compiler.set_name(id, it->second);
     }
   }
 
@@ -299,49 +316,7 @@ query_constants(const ShaderModule *module, DWORD *data) {
     }
     char *suffix;
     long index = strtol(name + 1, &suffix, 10);
-    if (suffix[0] == '_' && suffix[1] == 'r') {
-      int resource_index = atoi(suffix + 2);
-    }
     const Shader::Parameter &param = _shader->_parameters[index];
-    const ShaderType *element_type = param._type;
-    size_t num_elements = 1;
-
-    // If there is no binding yet for this parameter, add it.
-    size_t offset = (size_t)-1;
-    if (param._binding != nullptr) {
-      for (const Binding &binding : _data_bindings) {
-        if (param._binding == binding._binding) {
-          offset = binding._offset;
-        }
-      }
-      if (offset == (size_t)-1) {
-        offset = _scratch_space_size;
-
-        Binding binding;
-        binding._binding = param._binding;
-        binding._offset = offset;
-        binding._dep = param._binding->get_state_dep();
-        _constant_deps |= binding._dep;
-        _data_bindings.push_back(std::move(binding));
-
-        // Pad space to 16-byte boundary
-        uint32_t size = param._type->get_size_bytes(true);
-        size = (size + 15) & ~15;
-        _scratch_space_size += size;
-      }
-    }
-
-    if (const ShaderType::Array *array_type = param._type->as_array()) {
-      element_type = array_type->get_element_type();
-      num_elements = array_type->get_num_elements();
-    }
-
-    int reg_set = constant.RegisterSet;
-    int reg_idx = constant.RegisterIndex;
-    int reg_end = reg_idx + constant.RegisterCount;
-    if (!r_query_constants(stage, param, param._type, offset, 0, table_data, *type, reg_set, reg_idx, reg_end)) {
-      return false;
-    }
 
 #ifndef NDEBUG
     if (dxgsg9_cat.is_debug()) {
@@ -366,6 +341,44 @@ query_constants(const ShaderModule *module, DWORD *data) {
       dxgsg9_cat.debug(false) << std::endl;
     }
 #endif
+
+    int reg_set = constant.RegisterSet;
+    int reg_idx = constant.RegisterIndex;
+    int reg_end = reg_idx + constant.RegisterCount;
+    if (reg_set != D3DXRS_SAMPLER) {
+      size_t offset = (size_t)-1;
+      if (param._binding != nullptr) {
+        // If there is no binding yet for this parameter, add it.
+        for (const Binding &binding : _data_bindings) {
+          if (param._binding == binding._binding) {
+            offset = binding._offset;
+          }
+        }
+        if (offset == (size_t)-1) {
+          offset = _scratch_space_size;
+
+          Binding binding;
+          binding._binding = param._binding;
+          binding._offset = offset;
+          binding._dep = param._binding->get_state_dep();
+          _constant_deps |= binding._dep;
+          _data_bindings.push_back(std::move(binding));
+
+          // Pad space to 16-byte boundary
+          uint32_t size = param._type->get_size_bytes(true);
+          size = (size + 15) & ~15;
+          _scratch_space_size += size;
+        }
+      }
+
+      if (!r_query_constants(stage, param, param._type, offset, table_data, *type, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+    } else {
+      if (!r_query_resources(stage, param, param._type, suffix, 0, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+    }
   }
 
   return true;
@@ -376,7 +389,7 @@ query_constants(const ShaderModule *module, DWORD *data) {
  */
 bool DXShaderContext9::
 r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
-                  const ShaderType *type, size_t offset, int resource_index,
+                  const ShaderType *type, size_t offset,
                   BYTE *table_data, D3DXSHADER_TYPEINFO &typeinfo,
                   int reg_set, int &reg_idx, int reg_end) {
   if (typeinfo.Class == D3DXPC_STRUCT) {
@@ -392,46 +405,41 @@ r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
 
     D3DXSHADER_STRUCTMEMBERINFO *members = (D3DXSHADER_STRUCTMEMBERINFO *)(table_data + typeinfo.StructMemberInfo);
 
-    for (WORD ei = 0; ei < typeinfo.Elements && reg_idx < reg_end; ++ei) {
-      DWORD mi = 0;
-      for (; mi < typeinfo.StructMembers && reg_idx < reg_end; ++mi) {
-        D3DXSHADER_TYPEINFO *typeinfo = (D3DXSHADER_TYPEINFO *)(table_data + members[mi].TypeInfo);
+    if (reg_idx < reg_end && typeinfo.StructMembers == 1 &&
+        ((D3DXSHADER_TYPEINFO *)(table_data + members[0].TypeInfo))->Elements == 1 &&
+        strcmp((const char *)(table_data + members[0].Name), "empty_struct_member") == 0) {
+      // Special case of spirv-cross inventing a struct member where it does
+      // not exist.  Increment the register index and skip.
+      ++reg_idx;
+      return true;
+    }
 
+    for (WORD ei = 0; ei < typeinfo.Elements && reg_idx < reg_end; ++ei) {
+      DWORD dxmi = 0;
+      for (size_t mi = 0; mi < struct_type->get_num_members() && reg_idx < reg_end && dxmi < typeinfo.StructMembers; ++mi) {
         const ShaderType::Struct::Member &member = struct_type->get_member(mi);
-        if (!r_query_constants(stage, param, member.type, offset + member.offset, resource_index, table_data, *typeinfo, reg_set, reg_idx, reg_end)) {
+
+        // Check if this is a resource or an array of resources.  If so, it was
+        // removed by the hoisting pass, and so we have to skip it.
+        const ShaderType *element_type = member.type;
+        while (const ShaderType::Array *array_type = element_type->as_array()) {
+          element_type = array_type->get_element_type();
+        }
+        if (element_type->as_resource() != nullptr) {
+          continue;
+        }
+
+        //const char *name = (const char *)(table_data + members[dxmi].Name);
+        D3DXSHADER_TYPEINFO *typeinfo = (D3DXSHADER_TYPEINFO *)(table_data + members[dxmi].TypeInfo);
+        if (!r_query_constants(stage, param, member.type, offset + member.offset, table_data, *typeinfo, reg_set, reg_idx, reg_end)) {
           return false;
         }
-
-        resource_index += member.type->get_num_resources();
-      }
-
-      if (reg_idx < reg_end) {
-        // If there are members left over in the struct, be sure to increment
-        // the resource_index anyway, for the next array element.
-        while (mi < struct_type->get_num_members()) {
-          const ShaderType::Struct::Member &member = struct_type->get_member(mi++);
-          resource_index += member.type->get_num_resources();
-        }
+        ++dxmi;
       }
 
       offset += stride;
     }
-  }
-  else if (reg_set == D3DXRS_SAMPLER) {
-    const ShaderType *element_type;
-    uint32_t num_elements;
-    type->unwrap_array(element_type, num_elements);
-
-    for (UINT ei = 0; ei < typeinfo.Elements && reg_idx < reg_end; ++ei) {
-      TextureRegister reg;
-      reg.unit = reg_idx;
-      reg.binding = param._binding;
-      reg.resource_id = param._binding->get_resource_id(resource_index++, element_type);
-      _textures.push_back(std::move(reg));
-      ++reg_idx;
-    }
-  }
-  else {
+  } else {
     // Non-aggregate type.  Note that arrays of arrays are not supported.
     //nassertr(!element_type->is_aggregate_type(), false);
 
@@ -457,6 +465,59 @@ r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
     }
 
     reg_idx += typeinfo.Elements * typeinfo.Rows;
+  }
+
+  return true;
+}
+
+/**
+ * Recursive method used by query_constants, identifying the resources used in
+ * the shader.  The resources that are hoisted from structs will be named
+ * something like p0_1_2_3, where p0 indicates the parameter index, and the
+ * next indices identify the struct member indices to traverse down into.
+ */
+bool DXShaderContext9::
+r_query_resources(Shader::Stage stage, const Shader::Parameter &param,
+                  const ShaderType *type, const char *path, int resource_index,
+                  int reg_set, int &reg_idx, int reg_end) {
+
+  if (const ShaderType::Array *array_type = type->as_array()) {
+    const ShaderType *element_type = array_type->get_element_type();
+    int stride = element_type->get_num_resources();
+
+    for (size_t i = 0; i < array_type->get_num_elements() && reg_idx < reg_end; ++i) {
+      if (!r_query_resources(stage, param, element_type, path, resource_index, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+      resource_index += stride;
+    }
+  }
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    nassertr(path[0] == '_', false);
+
+    char *suffix;
+    long member_index = strtol(path + 1, &suffix, 10);
+    nassertr(member_index >= 0 && member_index < struct_type->get_num_members(), false);
+
+    for (long i = 0; i < member_index; ++i) {
+      const ShaderType *member_type = struct_type->get_member(i).type;
+      resource_index += member_type->get_num_resources();
+    }
+
+    const ShaderType *member_type = struct_type->get_member(member_index).type;
+    return r_query_resources(stage, param, member_type, suffix, resource_index, reg_set, reg_idx, reg_end);
+  }
+  else if (const ShaderType::Resource *resource_type = type->as_resource()) {
+    nassertr(path[0] == '\0', false);
+
+    if (reg_idx < reg_end) {
+      TextureRegister reg;
+      reg.unit = reg_idx;
+      reg.binding = param._binding;
+      reg.resource_id = param._binding->get_resource_id(resource_index, resource_type);
+      _textures.push_back(std::move(reg));
+      ++reg_idx;
+    }
   }
 
   return true;

@@ -973,56 +973,6 @@ make_light_ambient(const ShaderType *type) {
  * Returns a mask indicating which state changes should cause the parameter to
  * be respecified.
  */
-int ShaderInputBinding::
-get_state_dep() const {
-  // Normally we respecify everything per frame.
-  return Shader::D_frame;
-}
-
-/**
- * Sets up anything necessary to prepare this binding to be used with the given
- * shader.
- */
-void ShaderInputBinding::
-setup(Shader *shader) {
-}
-
-/**
- * Fetches the part of the shader input that is plain numeric data.
- */
-void ShaderInputBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
-}
-
-/**
- * Returns an opaque resource identifier that can later be used to fetch the
- * nth resource, which is of the given type.
- */
-ShaderInputBinding::ResourceId ShaderInputBinding::
-get_resource_id(int index, const ShaderType *type) const {
-  return 0;
-}
-
-/**
- * Fetches the texture associated with this shader input.
- */
-PT(Texture) ShaderInputBinding::
-fetch_texture(const State &state, ResourceId resource_id, SamplerState &sampler, int &view) const {
-  return nullptr;
-}
-
-/**
- * Fetches the texture that should be bound as a storage image.
- */
-PT(Texture) ShaderInputBinding::
-fetch_texture_image(const State &state, ResourceId resource_id, ShaderType::Access &access, int &z, int &n) const {
-  return nullptr;
-}
-
-/**
- * Returns a mask indicating which state changes should cause the parameter to
- * be respecified.
- */
 int ShaderMatrixBinding::
 get_state_dep() const {
   return Shader::get_matrix_deps(_input);
@@ -2242,7 +2192,7 @@ r_collect_members(const InternalName *name, const ShaderType *type, size_t offse
       offset += stride;
     }
   }
-  else if (type->as_sampled_image() != nullptr || type->as_image() != nullptr) {
+  else if (type->as_resource() != nullptr) {
     _resources.push_back(name);
   }
 }

@@ -22,6 +22,9 @@
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVHoistStructResourcesPass final : public SpirVTransformPass {
 public:
+  SpirVHoistStructResourcesPass(bool remove_empty_structs) :
+    _remove_empty_structs(remove_empty_structs) {}
+
   virtual bool transform_definition_op(Instruction op);
   virtual bool begin_function(Instruction op);
   virtual bool transform_function_op(Instruction op, uint32_t function_id);
@@ -29,6 +32,9 @@ public:
   virtual void postprocess();
 
 private:
+  // Remove structs that became empty due to only containing resources.
+  const bool _remove_empty_structs;
+
   // Which type we need to hoist.
   pset<uint32_t> _hoist_types;
 
@@ -39,6 +45,7 @@ private:
   pmap<uint32_t, pvector<std::pair<const ShaderType *, AccessChain> > > _affected_types;
   pset<uint32_t> _affected_pointer_types;
 
+public:
   // For each access chain consisting only of struct members
   // (prefixed by a variable id), map to the variable that has been hoisted
   pmap<AccessChain, uint32_t> _hoisted_vars;
