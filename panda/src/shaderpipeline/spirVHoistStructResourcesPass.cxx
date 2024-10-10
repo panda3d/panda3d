@@ -286,6 +286,12 @@ transform_function_op(Instruction op, uint32_t function_id) {
           }
         }
 
+        if (access_chain.size() == 0) {
+          // There are no structs involved, this is probably just an array of
+          // samplers.  No need to hoist.
+          return true;
+        }
+
         auto hit = _hoisted_vars.find(access_chain);
         nassertr(hit != _hoisted_vars.end(), false);
         uint32_t new_var_id = hit->second;
