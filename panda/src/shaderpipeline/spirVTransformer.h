@@ -35,6 +35,7 @@ public:
   SpirVTransformer(InstructionStream &stream);
 
   void run(SpirVTransformPass &pass);
+  INLINE void run(SpirVTransformPass &&pass);
 
   InstructionStream get_result() const;
 

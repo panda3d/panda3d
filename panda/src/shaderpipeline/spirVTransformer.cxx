@@ -113,7 +113,7 @@ run(SpirVTransformPass &pass) {
     for (size_t i = 0; i < def._members.size();) {
       if (pair.second.count(i)) {
         def._members.erase(def._members.begin() + i);
-        nassertd(def._members[i]._new_index == i) continue;
+        nassertd(def._members[i]._new_index == (int)i) continue;
       }
       ++i;
     }

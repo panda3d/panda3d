@@ -12,6 +12,14 @@
  */
 
 /**
+ *
+ */
+INLINE void SpirVTransformer::
+run(SpirVTransformPass &&pass) {
+  run(pass);
+}
+
+/**
  * Returns the number of ids allocated.
  */
 INLINE uint32_t SpirVTransformer::

@@ -253,6 +253,9 @@ transform_definition_op(Instruction op) {
       }
     }
     break;
+
+  default:
+    break;
   }
   return true;
 }
@@ -436,7 +439,7 @@ delete_id(uint32_t id) {
 
   auto it = _new_annotations.begin();
   while (it != _new_annotations.end()) {
-    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    //spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
     uint32_t wcount = *it >> spv::WordCountShift;
     nassertd(wcount > 0) break;
 
@@ -810,7 +813,7 @@ define_int_constant(int32_t constant) {
   for (uint32_t id = 0; id < get_id_bound(); ++id) {
     const Definition &def = _db.get_definition(id);
     if (def.is_constant() &&
-        def._constant == constant &&
+        def._constant == (uint32_t)constant &&
         (def._type == ShaderType::int_type || (constant >= 0 && def._type == ShaderType::uint_type))) {
       if (is_defined(id)) {
         return id;

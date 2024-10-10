@@ -191,6 +191,9 @@ transform_definition_op(Instruction op) {
       }
     }
     break;
+
+  default:
+    return SpirVTransformPass::transform_definition_op(op);
   }
 
   return true;
@@ -332,7 +335,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
             }
 
             const MemberDefinition &member_def = def._members[index];
-            if (member_def._new_index != index) {
+            if (member_def._new_index != (int)index) {
               new_args.push_back(define_int_constant(member_def._new_index));
               access_chain.append(member_def._new_index);
             } else {
@@ -404,7 +407,6 @@ transform_function_op(Instruction op, uint32_t function_id) {
 
           // Passing a struct with non-opaque types to a function.  That means
           // adding additional parameters for the hoisted variables.
-          size_t j = i;
           for (auto &pair : ait->second) {
             AccessChain access_chain(pair.second);
             access_chain._var_id = arg;
