@@ -2197,6 +2197,11 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
     image_compression = Texture::CM_off;
   }
 
+  if (image.is_null() && tex->has_clear_color()) {
+    // Make an image, filled with the texture's clear color.
+    image = get_texture()->make_ram_image();
+  }
+
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it might be a
     // texture we've rendered to by frame buffer operations or something.
