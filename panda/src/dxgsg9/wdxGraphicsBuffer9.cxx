@@ -767,6 +767,11 @@ open_buffer() {
   } else {
     ZeroMemory(&_saved_depth_desc, sizeof(_saved_depth_desc));
   }
+  if (_fb_properties.get_alpha_bits() > 0 &&
+      _saved_color_desc.Format == D3DFMT_X8R8G8B8) {
+    // Add alpha if we didn't have it and we do need it.
+    _saved_color_desc.Format = D3DFMT_A8R8G8B8;
+  }
   _fb_properties = _dxgsg->
     calc_fb_properties(_saved_color_desc.Format,
                        _saved_depth_desc.Format,
