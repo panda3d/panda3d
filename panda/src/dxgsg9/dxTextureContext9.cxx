@@ -2464,6 +2464,20 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
     *alphbits = 32;
     return 128;
 
+  case Texture::F_r16:
+    return 16;
+  case Texture::F_rg16:
+    return 16 * 2;
+  case Texture::F_rgb16:
+    return 16 * 3;
+
+  case Texture::F_r32:
+    return 32;
+  case Texture::F_rg32:
+    return 32 * 2;
+  case Texture::F_rgb32:
+    return 32 * 3;
+
   case Texture::F_srgb:
     return 24;
   case Texture::F_srgb_alpha:
