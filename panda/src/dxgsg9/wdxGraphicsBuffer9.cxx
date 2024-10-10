@@ -45,9 +45,10 @@ wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
   _color_backing_store = nullptr;
   _depth_backing_store = nullptr;
 
-  // is this correct ??? Since the pbuffer never gets flipped, we get
-  // screenshots from the same buffer we draw into.
-  _screenshot_buffer_type = _draw_buffer_type;
+  // Since the pbuffer never gets flipped, we get screenshots from the same
+  // buffer we draw into, which is the back buffer.
+  _draw_buffer_type = RenderBuffer::T_back;
+  _screenshot_buffer_type = RenderBuffer::T_back;
 
   _shared_depth_buffer = 0;
   _debug = 0;
