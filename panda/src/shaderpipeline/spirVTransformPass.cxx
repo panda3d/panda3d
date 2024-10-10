@@ -315,6 +315,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
   case spv::OpPtrAccessChain:
   case spv::OpInBoundsPtrAccessChain:
   case spv::OpCopyObject:
+  case spv::OpExpectKHR:
   case spv::OpBitcast:
   case spv::OpCopyLogical:
     // Delete these uses of a deleted variable, presumably the result is also

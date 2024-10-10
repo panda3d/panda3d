@@ -495,6 +495,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
     case spv::OpImageTexelPointer:
     case spv::OpLoad:
     case spv::OpCopyObject:
+    case spv::OpExpectKHR:
       // Add access chains before all loads to access the right block member.
       if (member_indices.count(op.args[2])) {
         uint32_t member_index = member_indices[op.args[2]];

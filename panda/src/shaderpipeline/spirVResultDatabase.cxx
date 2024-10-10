@@ -546,6 +546,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
   case spv::OpAtomicFMinEXT:
   case spv::OpAtomicFMaxEXT:
   case spv::OpAtomicFAddEXT:
+  case spv::OpCooperativeMatrixLoadKHR:
     record_temporary(args[1], args[0], args[2], current_function_id);
 
     // A load from the pointer is enough for us to consider it "used", for now.
@@ -555,6 +556,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
   case spv::OpStore:
   case spv::OpAtomicStore:
   case spv::OpAtomicFlagClear:
+  case spv::OpCooperativeMatrixStoreKHR:
     // An atomic write creates no result ID, but we do consider the var "used".
     mark_used(args[0]);
     break;
@@ -673,6 +675,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
     break;
 
   case spv::OpCopyObject:
+  case spv::OpExpectKHR:
     record_temporary(args[1], args[0], args[2], current_function_id);
     // fall through
 
@@ -752,6 +755,8 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
   case spv::OpIsNormal:
   case spv::OpSignBitSet:
   case spv::OpNot:
+  case spv::OpConvertFToBF16INTEL:
+  case spv::OpConvertBF16ToFINTEL:
     if ((_defs[args[2]]._flags & DF_constant_expression) != 0) {
       _defs[args[1]]._flags |= DF_constant_expression;
     }

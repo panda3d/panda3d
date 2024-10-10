@@ -231,6 +231,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
     break;
 
   case spv::OpCopyObject:
+  case spv::OpExpectKHR:
     if (_deleted_access_chains.count(op.args[2])) {
       op.args[2] = _deleted_access_chains[op.args[2]];
 

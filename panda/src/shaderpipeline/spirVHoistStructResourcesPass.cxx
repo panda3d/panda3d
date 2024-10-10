@@ -456,6 +456,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
 
   case spv::OpCopyObject:
   case spv::OpCopyLogical:
+  case spv::OpExpectKHR:
     // Not allowed to copy structs containing resources.
     nassertr(!_affected_types.count(op.args[0]), false);
     nassertr(!_affected_pointer_types.count(op.args[0]), false);

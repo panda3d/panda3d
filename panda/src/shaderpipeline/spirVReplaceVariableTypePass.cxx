@@ -95,6 +95,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
     break;
 
   case spv::OpCopyObject:
+  case spv::OpExpectKHR:
     // This clones a pointer or object verbatim, so keep following the chain.
     if (_pointer_ids.count(op.args[2])) {
       Definition &def = _db.modify_definition(op.args[1]);
