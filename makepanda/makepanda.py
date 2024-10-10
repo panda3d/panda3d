@@ -802,8 +802,10 @@ if (COMPILER == "MSVC"):
 
     IncDirectory("GLSLANG", GetThirdpartyDir() + "glslang/include")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang.lib")
-    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
-    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
+    if os.path.isfile(GetThirdpartyDir() + "glslang/lib/HLSL.lib"):
+        LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
+    if os.path.isfile(GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib"):
+        LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OSDependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/MachineIndependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/GenericCodeGen.lib")
@@ -883,7 +885,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h", optional_libs=("OGLCompiler", "HLSL"))
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")

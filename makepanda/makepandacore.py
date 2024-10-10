@@ -1740,7 +1740,7 @@ def ChooseLib(libs, thirdparty=None):
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
-def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None):
+def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config", thirdparty_dir = None, optional_libs = None):
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
@@ -1754,6 +1754,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         libs = ()
     elif (isinstance(libs, str)):
         libs = (libs, )
+    if (optional_libs is None or optional_libs == ""):
+        optional_libs = ()
+    elif (isinstance(optional_libs, str)):
+        optional_libs = (optional_libs, )
     if (incs is None or incs == ""):
         incs = ()
     elif (isinstance(incs, str)):
@@ -1842,6 +1846,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 else:
                     print(GetColor("cyan") + "Couldn't find library lib" + libname + " in thirdparty directory " + thirdparty_dir + GetColor())
 
+        for libname in optional_libs:
+            location = LocateLibrary(libname, lpath, prefer_static=True)
+            if location is not None:
+                # If it's a .so or .dylib we may have changed it and copied it to the built/lib dir.
+                if location.endswith('.so') or location.endswith('.dylib'):
+                    location = os.path.join(GetOutputDir(), "lib", os.path.basename(location))
+                LibName(target_pkg, location)
+
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
         return
@@ -1885,6 +1897,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
         have_pkg = True
+        in_system = False
         for l in libs:
             libname = l
             if l.startswith("lib"):
@@ -1903,6 +1916,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             elif SystemLibraryExists(libname):
                 # It exists in a system library directory.
                 LibName(target_pkg, "-l" + libname)
+                in_system = True
             else:
                 # Try searching in the package's LibDirectories.
                 lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg or ppkg == "ALWAYS"]
@@ -1913,6 +1927,24 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                     have_pkg = False
                     if VERBOSE or custom_loc:
                         print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
+
+        for libname in optional_libs:
+            if custom_loc:
+                # Try searching in the package's LibDirectories.
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                location = LocateLibrary(libname, lpath)
+                if location is not None:
+                    LibName(target_pkg, location)
+
+            elif in_system and SystemLibraryExists(libname):
+                # It exists in a system library directory.
+                LibName(target_pkg, "-l" + libname)
+            else:
+                # Try searching in the package's LibDirectories.
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg or ppkg == "ALWAYS"]
+                location = LocateLibrary(libname, lpath)
+                if location is not None:
+                    LibName(target_pkg, "-l" + libname)
 
         # Determine which include directories to look in.
         incdirs = []
