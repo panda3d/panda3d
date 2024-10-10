@@ -213,8 +213,8 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set(),
             engine.render_frame()
         except AssertionError as exc:
             assert False, "Error executing shader:\n" + code
-
-        engine.remove_window(buffer)
+        finally:
+            engine.remove_window(buffer)
 
     # Download the texture to check whether the assertion triggered.
     if use_compute:

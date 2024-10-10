@@ -136,8 +136,8 @@ def run_cg_test(gsg, body, preamble="", inputs={},
         engine.render_frame()
     except AssertionError as exc:
         assert False, "Error executing shader:\n" + code
-
-    engine.remove_window(buffer)
+    finally:
+        engine.remove_window(buffer)
 
     # Download the texture to check whether the assertion triggered.
     triggered = tuple(result.get_ram_image())
