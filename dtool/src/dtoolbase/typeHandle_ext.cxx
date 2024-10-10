@@ -49,19 +49,26 @@ __reduce__() const {
   PyTypeObject *py_type = _this->get_python_type();
   if (py_type != nullptr && py_type->tp_dict != nullptr) {
     // Look for a get_class_type method, if it returns this handle.
-    PyObject *func = PyDict_GetItemString(py_type->tp_dict, "get_class_type");
-    if (func != nullptr && PyCallable_Check(func)) {
-      PyObject *result = PyObject_CallNoArgs(func);
-      TypeHandle *result_handle = nullptr;
-      if (result == nullptr) {
-        // Never mind.
-        PyErr_Clear();
+    PyObject *func;
+    int result = PyDict_GetItemStringRef(py_type->tp_dict, "get_class_type", &func);
+    if (result > 0) {
+      if (PyCallable_Check(func)) {
+        PyObject *result = PyObject_CallNoArgs(func);
+        TypeHandle *result_handle = nullptr;
+        if (result == nullptr) {
+          // Never mind.
+          PyErr_Clear();
+        }
+        else if (DtoolInstance_GetPointer(result, result_handle, Dtool_TypeHandle) &&
+                 *result_handle == *_this) {
+          // It returned the correct result, so we can use this.
+          return Py_BuildValue("N()", func);
+        }
       }
-      else if (DtoolInstance_GetPointer(result, result_handle, Dtool_TypeHandle) &&
-               *result_handle == *_this) {
-        // It returned the correct result, so we can use this.
-        return Py_BuildValue("O()", func);
-      }
+      Py_DECREF(func);
+    }
+    else if (result < 0) {
+      PyErr_Clear();
     }
   }
 

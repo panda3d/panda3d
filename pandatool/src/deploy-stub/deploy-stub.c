@@ -712,7 +712,9 @@ int main(int argc, char *argv[]) {
       new_moddef->code = moddef->code;
       new_moddef->size = moddef->size < 0 ? -(moddef->size) : moddef->size;
       new_moddef->is_package = moddef->size < 0;
+#if PY_VERSION_HEX < 0x030d0000 // 3.13
       new_moddef->get_code = NULL;
+#endif
       new_moddef++;
     }
 #endif

@@ -106,12 +106,13 @@ __init__(PyObject *self, PyObject *source) {
   // We need to initialize the this pointer before we can call push_back.
   DtoolInstance_INIT_PTR(self, this->_this);
 
+  Py_BEGIN_CRITICAL_SECTION(source);
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject *item = PySequence_GetItem(source, i);
     if (item == nullptr) {
-      return;
+      break;
     }
     PyObject *result = PyObject_CallFunctionObjArgs(push_back, self, item, nullptr);
     Py_DECREF(item);
@@ -121,10 +122,11 @@ __init__(PyObject *self, PyObject *source) {
       PyErr_Format(PyExc_TypeError,
                    "Element %zd in sequence passed to PointerToArray "
                    "constructor could not be added", i);
-      return;
+      break;
     }
     Py_DECREF(result);
   }
+  Py_END_CRITICAL_SECTION();
 }
 
 /**

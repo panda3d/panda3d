@@ -146,6 +146,8 @@ static PyObject *gen_next_asyncfuture(PyObject *self) {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
       PyErr_SetObject(PyExc_StopIteration, result);
+      // PyErr_SetObject increased the reference count, so we no longer need our reference.
+      Py_DECREF(result);
     }
     return nullptr;
   }

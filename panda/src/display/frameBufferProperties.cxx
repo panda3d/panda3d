@@ -307,7 +307,7 @@ get_buffer_mask() const {
 
   //XXX rdb: some buffers only have a front buffer, some only a back buffer
   //if (_property[FBP_back_buffers] > 0) {
-    mask = RenderBuffer::T_front | RenderBuffer::T_back;
+     mask = RenderBuffer::T_front | RenderBuffer::T_back;
   //} else {
   //  mask = RenderBuffer::T_front;
   //}

@@ -32,7 +32,11 @@ __init__(PyObject *init_value) {
     _PyLong_AsByteArray((PyLongObject *)init_value,
       (unsigned char *)&_this->_array[0],
       num_words * sizeof(BitArray::WordType),
-      1, 0);
+      1, 0
+#if PY_VERSION_HEX >= 0x030d0000
+      , 1 // with_exceptions
+#endif
+      );
   }
 }
 
