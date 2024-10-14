@@ -2561,6 +2561,16 @@ end_scene() {
  */
 void VulkanGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
+  end_frame(current_thread, VK_NULL_HANDLE, VK_NULL_HANDLE);
+}
+
+/**
+ * Version of end_frame that waits for a semaphore before rendering, and also
+ * signals a given semaphore when it's done.
+ * Takes ownership of the wait_for semaphore.
+ */
+void VulkanGraphicsStateGuardian::
+end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done) {
   GraphicsStateGuardian::end_frame(current_thread);
 
   nassertv(_frame_data->_transfer_cmd != VK_NULL_HANDLE);
@@ -2623,18 +2633,19 @@ end_frame(Thread *current_thread) {
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = nullptr;
 
-  if (_wait_semaphore != VK_NULL_HANDLE) {
+  if (wait_for != VK_NULL_HANDLE) {
     // We may need to wait until the attachments are available for writing.
     static const VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &_wait_semaphore;
+    submit_info.pWaitSemaphores = &wait_for;
     submit_info.pWaitDstStageMask = &flags;
+    _frame_data->_wait_semaphore = wait_for;
   }
 
-  if (_signal_semaphore != VK_NULL_HANDLE) {
+  if (signal_done != VK_NULL_HANDLE) {
     // And we were asked to signal a semaphore when we are done rendering.
     submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &_signal_semaphore;
+    submit_info.pSignalSemaphores = &signal_done;
   }
 
   VkResult err;
@@ -2643,10 +2654,6 @@ end_frame(Thread *current_thread) {
     vulkan_error(err, "Error submitting queue");
     return;
   }
-
-  // We're done with these for now.
-  _wait_semaphore = VK_NULL_HANDLE;
-  _signal_semaphore = VK_NULL_HANDLE;
 
   // If we queued up synchronous texture downloads, wait for the queue to finish
   // (slow!) and then copy the data from Vulkan host memory to Panda memory.
@@ -2699,6 +2706,11 @@ void VulkanGraphicsStateGuardian::
 finish_frame(FrameData &frame_data) {
   ++_last_finished_frame;
   nassertv(frame_data._frame_index == _last_finished_frame);
+
+  if (frame_data._wait_semaphore != VK_NULL_HANDLE) {
+    vkDestroySemaphore(_device, frame_data._wait_semaphore, nullptr);
+    frame_data._wait_semaphore = nullptr;
+  }
 
   for (VkBufferView buffer_view : frame_data._pending_destroy_buffer_views) {
     vkDestroyBufferView(_device, buffer_view, nullptr);

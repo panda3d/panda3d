@@ -70,8 +70,7 @@ private:
   VkRenderPass _render_pass = VK_NULL_HANDLE;
   int _current_clear_mask = -1;
 
-  // We'll need these to synchronize the rendering with the presentation.
-  VkSemaphore _render_complete = VK_NULL_HANDLE;
+  // Synchronizes flip of previous frame with rendering.
   VkSemaphore _image_available = VK_NULL_HANDLE;
 
   LVecBase2i _swapchain_size;
@@ -80,6 +79,7 @@ private:
   struct SwapBuffer {
     VulkanTextureContext *_tc;
     VkFramebuffer _framebuffer;
+    VkSemaphore _render_complete;
   };
   typedef pvector<SwapBuffer> SwapBuffers;
   SwapBuffers _swap_buffers;

@@ -94,6 +94,7 @@ public:
   virtual bool begin_scene();
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
+  void end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done);
   void finish_frame(FrameData &frame_data);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
@@ -225,8 +226,6 @@ private:
   VulkanTextureContext *_fb_color_tc = nullptr;
   VulkanTextureContext *_fb_depth_tc = nullptr;
   VkSampleCountFlagBits _fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
-  VkSemaphore _wait_semaphore = VK_NULL_HANDLE;
-  VkSemaphore _signal_semaphore = VK_NULL_HANDLE;
 
   // Remembers semaphores created on this device.
   pvector<VkSemaphore> _semaphores;

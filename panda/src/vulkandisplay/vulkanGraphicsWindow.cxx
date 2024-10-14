@@ -226,9 +226,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
   vkgsg->_fb_ms_count = _ms_count;
-  vkgsg->_wait_semaphore = _image_available;
-  vkgsg->_signal_semaphore = _render_complete;
-
   return true;
 }
 
@@ -248,6 +245,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(cmd != VK_NULL_HANDLE);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
+  VkSemaphore signal_done = VK_NULL_HANDLE;
   if (mode == FM_render) {
     vkCmdEndRenderPass(cmd);
     vkgsg->_render_pass = VK_NULL_HANDLE;
@@ -258,6 +256,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
+
+    signal_done = buffer._render_complete;
   }
 
   // If we copied the textures, transition it back to the present state.
@@ -268,9 +268,13 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   // Note: this will close the command buffer, and unsignal the previous
   // frame's semaphore.
-  vkgsg->end_frame(current_thread);
+  vkgsg->end_frame(current_thread, _image_available, signal_done);
+
+  // Ownership of this was transferred to the VulkanFrameData.
+  _image_available = VK_NULL_HANDLE;
 
   if (mode == FM_render) {
+    nassertv(!_flip_ready);
     _flip_ready = true;
     clear_cube_map_selection();
   }
@@ -294,12 +298,14 @@ begin_flip() {
   VkQueue queue = vkgsg->_queue;
   VkResult err;
 
+  SwapBuffer &buffer = _swap_buffers[_image_index];
+
   VkResult results[1] = {VK_SUCCESS};
   VkPresentInfoKHR present;
   present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   present.pNext = nullptr;
   present.waitSemaphoreCount = 1;
-  present.pWaitSemaphores = &_render_complete;
+  present.pWaitSemaphores = &buffer._render_complete;
   present.swapchainCount = 1;
   present.pSwapchains = &_swapchain;
   present.pImageIndices = &_image_index;
@@ -315,12 +321,16 @@ begin_flip() {
     _swapchain_size.set(-1, -1);
     _flip_ready = false;
     return;
-
-  } else if (err == VK_SUBOPTIMAL_KHR) {
+  }
+  else if (err == VK_SUBOPTIMAL_KHR) {
     std::cerr << "suboptimal.\n";
-
-  } else if (err != VK_SUCCESS) {
+  }
+  else if (err != VK_SUCCESS) {
     vulkan_error(err, "Error presenting queue");
+
+    if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT || err == VK_ERROR_SURFACE_LOST_KHR) {
+      _flip_ready = false;
+    }
     return;
   }
 }
@@ -352,9 +362,15 @@ end_flip() {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
 
+  nassertv(_image_available == VK_NULL_HANDLE);
+
+  VkSemaphoreCreateInfo semaphore_info = {};
+  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  VkResult err = vkCreateSemaphore(vkgsg->_device, &semaphore_info, nullptr, &_image_available);
+  nassertv_always(err == VK_SUCCESS);
+
   // Get a new image for rendering into.  This may wait until a new image is
   // available.
-  VkResult
   err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
                               _image_available, VK_NULL_HANDLE, &_image_index);
 
@@ -977,6 +993,11 @@ create_swapchain() {
     }
 
     buffer._tc->_image_views.push_back(image_view);
+
+    // Create a semaphore that is signalled when we are finished rendering,
+    // to indicate that it is safe to present the image.
+    buffer._render_complete = vkgsg->create_semaphore();
+    nassertr(buffer._render_complete != VK_NULL_HANDLE, false);
   }
 
   // Now create a depth image.
@@ -1103,15 +1124,11 @@ create_swapchain() {
   }
 
   // Create a semaphore for signalling the availability of an image.
-  // It will be signalled in end_flip() and waited upon before submitting the
-  // command buffers that use that image for rendering to.
-  _image_available = vkgsg->create_semaphore();
-  nassertr(_image_available != VK_NULL_HANDLE, false);
+  VkSemaphoreCreateInfo semaphore_info = {};
+  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-  // Now create another one that is signalled when we are finished rendering,
-  // to indicate that it is safe to present the image.
-  _render_complete = vkgsg->create_semaphore();
-  nassertr(_render_complete != VK_NULL_HANDLE, false);
+  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info, nullptr, &_image_available);
+  nassertr_always(err == VK_SUCCESS, false);
 
   // We need to acquire an image before we continue rendering.
   _image_index = 0;

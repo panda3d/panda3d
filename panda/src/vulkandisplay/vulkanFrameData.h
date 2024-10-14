@@ -32,6 +32,10 @@ public:
   VkCommandBuffer _cmd = VK_NULL_HANDLE;
   VkCommandBuffer _transfer_cmd = VK_NULL_HANDLE;
 
+  // The frame data takes ownership of this semaphore, which indicates when the
+  // frame is allowed to start rendering (the image is available).
+  VkSemaphore _wait_semaphore = VK_NULL_HANDLE;
+
   // Keep track of resources that should be deleted after this frame is done.
   pvector<VulkanMemoryBlock> _pending_free;
   pvector<VkBuffer> _pending_destroy_buffers;
