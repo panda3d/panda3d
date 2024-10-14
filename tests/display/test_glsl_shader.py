@@ -99,13 +99,14 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set(),
 
     use_compute = gsg.supports_compute_shaders and \
                   gsg.supports_buffer_texture and \
-                  gsg.has_extension('GL_ARB_shader_image_load_store')
-    if use_compute:
-        exts = exts | {'GL_ARB_compute_shader', 'GL_ARB_shader_image_load_store'}
+                  (gsg.supported_shader_capabilities & core.Shader.C_image_load_store) != 0
 
     missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext))
     if missing_exts:
         pytest.skip("missing extensions: " + ' '.join(missing_exts))
+
+    if use_compute:
+        exts = exts | {'GL_ARB_compute_shader', 'GL_ARB_shader_image_load_store'}
 
     extensions = ''
     for ext in exts:

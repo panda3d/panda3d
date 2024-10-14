@@ -130,7 +130,6 @@ private:
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     GLenum _target;
-    int _index;
   };
   typedef pvector<TextureUnit> TextureUnits;
   TextureUnits _texture_units;

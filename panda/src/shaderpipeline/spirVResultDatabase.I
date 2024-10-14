@@ -52,6 +52,14 @@ is_constant() const {
 }
 
 /**
+ * Returns true if this is specifically a null constant.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_null_constant() const {
+  return _dtype == DT_constant && (_flags & DF_null_constant) != 0;
+}
+
+/**
  * Returns true if this is a specialization constant.
  */
 INLINE bool SpirVResultDatabase::Definition::

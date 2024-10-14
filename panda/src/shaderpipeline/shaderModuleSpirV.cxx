@@ -22,8 +22,6 @@
 
 #include "GLSL.std.450.h"
 
-#include <spirv-tools/libspirv.h>
-
 #ifndef NDEBUG
 #include <glslang/SPIRV/disassemble.h>
 #endif
@@ -660,16 +658,21 @@ validate_header() const {
  * Checks whether this is valid SPIR-V.
  */
 bool ShaderModuleSpirV::InstructionStream::
-validate() const {
-  spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_0);
+validate(spv_target_env env) const {
+  spv_context context = spvContextCreate(env);
   spv_const_binary_t binary = {_words.data(), _words.size()};
   spv_diagnostic diagnostic = nullptr;
 
   spv_result_t result = spvValidate(context, &binary, &diagnostic);
 
-  if (diagnostic != nullptr) {
-    shader_cat.error()
-      << "SPIR-V validation failed:\n" << diagnostic->error << "\n";
+  if (result != SPV_SUCCESS) {
+    if (diagnostic != nullptr) {
+      shader_cat.error()
+        << "SPIR-V validation failed:\n" << diagnostic->error << "\n";
+    } else {
+      shader_cat.error()
+        << "SPIR-V validation failed.\n";
+    }
 
     disassemble(shader_cat.error() << "Disassembly follows:\n");
   }

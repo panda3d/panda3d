@@ -27,7 +27,7 @@ public:
 
   virtual bool transform_definition_op(Instruction op);
   virtual bool begin_function(Instruction op);
-  virtual bool transform_function_op(Instruction op, uint32_t function_id);
+  virtual bool transform_function_op(Instruction op);
 
   virtual void postprocess();
 

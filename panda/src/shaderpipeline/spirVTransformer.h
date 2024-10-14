@@ -32,7 +32,7 @@ public:
   using InstructionStream = ShaderModuleSpirV::InstructionStream;
   using InstructionIterator = ShaderModuleSpirV::InstructionIterator;
 
-  SpirVTransformer(InstructionStream &stream);
+  SpirVTransformer(const InstructionStream &stream);
 
   void run(SpirVTransformPass &pass);
   INLINE void run(SpirVTransformPass &&pass);
@@ -44,10 +44,7 @@ public:
 
   void assign_locations(ShaderModule::Stage stage);
   void assign_locations(pmap<uint32_t, int> locations);
-  void bind_descriptor_set(uint32_t set, const vector_int &locations);
-
-  //uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
-  //                    spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
+  void bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids);
 
 private:
   // Stores the module split into the different sections for easier

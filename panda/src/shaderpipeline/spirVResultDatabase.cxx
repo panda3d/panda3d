@@ -120,7 +120,7 @@ modify_definition(uint32_t id) {
  * encountered definitions are recorded in the definitions vector.
  */
 void SpirVResultDatabase::
-parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &current_function_id) {
+parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t &current_function_id) {
   switch (opcode) {
   case spv::OpExtInstImport:
     record_ext_inst_import(args[0], (const char*)&args[1]);
@@ -195,6 +195,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       uint32_t component_count = args[2];
       record_type(args[0], ShaderType::register_type(
         ShaderType::Vector(element_type->get_scalar_type(), component_count)));
+      _defs[args[0]]._type_id = args[1];
     }
     break;
 
@@ -205,6 +206,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       uint32_t num_rows = args[2];
       record_type(args[0], ShaderType::register_type(
         ShaderType::Matrix(column_type->get_scalar_type(), num_rows, column_type->get_num_components())));
+      _defs[args[0]]._type_id = args[1];
     }
     break;
 
@@ -349,6 +351,7 @@ parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &curr
       record_type(args[0], ShaderType::register_type(
         ShaderType::Array(_defs[args[1]]._type, 0)));
     }
+    _defs[args[0]]._type_id = args[1];
     break;
 
   case spv::OpTypeStruct:
@@ -868,13 +871,37 @@ find_pointer_type(const ShaderType *type, spv::StorageClass storage_class) {
   if (tit == _type_map.end()) {
     return 0;
   }
-  uint32_t type_id = tit->second;
+  return find_pointer_type(tit->second, storage_class);
+}
 
+/**
+ * Searches for an already-defined type pointer of the given storage class.
+ * Returns its id, or 0 if it was not found.
+ */
+uint32_t SpirVResultDatabase::
+find_pointer_type(uint32_t type_id, spv::StorageClass storage_class) {
   for (uint32_t id = 0; id < _defs.size(); ++id) {
     Definition &def = _defs[id];
     if (def._dtype == DT_pointer_type &&
         def._type_id == type_id &&
         def._storage_class == storage_class) {
+      return id;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Searches for an already-defined null constant of the given type.
+ * Returns its id, or 0 if it was not found.
+ */
+uint32_t SpirVResultDatabase::
+find_null_constant(uint32_t type_id) {
+  for (uint32_t id = 0; id < _defs.size(); ++id) {
+    Definition &def = _defs[id];
+    if (def._dtype == DT_constant &&
+        (def._flags & DF_null_constant) != 0 &&
+        def._type_id == type_id) {
       return id;
     }
   }
@@ -1062,6 +1089,10 @@ record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t n
   def._type = (type_def._dtype == DT_type) ? type_def._type : nullptr;
   def._constant = (nwords > 0) ? words[0] : 0;
   def._flags |= DF_constant_expression;
+
+  if (words == nullptr) {
+    def._flags |= DF_null_constant;
+  }
 }
 
 /**

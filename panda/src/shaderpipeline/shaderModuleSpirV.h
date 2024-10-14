@@ -22,6 +22,8 @@
 #endif
 #include "spirv.hpp"
 
+#include <spirv-tools/libspirv.h>
+
 class ShaderType;
 
 /**
@@ -91,7 +93,7 @@ public:
     INLINE InstructionStream(std::vector<uint32_t> words);
 
     bool validate_header() const;
-    bool validate() const;
+    bool validate(spv_target_env env = SPV_ENV_UNIVERSAL_1_0) const;
     bool disassemble(std::ostream &out) const;
 
     INLINE operator std::vector<uint32_t> & ();

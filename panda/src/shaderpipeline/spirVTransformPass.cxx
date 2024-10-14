@@ -21,7 +21,8 @@ SpirVTransformPass() {
 }
 
 /**
- *
+ * Processes the header and all instructions, including the debug instructions,
+ * up to the first annotation instruction.
  */
 void SpirVTransformPass::
 process_preamble(std::vector<uint32_t> &stream) {
@@ -69,7 +70,8 @@ process_preamble(std::vector<uint32_t> &stream) {
 }
 
 /**
- *
+ * Processes the instructions of the annotations section, which contains the
+ * decorations.
  */
 void SpirVTransformPass::
 process_annotations(std::vector<uint32_t> &stream) {
@@ -92,7 +94,9 @@ process_annotations(std::vector<uint32_t> &stream) {
 }
 
 /**
- *
+ * Processes the instructions of the definitions section, which starts with the
+ * first non-annotation instruction and contains all of the types, constants,
+ * and global variables.
  */
 void SpirVTransformPass::
 process_definitions(std::vector<uint32_t> &stream) {
@@ -125,7 +129,8 @@ process_definitions(std::vector<uint32_t> &stream) {
 }
 
 /**
- *
+ * Processes the instructions of the function section, which starts with the
+ * first OpFunction and contains the remainder of the module.
  */
 void SpirVTransformPass::
 process_functions(std::vector<uint32_t> &stream) {
@@ -137,6 +142,7 @@ process_functions(std::vector<uint32_t> &stream) {
     if (op.opcode == spv::OpFunction) {
       if (begin_function(op)) {
         uint32_t function_id = op.args[1];
+        _current_function_id = function_id;
         _new_functions.insert(_new_functions.end(), it._words, it.next()._words);
 
         ++it;
@@ -148,7 +154,7 @@ process_functions(std::vector<uint32_t> &stream) {
           bool has_result, has_type;
           HasResultAndType(op.opcode, &has_result, &has_type);
           if (!has_result || (!is_defined(op.args[has_type]) && !is_deleted(op.args[has_type])))  {
-            if (transform_function_op(op, function_id)) {
+            if (transform_function_op(op)) {
               if (has_result) {
                 mark_defined(op.args[has_type]);
               }
@@ -160,6 +166,7 @@ process_functions(std::vector<uint32_t> &stream) {
 
         if (it != end) {
           end_function(function_id);
+          _current_function_id = 0;
           _new_functions.insert(_new_functions.end(), {spv::OpFunctionEnd | (1 << spv::WordCountShift)});
         } else {
           shader_cat.error()
@@ -178,26 +185,17 @@ process_functions(std::vector<uint32_t> &stream) {
 }
 
 /**
- *
+ * Called before any of the instructions are read.  Perform any pre-processing
+ * based on the result database and the input arguments here.
  */
 void SpirVTransformPass::
 preprocess() {
 }
 
 /**
- *
- */
-ShaderModuleSpirV::InstructionStream SpirVTransformPass::
-get_result() const {
-  InstructionStream stream(_new_preamble);
-  stream._words.insert(stream._words.end(), _new_annotations.begin(), _new_annotations.end());
-  stream._words.insert(stream._words.end(), _new_definitions.begin(), _new_definitions.end());
-  stream._words.insert(stream._words.end(), _new_functions.begin(), _new_functions.end());
-  return stream;
-}
-
-/**
- *
+ * Transforms a debug instruction (OpName or OpMemberName).
+ * Return true to preserve the instruction, false to omit it (in which case you
+ * may replace it using add_debug).
  */
 bool SpirVTransformPass::
 transform_debug_op(Instruction op) {
@@ -208,7 +206,9 @@ transform_debug_op(Instruction op) {
 }
 
 /**
- *
+ * Transforms an annotation instruction.
+ * Return true to preserve the instruction, false to omit it (in which case you
+ * may replace it using add_annotation).
  */
 bool SpirVTransformPass::
 transform_annotation_op(Instruction op) {
@@ -219,7 +219,9 @@ transform_annotation_op(Instruction op) {
 }
 
 /**
- *
+ * Transforms a definition instruction (a type, constant or global variable).
+ * Return true to preserve the instruction, false to omit it (in which case you
+ * may replace it using add_definition).
  */
 bool SpirVTransformPass::
 transform_definition_op(Instruction op) {
@@ -248,7 +250,6 @@ transform_definition_op(Instruction op) {
           }
         }
         add_definition(spv::OpTypeFunction, new_args.data(), new_args.size());
-        mark_defined(op.args[0]);
         return false;
       }
     }
@@ -261,7 +262,10 @@ transform_definition_op(Instruction op) {
 }
 
 /**
- *
+ * Called when an OpFunction is encountered.  Return true to preserve the
+ * function, false to skip all instructions up to the next OpFunctionEnd (in
+ * which case end_function() will not be called either).
+ * It is permitted to modify the arguments of the given op.
  */
 bool SpirVTransformPass::
 begin_function(Instruction op) {
@@ -269,10 +273,12 @@ begin_function(Instruction op) {
 }
 
 /**
- *
+ * Transforms an instruction encountered inside a function.  This will always
+ * be called between begin_function() and end_function() and will be passed the
+ * result identifier of the previous OpFunction.
  */
 bool SpirVTransformPass::
-transform_function_op(Instruction op, uint32_t function_id) {
+transform_function_op(Instruction op) {
   switch (op.opcode) {
   case spv::OpLoad:
   case spv::OpAtomicLoad:
@@ -346,7 +352,6 @@ transform_function_op(Instruction op, uint32_t function_id) {
           }
         }
         add_instruction(spv::OpFunctionCall, new_args.data(), new_args.size());
-        mark_defined(new_args[1]);
         return false;
       }
     }
@@ -364,14 +369,17 @@ transform_function_op(Instruction op, uint32_t function_id) {
 }
 
 /**
- *
+ * Called when an OpFunctionEnd instruction is encountered, belonging to an
+ * OpFunction with the given identifier.
  */
 void SpirVTransformPass::
 end_function(uint32_t function_id) {
 }
 
 /**
- *
+ * Called after all instructions have been read, this does any post-processing
+ * needed (such as updating the result database to reflect the transformations,
+ * adding names/decorations, etc.)
  */
 void SpirVTransformPass::
 postprocess() {
@@ -381,13 +389,65 @@ postprocess() {
  * Writes a name for the given id.
  */
 void SpirVTransformPass::
-add_name(uint32_t id, const std::string &name) {
+set_name(uint32_t id, const std::string &name) {
+  Definition &def = _db.modify_definition(id);
+  if (!def._name.empty()) {
+    // Remove the existing name.
+    auto it = _new_preamble.begin() + 5;
+    while (it != _new_preamble.end()) {
+      spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+      uint32_t wcount = *it >> spv::WordCountShift;
+      nassertd(wcount > 0) break;
+
+      if (wcount >= 2 && opcode == spv::OpName && *(it + 1) == id) {
+        it = _new_preamble.erase(it, it + wcount);
+        continue;
+      }
+
+      std::advance(it, wcount);
+    }
+  }
+  def._name = name;
+
   uint32_t nargs = 2 + name.size() / 4;
   uint32_t *args = (uint32_t *)alloca(nargs * 4);
   memset(args, 0, nargs * 4);
   args[0] = id;
   memcpy((char *)(args + 1), name.data(), name.size());
   add_debug(spv::OpName, args, nargs);
+}
+
+/**
+ * Writes a name for the given struct member.
+ */
+void SpirVTransformPass::
+set_member_name(uint32_t type_id, uint32_t member_index, const std::string &name) {
+  MemberDefinition &mdef = _db.modify_definition(type_id).modify_member(member_index);
+  if (!mdef._name.empty()) {
+    // Remove the existing name.
+    auto it = _new_preamble.begin();
+    while (it != _new_preamble.end()) {
+      spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+      uint32_t wcount = *it >> spv::WordCountShift;
+      nassertd(wcount > 0) break;
+
+      if (wcount >= 3 && opcode == spv::OpMemberName && *(it + 1) == type_id && *(it + 2) == member_index) {
+        it = _new_preamble.erase(it, it + wcount);
+        continue;
+      }
+
+      std::advance(it, wcount);
+    }
+  }
+  mdef._name = name;
+
+  uint32_t nargs = 3 + name.size() / 4;
+  uint32_t *args = (uint32_t *)alloca(nargs * 4);
+  memset(args, 0, nargs * 4);
+  args[0] = type_id;
+  args[1] = member_index;
+  memcpy((char *)(args + 2), name.data(), name.size());
+  add_debug(spv::OpMemberName, args, nargs);
 }
 
 /**
@@ -455,7 +515,8 @@ delete_id(uint32_t id) {
 
 /**
  * Deletes the annotations for the given struct member (using the pre-transform
- * struct index numbering).
+ * struct index numbering).  Does not update the actual OpTypeStruct args, any
+ * access chains, etc.
  */
 void SpirVTransformPass::
 delete_struct_member(uint32_t id, uint32_t member_index) {
@@ -518,7 +579,9 @@ delete_struct_member(uint32_t id, uint32_t member_index) {
 }
 
 /**
- * Deletes the given parameter of the given function type.
+ * Deletes the given parameter of the given function type.  Should be called
+ * before the OpTypeFunction is encountered, or the OpTypeFunction should have
+ * already been modified to remove this parameter.
  */
 void SpirVTransformPass::
 delete_function_parameter(uint32_t type_id, uint32_t param_index) {
@@ -537,7 +600,8 @@ delete_function_parameter(uint32_t type_id, uint32_t param_index) {
 }
 
 /**
- *
+ * Adds a new variable definition to the definitions section.  Inserts any type
+ * declarations and annotations that may be necessary.
  */
 uint32_t SpirVTransformPass::
 define_variable(const ShaderType *type, spv::StorageClass storage_class) {
@@ -586,9 +650,8 @@ define_pointer_type(const ShaderType *type, spv::StorageClass storage_class) {
 }
 
 /**
- * Helper for define_type.  Inserts the given type (after any requisite
- * dependent types, as found through the given type map) at the given iterator,
- * and advances the iterator.
+ * Ensures that the given type is defined by adding instructions to the
+ * definitions section as necessary.
  */
 uint32_t SpirVTransformPass::
 define_type(const ShaderType *type) {
@@ -804,7 +867,8 @@ define_type(const ShaderType *type) {
 
 /**
  * Defines a new integral constant, either of type uint or int, reusing an
- * existing one one is already defined.
+ * existing one if one is already defined (except for OpConstantNull, which
+ * can't be used to index structure members).
  */
 uint32_t SpirVTransformPass::
 define_int_constant(int32_t constant) {
@@ -813,7 +877,7 @@ define_int_constant(int32_t constant) {
 
   for (uint32_t id = 0; id < get_id_bound(); ++id) {
     const Definition &def = _db.get_definition(id);
-    if (def.is_constant() &&
+    if (def.is_constant() && !def.is_null_constant() &&
         def._constant == (uint32_t)constant &&
         (def._type == ShaderType::int_type || (constant >= 0 && def._type == ShaderType::uint_type))) {
       if (is_defined(id)) {
@@ -836,7 +900,36 @@ define_int_constant(int32_t constant) {
 }
 
 /**
- * Defines a new constant.
+ * Defines a new null constant of the given type, reusing an existing one if
+ * one is already defined.
+ */
+uint32_t SpirVTransformPass::
+define_null_constant(const ShaderType *type) {
+  uint32_t constant_id = 0;
+  uint32_t type_id = define_type(type);
+
+  for (uint32_t id = 0; id < get_id_bound(); ++id) {
+    const Definition &def = _db.get_definition(id);
+    if (def.is_null_constant() && def._type_id == type_id) {
+      if (is_defined(id)) {
+        return id;
+      }
+      constant_id = id;
+    }
+  }
+
+  if (constant_id == 0) {
+    constant_id = allocate_id();
+  }
+
+  add_definition(spv::OpConstantNull, {type_id, constant_id});
+
+  _db.record_constant(constant_id, type_id, nullptr, 0);
+  return constant_id;
+}
+
+/**
+ * Defines a new constant.  Does not attempt to reuse constants.
  */
 uint32_t SpirVTransformPass::
 define_constant(const ShaderType *type, uint32_t constant) {
@@ -898,10 +991,11 @@ r_annotate_struct_layout(uint32_t type_id) {
       // Also make sure there's an ArrayStride decoration for this array.
       uint32_t array_type_id = _db.find_type(array_type);
 
-      if (def._array_stride == 0) {
-        def._array_stride = array_type->get_stride_bytes();
+      Definition &array_def = _db.modify_definition(array_type_id);
+      if (array_def._array_stride == 0) {
+        array_def._array_stride = array_type->get_stride_bytes();
         add_annotation(spv::OpDecorate,
-          {array_type_id, spv::DecorationArrayStride, def._array_stride});
+          {array_type_id, spv::DecorationArrayStride, array_def._array_stride});
       }
     }
 
@@ -933,7 +1027,8 @@ add_definition(spv::Op opcode, const uint32_t *args, uint16_t nargs) {
 }
 
 /**
- * Adds an instruction to the current function.
+ * Adds an instruction to the current function.  May only be called from
+ * transform_function_op.
  */
 void SpirVTransformPass::
 add_instruction(spv::Op opcode, const uint32_t *args, uint16_t nargs) {
@@ -945,4 +1040,124 @@ add_instruction(spv::Op opcode, const uint32_t *args, uint16_t nargs) {
   }
   _new_functions.push_back(((nargs + 1) << spv::WordCountShift) | opcode);
   _new_functions.insert(_new_functions.end(), args, args + nargs);
+}
+
+/**
+ * Inserts an OpLoad from the given pointer id.
+ */
+uint32_t SpirVTransformPass::
+op_load(uint32_t var_id, spv::MemoryAccessMask access) {
+  const Definition &var_def = _db.get_definition(var_id);
+  uint32_t type_id = unwrap_pointer_type(var_def._type_id);
+
+  uint32_t id = allocate_id();
+  if (access != spv::MemoryAccessMaskNone) {
+    _new_functions.insert(_new_functions.end(),
+      {(5 << spv::WordCountShift) | spv::OpLoad, type_id, id, var_id, (uint32_t)access});
+  } else {
+    _new_functions.insert(_new_functions.end(),
+      {(4 << spv::WordCountShift) | spv::OpLoad, type_id, id, var_id});
+  }
+
+  _db.record_temporary(id, type_id, var_id, _current_function_id);
+
+  // A load from the pointer is enough for us to consider it "used", for now.
+  mark_used(id);
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpSelect.
+ */
+uint32_t SpirVTransformPass::
+op_select(uint32_t cond, uint32_t obj1, uint32_t obj2) {
+  const Definition &obj1_def = _db.get_definition(obj1);
+  const Definition &obj2_def = _db.get_definition(obj2);
+  nassertr(obj1_def._type_id == obj2_def._type_id, 0);
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {(6 << spv::WordCountShift) | spv::OpSelect, obj1_def._type_id, id, cond, obj1, obj2});
+
+  mark_used(obj1);
+  mark_used(obj2);
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpAccessChain with the given base id (which must be a pointer)
+ * and constant ids containing the various member/array indices.
+ */
+uint32_t SpirVTransformPass::
+op_access_chain(uint32_t var_id, std::initializer_list<uint32_t> chain) {
+  const Definition &var_def = _db.get_definition(var_id);
+  const Definition &var_type_def = _db.get_definition(var_def._type_id);
+  nassertr(var_type_def.is_pointer_type(), 0);
+  spv::StorageClass storage_class = var_type_def._storage_class;
+
+  uint32_t type_id = var_type_def._type_id;
+  for (auto index_id : chain) {
+    const Definition &type_def = _db.get_definition(type_id);
+    nassertr(type_def.is_type(), 0);
+
+    if (!type_def._members.empty()) {
+      uint32_t member_index = resolve_constant(index_id);
+      nassertr((size_t)member_index < type_def._members.size(), 0);
+      type_id = type_def._members[member_index]._type_id;
+    } else {
+      // Array, matrix, or vector
+      type_id = type_def._type_id;
+    }
+    nassertr(type_id != 0, 0);
+  }
+
+  uint32_t pointer_type_id = _db.find_pointer_type(type_id, storage_class);
+  if (pointer_type_id == 0) {
+    pointer_type_id = allocate_id();
+    _db.record_pointer_type(pointer_type_id, storage_class, type_id);
+
+    add_definition(spv::OpTypePointer,
+      {pointer_type_id, (uint32_t)storage_class, type_id});
+  }
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {((4 + (uint32_t)chain.size()) << spv::WordCountShift) | spv::OpAccessChain, pointer_type_id, id, var_id});
+  _new_functions.insert(_new_functions.end(), chain);
+
+  _db.record_temporary(id, pointer_type_id, var_id, _current_function_id);
+  return id;
+}
+
+/**
+ * Inserts an OpCompositeExtract.
+ */
+uint32_t SpirVTransformPass::
+op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t> chain) {
+  const Definition &obj_def = _db.get_definition(obj_id);
+
+  uint32_t type_id = obj_def._type_id;
+  for (auto index : chain) {
+    const Definition &type_def = _db.get_definition(type_id);
+    nassertr(type_def.is_type() && !type_def.is_pointer_type(), 0);
+
+    if (!type_def._members.empty()) {
+      nassertr((size_t)index < type_def._members.size(), 0);
+      type_id = type_def._members[index]._type_id;
+    } else {
+      // Array, matrix, or vector
+      type_id = type_def._type_id;
+    }
+    nassertr(type_id != 0, 0);
+  }
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {((4 + (uint32_t)chain.size()) << spv::WordCountShift) | spv::OpCompositeExtract, type_id, id, obj_id});
+  _new_functions.insert(_new_functions.end(), chain);
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+
+  mark_defined(id);
+  return id;
 }

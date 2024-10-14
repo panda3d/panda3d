@@ -27,7 +27,7 @@ public:
   virtual void preprocess();
 
   virtual bool transform_definition_op(Instruction op);
-  virtual bool transform_function_op(Instruction op, uint32_t function_id);
+  virtual bool transform_function_op(Instruction op);
 
 private:
   const uint32_t _type_id;

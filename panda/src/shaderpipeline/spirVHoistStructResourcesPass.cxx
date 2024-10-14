@@ -213,7 +213,7 @@ begin_function(Instruction op) {
  *
  */
 bool SpirVHoistStructResourcesPass::
-transform_function_op(Instruction op, uint32_t function_id) {
+transform_function_op(Instruction op) {
   switch (op.opcode) {
   case spv::OpFunctionParameter:
     // Erase deleted types in function parameter list.
@@ -223,7 +223,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
         delete_id(param_id);
       } else {
         add_instruction(op.opcode, op.args, op.nargs);
-        _db.modify_definition(function_id)._parameters.push_back(op.args[1]);
+        _db.modify_definition(_current_function_id)._parameters.push_back(op.args[1]);
       }
 
       // Structs with non-opaque types must be passed through pointers.
@@ -244,7 +244,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
           access_chain._var_id = param_id;
           _hoisted_vars[std::move(access_chain)] = id;
 
-          _db.record_function_parameter(id, type_ptr_id, function_id);
+          _db.record_function_parameter(id, type_ptr_id, _current_function_id);
         }
       }
 
@@ -374,7 +374,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
             hoisted_new_args[1] = id;
             hoisted_new_args[2] = hoisted_var_id;
             add_instruction(spv::OpAccessChain, hoisted_new_args.data(), hoisted_new_args.size());
-            _db.record_temporary(id, hoisted_type_ptr_id, hoisted_var_id, function_id);
+            _db.record_temporary(id, hoisted_type_ptr_id, hoisted_var_id, _current_function_id);
 
             AccessChain new_access_chain(pair.second);
             new_access_chain._var_id = orig_chain_id;
@@ -482,12 +482,15 @@ transform_function_op(Instruction op, uint32_t function_id) {
     break;
 
   default:
-    return SpirVTransformPass::transform_function_op(op, function_id);
+    return SpirVTransformPass::transform_function_op(op);
   }
 
   return true;
 }
 
+/**
+ *
+ */
 void SpirVHoistStructResourcesPass::
 postprocess() {
   for (auto vit = _hoisted_vars.begin(); vit != _hoisted_vars.end(); ++vit) {
@@ -499,7 +502,7 @@ postprocess() {
       for (size_t i = 0; i < access_chain.size(); ++i) {
         name += "_m" + format_string(access_chain[i]);
       }
-      add_name(var_id, name);
+      set_name(var_id, name);
     }
   }
 }

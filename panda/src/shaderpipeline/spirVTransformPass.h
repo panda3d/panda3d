@@ -37,14 +37,13 @@ public:
   void process_annotations(std::vector<uint32_t> &instructions);
   void process_definitions(std::vector<uint32_t> &instructions);
   void process_functions(std::vector<uint32_t> &instructions);
-  InstructionStream get_result() const;
 
   virtual void preprocess();
   virtual bool transform_debug_op(Instruction op);
   virtual bool transform_annotation_op(Instruction op);
   virtual bool transform_definition_op(Instruction op);
   virtual bool begin_function(Instruction op);
-  virtual bool transform_function_op(Instruction op, uint32_t function_id);
+  virtual bool transform_function_op(Instruction op);
   virtual void end_function(uint32_t function_id);
   virtual void postprocess();
 
@@ -58,7 +57,8 @@ public:
   INLINE uint32_t get_id_bound() const;
   INLINE uint32_t allocate_id();
 
-  void add_name(uint32_t id, const std::string &name);
+  void set_name(uint32_t id, const std::string &name);
+  void set_member_name(uint32_t type_id, uint32_t member_index, const std::string &name);
 
   void delete_id(uint32_t id);
   void delete_struct_member(uint32_t id, uint32_t member_index);
@@ -67,10 +67,14 @@ public:
   INLINE bool is_deleted(uint32_t id) const;
   INLINE bool is_member_deleted(uint32_t id, uint32_t member) const;
 
+  INLINE void decorate(uint32_t id, spv::Decoration decoration);
+  INLINE void decorate(uint32_t id, spv::Decoration decoration, uint32_t value);
+
   uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
   uint32_t define_pointer_type(const ShaderType *type, spv::StorageClass storage_class);
   uint32_t define_type(const ShaderType *type);
   uint32_t define_int_constant(int32_t constant);
+  uint32_t define_null_constant(const ShaderType *type);
   uint32_t define_constant(const ShaderType *type, uint32_t constant);
 
   /**
@@ -117,12 +121,19 @@ protected:
   INLINE void add_instruction(spv::Op opcode, std::initializer_list<uint32_t> args);
   void add_instruction(spv::Op opcode, const uint32_t *args, uint16_t nargs);
 
+  // Functions for putting specific instructions in the functions block.
+  uint32_t op_load(uint32_t var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
+  uint32_t op_select(uint32_t cond, uint32_t obj1, uint32_t obj2);
+  uint32_t op_access_chain(uint32_t var_id, std::initializer_list<uint32_t>);
+  uint32_t op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t>);
+
   // The module is split into sections to make it easier to add instructions
   // to other sections while we are iterating.
   std::vector<uint32_t> _new_preamble;
   std::vector<uint32_t> _new_annotations;
   std::vector<uint32_t> _new_definitions;
   std::vector<uint32_t> _new_functions;
+  uint32_t _current_function_id = 0;
 
   // Keeps track of what has been defined and deleted during this pass.
   BitArray _defined;

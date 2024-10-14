@@ -110,6 +110,29 @@ is_member_deleted(uint32_t type_id, uint32_t member) const {
 }
 
 /**
+ * Inserts a decoration instruction taking no arguments.
+ */
+INLINE void SpirVTransformPass::
+decorate(uint32_t id, spv::Decoration decoration) {
+  nassertv(decoration != spv::DecorationLocation);
+  _new_annotations.insert(_new_annotations.end(),
+    {spv::OpDecorate | (3 << spv::WordCountShift), id, decoration});
+}
+
+/**
+ * Inserts a decoration instruction taking one argument.
+ */
+INLINE void SpirVTransformPass::
+decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
+  _new_annotations.insert(_new_annotations.end(),
+    {spv::OpDecorate | (4 << spv::WordCountShift), id, decoration, value});
+
+  if (decoration == spv::DecorationLocation) {
+    _db.modify_definition(id)._location = (int)value;
+  }
+}
+
+/**
  * Returns true if the given id has already been defined during this pass.
  */
 INLINE bool SpirVTransformPass::

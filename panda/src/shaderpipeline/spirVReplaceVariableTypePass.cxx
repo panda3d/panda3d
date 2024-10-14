@@ -63,7 +63,7 @@ transform_definition_op(Instruction op) {
  *
  */
 bool SpirVReplaceVariableTypePass::
-transform_function_op(Instruction op, uint32_t function_id) {
+transform_function_op(Instruction op) {
   switch (op.opcode) {
   case spv::OpLoad:
   case spv::OpAtomicLoad:
@@ -135,7 +135,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
     break;
 
   default:
-    return SpirVTransformPass::transform_function_op(op, function_id);
+    return SpirVTransformPass::transform_function_op(op);
   }
 
   return true;

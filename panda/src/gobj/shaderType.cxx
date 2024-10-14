@@ -224,6 +224,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
 }
 
 /**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Scalar::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Scalar(b));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Scalar::
@@ -295,6 +307,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
   num_rows = 1;
   num_columns = _num_components;
   return true;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Vector::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Vector(b, _num_components));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -388,6 +412,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
   num_rows = _num_rows;
   num_columns = _num_columns;
   return true;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Matrix::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Matrix(b, _num_rows, _num_columns));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -519,6 +555,28 @@ contains_scalar_type(ScalarType type) const {
     }
   }
   return false;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Struct::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (contains_scalar_type(a)) {
+    ShaderType::Struct copy;
+    for (const Member &member : _members) {
+      const ShaderType *type = member.type->replace_scalar_type(a, b);
+      if ((a == ST_double) != (b == ST_double)) {
+        // Recompute offsets.
+        copy.add_member(type, member.name);
+      } else {
+        copy.add_member(type, member.name, member.offset);
+      }
+    }
+    return ShaderType::register_type(std::move(copy));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -728,6 +786,19 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
     return true;
   }
   return false;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Array::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  const ShaderType *element_type = _element_type->replace_scalar_type(a, b);
+  if (_element_type != element_type) {
+    return ShaderType::register_type(ShaderType::Array(element_type, _num_elements));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -1075,6 +1146,19 @@ compare_to_impl(const ShaderType &other) const {
 bool ShaderType::StorageBuffer::
 contains_scalar_type(ScalarType type) const {
   return _contained_type != nullptr && _contained_type->contains_scalar_type(type);
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::StorageBuffer::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  const ShaderType *contained_type = _contained_type->replace_scalar_type(a, b);
+  if (_contained_type != contained_type) {
+    return ShaderType::register_type(ShaderType::StorageBuffer(contained_type, _access));
+  } else {
+    return this;
+  }
 }
 
 /**

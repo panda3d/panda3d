@@ -46,6 +46,8 @@ private:
     DF_non_readable = 256, // writeonly
 
     DF_relaxed_precision = 512,
+
+    DF_null_constant = 1024,
   };
 
 public:
@@ -91,6 +93,7 @@ public:
     INLINE bool is_variable() const;
     INLINE bool is_function_parameter() const;
     INLINE bool is_constant() const;
+    INLINE bool is_null_constant() const;
     INLINE bool is_spec_constant() const;
     INLINE bool is_function() const;
     INLINE bool is_ext_inst() const;
@@ -105,16 +108,19 @@ public:
     MemberDefinition &modify_member(uint32_t i);
     void clear();
   };
-  typedef pvector<Definition> Definitions;
+  typedef pdeque<Definition> Definitions;
 
   uint32_t find_definition(const std::string &name) const;
   const Definition &get_definition(uint32_t id) const;
   Definition &modify_definition(uint32_t id);
 
-  void parse_instruction(spv::Op opcode, uint32_t *args, uint32_t nargs, uint32_t &current_function_id);
+  void parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs,
+                         uint32_t &current_function_id);
 
   uint32_t find_type(const ShaderType *type);
   uint32_t find_pointer_type(const ShaderType *type, spv::StorageClass storage_class);
+  uint32_t find_pointer_type(uint32_t type_id, spv::StorageClass storage_class);
+  uint32_t find_null_constant(uint32_t type_id);
 
   void record_type(uint32_t id, const ShaderType *type);
   void record_pointer_type(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);

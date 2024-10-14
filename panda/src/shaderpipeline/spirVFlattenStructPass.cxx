@@ -64,7 +64,7 @@ transform_definition_op(Instruction op) {
         // Insert a new variable for this struct member.
         uint32_t variable_id = define_variable(member.type, spv::StorageClassUniformConstant);
         if (!member.name.empty()) {
-          add_name(variable_id, member.name);
+          set_name(variable_id, member.name);
         }
 
         Definition &variable_def = _db.modify_definition(variable_id);
@@ -99,7 +99,7 @@ transform_definition_op(Instruction op) {
  *
  */
 bool SpirVFlattenStructPass::
-transform_function_op(Instruction op, uint32_t function_id) {
+transform_function_op(Instruction op) {
   switch (op.opcode) {
   case spv::OpAccessChain:
   case spv::OpInBoundsAccessChain:
@@ -286,7 +286,7 @@ transform_function_op(Instruction op, uint32_t function_id) {
     break;
 
   default:
-    return SpirVTransformPass::transform_function_op(op, function_id);
+    return SpirVTransformPass::transform_function_op(op);
   }
 
   return true;
