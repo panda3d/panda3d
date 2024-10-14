@@ -161,7 +161,7 @@ do_update() {
   _last_level_index = view.get_level_index();
 
   const PStatClientData *client_data = _monitor->get_client_data();
-  if (client_data->get_num_collectors() > _collector_items.size()) {
+  if ((size_t)client_data->get_num_collectors() > _collector_items.size()) {
     _collector_items.resize(client_data->get_num_collectors(), std::make_pair(nullptr, nullptr));
   }
 
