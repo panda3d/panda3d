@@ -2201,7 +2201,7 @@ fetch_specified_light(const NodePath &np, LVecBase4f *into) {
       if (!node->is_of_type(PointLight::get_class_type())) {
         t *= lens->get_projection_mat() * shadow_bias_mat;
       }
-      *(LMatrix4f *)&into[Shader::LA_shadow_view_matrix] = t;
+      *(LMatrix4f *)&into[Shader::LA_shadow_view_matrix] = LCAST(float, t);
     }
 
     LVecBase3 atten = light->get_attenuation();
