@@ -615,8 +615,7 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
     }
 
     VkBuffer ubo;
-    uint32_t ubo_offset;
-    void *ptr = gsg->alloc_dynamic_uniform_buffer(_other_state_block._size, ubo, ubo_offset);
+    void *ptr = gsg->alloc_dynamic_uniform_buffer(_other_state_block._size, ubo, _dynamic_uniform_offset);
 
     ShaderInputBinding::State state;
     state.gsg = gsg;
