@@ -53,6 +53,7 @@ public:
   VkImageAspectFlags _aspect_mask = 0;
   bool _generate_mipmaps = false;
   bool _pack_bgr8 = false;
+  bool _swap_bgra8 = false;
 
   // Depending on whether it's a buffer texture or image texture, either the
   // image and image view or buffer and buffer view will be set.

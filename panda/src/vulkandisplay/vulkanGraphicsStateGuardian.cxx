@@ -928,18 +928,26 @@ create_texture(VulkanTextureContext *tc) {
 
   bool supported;
   if (is_buffer) {
-    supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) != 0;
+    supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) != 0
+             && (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT) != 0;
   } else {
-    supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+    supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
+             && (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
   }
 
   bool pack_bgr8 = false;
+  bool swap_bgra8 = false;
   if (!supported) {
-    // Not supported.  Can we convert it to a format that is supported?  The two
-    // we pick have mandatory support in Vulkan, so no need to check things.
+    // Not fully supported.  Can we convert it to a format that is supported?
+    // We pick ones with mandatory support in Vulkan; no need to check things.
     switch (format) {
     case VK_FORMAT_B8G8R8_UNORM:
       format = VK_FORMAT_R8G8B8A8_UNORM;
+      pack_bgr8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8_SNORM:
+      format = VK_FORMAT_R8G8B8A8_SNORM;
       pack_bgr8 = true;
       break;
 
@@ -948,10 +956,44 @@ create_texture(VulkanTextureContext *tc) {
       pack_bgr8 = true;
       break;
 
+    case VK_FORMAT_B8G8R8_SINT:
+      format = VK_FORMAT_R8G8B8A8_SINT;
+      pack_bgr8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8A8_UNORM:
+      format = VK_FORMAT_R8G8B8A8_UNORM;
+      swap_bgra8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8A8_SNORM:
+      format = VK_FORMAT_R8G8B8A8_SNORM;
+      swap_bgra8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8A8_UINT:
+      format = VK_FORMAT_R8G8B8A8_UINT;
+      swap_bgra8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8A8_SINT:
+      format = VK_FORMAT_R8G8B8A8_SINT;
+      swap_bgra8 = true;
+      break;
+
     default:
-      vulkandisplay_cat.error()
-        << "Texture format " << format << " not supported.\n";
-      return false;
+      // We'll still allow it if it's supported in a limited fashion.
+      if (is_buffer) {
+        supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) != 0;
+      } else {
+        supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+      }
+
+      if (!supported) {
+        vulkandisplay_cat.error()
+          << "Texture format " << format << " not supported.\n";
+        return false;
+      }
     }
 
     // Update the properties for the new format.
@@ -966,14 +1008,19 @@ create_texture(VulkanTextureContext *tc) {
     }
 
     VkImageFormatProperties img_props;
-    vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, format, type,
-                                             VK_IMAGE_TILING_OPTIMAL, usage,
-                                             flags, &img_props);
+    if (vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, format, type,
+                                                 VK_IMAGE_TILING_OPTIMAL, usage,
+                                                 flags, &img_props) == VK_ERROR_FORMAT_NOT_SUPPORTED) {
+      vulkandisplay_cat.error()
+        << "Texture format " << format << " is not supported.\n";
+      return false;
+    }
+    nassertr(img_props.maxArrayLayers > 0, false);
     if (num_layers > img_props.maxArrayLayers) {
       //TODO: more elegant solution to reduce layer count.
       vulkandisplay_cat.error()
-        << "Texture has too many layers, this format has a maximum of "
-        << num_layers << "\n";
+        << "Texture has too many layers, format " << format << " has a maximum of "
+        << img_props.maxArrayLayers << " layers\n";
       return false;
     }
     int mipmap_begin = 0;
@@ -1239,6 +1286,7 @@ create_texture(VulkanTextureContext *tc) {
     tc->_buffer_views = std::move(buffer_views);
     tc->_block = std::move(block);
     tc->_pack_bgr8 = pack_bgr8;
+    tc->_swap_bgra8 = swap_bgra8;
   }
 
   // We can't upload it at this point because the texture lock is currently
@@ -1438,15 +1486,28 @@ upload_texture(VulkanTextureContext *tc) {
 
         if (tc->_pack_bgr8) {
           // Pack RGB data into RGBA, since most cards don't support RGB8.
+          nassertr(((uintptr_t)dest & 0x3) == 0, false);
           const uint8_t *src_end = src + src_size;
           uint32_t *dest32 = (uint32_t *)dest;
-          nassertr(((uintptr_t)dest32 & 0x3) == 0, false);
 
           for (; src < src_end; src += 3) {
             *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
           }
           src_size = src_size / 3 * 4;
-        } else {
+        }
+        else if (tc->_swap_bgra8) {
+          nassertr(((uintptr_t)src & 0x3) == 0, false);
+          nassertr(((uintptr_t)dest & 0x3) == 0, false);
+          const uint32_t *src32 = (const uint32_t *)src;
+          const uint32_t *src32_end = (const uint32_t *)(src + src_size);
+          uint32_t *dest32 = (uint32_t *)dest;
+
+          for (; src32 < src32_end; ++src32) {
+            uint32_t v = *src32++;
+            *dest32++ = (v & 0xff00ff00) | ((v & 0x00ff0000) >> 16) | ((v & 0x000000ff) << 16);
+          }
+        }
+        else {
           memcpy(dest, src, src_size);
         }
 
@@ -1498,15 +1559,28 @@ upload_texture(VulkanTextureContext *tc) {
 
     if (tc->_pack_bgr8) {
       // Pack RGB data into RGBA, since most cards don't support RGB8.
+      nassertr(((uintptr_t)data & 0x3) == 0, false);
       const uint8_t *src_end = src + src_size;
       uint32_t *dest32 = (uint32_t *)data;
-      nassertr(((uintptr_t)dest32 & 0x3) == 0, false);
 
       for (; src < src_end; src += 3) {
         *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
       }
       src_size = src_size / 3 * 4;
-    } else {
+    }
+    else if (tc->_swap_bgra8) {
+      nassertr(((uintptr_t)src & 0x3) == 0, false);
+      nassertr(((uintptr_t)data & 0x3) == 0, false);
+      const uint32_t *src32 = (const uint32_t *)src;
+      const uint32_t *src32_end = (const uint32_t *)(src + src_size);
+      uint32_t *dest32 = (uint32_t *)data;
+
+      for (; src32 < src32_end; ++src32) {
+        uint32_t v = *src32++;
+        *dest32++ = (v & 0xff00ff00) | ((v & 0x00ff0000) >> 16) | ((v & 0x000000ff) << 16);
+      }
+    }
+    else {
       memcpy(data, src, src_size);
     }
 
