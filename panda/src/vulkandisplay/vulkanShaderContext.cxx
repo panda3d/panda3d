@@ -13,6 +13,7 @@
 
 #include "vulkanShaderContext.h"
 #include "spirVTransformer.h"
+#include "spirVConvertBoolToIntPass.h"
 #include "spirVMakeBlockPass.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
@@ -44,6 +45,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 
   ShaderType::Struct shader_input_block_struct;
   ShaderType::Struct other_state_block_struct;
+  bool replace_bools = false;
 
   for (const Shader::Parameter &param : _shader->_parameters) {
     if (param._binding == nullptr) {
@@ -104,7 +106,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         continue;
       }
     }
-    const ShaderType *type = param._type;
+    const ShaderType *type = param._type->replace_scalar_type(ShaderType::ST_bool, ShaderType::ST_int);
+    if (param._type != type) {
+      replace_bools = true;
+    }
     int dep = param._binding->get_state_dep();
     if ((dep & ~(Shader::D_frame | Shader::D_shader_inputs)) == 0) {
       // Purely dependent on shader inputs, goes into separate block.
@@ -156,6 +161,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 
     // These are not used in Vulkan, and the validation layers trip over them.
     transformer.strip_uniform_locations();
+
+    if (replace_bools) {
+      transformer.run(SpirVConvertBoolToIntPass());
+    }
 
     if (_push_constant_stage_mask != 0) {
       auto ids = spv_module->get_parameter_ids_from_names(push_constant_params);

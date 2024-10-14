@@ -1,4 +1,5 @@
 #ifndef CPPPARSER
+#include "spirVConvertBoolToIntPass.cxx"
 #include "spirVFlattenStructPass.cxx"
 #include "spirVHoistStructResourcesPass.cxx"
 #include "spirVMakeBlockPass.cxx"
