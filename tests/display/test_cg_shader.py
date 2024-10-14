@@ -41,7 +41,7 @@ float4 _assert(bool4 cond) {{
 
 #define assert(cond) {{ if ((int)l_vpos.x == __LINE__ - line_offset) o_color = _assert(cond); }}
 
-void fshader(in float2 l_vpos : VPOS, out float4 o_color : COLOR) {{
+void fshader(in float4 l_vpos : VPOS, out float4 o_color : COLOR) {{
     o_color = float4(1, 1, 1, 1);
 
     if ((int)l_vpos.x == 0) {{
