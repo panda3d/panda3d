@@ -13,6 +13,8 @@
 
 #include "paramPyObject.h"
 
+#ifdef HAVE_PYTHON
+
 TypeHandle ParamPyObject::_type_handle;
 
 /**
@@ -40,3 +42,5 @@ output(std::ostream &out) const {
   out << "<" << Py_TYPE(_value)->tp_name
       << " object at " << (void *)_value << ">";
 }
+
+#endif

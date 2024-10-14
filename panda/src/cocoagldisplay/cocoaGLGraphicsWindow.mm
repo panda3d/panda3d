@@ -159,13 +159,16 @@ end_flip() {
     CocoaGLGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
 
-    if (_vsync_enabled) {
-      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
-      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
-        cocoagsg->_swap_lock.lock();
-        cocoagsg->_swap_condition.wait();
-        cocoagsg->_swap_lock.unlock();
+    if (sync_video) {
+      CocoaGraphicsPipe *cocoapipe = (CocoaGraphicsPipe *)_pipe.p();
+      if (!_vsync_enabled) {
+        // If this fails, we don't keep trying.
+        cocoapipe->init_vsync(_vsync_counter);
+        _vsync_enabled = true;
       }
+      cocoapipe->wait_vsync(_vsync_counter);
+    } else {
+      _vsync_enabled = false;
     }
 
     cocoagsg->lock_context();
@@ -236,8 +239,6 @@ open_window() {
     return false;
   }
   _fb_properties = cocoagsg->get_fb_properties();
-
-  _vsync_enabled = sync_video && cocoagsg->setup_vsync();
 
   return true;
 }

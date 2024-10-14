@@ -324,10 +324,7 @@ class DirectManipulationControl(DirectObject):
         if self.rotateAxis == 'x':
             SEditor.widget.setP(SEditor.widget, deltaAngle)
         elif self.rotateAxis == 'y':
-            if base.config.GetBool('temp-hpr-fix',0):
-                SEditor.widget.setR(SEditor.widget, deltaAngle)
-            else:
-                SEditor.widget.setR(SEditor.widget, -deltaAngle)
+            SEditor.widget.setR(SEditor.widget, deltaAngle)
         elif self.rotateAxis == 'z':
             SEditor.widget.setH(SEditor.widget, deltaAngle)
         # Record crank angle for next time around
@@ -456,10 +453,7 @@ class DirectManipulationControl(DirectObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         # Mouse motion edge to edge of display region results in one full turn
-        if base.config.GetBool('temp-hpr-fix',0):
-            relHpr(SEditor.widget, SEditor.camera, 0, 0, -deltaAngle)
-        else:
-            relHpr(SEditor.widget, SEditor.camera, 0, 0, deltaAngle)
+        relHpr(SEditor.widget, SEditor.camera, 0, 0, -deltaAngle)
 
     def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion

@@ -25,12 +25,17 @@
 #include "colorBlendAttrib.h"
 #include "transparencyAttrib.h"
 
+#include "small_vector.h"
+
 class VulkanGraphicsStateGuardian;
 
 /**
  * Manages a set of Vulkan shader modules.
  */
 class EXPCL_VULKANDISPLAY VulkanShaderContext : public ShaderContext {
+private:
+  struct Descriptor;
+
 public:
   INLINE VulkanShaderContext(Shader *shader);
   INLINE ~VulkanShaderContext();
@@ -39,9 +44,14 @@ public:
 
   bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
 
+  VkDescriptorSetLayout make_texture_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_dynamic_uniform_descriptor_set_layout(VkDevice device);
 
+  bool fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
+                        VkWriteDescriptorSet &write, VkDescriptorImageInfo *&image_infos);
+  bool update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
+  bool update_sattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
   uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer);
   uint32_t update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered);
 
@@ -79,20 +89,50 @@ public:
 
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
+  VkDescriptorSetLayout _tattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _dynamic_uniform_descriptor_set_layout = VK_NULL_HANDLE;
   VkPipelineLayout _pipeline_layout = VK_NULL_HANDLE;
 
-  // Describe the two UBOs and push constant range we create.
-  const ShaderType::Struct *_mat_block_type = nullptr;
-  const ShaderType::Struct *_ptr_block_type = nullptr;
-  VkDeviceSize _mat_block_size = 0;
-  VkDeviceSize _ptr_block_size = 0;
-  int _mat_block_stage_mask = 0;
-  int _ptr_block_stage_mask = 0;
-  int _mat_deps = Shader::SSD_NONE;
-  LMatrix4 *_mat_part_cache = nullptr;
-  pvector<Shader::ShaderMatSpec> _mat_spec;
+  // Keep track of a created descriptor set and the last frame in which it was
+  // bound (since we can only update it once per frame).
+  struct DescriptorSet {
+    VkDescriptorSet _handle = VK_NULL_HANDLE;
+    uint64_t _last_update_frame = 0;
+    WeakReferenceList *_weak_ref = nullptr;
+  };
+  typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
+  AttribDescriptorSetMap _attrib_descriptor_set_map;
+
+  // Describe the two UBOs and push constant ranges we create.
+  struct Block {
+    struct Binding {
+      PT(ShaderInputBinding) _binding;
+      size_t _offset;
+    };
+    pvector<Binding> _bindings;
+    VkDeviceSize _size = 0;
+    int _stage_mask = 0;
+    int _deps = 0;
+  };
+  Block _shader_input_block;
+  Block _other_state_block;
+  pvector<LMatrix4> _matrix_cache;
+  int _matrix_cache_deps = 0;
+
+  using ResourceId = ShaderInputBinding::ResourceId;
+  struct Descriptor {
+    VkDescriptorType _type;
+    PT(ShaderInputBinding) _binding;
+    small_vector<ResourceId, 1> _resource_ids;
+    int _stage_mask = 0;
+    ShaderType::Access _access = ShaderType::Access::read_write;
+  };
+  pvector<Descriptor> _tex_stage_descriptors;
+  size_t _num_tex_stage_descriptor_elements = 0;
+
+  pvector<Descriptor> _tex_input_descriptors;
+  size_t _num_tex_input_descriptor_elements = 0;
 
   VkDescriptorSet _uniform_descriptor_set = VK_NULL_HANDLE;
   VkBuffer _uniform_buffer = VK_NULL_HANDLE;

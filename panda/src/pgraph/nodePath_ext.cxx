@@ -56,10 +56,9 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
   // Borrowed reference.
-  PyObject *dupe = PyDict_GetItem(memo, self);
-  if (dupe != nullptr) {
+  PyObject *dupe;
+  if (PyDict_GetItemRef(memo, self, &dupe) > 0) {
     // Already in the memo dictionary.
-    Py_INCREF(dupe);
     return dupe;
   }
 
@@ -174,8 +173,7 @@ PyObject *Extension<NodePath>::
 get_tags() const {
   // An empty NodePath returns None
   if (_this->is_empty()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   // Just call PandaNode.tags rather than defining a whole new interface.
@@ -281,19 +279,21 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
   PyObject *key, *value;
   Py_ssize_t pos = 0;
 
+  Py_BEGIN_CRITICAL_SECTION(dict);
   while (PyDict_Next(kwargs, &pos, &key, &value)) {
     char *buffer;
     Py_ssize_t length;
     buffer = (char *)PyUnicode_AsUTF8AndSize(key, &length);
     if (buffer == nullptr) {
       Dtool_Raise_TypeError("NodePath.set_shader_inputs accepts only string keywords");
-      return;
+      break;
     }
 
     CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
     invoke_extension(&input).__init__(std::move(name), value);
   }
+  Py_END_CRITICAL_SECTION();
 
   if (!PyErr_Occurred()) {
     node->set_attrib(ShaderAttrib::return_new(attrib));
@@ -323,8 +323,7 @@ get_tight_bounds(const NodePath &other) const {
     return Py_BuildValue("NN", min_inst, max_inst);
 
   } else {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 }
 

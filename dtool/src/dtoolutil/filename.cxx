@@ -436,7 +436,7 @@ Filename Filename::
 temporary(const string &dirname, const string &prefix, const string &suffix,
           Type type) {
   Filename fdirname = dirname;
-#if defined(_WIN32) || defined(ANDROID)
+#if defined(_WIN32) || defined(ANDROID) || defined(__wasi__)
   // The Windows tempnam() function doesn't do a good job of choosing a
   // temporary directory.  Choose one ourselves.
   if (fdirname.empty()) {
@@ -1049,7 +1049,7 @@ make_canonical() {
     return true;
   }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__wasi__)
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != nullptr) {
@@ -1057,7 +1057,7 @@ make_canonical() {
     newpath_fn._flags = _flags;
     (*this) = newpath_fn;
   }
-#endif
+#endif  // _WIN32 __wasi__
 
   Filename cwd = ExecutionEnvironment::get_cwd();
   if (!r_make_canonical(cwd)) {
@@ -2317,7 +2317,9 @@ touch() const {
         perror(os_specific.c_str());
         return false;
       }
-      close(fd);
+      if (close(fd) < 0) {
+        perror(os_specific.c_str());
+      }
       return true;
     }
     perror(os_specific.c_str());
@@ -2766,7 +2768,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   if (flock(fd, LOCK_EX) != 0) {
 #endif
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2778,7 +2782,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   if (bytes_read < 0) {
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2789,7 +2795,9 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     ssize_t bytes_written = write(fd, new_contents.data(), new_contents.size());
     if (bytes_written < 0) {
       perror(os_specific.c_str());
-      close(fd);
+      if (close(fd) < 0) {
+        perror(os_specific.c_str());
+      }
       return false;
     }
   }
@@ -2882,7 +2890,9 @@ atomic_read_contents(string &contents) const {
   if (flock(fd, LOCK_EX) != 0) {
 #endif
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
@@ -2894,11 +2904,15 @@ atomic_read_contents(string &contents) const {
 
   if (bytes_read < 0) {
     perror(os_specific.c_str());
-    close(fd);
+    if (close(fd) < 0) {
+      perror(os_specific.c_str());
+    }
     return false;
   }
 
-  close(fd);
+  if (close(fd) < 0) {
+    perror(os_specific.c_str());
+  }
   return true;
 #endif  // _WIN32
 }

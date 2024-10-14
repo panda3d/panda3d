@@ -947,7 +947,7 @@ PUBLISHED:
   PY_EXTENSION(NodePath find_net_python_tag(PyObject *keys) const);
   PY_MAKE_PROPERTY(python_tags, get_python_tags);
 
-  PY_EXTENSION(int __traverse__(visitproc visit, void *arg));
+  //PY_EXTENSION(int __traverse__(visitproc visit, void *arg));
 
   INLINE void list_tags() const;
 

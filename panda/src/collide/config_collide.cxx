@@ -25,6 +25,7 @@
 #include "collisionHandlerFluidPusher.h"
 #include "collisionHandlerQueue.h"
 #include "collisionInvSphere.h"
+#include "collisionHeightfield.h"
 #include "collisionLine.h"
 #include "collisionLevelStateBase.h"
 #include "collisionGeom.h"
@@ -138,6 +139,7 @@ init_libcollide() {
   CollisionHandlerFluidPusher::init_type();
   CollisionHandlerQueue::init_type();
   CollisionInvSphere::init_type();
+  CollisionHeightfield::init_type();
   CollisionLine::init_type();
   CollisionLevelStateBase::init_type();
   CollisionGeom::init_type();
@@ -164,6 +166,7 @@ init_libcollide() {
   CollisionBox::register_with_read_factory();
   CollisionCapsule::register_with_read_factory();
   CollisionInvSphere::register_with_read_factory();
+  CollisionHeightfield::register_with_read_factory();
   CollisionLine::register_with_read_factory();
   CollisionNode::register_with_read_factory();
   CollisionParabola::register_with_read_factory();

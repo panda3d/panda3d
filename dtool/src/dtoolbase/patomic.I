@@ -433,6 +433,8 @@ patomic_wait(const volatile uint32_t *value, uint32_t old) {
   while (*value == old) {
     _patomic_wait_func((volatile void *)value, &old, sizeof(uint32_t), INFINITE);
   }
+#elif defined(__APPLE__)
+  __ulock_wait(UL_COMPARE_AND_WAIT, (void *)value, old, 0);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_wait(value, old);
 #else
@@ -451,6 +453,8 @@ patomic_notify_one(volatile uint32_t *value) {
 //  WakeByAddressSingle((void *)value);
 #elif defined(_WIN32)
   _patomic_wake_one_func((void *)value);
+#elif defined(__APPLE__)
+  __ulock_wake(UL_COMPARE_AND_WAIT, (void *)value, 0);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
 #endif
@@ -467,6 +471,8 @@ patomic_notify_all(volatile uint32_t *value) {
 //  WakeByAddressAll((void *)value);
 #elif defined(_WIN32)
   _patomic_wake_all_func((void *)value);
+#elif defined(__APPLE__)
+  __ulock_wake(UL_COMPARE_AND_WAIT | ULF_WAKE_ALL, (void *)value, 0);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
 #endif

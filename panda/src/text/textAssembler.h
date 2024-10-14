@@ -25,7 +25,7 @@
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
 #include "geomVertexRewriter.h"
-
+#include "epvector.h"
 #include "pmap.h"
 
 typedef struct hb_buffer_t hb_buffer_t;
@@ -78,14 +78,14 @@ PUBLISHED:
   int calc_index(int r, int c) const;
 
   INLINE int get_num_characters() const;
-  INLINE wchar_t get_character(int n) const;
+  INLINE char32_t get_character(int n) const;
   INLINE const TextGraphic *get_graphic(int n) const;
   INLINE const TextProperties &get_properties(int n) const;
   INLINE PN_stdfloat get_width(int n) const;
 
   INLINE int get_num_rows() const;
   INLINE int get_num_cols(int r) const;
-  INLINE wchar_t get_character(int r, int c) const;
+  INLINE char32_t get_character(int r, int c) const;
   INLINE const TextGraphic *get_graphic(int r, int c) const;
   INLINE const TextProperties &get_properties(int r, int c) const;
   INLINE PN_stdfloat get_width(int r, int c) const;
@@ -98,6 +98,7 @@ PUBLISHED:
   INLINE const LVector2 &get_lr() const;
 
   static PN_stdfloat calc_width(wchar_t character, const TextProperties &properties);
+  static PN_stdfloat calc_width(char32_t character, const TextProperties &properties);
   static PN_stdfloat calc_width(const TextGraphic *graphic, const TextProperties &properties);
 
   static bool has_exact_character(wchar_t character, const TextProperties &properties);
@@ -132,13 +133,14 @@ private:
   class TextCharacter {
   public:
     INLINE TextCharacter(wchar_t character, ComputedProperties *cprops);
+    INLINE TextCharacter(char32_t character, ComputedProperties *cprops);
     INLINE TextCharacter(const TextGraphic *graphic,
                          const std::wstring &graphic_wname,
                          ComputedProperties *cprops);
     INLINE TextCharacter(const TextCharacter &copy);
     INLINE void operator = (const TextCharacter &copy);
 
-    wchar_t _character;
+    char32_t _character;
     const TextGraphic *_graphic;
     std::wstring _graphic_wname;
     PT(ComputedProperties) _cprops;

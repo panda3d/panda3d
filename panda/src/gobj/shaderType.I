@@ -94,6 +94,8 @@ get_num_components() const {
 
 /**
  * Constructs a matrix type from a scalar type, a number of rows and columns.
+ * Note that this is using Panda terminology.  In GLSL parlance, rows are
+ * called "columns" and columns are called "rows".
  */
 INLINE ShaderType::Matrix::
 Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns) :
@@ -111,7 +113,8 @@ get_scalar_type() const {
 }
 
 /**
- * Returns the number of rows in this matrix type.
+ * Returns the number of rows in this matrix type (or the number of columns,
+ * in GLSL parlance).
  */
 INLINE uint32_t ShaderType::Matrix::
 get_num_rows() const {
@@ -119,7 +122,8 @@ get_num_rows() const {
 }
 
 /**
- * Returns the number of columns in this matrix type.
+ * Returns the number of columns in this matrix type (or the number of rows,
+ * in GLSL parlance).
  */
 INLINE uint32_t ShaderType::Matrix::
 get_num_columns() const {
@@ -241,4 +245,29 @@ get_sampled_type() const {
 INLINE bool ShaderType::SampledImage::
 is_shadow() const {
   return _shadow;
+}
+
+/**
+ * Constructs a storage buffer type.
+ */
+INLINE ShaderType::StorageBuffer::
+StorageBuffer(const ShaderType *contained_type, Access access) :
+  _contained_type(contained_type),
+  _access(access) {
+}
+
+/**
+ * Returns the type contained within the buffer (usually a struct)
+ */
+INLINE const ShaderType *ShaderType::StorageBuffer::
+get_contained_type() const {
+  return _contained_type;
+}
+
+/**
+ * Returns the way this buffer is accessed.
+ */
+INLINE ShaderType::Access ShaderType::StorageBuffer::
+get_access() const {
+  return _access;
 }

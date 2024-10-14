@@ -103,6 +103,11 @@
 #               Panda3D::OpenGLES2::pandagles2
 #
 #
+#   TinyDisplay - Support for software rendering.
+#
+#               Panda3D::TinyDisplay::p3tinydisplay
+#
+#
 #   Vision    - Support for vision processing.
 #
 #               Panda3D::Vision::p3vision
@@ -126,7 +131,7 @@ set(_panda_components
   Bullet ODE
   FFmpeg
   OpenAL FMOD
-  OpenGL DX9 OpenGLES1 OpenGLES2
+  OpenGL DX9 OpenGLES1 OpenGLES2 TinyDisplay
   Vision VRPN
 )
 

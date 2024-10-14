@@ -53,7 +53,7 @@ add_font(const std::string &filename, TextFont *font) {
 /**
  * Removes the indicated font from the pool, indicating it will never be
  * loaded again; the font may then be freed.  If this function is never
- * called, a reference count will be maintained on every font every loaded,
+ * called, a reference count will be maintained on every font ever loaded,
  * and fonts will never be freed.
  */
 INLINE void FontPool::

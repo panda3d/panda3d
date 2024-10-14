@@ -30,10 +30,15 @@ if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
 endif()
 
 # Are we building with static or dynamic linking?
+if(EMSCRIPTEN OR WASI)
+  set(_default_shared OFF)
+else()
+  set(_default_shared ON)
+endif()
 option(BUILD_SHARED_LIBS
   "Causes subpackages to be built separately -- setup for dynamic linking.
 Utilities/tools/binaries/etc are then dynamically linked to the
-libraries instead of being statically linked." ON)
+libraries instead of being statically linked." ${_default_shared})
 
 option(BUILD_METALIBS
   "Should we build 'metalibs' -- fewer, larger libraries that contain the bulk
@@ -216,12 +221,6 @@ mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
 
-option(WANT_INTERROGATE
-  "Do you want to include Interrogate in the installation? This
-program reads C++ source files and generates bindings for another
-language.  If you won't be building interfaces for other languages,
-you don't need the program." ON)
-
 cmake_dependent_option(INTERROGATE_PYTHON_INTERFACE
   "Do you want to generate a Python-callable interrogate interface?
 This is only necessary if you plan to make calls into Panda from a
@@ -244,7 +243,78 @@ option(INTERROGATE_VERBOSE
   "Set this if you would like interrogate to generate advanced
 debugging information." OFF)
 
+set(_default_build_interrogate OFF)
+if (INTERROGATE_C_INTERFACE OR INTERROGATE_PYTHON_INTERFACE)
+  set(_default_build_interrogate ON)
+endif()
+
+option(BUILD_INTERROGATE
+  "Do you want to build interrogate from source?  This is necessary
+if you wish to build Python or other bindings around Panda3D's C++
+interface.  Set this to false if you already have a compatible
+version of interrogate installed." ${_default_build_interrogate})
+
 mark_as_advanced(INTERROGATE_OPTIONS)
+
+if(BUILD_INTERROGATE)
+  include(ExternalProject)
+
+  set(_interrogate_dir "${PROJECT_BINARY_DIR}/interrogate")
+
+  ExternalProject_Add(
+    panda3d-interrogate
+
+    GIT_REPOSITORY https://github.com/panda3d/interrogate.git
+    GIT_TAG c343350a6e210029cfe3fd8468e530e1ea6bcead
+
+    PREFIX ${_interrogate_dir}
+    CMAKE_ARGS
+      -DHAVE_PYTHON=OFF
+      -DBUILD_SHARED_LIBS=OFF
+      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+    EXCLUDE_FROM_ALL ON
+    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate"
+                     "${_interrogate_dir}/bin/interrogate_module"
+  )
+
+  add_executable(interrogate IMPORTED GLOBAL)
+  add_dependencies(interrogate panda3d-interrogate)
+  set_target_properties(interrogate PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate")
+
+  add_executable(interrogate_module IMPORTED GLOBAL)
+  add_dependencies(interrogate_module panda3d-interrogate)
+  set_target_properties(interrogate_module PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module")
+
+else()
+  find_program(INTERROGATE_EXECUTABLE interrogate)
+  find_program(INTERROGATE_MODULE_EXECUTABLE interrogate_module)
+
+  add_executable(interrogate IMPORTED GLOBAL)
+  if(INTERROGATE_EXECUTABLE)
+    set_target_properties(interrogate PROPERTIES
+      IMPORTED_LOCATION "${INTERROGATE_EXECUTABLE}")
+
+  elseif(INTERROGATE_PYTHON_INTERFACE OR INTERROGATE_C_INTERFACE)
+    message(FATAL_ERROR
+      "Requested interrogate bindings, but interrogate not found.  Set "
+      "BUILD_INTERROGATE to build interrogate from source, or set "
+      "INTERROGATE_EXECUTABLE to the location of this tool.")
+  endif()
+
+  add_executable(interrogate_module IMPORTED GLOBAL)
+  if(INTERROGATE_MODULE_EXECUTABLE)
+    set_target_properties(interrogate_module PROPERTIES
+      IMPORTED_LOCATION "${INTERROGATE_MODULE_EXECUTABLE}")
+
+  elseif(INTERROGATE_PYTHON_INTERFACE)
+    message(FATAL_ERROR
+      "Requested interrogate bindings, but interrogate not found.  Set "
+      "BUILD_INTERROGATE to build interrogate from source, or set "
+      "INTERROGATE_MODULE_EXECUTABLE to the location of this tool.")
+  endif()
+
+endif()
 
 #
 # The following options have to do with optional debugging features.
@@ -448,10 +518,10 @@ on DirectX rendering." OFF)
 mark_as_advanced(SUPPORT_FIXED_FUNCTION)
 
 # Should build tinydisplay?
-#option(HAVE_TINYDISPLAY
-#  "Builds TinyDisplay, a light software renderer based on TinyGL,
-#that is built into Panda. TinyDisplay is not as full-featured as Mesa
-#but is many times faster." ON)
+option(HAVE_TINYDISPLAY
+  "Builds TinyDisplay, a light software renderer based on TinyGL,
+that is built into Panda. TinyDisplay is not as full-featured as Mesa
+but is many times faster." ON)
 
 # Is SDL installed, and where?
 set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
@@ -561,12 +631,18 @@ set(THREADS_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
 set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
 # Add basic use flag for threading
+if(EMSCRIPTEN OR WASI)
+  set(_default_threads OFF)
+else()
+  set(_default_threads ON)
+endif()
 package_option(THREADS
   "If on, compile Panda3D with threading support.
 Building in support for threading will enable Panda to take
 advantage of multiple CPU's if you have them (and if the OS
 supports kernel threads running on different CPU's), but it will
 slightly slow down Panda for the single CPU case."
+  DEFAULT ${_default_threads}
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads

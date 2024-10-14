@@ -17,7 +17,7 @@
 template<class BMType>
 INLINE void Extension<DoubleBitMask<BMType> >::
 __init__(PyObject *init_value) {
-  if (!PyLong_Check(init_value) || Py_SIZE(init_value) < 0) {
+  if (!PyLong_Check(init_value) || !PyLong_IsNonNegative(init_value)) {
     PyErr_SetString(PyExc_ValueError, "DoubleBitMask constructor requires a positive integer");
     return;
   }
@@ -31,7 +31,11 @@ __init__(PyObject *init_value) {
   if (n > 0) {
     size_t num_bytes = (n + 7) / 8;
     unsigned char *bytes = (unsigned char *)alloca(num_bytes);
-    _PyLong_AsByteArray((PyLongObject *)init_value, bytes, num_bytes, 1, 0);
+    _PyLong_AsByteArray((PyLongObject *)init_value, bytes, num_bytes, 1, 0
+#if PY_VERSION_HEX >= 0x030d0000
+      , 1 // with_exceptions
+#endif
+    );
 
     for (size_t i = 0; i < num_bytes; ++i) {
       this->_this->store(bytes[i], i * 8, 8);
@@ -58,7 +62,13 @@ __int__() const {
   if (!this->_this->_hi.is_zero()) {
     PyObject *lo = result;
     PyObject *hi = invoke_extension(&this->_this->_hi).__int__();
+#if PY_VERSION_HEX >= 0x030d0000
+    PyObject *half_bits = PyLong_FromUnsignedLong(DoubleBitMask<BMType>::half_bits);
+    PyObject *shifted = PyNumber_Lshift(hi, half_bits);
+    Py_DECREF(half_bits);
+#else
     PyObject *shifted = _PyLong_Lshift(hi, DoubleBitMask<BMType>::half_bits);
+#endif
     Py_DECREF(hi);
     result = PyNumber_Or(shifted, lo);
     Py_DECREF(shifted);

@@ -85,9 +85,8 @@ update_internals(PartBundle *, PartGroup *, bool, bool, Thread *current_thread) 
 /**
  * Factory method to generate a CharacterSlider object
  */
-TypedWritable* CharacterSlider::
-make_CharacterSlider(const FactoryParams &params)
-{
+TypedWritable *CharacterSlider::
+make_from_bam(const FactoryParams &params) {
   CharacterSlider *me = new CharacterSlider;
   DatagramIterator scan;
   BamReader *manager;
@@ -101,7 +100,6 @@ make_CharacterSlider(const FactoryParams &params)
  * Factory method to generate a CharacterSlider object
  */
 void CharacterSlider::
-register_with_read_factory()
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_CharacterSlider);
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }

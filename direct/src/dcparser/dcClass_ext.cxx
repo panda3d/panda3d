@@ -41,9 +41,7 @@ void Extension<DCClass>::
 set_class_def(PyObject *class_def) {
   PythonClassDefsImpl *defs = do_get_defs();
 
-  Py_XINCREF(class_def);
-  Py_XDECREF(defs->_class_def);
-  defs->_class_def = class_def;
+  Py_XSETREF(defs->_class_def, Py_XNewRef(class_def));
 }
 
 /**
@@ -53,13 +51,11 @@ set_class_def(PyObject *class_def) {
 PyObject *Extension<DCClass>::
 get_class_def() const {
   if (!has_class_def()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PythonClassDefsImpl *defs = do_get_defs();
-  Py_INCREF(defs->_class_def);
-  return defs->_class_def;
+  return Py_NewRef(defs->_class_def);
 }
 
 /**
@@ -80,9 +76,7 @@ void Extension<DCClass>::
 set_owner_class_def(PyObject *owner_class_def) {
   PythonClassDefsImpl *defs = do_get_defs();
 
-  Py_XINCREF(owner_class_def);
-  Py_XDECREF(defs->_owner_class_def);
-  defs->_owner_class_def = owner_class_def;
+  Py_XSETREF(defs->_owner_class_def, Py_XNewRef(owner_class_def));
 }
 
 /**
@@ -92,13 +86,11 @@ set_owner_class_def(PyObject *owner_class_def) {
 PyObject *Extension<DCClass>::
 get_owner_class_def() const {
   if (!has_owner_class_def()) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
   }
 
   PythonClassDefsImpl *defs = do_get_defs();
-  Py_INCREF(defs->_owner_class_def);
-  return defs->_owner_class_def;
+  return Py_NewRef(defs->_owner_class_def);
 }
 
 /**
@@ -530,31 +522,35 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
   }
 
   // Also specify the optional fields.
-  int num_optional_fields = 0;
   if (PyObject_IsTrue(optional_fields)) {
-    num_optional_fields = PySequence_Size(optional_fields);
-  }
-  packer.raw_pack_uint16(num_optional_fields);
+    optional_fields = PySequence_Tuple(optional_fields);
+    Py_ssize_t num_optional_fields = PyTuple_GET_SIZE(optional_fields);
+    packer.raw_pack_uint16(num_optional_fields);
 
-  for (int i = 0; i < num_optional_fields; i++) {
-    PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
-    std::string field_name = PyUnicode_AsUTF8(py_field_name);
-    Py_XDECREF(py_field_name);
+    for (Py_ssize_t i = 0; i < num_optional_fields; i++) {
+      PyObject *py_field_name = PyTuple_GET_ITEM(optional_fields, i);
+      std::string field_name = PyUnicode_AsUTF8(py_field_name);
 
-    DCField *field = _this->get_field_by_name(field_name);
-    if (field == nullptr) {
-      std::ostringstream strm;
-      strm << "No field named " << field_name << " in class " << _this->get_name()
-           << "\n";
-      nassert_raise(strm.str());
-      return Datagram();
+      DCField *field = _this->get_field_by_name(field_name);
+      if (field == nullptr) {
+        std::ostringstream strm;
+        strm << "No field named " << field_name << " in class " << _this->get_name()
+             << "\n";
+        nassert_raise(strm.str());
+        Py_DECREF(optional_fields);
+        return Datagram();
+      }
+      packer.raw_pack_uint16(field->get_number());
+      packer.begin_pack(field);
+      if (!pack_required_field(packer, distobj, field)) {
+        Py_DECREF(optional_fields);
+        return Datagram();
+      }
+      packer.end_pack();
     }
-    packer.raw_pack_uint16(field->get_number());
-    packer.begin_pack(field);
-    if (!pack_required_field(packer, distobj, field)) {
-      return Datagram();
-    }
-    packer.end_pack();
+    Py_DECREF(optional_fields);
+  } else {
+    packer.raw_pack_uint16(0);
   }
 
   return Datagram(packer.get_data(), packer.get_length());
@@ -610,13 +606,13 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 
   // Also specify the optional fields.
   if (has_optional_fields) {
-    int num_optional_fields = PySequence_Size(optional_fields);
+    optional_fields = PySequence_Tuple(optional_fields);
+    Py_ssize_t num_optional_fields = PyTuple_GET_SIZE(optional_fields);
     packer.raw_pack_uint16(num_optional_fields);
 
-    for (int i = 0; i < num_optional_fields; ++i) {
-      PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
+    for (Py_ssize_t i = 0; i < num_optional_fields; ++i) {
+      PyObject *py_field_name = PyTuple_GET_ITEM(optional_fields, i);
       std::string field_name = PyUnicode_AsUTF8(py_field_name);
-      Py_XDECREF(py_field_name);
 
       DCField *field = _this->get_field_by_name(field_name);
       if (field == nullptr) {
@@ -624,6 +620,7 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
         strm << "No field named " << field_name << " in class "
              << _this->get_name() << "\n";
         nassert_raise(strm.str());
+        Py_DECREF(optional_fields);
         return Datagram();
       }
 
@@ -631,10 +628,13 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 
       packer.begin_pack(field);
       if (!pack_required_field(packer, distobj, field)) {
+        Py_DECREF(optional_fields);
         return Datagram();
       }
       packer.end_pack();
     }
+
+    Py_DECREF(optional_fields);
   }
 
   return Datagram(packer.get_data(), packer.get_length());

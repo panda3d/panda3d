@@ -164,11 +164,10 @@ make_parasite(GraphicsOutput *host, const std::string &name,
 }
 
 /**
- * Deprecated variant of dispatch_compute() which takes only a ShaderAttrib
- * instead of a whole RenderState.
+ * Version of dispatch_compute that takes a ShaderAttrib instead of a full
+ * RenderState.
  */
-void GraphicsEngine::
+INLINE void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
-  CPT(RenderState) state = RenderState::make(sattr);
-  dispatch_compute(work_groups, state, gsg);
+  dispatch_compute(work_groups, RenderState::make(sattr), gsg);
 }

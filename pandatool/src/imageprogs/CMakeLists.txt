@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(image-fix-hidden-color imageFixHiddenColor.cxx imageFixHiddenColor.h)
 target_link_libraries(image-fix-hidden-color p3imagebase)
 install(TARGETS image-fix-hidden-color EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

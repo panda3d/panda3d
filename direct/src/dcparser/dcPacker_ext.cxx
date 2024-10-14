@@ -136,6 +136,7 @@ pack_object(PyObject *object) {
       // The supplied object is not an instance of the expected class object,
       // but it is a sequence.  This is case (2).
       _this->push();
+      Py_BEGIN_CRITICAL_SECTION(object);
       int size = PySequence_Size(object);
       for (int i = 0; i < size; ++i) {
         PyObject *element = PySequence_GetItem(object, i);
@@ -146,6 +147,7 @@ pack_object(PyObject *object) {
           std::cerr << "Unable to extract item " << i << " from sequence.\n";
         }
       }
+      Py_END_CRITICAL_SECTION();
       _this->pop();
     } else {
       // The supplied object is not a sequence, and we weren't expecting a
@@ -173,8 +175,7 @@ unpack_object() {
 
   switch (pack_type) {
   case PT_invalid:
-    object = Py_None;
-    Py_INCREF(object);
+    object = Py_NewRef(Py_None);
     _this->unpack_skip();
     break;
 

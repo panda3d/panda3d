@@ -562,7 +562,7 @@ fill_viz_geom() {
  */
 void CollisionInvSphere::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionInvSphere);
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -578,7 +578,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
  * Factory method to generate a CollisionInvSphere object
  */
 TypedWritable *CollisionInvSphere::
-make_CollisionInvSphere(const FactoryParams &params) {
+make_from_bam(const FactoryParams &params) {
   CollisionInvSphere *me = new CollisionInvSphere;
   DatagramIterator scan;
   BamReader *manager;

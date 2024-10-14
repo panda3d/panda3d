@@ -834,7 +834,7 @@ union_quality_level(EggTexture::QualityLevel a, EggTexture::QualityLevel b) {
 void TextureProperties::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_TextureProperties);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -888,8 +888,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* TextureProperties::
-make_TextureProperties(const FactoryParams &params) {
+TypedWritable *TextureProperties::
+make_from_bam(const FactoryParams &params) {
   TextureProperties *me = new TextureProperties;
   DatagramIterator scan;
   BamReader *manager;

@@ -30,6 +30,7 @@
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
 #include "screenshotRequest.h"
+#include "shaderInputBinding_impls.h"
 #include "stereoDisplayRegion.h"
 #include "subprocessWindow.h"
 #include "windowHandle.h"
@@ -547,4 +548,7 @@ init_libdisplay() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("pipelining");
 #endif
+
+  ShaderInputBinding::register_binder(ShaderEnums::SL_GLSL, 0, make_binding_glsl);
+  ShaderInputBinding::register_binder(ShaderEnums::SL_Cg, 0, make_binding_cg);
 }

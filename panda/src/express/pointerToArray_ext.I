@@ -106,12 +106,13 @@ __init__(PyObject *self, PyObject *source) {
   // We need to initialize the this pointer before we can call push_back.
   DtoolInstance_INIT_PTR(self, this->_this);
 
+  Py_BEGIN_CRITICAL_SECTION(source);
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject *item = PySequence_GetItem(source, i);
     if (item == nullptr) {
-      return;
+      break;
     }
     PyObject *result = PyObject_CallFunctionObjArgs(push_back, self, item, nullptr);
     Py_DECREF(item);
@@ -121,10 +122,11 @@ __init__(PyObject *self, PyObject *source) {
       PyErr_Format(PyExc_TypeError,
                    "Element %zd in sequence passed to PointerToArray "
                    "constructor could not be added", i);
-      return;
+      break;
     }
     Py_DECREF(result);
   }
+  Py_END_CRITICAL_SECTION();
 }
 
 /**
@@ -304,10 +306,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
     return -1;
   }
 
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   view->len = this->_this->size() * sizeof(Element);
   view->readonly = 0;
@@ -345,10 +344,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<LMatrix3f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 3, false, false);
 
@@ -367,10 +363,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<LMatrix3d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 3, true, false);
 
@@ -389,10 +382,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<UnalignedLMatrix4f> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 4, false, false);
 
@@ -411,10 +401,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 template<>
 INLINE int Extension<PointerToArray<UnalignedLMatrix4d> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 4, true, false);
 
@@ -473,10 +460,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
     return -1;
   }
 
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   view->len = this->_this->size() * sizeof(Element);
   view->readonly = 1;
@@ -518,10 +502,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
                     "Object is not writable.");
     return -1;
   }
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 3, false, true);
 
@@ -544,10 +525,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
                     "Object is not writable.");
     return -1;
   }
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 3, true, true);
 
@@ -570,10 +548,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
                     "Object is not writable.");
     return -1;
   }
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 4, false, true);
 
@@ -596,10 +571,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
                     "Object is not writable.");
     return -1;
   }
-  if (self != nullptr) {
-    Py_INCREF(self);
-  }
-  view->obj = self;
+  view->obj = Py_XNewRef(self);
   view->buf = (void*) this->_this->p();
   set_matrix_view(*view, flags, this->_this->size(), 4, true, true);
 

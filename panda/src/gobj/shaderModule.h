@@ -42,6 +42,7 @@ PUBLISHED:
   PUBLISHED:
     const ShaderType *type;
     CPT(InternalName) name;
+    uint32_t id;
 
     MAKE_PROPERTY2(location, has_location, get_location);
 
@@ -72,17 +73,19 @@ public:
   INLINE const SpecializationConstant &get_spec_constant(size_t i) const;
   INLINE size_t get_num_spec_constants() const;
 
-  size_t get_num_inputs() const;
-  const Variable &get_input(size_t i) const;
-  int find_input(CPT_InternalName name) const;
+  INLINE size_t get_num_inputs() const;
+  INLINE const Variable &get_input(size_t i) const;
+  INLINE int find_input(CPT_InternalName name) const;
 
-  size_t get_num_outputs() const;
-  const Variable &get_output(size_t i) const;
-  int find_output(CPT_InternalName name) const;
+  INLINE size_t get_num_outputs() const;
+  INLINE const Variable &get_output(size_t i) const;
+  INLINE int find_output(CPT_InternalName name) const;
 
-  size_t get_num_parameters() const;
-  const Variable &get_parameter(size_t i) const;
-  int find_parameter(CPT_InternalName name) const;
+  INLINE size_t get_num_parameters() const;
+  INLINE const Variable &get_parameter(size_t i) const;
+  INLINE int find_parameter(CPT_InternalName name) const;
+
+  pvector<uint32_t> get_parameter_ids_from_names(const pvector<const InternalName *> &names) const;
 
   typedef pmap<CPT_InternalName, Variable *> VariablesByName;
 

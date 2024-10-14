@@ -28,11 +28,9 @@ _py_write(PyObject *self, PyObject *args) {
   char *text;
   if (PyArg_ParseTuple(args, "iss", &prio, &tag, &text)) {
     __android_log_write(prio, tag, text);
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
   }
   return NULL;
-
 }
 
 static PyMethodDef python_simple_funcs[] = {

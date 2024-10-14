@@ -84,7 +84,7 @@ public:
   INLINE bool write_file(const std::string &data, bool auto_wrap);
 
   INLINE void set_original_filename(const Filename &filename);
-  bool read_file(std::string &result, bool auto_unwrap) const;
+  virtual bool read_file(std::string &result, bool auto_unwrap) const;
   virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
   virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 

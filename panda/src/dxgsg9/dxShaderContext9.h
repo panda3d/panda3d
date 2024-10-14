@@ -51,27 +51,47 @@ public:
   LPDIRECT3DVERTEXDECLARATION9 get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used_streams);
 
 private:
-  bool r_query_constants(Shader::Stage stage, BYTE *offset,
-                         D3DXSHADER_TYPEINFO &typeinfo, int &loc,
+  bool r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
+                         const ShaderType *type, size_t offset,
+                         BYTE *table_data, D3DXSHADER_TYPEINFO &typeinfo,
+                         int reg_set, int &reg_idx, int reg_end);
+  bool r_query_resources(Shader::Stage stage, const Shader::Parameter &param,
+                         const ShaderType *type, const char *path, int index,
                          int reg_set, int &reg_idx, int reg_end);
 
   IDirect3DVertexShader9 *_vertex_shader = nullptr;
   IDirect3DPixelShader9 *_pixel_shader = nullptr;
 
+  struct Binding {
+    PT(ShaderInputBinding) _binding;
+    size_t _offset;
+    int _dep;
+  };
+  pvector<Binding> _data_bindings;
+  size_t _scratch_space_size = 0;
+
   struct ConstantRegister {
-    int vreg = -1;
-    int freg = -1;
     D3DXREGISTER_SET set;
+    bool convert = false;
+    int reg = -1;
     UINT count = 0;
+    int dep = 0;
+    size_t offset = 0;
   };
 
   int _half_pixel_register = -1;
-  pvector<ConstantRegister> _register_map;
+  pvector<ConstantRegister> _vertex_constants;
+  pvector<ConstantRegister> _pixel_constants;
+  int _constant_deps = 0;
+
+  struct TextureRegister {
+    UINT unit;
+    PT(ShaderInputBinding) binding;
+    uint64_t resource_id;
+  };
+  pvector<TextureRegister> _textures;
 
   pmap<CPT(GeomVertexFormat), std::pair<LPDIRECT3DVERTEXDECLARATION9, BitMask32> > _vertex_declarations;
-
-  int _frame_number = -1;
-  LMatrix4 *_mat_part_cache = nullptr;
 
 private:
   void release_resources(void);

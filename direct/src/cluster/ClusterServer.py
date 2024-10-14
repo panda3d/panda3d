@@ -1,12 +1,14 @@
 from panda3d.core import (
     ClockObject,
+    Vec3,
+)
+from panda3d.net import (
     ConnectionWriter,
     NetAddress,
     PointerToConnection,
     QueuedConnectionListener,
     QueuedConnectionManager,
     QueuedConnectionReader,
-    Vec3,
 )
 from .ClusterMsgs import (
     CLUSTER_CAM_FRUSTUM,
@@ -137,13 +139,9 @@ class ClusterServer(DirectObject.DirectObject):
             self.objectMappings.pop(name)
 
     def redoSortedPriorities(self):
-
-        self.sortedControlMappings = []
-        for key in self.objectMappings:
-            self.sortedControlMappings.append([self.controlPriorities[key],
-                                               key])
-
-        self.sortedControlMappings.sort()
+        self.sortedControlMappings = sorted(
+            [self.controlPriorities[key], key] for key in self.objectMappings
+        )
 
     def addControlMapping(self, objectName, controlledName, offset = None,
                           priority = 0):

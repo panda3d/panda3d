@@ -283,10 +283,24 @@ x11GraphicsPipe(const std::string &display) :
         x11display_cat.debug()
           << "Using XRRScreenResources to obtain display modes\n";
       }
+
+      // Query current configuration, we just grab the first CRTC for now,
+      // since we don't have a way to represent multiple monitors.
+      RRMode current_mode_id = 0;
+      if (res->ncrtc > 0) {
+        if (auto info = get_crtc_info(res.get(), res->crtcs[0])) {
+          current_mode_id = info->mode;
+        }
+      }
+
       _display_information->_total_display_modes = res->nmode;
       _display_information->_display_mode_array = new DisplayMode[res->nmode];
       for (int i = 0; i < res->nmode; ++i) {
         XRRModeInfo &mode = res->modes[i];
+
+        if (mode.id == current_mode_id) {
+          _display_information->_current_display_mode_index = i;
+        }
 
         DisplayMode *dm = _display_information->_display_mode_array + i;
         dm->width = mode.width;
@@ -395,6 +409,7 @@ x11GraphicsPipe(const std::string &display) :
   _net_startup_info = XInternAtom(_display, "_NET_STARTUP_INFO", false);
   _net_startup_info_begin = XInternAtom(_display, "_NET_STARTUP_INFO_BEGIN", false);
   _net_wm_bypass_compositor = XInternAtom(_display, "_NET_WM_BYPASS_COMPOSITOR", false);
+  _net_wm_name = XInternAtom(_display, "_NET_WM_NAME", false);
   _net_wm_pid = XInternAtom(_display, "_NET_WM_PID", false);
   _net_wm_ping = XInternAtom(_display, "_NET_WM_PING", false);
   _net_wm_state = XInternAtom(_display, "_NET_WM_STATE", false);

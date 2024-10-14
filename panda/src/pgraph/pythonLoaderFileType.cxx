@@ -44,10 +44,9 @@ PythonLoaderFileType() {
 PythonLoaderFileType::
 PythonLoaderFileType(std::string extension, PyObject *entry_point) :
   _extension(std::move(extension)),
-  _entry_point(entry_point) {
+  _entry_point(Py_NewRef(entry_point)) {
 
   init_type();
-  Py_INCREF(entry_point);
 }
 
 /**
@@ -90,26 +89,25 @@ init(PyObject *loader) {
       return false;
     }
 
-    PyObject *sequence = PySequence_Fast(extensions, "extensions must be a sequence");
-    PyObject **items = PySequence_Fast_ITEMS(sequence);
-    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(sequence);
+    PyObject *tuple = PySequence_Tuple(extensions);
+    Py_ssize_t num_items = PyTuple_GET_SIZE(tuple);
     Py_DECREF(extensions);
 
     if (num_items == 0) {
       PyErr_SetString(PyExc_ValueError, "extensions list may not be empty");
-      Py_DECREF(sequence);
+      Py_DECREF(tuple);
       return false;
     }
 
     bool found_extension = false;
 
     for (Py_ssize_t i = 0; i < num_items; ++i) {
-      PyObject *extension = items[i];
+      PyObject *extension = PyTuple_GET_ITEM(tuple, i);
       const char *extension_str;
       Py_ssize_t extension_len;
       extension_str = PyUnicode_AsUTF8AndSize(extension, &extension_len);
       if (extension_str == nullptr) {
-        Py_DECREF(sequence);
+        Py_DECREF(tuple);
         return false;
       }
 
@@ -128,7 +126,7 @@ init(PyObject *loader) {
         }
       }
     }
-    Py_DECREF(sequence);
+    Py_DECREF(tuple);
 
     if (!found_extension) {
       PyObject *repr = PyObject_Repr(loader);
@@ -314,8 +312,7 @@ load_file(const Filename &path, const LoaderOptions &options,
     record->ref();
     PyTuple_SET_ITEM(args, 2, DTool_CreatePyInstanceTyped((void *)record, Dtool_BamCacheRecord, true, false, record->get_type_index()));
   } else {
-    PyTuple_SET_ITEM(args, 2, Py_None);
-    Py_INCREF(Py_None);
+    PyTuple_SET_ITEM(args, 2, Py_NewRef(Py_None));
   }
 
   PT(PandaNode) node;

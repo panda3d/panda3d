@@ -214,6 +214,10 @@ private:
 
 #include "httpClient.I"
 
+#elif defined(__EMSCRIPTEN__)
+
+#include "httpClient_emscripten.h"
+
 #endif  // HAVE_OPENSSL
 
 #endif

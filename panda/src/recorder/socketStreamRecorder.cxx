@@ -113,11 +113,9 @@ write_recorder(BamWriter *manager, Datagram &dg) {
 RecorderBase *SocketStreamRecorder::
 make_recorder(const FactoryParams &params) {
   SocketStreamRecorder *node = new SocketStreamRecorder;
-  DatagramIterator scan;
-  BamReader *manager;
+  BamReaderParam *param = DCAST(BamReaderParam, params.get_param(0));
 
-  parse_params(params, scan, manager);
-  node->fillin_recorder(scan, manager);
+  node->fillin_recorder(param->get_iterator(), param->get_manager());
 
   return node;
 }

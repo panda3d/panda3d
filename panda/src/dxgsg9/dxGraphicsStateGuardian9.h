@@ -171,7 +171,7 @@ public:
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
-  void do_issue_shader();
+  bool do_issue_shader();
   void do_issue_render_mode();
   void do_issue_rescale_normal();
   void do_issue_color_write();
@@ -290,6 +290,7 @@ protected:
   DXShaderContext9 *_current_shader_context;
   PT(Shader) _texture_binding_shader;
   DXShaderContext9 *_texture_binding_shader_context;
+  pvector<LMatrix4> _matrix_cache;
 
   const DXIndexBufferContext9 *_active_ibuffer;
 

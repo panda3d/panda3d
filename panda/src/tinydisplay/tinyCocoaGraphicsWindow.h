@@ -62,6 +62,8 @@ private:
 
   small_vector<SwapBuffer, 2> _swap_chain;
   int _swap_index = 0;
+  uint32_t _vsync_counter = 0;
+  bool _vsync_enabled = false;
 
 public:
   static TypeHandle get_class_type() {

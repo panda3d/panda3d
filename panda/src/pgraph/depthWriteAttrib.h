@@ -23,7 +23,7 @@ class FactoryParams;
 /**
  * Enables or disables writing to the depth buffer.
  */
-class EXPCL_PANDA_PGRAPH DepthWriteAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthWriteAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_off,

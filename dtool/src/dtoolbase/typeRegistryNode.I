@@ -14,13 +14,30 @@
 /**
  * Returns the Python type object associated with this node.
  */
-INLINE PyObject *TypeRegistryNode::
+INLINE PyTypeObject *TypeRegistryNode::
 get_python_type() const {
   if (_python_type != nullptr || _parent_classes.empty()) {
     return _python_type;
   } else {
     // Recurse through parent classes.
     return r_get_python_type();
+  }
+}
+
+/**
+ * Returns a Python wrapper object corresponding to the given C++ pointer.
+ */
+INLINE PyObject *TypeRegistryNode::
+wrap_python(void *ptr, PyTypeObject *cast_from) const {
+  if (_python_wrap_func != nullptr) {
+    return _python_wrap_func(ptr, cast_from);
+  }
+  else if (_parent_classes.empty()) {
+    return nullptr;
+  }
+  else {
+    // Recurse through parent classes.
+    return r_wrap_python(ptr, cast_from);
   }
 }
 

@@ -136,16 +136,16 @@ x11GraphicsWindow::
 }
 
 /**
- * Returns the MouseData associated with the nth input device's pointer.  This
+ * Returns the PointerData associated with the nth input device's pointer.  This
  * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
  * mice, use the InputDeviceManager interface.
  */
-MouseData x11GraphicsWindow::
+PointerData x11GraphicsWindow::
 get_pointer(int device) const {
-  MouseData result;
+  PointerData result;
   {
     LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+    nassertr(device >= 0 && device < (int)_input_devices.size(), PointerData());
 
     result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
 
@@ -1326,6 +1326,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     if (XStringListToTextProperty((char **)&name, 1, &window_name) != 0) {
       window_name_p = &window_name;
     }
+
+#ifdef X_HAVE_UTF8_STRING
+    XTextProperty wm_name;
+    if (Xutf8TextListToTextProperty(_display, (char **)&name, 1,
+                                    XUTF8StringStyle, &wm_name) == Success) {
+      XSetTextProperty(_display, _xwindow, &wm_name, x11_pipe->_net_wm_name);
+      XFree(wm_name.value);
+    }
+#endif
   }
 
   // The size hints request a window of a particular size andor a particular

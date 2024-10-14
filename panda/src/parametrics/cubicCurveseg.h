@@ -112,7 +112,7 @@ public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWritable *make_CubicCurveseg(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
   virtual void write_datagram(BamWriter *manager, Datagram &me);
   void fillin(DatagramIterator &scan, BamReader *manager);
 

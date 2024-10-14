@@ -17,25 +17,33 @@
 #endif
 
 static void _register_collection(PyTypeObject *type, const char *abc) {
-  PyObject *sys_modules = PyImport_GetModuleDict();
-  if (sys_modules != nullptr) {
-    PyObject *module = PyDict_GetItemString(sys_modules, _COLLECTIONS_ABC);
-    if (module != nullptr) {
-      PyObject *dict = PyModule_GetDict(module);
-      if (module != nullptr) {
 #if PY_MAJOR_VERSION >= 3
-        static PyObject *register_str = PyUnicode_InternFromString("register");
+  PyObject *module_name = PyUnicode_InternFromString(_COLLECTIONS_ABC);
 #else
-        static PyObject *register_str = PyString_InternFromString("register");
+  PyObject *module_name = PyString_InternFromString(_COLLECTIONS_ABC);
 #endif
-        PyObject *sequence = PyDict_GetItemString(dict, abc);
-        if (sequence != nullptr) {
-          if (PyObject_CallMethodOneArg(sequence, register_str, (PyObject *)type) == nullptr) {
-            PyErr_Print();
-          }
-        }
+  PyObject *module = PyImport_GetModule(module_name);
+  Py_DECREF(module_name);
+  if (module != nullptr) {
+    PyObject *dict = PyModule_GetDict(module);
+    if (dict != nullptr) {
+#if PY_MAJOR_VERSION >= 3
+      PyObject *register_str = PyUnicode_InternFromString("register");
+#else
+      PyObject *register_str = PyString_InternFromString("register");
+#endif
+      PyObject *obj = nullptr;
+      if (register_str == nullptr ||
+          PyDict_GetItemStringRef(dict, abc, &obj) <= 0 ||
+          PyObject_CallMethodOneArg(obj, register_str, (PyObject *)type) == nullptr) {
+        PyErr_Print();
       }
+      Py_XDECREF(obj);
+      Py_XDECREF(register_str);
+    } else {
+      PyErr_Clear();
     }
+    Py_DECREF(module);
   }
 }
 
@@ -243,8 +251,7 @@ static PyObject *Dtool_MutableSequenceWrapper_clear(PyObject *self, PyObject *) 
       return nullptr;
     }
   }
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**
@@ -270,8 +277,7 @@ static PyObject *Dtool_MutableSequenceWrapper_remove(PyObject *self, PyObject *v
       int cmp = PyObject_RichCompareBool(item, value, Py_EQ);
       if (cmp > 0) {
         if (wrap->_setitem_func(wrap->_base._self, index, nullptr) == 0) {
-          Py_INCREF(Py_None);
-          return Py_None;
+          return Py_NewRef(Py_None);
         } else {
           return nullptr;
         }
@@ -405,8 +411,7 @@ static PyObject *Dtool_MutableSequenceWrapper_extend(PyObject *self, PyObject *a
   }
 
   Py_DECREF(iter);
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**
@@ -481,8 +486,7 @@ static PyObject *Dtool_MappingWrapper_get(PyObject *self, PyObject *args) {
     return value;
   } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
-    Py_INCREF(defvalue);
-    return defvalue;
+    return Py_NewRef(defvalue);
   } else {
     return nullptr;
   }
@@ -604,8 +608,7 @@ static PyObject *Dtool_MappingWrapper_keys(PyObject *self, PyObject *) {
   }
 
   (void)PyObject_INIT(keys, &wrapper_type);
-  Py_XINCREF(wrap->_base._self);
-  keys->_base._self = wrap->_base._self;
+  keys->_base._self = Py_XNewRef(wrap->_base._self);
   keys->_base._name = wrap->_base._name;
   keys->_keys._len_func = wrap->_keys._len_func;
   keys->_keys._getitem_func = wrap->_keys._getitem_func;
@@ -745,8 +748,7 @@ static PyObject *Dtool_MappingWrapper_values(PyObject *self, PyObject *) {
   }
 
   (void)PyObject_INIT(values, &wrapper_type);
-  Py_XINCREF(wrap->_base._self);
-  values->_base._self = wrap->_base._self;
+  values->_base._self = Py_XNewRef(wrap->_base._self);
   values->_base._name = wrap->_base._name;
   values->_keys._len_func = wrap->_keys._len_func;
   values->_keys._getitem_func = wrap->_keys._getitem_func;
@@ -894,8 +896,7 @@ static PyObject *Dtool_MappingWrapper_items(PyObject *self, PyObject *) {
   }
 
   (void)PyObject_INIT(items, &wrapper_type);
-  Py_XINCREF(wrap->_base._self);
-  items->_base._self = wrap->_base._self;
+  items->_base._self = Py_XNewRef(wrap->_base._self);
   items->_base._name = wrap->_base._name;
   items->_keys._len_func = wrap->_keys._len_func;
   items->_keys._getitem_func = wrap->_keys._getitem_func;
@@ -945,8 +946,7 @@ static PyObject *Dtool_MutableMappingWrapper_pop(PyObject *self, PyObject *args)
     }
   } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
-    Py_INCREF(defvalue);
-    return defvalue;
+    return Py_NewRef(defvalue);
   } else {
     return nullptr;
   }
@@ -1014,8 +1014,7 @@ static PyObject *Dtool_MutableMappingWrapper_clear(PyObject *self, PyObject *) {
       }
     }
   }
-  Py_INCREF(Py_None);
-  return Py_None;
+  return Py_NewRef(Py_None);
 }
 
 /**
@@ -1046,8 +1045,7 @@ static PyObject *Dtool_MutableMappingWrapper_setdefault(PyObject *self, PyObject
   } else if (PyErr_ExceptionMatches(PyExc_KeyError)) {
     PyErr_Clear();
     if (wrap->_setitem_func(wrap->_base._self, key, defvalue) == 0) {
-      Py_INCREF(defvalue);
-      return defvalue;
+      return Py_NewRef(defvalue);
     }
   }
   return nullptr;
@@ -1071,8 +1069,7 @@ static PyObject *Dtool_MutableMappingWrapper_update(PyObject *self, PyObject *ar
   case 0:
     if (kwargs == nullptr) {
       // This is legal.
-      Py_INCREF(Py_None);
-      return Py_None;
+      return Py_NewRef(Py_None);
     }
     dict = kwargs;
     break;
@@ -1086,15 +1083,19 @@ static PyObject *Dtool_MutableMappingWrapper_update(PyObject *self, PyObject *ar
     return PyErr_Format(PyExc_TypeError, "%s.update() takes either a dict argument or keyword arguments", wrap->_base._name);
   }
 
+  PyObject *result = Py_None;
   PyObject *key, *value;
   Py_ssize_t pos = 0;
+  Py_BEGIN_CRITICAL_SECTION(dict);
   while (PyDict_Next(dict, &pos, &key, &value)) {
     if (wrap->_setitem_func(wrap->_base._self, key, value) != 0) {
-      return nullptr;
+      result = nullptr;
+      break;
     }
   }
-  Py_INCREF(Py_None);
-  return Py_None;
+  Py_END_CRITICAL_SECTION();
+
+  return Py_XNewRef(result);
 }
 
 /**
@@ -1276,8 +1277,7 @@ Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name
   }
 
   (void)PyObject_INIT(wrap, &wrapper_type);
-  Py_XINCREF(self);
-  wrap->_base._self = self;
+  wrap->_base._self = Py_XNewRef(self);
   wrap->_base._name = name;
   wrap->_len_func = nullptr;
   wrap->_getitem_func = nullptr;
@@ -1387,8 +1387,7 @@ Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, co
   }
 
   (void)PyObject_INIT(wrap, &wrapper_type);
-  Py_XINCREF(self);
-  wrap->_base._self = self;
+  wrap->_base._self = Py_XNewRef(self);
   wrap->_base._name = name;
   wrap->_len_func = nullptr;
   wrap->_getitem_func = nullptr;
@@ -1502,8 +1501,7 @@ Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name) 
   }
 
   (void)PyObject_INIT(wrap, &wrapper_type);
-  Py_XINCREF(self);
-  wrap->_base._self = self;
+  wrap->_base._self = Py_XNewRef(self);
   wrap->_base._name = name;
   wrap->_keys._len_func = nullptr;
   wrap->_keys._getitem_func = nullptr;
@@ -1622,8 +1620,7 @@ Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char 
   }
 
   (void)PyObject_INIT(wrap, &wrapper_type);
-  Py_XINCREF(self);
-  wrap->_base._self = self;
+  wrap->_base._self = Py_XNewRef(self);
   wrap->_base._name = name;
   wrap->_keys._len_func = nullptr;
   wrap->_keys._getitem_func = nullptr;
@@ -1700,8 +1697,7 @@ Dtool_NewGenerator(PyObject *self, iternextfunc gen_next) {
   Dtool_GeneratorWrapper *gen;
   gen = (Dtool_GeneratorWrapper *)PyType_GenericAlloc(&wrapper_type, 0);
   if (gen != nullptr) {
-    Py_INCREF(self);
-    gen->_base._self = self;
+    gen->_base._self = Py_NewRef(self);
     gen->_iternext_func = gen_next;
   }
   return (PyObject *)gen;

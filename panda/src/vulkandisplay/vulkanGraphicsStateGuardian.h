@@ -176,8 +176,6 @@ public:
                                  const RenderAttrib *attrib);
 
   bool update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr);
-  bool update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr);
-  bool update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr);
   bool update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc);
   void *alloc_dynamic_uniform_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
 
@@ -238,25 +236,10 @@ private:
   VulkanMemoryBlock _null_vertex_memory;
   bool _needs_write_null_vertex_data = false;
 
-  // Keep track of a created descriptor set and the last frame in which it was
-  // bound (since we can only update it once per frame).
-  struct DescriptorSet {
-    VkDescriptorSet _handle = VK_NULL_HANDLE;
-    uint64_t _last_update_frame = 0;
-    WeakReferenceList *_weak_ref = nullptr;
-  };
-
-  // We need only one map rather than one per descriptor set since each
-  // different type of RenderAttrib corresponds to a different descriptor set.
-  typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
-  AttribDescriptorSetMap _attrib_descriptor_set_map;
-
-  // Descriptor set layouts used for the TextureAttrib and LightAttrib
-  // descriptor sets.  The others are shader-dependent and stored in
-  // VulkanShaderContext.
+  // Descriptor set layouts used for the LightAttrib descriptor sets.
+  // The others are shader-dependent and stored in VulkanShaderContext.
   VkSampler _shadow_sampler;
   VkDescriptorSetLayout _lattr_descriptor_set_layout;
-  VkDescriptorSetLayout _tattr_descriptor_set_layout;
 
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;
@@ -289,6 +272,7 @@ private:
 
   friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;
+  friend class VulkanShaderContext;
 
 public:
   static TypeHandle get_class_type() {

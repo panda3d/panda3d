@@ -462,13 +462,14 @@ get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const 
         else if (param->is_of_type(ParamVecBase4d::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4d *)param)->get_value().get_data();
           data._size = 4;
-          data._type = ShaderType::ST_float;
+          data._type = ShaderType::ST_double;
           return true;
         }
       }
     }
     ostringstream strm;
-    strm << "Shader input " << id->get_name() << " was given an incompatible parameter type.\n";
+    strm << "Shader input " << id->get_name() << " was given an incompatible parameter type ("
+         << p.get_value_type() << ").\n";
     nassert_raise(strm.str());
     return false;
   } else {
@@ -477,6 +478,347 @@ get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const 
     nassert_raise(strm.str());
     return false;
   }
+}
+
+/**
+ * Extracts the shader input data according to the given type expected by the
+ * shader.  Returns the number of bytes written to "into".
+ */
+size_t ShaderAttrib::
+get_shader_input_data(const InternalName *id, void *into,
+                      const ShaderType *type, bool pad_rows) const {
+  ShaderType::ScalarType scalar_type;
+  uint32_t num_elements;
+  uint32_t num_rows;
+  uint32_t num_columns;
+  if (type->as_scalar_type(scalar_type, num_elements, num_rows, num_columns)) {
+    Shader::ShaderPtrData data;
+    get_shader_input_data(id, into, scalar_type, num_elements, num_rows, num_columns, pad_rows, true);
+    return num_elements * num_rows * (pad_rows ? 16 : num_columns * 4);
+  }
+  else if (const ShaderType::Array *array_type = type->as_array()) {
+    size_t basename_size = id->get_basename().size();
+    char *buffer = (char *)alloca(basename_size + 14);
+    memcpy(buffer, id->get_basename().c_str(), basename_size);
+
+    size_t total_size = 0;
+    for (size_t i = 0; i < array_type->get_num_elements(); ++i) {
+      sprintf(buffer + basename_size, "[%d]", (int)i);
+
+      size_t size = get_shader_input_data(id->get_parent()->append(buffer), into, array_type->get_element_type(), pad_rows);
+      into = (char *)into + size;
+      total_size += size;
+    }
+    return total_size;
+  }
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    size_t total_size = 0;
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      size_t size = get_shader_input_data(((InternalName *)id)->append(member.name), (char *)into + member.offset, member.type, pad_rows);
+      total_size += size;
+    }
+    return total_size;
+  }
+  else {
+    return 0;
+  }
+}
+
+/**
+ * Extracts the shader input data, converting it as necessary.  The scratch
+ * pointer must be large enough to contain the data, but may or may not be
+ * filled by this function (depending on whether conversion is needed), unless
+ * always_copy is true.
+ */
+void *ShaderAttrib::
+get_shader_input_data(const InternalName *id, void *scratch,
+                      ShaderType::ScalarType scalar_type, int num_elements,
+                      int num_rows, int num_columns, bool pad_rows,
+                      bool always_copy) const {
+  Shader::ShaderPtrData ptr_data;
+  if (!get_shader_input_ptr(id, ptr_data)) {
+    return nullptr;
+  }
+
+  int total_rows = std::min(num_elements * num_rows, (int)ptr_data._size / num_columns);
+  if (total_rows == 1) {
+    pad_rows = false;
+  }
+  switch (scalar_type) {
+  case ShaderType::ST_float:
+    {
+      float *data = (float *)scratch;
+
+      switch (ptr_data._type) {
+      case ShaderType::ST_int:
+        // Convert int data to float data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (float)(((int *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const int *from_data = (const int *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (float)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_uint:
+        // Convert unsigned int data to float data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (float)(((unsigned int *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const unsigned int *from_data = (const unsigned int *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (float)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_double:
+        // Downgrade double data to float data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (float)(((double *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const double *from_data = (const double *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (float)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_float:
+        if (!pad_rows || num_columns == 4) {
+          // No conversion needed.
+          if (always_copy) {
+            memcpy(data, ptr_data._ptr, total_rows * num_columns * sizeof(float));
+            return data;
+          } else {
+            return (float *)ptr_data._ptr;
+          }
+        } else {
+          const float *from_data = (const float *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (float)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      default:
+#ifndef NDEBUG
+        pgraph_cat.error()
+          << "Invalid ShaderPtrData type " << (int)ptr_data._type
+          << " for shader input '" << *id << "'\n";
+#endif
+        return nullptr;
+      }
+
+      return data;
+    }
+    break;
+
+  case ShaderType::ST_int:
+    if (ptr_data._type != ShaderType::ST_int &&
+        ptr_data._type != ShaderType::ST_uint &&
+        ptr_data._type != ShaderType::ST_bool) {
+      pgraph_cat.error()
+        << "Cannot pass floating-point data to integer shader input '" << *id << "'\n";
+      return nullptr;
+    }
+    else if (always_copy) {
+      memcpy(scratch, ptr_data._ptr, total_rows * num_columns * sizeof(int));
+      return scratch;
+    }
+    else {
+      return ptr_data._ptr;
+    }
+    break;
+
+  case ShaderType::ST_uint:
+    if (ptr_data._type != ShaderType::ST_uint &&
+        ptr_data._type != ShaderType::ST_int &&
+        ptr_data._type != ShaderType::ST_bool) {
+      pgraph_cat.error()
+        << "Cannot pass floating-point data to integer shader input '" << *id << "'\n";
+      return nullptr;
+    }
+    else if (always_copy) {
+      memcpy(scratch, ptr_data._ptr, total_rows * num_columns * sizeof(unsigned int));
+      return scratch;
+    }
+    else {
+      return ptr_data._ptr;
+    }
+    break;
+
+  case ShaderType::ST_double:
+    {
+      double *data = (double *)scratch;
+
+      switch (ptr_data._type) {
+      case ShaderType::ST_int:
+        // Convert int data to double data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (double)(((int *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const int *from_data = (const int *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (double)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_uint:
+        // Convert int data to double data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (double)(((unsigned int *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const int *from_data = (const int *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (double)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_double:
+        if (!pad_rows || num_columns == 4) {
+          // No conversion needed.
+          if (always_copy) {
+            memcpy(data, ptr_data._ptr, total_rows * num_columns * sizeof(double));
+            return data;
+          } else {
+            return (double *)ptr_data._ptr;
+          }
+        } else {
+          const double *from_data = (const double *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (double)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_float:
+        // Upgrade float data to double data.
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = (double)(((float *)ptr_data._ptr)[i]);
+          }
+        } else {
+          const float *from_data = (const float *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (double)*from_data++;
+            }
+          }
+        }
+        return data;
+
+      default:
+  #ifndef NDEBUG
+        pgraph_cat.error()
+          << "Invalid ShaderPtrData type " << (int)ptr_data._type
+          << " for shader input '" << *id << "'\n";
+  #endif
+        return nullptr;
+      }
+
+      return data;
+    }
+    break;
+
+  case ShaderType::ST_bool:
+    {
+      unsigned int *data = (unsigned int *)scratch;
+
+      switch (ptr_data._type) {
+      case ShaderType::ST_int:
+      case ShaderType::ST_uint:
+      case ShaderType::ST_bool:
+        if (!pad_rows || num_columns == 4) {
+          // No conversion needed.
+          if (always_copy) {
+            memcpy(data, ptr_data._ptr, total_rows * num_columns * sizeof(unsigned int));
+            return data;
+          } else {
+            return (unsigned int *)ptr_data._ptr;
+          }
+        } else {
+          // Pad out rows.
+          const unsigned int *from_data = (const unsigned int *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (*from_data++) != 0;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_double:
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = ((double *)ptr_data._ptr)[i] != 0.0;
+          }
+        } else {
+          const double *from_data = (const double *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (*from_data++) != 0.0;
+            }
+          }
+        }
+        return data;
+
+      case ShaderType::ST_float:
+        if (!pad_rows || num_columns == 4) {
+          for (int i = 0; i < total_rows * num_columns; ++i) {
+            data[i] = ((float *)ptr_data._ptr)[i] != 0.0f;
+          }
+        } else {
+          const float *from_data = (const float *)ptr_data._ptr;
+          for (int i = 0; i < total_rows; ++i) {
+            for (int c = 0; c < num_columns; ++c) {
+              data[i * 4 + c] = (*from_data++) != 0.0f;
+            }
+          }
+        }
+        return data;
+
+      default:
+        break;
+      }
+    }
+    break;
+
+  case ShaderType::ST_unknown:
+    break;
+  }
+
+  return nullptr;
 }
 
 /**
@@ -526,19 +868,114 @@ get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
 }
 
 /**
+ *
+ */
+Texture *ShaderAttrib::
+get_shader_input_texture_image(const InternalName *id, ShaderType::Access &access, int &z, int &n) const {
+  PT(Texture) tex;
+
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    const ParamTextureImage *param = nullptr;
+
+    switch (p.get_value_type()) {
+    case ShaderInput::M_texture_image:
+      param = (const ParamTextureImage *)p.get_param();
+      tex = param->get_texture();
+      z = param->get_bind_layered() ? -1 : param->get_bind_layer();
+      n = param->get_bind_level();
+      break;
+
+    case ShaderInput::M_texture:
+      // People find it convenient to be able to pass a texture without
+      // further ado.
+      tex = p.get_texture();
+      access = ShaderType::Access::read_write;
+      z = -1;
+      n = 0;
+      break;
+
+    default:
+      ostringstream strm;
+      strm << "Shader input " << id->get_name() << " is not a texture.\n";
+      nassert_raise(strm.str());
+    }
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+  }
+
+  return tex;
+}
+
+/**
  * Returns the ShaderInput as a matrix.  Assertion fails if there is none, or
  * if it is not a matrix or NodePath.
  */
-const LMatrix4 &ShaderAttrib::
-get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
+const LMatrix4f &ShaderAttrib::
+get_shader_input_matrix(const InternalName *id, LMatrix4f &matrix) const {
   Inputs::const_iterator i = _inputs.find(id);
   if (i != _inputs.end()) {
     const ShaderInput &p = (*i).second;
 
     if (p.get_value_type() == ShaderInput::M_nodepath) {
       const NodePath &np = p.get_nodepath();
-      nassertr(!np.is_empty(), LMatrix4::ident_mat());
-      matrix = np.get_transform()->get_mat();
+      nassertr(!np.is_empty(), LMatrix4f::ident_mat());
+      matrix = LCAST(float, np.get_transform()->get_mat());
+      return matrix;
+
+    } else if (p.get_value_type() == ShaderInput::M_numeric &&
+               p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {
+      const Shader::ShaderPtrData &ptr = p.get_ptr();
+
+      switch (ptr._type) {
+        case ShaderType::ST_float: {
+          memcpy(&matrix(0, 0), ptr._ptr, sizeof(float) * 16);
+          return matrix;
+        }
+        case ShaderType::ST_double: {
+          LMatrix4d matrixd;
+          memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
+          matrix = LCAST(float, matrixd);
+          return matrix;
+        }
+        default: {
+          ostringstream strm;
+          strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
+          nassert_raise(strm.str());
+          return LMatrix4f::ident_mat();
+        }
+      }
+    }
+
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not a NodePath, LMatrix4 or PTA_LMatrix4.\n";
+    nassert_raise(strm.str());
+    return LMatrix4f::ident_mat();
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return LMatrix4f::ident_mat();
+  }
+}
+
+/**
+ * Returns the ShaderInput as a matrix.  Assertion fails if there is none, or
+ * if it is not a matrix or NodePath.
+ */
+const LMatrix4d &ShaderAttrib::
+get_shader_input_matrix(const InternalName *id, LMatrix4d &matrix) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+
+    if (p.get_value_type() == ShaderInput::M_nodepath) {
+      const NodePath &np = p.get_nodepath();
+      nassertr(!np.is_empty(), LMatrix4d::ident_mat());
+      matrix = LCAST(double, np.get_transform()->get_mat());
       return matrix;
 
     } else if (p.get_value_type() == ShaderInput::M_numeric &&
@@ -549,20 +986,18 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
         case ShaderType::ST_float: {
           LMatrix4f matrixf;
           memcpy(&matrixf(0, 0), ptr._ptr, sizeof(float) * 16);
-          matrix = LCAST(PN_stdfloat, matrixf);
+          matrix = LCAST(double, matrixf);
           return matrix;
         }
         case ShaderType::ST_double: {
-          LMatrix4d matrixd;
-          memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
-          matrix = LCAST(PN_stdfloat, matrixd);
+          memcpy(&matrix(0, 0), ptr._ptr, sizeof(double) * 16);
           return matrix;
         }
         default: {
           ostringstream strm;
           strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
           nassert_raise(strm.str());
-          return LMatrix4::ident_mat();
+          return LMatrix4d::ident_mat();
         }
       }
     }
@@ -570,12 +1005,12 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not a NodePath, LMatrix4 or PTA_LMatrix4.\n";
     nassert_raise(strm.str());
-    return LMatrix4::ident_mat();
+    return LMatrix4d::ident_mat();
   } else {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
-    return LMatrix4::ident_mat();
+    return LMatrix4d::ident_mat();
   }
 }
 

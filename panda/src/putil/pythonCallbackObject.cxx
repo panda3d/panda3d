@@ -37,8 +37,7 @@ extern struct Dtool_PyTypedObject Dtool_PythonCallbackObject;
  */
 PythonCallbackObject::
 PythonCallbackObject(PyObject *function) {
-  _function = Py_None;
-  Py_INCREF(_function);
+  _function = Py_NewRef(Py_None);
 
   set_function(function);
 
@@ -69,8 +68,7 @@ PythonCallbackObject::
 void PythonCallbackObject::
 set_function(PyObject *function) {
   Py_DECREF(_function);
-  _function = function;
-  Py_INCREF(_function);
+  _function = Py_NewRef(function);
   if (_function != Py_None && !PyCallable_Check(_function)) {
     nassert_raise("Invalid function passed to PythonCallbackObject");
   }
@@ -81,8 +79,7 @@ set_function(PyObject *function) {
  */
 PyObject *PythonCallbackObject::
 get_function() {
-  Py_INCREF(_function);
-  return _function;
+  return Py_NewRef(_function);
 }
 
 /**
@@ -90,7 +87,7 @@ get_function() {
  */
 PyObject *PythonCallbackObject::
 __reduce__() const {
-  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject, _function);
+  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject._PyType, _function);
 }
 
 /**

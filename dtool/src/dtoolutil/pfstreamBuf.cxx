@@ -14,6 +14,8 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
+#ifndef __EMSCRIPTEN__
+
 using std::cerr;
 using std::endl;
 using std::string;
@@ -183,7 +185,7 @@ is_open() const {
  */
 bool PipeStreamBuf::
 eof_pipe() const {
-  return (_pipe == nullptr) && feof(_pipe);
+  return (_pipe == nullptr) || feof(_pipe);
 }
 
 /**
@@ -404,3 +406,5 @@ read_pipe(char *data, size_t len) {
 
 
 #endif  // WIN_PIPE_CALLS
+
+#endif  // __EMSCRIPTEN__

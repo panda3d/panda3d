@@ -47,7 +47,7 @@ protected:
 public:
   static void register_with_read_factory();
 
-  static TypedWritable *make_MovingPartMatrix(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   virtual TypeHandle get_type() const {

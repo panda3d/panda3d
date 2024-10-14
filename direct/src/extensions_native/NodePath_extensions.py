@@ -435,7 +435,8 @@ Dtool_funcToMethod(iPosHprScale, NodePath)
 del iPosHprScale
 #####################################################################
 def place(self):
-    base.startDirect(fWantTk = 1)
+    from direct.showbase import ShowBaseGlobal
+    ShowBaseGlobal.base.startDirect(fWantTk = 1)
     # Don't use a regular import, to prevent ModuleFinder from picking
     # it up as a dependency when building a .p3d package.
     import importlib
@@ -446,7 +447,8 @@ Dtool_funcToMethod(place, NodePath)
 del place
 #####################################################################
 def explore(self):
-    base.startDirect(fWantTk = 1)
+    from direct.showbase import ShowBaseGlobal
+    ShowBaseGlobal.base.startDirect(fWantTk = 1)
     # Don't use a regular import, to prevent ModuleFinder from picking
     # it up as a dependency when building a .p3d package.
     import importlib
@@ -457,7 +459,8 @@ Dtool_funcToMethod(explore, NodePath)
 del explore
 #####################################################################
 def rgbPanel(self, cb = None):
-    base.startTk()
+    from direct.showbase import ShowBaseGlobal
+    ShowBaseGlobal.base.startTk()
     # Don't use a regular import, to prevent ModuleFinder from picking
     # it up as a dependency when building a .p3d package.
     import importlib
@@ -468,6 +471,8 @@ Dtool_funcToMethod(rgbPanel, NodePath)
 del rgbPanel
 #####################################################################
 def select(self):
+    from direct.showbase import ShowBaseGlobal
+    base = ShowBaseGlobal.base
     base.startDirect(fWantTk = 0)
     base.direct.select(self)
 
@@ -475,6 +480,8 @@ Dtool_funcToMethod(select, NodePath)
 del select
 #####################################################################
 def deselect(self):
+    from direct.showbase import ShowBaseGlobal
+    base = ShowBaseGlobal.base
     base.startDirect(fWantTk = 0)
     base.direct.deselect(self)
 
@@ -676,7 +683,8 @@ def flattenMultitex(self, stateFrom = None, target = None,
     mr.setAllowTexMat(allowTexMat)
 
     if win is None:
-        win = base.win
+        from direct.showbase import ShowBaseGlobal
+        win = ShowBaseGlobal.base.win
 
     if stateFrom is None:
         mr.scan(self)

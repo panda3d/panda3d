@@ -11,8 +11,8 @@
  * @date 2000-07-09
  */
 
-#ifndef CONFIG_PSTATS_H
-#define CONFIG_PSTATS_H
+#ifndef CONFIG_PSTATCLIENT_H
+#define CONFIG_PSTATCLIENT_H
 
 #include "pandabase.h"
 
@@ -49,4 +49,4 @@ extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_mem_other;
 
 extern EXPCL_PANDA_PSTATCLIENT void init_libpstatclient();
 
-#endif
+#endif /* CONFIG_PSTATCLIENT_H */

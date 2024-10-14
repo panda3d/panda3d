@@ -2,13 +2,15 @@
 
 from panda3d.core import (
     ClockObject,
-    ConnectionWriter,
     Point3,
-    QueuedConnectionManager,
-    QueuedConnectionReader,
     VBase3,
     Vec3,
     decomposeMatrix,
+)
+from panda3d.net import (
+    ConnectionWriter,
+    QueuedConnectionManager,
+    QueuedConnectionReader,
 )
 from .ClusterMsgs import (
     CLUSTER_DAEMON_PORT,
@@ -169,12 +171,9 @@ class ClusterClient(DirectObject.DirectObject):
             self.serverList[server].sendNamedMovementDone()
 
     def redoSortedPriorities(self):
-        self.sortedControlMappings = []
-        for key in self.controlMappings:
-            self.sortedControlMappings.append([self.controlPriorities[key],
-                                               key])
-
-        self.sortedControlMappings.sort()
+        self.sortedControlMappings = sorted(
+            [self.controlPriorities[key], key] for key in self.controlMappings
+        )
 
     def moveObject(self, nodePath, object, serverList, offset, hasColor = True):
         self.notify.debug('moving object '+object)

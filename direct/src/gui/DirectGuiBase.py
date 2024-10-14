@@ -84,6 +84,8 @@ Code overview:
     see if any keywords are left unused.  If so, an error is raised.
 """
 
+from __future__ import annotations
+
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 
@@ -227,7 +229,12 @@ class DirectGuiBase(DirectObject.DirectObject):
                         del keywords[name]
                     else:
                         # Use optionDefs value
-                        optionInfo[name] = [default, default, function]
+                        value = default
+                        if isinstance(value, list):
+                            value = list(value)
+                        elif isinstance(value, dict):
+                            value = dict(value)
+                        optionInfo[name] = [default, value, function]
                 elif optionInfo[name][FUNCTION] is None:
                     # Only override function if not defined by derived class
                     optionInfo[name][FUNCTION] = function
@@ -616,9 +623,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
     def components(self):
         # Return a list of all components.
-        names = list(self.__componentInfo.keys())
-        names.sort()
-        return names
+        return sorted(self.__componentInfo)
 
     def hascomponent(self, component):
         return component in self.__componentInfo
@@ -682,7 +687,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     else:
         inactiveInitState = DGG.DISABLED
 
-    guiDict = {}
+    guiDict: dict[str, DirectGuiWidget] = {}
 
     def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths

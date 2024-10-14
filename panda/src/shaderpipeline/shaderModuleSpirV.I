@@ -60,9 +60,19 @@ is_annotation() const {
   return
     opcode == spv::OpDecorate ||
     opcode == spv::OpMemberDecorate ||
+    opcode == spv::OpDecorationGroup ||
     opcode == spv::OpGroupDecorate ||
     opcode == spv::OpGroupMemberDecorate ||
-    opcode == spv::OpDecorationGroup;
+    opcode == spv::OpDecorateId ||
+    opcode == spv::OpDecorateString ||
+    opcode == spv::OpMemberDecorateString;
+}
+
+/**
+ * Constructs an iterator from the given word pointer.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator::
+InstructionIterator(uint32_t *words) : _words(words) {
 }
 
 /**
@@ -105,10 +115,12 @@ operator !=(const InstructionIterator &other) const {
 }
 
 /**
- * Constructs an iterator from the given word pointer.
+ * Returns an iterator pointing to the next instruction.
  */
-INLINE ShaderModuleSpirV::InstructionIterator::
-InstructionIterator(uint32_t *words) : _words(words) {
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionIterator::
+next() const {
+  uint16_t wcount = _words[0] >> spv::WordCountShift;
+  return InstructionIterator(_words + wcount);
 }
 
 /**
@@ -333,31 +345,4 @@ get_id_bound() const {
 INLINE uint32_t ShaderModuleSpirV::InstructionStream::
 allocate_id() {
   return _words[3]++;
-}
-
-/**
- * For a variable or function parameter, returns true if its value has been
- * loaded or passed into a function call.  For a type or type pointer, returns
- * true if it is the type of at least one variable that is marked "used".  For
- * a function, returns true if it is called at least once.
- */
-INLINE bool ShaderModuleSpirV::Definition::
-is_used() const {
-  return (_flags & DF_used) != 0;
-}
-
-/**
- * Returns true if this has the BuiltIn decoration.  See also has_builtin().
- */
-INLINE bool ShaderModuleSpirV::Definition::
-is_builtin() const {
-  return _builtin != spv::BuiltInMax;
-}
-
-/**
- * Returns true if this has a Location decoration.
- */
-INLINE bool ShaderModuleSpirV::Definition::
-has_location() const {
-  return _location >= 0;
 }

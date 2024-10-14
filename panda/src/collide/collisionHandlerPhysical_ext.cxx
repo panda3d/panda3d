@@ -32,8 +32,7 @@ __reduce__(PyObject *self) const {
     PyTuple_SET_ITEM(nodepaths, i++,
       DTool_CreatePyInstance((void *)center, Dtool_NodePath, false, true));
   } else {
-    PyTuple_SET_ITEM(nodepaths, i++, Py_None);
-    Py_INCREF(Py_None);
+    PyTuple_SET_ITEM(nodepaths, i++, Py_NewRef(Py_None));
   }
 
   CollisionHandlerPhysical::Colliders::const_iterator it;

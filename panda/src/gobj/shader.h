@@ -33,30 +33,24 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 #include "pStatCollector.h"
-#include "epvector.h"
+#include "pvector.h"
 #include "asyncFuture.h"
 #include "shaderModule.h"
 #include "copyOnWritePointer.h"
+#include "shaderInputBinding.h"
 
 class BamCacheRecord;
 class ShaderModuleGlsl;
 class ShaderCompiler;
+class ShaderInputBinding;
 
 /**
-
+ *
  */
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount, public ShaderEnums {
 PUBLISHED:
   using Stage = ShaderModule::Stage;
   using ScalarType = ShaderType::ScalarType;
-
-  enum ShaderLanguage {
-    SL_none,
-    SL_Cg,
-    SL_GLSL,
-    SL_HLSL,
-    SL_SPIR_V,
-  };
 
   enum DeprecatedShaderType {
     ST_none = 0,
@@ -108,7 +102,7 @@ PUBLISHED:
   INLINE const std::string &get_text(DeprecatedShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
-  INLINE int get_used_capabilities() const;
+  INLINE uint64_t get_used_capabilities() const;
 
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
@@ -135,189 +129,14 @@ PUBLISHED:
                              GraphicsStateGuardianBase *gsg);
 
 public:
-  enum ShaderMatInput {
-    SMO_identity,
-
-    SMO_window_size,
-    SMO_pixel_size,
-    SMO_texpad_x,
-    SMO_texpix_x,
-
-    SMO_attr_material,
-    SMO_attr_color,
-    SMO_attr_colorscale,
-
-    SMO_alight_x,
-    SMO_dlight_x,
-    SMO_plight_x,
-    SMO_slight_x,
-    SMO_satten_x,
-    SMO_texmat_i,
-    SMO_plane_x,
-    SMO_clipplane_x,
-
-    SMO_mat_constant_x,
-    SMO_vec_constant_x,
-
-    SMO_world_to_view,
-    SMO_view_to_world,
-
-    SMO_model_to_view,
-    SMO_view_to_model,
-
-    SMO_apiview_to_view,
-    SMO_view_to_apiview,
-
-    SMO_clip_to_view,
-    SMO_view_to_clip,
-
-    SMO_apiclip_to_view,
-    SMO_view_to_apiclip,
-
-    SMO_view_x_to_view,
-    SMO_view_to_view_x,
-
-    SMO_apiview_x_to_view,
-    SMO_view_to_apiview_x,
-
-    SMO_clip_x_to_view,
-    SMO_view_to_clip_x,
-
-    SMO_apiclip_x_to_view,
-    SMO_view_to_apiclip_x,
-
-    SMO_attr_fog,
-    SMO_attr_fogcolor,
-
-    SMO_frame_number,
-    SMO_frame_time,
-    SMO_frame_delta,
-
-    SMO_mat_constant_x_attrib,
-    SMO_vec_constant_x_attrib,
-
-    SMO_light_ambient,
-    SMO_light_source_i_attrib,
-
-    SMO_light_product_i_ambient,
-    SMO_light_product_i_diffuse,
-    SMO_light_product_i_specular,
-
-    // SMO_clipplane_x is world coords, GLSL needs eye coords
-    SMO_apiview_clipplane_i,
-
-    SMO_model_to_apiview,
-    SMO_apiview_to_model,
-    SMO_apiview_to_apiclip,
-    SMO_apiclip_to_apiview,
-
-    SMO_inv_texmat_i,
-
-    // Additional properties for PBR materials
-    SMO_attr_material2,
-
-    // Hack for text rendering.  Don't use in user shaders.
-    SMO_tex_is_alpha_i,
-
-    SMO_transform_i,
-    SMO_slider_i,
-
-    SMO_light_source_i_packed,
-
-    // Texture scale component of texture matrix.
-    SMO_texscale_i,
-
-    // Color of an M_blend texture stage.
-    SMO_texcolor_i,
-
-    // Constant value of the TexGenAttrib of stage i.
-    SMO_texconst_i,
-
-    // Point parameters
-    SMO_attr_pointparams,
-
-    SMO_INVALID
-  };
-
-  enum ShaderTexInput {
-    STO_INVALID,
-
-    STO_named_input,
-    STO_named_stage,
-
-    STO_stage_i,
-    STO_light_i_shadow_map,
-
-    STO_ff_stage_i,
-    STO_stage_modulate_i,
-    STO_stage_add_i,
-    STO_stage_normal_i,
-    STO_stage_height_i,
-    STO_stage_selector_i,
-    STO_stage_gloss_i,
-    STO_stage_emission_i,
-  };
-
-  enum ShaderMatPiece {
-    SMP_whole,
-    SMP_transpose,
-    SMP_row0,
-    SMP_row1,
-    SMP_row2,
-    SMP_row3,
-    SMP_col0,
-    SMP_col1,
-    SMP_col2,
-    SMP_col3,
-    SMP_row3x1,
-    SMP_row3x2,
-    SMP_row3x3,
-    SMP_upper3x3,
-    SMP_transpose3x3,
-    SMP_cell15,
-    SMP_cell14,
-    SMP_cell13,
-    SMP_upper3x4,
-    SMP_upper4x3,
-    SMP_transpose3x4,
-    SMP_transpose4x3,
-  };
-
-  enum ShaderStateDep {
-    SSD_NONE          = 0x000,
-    SSD_general       = 0x001,
-    SSD_transform    = 0x2002,
-    SSD_color         = 0x004,
-    SSD_colorscale    = 0x008,
-    SSD_material      = 0x010,
-    SSD_shaderinputs  = 0x020,
-    SSD_fog           = 0x040,
-    SSD_light         = 0x080,
-    SSD_clip_planes   = 0x100,
-    SSD_tex_matrix    = 0x200,
-    SSD_frame         = 0x400,
-    SSD_projection    = 0x800,
-    SSD_texture      = 0x1000,
-    SSD_view_transform= 0x2000,
-    SSD_tex_gen      = 0x4000,
-    SSD_render_mode  = 0x8000,
-  };
-
   enum ShaderBug {
     SBUG_ati_draw_buffers,
-  };
-
-  enum ShaderMatFunc {
-    SMF_compose,
-    SMF_transform_dlight,
-    SMF_transform_plight,
-    SMF_transform_slight,
-    SMF_first,
   };
 
   struct Parameter {
     CPT_InternalName _name;
     const ::ShaderType *_type = nullptr;
+    PT(ShaderInputBinding) _binding = nullptr;
     int _location = -1;
     int _stage_mask = 0;
   };
@@ -327,6 +146,7 @@ public:
     SPT_double = ScalarType::ST_double,
     SPT_int = ScalarType::ST_int,
     SPT_uint = ScalarType::ST_uint,
+    SPT_bool = ScalarType::ST_bool,
     SPT_unknown = ScalarType::ST_unknown,
   };
 
@@ -380,48 +200,18 @@ public:
   };
 
   /**
-   * Describes a matrix making up a single part of the ShaderMatInput cache.
+   * Describes a matrix making up a single part of the StateMatrix cache.
    * The cache is made up of a continuous array of matrices, as described by
-   * a successive list of ShaderMatPart (each of which takes up _count matrices)
+   * a successive list of MatrixCacheItem.
+   * The cache itself is stored in the back-end.
    */
-  struct ShaderMatPart {
-    ShaderMatInput _part;
+  struct MatrixCacheItem {
+    StateMatrix _part;
+    int _dep = 0;
     CPT(InternalName) _arg;
-    int _count = 1;
-    int _dep = SSD_NONE;
   };
 
-  /**
-   * Describes a shader input that is sourced from the render state.
-   */
-  struct ShaderMatSpec {
-    size_t _cache_offset[2];
-    Parameter         _id;
-    ShaderMatFunc     _func;
-    ShaderMatInput    _part[2];
-    CPT(InternalName) _arg[2];
-    LMatrix4          _value;
-    int               _dep = SSD_NONE;
-    int               _index = 0;
-    ShaderMatPiece    _piece;
-    ScalarType        _scalar_type = ScalarType::ST_float;
-  };
-
-  struct ShaderTexSpec {
-    Parameter         _id;
-    CPT(InternalName) _name;
-    ShaderTexInput    _part;
-    int               _stage;
-    int               _desired_type;
-    PT(InternalName)  _suffix;
-  };
-
-  struct ShaderImgSpec {
-    Parameter         _id;
-    CPT(InternalName) _name;
-    int               _desired_type;
-    bool              _writable;
-  };
+  typedef pvector<MatrixCacheItem> MatrixCacheDesc;
 
   struct ShaderVarSpec {
     Parameter         _id;
@@ -429,13 +219,6 @@ public:
     int               _append_uv;
     int               _elements;
     ScalarType        _scalar_type;
-  };
-
-  struct ShaderPtrSpec {
-    Parameter         _id;
-    uint32_t          _dim[3]; //n_elements,rows,cols
-    CPT(InternalName) _arg;
-    ScalarType        _type;
   };
 
   class ShaderFile : public ReferenceCount {
@@ -477,17 +260,10 @@ public:
 
 protected:
   bool report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg);
-  bool expect_num_words(const InternalName *name, const ::ShaderType *type, size_t len);
-  bool expect_float_vector(const InternalName *name, const ::ShaderType *type, int lo, int hi);
-  bool expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, int hi);
-  bool expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
-                                vector_string &pieces, int &next,
-                                ShaderMatSpec &spec, bool fromflag);
-  int cp_dependency(ShaderMatInput inp);
 
 public:
-  void cp_add_mat_spec(ShaderMatSpec &spec);
-  size_t cp_get_mat_cache_size() const;
+  size_t add_matrix_cache_item(StateMatrix input, const InternalName *arg, int dep);
+  size_t get_matrix_cache_size() const;
 
   void clear_parameters();
 
@@ -498,22 +274,11 @@ public:
   INLINE const std::string &get_debug_name() const;
 
 public:
-  pvector<ShaderPtrSpec> _ptr_spec;
-  epvector<ShaderMatSpec> _mat_spec;
-  pvector<ShaderTexSpec> _tex_spec;
-  pvector<ShaderImgSpec> _img_spec;
+  pvector<Parameter> _parameters;
   pvector<ShaderVarSpec> _var_spec;
-  pvector<ShaderMatPart> _mat_parts;
-  int _mat_deps = 0;
-  int _mat_cache_size = 0;
 
-  // These are here because we don't support passing these via ShaderMatSpec yet
-  int _frame_number_loc = -1;
-  int _transform_table_loc = -1;
-  uint32_t _transform_table_size = 0;
-  bool _transform_table_reduced = false;
-  int _slider_table_loc = -1;
-  uint32_t _slider_table_size = 0;
+  MatrixCacheDesc _matrix_cache_desc;
+  int _matrix_cache_deps = 0;
 
   bool _error_flag;
   ShaderFile _text;
@@ -528,7 +293,7 @@ public:
   typedef pvector<LinkedModule> Modules;
   Modules _modules;
   uint32_t _module_mask = 0;
-  int _used_caps = 0;
+  uint64_t _used_caps = 0;
 
 protected:
   ShaderFile _filename;
@@ -569,8 +334,8 @@ private:
 
 public:
   bool link();
+  void add_parameter(const InternalName *name, const ::ShaderType *type, int location = -1);
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
-  bool bind_parameter(const Parameter &parameter);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;
@@ -587,7 +352,7 @@ public:
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
-  void fillin(DatagramIterator &scan, BamReader *manager);
+  virtual void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 public:
   static TypeHandle get_class_type() {
@@ -598,10 +363,10 @@ public:
     register_type(_type_handle, "Shader",
                   TypedWritableReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

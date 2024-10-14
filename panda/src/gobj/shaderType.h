@@ -36,9 +36,10 @@ public:
   virtual void output(std::ostream &out) const=0;
 
   virtual int get_align_bytes() const { return 1; }
-  virtual int get_size_bytes() const;
+  virtual int get_size_bytes(bool pad_rows = false) const;
   virtual int get_num_interface_locations() const { return 1; }
   virtual int get_num_parameter_locations() const { return 1; }
+  virtual int get_num_resources() const { return 0; }
 
   enum ScalarType {
     ST_unknown,
@@ -47,6 +48,12 @@ public:
     ST_int,
     ST_uint,
     ST_bool,
+
+#ifdef STDFLOAT_DOUBLE
+    ST_stdfloat = ST_double,
+#else
+    ST_stdfloat = ST_float,
+#endif
   };
 
   enum class Access {
@@ -61,16 +68,20 @@ private:
   static Registry *_registered_types;
 
 PUBLISHED:
+  class Void;
   class Scalar;
   class Vector;
   class Matrix;
   class Struct;
   class Array;
+  class Resource;
   class Image;
   class Sampler;
   class SampledImage;
+  class StorageBuffer;
 
   // Fundamental types.
+  static const ShaderType::Void *void_type;
   static const ShaderType::Scalar *bool_type;
   static const ShaderType::Scalar *int_type;
   static const ShaderType::Scalar *uint_type;
@@ -87,18 +98,21 @@ public:
                               uint32_t &num_elements,
                               uint32_t &num_rows,
                               uint32_t &num_columns) const { return false; }
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const { return this; }
 
   virtual const Scalar *as_scalar() const { return nullptr; }
   virtual const Vector *as_vector() const { return nullptr; }
   virtual const Matrix *as_matrix() const { return nullptr; }
   virtual const Struct *as_struct() const { return nullptr; }
   virtual const Array *as_array() const { return nullptr; }
+  virtual const Resource *as_resource() const { return nullptr; }
   virtual const Image *as_image() const { return nullptr; }
   virtual const Sampler *as_sampler() const { return nullptr; }
   virtual const SampledImage *as_sampled_image() const { return nullptr; }
+  virtual const StorageBuffer *as_storage_buffer() const { return nullptr; }
 
   static void register_with_read_factory();
-  virtual bool require_fully_complete() const;
+  virtual bool require_fully_complete() const override;
   static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
 
 public:
@@ -134,6 +148,33 @@ INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
 }
 
 /**
+ * The void type, invalid for most uses.
+ */
+class EXPCL_PANDA_GOBJ ShaderType::Void final : public ShaderType {
+public:
+  virtual void output(std::ostream &out) const override;
+
+private:
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  virtual TypeHandle get_type() const override {
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class ShaderType;
+};
+
+/**
  * A numeric scalar type, like int or float.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Scalar final : public ShaderType {
@@ -142,6 +183,7 @@ public:
 
   INLINE ScalarType get_scalar_type() const;
   virtual bool contains_scalar_type(ScalarType type) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
@@ -188,6 +230,7 @@ public:
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
 
   virtual int get_num_interface_locations() const override;
 
@@ -235,6 +278,7 @@ public:
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
 
   virtual int get_num_interface_locations() const override;
 
@@ -285,13 +329,15 @@ public:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   virtual int get_align_bytes() const override;
-  virtual int get_size_bytes() const override;
+  virtual int get_size_bytes(bool pad_rows = false) const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
+  virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }
   virtual bool contains_opaque_type() const override;
   virtual bool contains_scalar_type(ScalarType type) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -308,7 +354,7 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
@@ -341,15 +387,17 @@ public:
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   int get_stride_bytes() const;
   virtual int get_align_bytes() const override;
-  virtual int get_size_bytes() const override;
+  virtual int get_size_bytes(bool pad_rows = false) const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
+  virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }
   const Array *as_array() const override { return this; }
@@ -364,7 +412,7 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
@@ -382,9 +430,21 @@ private:
 };
 
 /**
+ * Base class for all resources.
+ */
+class EXPCL_PANDA_GOBJ ShaderType::Resource : public ShaderType {
+public:
+  virtual int get_num_resources() const { return 1; }
+
+  virtual bool contains_opaque_type() const override { return true; }
+
+  const Resource *as_resource() const override final { return this; }
+};
+
+/**
  * Image type.
  */
-class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::Image final : public ShaderType::Resource {
 public:
   INLINE Image(Texture::TextureType texture_type, ScalarType sampled_type, Access access);
 
@@ -396,7 +456,6 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual bool contains_opaque_type() const override { return true; }
   virtual bool contains_scalar_type(ScalarType type) const override;
 
   const Image *as_image() const override { return this; }
@@ -433,7 +492,7 @@ private:
 /**
  * Sampler state.
  */
-class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType::Resource {
 private:
   Sampler() = default;
 
@@ -463,7 +522,7 @@ private:
 /**
  * Sampled image type.
  */
-class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType {
+class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType::Resource {
 public:
   INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type,
                       bool shadow = false);
@@ -475,7 +534,6 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual bool contains_opaque_type() const override { return true; }
   virtual bool contains_scalar_type(ScalarType type) const override;
 
   const SampledImage *as_sampled_image() const override { return this; }
@@ -487,6 +545,52 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  virtual TypeHandle get_type() const override {
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class ShaderType;
+};
+
+/**
+ * Opaque storage buffer (SSBO) storing a given type, which is usually a struct
+ * or an array.
+ */
+class EXPCL_PANDA_GOBJ ShaderType::StorageBuffer final : public ShaderType::Resource {
+public:
+  INLINE StorageBuffer(const ShaderType *contained_type, Access access);
+
+  INLINE const ShaderType *get_contained_type() const;
+  INLINE Access get_access() const;
+
+  virtual void output(std::ostream &out) const override;
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual bool contains_scalar_type(ScalarType type) const override;
+  virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+
+  const StorageBuffer *as_storage_buffer() const override { return this; }
+
+PUBLISHED:
+  MAKE_PROPERTY(contained_type, get_contained_type);
+  MAKE_PROPERTY(access, get_access);
+
+private:
+  const ShaderType *_contained_type;
+  Access _access;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:

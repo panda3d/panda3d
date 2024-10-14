@@ -39,7 +39,7 @@ make(PyObject *args, PyObject *kwds) {
     }
 
     // We got the item, we just need to make sure that it had the right key.
-    if (!PyUnicode_CheckExact(key) || !_PyUnicode_EqualToASCIIString(key, "override")) {
+    if (!PyUnicode_CheckExact(key) || PyUnicode_CompareWithASCIIString(key, "override") != 0) {
       Dtool_Raise_TypeError("RenderState.make() received an unexpected keyword argument");
       return nullptr;
     }
@@ -56,7 +56,7 @@ make(PyObject *args, PyObject *kwds) {
 
   int override = 0;
   if (py_override != nullptr) {
-    override = _PyLong_AsInt(py_override);
+    override = PyLong_AsInt(py_override);
     if (override == -1 && PyErr_Occurred()) {
       return nullptr;
     }
@@ -96,8 +96,7 @@ get_composition_cache() const {
     PyObject *a, *b;
     const RenderState *source = _this->_composition_cache.get_key(i);
     if (source == nullptr) {
-      a = Py_None;
-      Py_INCREF(a);
+      a = Py_NewRef(Py_None);
     } else {
       source->ref();
       a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
@@ -105,8 +104,7 @@ get_composition_cache() const {
     }
     const RenderState *result = _this->_composition_cache.get_data(i)._result;
     if (result == nullptr) {
-      b = Py_None;
-      Py_INCREF(b);
+      b = Py_NewRef(Py_None);
     } else {
       result->ref();
       b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,
@@ -144,8 +142,7 @@ get_invert_composition_cache() const {
     PyObject *a, *b;
     const RenderState *source = _this->_invert_composition_cache.get_key(i);
     if (source == nullptr) {
-      a = Py_None;
-      Py_INCREF(a);
+      a = Py_NewRef(Py_None);
     } else {
       source->ref();
       a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState,
@@ -153,8 +150,7 @@ get_invert_composition_cache() const {
     }
     const RenderState *result = _this->_invert_composition_cache.get_data(i)._result;
     if (result == nullptr) {
-      b = Py_None;
-      Py_INCREF(b);
+      b = Py_NewRef(Py_None);
     } else {
       result->ref();
       b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState,

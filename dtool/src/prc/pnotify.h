@@ -18,7 +18,13 @@
 #include "notifySeverity.h"
 #include <map>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 class NotifyCategory;
+class AndroidLogStream;
+class EmscriptenLogStream;
 
 /**
  * An object that handles general error reporting to the user.  It contains a
@@ -61,6 +67,7 @@ PUBLISHED:
                                const std::string &parent_fullname);
   NotifyCategory *get_category(const std::string &fullname);
 
+  static std::ostream &out(NotifySeverity severity);
   static std::ostream &out();
   static std::ostream &null();
   static void write_string(const std::string &str);
@@ -91,6 +98,12 @@ private:
   // the global malloc pointers.
   typedef std::map<std::string, NotifyCategory *> Categories;
   Categories _categories;
+
+#if defined(ANDROID)
+  AndroidLogStream *_log_streams[NS_fatal + 1];
+#elif defined(__EMSCRIPTEN__)
+  EmscriptenLogStream *_log_streams[NS_fatal + 1];
+#endif
 
   static Notify *_global_ptr;
 };

@@ -166,6 +166,10 @@ ShaderGenerator::
  */
 bool ShaderGenerator::
 reload_cache() {
+  if (shader_generator_cache_limit == 0) {
+    return true;
+  }
+
   LightMutexHolder holder(_lock);
 
   TrueClock *clock = TrueClock::get_global_ptr();

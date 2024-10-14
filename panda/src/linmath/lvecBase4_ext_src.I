@@ -24,13 +24,27 @@
  */
 INLINE_LINMATH std::string Extension<FLOATNAME(LVecBase4)>::
 __repr__() const {
-  std::ostringstream out;
-  out << "LVecBase4" << FLOATTOKEN << "("
-      << MAYBE_ZERO(_this->_v(0)) << ", "
-      << MAYBE_ZERO(_this->_v(1)) << ", "
-      << MAYBE_ZERO(_this->_v(2)) << ", "
-      << MAYBE_ZERO(_this->_v(3)) << ")";
-  return out.str();
+  char buf[160] = "LVecBase4";
+  char *p = buf + strlen(buf);
+  *(p++) = FLOATTOKEN;
+  *(p++) = '(';
+  FLOATTYPE_REPR(_this->_v(0), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(1), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(2), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(3), p);
+  p += strlen(p);
+  *(p++) = ')';
+  *p = '\0';
+  return std::string(buf, p - buf);
 }
 
 /**
@@ -287,8 +301,7 @@ __ifloordiv__(PyObject *self, FLOATTYPE scalar) {
   _this->_v(2) = std::floor(_this->_v(2) / scalar);
   _this->_v(3) = std::floor(_this->_v(3) / scalar);
 #endif
-  Py_INCREF(self);
-  return self;
+  return Py_NewRef(self);
 }
 
 /**
@@ -321,8 +334,7 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(1) = cpow(_this->_v(1), exponent);
   _this->_v(2) = cpow(_this->_v(2), exponent);
   _this->_v(3) = cpow(_this->_v(3), exponent);
-  Py_INCREF(self);
-  return self;
+  return Py_NewRef(self);
 }
 
 /**
@@ -402,10 +414,8 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   static const char format[2] = {FLOATTOKEN, 0};
   static const Py_ssize_t shape = FLOATNAME(LVecBase4)::num_components;
 
-  Py_INCREF(self);
-
   view->buf = (void *)_this->get_data();
-  view->obj = self;
+  view->obj = Py_NewRef(self);
   view->len = 4 * sizeof(FLOATTYPE);
   view->readonly = 1;
   view->itemsize = sizeof(FLOATTYPE);

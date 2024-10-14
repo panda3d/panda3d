@@ -14,7 +14,7 @@
 /**
  *
  */
-INLINE const DatagramIterator &BamReaderParam::
+INLINE DatagramIterator &BamReaderParam::
 get_iterator() {
   return _iterator;
 }
@@ -32,7 +32,7 @@ get_manager() {
  *
  */
 INLINE BamReaderParam::
-BamReaderParam(const DatagramIterator &dgi, BamReader *manager) :
+BamReaderParam(DatagramIterator &dgi, BamReader *manager) :
   _iterator(dgi),
   _manager(manager)
 {

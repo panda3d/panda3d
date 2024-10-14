@@ -48,26 +48,26 @@ class EXPCL_PANDA_GOBJ GeomVertexArrayFormat final : public TypedWritableReferen
 PUBLISHED:
   GeomVertexArrayFormat();
   GeomVertexArrayFormat(const GeomVertexArrayFormat &copy);
-  GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
-                        NumericType numeric_type0, Contents contents0);
-  GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
-                        NumericType numeric_type0, Contents contents0,
-                        CPT_InternalName name1, int num_components1,
-                        NumericType numeric_type1, Contents contents1);
-  GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
-                        NumericType numeric_type0, Contents contents0,
-                        CPT_InternalName name1, int num_components1,
-                        NumericType numeric_type1, Contents contents1,
-                        CPT_InternalName name2, int num_components2,
-                        NumericType numeric_type2, Contents contents2);
-  GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
-                        NumericType numeric_type0, Contents contents0,
-                        CPT_InternalName name1, int num_components1,
-                        NumericType numeric_type1, Contents contents1,
-                        CPT_InternalName name2, int num_components2,
-                        NumericType numeric_type2, Contents contents2,
-                        CPT_InternalName name3, int num_components3,
-                        NumericType numeric_type3, Contents contents3);
+  explicit GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
+                                 NumericType numeric_type0, Contents contents0);
+  explicit GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
+                                 NumericType numeric_type0, Contents contents0,
+                                 CPT_InternalName name1, int num_components1,
+                                 NumericType numeric_type1, Contents contents1);
+  explicit GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
+                                 NumericType numeric_type0, Contents contents0,
+                                 CPT_InternalName name1, int num_components1,
+                                 NumericType numeric_type1, Contents contents1,
+                                 CPT_InternalName name2, int num_components2,
+                                 NumericType numeric_type2, Contents contents2);
+  explicit GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
+                                 NumericType numeric_type0, Contents contents0,
+                                 CPT_InternalName name1, int num_components1,
+                                 NumericType numeric_type1, Contents contents1,
+                                 CPT_InternalName name2, int num_components2,
+                                 NumericType numeric_type2, Contents contents2,
+                                 CPT_InternalName name3, int num_components3,
+                                 NumericType numeric_type3, Contents contents3);
   void operator = (const GeomVertexArrayFormat &copy);
   ~GeomVertexArrayFormat();
 

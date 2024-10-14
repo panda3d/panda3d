@@ -44,11 +44,11 @@ public:
   INLINE static void prepare_for_exit();
 
   static Thread *get_current_thread();
-  static void bind_thread(Thread *thread);
+  static Thread *bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
   INLINE static bool is_simple_threads();
-  INLINE static void sleep(double seconds);
+  static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();
 
@@ -72,6 +72,7 @@ private:
   bool _joinable;
   Status _status;
   HANDLE _profiling;
+  HANDLE _timer = nullptr;
 };
 
 #include "threadWin32Impl.I"

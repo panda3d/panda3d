@@ -67,14 +67,6 @@ is_simple_threads() {
  *
  */
 INLINE void ThreadWin32Impl::
-sleep(double seconds) {
-  Sleep((int)(seconds * 1000));
-}
-
-/**
- *
- */
-INLINE void ThreadWin32Impl::
 yield() {
   Sleep(0);
 }

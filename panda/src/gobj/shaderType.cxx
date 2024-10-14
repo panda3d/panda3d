@@ -19,6 +19,7 @@ const char *texture_type_suffixes[] = {
 
 ShaderType::Registry *ShaderType::_registered_types = nullptr;
 TypeHandle ShaderType::_type_handle;
+TypeHandle ShaderType::Void::_type_handle;
 TypeHandle ShaderType::Scalar::_type_handle;
 TypeHandle ShaderType::Vector::_type_handle;
 TypeHandle ShaderType::Matrix::_type_handle;
@@ -27,7 +28,9 @@ TypeHandle ShaderType::Array::_type_handle;
 TypeHandle ShaderType::Image::_type_handle;
 TypeHandle ShaderType::Sampler::_type_handle;
 TypeHandle ShaderType::SampledImage::_type_handle;
+TypeHandle ShaderType::StorageBuffer::_type_handle;
 
+const ShaderType::Void *ShaderType::void_type;
 const ShaderType::Scalar *ShaderType::bool_type;
 const ShaderType::Scalar *ShaderType::int_type;
 const ShaderType::Scalar *ShaderType::uint_type;
@@ -60,6 +63,7 @@ init_type() {
   TypedWritable::init_type();
   ::register_type(_type_handle, "ShaderType", TypedWritable::get_class_type());
 
+  ::register_type(Void::_type_handle, "ShaderType::Void", _type_handle);
   ::register_type(Scalar::_type_handle, "ShaderType::Scalar", _type_handle);
   ::register_type(Vector::_type_handle, "ShaderType::Vector", _type_handle);
   ::register_type(Matrix::_type_handle, "ShaderType::Matrix", _type_handle);
@@ -68,7 +72,9 @@ init_type() {
   ::register_type(Image::_type_handle, "ShaderType::Image", _type_handle);
   ::register_type(Sampler::_type_handle, "ShaderType::Sampler", _type_handle);
   ::register_type(SampledImage::_type_handle, "ShaderType::SampledImage", _type_handle);
+  ::register_type(StorageBuffer::_type_handle, "ShaderType::StorageBuffer", _type_handle);
 
+  void_type = ShaderType::register_type(ShaderType::Void());
   bool_type = ShaderType::register_type(ShaderType::Scalar(ST_bool));
   int_type = ShaderType::register_type(ShaderType::Scalar(ST_int));
   uint_type = ShaderType::register_type(ShaderType::Scalar(ST_uint));
@@ -84,6 +90,7 @@ init_type() {
 void ShaderType::
 register_with_read_factory() {
   WritableFactory *factory = BamReader::get_factory();
+  factory->register_factory(Void::_type_handle, Void::make_from_bam);
   factory->register_factory(Scalar::_type_handle, Scalar::make_from_bam);
   factory->register_factory(Vector::_type_handle, Vector::make_from_bam);
   factory->register_factory(Matrix::_type_handle, Matrix::make_from_bam);
@@ -92,6 +99,7 @@ register_with_read_factory() {
   factory->register_factory(Image::_type_handle, Image::make_from_bam);
   factory->register_factory(Sampler::_type_handle, Sampler::make_from_bam);
   factory->register_factory(SampledImage::_type_handle, SampledImage::make_from_bam);
+  factory->register_factory(StorageBuffer::_type_handle, StorageBuffer::make_from_bam);
 }
 
 /**
@@ -145,21 +153,52 @@ std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type
 #ifndef CPPPARSER
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return -1.
+ * types will return 0.
  */
 int ShaderType::
-get_size_bytes() const {
+get_size_bytes(bool pad_rows) const {
   ScalarType type;
   uint32_t dim[3];
-  if (as_scalar_type(type, dim[0], dim[1], dim[2]) && type != ST_bool) {
+  if (as_scalar_type(type, dim[0], dim[1], dim[2])) {
+    if (pad_rows) {
+      // std140 array element padding rules, also used in DX9.
+      dim[2] = (dim[2] + 3) & ~3;
+    }
     if (type == ST_double) {
       return 8 * dim[0] * dim[1] * dim[2];
     } else {
       return 4 * dim[0] * dim[1] * dim[2];
     }
   } else {
-    return -1;
+    return 0;
   }
+}
+
+/**
+ *
+ */
+void ShaderType::Void::
+output(std::ostream &out) const {
+  out << "void";
+}
+
+/**
+ * Private implementation of compare_to, only called for types with the same
+ * TypeHandle.
+ */
+int ShaderType::Void::
+compare_to_impl(const ShaderType &other) const {
+  return true;
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ShaderType is encountered in the Bam file.  It should create the
+ * ShaderType and extract its information from the file.
+ */
+TypedWritable *ShaderType::Void::
+make_from_bam(const FactoryParams &params) {
+  return (ShaderType *)ShaderType::void_type;
 }
 
 /**
@@ -182,6 +221,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
   num_rows = 1;
   num_columns = 1;
   return true;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Scalar::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Scalar(b));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -256,6 +307,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
   num_rows = 1;
   num_columns = _num_components;
   return true;
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Vector::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Vector(b, _num_components));
+  } else {
+    return this;
+  }
 }
 
 /**
@@ -352,6 +415,18 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
 }
 
 /**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Matrix::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (_scalar_type == a) {
+    return ShaderType::register_type(ShaderType::Matrix(b, _num_rows, _num_columns));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Matrix::
@@ -434,7 +509,9 @@ add_member(const ShaderType *type, std::string name) {
   member.name = std::move(name);
   member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
   int alignment = type->get_align_bytes();
-  member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  if (alignment > 0) {
+    member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  }
   _members.push_back(std::move(member));
 }
 
@@ -481,6 +558,28 @@ contains_scalar_type(ScalarType type) const {
 }
 
 /**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Struct::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  if (contains_scalar_type(a)) {
+    ShaderType::Struct copy;
+    for (const Member &member : _members) {
+      const ShaderType *type = member.type->replace_scalar_type(a, b);
+      if ((a == ST_double) != (b == ST_double)) {
+        // Recompute offsets.
+        copy.add_member(type, member.name);
+      } else {
+        copy.add_member(type, member.name, member.offset);
+      }
+    }
+    return ShaderType::register_type(std::move(copy));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Struct::
@@ -516,6 +615,10 @@ compare_to_impl(const ShaderType &other) const {
       return (_members[i].name > other_struct._members[i].name)
            - (_members[i].name < other_struct._members[i].name);
     }
+    if (_members[i].offset != other_struct._members[i].offset) {
+      return (_members[i].offset > other_struct._members[i].offset)
+           - (_members[i].offset < other_struct._members[i].offset);
+    }
   }
 
   return 0;
@@ -535,10 +638,10 @@ get_align_bytes() const {
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return -1.
+ * types will return 0.
  */
 int ShaderType::Struct::
-get_size_bytes() const {
+get_size_bytes(bool pad_rows) const {
   return _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
 }
 
@@ -564,6 +667,18 @@ get_num_parameter_locations() const {
   int total = 0;
   for (const Member &member : _members) {
     total += member.type->get_num_parameter_locations();
+  }
+  return total;
+}
+
+/**
+ * Returns the number of resources (samplers, etc.) in this type.
+ */
+int ShaderType::Struct::
+get_num_resources() const {
+  int total = 0;
+  for (const Member &member : _members) {
+    total += member.type->get_num_resources();
   }
   return total;
 }
@@ -674,11 +789,28 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
 }
 
 /**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::Array::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  const ShaderType *element_type = _element_type->replace_scalar_type(a, b);
+  if (_element_type != element_type) {
+    return ShaderType::register_type(ShaderType::Array(element_type, _num_elements));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Array::
 output(std::ostream &out) const {
-  out << *_element_type << "[" << _num_elements << "]";
+  out << *_element_type << '[';
+  if (_num_elements > 0) {
+    out << _num_elements;
+  }
+  out << ']';
 }
 
 /**
@@ -700,7 +832,7 @@ compare_to_impl(const ShaderType &other) const {
  */
 int ShaderType::Array::
 get_stride_bytes() const {
-  int element_size = _element_type->get_size_bytes();
+  int element_size = _element_type->get_size_bytes(true);
   return (element_size + 15) & ~15;
 }
 
@@ -714,10 +846,10 @@ get_align_bytes() const {
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return -1.
+ * types will return 0.
  */
 int ShaderType::Array::
-get_size_bytes() const {
+get_size_bytes(bool pad_rows) const {
   return get_stride_bytes() * _num_elements;
 }
 
@@ -737,6 +869,14 @@ get_num_interface_locations() const {
 int ShaderType::Array::
 get_num_parameter_locations() const {
   return _element_type->get_num_parameter_locations() * _num_elements;
+}
+
+/**
+ * Returns the number of resources (samplers, etc.) in this type.
+ */
+int ShaderType::Array::
+get_num_resources() const {
+  return _element_type->get_num_resources() * _num_elements;
 }
 
 /**
@@ -955,6 +1095,111 @@ make_from_bam(const FactoryParams &params) {
   ScalarType sampled_type = (ScalarType)scan.get_uint8();
   bool shadow = scan.get_bool();
   return (ShaderType *)ShaderType::register_type(ShaderType::SampledImage(texture_type, sampled_type, shadow));
+}
+
+/**
+ *
+ */
+void ShaderType::StorageBuffer::
+output(std::ostream &out) const {
+  if ((_access & Access::write_only) == Access::none) {
+    out << "readonly ";
+  }
+  if ((_access & Access::read_only) == Access::none) {
+    out << "writeonly ";
+  }
+  out << "buffer";
+
+  if (const ShaderType::Struct *struct_type = _contained_type->as_struct()) {
+    out << " { ";
+    for (const Struct::Member &member : struct_type->_members) {
+      if (member.type != nullptr) {
+        out << *member.type << ' ';
+      }
+      out << member.name << "; ";
+    }
+    out << '}';
+  }
+  else if (_contained_type != nullptr) {
+    out << ' ' << *_contained_type;
+  }
+}
+
+/**
+ * Private implementation of compare_to, only called for types with the same
+ * TypeHandle.
+ */
+int ShaderType::StorageBuffer::
+compare_to_impl(const ShaderType &other) const {
+  const StorageBuffer &other_buffer = (const StorageBuffer &)other;
+  if (_contained_type != other_buffer._contained_type) {
+    return (_contained_type > other_buffer._contained_type)
+         - (_contained_type < other_buffer._contained_type);
+  }
+  return (_access > other_buffer._access)
+       - (_access < other_buffer._access);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::StorageBuffer::
+contains_scalar_type(ScalarType type) const {
+  return _contained_type != nullptr && _contained_type->contains_scalar_type(type);
+}
+
+/**
+ * Replaces any occurrence of the given scalar type with the given other one.
+ */
+const ShaderType *ShaderType::StorageBuffer::
+replace_scalar_type(ScalarType a, ScalarType b) const {
+  const ShaderType *contained_type = _contained_type->replace_scalar_type(a, b);
+  if (_contained_type != contained_type) {
+    return ShaderType::register_type(ShaderType::StorageBuffer(contained_type, _access));
+  } else {
+    return this;
+  }
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void ShaderType::StorageBuffer::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  manager->write_pointer(dg, _contained_type);
+  dg.add_uint8((uint8_t)_access);
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int ShaderType::StorageBuffer::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = ShaderType::complete_pointers(p_list, manager);
+  _contained_type = (ShaderType *)p_list[pi++];
+  nassertr(_contained_type->is_registered(), pi);
+  return pi;
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ShaderType is encountered in the Bam file.  It should create the
+ * ShaderType and extract its information from the file.
+ */
+TypedWritable *ShaderType::StorageBuffer::
+make_from_bam(const FactoryParams &params) {
+  DatagramIterator scan;
+  BamReader *manager;
+  parse_params(params, scan, manager);
+
+  manager->read_pointer(scan);
+  Access access = (Access)scan.get_uint8();
+
+  ShaderType *type = new ShaderType::StorageBuffer(nullptr, access);
+  manager->register_change_this(change_this, type);
+  return type;
 }
 
 #endif  // CPPPARSER

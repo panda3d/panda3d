@@ -563,6 +563,7 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 void CLP(GraphicsStateGuardian)::
 reset() {
   _last_error_check = -1.0;
+  _white_texture = 0;
 
   free_pointers();
   GraphicsStateGuardian::reset();
@@ -877,7 +878,10 @@ reset() {
 
 #elif defined(OPENGLES)
   if (gl_support_primitive_restart_index && is_at_least_gles_version(3, 0)) {
+    // In WebGL 2, primitive restart is always enabled.
+#ifndef __EMSCRIPTEN__
     glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+#endif
     _supported_geom_rendering |= Geom::GR_strip_cut_index;
   }
 
@@ -922,6 +926,8 @@ reset() {
 #ifndef OPENGLES_1
   _glDrawRangeElements = null_glDrawRangeElements;
 
+  // Temporarily disabled in WebGL due to Firefox bug
+#ifndef __EMSCRIPTEN__
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 0)) {
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
@@ -942,6 +948,7 @@ reset() {
       << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     _glDrawRangeElements = null_glDrawRangeElements;
   }
+#endif  // !__EMSCRIPTEN__
 #endif  // !OPENGLES_1
 
   _supports_3d_texture = false;
@@ -1513,7 +1520,12 @@ reset() {
     _supports_depth24 = true;
     _supports_depth32 = true;
   } else {
+#ifdef __EMSCRIPTEN__
+    if (has_extension("WEBGL_depth_texture") ||
+        has_extension("GL_ANGLE_depth_texture")) {
+#else
     if (has_extension("GL_ANGLE_depth_texture")) {
+#endif
       // This extension provides both depth textures and depth-stencil support.
       _supports_depth_texture = true;
       _supports_depth_stencil = true;
@@ -2836,6 +2848,12 @@ reset() {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffers");
 
+#ifdef __EMSCRIPTEN__
+  } else if (has_extension("WEBGL_draw_buffers")) {
+    _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
+      get_extension_func("glDrawBuffers");
+#endif  // EMSCRIPTEN
+
   } else if (has_extension("GL_EXT_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func("glDrawBuffersEXT");
@@ -3051,7 +3069,7 @@ reset() {
 
 #elif defined(OPENGLES)
   // In OpenGL ES 2.x and above, this is supported in the core.
-  _supports_blend_equation_separate = false;
+  _supports_blend_equation_separate = true;
 
 #else
   if (is_at_least_gl_version(1, 2)) {
@@ -3390,7 +3408,7 @@ reset() {
   _max_image_units = 0;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
-  if (is_at_least_gl_version(3, 1)) {
+  if (is_at_least_gles_version(3, 1) && gl_immutable_texture_storage) {
 #else
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
 #endif
@@ -3512,7 +3530,7 @@ reset() {
   }
 #endif  // !OPENGLES
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   _supports_get_program_binary = false;
   _program_binary_formats.clear();
 
@@ -3879,7 +3897,7 @@ reset() {
 
   report_my_gl_errors();
 
-#ifndef OPENGLES_1
+#if !defined(OPENGLES_1) && !defined(__EMSCRIPTEN__)
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()
@@ -4554,6 +4572,11 @@ begin_frame(Thread *current_thread) {
  */
 bool CLP(GraphicsStateGuardian)::
 begin_scene() {
+#ifndef OPENGLES_1
+  if (_current_shader_context != nullptr) {
+    _current_shader_context->set_display_region(_current_display_region);
+  }
+#endif
   return GraphicsStateGuardian::begin_scene();
 }
 
@@ -8627,6 +8650,8 @@ do_issue_shader() {
       _current_shader = shader;
     }
 
+    context->set_display_region(_current_display_region);
+
     // Bind the shader storage buffers.
     context->update_shader_buffer_bindings(_current_shader_context);
     _current_shader_context = context;
@@ -9807,7 +9832,7 @@ query_glsl_version() {
     int major = 1;
     int minor = (_gl_version_major >= 2) ? 1 : 0;
     if (ver.empty() || sscanf(ver.c_str(), "%d.%d", &major, &minor) != 2) {
-      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+      GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
     }
     _glsl_version = major * 100 + minor;
   }
@@ -9818,7 +9843,11 @@ query_glsl_version() {
   int minor = 0;
   if (ver.empty() ||
       sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &major, &minor) != 2) {
-    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
+#ifdef __EMSCRIPTEN__  // See emscripten bug 4070
+    if (sscanf(ver.c_str(), "OpenGL ES GLSL %d.%d", &major, &minor) != 2)
+#endif
+    GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format: " << ver << "\n";
   }
   _glsl_version = major * 100 + minor;
 #endif
@@ -11228,6 +11257,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
     }
   }
+
+#if defined(__EMSCRIPTEN__) && defined(OPENGLES)
+  // WebGL 1 has no sized formats, it would seem.
+  if (!is_at_least_gles_version(3, 0)) {
+    return get_external_image_format(tex);
+  }
+#endif
 
   switch (format) {
 #ifndef OPENGLES
@@ -12743,11 +12779,6 @@ set_state_and_transform(const RenderState *target,
     }
 #endif
     _state_mask.set_bit(tex_matrix_slot);
-#ifndef OPENGLES_1
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(Shader::SSD_tex_matrix);
-    }
-#endif
 
     // See previous occurrence of this check.
     if (_tex_gen_modifies_mat) {
@@ -14209,7 +14240,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         << "Attempt to modify texture with immutable storage, recreating texture.\n";
       gtc->reset_data(gtc->_target, num_views);
     }
-    else if (_supports_tex_storage && gl_immutable_texture_storage) {
+    else if (_supports_tex_storage && gl_immutable_texture_storage &&
+             texture_type != Texture::TT_buffer_texture) {
       gtc->_immutable = true;
     }
   }
@@ -14423,7 +14455,8 @@ upload_texture_image(CLP(TextureContext) *gtc, int view, bool needs_reload,
         GLCAT.debug()
           << "allocating storage for texture " << tex->get_name() << ", "
           << width << " x " << height << " x " << depth << ", mipmaps "
-          << num_levels << "\n";
+          << num_levels << ", internal_format = 0x" << std::hex
+          << internal_format << std::dec << "\n";
       }
 
       switch (texture_type) {

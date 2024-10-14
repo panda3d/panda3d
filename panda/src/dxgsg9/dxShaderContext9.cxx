@@ -15,6 +15,9 @@
 #include "dxShaderContext9.h"
 #include "dxVertexBufferContext9.h"
 #include "shaderModuleSpirV.h"
+#include "spirVTransformer.h"
+#include "spirVHoistStructResourcesPass.h"
+#include "spirVRemoveUnusedVariablesPass.h"
 
 #include <io.h>
 #include <stdio.h>
@@ -24,6 +27,17 @@
 #include <sys/stat.h>
 
 #include <spirv_cross/spirv_hlsl.hpp>
+
+// Temporary hack to allow spirv-cross to emit empty structs, which we need it
+// to do in order not to mess up our member numbering for structs that used to
+// contain samplers
+class Compiler : public spirv_cross::CompilerHLSL {
+public:
+  explicit Compiler(std::vector<uint32_t> spirv_)
+    : CompilerHLSL(std::move(spirv_)) {
+    backend.supports_empty_struct = true;
+  }
+};
 
 #define DEBUG_SHADER 0
 
@@ -53,8 +67,6 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
         << "Failed to create pixel shader: " << D3DERRORSTRING(result) << "\n";
     }
   }
-
-  _mat_part_cache = new LMatrix4[s->cp_get_mat_cache_size()];
 }
 
 /**
@@ -63,8 +75,6 @@ DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
 DXShaderContext9::
 ~DXShaderContext9() {
   release_resources();
-
-  delete[] _mat_part_cache;
 }
 
 /**
@@ -81,10 +91,66 @@ compile_module(const ShaderModule *module, DWORD *&data) {
       << spv->get_source_filename() << "\n";
   }
 
-  spirv_cross::CompilerHLSL compiler(std::vector<uint32_t>(spv->get_data(), spv->get_data() + spv->get_data_size()));
+  // Create a mapping from id to a new name, a string containing a parameter
+  // index.  This makes reflection a little easier later on.
+  bool hoist_necessary = false;
+  pmap<uint32_t, std::string> param_names;
+  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
+    const ShaderModule::Variable &var = module->get_parameter(i);
+
+    if (!hoist_necessary &&
+        var.type->is_aggregate_type() &&
+        var.type->get_num_resources() > 0) {
+      hoist_necessary = true;
+    }
+
+    for (size_t j = 0; j < _shader->_parameters.size(); ++j) {
+      if (_shader->_parameters[j]._name == var.name) {
+        param_names[var.id] = "p" + format_string(j);
+        break;
+      }
+    }
+  }
+
+  ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
+
+  // HLSL does not support resources inside a struct, so if they exist, we
+  // need to modify the SPIR-V to hoist those out.
+  // We tell it not to remove the empty structs, since that changes the member
+  // numbering, which we need to match between the original and the HLSL.
+  if (hoist_necessary) {
+    SpirVTransformer transformer(stream);
+    SpirVHoistStructResourcesPass hoist_pass(false);
+    transformer.run(hoist_pass);
+    transformer.run(SpirVRemoveUnusedVariablesPass());
+    stream = transformer.get_result();
+
+    for (const auto &item : hoist_pass._hoisted_vars) {
+      const auto &access_chain = item.first;
+
+      std::ostringstream str;
+      str << param_names[access_chain._var_id];
+
+      for (size_t i = 0; i < access_chain.size(); ++i) {
+        str << '_' << access_chain[i];
+      }
+
+      param_names[item.second] = str.str();
+    }
+
+#ifndef NDEBUG
+    if (!stream.validate()) {
+      return false;
+    }
+#endif
+  }
+
+  Compiler compiler(stream);
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;
   options.flatten_matrix_vertex_input_semantics = true;
+  options.point_size_compat = false;
+  options.point_coord_compat = true;
   compiler.set_hlsl_options(options);
 
   // Bind certain known attributes to specific semantics.
@@ -112,6 +178,9 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     else if (spec._name == InternalName::get_color()) {
       compiler.add_vertex_attribute_remap({idx, "COLOR"});
     }
+    else if (spec._name == InternalName::get_size()) {
+      compiler.add_vertex_attribute_remap({idx, "PSIZE"});
+    }
     else {
       // The rest gets mapped to TEXCOORD + location.
       for (size_t i = 0; i < spec._elements; ++i) {
@@ -124,30 +193,16 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
   }
 
-  // Create a mapping from locations to parameter index.  This makes
-  // reflection a little easier later on.
-  pmap<int, unsigned int> params_by_location;
-  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
-    const ShaderModule::Variable &var = module->get_parameter(i);
-    if (var.has_location()) {
-      params_by_location[var.get_location()] = (unsigned int)i;
-    }
-  }
-
   // Tell spirv-cross to rename the constants to "p#", where # is the index of
   // the original parameter.  This makes it easier to map the compiled
   // constants back to the original parameters later on.
   for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
-    uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
     spv::StorageClass sc = compiler.get_storage_class(id);
 
-    char buf[24];
     if (sc == spv::StorageClassUniformConstant) {
-      nassertd(params_by_location.count(loc)) continue;
-
-      unsigned int index = params_by_location[loc];
-      sprintf(buf, "p%u", index);
-      compiler.set_name(id, buf);
+      auto it = param_names.find(id);
+      nassertd(it != param_names.end()) continue;
+      compiler.set_name(id, it->second);
     }
   }
 
@@ -226,9 +281,9 @@ query_constants(const ShaderModule *module, DWORD *data) {
     return false;
   }
 
-  BYTE *offset = (BYTE *)(data + 3);
-  D3DXSHADER_CONSTANTTABLE *table = (D3DXSHADER_CONSTANTTABLE *)offset;
-  D3DXSHADER_CONSTANTINFO *constants = (D3DXSHADER_CONSTANTINFO *)(offset + table->ConstantInfo);
+  BYTE *table_data = (BYTE *)(data + 3);
+  D3DXSHADER_CONSTANTTABLE *table = (D3DXSHADER_CONSTANTTABLE *)table_data;
+  D3DXSHADER_CONSTANTINFO *constants = (D3DXSHADER_CONSTANTINFO *)(table_data + table->ConstantInfo);
 
   if (dxgsg9_cat.is_debug()) {
     if (table->Constants != 0) {
@@ -244,11 +299,11 @@ query_constants(const ShaderModule *module, DWORD *data) {
 
   for (DWORD ci = 0; ci < table->Constants; ++ci) {
     D3DXSHADER_CONSTANTINFO &constant = constants[ci];
-    D3DXSHADER_TYPEINFO *type = (D3DXSHADER_TYPEINFO *)(offset + constant.TypeInfo);
+    D3DXSHADER_TYPEINFO *type = (D3DXSHADER_TYPEINFO *)(table_data + constant.TypeInfo);
 
     // We renamed the constants to p# earlier on, so extract the original
     // parameter index.
-    const char *name = (const char *)(offset + constant.Name);
+    const char *name = (const char *)(table_data + constant.Name);
     if (name[0] != 'p') {
       if (stage == Shader::Stage::vertex && strcmp(name, "gl_HalfPixel") == 0) {
         // This is a special input generated by spirv-cross.
@@ -259,45 +314,24 @@ query_constants(const ShaderModule *module, DWORD *data) {
         << "Ignoring unknown " << stage << " shader constant " << name << "\n";
       continue;
     }
-    int index = atoi(name + 1);
-    const ShaderModule::Variable &var = module->get_parameter(index);
-    nassertd(var.has_location()) continue;
-    int loc = var.get_location();
-
-    int loc_end = loc + var.type->get_num_interface_locations();
-    if ((size_t)loc_end > _register_map.size()) {
-      _register_map.resize((size_t)loc_end);
-    }
-
-    const ShaderType *element_type = var.type;
-    size_t num_elements = 1;
-
-    if (const ShaderType::Array *array_type = var.type->as_array()) {
-      element_type = array_type->get_element_type();
-      num_elements = array_type->get_num_elements();
-    }
-
-    int reg_set = constant.RegisterSet;
-    int reg_idx = constant.RegisterIndex;
-    int reg_end = reg_idx + constant.RegisterCount;
-    if (!r_query_constants(stage, offset, *type, loc, reg_set, reg_idx, reg_end)) {
-      return false;
-    }
+    char *suffix;
+    long index = strtol(name + 1, &suffix, 10);
+    const Shader::Parameter &param = _shader->_parameters[index];
 
 #ifndef NDEBUG
     if (dxgsg9_cat.is_debug()) {
       const char sets[] = {'b', 'i', 'c', 's'};
       if (type->Class == D3DXPC_STRUCT) {
         dxgsg9_cat.debug()
-          << "  struct " << name << "[" << type->Elements << "] (" << *var.name
-          << "@" << loc << ") at register " << sets[constant.RegisterSet]
+          << "  struct " << name << "[" << type->Elements << "] (" << *param._name
+          << ") at register " << sets[constant.RegisterSet]
           << constant.RegisterIndex;
       } else {
         const char *types[] = {"void", "bool", "int", "float", "string", "texture", "texture1D", "texture2D", "texture3D", "textureCUBE", "sampler", "sampler1D", "sampler2D", "sampler3D", "samplerCUBE"};
         dxgsg9_cat.debug()
           << "  " << ((type->Type <= D3DXPT_SAMPLERCUBE) ? types[type->Type] : "unknown")
-          << " " << name << "[" << type->Elements << "] (" << *var.name
-          << "@" << loc << ") at register " << sets[constant.RegisterSet]
+          << " " << name << "[" << type->Elements << "] (" << *param._name
+          << ") at register " << sets[constant.RegisterSet]
           << constant.RegisterIndex;
       }
       if (constant.RegisterCount > 1) {
@@ -307,6 +341,44 @@ query_constants(const ShaderModule *module, DWORD *data) {
       dxgsg9_cat.debug(false) << std::endl;
     }
 #endif
+
+    int reg_set = constant.RegisterSet;
+    int reg_idx = constant.RegisterIndex;
+    int reg_end = reg_idx + constant.RegisterCount;
+    if (reg_set != D3DXRS_SAMPLER) {
+      size_t offset = (size_t)-1;
+      if (param._binding != nullptr) {
+        // If there is no binding yet for this parameter, add it.
+        for (const Binding &binding : _data_bindings) {
+          if (param._binding == binding._binding) {
+            offset = binding._offset;
+          }
+        }
+        if (offset == (size_t)-1) {
+          offset = _scratch_space_size;
+
+          Binding binding;
+          binding._binding = param._binding;
+          binding._offset = offset;
+          binding._dep = param._binding->get_state_dep();
+          _constant_deps |= binding._dep;
+          _data_bindings.push_back(std::move(binding));
+
+          // Pad space to 16-byte boundary
+          uint32_t size = param._type->get_size_bytes(true);
+          size = (size + 15) & ~15;
+          _scratch_space_size += size;
+        }
+      }
+
+      if (!r_query_constants(stage, param, param._type, offset, table_data, *type, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+    } else {
+      if (!r_query_resources(stage, param, param._type, suffix, 0, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+    }
   }
 
   return true;
@@ -316,21 +388,56 @@ query_constants(const ShaderModule *module, DWORD *data) {
  * Recursive method used by query_constants.
  */
 bool DXShaderContext9::
-r_query_constants(Shader::Stage stage, BYTE *offset, D3DXSHADER_TYPEINFO &typeinfo,
-                  int &loc, int reg_set, int &reg_idx, int reg_end) {
+r_query_constants(Shader::Stage stage, const Shader::Parameter &param,
+                  const ShaderType *type, size_t offset,
+                  BYTE *table_data, D3DXSHADER_TYPEINFO &typeinfo,
+                  int reg_set, int &reg_idx, int reg_end) {
   if (typeinfo.Class == D3DXPC_STRUCT) {
-    //const ShaderType::Struct *struct_type = element_type->as_struct();
-    //nassertr(struct_type != nullptr, false);
-    D3DXSHADER_STRUCTMEMBERINFO *members = (D3DXSHADER_STRUCTMEMBERINFO *)(offset + typeinfo.StructMemberInfo);
+    int stride = 0;
+    const ShaderType *element_type = type;
+    if (const ShaderType::Array *array_type = type->as_array()) {
+      element_type = array_type->get_element_type();
+      stride = array_type->get_stride_bytes();
+    }
+
+    const ShaderType::Struct *struct_type = element_type->as_struct();
+    nassertr(struct_type != nullptr, false);
+
+    D3DXSHADER_STRUCTMEMBERINFO *members = (D3DXSHADER_STRUCTMEMBERINFO *)(table_data + typeinfo.StructMemberInfo);
+
+    if (reg_idx < reg_end && typeinfo.StructMembers == 1 &&
+        ((D3DXSHADER_TYPEINFO *)(table_data + members[0].TypeInfo))->Elements == 1 &&
+        strcmp((const char *)(table_data + members[0].Name), "empty_struct_member") == 0) {
+      // Special case of spirv-cross inventing a struct member where it does
+      // not exist.  Increment the register index and skip.
+      ++reg_idx;
+      return true;
+    }
 
     for (WORD ei = 0; ei < typeinfo.Elements && reg_idx < reg_end; ++ei) {
-      for (DWORD mi = 0; mi < typeinfo.StructMembers && reg_idx < reg_end; ++mi) {
-        D3DXSHADER_TYPEINFO *typeinfo = (D3DXSHADER_TYPEINFO *)(offset + members[mi].TypeInfo);
+      DWORD dxmi = 0;
+      for (size_t mi = 0; mi < struct_type->get_num_members() && reg_idx < reg_end && dxmi < typeinfo.StructMembers; ++mi) {
+        const ShaderType::Struct::Member &member = struct_type->get_member(mi);
 
-        if (!r_query_constants(stage, offset, *typeinfo, loc, reg_set, reg_idx, reg_end)) {
+        // Check if this is a resource or an array of resources.  If so, it was
+        // removed by the hoisting pass, and so we have to skip it.
+        const ShaderType *element_type = member.type;
+        while (const ShaderType::Array *array_type = element_type->as_array()) {
+          element_type = array_type->get_element_type();
+        }
+        if (element_type->as_resource() != nullptr) {
+          continue;
+        }
+
+        //const char *name = (const char *)(table_data + members[dxmi].Name);
+        D3DXSHADER_TYPEINFO *typeinfo = (D3DXSHADER_TYPEINFO *)(table_data + members[dxmi].TypeInfo);
+        if (!r_query_constants(stage, param, member.type, offset + member.offset, table_data, *typeinfo, reg_set, reg_idx, reg_end)) {
           return false;
         }
+        ++dxmi;
       }
+
+      offset += stride;
     }
   } else {
     // Non-aggregate type.  Note that arrays of arrays are not supported.
@@ -339,25 +446,78 @@ r_query_constants(Shader::Stage stage, BYTE *offset, D3DXSHADER_TYPEINFO &typein
     // Note that RegisterCount may be lower than Rows * Elements if the
     // optimizer decided that eg. the last row of a matrix is not used!
 
-    nassertr((size_t)loc < _register_map.size(), false);
-
-    ConstantRegister &reg = _register_map[(size_t)loc];
+    ConstantRegister reg;
     reg.set = (D3DXREGISTER_SET)reg_set;
-    reg.count = std::max(reg.count, (UINT)(reg_end - reg_idx));
-    switch (stage) {
-    case ShaderModule::Stage::vertex:
-      reg.vreg = reg_idx;
-      break;
-    case ShaderModule::Stage::fragment:
-      reg.freg = reg_idx;
-      break;
-    default:
-      reg.count = 0;
-      break;
+    reg.reg = reg_idx;
+    reg.count = std::min((UINT)typeinfo.Elements * typeinfo.Rows, (UINT)(reg_end - reg_idx));
+    reg.dep = param._binding ? param._binding->get_state_dep() : 0;
+    reg.offset = offset;
+
+    // Regularly, ints and bools actually get mapped to a float constant
+    // register, so we need to do an extra conversion step.
+    reg.convert = (reg.set == D3DXRS_FLOAT4 && typeinfo.Type != D3DXPT_FLOAT);
+
+    if (stage == Shader::Stage::vertex) {
+      _vertex_constants.push_back(std::move(reg));
+    }
+    if (stage == Shader::Stage::fragment) {
+      _pixel_constants.push_back(std::move(reg));
     }
 
-    loc += typeinfo.Elements;
     reg_idx += typeinfo.Elements * typeinfo.Rows;
+  }
+
+  return true;
+}
+
+/**
+ * Recursive method used by query_constants, identifying the resources used in
+ * the shader.  The resources that are hoisted from structs will be named
+ * something like p0_1_2_3, where p0 indicates the parameter index, and the
+ * next indices identify the struct member indices to traverse down into.
+ */
+bool DXShaderContext9::
+r_query_resources(Shader::Stage stage, const Shader::Parameter &param,
+                  const ShaderType *type, const char *path, int resource_index,
+                  int reg_set, int &reg_idx, int reg_end) {
+
+  if (const ShaderType::Array *array_type = type->as_array()) {
+    const ShaderType *element_type = array_type->get_element_type();
+    int stride = element_type->get_num_resources();
+
+    for (size_t i = 0; i < array_type->get_num_elements() && reg_idx < reg_end; ++i) {
+      if (!r_query_resources(stage, param, element_type, path, resource_index, reg_set, reg_idx, reg_end)) {
+        return false;
+      }
+      resource_index += stride;
+    }
+  }
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    nassertr(path[0] == '_', false);
+
+    char *suffix;
+    long member_index = strtol(path + 1, &suffix, 10);
+    nassertr(member_index >= 0 && member_index < struct_type->get_num_members(), false);
+
+    for (long i = 0; i < member_index; ++i) {
+      const ShaderType *member_type = struct_type->get_member(i).type;
+      resource_index += member_type->get_num_resources();
+    }
+
+    const ShaderType *member_type = struct_type->get_member(member_index).type;
+    return r_query_resources(stage, param, member_type, suffix, resource_index, reg_set, reg_idx, reg_end);
+  }
+  else if (const ShaderType::Resource *resource_type = type->as_resource()) {
+    nassertr(path[0] == '\0', false);
+
+    if (reg_idx < reg_end) {
+      TextureRegister reg;
+      reg.unit = reg_idx;
+      reg.binding = param._binding;
+      reg.resource_id = param._binding->get_resource_id(resource_index, resource_type);
+      _textures.push_back(std::move(reg));
+      ++reg_idx;
+    }
   }
 
   return true;
@@ -373,9 +533,9 @@ release_resources() {
     _vertex_shader->Release();
     _vertex_shader = nullptr;
   }
-  if (_vertex_shader != nullptr) {
-    _vertex_shader->Release();
-    _vertex_shader = nullptr;
+  if (_pixel_shader != nullptr) {
+    _pixel_shader->Release();
+    _pixel_shader = nullptr;
   }
 
   for (const auto &it : _vertex_declarations) {
@@ -398,17 +558,6 @@ bind(GSG *gsg) {
   // through
   gsg->_last_fvf = 0;
 
-  // Pass in k-parameters and transform-parameters.
-  // Since the shader is always unbound at the end of a frame, this is a good
-  // place to check for frame parameter as well.
-  int altered = Shader::SSD_general;
-  int frame_number = ClockObject::get_global_clock()->get_frame_count();
-  if (frame_number != _frame_number) {
-     altered |= Shader::SSD_frame;
-    _frame_number = frame_number;
-  }
-  issue_parameters(gsg, altered);
-
   // Bind the shaders.
   HRESULT result;
   result = gsg->_d3d_device->SetVertexShader(_vertex_shader);
@@ -422,6 +571,12 @@ bind(GSG *gsg) {
     dxgsg9_cat.error() << "SetPixelShader failed " << D3DERRORSTRING(result);
     gsg->_d3d_device->SetVertexShader(nullptr);
     return false;
+  }
+
+  //TODO: what should we set this to?
+  if (_half_pixel_register >= 0) {
+    const float data[4] = {0, 0, 0, 0};
+    gsg->_d3d_device->SetVertexShaderConstantF(_half_pixel_register, data, 1);
   }
 
   return true;
@@ -452,445 +607,77 @@ issue_parameters(GSG *gsg, int altered) {
     return;
   }
 
+  nassertv(gsg->_target_shader != nullptr);
+
   LPDIRECT3DDEVICE9 device = gsg->_d3d_device;
 
-  // We have no way to track modifications to PTAs, so we assume that they are
-  // modified every frame and when we switch ShaderAttribs.
-  if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
-    // Iterate through _ptr parameters
-    for (const Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
-      Shader::ShaderPtrData ptr_data;
-      if (!gsg->fetch_ptr_parameter(spec, ptr_data)) { //the input is not contained in ShaderPtrData
-        release_resources();
-        return;
+  if (altered & _constant_deps) {
+    unsigned char *scratch = (unsigned char *)alloca(_scratch_space_size);
+
+    ShaderInputBinding::State state;
+    state.gsg = gsg;
+    state.matrix_cache = &gsg->_matrix_cache[0];
+
+    for (const Binding &binding : _data_bindings) {
+      if (altered & binding._dep) {
+        binding._binding->fetch_data(state, scratch + binding._offset, true);
       }
-      if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
+    }
+
+    for (const ConstantRegister &reg : _vertex_constants) {
+      if ((altered & reg.dep) == 0) {
         continue;
       }
 
-      ConstantRegister &reg = _register_map[spec._id._location];
-      if (reg.count == 0) {
-        continue;
-      }
-
-      // Calculate how many elements to transfer; no more than it expects,
-      // but certainly no more than we have.
-      size_t num_cols = spec._dim[2];
-      if (num_cols == 0) {
-        continue;
-      }
-      size_t num_rows = std::min((size_t)spec._dim[0] * (size_t)spec._dim[1],
-                                 (size_t)(ptr_data._size / num_cols));
+      const void *data = scratch + reg.offset;
 
       switch (reg.set) {
-      case D3DXRS_BOOL:
-        {
-          BOOL *data = (BOOL *)alloca(sizeof(BOOL) * 4 * num_rows);
-          memset(data, 0, sizeof(BOOL) * 4 * num_rows);
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-          case ShaderType::ST_uint:
-          case ShaderType::ST_float:
-            // All have the same 0-representation.
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4] = ((int *)ptr_data._ptr)[i] != 0;
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((int *)ptr_data._ptr)[i * 2] != 0;
-                data[i * 4 + 1] = ((int *)ptr_data._ptr)[i * 2 + 1] != 0;
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((int *)ptr_data._ptr)[i * 3] != 0;
-                data[i * 4 + 1] = ((int *)ptr_data._ptr)[i * 3 + 1] != 0;
-                data[i * 4 + 2] = ((int *)ptr_data._ptr)[i * 3 + 2] != 0;
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                data[i] = ((int *)ptr_data._ptr)[i] != 0;
-              }
-            }
-            break;
-
-          case ShaderType::ST_double:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4] = ((double *)ptr_data._ptr)[i] != 0;
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((double *)ptr_data._ptr)[i * 2] != 0;
-                data[i * 4 + 1] = ((double *)ptr_data._ptr)[i * 2 + 1] != 0;
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i * 4 + 0] = ((double *)ptr_data._ptr)[i * 3] != 0;
-                data[i * 4 + 1] = ((double *)ptr_data._ptr)[i * 3 + 1] != 0;
-                data[i * 4 + 2] = ((double *)ptr_data._ptr)[i * 3 + 2] != 0;
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                data[i] = ((double *)ptr_data._ptr)[i] != 0;
-              }
-            }
-            break;
-          }
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantB(reg.vreg, data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantB(reg.freg, data, num_rows);
+      case D3DXRS_FLOAT4:
+        if (reg.convert) {
+          for (UINT i = 0; i < reg.count; ++i) {
+            LVecBase4i from = ((LVecBase4i *)data)[i];
+            ((LVecBase4f *)data)[i] = LCAST(float, from);
           }
         }
+        device->SetVertexShaderConstantF(reg.reg, (const float *)data, reg.count);
         break;
 
       case D3DXRS_INT4:
-        if (ptr_data._type != ShaderType::ST_int &&
-            ptr_data._type != ShaderType::ST_uint) {
-          dxgsg9_cat.error()
-            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-          // Deactivate it to make sure the user doesn't get flooded with this
-          // error.
-          reg.count = -1;
-        }
-        else if (num_cols == 4) {
-          // Straight passthrough, hooray!
-          void *data = ptr_data._ptr;
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantI(reg.vreg, (int *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantI(reg.freg, (int *)data, num_rows);
-          }
-        }
-        else {
-          // Need to pad out the rows.
-          LVecBase4i *data = (LVecBase4i *)alloca(sizeof(LVecBase4i) * num_rows);
-          memset(data, 0, sizeof(LVecBase4i) * num_rows);
-          if (num_cols == 1) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i], 0, 0, 0);
-            }
-          } else if (num_cols == 2) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i * 2],
-                          ((int *)ptr_data._ptr)[i * 2 + 1],
-                          0, 0);
-            }
-          } else if (num_cols == 3) {
-            for (size_t i = 0; i < num_rows; ++i) {
-              data[i].set(((int *)ptr_data._ptr)[i * 3],
-                          ((int *)ptr_data._ptr)[i * 3 + 1],
-                          ((int *)ptr_data._ptr)[i * 3 + 2],
-                          0);
-            }
-          }
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantI(reg.vreg, (int *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantI(reg.freg, (int *)data, num_rows);
-          }
-        }
+        device->SetVertexShaderConstantI(reg.reg, (const int *)data, reg.count);
         break;
 
+      case D3DXRS_BOOL:
+        device->SetVertexShaderConstantB(reg.reg, (const BOOL *)data, reg.count);
+        break;
+      }
+    }
+
+    for (const ConstantRegister &reg : _pixel_constants) {
+      if ((altered & reg.dep) == 0) {
+        continue;
+      }
+
+      const void *data = scratch + reg.offset;
+
+      switch (reg.set) {
       case D3DXRS_FLOAT4:
-        if (ptr_data._type == ShaderType::ST_float && num_cols == 4) {
-          // Straight passthrough, hooray!
-          void *data = ptr_data._ptr;
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantF(reg.vreg, (float *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantF(reg.freg, (float *)data, num_rows);
+        if (reg.convert) {
+          for (UINT i = 0; i < reg.count; ++i) {
+            LVecBase4i from = ((LVecBase4i *)data)[i];
+            ((LVecBase4f *)data)[i] = LCAST(float, from);
           }
         }
-        else {
-          // Need to pad out the rows.
-          LVecBase4f *data = (LVecBase4f *)alloca(sizeof(LVecBase4f) * num_rows);
-          memset(data, 0, sizeof(LVecBase4f) * num_rows);
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i * 2],
-                            (float)((int *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((int *)ptr_data._ptr)[i * 3],
-                            (float)((int *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((int *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((int *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_uint:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i * 2],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((unsigned int *)ptr_data._ptr)[i * 3],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((unsigned int *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((unsigned int *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_float:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i * 2],
-                            ((float *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set(((float *)ptr_data._ptr)[i * 3],
-                            ((float *)ptr_data._ptr)[i * 3 + 1],
-                            ((float *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = ((float *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-
-          case ShaderType::ST_double:
-            if (num_cols == 1) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i], 0, 0, 0);
-              }
-            } else if (num_cols == 2) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i * 2],
-                            (float)((double *)ptr_data._ptr)[i * 2 + 1],
-                            0, 0);
-              }
-            } else if (num_cols == 3) {
-              for (size_t i = 0; i < num_rows; ++i) {
-                data[i].set((float)((double *)ptr_data._ptr)[i * 3],
-                            (float)((double *)ptr_data._ptr)[i * 3 + 1],
-                            (float)((double *)ptr_data._ptr)[i * 3 + 2],
-                            0);
-              }
-            } else {
-              for (size_t i = 0; i < num_rows * 4; ++i) {
-                ((float *)data)[i] = (float)((double *)ptr_data._ptr)[i];
-              }
-            }
-            break;
-          }
-
-          if (reg.vreg >= 0) {
-            device->SetVertexShaderConstantF(reg.vreg, (float *)data, num_rows);
-          }
-          if (reg.freg >= 0) {
-            device->SetPixelShaderConstantF(reg.freg, (float *)data, num_rows);
-          }
-        }
+        device->SetPixelShaderConstantF(reg.reg, (const float *)data, reg.count);
         break;
 
-      default:
-        continue;
-      }
-    }
-  }
+      case D3DXRS_INT4:
+        device->SetPixelShaderConstantI(reg.reg, (const int *)data, reg.count);
+        break;
 
-  if (altered & _shader->_mat_deps) {
-    gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
-
-    for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
-      if ((altered & spec._dep) == 0) {
-        continue;
-      }
-      if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
-        continue;
-      }
-
-      ConstantRegister &reg = _register_map[spec._id._location];
-      if (reg.count == 0) {
-        continue;
-      }
-      nassertd(reg.set == D3DXRS_FLOAT4) continue;
-
-      const LMatrix4 *val = gsg->fetch_specified_value(spec, _mat_part_cache, altered);
-      if (!val) continue;
-
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
-#else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
-#endif
-      PN_float32 scratch[16];
-
-      switch (spec._piece) {
-      case Shader::SMP_whole:
-      case Shader::SMP_upper3x4:
-      case Shader::SMP_upper4x3:
-        break;
-      case Shader::SMP_transpose:
-      case Shader::SMP_transpose3x4:
-      case Shader::SMP_transpose4x3:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[12];
-        scratch[4] = data[1];
-        scratch[5] = data[5];
-        scratch[6] = data[9];
-        scratch[7] = data[13];
-        scratch[8] = data[2];
-        scratch[9] = data[6];
-        scratch[10] = data[10];
-        scratch[11] = data[14];
-        scratch[12] = data[3];
-        scratch[13] = data[7];
-        scratch[14] = data[11];
-        scratch[15] = data[15];
-        data = scratch;
-        break;
-      case Shader::SMP_row0:
-        break;
-      case Shader::SMP_row1:
-        data = data + 4;
-        break;
-      case Shader::SMP_row2:
-        data = data + 8;
-        break;
-      case Shader::SMP_row3:
-        data = data + 12;
-        break;
-      case Shader::SMP_col0:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[12];
-        data = scratch;
-        break;
-      case Shader::SMP_col1:
-        scratch[0] = data[1];
-        scratch[1] = data[5];
-        scratch[2] = data[9];
-        scratch[3] = data[13];
-        data = scratch;
-        break;
-      case Shader::SMP_col2:
-        scratch[0] = data[2];
-        scratch[1] = data[6];
-        scratch[2] = data[10];
-        scratch[3] = data[14];
-        data = scratch;
-        break;
-      case Shader::SMP_col3:
-        scratch[0] = data[3];
-        scratch[1] = data[7];
-        scratch[2] = data[11];
-        scratch[3] = data[15];
-        data = scratch;
-        break;
-      case Shader::SMP_row3x1:
-      case Shader::SMP_row3x2:
-      case Shader::SMP_row3x3:
-        data = data + 12;
-        break;
-      case Shader::SMP_upper3x3:
-        scratch[0] = data[0];
-        scratch[1] = data[1];
-        scratch[2] = data[2];
-        scratch[3] = data[4];
-        scratch[4] = data[5];
-        scratch[5] = data[6];
-        scratch[6] = data[8];
-        scratch[7] = data[9];
-        scratch[8] = data[10];
-        data = scratch;
-        break;
-      case Shader::SMP_transpose3x3:
-        scratch[0] = data[0];
-        scratch[1] = data[4];
-        scratch[2] = data[8];
-        scratch[3] = data[1];
-        scratch[4] = data[5];
-        scratch[5] = data[9];
-        scratch[6] = data[2];
-        scratch[7] = data[6];
-        scratch[8] = data[10];
-        data = scratch;
-        break;
-      case Shader::SMP_cell15:
-        // Need to copy to scratch, otherwise D3D will read out of bounds.
-        scratch[0] = data[15];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
-        break;
-      case Shader::SMP_cell14:
-        scratch[0] = data[14];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
-        break;
-      case Shader::SMP_cell13:
-        scratch[0] = data[13];
-        scratch[1] = 0;
-        scratch[2] = 0;
-        scratch[3] = 0;
-        data = scratch;
+      case D3DXRS_BOOL:
+        device->SetPixelShaderConstantB(reg.reg, (const BOOL *)data, reg.count);
         break;
       }
-
-      if (reg.vreg >= 0) {
-        device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
-      }
-      if (reg.freg >= 0) {
-        device->SetPixelShaderConstantF(reg.freg, data, reg.count);
-      }
-    }
-  }
-
-  if (altered & Shader::SSD_frame) {
-    //TODO: what should we set this to?
-    if (_half_pixel_register >= 0) {
-      const float data[4] = {0, 0, 0, 0};
-      gsg->_d3d_device->SetVertexShaderConstantF(_half_pixel_register, data, 1);
     }
   }
 }
@@ -900,103 +687,7 @@ issue_parameters(GSG *gsg, int altered) {
  */
 void DXShaderContext9::
 update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
-  int loc = _shader->_transform_table_loc;
-  if (loc >= 0) {
-    ConstantRegister &reg = _register_map[(size_t)loc];
-
-    float *data;
-    const TransformTable *table = data_reader->get_transform_table();
-    if (!_shader->_transform_table_reduced) {
-      // reg.count is the number of registers, which is 4 per matrix.  However,
-      // due to optimization, the last row of the last matrix may be cut off.
-      size_t num_matrices = (reg.count + 3) / 4;
-      data = (float *)alloca(num_matrices * sizeof(LMatrix4f));
-      LMatrix4f *matrices = (LMatrix4f *)data;
-
-      size_t i = 0;
-      if (table != nullptr) {
-        bool transpose = (_shader->get_language() == Shader::SL_Cg);
-        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
-        for (; i < num_transforms; ++i) {
-#ifdef STDFLOAT_DOUBLE
-          LMatrix4 matrix;
-          table->get_transform(i)->get_matrix(matrix);
-          if (transpose) {
-            matrix.transpose_in_place();
-          }
-          matrices[i] = LCAST(float, matrix);
-#else
-          table->get_transform(i)->get_matrix(matrices[i]);
-          if (transpose) {
-            matrices[i].transpose_in_place();
-          }
-#endif
-        }
-      }
-      for (; i < num_matrices; ++i) {
-        matrices[i] = LMatrix4f::ident_mat();
-      }
-    }
-    else {
-      // Reduced 3x4 matrix, used by shader generator
-      size_t num_matrices = (reg.count + 2) / 3;
-      data = (float *)alloca(num_matrices * sizeof(LVecBase4f) * 3);
-      LVecBase4f *vectors = (LVecBase4f *)data;
-
-      size_t i = 0;
-      if (table != nullptr) {
-        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
-        for (; i < num_transforms; ++i) {
-          LMatrix4f matrix;
-#ifdef STDFLOAT_DOUBLE
-          LMatrix4d matrixd;
-          table->get_transform(i)->get_matrix(matrixd);
-          matrix = LCAST(float, matrixd);
-#else
-          table->get_transform(i)->get_matrix(matrix);
-#endif
-          vectors[i * 3 + 0] = matrix.get_col(0);
-          vectors[i * 3 + 1] = matrix.get_col(1);
-          vectors[i * 3 + 2] = matrix.get_col(2);
-        }
-      }
-      for (; i < num_matrices; ++i) {
-        vectors[i * 3 + 0].set(1, 0, 0, 0);
-        vectors[i * 3 + 1].set(0, 1, 0, 0);
-        vectors[i * 3 + 2].set(0, 0, 1, 0);
-      }
-    }
-
-    if (reg.vreg >= 0) {
-      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
-    }
-    if (reg.freg >= 0) {
-      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, data, reg.count);
-    }
-  }
-
-  loc = _shader->_slider_table_loc;
-  if (loc >= 0) {
-    ConstantRegister &reg = _register_map[(size_t)loc];
-
-    LVecBase4f *sliders = (LVecBase4f *)alloca(reg.count * sizeof(LVecBase4f));
-    memset(sliders, 0, reg.count * sizeof(LVecBase4f));
-
-    const SliderTable *table = data_reader->get_slider_table();
-    if (table != nullptr) {
-      size_t num_sliders = std::min((size_t)reg.count, table->get_num_sliders());
-      for (size_t i = 0; i < num_sliders; ++i) {
-        sliders[i] = table->get_slider(i)->get_slider();
-      }
-    }
-
-    if (reg.vreg >= 0) {
-      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, (float *)sliders, reg.count);
-    }
-    if (reg.freg >= 0) {
-      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, (float *)sliders, reg.count);
-    }
-  }
+  issue_parameters(gsg, Shader::D_vertex_data);
 }
 
 /**
@@ -1004,24 +695,11 @@ update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
  */
 void DXShaderContext9::
 disable_shader_texture_bindings(GSG *gsg) {
-  for (Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
-    ConstantRegister &reg = _register_map[spec._id._location];
-    if (reg.count == 0) {
-      continue;
-    }
-
-    int texunit = reg.freg;
-    if (texunit == -1) {
-      texunit = reg.vreg;
-      if (texunit == -1) {
-        continue;
-      }
-    }
-
-    HRESULT hr = gsg->_d3d_device->SetTexture(texunit, nullptr);
+  for (const TextureRegister &reg : _textures) {
+    HRESULT hr = gsg->_d3d_device->SetTexture(reg.unit, nullptr);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "SetTexture(" << texunit << ", NULL) failed "
+        << "SetTexture(" << reg.unit << ", NULL) failed "
         << D3DERRORSTRING(hr);
     }
   }
@@ -1043,46 +721,17 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
     return;
   }
 
-  for (Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
-    if (spec._id._location < 0 || (size_t)spec._id._location >= _register_map.size()) {
-      continue;
-    }
+  ShaderInputBinding::State state;
+  state.gsg = gsg;
+  state.matrix_cache = &gsg->_matrix_cache[0];
 
-    ConstantRegister &reg = _register_map[spec._id._location];
-    if (reg.count == 0) {
-      continue;
-    }
-    nassertd(reg.set == D3DXRS_SAMPLER) continue;
-
+  for (const TextureRegister &reg : _textures) {
     int view = gsg->get_current_tex_view_offset();
     SamplerState sampler;
 
-    PT(Texture) tex = gsg->fetch_specified_texture(spec, sampler, view);
+    PT(Texture) tex = reg.binding->fetch_texture(state, reg.resource_id, sampler, view);
     if (tex.is_null()) {
       continue;
-    }
-
-    if (spec._suffix != nullptr) {
-      // The suffix feature is inefficient.  It is a temporary hack.
-      tex = tex->load_related(spec._suffix);
-    }
-
-    Texture::TextureType tex_type = tex->get_texture_type();
-    if (tex_type != spec._desired_type) {
-      // Permit binding 2D texture to a 1D target, if it is one pixel high.
-      if (tex_type != Texture::TT_2d_texture ||
-          spec._desired_type != Texture::TT_1d_texture ||
-          tex->get_y_size() != 1) {
-        continue;
-      }
-    }
-
-    int texunit = reg.freg;
-    if (texunit == -1) {
-      texunit = reg.vreg;
-      if (texunit == -1) {
-        continue;
-      }
     }
 
     TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
@@ -1090,7 +739,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
       continue;
     }
 
-    gsg->apply_texture(texunit, tc, view, sampler);
+    gsg->apply_texture(reg.unit, tc, view, sampler);
   }
 }
 
@@ -1136,6 +785,9 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used
     }
     else if (spec._name == InternalName::get_color()) {
       usage = D3DDECLUSAGE_COLOR;
+    }
+    else if (spec._name == InternalName::get_size()) {
+      usage = D3DDECLUSAGE_PSIZE;
     }
     else {
       usage = D3DDECLUSAGE_TEXCOORD;

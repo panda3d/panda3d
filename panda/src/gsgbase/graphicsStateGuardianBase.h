@@ -227,6 +227,7 @@ public:
   (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
    ScreenshotRequest *request = nullptr)=0;
 
+  INLINE CoordinateSystem get_coordinate_system() const { return _coordinate_system; }
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
@@ -272,6 +273,8 @@ private:
 
 protected:
   static UpdateSeq _generated_shader_seq;
+
+  CoordinateSystem _coordinate_system = CS_invalid;
 
 public:
   static TypeHandle get_class_type() {

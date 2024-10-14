@@ -21,7 +21,8 @@ VulkanShaderContext(Shader *shader) :
   ShaderContext(shader),
   _modules{VK_NULL_HANDLE} {
 
-  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+  _matrix_cache = pvector<LMatrix4>(shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = shader->_matrix_cache_deps;
 }
 
 /**
@@ -29,7 +30,6 @@ VulkanShaderContext(Shader *shader) :
  */
 INLINE VulkanShaderContext::
 ~VulkanShaderContext()  {
-  delete[] _mat_part_cache;
 }
 
 /**

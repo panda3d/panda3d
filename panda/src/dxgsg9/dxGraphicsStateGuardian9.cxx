@@ -2065,8 +2065,9 @@ do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
     return false;
 
   default:
-    format = Texture::F_rgb;
+    format = Texture::has_alpha(format) ? Texture::F_rgba : Texture::F_rgb;
     component_type = Texture::T_unsigned_byte;
+    break;
   }
 
   Texture::TextureType texture_type;
@@ -2317,7 +2318,7 @@ reset() {
   // GR_point_sprite_tex_matrix.
   _supported_geom_rendering =
     Geom::GR_point | Geom::GR_point_uniform_size |
-    Geom::GR_point_perspective | Geom::GR_point_sprite |
+    Geom::GR_point_perspective | Geom::GR_point_sprite | Geom::GR_point_scale |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex |
@@ -2355,7 +2356,8 @@ reset() {
                            | Shader::C_standard_derivatives
                            | Shader::C_shadow_samplers
                            | Shader::C_non_square_matrices
-                           | Shader::C_texture_lod;
+                           | Shader::C_texture_lod
+                           | Shader::C_draw_buffers;
 
     _supports_geometry_instancing = true;
   }
@@ -2822,7 +2824,7 @@ do_issue_transform() {
 
   if (_current_shader_context) {
 // _current_shader_context->issue_transform(this);
-    _current_shader_context->issue_parameters(this, Shader::SSD_transform);
+    _current_shader_context->issue_parameters(this, Shader::D_transform);
 
 // ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM
 // IS ONLY USED IN THE SHADER
@@ -2874,9 +2876,9 @@ do_issue_alpha_test() {
 }
 
 /**
- *
+ * Returns true if the shader was replaced.
  */
-void DXGraphicsStateGuardian9::
+bool DXGraphicsStateGuardian9::
 do_issue_shader() {
 
   DXShaderContext9 *context = 0;
@@ -2895,7 +2897,7 @@ do_issue_shader() {
       _current_shader_context = 0;
       disable_standard_texture_bindings();
     }
-    return;
+    return false;
   }
 
   if (context != _current_shader_context) {
@@ -2906,16 +2908,17 @@ do_issue_shader() {
       _current_shader_context = 0;
       _current_shader = 0;
       disable_standard_texture_bindings();
+      _matrix_cache.clear();
     }
     if (context != 0) {
       context->bind(this);
       _current_shader = shader;
       _current_shader_context = context;
+      _matrix_cache.resize(shader->get_matrix_cache_size());
+      return true;
     }
-  } else {
-    // Use the same shader as before, but with new input arguments.
-    context->issue_parameters(this, Shader::SSD_shaderinputs);
   }
+  return false;
 }
 
 /**
@@ -3142,19 +3145,25 @@ set_state_and_transform(const RenderState *target,
   _state_pcollector.add_level(1);
   PStatTimer timer1(_draw_set_state_pcollector);
 
+  int shader_deps = 0;
   if (transform != _internal_transform) {
     // PStatTimer timer(_draw_set_state_transform_pcollector);
     _state_pcollector.add_level(1);
     _internal_transform = transform;
     do_issue_transform();
+    shader_deps |= Shader::D_transform;
   }
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+    if (shader_deps != 0 && _current_shader_context != nullptr) {
+      update_shader_matrix_cache(_current_shader, &_matrix_cache[0], ~0);
+
+      _current_shader_context->issue_parameters(this, shader_deps);
+    }
     return;
   }
   _target_rs = target;
 
-  int shader_deps = 0;
   determine_target_shader();
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
@@ -3184,7 +3193,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
-    shader_deps |= Shader::SSD_color | Shader::SSD_colorscale;
+    shader_deps |= Shader::D_color | Shader::D_colorscale;
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -3225,7 +3234,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
     _state_mask.set_bit(render_mode_slot);
-    shader_deps |= Shader::SSD_render_mode;
+    shader_deps |= Shader::D_render_mode;
   }
 
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
@@ -3266,10 +3275,19 @@ set_state_and_transform(const RenderState *target,
   if (_target_shader != _state_shader ||
       !_state_mask.get_bit(shader_slot)) {
     // PStatTimer timer(_draw_set_state_shader_pcollector);
-    do_issue_shader();
+    Shader *prev_shader = _current_shader;
+    if (do_issue_shader()) {
+      // Respecify everything after binding a shader.
+      shader_deps |= Shader::D_frame |
+                     Shader::D_scene |
+                     Shader::D_state |
+                     Shader::D_transform |
+                     Shader::D_projection;
+    }
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.set_bit(shader_slot);
+    shader_deps |= Shader::D_shader_inputs;
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
@@ -3289,7 +3307,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(texture_slot);
     _state_mask.set_bit(tex_matrix_slot);
     _state_mask.set_bit(tex_gen_slot);
-    shader_deps |= Shader::SSD_tex_matrix | Shader::SSD_tex_gen;
+    shader_deps |= Shader::D_tex_matrix | Shader::D_tex_gen;
   }
 
   int material_slot = MaterialAttrib::get_class_slot();
@@ -3298,7 +3316,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state_mask.set_bit(material_slot);
-    shader_deps |= Shader::SSD_material;
+    shader_deps |= Shader::D_material;
   }
 
   int light_slot = LightAttrib::get_class_slot();
@@ -3323,7 +3341,7 @@ set_state_and_transform(const RenderState *target,
     // PStatTimer timer(_draw_set_state_fog_pcollector);
     do_issue_fog();
     _state_mask.set_bit(fog_slot);
-    shader_deps |= Shader::SSD_fog;
+    shader_deps |= Shader::D_fog;
   }
 
   int scissor_slot = ScissorAttrib::get_class_slot();
@@ -3335,6 +3353,8 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (_current_shader_context != nullptr && shader_deps != 0) {
+    update_shader_matrix_cache(_current_shader, &_matrix_cache[0], ~0);
+
     _current_shader_context->issue_parameters(this, shader_deps);
   }
 
@@ -5258,7 +5278,7 @@ FrameBufferProperties DXGraphicsStateGuardian9::
 calc_fb_properties(DWORD cformat, DWORD dformat,
                    DWORD multisampletype, DWORD multisamplequality) {
   FrameBufferProperties props;
-  int index=0;
+  int index=0, isfloat=0;
   int r=0, g=0, b=0, a=0;
   switch (cformat) {
   case D3DFMT_R8G8B8:      r=8; g=8; b=8; a=0; break;
@@ -5272,9 +5292,18 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
   case D3DFMT_A8R3G3B2:    r=3; g=3; b=2; a=8; break;
   case D3DFMT_X4R4G4B4:    r=4; g=4; b=4; a=0; break;
   case D3DFMT_A2B10G10R10: r=10;g=10;b=10;a=2; break;
+  case D3DFMT_R16F:        r=16; isfloat=1; break;
+  case D3DFMT_G16R16F:     r=16; isfloat=1; break;
+  case D3DFMT_A16B16G16R16F:r=16; g=16; b=16; a=16; isfloat=1; break;
+  case D3DFMT_R32F:        r=32; isfloat=1; break;
+  case D3DFMT_G32R32F:     r=32; isfloat=1; break;
+  case D3DFMT_A32B32G32R32F:r=32; g=32; b=32; a=32; isfloat=1; break;
   case D3DFMT_A8P8:        index=8; a=8; break;
   case D3DFMT_P8:          index=8; a=0; break;
   default: break;
+  }
+  if (isfloat > 0) {
+    props.set_float_color(true);
   }
   if (index > 0) {
     props.set_rgb_color(0);

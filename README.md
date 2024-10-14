@@ -2,10 +2,10 @@
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
-
 Panda3D
 =======
+
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200" />
 
 Panda3D is a game engine, a framework for 3D rendering and game development for
 Python and C++ programs.  Panda3D is open-source and free for any purpose,
@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-13/).
+[this page](https://www.panda3d.org/download/sdk-1-10-14/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.13/panda3d-1.10.13-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -168,7 +168,7 @@ Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.11 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source

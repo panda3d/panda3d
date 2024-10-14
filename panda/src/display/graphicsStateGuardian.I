@@ -803,16 +803,6 @@ get_runtime_color_scale() const {
 }
 
 /**
- * Returns the coordinate system in effect on this particular gsg.  Normally,
- * this will be the default coordinate system, but it might be set differently
- * at runtime.
- */
-INLINE CoordinateSystem GraphicsStateGuardian::
-get_coordinate_system() const {
-  return _coordinate_system;
-}
-
-/**
  * Specifies the global quality_level to be imposed for all Textures rendered
  * by this GSG.  This overrides the value set on individual textures via
  * Texture::set_quality_level().  Set this to Texture::QL_default in order to
@@ -858,6 +848,31 @@ reset_if_new() {
 INLINE void GraphicsStateGuardian::
 mark_new() {
   _needs_reset = true;
+}
+
+/**
+ * This is only valid during rendering, and contains the RenderState last
+ * passed to set_state_and_transform.
+ */
+INLINE const RenderState *GraphicsStateGuardian::
+get_target_state() const {
+  return _target_rs.p();
+}
+
+/**
+ * This is only valid during rendering, and contains the ShaderAttrib in use.
+ */
+INLINE const ShaderAttrib *GraphicsStateGuardian::
+get_target_shader_attrib() const {
+  return _target_shader.p();
+}
+
+/**
+ *
+ */
+INLINE const GeomVertexDataPipelineReader *GraphicsStateGuardian::
+get_data_reader() const {
+  return _data_reader;
 }
 
 /**

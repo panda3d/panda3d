@@ -32,6 +32,7 @@
 #include "indirectLess.h"
 #include "loader.h"
 #include "referenceCount.h"
+#include "renderState.h"
 
 class Pipeline;
 class DisplayRegion;

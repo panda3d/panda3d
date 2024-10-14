@@ -41,7 +41,7 @@ struct Dtool_PyTypedObject;
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
-typedef Dtool_PyInstDef *(*WrapFunction)(void *, Dtool_PyTypedObject *);
+typedef PyObject *(*WrapFunction)(void *, PyTypeObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
 typedef void (*ModuleClassInitFunction)(PyObject *module);
 
@@ -162,6 +162,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
+// Extract the PyTypeObject pointer corresponding to a Dtool_PyTypedObject.
+#define Dtool_GetPyTypeObject(type) (&(type)->_PyType)
+
 // Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
 #define DtoolInstance_Check(obj) \
   (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
@@ -178,9 +181,26 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
+#if PY_VERSION_HEX >= 0x030d0000
+class Dtool_TypeMap : public std::map<std::string, Dtool_PyTypedObject *> {
+public:
+  PyMutex _lock { 0 };
+};
+#else
 typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
+#endif
 
 EXPCL_PYPANDA Dtool_TypeMap *Dtool_GetGlobalTypeMap();
+
+class DtoolProxy {
+public:
+  mutable PyObject *_self;
+  TypeHandle _type;
+};
+
+EXPCL_PYPANDA void DtoolProxy_Init(DtoolProxy *proxy, PyObject *self,
+                                   Dtool_PyTypedObject &classdef,
+                                   TypeRegistry::PythonWrapFunc *wrap_func);
 
 /**
 
@@ -216,12 +236,17 @@ EXPCL_PYPANDA PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const
 EXPCL_PYPANDA PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
 
 EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError();
+EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError(const char *message);
+EXPCL_PYPANDA int _Dtool_Raise_BadArgumentsError_Int();
+EXPCL_PYPANDA int _Dtool_Raise_BadArgumentsError_Int(const char *message);
 #ifdef NDEBUG
 // Define it to a function that just prints a generic message.
 #define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError()
+#define Dtool_Raise_BadArgumentsError_Int(x) _Dtool_Raise_BadArgumentsError_Int()
 #else
 // Expand this to a TypeError listing all of the overloads.
-#define Dtool_Raise_BadArgumentsError(x) Dtool_Raise_TypeError("Arguments must match:\n" x)
+#define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError(x)
+#define Dtool_Raise_BadArgumentsError_Int(x) _Dtool_Raise_BadArgumentsError_Int(x)
 #endif
 
 // These functions are similar to Dtool_WrapValue, except that they also
@@ -232,7 +257,7 @@ EXPCL_PYPANDA PyObject *Dtool_Return_Bool(bool value);
 EXPCL_PYPANDA PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
-#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
+#define Dtool_Return_None() (LIKELY(PyErr_Occurred() == nullptr) ? (Py_NewRef(Py_None)) : nullptr)
 #define Dtool_Return(value) (LIKELY(PyErr_Occurred() == nullptr) ? value : nullptr)
 #else
 #define Dtool_Return_None() _Dtool_Return_None()

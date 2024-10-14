@@ -47,6 +47,26 @@ ShaderModule::
 }
 
 /**
+ * Takes a vector of parameter names and returns a vectort of parameter ids.
+ */
+pvector<uint32_t> ShaderModule::
+get_parameter_ids_from_names(const pvector<const InternalName *> &names) const {
+  pvector<uint32_t> ids(names.size(), 0u);
+
+  for (size_t i = 0; i < names.size(); ++i) {
+    const InternalName *name = names[i];
+    if (name != nullptr) {
+      int index = find_parameter(name);
+      if (index >= 0) {
+        ids[i] = _parameters[index].id;
+      }
+    }
+  }
+
+  return ids;
+}
+
+/**
  * Links the stage with the given previous stage, by matching up its inputs with
  * the outputs of the previous stage.  Rather than reassigning the locations
  * directly, this method just returns the location remappings that need to be

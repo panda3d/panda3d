@@ -80,6 +80,7 @@ PUBLISHED:
 
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
+  MAKE_PROPERTY(cursor_position, get_cursor_position, set_cursor_position);
 
   INLINE PN_stdfloat get_cursor_X() const;
   INLINE PN_stdfloat get_cursor_Y() const;
@@ -90,33 +91,45 @@ PUBLISHED:
   INLINE PN_stdfloat get_max_width() const;
   INLINE void set_num_lines(int num_lines);
   INLINE int get_num_lines() const;
+  MAKE_PROPERTY(max_chars, get_max_chars, set_max_chars);
+  MAKE_PROPERTY(max_width, get_max_width, set_max_width);
+  MAKE_PROPERTY(num_lines, get_num_lines, set_num_lines);
 
   INLINE void set_blink_rate(PN_stdfloat blink_rate);
   INLINE PN_stdfloat get_blink_rate() const;
+  MAKE_PROPERTY(blink_rate, get_blink_rate, set_blink_rate);
 
   INLINE NodePath get_cursor_def();
   INLINE void clear_cursor_def();
+  MAKE_PROPERTY(cursor_def, get_cursor_def);
 
   INLINE void set_cursor_keys_active(bool flag);
   INLINE bool get_cursor_keys_active() const;
+  MAKE_PROPERTY(cursor_keys_active, get_cursor_keys_active, set_cursor_keys_active);
 
   INLINE void set_obscure_mode(bool flag);
   INLINE bool get_obscure_mode() const;
+  MAKE_PROPERTY(obscure_mode, get_obscure_mode, set_obscure_mode);
 
   INLINE void set_overflow_mode(bool flag);
   INLINE bool get_overflow_mode() const;
+  MAKE_PROPERTY(overflow_mode, get_overflow_mode, set_overflow_mode);
 
   INLINE void set_candidate_active(const std::string &candidate_active);
   INLINE const std::string &get_candidate_active() const;
+  MAKE_PROPERTY(candidate_active, get_candidate_active, set_candidate_active);
 
   INLINE void set_candidate_inactive(const std::string &candidate_inactive);
   INLINE const std::string &get_candidate_inactive() const;
+  MAKE_PROPERTY(candidate_inactive, get_candidate_inactive, set_candidate_inactive);
 
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
   virtual void set_active(bool active) final;
   virtual void set_focus(bool focus);
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(focus, get_focus, set_focus);
 
   INLINE static std::string get_accept_prefix();
   INLINE static std::string get_accept_failed_prefix();
@@ -132,6 +145,12 @@ PUBLISHED:
   INLINE std::string get_erase_event() const;
   INLINE std::string get_cursormove_event() const;
 
+  MAKE_PROPERTY(accept_prefix, get_accept_prefix);
+  MAKE_PROPERTY(accept_failed_prefix, get_accept_failed_prefix);
+  MAKE_PROPERTY(overflow_prefix, get_overflow_prefix);
+  MAKE_PROPERTY(type_prefix, get_type_prefix);
+  MAKE_PROPERTY(erase_prefix, get_erase_prefix);
+  MAKE_PROPERTY(cursormove_prefix, get_cursormove_prefix);
 
   INLINE bool set_wtext(const std::wstring &wtext);
   INLINE std::wstring get_plain_wtext() const;

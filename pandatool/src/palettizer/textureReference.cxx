@@ -791,7 +791,7 @@ translate_uv(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
 void TextureReference::
 register_with_read_factory() {
   BamReader::get_factory()->
-    register_factory(get_class_type(), make_TextureReference);
+    register_factory(get_class_type(), make_from_bam);
 }
 
 /**
@@ -859,8 +859,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * encountered in a Bam file; it should allocate and return a new object with
  * all the data read.
  */
-TypedWritable* TextureReference::
-make_TextureReference(const FactoryParams &params) {
+TypedWritable *TextureReference::
+make_from_bam(const FactoryParams &params) {
   TextureReference *me = new TextureReference;
   DatagramIterator scan;
   BamReader *manager;

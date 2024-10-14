@@ -235,11 +235,16 @@ wstring TextAssembler::
 get_plain_wtext() const {
   wstring wtext;
 
-  TextString::const_iterator si;
-  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
-    const TextCharacter &tch = (*si);
+  for (const TextCharacter &tch : _text_string) {
     if (tch._graphic == nullptr) {
-      wtext += tch._character;
+      if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
+        wtext += (wchar_t)tch._character;
+      } else {
+        // Use a surrogate pair.
+        char32_t v = (char32_t)tch._character - 0x10000u;
+        wtext += (wchar_t)((v >> 10u) | 0xd800u);
+        wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
+      }
     } else {
       wtext.push_back(0);
     }
@@ -269,11 +274,16 @@ get_wordwrapped_plain_wtext() const {
       wtext += '\n';
     }
 
-    TextString::const_iterator si;
-    for (si = row._string.begin(); si != row._string.end(); ++si) {
-      const TextCharacter &tch = (*si);
+    for (const TextCharacter &tch : row._string) {
       if (tch._graphic == nullptr) {
-        wtext += tch._character;
+        if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
+          wtext += (wchar_t)tch._character;
+        } else {
+          // Use a surrogate pair.
+          char32_t v = (char32_t)tch._character - 0x10000u;
+          wtext += (wchar_t)((v >> 10u) | 0xd800u);
+          wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
+        }
       } else {
         wtext.push_back(0);
       }
@@ -295,12 +305,17 @@ get_wtext() const {
   wstring wtext;
   PT(ComputedProperties) current_cprops = _initial_cprops;
 
-  TextString::const_iterator si;
-  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
-    const TextCharacter &tch = (*si);
+  for (const TextCharacter &tch : _text_string) {
     current_cprops->append_delta(wtext, tch._cprops);
     if (tch._graphic == nullptr) {
-      wtext += tch._character;
+      if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
+        wtext += (wchar_t)tch._character;
+      } else {
+        // Use a surrogate pair.
+        char32_t v = (char32_t)tch._character - 0x10000u;
+        wtext += (wchar_t)((v >> 10u) | 0xd800u);
+        wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
+      }
     } else {
       wtext.push_back(text_embed_graphic_key);
       wtext += tch._graphic_wname;
@@ -341,12 +356,17 @@ get_wordwrapped_wtext() const {
       wtext += '\n';
     }
 
-    TextString::const_iterator si;
-    for (si = row._string.begin(); si != row._string.end(); ++si) {
-      const TextCharacter &tch = (*si);
+    for (const TextCharacter &tch : row._string) {
       current_cprops->append_delta(wtext, tch._cprops);
       if (tch._graphic == nullptr) {
-        wtext += tch._character;
+        if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
+          wtext += (wchar_t)tch._character;
+        } else {
+          // Use a surrogate pair.
+          char32_t v = (char32_t)tch._character - 0x10000u;
+          wtext += (wchar_t)((v >> 10u) | 0xd800u);
+          wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
+        }
       } else {
         wtext.push_back(text_embed_graphic_key);
         wtext += tch._graphic_wname;
@@ -624,6 +644,18 @@ assemble_text() {
  */
 PN_stdfloat TextAssembler::
 calc_width(wchar_t character, const TextProperties &properties) {
+  return calc_width((char32_t)character, properties);
+}
+
+/**
+ * Returns the width of a single character, according to its associated font.
+ * This also correctly calculates the width of cheesy ligatures and accented
+ * characters, which may not exist in the font as such.
+ *
+ * This does not take kerning into account, however.
+ */
+PN_stdfloat TextAssembler::
+calc_width(char32_t character, const TextProperties &properties) {
   if (character == ' ') {
     // A space is a special case.
     TextFont *font = properties.get_font();
@@ -846,6 +878,27 @@ scan_wtext(TextAssembler::TextString &output_string,
         text_cat.warning()
           << "Unknown TextGraphic: " << graphic_name << "\n";
       }
+
+#if WCHAR_MAX < 0x10FFFF
+    } else if (*si >= 0xd800 && *si < 0xdc00) {
+      // This is a high surrogate.  Look for a subsequent low surrogate.
+      wchar_t ch = *si;
+      ++si;
+      if (si == send) {
+        text_cat.warning()
+          << "High surrogate at end of text.\n";
+        return;
+      }
+      wchar_t ch2 = *si;
+      if (ch2 >= 0xdc00 && ch2 < 0xe000) {
+        char32_t code_point = 0x10000 + ((ch - 0xd800) << 10) + (ch2 - 0xdc00);
+        output_string.push_back(TextCharacter(code_point, current_cprops));
+        ++si;
+      } else {
+        text_cat.warning()
+          << "High surrogate was not followed by low surrogate in text.\n";
+      }
+#endif
 
     } else {
       // A normal character.  Apply it.
@@ -1411,6 +1464,10 @@ assemble_row(TextAssembler::TextRow &row,
   PN_stdfloat xpos = 0.0f;
   align = TextProperties::A_left;
 
+  TextProperties::Direction dir = TextProperties::D_ltr;
+  size_t rtl_begin = 0;
+  PN_stdfloat rtl_begin_xpos = 0.0f;
+
   // Remember previous character, for kerning.
   int prev_char = -1;
 
@@ -1423,10 +1480,8 @@ assemble_row(TextAssembler::TextRow &row,
   hb_buffer_t *harfbuff = nullptr;
 #endif
 
-  TextString::const_iterator si;
-  for (si = row._string.begin(); si != row._string.end(); ++si) {
-    const TextCharacter &tch = (*si);
-    wchar_t character = tch._character;
+  for (const TextCharacter &tch : row._string) {
+    char32_t character = tch._character;
     const TextGraphic *graphic = tch._graphic;
     const TextProperties *properties = &(tch._cprops->_properties);
 
@@ -1472,6 +1527,8 @@ assemble_row(TextAssembler::TextRow &row,
         // Shape the buffer accumulated so far.
         shape_buffer(harfbuff, placed_glyphs, xpos, prev_cprops->_properties);
         hb_buffer_reset(harfbuff);
+        rtl_begin = placed_glyphs.size();
+        rtl_begin_xpos = xpos;
 
       } else if (harfbuff == nullptr && text_use_harfbuzz &&
                  font->is_of_type(DynamicTextFont::get_class_type())) {
@@ -1485,6 +1542,29 @@ assemble_row(TextAssembler::TextRow &row,
       continue;
     }
 #endif
+
+    // When not using harfbuzz, check if the direction was set explicitly.
+    if (properties->has_direction() && properties->get_direction() != dir) {
+      if (dir == TextProperties::D_rtl) {
+        // Flip the preceding characters.
+        PN_stdfloat xpos2 = xpos;
+        size_t i = placed_glyphs.size();
+        while (i > rtl_begin) {
+          --i;
+          PN_stdfloat new_xpos = rtl_begin_xpos + (xpos - xpos2);
+          xpos2 = placed_glyphs[i]._xpos;
+          placed_glyphs[i]._xpos = new_xpos;
+        }
+        dir = TextProperties::D_ltr;
+      }
+      else if (dir == TextProperties::D_ltr) {
+        // When switching to right-to-left, keep track of the first glyph that
+        // was RTL so that we can later offset the X positions.
+        dir = TextProperties::D_rtl;
+        rtl_begin = placed_glyphs.size();
+        rtl_begin_xpos = xpos;
+      }
+    }
 
     if (character == ' ') {
       // A space is a special case.
@@ -1648,6 +1728,18 @@ assemble_row(TextAssembler::TextRow &row,
       }
 
       xpos += advance * glyph_scale;
+    }
+  }
+
+  if (dir == TextProperties::D_rtl) {
+    // Flip the preceding characters.
+    PN_stdfloat xpos2 = xpos;
+    size_t i = placed_glyphs.size();
+    while (i > rtl_begin) {
+      --i;
+      PN_stdfloat new_xpos = rtl_begin_xpos + (xpos - xpos2);
+      xpos2 = placed_glyphs[i]._xpos;
+      placed_glyphs[i]._xpos = new_xpos;
     }
   }
 

@@ -297,6 +297,7 @@ dclass_or_struct:
 dclass:
         KW_DCLASS optional_name
 {
+  $<u.dclass>$ = current_class;
   current_class = new DCClass(dc_file, $2, false, false);
 }
         dclass_derivation '{' dclass_fields '}'
@@ -401,6 +402,7 @@ dclass_field:
 struct:
         KW_STRUCT optional_name
 {
+  $<u.dclass>$ = current_class;
   current_class = new DCClass(dc_file, $2, true, false);
 }
         struct_derivation '{' struct_fields '}'
@@ -488,6 +490,7 @@ struct_field:
 atomic_field:
         optional_name '('
 {
+  $<u.atomic>$ = current_atomic;
   if (current_class == nullptr) {
     yyerror("Cannot define a method outside of a struct or class.");
     DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
@@ -1243,12 +1246,13 @@ optional_name:
 switch:
         KW_SWITCH optional_name '(' parameter_or_atomic ')' '{'
 {
+  $<u.dswitch>$ = current_switch;
   current_switch = new DCSwitch($2, $4);
 }
         switch_fields '}'
 {
   $$ = current_switch;
-  current_switch = (DCSwitch *)$<u.parameter>7;
+  current_switch = $<u.dswitch>7;
 }
         ;
 

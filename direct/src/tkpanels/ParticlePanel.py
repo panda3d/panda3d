@@ -1174,9 +1174,7 @@ class ParticlePanel(AppShell):
         self.particlesLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         particles = self.particleEffect.getParticlesList()
-        names = [x.getName() for x in particles]
-        names.sort()
-        for name in names:
+        for name in sorted(x.getName() for x in particles):
             particle = self.particleEffect.getParticlesNamed(name)
             self.particlesLabelMenu.add_command(
                 label = name,
@@ -1199,9 +1197,7 @@ class ParticlePanel(AppShell):
         self.forceGroupLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         forceGroupList = self.particleEffect.getForceGroupList()
-        names = [x.getName() for x in forceGroupList]
-        names.sort()
-        for name in names:
+        for name in sorted(x.getName() for x in forceGroupList):
             force = self.particleEffect.getForceGroupNamed(name)
             self.forceGroupLabelMenu.add_command(
                 label = name,
@@ -2913,21 +2909,3 @@ class ParticlePanel(AppShell):
                            min = 0.01,
                            value = force.getRadius())
         self.createForceActiveWidget(frame, pageName, forceName, force)
-
-######################################################################
-
-
-# Create demo in root window for testing.
-if __name__ == '__main__':
-    try:
-        base
-    except NameError:
-        from direct.showbase.ShowBase import ShowBase
-        base = ShowBase()
-
-    root = Pmw.initialise()
-    pp = ParticlePanel()
-    base.pp=pp
-    #ve = VectorEntry(Toplevel(), relief = GROOVE)
-    #ve.pack()
-    base.run()

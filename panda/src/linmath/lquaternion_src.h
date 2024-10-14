@@ -18,7 +18,7 @@ class EXPCL_PANDA_LINMATH FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();
   INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LQuaternion)(FLOATTYPE r, const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH explicit FLOATNAME(LQuaternion)(FLOATTYPE r, const FLOATNAME(LVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LQuaternion)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k);
 
   static FLOATNAME(LQuaternion) pure_imaginary(const FLOATNAME(LVector3) &v);

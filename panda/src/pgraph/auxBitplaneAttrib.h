@@ -46,7 +46,7 @@ class FactoryParams;
  * Otherwise, it has no effect.
  *
  */
-class EXPCL_PANDA_PGRAPH AuxBitplaneAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH AuxBitplaneAttrib final : public RenderAttrib {
 private:
   INLINE AuxBitplaneAttrib(int outputs);
 

@@ -34,7 +34,7 @@ public:
                     GraphicsOutput *host);
   virtual ~x11GraphicsWindow();
 
-  virtual MouseData get_pointer(int device) const;
+  virtual PointerData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
 
   virtual void clear(Thread *current_thread);

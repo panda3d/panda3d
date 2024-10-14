@@ -36,13 +36,14 @@ __init__(PyObject *self, PyObject *sequence) {
     return;
   }
 
+  Py_BEGIN_CRITICAL_SECTION(fast);
   Py_ssize_t size = PySequence_Fast_GET_SIZE(fast);
   _this->reserve(size);
 
   for (int i = 0; i < size; ++i) {
     PyObject *item = PySequence_Fast_GET_ITEM(fast, i);
     if (item == nullptr) {
-      return;
+      break;
     }
 
     NodePath *path;
@@ -52,13 +53,12 @@ __init__(PyObject *self, PyObject *sequence) {
       stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
       std::string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
-      Py_DECREF(fast);
-      return;
+      break;
     } else {
       _this->add_path(*path);
     }
   }
-
+  Py_END_CRITICAL_SECTION();
   Py_DECREF(fast);
 }
 
@@ -110,10 +110,9 @@ get_tight_bounds() const {
     PyObject *max_inst = DTool_CreatePyInstance((void*) max_point, Dtool_LPoint3f, true, false);
 #endif
     return Py_BuildValue("NN", min_inst, max_inst);
-
-  } else {
-    Py_INCREF(Py_None);
-    return Py_None;
+  }
+  else {
+    return Py_NewRef(Py_None);
   }
 }
 

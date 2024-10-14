@@ -174,6 +174,7 @@ public:
   Atom _net_startup_info;
   Atom _net_startup_info_begin;
   Atom _net_wm_bypass_compositor;
+  Atom _net_wm_name;
   Atom _net_wm_pid;
   Atom _net_wm_ping;
   Atom _net_wm_state;

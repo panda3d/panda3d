@@ -9,6 +9,7 @@
 #include "shaderBuffer.cxx"
 #include "shaderContext.cxx"
 #include "shaderEnums.cxx"
+#include "shaderInputBinding.cxx"
 #include "shaderModule.cxx"
 #include "shaderType.cxx"
 #include "simpleAllocator.cxx"

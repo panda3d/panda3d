@@ -16,32 +16,10 @@
 
 #include <set>
 
-DeletedBufferChain DeletedBufferChain::_small_deleted_chains[DeletedBufferChain::num_small_deleted_chains] = {
-  DeletedBufferChain(sizeof(void *)),
-  DeletedBufferChain(sizeof(void *) * 2),
-  DeletedBufferChain(sizeof(void *) * 3),
-  DeletedBufferChain(sizeof(void *) * 4),
-  DeletedBufferChain(sizeof(void *) * 5),
-  DeletedBufferChain(sizeof(void *) * 6),
-  DeletedBufferChain(sizeof(void *) * 7),
-  DeletedBufferChain(sizeof(void *) * 8),
-  DeletedBufferChain(sizeof(void *) * 9),
-  DeletedBufferChain(sizeof(void *) * 10),
-  DeletedBufferChain(sizeof(void *) * 11),
-  DeletedBufferChain(sizeof(void *) * 12),
-  DeletedBufferChain(sizeof(void *) * 13),
-  DeletedBufferChain(sizeof(void *) * 14),
-  DeletedBufferChain(sizeof(void *) * 15),
-  DeletedBufferChain(sizeof(void *) * 16),
-  DeletedBufferChain(sizeof(void *) * 17),
-  DeletedBufferChain(sizeof(void *) * 18),
-  DeletedBufferChain(sizeof(void *) * 19),
-  DeletedBufferChain(sizeof(void *) * 20),
-  DeletedBufferChain(sizeof(void *) * 21),
-  DeletedBufferChain(sizeof(void *) * 22),
-  DeletedBufferChain(sizeof(void *) * 23),
-  DeletedBufferChain(sizeof(void *) * 24),
-};
+// This array stores the deleted chains for smaller sizes, starting with
+// sizeof(void *) and increasing in multiples thereof.
+static const size_t num_small_deleted_chains = 24;
+static DeletedBufferChain small_deleted_chains[num_small_deleted_chains] = {};
 
 /**
  * Allocates the memory for a new buffer of the indicated size (which must be
@@ -49,6 +27,8 @@ DeletedBufferChain DeletedBufferChain::_small_deleted_chains[DeletedBufferChain:
  */
 void *DeletedBufferChain::
 allocate(size_t size, TypeHandle type_handle) {
+  assert(_buffer_size > 0);
+
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", "
   // ", TAU_USER);
@@ -161,7 +141,18 @@ deallocate(void *ptr, TypeHandle type_handle) {
  * Returns a new DeletedBufferChain.
  */
 DeletedBufferChain *DeletedBufferChain::
-get_large_deleted_chain(size_t buffer_size) {
+get_deleted_chain(size_t buffer_size) {
+  // Common, smaller sized chains avoid the expensive locking and set
+  // manipulation code further down.
+  size_t index = ((buffer_size + sizeof(void *) - 1) / sizeof(void *));
+  buffer_size = index * sizeof(void *);
+  index--;
+  if (index < num_small_deleted_chains) {
+    DeletedBufferChain *chain = &small_deleted_chains[index];
+    chain->_buffer_size = buffer_size;
+    return chain;
+  }
+
   static MutexImpl lock;
   lock.lock();
   static std::set<DeletedBufferChain> deleted_chains;

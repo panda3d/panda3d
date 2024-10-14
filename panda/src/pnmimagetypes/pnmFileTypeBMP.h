@@ -55,6 +55,7 @@ public:
     unsigned long offBits;
 
     unsigned short  cBitCount;
+    unsigned short  cCompression;
     int             indexed;
     int             classv;
 
@@ -77,7 +78,7 @@ public:
   static void register_with_read_factory();
 
 protected:
-  static TypedWritable *make_PNMFileTypeBMP(const FactoryParams &params);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

@@ -125,7 +125,7 @@ initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   return emulated_wait(addr, cmp, size, timeout);
 }
 
-#elif !defined(CPPPARSER) && !defined(__linux__) && defined(HAVE_POSIX_THREADS)
+#elif !defined(CPPPARSER) && !defined(__linux__) && !defined(__APPLE__) && defined(HAVE_POSIX_THREADS)
 
 // Same as above, but using pthreads.
 struct alignas(64) WaitTableEntry {

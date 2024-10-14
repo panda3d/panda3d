@@ -25,7 +25,7 @@ class FactoryParams;
  * for certain special effects in which it is important to write to the depth
  * buffer without affecting the color buffer.
  */
-class EXPCL_PANDA_PGRAPH ColorWriteAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ColorWriteAttrib final : public RenderAttrib {
 PUBLISHED:
   enum Channels {
     // By coincidence, these bits are the same as those for

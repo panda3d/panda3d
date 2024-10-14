@@ -49,6 +49,7 @@ PUBLISHED:
 
   INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
   INLINE void set_color(const LColor &color);
+  INLINE void clear_color();
 
   INLINE void set_has_normals(bool flag);
 

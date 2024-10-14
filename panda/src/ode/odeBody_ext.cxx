@@ -25,8 +25,7 @@ set_data(PyObject *data) {
   void *old_data = _this->get_data();
 
   if (data != nullptr && data != Py_None) {
-    Py_INCREF(data);
-    _this->set_data((void *)data);
+    _this->set_data((void *)Py_NewRef(data));
     _this->_destroy_callback = &destroy_callback;
   } else {
     _this->set_data(nullptr);

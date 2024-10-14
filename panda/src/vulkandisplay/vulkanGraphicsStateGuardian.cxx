@@ -373,36 +373,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     }
   }
 
-  // Create a descriptor set layout for our TextureAttrib descriptor set.
-  const uint32_t num_texture_stages = 8;
-  {
-    VkDescriptorSetLayoutBinding stage_bindings[num_texture_stages];
-
-    for (uint32_t i = 0; i < num_texture_stages; ++i) {
-      VkDescriptorSetLayoutBinding &binding = stage_bindings[i];
-      binding.binding = i;
-      binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      binding.descriptorCount = 1;
-      binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-      binding.pImmutableSamplers = nullptr;
-    }
-
-    VkDescriptorSetLayoutCreateInfo set_info;
-    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    set_info.pNext = nullptr;
-    set_info.flags = 0;
-    set_info.bindingCount = num_texture_stages;
-    set_info.pBindings = stage_bindings;
-
-    VkResult
-    err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr,
-      &_tattr_descriptor_set_layout);
-    if (err) {
-      vulkan_error(err, "Failed to create descriptor set layout for TextureAttrib");
-      return;
-    }
-  }
-
   // Create a uniform buffer that we'll use for everything.
   // Some cards set aside 256 MiB of device-local host-visible memory for data
   // like this, so we use that.
@@ -447,7 +417,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _max_vertices_per_array = std::max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
   _max_vertices_per_primitive = INT_MAX;
 
-  _max_texture_stages = num_texture_stages;
+  _max_texture_stages = std::max((uint32_t)0x7fffffff, std::min(limits.maxPerStageDescriptorSampledImages, std::min(limits.maxDescriptorSetSampledImages, limits.maxPerStageDescriptorSampledImages)));
   _max_texture_dimension = limits.maxImageDimension2D;
   _max_3d_texture_dimension = limits.maxImageDimension3D;
   _max_2d_texture_array_layers = limits.maxImageArrayLayers;
@@ -639,7 +609,6 @@ VulkanGraphicsStateGuardian::
   // Remove the things we created in the constructor, in reverse order.
   vkDestroyBuffer(_device, _uniform_buffer, nullptr);
   vkDestroyDescriptorSetLayout(_device, _lattr_descriptor_set_layout, nullptr);
-  vkDestroyDescriptorSetLayout(_device, _tattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
   vkDestroySampler(_device, _shadow_sampler, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
@@ -1822,7 +1791,7 @@ prepare_shader(Shader *shader) {
   // specific sets corresponding to different render attributes.
   VkDescriptorSetLayout ds_layouts[DS_SET_COUNT] = {};
   ds_layouts[DS_light_attrib] = _lattr_descriptor_set_layout;
-  ds_layouts[DS_texture_attrib] = _tattr_descriptor_set_layout;
+  ds_layouts[DS_texture_attrib] = sc->make_texture_attrib_descriptor_set_layout(_device);
   ds_layouts[DS_shader_attrib] = sc->make_shader_attrib_descriptor_set_layout(_device);
   ds_layouts[DS_dynamic_uniforms] = sc->make_dynamic_uniform_descriptor_set_layout(_device);
 
@@ -1897,6 +1866,7 @@ release_shader(ShaderContext *context) {
     sc->_compute_pipeline = VK_NULL_HANDLE;
   }
 
+  vkDestroyDescriptorSetLayout(_device, sc->_tattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, sc->_sattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, sc->_dynamic_uniform_descriptor_set_layout, nullptr);
   vkDestroyPipelineLayout(_device, sc->_pipeline_layout, nullptr);
@@ -2134,6 +2104,7 @@ release_index_buffer(IndexBufferContext *context) {
 void VulkanGraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   nassertv(_frame_data != nullptr);
+  nassertv(_current_shader != nullptr);
 
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
@@ -2221,15 +2192,15 @@ set_state_and_transform(const RenderState *state,
 
   determine_target_texture();
   if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
-                                _tattr_descriptor_set_layout,
+                                sc->_tattr_descriptor_set_layout,
                                 _target_texture)) {
-    update_tattr_descriptor_set(descriptor_sets[DS_texture_attrib], _target_texture);
+    sc->update_tattr_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
   }
 
   if (get_attrib_descriptor_set(descriptor_sets[DS_shader_attrib],
                                 sc->_sattr_descriptor_set_layout,
                                 _target_shader)) {
-    update_sattr_descriptor_set(descriptor_sets[DS_shader_attrib], _target_shader);
+    sc->update_sattr_descriptor_set(this, descriptor_sets[DS_shader_attrib]);
   }
 
   const ColorAttrib *target_color;
@@ -2250,7 +2221,7 @@ set_state_and_transform(const RenderState *state,
   //TODO: properly compute altered field.
   uint32_t num_offsets = 0;
   uint32_t offset = 0;
-  if (sc->_mat_block_size > 0) {
+  if (sc->_other_state_block._size > 0) {
     offset = sc->update_dynamic_uniforms(this, ~0);
     num_offsets = 1;
   }
@@ -3417,7 +3388,7 @@ make_pipeline(VulkanShaderContext *sc,
   VkVertexInputBindingDescription *binding_descs = (VkVertexInputBindingDescription *)
     alloca(sizeof(VkVertexInputBindingDescription) * (num_arrays + 2));
 
-  VkVertexInputBindingDivisorDescriptionEXT *divisors;
+  VkVertexInputBindingDivisorDescriptionEXT *divisors = nullptr;
   int num_divisors = 0;
   if (_supports_vertex_attrib_divisor) {
     divisors = (VkVertexInputBindingDivisorDescriptionEXT *)
@@ -3892,11 +3863,11 @@ make_compute_pipeline(VulkanShaderContext *sc) {
 bool VulkanGraphicsStateGuardian::
 get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, const RenderAttrib *attrib) {
   // Look it up in the attribute map.
-  auto it = _attrib_descriptor_set_map.find(attrib);
-  if (it != _attrib_descriptor_set_map.end()) {
+  auto it = _current_shader->_attrib_descriptor_set_map.find(attrib);
+  if (it != _current_shader->_attrib_descriptor_set_map.end()) {
     // Found something.  Check that it's not just a different state that has
     // been allocated in the memory of a previous state.
-    DescriptorSet &set = it->second;
+    VulkanShaderContext::DescriptorSet &set = it->second;
     if (!set._weak_ref->was_deleted()) {
       // Nope, it's not deleted, which must mean it's the same one, which must
       // mean we have a live pointer to it (so no need to lock anything).
@@ -3924,7 +3895,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
     set._handle = VK_NULL_HANDLE;
   }
 
-  DescriptorSet set;
+  VulkanShaderContext::DescriptorSet set;
 
   VkDescriptorSetAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -3944,7 +3915,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
   set._last_update_frame = _frame_counter;
 
   out = set._handle;
-  _attrib_descriptor_set_map[attrib] = std::move(set);
+  _current_shader->_attrib_descriptor_set_map[attrib] = std::move(set);
   return true;
 }
 
@@ -4031,330 +4002,6 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 }
 
 /**
- * Updates the descriptor set containing all the texture attributes.
- */
-bool VulkanGraphicsStateGuardian::
-update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
-  // To ensure compatibility with any shader, we pad this out with white
-  // textures.
-  size_t num_textures = _max_texture_stages;
-
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_textures * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_textures * sizeof(VkDescriptorImageInfo));
-
-  for (size_t i = 0; i < num_textures; ++i) {
-    SamplerState sampler;
-    int view = 0;
-
-    Texture *texture;
-    if (i < (size_t)attr->get_num_on_stages()) {
-      TextureStage *stage = attr->get_on_stage(i);
-      sampler = attr->get_on_sampler(stage);
-      view += stage->get_tex_view_offset();
-      texture = attr->get_on_texture(stage);
-
-      // We can't support this easily, because texel buffers need a different
-      // descriptor type, so we'd need a different layout as well, which ruins
-      // the whole convenience of doing TextureAttrib this way.  However, it's
-      // not a limitation that people are likely to run into anyway.
-      if (texture->get_texture_type() == Texture::TT_buffer_texture) {
-        vulkandisplay_cat.error()
-          << "Buffer textures are not supported via texture stages.  Use shader inputs instead.\n";
-        texture = _white_texture;
-        view = 0;
-      }
-    } else {
-      texture = _white_texture;
-    }
-
-    VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
-
-    VulkanSamplerContext *sc;
-    DCAST_INTO_R(sc, sampler.prepare_now(_prepared_objects, this), false);
-
-    tc->set_active(true);
-    update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
-    // We don't know at this point which stages is using them, and finding out
-    // would require duplication of descriptor sets, so we flag all stages.
-    VkPipelineStageFlags stage_flags = 0
-      | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-      | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-      | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
-      ;
-    if (_supported_shader_caps & ShaderModule::C_tessellation_shader) {
-      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
-      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
-    }
-    if (_supported_shader_caps & ShaderModule::C_geometry_shader) {
-      //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
-    }
-
-    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                   stage_flags, VK_ACCESS_SHADER_READ_BIT);
-
-    VkDescriptorImageInfo &image_info = image_infos[i];
-    image_info.sampler = sc->_sampler;
-    image_info.imageView = tc->get_image_view(view);
-    image_info.imageLayout = tc->_layout;
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = i;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    write.pImageInfo = &image_info;
-    write.pBufferInfo = nullptr;
-    write.pTexelBufferView = nullptr;
-  }
-
-  _vkUpdateDescriptorSets(_device, num_textures, writes, 0, nullptr);
-  return true;
-}
-
-/**
- * Updates the descriptor set containing all the ShaderAttrib textures.
- */
-bool VulkanGraphicsStateGuardian::
-update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
-  Shader *shader = (Shader *)attr->get_shader();
-  if (shader == nullptr) {
-    // Nothing to do.
-    return true;
-  }
-
-  VulkanShaderContext *sc;
-  DCAST_INTO_R(sc, shader->prepare_now(get_prepared_objects(), this), false);
-
-  // Allocate enough memory.
-  size_t max_num_descriptors = 1 + shader->_tex_spec.size() + shader->_img_spec.size();
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_descriptors * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(max_num_descriptors * sizeof(VkDescriptorImageInfo));
-
-  // First the UBO, then the shader input textures.
-  size_t i = 0;
-
-  VkDescriptorBufferInfo buffer_info;
-  if (sc->_ptr_block_size > 0) {
-    buffer_info.offset = sc->update_sattr_uniforms(this, buffer_info.buffer);
-    buffer_info.range = sc->_ptr_block_size;
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = i;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    write.pImageInfo = nullptr;
-    write.pBufferInfo = &buffer_info;
-    write.pTexelBufferView = nullptr;
-
-    ++i;
-  }
-
-  for (Shader::ShaderTexSpec &spec : shader->_tex_spec) {
-    if (spec._part != Shader::STO_named_input || spec._id._location < 0) {
-      continue;
-    }
-
-    int view = get_current_tex_view_offset();
-    SamplerState sampler;
-
-    PT(Texture) texture = fetch_specified_texture(spec, sampler, view);
-    if (texture == nullptr) {
-      return false;
-    }
-
-    if (texture->get_texture_type() != spec._desired_type) {
-      vulkandisplay_cat.error()
-        << "Sampler type of shader input '" << *spec._name << "' does not "
-           "match type of texture " << *texture << ".\n";
-    }
-
-    VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
-
-    VulkanSamplerContext *sc;
-    DCAST_INTO_R(sc, sampler.prepare_now(_prepared_objects, this), false);
-
-    tc->set_active(true);
-    update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
-    VkPipelineStageFlags stage_flags = 0;
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::vertex)) {
-      stage_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_control)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_evaluation)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::fragment)) {
-      stage_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::geometry)) {
-      stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::compute)) {
-      stage_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-    }
-
-    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                   stage_flags, VK_ACCESS_SHADER_READ_BIT);
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = i;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.pImageInfo = nullptr;
-    write.pBufferInfo = nullptr;
-    write.pTexelBufferView = nullptr;
-
-    if (spec._desired_type != Texture::TT_buffer_texture) {
-      write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      VkDescriptorImageInfo &image_info = image_infos[i];
-      image_info.sampler = sc->_sampler;
-      image_info.imageView = tc->get_image_view(view);
-      image_info.imageLayout = tc->_layout;
-      write.pImageInfo = &image_info;
-    } else {
-      write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-      write.pTexelBufferView = &tc->get_buffer_view(view);
-    }
-
-    ++i;
-  }
-
-  for (const Shader::ShaderImgSpec &spec : shader->_img_spec) {
-    if (spec._id._location < 0) {
-      continue;
-    }
-
-    const ParamTextureImage *param = nullptr;
-    Texture *texture;
-    VkAccessFlags access_mask = 0;
-
-    const ShaderInput &sinp = attr->get_shader_input(spec._name);
-    switch (sinp.get_value_type()) {
-    case ShaderInput::M_texture_image:
-      param = (const ParamTextureImage *)sinp.get_param();
-      texture = param->get_texture();
-      if (param->has_read_access()) {
-        access_mask |= VK_ACCESS_SHADER_READ_BIT;
-      }
-      if (param->has_write_access()) {
-        access_mask |= VK_ACCESS_SHADER_WRITE_BIT;
-      }
-      break;
-
-    case ShaderInput::M_texture:
-      // People find it convenient to be able to pass a texture without
-      // further ado.
-      texture = sinp.get_texture();
-      access_mask = VK_ACCESS_SHADER_READ_BIT;
-      break;
-
-    case ShaderInput::M_invalid:
-      vulkandisplay_cat.error()
-        << "Missing texture image binding input " << *spec._name << "\n";
-      return false;
-
-    default:
-      vulkandisplay_cat.error()
-        << "Mismatching type for parameter " << *spec._name
-        << ", expected texture image binding\n";
-      return false;
-    }
-
-    if (texture->get_texture_type() != spec._desired_type) {
-      vulkandisplay_cat.error()
-        << "Sampler type of shader input '" << *spec._name << "' does not "
-           "match type of texture " << *texture << ".\n";
-    }
-
-    VulkanTextureContext *tc;
-    int view = get_current_tex_view_offset();
-    DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), false);
-
-    tc->set_active(true);
-    update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
-    VkPipelineStageFlags stage_flags = 0;
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::vertex)) {
-      stage_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_control)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_evaluation)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::fragment)) {
-      stage_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::geometry)) {
-      stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::compute)) {
-      stage_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-    }
-
-    // Load/store images need to be in the general layout.
-    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_GENERAL, stage_flags, access_mask);
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = i;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.pImageInfo = nullptr;
-    write.pBufferInfo = nullptr;
-    write.pTexelBufferView = nullptr;
-
-    if (spec._desired_type != Texture::TT_buffer_texture) {
-      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-      VkDescriptorImageInfo &image_info = image_infos[i];
-      image_info.sampler = VK_NULL_HANDLE;
-      image_info.imageView = tc->get_image_view(view);
-      image_info.imageLayout = tc->_layout;
-      write.pImageInfo = &image_info;
-    } else {
-      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-      write.pTexelBufferView = &tc->get_buffer_view(view);
-    }
-
-    ++i;
-  }
-
-  _vkUpdateDescriptorSets(_device, i, writes, 0, nullptr);
-  return true;
-}
-
-/**
  * Updates the descriptor set containing the dynamic uniform buffer.  This only
  * needs to happen rarely, when the global uniform buffer is swapped out due to
  * running out of size.
@@ -4380,10 +4027,10 @@ update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc) {
   // We set the offsets to 0, since we use dynamic offsets.
   size_t count = 0;
   VkDescriptorBufferInfo buffer_info[2];
-  if (sc->_mat_block_size > 0) {
+  if (sc->_other_state_block._size > 0) {
     buffer_info[count].buffer = _uniform_buffer;
     buffer_info[count].offset = 0;
-    buffer_info[count].range = sc->_mat_block_size;
+    buffer_info[count].range = sc->_other_state_block._size;
     ++count;
   }
 
