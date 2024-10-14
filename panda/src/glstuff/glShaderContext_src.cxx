@@ -1756,7 +1756,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
               << " is bound to image unit " << binding << "\n";
           }
 
-          if (binding >= _glsl_img_inputs.size()) {
+          if (binding >= (GLint)_glsl_img_inputs.size()) {
             _glsl_img_inputs.resize(binding + 1);
           }
 

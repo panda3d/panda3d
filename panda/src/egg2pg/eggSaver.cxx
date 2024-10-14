@@ -809,7 +809,7 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check for a texture.
   const TextureAttrib *ta;
   if (net_state->get_attrib(ta)) {
-    for (size_t i = 0; i < ta->get_num_on_stages(); ++i) {
+    for (size_t i = 0; i < (size_t)ta->get_num_on_stages(); ++i) {
       TextureStage *tex_stage = ta->get_on_stage(i);
 
       EggTexture *egg_tex = get_egg_texture(ta->get_on_texture(tex_stage));
