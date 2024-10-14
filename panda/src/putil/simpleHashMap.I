@@ -287,8 +287,8 @@ remove(const Key &key) {
 
   // Now remove this element.
   size_t last = _num_entries - 1;
-  size_t index = (size_t)index_array[slot];
-  if (index < _num_entries) {
+  int index = index_array[slot];
+  if ((size_t)index < _num_entries) {
     // Find the last element in the index array.
     int other_slot = find_slot(_table[last]._key);
     nassertr(other_slot != -1, false);
@@ -296,7 +296,7 @@ remove(const Key &key) {
 
     // Swap it with the last one, so that we don't get any gaps in the table
     // of entries.
-    _table[index] = std::move(_table[last]);
+    _table[(size_t)index] = std::move(_table[last]);
     index_array[(size_t)other_slot] = index;
   }
 
@@ -316,13 +316,13 @@ remove(const Key &key) {
   // Now we have put a hole in the index array.  If there was a hash conflict
   // in the slot after this one, we have to move it down to close the hole.
   slot = next_hash(slot);
-  while (has_slot(slot)) {
-    size_t index = (size_t)index_array[slot];
+  index = index_array[slot];
+  while (index >= 0) {
     size_t wants_slot = get_hash(_table[index]._key);
     if (wants_slot != slot) {
       // This one was a hash conflict; try to put it where it belongs.  We
       // can't just put it in n, since maybe it belongs somewhere after n.
-      while (wants_slot != slot && has_slot(wants_slot)) {
+      while (wants_slot != slot && index_array[wants_slot] >= 0) {
         wants_slot = next_hash(wants_slot);
       }
       if (wants_slot != slot) {
@@ -336,6 +336,7 @@ remove(const Key &key) {
     // Continue until we encounter the next unused slot.  Until we do, we
     // can't be sure we've found all of the potential hash conflicts.
     slot = next_hash(slot);
+    index = index_array[slot];
   }
 
 #ifdef _DEBUG
