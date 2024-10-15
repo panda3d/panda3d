@@ -139,6 +139,35 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     _supports_vertex_attrib_zero_divisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
   }
 
+  // VK_EXT_extended_dynamic_state and VK_EXT_extended_dynamic_state2
+  VkPhysicalDeviceExtendedDynamicStateFeaturesEXT eds_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+    enabled_features.pNext,
+  };
+  bool supports_eds_and_eds2 = pipe->_gpu_supports_extended_dynamic_state && pipe->_gpu_supports_extended_dynamic_state2;
+  if (supports_eds_and_eds2) {
+    eds_features.extendedDynamicState = VK_TRUE;
+    enabled_features.pNext = &eds_features;
+
+    extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    _supports_extended_dynamic_state2 = true;
+  }
+
+  // VK_EXT_extended_dynamic_state2
+  VkPhysicalDeviceExtendedDynamicState2FeaturesEXT eds2_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+    enabled_features.pNext,
+  };
+  if (supports_eds_and_eds2 ||
+      pipe->_gpu_supports_extended_dynamic_state2_patch_control_points) {
+    eds2_features.extendedDynamicState2 = supports_eds_and_eds2;
+    eds2_features.extendedDynamicState2PatchControlPoints = pipe->_gpu_supports_extended_dynamic_state2_patch_control_points;
+    enabled_features.pNext = &eds2_features;
+
+    extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    _supports_extended_dynamic_state2_patch_control_points = pipe->_gpu_supports_extended_dynamic_state2_patch_control_points;
+  }
+
   // VK_KHR_portability_subset
   VkPhysicalDevicePortabilitySubsetFeaturesKHR portability_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
@@ -210,6 +239,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
   _vkCmdPushConstants = (PFN_vkCmdPushConstants)vkGetDeviceProcAddr(_device, "vkCmdPushConstants");
   _vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)vkGetDeviceProcAddr(_device, "vkUpdateDescriptorSets");
+
+  if (_supports_extended_dynamic_state2) {
+    _vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveTopologyEXT");
+    _vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveRestartEnableEXT");
+  }
+  if (_supports_extended_dynamic_state2_patch_control_points) {
+    _vkCmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPatchControlPointsEXT");
+  }
 
   // Create a command pool to allocate command buffers from.
   VkCommandPoolCreateInfo cmd_pool_info;
@@ -2901,7 +2938,44 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   _vkCmdBindVertexBuffers(_frame_data->_cmd, 1, num_buffers, buffers, offsets);
 
-  _format = data_reader->get_format();
+  // If we support setting the topology as dynamic state, or we're rendering
+  // points, we can bind the pipeline here.  Otherwise, we have to bind a new
+  // pipeline before every draw call.
+  Geom::PrimitiveType prim_type = geom_reader->get_primitive_type();
+  if (prim_type == Geom::PT_points ||
+      (prim_type != Geom::PT_patches && _supports_extended_dynamic_state2) ||
+      (prim_type == Geom::PT_patches && _supports_extended_dynamic_state2_patch_control_points)) {
+    // With extended dynamic state, Vulkan might still want to know the
+    // primitive class up front, it just doesn't care about strip vs fan, etc.
+    VkPrimitiveTopology topology;
+    switch (prim_type) {
+    case Geom::PT_polygons:
+      topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+      break;
+
+    case Geom::PT_lines:
+      topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+      break;
+
+    case Geom::PT_points:
+      topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+      break;
+
+    case Geom::PT_patches:
+      topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+      break;
+
+    default:
+      return false;
+    }
+
+    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_ms_count);
+    nassertr(pipeline != VK_NULL_HANDLE, false);
+    _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  } else {
+    _format = data_reader->get_format();
+  }
+
   return true;
 }
 
@@ -2910,7 +2984,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
  */
 bool VulkanGraphicsStateGuardian::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false);
 }
 
 /**
@@ -2918,7 +2992,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY, false);
 }
 
 /**
@@ -2926,7 +3000,7 @@ draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, false);
 }
 
 /**
@@ -2934,7 +3008,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY, true);
 }
 
 /**
@@ -2942,7 +3016,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN, false);
 }
 
 /**
@@ -2951,8 +3025,20 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
-                           reader->get_object()->get_num_vertices_per_primitive());
+  uint32_t patch_control_points = ((const GeomPrimitive *)reader->get_object())->get_num_vertices_per_primitive();
+  if (_supports_extended_dynamic_state2_patch_control_points) {
+    // No need to set topology, there's no reason not to bake that into the
+    // pipeline for a pipeline with tessellation shaders.
+    _vkCmdSetPatchControlPointsEXT(_frame_data->_cmd, patch_control_points);
+  } else {
+    // Bind a pipeline which has both the topology and number of patch control
+    // points baked in.
+    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_ms_count);
+    nassertr(pipeline != VK_NULL_HANDLE, false);
+    _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  }
+
+  return do_draw_primitive(reader, force);
 }
 
 /**
@@ -2960,7 +3046,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, false);
 }
 
 /**
@@ -2968,7 +3054,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY, false);
 }
 
 /**
@@ -2976,7 +3062,7 @@ draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, true);
 }
 
 /**
@@ -2984,7 +3070,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY, 0);
+  return do_draw_primitive_with_topology(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY, true);
 }
 
 /**
@@ -2992,7 +3078,9 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
+  // For point-type primitives, there is only one choice of topology, so we set
+  // the pipeline only once in begin_draw_primitives.
+  return do_draw_primitive(reader, force);
 }
 
 /**
@@ -3257,16 +3345,33 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
 }
 
 /**
+ * Sets the primitive topology (or binds the entire pipeline, if extended
+ * dynamic state if not supported) and calls do_draw_primitive.
+ *
+ * Not used for patches.
+ */
+bool VulkanGraphicsStateGuardian::
+do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
+                                bool force, VkPrimitiveTopology topology,
+                                bool primitive_restart_enable) {
+
+  if (_supports_extended_dynamic_state2) {
+    _vkCmdSetPrimitiveTopologyEXT(_frame_data->_cmd, topology);
+    _vkCmdSetPrimitiveRestartEnableEXT(_frame_data->_cmd, primitive_restart_enable && reader->is_indexed());
+  } else {
+    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, 0, _fb_ms_count);
+    nassertr(pipeline != VK_NULL_HANDLE, false);
+    _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  }
+
+  return do_draw_primitive(reader, force);
+}
+
+/**
  * Invoked by all the draw_xyz methods.
  */
 bool VulkanGraphicsStateGuardian::
-do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
-                  VkPrimitiveTopology topology, uint32_t patch_control_points) {
-
-  VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, patch_control_points, _fb_ms_count);
-  nassertr(pipeline != VK_NULL_HANDLE, false);
-  _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
+do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force) {
   int num_vertices = reader->get_num_vertices();
 
   if (reader->is_indexed()) {
@@ -3680,12 +3785,17 @@ make_pipeline(VulkanShaderContext *sc,
   assembly_info.pNext = nullptr;
   assembly_info.flags = 0;
   assembly_info.topology = key._topology;
-  assembly_info.primitiveRestartEnable = (
-    key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
-    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
-    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
-    key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
-    key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
+  if (_supports_extended_dynamic_state2) {
+    // This is enabled dynamically if needed.
+    assembly_info.primitiveRestartEnable = VK_FALSE;
+  } else {
+    assembly_info.primitiveRestartEnable = (
+      key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+      //key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+      //key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
+      key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
+      key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
+  }
 
   VkPipelineTessellationStateCreateInfo tess_info;
   tess_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -3864,13 +3974,27 @@ make_pipeline(VulkanShaderContext *sc,
   blend_info.blendConstants[3] = constant_color[3];
 
   // Tell Vulkan that we'll be specifying the viewport and scissor separately.
-  const VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  VkDynamicState dynamic_states[4] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  uint32_t num_dynamic_states = 2;
+  if (key._topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST) {
+    if (key._patch_control_points == 0) {
+      nassertr(_supports_extended_dynamic_state2_patch_control_points, VK_NULL_HANDLE);
+      dynamic_states[2] = VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT;
+      num_dynamic_states = 3;
+    }
+  }
+  else if (key._topology != VK_PRIMITIVE_TOPOLOGY_POINT_LIST &&
+           _supports_extended_dynamic_state2) {
+    dynamic_states[2] = VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT;
+    dynamic_states[3] = VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT;
+    num_dynamic_states = 4;
+  }
 
   VkPipelineDynamicStateCreateInfo dynamic_info;
   dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamic_info.pNext = nullptr;
   dynamic_info.flags = 0;
-  dynamic_info.dynamicStateCount = 2;
+  dynamic_info.dynamicStateCount = num_dynamic_states;
   dynamic_info.pDynamicStates = dynamic_states;
 
   VkGraphicsPipelineCreateInfo pipeline_info;

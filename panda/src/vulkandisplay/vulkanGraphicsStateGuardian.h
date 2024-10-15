@@ -138,8 +138,10 @@ private:
   bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1,
                         ScreenshotRequest *request = nullptr);
 
-  bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
-                         VkPrimitiveTopology topology, uint32_t patch_control_points);
+  bool do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
+                                      bool force, VkPrimitiveTopology topology,
+                                      bool primitive_restart_enable);
+  bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force);
 
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
@@ -259,6 +261,8 @@ private:
   bool _supports_custom_border_colors = false;
   bool _supports_vertex_attrib_divisor = false;
   bool _supports_vertex_attrib_zero_divisor = false;
+  bool _supports_extended_dynamic_state2 = false;
+  bool _supports_extended_dynamic_state2_patch_control_points = false;
 
   // Function pointers.
   PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
@@ -267,6 +271,9 @@ private:
   PFN_vkCmdDraw _vkCmdDraw;
   PFN_vkCmdDrawIndexed _vkCmdDrawIndexed;
   PFN_vkCmdPushConstants _vkCmdPushConstants;
+  PFN_vkCmdSetPatchControlPointsEXT _vkCmdSetPatchControlPointsEXT;
+  PFN_vkCmdSetPrimitiveRestartEnableEXT _vkCmdSetPrimitiveRestartEnableEXT;
+  PFN_vkCmdSetPrimitiveTopologyEXT _vkCmdSetPrimitiveTopologyEXT;
   PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
 
   friend class VulkanGraphicsBuffer;

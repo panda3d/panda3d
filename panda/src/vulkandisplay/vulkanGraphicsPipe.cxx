@@ -334,6 +334,22 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       features2.pNext = &div_features;
     }
 
+    VkPhysicalDeviceExtendedDynamicStateFeaturesEXT eds_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+      features2.pNext,
+    };
+    if (has_device_extension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME)) {
+      features2.pNext = &eds_features;
+    }
+
+    VkPhysicalDeviceExtendedDynamicState2FeaturesEXT eds2_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+      features2.pNext,
+    };
+    if (has_device_extension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME)) {
+      features2.pNext = &eds2_features;
+    }
+
     pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
     _gpu_features = features2.features;
     _gpu_supports_custom_border_colors = cbc_features.customBorderColors
@@ -341,6 +357,9 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _gpu_supports_null_descriptor = ro2_features.nullDescriptor;
     _gpu_supports_vertex_attrib_divisor = div_features.vertexAttributeInstanceRateDivisor;
     _gpu_supports_vertex_attrib_zero_divisor = div_features.vertexAttributeInstanceRateZeroDivisor;
+    _gpu_supports_extended_dynamic_state = eds_features.extendedDynamicState;
+    _gpu_supports_extended_dynamic_state2 = eds2_features.extendedDynamicState2;
+    _gpu_supports_extended_dynamic_state2_patch_control_points = eds2_features.extendedDynamicState2PatchControlPoints;
   }
   else {
     vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
@@ -348,6 +367,9 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _gpu_supports_null_descriptor = false;
     _gpu_supports_vertex_attrib_divisor = false;
     _gpu_supports_vertex_attrib_zero_divisor = false;
+    _gpu_supports_extended_dynamic_state = false;
+    _gpu_supports_extended_dynamic_state2 = false;
+    _gpu_supports_extended_dynamic_state2_patch_control_points = false;
   }
 
   // Default the maximum allocation size to the largest of the heaps.

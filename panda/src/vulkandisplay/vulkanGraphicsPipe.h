@@ -78,6 +78,9 @@ public:
   bool _gpu_supports_null_descriptor = false;
   bool _gpu_supports_vertex_attrib_divisor = false;
   bool _gpu_supports_vertex_attrib_zero_divisor = false;
+  bool _gpu_supports_extended_dynamic_state = false;
+  bool _gpu_supports_extended_dynamic_state2 = false;
+  bool _gpu_supports_extended_dynamic_state2_patch_control_points = false;
   VkPhysicalDeviceMemoryProperties _memory_properties;
   pvector<VkQueueFamilyProperties> _queue_families;
   VkDeviceSize _max_allocation_size;
