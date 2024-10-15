@@ -1131,6 +1131,52 @@ op_access_chain(uint32_t var_id, std::initializer_list<uint32_t> chain) {
 }
 
 /**
+ * Inserts an OpVectorShuffle, like a swizzle but may source from two vectors
+ * at once, with the indices continuing to number into the second vector.
+ * For a regular swizzle, pass the same vector twice.
+ */
+uint32_t SpirVTransformPass::
+op_vector_shuffle(uint32_t vec1, uint32_t vec2, const pvector<uint32_t> &components) {
+  const ShaderType::Vector *vec1_type = resolve_type(get_type_id(vec1))->as_vector();
+  const ShaderType::Vector *vec2_type = resolve_type(get_type_id(vec2))->as_vector();
+  nassertr(vec1_type != nullptr && vec2_type != nullptr, 0);
+  nassertr(vec1_type->get_scalar_type() == vec2_type->get_scalar_type(), 0);
+
+  const ShaderType *result_type = ShaderType::register_type(ShaderType::Vector(vec1_type->get_scalar_type(), components.size()));
+  uint32_t type_id = define_type(result_type);
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {((5 + (uint32_t)components.size()) << spv::WordCountShift) | spv::OpVectorShuffle, type_id, id, vec1, vec2});
+  _new_functions.insert(_new_functions.end(), components.begin(), components.end());
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = result_type;
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Constructs a composite with the given type from the given constituents.
+ */
+uint32_t SpirVTransformPass::
+op_composite_construct(const ShaderType *type, const pvector<uint32_t> &constituents) {
+  uint32_t type_id = define_type(type);
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {((3 + (uint32_t)constituents.size()) << spv::WordCountShift) | spv::OpCompositeConstruct, type_id, id});
+  _new_functions.insert(_new_functions.end(), constituents.begin(), constituents.end());
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = type;
+
+  mark_defined(id);
+  return id;
+}
+
+/**
  * Inserts an OpCompositeExtract.
  */
 uint32_t SpirVTransformPass::
@@ -1158,6 +1204,7 @@ op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t> chain) {
 
   Definition &def = _db.modify_definition(id);
   def._type_id = type_id;
+  def._type = resolve_type(type_id);
 
   mark_defined(id);
   return id;

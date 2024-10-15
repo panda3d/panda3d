@@ -47,6 +47,7 @@ transform_definition_op(Instruction op) {
         (uint32_t)_new_storage_class,
       });
       def._type = _new_type;
+      def._type_id = _pointer_type_id;
       if (def.is_used()) {
         _db.mark_used(_variable_id);
       }
@@ -66,6 +67,98 @@ bool SpirVReplaceVariableTypePass::
 transform_function_op(Instruction op) {
   switch (op.opcode) {
   case spv::OpLoad:
+    if (_pointer_ids.count(op.args[2])) {
+      Definition &def = _db.modify_definition(op.args[1]);
+
+      // If both are vectors or scalars, we can try a conversion.
+      const ShaderType::Vector *old_vector = _new_type->as_vector();
+      const ShaderType::Scalar *old_scalar = _new_type->as_scalar();
+      const ShaderType::Vector *new_vector = def._type->as_vector();
+      const ShaderType::Scalar *new_scalar = def._type->as_scalar();
+      if ((old_vector != nullptr && new_vector != nullptr && old_vector != new_vector) ||
+          (old_scalar != nullptr && new_scalar != nullptr && old_scalar != new_scalar) ||
+          (old_vector != nullptr && new_scalar != nullptr) ||
+          (old_scalar != nullptr && new_vector != nullptr)) {
+        uint32_t temp = op_load(op.args[2]);
+        ShaderType::ScalarType old_scalar_type, new_scalar_type;
+        if (new_vector != nullptr && old_vector != nullptr) {
+          // Swizzle the vector.
+          old_scalar_type = old_vector->get_scalar_type();
+          new_scalar_type = new_vector->get_scalar_type();
+          if (new_vector->get_num_components() != old_vector->get_num_components()) {
+            pvector<uint32_t> components;
+            uint32_t i = 0;
+            while (i < new_vector->get_num_components() && i < old_vector->get_num_components()) {
+              components.push_back(i);
+              ++i;
+            }
+            // The remaining components are undefined.
+            while (i < new_vector->get_num_components()) {
+              components.push_back(0xffffffff);
+              ++i;
+            }
+            temp = op_vector_shuffle(temp, temp, components);
+          }
+        }
+        else if (new_vector != nullptr) {
+          // Convert scalar to vector.
+          old_scalar_type = old_scalar->get_scalar_type();
+          new_scalar_type = new_vector->get_scalar_type();
+          pvector<uint32_t> components(new_vector->get_num_components(), temp);
+          temp = op_composite_construct(new_scalar, components);
+        }
+        else if (new_scalar != nullptr) {
+          // Convert vector to scalar.
+          old_scalar_type = old_vector->get_scalar_type();
+          new_scalar_type = new_scalar->get_scalar_type();
+          temp = op_composite_extract(temp, {0});
+        }
+        else {
+          old_scalar_type = old_scalar->get_scalar_type();
+          new_scalar_type = new_scalar->get_scalar_type();
+        }
+
+        // Determine which conversion instruction to use.
+        spv::Op opcode;
+        if (old_scalar_type != new_scalar_type) {
+          bool old_float = old_scalar_type == ShaderType::ST_float
+                        || old_scalar_type == ShaderType::ST_double;
+          bool new_float = new_scalar_type == ShaderType::ST_float
+                        || new_scalar_type == ShaderType::ST_double;
+
+          if (old_float && new_float) {
+            opcode = spv::OpFConvert;
+          }
+          else if (old_float) {
+            bool new_signed = new_scalar_type == ShaderType::ST_int;
+            opcode = new_signed ? spv::OpConvertFToS : spv::OpConvertFToU;
+          }
+          else if (new_float) {
+            bool old_signed = old_scalar_type == ShaderType::ST_int;
+            opcode = old_signed ? spv::OpConvertSToF : spv::OpConvertUToF;
+          }
+          else {
+            // Assuming it's the same bit width, for now.
+            opcode = spv::OpBitcast;
+          }
+        } else {
+          // Redundant instruction, but keeps the logic here simple.
+          opcode = spv::OpCopyObject;
+        }
+        // Replace the original load with our conversion.
+        add_instruction(opcode, {op.args[0], op.args[1], temp});
+        return false;
+      }
+      else {
+        def._type = _new_type;
+        def._type_id = _type_id;
+
+        op.args[0] = _type_id;
+        _object_ids.insert(op.args[1]);
+      }
+    }
+    break;
+
   case spv::OpAtomicLoad:
   case spv::OpAtomicExchange:
   case spv::OpAtomicCompareExchange:

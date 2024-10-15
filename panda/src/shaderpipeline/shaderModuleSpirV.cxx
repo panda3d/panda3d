@@ -302,6 +302,30 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
         _used_caps |= C_sample_variables;
         break;
 
+      case spv::BuiltInFragCoord:
+        // glslang doesn't always check this properly, so we may need to convert
+        // this to a vec4 in order to get a valid module.
+        {
+          const ShaderType::Vector *vector_type = def._type->as_vector();
+          if (vector_type != nullptr || def._type->as_scalar() != nullptr) {
+            if (vector_type == nullptr ||
+                vector_type->get_scalar_type() != ShaderType::ST_float ||
+                vector_type->get_num_components() != 4) {
+              ShaderType::ScalarType scalar_type =
+                (vector_type != nullptr)
+                ? vector_type->get_scalar_type()
+                : def._type->as_scalar()->get_scalar_type();
+
+              const ShaderType *new_type = ShaderType::register_type(ShaderType::Vector(scalar_type, 4));
+              transformer.run(SpirVReplaceVariableTypePass(id, new_type, spv::StorageClassInput));
+            }
+          } else {
+            shader_cat.error()
+              << "FragCoord input must be a vector!\n";
+          }
+        }
+        break;
+
       default:
         break;
       }

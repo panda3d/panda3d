@@ -19,7 +19,9 @@
 /**
  * Changes the type of a given variable.  Does not check that the existing
  * usage of the variable in the shader is valid with the new type - it only
- * changes the types of loads and copies.
+ * changes the types of loads and copies.  An exception is when changing a
+ * scalar or vector to a different scalar type or number of components, where
+ * conversion is performed at the load point.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVReplaceVariableTypePass final : public SpirVTransformPass {
 public:
