@@ -1400,6 +1400,10 @@ upload_texture(VulkanTextureContext *tc) {
   nassertd(optimal_align > 0) {
     optimal_align = 1;
   }
+  if (optimal_align < 4) {
+    //FIXME: texel size
+    optimal_align = 4;
+  }
 
   // Add up the total size of the staging buffer to create.
   for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
