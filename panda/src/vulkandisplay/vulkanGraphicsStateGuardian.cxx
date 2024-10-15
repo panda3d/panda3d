@@ -74,6 +74,9 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   GraphicsStateGuardian(CS_default, engine, pipe),
   _graphics_queue_family_index(queue_family_index)
 {
+  reset();
+  _is_valid = false;
+
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
 
