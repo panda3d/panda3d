@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 #include "shaderModuleSpirV.h"
+#include "spirVTransformPass.h"
 
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
@@ -37,12 +38,18 @@ private:
   struct Descriptor;
 
 public:
+  using AccessChain = SpirVTransformPass::AccessChain;
+
   INLINE VulkanShaderContext(Shader *shader);
   INLINE ~VulkanShaderContext();
 
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
   bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
+
+  const ShaderType *r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
+                                        pmap<AccessChain, Descriptor> &descriptors,
+                                        const ShaderType *type, int &resource_index);
 
   VkDescriptorSetLayout make_texture_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);

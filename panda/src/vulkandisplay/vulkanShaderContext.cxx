@@ -14,10 +14,9 @@
 #include "vulkanShaderContext.h"
 #include "spirVTransformer.h"
 #include "spirVConvertBoolToIntPass.h"
+#include "spirVHoistStructResourcesPass.h"
 #include "spirVMakeBlockPass.h"
-
-#define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
-#include <spirv_cross/spirv_glsl.hpp>
+#include "spirVRemoveUnusedVariablesPass.h"
 
 TypeHandle VulkanShaderContext::_type_handle;
 
@@ -40,58 +39,47 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   pvector<const InternalName *> shader_input_block_params;
   pvector<const InternalName *> other_state_block_params;
 
-  pvector<const InternalName *> tex_stage_set_params;
-  pvector<const InternalName *> tex_input_set_params;
+  // Abuse the var id field in the access chain to store the parameter index.
+  // Later we replace it with the id, because the id is unique per-module.
+  pvector<AccessChain> tex_stage_set_params;
+  pvector<AccessChain> tex_input_set_params;
 
   ShaderType::Struct shader_input_block_struct;
   ShaderType::Struct other_state_block_struct;
   bool replace_bools = false;
 
-  for (const Shader::Parameter &param : _shader->_parameters) {
+  for (size_t pi = 0; pi < _shader->_parameters.size(); ++pi) {
+    const Shader::Parameter &param = _shader->_parameters[pi];
     if (param._binding == nullptr) {
       continue;
     }
-    const ShaderType *element_type;
-    uint32_t num_elements;
-    param._type->unwrap_array(element_type, num_elements);
-    if (element_type->as_resource() != nullptr) {
-      Descriptor desc;
-      desc._binding = param._binding;
-      desc._resource_ids.resize(num_elements);
-      desc._stage_mask = param._stage_mask;
 
-      if (const ShaderType::SampledImage *sampler = param._type->as_sampled_image()) {
-        desc._type =
-          (sampler->get_texture_type() == Texture::TT_buffer_texture)
-            ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER
-            : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      }
-      else if (const ShaderType::Image *image = param._type->as_image()) {
-        desc._type =
-          (image->get_texture_type() == Texture::TT_buffer_texture)
-            ? VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
-            : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-      }
-      else {
-        continue;
-      }
+    AccessChain chain(pi);
+    pmap<AccessChain, Descriptor> descriptors;
+    int num_resources = 0;
+    const ShaderType *remaining_type = r_extract_resources(param, chain, descriptors, param._type, num_resources);
 
-      for (uint32_t i = 0; i < num_elements; ++i) {
-        desc._resource_ids[i] = param._binding->get_resource_id(i, element_type);
-      }
-
+    if (num_resources > 0) {
       if (param._binding->get_state_dep() & Shader::D_texture) {
-        tex_stage_set_params.push_back(param._name);
-        _tex_stage_descriptors.push_back(std::move(desc));
-        _num_tex_stage_descriptor_elements += num_elements;
+        for (auto &item : descriptors) {
+          tex_stage_set_params.push_back(item.first);
+          _tex_stage_descriptors.push_back(std::move(item.second));
+        }
+        _num_tex_stage_descriptor_elements += num_resources;
+      } else {
+        for (auto &item : descriptors) {
+          tex_input_set_params.push_back(item.first);
+          _tex_input_descriptors.push_back(std::move(item.second));
+        }
+        _num_tex_input_descriptor_elements += num_resources;
       }
-      else if (param._binding->get_state_dep() & Shader::D_shader_inputs) {
-        tex_input_set_params.push_back(param._name);
-        _tex_input_descriptors.push_back(std::move(desc));
-        _num_tex_input_descriptor_elements += num_elements;
-      }
+    }
+
+    if (remaining_type == nullptr) {
+      // Contained only opaque types.
       continue;
     }
+
     if (push_constant_block_type != nullptr) {
       if (param._binding->is_model_to_apiclip_matrix()) {
         push_constant_params[0] = param._name.p();
@@ -106,8 +94,9 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         continue;
       }
     }
-    const ShaderType *type = param._type->replace_scalar_type(ShaderType::ST_bool, ShaderType::ST_int);
-    if (param._type != type) {
+
+    const ShaderType *type = remaining_type->replace_scalar_type(ShaderType::ST_bool, ShaderType::ST_int);
+    if (remaining_type != type) {
       replace_bools = true;
     }
     int dep = param._binding->get_state_dep();
@@ -162,6 +151,72 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     // These are not used in Vulkan, and the validation layers trip over them.
     transformer.strip_uniform_locations();
 
+    // Determine the ids making up the inputs for the descriptor sets.
+    pvector<uint32_t> tex_stage_set_ids(tex_stage_set_params.size(), 0u);
+    bool needs_hoist = false;
+    for (size_t i = 0; i < tex_stage_set_params.size(); ++i) {
+      const AccessChain &chain = tex_stage_set_params[i];
+      int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+      if (index < 0) {
+        continue;
+      }
+      if (chain.size() > 0) {
+        // In a struct, need to hoist.
+        needs_hoist = true;
+      } else {
+        tex_stage_set_ids[i] = spv_module->get_parameter(index).id;
+      }
+    }
+    pvector<uint32_t> tex_input_set_ids(tex_input_set_params.size(), 0u);
+    for (size_t i = 0; i < tex_input_set_params.size(); ++i) {
+      const AccessChain &chain = tex_input_set_params[i];
+      int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+      if (index < 0) {
+        continue;
+      }
+      if (chain.size() > 0) {
+        // In a struct, need to hoist.
+        needs_hoist = true;
+      } else {
+        tex_input_set_ids[i] = spv_module->get_parameter(index).id;
+      }
+    }
+
+    if (needs_hoist) {
+      // Hoist resources out of structs into top-level vars / arrays.
+      SpirVHoistStructResourcesPass hoist_pass(true);
+      transformer.run(hoist_pass);
+      transformer.run(SpirVRemoveUnusedVariablesPass());
+
+      // Assign the remaining ids to the hoisted params.
+      for (size_t i = 0; i < tex_stage_set_params.size(); ++i) {
+        AccessChain chain = tex_stage_set_params[i];
+        if (chain.size() > 0) {
+          int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+          if (index > 0) {
+            chain._var_id = spv_module->get_parameter(index).id;
+            auto it = hoist_pass._hoisted_vars.find(chain);
+            if (it != hoist_pass._hoisted_vars.end()) {
+              tex_stage_set_ids[i] = it->second;
+            }
+          }
+        }
+      }
+      for (size_t i = 0; i < tex_input_set_params.size(); ++i) {
+        AccessChain chain = tex_input_set_params[i];
+        if (chain.size() > 0) {
+          int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+          if (index > 0) {
+            chain._var_id = spv_module->get_parameter(index).id;
+            auto it = hoist_pass._hoisted_vars.find(chain);
+            if (it != hoist_pass._hoisted_vars.end()) {
+              tex_input_set_ids[i] = it->second;
+            }
+          }
+        }
+      }
+    }
+
     if (replace_bools) {
       transformer.run(SpirVConvertBoolToIntPass());
     }
@@ -187,19 +242,16 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
 
     // Bind the textures to the desired descriptor sets.
-    if (!tex_stage_set_params.empty()) {
-      auto ids = spv_module->get_parameter_ids_from_names(tex_stage_set_params);
-      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, ids);
+    if (!tex_stage_set_ids.empty()) {
+      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, tex_stage_set_ids);
     }
-    if (!tex_input_set_params.empty()) {
-      auto ids = spv_module->get_parameter_ids_from_names(tex_input_set_params);
-
+    if (!tex_input_set_ids.empty()) {
       if (_shader_input_block._size > 0) {
         // Make room for the uniform buffer binding.
-        ids.insert(ids.begin(), 0);
+        tex_input_set_ids.insert(tex_input_set_ids.begin(), 0);
       }
 
-      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, ids);
+      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, tex_input_set_ids);
     }
 
     // Change OpenGL conventions to Vulkan conventions.
@@ -258,6 +310,79 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   }
 
   return success;
+}
+
+/**
+ * Collects the resources from the given parameter and adds them to the
+ * descriptor table.
+ * Returns the type with the resources removed (or nullptr if it was just
+ * resources).
+ */
+const ShaderType *VulkanShaderContext::
+r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
+                    pmap<AccessChain, Descriptor> &descriptors,
+                    const ShaderType *type, int &resource_index) {
+
+  if (const ShaderType::Array *array_type = type->as_array()) {
+    // Recurse.
+    const ShaderType *element_type = array_type->get_element_type();
+    const ShaderType *new_element_type = nullptr;
+    uint32_t count = array_type->get_num_elements();
+    for (uint32_t i = 0; i < count; ++i) {
+      new_element_type = r_extract_resources(param, chain, descriptors, element_type, resource_index);
+    }
+    if (new_element_type != nullptr) {
+      return ShaderType::register_type(ShaderType::Array(new_element_type, count));
+    } else {
+      return nullptr;
+    }
+  }
+  if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    ShaderType::Struct new_struct;
+    for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      AccessChain member_chain(chain);
+      member_chain.append(i);
+      const ShaderType *new_member_type = r_extract_resources(param, member_chain, descriptors, member.type, resource_index);
+      if (new_member_type != nullptr) {
+        new_struct.add_member(new_member_type, member.name, member.offset);
+      }
+    }
+    if (new_struct.get_num_members() > 0) {
+      return ShaderType::register_type(std::move(new_struct));
+    } else {
+      return nullptr;
+    }
+  }
+  if (type->as_resource() == nullptr) {
+    return type;
+  }
+
+  Descriptor &desc = descriptors[chain];
+  desc._resource_ids.push_back(param._binding->get_resource_id(resource_index++, type));
+
+  if (desc._binding == nullptr) {
+    desc._binding = param._binding;
+    desc._stage_mask = param._stage_mask;
+
+    if (const ShaderType::SampledImage *sampler = type->as_sampled_image()) {
+      desc._type =
+        (sampler->get_texture_type() == Texture::TT_buffer_texture)
+          ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER
+          : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      desc._access = ShaderType::Access::read_only;
+    }
+    else if (const ShaderType::Image *image = type->as_image()) {
+      desc._type =
+        (image->get_texture_type() == Texture::TT_buffer_texture)
+          ? VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
+          : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+      desc._access = image->get_access();
+    }
+  }
+
+  return nullptr;
 }
 
 /**
@@ -412,6 +537,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
 
   switch (desc._type) {
   case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+    write.pImageInfo = image_infos;
+
     for (ResourceId id : desc._resource_ids) {
       SamplerState sampler;
       int view = gsg->get_current_tex_view_offset();
@@ -435,7 +562,6 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       image_info.sampler = sc->_sampler;
       image_info.imageView = tc->get_image_view(view);
       image_info.imageLayout = tc->_layout;
-      write.pImageInfo = &image_info;
     }
     break;
 
@@ -462,6 +588,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
 
   case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
   case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+    write.pImageInfo = image_infos;
+
     for (ResourceId id : desc._resource_ids) {
       ShaderType::Access access = ShaderType::Access::read_write;
       int z = -1;

@@ -305,13 +305,15 @@ strip_uniform_locations() {
 
 /**
  * Assign descriptor bindings for a descriptor set based on the given ids.
- * Assumes there are already binding and set decorations.
  * To create gaps in the descriptor set, entries in ids may be 0.
  */
 void SpirVTransformer::
 bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids) {
   InstructionIterator it(_annotations.data());
   InstructionIterator end(_annotations.data() + _annotations.size());
+
+  BitArray assigned_sets;
+  BitArray assigned_bindings;
 
   while (it != end) {
     Instruction op = *it;
@@ -321,15 +323,31 @@ bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids) {
          op.args[1] == spv::DecorationDescriptorSet)) {
       auto iit = std::find(ids.begin(), ids.end(), op.args[0]);
       if (iit != ids.end()) {
+        uint32_t binding = std::distance(ids.begin(), iit);
         if (op.args[1] == spv::DecorationBinding) {
-          op.args[2] = std::distance(ids.begin(), iit);
+          op.args[2] = binding;
+          assigned_bindings.set_bit(binding);
         }
         else if (op.args[1] == spv::DecorationDescriptorSet) {
           op.args[2] = set;
+          assigned_sets.set_bit(binding);
         }
       }
     }
 
     ++it;
+  }
+
+  // Anything left?
+  for (uint32_t binding = 0; binding < ids.size(); ++binding) {
+    uint32_t id = ids[binding];
+    if (id > 0) {
+      if (!assigned_sets.get_bit(binding)) {
+        _annotations.insert(_annotations.end(), {spv::OpDecorate | (4 << spv::WordCountShift), id, spv::DecorationDescriptorSet, set});
+      }
+      if (!assigned_bindings.get_bit(binding)) {
+        _annotations.insert(_annotations.end(), {spv::OpDecorate | (4 << spv::WordCountShift), id, spv::DecorationBinding, binding});
+      }
+    }
   }
 }
