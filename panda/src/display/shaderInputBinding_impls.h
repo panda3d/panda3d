@@ -315,6 +315,8 @@ class EXPCL_PANDA_DISPLAY ShaderAggregateBinding : public ShaderInputBinding {
 public:
   INLINE ShaderAggregateBinding(CPT_InternalName input, const ShaderType *type);
 
+  virtual int get_state_dep() const override;
+
   virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
 
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;

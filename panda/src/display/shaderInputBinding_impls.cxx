@@ -2103,6 +2103,15 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 }
 
 /**
+ * Returns a mask indicating which state changes should cause the parameter to
+ * be respecified.
+ */
+int ShaderAggregateBinding::
+get_state_dep() const {
+  return Shader::D_frame | Shader::D_shader_inputs;
+}
+
+/**
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderAggregateBinding::
