@@ -4676,9 +4676,11 @@ get_image_format(const Texture *texture) const {
   case Texture::F_rg8i:
     return (VkFormat)(VK_FORMAT_R8G8_UINT + is_signed);
   case Texture::F_rgb8i:
-    return (VkFormat)(VK_FORMAT_B8G8R8_UINT + is_signed);
+    //XXX not flipped in OpenGL, so not flipped here
+    return (VkFormat)(VK_FORMAT_R8G8B8_UINT + is_signed);
   case Texture::F_rgba8i:
-    return (VkFormat)(VK_FORMAT_B8G8R8A8_UINT + is_signed);
+    //XXX not flipped in OpenGL, so not flipped here
+    return (VkFormat)(VK_FORMAT_R8G8B8A8_UINT + is_signed);
   case Texture::F_r11_g11_b10:
     return VK_FORMAT_B10G11R11_UFLOAT_PACK32;
   case Texture::F_rgb9_e5:
