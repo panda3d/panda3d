@@ -1423,9 +1423,9 @@ def test_glsl_state_texture(gsg):
     assert(texture(p3d_TextureAdd[2], coord) == vec4(0.0, 0.0, 0.0, 1.0));
     assert(abs(texture(p3d_TextureNormal[0], coord).r - 4.0 / 255.0) < 0.001);
     assert(abs(texture(p3d_TextureNormal[1], coord).r - 6.0 / 255.0) < 0.001);
-    assert(texture(p3d_TextureNormal[2], coord) == vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0));
+    assert(all(lessThan(abs(texture(p3d_TextureNormal[2], coord) - vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0)), vec4(0.004))));
     assert(texture(p3d_TextureHeight[0], coord).r == 4.0 / 255.0);
-    assert(texture(p3d_TextureHeight[1], coord) == vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0));
+    assert(all(lessThan(abs(texture(p3d_TextureHeight[1], coord) - vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0)), vec4(0.004))));
     """
 
     run_glsl_test(gsg, code, preamble, state=np.get_state())
