@@ -12,6 +12,9 @@
  */
 
 #include "vulkanGraphicsStateGuardian.h"
+#include "vulkanBufferContext.h"
+#include "vulkanIndexBufferContext.h"
+#include "vulkanTextureContext.h"
 #include "vulkanVertexBufferContext.h"
 #include "graphicsEngine.h"
 #include "pStatTimer.h"
@@ -2213,6 +2216,78 @@ release_index_buffer(IndexBufferContext *context) {
   _frame_data->_pending_destroy_buffers.push_back(vbc->_buffer);
   _frame_data->_pending_free.push_back(std::move(vbc->_block));
   delete vbc;
+}
+
+/**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated BufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_shader_buffer()
+ * with this same pointer (which will also delete the pointer).
+ *
+ * This function should not be called directly to prepare a buffer.  Instead,
+ * call ShaderBuffer::prepare().
+ */
+BufferContext *VulkanGraphicsStateGuardian::
+prepare_shader_buffer(ShaderBuffer *data) {
+  PStatTimer timer(_prepare_shader_buffer_pcollector);
+
+  VkDeviceSize data_size = data->get_data_size_bytes();
+
+  VkBuffer buffer;
+  VulkanMemoryBlock block;
+  if (!create_buffer(data_size, buffer, block,
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create shader buffer.\n";
+    return nullptr;
+  }
+
+  VulkanBufferContext *bc = new VulkanBufferContext(_prepared_objects, data);
+  bc->_buffer = buffer;
+  bc->_block = std::move(block);
+  bc->update_data_size_bytes(data_size);
+
+  const unsigned char *initial_data = data->get_initial_data();
+  if (initial_data != nullptr) {
+    VkBuffer buffer;
+    uint32_t buffer_offset;
+    void *data = alloc_staging_buffer(data_size, buffer, buffer_offset);
+    if (!data) {
+      vulkandisplay_cat.error()
+        << "Failed to allocate staging buffer for updating shader buffer.\n";
+      return nullptr;
+    }
+    memcpy(data, initial_data, data_size);
+    _data_transferred_pcollector.add_level(data_size);
+
+    VkBufferCopy region;
+    region.srcOffset = buffer_offset;
+    region.dstOffset = 0;
+    region.size = data_size;
+    vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, bc->_buffer, 1, &region);
+  }
+
+  //bc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+  return bc;
+}
+
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void VulkanGraphicsStateGuardian::
+release_shader_buffer(BufferContext *context) {
+  nassertv(_frame_data != nullptr);
+
+  VulkanBufferContext *bc;
+  DCAST_INTO_V(bc, context);
+
+  _frame_data->_pending_destroy_buffers.push_back(bc->_buffer);
+  _frame_data->_pending_free.push_back(std::move(bc->_block));
+  delete bc;
 }
 
 /**

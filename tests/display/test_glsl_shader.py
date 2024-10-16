@@ -480,14 +480,14 @@ def test_glsl_ssbo_array(gsg):
     };
     layout(std430, binding=0) buffer test {
         readonly InsideStruct inside[1];
-    } test_ns[3][1];
+    } test_ns[3];
     """
     code = """
-    assert(test_ns[1][0].inside[0].value == 1234567);
-    assert(test_ns[2][0].inside[0].value == -1234567);
+    assert(test_ns[1].inside[0].value == 1234567);
+    assert(test_ns[2].inside[0].value == -1234567);
     """
     run_glsl_test(gsg, code, preamble,
-                  {'test[0][0]': unused, 'test[1][0]': buffer1, 'test[2][0]': buffer2},
+                  {'test[0]': unused, 'test[1]': buffer1, 'test[2]': buffer2},
                   version=430)
 
 

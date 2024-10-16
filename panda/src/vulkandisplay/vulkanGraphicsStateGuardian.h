@@ -20,6 +20,7 @@
 #include "vulkanShaderContext.h"
 #include "circularAllocator.h"
 
+class VulkanBufferContext;
 class VulkanIndexBufferContext;
 class VulkanSamplerContext;
 class VulkanShaderContext;
@@ -76,6 +77,9 @@ public:
                            const GeomPrimitivePipelineReader *reader,
                            bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+
+  virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
+  virtual void release_shader_buffer(BufferContext *bc);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 

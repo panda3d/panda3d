@@ -12,6 +12,8 @@
  */
 
 #include "vulkanShaderContext.h"
+#include "vulkanBufferContext.h"
+#include "vulkanTextureContext.h"
 #include "spirVTransformer.h"
 #include "spirVConvertBoolToIntPass.h"
 #include "spirVHoistStructResourcesPass.h"
@@ -41,8 +43,8 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 
   // Abuse the var id field in the access chain to store the parameter index.
   // Later we replace it with the id, because the id is unique per-module.
-  pvector<AccessChain> tex_stage_set_params;
-  pvector<AccessChain> tex_input_set_params;
+  pvector<AccessChain> tattr_set_params;
+  pvector<AccessChain> sattr_set_params;
 
   ShaderType::Struct shader_input_block_struct;
   ShaderType::Struct other_state_block_struct;
@@ -62,16 +64,16 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     if (num_resources > 0) {
       if (param._binding->get_state_dep() & Shader::D_texture) {
         for (auto &item : descriptors) {
-          tex_stage_set_params.push_back(item.first);
-          _tex_stage_descriptors.push_back(std::move(item.second));
+          tattr_set_params.push_back(item.first);
+          _tattr_descriptors.push_back(std::move(item.second));
         }
-        _num_tex_stage_descriptor_elements += num_resources;
+        _num_tattr_descriptor_elements += num_resources;
       } else {
         for (auto &item : descriptors) {
-          tex_input_set_params.push_back(item.first);
-          _tex_input_descriptors.push_back(std::move(item.second));
+          sattr_set_params.push_back(item.first);
+          _sattr_descriptors.push_back(std::move(item.second));
         }
-        _num_tex_input_descriptor_elements += num_resources;
+        _num_sattr_descriptor_elements += num_resources;
       }
     }
 
@@ -152,10 +154,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     transformer.strip_uniform_locations();
 
     // Determine the ids making up the inputs for the descriptor sets.
-    pvector<uint32_t> tex_stage_set_ids(tex_stage_set_params.size(), 0u);
+    pvector<uint32_t> tattr_set_ids(tattr_set_params.size(), 0u);
     bool needs_hoist = false;
-    for (size_t i = 0; i < tex_stage_set_params.size(); ++i) {
-      const AccessChain &chain = tex_stage_set_params[i];
+    for (size_t i = 0; i < tattr_set_params.size(); ++i) {
+      const AccessChain &chain = tattr_set_params[i];
       int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
       if (index < 0) {
         continue;
@@ -164,12 +166,12 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         // In a struct, need to hoist.
         needs_hoist = true;
       } else {
-        tex_stage_set_ids[i] = spv_module->get_parameter(index).id;
+        tattr_set_ids[i] = spv_module->get_parameter(index).id;
       }
     }
-    pvector<uint32_t> tex_input_set_ids(tex_input_set_params.size(), 0u);
-    for (size_t i = 0; i < tex_input_set_params.size(); ++i) {
-      const AccessChain &chain = tex_input_set_params[i];
+    pvector<uint32_t> sattr_set_ids(sattr_set_params.size(), 0u);
+    for (size_t i = 0; i < sattr_set_params.size(); ++i) {
+      const AccessChain &chain = sattr_set_params[i];
       int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
       if (index < 0) {
         continue;
@@ -178,7 +180,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         // In a struct, need to hoist.
         needs_hoist = true;
       } else {
-        tex_input_set_ids[i] = spv_module->get_parameter(index).id;
+        sattr_set_ids[i] = spv_module->get_parameter(index).id;
       }
     }
 
@@ -189,28 +191,28 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       transformer.run(SpirVRemoveUnusedVariablesPass());
 
       // Assign the remaining ids to the hoisted params.
-      for (size_t i = 0; i < tex_stage_set_params.size(); ++i) {
-        AccessChain chain = tex_stage_set_params[i];
+      for (size_t i = 0; i < tattr_set_params.size(); ++i) {
+        AccessChain chain = tattr_set_params[i];
         if (chain.size() > 0) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
           if (index > 0) {
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
-              tex_stage_set_ids[i] = it->second;
+              tattr_set_ids[i] = it->second;
             }
           }
         }
       }
-      for (size_t i = 0; i < tex_input_set_params.size(); ++i) {
-        AccessChain chain = tex_input_set_params[i];
+      for (size_t i = 0; i < sattr_set_params.size(); ++i) {
+        AccessChain chain = sattr_set_params[i];
         if (chain.size() > 0) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
           if (index > 0) {
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
-              tex_input_set_ids[i] = it->second;
+              sattr_set_ids[i] = it->second;
             }
           }
         }
@@ -242,16 +244,16 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
 
     // Bind the textures to the desired descriptor sets.
-    if (!tex_stage_set_ids.empty()) {
-      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, tex_stage_set_ids);
+    if (!tattr_set_ids.empty()) {
+      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, tattr_set_ids);
     }
-    if (!tex_input_set_ids.empty()) {
+    if (!sattr_set_ids.empty()) {
       if (_shader_input_block._size > 0) {
         // Make room for the uniform buffer binding.
-        tex_input_set_ids.insert(tex_input_set_ids.begin(), 0);
+        sattr_set_ids.insert(sattr_set_ids.begin(), 0);
       }
 
-      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, tex_input_set_ids);
+      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, sattr_set_ids);
     }
 
     // Change OpenGL conventions to Vulkan conventions.
@@ -380,6 +382,10 @@ r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
           : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
       desc._access = image->get_access();
     }
+    else if (const ShaderType::StorageBuffer *buffer = type->as_storage_buffer()) {
+      desc._type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+      desc._access = buffer->get_access();
+    }
   }
 
   return nullptr;
@@ -391,12 +397,12 @@ r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
  */
 VkDescriptorSetLayout VulkanShaderContext::
 make_texture_attrib_descriptor_set_layout(VkDevice device) {
-  size_t num_descriptors = _tex_stage_descriptors.size();
+  size_t num_descriptors = _tattr_descriptors.size();
   VkDescriptorSetLayoutBinding *bindings;
   bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * num_descriptors);
 
   size_t i = 0;
-  for (const Descriptor &desc : _tex_stage_descriptors) {
+  for (const Descriptor &desc : _tattr_descriptors) {
     VkDescriptorSetLayoutBinding &binding = bindings[i];
     binding.binding = i++;
     binding.descriptorType = desc._type;
@@ -430,7 +436,7 @@ make_texture_attrib_descriptor_set_layout(VkDevice device) {
  */
 VkDescriptorSetLayout VulkanShaderContext::
 make_shader_attrib_descriptor_set_layout(VkDevice device) {
-  size_t num_descriptors = _tex_input_descriptors.size() + 1;
+  size_t num_descriptors = _sattr_descriptors.size() + 1;
   VkDescriptorSetLayoutBinding *bindings;
   bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * num_descriptors);
 
@@ -447,7 +453,7 @@ make_shader_attrib_descriptor_set_layout(VkDevice device) {
   }
 
   // Then the descriptors.
-  for (const Descriptor &desc : _tex_input_descriptors) {
+  for (const Descriptor &desc : _sattr_descriptors) {
     VkDescriptorSetLayoutBinding &binding = bindings[i];
     binding.binding = i++;
     binding.descriptorType = desc._type;
@@ -518,7 +524,10 @@ make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
  */
 bool VulkanShaderContext::
 fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
-                 VkWriteDescriptorSet &write, VkDescriptorImageInfo *&image_infos) {
+                 VkWriteDescriptorSet &write,
+                 VkDescriptorImageInfo *&image_infos,
+                 VkDescriptorBufferInfo *&buffer_infos,
+                 VkBufferView *&texel_buffer_views) {
 
   ShaderInputBinding::State state;
   state.gsg = gsg;
@@ -566,6 +575,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
     break;
 
   case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+    write.pTexelBufferView = texel_buffer_views;
+
     for (ResourceId id : desc._resource_ids) {
       SamplerState sampler;
       int view = gsg->get_current_tex_view_offset();
@@ -582,13 +593,18 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                      desc._stage_mask, VK_ACCESS_SHADER_READ_BIT);
 
-      write.pTexelBufferView = &tc->get_buffer_view(view);
+      VkBufferView &texel_buffer_view = *texel_buffer_views++;
+      texel_buffer_view = tc->get_buffer_view(view);
     }
     break;
 
   case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
   case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-    write.pImageInfo = image_infos;
+    if (desc._type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) {
+      write.pTexelBufferView = texel_buffer_views;
+    } else {
+      write.pImageInfo = image_infos;
+    }
 
     for (ResourceId id : desc._resource_ids) {
       ShaderType::Access access = ShaderType::Access::READ_WRITE;
@@ -618,14 +634,31 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
 
       int view = gsg->get_current_tex_view_offset();
       if (desc._type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) {
-        write.pTexelBufferView = &tc->get_buffer_view(view);
+        VkBufferView &texel_buffer_view = *texel_buffer_views++;
+        texel_buffer_view = tc->get_buffer_view(view);
       } else {
         VkDescriptorImageInfo &image_info = *image_infos++;
         image_info.sampler = VK_NULL_HANDLE;
         image_info.imageView = tc->get_image_view(view);
         image_info.imageLayout = tc->_layout;
-        write.pImageInfo = &image_info;
       }
+    }
+    break;
+
+  case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+    write.pBufferInfo = buffer_infos;
+
+    for (ResourceId id : desc._resource_ids) {
+      PT(ShaderBuffer) buffer = desc._binding->fetch_shader_buffer(state, id);
+
+      VulkanBufferContext *bc;
+      DCAST_INTO_R(bc, buffer->prepare_now(pgo, gsg), false);
+      bc->set_active(true);
+
+      VkDescriptorBufferInfo &buffer_info = *buffer_infos++;
+      buffer_info.buffer = bc->_buffer;
+      buffer_info.offset = 0;
+      buffer_info.range = VK_WHOLE_SIZE;
     }
     break;
 
@@ -642,13 +675,15 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
  */
 bool VulkanShaderContext::
 update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(_tex_stage_descriptors.size() * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(_num_tex_stage_descriptor_elements * sizeof(VkDescriptorImageInfo));
+  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(_tattr_descriptors.size() * sizeof(VkWriteDescriptorSet));
+  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(_num_tattr_descriptor_elements * sizeof(VkDescriptorImageInfo));
+  VkDescriptorBufferInfo *buffer_infos = (VkDescriptorBufferInfo *)alloca(_num_tattr_descriptor_elements * sizeof(VkDescriptorBufferInfo));
+  VkBufferView *texel_buffer_views = (VkBufferView *)alloca(_num_tattr_descriptor_elements * sizeof(VkBufferView));
 
   size_t wi = 0;
   size_t di = 0;
-  for (const Descriptor &desc : _tex_stage_descriptors) {
-    if (!fetch_descriptor(gsg, desc, writes[wi], image_infos)) {
+  for (const Descriptor &desc : _tattr_descriptors) {
+    if (!fetch_descriptor(gsg, desc, writes[wi], image_infos, buffer_infos, texel_buffer_views)) {
       return false;
     }
     writes[wi].dstSet = ds;
@@ -665,9 +700,11 @@ update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds
 bool VulkanShaderContext::
 update_sattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
   // Allocate enough memory.
-  size_t max_num_descriptors = 1 + _tex_input_descriptors.size();
+  size_t max_num_descriptors = 1 + _sattr_descriptors.size();
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_descriptors * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(_num_tex_input_descriptor_elements * sizeof(VkDescriptorImageInfo));
+  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(_num_sattr_descriptor_elements * sizeof(VkDescriptorImageInfo));
+  VkDescriptorBufferInfo *buffer_infos = (VkDescriptorBufferInfo *)alloca(_num_sattr_descriptor_elements * sizeof(VkDescriptorBufferInfo));
+  VkBufferView *texel_buffer_views = (VkBufferView *)alloca(_num_sattr_descriptor_elements * sizeof(VkBufferView));
 
   // First the UBO, then the shader input textures.
   size_t di = 0;
@@ -693,8 +730,8 @@ update_sattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds
     ++di;
   }
 
-  for (const Descriptor &desc : _tex_input_descriptors) {
-    if (!fetch_descriptor(gsg, desc, writes[wi], image_infos)) {
+  for (const Descriptor &desc : _sattr_descriptors) {
+    if (!fetch_descriptor(gsg, desc, writes[wi], image_infos, buffer_infos, texel_buffer_views)) {
       return false;
     }
     writes[wi].dstSet = ds;

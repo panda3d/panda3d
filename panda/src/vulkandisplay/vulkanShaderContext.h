@@ -55,8 +55,11 @@ public:
   VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_dynamic_uniform_descriptor_set_layout(VkDevice device);
 
-  bool fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
-                        VkWriteDescriptorSet &write, VkDescriptorImageInfo *&image_infos);
+  bool fetch_descriptor(VulkanGraphicsStateGuardian *gsg,
+                        const Descriptor &desc, VkWriteDescriptorSet &write,
+                        VkDescriptorImageInfo *&image_infos,
+                        VkDescriptorBufferInfo *&buffer_infos,
+                        VkBufferView *&texel_buffer_views);
   bool update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
   bool update_sattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
   uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer);
@@ -135,11 +138,11 @@ private:
     int _stage_mask = 0;
     ShaderType::Access _access = ShaderType::Access::READ_WRITE;
   };
-  pvector<Descriptor> _tex_stage_descriptors;
-  size_t _num_tex_stage_descriptor_elements = 0;
+  pvector<Descriptor> _tattr_descriptors;
+  size_t _num_tattr_descriptor_elements = 0;
 
-  pvector<Descriptor> _tex_input_descriptors;
-  size_t _num_tex_input_descriptor_elements = 0;
+  pvector<Descriptor> _sattr_descriptors;
+  size_t _num_sattr_descriptor_elements = 0;
 
   VkDescriptorSet _uniform_descriptor_set = VK_NULL_HANDLE;
   VkBuffer _uniform_buffer = VK_NULL_HANDLE;
