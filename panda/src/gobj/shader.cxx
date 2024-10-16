@@ -455,7 +455,7 @@ link() {
   pmap<CPT_InternalName, Parameter> parameters_by_name;
   pvector<Parameter *> parameters;
 
-  pmap<CPT_InternalName, const ::ShaderType *> spec_const_types;
+  pmap<CPT_InternalName, const ShaderType *> spec_const_types;
 
   for (LinkedModule &linked_module : _modules) {
     const ShaderModule *module = linked_module._module.get_read_pointer();
@@ -499,7 +499,7 @@ link() {
       if (!result.second) {
         // Another module has already defined a spec constant with this name.
         // Make sure they have the same type.
-        const ::ShaderType *other_type = it->second;
+        const ShaderType *other_type = it->second;
         if (spec_const.type != other_type) {
           shader_cat.error()
             << "Specialization constant " << *spec_const.name << " in module "
@@ -554,7 +554,7 @@ add_parameter(const InternalName *name, const ShaderType *type, int location) {
  * Binds a vertex input parameter with the given type.
  */
 bool Shader::
-bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location) {
+bind_vertex_input(const InternalName *name, const ShaderType *type, int location) {
   std::string name_str = name->get_name();
 
   Shader::ShaderVarSpec bind;

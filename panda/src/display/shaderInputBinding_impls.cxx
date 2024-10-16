@@ -275,7 +275,7 @@ check_light_struct_member(const string &name, const ShaderType *type) {
     return false;
   }
 
-  const ::ShaderType::Matrix *matrix = type->as_matrix();
+  const ShaderType::Matrix *matrix = type->as_matrix();
   if (matrix != nullptr) {
     if (matrix->get_num_rows() != num_rows ||
         matrix->get_num_columns() < min_cols ||
@@ -288,7 +288,7 @@ check_light_struct_member(const string &name, const ShaderType *type) {
   }
   else {
     uint32_t num_components = 1;
-    if (const ::ShaderType::Vector *vector = type->as_vector()) {
+    if (const ShaderType::Vector *vector = type->as_vector()) {
       num_components = vector->get_num_components();
     }
     else if (type->as_scalar() == nullptr) {
@@ -2239,15 +2239,15 @@ r_collect_members(const InternalName *name, const ShaderType *type, size_t offse
 
     _data_members.push_back({binding, offset});
   }
-  else if (const ::ShaderType::Struct *struct_type = type->as_struct()) {
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
-      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
 
       PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
       r_collect_members(fqname, member.type, offset + member.offset);
     }
   }
-  else if (const ::ShaderType::Array *array_type = type->as_array()) {
+  else if (const ShaderType::Array *array_type = type->as_array()) {
     size_t basename_size = name->get_basename().size();
     char *buffer = (char *)alloca(basename_size + 14);
     memcpy(buffer, name->get_basename().c_str(), basename_size);
