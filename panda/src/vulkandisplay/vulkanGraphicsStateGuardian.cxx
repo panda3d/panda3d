@@ -3104,6 +3104,7 @@ end_draw_primitives() {
  */
 void VulkanGraphicsStateGuardian::
 reset() {
+  GraphicsStateGuardian::reset();
 }
 
 /**
